@@ -8,6 +8,7 @@ import { neonConfigured, neonQuery } from "@/lib/create/platform/neon";
 import { caps, spendToday, adminSpendToday } from "@/lib/create/platform/spend";
 import { breakerLevel } from "@/lib/create/platform/breaker";
 import { PAID_PLANS } from "@/lib/billing/plans";
+import { businessTierForWhopPlanId, priceFor } from "@/lib/business/tiers";
 import { whopCheckoutConfigured, whopWebhookConfigured } from "@/lib/billing/whop";
 import { type ModelCallRow } from "./telemetry";
 import { maskEmail, recentAudit, type AuditRow } from "./audit";
@@ -40,6 +41,10 @@ export function summarize(input: { now: number; workspaces: WorkspaceRow[]; ledg
     if ((w.plan === "lite" || w.plan === "plus" || w.plan === "pro") && w.billing.status === "active" && (!w.billing.periodEnd || Date.parse(w.billing.periodEnd) > now)) {
       activePaid[w.plan]++;
       mrr += PAID_PLANS[w.plan].usdMonthly;
+    } else if (w.plan === "business" && w.billing.status === "active" && (!w.billing.periodEnd || Date.parse(w.billing.periodEnd) > now)) {
+      // Keplar Business: the tier's monthly price (an annual plan counts at its discounted monthly equivalent).
+      const bt = businessTierForWhopPlanId(w.billing.lookupKey);
+      if (bt) mrr += Math.round(priceFor(bt.tier, bt.cycle) / (bt.cycle === "annual" ? 12 : 1));
     }
   }
   const pay30 = payments.filter((p) => Date.parse(p.at) >= now - 30 * DAY);

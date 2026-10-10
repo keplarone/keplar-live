@@ -191,3 +191,30 @@ export function verifyWebhook(rawBody: string, headers: { get(name: string): str
 export function signWebhook(rawBody: string, id: string, ts: number, secret: string): string {
   return `v1,${createHmac("sha256", Buffer.from(secret, "utf8")).update(`${id}.${ts}.${rawBody}`).digest("base64")}`;
 }
+
+/* ───────────────────── Keplar Business (business.keplar.one) ───────────────────── */
+
+/**
+ * Checkout for a Keplar Business tier: the tier's own Whop plan id (WHOP_PLAN_BIZ_<TIER>_<CYCLE>) decides price, cycle and
+ * product; the webhook grants the business plan from that id alone (src/lib/business/tiers.ts). Returns to business.keplar.one.
+ */
+export function businessCheckoutBody(input: { planId: string; tier: string; cycle: string; email: string; workspaceId: string }) {
+  return {
+    plan_id: input.planId,
+    metadata: { email: input.email.trim().toLowerCase(), plan: "business", tier: input.tier, cycle: input.cycle, workspace_id: input.workspaceId, source: "business.keplar.one" },
+    redirect_url: "https://business.keplar.one/?purchased=1",
+  };
+}
+
+export async function createBusinessCheckout(input: { planId: string; tier: string; cycle: string; email: string; workspaceId: string }): Promise<{ id: string; url: string }> {
+  if (!whopCheckoutConfigured()) throw new HttpError(503, "Checkout opens soon.", "billing_unconfigured");
+  const res = await whopFetch("/checkout_configurations", { method: "POST", body: JSON.stringify(businessCheckoutBody(input)) }).catch(() => null);
+  if (!res || !res.ok) {
+    if (res) console.error("[whop] business checkout_configurations failed with status", res.status);
+    throw new HttpError(502, "Checkout couldn't start. Please try again in a moment.", "whop_error");
+  }
+  const j = (await res.json().catch(() => null)) as { id?: string; purchase_url?: string } | null;
+  const url = whopPurchaseUrl(j?.purchase_url);
+  if (!j?.id || !url) throw new HttpError(502, "Checkout couldn't start. Please try again in a moment.", "whop_error");
+  return { id: j.id, url };
+}

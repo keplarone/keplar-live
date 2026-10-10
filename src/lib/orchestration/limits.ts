@@ -54,7 +54,7 @@ export const PLAN_LIMITS: Record<LimitPlan, PlanLimits> = {
   lite: { burstPerMin: 8, dailyRequests: 150, dailyIpRequests: 400, concurrent: 2, maxPromptChars: 10_000, maxHistoryChars: 24_000, maxAttachments: 4, maxAttachmentBytes: 15 * MB, maxImages: 3, maxRequestUsd: 0.3, maxDeepResearchUsd: 0, dailyUsd: 1.2, dailyFanoutRuns: 60, dailyProviderCalls: null },
   plus: { burstPerMin: 10, dailyRequests: 300, dailyIpRequests: 600, concurrent: 3, maxPromptChars: 12_000, maxHistoryChars: 30_000, maxAttachments: 6, maxAttachmentBytes: 25 * MB, maxImages: 4, maxRequestUsd: 0.75, maxDeepResearchUsd: 3.5, dailyUsd: 3, dailyFanoutRuns: 150, dailyProviderCalls: null },
   pro: { burstPerMin: 20, dailyRequests: 600, dailyIpRequests: 1_200, concurrent: 4, maxPromptChars: 16_000, maxHistoryChars: 40_000, maxAttachments: 10, maxAttachmentBytes: 25 * MB, maxImages: 4, maxRequestUsd: 1.5, maxDeepResearchUsd: 5, dailyUsd: 7, dailyFanoutRuns: 300, dailyProviderCalls: null },
-  business: { burstPerMin: 30, dailyRequests: 1_000, dailyIpRequests: 2_000, concurrent: 5, maxPromptChars: 16_000, maxHistoryChars: 40_000, maxAttachments: 10, maxAttachmentBytes: 50 * MB, maxImages: 4, maxRequestUsd: 2, maxDeepResearchUsd: 5, dailyUsd: null, dailyFanoutRuns: 600, dailyProviderCalls: null },
+  business: { burstPerMin: 30, dailyRequests: 1_000, dailyIpRequests: 2_000, concurrent: 5, maxPromptChars: 16_000, maxHistoryChars: 40_000, maxAttachments: 10, maxAttachmentBytes: 50 * MB, maxImages: 4, maxRequestUsd: 2, maxDeepResearchUsd: 5, dailyUsd: 150, dailyFanoutRuns: 600, dailyProviderCalls: null },
 };
 
 export const limitsFor = (plan: LimitPlan): PlanLimits => PLAN_LIMITS[plan] ?? PLAN_LIMITS.free;

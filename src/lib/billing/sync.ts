@@ -13,7 +13,7 @@ import { userIdForEmail } from "@/lib/accounts/magic-token";
 import { authSecret } from "@/lib/accounts/secret";
 import { ensureWorkspaceForUser, updateWorkspace, workspaces, type WorkspaceRow } from "@/lib/accounts/workspaces";
 import type { PlanId } from "@/lib/create/platform/plans";
-import { isPaidPlan, planForWhopPlanId, type PaidPlan } from "./plans";
+import { isPaidPlan, planForWhopPlanId, type GrantablePlan, type PaidPlan } from "./plans";
 import { EMBED_SOURCE, verifyEmbedRef } from "./embed";
 import { extensionValidDays, packForWhopPlanId, type Pack } from "./extensions";
 import { extensionForPayment, grantExtension, revokeExtensionByPayment } from "@/lib/create/platform/extensions";
@@ -21,7 +21,7 @@ import { extensionForPayment, grantExtension, revokeExtensionByPayment } from "@
 type EventRow = { id: string; workspaceId: string; type: string; at: string; result: string };
 const events = () => collection<EventRow>("billing_events");
 type PaymentRow = {
-  id: string; workspaceId: string; email: string; plan: PaidPlan; membershipId: string | null; at: string;
+  id: string; workspaceId: string; email: string; plan: GrantablePlan; membershipId: string | null; at: string;
   /** What Whop says was charged, in USD (webhook payload or a later API backfill). Missing on older rows: never guessed. */
   amountUsd?: number; netUsd?: number; refundedAt?: string; disputedAt?: string;
 };
@@ -43,7 +43,7 @@ export function amountsOf(data: Record<string, unknown>): { amountUsd: number | 
 }
 const addDays = (iso: string, d: number) => new Date(Date.parse(iso) + d * 864e5).toISOString();
 
-type Ids = { email: string | null; plan: PaidPlan | null; membershipId: string | null; paymentId: string | null; userId: string | null; planId: string | null; periodEnd: string | null; manageUrl: string | null };
+type Ids = { email: string | null; plan: GrantablePlan | null; membershipId: string | null; paymentId: string | null; userId: string | null; planId: string | null; periodEnd: string | null; manageUrl: string | null };
 
 /**
  * Email from checkout metadata. Hosted checkouts set it on the server. Embedded checkouts set it in the browser, so
@@ -67,7 +67,8 @@ export function extract(data: Record<string, unknown>): Ids {
   const isMembership = typeof data.id === "string" && data.id.startsWith("mem_");
   return {
     email,
-    plan: isPaidPlan(planRaw) ? planRaw : null,
+    // Business is granted only by its own Whop plan id (never by metadata alone).
+    plan: planForWhopPlanId(planId) === "business" ? "business" : isPaidPlan(planRaw) ? planRaw : null,
     membershipId: isMembership ? str(data.id) : str(data.membership_id) ?? str(membership?.id),
     paymentId: isMembership ? null : str(data.id),
     userId: str(data.user_id) ?? str(user?.id),
@@ -95,7 +96,7 @@ async function workspaceFor(ids: Pick<Ids, "email" | "membershipId" | "paymentId
   return null;
 }
 
-async function grant(ws: WorkspaceRow, plan: PaidPlan, ids: Ids, paidAt: string | null) {
+async function grant(ws: WorkspaceRow, plan: GrantablePlan, ids: Ids, paidAt: string | null) {
   const start = paidAt ?? now();
   const end = ids.periodEnd ?? addDays(start, 31);
   await updateWorkspace(ws.id, {
@@ -154,7 +155,7 @@ async function applyWhopEvent(event: WhopEvent, webhookId: string): Promise<stri
   switch (event.type) {
     case "payment.succeeded": {
       const ws = await workspaceFor(ids);
-      const plan = ids.plan ?? (ws && ws.plan !== "free" ? (ws.plan as PaidPlan) : null);
+      const plan = ids.plan ?? (ws && ws.plan !== "free" ? (ws.plan as GrantablePlan) : null);
       if (!ws || !plan) {
         result = "no_workspace";
         break;

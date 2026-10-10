@@ -37,7 +37,8 @@ export const PLAN_ALLOWANCES: Record<PlanId, PlanAllowance> = {
   lite: { id: "lite", name: brand.plans.lite, monthlyUnits: 2_400, monthlyBudgetUsd: 4.8, models: "all", deepResearch: false },
   plus: { id: "plus", name: brand.plans.plus, monthlyUnits: 6_000, monthlyBudgetUsd: 12, models: "all", deepResearch: true },
   pro: { id: "pro", name: brand.plans.pro, monthlyUnits: 13_500, monthlyBudgetUsd: 27, models: "all", deepResearch: true },
-  business: { id: "business", name: brand.plans.business, monthlyUnits: null, monthlyBudgetUsd: null, models: "all", deepResearch: true },
+  // Business: the Starter allowance by default (never unlimited); the tier bought sets the real one (src/lib/business/tiers.ts).
+  business: { id: "business", name: brand.plans.business, monthlyUnits: 30_000, monthlyBudgetUsd: 60, models: "all", deepResearch: true },
 };
 
 /**

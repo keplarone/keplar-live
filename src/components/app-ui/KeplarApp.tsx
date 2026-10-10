@@ -90,7 +90,7 @@ function lazyView<P extends object>(load: () => Promise<ComponentType<P>>) {
   }
   return { View, warm };
 }
-const create = lazyView(() => import("@/components/create/CreateStudio").then((m) => m.CreateStudio as ComponentType<{ embedded?: boolean; signedIn?: boolean | null }>));
+const create = lazyView(() => import("@/components/create/CreateStudio").then((m) => m.CreateStudio as ComponentType<{ embedded?: boolean; signedIn?: boolean | null; plan?: string }>));
 const business = lazyView(() => import("@/components/business/BusinessOS").then((m) => m.BusinessOS as ComponentType<{ embedded?: boolean; initialTab?: "overview" | "orders" | "crm" | "apps" | "approvals" }>));
 const slides = lazyView(() => import("@/components/slides/SlidesStudio").then((m) => m.SlidesStudio as ComponentType<object>));
 const study = lazyView(() => import("@/components/study/StudyMode").then((m) => m.StudyMode as ComponentType<object>));
@@ -1211,7 +1211,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
           </>
         ) : state.view === "create" ? (
           <div className={s.createHost}>
-            <CreateStudio embedded signedIn={state.scope === "pending" ? null : state.ledger.signedIn} />
+            <CreateStudio embedded signedIn={state.scope === "pending" ? null : state.ledger.signedIn} plan={state.ledger.plan} />
           </div>
         ) : state.view === "slides" ? (
           <div className={s.createHost}>

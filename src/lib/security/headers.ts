@@ -27,7 +27,8 @@ export const CSP = [
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' data: blob: ${WHOP}`,
   "font-src 'self' data:",
-  `connect-src 'self' blob: ${WHOP} ${WHOP_API} ${WHOP_PIXEL}${dev ? " ws: wss:" : ""}`,
+  // https://keplar.one: business.keplar.one reads the visitor's Business status from keplar.one (same site; /api/business/account).
+  `connect-src 'self' blob: https://keplar.one ${WHOP} ${WHOP_API} ${WHOP_PIXEL}${dev ? " ws: wss:" : ""}`,
   "media-src 'self' blob: data:",
   "worker-src 'self' blob:",
   `frame-src 'self' ${WHOP}`,
@@ -60,7 +61,7 @@ export const APP_PAGE_CSP = CSP
   .replace("font-src 'self' data:", `font-src 'self' data: ${GOOGLE_FONTS_FILES}`)
   .replace(`script-src 'self' 'unsafe-inline' ${WHOP} ${WHOP_PIXEL}`, `script-src 'self' 'unsafe-inline' ${WHOP} ${WHOP_PIXEL} ${STRIPE_JS}`)
   .replace(`frame-src 'self' ${WHOP}`, `frame-src 'self' ${WHOP} ${STRIPE_JS} ${STRIPE_CONNECT_JS} ${STRIPE_HOOKS}`)
-  .replace(`connect-src 'self' blob: ${WHOP} ${WHOP_API} ${WHOP_PIXEL}`, `connect-src 'self' blob: ${WHOP} ${WHOP_API} ${WHOP_PIXEL} ${STRIPE_API}`);
+  .replace(`connect-src 'self' blob: https://keplar.one ${WHOP} ${WHOP_API} ${WHOP_PIXEL}`, `connect-src 'self' blob: https://keplar.one ${WHOP} ${WHOP_API} ${WHOP_PIXEL} ${STRIPE_API}`);
 
 /** Applied to every path. */
 export const BASE_HEADERS = [

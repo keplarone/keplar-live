@@ -12,8 +12,11 @@ test("Roblox Studio mode: Lite and up only, desktop-only (no bridge outside the 
   assert.equal(studioBridge(), null, "no window here, so no bridge");
   assert.equal(pathForView("studio"), "/app/studio");
   assert.equal(viewForPath("/app/studio"), "studio");
-  const side = readFileSync("src/components/app-ui/Sidebar.tsx", "utf8");
-  assert.match(side, /useSyncExternalStore\(noSubscribe, \(\) => Boolean\(studioBridge\(\)\), \(\) => false\)/, "the sidebar row only appears with the desktop bridge");
+  // It lives in Create as a tab that only appears with the desktop bridge, not in the sidebar.
+  const create = readFileSync("src/components/create/CreateStudio.tsx", "utf8");
+  assert.match(create, /useSyncExternalStore\(noSubscribe, \(\) => Boolean\(studioBridge\(\)\), \(\) => false\)/);
+  assert.match(create, /\{desktop \? tab\("roblox", "Roblox Studio"\) : null\}/);
+  assert.doesNotMatch(readFileSync("src/components/app-ui/Sidebar.tsx", "utf8"), /studioBridge/);
 });
 
 test("Studio tool results: text blocks are joined; failed calls read as empty", () => {

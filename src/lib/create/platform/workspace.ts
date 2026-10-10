@@ -19,6 +19,7 @@ import { resolveTeamAccess, teamSelector, type TeamAccess } from "@/lib/team/res
 import { TEAM_POLICY, type TeamAction, type TeamRole } from "@/lib/team/policy";
 import { isTeamId, teams } from "@/lib/team/rows";
 import { bindCostIdentity } from "@/lib/cost/context";
+import { businessTierOf, tierEntitlements } from "@/lib/business/tiers";
 
 export type Workspace = {
   id: string;
@@ -49,7 +50,8 @@ function toWorkspace(row: WorkspaceRow, planIn: PlanId, extra: { verified: boole
   const admin = Boolean(extra.email) && extra.verified && isAdminEmail(extra.email);
   const p = currentPeriod({ ...row, plan });
   const effective: PlanId = admin ? "business" : plan;
-  const entitlements: Entitlements = admin ? { ...ENTITLEMENTS.business, label: "Admin", monthlyUnits: Infinity } : ENTITLEMENTS[effective];
+  // Business: the tier bought (from the Whop plan id on the row) sets the allowances.
+  const entitlements: Entitlements = admin ? { ...ENTITLEMENTS.business, label: "Admin", monthlyUnits: Infinity } : effective === "business" ? tierEntitlements(ENTITLEMENTS.business, businessTierOf(row.billing.lookupKey)) : ENTITLEMENTS[effective];
   return {
     id: row.id,
     name: row.name,

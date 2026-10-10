@@ -1,5 +1,6 @@
 /** Keplar's paid plans, sold through Whop (see ./whop.ts). */
 import type { PlanId } from "@/lib/create/platform/plans";
+import { businessTierForWhopPlanId } from "@/lib/business/tiers";
 
 export type PaidPlan = "lite" | "plus" | "pro";
 
@@ -24,9 +25,13 @@ export function embedPlanId(plan: PaidPlan): string | null {
   return PLAN_ID_RE.test(v) ? v : null;
 }
 
+/** A plan a Whop purchase can grant: a Keplar One plan, or Keplar Business (its tier comes from the same plan id). */
+export type GrantablePlan = PaidPlan | "business";
+
 /** Which tier a Whop plan id sells. Authoritative for embedded payments (browser metadata is never trusted for the tier). */
-export function planForWhopPlanId(id: unknown): PaidPlan | null {
+export function planForWhopPlanId(id: unknown): GrantablePlan | null {
   if (typeof id !== "string" || !id) return null;
+  if (businessTierForWhopPlanId(id)) return "business";
   for (const p of ["lite", "plus", "pro"] as const) if (embedPlanId(p)?.toLowerCase() === id.toLowerCase()) return p; // Whop resolves ids case-insensitively; match the same way
   return null;
 }

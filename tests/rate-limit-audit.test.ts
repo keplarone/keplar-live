@@ -43,11 +43,11 @@ test("spend caps: Free can only use $0 models; Lite, Plus and Pro have a monthly
   assert.equal(PLAN_LIMITS.lite.maxDeepResearchUsd, 0, "no Deep Research budget where the plan has no Deep Research");
 });
 
-test("Business is the one plan without a monthly or daily dollar cap; it still has a per-request cap and request counts (documented in known-gaps)", () => {
-  assert.equal(PLAN_ALLOWANCES.business.monthlyBudgetUsd, null);
-  assert.equal(PLAN_LIMITS.business.dailyUsd, null);
+test("Business is self-serve now, so it is capped: bounded monthly budget, a daily dollar cap, per-request cap and request counts (documented in known-gaps)", () => {
+  assert.equal(PLAN_ALLOWANCES.business.monthlyBudgetUsd, 60);
+  assert.equal(PLAN_LIMITS.business.dailyUsd, 150);
   assert.ok(PLAN_LIMITS.business.maxRequestUsd > 0 && PLAN_LIMITS.business.dailyRequests > 0);
-  assert.match(readFileSync("docs/known-gaps.md", "utf8"), /Business[^\n]*(no|without)[^\n]*(daily|monthly)[^\n]*(spend|dollar|cap)/i);
+  assert.match(readFileSync("docs/known-gaps.md", "utf8"), /Business spend caps are tier-wide/);
 });
 
 // ---- Every state-changing API route has a limit, or a reviewed reason not to ----
