@@ -232,3 +232,38 @@
   .brand, .word, .mark, .morph, .toggleIcon i, .bigLinks a, .cta { transition: none; }
   .colHead, .bigLinks li, .smallLinks li, .panelFoot { animation: none; }
 }
+
+/* light/dark switch (ThemeToggle), a round pill like the logo */
+.theme {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--nav-solid);
+  color: var(--nav-ink);
+  box-shadow: var(--nav-shadow);
+  cursor: pointer;
+  transition: transform 0.25s var(--e-standard);
+}
+.theme:hover { transform: translateY(-1px); }
+.theme:focus-visible { outline: var(--b-focus, 2px) solid var(--nav-focus); outline-offset: 3px; }
+
+/* Logo pill ink always routes through the nav tokens (no hard-coded black), in every theme. */
+.brand { color: var(--nav-ink); }
+
+/* Desktop app (Keplar One for Windows/macOS/Linux): html[data-desktop] (set before paint by src/lib/desktop.ts) or
+ * html[data-keplar-desktop] / .keplar-desktop (set by the app). Pad the pills to env(titlebar-area-*) so nothing sits under the
+ * window controls; empty nav space opts in to dragging with data-keplar-drag (Nav.tsx). */
+:global(html:is([data-desktop], [data-keplar-desktop], .keplar-desktop)) .wrap {
+  padding-left: calc(env(titlebar-area-x, 0px) + 12px);
+  padding-right: calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw) + 12px);
+  padding-top: max(6px, calc((env(titlebar-area-height, 40px) - 52px) / 2 + 6px));
+}
+
+@media print {
+  .wrap {
+    display: none;
+  }
+}

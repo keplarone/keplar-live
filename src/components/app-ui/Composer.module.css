@@ -899,3 +899,33 @@ html[data-lens] .composer { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 :global(:root[data-theme="light"]) .tool { border-radius: 999px; background: #f1f3f6; box-shadow: none; }
 :global(:root[data-theme="light"]) .send { border-radius: 999px; background: #0e0f12; color: #ffffff; box-shadow: 0 1px 2px rgb(0 0 0 / 0.2), 0 8px 18px -8px rgb(14 15 18 / 0.5); -webkit-backdrop-filter: none; backdrop-filter: none; }
 :global(:root[data-theme="light"]) .send:disabled { background: #c9ccd2; box-shadow: none; }
+
+/* canvas "App home"/"App chat": the send button is a round black arrow; the label stays for screen readers */
+:global(:root[data-theme="light"]) .send { width: 44px; height: 44px; min-width: 44px; padding: 0; justify-content: center; }
+:global(:root[data-theme="light"]) .send > span:first-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+:global(:root[data-theme="light"]) .send .arrow { display: inline-block; margin: 0; font-size: 18px; transform: rotate(-90deg); }
+:global(:root[data-theme="light"]) .send:hover:not(:disabled) .arrow { transform: rotate(-90deg) translateX(1px); }
+
+/* Dark mode of the composer redesign (generated from the light rules above). */
+/* Oct 2026 redesign (canvas "Chat"), light theme: a large white card with soft depth, round grey tool pills and a round black send. */
+:global(:root[data-theme="dark"]) .composer {
+  padding: 16px 16px 12px 18px;
+  border-radius: 26px;
+  background: rgb(28 28 32 / 0.95);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.07), 0 1px 0 #ffffff inset, 0 30px 80px -40px rgb(0 0 0 / 0.3), 0 2px 6px rgb(0 0 0 / 0.04);
+}
+:global(:root[data-theme="dark"]) .composer:has(:is(textarea, input):focus) {
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.14), 0 30px 80px -40px rgb(0 0 0 / 0.35), 0 2px 6px rgb(0 0 0 / 0.05);
+}
+:global(:root[data-theme="dark"]) .input { font-size: 17px; }
+:global(:root[data-theme="dark"]) .tool { border-radius: 999px; background: #26262b; box-shadow: none; }
+:global(:root[data-theme="dark"]) .send { border-radius: 999px; background: #ffffff; color: #0e0f12; box-shadow: 0 1px 2px rgb(0 0 0 / 0.2), 0 8px 18px -8px rgb(0 0 0 / 0.5); -webkit-backdrop-filter: none; backdrop-filter: none; }
+:global(:root[data-theme="dark"]) .send:disabled { background: #3a3b40; box-shadow: none; }
+
+/* canvas "App home"/"App chat": the send button is a round black arrow; the label stays for screen readers */
+:global(:root[data-theme="dark"]) .send { width: 44px; height: 44px; min-width: 44px; padding: 0; justify-content: center; }
+:global(:root[data-theme="dark"]) .send > span:first-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+:global(:root[data-theme="dark"]) .send .arrow { display: inline-block; margin: 0; font-size: 18px; transform: rotate(-90deg); }
+:global(:root[data-theme="dark"]) .send:hover:not(:disabled) .arrow { transform: rotate(-90deg) translateX(1px); }

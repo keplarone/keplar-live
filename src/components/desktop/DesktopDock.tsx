@@ -207,11 +207,12 @@ export function DesktopDock() {
           <p className={s.drawNote}>Draw on this page. Ask sends the words under each shape, not the picture.</p>
         </div>
       )}
-      <div className={s.bar}>
-        <button type="button" className={s.pill} onClick={() => open("chat")}>Chat</button>
-        <button type="button" className={s.pill} onClick={() => open("draw")}>Draw</button>
-        {pro && <button type="button" className={s.pill} onClick={() => open("stats")}>Stats</button>}
-      </div>
+      {/* Chat and Draw were removed from the floating bar (Oct 2026); only Pro keeps its Stats pill. */}
+      {pro ? (
+        <div className={s.bar}>
+          <button type="button" className={s.pill} onClick={() => open("stats")}>Stats</button>
+        </div>
+      ) : null}
     </div>
   );
 }

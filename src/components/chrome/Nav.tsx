@@ -9,6 +9,9 @@ import { usePlan } from "@/components/billing/usePlan";
 import s from "./Nav.module.css";
 import { useCommon, useLocale } from "@/lib/i18n/client";
 import { localizedPath } from "@/lib/i18n/routing";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { lockScroll } from "@/lib/ui/scroll-lock";
+import { usePresence } from "@/components/motion/usePresence";
 
 /**
  * Floating nav: three separate pills over the page (logo, Menu, actions).
@@ -31,6 +34,7 @@ export function Nav() {
   const href = (h: string) => localizedPath(h, locale);
   const label = (c: { href: string; label: string }) => t.items[c.href] ?? links[c.href] ?? c.label;
   const en = locale === "en";
+  const panel = usePresence(open); // the panel stays mounted while its exit plays (shared overlay pattern)
 
   // Close whenever the route changes (state adjusted during render).
   const [lastPath, setLastPath] = useState(pathname);
@@ -51,6 +55,7 @@ export function Nav() {
     const toggle = toggleRef.current;
     const first = morphRef.current?.querySelector<HTMLElement>("[data-panel] a");
     const focusTimer = window.setTimeout(() => first?.focus({ preventScroll: true }), 160);
+    const release = lockScroll();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
     };
@@ -61,6 +66,7 @@ export function Nav() {
     window.addEventListener("pointerdown", onDown);
     return () => {
       window.clearTimeout(focusTimer);
+      release();
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("pointerdown", onDown);
       toggle?.focus({ preventScroll: true });
@@ -73,7 +79,7 @@ export function Nav() {
   let i = 0; // stagger index for the panel links
 
   return (
-    <header className={`${s.wrap} m-vt-nav`} data-scrolled={scrolled || undefined} data-open={open || undefined}>
+    <header className={`${s.wrap} m-vt-nav`} data-keplar-drag data-scrolled={scrolled || undefined} data-open={open || undefined}>
       <Link href={href("/")} className={s.brand} aria-label={t.home}>
         <KeplarSymbol size={22} className={s.mark} />
         <span className={s.word} aria-hidden="true">{brand.name}</span>
@@ -96,7 +102,7 @@ export function Nav() {
           <span className={s.toggleLabel}>{open ? (en ? "Close" : t.closeMenu) : en ? "Menu" : t.siteMenu}</span>
         </button>
 
-        <nav id="site-menu" className={s.panel} aria-label={t.siteMenu} data-panel hidden={!open}>
+        <nav id="site-menu" className={s.panel} aria-label={t.siteMenu} data-panel hidden={!panel.mounted} {...panel.motion("drop")}>
           <div className={s.cols}>
             <div className={s.col}>
               <p className={s.colHead}>{t.product}</p>
@@ -140,6 +146,7 @@ export function Nav() {
       </div>
 
       <div className={s.actions}>
+        <ThemeToggle className={s.theme} />
         <Link href={me.signedIn ? "/account" : href(signInHref)} className={s.signIn}>
           {me.signedIn ? t.account : t.signIn}
         </Link>

@@ -1055,3 +1055,13 @@
   border-radius: 22px;
   box-shadow: 0 0 0 1px rgb(14 15 18 / 0.06), 0 12px 28px -14px rgb(14 15 18 / 0.25);
 }
+
+/* Dark mode of the answer redesign (generated from the light rules above). */
+/* Oct 2026 redesign (canvas "Chat"), light theme: the answer sits on the page (no card), like the design; notices keep their card. */
+:global(:root[data-theme="dark"]) .answer { background: transparent; box-shadow: none; padding-inline: 0; }
+:global(:root[data-theme="dark"]) .notice, :global(:root[data-theme="dark"]) .limit, :global(:root[data-theme="dark"]) .upsell {
+  padding: 16px 20px;
+  background: rgb(28 28 32 / 0.9);
+  border-radius: 22px;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.06), 0 12px 28px -14px rgb(0 0 0 / 0.25);
+}

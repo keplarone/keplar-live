@@ -4,6 +4,7 @@ import { Fragment, useCallback, useEffect, useMemo, useReducer, useRef, useState
 import Link from "next/link";
 import { KeplarSymbol } from "@/components/brand";
 import { SkyBackdrop } from "@/components/sky/SkyBackdrop";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import type { Attachment, ComposerModes, KeplarRequest } from "@/lib/orchestration/types";
 import { UsageNotice } from "./UsageNotice";
 import { Composer, toMediaInput, type ComposerHandle } from "./Composer";
@@ -899,7 +900,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
       <SendFieldLazy />
       {drawerScrim.mounted ? <div className={s.drawerScrim} onClick={() => setDrawerOpen(false)} aria-hidden="true" {...drawerScrim.motion("fade")} /> : null}
 
-      <div key={state.epoch} className={s.main} inert={drawerOpen || undefined}>
+      <div key={state.epoch} className={s.main} inert={drawerOpen || undefined} data-empty={(state.view === "thread" && messages.length === 0) || undefined}>
         <header className={s.topbar} data-keplar-drag>
           <button ref={menuBtnRef} type="button" className={`${s.iconBtn} ${s.menuBtn}`} onClick={() => setDrawerOpen(true)} aria-label="Open sidebar" aria-expanded={drawerOpen} aria-controls="keplar-sidebar">
             <KeplarSymbol size={22} />
@@ -931,6 +932,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
             </>
           ) : null}
           {state.view === "thread" && thread && thread.messages.length ? <DeleteChatAction variant="header" title={thread.title} onDelete={() => del.request(thread.id)} /> : null}
+          <ThemeToggle className={s.iconBtn} />
           <button type="button" className={`${s.iconBtn} ${s.newBtnMobile}`} onClick={() => newThread()} aria-label="New chat">
             <IconPlus size={18} />
           </button>
@@ -951,7 +953,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                           <>
                             {welcome ? "Welcome," : `${dayGreeting(new Date().getHours())},`} <span className={s.welcomeName}>{firstName}</span>
                           </>
-                        ) : "Welcome to Keplar."}
+                        ) : state.ledger.synced ? `${dayGreeting(new Date().getHours())}.` : "Welcome to Keplar."}
                       </span>
                     </h1>
                     <p className={s.welcomeLede}>Ask anything. Keplar checks with several models and gives you one clear answer.</p>
@@ -1170,7 +1172,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                 plan={state.ledger.plan}
                 signedIn={state.ledger.synced ? state.ledger.signedIn : undefined}
                 onModesChange={onComposerModes}
-                placeholder={messages.length ? "Ask a follow-up…" : "Ask anything. Keplar consults the right models."}
+                placeholder={messages.length ? "Reply to Keplar…" : "How can Keplar help you today?"}
               />
               <p className={s.dockNote}>Keplar can be wrong, even when models agree. Verify important decisions.</p>
             </div>

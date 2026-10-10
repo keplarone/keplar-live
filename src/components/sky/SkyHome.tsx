@@ -6,6 +6,7 @@ import { brand, tryHref } from "@/lib/site";
 import { ScrollZoom } from "./ScrollZoom";
 import { ModelStack } from "./ModelStack";
 import { DemoWindow } from "./DemoWindow";
+import { FeatureList } from "./FeatureList";
 import s from "./Sky.module.css";
 
 /** Use cases shown on the home, in this order (slugs from content/use-cases), each with its icon stroke colour. */
@@ -59,17 +60,7 @@ export function SkyHome({ pricing }: { pricing?: React.ReactNode }) {
 
       <section className={s.section} aria-labelledby="everything-title">
         <h2 id="everything-title" className={s.h2}><span>Everything in {brand.name}.</span> <span className={s.muted}>One place.</span></h2>
-        <ol className={s.featureList}>
-          {chapters.map((c) => (
-            <li key={c.id}>
-              <Link href={`/features#${c.id}`} className={s.featureRow}>
-                <span className={s.featureN}>{c.n}</span>
-                <span className={s.featureName}>{c.label}</span>
-                <span className={s.featureLede}>{c.title}</span>
-              </Link>
-            </li>
-          ))}
-        </ol>
+        <FeatureList rows={chapters.map(({ id, n, label, title }) => ({ id, n, label, title }))} />
       </section>
 
       <section className={s.section} aria-labelledby="how-title">

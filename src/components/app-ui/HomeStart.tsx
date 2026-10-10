@@ -23,6 +23,15 @@ const FALLBACK: FaqItem[] = [{ text: PINNED_QUESTION, kind: "pinned" }, ...START
 
 type Tile = { id: string; title: string; body: string; run: () => void };
 
+/** Line icons for the starter chips (24px grid, drawn with the chip's text color). */
+const TILE_ICONS: Record<string, ReactNode> = {
+  research: <><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></>,
+  create: <path d="M4 20l4-1 11-11-3-3L5 16l-1 4z" />,
+  agent: <><circle cx="12" cy="12" r="3" /><path d="M12 3v3M12 18v3M3 12h3M18 12h3" /></>,
+  business: <><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M9 7V5h6v2" /></>,
+  project: <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />,
+};
+
 /**
  * Empty-thread home, calm version: a few one-line suggestion chips (real entry points), then everything else behind a quiet
  * "More ideas" disclosure: the use-for examples and "Most frequently asked question", which lists "Are you conscious?" first (always),
@@ -57,6 +66,7 @@ export function HomeStart({ showBusiness, onSeed, onView, onSend, more }: Props)
         {tiles.map((t) => (
           <li key={t.id}>
             <button type="button" className={s.homeChip} data-tile={t.id} title={t.body} onClick={t.run}>
+              <svg className={s.homeChipIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{TILE_ICONS[t.id]}</svg>
               {t.title}
             </button>
           </li>
