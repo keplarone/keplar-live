@@ -845,6 +845,9 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   const onScroll = () => {
     const el = scrollRef.current;
     if (!el) return;
+    // Empty chat: the composer sits mid-column over the scroller (not inside it), so it follows the scroll offset and the greeting,
+    // composer and starters move as one column instead of sliding through each other (phones, short windows).
+    el.parentElement?.style.setProperty("--empty-scroll", `${el.scrollTop}px`);
     const near = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
     if (near !== atBottom) setAtBottom(near);
   };

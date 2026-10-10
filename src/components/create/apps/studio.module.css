@@ -539,3 +539,7 @@
 @media (prefers-reduced-motion: reduce) { .card, .card:hover { transition: none; translate: none; } }
 .cardActions { gap: 2px; margin-left: -10px; }
 .shelf { width: 100%; box-sizing: border-box; }
+
+/* Scrolling Create: content fades out under the tab row instead of being cut by a hard edge right beneath the tabs. */
+.start { -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 36px); mask-image: linear-gradient(to bottom, transparent 0, #000 36px); }
+.calm { padding-top: max(36px, clamp(32px, 9vh, 96px)); }

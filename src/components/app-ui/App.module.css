@@ -1878,3 +1878,7 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
    squeezed the icon to nothing, leaving an empty circle). */
 :global(:root[data-theme]) .topbar .memoryChip { display: inline-grid; place-items: center; width: 44px; height: 44px; padding: 0; }
 :global(:root[data-theme]) .topbar .memoryChip:not([data-on])::after { left: 13px; right: 13px; }
+
+/* Empty chat: the centred composer follows the scroll (KeplarApp onScroll publishes --empty-scroll), so on phones and short
+   windows the greeting, composer, starters and the "use Keplar for" card scroll as one column instead of passing under it. */
+:global(:root[data-theme]) .main[data-empty] .dock { translate: 0 calc(var(--empty-scroll, 0px) * -1); will-change: translate; }
