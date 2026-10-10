@@ -69,8 +69,9 @@ test("every rule that paints an aura is scoped to light, sitewide", () => {
       assert.match(r.body, /pointer-events:\s*none|animation:/, `${f}: aura layer must not take pointer events`);
     }
   }
-  // Ask (composer + welcome), Create and the app shell at least; the marketing pages now use SkyBackdrop (src/components/sky) instead
-  assert.ok(painters >= 4, `expected aura placements, found ${painters}`);
+  // Ask (composer + welcome) and the app shell at least; the marketing pages and Create's start screen now sit on SkyBackdrop
+  // (src/components/sky), so Create no longer paints its own aura panel (Oct 2026 redesign)
+  assert.ok(painters >= 3, `expected aura placements, found ${painters}`);
 });
 
 test("dark theme defines and paints no aura", () => {

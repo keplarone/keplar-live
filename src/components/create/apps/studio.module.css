@@ -496,3 +496,46 @@
 .shipped strong { color: #7a3e24; }
 .shipped p { margin: 0; color: var(--c-ink-2); font-size: var(--t-small); }
 .codeEdit { flex: 1; min-height: 320px; width: 100%; margin: 0; padding: 12px; border: 0; resize: vertical; background: var(--c-surface-1); color: var(--c-ink); font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; line-height: 1.55; }
+
+/* ── Create, Oct 2026 canvas design ──
+ * The page sits on the app's aura backdrop (no solid band or canvas fill); the kind tabs are pills like the rest of the app;
+ * the start screen is a two-tone light headline, a grey lede, one frosted composer card, frosted pill starters; the shelf is
+ * frosted cards with soft posters and sentence-case labels. Colours come from the theme tokens, so Dark follows. */
+.kindBar.kindBar { background: transparent; border-bottom: 0; padding: 4px 28px 8px; }
+.kindTabs.kindTabs { gap: 6px; }
+.kindTabs :global(.m-tab-indicator) { display: none; }
+.kindTabs .kindTab::after { display: none; }
+.kindTabs .kindTab { height: 38px; padding: 0 16px; border-radius: 999px; background: color-mix(in srgb, var(--c-surface-1) 70%, transparent); color: var(--c-ink-2); font-size: 14px; }
+.kindTabs .kindTab:hover { color: var(--c-ink); }
+.kindTabs .kindTab[aria-selected="true"] { background: var(--c-ink); color: var(--c-canvas); }
+
+.start { background: transparent; }
+.calm { gap: 20px; padding-top: clamp(32px, 9vh, 96px); }
+.calmIntro { gap: 12px; }
+.calmTitle { font-size: clamp(32px, 3.4vw, 44px); line-height: 1.08; letter-spacing: -0.035em; font-weight: var(--w-regular); color: var(--c-ink); text-wrap: balance; }
+.calmLede { font-size: 17px; line-height: 1.55; color: var(--c-ink-3); max-width: 46ch; }
+.calmCard { gap: 10px; padding: 18px 18px 12px 22px; border: 0; border-radius: 26px; background: color-mix(in srgb, var(--c-surface-1) 85%, transparent); box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 30px 80px -40px rgb(14 15 18 / 0.35); }
+.calmCard .prompt { font-size: 17px; }
+.calmBar .textBtn { height: 34px; padding: 0 14px; border-radius: 999px; background: rgb(var(--rgb-ink) / 0.05); color: var(--c-ink); font-size: 13px; text-decoration: none; }
+.calmBar .textBtn:hover { background: rgb(var(--rgb-ink) / 0.09); }
+.calmChips { gap: 8px; }
+.calmChip { height: 38px; padding: 0 16px; border: 0; background: color-mix(in srgb, var(--c-surface-1) 75%, transparent); color: var(--c-ink); font-size: 14px; }
+.calmChip:hover { background: var(--c-surface-1); }
+
+.shelf { max-width: 1240px; }
+.shelfHead { border-top: 0; padding-top: var(--s-6); align-items: center; }
+.shelfTitle { font-size: 24px; font-weight: var(--w-regular); letter-spacing: -0.03em; }
+.shelfCount { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; background: rgb(var(--rgb-ink) / 0.06); font-size: 12px; color: var(--c-ink-2); }
+.shelfGrid { gap: 16px; }
+.card { border: 0; border-radius: 24px; background: color-mix(in srgb, var(--c-surface-1) 82%, transparent); box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 12px 28px -14px rgb(14 15 18 / 0.25); transition: translate 300ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 240ms ease; }
+.card:hover { translate: 0 -4px; box-shadow: 0 1px 2px rgb(14 15 18 / 0.08), 0 18px 36px -14px rgb(14 15 18 / 0.32); }
+.thumb { margin: 8px 8px 0; border-radius: 18px; }
+.poster { background: linear-gradient(160deg, color-mix(in srgb, #a9d8f5 45%, var(--c-surface-2)), color-mix(in srgb, #d6cdf5 45%, var(--c-surface-2)) 60%, color-mix(in srgb, #f9d6c4 40%, var(--c-surface-2))); }
+:global(:root[data-theme="dark"]) .poster { background: linear-gradient(160deg, #1d2a3a, #241f38 60%, #33241f); }
+.posterName { font-weight: var(--w-regular); letter-spacing: -0.03em; }
+.posterKind { top: 12px; left: 14px; padding: 2px 9px; border-radius: 999px; background: rgb(var(--rgb-ink) / 0.08); font-size: 11px; letter-spacing: 0; text-transform: capitalize; opacity: 1; }
+.cardActions .textBtn { height: 30px; padding: 0 10px; border-radius: 999px; text-decoration: none; color: var(--c-ink-2); }
+.cardActions .textBtn:hover { background: rgb(var(--rgb-ink) / 0.06); color: var(--c-ink); }
+@media (prefers-reduced-motion: reduce) { .card, .card:hover { transition: none; translate: none; } }
+.cardActions { gap: 2px; margin-left: -10px; }
+.shelf { width: 100%; box-sizing: border-box; }

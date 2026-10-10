@@ -57,14 +57,6 @@
 :root[data-theme="light"] [class*="studio-module__"][class$="__top"],
 :root[data-theme="light"] [class*="studio-module__"][class$="__ledger"] { background-color: rgb(250 249 247 / 0.55); }
 :root[data-theme="light"] [class*="studio-module__"][class$="__stage"] { background-color: rgb(255 255 255 / 0.78); }
-:root[data-theme="light"] [class*="studio-module__"][class$="__calm"]::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: var(--aura-soft);
-}
 /* The composer dock stays readable; a short fade lets the bottom gold and cyan corners show above it. */
 :root[data-theme="light"] [class*="App-module__"][class$="__dock"] {
   background: linear-gradient(to bottom, transparent, var(--c-canvas) 36%);

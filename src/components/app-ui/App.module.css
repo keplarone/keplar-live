@@ -1873,3 +1873,8 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 /* Sidebar "Business · Learn more": links out to business.keplar.one (Business, Agents and Approvals live there for now) */
 .learnMore { margin-left: auto; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: var(--w-medium); color: var(--c-ink-2); background: rgb(var(--rgb-ink) / 0.06); white-space: nowrap; }
 .sideItem:hover .learnMore { background: var(--c-ink); color: var(--c-canvas); }
+
+/* Memory button in the top bar: a 44px round button with its icon centred (a 16px side padding inside a 32px width had
+   squeezed the icon to nothing, leaving an empty circle). */
+:global(:root[data-theme]) .topbar .memoryChip { display: inline-grid; place-items: center; width: 44px; height: 44px; padding: 0; }
+:global(:root[data-theme]) .topbar .memoryChip:not([data-on])::after { left: 13px; right: 13px; }

@@ -25,6 +25,7 @@ import { ReferenceTray, withReferences } from "./ReferenceTray";
 import { BriefPanel } from "./BriefPanel";
 import { surpriseBrief } from "@/lib/create/surprise-brief";
 import { clearResume, isBusyError, loadResume, resumeAction, saveResume } from "./resume";
+import { TwoTone } from "@/components/page/TwoTone";
 import s from "./studio.module.css";
 import { usePresence } from "@/components/motion/usePresence";
 import type { AppDetail, AppDetailResponse, AppSummary, Config, Design, VersionMeta } from "./types";
@@ -383,7 +384,7 @@ export function AppBuilder() {
           {/* Minimal pass: one prompt, like Ask. Surprise me, Voice, References, Look and the screen preview sit behind Options. */}
           <div className={s.calm}>
             <header className={s.calmIntro}>
-              <h2 className={s.calmTitle}>What do you want to build?</h2>
+              <h2 className={s.calmTitle}><TwoTone text="What do you want to build?" /></h2>
               <p className={s.calmLede}>Describe it or say it. Keplar designs it, writes the code and tests every screen.</p>
             </header>
 

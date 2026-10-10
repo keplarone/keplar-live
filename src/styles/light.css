@@ -95,18 +95,7 @@ html[data-glass="lite"][data-theme="light"] { --lg-fill: var(--lg-solid); --lg-f
 :root[data-theme="light"] [class*="App-module__"][class$="__emptyLede"] { color: #686d78; }
 :root[data-theme="light"] [class*="App-module__"][class$="__welcomeTitle"] { color: #0e0f12; }
 :root[data-theme="light"] [class*="App-module__"][class$="__welcomeLede"] { color: #686d78; }
-:root[data-theme="light"] [class*="studio-module__"][class$="__calmTitle"] { color: #5c2f6e; }
-:root[data-theme="light"] [class*="studio-module__"][class$="__calmLede"] { color: #8a5a12; }
 :root[data-theme="light"] [class*="App-module__"][class$="__exampleHint"] { color: #0c5c66; }
-/* Create: the prompt card floats on its aura as a crisp white card; idea chips read as white pills */
-:root[data-theme="light"] [class*="studio-module__"][class$="__calmCard"] {
-  background: #fff;
-  border-color: rgb(14 15 18 / 0.12);
-  box-shadow: 0 1px 2px rgb(14 15 18 / 0.05), 0 18px 44px -22px rgb(150 70 40 / 0.26);
-  transition: border-color var(--m-dur-2) var(--m-ease-out), box-shadow var(--m-dur-2) var(--m-ease-out);
-}
-:root[data-theme="light"] [class*="studio-module__"][class$="__calmCard"]:focus-within { border-color: rgb(14 15 18 / 0.24); box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 20px 48px -22px rgb(150 70 40 / 0.32); }
-:root[data-theme="light"] [class*="studio-module__"][class$="__calmChip"] { background: var(--lt-chip-bg); border-color: rgb(14 15 18 / 0.1); box-shadow: 0 1px 2px rgb(14 15 18 / 0.04); }
 /* In-app search (Cmd-K): a near-opaque white sheet over a light cool scrim; the selected row is a cool tint, not white on white */
 :root[data-theme="light"] [class*="App-module__"][class$="__scrim"] { background: rgb(14 15 18 / 0.12); }
 :root[data-theme="light"] [class*="App-module__"][class$="__search"] { background: rgb(255 255 255 / 0.95); box-shadow: var(--lg-ring), 0 2px 4px rgb(14 15 18 / 0.05), 0 30px 80px -28px rgb(14 15 18 / 0.32); }
