@@ -914,10 +914,10 @@ html[data-lens] .composer { backdrop-filter: url(#lg-refract) var(--lg-bf); }
   background: rgb(28 28 32 / 0.95);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
-  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.07), 0 1px 0 #ffffff inset, 0 30px 80px -40px rgb(0 0 0 / 0.3), 0 2px 6px rgb(0 0 0 / 0.04);
+  box-shadow: 0 30px 80px -40px rgb(0 0 0 / 0.6), 0 2px 6px rgb(0 0 0 / 0.2); /* no white edge or top highlight in dark */
 }
 :global(:root[data-theme="dark"]) .composer:has(:is(textarea, input):focus) {
-  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.14), 0 30px 80px -40px rgb(0 0 0 / 0.35), 0 2px 6px rgb(0 0 0 / 0.05);
+  box-shadow: 0 30px 80px -40px rgb(0 0 0 / 0.7), 0 2px 6px rgb(0 0 0 / 0.25);
 }
 :global(:root[data-theme="dark"]) .input { font-size: 17px; }
 :global(:root[data-theme="dark"]) .tool { border-radius: 999px; background: #26262b; box-shadow: none; }

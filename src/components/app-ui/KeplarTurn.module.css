@@ -1063,5 +1063,5 @@
   padding: 16px 20px;
   background: rgb(28 28 32 / 0.9);
   border-radius: 22px;
-  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.06), 0 12px 28px -14px rgb(0 0 0 / 0.25);
+  box-shadow: 0 12px 28px -14px rgb(0 0 0 / 0.25);
 }

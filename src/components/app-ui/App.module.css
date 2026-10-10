@@ -1705,7 +1705,7 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
   background: rgb(28 28 32 / 0.72);
   -webkit-backdrop-filter: blur(16px) saturate(1.2);
   backdrop-filter: blur(16px) saturate(1.2);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.07), 0 1px 2px rgb(0 0 0 / 0.06), 0 12px 32px -16px rgb(0 0 0 / 0.18);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 12px 32px -16px rgb(0 0 0 / 0.18);
 }
 :global(:root[data-theme="dark"]) .sideItem { border-radius: 999px; }
 :global(:root[data-theme="dark"]) .sideItem:hover { background: rgb(0 0 0 / 0.04); }
@@ -1770,7 +1770,7 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
   padding: 14px 18px;
   border-radius: 22px 22px 6px 22px;
   background: #1c1c20;
-  border: 1px solid rgb(255 255 255 / 0.07);
+  border: 1px solid transparent;
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
   font-size: 16px;
   line-height: 1.55;
@@ -1800,13 +1800,13 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
   padding: 0 16px;
   border-radius: 999px;
   background: rgb(28 28 32 / 0.7);
-  border: 1px solid rgb(255 255 255 / 0.1);
+  border: 1px solid transparent;
   box-shadow: none;
   font-size: 14px;
 }
-:global(:root[data-theme="dark"]) .homeChip:hover { background: #1c1c20; border-color: rgb(255 255 255 / 0.18); }
-:global(:root[data-theme="dark"]) .homeTile, :global(:root[data-theme="dark"]) .useForOption { background: rgb(28 28 32 / 0.85); box-shadow: 0 0 0 1px rgb(255 255 255 / 0.06), 0 12px 28px -14px rgb(0 0 0 / 0.25); }
-:global(:root[data-theme="dark"]) .example.example { background: rgb(28 28 32 / 0.8); box-shadow: 0 0 0 1px rgb(255 255 255 / 0.06), 0 12px 28px -14px rgb(0 0 0 / 0.25); }
+:global(:root[data-theme="dark"]) .homeChip:hover { background: #1c1c20; border-color: transparent; }
+:global(:root[data-theme="dark"]) .homeTile, :global(:root[data-theme="dark"]) .useForOption { background: rgb(28 28 32 / 0.85); box-shadow: 0 12px 28px -14px rgb(0 0 0 / 0.25); }
+:global(:root[data-theme="dark"]) .example.example { background: rgb(28 28 32 / 0.8); box-shadow: 0 12px 28px -14px rgb(0 0 0 / 0.25); }
 
 /* under 900px the sidebar is the existing slide-in drawer; give it the same card look */
 @media (max-width: 899px) {
@@ -1839,3 +1839,25 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 :global(:root[data-theme="dark"]) .homeChipIcon { flex-shrink: 0; }
 .homeChipIcon { display: none; }
 :global(:root[data-theme="dark"]) .homeChipIcon { display: block; }
+
+/* The greeting ("Good morning," / "Welcome to Keplar.") as a slow moving gradient in the aura colors; the name after it stays grey.
+   Deeper hues on the light canvas (AA-ish at display size), soft pastel ones on dark. Reduced motion keeps a still gradient. */
+.welcomeGreet {
+  background: linear-gradient(100deg, #0a7a8a, #4a63b8, #8a4f9e, #c4573a, #0a7a8a);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: welcome-flow 9s linear infinite;
+}
+:global(:root[data-theme="dark"]) .welcomeGreet {
+  background-image: linear-gradient(100deg, #9fd8f0, #b9a8f5, #f2b8a0, #9fe3c4, #9fd8f0);
+}
+@keyframes welcome-flow {
+  from { background-position: 0% 50%; }
+  to { background-position: 300% 50%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .welcomeGreet { animation: none; }
+}

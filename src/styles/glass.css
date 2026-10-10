@@ -26,9 +26,10 @@
 :root[data-theme="dark"] {
   --lg-fill: rgb(30 30 30 / 0.58);
   --lg-fill-strong: rgb(30 30 30 / 0.78);
-  --lg-edge-hi: rgb(255 255 255 / 0.28);
-  --lg-edge-lo: rgb(255 255 255 / 0.06);
-  --lg-rim: rgb(255 255 255 / 0.1);
+  /* Dark glass has no white edges (Oct 2026): no highlight, no rim; depth comes from the drop shadow alone. */
+  --lg-edge-hi: transparent;
+  --lg-edge-lo: transparent;
+  --lg-rim: transparent;
   --lg-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 34px -12px rgb(0 0 0 / 0.6);
   --lg-solid: #171717;
 }
@@ -125,8 +126,9 @@ html[data-glass="lite"] .lg, html[data-glass="lite"] .lg-strong { background: va
   --btn-p-solid: #f4f4f5;
   --btn-p-bg: #ffffff;
   --btn-p-ink: #09090b;
-  --btn-p-shadow: inset 0 1px 0 rgb(255 255 255 / 0.95), inset 0 -1px 0 rgb(0 0 0 / 0.12), 0 0 0 1px rgb(255 255 255 / 0.55), 0 0 26px -4px rgb(255 255 255 / 0.38), 0 10px 22px -10px rgb(0 0 0 / 0.7);
-  --btn-s-shadow: inset 1px 1px 0 0 rgb(255 255 255 / 0.22), inset 0 0 0 1px rgb(255 255 255 / 0.1), 0 6px 18px -8px rgb(0 0 0 / 0.6);
+  /* no white ring, top highlight or white glow on dark buttons (Oct 2026) */
+  --btn-p-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 10px 22px -10px rgb(0 0 0 / 0.7);
+  --btn-s-shadow: 0 6px 18px -8px rgb(0 0 0 / 0.6);
 }
 .lgb-p, .lgb-s {
   -webkit-backdrop-filter: blur(6px) saturate(1.4);

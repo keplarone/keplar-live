@@ -951,9 +951,9 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                       <span>
                         {firstName ? (
                           <>
-                            {welcome ? "Welcome," : `${dayGreeting(new Date().getHours())},`} <span className={s.welcomeName}>{firstName}</span>
+                            <span className={s.welcomeGreet}>{welcome ? "Welcome," : `${dayGreeting(new Date().getHours())},`}</span> <span className={s.welcomeName}>{firstName}</span>
                           </>
-                        ) : state.ledger.synced ? `${dayGreeting(new Date().getHours())}.` : "Welcome to Keplar."}
+                        ) : <span className={s.welcomeGreet}>{state.ledger.synced ? `${dayGreeting(new Date().getHours())}.` : "Welcome to Keplar."}</span>}
                       </span>
                     </h1>
                     <p className={s.welcomeLede}>Ask anything. Keplar checks with several models and gives you one clear answer.</p>
