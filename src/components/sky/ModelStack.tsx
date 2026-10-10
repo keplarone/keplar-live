@@ -10,13 +10,20 @@ export const MODELS = [
   { id: "grok", name: "Grok", src: "/models/grok.svg" },
 ] as const;
 
-/** Overlapping row of model marks in white discs. */
+/**
+ * Model marks in white discs, drifting sideways as an endless carousel inside a fixed window with soft faded edges.
+ * The row is drawn twice and slid by exactly one copy's width, so the loop has no seam; the copy is hidden from assistive tech.
+ * Hover pauses it; prefers-reduced-motion shows the still, overlapping row.
+ */
 export function ModelStack({ size = 18 }: { size?: number }) {
+  const row = (copy: boolean) =>
+    MODELS.map((m) => <img key={`${copy ? "b" : "a"}-${m.id}`} src={m.src} alt={copy ? "" : m.name} title={copy ? undefined : m.name} width={size} height={size} />);
   return (
-    <span className={s.stack}>
-      {MODELS.map((m) => (
-        <img key={m.id} src={m.src} alt={m.name} title={m.name} width={size} height={size} />
-      ))}
+    <span className={s.stack} style={{ "--disc": `${size + 10}px`, "--n": MODELS.length } as React.CSSProperties}>
+      <span className={s.stackTrack}>
+        {row(false)}
+        <span className={s.stackCopy} aria-hidden="true">{row(true)}</span>
+      </span>
     </span>
   );
 }

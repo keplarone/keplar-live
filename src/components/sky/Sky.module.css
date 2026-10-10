@@ -48,15 +48,39 @@
   color: var(--c-ink-3);
 }
 :global(:root[data-theme="dark"]) .badge { background: var(--c-surface-1); }
-.stack { display: inline-flex; align-items: center; }
+/* Model logo carousel (ModelStack.tsx): a window about five discs wide; the doubled row slides left by one copy (n discs, each
+   --disc wide plus the gap) and repeats seamlessly. Edges fade out with a mask. */
+.stack {
+  --gap: 4px;
+  display: inline-flex;
+  align-items: center;
+  width: calc(var(--disc) * 5 + var(--gap) * 4);
+  overflow: hidden;
+  padding: 3px 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 16%, #000 84%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 16%, #000 84%, transparent);
+}
+.stackTrack, .stackCopy { display: flex; align-items: center; gap: var(--gap); flex: none; }
+.stackTrack { animation: stack-slide 14s linear infinite; }
+.stack:hover .stackTrack { animation-play-state: paused; }
 .stack img {
+  flex: none;
   box-sizing: content-box;
   padding: 5px;
   background: #fff;
   border-radius: 999px;
-  box-shadow: 0 0 0 2px var(--c-canvas), 0 1px 3px rgb(14 15 18 / 0.12);
+  box-shadow: 0 1px 3px rgb(14 15 18 / 0.14);
 }
-.stack img + img { margin-left: -6px; }
+@keyframes stack-slide {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc((var(--disc) + var(--gap)) * var(--n) * -1)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stack { width: auto; overflow: visible; -webkit-mask-image: none; mask-image: none; }
+  .stackTrack { animation: none; gap: 0; }
+  .stackCopy { display: none; }
+  .stack img + img { margin-left: -6px; }
+}
 .h1 {
   margin: 0;
   font-size: clamp(44px, 6vw, 88px);

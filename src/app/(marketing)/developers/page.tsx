@@ -223,7 +223,6 @@ export default function DevelopersPage() {
           </section>
         </div>
       </div>
-      <p className={s.credit}>Built by Hassen and Hussain Keder. Keplar was created by two co-founders, Hassen and Hussain Keder.</p>
     </div>
   );
 }

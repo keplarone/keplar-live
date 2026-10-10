@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { KeplarLogo } from "@/components/brand";
 import { brand, footerNav, site } from "@/lib/site";
-import { CREATOR_LINE } from "@/lib/identity";
 import { CookieSettingsButton } from "@/components/consent/CookieSettingsButton";
 import { ThemeControl } from "@/components/theme/ThemeControl";
 import { LanguagePicker } from "@/components/i18n/LanguagePicker";
@@ -20,8 +19,6 @@ export async function Footer({ locale = "en" }: { locale?: string }) {
           <KeplarLogo height={22} title={brand.name} />
           {/* The tagline under the logo is the brand lockup: it stays in English in every locale. */}
           <p className={s.tagline} lang="en">{site.tagline}</p>
-          {/* Who made Keplar: two co-founders, two different people. Names are never translated, and no personal details are added. */}
-          <p className={s.credit} lang="en" data-credit="">{CREATOR_LINE}</p>
           <a href={`mailto:${brand.contactEmail}`} className={s.email}>
             {brand.contactEmail}
           </a>

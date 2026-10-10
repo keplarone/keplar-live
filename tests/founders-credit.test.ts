@@ -60,7 +60,6 @@ test("no birthDate, age or birth year anywhere in the public output or copy", as
     ["about page", JSON.stringify(aboutPage)],
     ["faq", JSON.stringify(faq.filter((f) => /Hassen|Hussain|creat/i.test(f.q + f.a)))],
     ["creator answers", creatorAnswers().join("\n")],
-    ["footer", readFileSync("src/components/chrome/Footer.tsx", "utf8")],
   ] as const) assert.doesNotMatch(text, NO_AGE, name);
   for (const f of readdirSync("src/lib/i18n/messages/common")) {
     const credit = /"?credit"?: "([^"]*)"/.exec(readFileSync(`src/lib/i18n/messages/common/${f}`, "utf8"))?.[1] ?? "";
@@ -86,8 +85,6 @@ test("credit copy is always the two co-founders, plural, one spelling, never a s
     ["llms.txt credit", llmsTxt.split("\n").filter((l) => /Hassen|Hussain/.test(l)).join("\n")],
     ["about", [aboutPage.metaDescription, aboutPage.answer, ...(who.p ?? []), ...aboutPage.faq.map((f) => f.a)].join("\n")],
     ["faq", faq.filter((f) => /Hassen|Hussain/.test(f.a)).map((f) => f.a).join("\n")],
-    ["footer", readFileSync("src/components/chrome/Footer.tsx", "utf8").split("\n").filter((l) => /CREATOR_LINE|Hassen/.test(l)).join("\n")],
-    ["developers", readFileSync("src/app/(marketing)/developers/page.tsx", "utf8").split("\n").filter((l) => /Hassen/.test(l)).join("\n")],
     ["feedback", readFileSync("src/app/(marketing)/feedback/page.tsx", "utf8").split("\n").filter((l) => /Hassen/.test(l)).join("\n")],
     ["en catalogs", ["common", "client", "marketing"].map((n) => readFileSync(`src/lib/i18n/messages/${n}/en.ts`, "utf8")).join("\n").split("\n").filter((l) => /credit/i.test(l) && !/^\s*(\/\*|\*)/.test(l)).join("\n")],
     ["sign-off", SIGN_OFF],
