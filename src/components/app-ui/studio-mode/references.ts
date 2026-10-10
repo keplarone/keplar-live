@@ -52,3 +52,13 @@ export async function referencesFromFiles(files: File[]): Promise<string[]> {
   }
   return out;
 }
+
+/** A Studio screenshot (a data URL) scaled to at most `side` px and re-encoded as JPEG, so turns stay small. */
+export async function scaleDataUrl(dataUrl: string, side = MAX_SIDE): Promise<string> {
+  try {
+    const bmp = await createImageBitmap(await (await fetch(dataUrl)).blob());
+    try { return canvasJpeg(bmp, bmp.width, bmp.height, side); } finally { bmp.close(); }
+  } catch {
+    return dataUrl;
+  }
+}

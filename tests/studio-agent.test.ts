@@ -68,9 +68,10 @@ test("turn: asks Fable 5 with Keplar's system prompt and the tools, charges the 
   const body = sent as unknown as { model: string; messages: { role: string; content: unknown }[]; tools: unknown[]; max_tokens: number };
   assert.equal(body.model, "anthropic/claude-fable-5.1");
   assert.equal(body.messages[0]!.role, "system");
-  assert.match(JSON.stringify(body.messages[0]!.content), /building inside Roblox Studio/);
+  assert.match(JSON.stringify(body.messages[0]!.content), /working inside Roblox Studio/);
   assert.equal(body.tools.length, 2);
   assert.equal(body.max_tokens, STUDIO_LIMITS.maxOutputTokens);
+  assert.deepEqual((body as unknown as { reasoning: unknown }).reasoning, { max_tokens: STUDIO_LIMITS.reasoningTokens });
   assert.deepEqual(turn.actions.map((a) => [a.name, a.risk]), [["list_roblox_studios", "read"], ["execute_luau", "destructive"]]);
   assert.deepEqual(turn.blocked, [{ id: "c", name: "http_get" }]);
   assert.equal(turn.done, false);

@@ -6,7 +6,7 @@ import { STUDIO_PLANS } from "@/lib/desktop/studio-bridge";
 import { buildTools, runStudioTurn, STUDIO_LIMITS, validateMessages } from "@/lib/studio/agent";
 
 export const runtime = "nodejs";
-export const maxDuration = 150;
+export const maxDuration = 300;
 
 /**
  * One turn of Roblox Studio mode (src/lib/studio/agent.ts): signed-in Lite and up only, rate limited, credits checked before

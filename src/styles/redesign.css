@@ -202,3 +202,8 @@
 /* Desktop app (html[data-desktop], src/lib/desktop.ts): the height of its own title bar, the band the window controls live in.
    The /app shell starts below it (App.module.css, DesktopTitleBar). */
 html[data-desktop] { --kp-titlebar: env(titlebar-area-height, 36px); }
+
+/* The desktop Studio overlay window (/app/studio/overlay): transparent, nothing but the panel. */
+html[data-overlay], html[data-overlay] body { background: transparent !important; overflow: hidden; }
+html[data-overlay] body::before, html[data-overlay] body::after { display: none !important; }
+html[data-overlay] body > :not(#main):not(script):not(style) { display: none !important; }

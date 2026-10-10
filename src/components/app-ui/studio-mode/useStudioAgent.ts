@@ -3,19 +3,26 @@
  * The Studio co-creator's run loop on the page (server turn: src/lib/studio/agent.ts, Studio access: the desktop bridge).
  *
  * One run = the person's request, then turns until the model is done, the person pauses or stops, the run's credit budget is
- * spent, or the step cap is reached. Each turn the server returns the model's reply and labelled actions. Reads run by
- * themselves; changes wait for Approve (or run when auto-approve is on); destructive actions always wait. Results go back into
- * the conversation: text capped, and Studio screenshots as images (only the newest kept in full, to keep turns cheap).
+ * spent, or the step cap is reached. Before each request Keplar looks at the place (look): a screenshot of Studio's current
+ * view and the Workspace tree go into the conversation with the studio_id to use, so it builds on what is really there.
+ * Each turn the server returns the model's reply and labelled actions. Reads run by themselves; changes wait for Approve (or
+ * run when auto-approve is on); destructive actions always wait. Results go back into the conversation: text capped, and
+ * Studio screenshots as images (only the newest kept in full, to keep turns cheap).
+ * When the model first says it is finished after making changes, it gets one review pass (REVIEW_PROMPT): check every plan
+ * step against a fresh screenshot and the output log, fix what falls short, then finish.
+ * Alongside the feed it keeps what the side panel shows: the latest viewport, the plan and the current step ("Step N:"), the
+ * changes made, and the run's numbers.
  */
 import { useCallback, useRef, useState } from "react";
-import type { StudioBridge, StudioContent } from "@/lib/desktop/studio-bridge";
+import { resultText, type StudioBridge, type StudioContent } from "@/lib/desktop/studio-bridge";
+import { scaleDataUrl } from "./references";
 
 export type Risk = "read" | "change" | "destructive";
 type ToolCall = { id: string; type: "function"; function: { name: string; arguments: string } };
 type Part = { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } };
 type Msg =
   | { role: "user"; content: string | Part[] }
-  | { role: "assistant"; content: string | null; tool_calls?: ToolCall[] }
+  | { role: "assistant"; content: string | null; tool_calls?: ToolCall[]; reasoning_details?: unknown[] }
   | { role: "tool"; tool_call_id: string; content: string };
 
 export type ActionStatus = "waiting" | "running" | "done" | "failed" | "skipped";
@@ -23,12 +30,20 @@ export type Item =
   | { kind: "user"; key: string; text: string; images: string[] }
   | { kind: "keplar"; key: string; text: string }
   | { kind: "action"; key: string; name: string; args: Record<string, unknown>; risk: Risk; status: ActionStatus; summary?: string; image?: string }
+  | { kind: "look"; key: string; image?: string; text: string }
   | { kind: "note"; key: string; text: string; tone?: "warn" };
+
+export type Place = { id: string; name: string };
+export type PlanStep = { text: string; state: "done" | "doing" | "next" };
+export type Viewport = { image: string; at: number };
 
 type Turn = { message: Extract<Msg, { role: "assistant" }>; text: string; actions: { id: string; name: string; args: Record<string, unknown>; risk: Risk }[]; blocked: { id: string; name: string }[]; done: boolean; units: number };
 
-export const RUN_STEP_CAP = 40;
-export const DEFAULT_BUDGET = 1500;
+export const RUN_STEP_CAP = 80;
+export const DEFAULT_BUDGET = 3000;
+
+/** Sent once per run when the model stops after making changes: a real self-review before it may finish. */
+export const REVIEW_PROMPT = "Before you finish, review your work like a lead developer would. Take a fresh screen_capture (more than one angle if it is a scene) and check get_console_output for errors. Compare against the request, your plan and any references: is every step done, does it look polished and complete, is anything placeholder, empty, misaligned or broken? Fix everything that falls short, verify again, then give your short summary. If it is truly complete, say so and summarise.";
 
 /** A short human line for an action card ("Run Luau", "Read script ServerScriptService.Spawn"). */
 export function describeAction(name: string, args: Record<string, unknown>): string {
@@ -62,6 +77,34 @@ export function describeAction(name: string, args: Record<string, unknown>): str
   }
 }
 
+/** The numbered plan in a Keplar message ("1. …" lines), when it has at least three steps. */
+export function parsePlan(text: string): string[] | null {
+  const steps = text.split("\n").map((l) => /^\s*(\d{1,2})[.)]\s+(.+?)\s*$/.exec(l)).filter((m): m is RegExpExecArray => Boolean(m)).map((m) => m[2]!.replace(/\*\*/g, ""));
+  return steps.length >= 3 ? steps.slice(0, 12) : null;
+}
+
+/** The plan step a Keplar message says it is starting ("Step 3: …"), or null. */
+export function stepMarker(text: string): number | null {
+  const m = /^\s*\**step\s+(\d{1,2})\b/i.exec(text);
+  return m ? Number(m[1]) : null;
+}
+
+/** Parses list_roblox_studios ({"studios":[{id,name}]}). */
+export function parsePlaces(text: string): Place[] {
+  try {
+    const j = JSON.parse(text) as { studios?: unknown[] };
+    return (j.studios ?? []).flatMap((x, i) => {
+      const o = (x ?? {}) as Record<string, unknown>;
+      const id = o.id ?? o.studioId;
+      if (id === undefined) return [];
+      const name = String(o.name ?? o.placeName ?? `Studio ${i + 1}`).replace(/\s*\(placeId:\s*\d+\)\s*$/, "");
+      return [{ id: String(id), name }];
+    });
+  } catch {
+    return [];
+  }
+}
+
 const key = () => Math.random().toString(36).slice(2, 10);
 
 function toolResult(content: StudioContent[]): { text: string; image?: string } {
@@ -82,19 +125,100 @@ function compactScreenshots(history: Msg[]): Msg[] {
   return history;
 }
 
+/** The Workspace tree as short lines ("Workspace.NeonCity (Model) · 4 children (…)"), capped for the prompt. */
+function treeLines(text: string): string {
+  try {
+    const nodes = JSON.parse(text) as { fullPath?: string; className?: string; childSummary?: string }[];
+    return nodes.map((n) => `${n.fullPath ?? "?"} (${n.className ?? "?"})${n.childSummary ? ` · ${n.childSummary}` : ""}`).join("\n").slice(0, 6000);
+  } catch {
+    return text.slice(0, 6000);
+  }
+}
+
 export function useStudioAgent(bridge: StudioBridge | null) {
   const [items, setItems] = useState<Item[]>([]);
   const [running, setRunning] = useState(false);
   const [paused, setPaused] = useState(false);
+  const [looking, setLooking] = useState(false);
   const [units, setUnits] = useState(0);
   const [budget, setBudget] = useState(DEFAULT_BUDGET);
   const [autoApprove, setAutoApprove] = useState(false);
+  const [place, setPlaceState] = useState<Place | null>(null);
+  const [viewport, setViewport] = useState<Viewport | null>(null);
+  const [shots, setShots] = useState<string[]>([]);
+  const [plan, setPlan] = useState<string[]>([]);
+  const [current, setCurrent] = useState(0);
+  const [finished, setFinished] = useState(false);
+  const [built, setBuilt] = useState<{ key: string; title: string }[]>([]);
+  const [stats, setStats] = useState({ steps: 0, changes: 0, errors: 0 });
   const history = useRef<Msg[]>([]);
   const decisions = useRef(new Map<string, (ok: boolean) => void>());
-  const flags = useRef({ pause: false, stop: false, units: 0, steps: 0, budget: DEFAULT_BUDGET, auto: false });
+  const placeRef = useRef<Place | null>(null);
+  const flags = useRef({ pause: false, stop: false, units: 0, steps: 0, budget: DEFAULT_BUDGET, auto: false, changed: false, reviewed: false });
 
   const add = useCallback((it: Item) => setItems((xs) => [...xs, it]), []);
   const patch = useCallback((k: string, p: Partial<Extract<Item, { kind: "action" }>>) => setItems((xs) => xs.map((x) => (x.key === k && x.kind === "action" ? { ...x, ...p } : x))), []);
+
+  const showShot = useCallback((image: string) => {
+    setViewport({ image, at: Date.now() });
+    setShots((xs) => [image, ...xs.filter((x) => x !== image)].slice(0, 4));
+  }, []);
+
+  const setPlace = useCallback((p: Place | null) => { placeRef.current = p; setPlaceState(p); }, []);
+
+  /** The open place to work in: the chosen one, else the first Studio lists. */
+  const ensurePlace = useCallback(async (): Promise<Place | null> => {
+    if (!bridge) return null;
+    if (placeRef.current) return placeRef.current;
+    const r = await bridge.call("list_roblox_studios", {});
+    const first = r.ok ? parsePlaces(resultText(r))[0] ?? null : null;
+    setPlace(first);
+    return first;
+  }, [bridge, setPlace]);
+
+  /** A screenshot of Studio's current view (scaled down), or null when Studio could not take one. */
+  const capture = useCallback(async (p: Place): Promise<string | null> => {
+    if (!bridge) return null;
+    const r = await bridge.call("screen_capture", { studio_id: p.id, capture_id: `Keplar_${Date.now()}` });
+    if (!r.ok || r.result.isError) return null;
+    const img = toolResult(r.result.content).image;
+    return img ? scaleDataUrl(img) : null;
+  }, [bridge]);
+
+  /** Refreshes the viewport panel (no model call, no credits). */
+  const refreshViewport = useCallback(async () => {
+    const p = await ensurePlace();
+    if (!p) return;
+    setLooking(true);
+    try {
+      const img = await capture(p);
+      if (img) showShot(img);
+    } finally {
+      setLooking(false);
+    }
+  }, [ensurePlace, capture, showShot]);
+
+  /** Keplar looks at the place before a request: screenshot plus the Workspace tree, added to the conversation. */
+  const look = useCallback(async () => {
+    if (!bridge) return;
+    const p = await ensurePlace();
+    if (!p) return;
+    setLooking(true);
+    try {
+      const [img, tree] = await Promise.all([
+        capture(p),
+        bridge.call("search_game_tree", { studio_id: p.id, datamodel_type: "Edit", path: "Workspace", max_depth: 2, head_limit: 80 }),
+      ]);
+      const treeText = tree.ok && !tree.result.isError ? treeLines(resultText(tree)) : "";
+      const intro = `Studio screenshot before this request: what the place "${p.name}" looks like right now. Use studio_id "${p.id}" in every call.${treeText ? `\nWorkspace contents:\n${treeText}` : ""}`;
+      history.current.push({ role: "user", content: [{ type: "text", text: intro }, ...(img ? [{ type: "image_url" as const, image_url: { url: img } }] : [])] });
+      if (img) showShot(img);
+      const count = treeText ? treeText.split("\n").length : 0;
+      add({ kind: "look", key: key(), ...(img ? { image: img } : {}), text: count ? `Looked at ${p.name}: ${count} item${count === 1 ? "" : "s"} in the Workspace.` : `Looked at ${p.name}.` });
+    } finally {
+      setLooking(false);
+    }
+  }, [bridge, ensurePlace, capture, showShot, add]);
 
   const decide = useCallback((k: string, ok: boolean) => {
     decisions.current.get(k)?.(ok);
@@ -110,15 +234,22 @@ export function useStudioAgent(bridge: StudioBridge | null) {
         if (flags.current.steps >= RUN_STEP_CAP) { add({ kind: "note", key: key(), text: `Paused after ${RUN_STEP_CAP} steps. Continue when you are ready.`, tone: "warn" }); flags.current.pause = true; break; }
         if (flags.current.units >= flags.current.budget) { add({ kind: "note", key: key(), text: `Paused at this run's budget (${flags.current.budget.toLocaleString()} credits). Raise it to continue.`, tone: "warn" }); flags.current.pause = true; break; }
         flags.current.steps++;
+        setStats((st) => ({ ...st, steps: st.steps + 1 }));
         const res = await fetch("/api/studio/agent", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ messages: compactScreenshots(history.current), tools }) });
         const data = (await res.json().catch(() => ({}))) as Turn & { error?: string };
         if (!res.ok) { add({ kind: "note", key: key(), text: data.error ?? "Keplar could not continue. Try again.", tone: "warn" }); flags.current.pause = true; break; }
         flags.current.units += data.units;
         setUnits(flags.current.units);
         history.current.push(data.message);
-        if (data.text) add({ kind: "keplar", key: key(), text: data.text });
+        if (data.text) {
+          add({ kind: "keplar", key: key(), text: data.text });
+          const steps = parsePlan(data.text);
+          if (steps) { setPlan(steps); setCurrent(0); setFinished(false); }
+          const n = stepMarker(data.text);
+          if (n) setCurrent(n);
+        }
         for (const b of data.blocked) history.current.push({ role: "tool", tool_call_id: b.id, content: `The tool ${b.name} is not available in Keplar.` });
-        const shots: string[] = [];
+        const shotsThisTurn: string[] = [];
         for (const a of data.actions) {
           const k = key();
           const needsYes = a.risk === "destructive" || (a.risk === "change" && !flags.current.auto);
@@ -137,36 +268,56 @@ export function useStudioAgent(bridge: StudioBridge | null) {
           if (!r.ok || r.result.isError) {
             const msg = r.ok ? toolResult(r.result.content).text : r.error;
             patch(k, { status: "failed", summary: msg.slice(0, 300) });
+            setStats((st) => ({ ...st, errors: st.errors + 1 }));
             history.current.push({ role: "tool", tool_call_id: a.id, content: `Error: ${msg}`.slice(0, 12_000) });
             continue;
           }
           const out = toolResult(r.result.content);
-          patch(k, { status: "done", summary: out.text.slice(0, 300), ...(out.image ? { image: out.image } : {}) });
+          const image = out.image ? await scaleDataUrl(out.image) : undefined;
+          patch(k, { status: "done", summary: out.text.slice(0, 300), ...(image ? { image } : {}) });
+          if (a.risk !== "read") {
+            flags.current.changed = true;
+            setBuilt((xs) => [...xs, { key: k, title: describeAction(a.name, a.args) }]);
+            setStats((st) => ({ ...st, changes: st.changes + 1 }));
+          }
           history.current.push({ role: "tool", tool_call_id: a.id, content: out.text.slice(0, 12_000) });
-          if (out.image) shots.push(out.image);
+          if (image) { shotsThisTurn.push(image); showShot(image); }
         }
-        if (shots.length) history.current.push({ role: "user", content: [{ type: "text", text: "Studio screenshot after these steps:" }, { type: "image_url", image_url: { url: shots[shots.length - 1]! } }] });
-        if (data.done) break;
+        if (shotsThisTurn.length) history.current.push({ role: "user", content: [{ type: "text", text: "Studio screenshot after these steps:" }, { type: "image_url", image_url: { url: shotsThisTurn[shotsThisTurn.length - 1]! } }] });
+        if (data.done) {
+          if (flags.current.changed && !flags.current.reviewed) {
+            flags.current.reviewed = true;
+            history.current.push({ role: "user", content: REVIEW_PROMPT });
+            add({ kind: "note", key: key(), text: "Checking the work before finishing…" });
+            continue;
+          }
+          setFinished(true);
+          break;
+        }
       }
     } catch (e) {
       add({ kind: "note", key: key(), text: e instanceof Error ? e.message : "Something went wrong.", tone: "warn" });
     } finally {
       setRunning(false);
       setPaused(flags.current.pause && !flags.current.stop);
+      // A fresh look at the result for the viewport panel (no model call).
+      if (flags.current.changed) void refreshViewport();
     }
-  }, [bridge, add, patch]);
+  }, [bridge, add, patch, showShot, refreshViewport]);
 
-  /** Start a request (text plus reference images as data URLs). */
+  /** Start a request (text plus reference images as data URLs). Keplar looks at the place first. */
   const send = useCallback(async (text: string, images: string[]) => {
     if (!bridge || running || (!text.trim() && !images.length)) return;
     add({ kind: "user", key: key(), text, images });
+    flags.current = { ...flags.current, pause: false, stop: false, steps: 0, units: flags.current.units, changed: false, reviewed: false };
+    setPaused(false);
+    setRunning(true);
+    try { await look(); } catch { /* Keplar builds without the screenshot if Studio could not take one */ }
     const parts: Part[] = [{ type: "text", text: text.trim() || "Use these references." }];
     if (images.length) parts.push({ type: "text", text: `Reference ${images.length === 1 ? "image" : "images"} for this request (match the style, layout, motion and feel):` }, ...images.map((url) => ({ type: "image_url" as const, image_url: { url } })));
     history.current.push({ role: "user", content: parts });
-    flags.current = { ...flags.current, pause: false, stop: false, steps: 0, units: flags.current.units };
-    setPaused(false);
     await loop();
-  }, [bridge, running, add, loop]);
+  }, [bridge, running, add, look, loop]);
 
   const pause = useCallback(() => { flags.current.pause = true; setPaused(true); }, []);
   const resume = useCallback(async () => { flags.current.pause = false; flags.current.stop = false; flags.current.steps = 0; setPaused(false); await loop(); }, [loop]);
@@ -175,9 +326,28 @@ export function useStudioAgent(bridge: StudioBridge | null) {
     for (const [k, r] of decisions.current) { r(false); decisions.current.delete(k); }
     setPaused(false);
   }, []);
-  const reset = useCallback(() => { stop(); history.current = []; flags.current.units = 0; setUnits(0); setItems([]); }, [stop]);
+  const reset = useCallback(() => {
+    stop();
+    history.current = [];
+    flags.current.units = 0;
+    setUnits(0);
+    setItems([]);
+    setPlan([]);
+    setCurrent(0);
+    setFinished(false);
+    setBuilt([]);
+    setStats({ steps: 0, changes: 0, errors: 0 });
+  }, [stop]);
   const setRunBudget = useCallback((n: number) => { flags.current.budget = n; setBudget(n); }, []);
   const setAuto = useCallback((v: boolean) => { flags.current.auto = v; setAutoApprove(v); }, []);
 
-  return { items, running, paused, units, budget, autoApprove, send, decide, pause, resume, stop, reset, setRunBudget, setAuto };
+  const planSteps: PlanStep[] = plan.map((t, i) => ({ text: t, state: finished || i + 1 < current ? "done" : i + 1 === current ? "doing" : "next" }));
+  const pending = items.filter((x) => x.kind === "action" && x.status === "waiting").length;
+
+  return {
+    items, running, paused, looking, units, budget, autoApprove, place, viewport, shots, plan: planSteps, current, finished, built, stats, pending,
+    send, decide, pause, resume, stop, reset, setRunBudget, setAuto, setPlace, refreshViewport,
+  };
 }
+
+export type StudioAgent = ReturnType<typeof useStudioAgent>;

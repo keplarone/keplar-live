@@ -8,6 +8,18 @@ export type StudioStatus = { state: StudioState; message?: string; server?: stri
 export type StudioContent = { type: string; text?: string; data?: string; mimeType?: string };
 export type StudioCall = { ok: true; result: { content: StudioContent[]; isError?: boolean } } | { ok: false; error: string };
 
+export type OverlayState = { open: boolean; collapsed: boolean; seeThrough: boolean };
+
+/** The always-on-top Studio overlay window (desktop app 0.1.7+, bridge version 2). */
+export type StudioOverlayApi = {
+  state(): Promise<OverlayState>;
+  open(): Promise<OverlayState>;
+  close(): Promise<OverlayState>;
+  collapse(on: boolean): Promise<OverlayState>;
+  seeThrough(on: boolean): Promise<OverlayState>;
+  onState(listener: (state: OverlayState) => void): () => void;
+};
+
 export type StudioBridge = {
   version: number;
   status(): Promise<StudioStatus>;
@@ -17,6 +29,8 @@ export type StudioBridge = {
   tools(): Promise<{ name: string; description?: string; inputSchema?: unknown }[]>;
   call(name: string, args?: Record<string, unknown>): Promise<StudioCall>;
   onStatus(listener: (status: StudioStatus) => void): () => void;
+  /** Present on desktop builds that can float Keplar over Studio. */
+  overlay?: StudioOverlayApi;
 };
 
 /** The bridge when running inside the Keplar desktop app on a keplar.one app page, else null. */

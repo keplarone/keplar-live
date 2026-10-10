@@ -1,28 +1,28 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { StudioBridge } from "@/lib/desktop/studio-bridge";
 import { referencesFromFiles } from "./references";
-import { describeAction, useStudioAgent, type Item } from "./useStudioAgent";
+import { describeAction, type Item, type StudioAgent } from "./useStudioAgent";
 import s from "./studio-mode.module.css";
 
 const RISK_LABEL = { read: "Look", change: "Change", destructive: "Needs care" } as const;
 const STATUS_LABEL = { waiting: "Waiting for you", running: "Working…", done: "Done", failed: "Failed", skipped: "Skipped" } as const;
-const BUDGETS = [500, 1500, 3000, 6000];
+const BUDGETS = [1500, 3000, 6000, 12000];
 const MAX_REFS = 8;
 
-function ActionCard({ it, onDecide }: { it: Extract<Item, { kind: "action" }>; onDecide: (ok: boolean) => void }) {
+function ActionCard({ it, onDecide, compact }: { it: Extract<Item, { kind: "action" }>; onDecide: (ok: boolean) => void; compact: boolean }) {
   const code = it.name === "execute_luau" && typeof it.args.code === "string" ? it.args.code : null;
+  const [showCode, setShowCode] = useState(!compact);
   return (
     <li className={s.action} data-status={it.status} data-risk={it.risk}>
       <div className={s.actionHead}>
         <span className={s.actionDot} aria-hidden="true" />
         <span className={s.actionTitle}>{describeAction(it.name, it.args)}</span>
-        <span className={s.riskTag} data-risk={it.risk}>{RISK_LABEL[it.risk]}</span>
+        {compact ? null : <span className={s.riskTag} data-risk={it.risk}>{RISK_LABEL[it.risk]}</span>}
         <span className={s.actionStatus}>{STATUS_LABEL[it.status]}</span>
       </div>
-      {code && it.status === "waiting" ? <pre className={s.code}>{code.slice(0, 4000)}</pre> : null}
-      {it.summary && it.status !== "waiting" ? <p className={s.actionSummary}>{it.summary}</p> : null}
+      {code && it.status === "waiting" && showCode ? <pre className={s.code}>{code.slice(0, 4000)}</pre> : null}
+      {it.summary && it.status !== "waiting" && !compact ? <p className={s.actionSummary}>{it.summary}</p> : null}
       {it.image ? (
         // eslint-disable-next-line @next/next/no-img-element -- a data URL from Studio, shown as is
         <img className={s.shot} src={it.image} alt="Studio screenshot" />
@@ -31,16 +31,19 @@ function ActionCard({ it, onDecide }: { it: Extract<Item, { kind: "action" }>; o
         <div className={s.actionButtons}>
           <button type="button" className={s.primary} onClick={() => onDecide(true)}>{it.risk === "destructive" ? "Approve this change" : "Approve"}</button>
           <button type="button" className={s.ghost} onClick={() => onDecide(false)}>Skip</button>
+          {code && compact ? <button type="button" className={s.quiet} onClick={() => setShowCode((v) => !v)} aria-expanded={showCode}>{showCode ? "Hide script" : "See script"}</button> : null}
         </div>
       ) : null}
     </li>
   );
 }
 
-/** The Studio co-creator's chat dock (run loop: useStudioAgent). Shown once Keplar is connected to Studio. */
-export function StudioDock({ bridge }: { bridge: StudioBridge }) {
-  const a = useStudioAgent(bridge);
-  const [text, setText] = useState("");
+/**
+ * The Studio co-creator's chat dock (run loop: useStudioAgent, passed in so the side panel shares it). Shown once Keplar is
+ * connected to Studio, on the Studio page and, compact, in the desktop overlay.
+ */
+export function StudioDock({ a, compact = false, draft = "", onDraftUsed }: { a: StudioAgent; compact?: boolean; draft?: string; onDraftUsed?: () => void }) {
+  const [text, setText] = useState(draft);
   const [refs, setRefs] = useState<string[]>([]);
   const [refBusy, setRefBusy] = useState(false);
   const [refErr, setRefErr] = useState("");
@@ -51,6 +54,12 @@ export function StudioDock({ bridge }: { bridge: StudioBridge }) {
     const el = listRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [a.items.length]);
+
+  // An idea picked before connecting arrives as a draft; it fills the box once.
+  useEffect(() => {
+    if (!draft) return;
+    queueMicrotask(() => { setText(draft); onDraftUsed?.(); });
+  }, [draft, onDraftUsed]);
 
   const addFiles = async (files: FileList | null) => {
     if (!files?.length) return;
@@ -78,27 +87,33 @@ export function StudioDock({ bridge }: { bridge: StudioBridge }) {
   };
 
   return (
-    <section className={s.dock} aria-label="Build with Keplar in Roblox Studio">
-      <div className={s.dockBar}>
-        <span className={s.meta}>{a.units.toLocaleString()} of {a.budget.toLocaleString()} credits this run</span>
-        <label className={s.budget}>
-          Budget
-          <select value={a.budget} onChange={(e) => a.setRunBudget(Number(e.target.value))}>
-            {BUDGETS.map((b) => <option key={b} value={b}>{b.toLocaleString()}</option>)}
-          </select>
-        </label>
-        <label className={s.switch}>
-          <input type="checkbox" role="switch" checked={a.autoApprove} onChange={(e) => a.setAuto(e.target.checked)} />
-          <span>Auto-approve safe changes</span>
-        </label>
-        {a.items.length ? <button type="button" className={s.textBtn} onClick={a.reset} disabled={a.running}>New session</button> : null}
-      </div>
+    <section className={s.dock} data-compact={compact || undefined} aria-label="Build with Keplar in Roblox Studio">
+      {compact ? null : (
+        <div className={s.dockBar}>
+          <span className={s.runState} data-running={a.running || undefined}>
+            <span className={s.runDot} aria-hidden="true" />
+            {a.looking ? "Looking at your place…" : a.running ? (a.current ? `Building · step ${a.current}${a.plan.length ? ` of ${a.plan.length}` : ""}` : "Planning…") : a.paused ? "Paused" : a.finished ? "Finished" : "Ready"}
+          </span>
+          <span className={s.grow} />
+          <label className={s.budget}>
+            Budget
+            <select value={a.budget} onChange={(e) => a.setRunBudget(Number(e.target.value))}>
+              {BUDGETS.map((b) => <option key={b} value={b}>{b.toLocaleString()}</option>)}
+            </select>
+          </label>
+          <label className={s.switch}>
+            <input type="checkbox" role="switch" checked={a.autoApprove} onChange={(e) => a.setAuto(e.target.checked)} />
+            <span>Auto-approve safe changes</span>
+          </label>
+          {a.items.length ? <button type="button" className={s.textBtn} onClick={a.reset} disabled={a.running}>New session</button> : null}
+        </div>
+      )}
 
       <ol className={s.feed} ref={listRef} aria-live="polite">
         {a.items.length === 0 ? (
           <li className={s.empty}>
             <strong>What should we build?</strong>
-            <span>Try “Make a sci-fi city with flying cars and neon signs”, or attach screenshots or a clip of a UI, effect or gameplay you want to match.</span>
+            <span>Keplar looks at your place first, then plans and builds. Attach screenshots or a clip of a UI, effect or gameplay you want to match.</span>
           </li>
         ) : null}
         {a.items.map((it) =>
@@ -116,10 +131,18 @@ export function StudioDock({ bridge }: { bridge: StudioBridge }) {
             </li>
           ) : it.kind === "keplar" ? (
             <li key={it.key} className={s.keplarMsg}><p>{it.text}</p></li>
+          ) : it.kind === "look" ? (
+            <li key={it.key} className={s.lookItem}>
+              {it.image ? (
+                // eslint-disable-next-line @next/next/no-img-element -- a data URL from Studio
+                <img src={it.image} alt="What Keplar saw in Studio" />
+              ) : <span className={s.lookIcon} aria-hidden="true" />}
+              <span><strong>Looked at your place</strong><br />{it.text}</span>
+            </li>
           ) : it.kind === "note" ? (
             <li key={it.key} className={s.note} data-tone={it.tone}>{it.text}</li>
           ) : (
-            <ActionCard key={it.key} it={it} onDecide={(ok) => a.decide(it.key, ok)} />
+            <ActionCard key={it.key} it={it} compact={compact} onDecide={(ok) => a.decide(it.key, ok)} />
           ),
         )}
       </ol>
@@ -138,9 +161,9 @@ export function StudioDock({ bridge }: { bridge: StudioBridge }) {
         {refErr ? <p className={s.refErr} role="status">{refErr}</p> : null}
         <textarea
           className={s.input}
-          rows={2}
+          rows={compact ? 1 : 2}
           value={text}
-          placeholder={a.running ? "Keplar is working. You can pause or stop." : "Describe what to build or change…"}
+          placeholder={a.running ? "Keplar is working. You can pause or stop." : a.items.length ? "Change something or add to it…" : "Describe what to build or change…"}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && !a.running) { e.preventDefault(); submit(); } }}
           aria-label="Describe what to build in Roblox Studio"
@@ -148,7 +171,11 @@ export function StudioDock({ bridge }: { bridge: StudioBridge }) {
         />
         <div className={s.composerBar}>
           <input ref={fileRef} type="file" accept="image/*,video/*" multiple hidden onChange={(e) => void addFiles(e.target.files)} />
-          <button type="button" className={s.ghost} onClick={() => fileRef.current?.click()} disabled={a.running || refBusy || refs.length >= MAX_REFS}>{refBusy ? "Reading…" : "Add reference"}</button>
+          <button type="button" className={s.ghost} data-icon={compact || undefined} onClick={() => fileRef.current?.click()} disabled={a.running || refBusy || refs.length >= MAX_REFS} aria-label={compact ? "Add a reference image or clip" : undefined}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" /><circle cx="9" cy="10" r="1.6" /><path d="M21 16l-5-5-8 8" /></svg>
+            {compact ? null : refBusy ? "Reading…" : "Add reference"}
+          </button>
+          {compact ? <span className={s.meta}>{a.units.toLocaleString()} of {a.budget.toLocaleString()} credits</span> : null}
           <span className={s.grow} />
           {a.running ? (
             <>

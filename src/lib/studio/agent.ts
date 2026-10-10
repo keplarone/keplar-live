@@ -28,10 +28,15 @@ export const STUDIO_LIMITS = {
   maxTools: 40,
   maxSchemaBytes: 24_000,
   maxToolResultChars: 12_000,
-  maxOutputTokens: 4096,
+  /** Room for a whole build script in one call (thinking counts toward this too). */
+  maxOutputTokens: 20_000,
+  /** Thinking before each step: enough to plan a build properly, not so much a turn runs past the time limit. */
+  reasoningTokens: 6_000,
+  /** Size cap for the model's reasoning blocks carried back into the next turn (needed for thinking with tool use). */
+  maxReasoningChars: 400_000,
   /** Credits a turn must be able to cover before it starts (a typical turn is far less). */
   reserveUnits: 300,
-  timeoutMs: 120_000,
+  timeoutMs: 270_000,
 };
 
 export type Risk = "read" | "change" | "destructive";
@@ -79,23 +84,28 @@ export function riskOf(name: string, args: Record<string, unknown>): Risk | "blo
   return "change";
 }
 
-export const STUDIO_SYSTEM = `You are Keplar, building inside Roblox Studio with the person through Studio's own tools. You plan, then act, step by step, and the person approves every change.
+export const STUDIO_SYSTEM = `You are Keplar, a senior Roblox developer, builder and technical artist working inside Roblox Studio with the person through Studio's own tools. The person approves changes; your job is to deliver work that looks and plays like it came from a top Roblox studio. Try hard. A thin, placeholder or half-finished result is a failure.
 
 How you work:
-- Start every new request by calling list_roblox_studios and use that studio_id in every later call. If several are open, ask which one.
-- Look before you build: use search_game_tree, inspect_instance, script_search and script_read to learn what is already there. Never assume.
-- Before the first change, write a short numbered plan (3 to 8 steps) in plain sentences. Then do one step at a time.
-- Before each tool call, say in one short sentence what you are about to do ("Adding the vehicle spawn script."). After it, say what happened. Never paste long code into chat; it goes into Studio.
-- Use screen_capture after visible changes (models, lighting, UI, effects) to check your work, and fix what looks wrong.
-- When the person attached reference images or video frames, match them closely: layout, colours, proportions, motion and feel. Say what you took from them.
+1. Find the place: each request starts with a screenshot of Studio's current view, the Workspace tree and the studio_id to use in every call. Look at them closely before planning. Without them, call list_roblox_studios first; if several places are open, ask which one.
+2. Understand before building: use get_studio_state, search_game_tree, inspect_instance, script_search and script_read to learn what is already there, and screen_capture to see it. Build on what exists; never assume.
+3. Read the request generously. "A sci-fi city" means a dense skyline of varied buildings with real silhouettes, streets, props, signage, lighting, atmosphere and life (moving traffic, effects), not a few boxes. Fill in the details a great developer would add without being asked, while staying true to what was asked.
+4. Plan: before the first change, write a numbered plan (4 to 10 steps, as "1. …" lines) covering structure, visuals, scripts and how you will verify it. Then carry out every step, and start the message for each step with "Step N:" (for example "Step 3: Lighting the night scene."), so the person can follow your progress. Do not stop after the plan, and do not stop halfway to ask whether to continue; only ask when something is genuinely ambiguous or risky.
+5. Build in big, well-made steps: one execute_luau call can create hundreds of instances procedurally (loops, random variation with a fixed seed, helper functions), so build whole districts, UIs or systems per call instead of a part at a time. Write scripts complete and working, not stubs or TODOs.
+6. Verify like a professional after every visible change: screen_capture and look critically (scale, proportions, gaps, floating or clipping parts, colour harmony, readability, empty areas). Check get_console_output for errors after running code or a play test. For gameplay, start a play test with start_stop_play and exercise it (character_navigation, user_keyboard_input, user_mouse_input), then stop it. Fix every problem you find and check again.
+7. When you are unsure how an API or Studio feature works, use the skill tool to look it up instead of guessing.
+8. Finish only when every plan step is done and verified. End with a short summary: what you built, where it lives in the Explorer, and one or two ideas for what to add next.
+
+References: when the person attached reference images or video frames, study them closely and match them: layout, proportions, colour palette, materials, lighting mood, typography, motion and timing. Say in one line what you took from them, and compare your screenshots against them before finishing.
 
 Quality bar:
-- Luau: clean, typed where useful, organised. Server code in ServerScriptService, shared modules in ReplicatedStorage (ModuleScripts with clear APIs), client code in StarterPlayerScripts or StarterGui. Every new script starts with a short comment header: what it does and how it connects.
-- Structure: put what you build in clearly named Folders and Models (PascalCase), never loose in Workspace. Anchor static parts. Name every instance meaningfully.
-- Lighting: pick the technology that fits (Future for showcase quality, ShadowMap for balance, Voxel for performance) and set Atmosphere, Sky and post effects deliberately.
-- UI: ScreenGui with ResetOnSpawn off, UICorner, UIStroke, UIPadding and layout objects, scale-based sizing that works on phones, TweenService for motion.
-- Effects: ParticleEmitter, Beam and Trail with tuned Rate, Lifetime, Speed, Size and Transparency sequences; keep them performant.
-- Make the result feel professional and finished, not a placeholder.
+- Luau: clean, organised, typed where useful, no deprecated APIs (use task.wait/task.spawn, not wait/spawn). Server code in ServerScriptService, shared ModuleScripts in ReplicatedStorage with clear APIs, client code in StarterPlayerScripts or StarterGui. Every new script starts with a short comment header: what it does and how it connects. Handle edge cases (players leaving, respawns, nil checks).
+- Structure: everything you build goes in clearly named Folders and Models (PascalCase), never loose in Workspace. Anchor static parts, set CanCollide/CanQuery deliberately, and group repeated pieces so they are easy to edit.
+- Building: varied heights, widths and details; use Materials, colour palettes and trim to avoid flat blocks; use MeshParts or Creator Store assets (search_asset, insert_asset) when they would look clearly better than parts; generate_procedural_model or generate_mesh for bespoke props.
+- Lighting: choose the technology that fits (Future for showcase, ShadowMap for balance), set Atmosphere, Sky, Bloom, ColorCorrection and SunRays deliberately to create a mood, and add local lights (PointLight, SurfaceLight, neon) where they sell the scene.
+- UI: ScreenGui with ResetOnSpawn off, scale-based sizing that works on phones and desktop, UICorner, UIStroke, UIPadding and layout objects, a consistent palette and type scale, TweenService for motion, hover and press feedback.
+- Effects: ParticleEmitter, Beam, Trail and Attachments with tuned Rate, Lifetime, Speed, Size, Transparency and Color sequences; layered (core, glow, sparks, smoke) and performant.
+- Gameplay: server-authoritative, RemoteEvents validated on the server, sensible defaults that feel good to play.
 
 Safety:
 - Never delete, overwrite or replace existing work without saying exactly what will be removed; those steps always wait for the person's approval.
@@ -103,13 +113,13 @@ Safety:
 - If a tool is not available to you, do not try to get around it; say what you would need.
 - If the person says stop or pause, stop.
 
-Keep chat messages short. The person sees each step and can approve, skip, refine or pause.`;
+Chat: before each tool call, one short sentence on what you are doing ("Building the north district: 40 towers with neon trim."). Never paste long code into chat; it goes into Studio. Keep messages short; let the work speak.`;
 
 type Part = { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } };
 type ToolCall = { id: string; type: "function"; function: { name: string; arguments: string } };
 export type StudioMessage =
   | { role: "user"; content: string | Part[] }
-  | { role: "assistant"; content: string | null; tool_calls?: ToolCall[] }
+  | { role: "assistant"; content: string | null; tool_calls?: ToolCall[]; reasoning_details?: unknown[] }
   | { role: "tool"; tool_call_id: string; content: string };
 export type StudioToolDef = { name: string; description?: string; inputSchema?: unknown };
 
@@ -156,7 +166,8 @@ export function validateMessages(raw: unknown): StudioMessage[] {
       out.push({ role: "user", content: parts });
     } else if (m.role === "assistant") {
       const calls = Array.isArray(m.tool_calls) ? (m.tool_calls as ToolCall[]).filter((c) => c && typeof c.id === "string" && typeof c.function?.name === "string").map((c) => ({ id: c.id, type: "function" as const, function: { name: c.function.name, arguments: String(c.function.arguments ?? "{}").slice(0, 200_000) } })) : [];
-      out.push({ role: "assistant", content: typeof m.content === "string" ? m.content.slice(0, 20_000) : null, ...(calls.length ? { tool_calls: calls } : {}) });
+      const reasoning = Array.isArray(m.reasoning_details) && JSON.stringify(m.reasoning_details).length <= STUDIO_LIMITS.maxReasoningChars ? m.reasoning_details : null;
+      out.push({ role: "assistant", content: typeof m.content === "string" ? m.content.slice(0, 20_000) : null, ...(calls.length ? { tool_calls: calls } : {}), ...(reasoning ? { reasoning_details: reasoning } : {}) });
     } else if (m.role === "tool") {
       if (typeof m.tool_call_id !== "string") throw bad("Bad tool result.");
       out.push({ role: "tool", tool_call_id: m.tool_call_id, content: String(m.content ?? "").slice(0, STUDIO_LIMITS.maxToolResultChars) });
@@ -169,7 +180,7 @@ export function validateMessages(raw: unknown): StudioMessage[] {
 
 export type StudioTurn = {
   /** The model's reply exactly as it goes back into the conversation (with its tool calls). */
-  message: { role: "assistant"; content: string | null; tool_calls?: ToolCall[] };
+  message: { role: "assistant"; content: string | null; tool_calls?: ToolCall[]; reasoning_details?: unknown[] };
   text: string;
   actions: { id: string; name: string; args: Record<string, unknown>; risk: Risk }[];
   /** Calls to tools Keplar does not run; the page answers them with a "not available" result so the conversation stays valid. */
@@ -179,12 +190,12 @@ export type StudioTurn = {
 };
 
 type ChatCompletion = {
-  choices?: { message?: { content?: string | null; tool_calls?: ToolCall[] }; finish_reason?: string }[];
+  choices?: { message?: { content?: string | null; tool_calls?: ToolCall[]; reasoning_details?: unknown[] }; finish_reason?: string }[];
   usage?: { prompt_tokens?: number; completion_tokens?: number; cost?: number };
   error?: { message?: string };
 };
 
-/** One model turn: check credits, ask Fable 5, charge the real cost, return the reply and the labelled actions. */
+/** One model turn: check credits, ask Fable 5 (thinking first), charge the real cost, return the reply and the labelled actions. */
 export async function runStudioTurn(
   ws: Workspace,
   input: { messages: StudioMessage[]; tools: ReturnType<typeof buildTools> },
@@ -207,6 +218,7 @@ export async function runStudioTurn(
       tool_choice: "auto",
       parallel_tool_calls: false,
       max_tokens: STUDIO_LIMITS.maxOutputTokens,
+      reasoning: { max_tokens: STUDIO_LIMITS.reasoningTokens },
       usage: { include: true },
     }),
     signal: AbortSignal.timeout(STUDIO_LIMITS.timeoutMs),
@@ -234,6 +246,8 @@ export async function runStudioTurn(
     else actions.push({ id: c.id, name: c.function.name, args, risk });
   }
   const calls = choice.message?.tool_calls ?? [];
-  const message: StudioTurn["message"] = { role: "assistant", content: choice.message?.content ?? null, ...(calls.length ? { tool_calls: calls } : {}) };
+  const reasoning = choice.message?.reasoning_details;
+  const keepReasoning = Array.isArray(reasoning) && reasoning.length > 0 && JSON.stringify(reasoning).length <= STUDIO_LIMITS.maxReasoningChars;
+  const message: StudioTurn["message"] = { role: "assistant", content: choice.message?.content ?? null, ...(calls.length ? { tool_calls: calls } : {}), ...(keepReasoning ? { reasoning_details: reasoning } : {}) };
   return { message, text: (choice.message?.content ?? "").trim(), actions, blocked, done: calls.length === 0, units };
 }
