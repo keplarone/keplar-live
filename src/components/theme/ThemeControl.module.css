@@ -44,3 +44,27 @@
   .option { height: 44px; padding: 0 var(--s-4); }
   .compact .option { width: 44px; padding: 0; }
 }
+
+/* Sliding highlight (ThemeControl.tsx): one pill under the options that glides to the chosen one with a soft spring.
+   The chosen option's own fill is dropped so only the pill shows. */
+.group { position: relative; isolation: isolate; }
+.thumb {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 0;
+  z-index: -1;
+  border-radius: var(--r-pill);
+  background: var(--c-surface-1);
+  box-shadow: 0 1px 2px rgb(14 15 18 / 0.1), 0 4px 12px -4px rgb(14 15 18 / 0.25);
+  transition: translate 420ms cubic-bezier(0.34, 1.4, 0.64, 1), width 420ms cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+:global(:root[data-theme="dark"]) .thumb { background: rgb(255 255 255 / 0.14); box-shadow: 0 1px 2px rgb(0 0 0 / 0.4); }
+.option[aria-checked="true"] { background: transparent; }
+.option { position: relative; transition: color 260ms ease; }
+.option svg { transition: scale 300ms cubic-bezier(0.34, 1.56, 0.64, 1), rotate 420ms cubic-bezier(0.34, 1.4, 0.64, 1); }
+.option[aria-checked="true"] svg { scale: 1.12; }
+.option:active svg { scale: 0.88; }
+@media (prefers-reduced-motion: reduce) {
+  .thumb, .option svg { transition: none; }
+}

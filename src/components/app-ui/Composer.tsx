@@ -13,7 +13,7 @@ import { providerFamilies } from "@/lib/orchestration/catalog";
 import type { Depth } from "@/lib/core/types";
 import type { Attachment, ComposerModes, RoutingPreferences, RoutingStrategy } from "@/lib/orchestration/types";
 import { MEDIA_LIMITS, type MediaInput } from "@/lib/orchestration/media";
-import { IconMic, IconPlus, IconDebate, IconDeep, IconAgentMode, IconCreate, IconImage, IconMore, IconReason, IconRouting, IconSlides, IconStop, IconStudy, IconWeb } from "./icons";
+import { IconMic, IconPlus, IconDebate, IconDeep, IconCreate, IconImage, IconMore, IconReason, IconRouting, IconSlides, IconStop, IconStudy, IconWeb } from "./icons";
 import { toggleMode, type ModeKey } from "@/lib/composer/modes";
 import { canUseSlides, slidesLimitsFor } from "@/lib/tools/limits";
 import { estimateDeckCredits } from "@/lib/slides/estimate";
@@ -93,14 +93,25 @@ const tools: { key: ModeKey; label: string; Icon: typeof IconWeb; hint: string }
   { key: "debate", label: "Debate", Icon: IconDebate, hint: "Beta: the models argue in rounds and read each other's points, then Keplar writes one answer. Uses more usage" },
   { key: "create", label: "Create", Icon: IconCreate, hint: "Build an app, image, video or document" },
   { key: "image", label: "Create image", Icon: IconImage, hint: "Make a picture from this message (Plus and Pro). Attach an image to use it as a reference" },
-  { key: "agent", label: "Agent", Icon: IconAgentMode, hint: "Hand the task to an agent that keeps working" },
 ];
 
 /**
  * Modes that are off live in the one quiet "Modes" menu (listed in this order of precedence); an active chip always stays in the row, and
  * on a row too narrow even for that it moves into the menu too. Attach (+), Voice and Talk never move (Talk is press-and-hold, which a menu can't do).
  */
-const OVERFLOW_ORDER: ModeKey[] = ["image", "agent", "web", "reason", "debate", "create", "deepResearch", "slides", "study"];
+/** One short line per mode for the Modes menu (the full hint stays as the tooltip). Agent mode is business-only (business.keplar.one). */
+const BLURB: Partial<Record<ModeKey, string>> = {
+  web: "Search the live web",
+  study: "Flashcards and a quiz",
+  slides: "A deck from your message",
+  reason: "Step by step, checked",
+  deepResearch: "Long, multi-step research",
+  debate: "Models argue in rounds",
+  create: "Apps, images, video, docs",
+  image: "A picture from this message",
+};
+
+const OVERFLOW_ORDER: ModeKey[] = ["image", "web", "reason", "debate", "create", "deepResearch", "slides", "study"];
 
 /** Keplar Core depth (src/lib/core). Auto decides per question and escalates when the models disagree. */
 const DEPTH_OPTIONS: { id: Depth; label: string; hint: string }[] = [
@@ -306,6 +317,27 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
   usePopupOrigin(attachOpen, attachBtnRef, attachMenuRef);
   usePopupOrigin(moreOpen, moreBtnRef, moreMenuRef);
   usePopupOrigin(routingOpen, routingBtnRef, panelRef);
+  // Pop-ups open toward the side with more room (below the centred composer on the empty home, above it in a chat), and get
+  // that much height; the Modes menu sits under its own button.
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [pop, setPop] = useState<{ side: "above" | "below"; room: number; moreX: number }>({ side: "above", room: 560, moreX: 0 });
+  useLayoutEffect(() => {
+    if (!(attachOpen || moreOpen || routingOpen)) return;
+    const w = wrapRef.current;
+    if (!w) return;
+    const place = () => {
+      const r = w.getBoundingClientRect();
+      const above = r.top - 16;
+      const below = window.innerHeight - r.bottom - 16;
+      const side = below >= 300 || below > above ? "below" : "above";
+      const btn = moreBtnRef.current?.getBoundingClientRect();
+      const moreX = btn ? Math.max(0, Math.min(btn.left - r.left, r.width - 380)) : 0;
+      setPop({ side, room: Math.max(140, Math.floor(side === "below" ? below : above)), moreX });
+    };
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [attachOpen, moreOpen, routingOpen]);
 
   useImperativeHandle(ref, () => ({
     focus: () => taRef.current?.focus(),
@@ -818,7 +850,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
   const customised = depth !== "auto" || (routing.strategy ?? "auto") !== "auto" || routing.tier === "sensitive" || (routing.excludeProviders?.length ?? 0) > 0 || routing.preferOpenWeights || (routing.maxModels ?? 6) < 6;
 
   return (
-    <div className={s.wrap}>
+    <div ref={wrapRef} className={s.wrap} data-pop={pop.side} style={{ ["--pop-room" as string]: `${pop.room}px`, ["--more-x" as string]: `${pop.moreX}px` }}>
       {routingPanel.mounted ? (
         <div ref={panelRef} id={`${uid}-routing`} className={s.panel} role="dialog" aria-label="Advanced routing" {...routingPanel.motion("pop")} style={{ ["--m-origin" as string]: "100% 100%" }}>
           <div className={s.panelHead}>
@@ -841,11 +873,11 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
 
           <fieldset className={s.field}>
             <legend className={s.legend}>Strategy</legend>
-            <div className={s.segmented}>
+            <div className={s.choices}>
               {strategies.map((st) => (
-                <label key={st.id} className={s.segment} title={st.hint}>
+                <label key={st.id} className={s.choice}>
                   <input type="radio" name={`${uid}-strategy`} value={st.id} checked={(routing.strategy ?? "auto") === st.id} onChange={() => onRouting({ ...routing, strategy: st.id })} />
-                  <span>{st.label}</span>
+                  <span className={s.choiceText}><span className={s.choiceLabel}>{st.label}</span><span className={s.choiceHint}>{st.hint}</span></span>
                 </label>
               ))}
             </div>
@@ -1234,9 +1266,11 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
                     title={t.hint}
                     onClick={() => { setModes((m) => toggleMode(m, k)); setMoreOpen(false); taRef.current?.focus(); }}
                   >
-                    <t.Icon size={15} />
-                    <span>{t.label}</span>
-                    {k === "debate" ? <span className={s.toolBeta} data-in-menu="">Beta</span> : null}
+                    <span className={s.moreIcon}><t.Icon size={16} /></span>
+                    <span className={s.moreText}>
+                      <span className={s.moreLabel}>{t.label}{k === "debate" ? <span className={s.toolBeta} data-in-menu="">Beta</span> : null}</span>
+                      <span className={s.moreBlurb}>{BLURB[k]}</span>
+                    </span>
                   </button>
                 );
               })}

@@ -929,3 +929,82 @@ html[data-lens] .composer { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 :global(:root[data-theme="dark"]) .send > span:first-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 :global(:root[data-theme="dark"]) .send .arrow { display: inline-block; margin: 0; font-size: 18px; transform: rotate(-90deg); }
 :global(:root[data-theme="dark"]) .send:hover:not(:disabled) .arrow { transform: rotate(-90deg) translateX(1px); }
+
+/* ── Pop-ups, rebuilt (Oct 2026) ──
+ * Placement: Composer.tsx measures the room above and below the composer when one opens and sets data-pop="above|below" plus
+ * --pop-room (that space) and --more-x (the Modes button's offset). On the empty home the composer sits mid-screen, so they open
+ * downward instead of running off the top over the greeting; in a chat they open upward as before. Height is capped to the room
+ * so nothing is clipped. Look: one frosted surface (the sidebar's), sentence-case section labels, roomy rows. */
+.panel, .moreMenu, .attachMenu {
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--c-surface-1) 88%, transparent);
+  box-shadow: 0 1px 2px rgb(14 15 18 / 0.08), 0 24px 60px -24px rgb(14 15 18 / 0.35);
+  -webkit-backdrop-filter: blur(24px) saturate(1.3);
+  backdrop-filter: blur(24px) saturate(1.3);
+  max-height: var(--pop-room, 560px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+:global(:root[data-theme="dark"]) .panel,
+:global(:root[data-theme="dark"]) .moreMenu,
+:global(:root[data-theme="dark"]) .attachMenu {
+  background: rgb(30 30 34 / 0.86);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 24px 60px -20px rgb(0 0 0 / 0.7);
+}
+.wrap[data-pop="below"] .panel,
+.wrap[data-pop="below"] .moreMenu,
+.wrap[data-pop="below"] .attachMenu { bottom: auto; top: calc(100% + 10px); }
+
+/* Advanced routing */
+.panel { width: min(400px, 100%); padding: 20px; gap: 20px; }
+.panelTitle { font-size: 17px; font-weight: var(--w-medium); letter-spacing: -0.01em; }
+.panelLede { font-size: 13px; line-height: 1.5; color: var(--c-ink-3); }
+.legend { margin-bottom: 8px; font-size: 13px; font-weight: var(--w-medium); letter-spacing: 0; text-transform: none; color: var(--c-ink-2); }
+.segmented { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; flex-wrap: nowrap; gap: 2px; padding: 3px; border-radius: 999px; background: rgb(var(--rgb-ink) / 0.06); }
+.segment span { height: 32px; padding: 0 8px; border-radius: 999px; font-size: 13px; transition: background-color 220ms ease, color 220ms ease, box-shadow 220ms ease; }
+.segment input:checked + span { background: var(--c-surface-1); color: var(--c-ink); box-shadow: 0 1px 2px rgb(14 15 18 / 0.1), 0 4px 10px -4px rgb(14 15 18 / 0.2); }
+:global(:root[data-theme="dark"]) .segment input:checked + span { background: rgb(255 255 255 / 0.14); box-shadow: 0 1px 2px rgb(0 0 0 / 0.4); }
+
+/* Strategy: a list of options, each with its one-line hint */
+.choices { display: flex; flex-direction: column; gap: 4px; }
+.choice { position: relative; display: block; cursor: pointer; }
+.choice input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.choiceText { display: flex; flex-direction: column; gap: 2px; padding: 10px 14px 10px 38px; border-radius: 16px; transition: background-color 200ms ease; position: relative; }
+.choiceText::before { content: ""; position: absolute; left: 14px; top: 13px; width: 14px; height: 14px; border-radius: 999px; box-shadow: inset 0 0 0 1.5px rgb(var(--rgb-ink) / 0.3); transition: box-shadow 200ms ease; }
+.choice:hover .choiceText { background: rgb(var(--rgb-ink) / 0.04); }
+.choice input:checked + .choiceText { background: rgb(var(--rgb-ink) / 0.06); }
+.choice input:checked + .choiceText::before { box-shadow: inset 0 0 0 4.5px var(--c-ink); }
+.choice input:focus-visible + .choiceText { outline: var(--b-focus) solid var(--c-focus); outline-offset: 1px; }
+.choiceLabel { font-size: 14px; font-weight: var(--w-medium); color: var(--c-ink); }
+.choiceHint { font-size: 12.5px; line-height: 1.4; color: var(--c-ink-3); }
+
+.families { gap: 6px; }
+.family span { border-radius: 999px; }
+.help { font-size: 12.5px; }
+
+/* Modes: two columns of tiles, each an icon disc, the name and one short line */
+.moreMenu {
+  left: var(--more-x, 0px);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  width: min(380px, calc(100% - var(--more-x, 0px)));
+  min-width: 0;
+  max-width: none;
+  padding: 8px;
+}
+.moreItem { align-items: center; gap: 10px; min-height: 56px; padding: 8px 10px; border-radius: 16px; white-space: normal; transition: background-color 180ms ease; }
+.moreIcon { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 999px; background: rgb(var(--rgb-ink) / 0.06); color: var(--c-ink); transition: background-color 180ms ease, color 180ms ease, scale 260ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+.moreItem:hover .moreIcon { scale: 1.08; }
+.moreItem[aria-checked="true"] .moreIcon { background: var(--c-ink); color: var(--c-canvas); }
+.moreText { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.moreLabel { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: var(--w-medium); color: var(--c-ink); }
+.moreBlurb { font-size: 12px; line-height: 1.35; color: var(--c-ink-3); }
+.moreItem .toolBeta { margin-left: 0; }
+@container composer (max-width: 420px) {
+  .moreMenu { grid-template-columns: minmax(0, 1fr); left: 0; width: 100%; }
+}
+
+/* Attach: same surface; rows already carry a title and a sub-line */
+.attachItem { border-radius: 16px; }

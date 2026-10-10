@@ -82,7 +82,17 @@ export function saveThemePref(pref: ThemePref) {
   }
   const secure = location.protocol === "https:" ? "; Secure" : "";
   document.cookie = `${THEME_KEY}=${pref}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
-  applyTheme(pref);
+  // The whole page crossfades into the new theme (a view transition snapshots the old one); instant without support or with reduced motion.
+  const d = document as Document & { startViewTransition?: (cb: () => void) => { finished: Promise<void> } };
+  const still = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  if (!d.startViewTransition || still || document.hidden) return applyTheme(pref);
+  const r = document.documentElement;
+  r.setAttribute("data-vt", "theme");
+  const done = () => {
+    if (r.getAttribute("data-vt") === "theme") r.removeAttribute("data-vt");
+  };
+  d.startViewTransition(() => applyTheme(pref)).finished.finally(done);
+  window.setTimeout(done, 1000); // backstop: a skipped or stalled transition never leaves the marker behind
 }
 
 /** Calls back with the resolved theme whenever <html data-theme> changes. */

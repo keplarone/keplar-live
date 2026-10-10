@@ -1678,10 +1678,10 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
  * "More ideas" and the empty title pill are hidden, as in the design. As soon as the first message is sent the dock returns to the bottom. */
 :global(:root[data-theme="light"]) .sidebar { background: rgb(255 255 255 / 0.86); }
 :global(:root[data-theme="light"]) .main[data-empty] .topTitle { visibility: hidden; }
-:global(:root[data-theme="light"]) .main[data-empty] .scroll { padding-top: calc(50vh - 190px); }
+:global(:root[data-theme="light"]) .main[data-empty] .scroll { padding-top: max(96px, calc(50vh - 190px)); }
 :global(:root[data-theme="light"]) .main[data-empty] .empty.empty { padding-top: 0; }
 :global(:root[data-theme="light"]) .main[data-empty] .dock {
-  top: calc(50vh - 112px);
+  top: calc(max(96px, calc(50vh - 190px)) + 78px);
   bottom: auto;
   padding-top: 0;
   background: transparent;
@@ -1825,10 +1825,10 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
  * "More ideas" and the empty title pill are hidden, as in the design. As soon as the first message is sent the dock returns to the bottom. */
 :global(:root[data-theme="dark"]) .sidebar { background: rgb(28 28 32 / 0.86); }
 :global(:root[data-theme="dark"]) .main[data-empty] .topTitle { visibility: hidden; }
-:global(:root[data-theme="dark"]) .main[data-empty] .scroll { padding-top: calc(50vh - 190px); }
+:global(:root[data-theme="dark"]) .main[data-empty] .scroll { padding-top: max(96px, calc(50vh - 190px)); }
 :global(:root[data-theme="dark"]) .main[data-empty] .empty.empty { padding-top: 0; }
 :global(:root[data-theme="dark"]) .main[data-empty] .dock {
-  top: calc(50vh - 112px);
+  top: calc(max(96px, calc(50vh - 190px)) + 78px);
   bottom: auto;
   padding-top: 0;
   background: transparent;
