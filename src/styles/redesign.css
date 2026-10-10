@@ -198,3 +198,7 @@
     backdrop-filter: blur(18px) saturate(1.3) !important;
   }
 }
+
+/* Desktop app (html[data-desktop], src/lib/desktop.ts): the height of its own title bar, the band the window controls live in.
+   The /app shell starts below it (App.module.css, DesktopTitleBar). */
+html[data-desktop] { --kp-titlebar: env(titlebar-area-height, 36px); }

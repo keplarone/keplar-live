@@ -68,11 +68,11 @@ function tabClick(e: MouseEvent, go: () => void) {
 
 export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteChat, onClose, businessProminent = false, account = null, importOffer = null, modeView = null, id }: Props) {
   void businessProminent;
-  const rows = primary;
-  // Roblox Studio mode lives in the desktop app only: its row appears once the desktop bridge is seen (after mount, so the
-  // server render and the first client render match).
+  // Roblox Studio mode lives in the desktop app only, where it is a top-level place: its row appears once the desktop bridge
+  // is seen (after mount, so the server render and the first client render match).
   const desktopStudio = useSyncExternalStore(noSubscribe, () => Boolean(studioBridge()), () => false);
-  const more = desktopStudio ? [...secondary.slice(0, 3), STUDIO_ROW, ...secondary.slice(3)] : secondary;
+  const rows = desktopStudio ? [...primary, STUDIO_ROW] : primary;
+  const more = secondary;
   const moreViews = new Set<View>(more.map((n) => n.view));
   // Open More by choice, or whenever the current view lives in it.
   const [moreOpen, setMoreOpen] = useState(false);

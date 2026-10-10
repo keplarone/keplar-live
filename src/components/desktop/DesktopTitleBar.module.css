@@ -1,0 +1,44 @@
+/* The desktop app's title bar (DesktopTitleBar.tsx). Its height is --kp-titlebar (redesign.css), the band the window controls
+   live in; the app shell starts below it. The background is solid canvas so it matches the native controls' colour, which the
+   desktop app sets from the page's theme. */
+.bar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: calc(var(--z-overlay) + 1);
+  height: var(--kp-titlebar);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 440px) minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding-left: max(10px, calc(env(titlebar-area-x, 0px) + 8px));
+  padding-right: calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw) + 8px);
+  background: var(--c-canvas);
+  border-bottom: 1px solid rgb(var(--rgb-ink) / 0.06);
+  color: var(--c-ink-2);
+  font-size: 12.5px;
+  user-select: none;
+}
+/* macOS: clear the traffic lights (the desktop app puts them at x 16). */
+.bar[data-mac] { padding-left: max(84px, calc(env(titlebar-area-x, 0px) + 8px)); }
+.left { display: flex; align-items: center; gap: 2px; min-width: 0; }
+.right { min-width: 0; }
+.brand { display: inline-flex; align-items: center; gap: 7px; margin-right: 10px; font-weight: var(--w-medium); color: var(--c-ink); letter-spacing: -0.005em; }
+.nav {
+  display: inline-grid; place-items: center; width: 26px; height: 24px; padding: 0; border: 0; border-radius: 7px;
+  background: transparent; color: var(--c-ink-3); cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.nav:hover { background: rgb(var(--rgb-ink) / 0.07); color: var(--c-ink); }
+.search {
+  display: flex; align-items: center; gap: 8px; height: 24px; width: 100%; padding: 0 10px; border: 0; border-radius: 8px;
+  background: rgb(var(--rgb-ink) / 0.055); color: var(--c-ink-3); font: inherit; font-size: 12.5px; cursor: pointer;
+  box-shadow: none;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.search span { flex: 1; text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.search kbd { font: inherit; font-size: 11px; color: var(--c-ink-3); opacity: 0.8; }
+.search:hover { background: rgb(var(--rgb-ink) / 0.09); color: var(--c-ink-2); }
+.nav:focus-visible, .search:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 1px; }
+/* No lift or shadow from the site-wide button motion here: this is window chrome. */
+.bar button, .bar button:hover, .bar button:active { transform: none; box-shadow: none; }
+@media (max-width: 640px) { .brand span { display: none; } .bar { grid-template-columns: auto minmax(0, 1fr) 0; } }

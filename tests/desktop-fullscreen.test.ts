@@ -19,7 +19,12 @@ test("desktop app: detected before paint (keplar-desktop UA token / html marker)
   const tsx = read("src/components/chrome/Nav.tsx");
   assert.match(tsx, /data-keplar-drag/);
   const app = read("src/components/app-ui/App.module.css");
-  assert.match(app, /\.topbar \{[^}]*titlebar-area-width/);
+  // The app sits below its own title bar (DesktopTitleBar), which holds the window controls and stays clear of them.
+  assert.match(app, /html\[data-desktop\]\) \.app,[^{]*\{ top: var\(--kp-titlebar\); \}/);
+  const bar = read("src/components/desktop/DesktopTitleBar.module.css");
+  assert.match(bar, /padding-right: calc\(100vw - env\(titlebar-area-x, 0px\) - env\(titlebar-area-width, 100vw\)/);
+  assert.match(read("src/components/desktop/DesktopTitleBar.tsx"), /data-keplar-drag/);
+  assert.match(read("src/app/app/layout.tsx"), /<DesktopTitleBar \/>/);
   assert.match(read("src/components/app-ui/KeplarApp.tsx"), /className=\{s\.topbar\} data-keplar-drag/);
 });
 

@@ -1400,11 +1400,10 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 }
 @media (prefers-reduced-motion: reduce) { .sideWrap, .topbar { transition: none; } }
 
-/* ── desktop app: stay clear of the window controls (the app owns the drag band; empty chrome opts in with data-keplar-drag) ── */
-:global(html:is([data-desktop], [data-keplar-desktop], .keplar-desktop)) .topbar {
-  padding-right: max(var(--s-6), calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw) + var(--s-3)));
-}
-:global(html:is([data-desktop], [data-keplar-desktop], .keplar-desktop)) .sideTop { padding-left: max(var(--s-2), env(titlebar-area-x, 0px)); }
+/* ── desktop app: the shell starts below the app's own title bar (DesktopTitleBar), which holds the window controls ── */
+:global(html[data-desktop]) .app,
+:global(html[data-desktop]) .sideWrap,
+:global(html[data-desktop]) .drawerScrim { top: var(--kp-titlebar); }
 
 /* Free plan: questions left today (header, next to Upgrade). */
 .dailyLeft { font-size: var(--t-small); color: var(--c-ink-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
