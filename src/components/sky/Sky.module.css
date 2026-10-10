@@ -254,4 +254,5 @@
   opacity: 0.85;
   pointer-events: none;
 }
-:global(:root[data-theme="dark"]) .liquid { opacity: 1; filter: blur(6px); }
+/* Dark: much more see-through, a faint tint over the night ground rather than solid colour blobs */
+:global(:root[data-theme="dark"]) .liquid { opacity: 0.35; filter: blur(6px); }
