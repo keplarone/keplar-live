@@ -1,0 +1,142 @@
+/* Create: monochrome product UI. Hairlines, mono labels, one ink. */
+
+.label {
+  font-family: var(--f-sans);
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--c-ink-3);
+}
+
+.select,
+.input,
+.textarea {
+  font: inherit;
+  color: var(--c-ink);
+  background: var(--c-canvas);
+  border: var(--b-hairline) solid var(--c-border-strong);
+  border-radius: var(--r-input);
+  padding: 0 var(--s-3);
+  height: 36px;
+}
+
+.textarea {
+  height: auto;
+  padding: var(--s-3);
+  resize: none;
+  line-height: var(--lh-small);
+}
+
+.select:focus-visible,
+.input:focus-visible,
+.textarea:focus-visible,
+.btn:focus-visible,
+.iconBtn:focus-visible {
+  outline: none;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  height: 36px;
+  padding: 0 var(--s-4);
+  border-radius: var(--r-pill);
+  border: var(--b-hairline) solid var(--c-ink);
+  background: var(--c-ink);
+  color: var(--c-canvas);
+  font: inherit;
+  font-weight: var(--w-medium);
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: opacity var(--d-fast) var(--e-standard);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btnGhost {
+  background: transparent;
+  color: var(--c-ink);
+  border-color: var(--c-border-strong);
+}
+
+.btnDanger {
+  background: transparent;
+  color: var(--c-dissent-text);
+  border-color: var(--c-border-strong);
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 var(--s-2);
+  border: var(--b-hairline) solid var(--c-border);
+  border-radius: var(--r-sm);
+  background: var(--c-canvas);
+  color: var(--c-ink-2);
+  font: inherit;
+  font-size: var(--t-label);
+  cursor: pointer;
+}
+
+.iconBtn:hover {
+  color: var(--c-ink);
+  border-color: var(--c-border-strong);
+}
+
+/* Builder */
+
+@keyframes pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+/* Panels */
+
+.panelTitle {
+  font-size: var(--t-title);
+  line-height: var(--lh-title);
+  letter-spacing: var(--tr-title);
+  font-weight: var(--w-medium);
+}
+
+.muted {
+  color: var(--c-ink-2);
+}
+
+.address {
+  font-family: var(--f-mono);
+  font-size: var(--t-small);
+  word-break: break-all;
+}
+
+.error {
+  color: var(--c-dissent-text);
+}
+
+/* Media */
+
+.tilePrompt {
+  color: var(--c-ink-2);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* glass buttons (liquid glass: see src/styles/glass.css) */
+.btn { background: var(--btn-p-bg); color: var(--btn-p-ink); border-color: transparent; box-shadow: var(--btn-p-shadow); -webkit-backdrop-filter: blur(6px) saturate(1.4); backdrop-filter: blur(6px) saturate(1.4); transition: var(--btn-spring); }
+.btn:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--btn-p-bg); transform: scale(1.03, 1.015); }
+.btn:active:not(:disabled) { transform: scale(0.97, 0.92); }
+@media (prefers-reduced-motion: reduce) { .btn { transition: background-color 0.1s linear; transform: none !important; } }
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .btn { backdrop-filter: none; -webkit-backdrop-filter: none; } .btn { background: var(--btn-p-solid, #17171a); } }
+
+/* Card-like button: opt out of the sitewide pill rule (glass.css) with a doubled class. */

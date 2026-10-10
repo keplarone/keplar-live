@@ -1,0 +1,141 @@
+/*
+ * Docs-only theme: clean white, one confident blue, Google Sans (the sitewide --f-sans), flat.
+ * Scoped to <html data-docs="1">, which the head script (src/lib/theme.ts THEME_SCRIPT) sets before first paint on /docs/... and on
+ * docs.keplar.one, and DocsSkin sets on client-side navigation. The main site keeps its graphite (#0b0b0d) dark default.
+ *
+ * Flat means: opaque white surfaces, 1px hairlines, no gradients, no glass blur, no glows or coloured shadows.
+ * Focus: the site's keyboard-only :focus-visible cue (globals.css), recoloured blue; nothing on click or tap.
+ * Contrast on #ffffff: ink 18.7:1, ink-2 9.5:1, ink-3 7.5:1, blue #0b57d0 6.4:1 (5.6:1 on the #e8f0fe tint); white on blue 6.4:1.
+ *
+ * Selector weight :root[data-docs="1"][data-theme] (0,3,0) beats :root[data-theme="dark"] and glass.css's :root:root fallbacks.
+ */
+:root[data-docs="1"][data-theme] {
+  --docs-blue: #0b57d0;
+  --docs-blue-hover: #0842a0;
+  --docs-blue-tint: #e8f0fe;
+  --docs-blue-line: #b3cbf2;
+  --docs-line: #dde3ec;
+  --docs-line-strong: #c6cfdb;
+
+  color-scheme: light;
+  --c-canvas: #ffffff;
+  --c-surface-1: #f6f8fb;
+  --c-surface-2: #eef2f7;
+  --c-ink: #0b1220;
+  --c-ink-2: #3c4657;
+  --c-ink-3: #4b5565;
+  --c-border: var(--docs-line);
+  --c-border-strong: var(--docs-line-strong);
+  --c-glass: #ffffff;
+  --c-glass-strong: #f6f8fb;
+  --c-glass-border: var(--docs-line);
+  --c-focus: var(--docs-blue);
+  --c-accent: var(--docs-blue);
+  --c-cyan: var(--docs-blue);
+  --ring-rgb: 11 87 208;
+  --c-ink-hover: var(--docs-blue-hover);
+  --focus-filter: none;
+  --rgb-ink: 11 18 32;
+  --rgb-canvas: 255 255 255;
+  --rgb-surface: 246 248 251;
+  --n-paper: #f6f8fb;
+  --n-mark: var(--docs-blue);
+  --n-line: var(--docs-line-strong);
+  --sh-hairline: 0 0 0 1px var(--docs-line);
+  --sh-float: 0 0 0 1px var(--docs-line-strong);
+  --sh-window: 0 0 0 1px var(--docs-line-strong);
+
+  /* glass → flat white */
+  --lg-blur: 0px;
+  --lg-sat: 1;
+  --lg-bf: none;
+  --lg-fill: #ffffff;
+  --lg-fill-strong: #ffffff;
+  --lg-solid: #ffffff;
+  --lg-card: #ffffff;
+  --lg-card-hover: #f6f8fb;
+  --lg-wash: #ffffff;
+  --lg-edge-hi: transparent;
+  --lg-edge-lo: transparent;
+  --lg-rim: var(--docs-line);
+  --lg-ring: inset 0 0 0 1px var(--docs-line);
+  --lg-shadow: 0 0 0 0 transparent;
+
+  /* buttons: solid blue primary, hairline secondary, no shadows */
+  --btn-p-solid: var(--docs-blue);
+  --btn-p-bg: var(--docs-blue);
+  --btn-p-ink: #ffffff;
+  --btn-p-shadow: none;
+  --btn-s-bg: #ffffff;
+  --btn-s-ink: var(--c-ink);
+  --btn-s-shadow: inset 0 0 0 1px var(--docs-line-strong);
+
+  /* nav: solid white bar, hairline rim, blue CTA */
+  --blur-nav-rest: 0px;
+  --blur-nav-scrolled: 0px;
+  --nav-fill: #ffffff;
+  --nav-fill-scrolled: #ffffff;
+  --nav-solid: #ffffff;
+  --nav-ink: #0b1220;
+  --nav-link: #3c4657;
+  --nav-link-2: #4b5565;
+  --nav-hover-bg: var(--docs-blue-tint);
+  --nav-active-bg: var(--docs-blue-tint);
+  --nav-edge-hi: transparent;
+  --nav-edge-lo: transparent;
+  --nav-rim: var(--docs-line);
+  --nav-shadow: none;
+  --nav-focus: var(--docs-blue);
+  --nav-menu-fill: #ffffff;
+  --nav-sheet: #ffffff;
+  --nav-cta-bg: var(--docs-blue);
+  --nav-cta-solid: var(--docs-blue);
+  --nav-cta-ink: #ffffff;
+  --nav-cta-shadow: none;
+
+  background: #ffffff;
+}
+
+:root[data-docs="1"] body {
+  background: #ffffff;
+  color: var(--c-ink-2);
+  font-family: var(--f-sans);
+}
+
+/* No ambient wash, no glass blur, no glow layers on the docs. */
+:root[data-docs="1"] .ambient { display: none !important; }
+:root[data-docs="1"] :is(.lg, .lg-strong, .lg-solid, .lgb-p, .lgb-s) {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+:root[data-docs="1"] :is(.lg, .lg-strong)::before,
+:root[data-docs="1"] .lg[data-lit]::after { display: none; }
+
+/* Keyboard focus (only :focus-visible): blue underline/bar from globals.css, plus a crisp blue outline on docs controls. */
+:root[data-docs="1"] :is(a[href], button, summary, input, select, textarea, [tabindex="0"]):focus:not(:focus-visible) { outline: none; }
+:root[data-docs="1"] main :is(a[href], button, summary, input, select, textarea, pre, [tabindex="0"]):focus-visible {
+  outline: 2px solid var(--docs-blue) !important;
+  outline-offset: 2px;
+  filter: none;
+}
+
+/* Docs chrome: blue current page, links, active TOC entry. */
+:root[data-docs="1"] main a[aria-current="page"] {
+  color: var(--docs-blue);
+  background: var(--docs-blue-tint);
+  box-shadow: none;
+}
+:root[data-docs="1"] main [class*="prose"] a:not(:is(h1, h2, h3, h4, h5, h6) a) {
+  color: var(--docs-blue);
+  text-decoration-color: var(--docs-blue-line);
+}
+:root[data-docs="1"] main [class*="prose"] a:not(:is(h1, h2, h3, h4, h5, h6) a):hover {
+  color: var(--docs-blue-hover);
+  text-decoration-color: currentColor;
+}
+:root[data-docs="1"] main :is([class*="sideTitle"], [class*="h1"]) { color: var(--c-ink); }
+:root[data-docs="1"] main [class*="tocLink"][data-active="true"] { color: var(--docs-blue); }
+:root[data-docs="1"] main a[class*="card"]:hover { box-shadow: inset 0 0 0 1px var(--docs-blue-line); }
+:root[data-docs="1"] main [class*="searchInput"] { background: #ffffff; box-shadow: inset 0 0 0 1px var(--docs-line-strong); }
+:root[data-docs="1"] main [class*="callout"] { background: var(--docs-blue-tint); box-shadow: inset 3px 0 0 var(--docs-blue); }
+:root[data-docs="1"] ::selection { background: #c9dbfb; color: var(--c-ink); }

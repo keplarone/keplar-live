@@ -1,0 +1,480 @@
+.section {
+  position: relative;
+  z-index: var(--z-content);
+  background: var(--c-canvas);
+  height: 240vh;
+}
+
+.sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  display: flex;
+  align-items: center;
+  padding: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-6)) var(--l-gutter) var(--s-8);
+  overflow: hidden;
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--l-max);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-10);
+}
+
+.stage {
+  position: relative;
+  perspective: 1400px;
+  padding: var(--s-16) var(--s-6) var(--s-6);
+}
+
+.frame {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-card-lg);
+  background: var(--c-surface-1);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border);
+}
+
+.frameBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: var(--s-16);
+  padding: 0 var(--s-6);
+}
+
+.frameTitle {
+  font-size: var(--t-small);
+  font-weight: var(--w-medium);
+}
+
+.frameMeta {
+  font-family: var(--f-sans);
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--c-ink-3);
+}
+
+.grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-4);
+  transform-style: preserve-3d;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-3);
+  border-radius: var(--r-card);
+  background: var(--c-canvas);
+  box-shadow: var(--sh-hairline), var(--sh-float);
+  will-change: transform;
+}
+
+.visual {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  max-height: calc((100vh - 520px - max(0px, (100vw - 1800px) * 0.14) - max(0px, (100vw - 2200px) * 0.12) - var(--creation-shrink, 0px)) / 2); /* two rows of previews + heading + frame must fit the pinned screen (checked at 1920x1080) */
+  max-height: calc((100svh - 520px - max(0px, (100vw - 1800px) * 0.14) - max(0px, (100vw - 2200px) * 0.12) - var(--creation-shrink, 0px)) / 2);
+  width: 100%;
+  border-radius: var(--r-md);
+  background: var(--c-surface-1);
+  overflow: hidden;
+}
+
+.caption {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s-3);
+  padding: 0 var(--s-1) var(--s-1);
+}
+
+.name {
+  font-size: var(--t-small);
+  font-weight: var(--w-medium);
+}
+
+.meta {
+  font-size: var(--t-label);
+  color: var(--c-ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- artifact visuals (drawn, not screenshots) ------------------------ */
+.vWebsite {
+  position: absolute;
+  inset: 10% 8% 0;
+  background: var(--c-canvas);
+  border-radius: var(--r-xs) var(--r-xs) 0 0;
+  box-shadow: var(--sh-hairline);
+  display: flex;
+  flex-direction: column;
+  gap: 8%;
+  padding: 0 0 6%;
+}
+
+.vBar {
+  display: flex;
+  gap: 4px;
+  padding: 6px 8px;
+  border-bottom: var(--b-hairline) solid var(--c-border);
+}
+
+.vBar i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--c-border-strong);
+}
+
+.vHero {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 0 10%;
+}
+
+.vHero b {
+  display: block;
+  height: 9px;
+  width: 70%;
+  border-radius: 2px;
+  background: var(--c-ink);
+}
+
+.vHero b + b {
+  width: 46%;
+}
+
+.vHero span {
+  display: block;
+  margin-top: 4px;
+  width: 22%;
+  height: 8px;
+  border-radius: var(--r-pill);
+  background: var(--c-ink);
+  opacity: 0.85;
+}
+
+.vCols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding: 0 10%;
+  flex: 1;
+}
+
+.vCols span {
+  border-radius: 4px;
+  background: var(--c-surface-2);
+}
+
+.vApp {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: end center;
+}
+
+.vPhone {
+  width: 34%;
+  height: 88%;
+  border-radius: 14px 14px 0 0;
+  background: var(--c-canvas);
+  box-shadow: 0 0 0 3px var(--c-ink);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 8px 0;
+  position: relative;
+}
+
+.vNotch {
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  width: 30%;
+  height: 4px;
+  transform: translateX(-50%);
+  border-radius: var(--r-pill);
+  background: var(--c-ink);
+}
+
+.vRow {
+  height: 10px;
+  border-radius: 3px;
+  background: var(--c-surface-2);
+}
+
+.vRow:first-of-type {
+  height: 22px;
+  background: var(--c-ice);
+  opacity: 0.55;
+}
+
+.vTab {
+  margin-top: auto;
+  height: 10px;
+  border-top: var(--b-hairline) solid var(--c-border);
+}
+
+.vImage {
+  position: absolute;
+  inset: 0;
+  background: #eef2f8;
+  container-type: size; /* shapes are sized from the box's smaller side so they always sit inside it, whatever the card's shape */
+}
+
+.vShapeA,
+.vShapeB,
+.vShapeC {
+  position: absolute;
+  display: block;
+}
+
+.vShapeA {
+  left: 16%;
+  top: 22%;
+  width: min(30cqw, 56cqh);
+  aspect-ratio: 1;
+  border-radius: 24%;
+  background: var(--c-ink);
+}
+
+.vShapeB {
+  left: 38%;
+  top: 36%;
+  width: min(32cqw, 58cqh);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--c-lavender);
+  mix-blend-mode: multiply;
+}
+
+.vShapeC {
+  right: 10%;
+  top: 14%;
+  width: min(22cqw, 70cqh);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--c-warm);
+  opacity: 0.8;
+}
+
+.vVideo {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8%;
+}
+
+.vFrame {
+  flex: 1;
+  border-radius: 6px;
+  background: var(--c-ink);
+  display: grid;
+  place-items: center;
+}
+
+.vPlay {
+  width: 0;
+  height: 0;
+  border-left: 12px solid var(--c-canvas);
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+}
+
+.vStrip {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+  height: 14px;
+}
+
+.vStrip span {
+  border-radius: 2px;
+  background: var(--c-border-strong);
+}
+
+.vStrip i {
+  position: absolute;
+  left: 38%;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: var(--c-dissent);
+}
+
+/* The one visual made of text: it sizes to its content (never a fixed height) and its type scales with the card width, so the whole snippet,
+   closing brace included, is always visible. The card grows instead of clipping. */
+.visualFit {
+  aspect-ratio: auto;
+  max-height: none;
+  min-height: calc((100vh - 520px - max(0px, (100vw - 1800px) * 0.14) - max(0px, (100vw - 2200px) * 0.12) - var(--creation-shrink, 0px)) / 2);
+  min-height: calc((100svh - 520px - max(0px, (100vw - 1800px) * 0.14) - max(0px, (100vw - 2200px) * 0.12) - var(--creation-shrink, 0px)) / 2);
+  container-type: inline-size;
+  display: flex;
+  align-items: center;
+}
+
+.vCode {
+  margin: 0;
+  width: 100%;
+  padding: 0.9em 1em;
+  font-family: var(--f-mono);
+  font-size: clamp(8px, 6.4cqw, 12px);
+  line-height: 1.6;
+  color: var(--c-ink-2);
+  white-space: pre;
+  overflow: visible;
+}
+
+.k {
+  color: #3a3b41;
+}
+
+.f {
+  color: #55575d;
+}
+
+.vDoc {
+  position: absolute;
+  inset: 10% 14% 0;
+  padding: 10% 10% 0;
+  background: var(--c-canvas);
+  box-shadow: var(--sh-hairline);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.vDoc b {
+  display: block;
+  width: 60%;
+  height: 8px;
+  margin-bottom: 4px;
+  border-radius: 2px;
+  background: var(--c-ink);
+}
+
+.vDoc span {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--c-border-strong);
+}
+
+.vCites {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.vCites em {
+  font-style: normal;
+  font-family: var(--f-sans);
+  font-size: 8px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(23, 23, 26, 0.12);
+  color: var(--c-agree);
+}
+
+@media (max-width: 899px) {
+  .section {
+    height: auto;
+  }
+  .sticky {
+    position: relative;
+    height: auto;
+    padding: var(--s-24) var(--l-gutter);
+  }
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-3);
+  }
+  .stage {
+    padding: var(--s-16) var(--s-3) var(--s-3);
+  }
+  .visual {
+    max-height: none;
+  }
+  .meta {
+    display: none;
+  }
+  .visualFit {
+    min-height: 0;
+  }
+}
+
+/* Same final layout when the pinned screen does not fit the window (set by Creation.tsx; see there). */
+.section[data-static] {
+  height: auto;
+}
+.section[data-static] .sticky {
+  position: relative;
+  height: auto;
+  padding: var(--s-24) var(--l-gutter);
+}
+.section[data-static] .grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-3);
+}
+.section[data-static] .stage {
+  padding: var(--s-16) var(--s-3) var(--s-3);
+}
+.section[data-static] .visual {
+  max-height: none;
+}
+.section[data-static] .meta {
+  display: none;
+}
+.section[data-static] .visualFit {
+  min-height: 0;
+}
+
+/* Phone-width cards are ~75px tall: draw fewer lines so nothing is cut at the bottom of a preview. */
+@media (max-width: 520px) {
+  .vPhone {
+    padding-top: 12px;
+  }
+  .vRow:nth-of-type(n + 4) {
+    display: none;
+  }
+  .vHero b + b {
+    display: none;
+  }
+  .vDoc {
+    gap: 3px;
+    padding-top: 7%;
+  }
+  .vDoc span:nth-of-type(n + 3) {
+    display: none;
+  }
+}
+
+:global(html[data-theme="dark"]) .vImage {
+  background: #1a2130;
+}
+
+:global(html[data-theme="dark"]) .k {
+  color: #c3c5cb;
+}
+
+:global(html[data-theme="dark"]) .f {
+  color: #d3d5da;
+}

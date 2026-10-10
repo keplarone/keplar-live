@@ -1,0 +1,27 @@
+{
+  "kfx.1.js": {
+    "bytes": 3548,
+    "gzip": 1624,
+    "sha256": "c2d642d1b8bc577f"
+  },
+  "kfx-gl.1.js": {
+    "bytes": 553112,
+    "gzip": 139775,
+    "sha256": "29d563c8a27809b6"
+  },
+  "kapp.1.js": {
+    "bytes": 13804,
+    "gzip": 5174,
+    "sha256": "fd68f740fdc029d6"
+  },
+  "kapp-ui.1.js": {
+    "bytes": 15970,
+    "gzip": 6594,
+    "sha256": "0f606d5441164813"
+  },
+  "kapp-three.1.js": {
+    "bytes": 742994,
+    "gzip": 189615,
+    "sha256": "b667735a04c1938d"
+  }
+}

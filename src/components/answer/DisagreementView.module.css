@@ -1,0 +1,28 @@
+/* Side-by-side model positions. Columns come from the available width (auto-fit), so a phone gets one stacked column and a wide card gets two or three with no device breakpoints. Rounded rectangles only; the one chip is a pill by the shape system. */
+.root { display: flex; flex-direction: column; gap: var(--s-4); margin-top: var(--s-4); padding: var(--s-4); border-radius: var(--r-card); background: var(--c-surface-1, var(--c-glass-strong)); box-shadow: inset 0 0 0 var(--b-hairline, 1px) var(--c-border-strong); min-width: 0; }
+.head { display: flex; flex-direction: column; gap: 2px; margin: 0; font-weight: var(--w-medium); }
+.count { font-size: var(--t-body); color: var(--c-ink); }
+.topic { font-size: var(--t-small); font-weight: 400; color: var(--c-ink-2); overflow-wrap: anywhere; }
+.cols { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-3); grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); }
+.col { display: flex; flex-direction: column; gap: var(--s-1, 4px); min-width: 0; padding: var(--s-4); border-radius: var(--r-md, 12px); background: color-mix(in srgb, var(--c-ink) 4%, transparent); box-shadow: inset 0 0 0 var(--b-hairline, 1px) var(--c-border-strong); font-size: var(--t-small); color: var(--c-ink-2); overflow-wrap: anywhere; }
+.col[data-lead] { background: color-mix(in srgb, var(--c-ink) 8%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c-ink) 38%, transparent), 0 0 28px color-mix(in srgb, var(--c-ink) 9%, transparent); }
+.tag { align-self: flex-start; padding: 2px var(--s-3); border-radius: var(--shape-pill, 9999px); font-size: var(--t-label); letter-spacing: var(--tr-label, 0.02em); color: var(--c-ink-2); box-shadow: inset 0 0 0 1px var(--c-border-strong); }
+.col[data-lead] .tag { color: var(--c-ink); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c-ink) 55%, transparent); }
+.stance { color: var(--c-ink); }
+.who { font-size: var(--t-label); color: var(--c-ink-3, var(--c-ink-2)); }
+.summary { color: var(--c-ink-2); }
+.lists { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
+.list, .why { font-size: var(--t-small); color: var(--c-ink-2); min-width: 0; overflow-wrap: anywhere; }
+.list ul, .steps { margin: var(--s-2) 0 0; padding-left: 1.1em; display: grid; gap: var(--s-2); }
+.list p, .why p { margin: var(--s-2) 0 0; }
+.listH { margin: 0; font-size: var(--t-label); letter-spacing: var(--tr-label, 0.04em); text-transform: uppercase; color: var(--c-ink-2); font-weight: var(--w-medium); }
+.why { padding-top: var(--s-3); border-top: 1px solid var(--c-border-strong); }
+.why strong { color: var(--c-ink); }
+.steps { list-style: none; padding-left: 0; }
+.stepTag { display: inline-block; margin-right: var(--s-1, 4px); padding: 0 var(--s-2); border-radius: var(--shape-pill, 9999px); font-size: var(--t-label); color: var(--c-ink); box-shadow: inset 0 0 0 1px var(--c-border-strong); }
+.arrow { margin: 0 var(--s-1, 4px); }
+.foot { margin: 0; font-size: var(--t-label); color: var(--c-ink-3, var(--c-ink-2)); }
+.foot button { min-height: 24px; }
+@media (pointer: coarse) { .foot button { min-height: 44px; } }
+@media (forced-colors: active) { .col, .col[data-lead] { box-shadow: none; border: 1px solid CanvasText; } .col[data-lead] { border-width: 2px; } .root { border: 1px solid CanvasText; box-shadow: none; } }
+.sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }

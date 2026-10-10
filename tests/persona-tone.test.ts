@@ -1,0 +1,62 @@
+import "./setup";
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { detectMood, HUMAN_TONE_PROMPT, HUMAN_TONE_SHORT, moodNote, polish } from "@/lib/persona-tone";
+import { BASE_SYSTEM_PROMPT } from "@/lib/orchestration/providers/shared";
+import { SMALLTALK_SYSTEM_PROMPT } from "@/lib/orchestration/smalltalk";
+import { guardVoice, VOICE_PROMPT } from "@/lib/persona";
+import { guardHumanClaim, NOT_HUMAN_LINE } from "@/lib/orchestration/identity-guards";
+
+test("mood detection: frustration, excitement, sadness, stress, crisis and neutral", () => {
+  const cases: [string, string][] = [
+    ["ugh this still doesn't work", "frustrated"], ["this is the third time I'm asking", "frustrated"], ["WHY IS THIS NOT WORKING AT ALL", "frustrated"], ["wtf, it keeps crashing", "frustrated"],
+    ["I'm so excited, I got the job!", "excited"], ["we shipped it!! so happy", "excited"], ["yay, it finally works", "excited"], ["amazing news: I passed", "excited"],
+    ["I'm really sad today", "sad"], ["my grandma passed away", "sad"], ["I feel so alone lately", "sad"], ["we broke up and I miss him so much", "sad"],
+    ["I'm so stressed about my deadline", "stressed"], ["I feel overwhelmed", "stressed"], ["my interview is tomorrow and I'm nervous", "stressed"], ["I haven't studied and the exam is tonight", "stressed"],
+    ["I want to kill myself", "crisis"], ["I don't want to live anymore", "crisis"], ["thinking about self-harm", "crisis"],
+    ["what is the capital of France", "neutral"], ["What is the capital of Australia, and why isn't it Sydney?", "neutral"], ["why is it hot in summer", "neutral"], ["why doesn't it rain in the desert", "neutral"], ["how many times does 7 go into 56", "neutral"], ["which team won the cup for the third time", "neutral"], ["why won't it load", "frustrated"], ["why can't you understand me", "frustrated"], ["how many times do I have to ask", "frustrated"], ["write a function that sorts a list", "neutral"], ["how do I stress test a server", "neutral"], ["summarize this article", "neutral"], ["", "neutral"],
+  ];
+  for (const [t, m] of cases) assert.equal(detectMood(t), m, t);
+});
+
+test("mood notes guide tone for the writer; neutral adds nothing; crisis points to real help", () => {
+  assert.equal(moodNote("neutral"), "");
+  for (const m of ["frustrated", "excited", "sad", "stressed", "crisis"] as const) assert.match(moodNote(m), /^Tone guidance for this reply/);
+  assert.match(moodNote("crisis"), /988/);
+  assert.match(moodNote("crisis"), /trust|crisis line/);
+  assert.match(moodNote("sad"), /gently/i);
+  assert.match(moodNote("frustrated"), /acknowledgement/);
+});
+
+test("the tone prompt asks for warmth, matched empathy, first-person feelings as voice, fitting humor, no boilerplate, concise exact formats; and never human or sentient", () => {
+  for (const w of ["natural conversational phrasing", "frustrated", "excited", "sad or stressed", "curiosity, delight, concern, enthusiasm, humility", "humor", "No corporate boilerplate", "Be concise", "never say or imply that you are a human"]) assert.match(HUMAN_TONE_PROMPT, new RegExp(w, "i"), w);
+  assert.match(HUMAN_TONE_PROMPT, /voice, not a claim/);
+  assert.match(HUMAN_TONE_PROMPT, /Invent no facts about the person/);
+  // no overlap with the voice rule: the tone prompt does not restate the consciousness rules
+  assert.doesNotMatch(HUMAN_TONE_PROMPT, /conscious|sentient/i);
+  assert.ok(BASE_SYSTEM_PROMPT.includes(HUMAN_TONE_SHORT));
+  assert.ok(SMALLTALK_SYSTEM_PROMPT.includes(HUMAN_TONE_SHORT));
+  assert.ok(SMALLTALK_SYSTEM_PROMPT.includes(VOICE_PROMPT), "the voice layer is still there");
+});
+
+test("polish: stock openers and closers go; code, math and exact facts are untouched", () => {
+  assert.equal(polish("Certainly! Canberra is the capital of Australia."), "Canberra is the capital of Australia.");
+  assert.equal(polish("Great question! The answer is 391."), "The answer is 391.");
+  assert.equal(polish("As an AI language model, I can say the capital is Canberra."), "I can say the capital is Canberra.");
+  assert.equal(polish("Use a map.\n\nI hope this helps!"), "Use a map.");
+  assert.equal(polish("Use a map. Let me know if you have any other questions."), "Use a map.");
+  const code = "Here's one:\n\n```ts\n// Certainly! I hope this helps!\nconst x = 1;\n```\n\nThat's it.";
+  assert.equal(polish(code), code);
+  assert.equal(polish("17 × 23 = 391"), "17 × 23 = 391");
+  assert.equal(polish("Sure!"), "Sure!", "never reduces an answer to nothing");
+  assert.equal(polish("I'm glad you asked. Certainly the weather is nice."), "I'm glad you asked. Certainly the weather is nice.");
+  assert.equal(polish(polish("Absolutely! Yes, you can.")), "Yes, you can.");
+});
+
+test("polish also removes any claim to be human, and leaves negations alone", () => {
+  assert.equal(polish("Yes, I'm a human. Anyway, here is the answer."), `${NOT_HUMAN_LINE} Anyway, here is the answer.`);
+  assert.equal(polish("I'm not a human, but I'm happy to help."), "I'm not a human, but I'm happy to help.");
+  assert.equal(guardHumanClaim("As a human, I get nervous too."), NOT_HUMAN_LINE);
+  // composes with the consciousness guard
+  assert.doesNotMatch(polish(guardVoice("I am conscious. I'm a person. Here you go.")), /conscious|person/);
+});

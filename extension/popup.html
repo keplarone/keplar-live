@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Keplar (beta)</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <h1>Keplar <span class="beta">Beta</span></h1>
+    <button id="forget" class="ghost small" type="button" hidden>Remove key</button>
+  </header>
+  <div class="row">
+    <button id="lens" class="ghost" type="button">Search this tab</button>
+  </div>
+  <p id="lens-msg" class="msg" role="status"></p>
+
+  <main id="setup" hidden>
+    <p>Paste a Keplar API key to start. Keys are for paid plans (Lite and above). The key stays on this device, in this extension&rsquo;s own storage.</p>
+    <label for="key">API key</label>
+    <input id="key" type="password" autocomplete="off" spellcheck="false" placeholder="kpl_…">
+    <div class="row">
+      <button id="save" type="button">Save key</button>
+      <a id="getkey" href="https://keplar.one/account#api" target="_blank" rel="noopener">Create a key</a>
+    </div>
+    <p class="note">No key? <a href="https://keplar.one/app" target="_blank" rel="noopener">Open Keplar</a> and ask there.</p>
+    <p id="setup-msg" class="msg" role="alert"></p>
+  </main>
+
+  <main id="ask" hidden>
+    <label for="q">Your question</label>
+    <textarea id="q" rows="3" placeholder="Ask about what you added, or leave blank for a short explanation"></textarea>
+    <div class="row">
+      <button id="add-sel" class="ghost" type="button">Add selected text</button>
+      <button id="add-page" class="ghost" type="button">Add page text</button>
+    </div>
+    <p id="ctx" class="ctx" hidden></p>
+    <div class="row">
+      <button id="go" type="button">Ask</button>
+      <button id="clear-ctx" class="ghost" type="button" hidden>Remove added text</button>
+    </div>
+    <p id="status" class="msg" role="status" aria-live="polite"></p>
+    <section id="result" hidden aria-label="Answer">
+      <p id="agreement" class="agreement"></p>
+      <div id="answer" class="answer"></div>
+      <div id="differ" hidden>
+        <h2 id="headline"></h2>
+        <ul id="positions"></ul>
+      </div>
+      <p id="meta" class="note"></p>
+      <p class="note"><a href="https://keplar.one/app" target="_blank" rel="noopener">Open Keplar</a> to keep going.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>Beta. Text is sent to Keplar only when you press Ask. Search this tab reads words you drag; the picture stays on this device. Nothing is saved here except your key. <a href="https://keplar.one/developers" target="_blank" rel="noopener">API &amp; limits</a></p>
+  </footer>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

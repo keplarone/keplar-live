@@ -1,0 +1,10 @@
+/ mobile perf:94 acce:100 best:100 seo:66 LCP 2.7 s TBT 150 ms CLS 0
+/ desktop perf:100 acce:100 best:100 seo:66 LCP 0.6 s TBT 0 ms CLS 0
+/pricing mobile perf:99 acce:100 best:100 seo:66 LCP 2.0 s TBT 40 ms CLS 0
+/pricing desktop perf:100 acce:100 best:100 seo:66 LCP 0.5 s TBT 0 ms CLS 0
+/how-it-works mobile perf:97 acce:100 best:100 seo:66 LCP 2.6 s TBT 50 ms CLS 0
+/how-it-works desktop perf:100 acce:100 best:100 seo:66 LCP 0.6 s TBT 0 ms CLS 0
+/app mobile perf:94 acce:100 best:100 seo:66 LCP 3.0 s TBT 90 ms CLS 0
+/app desktop perf:100 acce:100 best:100 seo:66 LCP 0.7 s TBT 0 ms CLS 0
+/inquire mobile perf:99 acce:100 best:100 seo:66 LCP 2.0 s TBT 90 ms CLS 0
+/inquire desktop perf:100 acce:100 best:100 seo:66 LCP 0.6 s TBT 0 ms CLS 0

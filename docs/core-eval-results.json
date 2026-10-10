@@ -1,0 +1,245 @@
+{
+  "at": "2026-10-07T01:24:55.062Z",
+  "items": [
+    "r3",
+    "r5",
+    "m2",
+    "m5",
+    "c2",
+    "c4",
+    "f2",
+    "f5",
+    "l1",
+    "l2",
+    "s2",
+    "s5"
+  ],
+  "arms": {
+    "baseline": {
+      "overall": 0.75,
+      "byCategory": {
+        "reasoning": 0.5,
+        "math": 1,
+        "coding": 1,
+        "factual": 1,
+        "long-context": 0.5,
+        "multi-step": 0.5
+      },
+      "n": 12,
+      "results": [
+        {
+          "id": "r3",
+          "category": "reasoning",
+          "score": 0,
+          "note": "missing answer",
+          "ms": 29452,
+          "calls": 4
+        },
+        {
+          "id": "r5",
+          "category": "reasoning",
+          "score": 1,
+          "note": "correct",
+          "ms": 27128,
+          "calls": 4
+        },
+        {
+          "id": "m2",
+          "category": "math",
+          "score": 1,
+          "note": "correct",
+          "ms": 66291,
+          "calls": 4
+        },
+        {
+          "id": "m5",
+          "category": "math",
+          "score": 1,
+          "note": "correct",
+          "ms": 31106,
+          "calls": 4
+        },
+        {
+          "id": "c2",
+          "category": "coding",
+          "score": 1,
+          "note": "4/4 tests",
+          "ms": 19744,
+          "calls": 4
+        },
+        {
+          "id": "c4",
+          "category": "coding",
+          "score": 1,
+          "note": "4/4 tests",
+          "ms": 13251,
+          "calls": 4
+        },
+        {
+          "id": "f2",
+          "category": "factual",
+          "score": 1,
+          "note": "correct",
+          "ms": 920,
+          "calls": 2
+        },
+        {
+          "id": "f5",
+          "category": "factual",
+          "score": 1,
+          "note": "correct",
+          "ms": 12575,
+          "calls": 4
+        },
+        {
+          "id": "l1",
+          "category": "long-context",
+          "score": 1,
+          "note": "correct",
+          "ms": 830,
+          "calls": 2
+        },
+        {
+          "id": "l2",
+          "category": "long-context",
+          "score": 0,
+          "note": "wrong number",
+          "ms": 12366,
+          "calls": 4
+        },
+        {
+          "id": "s2",
+          "category": "multi-step",
+          "score": 0,
+          "note": "missing answer",
+          "ms": 7915,
+          "calls": 4
+        },
+        {
+          "id": "s5",
+          "category": "multi-step",
+          "score": 1,
+          "note": "2/2 values",
+          "ms": 10218,
+          "calls": 4
+        }
+      ],
+      "p50Ms": 13251,
+      "meanCalls": 3.6666666666666665,
+      "wallMs": 478859
+    },
+    "thorough": {
+      "overall": 0.8333333333333334,
+      "byCategory": {
+        "reasoning": 1,
+        "math": 1,
+        "coding": 1,
+        "factual": 1,
+        "long-context": 1,
+        "multi-step": 0
+      },
+      "n": 12,
+      "results": [
+        {
+          "id": "r3",
+          "category": "reasoning",
+          "score": 1,
+          "note": "correct",
+          "ms": 21821,
+          "calls": 10
+        },
+        {
+          "id": "r5",
+          "category": "reasoning",
+          "score": 1,
+          "note": "correct",
+          "ms": 20930,
+          "calls": 8
+        },
+        {
+          "id": "m2",
+          "category": "math",
+          "score": 1,
+          "note": "correct",
+          "ms": 12529,
+          "calls": 7
+        },
+        {
+          "id": "m5",
+          "category": "math",
+          "score": 1,
+          "note": "correct",
+          "ms": 20670,
+          "calls": 9
+        },
+        {
+          "id": "c2",
+          "category": "coding",
+          "score": 1,
+          "note": "4/4 tests",
+          "ms": 30379,
+          "calls": 8
+        },
+        {
+          "id": "c4",
+          "category": "coding",
+          "score": 1,
+          "note": "4/4 tests",
+          "ms": 49129,
+          "calls": 18
+        },
+        {
+          "id": "f2",
+          "category": "factual",
+          "score": 1,
+          "note": "correct",
+          "ms": 4250,
+          "calls": 6
+        },
+        {
+          "id": "f5",
+          "category": "factual",
+          "score": 1,
+          "note": "correct",
+          "ms": 9462,
+          "calls": 8
+        },
+        {
+          "id": "l1",
+          "category": "long-context",
+          "score": 1,
+          "note": "correct",
+          "ms": 6384,
+          "calls": 6
+        },
+        {
+          "id": "l2",
+          "category": "long-context",
+          "score": 1,
+          "note": "correct",
+          "ms": 5522,
+          "calls": 4
+        },
+        {
+          "id": "s2",
+          "category": "multi-step",
+          "score": 0,
+          "note": "missing answer",
+          "ms": 7169,
+          "calls": 4
+        },
+        {
+          "id": "s5",
+          "category": "multi-step",
+          "score": 0,
+          "note": "0/2 values",
+          "ms": 9058,
+          "calls": 4
+        }
+      ],
+      "p50Ms": 12529,
+      "meanCalls": 7.666666666666667,
+      "wallMs": 797689
+    }
+  }
+}

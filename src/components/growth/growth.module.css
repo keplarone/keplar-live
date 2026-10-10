@@ -1,0 +1,165 @@
+.try {
+  position: relative;
+  z-index: var(--z-content);
+  max-width: clamp(760px, 46vw, 1400px);
+  margin: 0 auto;
+  padding: var(--s-8) var(--l-gutter);
+}
+
+.tryTitle {
+  font-size: var(--t-title);
+  line-height: var(--lh-title);
+  letter-spacing: var(--tr-title);
+  font-weight: var(--w-medium);
+}
+
+.tryForm {
+  display: flex;
+  gap: var(--s-3);
+  align-items: stretch;
+  margin-top: var(--s-5);
+  padding: var(--s-3);
+  border-radius: var(--r-card);
+  background: var(--c-glass-strong);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong);
+}
+
+.tryInput {
+  flex: 1;
+  min-width: 0;
+  resize: none;
+  border: 0;
+  background: transparent;
+  color: var(--c-ink);
+  font: inherit;
+  font-size: var(--t-body);
+  padding: var(--s-2) var(--s-3);
+}
+
+.tryInput:focus-visible {
+  outline: var(--b-focus) solid var(--c-focus);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+.tryGo {
+  flex: none;
+  align-self: flex-end;
+  height: 44px;
+  padding: 0 var(--s-5);
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--c-ink);
+  color: var(--c-canvas);
+  font: inherit;
+  font-size: var(--t-small);
+  font-weight: var(--w-medium);
+  cursor: pointer;
+  transition: background-color var(--d-base) var(--e-standard), transform var(--d-fast) var(--e-standard);
+}
+
+.tryGo:hover:not(:disabled) {
+  background: var(--c-ink-hover);
+}
+
+.tryGo:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.tryGo:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin-top: var(--s-4);
+}
+
+.chip {
+  border: 0;
+  border-radius: 20px; /* a pill for one line, a soft rectangle when a long question wraps (never a squashed stadium) */
+  max-width: 100%;
+  text-wrap: balance;
+  padding: var(--s-2) var(--s-4);
+  background: var(--c-glass);
+  color: var(--c-ink-2);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border);
+  font: inherit;
+  font-size: var(--t-small);
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--d-fast) var(--e-standard), box-shadow var(--d-fast) var(--e-standard);
+}
+
+.chip:hover {
+  color: var(--c-ink);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong);
+}
+
+.tryNote {
+  margin-top: var(--s-4);
+  font-size: var(--t-small);
+  color: var(--c-ink-3);
+}
+
+.sticky {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--z-nav);
+  display: flex;
+  justify-content: center;
+  padding: var(--s-3) var(--l-gutter) calc(var(--s-3) + env(safe-area-inset-bottom, 0px));
+  background: var(--c-glass-strong);
+  -webkit-backdrop-filter: blur(var(--blur-glass));
+  backdrop-filter: blur(var(--blur-glass));
+  border-top: var(--b-hairline) solid var(--c-border);
+  transform: translateY(110%);
+  transition: transform var(--d-base) var(--e-standard);
+  visibility: hidden;
+}
+
+.sticky[data-shown] {
+  transform: none;
+  visibility: visible;
+}
+
+@media (min-width: 900px) {
+  .sticky {
+    display: none;
+  }
+}
+
+@media (max-width: 599px) {
+  .tryForm {
+    flex-direction: column;
+  }
+  .tryGo {
+    align-self: stretch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticky,
+  .tryGo {
+    transition: none;
+  }
+}
+
+/* glass buttons (liquid glass: see src/styles/glass.css) */
+.tryGo { background: var(--btn-p-bg); color: var(--btn-p-ink); border-color: transparent; box-shadow: var(--btn-p-shadow); -webkit-backdrop-filter: blur(6px) saturate(1.4); backdrop-filter: blur(6px) saturate(1.4); transition: var(--btn-spring); }
+.tryGo:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--btn-p-bg); transform: scale(1.03, 1.015); }
+.tryGo:active:not(:disabled) { transform: scale(0.97, 0.92); }
+@media (prefers-reduced-motion: reduce) { .tryGo { transition: background-color 0.1s linear; transform: none !important; } }
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .tryGo { backdrop-filter: none; -webkit-backdrop-filter: none; } .tryGo { background: var(--btn-p-solid, #17171a); } }
+
+/* A chip whose question may wrap is a soft rectangle (the base rule is overridden by the global pill-button rule). */
+.chip.chip { border-radius: 18px; }
+
+@media (pointer: coarse) {
+  .chip { min-height: 44px; }
+}

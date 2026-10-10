@@ -1,0 +1,96 @@
+.section {
+  position: relative;
+  z-index: var(--z-content);
+  background: var(--c-canvas);
+  padding: var(--s-40) var(--l-gutter);
+}
+
+.inner {
+  max-width: var(--l-max);
+  margin: 0 auto;
+}
+
+.cards {
+  margin-top: var(--s-20);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-6);
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+  padding: var(--s-10);
+  border-radius: var(--r-card-lg);
+  border: var(--b-hairline) solid var(--c-border);
+  background: var(--c-surface-1);
+  overflow: hidden;
+}
+
+/* A restrained spectral wash, only on the personal path. */
+.card[data-path="personal"] {
+  background:
+    var(--c-canvas);
+  box-shadow: var(--sh-float);
+}
+
+.cardLabel {
+  font-family: var(--f-sans);
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--c-ink-2);
+}
+
+.cardTitle {
+  font-size: var(--t-title);
+  line-height: var(--lh-title);
+  letter-spacing: var(--tr-title);
+  font-weight: var(--w-medium);
+  text-wrap: balance;
+  max-width: 18ch;
+}
+
+.points {
+  display: flex;
+  flex-direction: column;
+  border-top: var(--b-hairline) solid var(--c-border);
+}
+
+.points li {
+  padding: var(--s-3) 0;
+  border-bottom: var(--b-hairline) solid var(--c-border);
+  font-size: var(--t-body);
+  color: var(--c-ink);
+}
+
+.note {
+  font-family: var(--f-sans);
+  font-size: var(--t-label);
+  letter-spacing: 0.02em;
+  color: var(--c-ink-3);
+}
+
+.ctas {
+  margin-top: auto;
+  padding-top: var(--s-4);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+}
+
+@media (max-width: 899px) {
+  .section {
+    padding: var(--s-24) var(--l-gutter);
+  }
+  .cards {
+    margin-top: var(--s-12);
+    grid-template-columns: 1fr;
+  }
+  .card {
+    padding: var(--s-8) var(--s-6);
+    border-radius: var(--r-card);
+  }
+}

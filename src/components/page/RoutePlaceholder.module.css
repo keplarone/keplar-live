@@ -1,0 +1,105 @@
+.page {
+  position: relative;
+  z-index: var(--z-content);
+  max-width: var(--l-max);
+  margin: 0 auto;
+  padding: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-32)) var(--l-gutter) var(--s-32);
+  min-height: 78vh;
+}
+
+.header {
+  max-width: clamp(980px, 62vw, 2000px);
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  font-family: var(--f-sans);
+  font-size: var(--t-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-ink-2);
+  margin-bottom: var(--s-8);
+  padding: 7px 14px 7px 12px;
+  border-radius: var(--r-pill);
+  border: var(--b-hairline) solid var(--c-border-strong);
+  background: rgb(var(--rgb-ink) / 0.06);
+  box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.1);
+}
+
+.label::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--c-ink);
+  box-shadow: 0 0 10px 1px rgb(var(--rgb-ink) / 0.7);
+}
+
+.title {
+  /* The floor is 42px, or 11vw on phones under ~380px: at 320 a fixed 42px split "superintelligenc / e?" (QA 2026-10-05). */
+  font-size: clamp(min(42px, 11vw), 6.6vw, 170px);
+  line-height: 0.97;
+  letter-spacing: -0.05em;
+  font-weight: var(--w-medium);
+  text-wrap: balance;
+  max-width: 17ch;
+}
+
+.lede {
+  margin-top: var(--s-6);
+  font-size: var(--t-lead);
+  line-height: var(--lh-lead);
+  letter-spacing: var(--tr-lead);
+  color: var(--c-ink-2);
+  max-width: 52ch;
+}
+
+.cta {
+  margin-top: var(--s-10);
+}
+
+.content {
+  margin-top: var(--s-24);
+}
+
+.hero {
+  position: relative;
+  z-index: var(--z-content);
+  max-width: var(--l-max);
+  margin: 0 auto;
+  padding: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-32)) var(--l-gutter) var(--s-16);
+}
+
+/* a slit of light under the hero: the Monolith's seam, quietly */
+.hero::after {
+  content: "";
+  position: absolute;
+  left: var(--l-gutter);
+  right: var(--l-gutter);
+  bottom: 0;
+  height: 1px;
+  background: rgb(var(--rgb-ink) / 0.06);
+  box-shadow: 0 0 24px 2px rgb(var(--rgb-ink) / 0.18);
+  pointer-events: none;
+}
+
+.ctaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  margin-top: var(--s-10);
+}
+
+@media (max-width: 899px) {
+  .hero {
+    padding-top: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-16));
+  }
+}
+
+/* Light theme: white cards on the warm page with a warm hairline and soft drop (Dark's 6% light veil + bright top edge read as a grey
+   slab with a dark line on a light page); ink glows become clean marks. Dark above is unchanged. */
+:global(:root[data-theme="light"]) .label { background: var(--lt-chip-bg); box-shadow: var(--sh-hairline); }
+:global(:root[data-theme="light"]) .label::before { box-shadow: none; }
+:global(:root[data-theme="light"]) .hero::after { background: rgb(28 24 18 / 0.1); box-shadow: none; }

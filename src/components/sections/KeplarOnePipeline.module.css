@@ -1,0 +1,247 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-10);
+}
+
+.plane {
+  perspective: 1800px;
+  perspective-origin: 50% 0%;
+  margin: 0 calc(var(--l-gutter) * -0.5);
+  /* The tilted floor grid extends past the viewport; clip it so the page never scrolls sideways. */
+  overflow-x: clip;
+}
+
+.svg {
+  width: 100%;
+  height: auto;
+  transform: rotateX(34deg);
+  transform-origin: 50% 60%;
+  overflow: visible;
+}
+
+.grid line {
+  stroke: var(--c-ink);
+  stroke-opacity: 0.045;
+  stroke-width: 1;
+}
+
+.lane {
+  fill: none;
+  stroke-width: 1.4;
+  stroke-opacity: 0.4;
+  transition: stroke-opacity var(--d-slow) var(--e-standard);
+}
+
+.lane[data-dim] {
+  stroke-opacity: 0.16;
+}
+
+.idle {
+  fill: none;
+  stroke: var(--c-ink-3);
+  stroke-width: 1.2;
+  stroke-dasharray: 2 6;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+
+.node {
+  cursor: pointer;
+}
+
+.halo {
+  fill: var(--c-canvas);
+  stroke: var(--c-border-strong);
+  stroke-width: 1;
+  transition: stroke var(--d-base) var(--e-standard), r var(--d-base) var(--e-standard);
+}
+
+.core {
+  fill: var(--c-ink);
+  transition: transform var(--d-base) var(--e-emphasized);
+}
+
+.node[data-active] .halo {
+  stroke: var(--c-ink);
+  r: 30;
+}
+
+.node[data-active] .core {
+  transform: scale(1.15);
+}
+
+.nodeLabel {
+  font-family: var(--f-sans);
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  fill: var(--c-ink-2);
+}
+
+.node[data-active] .nodeLabel {
+  fill: var(--c-ink);
+}
+
+.answerMark {
+  fill: var(--c-canvas);
+  pointer-events: none;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-6);
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  border-top: var(--b-hairline) solid var(--c-border);
+}
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-1);
+  width: 100%;
+  padding: var(--s-4) var(--s-2) var(--s-4) 0;
+  text-align: left;
+  border-top: var(--b-focus) solid transparent;
+  margin-top: calc(var(--b-hairline) * -1);
+  transition: border-color var(--d-base) var(--e-standard), color var(--d-base) var(--e-standard);
+  color: var(--c-ink-3);
+}
+
+.tab[aria-selected="true"] {
+  border-top-color: var(--c-ink);
+  color: var(--c-ink);
+}
+
+.tab:hover {
+  color: var(--c-ink);
+}
+
+.tab:focus-visible {
+  outline: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.tabIndex {
+  font-family: var(--f-sans);
+  font-size: var(--t-label);
+}
+
+.tabName {
+  font-size: var(--t-body);
+  font-weight: var(--w-medium);
+}
+
+.panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: var(--s-12);
+  min-height: 176px;
+}
+
+.panelTitle {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  font-size: var(--t-title);
+  line-height: var(--lh-title);
+  letter-spacing: var(--tr-title);
+  font-weight: var(--w-medium);
+}
+
+.panelTitle svg {
+  align-self: center;
+}
+
+.panelShort {
+  color: var(--c-ink-3);
+}
+
+.panelDetail {
+  margin-top: var(--s-4);
+  color: var(--c-ink-2);
+  max-width: 56ch;
+}
+
+.formula {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  margin-top: var(--s-5);
+  font-family: var(--f-sans);
+  font-size: var(--t-label);
+  color: var(--c-ink-3);
+}
+
+.formula span {
+  padding: var(--s-1) var(--s-2);
+  border-radius: var(--r-xs);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong);
+  color: var(--c-ink);
+  letter-spacing: 0.02em;
+}
+
+.panelExample {
+  padding-left: var(--s-6);
+  border-left: var(--b-hairline) solid var(--c-border);
+}
+
+.exampleLabel {
+  font-family: var(--f-sans);
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--c-ink-3);
+  margin-bottom: var(--s-3);
+}
+
+.exampleText {
+  font-size: var(--t-lead);
+  line-height: var(--lh-lead);
+  letter-spacing: var(--tr-lead);
+}
+
+@media (max-width: 899px) {
+  .plane {
+    margin: 0;
+  }
+  .svg {
+    transform: rotateX(24deg);
+  }
+  .nodeLabel {
+    display: none;
+  }
+  .tabs {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    row-gap: var(--s-2);
+  }
+  .panel {
+    grid-template-columns: 1fr;
+    gap: var(--s-6);
+  }
+  .panelExample {
+    padding-left: 0;
+    padding-top: var(--s-5);
+    border-left: 0;
+    border-top: var(--b-hairline) solid var(--c-border);
+  }
+}
+
+/* Pipeline steps: rounded glass chips instead of top-rule tabs (CP-6c). */
+.tab.tab { border-radius: 22px; border-top: 0; margin-top: 0; padding: var(--s-3) var(--s-4); }
+.tab.tab[aria-selected="true"] { background: var(--lg-card-hover); box-shadow: var(--lg-ring), 0 10px 24px -16px rgb(0 0 0 / 0.4); }
+.tab.tab:hover { background: var(--lg-card); }
+
+@media (max-width: 440px) {
+  .tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tab { overflow-wrap: anywhere; }
+}

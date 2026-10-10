@@ -1,0 +1,5 @@
+/* The real text holds the layout; while scrambling it is transparent and the glyphs are drawn over it, so nothing reflows. */
+.vis { position: relative; display: block; }
+.hold { color: transparent; text-shadow: none; }
+.over { position: absolute; inset: 0; display: block; pointer-events: none; }
+.sc { font-style: normal; color: var(--sc-ink-3, rgb(255 255 255 / 0.46)); }

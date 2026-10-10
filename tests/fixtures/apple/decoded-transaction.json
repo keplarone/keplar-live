@@ -1,0 +1,10 @@
+{
+  "transactionId": "2000000123456789",
+  "originalTransactionId": "2000000123456789",
+  "productId": "one.keplar.plus.monthly",
+  "bundleId": "one.keplar.app",
+  "environment": "Sandbox",
+  "expiresDateMs": null,
+  "purchaseDateMs": 1728000000000,
+  "appAccountToken": null
+}

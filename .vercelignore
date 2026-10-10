@@ -1,0 +1,10 @@
+# Keep local state, secrets and heavy dev artifacts out of Vercel uploads.
+.data
+.env*
+!.env.example
+.next
+node_modules
+screenshots
+bench/out
+tmp
+*.tsbuildinfo

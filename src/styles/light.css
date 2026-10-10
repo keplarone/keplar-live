@@ -1,0 +1,114 @@
+/*
+ * Light theme polish (also Auto when it resolves to light). Dark is untouched: every rule here is under :root[data-theme="light"].
+ *
+ * Warm off-white base (#faf9f7) instead of pure white, warm-neutral hairlines, soft warm elevation (no teal-tinted or heavy black
+ * shadows), white cards that lift off the page, and inks retuned for WCAG AA on the warmer surfaces:
+ *   ink #111113 on canvas 18.6:1 · ink-2 #4f5056 7.9:1 on canvas, 6.6:1 on surface-2 · ink-3 #646569 5.6:1 on canvas, 4.7:1 on surface-2.
+ * The docs keep their own flat white-and-blue skin (docs-theme.css outranks this block).
+ */
+:root[data-theme="light"] {
+  --c-canvas: #faf9f7;
+  --c-surface-1: #f4f2ee;
+  --c-surface-2: #ece9e4;
+  --c-ink: #2c241e;
+  --c-ink-2: #5a4638;
+  --c-ink-3: #6b5646;
+  --c-border: rgb(28 24 18 / 0.09);
+  --c-border-strong: rgb(28 24 18 / 0.15);
+  --c-glass: rgb(255 255 255 / 0.62);
+  --c-glass-strong: rgb(255 255 255 / 0.82);
+  --c-glass-border: rgb(255 255 255 / 0.78);
+  --c-ink-hover: #26262b;
+  --n-paper: #f6f4f0;
+  --n-silver: #dcd8d1;
+  --n-line: #c4c0b8;
+  --rgb-canvas: 250 249 247;
+  --rgb-surface: 244 242 238;
+
+  --sh-hairline: 0 0 0 1px rgb(28 24 18 / 0.08);
+  --sh-float: 0 1px 2px rgb(28 24 18 / 0.05), 0 10px 28px -14px rgb(28 24 18 / 0.16);
+  --sh-window: 0 1px 0 rgb(255 255 255 / 0.9) inset, 0 30px 80px -40px rgb(28 24 18 / 0.22), 0 2px 6px rgb(28 24 18 / 0.04);
+
+  /* liquid glass: whiter fill, warm hairline rim, warm soft depth (was a teal-tinted 60px shadow that read muddy on white) */
+  --lg-fill: rgb(255 255 255 / 0.66);
+  --lg-fill-strong: rgb(255 255 255 / 0.84);
+  --lg-rim: rgb(28 24 18 / 0.08);
+  --lg-edge-lo: rgb(255 255 255 / 0.5);
+  --lg-shadow: 0 1px 2px rgb(28 24 18 / 0.05), 0 12px 32px -16px rgb(28 24 18 / 0.18);
+  --lg-solid: #ffffff;
+  --lg-card: rgb(255 255 255 / 0.8);
+  --lg-card-hover: #ffffff;
+
+  /* buttons: graphite primary with a neutral drop (no teal glow under it), crisp white secondary */
+  --btn-p-solid: #17171a;
+  --btn-p-bg: #17171a;
+  --btn-p-shadow: inset 0 1px 0 rgb(255 255 255 / 0.16), inset 0 0 0 1px rgb(255 255 255 / 0.08), 0 1px 2px rgb(28 24 18 / 0.2), 0 8px 20px -10px rgb(28 24 18 / 0.45);
+  --btn-s-bg: rgb(255 255 255 / 0.86);
+  --btn-s-shadow: inset 0 0 0 1px rgb(28 24 18 / 0.1), 0 1px 2px rgb(28 24 18 / 0.05), 0 6px 16px -10px rgb(28 24 18 / 0.16);
+
+  /* marketing nav pill: warm white glass, a lighter warm drop (the old 0.28 black + white halo looked smudgy on white) */
+  --nav-fill: rgb(255 254 252 / 0.88);
+  --nav-fill-scrolled: rgb(255 254 252 / 0.94);
+  --nav-solid: #fffefc;
+  --nav-rim: rgb(28 24 18 / 0.1);
+  --nav-shadow: 0 1px 2px rgb(28 24 18 / 0.06), 0 10px 30px -14px rgb(28 24 18 / 0.2);
+  --nav-menu-fill: rgb(255 254 252 / 0.97);
+  --nav-sheet: rgb(250 249 247 / 0.97);
+  --nav-cta-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), inset 0 0 0 1px rgb(255 255 255 / 0.08), 0 1px 2px rgb(28 24 18 / 0.2), 0 8px 18px -10px rgb(28 24 18 / 0.45);
+
+  /* Card recipe for the light theme, used by module overrides (`:global(:root[data-theme="light"]) .x { ... }`): Dark's cards are a
+     6% light veil over graphite with a bright top edge; on a light page that same veil reads as a grey slab with a dark line on top. */
+  --lt-card-bg: #ffffff;
+  --lt-card-border: rgb(28 24 18 / 0.09);
+  --lt-card-shadow: 0 1px 2px rgb(28 24 18 / 0.04), 0 10px 28px -18px rgb(28 24 18 / 0.16);
+  --lt-card-lift: 0 1px 2px rgb(28 24 18 / 0.05), 0 22px 48px -24px rgb(28 24 18 / 0.24);
+  --lt-chip-bg: rgb(255 255 255 / 0.9);
+  --lt-tint: rgb(28 24 18 / 0.035);
+}
+
+/* the page background behind everything (html already paints --c-canvas; selection gets a warm tint instead of the UA blue) */
+:root[data-theme="light"] ::selection { background: rgb(255 170 128 / 0.35); color: inherit; }
+
+/* Solid glass and the opt-in INS badge read as clean white cards, not grey */
+:root[data-theme="light"] .lg-solid { background: rgb(255 255 255 / 0.9); }
+
+/* Native dialogs, menus and listboxes that use the shared tokens get the warm hairline and soft drop */
+:root[data-theme="light"] :is([role="menu"], [role="listbox"], dialog) { --c-border: rgb(28 24 18 / 0.1); }
+
+/* Keep glass.css's opaque fallbacks winning over the light fills above (same weight, later in the cascade, so restate them). */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root[data-theme="light"] { --lg-card: var(--lg-solid); --lg-card-hover: var(--lg-solid); --lg-fill: var(--lg-solid); --lg-fill-strong: var(--lg-solid); }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  :root[data-theme="light"] { --lg-fill: var(--lg-solid); --lg-fill-strong: var(--lg-solid); --lg-card: var(--lg-solid); --lg-card-hover: var(--lg-solid); }
+}
+html[data-glass="lite"][data-theme="light"] { --lg-fill: var(--lg-solid); --lg-fill-strong: var(--lg-solid); --lg-card: var(--lg-solid); --lg-card-hover: var(--lg-solid); }
+
+/* ── Shared surfaces (global hooks, so the shared app modules are untouched) ── */
+/* Monolith UI panels below the home: white cards, warm hairline, soft drop (Dark keeps its lit graphite panels) */
+:root[data-theme="light"] .mu-panel { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-shadow); }
+:root[data-theme="light"] .mu-panel[data-lit] { border-color: rgb(28 24 18 / 0.16); background: var(--lt-card-bg); box-shadow: inset 0 1px 0 rgb(var(--ring-rgb) / 0.25), var(--lt-card-lift); }
+/* Ask home tiles and the empty mark: white tiles, no dark halo */
+:root[data-theme="light"] [class*="App-module__"][class*="__homeTile"]:not([class*="__homeTileDot"]) { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-shadow); }
+:root[data-theme="light"] [class*="App-module__"][class*="__homeTile"]:not([class*="__homeTileDot"]):hover { background: #fff; border-color: rgb(28 24 18 / 0.18); box-shadow: var(--lt-card-lift); }
+:root[data-theme="light"] [class*="App-module__"][class$="__emptyMark"] { filter: none; }
+:root[data-theme="light"] [class*="App-module__"][class$="__emptyTitle"] { text-shadow: none; color: #7a3e24; }
+:root[data-theme="light"] [class*="App-module__"][class$="__emptyLede"] { color: #0c5c66; }
+:root[data-theme="light"] [class*="App-module__"][class$="__welcomeTitle"] { color: #7a3e24; }
+:root[data-theme="light"] [class*="App-module__"][class$="__welcomeLede"] { color: #0c5c66; }
+:root[data-theme="light"] [class*="studio-module__"][class$="__calmTitle"] { color: #5c2f6e; }
+:root[data-theme="light"] [class*="studio-module__"][class$="__calmLede"] { color: #8a5a12; }
+:root[data-theme="light"] [class*="App-module__"][class$="__exampleHint"] { color: #0c5c66; }
+/* Create: the prompt card floats on its aura as a crisp white card; idea chips read as white pills */
+:root[data-theme="light"] [class*="studio-module__"][class$="__calmCard"] {
+  background: #fff;
+  border-color: rgb(28 24 18 / 0.12);
+  box-shadow: 0 1px 2px rgb(28 24 18 / 0.05), 0 18px 44px -22px rgb(150 70 40 / 0.26);
+  transition: border-color var(--m-dur-2) var(--m-ease-out), box-shadow var(--m-dur-2) var(--m-ease-out);
+}
+:root[data-theme="light"] [class*="studio-module__"][class$="__calmCard"]:focus-within { border-color: rgb(28 24 18 / 0.24); box-shadow: 0 1px 2px rgb(28 24 18 / 0.06), 0 20px 48px -22px rgb(150 70 40 / 0.32); }
+:root[data-theme="light"] [class*="studio-module__"][class$="__calmChip"] { background: var(--lt-chip-bg); border-color: rgb(28 24 18 / 0.1); box-shadow: 0 1px 2px rgb(28 24 18 / 0.04); }
+/* In-app search (Cmd-K): a near-opaque white sheet over a light warm scrim; the selected row is a warm tint, not white on white */
+:root[data-theme="light"] [class*="App-module__"][class$="__scrim"] { background: rgb(28 24 18 / 0.12); }
+:root[data-theme="light"] [class*="App-module__"][class$="__search"] { background: rgb(255 255 255 / 0.95); box-shadow: var(--lg-ring), 0 2px 4px rgb(28 24 18 / 0.05), 0 30px 80px -28px rgb(28 24 18 / 0.32); }
+:root[data-theme="light"] [class*="App-module__"][class$="__searchItem"][aria-selected="true"] { background: rgb(28 24 18 / 0.05); box-shadow: none; }

@@ -1,0 +1,21 @@
+/* Page-wide particle layer (src/components/field/PageField.tsx). The canvas sits behind all content; content sections
+ * become transparent only once the canvas has actually drawn (html[data-field]), so no-WebGL / reduced-motion /
+ * weak-device visitors keep the plain page. */
+.pagefield {
+  contain: strict;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--pf-o, 0.5);
+  transition: opacity 0.9s ease;
+}
+/* A question is running in the app: the field comes forward. */
+html[data-field-ask] .pagefield { opacity: 0.95; }
+
+html[data-field] main section,
+html[data-field] footer { background: transparent; }
+/* The app shell is a fixed overlay with its own wash; let the layer show through it. */
+html[data-field="app"] { background: var(--lg-wash); }

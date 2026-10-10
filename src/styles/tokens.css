@@ -1,0 +1,297 @@
+/*
+ * Keplar design tokens (CSS twin of src/lib/tokens.ts).
+ * Components must consume these variables; no raw values in component CSS
+ * except structural numbers (0, 1, 100%).
+ */
+:root {
+  /* color */
+  --c-canvas: #ffffff;
+  --c-surface-1: #f7f8fa;
+  --c-surface-2: #f1f3f6;
+  --c-ink: #09090b;
+  --c-ink-2: #62646a;
+  --c-ink-3: #696b71; /* was #8c8e94 (3.3:1); now ≥4.8:1 on canvas and surfaces (WCAG AA) */
+  --c-border: rgba(0, 0, 0, 0.08);
+  --c-border-strong: rgba(0, 0, 0, 0.14);
+  --c-glass: rgba(255, 255, 255, 0.55);
+  --c-glass-strong: rgba(255, 255, 255, 0.72);
+  --c-glass-border: rgba(255, 255, 255, 0.7);
+  --c-ice: #c5e6ec;
+  --c-cyan: #00c0e0;
+  --c-lavender: #d4cfc4; /* warm sand mist — not purple */
+  --c-blush: #e8cfc4;
+  --c-warm: #e0b888;
+  --c-agree: var(--c-reasoning);
+  --c-dissent: #c9664a;
+  --c-dissent-text: var(--c-disagree);
+  --c-focus: #0a7a8a;
+  --focus-filter: brightness(0.85); /* keyboard focus cue: no outline or box anywhere (globals.css) */
+  --c-accent: #0a7a8a; /* teal accent for links/highlights; primary buttons stay graphite */
+  --ring-rgb: 10 122 138; /* teal focus rings / soft glows */
+  --c-ink-hover: #1d1d22; /* hover for ink-filled (primary) controls */
+  --c-ok: var(--c-verified); /* alias: one meaning, one color */
+  --c-err: var(--c-destructive);
+  /* Semantic color: one meaning each, used the same everywhere (see src/lib/tokens.ts `semantic`).
+     All are text-safe (>= 4.5:1) on canvas and surface-1. Tints: rgb(var(--rgb-reasoning) / 0.12). */
+  --c-reasoning: #0a6f7c; --rgb-reasoning: 10 111 124;
+  --c-research: #0b5f70; --rgb-research: 11 95 112;
+  --c-creation: #8a4f24; --rgb-creation: 138 79 36;
+  --c-verified: #1f7a4a; --rgb-verified: 31 122 74;
+  --c-attention: #8a5a00; --rgb-attention: 138 90 0;
+  --c-disagree: #a94f36; --rgb-disagree: 169 79 54;
+  --c-destructive: #b42318; --rgb-destructive: 180 35 24;
+  /* Vivid hues: FILLS, strokes, glows, chips and graphics (never body text). Same meanings as the text-safe
+     semantic colors above. --on-* is the ink that holds >= 4.5:1 on that fill. memory = soft pink (personal, remembered). */
+  --v-reasoning: #00c0e0; --on-reasoning: #09090b;
+  --v-research: #12a3b5; --on-research: #09090b;
+  --v-creation: #d4894a; --on-creation: #09090b;
+  --v-memory: #d4848e; --on-memory: #09090b;
+  --v-disagree: #e0715a; --on-disagree: #09090b;
+  --v-attention: #e2a73b; --on-attention: #09090b;
+  --v-verified: #34a56f; --on-verified: #09090b;
+  --v-destructive: #d92d20; --on-destructive: #ffffff;
+  --c-memory: #8a4550; --rgb-memory: 138 69 80;
+  /* Neutrals: white-first, then off-white, silver, graphite, black. */
+  --n-paper: #f6f7f9; --n-silver: #d9dce2; --n-graphite: #26282d; --n-black: #07080a;
+  /* Neutral for marks/strokes that must read on the canvas in either theme (graphite in light, silver in dark). */
+  --n-mark: #3b3d44;
+  --n-line: #bfc1c7;
+  /* A dark panel that stays dark in both themes (agents timeline). */
+  --c-night: #09090b;
+  --c-night-ink: #ffffff;
+  /* Channels for alpha tints: rgb(var(--rgb-ink) / 0.04). */
+  --rgb-ink: 9 9 11;
+  --rgb-canvas: 255 255 255;
+  --rgb-surface: 247 247 248;
+  color-scheme: light;
+
+  /* Sitewide density lever. Rem root (globals.html font-size) and spacing (--u) track this.
+     0.61625 = 0.90625 × 0.68, so token UI is exactly 32% smaller. The WebGL stage stays full viewport. Do not use transform: scale() or zoom on html. */
+  --ui-scale: 0.61625;
+
+  /* type families + weights */
+  --f-sans: var(--font-sans), "Keplar Sans Fallback", ui-sans-serif, system-ui, sans-serif;
+  --f-mono: var(--font-mono), ui-monospace, "SFMono-Regular", monospace;
+  --w-light: 300;
+  --w-regular: 400;
+  --w-medium: 500;
+  --w-semibold: 600;
+  --w-bold: 700;
+
+  /* fluid type scale */
+  /* Display sizes were tuned for a wide face (Lexend Deca); Google Sans is narrower, so these stay as they were (never larger) and the fit audit decides. */
+  /* All sizes are rem-based so the browser's own text-size setting (and OS text scaling) scales them; at the default 16px they equal the old px values.
+     Past ~1500px wide the body sizes keep growing smoothly with the window (linear in vw, capped), so there are no stepped jumps between 1800 / 2400 / 3200px. */
+  --t-display: clamp(3.125rem, 7.6vw, 12.5rem);
+  --t-headline: clamp(2.375rem, 5.2vw, 8.5rem);
+  --t-title: clamp(1.75rem, 2.9vw, 4.25rem);
+  --t-lead: max(clamp(1.125rem, 1.45vw, 1.375rem), min(2.5rem, calc(0.824vw + 0.603rem)));
+  --t-body: max(clamp(0.9375rem, 1.05vw, 1rem), min(1.875rem, calc(0.529vw + 0.504rem)));
+  --t-small: max(clamp(0.8125rem, 0.9vw, 0.875rem), min(1.5rem, calc(0.412vw + 0.489rem)));
+  --t-label: max(clamp(0.6875rem, 0.76vw, 0.75rem), min(1.25rem, calc(0.294vw + 0.474rem)));
+  --lh-display: 0.94;
+  --lh-headline: 0.98;
+  --lh-title: 1.06;
+  --lh-lead: 1.42;
+  --lh-body: 1.55;
+  --lh-small: 1.45;
+  --tr-display: -0.045em;
+  --tr-headline: -0.042em;
+  --tr-title: -0.03em;
+  --tr-lead: -0.012em;
+  --tr-body: -0.006em;
+  --tr-label: 0.06em;
+
+  /* spacing (4px base), scaled by --u and --ui-scale: 1px×scale up to a 1800px-wide window, then growing smoothly to 1.5px×scale (4K) so gaps keep pace with the type */
+  --u: clamp(calc(1px * var(--ui-scale)), calc((1px + (100vw - 1800px) * 0.0003) * var(--ui-scale)), calc(1.5px * var(--ui-scale)));
+  --s-1: calc(4 * var(--u));
+  --s-2: calc(8 * var(--u));
+  --s-3: calc(12 * var(--u));
+  --s-4: calc(16 * var(--u));
+  --s-5: calc(20 * var(--u));
+  --s-6: calc(24 * var(--u));
+  --s-8: calc(32 * var(--u));
+  --s-10: calc(40 * var(--u));
+  --s-12: calc(48 * var(--u));
+  --s-16: calc(64 * var(--u));
+  --s-20: calc(80 * var(--u));
+  --s-24: calc(96 * var(--u));
+  --s-32: calc(128 * var(--u));
+  --s-40: calc(160 * var(--u));
+  --s-48: calc(192 * var(--u));
+
+  /* radius (track --ui-scale; pill stays full) */
+  --r-xs: calc(8px * var(--ui-scale));
+  --r-sm: calc(12px * var(--ui-scale));
+  --r-md: calc(16px * var(--ui-scale));
+  --r-card: calc(24px * var(--ui-scale));
+  --r-card-lg: calc(32px * var(--ui-scale));
+  --r-input: calc(22px * var(--ui-scale));
+  --r-pill: 999px;
+
+  /* border */
+  --b-hairline: 1px;
+  --b-focus: 2px;
+
+  /* shadow */
+  --sh-hairline: 0 0 0 1px rgba(0, 0, 0, 0.06);
+  --sh-float: 0 1px 1px rgba(0, 0, 0, 0.03), 0 8px 24px -12px rgba(9, 9, 11, 0.12);
+  --sh-window: 0 1px 0 rgba(255, 255, 255, 0.8) inset, 0 30px 80px -40px rgba(9, 9, 11, 0.28),
+    0 2px 6px rgba(9, 9, 11, 0.04);
+
+  /* blur */
+  --blur-glass: 20px;
+  --blur-glass-strong: 28px;
+  --blur-nav-rest: 12px;
+  --blur-nav-scrolled: 24px;
+  --glass-saturate: 130%;
+
+  /* motion */
+  --e-standard: cubic-bezier(0.2, 0, 0, 1);
+  --e-emphasized: cubic-bezier(0.3, 0, 0, 1);
+  --e-exit: cubic-bezier(0.4, 0, 1, 1);
+  --e-glide: cubic-bezier(0.65, 0, 0.35, 1);
+  --d-instant: 90ms;
+  --d-fast: 160ms;
+  --d-base: 240ms;
+  --d-slow: 420ms;
+  --d-scene: 900ms;
+
+  /* z-index */
+  --z-canvas: 0;
+  --z-content: 10;
+  --z-stage: 20;
+  --z-window: 30;
+  --z-nav: 100;
+  --z-overlay: 200;
+  --z-skip: 300;
+
+  /* layout (gutter / nav track --ui-scale; max stays viewport-fluid) */
+  --l-max: clamp(1360px, 92vw, 3240px); /* fluid: content grows with the screen, never a small centered box */
+  --l-gutter: calc(20px * var(--ui-scale));
+  --l-nav-h: max(calc(56px * var(--ui-scale)), min(calc(96px * var(--ui-scale)), calc((1.176vw + 38.4px) * var(--ui-scale))));
+  --l-nav-offset: max(calc(16px * var(--ui-scale)), min(calc(36px * var(--ui-scale)), calc((0.706vw + 5.4px) * var(--ui-scale))));
+}
+
+/*
+ * Dark theme (the default). <html data-theme> is set before paint by the
+ * inline script in the root layout (src/lib/theme.ts). Contrast: ink-2 on
+ * canvas ≈ 7.9:1, ink-3 ≈ 5.6:1, dissent text ≈ 7:1.
+ */
+:root[data-theme="dark"] {
+  --c-canvas: #0b0b0d;
+  --c-surface-1: #141417;
+  --c-surface-2: #1c1c20;
+  --c-ink: #ededf0;
+  --c-ink-2: #a4a6ad;
+  --c-ink-3: #8b8d94;
+  --c-border: rgba(255, 255, 255, 0.09);
+  --c-border-strong: rgba(255, 255, 255, 0.17);
+  --c-glass: rgba(22, 22, 26, 0.6);
+  --c-glass-strong: rgba(26, 26, 30, 0.82);
+  --c-glass-border: rgba(255, 255, 255, 0.08);
+  --c-agree: var(--c-reasoning);
+  --c-dissent: #e08466;
+  --c-dissent-text: var(--c-disagree);
+  --c-focus: #5ecad8;
+  --focus-filter: brightness(1.45);
+  --c-accent: #5ecad8;
+  --ring-rgb: 94 202 216;
+  --c-ink-hover: #ffffff;
+  --c-ok: var(--c-verified); /* alias: one meaning, one color */
+  --c-err: var(--c-destructive);
+  --c-reasoning: #5ecad8; --rgb-reasoning: 94 202 216;
+  --c-research: #7ab8c8; --rgb-research: 122 184 200;
+  --c-creation: #e0a86a; --rgb-creation: 224 168 106;
+  --c-verified: #6fd3a0; --rgb-verified: 111 211 160;
+  --c-attention: #f0c060; --rgb-attention: 240 192 96;
+  --c-disagree: #f0a88f; --rgb-disagree: 240 168 143;
+  --c-destructive: #ff8c7e; --rgb-destructive: 255 140 126;
+  --v-reasoning: #5ecad8; --on-reasoning: #09090b;
+  --v-research: #7ab8c8; --on-research: #09090b;
+  --v-creation: #e0a86a; --on-creation: #09090b;
+  --v-memory: #e09aa4; --on-memory: #09090b;
+  --v-disagree: #e5805e; --on-disagree: #09090b;
+  --v-attention: #e2a73b; --on-attention: #09090b;
+  --v-verified: #34a56f; --on-verified: #09090b;
+  --v-destructive: #ff6b5c; --on-destructive: #09090b;
+  --c-memory: #e09aa4; --rgb-memory: 224 154 164;
+  --n-paper: #121214; --n-silver: #34363c; --n-graphite: #1c1d21; --n-black: #050506;
+  --n-mark: #b4b6bd;
+  --n-line: #5b5d65;
+  --c-night: #16161a;
+  --c-night-ink: #ededf0;
+  --rgb-ink: 237 237 240;
+  --rgb-canvas: 11 11 13;
+  --rgb-surface: 20 20 23;
+  --sh-hairline: 0 0 0 1px rgba(255, 255, 255, 0.07);
+  --sh-float: 0 1px 1px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  --sh-window: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 30px 80px -40px rgba(0, 0, 0, 0.8), 0 2px 6px rgba(0, 0, 0, 0.3);
+  color-scheme: dark;
+}
+
+@media (min-width: 900px) {
+  :root {
+    --l-gutter: clamp(calc(40px * var(--ui-scale)), calc(3.2vw * var(--ui-scale)), calc(128px * var(--ui-scale)));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --d-fast: 0ms;
+    --d-base: 0ms;
+    --d-slow: 0ms;
+    --d-scene: 0ms;
+  }
+}
+
+/*
+ * Nav tokens (marketing top nav pill, its Product menu and the mobile sheet; src/components/chrome/Nav.module.css).
+ * The nav floats over BOTH a black stage (home hero, space backdrop) and light sections, in every theme, so its own surface
+ * (not the page behind it) carries the contrast: a near-opaque glass fill, with ink / link colors picked against the
+ * WORST backdrop (pure black or pure white behind the fill). tests/nav-theme.test.ts checks every pair below >= 4.5:1 (AA) that way.
+ * Light = frosted white glass + graphite ink + an inverse (black) pill button. Dark = graphite glass + white ink + an inverse (white) pill button.
+ * Graphite glass + teal focus accent. Set before paint with the rest of the theme by the inline THEME_SCRIPT (data-theme), so no flash.
+ */
+:root {
+  --nav-fill: rgb(255 255 255 / 0.88);
+  --nav-fill-scrolled: rgb(255 255 255 / 0.94);
+  --nav-solid: #ffffff;
+  --nav-ink: #09090b;
+  --nav-link: #34363c;
+  --nav-link-2: #4a4c53;
+  --nav-hover-bg: rgb(10 122 138 / 0.10);
+  --nav-active-bg: rgb(10 122 138 / 0.14);
+  --nav-edge-hi: rgb(255 255 255 / 0.95);
+  --nav-edge-lo: rgb(255 255 255 / 0.5);
+  --nav-rim: rgb(9 9 11 / 0.14);
+  --nav-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 10px 30px -10px rgb(0 0 0 / 0.28);
+  --nav-focus: #0a7a8a;
+  --nav-menu-fill: rgb(255 255 255 / 0.97);
+  --nav-sheet: rgb(255 255 255 / 0.97);
+  --nav-cta-bg: #17171a;
+  --nav-cta-solid: #17171a;
+  --nav-cta-ink: #ffffff;
+  --nav-cta-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), inset 0 0 0 1px rgb(255 255 255 / 0.12), 0 1px 2px rgb(0 0 0 / 0.25), 0 8px 18px -8px rgb(0 0 0 / 0.55);
+}
+:root[data-theme="dark"] {
+  --nav-fill: rgb(20 20 23 / 0.92);
+  --nav-fill-scrolled: rgb(16 16 19 / 0.95);
+  --nav-solid: #141417;
+  --nav-ink: #ffffff;
+  --nav-link: #e4e6ea;
+  --nav-link-2: #d6d8de;
+  --nav-hover-bg: rgb(94 202 216 / 0.12);
+  --nav-active-bg: rgb(94 202 216 / 0.18);
+  --nav-edge-hi: rgb(255 255 255 / 0.26);
+  --nav-edge-lo: rgb(255 255 255 / 0.05);
+  --nav-rim: rgb(255 255 255 / 0.16);
+  --nav-shadow: 0 1px 2px rgb(0 0 0 / 0.45), 0 12px 34px -12px rgb(0 0 0 / 0.7);
+  --nav-focus: #5ecad8;
+  --nav-menu-fill: rgb(20 20 23 / 0.97);
+  --nav-sheet: rgb(11 11 13 / 0.97);
+  --nav-cta-bg: #ffffff;
+  --nav-cta-solid: #f4f4f5;
+  --nav-cta-ink: #09090b;
+  --nav-cta-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.12), 0 8px 18px -8px rgb(0 0 0 / 0.7);
+}

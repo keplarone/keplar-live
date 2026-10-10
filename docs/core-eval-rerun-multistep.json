@@ -1,0 +1,71 @@
+{
+  "at": "2026-10-07T01:57:16.027Z",
+  "items": [
+    "s2",
+    "s5"
+  ],
+  "arms": {
+    "baseline": {
+      "overall": 0,
+      "byCategory": {
+        "multi-step": 0
+      },
+      "n": 2,
+      "results": [
+        {
+          "id": "s2",
+          "category": "multi-step",
+          "score": 0,
+          "note": "missing answer",
+          "ms": 7171,
+          "calls": 4,
+          "excerpt": "The train arrives at 14:19.\n\nFirst leg: 315 km at 90 km/h takes 3.5 hours (315 ÷ 90 = 3.5). Starting at 09:40, adding 3 hours 30 minutes gives 13:10.  \nStop: 25 minutes, so departure after stop is at 13:35.  \nSecond leg: 120 km at 80 km/h takes 1.5 hours (120 ÷ 80 = 1.5). Adding "
+        },
+        {
+          "id": "s5",
+          "category": "multi-step",
+          "score": 0,
+          "note": "0/2 values",
+          "ms": 17132,
+          "calls": 4,
+          "excerpt": "Take-home pay is $48,400.  \nEffective tax rate is 42.4%."
+        }
+      ],
+      "p50Ms": 17132,
+      "meanCalls": 4,
+      "wallMs": 204465
+    },
+    "thorough": {
+      "overall": 1,
+      "byCategory": {
+        "multi-step": 1
+      },
+      "n": 2,
+      "results": [
+        {
+          "id": "s2",
+          "category": "multi-step",
+          "score": 1,
+          "note": "correct",
+          "ms": 25764,
+          "calls": 15,
+          "ran": "thorough, 2 round(s): You picked Thorough: Keplar plans, works through the steps and checks its answer.",
+          "excerpt": "The train arrives at 15:05.\n\nFirst, the train travels 315 km at 90 km/h, which takes \\( \\frac{315}{90} = 3.5 \\) hours, or 3 hours and 30 minutes. Starting at 09:40, this brings it to 13:10.\n\nIt then stops for 25 minutes, so it departs at 13:35.\n\nNext, it travels 120 km at 80 km/h"
+        },
+        {
+          "id": "s5",
+          "category": "multi-step",
+          "score": 1,
+          "note": "2/2 values",
+          "ms": 24373,
+          "calls": 11,
+          "ran": "thorough, 2 round(s): You picked Thorough: Keplar plans, works through the steps and checks its answer.",
+          "excerpt": "Take-home pay: $62,800  \nEffective tax rate: 25.2%"
+        }
+      ],
+      "p50Ms": 25764,
+      "meanCalls": 13,
+      "wallMs": 230277
+    }
+  }
+}

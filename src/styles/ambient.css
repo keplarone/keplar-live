@@ -1,0 +1,47 @@
+/*
+ * Ambient motion: calm, continuous, black / white / grey only. Compositor-only properties (transform, opacity, translate, scale);
+ * nothing here changes layout. Switches (set by AmbientRuntime): html[data-tab="hidden"] pauses, html[data-amb="low"] trims to one static glow.
+ * Only on the marketing pages, and only where the 3D page layer is not running (html[data-field] hides it).
+ */
+
+.ambient { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; contain: strict; }
+.ambient i {
+  position: absolute; border-radius: 50%; will-change: transform, opacity;
+  width: 70vmax; height: 70vmax;
+  background: transparent;
+}
+.ambient i:nth-child(1) { left: -22vmax; top: -26vmax; --amb-o: 0.075; }
+.ambient i:nth-child(2) { right: -28vmax; top: 18vh; width: 60vmax; height: 60vmax; --amb-o: 0.055; }
+.ambient i:nth-child(3) { left: 8vw; bottom: -38vmax; width: 80vmax; height: 80vmax; --amb-o: 0.05; }
+/* a faint sheen that crosses the page now and then */
+.ambient b {
+  position: absolute; inset: -20% -50%; opacity: 0; will-change: transform, opacity;
+  background: transparent;
+}
+:root[data-theme="light"] .ambient i { --amb-o: 0.05; }
+:root[data-theme="light"] .ambient i:nth-child(1) { --amb-o: 0.06; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .ambient i:nth-child(1) { animation: amb-a 74s ease-in-out infinite alternate, amb-breathe 11s ease-in-out infinite; }
+  .ambient i:nth-child(2) { animation: amb-b 92s ease-in-out infinite alternate, amb-breathe 14s ease-in-out -4s infinite; }
+  .ambient i:nth-child(3) { animation: amb-c 110s ease-in-out infinite alternate, amb-breathe 17s ease-in-out -8s infinite; }
+  .ambient b { animation: amb-sheen 38s linear 6s infinite; }
+
+  /* headings glide in as they enter (Chromium scroll-driven animations; elsewhere they are simply there) */
+  @supports (animation-timeline: view()) {
+    main h2:not([data-still] *):not(section[aria-label] *):not(nav *):not(aside *):not([class*="toc" i] *) { animation: amb-rise linear both; animation-timeline: view(); animation-range: entry 0% entry 45%; }
+  }
+}
+
+html[data-tab="hidden"] .ambient *, html[data-tab="hidden"] .ambient i { animation-play-state: paused !important; }
+html[data-amb="low"] .ambient i:nth-child(n + 2), html[data-amb="low"] .ambient b { display: none; }
+html[data-amb="low"] .ambient i { animation: none !important; }
+/* The 3D page layer (PageMonolith) already is the ambient smoke where WebGL runs; the CSS smoke is for everyone else. */
+html[data-field] .ambient { display: none; }
+
+@keyframes amb-a { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(14vmax, 10vmax, 0) scale(1.15); } }
+@keyframes amb-b { from { transform: translate3d(0, 0, 0) scale(1.1); } to { transform: translate3d(-12vmax, 8vmax, 0) scale(0.9); } }
+@keyframes amb-c { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(10vmax, -8vmax, 0) scale(1.2); } }
+@keyframes amb-breathe { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+@keyframes amb-sheen { 0% { transform: translate3d(-30%, 0, 0); opacity: 0; } 8% { opacity: 1; } 22% { transform: translate3d(30%, 0, 0); opacity: 0; } 100% { transform: translate3d(30%, 0, 0); opacity: 0; } }
+@keyframes amb-rise { from { opacity: 0.6; translate: 0 14px; } to { opacity: 1; translate: 0 0; } }

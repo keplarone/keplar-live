@@ -1,0 +1,35 @@
+{"type":"stage","stage":"understand","status":"active"}
+{"type":"stage","stage":"understand","status":"done","detail":"Benefits from a second opinion. A small panel with a verifier."}
+{"type":"stage","stage":"select","status":"active"}
+{"type":"capabilities","items":["Reasoning","Risk","Verification"],"mode":"consensus","modelCount":3}
+{"type":"stage","stage":"select","status":"done","detail":"Selected 3 intelligences"}
+{"type":"stage","stage":"compare","status":"active"}
+{"type":"model","modelId":"free:nemotron-3-super","name":"Nemotron 3 Super (free)","status":"responded"}
+{"type":"model","modelId":"free:dots-3-note","name":"Dots3-Note Preview (free)","status":"responded"}
+{"type":"model","modelId":"free:qwen3.8-27b","name":"Qwen3.8 27B (free)","status":"responded"}
+{"type":"stage","stage":"compare","status":"done","detail":"Compared 3 responses"}
+{"type":"stage","stage":"disagree","status":"active"}
+{"type":"disagreement","summary":"2 agree. 1 doesn't."}
+{"type":"stage","stage":"disagree","status":"done","detail":"Keplar investigated why"}
+{"type":"stage","stage":"verify","status":"active"}
+{"type":"stage","stage":"verify","status":"done","detail":"Reviewed the draft · no issues found"}
+{"type":"stage","stage":"synthesize","status":"active"}
+{"type":"delta","text":"Node.js 22 is the current latest "}
+{"type":"delta","text":"LTS version, entering LTS in October "}
+{"type":"delta","text":"2024. Node.js 20 remains in active "}
+{"type":"delta","text":"LTS since October 2023, but Node.js "}
+{"type":"delta","text":"22 supersedes it as the newest "}
+{"type":"delta","text":"long-term support release.\n\n**Where the "}
+{"type":"delta","text":"models disagree**  \nTwo models "}
+{"type":"delta","text":"identify Node.js 22 (October 2024) as "}
+{"type":"delta","text":"the latest LTS, while one model "}
+{"type":"delta","text":"cites Node.js 20 (October 2023). The "}
+{"type":"delta","text":"majority position is better supported because "}
+{"type":"delta","text":"Node.js follows a predictable release schedule "}
+{"type":"delta","text":"where even-numbered versions become LTS annually; "}
+{"type":"delta","text":"Node.js 22 is the most recent "}
+{"type":"delta","text":"even-numbered release and its LTS promotion "}
+{"type":"delta","text":"in October 2024 aligns with that "}
+{"type":"delta","text":"cadence."}
+{"type":"stage","stage":"synthesize","status":"done"}
+{"type":"answer","answer":{"markdown":"Node.js 22 is the current latest LTS version, entering LTS in October 2024. Node.js 20 remains in active LTS since October 2023, but Node.js 22 supersedes it as the newest long-term support release.\n\n**Where the models disagree**  \nTwo models identify Node.js 22 (October 2024) as the latest LTS, while one model cites Node.js 20 (October 2023). The majority position is better supported because Node.js follows a predictable release schedule where even-numbered versions become LTS annually; Node.js 22 is the most recent even-numbered release and its LTS promotion in October 2024 aligns with that cadence.","consensus":{"level":"partial","score":67,"agree":2,"disagree":1,"missing":0,"responded":3,"consulted":3,"summary":"2 agree, 1 disagrees"},"models":[{"id":"free:nemotron-3-super","name":"Nemotron 3 Super (free)","provider":"NVIDIA","slot":"panel","status":"responded","stance":"Node.js 20 LTS (Oct 2023)","note":"Served via openrouter."},{"id":"free:qwen3.8-27b","name":"Qwen3.8 27B (free)","provider":"Alibaba Qwen","slot":"panel","status":"responded","stance":"Node.js 22 LTS (Oct 2024)","note":"Served via openrouter."},{"id":"free:dots-3-note","name":"Dots3-Note Preview (free)","provider":"Dots Studio","slot":"panel","status":"responded","stance":"Node.js 22 LTS (Oct 2024)","note":"Served via openrouter."},{"id":"free:nemotron-3-super","name":"Nemotron 3 Super (free)","provider":"NVIDIA","slot":"verifier","status":"responded","note":"Reviewed the draft answer against each response."}],"sources":[{"kind":"note","title":"No sources cited","detail":"None of the consulted models cited a source for this answer."}],"disagreements":[{"topic":"Node.js LTS version and start date","positions":[{"stance":"Node.js 22 LTS (Oct 2024)","models":["Dots3-Note Preview (free)","Qwen3.8 27B (free)"],"summary":"Node.js 22 is the latest LTS version, starting in October 2024."},{"stance":"Node.js 20 LTS (Oct 2023)","models":["Nemotron 3 Super (free)"],"summary":"Node.js 20.x is the LTS version that started in October 2023."}],"resolution":"The disagreement was resolved by recognizing Node.js 22 as the latest LTS per the established release cadence, while acknowledging Node.js 20 remains in concurrent LTS."}],"verification":{"mode":"cross-model","summary":"Nemotron 3 Super (free) (verifier) reviewed the draft answer against the 3 responses. No reasoning gaps, contradictions or unsupported claims found.","reviewer":"Nemotron 3 Super (free) (verifier)","checks":[],"notes":[]},"reasoning":"Live responses from 3 of 3 models. Positions and claims were extracted from each response, and agreement was scored across 2 positions. Nemotron 3 Ultra (free) wrote the synthesis after the review, weighing evidence and reasoning rather than headcount.","id":"ans_murzznjkl0y9a","capabilities":["Reasoning","Risk","Verification"],"compute":{"units":1,"level":"low"},"durationMs":23638}}

@@ -1,0 +1,279 @@
+.md {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  font-size: var(--t-body);
+  line-height: var(--lh-body);
+  color: var(--c-ink);
+  max-width: 72ch;
+  overflow-wrap: anywhere;
+}
+
+.md p:first-child strong:first-child {
+  font-weight: var(--w-medium);
+}
+
+.md strong {
+  font-weight: var(--w-medium);
+}
+
+.h {
+  margin-top: var(--s-3);
+  font-size: var(--t-body);
+  font-weight: var(--w-medium);
+  letter-spacing: var(--tr-body);
+}
+
+.ul,
+.ol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding-left: var(--s-5);
+}
+
+.ul {
+  list-style: none;
+}
+
+.ul > li {
+  position: relative;
+}
+
+.ul > li::before {
+  content: "";
+  position: absolute;
+  left: calc(-1 * var(--s-4));
+  top: 0.72em;
+  width: 5px;
+  height: 1px;
+  background: var(--c-ink-2);
+}
+
+.ol {
+  list-style: decimal;
+}
+
+.ol > li::marker {
+  color: var(--c-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.quote {
+  padding-left: var(--s-4);
+  border-left: var(--b-hairline) solid var(--c-border-strong);
+  color: var(--c-ink-2);
+}
+
+.hr {
+  border: 0;
+  border-top: var(--b-hairline) solid var(--c-border);
+  margin: var(--s-2) 0;
+}
+
+.link {
+  color: var(--c-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--c-border-strong);
+  text-underline-offset: 3px;
+}
+
+.link:hover {
+  text-decoration-color: currentColor;
+}
+
+.inlineCode {
+  font-family: var(--f-mono);
+  font-size: 0.88em;
+  padding: 1px 5px;
+  border-radius: 6px;
+  background: var(--c-surface-2);
+}
+
+.code {
+  border-radius: var(--r-md);
+  background: var(--c-surface-1);
+  box-shadow: var(--sh-hairline);
+  overflow: hidden;
+}
+
+.codeBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  padding: 0 var(--s-2) 0 var(--s-4);
+  border-bottom: var(--b-hairline) solid var(--c-border);
+}
+
+.codeLang {
+  font-family: var(--f-mono);
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--c-ink-3);
+}
+
+.copy {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  height: 26px;
+  padding: 0 var(--s-2);
+  border-radius: var(--r-pill);
+  font-size: var(--t-label);
+  color: var(--c-ink-2);
+  transition: color var(--d-fast) var(--e-standard), background-color var(--d-fast) var(--e-standard);
+}
+
+.copy:hover:not(:disabled) {
+  color: var(--c-ink);
+  background: rgb(var(--rgb-ink) / 0.05);
+}
+
+.copy:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.pre {
+  margin: 0;
+  padding: var(--s-4);
+  overflow-x: auto;
+  font-family: var(--f-mono);
+  font-size: var(--t-small);
+  line-height: 1.6;
+  tab-size: 2;
+  scrollbar-width: thin;
+}
+
+.pre:focus-visible {
+  outline-offset: -2px;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-hairline);
+  scrollbar-width: thin;
+}
+
+.tableWrap:focus-visible {
+  outline-offset: 2px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-small);
+  line-height: var(--lh-small);
+}
+
+.table th,
+.table td {
+  padding: var(--s-3) var(--s-4);
+  text-align: left;
+  vertical-align: top;
+  border-bottom: var(--b-hairline) solid var(--c-border);
+}
+
+.table thead th {
+  font-weight: var(--w-medium);
+  background: var(--c-surface-1);
+  white-space: nowrap;
+}
+
+.table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.table td:first-child,
+.table tbody th {
+  font-weight: var(--w-medium);
+  white-space: nowrap;
+}
+
+.table td {
+  color: var(--c-ink-2);
+  min-width: 14ch;
+}
+
+/* ── typing caret ──────────────────────────────────── */
+
+.caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.05em;
+  margin-left: 2px;
+  vertical-align: -0.17em;
+  border-radius: 1px;
+  background: var(--c-ink);
+  animation: caretBlink 1.06s steps(1, end) infinite;
+}
+
+.caretLine {
+  line-height: 1;
+  min-height: 1em;
+}
+
+@keyframes caretBlink {
+  0%,
+  55% {
+    opacity: 1;
+  }
+  56%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caret {
+    animation: none;
+    opacity: 0.7;
+  }
+}
+
+/* ── math (KaTeX, self-hosted) ──
+ * Colour follows the text (dark and light alike). Display equations scroll sideways instead of overflowing; inline
+ * formulas never break mid-expression. A formula waiting for KaTeX holds its space invisibly. */
+.md :global(.katex) {
+  color: inherit;
+  font-size: 1.06em;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+.mathDisplay {
+  display: block;
+  max-width: 100%;
+  margin: var(--s-2) 0;
+  padding: var(--s-1) 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  text-align: center;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+.mathDisplay :global(.katex-display) { margin: 0; }
+.mathDisplay:focus-visible { outline: 2px solid var(--c-accent, #17171a); outline-offset: 2px; border-radius: 8px; }
+.mathInline { display: inline; }
+.mathPending { color: transparent; user-select: none; white-space: nowrap; }
+.mathRaw {
+  font-family: var(--f-mono);
+  font-size: 0.9em;
+  color: var(--c-ink-2);
+  overflow-wrap: anywhere;
+}
+
+/* Streaming text ease: each newly arrived word fades in once. Opacity only, so a long answer does not blur the GPU. */
+.w { animation: word-in 0.38s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes word-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .w { animation: none; } }
+
+/* Touch screens: the Copy button on code blocks gets a finger-sized target. */
+@media (pointer: coarse) {
+  .copy {
+    min-height: 36px;
+    padding: 0 var(--s-3);
+  }
+}

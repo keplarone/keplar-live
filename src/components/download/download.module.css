@@ -1,0 +1,195 @@
+/* Token-based and flat on purpose: the visual system is being redesigned, so this page only uses shared tokens. */
+.stack {
+  display: grid;
+  gap: var(--s-16);
+}
+
+.panel,
+.block,
+.card {
+  background: var(--c-surface-1);
+  border: var(--b-hairline) solid var(--c-border);
+  border-radius: var(--r-card);
+  padding: var(--s-10);
+}
+
+.block {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s-4);
+}
+
+.h2 {
+  font-size: var(--t-title);
+  line-height: var(--lh-title);
+  letter-spacing: var(--tr-title);
+  font-weight: var(--w-medium);
+  text-wrap: balance;
+}
+
+.h3 {
+  font-size: var(--t-body);
+  font-weight: var(--w-medium);
+  color: var(--c-ink);
+}
+
+.text {
+  margin-top: var(--s-4);
+  max-width: 64ch;
+  color: var(--c-ink-2);
+  line-height: var(--lh-body, 1.6);
+}
+
+.fine {
+  margin-top: var(--s-4);
+  max-width: 72ch;
+  font-size: var(--t-small);
+  line-height: var(--lh-small);
+  color: var(--c-ink-3);
+  overflow-wrap: anywhere;
+}
+
+.fine a,
+.text a,
+.table a,
+.steps a {
+  color: var(--c-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.row {
+  margin-top: var(--s-6);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+}
+
+.scroller {
+  overflow-x: auto;
+  border: var(--b-hairline) solid var(--c-border);
+  border-radius: var(--r-card);
+  background: var(--c-surface-1);
+}
+
+.table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: var(--t-small);
+  line-height: var(--lh-small);
+}
+
+.table th,
+.table td {
+  text-align: left;
+  vertical-align: top;
+  padding: var(--s-4) var(--s-5);
+  border-bottom: var(--b-hairline) solid var(--c-border);
+}
+
+.table thead th {
+  font-weight: var(--w-medium);
+  color: var(--c-ink-2);
+}
+
+.table tbody th {
+  font-weight: var(--w-medium);
+  color: var(--c-ink);
+}
+
+.table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.fn {
+  display: block;
+  margin-top: var(--s-1);
+  color: var(--c-ink-3);
+  overflow-wrap: anywhere;
+}
+
+.hash {
+  display: block;
+  font-family: var(--f-sans);
+  font-size: var(--t-label);
+  color: var(--c-ink-2);
+  overflow-wrap: anywhere;
+  max-width: 34ch;
+  user-select: all;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-5);
+}
+
+.card {
+  padding: var(--s-8);
+  display: grid;
+  gap: var(--s-3);
+  align-content: start;
+}
+
+.steps {
+  margin: 0;
+  padding-left: var(--s-5);
+  display: grid;
+  gap: var(--s-2);
+  color: var(--c-ink-2);
+  font-size: var(--t-small);
+  line-height: var(--lh-small);
+}
+
+.steps code,
+.fine code,
+.text code {
+  font-family: var(--f-sans);
+  background: var(--c-surface-2);
+  border-radius: var(--r-xs);
+  padding: 0 var(--s-1);
+  overflow-wrap: anywhere;
+}
+
+.reqs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-5);
+}
+
+@media (max-width: 899px) {
+  .panel,
+  .card {
+    padding: var(--s-6);
+  }
+  .grid,
+  .reqs {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Monolith redesign: lit panels, numbered step badges, spec-sheet tables ── */
+.panel, .card {
+  border-color: var(--c-border-strong); border-radius: var(--r-card-lg);
+  background: rgb(var(--rgb-ink) / 0.06);
+  box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.12), 0 40px 90px -60px rgb(var(--rgb-ink) / 0.4);
+}
+.panel[data-lit], .panel:first-child { border-color: rgb(var(--rgb-ink) / 0.24); }
+.h2 { font-size: clamp(28px, 3.2vw, 56px); letter-spacing: -0.04em; }
+.scroller { border-radius: var(--r-card); border: var(--b-hairline) solid var(--c-border-strong); background: rgb(var(--rgb-ink) / 0.06); }
+.table thead th { font-size: var(--t-label); letter-spacing: 0.1em; text-transform: uppercase; background: rgb(var(--rgb-ink) / 0.06); }
+.steps { counter-reset: st; }
+@media (max-width: 599px) { .panel, .card { padding: var(--s-5); } }
+
+/* The first panel is rendered for "unknown device" on the server and swaps to the detected device after hydration; reserve the larger height so nothing below it jumps (CLS). */
+.stack > .panel:first-child { min-height: 276px; }
+@media (pointer: coarse) and (max-width: 600px) { .stack > .panel:first-child { min-height: 408px; } }
+
+/* Light theme: white cards on the warm page with a warm hairline and soft drop (Dark's 6% light veil + bright top edge read as a grey
+   slab with a dark line on a light page); ink glows become clean marks. Dark above is unchanged. */
+:global(:root[data-theme="light"]) :is(.panel, .card) { background: var(--lt-card-bg); box-shadow: var(--lt-card-shadow); }
+:global(:root[data-theme="light"]) .panel[data-lit], :global(:root[data-theme="light"]) .panel:first-child { border-color: rgb(28 24 18 / 0.18); box-shadow: var(--lt-card-lift); }
+:global(:root[data-theme="light"]) .scroller { background: var(--lt-card-bg); }

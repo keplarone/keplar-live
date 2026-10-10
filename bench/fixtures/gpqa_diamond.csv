@@ -1,0 +1,7 @@
+Record ID,Question,Correct Answer,Incorrect Answer 1,Incorrect Answer 2,Incorrect Answer 3,High-level domain,Subdomain,synthetic
+fx-gpqa-001,Which particle mediates the electromagnetic force?,Photon,Gluon,W boson,Graviton,Physics,fixture,true
+fx-gpqa-002,What is the pH of a neutral aqueous solution at 25 °C?,7,1,14,0,Chemistry,fixture,true
+fx-gpqa-003,Which organelle is the main site of ATP synthesis?,Mitochondrion,Ribosome,Golgi apparatus,Lysosome,Biology,fixture,true
+fx-gpqa-004,What is the SI unit of electrical resistance?,Ohm,Volt,Ampere,Tesla,Physics,fixture,true
+fx-gpqa-005,Which bond links amino acids in a protein?,Peptide bond,Glycosidic bond,Phosphodiester bond,Hydrogen bond,Biology,fixture,true
+fx-gpqa-006,Which noble gas has the lowest boiling point?,Helium,Neon,Argon,Xenon,Chemistry,fixture,true

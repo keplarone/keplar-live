@@ -1,0 +1,224 @@
+/* Attachment chips: flat graphite, hairline edges, typed tiles. No gradients, no glow, no focus boxes. */
+.tray {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: var(--s-1) 0 0;
+  list-style: none;
+}
+
+.item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  max-width: min(288px, 100%);
+  height: 52px;
+  padding: 6px 6px 6px 6px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--c-surface-1);
+  box-shadow: var(--sh-hairline);
+  font-size: var(--t-small);
+  color: var(--c-ink-2);
+  transform-origin: 20% 60%;
+  animation: chipIn 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transition: opacity 180ms ease, transform 180ms ease, background 140ms ease;
+}
+.item:hover { background: var(--c-surface-2); }
+.item[data-leaving] { opacity: 0; transform: scale(0.94) translateY(2px); pointer-events: none; }
+
+.thumb {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 7px;
+  background: var(--c-surface-2);
+  color: var(--c-ink-2);
+}
+.thumb > img:not(.favicon) {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: thumbIn 240ms ease-out both;
+}
+.thumb[data-link] { background: rgb(var(--rgb-ink) / 0.06); }
+.favicon { width: 18px; height: 18px; object-fit: contain; border-radius: 3px; }
+.initial { font-family: var(--f-sans); font-weight: 600; font-size: 15px; color: var(--c-ink-1); }
+
+.thumbBtn { cursor: zoom-in; }
+.thumbBtn:hover img { filter: brightness(1.08); }
+.thumbBtn:focus { outline: none; }
+.thumbBtn:focus-visible { box-shadow: 0 0 0 1.5px var(--c-ink-2); }
+
+/* Typed tile: the file type reads at a glance. Muted per-kind ink on a faint wash of the same hue. */
+.typeTile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+  height: 100%;
+  --k: 160 165 175;
+  color: rgb(var(--k));
+  background: rgb(var(--k) / 0.1);
+  clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 0 100%);
+}
+.typeTile::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 9px;
+  height: 9px;
+  background: rgb(var(--k) / 0.28);
+  border-bottom-left-radius: 2px;
+}
+.typeLabel {
+  font-family: var(--f-sans);
+  font-size: 8.5px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+.typeTile[data-kind="pdf"] { --k: 226 120 108; }
+.typeTile[data-kind="docx"], .typeTile[data-kind="rtf"] { --k: 118 160 222; }
+.typeTile[data-kind="pptx"] { --k: 224 146 92; }
+.typeTile[data-kind="xlsx"], .typeTile[data-kind="csv"] { --k: 104 186 136; }
+.typeTile[data-kind="json"] { --k: 196 176 104; }
+.typeTile[data-kind="code"], .typeTile[data-kind="zip"] { --k: 200 168 120; }
+.typeTile[data-kind="audio"] { --k: 120 190 196; }
+.typeTile[data-kind="text"] { --k: 170 174 184; }
+
+.pending {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--c-surface-2);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.badge {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  padding: 0 3px;
+  border-radius: 3px;
+  background: rgba(9, 9, 11, 0.78);
+  color: #f2f2f3;
+  font-family: var(--f-sans);
+  font-size: 9.5px;
+  line-height: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  flex: 1 1 auto;
+  gap: 3px;
+}
+.name {
+  overflow: hidden;
+  max-width: 196px;
+  color: var(--c-ink-1);
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-decoration: none;
+}
+a.name:hover { text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+a.name:focus { outline: none; }
+a.name:focus-visible { text-decoration: underline; }
+.sub {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+  max-width: 196px;
+  font-family: var(--f-sans);
+  font-size: 11.5px;
+  line-height: 14px;
+  color: var(--c-ink-3);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+.sub > span { overflow: hidden; text-overflow: ellipsis; }
+.item[data-processing] .sub { color: var(--c-ink-2); }
+.item[data-status="warn"] .sub { color: var(--c-caution-text, #d4a35a); }
+.item[data-status="error"] .sub { color: var(--c-dissent-text); }
+.warnIcon { flex: none; }
+
+.swatches { display: inline-flex; gap: 3px; margin-top: 1px; }
+.swatches > span { width: 10px; height: 10px; border-radius: 2px; box-shadow: inset 0 0 0 1px rgb(var(--rgb-ink) / 0.14); }
+.item:has(.swatches) { height: 60px; }
+
+.remove {
+  appearance: none;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  align-self: flex-start;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--c-ink-3);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+.remove:hover { background: rgb(var(--rgb-ink) / 0.08); color: var(--c-ink-1); }
+.remove:focus { outline: none; }
+.remove:focus-visible { background: rgb(var(--rgb-ink) / 0.12); color: var(--c-ink-1); }
+
+.bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  overflow: hidden;
+  background: rgb(var(--rgb-ink) / 0.06);
+}
+.fill, .sweep {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--c-ink-2);
+  transform-origin: 0 50%;
+}
+.fill { transition: transform 200ms ease-out; }
+.sweep { width: 40%; animation: sweep 1.1s ease-in-out infinite; }
+
+@keyframes chipIn { from { opacity: 0; transform: translateY(6px) scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes thumbIn { from { opacity: 0; transform: scale(1.06); } to { opacity: 1; transform: none; } }
+@keyframes sweep { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+@keyframes pulse { 50% { opacity: 0.55; } }
+
+@media (max-width: 520px) {
+  .item { max-width: 100%; flex: 1 1 100%; }
+  .name, .sub { max-width: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item, .thumb > img { animation: none; transition: none; }
+  .pending, .sweep { animation: none; }
+  .sweep { width: 100%; opacity: 0.5; }
+  .fill { transition: none; }
+}

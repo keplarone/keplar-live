@@ -1,0 +1,5 @@
+/* One fixed layer behind the page. Dark: light on black (additive). Light: soft ink on white. Content always sits above it. */
+.layer { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; display: block; opacity: 0; transition: opacity 1200ms var(--e-standard); contain: strict; }
+.layer[data-ready] { opacity: 0.8; }
+:global(:root[data-theme="light"]) .layer[data-ready] { opacity: 0.78; }
+@media print { .layer { display: none; } }

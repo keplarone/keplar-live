@@ -1,0 +1,66 @@
+/* Phones and touch screens. Global and last in the cascade on purpose: the rules here are the few that cut across many components
+ * (iOS input zoom, the nav toggle) or belong to files other people are editing. Everything component-specific lives in its own
+ * module's `@media (pointer: coarse)` block. Selectors carry extra specificity so they win regardless of stylesheet order. */
+
+/* iOS Safari zooms the page when a field under 16px gets focus (and does not zoom back out). 16px on every text field on touch screens. */
+@media (pointer: coarse) {
+  /* :not(#_) lifts the rule to id-level specificity so it beats every single-class component rule (.tryInput, .prompt, ...). */
+  html input:not(#_):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]):not([type="hidden"]),
+  html textarea:not(#_),
+  html select:not(#_) {
+    font-size: 16px;
+  }
+}
+
+/* Nav menu button: a 44px target (the capsule is 52px tall). Nav.module.css owns the look; this only sets the hit size. */
+@media (max-width: 899px) and (pointer: coarse) {
+  html [class*="Nav-module__"][class*="__toggle"]:not([class*="Bar"]) {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* The INS / OVR badge belongs to the Insert key. Touch screens have none, and the badge floats above every focused field. */
+@media (pointer: coarse) {
+  html .ins-badge {
+    display: none;
+  }
+}
+
+/* Windows / Linux classic scrollbars take ~15px from the page. Reserve their place so opening a menu or dialog (which locks page scroll) or a page that
+ * grows past one screen does not shift or reflow the layout sideways. No effect with overlay scrollbars (macOS, phones). /app opts out (KeplarApp). */
+html {
+  scrollbar-gutter: stable;
+}
+
+/* Windows High Contrast / forced colors: the glass buttons and cards draw their edges with shadows and translucent fills, which this mode removes.
+ * Give every control a real system-colour border, keep focus rings, and let images and the 3D canvas stay as they are. */
+@media (forced-colors: active) {
+  :where(button, [role="button"], [role="tab"], a[class*="btn"], a[class*="Btn"], input, select, textarea, summary) {
+    border: 1px solid ButtonText;
+  }
+  :where(a[href]):not(:where([class*="brand"], [class*="Brand"], [class*="logo"])) {
+    text-decoration: underline;
+  }
+  :where(button, [role="button"], a[href], input, select, textarea, summary):focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+  :where([aria-current="page"], [aria-pressed="true"], [aria-expanded="true"], [aria-selected="true"]) {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+}
+
+/* viewport-fit=cover (root layout) lets the page reach the screen edges, so in-flow content keeps out of the notch, rounded corners and home bar.
+ * Fixed bars handle their own insets (nav, cookie card, app shell, composer dock, toasts). All values are 0 on screens without a cutout. */
+body {
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* "On this page" / Topics rails on touch tablets and touch laptops (kept as a side column from ~1000px): every link is a 44px target. */
+@media (pointer: coarse) {
+  nav[aria-label="On this page"] ol a { display: flex; align-items: center; min-height: 44px; }
+}

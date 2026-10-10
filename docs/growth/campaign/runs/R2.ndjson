@@ -1,0 +1,22 @@
+{"type":"stage","stage":"understand","status":"active"}
+{"type":"stage","stage":"understand","status":"done","detail":"Benefits from a second opinion. A small panel with a verifier."}
+{"type":"stage","stage":"select","status":"active"}
+{"type":"capabilities","items":["Reasoning","Verification"],"mode":"consensus","modelCount":3}
+{"type":"stage","stage":"select","status":"done","detail":"Selected 3 intelligences"}
+{"type":"stage","stage":"compare","status":"active"}
+{"type":"model","modelId":"free:qwen3.8-27b","name":"Qwen3.8 27B (free)","status":"responded"}
+{"type":"model","modelId":"free:nemotron-3-super","name":"Nemotron 3 Super (free)","status":"responded"}
+{"type":"model","modelId":"free:dots-3-note","name":"Dots3-Note Preview (free)","status":"responded"}
+{"type":"stage","stage":"compare","status":"done","detail":"Compared 3 responses"}
+{"type":"stage","stage":"verify","status":"active"}
+{"type":"stage","stage":"verify","status":"done","detail":"Reviewed the draft · no issues found"}
+{"type":"stage","stage":"synthesize","status":"active"}
+{"type":"delta","text":"You must use httpOnly cookies. Storing "}
+{"type":"delta","text":"JWTs in localStorage is unsafe because "}
+{"type":"delta","text":"any JavaScript on the page—including malicious "}
+{"type":"delta","text":"code injected via XSS—can read and "}
+{"type":"delta","text":"exfiltrate the token. httpOnly cookies are "}
+{"type":"delta","text":"inaccessible to client-side scripts, which effectively "}
+{"type":"delta","text":"mitigates this theft vector."}
+{"type":"stage","stage":"synthesize","status":"done"}
+{"type":"answer","answer":{"markdown":"You must use httpOnly cookies. Storing JWTs in localStorage is unsafe because any JavaScript on the page—including malicious code injected via XSS—can read and exfiltrate the token. httpOnly cookies are inaccessible to client-side scripts, which effectively mitigates this theft vector.","consensus":{"level":"consensus","score":100,"agree":3,"disagree":0,"missing":0,"responded":3,"consulted":3,"summary":"3 agree, 0 disagree"},"models":[{"id":"free:nemotron-3-super","name":"Nemotron 3 Super (free)","provider":"NVIDIA","slot":"panel","status":"responded","stance":"Must use httpOnly cookies","note":"Served via openrouter."},{"id":"free:qwen3.8-27b","name":"Qwen3.8 27B (free)","provider":"Alibaba Qwen","slot":"panel","status":"responded","stance":"Must use httpOnly cookies","note":"Served via openrouter."},{"id":"free:dots-3-note","name":"Dots3-Note Preview (free)","provider":"Dots Studio","slot":"panel","status":"responded","stance":"Must use httpOnly cookies","note":"Served via openrouter."},{"id":"free:nemotron-3-super","name":"Nemotron 3 Super (free)","provider":"NVIDIA","slot":"verifier","status":"responded","note":"Reviewed the draft answer against each response."}],"sources":[{"kind":"note","title":"No sources cited","detail":"None of the consulted models cited a source for this answer."}],"disagreements":[],"verification":{"mode":"cross-model","summary":"Nemotron 3 Super (free) (verifier) reviewed the draft answer against the 3 responses. No reasoning gaps, contradictions or unsupported claims found.","reviewer":"Nemotron 3 Super (free) (verifier)","checks":[],"notes":[]},"reasoning":"Live responses from 3 of 3 models. Positions and claims were extracted from each response, and agreement was scored across 1 position. Nemotron 3 Ultra (free) wrote the synthesis after the review, weighing evidence and reasoning rather than headcount.","id":"ans_mus12059xlthr","capabilities":["Reasoning","Verification"],"compute":{"units":1,"level":"low"},"durationMs":9484}}

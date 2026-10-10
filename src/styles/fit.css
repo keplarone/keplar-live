@@ -1,0 +1,32 @@
+/*
+ * Text fits its frame. Three layers, from cheapest to last resort:
+ *  1. CSS: flex children may shrink (min-width: 0), long words break instead of overflowing, headings balance their lines.
+ *  2. Scale: labels in controls shrink with their container (clamp + container query units) or via FitRuntime / <FitText> (min 11px).
+ *  3. Ellipsis plus a title tooltip, only when even the smallest size does not fit ([data-fit-state="ellipsis"]).
+ */
+:where(button, [role="tab"], [role="menuitem"], label, summary, select) { min-width: 0; max-width: 100%; }
+:where(button, [role="tab"], a, label, li, td, th, p, h1, h2, h3, h4, h5, h6, dd, dt, figcaption) { overflow-wrap: break-word; }
+:where(h1, h2, h3, h4, button, [role="tab"]) { text-wrap: balance; }
+:where(p, li, dd) { text-wrap: pretty; }
+:where(input, textarea, select) { max-width: 100%; text-overflow: ellipsis; }
+
+/* one-line labels */
+[data-fit] { min-width: 0; max-width: 100%; white-space: nowrap; overflow: hidden; }
+[data-fit-state="ellipsis"] { text-overflow: ellipsis; overflow: hidden; }
+[data-fit-state="ellipsis"] > span, [data-fit-state="ellipsis"] > strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+/* a control that already scaled down keeps its padding in proportion */
+[data-fit-state="scaled"] { letter-spacing: 0; }
+
+/* Signed-in call to action: "Try Keplar" -> "Open Keplar" (no flash: data-signed is set before first paint from the last known session) */
+[data-cta="open"] { display: none; }
+html[data-signed="1"] [data-cta="open"] { display: inline; }
+html[data-signed="1"] [data-cta="try"] { display: none; }
+
+/* ── smooth caret (SmoothCaret.tsx): only while the overlay is showing is the native caret hidden ── */
+[data-sc] { caret-color: transparent; }
+.smooth-caret { position: fixed; left: 0; top: 0; z-index: 2147483000; width: 2px; border-radius: 1px; background: currentColor; pointer-events: none; visibility: hidden; will-change: transform; contain: layout style; transition: width 0.14s ease; }
+.smooth-caret[data-block="1"] { opacity: 0.5 !important; border-radius: 2px; }
+.smooth-caret:not([data-moving]) { animation: sc-blink 1.1s steps(1, end) infinite; }
+@keyframes sc-blink { 0%, 55% { opacity: 1; } 56%, 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce), (forced-colors: active) { .smooth-caret { display: none; } [data-sc] { caret-color: auto; } }
+

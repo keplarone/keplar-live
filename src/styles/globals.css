@@ -1,0 +1,319 @@
+@import "./tokens.css";
+@import "./lit.css";
+@import "./fit.css";
+@import "./glass.css";
+@import "./field.css";
+@import "./ambient.css";
+@import "./polish.css";
+@import "./monolith-ui.css";
+@import "./mobile.css";
+@import "./motion.css";
+@import "./light.css";
+@import "./aura.css";
+
+/*
+ * Metric-matched fallback for Google Sans. next/font cannot generate one (the font is not in its metrics table), so without this the
+ * text first paints in whatever the OS UI font is (Segoe UI, San Francisco, Cantarell, DejaVu...), each with different widths, and
+ * headings re-wrap when Google Sans arrives. Arial (Arimo / Liberation Sans on Linux) is within 1% of Google Sans's average width
+ * (measured: 400 +0.7%, 600 +0.4%, 700 -0.4%), and size-adjust + the vertical overrides (from the font: ascent 966, descent 286 per 1000)
+ * make the line box the same, so the swap moves nothing and every OS shows the same layout before the web font loads.
+ */
+@font-face {
+  font-family: "Keplar Sans Fallback";
+  font-weight: 400 500;
+  src: local("Arial"), local("ArialMT"), local("Arimo"), local("Liberation Sans"), local("Helvetica");
+  size-adjust: 100.7%;
+  ascent-override: 95.9%;
+  descent-override: 28.4%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Keplar Sans Fallback";
+  font-weight: 600 700;
+  src: local("Arial Bold"), local("Arial-BoldMT"), local("Arimo Bold"), local("Liberation Sans Bold"), local("Helvetica Bold");
+  size-adjust: 99.6%;
+  ascent-override: 97%;
+  descent-override: 28.7%;
+  line-gap-override: 0%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* Dense rem root: 16px × --ui-scale (14.5px at 0.90625). Rem/em UI + type tokens shrink together. */
+  font-size: calc(16px * var(--ui-scale));
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  background: var(--c-canvas);
+  color: var(--c-ink);
+  scroll-behavior: auto;
+}
+
+body {
+  margin: 0;
+  font-family: var(--f-sans);
+  font-size: var(--t-body);
+  line-height: var(--lh-body);
+  letter-spacing: var(--tr-body);
+  font-weight: var(--w-regular);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "ss01" on, "cv11" on;
+  overflow-x: clip;
+}
+
+/* Shared scroll lock (src/lib/ui/scroll-lock.ts): menus, the palette and the lightbox hold it while open. overscroll-behavior stops
+   iOS/Android chaining the overlay's own scroll into the page underneath (no rubber-band bleed). */
+html[data-scroll-lock] { overflow: hidden; overscroll-behavior: none; }
+[role="dialog"][aria-modal="true"] { overscroll-behavior: contain; }
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+blockquote,
+dl,
+dd,
+ol,
+ul {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+input,
+textarea,
+select,
+option,
+optgroup,
+button,
+label,
+table,
+summary {
+  font-family: var(--f-sans);
+}
+
+input,
+textarea,
+select {
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+img,
+svg,
+canvas {
+  display: block;
+}
+
+/* The design uses two weights; keep <b>/<strong> on the loaded 500 instead of faux bold. */
+b,
+strong {
+  font-weight: var(--w-medium);
+}
+
+/* One refined, translucent blue selection (text keeps its own color, nothing hard-edged). */
+::selection {
+  background: rgb(var(--rgb-reasoning) / 0.2);
+  color: inherit;
+  text-shadow: none;
+}
+
+/* Thin, quiet scrollbars that follow the theme (Firefox: scrollbar-*; Chromium/WebKit: ::-webkit-scrollbar). */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--rgb-reasoning) / 0.38) transparent;
+}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgb(var(--rgb-reasoning) / 0.34); border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background: rgb(var(--rgb-reasoning) / 0.55); background-clip: content-box; }
+::-webkit-scrollbar-corner { background: transparent; }
+
+/* Focus is never a box. A click, tap or programmatic focus draws nothing (no outline, no tap-highlight rectangle, no ring);
+ * a keyboard user gets a quiet non-box cue on the real control only: a brightness shift (--focus-filter) plus an underline on its label.
+ * Windows High Contrast (forced-colors) keeps the system outline: see mobile.css. */
+*, *::before, *::after { -webkit-tap-highlight-color: transparent; }
+button, [role="button"], summary, canvas, nav, [data-lit] { -webkit-user-select: none; user-select: none; }
+canvas { outline: none; }
+@media not (forced-colors: active) {
+  :focus, :focus-visible { outline: none !important; }
+  :is(a[href], button, summary, select, input, textarea, [role="button"], [role="tab"], [role="link"], [role="menuitem"], [role="switch"], [role="radio"], [role="checkbox"], [tabindex="0"]):focus-visible {
+    filter: var(--focus-filter);
+  }
+  :is(a[href], button, summary, [role="button"], [role="tab"], [role="link"], [role="menuitem"]):focus-visible {
+    text-decoration-line: underline;
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--c-focus);
+    text-underline-offset: 4px;
+  }
+  /* Icon-only / aria-labelled controls have no visible label to underline: a short muted-accent bar under the control instead
+   * (keyboard only, never on click — :focus-visible; never an outline or box). WCAG 2.4.7. */
+  :is(button, a[href], [role="button"], [role="tab"], [role="switch"])[aria-label]:focus-visible {
+    background-image: linear-gradient(var(--c-focus), var(--c-focus));
+    background-repeat: no-repeat;
+    background-size: min(60%, 20px) 2px;
+    background-position: 50% calc(100% - 2px);
+  }
+  /* Programmatic focus targets (skip link target, palette section jumps) never show anything. */
+  [tabindex="-1"]:focus { outline: none !important; }
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: fixed;
+  top: var(--s-3);
+  left: var(--s-3);
+  z-index: var(--z-skip);
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-pill);
+  background: var(--c-ink);
+  color: var(--c-canvas);
+  font-size: var(--t-small);
+  transform: translateY(-200%);
+  transition: transform var(--d-base) var(--e-standard);
+}
+
+.skip-link:focus-visible {
+  transform: none;
+}
+
+.mono {
+  font-family: var(--f-mono);
+}
+
+/* Scroll reveal (see components/motion/RevealRoot). Opacity and transform only: no layout shift. */
+[data-rv="out"] {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+}
+[data-rv="in"] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity var(--d-slow) var(--e-standard) var(--rv-delay, 0ms),
+    transform var(--d-slow) var(--e-standard) var(--rv-delay, 0ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-rv] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* Diagram streams drift once when their step scrolls into view. */
+[data-rv="in"] .kp-flow {
+  animation: kp-flow 1.6s var(--e-standard) 1;
+}
+@keyframes kp-flow {
+  from {
+    stroke-dashoffset: 36;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kp-flow {
+    animation: none !important;
+  }
+}
+
+/* Typing feel: native <input>/<textarea> only. Crisp, stable caret; no ligature/kerning reflow while typing; quiet selection. */
+.type-input,
+textarea,
+input[type="text"],
+input[type="email"],
+input[type="search"],
+input[type="url"],
+input[type="password"],
+input:not([type]) {
+  caret-color: var(--c-focus);
+  font-variant-ligatures: none;
+  font-feature-settings: "ss01" on, "cv11" on, "liga" 0, "calt" 0;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: 0;
+  scroll-padding: 8px;
+}
+/* Contain scroll chaining only on a textarea that actually overflows (TypingFeel marks it data-scrolls). A blanket
+   `textarea { contain }` trapped the page's wheel scroll whenever the pointer rested on a one-line box, e.g. the pinned
+   home hero composer at 1280-1440px desktop widths. */
+textarea[data-scrolls] { overscroll-behavior: contain; }
+
+/*
+ * Print (QA 2026-10-05: printing /pricing gave 8 mostly blank pages). Scroll-reveal blocks that were never scrolled into view stayed at
+ * opacity 0 (the plan cards and FAQ vanished), the fixed nav and skip link repeated on every sheet, and Dark printed near-white ink on
+ * white paper. Paper always gets the Light ink; nothing changes on screen.
+ */
+@media print {
+  [data-rv] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .skip-link {
+    display: none !important;
+  }
+  :root[data-theme="dark"] {
+    --c-canvas: #ffffff;
+    --c-surface-1: #f7f8fa;
+    --c-surface-2: #f1f3f6;
+    --c-ink: #09090b;
+    --c-ink-2: #62646a;
+    --c-ink-3: #696b71;
+    --c-border: rgba(0, 0, 0, 0.08);
+    --c-border-strong: rgba(0, 0, 0, 0.14);
+    --c-glass: rgba(255, 255, 255, 0.55);
+    --c-glass-strong: rgba(255, 255, 255, 0.72);
+    --c-glass-border: rgba(255, 255, 255, 0.7);
+    --rgb-ink: 9 9 11;
+    --rgb-canvas: 255 255 255;
+    --rgb-surface: 247 247 248;
+    color-scheme: light;
+  }
+}

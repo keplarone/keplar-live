@@ -1,0 +1,66 @@
+"use client";
+/** The Data (backend browser) and Settings panes of an app. Loaded only when one of those tabs is opened. */
+import { useEffect, useState } from "react";
+import { api } from "../api";
+import s from "./studio.module.css";
+import type { AppDetail } from "./types";
+
+export function DataPane({ id }: { id: string }) {
+  const [env, setEnv] = useState<"draft" | "live">("draft");
+  const [col, setCol] = useState("");
+  const [data, setData] = useState<{ collections: { name: string; label: string; count: number }[]; users: number; files: { count: number; bytes: number }; ai: { calls30d: number }; records: { id: string; owner: string; createdAt: string; data: unknown }[] } | null>(null);
+  const [err, setErr] = useState("");
+  useEffect(() => {
+    api<typeof data>(`/api/apps/${id}/data?env=${env}${col ? `&col=${encodeURIComponent(col)}` : ""}`).then(setData, (e) => setErr((e as Error).message));
+  }, [id, env, col]);
+  return (
+    <div className={s.pane}>
+      <div className={s.paneHead}>
+        <h2 className={s.paneTitle}>Backend</h2>
+        <span className={s.grow} />
+        <div className={s.toggle} role="group" aria-label="Environment">{(["draft", "live"] as const).map((e) => <button key={e} type="button" aria-pressed={env === e} onClick={() => setEnv(e)}>{e === "draft" ? "Preview data" : "Live data"}</button>)}</div>
+      </div>
+      {err ? <div className={s.paneMsg} role="alert">{err}</div> : null}
+      {data ? (
+        <>
+          <p className={s.paneMeta}>{data.users} account{data.users === 1 ? "" : "s"} · {data.files.count} file{data.files.count === 1 ? "" : "s"} ({Math.round(data.files.bytes / 1024)} KB) · {data.ai.calls30d} AI calls in 30 days</p>
+          <table className={s.table}>
+            <thead><tr><th>Collection</th><th>Records</th><th /></tr></thead>
+            <tbody>{data.collections.map((c) => <tr key={c.name}><td>{c.label} <span className={s.dim}>({c.name})</span></td><td>{c.count}</td><td><button type="button" className={s.textBtn} onClick={() => setCol(c.name)}>View</button></td></tr>)}</tbody>
+          </table>
+          {col ? (
+            <table className={s.table}>
+              <thead><tr><th>Record</th><th>Data</th></tr></thead>
+              <tbody>{data.records.map((r) => <tr key={r.id}><td><span className={s.dim}>{new Date(r.createdAt).toLocaleString()}</span><br />{r.owner === "seed" ? "example" : r.owner}</td><td><pre className={s.rec}>{JSON.stringify(r.data, null, 1)}</pre></td></tr>)}</tbody>
+            </table>
+          ) : null}
+        </>
+      ) : !err ? <p className={s.paneMeta}>Loading…</p> : null}
+    </div>
+  );
+}
+
+export function SettingsPane({ app, onSaved }: { app: AppDetail; onSaved: () => void }) {
+  const [settings, setSettings] = useState(app.settings ?? { signups: true, ai: true, uploads: true });
+  const [admins, setAdmins] = useState(app.admins.join(", "));
+  const [msg, setMsg] = useState("");
+  const save = async () => {
+    try {
+      await api(`/api/apps/${app.id}`, { method: "PATCH", body: JSON.stringify({ settings, admins: admins.split(/[\s,]+/).filter(Boolean) }) });
+      setMsg("Saved.");
+      onSaved();
+    } catch (e) {
+      setMsg((e as Error).message);
+    }
+  };
+  return (
+    <div className={s.pane}>
+      <h2 className={s.paneTitle}>App settings</h2>
+      <label className={s.switch}><input type="checkbox" checked={settings.signups} onChange={(e) => setSettings({ ...settings, signups: e.target.checked })} />New people can create accounts</label>
+      <label className={s.switch}><input type="checkbox" checked={settings.uploads} onChange={(e) => setSettings({ ...settings, uploads: e.target.checked })} />File and photo uploads</label>
+      <label className={s.switch}><input type="checkbox" checked={settings.ai} onChange={(e) => setSettings({ ...settings, ai: e.target.checked })} />AI features (each call uses your credits)</label>
+      <label className={s.field}><span>Admins (sign in to the app with these emails to get admin screens)</span><input className={s.input} value={admins} onChange={(e) => setAdmins(e.target.value)} /></label>
+      <div className={s.paneHead}><button type="button" className={s.ghostBtn} onClick={save}>Save</button><span className={s.paneMeta}>{msg}</span></div>
+    </div>
+  );
+}

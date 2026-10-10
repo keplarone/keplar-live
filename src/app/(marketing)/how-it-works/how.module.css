@@ -1,0 +1,207 @@
+/* Editorial long-form: one reading column, diagrams in the margin. */
+.page {
+  position: relative;
+  z-index: var(--z-content);
+  max-width: clamp(1120px, 66vw, 2300px);
+  margin: 0 auto;
+  padding: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-32)) var(--l-gutter) 0;
+}
+
+.hero {
+  max-width: clamp(760px, 46vw, 1400px);
+  padding-bottom: var(--s-24);
+  border-bottom: var(--b-hairline) solid var(--c-border);
+}
+
+.kicker,
+.num {
+  font-family: var(--f-sans);
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--c-ink-3);
+}
+
+.h1 {
+  margin-top: var(--s-5);
+  font-size: var(--t-headline);
+  line-height: var(--lh-headline);
+  letter-spacing: var(--tr-headline);
+  font-weight: var(--w-medium);
+}
+
+.sub {
+  margin-top: var(--s-4);
+  font-size: var(--t-title);
+  line-height: var(--lh-title);
+  letter-spacing: var(--tr-title);
+  color: var(--c-ink-2);
+}
+
+.intro {
+  margin-top: var(--s-8);
+  font-size: var(--t-lead);
+  line-height: var(--lh-lead);
+  letter-spacing: var(--tr-lead);
+  max-width: 52ch;
+}
+
+.ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  margin-top: var(--s-10);
+}
+
+.step {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: var(--s-16);
+  align-items: center;
+  padding: var(--s-20) 0;
+  border-bottom: var(--b-hairline) solid var(--c-border);
+}
+
+.h2 {
+  margin-top: var(--s-3);
+  font-size: var(--t-title);
+  line-height: var(--lh-title);
+  letter-spacing: var(--tr-title);
+  font-weight: var(--w-medium);
+}
+
+.lead {
+  margin-top: var(--s-4);
+  font-size: var(--t-lead);
+  line-height: var(--lh-lead);
+  letter-spacing: var(--tr-lead);
+  max-width: 44ch;
+}
+
+.body {
+  margin-top: var(--s-4);
+  color: var(--c-ink-2);
+  max-width: 56ch;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.quote {
+  margin: 0;
+  padding-left: var(--s-5);
+  border-left: var(--b-focus) solid var(--c-ink);
+  font-size: var(--t-lead);
+  color: var(--c-ink);
+}
+
+.defs {
+  margin: 0;
+  border-top: var(--b-hairline) solid var(--c-border);
+}
+
+.defs > div {
+  display: grid;
+  grid-template-columns: 11rem 1fr;
+  gap: var(--s-4);
+  padding: var(--s-3) 0;
+  border-bottom: var(--b-hairline) solid var(--c-border);
+}
+
+.defs dt {
+  color: var(--c-ink);
+  font-weight: var(--w-medium);
+}
+
+.defs dd {
+  margin: 0;
+}
+
+.figure {
+  margin: 0;
+  padding: var(--s-8);
+  border-radius: var(--r-card);
+  background: var(--c-surface-1);
+}
+
+.plans {
+  padding: var(--s-20) 0;
+  border-bottom: var(--b-hairline) solid var(--c-border);
+}
+
+.planList {
+  margin: var(--s-8) 0 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: var(--b-hairline) solid var(--c-ink);
+}
+
+.planList > div {
+  padding: var(--s-4) var(--s-4) var(--s-4) 0;
+}
+
+.planList dt {
+  font-size: var(--t-small);
+  color: var(--c-ink-2);
+}
+
+.planList dd {
+  margin: var(--s-2) 0 0;
+  font-size: var(--t-lead);
+  font-weight: var(--w-medium);
+}
+
+.planList dd a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--c-border-strong);
+}
+
+.more {
+  display: inline-block;
+  margin-top: var(--s-6);
+  font-size: var(--t-small);
+  color: var(--c-ink-2);
+}
+
+.more:hover {
+  color: var(--c-ink);
+}
+
+.closing {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-8);
+  padding: 0 0 var(--s-32);
+}
+
+.page :global(section[aria-labelledby="faq-title"]) {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+@media (max-width: 899px) {
+  .page {
+    padding-top: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-16));
+  }
+  .step {
+    grid-template-columns: 1fr;
+    gap: var(--s-8);
+    padding: var(--s-12) 0;
+  }
+  .figure {
+    padding: var(--s-5);
+  }
+  .planList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .defs > div {
+    grid-template-columns: 1fr;
+    gap: var(--s-1);
+  }
+}
+
+@media (pointer: coarse) {
+  .more { display: inline-block; padding: 12px 0; margin: -12px 0; }
+}

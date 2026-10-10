@@ -1,0 +1,246 @@
+/*
+ * Keplar motion system. Quiet, fast, professional: everything that appears or leaves moves a little, nothing bounces for show.
+ *
+ *  - Tokens: three durations, an ease-out for enter, a quicker ease-in for exit, one soft spring for small physical things
+ *    (toggles, tab indicators), a few distances and the pop scale.
+ *  - Overlays: [data-motion] + [data-state="open" | "closed"] (src/components/motion/usePresence.ts keeps the element mounted
+ *    until its exit animation ends, with a fallback timeout). Menus, dialogs and tooltips that have not opted in still get
+ *    a quiet enter from the role defaults below; native <dialog> animates both ways in CSS.
+ *  - Pages: View Transitions (React <ViewTransition> on route templates, @view-transition for full page loads, and
+ *    src/lib/ui/view-transition.ts for the /app tabs, which switch inside one mounted shell).
+ *  - Loading: flat skeletons with an opacity pulse (never a gradient shimmer), a delayed fade for route loading states,
+ *    a thinking indicator; streamed chat messages fade and rise in once, when they mount (never per token or keystroke).
+ *  - Micro: color/opacity hover and focus transitions, a 0.98 press, pending buttons, sliding tab indicator, accordions, switches.
+ *
+ * Only transform-type properties (scale / translate / transform) and opacity are animated, plus color on hover and one
+ * accordion height (block-size, one element, on toggle only). Low-specificity :where() defaults so a component's own rules win.
+ * Reduced motion: distances and scale collapse to none, exits are instant (the hook skips the wait), enters are opacity only.
+ */
+
+:root {
+  --m-dur-1: 120ms; /* exits, presses, hover color */
+  --m-dur-2: 180ms; /* menus, popovers, tooltips, toasts */
+  --m-dur-3: 240ms; /* dialogs, sheets, page transitions */
+  --m-ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* enter: crisp start, long soft landing */
+  --m-ease-in: cubic-bezier(0.5, 0, 0.75, 0); /* exit: gets out of the way fast */
+  --m-ease-spring: cubic-bezier(0.34, 1.32, 0.64, 1); /* soft spring: one small overshoot */
+  --m-dist-1: 2px;
+  --m-dist-2: 4px;
+  --m-dist-3: 8px;
+  --m-scale-in: 0.96; /* overlays pop from 96% */
+  --m-press: 0.98; /* pressed buttons */
+  --m-loading-delay: 150ms; /* loading states stay invisible this long, so fast loads never flash */
+  --m-pulse: 1.6s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --m-dist-1: 0px;
+    --m-dist-2: 0px;
+    --m-dist-3: 0px;
+    --m-scale-in: 1;
+    --m-press: 1;
+    --m-ease-spring: var(--m-ease-out);
+    --m-dur-1: 1ms;
+    --m-dur-2: 120ms; /* enters stay as a short opacity fade */
+    --m-dur-3: 120ms;
+    --m-pulse: 2.4s;
+  }
+}
+
+/* ── keyframes (individual transform properties, so they compose with a component's own transform / translate) ── */
+@keyframes m-pop-in { from { opacity: 0; scale: var(--m-scale-in); } }
+@keyframes m-pop-out { to { opacity: 0; scale: var(--m-scale-in); } }
+@keyframes m-fade-in { from { opacity: 0; } }
+@keyframes m-fade-out { to { opacity: 0; } }
+@keyframes m-rise-in { from { opacity: 0; translate: 0 var(--m-rise, var(--m-dist-3)); } }
+@keyframes m-rise-out { to { opacity: 0; translate: 0 var(--m-dist-2); } }
+@keyframes m-drop-in { from { opacity: 0; translate: 0 calc(-1 * var(--m-dist-3)); } }
+@keyframes m-drop-out { to { opacity: 0; translate: 0 calc(-1 * var(--m-dist-2)); } }
+@keyframes m-sheet-in { from { translate: 0 100%; } }
+@keyframes m-sheet-out { to { translate: 0 100%; } }
+@keyframes m-left-in { from { translate: -100% 0; } }
+@keyframes m-left-out { to { translate: -100% 0; } }
+@keyframes m-right-in { from { translate: 100% 0; } }
+@keyframes m-right-out { to { translate: 100% 0; } }
+@keyframes m-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+@keyframes m-spin { to { rotate: 360deg; } }
+
+/* ── overlays: explicit opt-in (usePresence / useExit) ── */
+[data-motion="pop"],
+[data-motion="tip"] {
+  transform-origin: var(--m-origin, 50% 0);
+}
+[data-motion="pop"][data-state="open"] { animation: m-pop-in var(--m-dur-2) var(--m-ease-out) both; }
+[data-motion="pop"][data-state="closed"] { animation: m-pop-out var(--m-dur-1) var(--m-ease-in) both; }
+[data-motion="tip"][data-state="open"] { animation: m-pop-in var(--m-dur-1) var(--m-ease-out) both; }
+[data-motion="tip"][data-state="closed"] { animation: m-fade-out var(--m-dur-1) var(--m-ease-in) both; }
+[data-motion="fade"][data-state="open"] { animation: m-fade-in var(--m-dur-2) var(--m-ease-out) both; }
+[data-motion="fade"][data-state="closed"] { animation: m-fade-out var(--m-dur-1) var(--m-ease-in) both; }
+[data-motion="toast"][data-state="open"] { animation: m-rise-in var(--m-dur-3) var(--m-ease-out) both; }
+[data-motion="toast"][data-state="closed"] { animation: m-rise-out var(--m-dur-1) var(--m-ease-in) both; }
+[data-motion="drop"][data-state="open"] { animation: m-drop-in var(--m-dur-3) var(--m-ease-out) both; }
+[data-motion="drop"][data-state="closed"] { animation: m-drop-out var(--m-dur-1) var(--m-ease-in) both; }
+[data-motion="sheet"][data-state="open"] { animation: m-sheet-in var(--m-dur-3) var(--m-ease-out) both; }
+[data-motion="sheet"][data-state="closed"] { animation: m-sheet-out var(--m-dur-2) var(--m-ease-in) both; }
+[data-motion="drawer-left"][data-state="open"] { animation: m-left-in var(--m-dur-3) var(--m-ease-out) both; }
+[data-motion="drawer-left"][data-state="closed"] { animation: m-left-out var(--m-dur-2) var(--m-ease-in) both; }
+[data-motion="drawer-right"][data-state="open"] { animation: m-right-in var(--m-dur-3) var(--m-ease-out) both; }
+[data-motion="drawer-right"][data-state="closed"] { animation: m-right-out var(--m-dur-2) var(--m-ease-in) both; }
+/* A closing overlay never takes clicks meant for the page under it. */
+[data-motion][data-state="closed"] { pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* Sheets and drawers would still slide a full panel width: opacity only. Exits are instant (the hook does not wait). */
+  [data-motion="sheet"][data-state="open"],
+  [data-motion="drawer-left"][data-state="open"],
+  [data-motion="drawer-right"][data-state="open"] { animation-name: m-fade-in; }
+  [data-motion][data-state="closed"] { animation: none; }
+}
+
+/* ── overlays that have not opted in: a quiet enter (no exit: they unmount instantly) ── */
+:where([role="menu"], [role="dialog"], [role="alertdialog"], [role="tooltip"], [popover]:popover-open):where(:not([data-motion])) {
+  animation: m-pop-in var(--m-dur-2) var(--m-ease-out) backwards;
+}
+:where([role="menu"]):where(:not([data-motion])) { transform-origin: var(--m-origin, 50% 0); }
+:where([role="tooltip"]):where(:not([data-motion])) { animation-duration: var(--m-dur-1); }
+
+/* Native <dialog> (and its backdrop) animates both ways in CSS: @starting-style for the enter, allow-discrete display /
+   overlay transitions for the exit. Browsers without them open and close instantly, exactly as before. */
+:where(dialog):where(:not([data-motion])) {
+  opacity: 0;
+  scale: var(--m-scale-in);
+  transition:
+    opacity var(--m-dur-1) var(--m-ease-in),
+    scale var(--m-dur-1) var(--m-ease-in),
+    overlay var(--m-dur-1) allow-discrete,
+    display var(--m-dur-1) allow-discrete;
+}
+:where(dialog[open]):where(:not([data-motion])) {
+  opacity: 1;
+  scale: 1;
+  transition-duration: var(--m-dur-2);
+  transition-timing-function: var(--m-ease-out);
+}
+@starting-style {
+  :where(dialog[open]):where(:not([data-motion])) { opacity: 0; scale: var(--m-scale-in); }
+}
+:where(dialog):where(:not([data-motion]))::backdrop {
+  opacity: 0;
+  transition: opacity var(--m-dur-1) var(--m-ease-in), overlay var(--m-dur-1) allow-discrete, display var(--m-dur-1) allow-discrete;
+}
+:where(dialog[open]):where(:not([data-motion]))::backdrop { opacity: 1; transition-duration: var(--m-dur-2); }
+@starting-style {
+  :where(dialog[open]):where(:not([data-motion]))::backdrop { opacity: 0; }
+}
+
+/* ── pages ── */
+/* Full page loads between our own pages (docs host, sign-in redirects, hard links): a quick crossfade. */
+@view-transition { navigation: auto; }
+/* Clicks during a transition reach the live page instead of the snapshot overlay. */
+::view-transition { pointer-events: none; }
+::view-transition-old(root) { animation: m-fade-out var(--m-dur-1) var(--m-ease-in) both; }
+::view-transition-new(root) { animation: m-rise-in var(--m-dur-3) var(--m-ease-out) both; --m-rise: var(--m-dist-2); }
+/* Route templates (src/components/motion/RouteTransition.tsx): the page leaves fast, the next one fades and rises 4px. */
+::view-transition-old(.kp-route-out) { animation: m-fade-out var(--m-dur-1) var(--m-ease-in) both; }
+::view-transition-new(.kp-route-in) { animation: m-rise-in var(--m-dur-3) var(--m-ease-out) both; --m-rise: var(--m-dist-2); }
+/* The floating nav is an anchor: it never moves or fades between pages. */
+.m-vt-nav { view-transition-name: kp-nav; }
+::view-transition-group(kp-nav) { animation: none; z-index: 100; }
+::view-transition-old(kp-nav) { display: none; }
+::view-transition-new(kp-nav) { animation: none; }
+/* /app tabs (src/lib/ui/view-transition.ts, called from the sidebar): the root's fade-and-rise above plays for the view area,
+   and the sidebar is held still as its own anchor group. */
+:root[data-vt="view"] #keplar-sidebar { view-transition-name: kp-side; }
+::view-transition-group(kp-side) { animation: none; }
+::view-transition-old(kp-side) { display: none; }
+::view-transition-new(kp-side) { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) { animation-duration: 0s !important; animation-delay: 0s !important; }
+}
+
+/* ── loading ── */
+/* Skeleton: a flat block on the surface tint that breathes in opacity. No gradients, no shimmer sweep. */
+.m-skeleton {
+  display: block;
+  min-height: 0.75em;
+  border-radius: var(--r-xs);
+  background: rgb(var(--rgb-ink) / 0.07);
+  animation: m-pulse var(--m-pulse) ease-in-out infinite;
+}
+.m-skeleton[data-shape="line"] { height: 0.8em; border-radius: var(--r-pill); }
+.m-skeleton[data-shape="title"] { height: 1.4em; width: 45%; }
+.m-skeleton[data-shape="block"] { height: 8rem; border-radius: var(--r-md); }
+.m-skeleton[data-shape="circle"] { aspect-ratio: 1; border-radius: 50%; }
+/* Route loading states (loading.tsx): invisible for --m-loading-delay, then a soft fade in. */
+.m-delayed { animation: m-fade-in var(--m-dur-3) var(--m-ease-out) var(--m-loading-delay) both; }
+/* Thinking: three dots taking turns in opacity (Keplar's KLoader is the spinner; this is the inline "working" cue). */
+.m-thinking { display: inline-flex; align-items: center; gap: 0.3em; color: currentColor; }
+.m-thinking > i { width: 0.36em; height: 0.36em; border-radius: 50%; background: currentColor; animation: m-pulse 1.2s ease-in-out infinite both; }
+.m-thinking > i:nth-child(2) { animation-delay: 0.16s; }
+.m-thinking > i:nth-child(3) { animation-delay: 0.32s; }
+/* Streamed chat: each message fades and rises once, when it mounts. Token updates inside it never re-trigger this.
+   Opt in with data-motion="stream" on the message list; the /app chat thread (role="log", aria-live="off": its own announcer
+   handles speech) is matched as well until it carries the attribute. */
+:where([data-motion="stream"], [role="log"][aria-live="off"]) > :where(*) {
+  animation: m-rise-in var(--m-dur-3) var(--m-ease-out) backwards;
+  --m-rise: var(--m-dist-3);
+}
+
+/* ── micro-interactions ── */
+/* Hover and focus: color and opacity ease in, so nothing snaps. Never size: no growth on hover anywhere. */
+:where(a[href], button, summary, [role="button"], [role="tab"], [role="menuitem"], [role="switch"]) {
+  transition-property: color, background-color, border-color, text-decoration-color, opacity, fill, stroke, scale;
+  transition-duration: var(--m-dur-1);
+  transition-timing-function: var(--m-ease-out);
+}
+/* Press: a 0.98 dip while held (data-lit controls have their own press in lit.css). */
+:where(button, [role="button"]):where(:not([data-lit], [role="menuitem"], [role="option"], [role="tab"], :disabled, [aria-disabled="true"])):active {
+  scale: var(--m-press);
+  transition-duration: 60ms;
+}
+/* Pending: work in flight (Button `loading`, or aria-busy / data-pending on any button). Stays focusable. */
+:where(button, [role="button"]):where([aria-busy="true"], [data-pending]):where(:not([data-lit])) {
+  cursor: progress;
+  opacity: 0.72;
+}
+/* Switches: the knob and fill ease with the soft spring. */
+:where([role="switch"]) :where(*),
+:where([role="switch"])::before,
+:where([role="switch"])::after {
+  transition: translate var(--m-dur-2) var(--m-ease-spring), transform var(--m-dur-2) var(--m-ease-spring), background-color var(--m-dur-2) var(--m-ease-out), opacity var(--m-dur-2) var(--m-ease-out);
+}
+/* Tab indicator (useTabIndicator): one 1px bar scaled to the selected tab's width and slid under it. Transform only. */
+.m-tab-indicator {
+  position: absolute;
+  left: 0;
+  bottom: var(--ti-bottom, 0px);
+  width: 1px;
+  height: 2px;
+  background: var(--ti-color, currentColor);
+  transform-origin: 0 0;
+  /* --ti-inset (unitless px) keeps the bar short of the tab's edges, like an underline under the label */
+  transform: translateX(calc(var(--ti-x, 0px) + var(--ti-inset, 0) * 1px)) scaleX(calc(var(--ti-w, 0) - 2 * var(--ti-inset, 0)));
+  transition: transform var(--m-dur-3) var(--m-ease-spring);
+  pointer-events: none;
+}
+:where([data-tab-indicator="placing"]) .m-tab-indicator { transition: none; }
+/* Accordions: <details> opens and closes with its height (one element, on toggle) and a fade; instant where unsupported. */
+@supports selector(::details-content) {
+  :where(details):where(:not([data-motion="none"])) { interpolate-size: allow-keywords; }
+  :where(details):where(:not([data-motion="none"]))::details-content {
+    block-size: 0;
+    opacity: 0;
+    overflow-y: clip;
+    transition: block-size var(--m-dur-3) var(--m-ease-out), opacity var(--m-dur-2) var(--m-ease-out), content-visibility var(--m-dur-3) allow-discrete;
+  }
+  :where(details[open]):where(:not([data-motion="none"]))::details-content { block-size: auto; opacity: 1; }
+}
+:where(summary) :where(svg, [data-chevron]) { transition: rotate var(--m-dur-2) var(--m-ease-out), transform var(--m-dur-2) var(--m-ease-out); }
+
+@media (prefers-reduced-motion: reduce) {
+  :where(details)::details-content { transition-duration: 1ms; }
+  .m-tab-indicator { transition-duration: 1ms; }
+}

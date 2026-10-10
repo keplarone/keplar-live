@@ -1,0 +1,5 @@
+Contact: mailto:team@keplar.one
+Expires: 2027-09-30T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://keplar.one/.well-known/security.txt
+Policy: https://keplar.one/security

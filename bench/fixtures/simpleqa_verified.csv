@@ -1,0 +1,13 @@
+original_index,problem,answer,topic,answer_type,multi_step,requires_reasoning,urls,synthetic
+9000,Which gas makes up most of Earth's atmosphere?,Nitrogen,Science and technology,Other,false,false,https://example.org/fixture,true
+9001,What is the chemical symbol for tungsten?,W,Science and technology,Other,false,false,https://example.org/fixture,true
+9002,What is the capital city of Australia?,Canberra,Geography,Place,false,false,https://example.org/fixture,true
+9003,Which river flows through Baghdad?,Tigris,Geography,Place,false,false,https://example.org/fixture,true
+9004,In which year did the Berlin Wall fall?,1989,History,Date,false,false,https://example.org/fixture,true
+9005,Who was the first Roman emperor?,Augustus,History,Person,false,false,https://example.org/fixture,true
+9006,Who painted 'The Starry Night'?,Vincent van Gogh,Art,Person,false,false,https://example.org/fixture,true
+9007,In which city is the Prado Museum?,Madrid,Art,Place,false,false,https://example.org/fixture,true
+9008,How many symphonies did Beethoven complete?,9,Music,Number,false,false,https://example.org/fixture,true
+9009,Which instrument has 88 keys in its standard modern form?,Piano,Music,Other,false,false,https://example.org/fixture,true
+9010,How many players are on the field for one team in association football?,11,Sports,Number,false,false,https://example.org/fixture,true
+9011,In which city were the 1992 Summer Olympics held?,Barcelona,Sports,Place,false,false,https://example.org/fixture,true

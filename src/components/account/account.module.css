@@ -1,0 +1,160 @@
+.page { min-height: 70vh; padding: calc(var(--s-24) + var(--s-8)) var(--s-6) var(--s-24); display: flex; justify-content: center; }
+.card { width: 100%; max-width: clamp(520px, 30vw, 760px); display: flex; flex-direction: column; gap: var(--s-5); }
+.wide { max-width: clamp(760px, 46vw, 1400px); }
+.eyebrow { font-family: var(--f-sans); font-size: var(--t-label); letter-spacing: var(--tr-label); text-transform: uppercase; color: var(--c-ink-2); margin: 0; }
+.title { font-size: var(--t-title); line-height: var(--lh-title); letter-spacing: var(--tr-title); font-weight: var(--w-medium); margin: 0; }
+.lead { color: var(--c-ink-2); margin: 0; line-height: var(--lh-body); }
+.form { display: flex; flex-direction: column; gap: var(--s-3); }
+.fieldLabel { font-size: var(--t-small); color: var(--c-ink-2); }
+.input { height: 48px; padding: 0 var(--s-4); border-radius: var(--r-sm); border: var(--b-hairline, 1px) solid var(--c-border-strong); background: var(--c-canvas); color: var(--c-ink); font: inherit; }
+.input:focus-visible { outline: none; }
+.btn { height: 48px; padding: 0 var(--s-5); border-radius: var(--r-pill, 999px); border: 0; background: var(--c-ink); color: var(--c-canvas); font: inherit; font-weight: var(--w-medium); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2); text-decoration: none; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btnGhost { background: var(--c-canvas); color: var(--c-ink); border: 1px solid var(--c-border-strong); }
+.btn:focus-visible, .btnGhost:focus-visible, .link:focus-visible { outline: none; text-decoration: underline; text-underline-offset: 3px; }
+.divider { display: flex; align-items: center; gap: var(--s-3); color: var(--c-ink-2); font-size: var(--t-small); }
+.divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--c-border-strong); }
+.note { font-size: var(--t-small); color: var(--c-ink-2); margin: 0; line-height: var(--lh-small); }
+.ok { color: var(--c-ok); }
+.err { color: var(--c-err); }
+.panel { border: 1px solid var(--c-border-strong); border-radius: var(--r-md); padding: var(--s-5); display: flex; flex-direction: column; gap: var(--s-3); background: var(--c-canvas); }
+.row { display: flex; justify-content: space-between; gap: var(--s-4); align-items: baseline; flex-wrap: wrap; }
+.k { color: var(--c-ink-2); font-size: var(--t-small); }
+.v { font-weight: var(--w-medium); }
+.actions { display: flex; gap: var(--s-3); flex-wrap: wrap; }
+.track { height: 6px; border-radius: 3px; background: var(--c-surface-2); overflow: hidden; }
+.fill { height: 100%; background: var(--c-ink); }
+.fill[data-warn] { background: var(--c-dissent); }
+.badge { font-family: var(--f-sans); font-size: 11px; border: 1px solid var(--c-border-strong); border-radius: 999px; padding: 3px 8px; color: var(--c-ink-2); }
+.link { color: var(--c-ink); text-decoration: underline; text-underline-offset: 3px; }
+.mail { border-top: 1px solid var(--c-border); padding-top: var(--s-3); display: flex; flex-direction: column; gap: var(--s-1); }
+.pre { white-space: pre-wrap; word-break: break-all; font-family: var(--f-sans); font-size: 12px; margin: 0; color: var(--c-ink); }
+
+/* Social sign-in: provider brand guidelines (white button, neutral border, full-color logo, no recoloring). */
+.oauth { display: flex; flex-direction: column; gap: var(--s-3); }
+.oauthBtn { height: 48px; padding: 0 var(--s-5); border-radius: var(--r-pill, 999px); background: #fff; font: inherit; font-size: 15px; font-weight: var(--w-medium); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 12px; transition: background-color var(--d-fast, 120ms) ease, box-shadow var(--d-fast, 120ms) ease; }
+.oauthGoogle { color: #1f1f1f; border: 1px solid #747775; }
+.oauthMicrosoft { color: #5e5e5e; border: 1px solid #8c8c8c; }
+.oauthBtn:hover:not(:disabled) { background: #f8f9fa; box-shadow: 0 1px 2px rgba(60, 64, 67, 0.12); }
+.oauthBtn:focus-visible { outline: none; text-decoration: underline; text-underline-offset: 3px; }
+.oauthBtn:disabled { opacity: 0.6; cursor: progress; }
+.oauthLogo { flex: none; display: block; }
+.switch { font-size: var(--t-small); color: var(--c-ink-2); margin: 0; }
+/* Dark variants per Google's and Microsoft's dark-theme button specs. */
+:global(html[data-theme="dark"]) .oauthGoogle { background: #131314; color: #e3e3e3; border-color: #8e918f; }
+:global(html[data-theme="dark"]) .oauthMicrosoft { background: #2f2f2f; color: #ffffff; border-color: #2f2f2f; }
+:global(html[data-theme="dark"]) .oauthBtn:hover:not(:disabled) { background: #1f1f22; box-shadow: none; }
+:global(html[data-theme="dark"]) .oauthMicrosoft:hover:not(:disabled) { background: #3a3a3a; }
+
+/* Remember me + device sessions */
+.check { display: flex; align-items: center; gap: var(--s-2); font-size: var(--t-small); color: var(--c-ink-2); cursor: pointer; }
+.check input { width: 18px; height: 18px; accent-color: var(--c-ink); }
+.check input:focus-visible { outline: none; }
+.sessions { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-3); }
+.session { display: flex; justify-content: space-between; align-items: center; gap: var(--s-3); flex-wrap: wrap; padding-top: var(--s-3); border-top: 1px solid var(--c-border); }
+.session:first-child { border-top: 0; padding-top: 0; }
+.sessionInfo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.btnSm { height: 36px; padding: 0 var(--s-4); font-size: var(--t-small); }
+
+button.link { background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
+
+/* Settings categories + search */
+.settings { display: flex; flex-direction: column; gap: var(--s-5); }
+.settings [hidden] { display: none !important; }
+
+@media (pointer: coarse) {
+  .check { min-height: 40px; }
+  .btnSm { height: 40px; }
+}
+
+/* glass buttons (liquid glass: see src/styles/glass.css) */
+.btn { background: var(--btn-p-bg); color: var(--btn-p-ink); border-color: transparent; box-shadow: var(--btn-p-shadow); -webkit-backdrop-filter: blur(6px) saturate(1.4); backdrop-filter: blur(6px) saturate(1.4); transition: var(--btn-spring); }
+.btn:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--btn-p-bg); transform: scale(1.03, 1.015); }
+.btn:active:not(:disabled) { transform: scale(0.97, 0.92); }
+@media (prefers-reduced-motion: reduce) { .btn { transition: background-color 0.1s linear; transform: none !important; } }
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .btn { backdrop-filter: none; -webkit-backdrop-filter: none; } .btn { background: var(--btn-p-solid, #17171a); } }
+
+/* ── on/off switch (Settings -> Typing): clear glass track, ink knob when on ── */
+.tk { display: inline-flex; align-items: center; gap: var(--s-2); min-height: 40px; padding: 4px 12px 4px 4px; border-radius: var(--r-pill); background: var(--btn-s-bg); color: var(--c-ink); box-shadow: var(--btn-s-shadow); font-size: var(--t-small); font-weight: var(--w-medium); cursor: pointer; }
+.tk:disabled { opacity: 0.6; cursor: default; }
+.tkKnob { width: 28px; height: 28px; border-radius: 50%; background: rgb(var(--rgb-ink) / 0.18); transition: transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1), background-color 0.2s; }
+.tk[aria-checked="true"] .tkKnob { background: var(--c-ink); transform: translateX(0); }
+.tkText { min-width: 24px; text-align: left; }
+@media (prefers-reduced-motion: reduce) { .tkKnob { transition: none; } }
+
+/* ── Monolith redesign: big title, lit panels, glassy chips, glowing meters ── */
+.page { padding-top: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-20)); }
+.wide { max-width: clamp(880px, 58vw, 1500px); gap: var(--s-6); }
+.eyebrow { display: inline-flex; align-items: center; gap: var(--s-3); align-self: flex-start; padding: 7px 14px 7px 12px; border-radius: var(--r-pill); border: var(--b-hairline) solid var(--c-border-strong); background: rgb(var(--rgb-ink) / 0.06); box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.1); letter-spacing: 0.14em; }
+.eyebrow::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--c-ink); box-shadow: 0 0 10px 1px rgb(var(--rgb-ink) / 0.7); }
+.wide > .title { font-size: clamp(36px, 4.6vw, 88px); line-height: 0.98; letter-spacing: -0.05em; overflow-wrap: anywhere; text-wrap: balance; }
+.panel { border-radius: var(--r-card); border-color: var(--c-border-strong); padding: var(--s-6); background: rgb(var(--rgb-ink) / 0.06); box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.1), 0 30px 70px -56px rgb(0 0 0 / 0.6); }
+.row { padding: var(--s-1) 0; }
+.row + .row { border-top: var(--b-hairline) solid var(--c-border); padding-top: var(--s-3); }
+.track { height: 8px; border-radius: var(--r-pill); background: rgb(var(--rgb-ink) / 0.08); }
+.fill { border-radius: var(--r-pill); box-shadow: 0 0 14px rgb(var(--rgb-ink) / 0.5); }
+@media (max-width: 599px) { .panel { padding: var(--s-5) var(--s-4); } .page { padding-inline: var(--s-4); } }
+
+/* ── Settings: search + tabs + panels ── */
+.settingsSearch { display: flex; flex-direction: column; gap: var(--s-2); }
+.searchWrap { position: relative; display: flex; }
+.searchInput { width: 100%; border-radius: var(--r-pill); padding-inline: var(--s-5); padding-right: 76px; min-width: 0; text-overflow: ellipsis; }
+.searchInput::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; display: none; }
+.searchClear { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); height: 36px; padding: 0 var(--s-4); border-radius: var(--r-pill); border: 0; background: rgb(var(--rgb-ink) / 0.1); color: var(--c-ink); font: inherit; font-size: var(--t-small); cursor: pointer; }
+.searchClear:hover { background: rgb(var(--rgb-ink) / 0.16); }
+.searchClear:focus-visible { outline: none; }
+.settingsSearch .note:empty { display: none; }
+
+/* Tabs: wrap on wide screens; one swipeable row (with edge fade) on phones so they never stack three lines deep.
+ * Always transparent — even while sticky under the nav. A canvas/page-coloured band (solid or blurred) reads as a black
+ * rectangle behind the pills; selected pills keep their own fill for contrast. */
+.settingsTabsWrap { position: sticky; top: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-2)); z-index: 2; padding: var(--s-2) 0; background: transparent; }
+.settingsNav { display: flex; gap: var(--s-2); flex-wrap: wrap; }
+.settingsChip { display: inline-flex; align-items: center; justify-content: center; flex: none; min-height: 40px; padding: 0 var(--s-4); border: 1px solid var(--c-border); border-radius: var(--r-md); background: transparent; color: var(--c-ink-2); font: inherit; font-size: var(--t-small); font-weight: var(--w-medium); white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease; }
+/* Tabs are rounded rectangles, not pills: doubled class beats the sitewide pill rule in glass.css (specificity 0,1,1). */
+.settingsChip.settingsChip { border-radius: var(--r-md); }
+/* Inactive tabs never get a fill (no dark/grey box on hover, tap or focus): hover only lifts the label and hairline, on real pointers. */
+@media (hover: hover) { .settingsChip:not([data-on]):hover { color: var(--c-ink); border-color: rgb(var(--rgb-ink) / 0.3); background: transparent; } }
+/* Same weight as the other tabs on purpose: a heavier active label changed the chip width and shifted its neighbours on every click. */
+.settingsChip.settingsChip[data-on] { background: var(--c-ink); color: var(--c-canvas); border-color: var(--c-ink); }
+.settingsSection { display: flex; flex-direction: column; gap: var(--s-4); scroll-margin-top: calc(var(--l-nav-h) + var(--l-nav-offset) + 96px); }
+.sectionHeading { margin: 0; font-size: var(--t-small); font-weight: var(--w-medium); letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-ink-2); }
+.pageFooter { display: flex; flex-wrap: wrap; gap: var(--s-3); padding-top: var(--s-2); }
+
+@media (max-width: 720px) {
+  .settingsTabsWrap { margin-inline: calc(var(--s-4) * -1); padding-inline: var(--s-4); }
+  .settingsNav { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scrollbar-width: none; padding-block: 2px; padding-right: var(--s-8); }
+  .settingsNav::-webkit-scrollbar { display: none; }
+  .settingsChip { scroll-snap-align: center; }
+}
+
+/* Rows: value right-aligned on desktop, stacked under its label on phones so long values (email, dates) never squeeze. */
+.v { text-align: right; min-width: 0; overflow-wrap: anywhere; }
+.sub { display: block; margin-top: 2px; font-weight: var(--w-regular, 400); font-size: var(--t-small); line-height: var(--lh-small); color: var(--c-ink-2); }
+.vEmail { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: var(--s-2); }
+.email { overflow-wrap: anywhere; }
+@media (max-width: 599px) {
+  .row:has(> .v) { flex-direction: column; gap: 2px; align-items: flex-start; }
+  .row:has(> .v) > .v { text-align: left; }
+  .vEmail { justify-content: flex-start; }
+}
+
+/* Secondary buttons: must come after the primary glass override above (same specificity), otherwise "Sign out", "Refresh plan" and "Manage billing" render as white primary pills. */
+.btn.btnGhost { background: var(--btn-s-bg); color: var(--btn-s-ink, var(--c-ink)); border: 0; box-shadow: var(--btn-s-shadow); }
+.btn.btnGhost:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--btn-s-bg); filter: brightness(1.12); }
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .btn.btnGhost { background: var(--c-canvas); border: 1px solid var(--c-border-strong); } }
+
+/* ── minimal pass: five Settings groups; each group stacks its parts with one plain heading where the panel has none ── */
+.backLink { align-self: flex-start; display: inline-flex; align-items: center; gap: var(--s-2); font-size: var(--t-small); color: var(--c-ink-2); text-decoration: none; }
+.backLink:hover { color: var(--c-ink); }
+.sub { display: flex; flex-direction: column; gap: var(--s-3); scroll-margin-top: calc(var(--l-nav-h, 64px) + var(--s-16)); }
+.sub + .sub { margin-top: var(--s-8); }
+.subHeading { margin: 0; font-size: var(--t-body); font-weight: var(--w-medium); color: var(--c-ink); display: inline-flex; align-items: center; gap: var(--s-2); }
+.subTag { font-size: var(--t-label); font-weight: var(--w-regular); color: var(--c-ink-3); }
+
+/* Light theme: white cards on the warm page with a warm hairline and soft drop (Dark's 6% light veil + bright top edge read as a grey
+   slab with a dark line on a light page); ink glows become clean marks. Dark above is unchanged. */
+:global(:root[data-theme="light"]) .eyebrow { background: var(--lt-chip-bg); box-shadow: var(--sh-hairline); }
+:global(:root[data-theme="light"]) .eyebrow::before { box-shadow: none; }
+:global(:root[data-theme="light"]) .panel { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-shadow); }
+:global(:root[data-theme="light"]) .fill { box-shadow: none; }

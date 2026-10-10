@@ -1,0 +1,884 @@
+.wrap {
+  position: relative;
+  width: 100%;
+  container: composer / inline-size;
+}
+
+.composer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-3) var(--s-3) var(--s-4);
+  border-radius: var(--r-input);
+  background: var(--c-glass-strong);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-glass-border), 0 0 0 var(--b-hairline) rgb(var(--rgb-ink) / 0.07), var(--sh-float);
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--blur-glass)) saturate(var(--glass-saturate));
+  transition: box-shadow var(--d-base) var(--e-standard);
+}
+
+.composer:has(:is(textarea, input):focus) {
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-glass-border), 0 0 0 var(--b-hairline) rgb(var(--rgb-ink) / 0.16), var(--sh-float);
+}
+
+.input {
+  width: 100%;
+  min-height: 28px;
+  max-height: 240px;
+  padding: var(--s-1) var(--s-1) 0 0;
+  border: 0;
+  background: transparent;
+  resize: none;
+  font: inherit;
+  font-size: var(--t-body);
+  line-height: var(--lh-body);
+  color: var(--c-ink);
+  outline: none;
+  field-sizing: content;
+}
+
+.input::placeholder {
+  color: var(--c-ink-3);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+}
+
+.tools {
+  display: flex;
+  flex: 1 1 0;
+  gap: var(--s-1);
+  min-width: 0;
+  overflow: hidden;
+  scrollbar-width: none;
+  margin-left: calc(-1 * var(--s-1));
+  padding: 2px;
+}
+
+.tools::-webkit-scrollbar {
+  display: none;
+}
+
+.tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 var(--s-3) 0 10px;
+  border-radius: var(--r-pill);
+  font-size: var(--t-small);
+  color: var(--c-ink-2);
+  white-space: nowrap;
+  flex: none;
+  transition: color var(--d-fast) var(--e-standard), background-color var(--d-fast) var(--e-standard), box-shadow var(--d-fast) var(--e-standard);
+}
+
+.tool:hover {
+  color: var(--c-ink);
+  background: rgb(var(--rgb-ink) / 0.04);
+}
+
+.tool[aria-pressed="true"] {
+  color: var(--c-ink);
+  background: var(--c-canvas);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong), 0 0 0 3px rgba(255, 255, 255, 0.22);
+}
+
+.tool[aria-pressed="true"] svg {
+  color: var(--c-agree);
+}
+
+.tool:focus-visible,
+.routingBtn:focus-visible,
+.send:focus-visible,
+.stop:focus-visible {
+  border-radius: var(--r-pill);
+  outline-offset: 1px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  flex: none;
+}
+
+.routingBtn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 var(--s-3) 0 10px;
+  border-radius: var(--r-pill);
+  font-size: var(--t-small);
+  color: var(--c-ink-3);
+  transition: color var(--d-fast) var(--e-standard), background-color var(--d-fast) var(--e-standard);
+}
+
+.routingBtn:hover,
+.routingBtn[aria-expanded="true"] {
+  color: var(--c-ink);
+  background: rgb(var(--rgb-ink) / 0.04);
+}
+
+.routingBtn[data-custom]::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 20px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--c-agree);
+}
+
+.send,
+.stop {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  height: 36px;
+  padding: 0 var(--s-4);
+  border-radius: var(--r-pill);
+  background: var(--c-ink);
+  color: var(--c-canvas);
+  font-size: var(--t-small);
+  font-weight: var(--w-medium);
+  white-space: nowrap;
+  box-shadow: inset 0 1px 0 rgb(var(--rgb-canvas) / 0.14);
+  transition: background-color var(--d-base) var(--e-standard), opacity var(--d-base) var(--e-standard);
+}
+
+.send:hover:not(:disabled),
+.stop:hover {
+  background: var(--c-ink-hover);
+}
+
+.send:disabled {
+  opacity: 0.28;
+  cursor: default;
+}
+
+.arrow {
+  display: inline-block;
+  transition: transform var(--d-base) var(--e-standard);
+}
+
+.send:hover:not(:disabled) .arrow {
+  transform: translateX(3px);
+}
+
+.stop {
+  background: var(--c-canvas);
+  color: var(--c-ink);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong);
+}
+
+.stop:hover {
+  background: var(--c-surface-1);
+}
+
+/* attachments */
+
+.fileError {
+  font-size: var(--t-label);
+  color: var(--c-dissent-text);
+}
+
+/* advanced routing */
+.panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + var(--s-2));
+  z-index: 5;
+  width: min(420px, 100%);
+  max-height: min(70vh, 620px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+  padding: var(--s-5);
+  border-radius: var(--r-card);
+  background: rgb(var(--rgb-canvas) / 0.9);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-glass-border), 0 0 0 var(--b-hairline) rgb(var(--rgb-ink) / 0.08), var(--sh-window);
+  -webkit-backdrop-filter: blur(var(--blur-glass-strong)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--blur-glass-strong)) saturate(var(--glass-saturate));
+  /* enter and exit: data-motion="pop" from the routing button (src/styles/motion.css) */
+  scrollbar-width: thin;
+}
+
+.panelHead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+.panelTitle {
+  font-weight: var(--w-medium);
+  font-size: var(--t-small);
+}
+
+.panelLede,
+.help {
+  font-size: var(--t-label);
+  line-height: var(--lh-small);
+  color: var(--c-ink-2);
+}
+
+.help {
+  color: var(--c-ink-3);
+  margin-top: var(--s-2);
+}
+
+.field {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.fieldRow {
+  display: flex;
+  flex-direction: column;
+}
+
+.legend {
+  display: block;
+  padding: 0;
+  margin-bottom: var(--s-2);
+  font-family: var(--f-sans);
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--c-ink-3);
+}
+
+.segmented {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--r-sm);
+  background: var(--c-surface-2);
+}
+
+.segment {
+  position: relative;
+  flex: 1 1 auto;
+}
+
+.segment input,
+.family input,
+.check input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.segment span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  padding: 0 var(--s-3);
+  border-radius: var(--r-xs);
+  font-size: var(--t-small);
+  color: var(--c-ink-2);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--d-fast) var(--e-standard), color var(--d-fast) var(--e-standard);
+}
+
+.segment input:checked + span {
+  background: var(--c-canvas);
+  color: var(--c-ink);
+  box-shadow: var(--sh-hairline);
+}
+
+.segment input:focus-visible + span,
+.family input:focus-visible + span,
+.check input:focus-visible + span {
+  outline: var(--b-focus) solid var(--c-focus);
+  outline-offset: 1px;
+}
+
+.rangeRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.range {
+  flex: 1;
+  accent-color: var(--c-ink);
+}
+
+.rangeValue {
+  width: 2ch;
+  text-align: right;
+  font-family: var(--f-sans);
+  font-size: var(--t-small);
+  font-variant-numeric: tabular-nums;
+}
+
+.check {
+  position: relative;
+  display: flex;
+}
+
+.check span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  font-size: var(--t-small);
+  cursor: pointer;
+  border-radius: var(--r-xs);
+}
+
+.check span::before {
+  content: "";
+  width: 28px;
+  height: 16px;
+  border-radius: var(--r-pill);
+  background: var(--c-surface-2);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border);
+  transition: background-color var(--d-fast) var(--e-standard);
+}
+
+.check span::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: var(--c-canvas);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: transform var(--d-fast) var(--e-standard);
+}
+
+.check input:checked + span::before {
+  background: var(--c-ink);
+}
+
+.check input:checked + span::after {
+  transform: translateX(12px);
+}
+
+.families {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+}
+
+.family {
+  position: relative;
+}
+
+.family span {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 var(--s-3);
+  border-radius: var(--r-pill);
+  font-size: var(--t-label);
+  color: var(--c-ink-2);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border);
+  cursor: pointer;
+  transition: color var(--d-fast) var(--e-standard), background-color var(--d-fast) var(--e-standard);
+}
+
+.family input:checked + span {
+  color: var(--c-ink-3);
+  text-decoration: line-through;
+  background: var(--c-surface-2);
+}
+
+.previewLine {
+  padding-top: var(--s-4);
+  border-top: var(--b-hairline) solid var(--c-border);
+  font-size: var(--t-label);
+  color: var(--c-ink-2);
+  font-family: var(--f-sans);
+  letter-spacing: 0.02em;
+}
+
+
+/* Debate (BETA) chip: a small "Beta" tag after its label, hidden whenever the tools are icon-only. */
+.toolBeta {
+  display: inline-flex;
+  align-items: center;
+  height: 16px;
+  padding: 0 6px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--c-border-strong);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--c-ink-2);
+}
+
+@media (max-width: 899px) {
+  .toolBeta {
+    display: none;
+  }
+  .composer {
+    padding: var(--s-2) var(--s-2) var(--s-2) var(--s-3);
+    border-radius: var(--r-card);
+  }
+  .toolLabel,
+  .routingLabel {
+    display: none;
+  }
+  .tool,
+  .routingBtn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    justify-content: center;
+  }
+  .routingBtn[data-custom]::after {
+    left: 22px;
+  }
+  .send {
+    padding: 0 var(--s-3);
+  }
+  .panel {
+    position: fixed;
+    left: var(--s-3);
+    right: var(--s-3);
+    bottom: calc(var(--s-3) + 120px);
+    width: auto;
+  }
+}
+
+
+/* Deep Research budget hint */
+.budget {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-4);
+  margin: 0 var(--s-2) var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-md);
+  background: rgba(23, 23, 26, 0.06);
+  font-size: var(--t-label);
+  color: var(--c-ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.budget[data-blocked] {
+  background: rgba(201, 102, 74, 0.07);
+  color: var(--c-ink);
+}
+
+.budgetQuiet {
+  color: var(--c-ink-3);
+}
+
+.budgetActions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-4);
+}
+
+.budgetBtn,
+.budgetLink {
+  font-size: var(--t-label);
+  font-weight: var(--w-medium);
+  color: var(--c-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--c-border-strong);
+  text-underline-offset: 3px;
+}
+
+.budgetBtn:hover,
+.budgetLink:hover {
+  text-decoration-color: currentColor;
+}
+
+/* media attachments (images, video frames) */
+.composer[data-dragging] {
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-glass-border), 0 0 0 2px rgba(23, 23, 26, 0.35), var(--sh-float);
+}
+
+.dropZone {
+  position: absolute;
+  inset: 4px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  border-radius: calc(var(--r-input) - 4px);
+  border: 1.5px dashed rgba(23, 23, 26, 0.55);
+  background: rgb(var(--rgb-canvas) / 0.92);
+  font-family: var(--f-sans);
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--c-ink-2);
+  pointer-events: none;
+}
+
+.mediaNote {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px var(--s-3);
+  font-family: var(--f-sans);
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  line-height: var(--lh-small);
+  color: var(--c-ink-2);
+}
+
+.mediaNote[data-free] > span:first-child {
+  color: var(--c-dissent-text);
+}
+
+.mediaNoteQuiet {
+  color: var(--c-ink-3);
+}
+
+/* Loading text in the composer pulses in opacity (never a gradient shimmer sweep). */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+/* Dictation: a quiet state on the Voice button (no glow); reduced motion gets a steady dot instead of a pulse. */
+.tool[data-voice-btn="listening"] svg { color: var(--c-dissent); }
+.tool[data-voice-btn="listening"]::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  margin-left: 2px;
+  border-radius: 50%;
+  background: var(--c-dissent);
+  animation: voicePulse 1.4s var(--e-standard) infinite;
+}
+.tool[data-voice-btn="processing"] { animation: pulse var(--m-pulse, 1.6s) ease-in-out infinite; } /* "Finishing…": the one composer loading state */
+@media (prefers-reduced-motion: reduce) { .tool[data-voice-btn="processing"] { animation: none; opacity: 0.6; } }
+.tool[data-voice-btn="speaking"] svg { color: var(--c-ink); }
+.tool[data-voice-btn="error"] svg { color: var(--c-dissent-text); }
+@keyframes voicePulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+@media (prefers-reduced-motion: reduce) { .tool[data-voice-btn="listening"]::after { animation: none; } }
+
+@media (pointer: coarse) {
+  .tool, .routingBtn, .send, .stop { min-width: 44px; min-height: 44px; height: 44px; }
+}
+
+/* glass buttons (liquid glass: see src/styles/glass.css) */
+.send { background: var(--btn-p-bg); color: var(--btn-p-ink); border-color: transparent; box-shadow: var(--btn-p-shadow); -webkit-backdrop-filter: blur(6px) saturate(1.4); backdrop-filter: blur(6px) saturate(1.4); transition: var(--btn-spring); }
+.send:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--btn-p-bg); transform: scale(1.03, 1.015); }
+.send:active:not(:disabled) { transform: scale(0.97, 0.92); }
+@media (prefers-reduced-motion: reduce) { .send { transition: background-color 0.1s linear; transform: none !important; } }
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .send { backdrop-filter: none; -webkit-backdrop-filter: none; } .send { background: var(--btn-p-solid, #17171a); } }
+
+/* ── liquid glass (CP-6c): clear glass composer + menus, ink focus glow (no blue/purple), refraction in Chromium ── */
+.composer {
+  border-radius: 28px;
+  background: var(--lg-fill-strong);
+  -webkit-backdrop-filter: var(--lg-bf);
+  backdrop-filter: var(--lg-bf);
+  box-shadow: var(--lg-ring), var(--lg-shadow);
+  transition: box-shadow 0.25s var(--e-standard);
+}
+html[data-lens] .composer { backdrop-filter: url(#lg-refract) var(--lg-bf); }
+.composer:has(:is(textarea, input):focus) {
+  box-shadow: var(--lg-ring), inset 0 0 0 1px rgb(var(--ring-rgb, 23 23 26) / 0.32), 0 0 0 4px rgb(var(--ring-rgb, 23 23 26) / 0.09), var(--lg-shadow);
+}
+
+/* Phones and narrow columns: mode chips that don't fit move into the "More" menu (measured in Composer.tsx); the row never scrolls or clips. */
+.tool[data-overflow] { display: none; }
+.more:not([data-show]) { display: none; }
+.more[aria-expanded="true"] { color: var(--c-ink); background: rgb(var(--rgb-ink) / 0.06); }
+/* a pressed mode that had to move into More (narrow phones): More looks pressed, like the chip it holds */
+.more[data-active] { color: var(--c-ink); background: var(--c-canvas); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong), 0 0 0 3px rgba(255, 255, 255, 0.22); }
+.more[data-active] svg { color: var(--c-agree); }
+.moreMenu {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + var(--s-2));
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 200px;
+  max-width: calc(100% - var(--s-4));
+  padding: var(--s-1);
+  border-radius: var(--shape-card, 16px);
+  /* Opaque like the slash-command menu: a blur inside the composer's own glass can't reach the page behind, so a glass fill reads as see-through. */
+  background: var(--c-canvas);
+  box-shadow: inset 0 0 0 var(--b-hairline, 1px) var(--c-border-strong), var(--lg-shadow, var(--sh-float));
+  /* enter and exit: data-motion="pop" from the button that opened it (src/styles/motion.css) */
+}
+.moreItem {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 40px;
+  padding: 0 var(--s-3);
+  border-radius: var(--shape-control, 12px);
+  font-size: var(--t-small);
+  color: var(--c-ink-2);
+  text-align: left;
+  white-space: nowrap;
+}
+.moreItem:hover { color: var(--c-ink); background: rgb(var(--rgb-ink) / 0.05); }
+.moreItem[aria-checked="true"] { color: var(--c-ink); background: rgb(var(--rgb-ink) / 0.08); }
+.moreItem .toolBeta { display: inline-flex; margin-left: auto; }
+.moreItem:focus-visible { outline-offset: -2px; }
+@media (pointer: coarse) { .moreItem { min-height: 44px; } }
+
+/* The composer, not the window, decides: when the toolbar cannot show every label (a narrow main column beside the sidebar, 200% zoom, a split view),
+ * the tools become icon buttons (each already has its aria-label and tooltip) instead of a strip that clips its labels behind a hidden scrollbar.
+ * Two steps, measured on the live row (Attach, Voice, Talk + 5 modes needs a ~1150px composer; the Debate chip adds ~130px, so both steps moved up): first Attach, Voice and Talk (the buttons without
+ * a data-mode) drop their labels, unless active so "Listening…" stays readable; then every tool does. At 1920x1080 the composer is ~1000px wide
+ * and at 1366x768 ~800px, so before this the row clipped "Create image" and "Agent" out of sight on ordinary desktops. */
+@container composer (max-width: 1480px) {
+  .tool:not([data-mode]):not([aria-pressed="true"]) .toolLabel {
+    display: none;
+  }
+  .tool:not([data-mode]):not([aria-pressed="true"]) {
+    width: 36px;
+    padding: 0;
+    justify-content: center;
+  }
+}
+@container composer (max-width: 1240px) {
+  .toolBeta {
+    display: none;
+  }
+  .toolLabel {
+    display: none;
+  }
+  .tool {
+    width: 36px;
+    padding: 0;
+    justify-content: center;
+  }
+  /* an active mode keeps its name next to the icon (as in the product videos: "Study", "Slides"), so what the next message does is readable */
+  .tool[data-mode][aria-pressed="true"] {
+    width: auto;
+    padding: 0 var(--s-3) 0 10px;
+  }
+  .tool[data-mode][aria-pressed="true"] .toolLabel {
+    display: inline;
+  }
+  /* ...unless even that can't fit beside Attach, Voice, Talk and More (a phone): then it is a pressed icon like the rest (the status note names the mode) */
+  .tool[data-mode][aria-pressed="true"][data-compact] {
+    width: 36px;
+    padding: 0;
+  }
+  .tool[data-mode][aria-pressed="true"][data-compact] .toolLabel {
+    display: none;
+  }
+}
+
+/* ── Attach menu, reads hint and drop zone (multimodal) ─────────────────────
+   Flat graphite: opaque surface, hairline edges, no glow, no gradients, no focus boxes. */
+.readsHint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px var(--s-2);
+  margin: 0;
+  font-size: var(--t-label);
+  line-height: var(--lh-small);
+  color: var(--c-ink-3);
+  pointer-events: none;
+  user-select: none;
+}
+.readsKinds {
+  color: rgb(var(--rgb-ink) / 0.38);
+}
+@container composer (max-width: 420px) {
+  .readsKinds { display: none; }
+}
+
+.attachMenu {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + var(--s-2));
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  width: min(340px, calc(100% - var(--s-2)));
+  padding: var(--s-1);
+  border-radius: var(--shape-card, 16px);
+  background: var(--c-canvas);
+  box-shadow: inset 0 0 0 var(--b-hairline, 1px) var(--c-border-strong), var(--lg-shadow, var(--sh-float));
+  /* enter and exit: data-motion="pop" from the button that opened it (src/styles/motion.css) */
+}
+.attachItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  width: 100%;
+  padding: 10px var(--s-3);
+  border-radius: 10px;
+  text-align: left;
+  color: var(--c-ink);
+  outline: none;
+  transition: background-color var(--d-fast) var(--e-standard);
+}
+.attachItem > svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--c-ink-2);
+}
+.attachItem:hover,
+.attachItem:focus-visible {
+  background: rgb(var(--rgb-ink) / 0.06);
+}
+.attachText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  font-size: var(--t-small);
+  line-height: 1.3;
+}
+.attachSub {
+  font-size: var(--t-label);
+  color: var(--c-ink-3);
+}
+.linkForm {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 2px 0;
+  padding: 4px 4px 4px var(--s-3);
+  border-radius: 10px;
+  background: rgb(var(--rgb-ink) / 0.05);
+  box-shadow: inset 0 0 0 var(--b-hairline, 1px) var(--c-border-strong);
+}
+.linkForm > svg {
+  flex: none;
+  color: var(--c-ink-2);
+}
+.linkInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--t-small);
+  color: var(--c-ink);
+  outline: none;
+}
+.linkInput::placeholder {
+  color: var(--c-ink-3);
+}
+.linkGo {
+  flex: none;
+  height: 30px;
+  padding: 0 var(--s-3);
+  border-radius: 8px;
+  font-size: var(--t-small);
+  font-weight: 500;
+  background: var(--c-ink);
+  color: var(--c-canvas);
+  outline: none;
+}
+.linkGo:disabled {
+  opacity: 0.35;
+}
+.linkGo:focus-visible {
+  box-shadow: 0 0 0 2px var(--c-canvas), 0 0 0 3px var(--c-ink-2);
+}
+.attachReads {
+  margin-top: var(--s-1);
+  padding: var(--s-2) var(--s-3) var(--s-1);
+  border-top: var(--b-hairline, 1px) solid var(--c-border);
+}
+.attachReadsTitle {
+  margin: 0 0 6px;
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--c-ink-3);
+}
+.attachReads ul {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.attachReads li {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  font-size: var(--t-label);
+  color: var(--c-ink-2);
+  white-space: nowrap;
+  cursor: default;
+}
+.attachReads li svg {
+  flex: none;
+  color: var(--c-ink-3);
+}
+
+.dropTitle {
+  font-size: var(--t-label);
+}
+.dropKinds {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px var(--s-3);
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--c-ink-3);
+}
+.dropKinds > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.dropZone:has(.dropKinds) {
+  flex-direction: column;
+}
+:global(html[data-theme="dark"]) .dropZone {
+  border-color: rgb(var(--rgb-ink) / 0.4);
+}
+
+@media (pointer: coarse) {
+  .attachItem { min-height: 48px; }
+  .linkGo { height: 40px; }
+  .linkInput { height: 40px; font-size: 16px; }
+}
+@media (max-width: 520px) {
+  .attachMenu { width: calc(100% - var(--s-2)); }
+  .attachReads ul { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* Calm composer: the "Paste a link or drop a file" line (aria-hidden; the same guidance is in the input's description and the + menu)
+   no longer sits under every empty box, and the single "Modes" control keeps its word so the menu is findable. */
+.readsHint { display: none; }
+.wrap .tool.more:not([aria-pressed="true"]) { width: auto; padding: 0 var(--s-3) 0 10px; gap: 6px; color: var(--c-ink-2); }
+.wrap .tool.more:not([data-mode]) .toolLabel { display: inline; }
+@container composer (max-width: 420px) {
+  .wrap .tool.more:not([aria-pressed="true"]) { width: 36px; padding: 0; }
+  .wrap .tool.more:not([data-mode]) .toolLabel { display: none; }
+}
+@media (max-height: 700px) {
+  .composer { gap: var(--s-1); padding-top: var(--s-2); padding-bottom: var(--s-2); }
+}

@@ -1,0 +1,28 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/domains",
+      "schedule": "17 5 * * *"
+    },
+    {
+      "path": "/api/cron/learning",
+      "schedule": "37 4 * * *"
+    },
+    {
+      "path": "/api/cron/agents",
+      "schedule": "5 13 * * *"
+    },
+    {
+      "path": "/api/ops/openrouter-balance",
+      "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/cost-guard",
+      "schedule": "30 13 * * *"
+    },
+    {
+      "path": "/api/cron/core",
+      "schedule": "47 6 * * *"
+    }
+  ]
+}

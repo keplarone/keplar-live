@@ -1,0 +1,43 @@
+.dock { position: fixed; right: 16px; bottom: 16px; z-index: var(--z-overlay); display: flex; flex-direction: column; align-items: flex-end; gap: 8px; pointer-events: none; }
+.dock > * { pointer-events: auto; }
+.bar { display: flex; gap: 8px; }
+.pill, .tool, .toolOn, .primary, .x {
+  font: inherit; cursor: pointer; border-radius: 999px; min-height: 36px; padding: 6px 14px;
+  border: 1px solid var(--c-border-strong); background: var(--c-canvas); color: var(--c-ink);
+}
+.pill:hover, .tool:hover { background: var(--c-surface-1); }
+.toolOn, .primary { background: var(--c-ink); color: var(--c-canvas); border-color: var(--c-ink); }
+.primary:disabled { opacity: 0.45; cursor: default; }
+.x { min-width: 36px; padding: 0 10px; font-size: 18px; line-height: 1; }
+.panel {
+  width: min(360px, calc(100vw - 32px)); padding: 14px; border-radius: 16px;
+  background: var(--c-canvas); color: var(--c-ink); border: 1px solid var(--c-border);
+  box-shadow: 0 16px 40px rgb(0 0 0 / 0.18);
+}
+.head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.head h2 { margin: 0; font-size: 16px; }
+.input {
+  width: 100%; resize: vertical; min-height: 72px; border-radius: 12px; padding: 10px 12px;
+  border: 1px solid var(--c-border-strong); background: var(--c-surface-1); color: var(--c-ink); font: inherit;
+}
+.note { margin: 8px 0; color: var(--c-ink-2); font-size: 12px; }
+.err { margin: 8px 0; color: #8a3b32; font-size: 13px; }
+.stats { margin: 0; display: grid; gap: 8px; }
+.stats div { display: flex; justify-content: space-between; gap: 12px; padding-top: 8px; border-top: 1px solid var(--c-border); }
+.stats dt { color: var(--c-ink-2); font-size: 13px; }
+.stats dd { margin: 0; font-variant-numeric: tabular-nums; }
+.draw { position: fixed; inset: 0; z-index: 60; }
+.sheet { position: absolute; inset: 0; width: 100%; height: 100%; cursor: crosshair; background: rgb(11 11 13 / 0.12); touch-action: none; }
+.tools {
+  position: absolute; top: calc(var(--l-nav-h) + var(--l-nav-offset) + 10px); left: 50%; transform: translateX(-50%);
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-width: calc(100vw - 24px);
+  padding: 8px; border-radius: 16px; background: var(--c-canvas); border: 1px solid var(--c-border);
+}
+.drawNote {
+  position: absolute; left: 16px; bottom: 16px; margin: 0; max-width: 360px;
+  padding: 8px 12px; border-radius: 12px; background: var(--c-canvas); color: var(--c-ink-2); font-size: 12px;
+  border: 1px solid var(--c-border);
+}
+@media (max-width: 1099px) {
+  :global(html:not([data-desktop="1"])) .dock { display: none; }
+}

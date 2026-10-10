@@ -1,0 +1,124 @@
+/**
+ * First-party, privacy-respecting search-to-activation measurement.
+ *
+ * What is stored (collection `seo_events`, see docs/seo/MEASUREMENT.md): the event name, the landing page path the visit started
+ * on, a coarse source class (search / ai / social / direct / other), an optional utm_source and utm_campaign, an optional
+ * placement label for CTA clicks, and a random per-browser id. NEVER stored: prompt text, uploads, emails, account ids,
+ * IP addresses, user agents, referrer URLs. Collected only after the visitor allowed Analytics in the cookie banner
+ * (the consent cookie is re-checked on the server); Global Privacy Control / Do Not Track visitors are skipped.
+ * Retention: 180 days by default (KEPLAR_RETAIN_SEO_EVENTS_DAYS), pruned with the other telemetry.
+ */
+import { allows, parseRecord } from "@/lib/consent";
+import { collection } from "@/lib/create/platform/store";
+import { id } from "@/lib/create/platform/ids";
+
+export const SEO_EVENTS = ["landing_view", "cta_click", "signup_complete", "first_prompt", "synthesis_success"] as const;
+export type SeoEvent = (typeof SEO_EVENTS)[number];
+export const SEO_SOURCES = ["search", "ai", "social", "direct", "other", "internal"] as const;
+export type SeoSource = (typeof SEO_SOURCES)[number];
+
+export type SeoEventRow = {
+  id: string;
+  workspaceId: string;
+  at: string;
+  day: string;
+  event: SeoEvent;
+  landing: string;
+  src: SeoSource;
+  vid: string;
+  where?: string;
+  utmSource?: string;
+  utmCampaign?: string;
+  level?: string;
+};
+
+const SYSTEM = "system";
+const rows = () => collection<SeoEventRow>("seo_events");
+
+const LEVELS = new Set(["consensus", "partial", "none", "single", "unscored"]);
+const tag = (v: unknown, re: RegExp) => (typeof v === "string" && re.test(v) ? v : undefined);
+
+export type SeoInput = { event: SeoEvent; landing: string; src: SeoSource; vid: string; where?: string; utmSource?: string; utmCampaign?: string; level?: string };
+
+/** Strict allow-list validation. Anything else is dropped; free text never reaches the database. */
+export function sanitizeSeoEvent(body: unknown): SeoInput | null {
+  if (!body || typeof body !== "object") return null;
+  const b = body as Record<string, unknown>;
+  const event = SEO_EVENTS.find((e) => e === b.e);
+  if (!event) return null;
+  const landing = tag(b.landing, /^(\/[a-z0-9][a-z0-9\-/]{0,79}|\/|\(unknown\))$/);
+  const vid = tag(b.vid, /^[a-f0-9]{16,32}$/);
+  const src = SEO_SOURCES.find((s) => s === b.src) ?? "other";
+  if (!landing || !vid) return null;
+  const level = typeof b.level === "string" && LEVELS.has(b.level) ? b.level : undefined;
+  return {
+    event,
+    landing,
+    src,
+    vid,
+    where: tag(b.where, /^[a-z0-9:_\-]{1,48}$/),
+    utmSource: tag(b.utmSource, /^[\w.\-]{1,40}$/),
+    utmCampaign: tag(b.utmCampaign, /^[\w.\-]{1,60}$/),
+    level,
+  };
+}
+
+/** True when the request carries a consent cookie that allows analytics, and no GPC / DNT signal. */
+export function consentOk(headers: Headers): boolean {
+  if (headers.get("sec-gpc") === "1" || headers.get("dnt") === "1") return false;
+  const m = /(?:^|;\s*)keplar_consent=([^;]+)/.exec(headers.get("cookie") ?? "");
+  return Boolean(m && allows(parseRecord(m[1]), "analytics"));
+}
+
+export async function recordSeoEvent(input: SeoInput, at = new Date()): Promise<SeoEventRow> {
+  const iso = at.toISOString();
+  const row: SeoEventRow = { id: id("se"), workspaceId: SYSTEM, at: iso, day: iso.slice(0, 10), ...input };
+  for (const k of Object.keys(row) as (keyof SeoEventRow)[]) if (row[k] === undefined) delete row[k];
+  return rows().insert(row);
+}
+
+export const retainSeoDays = (env: Record<string, string | undefined> = process.env) => {
+  const n = Number(env.KEPLAR_RETAIN_SEO_EVENTS_DAYS);
+  return Number.isFinite(n) && n >= 1 ? Math.floor(n) : 180;
+};
+
+export async function pruneSeoEvents(at = Date.now(), batch = 5000): Promise<number> {
+  return rows().purgeSystemBefore("at", new Date(at - retainSeoDays() * 864e5).toISOString(), batch);
+}
+
+/* ── reporting ─────────────────────────────────────────────────────────────── */
+
+export type LandingStats = { landing: string; views: number; ctaClicks: number; signups: number; firstPrompts: number; syntheses: number; bySource: Partial<Record<SeoSource, number>> };
+
+/** Distinct browsers per event per landing page, over the last `days` days. Pure over rows so it is easy to test. */
+export function summarize(list: SeoEventRow[]): LandingStats[] {
+  const by = new Map<string, { sets: Record<SeoEvent, Set<string>>; src: Map<SeoSource, Set<string>> }>();
+  for (const r of list) {
+    let e = by.get(r.landing);
+    if (!e) by.set(r.landing, (e = { sets: { landing_view: new Set(), cta_click: new Set(), signup_complete: new Set(), first_prompt: new Set(), synthesis_success: new Set() }, src: new Map() }));
+    e.sets[r.event].add(r.vid);
+    if (r.event === "landing_view") (e.src.get(r.src) ?? e.src.set(r.src, new Set()).get(r.src)!).add(r.vid);
+  }
+  return [...by.entries()]
+    .map(([landing, e]) => ({
+      landing,
+      views: e.sets.landing_view.size,
+      ctaClicks: e.sets.cta_click.size,
+      signups: e.sets.signup_complete.size,
+      firstPrompts: e.sets.first_prompt.size,
+      syntheses: e.sets.synthesis_success.size,
+      bySource: Object.fromEntries([...e.src].map(([k, v]) => [k, v.size])),
+    }))
+    .sort((a, b) => b.views - a.views);
+}
+
+export async function seoReport(days = 28, at = Date.now()): Promise<LandingStats[]> {
+  const gte = new Date(at - days * 864e5).toISOString();
+  return summarize(await rows().listSystemRange({ field: "at", gte }, 50_000));
+}
+
+/** Report plus the clock it was built with, so pages can compute ages without calling Date.now() during render. */
+export async function seoSnapshot(days = 28): Promise<{ at: number; report: LandingStats[] | null }> {
+  const at = Date.now();
+  return { at, report: await seoReport(days, at).catch(() => null) };
+}

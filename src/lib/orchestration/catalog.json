@@ -1,0 +1,514 @@
+[
+  {
+    "provider": "OpenAI",
+    "model_name": "GPT-6 Astra",
+    "api_model_id": "gpt-6-astra",
+    "release_date": "2026-09-03",
+    "open_weights": false,
+    "context_window_tokens": 1050000,
+    "input_price_per_1m_usd": 10.0,
+    "output_price_per_1m_usd": 50.0,
+    "strengths": [
+      "reasoning",
+      "coding",
+      "computer-use",
+      "long-context"
+    ],
+    "suggested_role": "judge",
+    "source_url": "https://developers.openai.com/api/docs/models/gpt-6-astra",
+    "verified": true
+  },
+  {
+    "provider": "OpenAI",
+    "model_name": "GPT-6 Sol",
+    "api_model_id": "gpt-6-sol",
+    "release_date": "2026-09-22",
+    "open_weights": false,
+    "context_window_tokens": 1050000,
+    "input_price_per_1m_usd": 2.0,
+    "output_price_per_1m_usd": 10.0,
+    "strengths": [
+      "reasoning",
+      "coding",
+      "cost",
+      "long-context"
+    ],
+    "suggested_role": "primary",
+    "source_url": "https://developers.openai.com/api/docs/models/gpt-6-sol",
+    "verified": true
+  },
+  {
+    "provider": "OpenAI",
+    "model_name": "GPT-6 Luna",
+    "api_model_id": "gpt-6-luna",
+    "release_date": "2026-09-22",
+    "open_weights": false,
+    "context_window_tokens": 1050000,
+    "input_price_per_1m_usd": 0.1,
+    "output_price_per_1m_usd": 0.5,
+    "strengths": [
+      "cost",
+      "speed",
+      "long-context"
+    ],
+    "suggested_role": "fast-cheap",
+    "source_url": "https://developers.openai.com/api/docs/models/gpt-6-luna",
+    "verified": true
+  },
+  {
+    "provider": "OpenAI",
+    "model_name": "GPT-5.6 Sol (promotional price)",
+    "api_model_id": "gpt-5.6-sol",
+    "release_date": "2026-07-09",
+    "open_weights": false,
+    "context_window_tokens": null,
+    "input_price_per_1m_usd": 4.0,
+    "output_price_per_1m_usd": 20.0,
+    "strengths": [
+      "reasoning",
+      "coding"
+    ],
+    "suggested_role": "primary",
+    "source_url": "https://developers.openai.com/api/docs/pricing",
+    "verified": true
+  },
+  {
+    "provider": "Anthropic",
+    "model_name": "Claude Opus 5.5",
+    "api_model_id": "claude-opus-5-5",
+    "release_date": "2026-09-22",
+    "open_weights": false,
+    "context_window_tokens": 1000000,
+    "input_price_per_1m_usd": 4.0,
+    "output_price_per_1m_usd": 20.0,
+    "strengths": [
+      "reasoning",
+      "coding",
+      "agentic",
+      "long-context",
+      "writing"
+    ],
+    "suggested_role": "judge",
+    "source_url": "https://platform.claude.com/docs/en/models/opus-5-5/overview",
+    "verified": true
+  },
+  {
+    "provider": "Anthropic",
+    "model_name": "Claude Fable 5.1",
+    "api_model_id": "claude-fable-5-1",
+    "release_date": "2026-09-01",
+    "open_weights": false,
+    "context_window_tokens": 1000000,
+    "input_price_per_1m_usd": 10.0,
+    "output_price_per_1m_usd": 50.0,
+    "strengths": [
+      "reasoning",
+      "agentic",
+      "long-context"
+    ],
+    "suggested_role": "specialist",
+    "source_url": "https://platform.claude.com/docs/en/about-claude/models/overview",
+    "verified": true
+  },
+  {
+    "provider": "Anthropic",
+    "model_name": "Claude Sonnet 5",
+    "api_model_id": "claude-sonnet-5",
+    "release_date": "2026-06-30",
+    "open_weights": false,
+    "context_window_tokens": 1000000,
+    "input_price_per_1m_usd": 2.0,
+    "output_price_per_1m_usd": 10.0,
+    "strengths": [
+      "coding",
+      "speed",
+      "long-context"
+    ],
+    "suggested_role": "primary",
+    "source_url": "https://platform.claude.com/docs/en/about-claude/models/overview",
+    "verified": true
+  },
+  {
+    "provider": "Anthropic",
+    "model_name": "Claude Haiku 4.5",
+    "api_model_id": "claude-haiku-4-5-20251001",
+    "release_date": null,
+    "open_weights": false,
+    "context_window_tokens": 200000,
+    "input_price_per_1m_usd": 1.0,
+    "output_price_per_1m_usd": 5.0,
+    "strengths": [
+      "speed",
+      "cost"
+    ],
+    "suggested_role": "fast-cheap",
+    "source_url": "https://platform.claude.com/docs/en/about-claude/models/overview",
+    "verified": true
+  },
+  {
+    "provider": "Google",
+    "model_name": "Gemini 3.8 Flash",
+    "api_model_id": "gemini-3.8-flash",
+    "release_date": "2026-09-02",
+    "open_weights": false,
+    "context_window_tokens": 1048576,
+    "input_price_per_1m_usd": 0.75,
+    "output_price_per_1m_usd": 3.75,
+    "strengths": [
+      "reasoning",
+      "coding",
+      "multimodal",
+      "long-context",
+      "cost",
+      "speed"
+    ],
+    "suggested_role": "primary",
+    "source_url": "https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash",
+    "verified": true
+  },
+  {
+    "provider": "Google",
+    "model_name": "Gemini 3.1 Pro (Preview)",
+    "api_model_id": "gemini-3.1-pro-preview",
+    "release_date": null,
+    "open_weights": false,
+    "context_window_tokens": null,
+    "input_price_per_1m_usd": 2.0,
+    "output_price_per_1m_usd": 12.0,
+    "strengths": [
+      "reasoning",
+      "multimodal"
+    ],
+    "suggested_role": "verifier",
+    "source_url": "https://ai.google.dev/gemini-api/docs/pricing",
+    "verified": true
+  },
+  {
+    "provider": "Google",
+    "model_name": "Gemini 3.5 Flash-Lite",
+    "api_model_id": "gemini-3.5-flash-lite",
+    "release_date": null,
+    "open_weights": false,
+    "context_window_tokens": null,
+    "input_price_per_1m_usd": 0.3,
+    "output_price_per_1m_usd": 2.5,
+    "strengths": [
+      "cost",
+      "speed",
+      "multimodal"
+    ],
+    "suggested_role": "fast-cheap",
+    "source_url": "https://ai.google.dev/gemini-api/docs/pricing",
+    "verified": true
+  },
+  {
+    "provider": "Google",
+    "model_name": "Gemini 3.1 Flash-Lite",
+    "api_model_id": "gemini-3.1-flash-lite",
+    "release_date": null,
+    "open_weights": false,
+    "context_window_tokens": null,
+    "input_price_per_1m_usd": 0.25,
+    "output_price_per_1m_usd": 1.5,
+    "strengths": [
+      "cost",
+      "speed"
+    ],
+    "suggested_role": "fast-cheap",
+    "source_url": "https://ai.google.dev/gemini-api/docs/pricing",
+    "verified": true
+  },
+  {
+    "provider": "xAI (SpaceXAI)",
+    "model_name": "Grok 4.7",
+    "api_model_id": "grok-4.7",
+    "release_date": "2026-09-21",
+    "open_weights": false,
+    "context_window_tokens": 500000,
+    "input_price_per_1m_usd": 2.0,
+    "output_price_per_1m_usd": 6.0,
+    "strengths": [
+      "coding",
+      "reasoning",
+      "cost",
+      "knowledge-work"
+    ],
+    "suggested_role": "primary",
+    "source_url": "https://docs.x.ai/developers/models",
+    "verified": true
+  },
+  {
+    "provider": "Meta",
+    "model_name": "Muse Spark 1.3",
+    "api_model_id": "muse-spark-1.3",
+    "release_date": "2026-09-02",
+    "open_weights": false,
+    "context_window_tokens": 1048576,
+    "input_price_per_1m_usd": 1.25,
+    "output_price_per_1m_usd": 4.25,
+    "strengths": [
+      "agentic",
+      "coding",
+      "multimodal",
+      "long-context"
+    ],
+    "suggested_role": "verifier",
+    "source_url": "https://dev.meta.ai/docs/pricing-rate-limits",
+    "verified": true
+  },
+  {
+    "provider": "DeepSeek",
+    "model_name": "DeepSeek-V4.1-Flash (peak price; off-peak 50%)",
+    "api_model_id": "deepseek-flash",
+    "release_date": "2026-09-10",
+    "open_weights": true,
+    "context_window_tokens": 1000000,
+    "input_price_per_1m_usd": 0.3,
+    "output_price_per_1m_usd": 1.2,
+    "strengths": [
+      "reasoning",
+      "coding",
+      "cost",
+      "long-context",
+      "multimodal"
+    ],
+    "suggested_role": "verifier",
+    "source_url": "https://api-docs.deepseek.com/quick_start/pricing/",
+    "verified": true
+  },
+  {
+    "provider": "DeepSeek",
+    "model_name": "DeepSeek-V4-Pro (peak price; off-peak 50%)",
+    "api_model_id": "deepseek-v4-pro",
+    "release_date": "2026-08-13",
+    "open_weights": true,
+    "context_window_tokens": 1000000,
+    "input_price_per_1m_usd": 1.32,
+    "output_price_per_1m_usd": 3.96,
+    "strengths": [
+      "reasoning",
+      "coding",
+      "long-context"
+    ],
+    "suggested_role": "verifier",
+    "source_url": "https://api-docs.deepseek.com/quick_start/pricing/",
+    "verified": true
+  },
+  {
+    "provider": "Alibaba Qwen",
+    "model_name": "Qwen3.8-Max (0902 snapshot)",
+    "api_model_id": "qwen3.8-max",
+    "release_date": "2026-09-02",
+    "open_weights": null,
+    "context_window_tokens": 1000000,
+    "input_price_per_1m_usd": 2.0,
+    "output_price_per_1m_usd": 6.0,
+    "strengths": [
+      "reasoning",
+      "coding",
+      "multimodal",
+      "long-context"
+    ],
+    "suggested_role": "verifier",
+    "source_url": "https://openrouter.ai/qwen/qwen3.8-max-0902",
+    "verified": false
+  },
+  {
+    "provider": "Moonshot AI",
+    "model_name": "Kimi K3",
+    "api_model_id": "kimi-k3",
+    "release_date": null,
+    "open_weights": true,
+    "context_window_tokens": 1048576,
+    "input_price_per_1m_usd": 3.0,
+    "output_price_per_1m_usd": 15.0,
+    "strengths": [
+      "coding",
+      "reasoning",
+      "long-context",
+      "multimodal"
+    ],
+    "suggested_role": "verifier",
+    "source_url": "https://platform.moonshot.ai/docs/pricing/chat",
+    "verified": true
+  },
+  {
+    "provider": "Zhipu / Z.ai",
+    "model_name": "GLM-5.3",
+    "api_model_id": "glm-5.3",
+    "release_date": "2026-08-18",
+    "open_weights": true,
+    "context_window_tokens": 1000000,
+    "input_price_per_1m_usd": 1.4,
+    "output_price_per_1m_usd": 4.4,
+    "strengths": [
+      "coding",
+      "reasoning",
+      "long-context",
+      "cost"
+    ],
+    "suggested_role": "verifier",
+    "source_url": "https://docs.z.ai/guides/overview/pricing",
+    "verified": true
+  },
+  {
+    "provider": "Zhipu / Z.ai",
+    "model_name": "GLM-5.3-Flash",
+    "api_model_id": "glm-5.3-flash",
+    "release_date": "2026-08-26",
+    "open_weights": null,
+    "context_window_tokens": null,
+    "input_price_per_1m_usd": 0.15,
+    "output_price_per_1m_usd": 0.5,
+    "strengths": [
+      "cost",
+      "speed",
+      "multimodal"
+    ],
+    "suggested_role": "fast-cheap",
+    "source_url": "https://docs.z.ai/guides/overview/pricing",
+    "verified": true
+  },
+  {
+    "provider": "Mistral",
+    "model_name": "Mistral Medium 3.5",
+    "api_model_id": "mistral-medium-3.5",
+    "release_date": "2026-04-29",
+    "open_weights": true,
+    "context_window_tokens": 262144,
+    "input_price_per_1m_usd": 1.5,
+    "output_price_per_1m_usd": 7.5,
+    "strengths": [
+      "coding",
+      "multimodal",
+      "sovereign-eu"
+    ],
+    "suggested_role": "verifier",
+    "source_url": "https://docs.mistral.ai/models/mistral-medium-3-5-26-04",
+    "verified": true
+  },
+  {
+    "provider": "Mistral",
+    "model_name": "Mistral Small 4",
+    "api_model_id": null,
+    "release_date": null,
+    "open_weights": true,
+    "context_window_tokens": null,
+    "input_price_per_1m_usd": null,
+    "output_price_per_1m_usd": null,
+    "strengths": [
+      "cost",
+      "speed"
+    ],
+    "suggested_role": "fast-cheap",
+    "source_url": "https://docs.mistral.ai/getting-started/models/models_overview/",
+    "verified": false
+  },
+  {
+    "provider": "Cohere",
+    "model_name": "Command A+",
+    "api_model_id": "command-a-plus-05-2026",
+    "release_date": "2026-05-20",
+    "open_weights": true,
+    "context_window_tokens": 128000,
+    "input_price_per_1m_usd": 0.3,
+    "output_price_per_1m_usd": 1.5,
+    "strengths": [
+      "cost",
+      "rag",
+      "multilingual"
+    ],
+    "suggested_role": "fast-cheap",
+    "source_url": "https://cohere.com/blog/command-a-plus",
+    "verified": false
+  },
+  {
+    "provider": "Amazon",
+    "model_name": "Nova 2 Lite",
+    "api_model_id": "amazon.nova-2-lite-v1:0",
+    "release_date": "2025-12-02",
+    "open_weights": false,
+    "context_window_tokens": 1000000,
+    "input_price_per_1m_usd": 0.3,
+    "output_price_per_1m_usd": 2.5,
+    "strengths": [
+      "cost",
+      "multimodal",
+      "long-context"
+    ],
+    "suggested_role": "fast-cheap",
+    "source_url": "https://aws.amazon.com/about-aws/whats-new/2025/12/nova-2-foundation-models-amazon-bedrock/",
+    "verified": false
+  },
+  {
+    "provider": "Microsoft",
+    "model_name": "MAI-Thinking-1",
+    "api_model_id": "MAI-Thinking-1",
+    "release_date": null,
+    "open_weights": false,
+    "context_window_tokens": null,
+    "input_price_per_1m_usd": null,
+    "output_price_per_1m_usd": null,
+    "strengths": [
+      "reasoning",
+      "coding"
+    ],
+    "suggested_role": "specialist",
+    "source_url": "https://ai.azure.com/catalog/models/MAI-Thinking-1",
+    "verified": false
+  },
+  {
+    "provider": "NVIDIA",
+    "model_name": "Nemotron 3.5 Lightning",
+    "api_model_id": "nvidia/nemotron-3.5-lightning",
+    "release_date": "2026-08-11",
+    "open_weights": true,
+    "context_window_tokens": null,
+    "input_price_per_1m_usd": null,
+    "output_price_per_1m_usd": null,
+    "strengths": [
+      "speed",
+      "cost",
+      "tool-use"
+    ],
+    "suggested_role": "fast-cheap",
+    "source_url": "https://openrouter.ai/blog/insights/nemotron-3-5-lightning/",
+    "verified": false
+  },
+  {
+    "provider": "Supersonic Labs",
+    "model_name": "Julia 1 (144.3M decision/scoring model)",
+    "api_model_id": null,
+    "release_date": "2026-09-26",
+    "open_weights": true,
+    "context_window_tokens": null,
+    "input_price_per_1m_usd": null,
+    "output_price_per_1m_usd": null,
+    "strengths": [
+      "classification",
+      "speed",
+      "cost"
+    ],
+    "suggested_role": "specialist",
+    "source_url": "https://tech-insider.org/supersonic-labs-julia-1-cpu-decision-model-2026/",
+    "verified": false
+  },
+  {
+    "provider": "InternLM",
+    "model_name": "Intern-Decision-4B",
+    "api_model_id": "internlm/Intern-Decision-4B",
+    "release_date": "2026-09-26",
+    "open_weights": true,
+    "context_window_tokens": null,
+    "input_price_per_1m_usd": null,
+    "output_price_per_1m_usd": null,
+    "strengths": [
+      "classification",
+      "calibration",
+      "speed"
+    ],
+    "suggested_role": "specialist",
+    "source_url": "https://www.orcarouter.ai/blog/intern-decision-4b-quiet-release",
+    "verified": false
+  }
+]

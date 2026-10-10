@@ -1,0 +1,9 @@
+/* Features tab on a phone: every control is a real touch target (44px), long values wrap, nothing sideways. */
+.touch { min-width: 0; }
+.touch li, .touch label, .touch small, .touch strong { overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+  .touch button { min-height: 44px; padding-left: 14px; padding-right: 14px; }
+  .touch input:not([type="checkbox"]), .touch select, .touch textarea { min-height: 44px; }
+  .touch input[type="checkbox"] { width: 24px; height: 24px; flex: none; }
+  .touch label { min-height: 44px; align-items: center; }
+}

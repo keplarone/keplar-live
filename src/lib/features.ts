@@ -1,0 +1,93 @@
+/**
+ * Every feature, grouped into the landing's seven chapters. One registry drives the landing chapters, /features, and the nav
+ * so a status changes in one place. Status is honest: "live" = anyone can use it today; "beta" = works, still changing or
+ * limited to some plans; "soon" = being built, not usable yet (shown as "Coming soon", never linked as if it works).
+ * Owners of each workstream: flip the status here when it ships to production.
+ */
+export type FeatureStatus = "live" | "beta" | "soon";
+export type Feature = { id: string; name: string; line: string; href: string; status: FeatureStatus; note?: string };
+export type Chapter = { id: string; n: string; label: string; title: string; lede: string; features: Feature[] };
+
+export const STATUS_LABEL: Record<FeatureStatus, string> = { live: "Live", beta: "Beta", soon: "Coming soon" };
+
+export const CHAPTERS: Chapter[] = [
+  {
+    id: "ask", n: "01", label: "Ask", title: "Ask Keplar anything.",
+    lede: "One question goes to several AI models. Keplar compares them, shows where they disagree, checks what holds up and writes one answer.",
+    features: [
+      { id: "demo", name: "Live demo", line: "Ask a real question on this page. No account.", href: "/#demo", status: "live" },
+      { id: "multi-model", name: "Several models, one answer", line: "Only the models a question needs, compared claim by claim.", href: "/how-it-works", status: "live" },
+      { id: "disagreement", name: "Disagreement map", line: "Where the models agree, where they split, and why the answer went the way it did.", href: "/how-it-works", status: "live" },
+      { id: "debate", name: "Debate mode", line: "Watch the models argue in rounds before Keplar answers.", href: "/app/ask", status: "beta" },
+      { id: "voice", name: "Voice mode", line: "Ask out loud, hear the answer read back. Keplar never records or stores your audio.", href: "/app/ask", status: "beta" },
+    ],
+  },
+  {
+    id: "understand", n: "02", label: "Understand", title: "It reads what you give it.",
+    lede: "Drop in the thing you are asking about. Keplar reads it for that question only and does not keep the file.",
+    features: [
+      { id: "images", name: "Images and screenshots", line: "Charts, receipts, whiteboards, UI. Sent only to models that can see.", href: "/app/ask", status: "live" },
+      { id: "video", name: "Video", line: "Keyframes are sampled in your browser; the clip itself is not uploaded.", href: "/app/ask", status: "live" },
+      { id: "docs", name: "Documents, code and data", line: "PDF, text, CSV, JSON and source files, read as text.", href: "/app/ask", status: "live" },
+      { id: "office", name: "Word, PowerPoint, Excel and audio", line: "Office files parsed safely; audio transcribed.", href: "/app/ask", status: "soon" },
+      { id: "links", name: "Links", line: "Paste a URL and Keplar reads the page through a guarded fetch.", href: "/app/ask", status: "soon" },
+    ],
+  },
+  {
+    id: "create", n: "03", label: "Create", title: "Describe it, or say it. Get something that does not look generated.",
+    lede: "Create plans a design for the business in your brief, writes the code, tests every screen, and refuses purple glow, gradient blobs and three-card grids.",
+    features: [
+      { id: "voice-create", name: "Voice Live Create", line: "Speak and watch the editor, terminal and preview build at the same time. Say \"actually\" to change course.", href: "/app/create", status: "beta", note: "Needs a browser with speech recognition (Chrome, Edge, Safari)." },
+      { id: "showcase", name: "Showcase", line: "Eight demos by the Keplar team that set the bar Create is held to.", href: "/showcase", status: "live" },
+      { id: "surprise", name: "Surprise me", line: "One press: a specific brief, style and depth, built for you.", href: "/app/create", status: "live" },
+      { id: "versions", name: "Version history", line: "Every build is a version. Restore any one, or branch it into a new draft.", href: "/app/create", status: "live" },
+      { id: "community", name: "Community gallery", line: "Sites people chose to share. Like, remix, report.", href: "/templates", status: "beta" },
+      { id: "anti-vibe", name: "Anti-generic design rules", line: "A written rubric and a lint pass that reject the usual AI look before you see it.", href: "/showcase", status: "live" },
+    ],
+  },
+  {
+    id: "together", n: "04", label: "Build together", title: "Build it with someone, and with a critic.",
+    lede: "Work on the same project at the same time, and get a second opinion that is not you.",
+    features: [
+      { id: "collab", name: "Real-time collaboration", line: "Invite by link and edit the same project together: live cursors, follow mode, a shared terminal and preview.", href: "/app/create", status: "live", note: "Open an app in Create, then Live. Viewers watch; editors type." },
+      { id: "critic", name: "AI critic", line: "Rules, axe-core in a real browser and a separate model review your build, then apply the fixes you pick.", href: "/app/create", status: "live" },
+    ],
+  },
+  {
+    id: "ship", n: "05", label: "Ship", title: "Publish in one step. Undo in one step.",
+    lede: "Your project goes live on a Keplar address, with your own domain when you want it.",
+    features: [
+      { id: "publish", name: "One-click publish", line: "Publish a draft to a live address from Create.", href: "/app/create", status: "live" },
+      { id: "previews", name: "Previews", line: "Every draft has a private preview link before it goes live.", href: "/app/create", status: "live" },
+      { id: "rollback", name: "Rollback", line: "Restore the previous version if a change goes wrong.", href: "/app/create", status: "live" },
+      { id: "domains", name: "Custom domains", line: "Connect a domain you own; Keplar checks the DNS and tells you what to change.", href: "/app/create", status: "beta" },
+      { id: "ssl", name: "Automatic HTTPS", line: "Certificates are issued and renewed for connected domains.", href: "/app/create", status: "beta" },
+    ],
+  },
+  {
+    id: "platform", n: "06", label: "Platform", title: "Use Keplar from anywhere.",
+    lede: "The same engine, behind an API, inside a widget on your site, and shared across a team.",
+    features: [
+      { id: "api", name: "Public API", line: "Bearer keys, per-plan limits, OpenAPI spec. Free keys use free models only.", href: "/developers", status: "beta" },
+      { id: "embed", name: "Embeddable widget", line: "One script tag puts Keplar Ask on your site, limited to origins you allow.", href: "/developers#embed", status: "beta" },
+      { id: "teams", name: "Keplar for Teams", line: "Shared workspaces with owner, admin, editor and viewer roles.", href: "/enterprise", status: "beta", note: "Business plan." },
+      { id: "referrals", name: "Referral program", line: "Invite a friend; you both get extra usage, never cash.", href: "/referral-terms", status: "live" },
+    ],
+  },
+  {
+    id: "trust", n: "07", label: "Trust", title: "Plain about what it does, and with your data.",
+    lede: "What we protect, how, and what we have not done yet, written down. No badges we have not earned.",
+    features: [
+      { id: "security", name: "Security", line: "Encryption, providers, retention, account protection and how to report a problem.", href: "/security", status: "live" },
+      { id: "changelog", name: "Changelog", line: "What shipped, when.", href: "/changelog", status: "live" },
+      { id: "roadmap", name: "Roadmap", line: "What we are building next, and what is not live yet.", href: "/roadmap", status: "live" },
+    ],
+  },
+];
+
+export const ALL_FEATURES: Feature[] = CHAPTERS.flatMap((c) => c.features);
+export const featureCounts = () => ({
+  live: ALL_FEATURES.filter((f) => f.status === "live").length,
+  beta: ALL_FEATURES.filter((f) => f.status === "beta").length,
+  soon: ALL_FEATURES.filter((f) => f.status === "soon").length,
+});

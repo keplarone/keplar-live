@@ -1,0 +1,19 @@
+.bar { display: flex; justify-content: flex-end; gap: var(--s-2); margin-bottom: var(--s-2); }
+.btn {
+  font: inherit; font-size: var(--t-label); color: var(--c-ink-3); background: transparent; border: 0;
+  padding: var(--s-1) var(--s-2); border-radius: var(--shape-control); cursor: pointer;
+}
+.btn:hover, .btn:focus-visible { color: var(--c-ink); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong); }
+.edit { composes: btn; margin-top: var(--s-1); align-self: flex-end; }
+.scrim { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; background: rgb(0 0 0 / 0.35); }
+.panel {
+  width: min(92vw, 420px); padding: var(--s-5); border-radius: var(--r-card, 16px); background: var(--c-canvas);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong); color: var(--c-ink);
+}
+.panel h2 { margin: 0 0 var(--s-3); font-size: var(--t-body); font-weight: var(--w-medium); }
+.list { list-style: none; margin: 0 0 var(--s-3); padding: 0; display: flex; flex-direction: column; gap: var(--s-2); font-size: var(--t-small); }
+.list li { display: flex; justify-content: space-between; gap: var(--s-4); }
+.keys { color: var(--c-ink-2); font-family: var(--f-sans); white-space: nowrap; }
+@media (pointer: coarse) {
+  .btn, .edit { min-height: 36px; padding: 0 var(--s-3); }
+}

@@ -1,0 +1,167 @@
+.footer {
+  position: relative;
+  z-index: var(--z-content);
+  background: var(--c-canvas);
+  border-top: var(--b-hairline) solid var(--c-border);
+  padding: var(--s-20) var(--l-gutter) var(--s-8);
+}
+
+.inner {
+  max-width: var(--l-max);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) 3fr;
+  gap: var(--s-16);
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-4);
+  color: var(--c-ink);
+}
+
+.tagline {
+  color: var(--c-ink-2);
+  font-size: var(--t-small);
+  max-width: 28ch;
+}
+
+.credit {
+  color: var(--c-ink-3);
+  font-size: var(--t-small);
+  max-width: 32ch;
+}
+
+.email {
+  align-self: flex-start;
+  font-family: var(--f-sans);
+  font-size: var(--t-small);
+  letter-spacing: 0; /* an address in label tracking read as "t e a m @ ..." */
+  color: var(--c-ink-3);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+  transition: color var(--d-fast) var(--e-standard), text-decoration-color var(--d-fast) var(--e-standard);
+}
+
+.email:hover {
+  color: var(--c-ink);
+  text-decoration-color: currentColor;
+}
+
+.cols {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--s-8);
+}
+
+/* A long list (Learn has 13 links) runs in two columns across two grid tracks instead of towering over the 3-5 link columns beside it. */
+.col[data-wide] {
+  grid-column: span 2;
+}
+
+.col[data-wide] ul {
+  display: block;
+  columns: 2;
+  column-gap: var(--s-8);
+}
+
+.col[data-wide] li {
+  break-inside: avoid;
+  margin-bottom: var(--s-2);
+}
+
+/* Between the stacked phone layout and ~1200px the two Learn tracks are only ~80px each, so two columns split
+   "What is superintelligence?" mid-word ("superintellige / nce?"). One column there; two again from 1200px. */
+@media (min-width: 900px) and (max-width: 1199px) {
+  .col[data-wide] ul {
+    columns: 1;
+  }
+}
+
+.col ul {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.heading {
+  font-family: var(--f-sans);
+  font-size: var(--t-label);
+  font-weight: var(--w-regular);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--c-ink-3);
+  margin-bottom: var(--s-4);
+}
+
+.link {
+  font-size: var(--t-small);
+  color: var(--c-ink-2);
+  transition: color var(--d-fast) var(--e-standard);
+}
+
+.link:hover {
+  color: var(--c-ink);
+}
+
+.base {
+  max-width: var(--l-max);
+  margin: var(--s-20) auto 0;
+  padding-top: var(--s-6);
+  border-top: var(--b-hairline) solid var(--c-border);
+  font-size: var(--t-small);
+  color: var(--c-ink-3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  flex-wrap: wrap;
+}
+
+.theme {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.themeLabel {
+  font-family: var(--f-sans);
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+}
+
+@media (max-width: 899px) {
+  .inner {
+    grid-template-columns: 1fr;
+    gap: var(--s-12);
+  }
+  .cols {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.cookieLink {
+  font: inherit;
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-label);
+  color: var(--c-ink-3);
+  background: none;
+  border: 0;
+  padding: var(--s-2) 0;
+  min-height: 24px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.cookieLink:hover { color: var(--c-ink); }
+.cookieLink:focus-visible { outline: var(--b-focus) solid var(--c-focus); outline-offset: 2px; }
+
+@media (pointer: coarse) {
+  .link, .cookieLink, .email { display: inline-flex; align-items: center; min-height: 44px; }
+  .col ul { gap: 0; } /* the links are 44px tall now: the gap between them is inside the targets */
+  .col[data-wide] li { margin-bottom: 0; }
+}

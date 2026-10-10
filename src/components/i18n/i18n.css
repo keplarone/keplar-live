@@ -1,0 +1,76 @@
+/*
+ * Per-language typography for the localized pages (src/lib/i18n/fonts.ts explains the loading). English is untouched:
+ * every rule here is scoped to html:not(:lang(en)) or to a specific language.
+ */
+
+/* Non-English: the multi-script Google Sans instance first, then the same fallbacks English uses. */
+html:not(:lang(en)) {
+  --f-sans: var(--font-sans-intl), var(--font-sans), "Keplar Sans Fallback", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Scripts Google Sans does not draw: system and Noto families, by language. Nothing is downloaded for these. */
+html:lang(ja) {
+  --f-sans: var(--font-sans-intl), "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic", Meiryo, "Noto Sans JP", "Noto Sans CJK JP", system-ui, sans-serif;
+}
+html:lang(ko) {
+  --f-sans: var(--font-sans-intl), "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", "Noto Sans CJK KR", system-ui, sans-serif;
+}
+html:lang(zh-CN) {
+  --f-sans: var(--font-sans-intl), "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Noto Sans CJK SC", system-ui, sans-serif;
+}
+html:lang(zh-TW) {
+  --f-sans: var(--font-sans-intl), "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", "Noto Sans CJK TC", system-ui, sans-serif;
+}
+html:is(:lang(ar), :lang(fa), :lang(ur), :lang(ps), :lang(ug), :lang(ckb), :lang(sd)) {
+  --f-sans: var(--font-sans-intl), "Noto Sans Arabic", "SF Arabic", "Geeza Pro", "Noto Naskh Arabic", Tahoma, system-ui, sans-serif;
+}
+html:lang(kn) {
+  --f-sans: var(--font-sans-intl), "Noto Sans Kannada", "Kannada Sangam MN", Tunga, "Nirmala UI", system-ui, sans-serif;
+}
+html:lang(my) {
+  --f-sans: var(--font-sans-intl), "Noto Sans Myanmar", "Myanmar Sangam MN", "Myanmar Text", system-ui, sans-serif;
+}
+/* Covered by Google Sans, with system fallbacks for older browsers or blocked font downloads. */
+html:is(:lang(hi), :lang(mr), :lang(ne)) { --f-sans: var(--font-sans-intl), "Noto Sans Devanagari", "Kohinoor Devanagari", "Nirmala UI", system-ui, sans-serif; }
+html:is(:lang(bn), :lang(as)) { --f-sans: var(--font-sans-intl), "Noto Sans Bengali", "Kohinoor Bangla", "Nirmala UI", system-ui, sans-serif; }
+html:lang(th) { --f-sans: var(--font-sans-intl), "Noto Sans Thai", Thonburi, "Leelawadee UI", system-ui, sans-serif; }
+html:is(:lang(he), :lang(yi)) { --f-sans: var(--font-sans-intl), "Noto Sans Hebrew", system-ui, sans-serif; }
+
+/* Long compound words (German, Finnish, Dutch, Hungarian...) wrap instead of overflowing a 320 px screen. */
+html:not(:lang(en)) :is(h1, h2, h3, h4) {
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+html:not(:lang(en)) :is(p, li, a, button, td, th, dd, dt, label, summary, figcaption) {
+  overflow-wrap: break-word;
+}
+/* Korean breaks between words, not inside them. */
+html:lang(ko) :is(h1, h2, h3, h4, p, li) {
+  word-break: keep-all;
+}
+
+/* Scripts with tall marks above and below the line get room so nothing is clipped. */
+html:is(:lang(th), :lang(lo), :lang(km), :lang(my), :lang(hi), :lang(mr), :lang(ne), :lang(bn), :lang(as), :lang(gu), :lang(pa), :lang(or), :lang(ta), :lang(te), :lang(kn), :lang(ml), :lang(si), :lang(am), :lang(ar), :lang(fa), :lang(ur), :lang(ps), :lang(ug), :lang(ckb), :lang(sd)) :is(h1, h2, h3) {
+  line-height: 1.3;
+}
+
+/* Han, Kana, Hangul and Arabic script: no tracking (Arabic letters must join; CJK reads cramped when tightened). */
+html:is(:lang(ja), :lang(ko), :lang(zh-CN), :lang(zh-TW), :lang(ar), :lang(fa), :lang(ur), :lang(ps), :lang(ug), :lang(ckb), :lang(sd)) :is(h1, h2, h3, h4, p, a, button, span, li) {
+  letter-spacing: 0 !important;
+}
+
+/* Right-to-left: only directional icons (arrows, chevrons pointing along the reading direction) are mirrored. */
+[dir="rtl"] [data-mirror] {
+  scale: -1 1;
+}
+
+/*
+ * The home headline's letter scramble draws one element per character, which breaks cursive joining and
+ * conjunct shaping. For those scripts the overlay stays hidden and the settled headline shows from the start.
+ */
+html:is(:lang(ar), :lang(fa), :lang(ur), :lang(ps), :lang(ug), :lang(ckb), :lang(sd), :lang(hi), :lang(mr), :lang(ne), :lang(bn), :lang(as), :lang(gu), :lang(pa), :lang(or), :lang(ta), :lang(te), :lang(kn), :lang(ml), :lang(si), :lang(th), :lang(lo), :lang(km), :lang(my)) [data-scr] [data-scr-out] {
+  display: none !important;
+}
+html:is(:lang(ar), :lang(fa), :lang(ur), :lang(ps), :lang(ug), :lang(ckb), :lang(sd), :lang(hi), :lang(mr), :lang(ne), :lang(bn), :lang(as), :lang(gu), :lang(pa), :lang(or), :lang(ta), :lang(te), :lang(kn), :lang(ml), :lang(si), :lang(th), :lang(lo), :lang(km), :lang(my)) [data-scr] [data-line] > span:not([data-scr-out]) {
+  visibility: visible !important;
+}

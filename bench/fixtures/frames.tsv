@@ -1,0 +1,9 @@
+Unnamed: 0	Prompt	Answer	wikipedia_link_1	reasoning_types	synthetic
+9000	How many years passed between the fall of the Berlin Wall and the first iPhone release?	18	https://en.wikipedia.org/wiki/Example	Numerical reasoning | Temporal reasoning	true
+9001	Which is taller, the Eiffel Tower or the Statue of Liberty including pedestal?	The Eiffel Tower	https://en.wikipedia.org/wiki/Example	Numerical reasoning | Multiple constraints	true
+9002	What is the capital of the country where the Prado Museum is located?	Madrid	https://en.wikipedia.org/wiki/Example	Multiple constraints	true
+9003	The composer of 'The Magic Flute' was born in which city?	Salzburg	https://en.wikipedia.org/wiki/Example	Multiple constraints	true
+9004	How many Summer Olympics had been held before the 1992 Barcelona games (modern era, counting cancelled ones)?	24	https://en.wikipedia.org/wiki/Example	Tabular reasoning | Numerical reasoning	true
+9005	Which element with atomic number 26 is the main component of steel?	Iron	https://en.wikipedia.org/wiki/Example	Post processing	true
+9006	In what year did the first person to walk on the Moon turn 40?	1970	https://en.wikipedia.org/wiki/Example	Temporal reasoning | Numerical reasoning	true
+9007	What river flows through the city that hosted the 2012 Summer Olympics?	River Thames	https://en.wikipedia.org/wiki/Example	Multiple constraints	true

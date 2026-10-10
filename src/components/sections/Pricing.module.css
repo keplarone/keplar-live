@@ -1,0 +1,245 @@
+.section {
+  position: relative;
+  z-index: var(--z-content);
+  background: var(--c-canvas);
+  padding: var(--s-40) var(--l-gutter);
+}
+
+.inner {
+  max-width: var(--l-max);
+  margin: 0 auto;
+}
+
+.plans {
+  margin-top: var(--s-16);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s-3);
+  align-items: stretch;
+}
+
+.plan {
+  display: flex;
+  flex-direction: column;
+  padding: var(--s-8) var(--s-6) var(--s-6);
+  border-radius: var(--r-card);
+  border: var(--b-hairline) solid var(--c-border);
+  background:
+    rgb(var(--rgb-ink) / 0.06);
+  box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.1);
+}
+
+.plan[data-plan="plus"] {
+  border-color: rgb(var(--rgb-ink) / 0.28);
+  background:
+    rgb(var(--rgb-ink) / 0.06);
+  box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.22), 0 40px 90px -46px rgb(var(--rgb-ink) / 0.4);
+}
+
+.plan[data-plan="business"] {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) auto;
+  grid-template-rows: auto auto;
+  column-gap: var(--s-12);
+  align-items: start;
+  padding: var(--s-8);
+}
+.plan[data-plan="business"] .name { grid-column: 1; grid-row: 1; }
+.plan[data-plan="business"] .price { grid-column: 1; grid-row: 2; margin-top: var(--s-4); }
+.plan[data-plan="business"] .summary { grid-column: 2; grid-row: 1; margin-top: 0; min-height: 0; }
+.plan[data-plan="business"] .features { grid-column: 2; grid-row: 2; margin-top: var(--s-4); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--s-8); }
+.plan[data-plan="business"] .cta { grid-column: 3; grid-row: 1 / span 2; margin-top: 0; align-self: center; }
+.plan[data-plan="business"] .amount { font-size: clamp(30px, 2.6vw, 56px); }
+
+.name {
+  font-size: var(--t-small);
+  font-weight: var(--w-medium);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-ink-2);
+}
+
+.price {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  margin-top: var(--s-8);
+}
+
+.amount {
+  font-size: clamp(44px, 4.6vw, 96px);
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+  font-weight: var(--w-light);
+  font-variant-numeric: tabular-nums;
+}
+
+.cadence {
+  font-family: var(--f-sans);
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--c-ink-3);
+}
+
+.summary {
+  margin-top: var(--s-5);
+  color: var(--c-ink-2);
+  font-size: var(--t-small);
+  min-height: 3em;
+}
+
+.features {
+  margin-top: var(--s-6);
+  padding-top: var(--s-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  border-top: var(--b-hairline) solid var(--c-border);
+  flex: 1;
+}
+
+.features li {
+  position: relative;
+  padding-left: var(--s-5);
+  font-size: var(--t-small);
+  line-height: 1.45;
+}
+
+.features li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 8px;
+  height: 1px;
+  background: var(--c-ink-2);
+}
+
+.cta {
+  margin-top: var(--s-8);
+}
+
+.compute {
+  margin-top: var(--s-24);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: var(--s-16);
+  align-items: start;
+  padding: var(--s-12);
+  border-radius: var(--r-card-lg);
+  border: var(--b-hairline) solid var(--c-border);
+  background: rgb(var(--rgb-ink) / 0.06);
+  box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.09);
+}
+
+.computeTitle {
+  font-size: var(--t-title);
+  line-height: var(--lh-title);
+  letter-spacing: var(--tr-title);
+  font-weight: var(--w-medium);
+}
+
+.computeLede {
+  margin-top: var(--s-3);
+  color: var(--c-ink-2);
+  max-width: 36ch;
+}
+
+.scale {
+  margin: 0;
+  border-top: var(--b-hairline) solid var(--c-border);
+}
+
+.scaleRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  padding: var(--s-4) 0;
+  border-bottom: var(--b-hairline) solid var(--c-border);
+  font-size: var(--t-small);
+}
+
+.scaleRow dd {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  color: var(--c-ink-2);
+}
+
+.bars {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.bars i {
+  width: 22px;
+  height: 5px;
+  border-radius: var(--r-pill);
+  background: var(--c-surface-2);
+}
+
+.bars i[data-on] {
+  background: var(--c-ink);
+  box-shadow: 0 0 12px rgb(var(--rgb-ink) / 0.5);
+}
+
+@media (max-width: 1080px) {
+  .plans {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1080px) {
+  .plan[data-plan="business"] { grid-template-columns: minmax(0, 1fr); }
+  .plan[data-plan="business"] :is(.name, .price, .summary, .features, .cta) { grid-column: 1; grid-row: auto; margin-top: var(--s-4); }
+  .plan[data-plan="business"] .features { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 899px) {
+  .section {
+    padding: var(--s-24) var(--l-gutter);
+  }
+  .plans {
+    grid-template-columns: 1fr;
+    margin-top: var(--s-12);
+  }
+  .plan {
+    padding: var(--s-6) var(--s-5) var(--s-6);
+  }
+  .compute {
+    padding: var(--s-6) var(--s-5);
+  }
+  .scaleRow {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-2);
+  }
+  .scaleRow dd {
+    flex-wrap: wrap;
+  }
+  .summary {
+    min-height: 0;
+  }
+  .compute {
+    grid-template-columns: 1fr;
+    gap: var(--s-8);
+  }
+}
+
+.fine {
+  margin-top: var(--s-6);
+  max-width: 70ch;
+  color: var(--c-ink-2);
+  font-size: var(--t-small);
+}
+
+/* Light theme: white cards on the warm page with a warm hairline and soft drop (Dark's 6% light veil + bright top edge read as a grey
+   slab with a dark line on a light page); ink glows become clean marks. Dark above is unchanged. */
+:global(:root[data-theme="light"]) .plan { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-shadow); }
+:global(:root[data-theme="light"]) .plan[data-plan="plus"] { border-color: rgb(28 24 18 / 0.2); box-shadow: var(--lt-card-lift); }
+:global(:root[data-theme="light"]) .compute { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-shadow); }
+:global(:root[data-theme="light"]) .bars i[data-on] { box-shadow: none; }
+/* a quiet aura behind the plans (light only; transform-free, inside the section box so it never adds overflow) */
+:global(:root[data-theme="light"]) .section { isolation: isolate; }
+:global(:root[data-theme="light"]) .section::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: var(--aura-soft); }

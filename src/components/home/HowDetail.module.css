@@ -1,0 +1,13 @@
+.section { position: relative; padding: var(--s-32) 0; background: var(--c-canvas); }
+.inner { max-width: var(--l-max); margin: 0 auto; padding: 0 var(--l-gutter); display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--s-10) 0; align-items: start; }
+.head { grid-column: 1 / 5; padding-right: var(--s-6); position: sticky; top: 110px; }
+.stage { grid-column: 5 / 13; min-width: 0; position: relative; padding: var(--s-3); border-radius: 36px; background: var(--c-surface-1); box-shadow: inset 0 0 0 1px rgb(var(--rgb-ink) / 0.05); }
+.stage > * { width: 100% !important; max-width: 100%; border-radius: 26px; overflow: hidden; }
+.kicker { margin: 0 0 var(--s-4); font-size: var(--t-label); font-weight: var(--w-medium); letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-reasoning); }
+.title { margin: 0 0 var(--s-5); font-size: clamp(32px, 3.8vw, 56px); line-height: 1.04; letter-spacing: -0.04em; font-weight: var(--w-semibold); text-wrap: balance; }
+.body { margin: 0; color: var(--c-ink-2); font-size: var(--t-body); line-height: 1.6; max-width: 40ch; }
+@media (max-width: 899px) {
+  .section { padding: var(--s-16) 0; }
+  .head, .stage { grid-column: 1 / -1; position: static; padding-right: 0; }
+  .stage { border-radius: 28px; padding: var(--s-2); }
+}

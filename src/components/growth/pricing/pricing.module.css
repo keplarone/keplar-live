@@ -1,0 +1,238 @@
+/* Pricing conversion sections. Flat graphite surfaces, hairline borders, no gradients or glow. */
+.section {
+  position: relative;
+  z-index: var(--z-content);
+  background: var(--c-canvas);
+  padding: var(--s-20) var(--l-gutter) 0;
+}
+
+.inner {
+  max-width: var(--l-max);
+  margin: 0 auto;
+}
+
+.title {
+  font-size: var(--t-title);
+  line-height: var(--lh-title);
+  letter-spacing: var(--tr-title);
+  font-weight: var(--w-medium);
+}
+
+.lede {
+  margin-top: var(--s-3);
+  max-width: 62ch;
+  color: var(--c-ink-2);
+  font-size: var(--t-body);
+  line-height: var(--lh-body);
+}
+
+/* ── Which plan fits ── */
+.fits {
+  margin-top: var(--s-8);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s-3);
+}
+
+.fit {
+  display: flex;
+  flex-direction: column;
+  padding: var(--s-6);
+  border-radius: var(--r-card);
+  border: var(--b-hairline) solid var(--c-border);
+  background: var(--c-surface-1);
+}
+
+.fitPlan {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-3);
+  font-size: var(--t-small);
+  font-weight: var(--w-medium);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--c-ink-2);
+}
+
+.fitPrice {
+  letter-spacing: 0;
+  text-transform: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.fitWho {
+  margin-top: var(--s-5);
+  font-size: var(--t-lead);
+  line-height: var(--lh-lead);
+  font-weight: var(--w-medium);
+}
+
+.fitOutcome {
+  margin-top: var(--s-3);
+  color: var(--c-ink-2);
+  font-size: var(--t-small);
+  line-height: var(--lh-small);
+  flex: 1;
+}
+
+.fitCta {
+  margin-top: var(--s-6);
+}
+
+/* ── Comparison table ── */
+.scroller {
+  /* positioned so the visually-hidden labels inside cells (absolute) are clipped by this scroller, not the page */
+  position: relative;
+  margin-top: var(--s-8);
+  overflow-x: auto;
+  border-radius: var(--r-card);
+  border: var(--b-hairline) solid var(--c-border);
+  background: var(--c-surface-1);
+  -webkit-overflow-scrolling: touch;
+}
+
+.scroller:focus-visible {
+  outline: var(--b-focus) solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+  font-size: var(--t-small);
+  line-height: var(--lh-small);
+  font-variant-numeric: tabular-nums;
+}
+
+.table th,
+.table td {
+  padding: var(--s-3) var(--s-4);
+  text-align: left;
+  vertical-align: top;
+  border-bottom: var(--b-hairline) solid var(--c-border);
+}
+
+.table thead th {
+  font-weight: var(--w-medium);
+  color: var(--c-ink);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: var(--t-label);
+  padding-top: var(--s-5);
+  padding-bottom: var(--s-4);
+}
+
+.table td {
+  color: var(--c-ink-2);
+}
+
+.table [data-plan="plus"] {
+  background: rgb(var(--rgb-ink) / 0.035);
+}
+
+.table td[data-soon] {
+  color: var(--c-ink-3);
+  font-style: italic;
+}
+
+.featureHead,
+.feature {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 220px;
+  background: var(--c-surface-1);
+  color: var(--c-ink);
+  font-weight: var(--w-regular);
+}
+
+.hint {
+  display: block;
+  margin-top: var(--s-1);
+  color: var(--c-ink-3);
+  font-size: var(--t-label);
+  line-height: var(--lh-small);
+}
+
+.groupRow th {
+  position: sticky;
+  left: 0;
+  padding-top: var(--s-6);
+  font-size: var(--t-label);
+  font-weight: var(--w-medium);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--c-ink-3);
+  background: var(--c-surface-1);
+}
+
+.dash {
+  color: var(--c-ink-3);
+}
+
+.table tfoot td,
+.table tfoot th {
+  border-bottom: 0;
+  padding-top: var(--s-5);
+  padding-bottom: var(--s-5);
+}
+
+.ctaCell {
+  white-space: nowrap;
+}
+
+/* ── Context note (arrivals from the app) ── */
+.contextWrap {
+  position: relative;
+  z-index: var(--z-content);
+  padding: 0 var(--l-gutter);
+}
+
+.context {
+  max-width: var(--l-max);
+  margin: var(--s-6) auto 0;
+  padding: var(--s-4) var(--s-5);
+  border-radius: var(--r-md);
+  border: var(--b-hairline) solid var(--c-border-strong);
+  background: var(--c-surface-1);
+}
+
+.contextTitle {
+  font-weight: var(--w-medium);
+}
+
+.contextBody {
+  margin-top: var(--s-1);
+  color: var(--c-ink-2);
+  font-size: var(--t-small);
+  line-height: var(--lh-small);
+}
+
+/* ── Closing ── */
+.closing {
+  padding-bottom: var(--s-24);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.closingRow {
+  margin-top: var(--s-8);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s-3);
+}
+
+@media (max-width: 1080px) {
+  .fits { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .section { padding-top: var(--s-16); }
+  .fits { grid-template-columns: minmax(0, 1fr); }
+  .featureHead, .feature { min-width: 160px; }
+  .closingRow { flex-direction: column; align-items: stretch; width: 100%; }
+}

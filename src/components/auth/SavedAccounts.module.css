@@ -1,0 +1,17 @@
+/* Accounts already signed in on this device (sign-in page). Tokens only. */
+.box { display: flex; flex-direction: column; gap: var(--s-2); margin-bottom: var(--s-4); }
+.title { margin: 0; font-size: var(--t-label); color: var(--c-ink-3); text-transform: uppercase; letter-spacing: var(--tr-label); }
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-2); }
+.row {
+  display: flex; align-items: center; gap: var(--s-3); width: 100%; min-height: 48px; padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-md); border: 1px solid var(--c-border); background: var(--c-surface-1); color: var(--c-ink); text-align: left; cursor: pointer;
+}
+.row:hover { border-color: var(--c-border-strong); background: var(--c-surface-2); }
+.row:focus-visible { outline: none; text-decoration: underline; text-underline-offset: 3px; }
+.row:disabled { opacity: 0.6; cursor: default; }
+.avatar { display: inline-grid; place-items: center; flex: none; width: 30px; height: 30px; border-radius: var(--r-pill); background: var(--c-reasoning); color: var(--c-canvas); font-size: var(--t-label); font-weight: var(--w-semibold); text-transform: uppercase; }
+.who { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.name { font-size: var(--t-small); font-weight: var(--w-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.email { font-size: var(--t-label); color: var(--c-ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.go { font-size: var(--t-small); color: var(--c-ink-2); }
+.problem { margin: 0; font-size: var(--t-small); color: var(--c-ink); }

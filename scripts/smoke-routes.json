@@ -1,0 +1,17 @@
+{
+  "pages": [
+    { "path": "/", "text": "Keplar" },
+    { "path": "/pricing", "text": "Free" },
+    { "path": "/ai-app-builder", "text": "builds it" },
+    { "path": "/signin", "text": "Sign in" },
+    { "path": "/status", "text": "status" },
+    { "path": "/help", "text": "help" },
+    { "path": "/contact", "text": "contact" },
+    { "path": "/security", "text": "vulnerab|security" },
+    { "path": "/app", "text": null }
+  ],
+  "api": [
+    { "path": "/api/health", "json": { "ok": true } }
+  ],
+  "mustBeHidden": ["/admin"]
+}

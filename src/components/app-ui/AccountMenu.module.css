@@ -1,0 +1,80 @@
+/* Account switcher + import prompt. Tokens only (src/styles/tokens.css). */
+.wrap { position: relative; padding: 0 var(--s-1); }
+
+.chip {
+  display: flex; align-items: center; gap: var(--s-3); width: 100%; min-height: 44px;
+  padding: var(--s-2) var(--s-3); border-radius: var(--r-sm); text-align: left;
+  color: var(--c-ink); background: var(--c-surface-1); border: 1px solid var(--c-border);
+  transition: background-color var(--d-fast) var(--e-standard), border-color var(--d-fast) var(--e-standard);
+}
+.chip:hover { background: var(--c-surface-2); border-color: var(--c-border-strong); }
+.chip:focus-visible, .item:focus-visible, .btn:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+
+.avatar {
+  display: inline-grid; place-items: center; flex: none; width: 28px; height: 28px; border-radius: var(--r-pill);
+  background: var(--c-reasoning); color: var(--c-canvas); font-size: var(--t-label); font-weight: var(--w-semibold); text-transform: uppercase;
+}
+.who { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.name { font-size: var(--t-small); font-weight: var(--w-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.email { font-size: var(--t-label); color: var(--c-ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.caret { color: var(--c-ink-3); font-size: var(--t-label); }
+
+.menu {
+  position: absolute; left: var(--s-1); right: var(--s-1); bottom: calc(100% + var(--s-2)); z-index: 30;
+  display: flex; flex-direction: column; gap: var(--s-1); padding: var(--s-2);
+  background: var(--c-canvas); border: 1px solid var(--c-border-strong); border-radius: var(--r-md);
+  box-shadow: 0 12px 32px rgb(var(--rgb-ink) / 0.14);
+}
+.menuHead { padding: var(--s-2) var(--s-3); display: flex; flex-direction: column; gap: 2px; border-bottom: 1px solid var(--c-border); margin-bottom: var(--s-1); }
+.menuLabel { font-size: var(--t-label); color: var(--c-ink-3); text-transform: uppercase; letter-spacing: var(--tr-label); }
+.item {
+  display: flex; align-items: center; width: 100%; min-height: 36px; padding: 0 var(--s-3); border-radius: var(--r-xs);
+  font-size: var(--t-small); color: var(--c-ink-2); text-align: left; text-decoration: none; cursor: pointer;
+}
+.item:hover { color: var(--c-ink); background: rgb(var(--rgb-ink) / 0.05); }
+.item[aria-disabled="true"] { opacity: 0.5; pointer-events: none; }
+.note { padding: var(--s-1) var(--s-3) var(--s-2); font-size: var(--t-label); color: var(--c-ink-3); }
+
+.import {
+  margin: 0 var(--s-1) var(--s-2); padding: var(--s-4); border-radius: var(--r-sm);
+  background: rgb(var(--rgb-reasoning) / 0.07); border: 1px solid rgb(var(--rgb-reasoning) / 0.25);
+  display: flex; flex-direction: column; gap: var(--s-3); font-size: var(--t-small); line-height: 1.4; color: var(--c-ink);
+}
+.importTitle { font-weight: var(--w-medium); }
+.importBody { color: var(--c-ink-2); font-size: var(--t-label); line-height: 1.5; text-wrap: pretty; }
+.row { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-1); }
+.btn {
+  /* equal pills that never wrap their label: side by side when they fit, stacked when the sidebar is narrow */
+  flex: 1 1 max-content; min-width: max-content; min-height: 40px; padding: 0 var(--s-5); border-radius: var(--r-pill); font-size: var(--t-small); font-weight: var(--w-medium); line-height: 1; white-space: nowrap;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--c-border-strong); color: var(--c-ink); background: transparent; cursor: pointer;
+}
+.btnPrimary { background: var(--c-ink); color: var(--c-canvas); border-color: var(--c-ink); }
+.btnPrimary:hover { background: var(--c-ink-hover); }
+.btn:disabled { opacity: 0.6; cursor: default; }
+
+/* ── liquid glass (CP-6c) ── */
+.chip { border-radius: var(--shape-control); background: var(--btn-s-bg); border-color: transparent; box-shadow: var(--btn-s-shadow); transition: var(--btn-spring); }
+.chip:hover { background: var(--lg-card-hover); border-color: transparent; }
+.menu {
+  border-radius: 22px; border: 0;
+  background: var(--lg-fill-strong); -webkit-backdrop-filter: var(--lg-bf); backdrop-filter: var(--lg-bf);
+  box-shadow: var(--lg-ring), 0 2px 4px rgb(0 0 0 / 0.06), 0 24px 56px -20px rgb(0 0 0 / 0.4);
+}
+.item { border-radius: var(--shape-control); }
+.item:hover { background: var(--lg-card-hover); }
+.import { border-radius: 18px; background: var(--lg-card); border-color: transparent; box-shadow: var(--lg-ring); }
+
+/* ── several accounts on this device ── */
+.list { display: flex; flex-direction: column; gap: 2px; margin-bottom: var(--s-1); padding-bottom: var(--s-1); border-bottom: 1px solid var(--c-border); }
+.acctRow { display: flex; align-items: center; gap: var(--s-1); }
+.acctRow .item { gap: var(--s-3); min-height: 44px; flex: 1; }
+.acctRow[data-expired] .email { color: var(--c-ink-3); }
+.rm { flex: none; min-height: 32px; padding: 0 var(--s-3); border-radius: var(--shape-control); font-size: var(--t-label); color: var(--c-ink-2); background: transparent; border: 1px solid var(--c-border); cursor: pointer; }
+.rm:hover { color: var(--c-ink); border-color: var(--c-border-strong); }
+.rm:disabled { opacity: 0.5; cursor: default; }
+
+/* ── minimal pass: usage and theme live in the menu ── */
+.menu { max-height: min(640px, calc(100dvh - 96px)); overflow-y: auto; overscroll-behavior: contain; }
+.usage { padding: var(--s-2) var(--s-3) var(--s-3); margin-bottom: var(--s-1); border-bottom: 1px solid var(--c-border); font-size: var(--t-small); }
+.themeRow { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); min-height: 40px; padding: 0 var(--s-1) 0 var(--s-3); font-size: var(--t-small); color: var(--c-ink-2); }

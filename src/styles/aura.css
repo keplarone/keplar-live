@@ -1,0 +1,86 @@
+/*
+ * Aura: static corner glows, LIGHT THEME ONLY.
+ * Peach, violet, cyan and gold sit in the four corners of a warm canvas. The middle stays clear so text is readable.
+ * Nothing here animates, nothing uses background-attachment, and nothing blurs a viewport-sized layer. Dark stays flat.
+ */
+:root[data-theme="light"] {
+  --aura-peach: 255 168 122;
+  --aura-violet: 168 112 176;
+  --aura-cyan: 72 186 196;
+  --aura-gold: 214 164 72;
+  /* kept so older placement names still resolve to the same static corners */
+  --aura-coral: 255 168 122;
+  --aura-pink: 168 112 176;
+  --aura-amber: 214 164 72;
+  --aura-sky: 72 186 196;
+  --aura-teal: 72 186 196;
+  --aura-blur: 0px;
+  --aura-anim: none;
+  --aura-corners:
+    radial-gradient(46% 42% at 0% 0%, rgb(var(--aura-peach) / 0.55) 0%, rgb(var(--aura-peach) / 0.16) 42%, transparent 68%),
+    radial-gradient(44% 40% at 100% 0%, rgb(var(--aura-violet) / 0.42) 0%, rgb(var(--aura-violet) / 0.12) 40%, transparent 66%),
+    radial-gradient(44% 42% at 0% 100%, rgb(var(--aura-cyan) / 0.38) 0%, rgb(var(--aura-cyan) / 0.1) 40%, transparent 66%),
+    radial-gradient(48% 44% at 100% 100%, rgb(var(--aura-gold) / 0.5) 0%, rgb(var(--aura-gold) / 0.14) 42%, transparent 68%);
+  --aura-hero: var(--aura-corners);
+  --aura-soft: var(--aura-corners);
+  --aura-dock: var(--aura-corners);
+  --aura-welcome: var(--aura-corners);
+}
+@media (prefers-contrast: more), (prefers-reduced-transparency: reduce) {
+  :root[data-theme="light"] {
+    --aura-corners: none;
+    --aura-hero: none;
+    --aura-soft: none;
+    --aura-dock: none;
+    --aura-welcome: none;
+  }
+}
+
+/* Ask and Create share the app main column. The glow is painted once on that column, which does not scroll,
+   so a long thread does not repaint it. The center of the column stays the warm canvas.
+   A second, lighter wash sits on the sidebar so the viewport's left corners stay in the same palette. */
+:root[data-theme="light"] [class*="App-module__"][class$="__main"] { isolation: isolate; }
+:root[data-theme="light"] [class*="App-module__"][class$="__main"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--aura-hero);
+}
+:root[data-theme="light"] [class*="App-module__"][class$="__sideWrap"] { position: relative; isolation: isolate; }
+:root[data-theme="light"] [class*="App-module__"][class$="__sideWrap"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 58% at 0% 0%, rgb(var(--aura-peach) / 0.5) 0%, transparent 64%),
+    radial-gradient(120% 58% at 0% 100%, rgb(var(--aura-cyan) / 0.36) 0%, transparent 64%);
+}
+:root[data-theme="light"] [class*="App-module__"][class$="__sidebar"] { position: relative; z-index: 1; }
+/* The top bar and the working Create panels are translucent in light so the corner glow stays visible while you use the app. */
+:root[data-theme="light"] [class*="App-module__"][class$="__topbar"] {
+  background: linear-gradient(to bottom, rgb(250 249 247 / 0.35), transparent);
+}
+:root[data-theme="light"] [class*="studio-module__"][class$="__top"],
+:root[data-theme="light"] [class*="studio-module__"][class$="__ledger"] { background-color: rgb(250 249 247 / 0.55); }
+:root[data-theme="light"] [class*="studio-module__"][class$="__stage"] { background-color: rgb(255 255 255 / 0.78); }
+:root[data-theme="light"] [class*="studio-module__"][class$="__calm"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--aura-soft);
+}
+/* The composer dock stays readable; a short fade lets the bottom gold and cyan corners show above it. */
+:root[data-theme="light"] [class*="App-module__"][class$="__dock"] {
+  background: linear-gradient(to bottom, transparent, var(--c-canvas) 36%);
+}
+:root[data-theme="light"] [class*="App-module__"][class$="__dockNote"] { color: var(--c-ink-2); }
+
+/* Create's start screen is opaque by default and would hide the column glow. */
+:root[data-theme="light"] [class*="studio-module__"][class$="__start"] { background-color: transparent; }
+:root[data-theme="light"] [class*="studio-module__"][class$="__calm"] { position: relative; }

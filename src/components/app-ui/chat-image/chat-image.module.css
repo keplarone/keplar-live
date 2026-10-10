@@ -1,0 +1,213 @@
+/* A picture made in chat. Own file so the chat's other styles stay untouched; tokens only. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  width: min(100%, 560px);
+}
+
+.frame {
+  position: relative;
+  margin: 0;
+  border-radius: var(--r-md, 14px);
+  overflow: hidden;
+  background: var(--c-surface-2);
+  box-shadow: var(--sh-hairline);
+}
+
+.frame button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+
+.frame button:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: -2px;
+}
+
+.frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 560px;
+  object-fit: contain;
+}
+
+/* Shown while the picture is being made: same footprint as the result, so nothing jumps. */
+.wait {
+  display: grid;
+  place-items: center;
+  aspect-ratio: var(--ratio, 3 / 2);
+  background: var(--c-surface-2);
+  color: var(--c-ink-2);
+  font-size: var(--t-small);
+}
+
+.pulse {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--c-ink-3);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.25; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse { animation: none; opacity: 0.6; }
+}
+
+.meta {
+  margin: 0;
+  font-size: var(--t-label);
+  color: var(--c-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.prompt {
+  margin: 0;
+  font-size: var(--t-small);
+  color: var(--c-ink-2);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border-radius: var(--r-md, 14px);
+  background: var(--c-surface-2);
+  box-shadow: var(--sh-hairline);
+}
+
+.panel h3 {
+  margin: 0;
+  font-size: var(--t-body);
+  font-weight: var(--w-medium);
+  color: var(--c-ink);
+}
+
+.panel p {
+  margin: 0;
+  font-size: var(--t-small);
+  color: var(--c-ink-2);
+}
+
+.cost {
+  color: var(--c-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.sizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.sizes legend {
+  padding: 0;
+  margin-bottom: var(--s-1);
+  font-size: var(--t-label);
+  color: var(--c-ink-3);
+}
+
+.chip {
+  height: 32px;
+  padding: 0 var(--s-3);
+  border-radius: var(--r-pill);
+  font-size: var(--t-small);
+  color: var(--c-ink-2);
+  box-shadow: var(--sh-hairline);
+}
+
+.chip[aria-pressed="true"] {
+  background: var(--c-ink);
+  color: var(--c-canvas);
+}
+
+.rights {
+  display: flex;
+  gap: var(--s-2);
+  align-items: flex-start;
+  font-size: var(--t-small);
+  color: var(--c-ink-2);
+}
+
+.rights input {
+  margin-top: 3px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.primary,
+.ghost {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 var(--s-4);
+  border-radius: var(--r-pill);
+  font-size: var(--t-small);
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.primary {
+  background: var(--c-ink);
+  color: var(--c-canvas);
+  font-weight: var(--w-medium);
+}
+
+.primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ghost {
+  color: var(--c-ink-2);
+  box-shadow: var(--sh-hairline);
+}
+
+.ghost:hover {
+  color: var(--c-ink);
+  background: rgb(var(--rgb-ink) / 0.04);
+}
+
+.edit {
+  display: flex;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+}
+
+.edit input {
+  flex: 1 1 220px;
+  min-width: 0;
+  height: 36px;
+  padding: 0 var(--s-3);
+  border-radius: var(--r-sm);
+  background: var(--c-surface-2);
+  box-shadow: var(--sh-hairline);
+  color: var(--c-ink);
+  font: inherit;
+  font-size: var(--t-small);
+}
+
+.error {
+  margin: 0;
+  font-size: var(--t-small);
+  color: var(--c-ink);
+}

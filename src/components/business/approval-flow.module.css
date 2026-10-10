@@ -1,0 +1,50 @@
+.flow {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--s-2);
+  margin: var(--s-3) 0;
+  padding: 0;
+  list-style: none;
+}
+.step {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  padding-top: var(--s-4);
+  font-size: var(--t-label);
+  color: var(--c-ink-3);
+}
+/* The line runs between nodes and lights up as far as the action has really got. */
+.step::before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 12px;
+  right: calc(-1 * var(--s-2));
+  height: 1px;
+  background: var(--c-border-strong);
+}
+.step:last-child::before { display: none; }
+.step[data-reached]::before { background: var(--tone, var(--c-ink-3)); }
+.node {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1.5px solid var(--c-border-strong);
+  background: var(--c-canvas);
+}
+.step[data-reached] .node { background: var(--tone, var(--c-ink-3)); border-color: var(--tone, var(--c-ink-3)); }
+.step[data-tone="verified"] { --tone: var(--c-verified); }
+.step[data-tone="attention"] { --tone: var(--c-attention); }
+.step[data-tone="destructive"] { --tone: var(--c-destructive); }
+.title { color: var(--c-ink-2); text-transform: uppercase; letter-spacing: var(--tr-label); }
+.detail { color: var(--c-ink); font-size: var(--t-small); overflow-wrap: anywhere; }
+.step[data-tone="attention"] .detail, .step[data-tone="destructive"] .detail, .step[data-tone="verified"] .detail { color: var(--tone); }
+@media (max-width: 640px) {
+  .flow { grid-template-columns: 1fr; gap: var(--s-3); }
+  .step { padding: 0 0 0 var(--s-6); }
+  .step::before { top: 14px; bottom: calc(-1 * var(--s-3)); left: 5px; right: auto; width: 1px; height: auto; }
+}

@@ -1,0 +1,305 @@
+.page {
+  position: relative;
+  z-index: var(--z-content);
+  max-width: clamp(1040px, 66vw, 2200px);
+  margin: 0 auto;
+  padding: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-24)) var(--l-gutter) var(--s-24);
+}
+
+.header {
+  padding-bottom: var(--s-12);
+  border-bottom: var(--b-hairline) solid var(--c-ink);
+}
+
+.label,
+.checked,
+.shortLabel {
+  font-family: var(--f-sans);
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--c-ink-3);
+}
+
+.h1 {
+  margin-top: var(--s-4);
+  font-size: var(--t-headline);
+  line-height: var(--lh-headline);
+  letter-spacing: var(--tr-headline);
+  font-weight: var(--w-medium);
+  max-width: 18ch;
+  text-wrap: balance;
+}
+
+.checked {
+  margin-top: var(--s-6);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-6);
+  padding-top: var(--s-10);
+}
+
+.p {
+  max-width: 68ch;
+  color: var(--c-ink-2);
+  font-size: var(--t-body);
+}
+
+.body > .p:first-child {
+  font-size: var(--t-lead);
+  line-height: var(--lh-lead);
+  color: var(--c-ink);
+}
+
+.disclosure {
+  max-width: 72ch;
+  padding: var(--s-4) var(--s-5);
+  border-left: var(--b-focus) solid var(--c-border-strong);
+  font-size: var(--t-small);
+  font-style: italic;
+  color: var(--c-ink-2);
+}
+
+.short {
+  padding: var(--s-6) 0;
+  border-top: var(--b-hairline) solid var(--c-border);
+  border-bottom: var(--b-hairline) solid var(--c-border);
+}
+
+.shortText {
+  margin-top: var(--s-2);
+  font-size: var(--t-lead);
+  line-height: var(--lh-lead);
+  letter-spacing: var(--tr-lead);
+  max-width: 64ch;
+}
+
+.h2 {
+  margin-top: var(--s-10);
+  font-size: var(--t-title);
+  line-height: var(--lh-title);
+  letter-spacing: var(--tr-title);
+  font-weight: var(--w-medium);
+}
+
+.block .h2 {
+  margin-bottom: var(--s-5);
+}
+
+.h3 {
+  font-size: var(--t-lead);
+  font-weight: var(--w-medium);
+  letter-spacing: var(--tr-lead);
+}
+
+.ul,
+.ol {
+  display: flex;
+  flex-direction: column;
+  border-top: var(--b-hairline) solid var(--c-border);
+  max-width: 76ch;
+}
+
+.ul li,
+.ol li {
+  padding: var(--s-3) 0;
+  border-bottom: var(--b-hairline) solid var(--c-border);
+  color: var(--c-ink-2);
+  font-size: var(--t-small);
+}
+
+.ol {
+  counter-reset: n;
+}
+
+.ol li {
+  counter-increment: n;
+}
+
+.ol li::before {
+  content: counter(n) ". ";
+  font-family: var(--f-sans);
+  color: var(--c-ink-3);
+}
+
+.ul strong,
+.ol strong {
+  color: var(--c-ink);
+  font-weight: var(--w-medium);
+}
+
+.tableWrap {
+  margin-top: var(--s-6);
+  overflow-x: auto;
+  border-top: var(--b-hairline) solid var(--c-ink);
+}
+
+.tableWrap:focus-visible {
+  outline-offset: 4px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-small);
+  min-width: 640px;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  vertical-align: top;
+  padding: var(--s-3) var(--s-4) var(--s-3) 0;
+  border-bottom: var(--b-hairline) solid var(--c-border);
+}
+
+.table thead th {
+  font-family: var(--f-sans);
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  font-weight: var(--w-regular);
+  color: var(--c-ink-3);
+}
+
+.table tbody th {
+  font-weight: var(--w-medium);
+  width: 22%;
+}
+
+.table td {
+  color: var(--c-ink-2);
+}
+
+.table td:first-of-type {
+  color: var(--c-ink);
+}
+
+.picks {
+  margin-top: var(--s-10);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-10);
+}
+
+.picks .h3 {
+  margin-bottom: var(--s-4);
+}
+
+.tool {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-6) 0 var(--s-2);
+}
+
+.faq {
+  margin-top: var(--s-16);
+}
+
+.faq :global(section) {
+  padding: 0;
+}
+
+.faq :global(section > div) {
+  grid-template-columns: 1fr;
+  gap: var(--s-6);
+}
+
+.cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  margin-top: var(--s-16);
+}
+
+.sources {
+  margin-top: var(--s-16);
+  padding-top: var(--s-6);
+  border-top: var(--b-hairline) solid var(--c-border);
+  font-size: var(--t-small);
+  color: var(--c-ink-2);
+}
+
+.sourcesDate {
+  margin-left: var(--s-2);
+  font-family: var(--f-sans);
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--c-ink-3);
+  font-weight: var(--w-regular);
+}
+
+.sourcesNote {
+  margin-top: var(--s-2);
+}
+
+.sources ul {
+  margin-top: var(--s-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.sources a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--c-border-strong);
+  word-break: break-word;
+}
+
+.sources a:hover {
+  color: var(--c-ink);
+}
+
+.related {
+  margin-top: var(--s-12);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-6);
+  font-size: var(--t-small);
+}
+
+/* Touch: each "Keplar One vs X" link is a 44px row. */
+@media (pointer: coarse) {
+  .related a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 899px) {
+  .page {
+    padding-top: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-12));
+  }
+  .picks {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Monolith redesign: big title with seam, lit short answer, lit tables and tool cards ── */
+.page { max-width: clamp(1100px, 70vw, 2300px); }
+.header { position: relative; border-bottom: 0; padding-bottom: var(--s-12); }
+.header::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: rgb(var(--rgb-ink) / 0.06); box-shadow: 0 0 24px 2px rgb(var(--rgb-ink) / 0.18); }
+.label { display: inline-flex; align-items: center; gap: var(--s-3); padding: 7px 14px 7px 12px; border-radius: var(--r-pill); border: var(--b-hairline) solid var(--c-border-strong); background: rgb(var(--rgb-ink) / 0.06); letter-spacing: 0.14em; color: var(--c-ink-2); }
+.label::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--c-ink); box-shadow: 0 0 10px 1px rgb(var(--rgb-ink) / 0.7); }
+.h1 { font-size: clamp(40px, 5.8vw, 140px); line-height: 0.97; letter-spacing: -0.05em; max-width: 20ch; margin-top: var(--s-8); }
+.short { padding: var(--s-8); border: var(--b-hairline) solid rgb(var(--rgb-ink) / 0.22); border-radius: var(--r-card-lg); background: rgb(var(--rgb-ink) / 0.06); box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.16), 0 40px 90px -56px rgb(var(--rgb-ink) / 0.4); }
+.tableWrap { border: var(--b-hairline) solid var(--c-border-strong); border-radius: var(--r-card); background: rgb(var(--rgb-ink) / 0.06); box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.08); }
+.table th, .table td { padding-left: var(--s-4); }
+.table thead th { background: rgb(var(--rgb-ink) / 0.06); letter-spacing: 0.1em; }
+.tool { padding: var(--s-6); border-radius: var(--r-card); border: var(--b-hairline) solid var(--c-border); background: rgb(var(--rgb-ink) / 0.06); box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.08); }
+.disclosure { border-radius: var(--r-md); border: var(--b-hairline) solid var(--c-border); border-left-width: var(--b-focus); }
+@media (max-width: 599px) { .short { padding: var(--s-5); } .tool { padding: var(--s-5); } }
+
+/* Light theme: white cards on the warm page with a warm hairline and soft drop (Dark's 6% light veil + bright top edge read as a grey
+   slab with a dark line on a light page); ink glows become clean marks. Dark above is unchanged. */
+:global(:root[data-theme="light"]) .label::before { box-shadow: none; }
+:global(:root[data-theme="light"]) .short { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-lift); }
+:global(:root[data-theme="light"]) .tableWrap { background: var(--lt-card-bg); box-shadow: var(--lt-card-shadow); }
+:global(:root[data-theme="light"]) .tool { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-shadow); }

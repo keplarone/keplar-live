@@ -1,0 +1,91 @@
+/* Business OS: same monochrome system as Create. */
+.shell { display: flex; flex-direction: column; min-height: 100%; background: var(--c-canvas); color: var(--c-ink); font-size: var(--t-small); }
+.bar { display: flex; align-items: center; gap: var(--s-4); padding: var(--s-3) var(--s-5); border-bottom: var(--b-hairline) solid var(--c-border); flex-wrap: wrap; }
+.title { font-size: var(--t-body); font-weight: var(--w-medium); letter-spacing: -0.01em; }
+.spacer { flex: 1; }
+.label { font-family: var(--f-sans); font-size: var(--t-label); letter-spacing: var(--tr-label); text-transform: uppercase; color: var(--c-ink-3); }
+.tabs { display: flex; gap: 2px; padding: 3px; border-radius: var(--shape-control); background: var(--c-surface-2); overflow-x: auto; max-width: 100%; scrollbar-width: none; }
+.tab { flex: none; height: 30px; padding: 0 var(--s-4); border: 0; border-radius: calc(var(--shape-control) - 4px); background: transparent; color: var(--c-ink-2); font: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.tab:hover { color: var(--c-ink); }
+.tab[aria-selected="true"] { background: var(--c-canvas); color: var(--c-ink); box-shadow: var(--sh-hairline); }
+.badge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--c-ink); color: var(--c-canvas); font-family: var(--f-sans); font-size: 11px; display: inline-grid; place-items: center; }
+.body { flex: 1; padding: var(--s-5); display: flex; flex-direction: column; gap: var(--s-5); max-width: 1180px; width: 100%; margin: 0 auto; box-sizing: border-box; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: var(--s-3); }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--s-4); }
+.card { border: var(--b-hairline) solid var(--c-border); border-radius: var(--r-card); padding: var(--s-4); display: flex; flex-direction: column; gap: var(--s-3); min-width: 0; }
+.stat { font-size: 26px; letter-spacing: -0.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.muted { color: var(--c-ink-3); }
+.row { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2); height: 32px; padding: 0 var(--s-4); border-radius: var(--r-pill); border: var(--b-hairline) solid var(--c-ink); background: var(--c-ink); color: var(--c-canvas); font: inherit; cursor: pointer; white-space: nowrap; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.ghost { background: transparent; color: var(--c-ink); border-color: var(--c-border-strong); }
+.danger { background: transparent; color: var(--c-dissent); border-color: var(--c-dissent); }
+.btn:focus-visible, .tab:focus-visible { outline: var(--b-focus) solid var(--c-focus); outline-offset: 2px; }
+.table { width: 100%; border-collapse: collapse; }
+.table th { text-align: left; font-family: var(--f-sans); font-size: var(--t-label); letter-spacing: var(--tr-label); text-transform: uppercase; color: var(--c-ink-3); font-weight: var(--w-regular); padding: var(--s-2) var(--s-3); border-bottom: var(--b-hairline) solid var(--c-border); }
+.table td { padding: var(--s-3); border-bottom: var(--b-hairline) solid var(--c-border); vertical-align: top; }
+.tableWrap { overflow-x: auto; }
+.pill { display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 var(--s-2); border-radius: var(--r-pill); border: var(--b-hairline) solid var(--c-border-strong); font-family: var(--f-sans); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+.pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--c-ink-3); }
+.on::before { background: var(--c-ink); }
+.warn { border-color: var(--c-dissent); color: var(--c-dissent); }
+.warn::before { background: var(--c-dissent); }
+.bars { display: flex; align-items: flex-end; gap: 4px; height: 72px; }
+.barCol { flex: 1; background: var(--c-surface-2); border-radius: 2px; position: relative; min-height: 2px; }
+.barCol > span { position: absolute; inset: auto 0 0; background: var(--c-ink); border-radius: 2px; }
+.list { display: flex; flex-direction: column; }
+.item { display: flex; gap: var(--s-3); padding: var(--s-3) 0; border-bottom: var(--b-hairline) solid var(--c-border); align-items: flex-start; }
+.item:last-child { border-bottom: 0; }
+.grow { flex: 1; min-width: 0; }
+.pre { white-space: pre-wrap; background: var(--c-surface-2); border-radius: var(--r-md); padding: var(--s-3); margin: 0; font: inherit; }
+.textarea { width: 100%; box-sizing: border-box; min-height: 110px; padding: var(--s-3); border: var(--b-hairline) solid var(--c-border-strong); border-radius: var(--r-md); font: inherit; background: var(--c-canvas); color: var(--c-ink); resize: vertical; }
+.notice { border: var(--b-hairline) solid var(--c-border-strong); border-radius: var(--r-md); padding: var(--s-3) var(--s-4); display: flex; gap: var(--s-3); align-items: center; flex-wrap: wrap; }
+.error { border-color: var(--c-dissent); color: var(--c-dissent); }
+.kanban { display: grid; grid-template-columns: repeat(5, minmax(180px, 1fr)); gap: var(--s-3); overflow-x: auto; }
+.col { background: var(--c-surface-2); border-radius: var(--r-card); padding: var(--s-3); display: flex; flex-direction: column; gap: var(--s-2); min-height: 120px; }
+.deal { background: var(--c-canvas); border: var(--b-hairline) solid var(--c-border); border-radius: var(--r-md); padding: var(--s-3); display: flex; flex-direction: column; gap: var(--s-2); }
+.select { height: 28px; border-radius: var(--r-sm); border: var(--b-hairline) solid var(--c-border-strong); background: var(--c-canvas); color: var(--c-ink); font: inherit; font-size: 12px; }
+.switch { display: inline-flex; align-items: center; gap: var(--s-2); cursor: pointer; }
+.mono { font-family: var(--f-sans); font-size: 12px; }
+@media (max-width: 640px) { .body { padding: var(--s-4); } .bar { padding: var(--s-3) var(--s-4); } }
+.meter { display: inline-flex; align-items: center; gap: var(--s-2); }
+
+@media (pointer: coarse) { .tab { min-height: 44px; } }
+
+/* glass buttons (liquid glass: see src/styles/glass.css) */
+.btn { background: var(--btn-p-bg); color: var(--btn-p-ink); border-color: transparent; box-shadow: var(--btn-p-shadow); -webkit-backdrop-filter: blur(6px) saturate(1.4); backdrop-filter: blur(6px) saturate(1.4); transition: var(--btn-spring); }
+.btn:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--btn-p-bg); transform: scale(1.03, 1.015); }
+.btn:active:not(:disabled) { transform: scale(0.97, 0.92); }
+.ghost { background: var(--btn-s-bg); color: var(--btn-s-ink); border-color: transparent; box-shadow: var(--btn-s-shadow); -webkit-backdrop-filter: blur(5px) saturate(1.4); backdrop-filter: blur(5px) saturate(1.4); transition: var(--btn-spring); }
+.ghost:hover:not(:disabled) { background: var(--lg-fill-strong); transform: scale(1.03, 1.015); }
+.ghost:active:not(:disabled) { transform: scale(0.97, 0.92); }
+@media (prefers-reduced-motion: reduce) { .btn, .ghost { transition: background-color 0.1s linear; transform: none !important; } }
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .btn, .ghost { backdrop-filter: none; -webkit-backdrop-filter: none; } .btn { background: var(--btn-p-solid, #17171a); } .ghost { background: var(--lg-solid); } }
+
+/* ── Monolith redesign: lit cards, big numerals, glassy tab rail ── */
+.bar { padding: var(--s-4) var(--s-6); background: rgb(var(--rgb-ink) / 0.06); }
+.title { font-size: var(--t-lead); letter-spacing: -0.03em; }
+.tabs { padding: 4px; background: rgb(var(--rgb-ink) / 0.06); box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.08); }
+.tab[aria-selected="true"] { background: rgb(var(--rgb-ink) / 0.13); box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.2), 0 0 18px -4px rgb(var(--rgb-ink) / 0.4); }
+.body { max-width: 1320px; padding: var(--s-8) var(--s-6); gap: var(--s-6); }
+.card { padding: var(--s-6); border-radius: var(--r-card); border-color: var(--c-border-strong); background: rgb(var(--rgb-ink) / 0.06); box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.1), 0 30px 60px -50px rgb(0 0 0 / 0.6); }
+.stat { font-size: clamp(30px, 3vw, 52px); font-weight: var(--w-medium); letter-spacing: -0.045em; }
+.col { border: var(--b-hairline) solid var(--c-border); background: rgb(var(--rgb-ink) / 0.06); }
+.deal { background: rgb(var(--rgb-ink) / 0.045); }
+.table th { background: rgb(var(--rgb-ink) / 0.05); }
+.barCol > span { box-shadow: 0 0 12px rgb(var(--rgb-ink) / 0.4); }
+@media (max-width: 640px) { .body { padding: var(--s-4); } .card { padding: var(--s-4); } }
+
+/* Minimal pass: secondary sections in one More menu next to the tab rail. */
+.more { position: relative; }
+.more > .tab { height: 38px; }
+.moreMenu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 40; min-width: 200px; padding: 6px; border-radius: 12px; border: var(--b-hairline) solid var(--c-border-strong); background: var(--c-surface-1); box-shadow: 0 12px 32px rgb(0 0 0 / .35); display: flex; flex-direction: column; --m-origin: 0 0; }
+.moreItem { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 34px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--c-ink); font: inherit; text-align: left; cursor: pointer; }
+.moreItem:hover, .moreItem:focus-visible { background: var(--c-surface-2); }
+
+/* Light theme: white cards on the warm page with a warm hairline and soft drop (Dark's 6% light veil + bright top edge read as a grey
+   slab with a dark line on a light page); ink glows become clean marks. Dark above is unchanged. */
+:global(:root[data-theme="light"]) .tabs { background: var(--lt-tint); box-shadow: inset 0 0 0 1px rgb(28 24 18 / 0.06); }
+:global(:root[data-theme="light"]) .tab[aria-selected="true"] { background: #fff; box-shadow: 0 1px 2px rgb(28 24 18 / 0.08), 0 0 0 1px rgb(28 24 18 / 0.08); }
+:global(:root[data-theme="light"]) .card { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-shadow); }
+:global(:root[data-theme="light"]) .barCol > span { box-shadow: none; }
