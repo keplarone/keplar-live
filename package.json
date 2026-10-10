@@ -19,6 +19,7 @@
     "verify": "node scripts/verify.mjs",
     "verify:quick": "node scripts/verify.mjs --quick",
     "smoke:prod": "node scripts/smoke-prod.mjs",
+    "indexnow": "node scripts/indexnow.mjs",
     "deploy": "node scripts/deploy.mjs",
     "backup": "node scripts/backup-db.mjs"
   },

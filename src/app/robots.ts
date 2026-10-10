@@ -11,6 +11,9 @@ import { isIndexable, site } from "@/lib/site";
 export const REPUTABLE_CRAWLERS = [
   "Googlebot", "Google-Extended", "Bingbot", "DuckDuckBot", "Applebot", "Applebot-Extended",
   "OAI-SearchBot", "GPTBot", "ChatGPT-User", "ClaudeBot", "Claude-SearchBot", "Claude-User", "PerplexityBot", "Perplexity-User",
+  // More AI assistants and the open web corpus many models learn from (Common Crawl): the more of them can read Keplar's pages,
+  // the more often answers can know and cite it.
+  "CCBot", "Amazonbot", "Meta-ExternalAgent", "MistralAI-User", "DuckAssistBot",
 ] as const;
 
 export default function robots(): MetadataRoute.Robots {
