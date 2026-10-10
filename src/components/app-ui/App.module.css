@@ -1547,70 +1547,54 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 .memoryChip.memoryChip:hover { color: var(--c-ink); background: rgb(var(--rgb-ink) / 0.06); }
 .memoryChip.memoryChip:not([data-on])::after { content: ""; position: absolute; left: 9px; right: 9px; top: 50%; height: 1.5px; border-radius: 1px; background: currentColor; transform: rotate(-45deg); }
 
-/* ── Oct 2026 redesign (canvas "Chat"), light theme only ──────────────────────────────
- * Full-width conversation on the aura ground. The sidebar becomes the slide-in drawer at every width, opened by a round
- * logo button; the top bar is floating pills (logo · chat title · actions). Dark keeps the layout above. */
-:global(:root[data-theme="light"]) .app {
-  grid-template-columns: minmax(0, 1fr);
-  background:
-    radial-gradient(42% 52% at 0% 0%, rgb(169 216 245 / 0.75), transparent 70%),
-    radial-gradient(36% 46% at 100% 0%, rgb(214 205 245 / 0.7), transparent 70%),
-    radial-gradient(30% 40% at 0% 100%, rgb(205 238 221 / 0.55), transparent 70%),
-    radial-gradient(32% 40% at 100% 100%, rgb(249 214 196 / 0.55), transparent 70%),
-    #f7f8fa;
-}
-:global(:root[data-theme="light"]) .sideWrap {
-  position: fixed;
-  inset: 0 auto 0 0;
-  z-index: 8;
-  width: min(340px, 88vw);
-  padding: 12px;
-  transform: translateX(calc(-100% - 12px));
-  visibility: hidden;
-  transition: transform var(--d-slow) var(--e-emphasized), visibility 0s linear var(--d-slow);
-  opacity: 1;
-}
-:global(:root[data-theme="light"]) .sideWrap[data-open] { transform: none; visibility: visible; transition: transform var(--d-slow) var(--e-emphasized), visibility 0s; }
+/* ── Oct 2026 redesign (canvas pages "App home" and "App chat"), light theme only ──────────────────
+ * Claude-style layout in the site's light style: a frosted sidebar card on the left (a slide-in drawer under 900px), the chat
+ * title as a pill with round actions on the right, the greeting with the mark beside it, a large white composer and pill starters,
+ * all over the aura ground with drifting dots (SkyBackdrop, rendered inside .app). Dark keeps the layout above. */
+:global(:root[data-theme="light"]) .app { isolation: isolate; background: #f7f8fa; }
+:global(:root[data-theme="light"]) .sideWrap { padding: 12px 0 12px 12px; background: transparent; opacity: 1; }
 :global(:root[data-theme="light"]) .sidebar {
   border-radius: 26px;
-  background: rgb(255 255 255 / 0.94);
-  box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 30px 80px -30px rgb(14 15 18 / 0.4);
+  background: rgb(255 255 255 / 0.72);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.8), 0 1px 2px rgb(14 15 18 / 0.06), 0 12px 32px -16px rgb(14 15 18 / 0.18);
 }
-:global(:root[data-theme="light"]) .drawerScrim {
-  display: block;
-  position: fixed;
-  inset: 0;
-  z-index: 7;
-  background: rgb(14 15 18 / 0.14);
-  animation: fade var(--d-base) var(--e-standard) both;
-}
+:global(:root[data-theme="light"]) .sideItem { border-radius: 999px; }
+:global(:root[data-theme="light"]) .sideItem:hover { background: rgb(14 15 18 / 0.04); }
+:global(:root[data-theme="light"]) .sideItem[aria-current="page"] { background: #ffffff; box-shadow: 0 1px 2px rgb(14 15 18 / 0.06); }
+/* "New chat": the black plus disc from the design */
+:global(:root[data-theme="light"]) .sideItem[data-nav="new"] { color: #0e0f12; font-weight: 500; }
+:global(:root[data-theme="light"]) .sideItem[data-nav="new"] > svg:first-child { box-sizing: content-box; padding: 4px; border-radius: 999px; background: #0e0f12; color: #ffffff; }
 
-/* floating pill top bar */
-:global(:root[data-theme="light"]) .topbar {
-  height: 92px;
-  padding: 20px 28px 0;
-  align-items: flex-start;
-  gap: 8px;
-  background: transparent;
-  opacity: 1;
+/* top bar: chat title pill on the left, round white actions and the black Upgrade pill on the right */
+:global(:root[data-theme="light"]) .topbar { height: 84px; padding: 20px 28px 0; align-items: flex-start; gap: 8px; background: transparent; opacity: 1; }
+:global(:root[data-theme="light"]) .topTitle {
+  flex: 0 1 auto;
+  max-width: min(460px, 50%);
+  margin-right: auto;
+  height: 44px;
+  line-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 8px 24px -12px rgb(14 15 18 / 0.16);
+  font-size: 15px;
 }
+:global(:root[data-theme="light"]) .topTitle:empty { visibility: hidden; }
 :global(:root[data-theme="light"]) .topbar .iconBtn,
-:global(:root[data-theme="light"]) .memoryChip,
-:global(:root[data-theme="light"]) .upgradeTop {
+:global(:root[data-theme="light"]) .memoryChip {
   height: 44px;
   background: #ffffff;
   color: #0e0f12;
   box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 8px 24px -12px rgb(14 15 18 / 0.16);
 }
-:global(:root[data-theme="light"]) .topbar .iconBtn { width: 44px; margin-top: 4px; }
-:global(:root[data-theme="light"]) .topbar .iconBtn:hover { background: #ffffff; transform: translateY(-1px); }
-:global(:root[data-theme="light"]) .menuBtn { display: inline-grid; width: 52px !important; height: 52px !important; margin-top: 0 !important; }
-:global(:root[data-theme="light"]) .newBtnMobile { display: inline-grid; }
-:global(:root[data-theme="light"]) .memoryChip { padding: 0 16px; margin-top: 4px; }
+:global(:root[data-theme="light"]) .topbar .iconBtn { width: 44px; }
+:global(:root[data-theme="light"]) .memoryChip { padding: 0 16px; }
 :global(:root[data-theme="light"]) .upgradeTop {
   display: inline-flex;
   align-items: center;
-  margin-top: 4px;
+  height: 44px;
   padding: 0 20px;
   border-radius: 999px;
   background: #0e0f12;
@@ -1618,25 +1602,23 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
   font-size: 15px;
   font-weight: 500;
   text-decoration: none;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2), 0 10px 22px -10px rgb(14 15 18 / 0.5);
 }
-:global(:root[data-theme="light"]) .topTitle {
-  flex: 0 1 auto;
-  max-width: min(520px, 50vw);
-  margin: 0 auto;
-  height: 52px;
-  line-height: 52px;
-  padding: 0 22px;
+:global(:root[data-theme="light"]) .topbar > :global([class*="delete-chat-module"][class*="__trigger"]) {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
   border-radius: 999px;
   background: #ffffff;
+  color: #0e0f12;
+  opacity: 1;
   box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 8px 24px -12px rgb(14 15 18 / 0.16);
-  font-size: 15px;
-  text-align: center;
 }
-:global(:root[data-theme="light"]) .topTitle:empty { visibility: hidden; }
 
 /* conversation column */
-:global(:root[data-theme="light"]) .scroll { padding-top: 108px; }
-:global(:root[data-theme="light"]) .thread { max-width: 780px; gap: 32px; }
+:global(:root[data-theme="light"]) .scroll { padding-top: 104px; }
+:global(:root[data-theme="light"]) .thread { max-width: 760px; gap: 32px; }
 :global(:root[data-theme="light"]) .userMsg {
   padding: 14px 18px;
   border-radius: 22px 22px 6px 22px;
@@ -1647,31 +1629,45 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
   line-height: 1.55;
 }
 :global(:root[data-theme="light"]) .dock { background: linear-gradient(to top, #f7f8fa 55%, rgb(247 248 250 / 0)); }
-:global(:root[data-theme="light"]) .dock > * { max-width: 780px; }
+:global(:root[data-theme="light"]) .dock > * { max-width: 760px; }
 
-@media (prefers-reduced-motion: reduce) {
-  :global(:root[data-theme="light"]) .sideWrap { transition: none; }
-  :global(:root[data-theme="light"]) .drawerScrim { animation: none; }
-}
-
-/* canvas "Home" welcome: centered, light-weight near-black greeting, muted lede, round white tiles */
-:global(:root[data-theme="light"]) .empty.empty { max-width: 780px; }
+/* welcome: the mark beside a two-tone, light-weight greeting; starters as pills */
+:global(:root[data-theme="light"]) .empty.empty { max-width: 760px; }
 :global(:root[data-theme="light"]) .welcome { align-items: center; text-align: center; }
-:global(:root[data-theme="light"]) .welcomeMark { width: 40px; height: 40px; color: #0e0f12; }
-:global(:root[data-theme="light"]) .welcomeTitle { font-size: clamp(38px, 4.2vw, 58px); line-height: 1.08; font-weight: 400; letter-spacing: -0.035em; color: #0e0f12; }
-:global(:root[data-theme="light"]) .welcomeLede { max-width: 46ch; font-size: 17px; line-height: 1.6; color: #686d78; }
+:global(:root[data-theme="light"]) .welcomeTitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-size: clamp(36px, 3.6vw, 48px);
+  line-height: 1.1;
+  font-weight: 400;
+  letter-spacing: -0.035em;
+}
+:global(:root[data-theme="light"]) .welcomeMark { width: 38px; height: 38px; margin: 0; flex-shrink: 0; color: #000000; }
+:global(:root[data-theme="light"]) .welcomeName { color: #686d78; }
+:global(:root[data-theme="light"]) .welcomeLede { display: none; }
+:global(:root[data-theme="light"]) .homeChips { justify-content: center; }
+:global(:root[data-theme="light"]) .homeChip {
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.7);
+  border: 1px solid rgb(14 15 18 / 0.1);
+  box-shadow: none;
+  font-size: 14px;
+}
+:global(:root[data-theme="light"]) .homeChip:hover { background: #ffffff; border-color: rgb(14 15 18 / 0.18); }
 :global(:root[data-theme="light"]) .homeTile, :global(:root[data-theme="light"]) .useForOption { background: rgb(255 255 255 / 0.85); box-shadow: 0 0 0 1px rgb(14 15 18 / 0.06), 0 12px 28px -14px rgb(14 15 18 / 0.25); }
 :global(:root[data-theme="light"]) .example.example { background: rgb(255 255 255 / 0.8); box-shadow: 0 0 0 1px rgb(14 15 18 / 0.06), 0 12px 28px -14px rgb(14 15 18 / 0.25); }
-/* the delete-chat trigger in the top bar matches the other round white buttons */
-:global(:root[data-theme="light"]) .topbar > :global([class*="delete-chat-module"][class*="__trigger"]) {
-  display: inline-grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  margin-top: 4px;
-  border-radius: 999px;
-  background: #ffffff;
-  color: #0e0f12;
-  opacity: 1;
-  box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 8px 24px -12px rgb(14 15 18 / 0.16);
+
+/* under 900px the sidebar is the existing slide-in drawer; give it the same card look */
+@media (max-width: 899px) {
+  :global(:root[data-theme="light"]) .sideWrap { padding: 12px; }
+  :global(:root[data-theme="light"]) .topbar { padding: 14px 14px 0; height: 72px; }
+  :global(:root[data-theme="light"]) .topTitle { max-width: none; margin-right: 0; flex: 1 1 auto; text-align: center; }
+  :global(:root[data-theme="light"]) .menuBtn { background: #ffffff; }
+  :global(:root[data-theme="light"]) .scroll { padding-top: 88px; }
+  :global(:root[data-theme="light"]) .welcomeTitle { gap: 10px; }
+  :global(:root[data-theme="light"]) .welcomeMark { width: 28px; height: 28px; }
 }

@@ -3,6 +3,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useReducer, useRef, useState, type ComponentType } from "react";
 import Link from "next/link";
 import { KeplarSymbol } from "@/components/brand";
+import { SkyBackdrop } from "@/components/sky/SkyBackdrop";
 import type { Attachment, ComposerModes, KeplarRequest } from "@/lib/orchestration/types";
 import { UsageNotice } from "./UsageNotice";
 import { Composer, toMediaInput, type ComposerHandle } from "./Composer";
@@ -114,6 +115,9 @@ const newKeplar = (replyTo: string): KeplarMessage => ({
 
 /** A picture turn: no panel answer, a card that checks the plan and cost, makes the picture and shows it (chat-image/). */
 const newImageKeplar = (replyTo: string, image: ChatImage): KeplarMessage => ({ ...newKeplar(replyTo), status: "done", finishedAt: Date.now(), image });
+
+/** Home greeting by local hour: "Good morning" before noon, "Good afternoon" until 6 pm, then "Good evening". */
+const dayGreeting = (hour: number) => (hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening");
 
 const browserTimeZone = () => {
   try {
@@ -872,6 +876,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
 
   return (
     <div ref={rootRef} className={s.app} data-own-search="" data-drawer={drawerOpen || undefined} data-app-ready={state.scope === "pending" ? undefined : ""}>
+      <SkyBackdrop />
       <ExtensionReturn onChanged={() => void syncMeter()} />
       <ReferralClaim signedIn={state.ledger.signedIn} onChanged={() => void syncMeter()} />
       <div ref={drawerRef} className={s.sideWrap} data-open={drawerOpen || undefined} onPointerEnter={() => warmViews(true)} onFocus={() => warmViews(true)}>
@@ -937,10 +942,17 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
               {messages.length === 0 ? (
                 <div className={s.empty}>
                   <div className={s.welcome}>
-                    <KeplarSymbol size={22} className={s.welcomeMark} />
-                    {/* Held invisible (same height) until the session is known, so the name never pops in over a generic line. */}
+                    {/* Held invisible (same height) until the session is known, so the name never pops in over a generic line.
+                        firstName is only set after the client knows the session, so the time-of-day greeting never renders on the server. */}
                     <h1 className={s.welcomeTitle} data-welcome-name={firstName || undefined} style={state.ledger.synced ? undefined : { visibility: "hidden" }}>
-                      {firstName ? (welcome ? `Welcome, ${firstName}.` : `Welcome back, ${firstName}.`) : "Welcome to Keplar."}
+                      <KeplarSymbol size={22} className={s.welcomeMark} />
+                      <span>
+                        {firstName ? (
+                          <>
+                            {welcome ? "Welcome," : `${dayGreeting(new Date().getHours())},`} <span className={s.welcomeName}>{firstName}</span>
+                          </>
+                        ) : "Welcome to Keplar."}
+                      </span>
                     </h1>
                     <p className={s.welcomeLede}>Ask anything. Keplar checks with several models and gives you one clear answer.</p>
                   </div>

@@ -26,10 +26,11 @@ test("sidebar: More holds every other view; Settings, Memory and Usage moved to 
   assert.doesNotMatch(side, /ThemeControl/, "no theme toggle in the sidebar itself");
 });
 
-test("home greets by first name (fallback 'Welcome to Keplar.') and keeps the most frequently asked questions (not recents)", () => {
+test("home greets by time of day and first name (fallback 'Welcome to Keplar.') and keeps the most frequently asked questions (not recents)", () => {
   const app = readFileSync("src/components/app-ui/KeplarApp.tsx", "utf8");
   assert.match(app, /Welcome to Keplar\./);
-  assert.match(app, /Welcome back, \$\{firstName\}/);
+  assert.match(app, /dayGreeting\(new Date\(\)\.getHours\(\)\)/);
+  assert.match(app, /className=\{s\.welcomeName\}>\{firstName\}/);
   const home = readFileSync("src/components/app-ui/HomeStart.tsx", "utf8");
   assert.match(home, /Most frequently asked question/);
   assert.doesNotMatch(home, /Pick up where you left off/);
