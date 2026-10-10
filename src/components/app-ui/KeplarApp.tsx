@@ -388,7 +388,8 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   useEffect(() => {
     const root = rootRef.current;
     const main = root?.closest("main");
-    const siblings = main ? [...document.body.children].filter((el) => el !== main && el.tagName !== "SCRIPT") : [];
+    // The desktop app's title bar (DesktopTitleBar) is the app's own chrome, not the site's: it stays usable.
+    const siblings = main ? [...document.body.children].filter((el) => el !== main && el.tagName !== "SCRIPT" && !el.hasAttribute("data-desktop-titlebar")) : [];
     siblings.forEach((el) => el.setAttribute("inert", ""));
     document.documentElement.style.overflow = "hidden";
     document.documentElement.style.scrollbarGutter = "auto"; // the app is a fixed full-screen shell: no empty scrollbar strip beside it on Windows/Linux
