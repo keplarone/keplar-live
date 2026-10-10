@@ -35,6 +35,7 @@ import { Presence, usePresence } from "@/components/motion/usePresence";
 import { withViewTransition } from "@/lib/ui/view-transition";
 import { UNDO_MS, useChatDelete } from "./delete/useChatDelete";
 import { UseForPrompt } from "./UseForPrompt";
+import { shouldWelcomeBack, WelcomeBack } from "./WelcomeBack";
 import { useDockHeight } from "./dock-height";
 import { HomeStart } from "./HomeStart";
 import { pathForView, viewForPath } from "./app-paths";
@@ -233,6 +234,9 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   // Greeting: the signed-in person's first name when the account has one (never guessed from the email address).
   const firstName = state.ledger.signedIn ? (state.account?.name?.trim().split(/\s+/)[0] ?? "").slice(0, 40) : "";
   const [welcome] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("welcome") === "1");
+  // Coming back signed in (a new visit, landing on the ask page): the welcome-back screen (WelcomeBack, Keplar Canvas Page 1).
+  const [welcomeBackOk] = useState(() => typeof window !== "undefined" && !welcome && /^\/app(\/ask)?\/?$/.test(window.location.pathname) && shouldWelcomeBack());
+  const [welcomeBackDone, setWelcomeBackDone] = useState(false);
   const chooseUseFor = useCallback((v: UseFor) => {
     writeUseFor(v);
     setUseFor(v);
@@ -904,6 +908,20 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
         />
       </div>
       <SendFieldLazy />
+      {welcomeBackOk && !welcomeBackDone && state.ledger.synced && state.ledger.signedIn && state.view === "thread" && messages.length === 0 && state.threads.some((t) => !t.private) ? (
+        <WelcomeBack
+          firstName={firstName}
+          plan={state.ledger.plan}
+          threads={state.threads}
+          canResearch={["plus", "pro", "business"].includes(state.ledger.plan)}
+          onAsk={(q, research) => { setWelcomeBackDone(true); send(q, [], { web: false, deepResearch: research, create: false, agent: false }); }}
+          onSeed={(text) => { setWelcomeBackDone(true); seedComposer(text, {}); }}
+          onOpenThread={(id) => { setWelcomeBackDone(true); openThread(id); }}
+          onOpenChats={() => { setWelcomeBackDone(true); goView("history"); }}
+          onMenu={() => { setWelcomeBackDone(true); if (window.innerWidth < 900) setDrawerOpen(true); }}
+          onClose={() => setWelcomeBackDone(true)}
+        />
+      ) : null}
       {drawerScrim.mounted ? <div className={s.drawerScrim} onClick={() => setDrawerOpen(false)} aria-hidden="true" {...drawerScrim.motion("fade")} /> : null}
 
       <div key={state.epoch} className={s.main} inert={drawerOpen || undefined} data-empty={(state.view === "thread" && messages.length === 0) || undefined}>
