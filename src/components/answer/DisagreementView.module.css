@@ -15,7 +15,7 @@
 .list, .why { font-size: var(--t-small); color: var(--c-ink-2); min-width: 0; overflow-wrap: anywhere; }
 .list ul, .steps { margin: var(--s-2) 0 0; padding-left: 1.1em; display: grid; gap: var(--s-2); }
 .list p, .why p { margin: var(--s-2) 0 0; }
-.listH { margin: 0; font-size: var(--t-label); letter-spacing: var(--tr-label, 0.04em); text-transform: uppercase; color: var(--c-ink-2); font-weight: var(--w-medium); }
+.listH { margin: 0; font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-2); font-weight: var(--w-medium); }
 .why { padding-top: var(--s-3); border-top: 1px solid var(--c-border-strong); }
 .why strong { color: var(--c-ink); }
 .steps { list-style: none; padding-left: 0; }

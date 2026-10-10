@@ -55,8 +55,8 @@
 .name {
   font-size: var(--t-small);
   font-weight: var(--w-medium);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-2);
 }
 
@@ -78,8 +78,8 @@
 .cadence {
   font-family: var(--f-sans);
   font-size: var(--t-label);
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-3);
 }
 

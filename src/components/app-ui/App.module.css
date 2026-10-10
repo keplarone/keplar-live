@@ -113,8 +113,8 @@
   font-family: var(--f-sans);
   font-size: var(--t-label);
   font-weight: var(--w-regular);
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-3);
 }
 
@@ -835,8 +835,8 @@
   padding: var(--s-3) var(--s-3) var(--s-1);
   font-family: var(--f-sans);
   font-size: var(--t-label);
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-3);
 }
 
@@ -1091,8 +1091,8 @@
   margin-left: auto;
   font-family: var(--f-sans);
   font-size: 11px;
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-3);
 }
 
@@ -1145,8 +1145,8 @@
 }
 .sideMoreLabel {
   font-size: var(--t-label);
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-3);
 }
 a.sideItem {
@@ -1253,8 +1253,8 @@ a.sideItem {
 .homeRecentKind {
   flex: none;
   font-size: var(--t-label);
-  text-transform: uppercase;
-  letter-spacing: var(--tr-label);
+  text-transform: none;
+  letter-spacing: 0;
   color: var(--c-ink-3);
 }
 @media (pointer: coarse) {

@@ -10,7 +10,7 @@
 .neg { color: var(--c-err); font-weight: var(--w-medium); }
 .pos { color: var(--c-ink); }
 .muted { color: var(--c-ink-3); }
-.tag { display: inline-block; font-size: var(--t-label); letter-spacing: var(--tr-label); text-transform: uppercase; padding: 1px var(--s-2); border-radius: var(--r-xs); border: var(--b-hairline) solid var(--c-border-strong); color: var(--c-ink-2); margin-right: var(--s-1); white-space: nowrap; }
+.tag { display: inline-block; font-size: var(--t-label); letter-spacing: 0; text-transform: none; padding: 1px var(--s-2); border-radius: var(--r-xs); border: var(--b-hairline) solid var(--c-border-strong); color: var(--c-ink-2); margin-right: var(--s-1); white-space: nowrap; }
 .tagBad { border-color: var(--c-err); color: var(--c-err); }
 .meter { height: 6px; background: var(--c-surface-2); border-radius: 3px; overflow: hidden; min-width: 80px; }
 .meter > span { display: block; height: 100%; background: var(--c-ink-2); }

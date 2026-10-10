@@ -10,7 +10,7 @@
 .slide { position: absolute; z-index: 2; inset: calc(var(--l-nav-h, 64px) + var(--l-nav-offset, 8px) + 56px) 0 118px 0; display: flex; align-items: center; justify-content: center; padding: 0 var(--l-gutter, 24px); overflow: hidden; }
 .center, .col { width: min(100%, 980px); display: flex; flex-direction: column; gap: 16px; min-width: 0; max-height: 100%; }
 .center { align-items: flex-start; }
-.eyebrow { margin: 0; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--c-ink-3); }
+.eyebrow { margin: 0; font-size: 12px; letter-spacing: 0; text-transform: none; color: var(--c-ink-3); }
 .h1 { margin: 0; font-size: clamp(2rem, 6.2vw, 4.6rem); line-height: 1.04; letter-spacing: -0.035em; font-weight: 500; text-wrap: balance; overflow-wrap: anywhere; }
 .h2 { margin: 0; font-size: clamp(1.5rem, 3.6vw, 2.6rem); line-height: 1.1; letter-spacing: -0.03em; font-weight: 500; overflow-wrap: anywhere; }
 .lede { margin: 0; max-width: 60ch; font-size: clamp(0.95rem, 1.5vw, 1.15rem); line-height: 1.55; color: var(--c-ink-2); overflow-wrap: anywhere; }
@@ -25,7 +25,7 @@
 
 .lanes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
 .lane { min-width: 0; padding: 14px; border: 1px solid var(--c-border); border-radius: 16px; background: rgb(var(--rgb-ink) / 0.04); font-size: 0.9rem; line-height: 1.5; transition: border-color 0.4s, box-shadow 0.4s, opacity 0.4s; }
-.lane h3 { margin: 0 0 6px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 500; color: var(--c-ink-3); }
+.lane h3 { margin: 0 0 6px; font-size: 11px; letter-spacing: 0; text-transform: none; font-weight: 500; color: var(--c-ink-3); }
 .lane p { margin: 0; overflow-wrap: anywhere; }
 .lane[data-odd="1"] { border-style: dashed; border-color: var(--c-ink); box-shadow: 0 0 30px -10px rgb(var(--rgb-ink) / 0.5); }
 .lane[data-dim="1"] { border-color: var(--c-border-strong); }
@@ -33,7 +33,7 @@
 
 .verify { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr); gap: 16px; align-items: start; }
 .claim { padding: 16px; border: 1px dashed var(--c-ink); border-radius: 16px; box-shadow: 0 0 30px -12px rgb(var(--rgb-ink) / 0.4); }
-.claim span { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--c-ink-3); }
+.claim span { font-size: 11px; letter-spacing: 0; text-transform: none; color: var(--c-ink-3); }
 .claim p { margin: 6px 0 0; font-size: 1.25rem; letter-spacing: -0.02em; }
 .checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
 .checks li { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--c-border); border-radius: 12px; font-size: 0.92rem; line-height: 1.4; overflow-wrap: anywhere; }
@@ -43,13 +43,13 @@
 .body { margin: 0; font-size: clamp(1rem, 1.7vw, 1.2rem); line-height: 1.55; color: var(--c-ink-2); overflow-wrap: anywhere; }
 .split2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .split2 p { margin: 0; padding: 10px 12px; border: 1px solid var(--c-border); border-radius: 12px; font-size: 0.88rem; line-height: 1.45; color: var(--c-ink-2); overflow-wrap: anywhere; }
-.split2 b { display: block; margin-bottom: 2px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--c-ink-3); font-weight: 500; }
+.split2 b { display: block; margin-bottom: 2px; font-size: 11px; letter-spacing: 0; text-transform: none; color: var(--c-ink-3); font-weight: 500; }
 
 .createGrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: stretch; min-height: 0; }
 .chat { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .chat .ask { font-size: clamp(0.95rem, 1.6vw, 1.15rem); }
 .understand { padding: 14px; border: 1px solid var(--c-border); border-radius: 16px; background: rgb(var(--rgb-ink) / 0.03); display: flex; flex-direction: column; gap: 10px; }
-.understand h3 { margin: 0; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 500; color: var(--c-ink-3); }
+.understand h3 { margin: 0; font-size: 12px; letter-spacing: 0; text-transform: none; font-weight: 500; color: var(--c-ink-3); }
 .understand dl { margin: 0; display: flex; flex-direction: column; gap: 6px; }
 .understand dl div { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 8px; font-size: 0.85rem; line-height: 1.4; }
 .understand dt { color: var(--c-ink-3); }
@@ -75,7 +75,7 @@
 .mail b { display: inline-block; min-width: 64px; font-weight: 400; color: var(--c-ink-3); }
 .mailBody { margin-top: 6px !important; color: var(--c-ink-2); }
 .approval { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border: 1px solid var(--c-ink); border-radius: 16px; box-shadow: 0 0 40px -16px rgb(var(--rgb-ink) / 0.5); }
-.needs { margin: 0; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--c-ink-2); }
+.needs { margin: 0; font-size: 12px; letter-spacing: 0; text-transform: none; color: var(--c-ink-2); }
 .result { margin: 0; font-size: 0.85rem; line-height: 1.45; color: var(--c-ink-2); overflow-wrap: anywhere; min-height: 2.5em; }
 .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 

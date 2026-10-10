@@ -19,8 +19,8 @@
   margin-bottom: var(--s-6);
   font-family: var(--f-sans);
   font-size: var(--t-label);
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-2);
 }
 
@@ -119,8 +119,8 @@
   margin-bottom: var(--s-3);
   font-family: var(--f-sans);
   font-size: var(--t-label);
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-3);
 }
 
@@ -283,8 +283,8 @@
 .reviewLabel {
   font-family: var(--f-sans);
   font-size: var(--t-label);
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: color-mix(in srgb, var(--c-dissent) 85%, var(--c-ink));
 }
 

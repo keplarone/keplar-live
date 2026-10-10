@@ -18,7 +18,7 @@
 .frame { position: absolute; top: 0; left: 0; width: 1280px; height: 800px; border: 0; background: #fff; transform-origin: 0 0; pointer-events: none; transform: scale(var(--thumb-scale, 0.171875)); }
 .thumb { container-type: inline-size; }
 @container (min-width: 1px) { .frame { transform: scale(calc(100cqw / 1280px)); } }
-.blank { position: absolute; inset: 0; display: grid; place-items: center; color: var(--c-ink-3); font-size: var(--t-label); letter-spacing: var(--tr-label); text-transform: uppercase; }
+.blank { position: absolute; inset: 0; display: grid; place-items: center; color: var(--c-ink-3); font-size: var(--t-label); letter-spacing: 0; text-transform: none; }
 
 .body { min-width: 0; display: flex; flex-direction: column; gap: var(--s-2); }
 .titleRow { display: flex; align-items: center; gap: var(--s-3); min-width: 0; }
@@ -33,7 +33,7 @@
 .actions > * { height: 34px; }
 
 .drawer { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--s-5); padding-top: var(--s-3); margin-top: var(--s-2); border-top: var(--b-hairline) solid var(--c-border); animation: open 200ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
-.h4 { margin: 0 0 var(--s-2); font-size: var(--t-label); letter-spacing: var(--tr-label); text-transform: uppercase; color: var(--c-ink-3); font-weight: var(--w-regular); }
+.h4 { margin: 0 0 var(--s-2); font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); font-weight: var(--w-regular); }
 .art, .vers, .tl { list-style: none; margin: 0 0 var(--s-4); padding: 0; display: flex; flex-direction: column; gap: var(--s-2); font-size: var(--t-small); }
 .art li { display: flex; justify-content: space-between; gap: var(--s-3); }
 .art a { color: var(--c-ink); text-decoration: underline; text-decoration-color: var(--c-border-strong); text-underline-offset: 3px; overflow-wrap: anywhere; }

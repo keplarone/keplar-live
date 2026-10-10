@@ -16,8 +16,8 @@
 .shortLabel {
   font-family: var(--f-sans);
   font-size: var(--t-label);
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-3);
 }
 
@@ -159,8 +159,8 @@
 .table thead th {
   font-family: var(--f-sans);
   font-size: var(--t-label);
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   font-weight: var(--w-regular);
   color: var(--c-ink-3);
 }
@@ -228,8 +228,8 @@
   margin-left: var(--s-2);
   font-family: var(--f-sans);
   font-size: var(--t-label);
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-3);
   font-weight: var(--w-regular);
 }

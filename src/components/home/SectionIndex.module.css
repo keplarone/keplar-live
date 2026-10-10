@@ -1,6 +1,6 @@
 .index { position: fixed; z-index: 30; left: clamp(14px, 1.8vw, 32px); top: 50%; transform: translateY(-50%); margin: 0; padding: 0; list-style: none; display: none; flex-direction: column; gap: 14px; color: #fff; mix-blend-mode: difference; pointer-events: none; opacity: 0; transition: opacity 500ms var(--e-standard); }
 .index[data-on] { opacity: 1; }
-.index li { display: flex; align-items: center; gap: 10px; font-size: 7.48px; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.38; transition: opacity 400ms var(--e-standard), transform 400ms var(--e-standard); }
+.index li { display: flex; align-items: center; gap: 10px; font-size: 7.48px; letter-spacing: 0; text-transform: none; opacity: 0.38; transition: opacity 400ms var(--e-standard), transform 400ms var(--e-standard); }
 .index li i { display: block; width: 14px; height: 1px; background: currentColor; transition: width 400ms var(--e-standard); }
 .index li[data-active] { opacity: 1; transform: translateX(4px); }
 .index li[data-active] i { width: 30px; }

@@ -209,8 +209,8 @@
 .badgeQuiet {
   font-family: var(--f-sans);
   font-size: var(--t-label);
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-3);
 }
 
@@ -266,8 +266,8 @@
 .consensusLabel {
   font-family: var(--f-sans);
   font-size: var(--t-label);
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-3);
 }
 
@@ -886,8 +886,8 @@
 .checkKind {
   font-family: var(--f-sans);
   font-size: 11px;
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-3);
 }
 
@@ -929,8 +929,8 @@
   margin-top: var(--s-4);
   font-family: var(--f-sans);
   font-size: var(--t-label);
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-2);
 }
 

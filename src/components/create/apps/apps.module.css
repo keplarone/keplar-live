@@ -22,7 +22,7 @@
 .start { flex: 1; overflow-y: auto; }
 .startInner { max-width: 1080px; margin: 0 auto; padding: var(--s-8) var(--s-5) var(--s-12); display: flex; flex-direction: column; gap: var(--s-6); }
 .hero { display: flex; flex-direction: column; gap: var(--s-3); }
-.kicker { font-size: var(--t-label); letter-spacing: var(--tr-label); text-transform: uppercase; color: var(--c-ink-3); }
+.kicker { font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); }
 .h1 { margin: 0; font-size: clamp(28px, 3.4vw, 44px); line-height: 1.05; letter-spacing: -0.02em; font-weight: var(--w-medium); text-shadow: 0 0 40px color-mix(in srgb, var(--c-ink) 18%, transparent); }
 .lede { margin: 0; color: var(--c-ink-2); max-width: 64ch; }
 .promptBox { position: relative; border-radius: 22px; border: var(--b-hairline) solid var(--c-border-strong); background: var(--c-surface-1); padding: var(--s-3); box-shadow: 0 0 60px -24px color-mix(in srgb, var(--c-ink) 35%, transparent); }
@@ -51,7 +51,7 @@
 .styleLine { font-size: 11.5px; color: var(--c-ink-3); line-height: 1.35; }
 .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--s-4); }
 .panel { border: var(--b-hairline) solid var(--c-border); border-radius: 16px; background: var(--c-canvas); padding: var(--s-4); display: flex; flex-direction: column; gap: var(--s-3); }
-.label { font-size: var(--t-label); letter-spacing: var(--tr-label); text-transform: uppercase; color: var(--c-ink-3); }
+.label { font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); }
 .seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: var(--r-pill); background: var(--c-surface-2); flex-wrap: wrap; }
 .segBtn { height: 28px; padding: 0 var(--s-3); border: 0; border-radius: var(--r-pill); background: transparent; color: var(--c-ink-2); font: inherit; font-size: var(--t-label); cursor: pointer; white-space: nowrap; }
 .segBtn[aria-pressed="true"] { background: var(--c-canvas); color: var(--c-ink); box-shadow: 0 0 14px -4px color-mix(in srgb, var(--c-ink) 30%, transparent); }
@@ -118,7 +118,7 @@
 .pane { flex: 1; overflow-y: auto; padding: var(--s-5); display: flex; flex-direction: column; gap: var(--s-4); max-width: 920px; width: 100%; margin: 0 auto; }
 .table { width: 100%; border-collapse: collapse; font-size: var(--t-small); }
 .table th, .table td { text-align: left; padding: 6px 8px; border-bottom: var(--b-hairline) solid var(--c-border); vertical-align: top; overflow-wrap: anywhere; }
-.table th { color: var(--c-ink-3); font-weight: var(--w-regular); font-size: var(--t-label); text-transform: uppercase; letter-spacing: var(--tr-label); }
+.table th { color: var(--c-ink-3); font-weight: var(--w-regular); font-size: var(--t-label); text-transform: none; letter-spacing: 0; }
 .pre { margin: 0; font-family: var(--f-mono); font-size: 11.5px; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 120px; overflow: auto; }
 .switch { display: flex; align-items: center; gap: var(--s-2); font-size: var(--t-small); cursor: pointer; }
 .switch input { accent-color: var(--c-ink); width: 16px; height: 16px; }

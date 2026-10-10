@@ -3,8 +3,8 @@
 .label {
   font-family: var(--f-sans);
   font-size: var(--t-label);
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-3);
 }
 
@@ -113,7 +113,7 @@
 }
 
 .address {
-  font-family: var(--f-mono);
+  font-family: var(--f-sans);
   font-size: var(--t-small);
   word-break: break-all;
 }

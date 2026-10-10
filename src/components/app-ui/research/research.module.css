@@ -45,12 +45,12 @@
 .stepLabel { font-weight: 500; }
 .stepDetail { color: var(--c-ink-2); font-size: var(--t-label); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .queries { margin-top: var(--s-1); font-size: var(--t-label); color: var(--c-ink-2); }
-.queriesLabel { display: block; margin-bottom: 2px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--c-ink-3); }
+.queriesLabel { display: block; margin-bottom: 2px; letter-spacing: 0; text-transform: none; color: var(--c-ink-3); }
 .queries ul { margin: 0; padding-left: var(--s-4); }
 .queries li { overflow-wrap: anywhere; }
 
 .feed { display: flex; flex-direction: column; gap: var(--s-2); min-width: 0; }
-.feedHead { display: flex; align-items: baseline; justify-content: space-between; font-size: var(--t-label); letter-spacing: 0.06em; text-transform: uppercase; color: var(--c-ink-3); }
+.feedHead { display: flex; align-items: baseline; justify-content: space-between; font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); }
 .feedHead b { font-size: var(--t-small); letter-spacing: 0; text-transform: none; color: var(--c-ink); font-variant-numeric: tabular-nums; }
 .feedList { display: flex; flex-direction: column; gap: 2px; max-height: 300px; overflow: auto; margin: 0; padding: 0; list-style: none; }
 .feedRow {

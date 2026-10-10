@@ -40,7 +40,7 @@
 .step[data-tone="verified"] { --tone: var(--c-verified); }
 .step[data-tone="attention"] { --tone: var(--c-attention); }
 .step[data-tone="destructive"] { --tone: var(--c-destructive); }
-.title { color: var(--c-ink-2); text-transform: uppercase; letter-spacing: var(--tr-label); }
+.title { color: var(--c-ink-2); text-transform: none; letter-spacing: 0; }
 .detail { color: var(--c-ink); font-size: var(--t-small); overflow-wrap: anywhere; }
 .step[data-tone="attention"] .detail, .step[data-tone="destructive"] .detail, .step[data-tone="verified"] .detail { color: var(--tone); }
 @media (max-width: 640px) {

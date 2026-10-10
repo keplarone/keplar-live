@@ -7,8 +7,8 @@
 .side { position: sticky; top: calc(var(--l-nav-h) + var(--s-10)); }
 @media (max-width: 900px) { .side { position: static; } }
 .head { max-width: 760px; margin-bottom: var(--s-10); }
-.kicker { display: flex; gap: var(--s-3); align-items: baseline; font-size: var(--t-label); letter-spacing: var(--tr-label); text-transform: uppercase; color: var(--c-ink-2); margin-bottom: var(--s-4); }
-.kicker b { font-family: var(--f-mono, ui-monospace, monospace); font-weight: 400; color: var(--c-ink-3); letter-spacing: 0; }
+.kicker { display: flex; gap: var(--s-3); align-items: baseline; font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-2); margin-bottom: var(--s-4); }
+.kicker b { font-family: var(--f-sans); font-weight: 400; color: var(--c-ink-3); letter-spacing: 0; }
 .title { font-size: clamp(30px, 4.2vw, 52px); line-height: 1.04; letter-spacing: -0.03em; font-weight: var(--w-medium); text-wrap: balance; }
 .lede { margin-top: var(--s-4); color: var(--c-ink-2); max-width: 46ch; font-size: var(--t-body); line-height: 1.55; }
 .proof { margin-top: var(--s-8); font-size: var(--t-small); color: var(--c-ink-2); max-width: 70ch; }
@@ -29,7 +29,7 @@ a.rowIn:focus-visible .name { text-decoration: underline; text-underline-offset:
 .name { font-weight: var(--w-medium); color: var(--c-ink); }
 .line { color: var(--c-ink-2); font-size: var(--t-small); line-height: 1.5; }
 .note { color: var(--c-ink-3); }
-.status { font-size: var(--t-label); letter-spacing: var(--tr-label); text-transform: uppercase; color: var(--c-ink-3); white-space: nowrap; }
+.status { font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); white-space: nowrap; }
 .status[data-s="live"] { color: var(--v-verified, var(--c-ok)); }
 .status[data-s="beta"] { color: var(--v-attention, var(--c-attention)); }
 .row[data-s="soon"] .name { color: var(--c-ink-2); }
@@ -54,7 +54,7 @@ a.rowIn:focus-visible .name { text-decoration: underline; text-underline-offset:
 .ks { color: #9cc4a4; }
 .kc { color: #77756f; }
 .vsT { font: 600 14px/1 Georgia, serif; border-bottom: 1px solid rgba(43, 29, 20, 0.2); padding-bottom: var(--s-2); }
-.vsH { font: 11px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: #b8471a; }
+.vsH { font: 11px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0; text-transform: none; color: #b8471a; }
 .vsR { display: grid; grid-template-columns: 1fr 22px; gap: 8px; align-items: center; }
 .vsR i { height: 6px; background: rgba(43, 29, 20, 0.28); }
 .vsR b { height: 6px; background: #b8471a; }

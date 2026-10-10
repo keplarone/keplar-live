@@ -49,8 +49,8 @@
   gap: var(--s-3);
   font-size: var(--t-small);
   font-weight: var(--w-medium);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-2);
 }
 
@@ -116,8 +116,8 @@
 .table thead th {
   font-weight: var(--w-medium);
   color: var(--c-ink);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   font-size: var(--t-label);
   padding-top: var(--s-5);
   padding-bottom: var(--s-4);
@@ -161,8 +161,8 @@
   padding-top: var(--s-6);
   font-size: var(--t-label);
   font-weight: var(--w-medium);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-3);
   background: var(--c-surface-1);
 }

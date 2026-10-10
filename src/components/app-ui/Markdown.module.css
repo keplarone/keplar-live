@@ -109,8 +109,8 @@
 .codeLang {
   font-family: var(--f-mono);
   font-size: var(--t-label);
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-3);
 }
 
@@ -259,7 +259,7 @@
 .mathInline { display: inline; }
 .mathPending { color: transparent; user-select: none; white-space: nowrap; }
 .mathRaw {
-  font-family: var(--f-mono);
+  font-family: var(--f-sans);
   font-size: 0.9em;
   color: var(--c-ink-2);
   overflow-wrap: anywhere;

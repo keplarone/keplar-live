@@ -45,8 +45,8 @@
   margin-bottom: var(--s-6);
   font-family: var(--f-sans);
   font-size: var(--t-label);
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-2);
 }
 
@@ -104,8 +104,8 @@
 
 .progressLabel {
   margin-left: var(--s-3);
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 /* ── glass card ────────────────────────────────────── */
@@ -385,8 +385,8 @@
 .businessTitle {
   font-family: var(--f-sans);
   font-size: var(--t-label);
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-2);
 }
 

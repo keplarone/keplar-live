@@ -33,7 +33,7 @@
 .stepBody { display: flex; flex-direction: column; gap: var(--s-4); animation: obIn 0.42s var(--e-standard) both; }
 .stepBody form { display: flex; flex-direction: column; gap: var(--s-4); }
 @keyframes obIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-.eyebrow { margin: 0; font-size: var(--t-label); letter-spacing: var(--tr-label); text-transform: uppercase; color: var(--c-ink-2); }
+.eyebrow { margin: 0; font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-2); }
 .title { margin: 0; font-size: clamp(28px, 3.2vw, 40px); line-height: 1.06; letter-spacing: var(--tr-title); font-weight: var(--w-medium); color: var(--c-ink); text-wrap: balance; outline: none; }
 .lead { margin: 0; color: var(--c-ink); font-size: var(--t-lead); line-height: var(--lh-lead); letter-spacing: var(--tr-lead); text-wrap: pretty; }
 .tagline { margin: 0; color: var(--c-focus); font-size: var(--t-body); font-weight: var(--w-medium); }

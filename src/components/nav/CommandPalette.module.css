@@ -48,7 +48,7 @@
   cursor: pointer;
 }
 .list { list-style: none; margin: 0; padding: 6px; overflow-y: auto; overscroll-behavior: contain; }
-.group { font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--c-ink-3, #8b8b94); padding: 10px 10px 4px; }
+.group { font-size: 11px; letter-spacing: 0; text-transform: none; color: var(--c-ink-3, #8b8b94); padding: 10px 10px 4px; }
 .item {
   display: flex;
   align-items: baseline;

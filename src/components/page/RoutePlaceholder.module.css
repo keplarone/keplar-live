@@ -17,8 +17,8 @@
   gap: var(--s-3);
   font-family: var(--f-sans);
   font-size: var(--t-label);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-2);
   margin-bottom: var(--s-8);
   padding: 7px 14px 7px 12px;

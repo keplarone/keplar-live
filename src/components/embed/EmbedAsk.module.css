@@ -34,8 +34,8 @@
   justify-content: space-between;
   gap: 8px;
   font-size: 12px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--emb-muted);
 }
 .brand a {
@@ -118,7 +118,7 @@
 
 .mark { display: inline-flex; align-items: center; gap: 8px; }
 .dot { width: 8px; height: 8px; border-radius: 2px; background: var(--emb-accent, #3d4450); display: inline-block; }
-.lane { font-family: var(--f-mono, ui-monospace, monospace); font-size: 11px; letter-spacing: 0.04em; text-transform: none; padding: 3px 8px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--emb-border); }
+.lane { font-family: var(--f-sans); font-size: 11px; letter-spacing: 0.04em; text-transform: none; padding: 3px 8px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--emb-border); }
 .empty { display: grid; gap: 12px; margin-top: auto; margin-bottom: auto; }
 .emptyTitle { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; color: var(--emb-ink); }
 .chips { display: grid; gap: 6px; }

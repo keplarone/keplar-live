@@ -115,7 +115,7 @@
 .scene[data-live] { pointer-events: auto; }
 :is(.hero[data-mode="static"], html:not([data-fx="webgl"]) .hero[data-mode="pending"]) .scene { position: relative; left: auto; right: auto; top: auto; margin: 0 auto clamp(72px, 14vh, 160px); translate: none; opacity: 1 !important; visibility: visible !important; transform: none !important; translate: none; }
 
-.kicker { margin: 0; display: inline-flex; align-items: center; gap: 12px; font-size: 8.16px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sc-ink-2); }
+.kicker { margin: 0; display: inline-flex; align-items: center; gap: 12px; font-size: 8.16px; letter-spacing: 0; text-transform: none; color: var(--sc-ink-2); }
 .kicker b { font-weight: 500; color: var(--sc-ink-3); }
 .kicker::before { content: ""; width: 28px; height: 1px; background: var(--sc-line); order: 1; }
 .kicker b { order: 0; }
@@ -131,7 +131,7 @@
 
 /* route: model families as glowing nodes (no wires; the smoke carries the path) */
 .nodes { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 26px; }
-.nodes li { display: inline-flex; align-items: center; gap: 9px; font-size: 8.16px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sc-ink-2); }
+.nodes li { display: inline-flex; align-items: center; gap: 9px; font-size: 8.16px; letter-spacing: 0; text-transform: none; color: var(--sc-ink-2); }
 .nodes i { width: 9px; height: 9px; border-radius: 50%; background: var(--sc-ink); box-shadow: none; animation: pulse 3.2s ease-in-out infinite; animation-delay: calc(var(--i) * -0.5s); }
 @keyframes pulse { 50% { opacity: 0.45; box-shadow: none; } }
 @media (prefers-reduced-motion: reduce) { .nodes i { animation: none; } }

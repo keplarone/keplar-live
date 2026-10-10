@@ -1,5 +1,5 @@
 .page { position: relative; z-index: var(--z-content); max-width: 760px; margin: 0 auto; padding: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-16)) var(--l-gutter) var(--s-24); }
-.eyebrow { font-size: var(--t-label); letter-spacing: var(--tr-label); text-transform: uppercase; color: var(--c-ink-2); margin-bottom: var(--s-4); }
+.eyebrow { font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-2); margin-bottom: var(--s-4); }
 .title { font-size: var(--t-headline); line-height: var(--lh-headline); letter-spacing: var(--tr-headline); font-weight: var(--w-medium); text-wrap: balance; }
 .lede { margin-top: var(--s-4); color: var(--c-ink-2); font-size: var(--t-lead); line-height: var(--lh-lead); max-width: 60ch; }
 .list { margin-top: var(--s-10); display: grid; gap: var(--s-3); padding: 0; list-style: none; }

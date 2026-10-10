@@ -2,7 +2,7 @@
 .page { position: relative; z-index: var(--z-content); max-width: 1180px; margin: 0 auto; padding: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-16)) var(--l-gutter) var(--s-24); }
 .head { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--s-8); align-items: end; padding-bottom: var(--s-8); border-bottom: var(--b-hairline) solid var(--c-border-strong); }
 @media (max-width: 860px) { .head { grid-template-columns: minmax(0, 1fr); } }
-.kicker { font-size: var(--t-label); letter-spacing: var(--tr-label); text-transform: uppercase; color: var(--c-ink-2); margin-bottom: var(--s-4); }
+.kicker { font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-2); margin-bottom: var(--s-4); }
 .kicker a { color: inherit; text-underline-offset: 3px; }
 .title { font-size: var(--t-headline); line-height: var(--lh-headline); letter-spacing: var(--tr-headline); font-weight: var(--w-medium); text-wrap: balance; }
 .lead { color: var(--c-ink-2); max-width: 52ch; }
@@ -24,7 +24,7 @@
 .item a:focus-visible { outline: none; }
 .num { font-family: var(--f-mono, ui-monospace, monospace); font-size: var(--t-label); color: var(--c-ink-3); font-weight: 400; }
 .line { color: var(--c-ink-2); font-size: var(--t-small); }
-.facts { display: flex; gap: var(--s-4); flex-wrap: wrap; font-size: var(--t-label); letter-spacing: var(--tr-label); text-transform: uppercase; color: var(--c-ink-3); }
+.facts { display: flex; gap: var(--s-4); flex-wrap: wrap; font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); }
 
 /* Poster: a drawn miniature of the page composition in the demo's own palette. */
 .poster { position: relative; aspect-ratio: 16 / 10; overflow: hidden; border-radius: var(--shape-card, 12px); background: var(--p-bg); color: var(--p-ink); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong); transition: transform 240ms var(--ease-out, ease); }
@@ -81,11 +81,11 @@
 .frameBar a { color: var(--c-ink-2); text-underline-offset: 3px; }
 .frame { display: block; width: 100%; height: min(78vh, 760px); min-height: 420px; border: 0; background: #fff; }
 .aside { display: grid; gap: var(--s-8); position: sticky; top: calc(var(--l-nav-h) + var(--s-8)); }
-.aside h2 { font-size: var(--t-label); letter-spacing: var(--tr-label); text-transform: uppercase; color: var(--c-ink-2); font-weight: var(--w-medium); margin-bottom: var(--s-3); }
+.aside h2 { font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-2); font-weight: var(--w-medium); margin-bottom: var(--s-3); }
 .prompt { font-size: var(--t-body); line-height: 1.55; padding: var(--s-4) var(--s-5); background: var(--c-surface-1); border-radius: var(--shape-control, 10px); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border); margin: 0; }
 .craft { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--s-3); counter-reset: c; }
 .craft li { counter-increment: c; display: grid; grid-template-columns: 2.2em 1fr; color: var(--c-ink-2); font-size: var(--t-small); }
-.craft li::before { content: counter(c, decimal-leading-zero); font-family: var(--f-mono, ui-monospace, monospace); color: var(--v-creation, var(--c-creation)); }
+.craft li::before { content: counter(c, decimal-leading-zero); font-family: var(--f-sans); color: var(--v-creation, var(--c-creation)); }
 .swatches { display: flex; gap: 6px; }
 .swatches span { width: 28px; height: 28px; border-radius: 6px; box-shadow: inset 0 0 0 1px var(--c-border-strong); }
 .actions { display: flex; gap: var(--s-3); flex-wrap: wrap; align-items: center; }
@@ -97,7 +97,7 @@
 .link:focus-visible { outline: none; text-decoration-thickness: 2px; }
 .pager { margin-top: var(--s-16); padding-top: var(--s-6); border-top: var(--b-hairline) solid var(--c-border-strong); display: flex; justify-content: space-between; gap: var(--s-4); font-size: var(--t-small); }
 .pager a { color: var(--c-ink); text-decoration: none; }
-.pager a span { display: block; color: var(--c-ink-3); font-size: var(--t-label); text-transform: uppercase; letter-spacing: var(--tr-label); }
+.pager a span { display: block; color: var(--c-ink-3); font-size: var(--t-label); text-transform: none; letter-spacing: 0; }
 
 /* Strip used on the landing Create section and the Create start page. */
 .strip { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-5); }

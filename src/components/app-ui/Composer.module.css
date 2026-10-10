@@ -254,8 +254,8 @@
   margin-bottom: var(--s-2);
   font-family: var(--f-sans);
   font-size: var(--t-label);
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-3);
 }
 
@@ -526,8 +526,8 @@
   background: rgb(var(--rgb-canvas) / 0.92);
   font-family: var(--f-sans);
   font-size: var(--t-label);
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-2);
   pointer-events: none;
 }
@@ -538,8 +538,8 @@
   gap: 2px var(--s-3);
   font-family: var(--f-sans);
   font-size: var(--t-label);
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   line-height: var(--lh-small);
   color: var(--c-ink-2);
 }
@@ -809,8 +809,8 @@ html[data-lens] .composer { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 .attachReadsTitle {
   margin: 0 0 6px;
   font-size: var(--t-label);
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-3);
 }
 .attachReads ul {

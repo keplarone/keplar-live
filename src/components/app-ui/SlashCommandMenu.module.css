@@ -72,8 +72,8 @@
 
 .badge {
   font-size: 10px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--c-ink-3);
   border: var(--b-hairline) solid var(--c-border);
   border-radius: var(--r-pill);

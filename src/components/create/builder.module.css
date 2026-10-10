@@ -46,7 +46,7 @@
 .code { margin: 0; padding: var(--s-4); border: var(--b-hairline) solid var(--c-border); border-radius: var(--r-md); background: var(--c-canvas); font-family: var(--f-mono); font-size: 12.5px; line-height: 1.55; overflow: auto; max-height: 62vh; white-space: pre; tab-size: 2; }
 .files { display: flex; gap: var(--s-2); flex-wrap: wrap; }
 .field { display: flex; flex-direction: column; gap: 6px; }
-.field > span { font-size: var(--t-label); color: var(--c-ink-3); letter-spacing: var(--tr-label); text-transform: uppercase; }
+.field > span { font-size: var(--t-label); color: var(--c-ink-3); letter-spacing: 0; text-transform: none; }
 .hint { color: var(--c-ink-3); font-size: var(--t-label); }
 .row { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
 .card { border: var(--b-hairline) solid var(--c-border); border-radius: var(--r-card); padding: var(--s-4); background: var(--c-canvas); display: flex; flex-direction: column; gap: var(--s-3); }
@@ -57,7 +57,7 @@
 .itemMain small { display: block; color: var(--c-ink-3); }
 .table { width: 100%; border-collapse: collapse; font-size: var(--t-small); }
 .table th, .table td { text-align: left; padding: var(--s-2) var(--s-3); border-bottom: var(--b-hairline) solid var(--c-border); vertical-align: top; overflow-wrap: anywhere; }
-.table th { color: var(--c-ink-3); font-weight: var(--w-regular); font-size: var(--t-label); text-transform: uppercase; letter-spacing: var(--tr-label); }
+.table th { color: var(--c-ink-3); font-weight: var(--w-regular); font-size: var(--t-label); text-transform: none; letter-spacing: 0; }
 .ok { color: var(--c-ink); }
 .warn { color: var(--c-dissent-text); }
 

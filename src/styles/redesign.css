@@ -165,3 +165,25 @@
   [class*="Sky-module__"][class$="__backdrop"] > i { filter: blur(64px); }
   #main section:not(:first-of-type) { content-visibility: auto; contain-intrinsic-size: auto 720px; }
 }
+
+/* ── Every feature in the canvas style (Oct 2026): rounder corners and softer hairlines, set once as tokens ──
+ * The chat cards (answers, research, Create and studio runs, attachments, menus, settings panels) all draw their shape and
+ * outline from these tokens, so they pick up the designs' soft, rounded, low-contrast look without per-component rewrites. */
+:root {
+  --r-xs: 10px;
+  --r-sm: 14px;
+  --r-md: 18px;
+  --r-card: 24px;
+  --r-card-lg: 28px;
+  --shape-control: 14px;
+  --shape-card: 22px;
+}
+:root[data-theme="light"] {
+  --c-border: rgb(14 15 18 / 0.07);
+  --c-border-strong: rgb(14 15 18 / 0.12);
+  --sh-hairline: 0 0 0 1px rgb(14 15 18 / 0.06), 0 6px 18px -12px rgb(14 15 18 / 0.25);
+}
+:root[data-theme="dark"] {
+  --c-border: rgb(255 255 255 / 0.07);
+  --c-border-strong: rgb(255 255 255 / 0.13);
+}

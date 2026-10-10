@@ -5,7 +5,7 @@
 .index li { display: block; }
 .index button { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 5px 6px; border-radius: 999px; color: var(--c-ink); opacity: 0.32; transition: opacity 300ms var(--e-standard), background-color 300ms var(--e-standard); }
 .index i { display: block; width: 12px; height: 1px; background: currentColor; transition: width 400ms var(--e-standard), box-shadow 400ms var(--e-standard); }
-.index span { position: absolute; left: 100%; margin-left: 6px; white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; padding: 5px 11px; border-radius: 999px; background: var(--c-canvas); border: 1px solid var(--c-border-strong); color: var(--c-ink); opacity: 0; transform: translateX(-4px); pointer-events: none; transition: opacity 200ms var(--e-standard), transform 200ms var(--e-standard); }
+.index span { position: absolute; left: 100%; margin-left: 6px; white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; font-size: 11px; letter-spacing: 0; text-transform: none; padding: 5px 11px; border-radius: 999px; background: var(--c-canvas); border: 1px solid var(--c-border-strong); color: var(--c-ink); opacity: 0; transform: translateX(-4px); pointer-events: none; transition: opacity 200ms var(--e-standard), transform 200ms var(--e-standard); }
 .index li { position: relative; }
 .index li[data-active] button { opacity: 1; }
 .index li[data-active] i { width: 26px; box-shadow: none; }

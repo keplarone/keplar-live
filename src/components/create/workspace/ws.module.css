@@ -44,7 +44,7 @@
 .row { display: flex; align-items: center; gap: var(--s-3, 12px); flex-wrap: wrap; }
 .error { color: var(--ws-bad); margin: 0; }
 .notice { margin: 0; padding: 8px 16px; background: rgb(var(--ws-fg) / 0.05); color: var(--c-ink-2); font-size: var(--t-small, 0.875rem); }
-.tag { display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border: 1px solid var(--c-border-strong); border-radius: 4px; font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--c-ink-2); }
+.tag { display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border: 1px solid var(--c-border-strong); border-radius: 4px; font-size: 11px; letter-spacing: 0; text-transform: none; color: var(--c-ink-2); }
 
 /* buttons: glow-white primary, graphite ghost */
 .btn, .btnGhost, .linkBtn { display: inline-flex; align-items: center; justify-content: center; height: 36px; padding: 0 16px; border-radius: 999px; font: inherit; font-size: 0.875rem; cursor: pointer; text-decoration: none; border: 0; transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease; }
@@ -58,13 +58,13 @@
 .input:focus-visible, .select:focus-visible, .prompt:focus-visible { outline: 2px solid rgb(var(--ws-fg) / 0.85); outline-offset: 1px; }
 .select { width: auto; padding: 6px 10px; }
 .field { display: flex; flex-direction: column; gap: 6px; }
-.field > span { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--c-ink-3); }
+.field > span { font-size: 11px; letter-spacing: 0; text-transform: none; color: var(--c-ink-3); }
 
 /* rail */
 .rail { display: flex; flex-direction: column; gap: 10px; padding: 14px 12px; min-height: 0; border-right: 1px solid var(--c-border); background: rgb(var(--ws-sheet) / 0.72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
 .newChat { display: flex; align-items: center; gap: 8px; width: 100%; height: 40px; padding: 0 14px; border-radius: 12px; border: 0; cursor: pointer; font: inherit; font-weight: 500; background: var(--btn-p-bg); color: var(--btn-p-ink); box-shadow: var(--btn-p-shadow); }
 .newChat:disabled { opacity: 0.45; cursor: not-allowed; }
-.railLabel { margin: 8px 6px 0; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-ink-3); }
+.railLabel { margin: 8px 6px 0; font-size: 11px; letter-spacing: 0; text-transform: none; color: var(--c-ink-3); }
 .projects { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; flex: 1; min-height: 0; }
 .project { width: 100%; display: flex; flex-direction: column; gap: 2px; text-align: left; padding: 9px 10px; border-radius: 10px; border: 1px solid transparent; background: transparent; color: var(--c-ink-2); font: inherit; cursor: pointer; }
 .project:hover:not(:disabled) { background: rgb(var(--ws-fg) / 0.05); color: var(--c-ink); }
@@ -83,7 +83,7 @@
 .centerTop { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--c-border); }
 .menuBtn { display: none; height: 32px; padding: 0 12px; border-radius: var(--shape-control); border: 1px solid var(--c-border-strong); background: rgb(var(--ws-fg) / 0.06); color: var(--c-ink); font: inherit; font-size: 0.8rem; cursor: pointer; }
 .goal { display: flex; align-items: baseline; gap: 10px; min-width: 0; flex: 1; padding: 6px 12px; border-radius: 10px; border: 1px solid var(--c-border-strong); background: rgb(var(--ws-fg) / 0.04); }
-.goal small { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-ink-3); }
+.goal small { font-size: 11px; letter-spacing: 0; text-transform: none; color: var(--c-ink-3); }
 .goal strong { font-weight: 500; font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .paneSwitch { display: none; }
 .backChat { display: none; height: 32px; padding: 0 12px; border-radius: var(--shape-control); border: 1px solid var(--c-border-strong); background: rgb(var(--ws-fg) / 0.06); color: var(--c-ink); font: inherit; font-size: 0.85rem; cursor: pointer; }
@@ -106,7 +106,7 @@
 .pair { display: flex; flex-direction: column; gap: 8px; }
 .botBubble { display: flex; flex-direction: column; gap: 8px; max-width: 96%; padding: 12px 14px; border-radius: 4px 16px 16px 16px; border: 1px solid var(--c-border); background: rgb(var(--ws-fg) / 0.04); overflow-wrap: anywhere; }
 .botBubble p { margin: 0; }
-.step { color: var(--c-ink-3); letter-spacing: 0.06em; text-transform: uppercase; font-size: 11px; }
+.step { color: var(--c-ink-3); letter-spacing: 0; text-transform: none; font-size: 11px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .pill { height: 34px; padding: 0 14px; border: 1px solid var(--c-border-strong); border-radius: 999px; background: rgb(var(--ws-fg) / 0.04); color: var(--c-ink-2); font: inherit; font-size: 0.85rem; cursor: pointer; }
 .pill:hover { color: var(--ws-hi); border-color: rgb(var(--ws-fg) / 0.4); }
@@ -123,7 +123,7 @@
 .groupHead { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 14px; border: 0; background: transparent; color: var(--c-ink); font: inherit; text-align: left; cursor: pointer; }
 .groupHead:disabled { cursor: default; }
 .groupHead small { color: var(--c-ink-3); margin-left: auto; }
-.lines { list-style: none; margin: 0; padding: 4px 14px 12px; display: flex; flex-direction: column; gap: 6px; font-family: var(--f-mono, ui-monospace, monospace); font-size: 12.5px; }
+.lines { list-style: none; margin: 0; padding: 4px 14px 12px; display: flex; flex-direction: column; gap: 6px; font-family: var(--f-sans); font-size: 12.5px; }
 .line { display: flex; gap: 10px; align-items: flex-start; color: var(--c-ink-2); line-height: 1.45; }
 .mark { flex: none; width: 14px; text-align: center; color: var(--c-ink-3); }
 .lineBody { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
@@ -159,7 +159,7 @@
 .bullets { margin: 0; padding-left: 18px; color: var(--c-ink-2); font-size: 0.9rem; }
 .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
 .summary div { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 10px; background: rgb(var(--ws-fg) / 0.04); min-width: 0; }
-.summary span { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--c-ink-3); }
+.summary span { font-size: 11px; letter-spacing: 0; text-transform: none; color: var(--c-ink-3); }
 .summary strong { font-weight: 500; font-size: 0.88rem; overflow-wrap: anywhere; }
 .seg[aria-labelledby] { align-self: flex-start; }
 .dirs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
@@ -176,7 +176,7 @@
 .fold[open] { display: flex; flex-direction: column; gap: 10px; }
 .dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin: 0; }
 .dl div { padding: 8px 10px; border-radius: 10px; background: rgb(var(--ws-fg) / 0.04); }
-.dl dt { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--c-ink-3); }
+.dl dt { font-size: 11px; letter-spacing: 0; text-transform: none; color: var(--c-ink-3); }
 .dl dd { margin: 2px 0 0; font-size: 0.88rem; }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
 .chipColor { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px 0 6px; border-radius: 8px; border: 1px solid var(--c-border-strong); background: rgb(var(--ws-fg) / 0.04); color: var(--c-ink-2); font: inherit; font-size: 12px; cursor: pointer; }
@@ -193,7 +193,7 @@
 /* Text always fits its frame: sizes follow the card's own width (container query units), a title may take two lines but never loses a word to an ellipsis. */
 .thumbName { font-size: clamp(0.8rem, 8.5cqi, 1.05rem); line-height: 1.12; letter-spacing: -0.02em; font-weight: 500; min-width: 0; overflow-wrap: break-word; text-wrap: balance; }
 /* Mini nav: the page names scale down with the card, and when even the smallest size has no room whole items drop off the end (HOME / PRICING) instead of a word being cut mid-way. */
-.thumbPages { display: flex; flex-wrap: wrap; column-gap: 0.55em; min-width: 0; height: 1.5em; overflow: hidden; font-size: clamp(8px, 5.6cqi, 10px); line-height: 1.5; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-ink-3); white-space: nowrap; }
+.thumbPages { display: flex; flex-wrap: wrap; column-gap: 0.55em; min-width: 0; height: 1.5em; overflow: hidden; font-size: clamp(8px, 5.6cqi, 10px); line-height: 1.5; letter-spacing: 0; text-transform: none; color: var(--c-ink-3); white-space: nowrap; }
 .thumbPages > span + span::before { content: "/\00a0"; }
 
 /* stage */

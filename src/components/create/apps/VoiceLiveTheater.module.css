@@ -10,7 +10,7 @@
   background: #101012;
 }
 .phase {
-  font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #9a9aa0;
+  font-size: 11px; letter-spacing: 0; text-transform: none; color: #9a9aa0;
 }
 .phase[data-on="true"] { color: #e8e8ea; }
 .mic {
@@ -50,7 +50,7 @@
   display: flex; align-items: center; gap: 8px; padding: 7px 10px; min-width: 0;
   border-bottom: 1px solid rgba(255,255,255,.06); background: #101012; flex-shrink: 0;
 }
-.paneTitle { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: #8e8e94; flex: none; white-space: nowrap; }
+.paneTitle { font-size: 11px; letter-spacing: 0; text-transform: none; color: #8e8e94; flex: none; white-space: nowrap; }
 /* File tabs: one scrolling row that takes the rest of the header. Each tab keeps its own width (no squeezing into its neighbor)
    and long names end in an ellipsis; the full path is in the tab's title. */
 .tabs {
@@ -61,7 +61,7 @@
 .tab {
   flex: none; max-width: 18ch; overflow: hidden; text-overflow: ellipsis;
   border: 0; background: transparent; color: #7a7a80; font: inherit; font-size: 11px; line-height: 1.4;
-  padding: 4px 8px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-family: var(--f-mono), ui-monospace, monospace;
+  padding: 4px 8px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-family: var(--f-sans);
 }
 .tab[aria-selected="true"] { color: #e8e8ea; background: rgba(255,255,255,.06); }
 .tab[data-writing="true"]::before { content: ""; display: inline-block; width: 5px; height: 5px; margin-right: 6px; border-radius: 50%; background: #c8a46a; vertical-align: middle; }

@@ -180,7 +180,7 @@
 .panel[data-lit], .panel:first-child { border-color: rgb(var(--rgb-ink) / 0.24); }
 .h2 { font-size: clamp(28px, 3.2vw, 56px); letter-spacing: -0.04em; }
 .scroller { border-radius: var(--r-card); border: var(--b-hairline) solid var(--c-border-strong); background: rgb(var(--rgb-ink) / 0.06); }
-.table thead th { font-size: var(--t-label); letter-spacing: 0.1em; text-transform: uppercase; background: rgb(var(--rgb-ink) / 0.06); }
+.table thead th { font-size: var(--t-label); letter-spacing: 0; text-transform: none; background: rgb(var(--rgb-ink) / 0.06); }
 .steps { counter-reset: st; }
 @media (max-width: 599px) { .panel, .card { padding: var(--s-5); } }
 

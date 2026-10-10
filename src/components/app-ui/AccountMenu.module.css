@@ -12,7 +12,7 @@
 
 .avatar {
   display: inline-grid; place-items: center; flex: none; width: 28px; height: 28px; border-radius: var(--r-pill);
-  background: var(--c-reasoning); color: var(--c-canvas); font-size: var(--t-label); font-weight: var(--w-semibold); text-transform: uppercase;
+  background: var(--c-reasoning); color: var(--c-canvas); font-size: var(--t-label); font-weight: var(--w-semibold); text-transform: none;
 }
 .who { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .name { font-size: var(--t-small); font-weight: var(--w-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -26,7 +26,7 @@
   box-shadow: 0 12px 32px rgb(var(--rgb-ink) / 0.14);
 }
 .menuHead { padding: var(--s-2) var(--s-3); display: flex; flex-direction: column; gap: 2px; border-bottom: 1px solid var(--c-border); margin-bottom: var(--s-1); }
-.menuLabel { font-size: var(--t-label); color: var(--c-ink-3); text-transform: uppercase; letter-spacing: var(--tr-label); }
+.menuLabel { font-size: var(--t-label); color: var(--c-ink-3); text-transform: none; letter-spacing: 0; }
 .item {
   display: flex; align-items: center; width: 100%; min-height: 36px; padding: 0 var(--s-3); border-radius: var(--r-xs);
   font-size: var(--t-small); color: var(--c-ink-2); text-align: left; text-decoration: none; cursor: pointer;
