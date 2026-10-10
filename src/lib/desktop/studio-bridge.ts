@@ -13,6 +13,8 @@ export type StudioBridge = {
   status(): Promise<StudioStatus>;
   connect(): Promise<StudioStatus>;
   disconnect(): Promise<StudioStatus>;
+  /** Studio's tool definitions (name, description, input schema), for the planner. Empty when not connected. */
+  tools(): Promise<{ name: string; description?: string; inputSchema?: unknown }[]>;
   call(name: string, args?: Record<string, unknown>): Promise<StudioCall>;
   onStatus(listener: (status: StudioStatus) => void): () => void;
 };

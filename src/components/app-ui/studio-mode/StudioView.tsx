@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { TwoTone } from "@/components/page/TwoTone";
 import { resultText, STUDIO_PLANS, studioBridge, type StudioStatus } from "@/lib/desktop/studio-bridge";
+import { StudioDock } from "./StudioDock";
 import s from "./studio-mode.module.css";
 
 type Place = { name: string; id?: string };
@@ -35,8 +36,8 @@ const LABEL: Record<StudioStatus["state"], string> = {
 };
 
 /**
- * Roblox Studio mode (desktop app only, Lite and up). Step 1 of the Studio co-creator: connect to Roblox Studio on this computer
- * through the desktop app's bridge and show what is open. The chat dock, planning and approvals build on this connection.
+ * Roblox Studio mode (desktop app only, Lite and up): connect to Roblox Studio on this computer through the desktop app's bridge,
+ * show what is open, and once connected, the chat dock (StudioDock) where Keplar plans and builds with the person's approval.
  */
 export function StudioView({ plan, signedIn }: { plan: string; signedIn: boolean | null }) {
   // The desktop bridge is fixed for the page's life; the server render (and the first client render) see none.
@@ -159,6 +160,7 @@ export function StudioView({ plan, signedIn }: { plan: string; signedIn: boolean
           ) : null}
         </div>
       </section>
+      {st === "connected" ? <StudioDock bridge={bridge} /> : null}
     </div>
   );
 }
