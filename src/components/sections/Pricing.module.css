@@ -234,12 +234,44 @@
   font-size: var(--t-small);
 }
 
-/* Light theme: white cards on the warm page with a warm hairline and soft drop (Dark's 6% light veil + bright top edge read as a grey
-   slab with a dark line on a light page); ink glows become clean marks. Dark above is unchanged. */
-:global(:root[data-theme="light"]) .plan { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-shadow); }
-:global(:root[data-theme="light"]) .plan[data-plan="plus"] { border-color: rgb(28 24 18 / 0.2); box-shadow: var(--lt-card-lift); }
-:global(:root[data-theme="light"]) .compute { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-shadow); }
+/* Light theme (Oct 2026 redesign): frosted white cards with large radii and soft cool shadows on the aura page, Plus as the one dark
+   card, plan names in sentence case, check marks for features. Dark above is unchanged. */
+:global(:root[data-theme="light"]) .section { background: transparent; isolation: isolate; }
+:global(:root[data-theme="light"]) .plan {
+  background: rgb(255 255 255 / 0.82);
+  border-color: var(--c-border);
+  border-radius: 28px;
+  padding: 32px 28px 28px;
+  box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 12px 28px -14px rgb(14 15 18 / 0.25);
+}
+:global(:root[data-theme="light"]) .plan[data-plan="plus"] {
+  background: #0e0f12;
+  border-color: #0e0f12;
+  color: #ffffff;
+  box-shadow: 0 40px 90px -40px rgb(14 15 18 / 0.7);
+  --c-ink: #ffffff;
+  --c-ink-2: #c9cbd1;
+  --c-ink-3: #b4b6bd;
+  --c-border: rgb(255 255 255 / 0.14);
+  --btn-p-bg: #ffffff;
+  --btn-p-solid: #ffffff;
+  --btn-p-ink: #0e0f12;
+}
+:global(:root[data-theme="light"]) .name { text-transform: none; letter-spacing: -0.01em; font-size: 22px; color: var(--c-ink); }
+:global(:root[data-theme="light"]) .amount { font-weight: 400; }
+:global(:root[data-theme="light"]) .cadence { text-transform: none; letter-spacing: 0; font-size: 15px; }
+:global(:root[data-theme="light"]) .summary { font-size: 15px; line-height: 1.5; }
+:global(:root[data-theme="light"]) .features { border-top: 0; padding-top: 0; }
+:global(:root[data-theme="light"]) .features li { padding-left: 28px; font-size: 15px; line-height: 1.5; }
+:global(:root[data-theme="light"]) .features li::before {
+  top: 0.18em;
+  width: 18px;
+  height: 18px;
+  background: currentColor;
+  color: var(--c-verified);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+:global(:root[data-theme="light"]) .plan[data-plan="plus"] .features li::before { color: #6fd3a0; }
+:global(:root[data-theme="light"]) .compute { background: rgb(255 255 255 / 0.82); border-color: var(--c-border); border-radius: 28px; box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 12px 28px -14px rgb(14 15 18 / 0.25); }
 :global(:root[data-theme="light"]) .bars i[data-on] { box-shadow: none; }
-/* a quiet aura behind the plans (light only; transform-free, inside the section box so it never adds overflow) */
-:global(:root[data-theme="light"]) .section { isolation: isolate; }
-:global(:root[data-theme="light"]) .section::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: var(--aura-soft); }

@@ -66,8 +66,8 @@
   color-scheme: light;
 
   /* Sitewide density lever. Rem root (globals.html font-size) and spacing (--u) track this.
-     0.61625 = 0.90625 × 0.68, so token UI is exactly 32% smaller. The WebGL stage stays full viewport. Do not use transform: scale() or zoom on html. */
-  --ui-scale: 0.61625;
+     1 = true size (16px rem). Was 0.61625, which shrank every page to 62% and read too small. Do not use transform: scale() or zoom on html. */
+  --ui-scale: 1;
 
   /* type families + weights */
   --f-sans: var(--font-sans), "Keplar Sans Fallback", ui-sans-serif, system-ui, sans-serif;

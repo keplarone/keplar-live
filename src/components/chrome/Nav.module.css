@@ -1,359 +1,234 @@
+/*
+ * Floating nav: three pills (logo, Menu, actions) over the page. Colors come from the nav tokens in tokens.css / light.css,
+ * so the same pills read on the light canvas and in Dark.
+ */
 .wrap {
   position: fixed;
-  inset: calc(var(--l-nav-offset) + env(safe-area-inset-top, 0px)) 0 auto 0;
-  z-index: var(--z-nav);
-  display: flex;
-  justify-content: center;
-  padding: 0 max(var(--s-3), env(safe-area-inset-right, 0px)) 0 max(var(--s-3), env(safe-area-inset-left, 0px));
+  inset: 0 0 auto 0;
+  z-index: var(--z-nav, 100);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+  gap: 12px;
+  padding: calc(env(safe-area-inset-top, 0px) + 20px) max(20px, env(safe-area-inset-right, 0px)) 0 max(20px, env(safe-area-inset-left, 0px));
   pointer-events: none;
 }
+.wrap > * { pointer-events: auto; }
 
-.capsule {
-  pointer-events: auto;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  width: 100%;
-  /* grows with the screen: 1120 on a laptop, ~1.7k at 2560, ~2.3k on an ultrawide */
-  max-width: clamp(1120px, 66vw, 2300px);
-  column-gap: var(--s-4);
-  /* one light blur layer, no refraction filter: cheap to recomposite while the page scrolls under it */
-  --lg-blur: 10px;
-  contain: layout style;
-  height: var(--l-nav-h);
-  padding: 0 var(--s-2) 0 var(--s-5);
-  --lg-radius: 999px;
-  /* theme-aware glass: every value comes from the --nav-* tokens (tokens.css), swapped by <html data-theme> before paint */
-  --lg-fill: var(--nav-fill);
-  --lg-solid: var(--nav-solid);
-  --lg-edge-hi: var(--nav-edge-hi);
-  --lg-edge-lo: var(--nav-edge-lo);
-  --lg-rim: var(--nav-rim);
-  --lg-shadow: var(--nav-shadow);
+.pill {
+  background: var(--nav-solid);
   color: var(--nav-ink);
-  transition: background-color var(--d-slow) var(--e-standard), box-shadow var(--d-slow) var(--e-standard);
+  border-radius: 999px;
+  box-shadow: var(--nav-shadow);
 }
 
-/* Scrolled: the glass thickens a little so text over content stays crisp (AA in both themes, over black and over white). */
-.wrap[data-scrolled] .capsule { --lg-fill: var(--nav-fill-scrolled); }
-
+/* ---- logo pill: a 52px circle that grows to show the wordmark ---- */
 .brand {
+  composes: pill;
   justify-self: start;
   display: inline-flex;
   align-items: center;
-  height: calc(var(--l-nav-h) - 12px);
-  padding: 0 var(--s-2);
-  color: var(--nav-ink); /* the logo mark + wordmark are fill=currentColor */
-  border-radius: var(--r-pill);
+  height: 52px;
+  padding: 0 15px;
+  text-decoration: none;
+  overflow: hidden;
+  transition: padding 0.42s var(--e-standard), box-shadow 0.3s var(--e-standard);
 }
-.logo { height: calc(var(--l-nav-h) * 0.46); width: auto; }
-
-.links {
-  display: flex;
-  gap: var(--s-1);
-}
-
-.link {
-  display: inline-flex;
-  align-items: center;
-  height: calc(var(--l-nav-h) - 20px);
-  padding: 0 var(--s-3);
-  border-radius: var(--r-pill);
-  font-size: var(--t-small);
-  color: var(--nav-link);
-  transition: color var(--d-fast) var(--e-standard), background-color var(--d-fast) var(--e-standard);
-}
-
-.link:hover,
-.signIn:hover {
-  color: var(--nav-ink);
-  background: var(--nav-hover-bg);
-}
-
-.link[aria-current="page"] {
-  color: var(--nav-ink);
-  background: var(--nav-active-bg);
-}
-
-/* Focus: an ink ring just inside the pill, so it always sits on the pill's own fill (visible over black and over white). */
-.link:focus-visible,
-.signIn:focus-visible,
-.brand:focus-visible,
-.toggle:focus-visible,
-.menuItem:focus-visible,
-.sheetLink:focus-visible,
-.signInMobile:focus-visible {
-  border-radius: var(--r-pill);
-  outline: var(--b-focus) solid var(--nav-focus);
-  outline-offset: -2px;
-}
-.menuItem:focus-visible { border-radius: 18px; }
-
-.actions {
-  justify-self: end;
-  display: flex;
-  align-items: center;
-  gap: var(--s-1);
+.mark { flex-shrink: 0; transition: transform 0.55s cubic-bezier(0.34, 1.45, 0.64, 1); }
+.word {
+  display: inline-block;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
   white-space: nowrap;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  transform: translateX(-6px);
+  transition: max-width 0.42s var(--e-standard), opacity 0.28s var(--e-standard), transform 0.42s var(--e-standard), margin 0.42s var(--e-standard);
 }
+.brand:hover, .brand:focus-visible { padding-right: 20px; }
+.brand:hover .word, .brand:focus-visible .word { max-width: 90px; opacity: 1; margin-left: 9px; transform: none; }
+.brand:hover .mark, .brand:focus-visible .mark { transform: rotate(-14deg) scale(0.94); }
+.brand:focus-visible { outline: var(--b-focus, 2px) solid var(--nav-focus); outline-offset: 3px; }
 
-.signIn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 5.2em; /* "Sign In" / "Account" swap without nudging the Try button */
-  height: calc(var(--l-nav-h) - 20px);
-  padding: 0 var(--s-3);
-  font-size: var(--t-small);
-  border-radius: var(--r-pill);
-  color: var(--nav-link);
-  transition: color var(--d-fast) var(--e-standard), background-color var(--d-fast) var(--e-standard);
+/* ---- Menu pill that morphs into the panel ---- */
+.morph {
+  composes: pill;
+  justify-self: center;
+  position: relative;
+  width: 124px;
+  height: 52px;
+  overflow: hidden;
+  border-radius: 26px;
+  transition:
+    width 0.5s cubic-bezier(0.2, 0, 0, 1),
+    height 0.5s cubic-bezier(0.2, 0, 0, 1),
+    border-radius 0.5s cubic-bezier(0.2, 0, 0, 1),
+    box-shadow 0.3s var(--e-standard);
 }
-
-/* "Open Keplar" / "Try Keplar": the inverse pill of each theme (black on light glass, white on dark glass). */
-.actions .cta {
-  background: var(--nav-cta-bg);
-  color: var(--nav-cta-ink);
-  box-shadow: var(--nav-cta-shadow);
-}
-.actions .cta:focus-visible,
-.sheetFoot .cta:focus-visible { outline: var(--b-focus) solid var(--nav-focus); outline-offset: 3px; }
-.sheetFoot .cta {
-  background: var(--nav-cta-bg);
-  color: var(--nav-cta-ink);
-  box-shadow: var(--nav-cta-shadow);
-}
-@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  .actions .cta, .sheetFoot .cta { background: var(--nav-cta-solid); }
+.morph[data-open] {
+  width: min(560px, calc(100vw - 40px));
+  height: min(536px, calc(100svh - 40px));
+  border-radius: 28px;
+  box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 30px 80px -30px rgb(14 15 18 / 0.35);
 }
 
 .toggle {
-  display: none;
   position: relative;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--r-pill);
-  color: var(--nav-ink);
-  transition: background-color var(--d-fast) var(--e-standard);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 52px;
+  padding: 0 20px;
+  background: transparent;
+  border: 0;
+  border-radius: 26px;
+  color: inherit;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
 }
-.toggle:hover,
-.wrap[data-open] .toggle { background: var(--nav-hover-bg); }
-
-.toggleBar {
+.morph[data-open] .toggle { border-bottom: 1px solid var(--c-border); border-radius: 0; }
+.toggle:focus-visible { outline: var(--b-focus, 2px) solid var(--nav-focus); outline-offset: -4px; }
+.toggleIcon { position: relative; width: 16px; height: 12px; }
+.toggleIcon i {
   position: absolute;
-  left: 12px;
-  right: 12px;
-  height: 1.5px;
-  background: var(--nav-ink);
-  border-radius: var(--r-pill);
-  transition: transform var(--d-base) var(--e-emphasized);
+  left: 0;
+  width: 16px;
+  height: 1.6px;
+  border-radius: 2px;
+  background: currentColor;
+  transition: transform 0.4s var(--e-standard), top 0.4s var(--e-standard);
 }
+.toggleIcon i:first-child { top: 3px; }
+.toggleIcon i:last-child { top: 8px; }
+.morph[data-open] .toggleIcon i:first-child { top: 5.2px; transform: rotate(45deg); }
+.morph[data-open] .toggleIcon i:last-child { top: 5.2px; transform: rotate(-45deg); }
+.toggleLabel { display: inline-block; }
 
-.toggleBar:first-child {
-  transform: translateY(-3.5px);
-}
-
-.toggleBar:last-child {
-  transform: translateY(3.5px);
-}
-
-.wrap[data-open] .toggleBar:first-child {
-  transform: rotate(45deg);
-}
-
-.wrap[data-open] .toggleBar:last-child {
-  transform: rotate(-45deg);
-}
-
-.sheet {
-  pointer-events: auto;
-  position: fixed;
-  inset: 0;
-  z-index: -1;
+.panel {
+  position: absolute;
+  inset: 52px 0 0 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-12) + env(safe-area-inset-top, 0px)) max(var(--l-gutter), env(safe-area-inset-right, 0px)) calc(var(--s-10) + env(safe-area-inset-bottom, 0px)) max(var(--l-gutter), env(safe-area-inset-left, 0px));
-  color: var(--nav-ink);
-  background: var(--nav-sheet);
-  -webkit-backdrop-filter: blur(var(--blur-glass-strong)) saturate(var(--glass-saturate));
-  backdrop-filter: blur(var(--blur-glass-strong)) saturate(var(--glass-saturate));
+  gap: 20px;
+  padding: 22px 26px 18px;
+  overflow-y: auto;
 }
-
-.sheet[hidden] {
-  display: none;
+.panel[hidden] { display: none; }
+.cols { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; }
+.col { min-width: 0; }
+.colHead {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-ink-3);
+  animation: kp-nav-in 0.5s var(--e-standard) both;
+  animation-delay: 0.16s;
 }
-
-.sheetLinks {
-  display: flex;
-  flex-direction: column;
-}
-
-.sheetLink {
+.bigLinks, .smallLinks, .footLinks { list-style: none; margin: 0; padding: 0; }
+.bigLinks { display: flex; flex-direction: column; gap: 2px; }
+.smallLinks { display: flex; flex-direction: column; gap: 2px; }
+.bigLinks li, .smallLinks li, .panelFoot { animation: kp-nav-in 0.5s var(--e-standard) both; animation-delay: calc(0.18s + var(--i, 0) * 0.04s); }
+.bigLinks a {
   display: block;
-  padding: var(--s-2) 0;
-  font-size: var(--t-title);
-  line-height: var(--lh-title);
-  letter-spacing: var(--tr-title);
-  font-weight: var(--w-medium);
+  padding: 5px 0;
+  font-size: 22px;
+  letter-spacing: -0.02em;
   color: var(--nav-ink);
-  animation: sheetIn var(--d-slow) var(--e-emphasized) both;
-  animation-delay: calc(var(--i) * 30ms);
+  text-decoration: none;
+  transition: color 0.2s var(--e-standard), transform 0.25s var(--e-standard);
 }
-
-.sheetLink[aria-current="page"] {
-  color: var(--nav-link-2);
+.smallLinks a {
+  display: block;
+  padding: 6px 0;
+  font-size: 15px;
+  color: var(--nav-link);
+  text-decoration: none;
+  transition: color 0.2s var(--e-standard);
 }
-
-.sheetFoot {
+.bigLinks a:hover { transform: translateX(3px); }
+.bigLinks a:hover, .smallLinks a:hover, .footLinks a:hover { color: var(--c-accent); }
+.bigLinks a[aria-current="page"], .smallLinks a[aria-current="page"] { color: var(--c-accent); }
+.panelFoot {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: var(--s-4);
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--c-border);
 }
-
-.signInMobile {
-  font-size: var(--t-body);
-  color: var(--nav-link);
-  padding: var(--s-3) var(--s-2);
-  border-radius: var(--r-pill);
-}
-
-@keyframes sheetIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-}
-
-@media (max-width: 1080px) {
-  .links {
-    gap: 0;
-  }
-  .link {
-    padding: 0 var(--s-2);
-  }
-}
-
-@media (max-width: 899px) {
-  .capsule {
-    grid-template-columns: 1fr auto;
-    padding: 0 var(--s-1) 0 var(--s-4);
-    height: 52px;
-  }
-  .links,
-  .signIn {
-    display: none;
-  }
-  .toggle {
-    display: inline-block;
-  }
-}
-
-/* Very narrow phones (320-380px): keep it tight so the capsule does not overflow the capsule instead of overflowing. */
-@media (max-width: 380px) {
-  .wrap {
-    padding: 0 var(--s-2);
-  }
-  .capsule {
-    grid-template-columns: minmax(0, 1fr) auto;
-    padding: 0 var(--s-1) 0 var(--s-3);
-  }
-}
-
-
-/* Product menu: a small clear-glass panel under the capsule (one blur layer). */
-.menuWrap { position: relative; }
-button.link { cursor: pointer; gap: 6px; }
-button.link[data-active] { color: var(--nav-ink); background: var(--nav-active-bg); }
-.caret { transition: transform 0.25s var(--e-standard); opacity: 0.7; }
-.link[aria-expanded="true"] .caret { transform: rotate(180deg); }
-.menu {
-  position: absolute; top: calc(100% + 8px); left: 50%; translate: -50% 0;
-  width: 300px; padding: var(--s-2);
-  display: flex; flex-direction: column; gap: 2px;
-  --lg-radius: 24px;
-  /* the panel is text-bearing: near-opaque, themed through the same tokens as the pill */
-  --lg-fill: var(--nav-menu-fill);
-  --lg-fill-strong: var(--nav-menu-fill);
-  color: var(--nav-ink);
-  animation: menuIn 0.22s var(--e-emphasized) both;
-}
-.menu[hidden] { display: none; }
-/* hover bridge so the menu stays open while the pointer crosses the gap */
-.menu::after { content: ""; position: absolute; left: 0; right: 0; top: -10px; height: 10px; }
-.menuItem { display: flex; flex-direction: column; gap: 2px; padding: 10px var(--s-4); border-radius: 18px; color: var(--nav-ink); transition: background-color var(--d-fast) var(--e-standard); }
-.menuItem:hover, .menuItem:focus-visible { background: var(--nav-hover-bg); }
-.menuItem[aria-current="page"] { background: var(--nav-active-bg); }
-.menuTitle { font-size: var(--t-small); font-weight: var(--w-medium); }
-.menuHint { font-size: var(--t-label); color: var(--nav-link-2); line-height: 1.35; }
-@keyframes menuIn { from { opacity: 0; transform: translateY(-4px) scale(0.98); } }
-@media (prefers-reduced-motion: reduce) { .menu { animation: none; } .caret { transition: none; } }
-
-/* Mobile sheet: Product's pages sit under it as smaller, indented links. */
-.sheetLink[data-sub] { font-size: var(--t-body); font-weight: var(--w-regular); color: var(--nav-link-2); padding-left: var(--s-5); }
-
-
-/* ── Desktop app (Keplar desktop v0.1.3+, any Electron window with a title-bar overlay) ──
- * html[data-desktop] (ours, set before paint by src/lib/desktop.ts) or html[data-keplar-desktop] / .keplar-desktop (set by
- * the app). env(titlebar-area-*) is the strip the window controls leave free: pad the nav to it so nothing sits under
- * min/max/close. In fullscreen the overlay height is 0 and env() fills the screen, so no special case. The app owns the
- * drag band; empty nav space opts in with data-keplar-drag (set in Nav.tsx), links and buttons stay clickable. */
-:global(html:is([data-desktop], [data-keplar-desktop], .keplar-desktop)) .wrap {
-  padding-left: calc(env(titlebar-area-x, 0px) + var(--s-3));
-  padding-right: calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw) + var(--s-3));
-  top: max(6px, calc((env(titlebar-area-height, 40px) - var(--l-nav-h)) / 2 + 6px));
-}
-
-/* Touch laptops and tablets in landscape show the full nav: its links are 44px targets, not 36px. */
-@media (pointer: coarse) {
-  .link,
-  .signIn {
-    height: max(44px, calc(var(--l-nav-h) - 20px));
-  }
-}
-
-/* Print: the fixed nav would repeat on every sheet. */
-@media print {
-  .wrap {
-    display: none;
-  }
-}
-
-/* Search / command palette trigger (Cmd/Ctrl-K). Quiet chip, same height as Sign In. */
 .search {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: calc(var(--l-nav-h) - 20px);
-  padding: 0 var(--s-2);
-  border-radius: var(--r-pill);
-  color: var(--nav-link);
-  font-size: var(--t-small);
-  background: transparent;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+  background: var(--c-surface-2);
   border: 0;
-  cursor: pointer;
-  transition: color var(--d-fast) var(--e-standard), background-color var(--d-fast) var(--e-standard);
-}
-.search:hover { color: var(--nav-ink); }
-.search kbd { font: inherit; font-size: 11px; letter-spacing: 0.02em; opacity: 0.75; }
-@media (max-width: 1080px) { .search kbd { display: none; } }
-@media (max-width: 899px) { .search { display: none; } }
-
-/* Mobile sheet: scroll if the list is taller than the screen; search first, sub-entries smaller so the list stays scannable. */
-.sheet { overflow-y: auto; overscroll-behavior: contain; justify-content: flex-start; gap: var(--s-8); }
-.sheetLink[data-sub] { font-size: var(--t-body); font-weight: var(--w-regular, 400); color: var(--nav-link); padding: var(--s-1) 0 var(--s-1) var(--s-3); }
-.sheetSearch {
-  align-self: stretch;
-  text-align: left;
+  border-radius: 999px;
+  color: var(--nav-ink);
   font: inherit;
-  font-size: var(--t-body);
-  color: var(--nav-link);
-  padding: var(--s-3) var(--s-4);
-  border-radius: var(--r-pill);
-  border: 1px solid rgb(127 127 127 / 0.25);
-  background: transparent;
+  font-size: 14px;
   cursor: pointer;
 }
-.sheetFoot { margin-top: auto; }
+.footLinks { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+.footLinks a { font-size: 13px; color: var(--c-ink-3); text-decoration: none; padding: 8px 0; display: inline-block; }
+
+/* ---- actions ---- */
+.actions { justify-self: end; display: flex; align-items: center; gap: 8px; }
+.signIn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  color: var(--c-ink);
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.signIn:hover { background: rgb(var(--rgb-ink) / 0.05); }
+.cta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 20px;
+  background: var(--nav-cta-bg);
+  color: var(--nav-cta-ink);
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  box-shadow: var(--nav-cta-shadow);
+  transition: transform 0.25s var(--e-standard);
+}
+.cta:hover { transform: translateY(-1px); color: var(--nav-cta-ink); }
+.signIn:focus-visible, .cta:focus-visible { outline: var(--b-focus, 2px) solid var(--nav-focus); outline-offset: 3px; }
+
+@keyframes kp-nav-in {
+  from { opacity: 0; transform: translateY(6px); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+@media (max-width: 720px) {
+  .wrap { grid-template-columns: auto 1fr auto; padding-left: 14px; padding-right: 14px; gap: 8px; }
+  .morph { justify-self: center; width: 108px; }
+  .morph[data-open] { position: fixed; left: 14px; right: 14px; top: calc(env(safe-area-inset-top, 0px) + 20px); width: auto; justify-self: stretch; }
+  .signIn { display: none; }
+  .cols { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand, .word, .mark, .morph, .toggleIcon i, .bigLinks a, .cta { transition: none; }
+  .colHead, .bigLinks li, .smallLinks li, .panelFoot { animation: none; }
+}

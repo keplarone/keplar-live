@@ -1,0 +1,140 @@
+import Link from "next/link";
+import { KeplarSymbol } from "@/components/brand";
+import { LiveDemo } from "@/components/landing/LiveDemo";
+import { CHAPTERS } from "@/lib/features";
+import { allUseCases } from "@/lib/kb/usecases";
+import { brand, tryHref } from "@/lib/site";
+import { SkyBackdrop } from "./SkyBackdrop";
+import { ScrollZoom } from "./ScrollZoom";
+import { MODELS, ModelStack } from "./ModelStack";
+import s from "./Sky.module.css";
+
+/** Use cases shown on the home, in this order (slugs from content/use-cases), each with its icon stroke colour. */
+const USE_CASES: { slug: string; color: string; icon: React.ReactNode }[] = [
+  { slug: "research-a-new-topic", color: "#0b5f70", icon: <><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></> },
+  { slug: "check-a-claim-before-sharing", color: "#1f7a4a", icon: <path d="M5 12.5l4.5 4.5L19 7.5" /> },
+  { slug: "compare-options-before-buying", color: "#8a5a00", icon: <path d="M7 7h10M7 12h10M7 17h6" /> },
+  { slug: "get-a-second-opinion-on-code", color: "#8a4550", icon: <path d="M9 8l-4 4 4 4M15 8l4 4-4 4" /> },
+  { slug: "study-for-an-exam", color: "#4a63b8", icon: <><path d="M4 6l8-3 8 3-8 3-8-3z" /><path d="M8 8v5c0 1.5 2 3 4 3s4-1.5 4-3V8" /></> },
+  { slug: "understand-a-document", color: "#8a4f24", icon: <><path d="M7 3h7l4 4v14H7z" /><path d="M14 3v4h4M10 12h5M10 16h5" /></> },
+];
+
+const STEPS = [
+  { title: "Ask once", body: "Type your question the way you would anywhere else. You don't need to pick a model." },
+  { title: "Several models answer", body: "Keplar sends it to the models your question needs, at the same time, and reads every response." },
+  { title: "You get one answer", body: "Their views are compared claim by claim and combined into one answer, with any disagreement shown." },
+];
+
+/** The light, Space-inspired home: hero, product window that zooms in on scroll, feature list, steps, use cases and the live demo. */
+export function SkyHome({ pricing }: { pricing?: React.ReactNode }) {
+  const cases = allUseCases();
+  const useCases = USE_CASES.map((u) => ({ ...u, data: cases.find((c) => c.slug === u.slug) })).filter((u) => u.data);
+  const [, ...chapters] = CHAPTERS;
+
+  return (
+    <div className={s.home}>
+      <SkyBackdrop />
+
+      <section className={s.hero} aria-labelledby="hero-title">
+        <p className={s.badge}>
+          <ModelStack />
+          <span>Top AI models, one answer</span>
+        </p>
+        <h1 id="hero-title" className={s.h1}>
+          <span>One question.</span>
+          <span className={s.muted}>Multiple intelligences.</span>
+          <span>One answer.</span>
+        </h1>
+        <p className={s.lede}>{brand.name} uses multiple AI models, compares their perspectives, and gives you one clear, synthesized answer.</p>
+        <div className={s.ctas}>
+          <Link href={tryHref} className={s.btnPrimary}>Try {brand.name}</Link>
+          <Link href="/download" className={s.btnSecondary}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
+            Download for desktop
+          </Link>
+        </div>
+      </section>
+
+      <ScrollZoom className={s.previewWrap}>
+        <section className={s.window} aria-label="Example answer">
+          <div className={s.windowBar}>
+            <i /><i /><i />
+            <span>{brand.name}</span>
+          </div>
+          <div className={s.windowBody}>
+            <p className={s.userMsg}>Should my small business site use Webflow or WordPress?</p>
+            <ul className={s.verdicts}>
+              {MODELS.slice(0, 5).map((m, i) => (
+                <li key={m.id}>
+                  <img src={m.src} alt="" width={16} height={16} />
+                  {m.name} <span data-agree={i === 3 ? "no" : "yes"}>{i === 3 ? "disagrees" : "agrees"}</span>
+                </li>
+              ))}
+            </ul>
+            <div className={s.answer}>
+              <p className={s.answerHead}><KeplarSymbol size={18} /> {brand.name}&apos;s answer · 4 of 5 models agree</p>
+              <p>For most small businesses that want a polished site without a developer, Webflow is the better fit: hosting, security and updates are handled for you, and the visual editor is easy to hand off. Pick WordPress if you need a specific plugin, a store with complex inventory, or full control over hosting.</p>
+              <p className={s.dissent}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16.5v.5" /></svg>
+                <span><b>Where they disagree:</b> DeepSeek recommends WordPress for long-term cost, since Webflow plans cost more as the site grows.</span>
+              </p>
+            </div>
+          </div>
+        </section>
+        <p className={s.note}>Example answer, shown for illustration.</p>
+      </ScrollZoom>
+
+      <section className={s.section} aria-labelledby="everything-title">
+        <h2 id="everything-title" className={s.h2}><span>Everything in {brand.name}.</span> <span className={s.muted}>One place.</span></h2>
+        <ol className={s.featureList}>
+          {chapters.map((c) => (
+            <li key={c.id}>
+              <Link href={`/features#${c.id}`} className={s.featureRow}>
+                <span className={s.featureN}>{c.n}</span>
+                <span className={s.featureName}>{c.label}</span>
+                <span className={s.featureLede}>{c.title}</span>
+              </Link>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className={s.section} aria-labelledby="how-title">
+        <h2 id="how-title" className={s.h2}><span>How {brand.name} works.</span> <span className={s.muted}>Three steps, a few seconds.</span></h2>
+        <ol className={s.cards3} data-reveal-stagger>
+          {STEPS.map((st, i) => (
+            <li key={st.title} className={s.card} data-reveal>
+              <span className={s.stepN}>{i + 1}</span>
+              <h3>{st.title}</h3>
+              <p>{st.body}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className={s.section} aria-labelledby="cases-title">
+        <h2 id="cases-title" className={s.h2}><span>Built for questions that matter.</span> <span className={s.muted}>And everyday ones too.</span></h2>
+        <ul className={s.cards3} data-reveal-stagger>
+          {useCases.map((u) => (
+            <li key={u.slug} data-reveal>
+              <Link href={u.data!.path} className={`${s.card} ${s.cardLink}`}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={u.color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{u.icon}</svg>
+                <h3>{u.data!.title}</h3>
+                <p>{u.data!.description}</p>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section id="demo" className={s.section} aria-labelledby="demo-title">
+        <div className={s.demo}>
+          <h2 id="demo-title" className={s.h2}><span>Try it here.</span> <span className={s.muted}>No account needed.</span></h2>
+          <LiveDemo />
+        </div>
+      </section>
+
+      {pricing}
+    </div>
+  );
+}

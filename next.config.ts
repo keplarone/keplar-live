@@ -60,7 +60,9 @@ const nextConfig: NextConfig = {
     const YEAR = "public, max-age=31536000, immutable";
     const DAY = "public, max-age=86400, stale-while-revalidate=604800";
     return [
-      { source: "/_next/static/:path*", headers: [{ key: "Cache-Control", value: YEAR }] },
+      // Production chunk names are content-hashed, so a year is safe there. In `next dev` the names stay the same across edits,
+      // and an immutable header made browsers keep stale CSS and JS after every change.
+      ...(process.env.NODE_ENV === "production" ? [{ source: "/_next/static/:path*", headers: [{ key: "Cache-Control", value: YEAR }] }] : []),
       { source: "/icons/:path*", headers: [{ key: "Cache-Control", value: YEAR }, { key: "X-Content-Type-Options", value: "nosniff" }] },
       { source: "/fonts/:path*", headers: [{ key: "Cache-Control", value: YEAR }, { key: "X-Content-Type-Options", value: "nosniff" }] },
       // Runtime scripts for generated apps, loaded from sandboxed (opaque-origin) previews: cross-origin readable (FX_HEADERS).

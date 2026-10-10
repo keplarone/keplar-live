@@ -100,8 +100,8 @@ export const layout = {
   breakpoints: { sm: 640, md: 900, lg: 1200, xl: 1520 },
 } as const;
 
-/** Sitewide UI density (1 = 16px rem root). 0.61625 is 32% smaller than 0.90625. Keep in lockstep with --ui-scale in tokens.css. */
-export const uiScale = 0.61625 as const;
+/** Sitewide UI density (1 = 16px rem root). Keep in lockstep with --ui-scale in tokens.css. */
+export const uiScale = 1 as const;
 
 export const tokens = { color, font, type, space, radius, border, shadow, blur, motion, z, layout, uiScale } as const;
 export type Tokens = typeof tokens;

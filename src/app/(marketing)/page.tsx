@@ -1,6 +1,4 @@
-import { MonolithHome } from "@/components/home/MonolithHome";
-import { Chapters } from "@/components/landing/Chapters";
-import { ChapterSync } from "@/components/landing/ChapterSync";
+import { SkyHome } from "@/components/sky/SkyHome";
 import { Pricing } from "@/components/sections/Pricing";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { softwareApp } from "@/lib/structuredData";
@@ -16,16 +14,13 @@ export const metadata: Metadata = {
 };
 
 /**
- * One screen: the sentence, the prompt, and the particle field, then seven chapters that cover the whole product: Ask (live demo),
- * Understand, Create, Build together, Ship, Platform, Trust. Every feature is one row linking to its real route, with an honest
- * status (src/lib/features.ts). ChapterSync tells the space scene which chapter is on screen.
+ * The light home (Oct 2026 redesign, src/components/sky): hero, a product window that zooms in on scroll, the "Everything in Keplar"
+ * list (src/lib/features.ts), how it works, use cases (content/use-cases), the live demo (#demo) and pricing.
  */
 export default function Home() {
   return (
     <>
-      <MonolithHome />
-      <Chapters beforeClose={<Pricing showCompute={false} />} />
-      <ChapterSync />
+      <SkyHome pricing={<Pricing showCompute={false} />} />
       <JsonLd data={softwareApp()} />
     </>
   );

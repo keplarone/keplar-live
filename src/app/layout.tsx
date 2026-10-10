@@ -76,7 +76,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   // Light first (white-first); the head script / ThemeWatcher update it for Dark or Auto.
-  themeColor: THEME_COLORS.dark,
+  themeColor: THEME_COLORS.light,
   colorScheme: "light dark",
   width: "device-width",
   initialScale: 1,
@@ -88,7 +88,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     // data-theme is the server default (light); THEME_SCRIPT corrects it before
     // paint from localStorage / the keplar-theme cookie, hence suppressHydrationWarning.
     // LocaleHtml renders <html> with lang and dir from the URL (/ar → ar, rtl; English at the root → en, ltr). src/components/i18n/LocaleHtml.tsx
-    <LocaleHtml className={`${sans.variable} ${mono.variable} dark`} data-theme="dark" data-theme-pref="dark" style={{ colorScheme: "dark" }}>
+    <LocaleHtml className={`${sans.variable} ${mono.variable} light`} data-theme="light" data-theme-pref="light" style={{ colorScheme: "light" }}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: DESKTOP_SCRIPT }} />

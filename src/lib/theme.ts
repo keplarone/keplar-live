@@ -12,9 +12,9 @@ export type ThemePref = "dark" | "light" | "auto";
 export type Theme = "dark" | "light";
 
 export const THEME_KEY = "keplar-theme";
-/** Dark is the default for everyone (first visit, no stored choice). Light and Auto stay available in the theme control and Settings. */
-export const DEFAULT_THEME_PREF: ThemePref = "dark";
-export const THEME_COLORS: Record<Theme, string> = { dark: "#0b0b0d", light: "#faf9f7" }; // light = the warm off-white canvas (src/styles/light.css)
+/** Light is the default for everyone (first visit, no stored choice). Dark and Auto stay available in the theme control and Settings. */
+export const DEFAULT_THEME_PREF: ThemePref = "light";
+export const THEME_COLORS: Record<Theme, string> = { dark: "#0b0b0d", light: "#f7f8fa" }; // light = the cool off-white canvas (src/styles/light.css)
 
 export const isThemePref = (v: unknown): v is ThemePref => v === "dark" || v === "light" || v === "auto";
 

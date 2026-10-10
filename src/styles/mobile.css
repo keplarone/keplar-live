@@ -12,13 +12,7 @@
   }
 }
 
-/* Nav menu button: a 44px target (the capsule is 52px tall). Nav.module.css owns the look; this only sets the hit size. */
-@media (max-width: 899px) and (pointer: coarse) {
-  html [class*="Nav-module__"][class*="__toggle"]:not([class*="Bar"]) {
-    width: 44px;
-    height: 44px;
-  }
-}
+/* The nav's Menu pill is 52px tall at every width (Nav.module.css), so it needs no touch-size override here. */
 
 /* The INS / OVR badge belongs to the Insert key. Touch screens have none, and the badge floats above every focused field. */
 @media (pointer: coarse) {
