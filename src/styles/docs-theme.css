@@ -1,29 +1,29 @@
 /*
- * Docs-only theme: clean white, one confident blue, Google Sans (the sitewide --f-sans), flat.
+ * Docs-only theme (Oct 2026 redesign): the light site look, tuned for reading. Cool off-white page with soft auras, white cards with
+ * large radii and soft shadows, near-black ink, black pill buttons, teal (#0a7a8a) for links and the current page. Google Sans throughout.
  * Scoped to <html data-docs="1">, which the head script (src/lib/theme.ts THEME_SCRIPT) sets before first paint on /docs/... and on
- * docs.keplar.one, and DocsSkin sets on client-side navigation. The main site keeps its graphite (#0b0b0d) dark default.
+ * docs.keplar.one, and DocsSkin sets on client-side navigation. The docs are always light.
  *
- * Flat means: opaque white surfaces, 1px hairlines, no gradients, no glass blur, no glows or coloured shadows.
- * Focus: the site's keyboard-only :focus-visible cue (globals.css), recoloured blue; nothing on click or tap.
- * Contrast on #ffffff: ink 18.7:1, ink-2 9.5:1, ink-3 7.5:1, blue #0b57d0 6.4:1 (5.6:1 on the #e8f0fe tint); white on blue 6.4:1.
+ * The --docs-blue* names are kept for compatibility; they now hold the teal accent.
+ * Contrast: ink #0e0f12 on #f7f8fa 18.9:1, ink-2 8.1:1, ink-3 5.1:1; teal #0a7a8a 4.9:1 on white, 4.6:1 on its #e8f4f6 tint.
  *
  * Selector weight :root[data-docs="1"][data-theme] (0,3,0) beats :root[data-theme="dark"] and glass.css's :root:root fallbacks.
  */
 :root[data-docs="1"][data-theme] {
-  --docs-blue: #0b57d0;
-  --docs-blue-hover: #0842a0;
-  --docs-blue-tint: #e8f0fe;
-  --docs-blue-line: #b3cbf2;
-  --docs-line: #dde3ec;
-  --docs-line-strong: #c6cfdb;
+  --docs-blue: #0a7a8a;
+  --docs-blue-hover: #075f6b;
+  --docs-blue-tint: #e8f4f6;
+  --docs-blue-line: #b9dbe0;
+  --docs-line: #e4e7ec;
+  --docs-line-strong: #d3d7de;
 
   color-scheme: light;
-  --c-canvas: #ffffff;
-  --c-surface-1: #f6f8fb;
-  --c-surface-2: #eef2f7;
-  --c-ink: #0b1220;
-  --c-ink-2: #3c4657;
-  --c-ink-3: #4b5565;
+  --c-canvas: #f7f8fa;
+  --c-surface-1: #ffffff;
+  --c-surface-2: #f1f3f6;
+  --c-ink: #0e0f12;
+  --c-ink-2: #4b4f58;
+  --c-ink-3: #686d78;
   --c-border: var(--docs-line);
   --c-border-strong: var(--docs-line-strong);
   --c-glass: #ffffff;
@@ -32,13 +32,13 @@
   --c-focus: var(--docs-blue);
   --c-accent: var(--docs-blue);
   --c-cyan: var(--docs-blue);
-  --ring-rgb: 11 87 208;
+  --ring-rgb: 10 122 138;
   --c-ink-hover: var(--docs-blue-hover);
   --focus-filter: none;
-  --rgb-ink: 11 18 32;
-  --rgb-canvas: 255 255 255;
-  --rgb-surface: 246 248 251;
-  --n-paper: #f6f8fb;
+  --rgb-ink: 14 15 18;
+  --rgb-canvas: 247 248 250;
+  --rgb-surface: 241 243 246;
+  --n-paper: #f7f8fa;
   --n-mark: var(--docs-blue);
   --n-line: var(--docs-line-strong);
   --sh-hairline: 0 0 0 1px var(--docs-line);
@@ -62,8 +62,8 @@
   --lg-shadow: 0 0 0 0 transparent;
 
   /* buttons: solid blue primary, hairline secondary, no shadows */
-  --btn-p-solid: var(--docs-blue);
-  --btn-p-bg: var(--docs-blue);
+  --btn-p-solid: #0e0f12;
+  --btn-p-bg: #0e0f12;
   --btn-p-ink: #ffffff;
   --btn-p-shadow: none;
   --btn-s-bg: #ffffff;
@@ -76,28 +76,28 @@
   --nav-fill: #ffffff;
   --nav-fill-scrolled: #ffffff;
   --nav-solid: #ffffff;
-  --nav-ink: #0b1220;
-  --nav-link: #3c4657;
-  --nav-link-2: #4b5565;
+  --nav-ink: #0e0f12;
+  --nav-link: #4b4f58;
+  --nav-link-2: #686d78;
   --nav-hover-bg: var(--docs-blue-tint);
   --nav-active-bg: var(--docs-blue-tint);
   --nav-edge-hi: transparent;
   --nav-edge-lo: transparent;
   --nav-rim: var(--docs-line);
-  --nav-shadow: none;
+  --nav-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 8px 24px -12px rgb(14 15 18 / 0.16);
   --nav-focus: var(--docs-blue);
   --nav-menu-fill: #ffffff;
   --nav-sheet: #ffffff;
-  --nav-cta-bg: var(--docs-blue);
-  --nav-cta-solid: var(--docs-blue);
+  --nav-cta-bg: #0e0f12;
+  --nav-cta-solid: #0e0f12;
   --nav-cta-ink: #ffffff;
-  --nav-cta-shadow: none;
+  --nav-cta-shadow: 0 1px 2px rgb(0 0 0 / 0.2), 0 10px 22px -10px rgb(14 15 18 / 0.5);
 
-  background: #ffffff;
+  background: #f7f8fa;
 }
 
 :root[data-docs="1"] body {
-  background: #ffffff;
+  background: #f7f8fa;
   color: var(--c-ink-2);
   font-family: var(--f-sans);
 }
@@ -138,4 +138,31 @@
 :root[data-docs="1"] main a[class*="card"]:hover { box-shadow: inset 0 0 0 1px var(--docs-blue-line); }
 :root[data-docs="1"] main [class*="searchInput"] { background: #ffffff; box-shadow: inset 0 0 0 1px var(--docs-line-strong); }
 :root[data-docs="1"] main [class*="callout"] { background: var(--docs-blue-tint); box-shadow: inset 3px 0 0 var(--docs-blue); }
-:root[data-docs="1"] ::selection { background: #c9dbfb; color: var(--c-ink); }
+:root[data-docs="1"] ::selection { background: #cdeaf5; color: var(--c-ink); }
+
+/* ---- Oct 2026 redesign: canvas "Docs" layout on top of the shared kb styles ---- */
+/* the page shows the aura backdrop (the marketing layout renders SkyBackdrop), so the shell is see-through */
+:root[data-docs="1"] main [class*="kb-module"][class*="__shell"] { background: transparent; }
+/* left menu: a frosted white card */
+:root[data-docs="1"] main [class*="kb-module"][class*="__side"] {
+  padding: 18px 12px;
+  background: rgb(255 255 255 / 0.72);
+  border: 1px solid var(--docs-line);
+  border-radius: 24px;
+  box-shadow: 0 1px 2px rgb(14 15 18 / 0.04), 0 18px 40px -26px rgb(14 15 18 / 0.25);
+}
+:root[data-docs="1"] main [class*="kb-module"][class*="__sideTitle"] { padding: 0 12px; font-size: 17px; letter-spacing: -0.01em; }
+/* current page: the black pill from the design */
+:root[data-docs="1"] main [class*="kb-module"][class*="__side"] a[aria-current="page"] { background: #0e0f12; color: #ffffff; box-shadow: none; border-radius: 10px; }
+:root[data-docs="1"] main [class*="kb-module"][class*="__navLink"] { border-radius: 10px; }
+:root[data-docs="1"] main [class*="kb-module"][class*="__navLink"]:hover { background: rgb(14 15 18 / 0.05); }
+:root[data-docs="1"] main [class*="kb-module"][class*="__searchInput"] { border-radius: 999px; padding-inline: 16px; }
+/* type: light-weight display headings with tight tracking */
+:root[data-docs="1"] main [class*="kb-module"][class*="__h1"] { font-weight: 400; letter-spacing: -0.04em; }
+:root[data-docs="1"] main [class*="prose"] :is(h2, h3) { font-weight: 500; letter-spacing: -0.02em; }
+/* cards, callouts and code: rounded white surfaces with soft shadows */
+:root[data-docs="1"] main a[class*="card"] { background: rgb(255 255 255 / 0.82); border-radius: 20px; box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 12px 28px -14px rgb(14 15 18 / 0.25); }
+:root[data-docs="1"] main a[class*="card"]:hover { box-shadow: 0 1px 2px rgb(14 15 18 / 0.08), 0 22px 44px -20px rgb(14 15 18 / 0.35); }
+:root[data-docs="1"] main [class*="callout"] { border-radius: 18px; box-shadow: none; color: #0b4a55; }
+:root[data-docs="1"] main [class*="codeBlock"] { background: #ffffff; border-radius: 16px; }
+:root[data-docs="1"] main [class*="prose"] code { background: #ffffff; }

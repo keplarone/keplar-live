@@ -5,15 +5,17 @@ import { RevealRoot } from "@/components/motion/RevealRoot";
 import { AmbientRuntime } from "@/components/motion/AmbientRuntime";
 import { Telemetry } from "@/components/growth/Telemetry";
 import { LocaleSuggest } from "@/components/i18n/LocaleSuggest";
+import { SkyBackdrop } from "@/components/sky/SkyBackdrop";
 
-/** Marketing chrome (floating nav + footer). /app and internal previews live outside this group. */
+/** Marketing chrome (floating nav + footer + the light aura backdrop behind every page). /app and internal previews live outside this group. */
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <AmbientRuntime />
       <PageChrome />
       <Nav />
-      <main id="main" style={{ position: "relative", zIndex: 0 }}>
+      <main id="main" style={{ position: "relative", zIndex: 0, isolation: "isolate", overflowX: "clip" }}>
+        <SkyBackdrop />
         {children}
       </main>
       <Footer />

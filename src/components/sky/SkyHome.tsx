@@ -1,12 +1,11 @@
 import Link from "next/link";
-import { KeplarSymbol } from "@/components/brand";
 import { LiveDemo } from "@/components/landing/LiveDemo";
 import { CHAPTERS } from "@/lib/features";
 import { allUseCases } from "@/lib/kb/usecases";
 import { brand, tryHref } from "@/lib/site";
-import { SkyBackdrop } from "./SkyBackdrop";
 import { ScrollZoom } from "./ScrollZoom";
-import { MODELS, ModelStack } from "./ModelStack";
+import { ModelStack } from "./ModelStack";
+import { DemoWindow } from "./DemoWindow";
 import s from "./Sky.module.css";
 
 /** Use cases shown on the home, in this order (slugs from content/use-cases), each with its icon stroke colour. */
@@ -25,7 +24,7 @@ const STEPS = [
   { title: "You get one answer", body: "Their views are compared claim by claim and combined into one answer, with any disagreement shown." },
 ];
 
-/** The light, Space-inspired home: hero, product window that zooms in on scroll, feature list, steps, use cases and the live demo. */
+/** The light, Space-inspired home: hero, animated product window that zooms in on scroll, feature list, steps, use cases and the live demo. */
 export function SkyHome({ pricing }: { pricing?: React.ReactNode }) {
   const cases = allUseCases();
   const useCases = USE_CASES.map((u) => ({ ...u, data: cases.find((c) => c.slug === u.slug) })).filter((u) => u.data);
@@ -33,8 +32,6 @@ export function SkyHome({ pricing }: { pricing?: React.ReactNode }) {
 
   return (
     <div className={s.home}>
-      <SkyBackdrop />
-
       <section className={s.hero} aria-labelledby="hero-title">
         <p className={s.badge}>
           <ModelStack />
@@ -56,31 +53,7 @@ export function SkyHome({ pricing }: { pricing?: React.ReactNode }) {
       </section>
 
       <ScrollZoom className={s.previewWrap}>
-        <section className={s.window} aria-label="Example answer">
-          <div className={s.windowBar}>
-            <i /><i /><i />
-            <span>{brand.name}</span>
-          </div>
-          <div className={s.windowBody}>
-            <p className={s.userMsg}>Should my small business site use Webflow or WordPress?</p>
-            <ul className={s.verdicts}>
-              {MODELS.slice(0, 5).map((m, i) => (
-                <li key={m.id}>
-                  <img src={m.src} alt="" width={16} height={16} />
-                  {m.name} <span data-agree={i === 3 ? "no" : "yes"}>{i === 3 ? "disagrees" : "agrees"}</span>
-                </li>
-              ))}
-            </ul>
-            <div className={s.answer}>
-              <p className={s.answerHead}><KeplarSymbol size={18} /> {brand.name}&apos;s answer · 4 of 5 models agree</p>
-              <p>For most small businesses that want a polished site without a developer, Webflow is the better fit: hosting, security and updates are handled for you, and the visual editor is easy to hand off. Pick WordPress if you need a specific plugin, a store with complex inventory, or full control over hosting.</p>
-              <p className={s.dissent}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16.5v.5" /></svg>
-                <span><b>Where they disagree:</b> DeepSeek recommends WordPress for long-term cost, since Webflow plans cost more as the site grows.</span>
-              </p>
-            </div>
-          </div>
-        </section>
+        <DemoWindow />
         <p className={s.note}>Example answer, shown for illustration.</p>
       </ScrollZoom>
 

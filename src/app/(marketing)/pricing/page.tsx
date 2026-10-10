@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import { brand } from "@/lib/site";
 import { HeroField } from "@/components/motion/HeroField";
-import { SkyBackdrop } from "@/components/sky/SkyBackdrop";
 import { Pricing } from "@/components/sections/Pricing";
 import { Faq } from "@/components/sections/Faq";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -28,8 +27,7 @@ const GENERAL = ["Does Keplar ask every AI model every time?", "What happens whe
 export default function PricingPage() {
   const entries = [...pricingFaq(), ...faq.filter((f) => GENERAL.includes(f.q))];
   return (
-    <div style={{ paddingTop: "var(--s-16)", position: "relative", isolation: "isolate", overflowX: "clip" }}>
-      <SkyBackdrop />
+    <div style={{ paddingTop: "var(--s-16)" }}>
       <HeroField variant="pricing" />
       <Suspense fallback={null}>
         <PricingContext notes={pricingContext} />

@@ -157,3 +157,7 @@
     grid-column: 2;
   }
 }
+
+/* Light theme (Oct 2026 redesign): display headings are light-weight with tight tracking, like the home and canvas designs. */
+:global(:root[data-theme="light"]) .headline,
+:global(:root[data-theme="light"]) .display { font-weight: 400; letter-spacing: -0.04em; }
