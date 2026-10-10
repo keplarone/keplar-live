@@ -93,7 +93,7 @@ export function SettingsSections({ sections }: { sections: SettingsSection[] }) 
   function onKey(e: KeyboardEvent<HTMLButtonElement>, i: number) {
     const n = tabs.length;
     if (!n) return;
-    const go = e.key === "ArrowRight" ? (i + 1) % n : e.key === "ArrowLeft" ? (i - 1 + n) % n : e.key === "Home" ? 0 : e.key === "End" ? n - 1 : -1;
+    const go = e.key === "ArrowRight" || e.key === "ArrowDown" ? (i + 1) % n : e.key === "ArrowLeft" || e.key === "ArrowUp" ? (i - 1 + n) % n : e.key === "Home" ? 0 : e.key === "End" ? n - 1 : -1;
     if (go < 0) return;
     e.preventDefault();
     select(tabs[go].id, { focus: true, hash: !searching });

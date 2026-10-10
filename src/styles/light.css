@@ -41,7 +41,7 @@
   /* buttons: graphite primary with a neutral drop (no teal glow under it), crisp white secondary */
   --btn-p-solid: #0e0f12;
   --btn-p-bg: #0e0f12;
-  --btn-p-shadow: inset 0 1px 0 rgb(255 255 255 / 0.16), inset 0 0 0 1px rgb(255 255 255 / 0.08), 0 1px 2px rgb(14 15 18 / 0.2), 0 8px 20px -10px rgb(14 15 18 / 0.45);
+  --btn-p-shadow: 0 1px 2px rgb(14 15 18 / 0.2), 0 8px 20px -10px rgb(14 15 18 / 0.45);
   --btn-s-bg: rgb(255 255 255 / 0.86);
   --btn-s-shadow: inset 0 0 0 1px rgb(14 15 18 / 0.1), 0 1px 2px rgb(14 15 18 / 0.05), 0 6px 16px -10px rgb(14 15 18 / 0.16);
 
@@ -53,7 +53,7 @@
   --nav-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 10px 30px -14px rgb(14 15 18 / 0.2);
   --nav-menu-fill: rgb(255 255 255 / 0.97);
   --nav-sheet: rgb(247 248 250 / 0.97);
-  --nav-cta-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), inset 0 0 0 1px rgb(255 255 255 / 0.08), 0 1px 2px rgb(14 15 18 / 0.2), 0 8px 18px -10px rgb(14 15 18 / 0.45);
+  --nav-cta-shadow: 0 1px 2px rgb(14 15 18 / 0.2), 0 8px 18px -10px rgb(14 15 18 / 0.45);
 
   /* Card recipe for the light theme, used by module overrides (`:global(:root[data-theme="light"]) .x { ... }`): Dark's cards are a
      6% light veil over graphite with a bright top edge; on a light page that same veil reads as a grey slab with a dark line on top. */

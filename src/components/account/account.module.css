@@ -158,3 +158,35 @@ button.link { background: none; border: 0; padding: 0; font: inherit; cursor: po
 :global(:root[data-theme="light"]) .eyebrow::before { box-shadow: none; }
 :global(:root[data-theme="light"]) .panel { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-shadow); }
 :global(:root[data-theme="light"]) .fill { box-shadow: none; }
+
+/* ── Oct 2026 redesign (canvas "Settings") ──
+ * Light-weight "Settings" title; on desktop the categories are a vertical list of pills on the left (sticky), the search box and
+ * the active section's cards on the right. Under 900px the existing chip row stays. Panels are rounded cards with soft depth;
+ * no white edges in dark. */
+.wide { max-width: 1000px; }
+.wide > .title { font-size: clamp(36px, 3.6vw, 48px); line-height: 1.1; font-weight: 400; letter-spacing: -0.035em; }
+.panel { border-radius: 24px; padding: 24px; }
+:global(:root[data-theme="light"]) .panel {
+  background: rgb(255 255 255 / 0.8);
+  border-color: rgb(14 15 18 / 0.07);
+  box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 12px 28px -14px rgb(14 15 18 / 0.25);
+}
+:global(:root[data-theme="dark"]) .panel {
+  background: rgb(28 28 32 / 0.78);
+  border-color: transparent;
+  box-shadow: 0 12px 28px -14px rgb(0 0 0 / 0.6);
+}
+.searchInput.searchInput { height: 44px; border-radius: 999px; padding-inline: 18px; }
+:global(:root[data-theme="light"]) .searchInput.searchInput { background: rgb(255 255 255 / 0.8); }
+.settingsChip.settingsChip { border-radius: 999px; }
+
+@media (min-width: 900px) {
+  .settings { display: grid; grid-template-columns: 220px minmax(0, 1fr); column-gap: 28px; row-gap: 16px; align-items: start; }
+  .settingsSearch { grid-column: 2; grid-row: 1; }
+  .settingsSection { grid-column: 2; }
+  .settingsTabsWrap { grid-column: 1; grid-row: 1 / span 20; align-self: start; padding: 0; }
+  .settingsNav { flex-direction: column; flex-wrap: nowrap; gap: 2px; }
+  .settingsChip.settingsChip { justify-content: flex-start; min-height: 42px; padding: 0 14px; border: 0; font-size: 15px; font-weight: 400; }
+  .settingsChip.settingsChip[data-on] { font-weight: 500; }
+  .settingsChip.settingsChip:not([data-on]):hover { background: rgb(var(--rgb-ink) / 0.06); color: var(--c-ink); }
+}

@@ -1370,7 +1370,7 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 }
 .homeTile, .useForOption { border-radius: 22px; }
 .homeTile:hover, .useForOption:hover { background: var(--lg-card-hover); border-color: transparent; }
-.useForOption[aria-pressed="true"] { background: var(--lg-card-hover); box-shadow: var(--lg-ring), 0 0 0 2px rgb(var(--ring-rgb, 23 23 26) / 0.45), 0 12px 28px -18px rgb(var(--ring-rgb, 23 23 26) / 0.4); }
+.useForOption[aria-pressed="true"] { background: var(--lg-card-hover); box-shadow: 0 0 0 2px rgb(var(--rgb-ink) / 0.8); } /* selected: a plain ink outline, no glow */
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   .homeTile:hover, .useForOption:hover { transform: translateY(-2px) scale(1.012); }
 }
