@@ -19,16 +19,16 @@ test("marketing nav: Product menu first, Docs, Pricing and Download direct; ever
   assert.ok(primaryNav.length <= 4, "the centre stays short");
 });
 
-test("marketing nav: no separate Upgrade button, one Try button per surface, menus keyboard-operable, palette trigger present", () => {
+test("marketing nav: no separate Upgrade button, one Try button, menu keyboard-operable, palette trigger present", () => {
   const nav = read("src/components/chrome/Nav.tsx");
   assert.doesNotMatch(nav, /["'>]Upgrade["'<]|planLink|data-plan-cta/);
-  assert.equal((nav.match(/<ButtonLink href=\{tryHref\}/g) ?? []).length, 2, "Try Keplar in the capsule and in the mobile sheet");
+  assert.equal((nav.match(/<Link href=\{tryHref\}/g) ?? []).length, 1, "one Try Keplar pill, at every width");
   assert.match(nav, /Escape/);
   assert.match(nav, /ArrowDown/);
-  assert.match(nav, /aria-expanded=\{isOpen\}/);
-  assert.match(nav, /PaletteButton/);
+  assert.match(nav, /aria-expanded=\{open\}/);
+  assert.match(nav, /keplar:palette/);
   assert.match(read("src/components/app-ui/Sidebar.tsx"), /data-plan-cta/); // in-app upgrade is untouched
-  // mobile sheet lists every menu's pages too, and is a labelled modal with a search entry
-  assert.match(nav, /flatMap\(\(l, i\)/);
+  // the Menu panel lists every menu's pages too, is labelled and has a search entry
+  assert.match(nav, /primaryNav\.flatMap\(/);
   assert.match(nav, /aria-label=\{t\.siteMenu\}/); assert.match(read("src/lib/i18n/messages/common/en.ts"), /siteMenu: "Site menu"/) /* labels come from the locale catalog; English stays "Site menu" */;
 });

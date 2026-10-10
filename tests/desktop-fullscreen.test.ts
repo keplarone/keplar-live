@@ -23,13 +23,12 @@ test("desktop app: detected before paint (keplar-desktop UA token / html marker)
   assert.match(read("src/components/app-ui/KeplarApp.tsx"), /className=\{s\.topbar\} data-keplar-drag/);
 });
 
-test("nav: logo left, links centred, Sign in + Try right; real mark at a readable size; one light blur, no refraction filter", () => {
+test("nav: logo pill left, Menu pill centred, theme + Sign in + Try right; real mark at a readable size; no refraction filter", () => {
   const css = read("src/components/chrome/Nav.module.css");
-  assert.match(css, /grid-template-columns: minmax\(0, 1fr\) auto minmax\(0, 1fr\)/);
-  assert.match(css, /--lg-blur: 10px/);
+  assert.match(css, /grid-template-columns: 1fr auto 1fr/);
   const tsx = read("src/components/chrome/Nav.tsx");
   assert.doesNotMatch(tsx, /lg-lens/);
-  assert.match(tsx, /<KeplarLogo height=\{26\}/);
+  assert.match(tsx, /<KeplarSymbol size=\{22\}/);
 });
 
 test("large screens: content, type and the app shell scale with the viewport instead of a small centred box", () => {
@@ -38,11 +37,10 @@ test("large screens: content, type and the app shell scale with the viewport ins
   // Fluid, not stepped: type is rem + vw (so browser/OS text size still applies) and spacing follows --u; no breakpoint jumps.
   assert.doesNotMatch(tokens, /@media \(min-width: (1800|2400|3200)px\)/);
   assert.match(tokens, /--t-body: max\(clamp\(0\.9375rem, 1\.05vw, 1rem\), min\(1\.875rem,/);
-  assert.match(tokens, /--ui-scale:\s*0\.61625/);
+  assert.match(tokens, /--ui-scale:\s*1;/);
   assert.match(tokens, /--u: clamp\(calc\(1px \* var\(--ui-scale\)\),/);
   assert.match(read("src/styles/globals.css"), /font-size:\s*calc\(16px \* var\(--ui-scale\)\)/);
   const app = read("src/components/app-ui/App.module.css");
   assert.match(app, /grid-template-columns: clamp\(264px, 14vw, 400px\) minmax\(0, 1fr\)/);
   assert.doesNotMatch(app.replace(/@media[^{]*\{/g, ""), /max-width: 800px;/);
-  assert.match(read("src/components/chrome/Nav.module.css"), /max-width: clamp\(1120px, 66vw, 2300px\)/);
 });

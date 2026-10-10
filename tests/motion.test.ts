@@ -115,7 +115,7 @@ test("hooks: usePresence / useExit wait for the element's own animationend with 
 test("overlays use the shared exit pattern at the source", () => {
   const uses: [string, RegExp][] = [
     ["src/components/nav/CommandPalette.tsx", /usePresence\(open\)[\s\S]*presence\.motion\("fade"\)[\s\S]*presence\.motion\("pop", false\)/],
-    ["src/components/chrome/Nav.tsx", /usePresence\(open\)[\s\S]*sheet\.motion\("drop"\)[\s\S]*function DropMenu[\s\S]*p\.motion\("pop"\)/],
+    ["src/components/chrome/Nav.tsx", /usePresence\(open\)[\s\S]*panel\.motion\("drop"\)/],
     ["src/components/app-ui/AccountMenu.tsx", /menu\.motion\("pop"\)/],
     ["src/components/app-ui/SearchDialog.tsx", /useExit\(onClose, \{ parent: presence \}\)/],
     // The app shell: Cmd+K search closes from outside too, the undo toast sinks out, the drawer scrim fades out.

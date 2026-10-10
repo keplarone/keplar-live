@@ -69,8 +69,8 @@ test("every rule that paints an aura is scoped to light, sitewide", () => {
       assert.match(r.body, /pointer-events:\s*none|animation:/, `${f}: aura layer must not take pointer events`);
     }
   }
-  // home hero, pricing, Ask (composer + welcome) and Create at least
-  assert.ok(painters >= 5, `expected aura placements, found ${painters}`);
+  // Ask (composer + welcome), Create and the app shell at least; the marketing pages now use SkyBackdrop (src/components/sky) instead
+  assert.ok(painters >= 4, `expected aura placements, found ${painters}`);
 });
 
 test("dark theme defines and paints no aura", () => {
@@ -103,7 +103,7 @@ test("the aura stays static: no drift, no viewport blur, no background-attachmen
   assert.match(aura, /__main"\]::before/, "Ask and Create share the main-column glow");
 });
 
-test("light palette: warm canvas and AA inks", () => {
+test("light palette: cool off-white canvas and AA inks", () => {
   const light = stripComments(read("src/styles/light.css"));
   const block = light.match(/:root\[data-theme="light"\]\s*\{([^}]*)\}/);
   assert.ok(block);
@@ -117,14 +117,14 @@ test("light palette: warm canvas and AA inks", () => {
     return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
   };
   const ratio = (a: string, b: string) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
-  assert.equal(v("--c-canvas").toLowerCase(), "#faf9f7");
+  assert.equal(v("--c-canvas").toLowerCase(), "#f7f8fa");
   for (const bg of ["--c-canvas", "--c-surface-1", "--c-surface-2"]) {
     for (const ink of ["--c-ink", "--c-ink-2", "--c-ink-3"]) {
       const r = ratio(v(ink), v(bg));
       assert.ok(r >= 4.5, `${ink} on ${bg} = ${r.toFixed(2)}:1 (needs 4.5)`);
     }
   }
-  // the light block never redefines dark tokens, and dark stays the default theme
+  // the light block never redefines dark tokens, and light is the default theme
   assert.doesNotMatch(light, /data-theme="dark"/);
-  assert.match(read("src/lib/theme.ts"), /DEFAULT_THEME_PREF: ThemePref = "dark"/);
+  assert.match(read("src/lib/theme.ts"), /DEFAULT_THEME_PREF: ThemePref = "light"/);
 });

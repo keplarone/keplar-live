@@ -58,6 +58,15 @@ export function Nav() {
     const release = lockScroll();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
+      // Arrow keys move through the panel links (and from the Menu pill into the panel).
+      if ((e.key === "ArrowDown" || e.key === "ArrowUp") && morphRef.current?.contains(document.activeElement)) {
+        const items = [...morphRef.current.querySelectorAll<HTMLElement>("[data-panel] a, [data-panel] button")];
+        if (!items.length) return;
+        e.preventDefault();
+        const i = items.indexOf(document.activeElement as HTMLElement);
+        const next = e.key === "ArrowDown" ? (i + 1) % items.length : i <= 0 ? items.length - 1 : i - 1;
+        items[next].focus();
+      }
     };
     const onDown = (e: PointerEvent) => {
       if (morphRef.current && !morphRef.current.contains(e.target as Node)) setOpen(false);

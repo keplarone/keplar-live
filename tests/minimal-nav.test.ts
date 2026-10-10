@@ -20,7 +20,7 @@ test("marketing nav: at most four top-level items, one short menu at most, foote
 
 test("marketing nav: one primary CTA and Sign in; pages that left the nav and footer keep their routes and stay in Cmd-K", () => {
   const nav = readFileSync("src/components/chrome/Nav.tsx", "utf8");
-  assert.equal((nav.match(/<ButtonLink href=\{tryHref\}/g) ?? []).length, 2, "one CTA in the capsule, one in the mobile sheet");
+  assert.equal((nav.match(/<Link href=\{tryHref\}/g) ?? []).length, 1, "one Try Keplar pill, at every width");
   const cmds = new Set(staticCommands().map((c) => c.href));
   for (const p of paletteOnlyPages) {
     assert.ok(routeExists(p.href), `${p.href} still exists`);

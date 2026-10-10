@@ -96,7 +96,8 @@ test("wiring: lazy three, pauses when hidden, DPR cap, grey-only, no scroll hija
   assert.ok(/import\("@\/field\/monolith\/scene"\)/.test(home), "home planet scene is lazy-loaded");
   assert.ok(/softwareRenderer\(\)/.test(canvas) && /softwareRenderer\(\)/.test(home) && /reducedMotion/.test(home), "CPU rendering and reduced motion fall back");
   assert.ok(!/wheel|scrollTo|scrollBy|overflow:\s*hidden/.test(home + canvas), "never takes over scrolling");
-  assert.ok(/<PageMonolith \/>/.test(layout) && /<MonolithHome \/>/.test(page));
+  // The 3D page layer stays in the layout (dark theme); the Oct 2026 light home no longer mounts MonolithHome.
+  assert.ok(/<PageMonolith \/>/.test(layout) && /<SkyHome /.test(page));
   // colour is limited to the four star families (and the planets); no neon accents in the monolith shaders
   assert.ok(!/cyan|indigo|violet|purple|magenta/i.test(gl + scene), "no neon accents in the scene");
   assert.ok(/SPECTRAL/.test(scene) && /aCol/.test(gl), "constellation stars use the spectral palette");

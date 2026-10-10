@@ -18,8 +18,8 @@ test("liquid glass: every glass surface has fallbacks (no backdrop-filter, reduc
   assert.match(caps, /id="lg-refract"/);
 });
 
-test("dark is the default and Light / Auto stay selectable", () => {
-  assert.match(read("src/lib/theme.ts"), /DEFAULT_THEME_PREF: ThemePref = "dark"/);
+test("light is the default and Dark / Auto stay selectable", () => {
+  assert.match(read("src/lib/theme.ts"), /DEFAULT_THEME_PREF: ThemePref = "light"/);
   const ctl = read("src/components/theme/ThemeControl.tsx");
   for (const id of ["dark", "light", "auto"]) assert.match(ctl, new RegExp(`id: "${id}"`));
 });

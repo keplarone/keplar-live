@@ -84,7 +84,7 @@ function paint(url: string, stored: string | null) {
   return attrs;
 }
 
-test("docs paint light with data-docs before first paint; the stored preference is kept and the main site stays dark", () => {
+test("docs paint light with data-docs before first paint; the stored preference is kept and the main site uses the default (light)", () => {
   for (const url of ["https://keplar.one/docs", "https://keplar.one/docs/get-started/quickstart", "https://docs.keplar.one/", "https://docs.keplar.one/reference"]) {
     const a = paint(url, "dark");
     assert.equal(a["data-theme"], "light", url);
@@ -93,16 +93,16 @@ test("docs paint light with data-docs before first paint; the stored preference 
   }
   for (const url of ["https://keplar.one/", "https://keplar.one/docsy", "https://keplar.one/pricing"]) {
     const a = paint(url, null);
-    assert.equal(a["data-theme"], "dark", url);
+    assert.equal(a["data-theme"], "light", url);
     assert.equal(a["data-docs"], undefined, url);
   }
 });
 
-test("docs theme: white canvas, blue accent, flat (no gradients, no blur), focus via :focus-visible only", () => {
+test("docs theme: off-white canvas, teal accent, no gradients or blur in the theme file, focus via :focus-visible only", () => {
   const css = readFileSync("src/styles/docs-theme.css", "utf8");
   const code = css.replace(/\/\*[\s\S]*?\*\//g, "");
-  assert.match(code, /--c-canvas: #ffffff/);
-  assert.match(code, /--docs-blue: #0b57d0/);
+  assert.match(code, /--c-canvas: #f7f8fa/);
+  assert.match(code, /--docs-blue: #0a7a8a/);
   assert.doesNotMatch(code, /gradient\(/);
   assert.doesNotMatch(code, /blur\((?!0)/);
   assert.match(code, /--lg-bf: none/);
