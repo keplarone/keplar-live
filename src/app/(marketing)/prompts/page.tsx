@@ -4,6 +4,7 @@ import { allPrompts, promptCategories } from "@/lib/kb/prompts";
 import { abs, pageMeta } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/seo-graph";
 import s from "@/components/kb/kb.module.css";
+import { TwoTone } from "@/components/page/TwoTone";
 
 export const metadata = pageMeta("/prompts", "AI prompt library: copyable prompts for any assistant", `${allPrompts().length} prompt templates for studying, writing, work, coding, research and checking AI answers, each with why it works and what to verify afterward.`);
 
@@ -13,7 +14,7 @@ export default function PromptsHub() {
       <div className={s.hubWrap}>
         <header>
           <p className={s.crumbs}>Prompt library</p>
-          <h1 className={s.h1}>Prompt library</h1>
+          <h1 className={s.h1}><TwoTone text={"Prompt library"} /></h1>
           <p className={s.lede}>{allPrompts().length} templates with [placeholders] you fill in. Each says why it works and what to check afterward. They work in any assistant; the Keplar page notes how Keplar handles them.</p>
         </header>
         <div className={s.cards}>

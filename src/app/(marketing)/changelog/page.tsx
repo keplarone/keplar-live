@@ -5,6 +5,7 @@ import { RELEASES_PAGE } from "@/lib/desktop/releases";
 import { abs, pageMeta } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/seo-graph";
 import s from "@/components/kb/kb.module.css";
+import { TwoTone } from "@/components/page/TwoTone";
 
 export const metadata = {
   ...pageMeta("/changelog", "Keplar release notes: what changed and when", "Dated release notes for Keplar: new features, changes and fixes you can see, newest first. Beta features are marked beta."),
@@ -18,12 +19,12 @@ export default function Changelog() {
       <div className={s.hubWrap}>
         <header>
           <p className={s.crumbs}>Release notes</p>
-          <h1 className={s.h1}>Release notes</h1>
+          <h1 className={s.h1}><TwoTone text={"Release notes"} /></h1>
           <p className={s.lede}>What changed in Keplar and when, newest first. Only changes you can see are listed. Beta features say so. Last updated {releaseDate(latestRelease())}. <a href="/changelog/feed.xml">Atom feed</a>.</p>
         </header>
         <div className={s.prose}>
           {releases.map((r) => (
-            <section key={r.id} id={r.id}>
+            <section key={r.id} id={r.id} className={s.release}>
               <h2><a href={`#${r.id}`} style={{ color: "inherit", textDecoration: "none" }}>{r.title}</a></h2>
               <p className={s.meta}><time dateTime={r.date}>{releaseDate(r.date)}</time></p>
               <p>{r.summary}</p>

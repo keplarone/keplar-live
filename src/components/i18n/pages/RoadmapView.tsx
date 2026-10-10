@@ -8,6 +8,7 @@ import { getMessages } from "@/lib/i18n/server";
 import { localeInfo } from "@/lib/i18n/locales";
 import { localizedPath } from "@/lib/i18n/routing";
 import { rich } from "@/lib/i18n/format";
+import { TwoTone } from "@/components/page/TwoTone";
 
 /** /roadmap in any locale. Open work on beta features (plain statements, no dates) lives in the marketing catalog. */
 export async function RoadmapView({ locale = "en" }: { locale?: string }) {
@@ -25,7 +26,7 @@ export async function RoadmapView({ locale = "en" }: { locale?: string }) {
     <div className={s.page}>
       <header className={s.head}>
         <p className={s.kicker}>{r.kicker}</p>
-        <h1 className={s.title}>{r.title}</h1>
+        <h1 className={s.title}><TwoTone text={r.title} /></h1>
         <p className={s.lead}>{rich(r.lead, { changelog: (t) => <Link href="/changelog">{t}</Link>, features: (t) => <Link href={L("/features")}>{t}</Link> })}</p>
       </header>
 

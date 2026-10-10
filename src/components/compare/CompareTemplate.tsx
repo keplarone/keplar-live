@@ -4,6 +4,7 @@ import { Faq } from "@/components/sections/Faq";
 import type { Block, Bullet, ComparePage } from "@/lib/compare";
 import { brand, tryHref } from "@/lib/site";
 import s from "./compare.module.css";
+import { TwoTone } from "@/components/page/TwoTone";
 
 function Bullets({ items, ordered }: { items: Bullet[]; ordered?: boolean }) {
   const L = ordered ? "ol" : "ul";
@@ -95,7 +96,7 @@ export function CompareTemplate({ page, related }: { page: ComparePage; related?
     <article className={s.page}>
       <header className={s.header}>
         <p className={s.label}>{page.label}</p>
-        <h1 className={s.h1}>{page.h1}</h1>
+        <h1 className={s.h1}><TwoTone text={page.h1} /></h1>
         <p className={s.checked}>Last checked: <time>{page.lastChecked}</time></p>
       </header>
 

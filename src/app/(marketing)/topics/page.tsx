@@ -4,6 +4,7 @@ import { publishedRows } from "@/lib/trends/store";
 import { abs, pageMeta } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/seo-graph";
 import s from "@/components/kb/kb.module.css";
+import { TwoTone } from "@/components/page/TwoTone";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,7 @@ export default async function Topics() {
       <div className={s.hubWrap}>
         <header>
           <p className={s.crumbs}>Topics</p>
-          <h1 className={s.h1}>AI topics explained</h1>
+          <h1 className={s.h1}><TwoTone text={"AI topics explained"} /></h1>
           <p className={s.lede}>Short orientation pages for AI terms people are searching for. Each one is assembled from Keplar&apos;s reviewed glossary and library, dated, and says how to check what you read. For the full set of definitions see the <Link href="/glossary">glossary</Link>.</p>
         </header>
         {rows.length ? (

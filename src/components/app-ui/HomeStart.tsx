@@ -27,8 +27,7 @@ type Tile = { id: string; title: string; body: string; run: () => void };
 const TILE_ICONS: Record<string, ReactNode> = {
   research: <><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></>,
   create: <path d="M4 20l4-1 11-11-3-3L5 16l-1 4z" />,
-  agent: <><circle cx="12" cy="12" r="3" /><path d="M12 3v3M12 18v3M3 12h3M18 12h3" /></>,
-  business: <><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M9 7V5h6v2" /></>,
+  study: <><path d="M4 6l8-3 8 3-8 3-8-3z" /><path d="M8 8v5c0 1.5 2 3 4 3s4-1.5 4-3V8" /></>,
   project: <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />,
 };
 
@@ -39,7 +38,7 @@ const TILE_ICONS: Record<string, ReactNode> = {
  * number of people), then generic starters only while there is not enough real data. Clicking an entry sends it.
  * "Ask a question" is the composer itself; Projects and Business stay one click away in the sidebar.
  */
-export function HomeStart({ showBusiness, onSeed, onView, onSend, more }: Props) {
+export function HomeStart({ showBusiness: _showBusiness, onSeed, onView, onSend, more }: Props) {
   const [faq, setFaq] = useState<FaqItem[]>(FALLBACK);
   const [faqState, setFaqState] = useState<"loading" | "loaded" | "fallback">("loading");
   useEffect(() => {
@@ -54,10 +53,8 @@ export function HomeStart({ showBusiness, onSeed, onView, onSend, more }: Props)
   const tiles: Tile[] = [
     { id: "research", title: "Research a topic", body: "Deep Research mode on, you write the question.", run: () => onSeed("", { deepResearch: true }) },
     { id: "create", title: "Create an app or image", body: "Describe it, preview it, publish it.", run: () => onView("create") },
-    { id: "agent", title: "Hand off a task", body: "Draft an agent task to review.", run: () => onSeed("", { agent: true }) },
-    showBusiness
-      ? { id: "business", title: "Run the business side", body: "Orders, inbox, approvals.", run: () => onView("business") }
-      : { id: "project", title: "Start a project", body: "Keep related threads together.", run: () => onView("projects") },
+    { id: "study", title: "Study something", body: "Notes or a topic into flashcards and a quiz.", run: () => onView("study") },
+    { id: "project", title: "Start a project", body: "Keep related threads together.", run: () => onView("projects") },
   ];
 
   return (

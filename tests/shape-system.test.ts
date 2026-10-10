@@ -34,8 +34,6 @@ test("tabs, dropdown triggers, sidebar items and list rows are not pills", () =>
     ["src/components/app-ui/App.module.css", ".sideItem"],
     ["src/components/app-ui/AccountMenu.module.css", ".chip"],
     ["src/components/app-ui/AccountMenu.module.css", ".item"],
-    ["src/components/business/business.module.css", ".tab"],
-    ["src/components/study/study.module.css", ".tab"],
     ["src/components/kb/kb.module.css", ".navLink"],
   ];
   for (const [f, s] of notPill) {

@@ -5,6 +5,7 @@ import s from "@/components/share/Shared.module.css";
 import { listPublic, publicSummary, publicTitle } from "@/lib/growth/share-public";
 import { abs, pageMeta } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/seo-graph";
+import { TwoTone } from "@/components/page/TwoTone";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ export default async function Answers() {
   return (
     <div className={s.page}>
       <p className={s.eyebrow}>Shared answers</p>
-      <h1 className={s.title}>Answers Keplar users chose to publish.</h1>
+      <h1 className={s.title}><TwoTone text={"Answers Keplar users chose to publish."} /></h1>
       <p className={s.notice}>
         Each page shows one question, the answer several AI models produced together, how many agreed and where they differed. Users opt in page by page and can take a page down at any time. Keplar has not checked these answers, so verify anything important.
       </p>

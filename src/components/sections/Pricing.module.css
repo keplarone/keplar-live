@@ -275,3 +275,6 @@
 :global(:root[data-theme="light"]) .plan[data-plan="plus"] .features li::before { color: #6fd3a0; }
 :global(:root[data-theme="light"]) .compute { background: rgb(255 255 255 / 0.82); border-color: var(--c-border); border-radius: 28px; box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 12px 28px -14px rgb(14 15 18 / 0.25); }
 :global(:root[data-theme="light"]) .bars i[data-on] { box-shadow: none; }
+
+/* Oct 2026 redesign: let the aura backdrop show through */
+.section { background: transparent; }

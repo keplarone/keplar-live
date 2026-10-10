@@ -9,6 +9,7 @@ import { allUseCases, getUseCase } from "@/lib/kb/usecases";
 import { pageMeta } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/seo-graph";
 import s from "@/components/kb/kb.module.css";
+import { TwoTone } from "@/components/page/TwoTone";
 
 export const dynamicParams = false;
 export function generateStaticParams() {
@@ -31,7 +32,7 @@ export default async function UseCasePage({ params }: Props) {
     <div className={s.shell}>
       <div style={{ maxWidth: "var(--l-max)", margin: "0 auto" }}>
         <p className={s.crumbs}><Link href="/use-cases">Use cases</Link></p>
-        <h1 className={s.h1}>{u.title}</h1>
+        <h1 className={s.h1}><TwoTone text={u.title} /></h1>
         <p className={s.lede}>{u.description}</p>
         <p className={s.meta}><span>Updated <time dateTime={u.updated}>{date(u.updated)}</time></span></p>
         <article className={s.prose}><Markdown nodes={u.nodes} /></article>

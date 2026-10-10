@@ -68,3 +68,4 @@
 :global(:root[data-theme="light"]) .answerLabel::before { box-shadow: none; }
 :global(:root[data-theme="light"]) .tableScroll { background: var(--lt-card-bg); box-shadow: var(--lt-card-shadow); }
 :global(:root[data-theme="light"]) .keplar { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-shadow); }
+.wrap { background: transparent; }

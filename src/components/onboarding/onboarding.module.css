@@ -124,3 +124,7 @@
   .btn, .chip { -webkit-backdrop-filter: none; backdrop-filter: none; }
   .primary, .chip[aria-pressed="true"], .radio[data-on], .switch[aria-checked="true"] { background: var(--btn-p-solid, #17171a); color: var(--btn-p-ink, #fff); }
 }
+
+/* Oct 2026 canvas design: sentence-case kicker, light-weight title */
+.eyebrow { text-transform: none; letter-spacing: 0; font-size: 13px; color: var(--c-ink-3); }
+.title { font-weight: var(--w-regular); letter-spacing: -0.035em; }

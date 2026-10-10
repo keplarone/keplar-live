@@ -7,6 +7,7 @@ import { localeMetadata } from "@/lib/i18n/seo";
 import { getMessages } from "@/lib/i18n/server";
 import { fmt } from "@/lib/i18n/format";
 import { localeInfo } from "@/lib/i18n/locales";
+import { TwoTone } from "@/components/page/TwoTone";
 
 type P = { params: Promise<{ locale: string }> };
 export async function generateMetadata({ params }: P): Promise<Metadata> {
@@ -30,7 +31,7 @@ export default async function LocaleDevelopers({ params }: P) {
     <div className={s.page}>
       <header className={s.hero}>
         <p className={s.kicker}><span>{d.kicker}</span><span>API v1</span><span>Embed</span><span>Teams</span></p>
-        <h1 className={s.title}>{d.title}</h1>
+        <h1 className={s.title}><TwoTone text={d.title} /></h1>
         <p className={s.lede}>{d.lede}</p>
         <div className={s.endpoint} aria-label={d.endpoint} dir="ltr"><span className={s.method}>POST</span>{site.url.replace(/^https?:\/\//, "")}/api/v1/ask</div>
         <div className={s.heroActions}>

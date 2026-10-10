@@ -29,3 +29,16 @@
 @media (max-width: 560px) { .table th { width: auto; display: block; padding-bottom: 0; } .table td { display: inline-block; } .table tr { display: block; padding: var(--s-2) 0; } }
 .foot { margin-top: var(--s-10); color: var(--c-ink-2); font-size: var(--t-small); }
 .foot a { color: var(--c-ink); text-underline-offset: 3px; }
+
+/* Oct 2026 canvas design: each chapter's list sits on a frosted card, statuses are soft chips */
+.table { border-collapse: separate; border-spacing: 0; border-radius: 24px; background: color-mix(in srgb, var(--c-surface-1) 80%, transparent); box-shadow: inset 0 0 0 1px rgb(var(--rgb-ink) / 0.07), 0 12px 28px -14px rgb(0 0 0 / 0.18); overflow: hidden; }
+.table tr, .table tr:first-child { border-top: 0; }
+.table tr + tr th, .table tr + tr td { border-top: 1px solid rgb(var(--rgb-ink) / 0.06); }
+.table th { padding-left: var(--s-6); }
+.table td.status { padding-right: var(--s-6) !important; }
+.status span, .status { text-transform: none; letter-spacing: 0; }
+.status[data-s] { font-size: 12px; font-weight: var(--w-medium); }
+.status[data-s]::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 999px; background: currentColor; vertical-align: 1px; }
+.jump a { min-height: 38px; align-items: center; padding: 0 15px; border-radius: 999px; border: 1px solid rgb(var(--rgb-ink) / 0.1); background: color-mix(in srgb, var(--c-surface-1) 70%, transparent); }
+.jump { gap: var(--s-2); }
+.num { display: inline-flex; }

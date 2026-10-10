@@ -24,6 +24,7 @@ import { CommandPalette } from "@/components/nav/CommandPalette";
 import { DesktopDock } from "@/components/desktop/DesktopDock";
 import { LocaleHtml } from "@/components/i18n/LocaleHtml";
 import "@/styles/globals.css";
+import "@/styles/redesign.css";
 
 // Google Sans (the current open-source family, SIL OFL 1.1, published on Google Fonts as "Google Sans"; NOT the legacy proprietary
 // Google Sans / Product Sans) is the one sitewide UI font: body, headings, buttons, inputs. next/font fetches it at build time and

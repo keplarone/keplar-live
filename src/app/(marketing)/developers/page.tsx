@@ -9,6 +9,7 @@ import { referralConfig } from "@/lib/referrals/config";
 import { CodeTabs } from "@/components/developers/CodeTabs";
 import { EmbedConfigurator } from "@/components/developers/EmbedConfigurator";
 import s from "@/components/developers/Developers.module.css";
+import { TwoTone } from "@/components/page/TwoTone";
 
 export const metadata = pageMeta(
   "/developers",
@@ -52,7 +53,7 @@ export default function DevelopersPage() {
     <div className={s.page}>
       <header className={s.hero}>
         <p className={s.kicker}><span>Developers</span><span>API v1</span><span>Embed</span><span>Teams</span></p>
-        <h1 className={s.title}>Build with Keplar.</h1>
+        <h1 className={s.title}><TwoTone text={"Build with Keplar."} /></h1>
         <p className={s.lede}>
           One request sends a question to several models, compares them, and returns one answer with a plain record of where they disagreed.
           Call it from your server with an API key, or put the same Ask on your own site with one script tag.

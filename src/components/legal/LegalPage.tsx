@@ -4,6 +4,7 @@ import { LegalToc } from "./LegalToc";
 import { Placeholder, ReviewNote } from "./ReviewNote";
 import { reviewItems, type LegalBlock, type LegalDoc } from "./content/types";
 import s from "./Legal.module.css";
+import { TwoTone } from "@/components/page/TwoTone";
 
 /** Renders `[[text]]` as a visible placeholder; everything else is plain text. */
 function rich(text: string): React.ReactNode {
@@ -68,7 +69,7 @@ export function LegalPage({ doc, sibling }: { doc: LegalDoc; sibling: { href: st
     <div className={s.page}>
       <header className={s.header}>
         <p className={s.eyebrow}>Legal</p>
-        <h1 className={s.title}>{doc.title}</h1>
+        <h1 className={s.title}><TwoTone text={doc.title} /></h1>
         {doc.subline ? <p className={s.subline}>{doc.subline}</p> : null}
         <p className={s.updated}>
           Last updated: {doc.lastUpdated ?? <Placeholder>[DATE]</Placeholder>}

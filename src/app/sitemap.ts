@@ -25,8 +25,6 @@ export const sitemapPaths: string[] = [
   "/roadmap",
   "/pricing",
   "/download",
-  "/agents",
-  "/enterprise",
   "/inquire",
   "/for-developers",
   "/ai-app-builder",

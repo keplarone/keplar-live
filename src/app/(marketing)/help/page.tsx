@@ -5,6 +5,7 @@ import { pageMeta } from "@/lib/seo";
 import { brand } from "@/lib/site";
 import hero from "@/components/page/RoutePlaceholder.module.css";
 import s from "@/components/support/Help.module.css";
+import { TwoTone } from "@/components/page/TwoTone";
 
 export const metadata = pageMeta("/help", "Help", "Answers about using Keplar, your account and plan, your data, connected apps, the desktop app and reporting an answer.");
 
@@ -16,7 +17,7 @@ export default function HelpPage() {
       <header className={hero.hero}>
         <div className={hero.header}>
           <p className={hero.label}>Help</p>
-          <h1 className={hero.title}>How can we help?</h1>
+          <h1 className={hero.title}><TwoTone text={"How can we help?"} /></h1>
           <p className={hero.lede}>
             Answers about what Keplar does today. Can&apos;t find yours? <Link href="/contact">Contact the team</Link> or email {brand.feedbackEmail}. Live service checks are on the <Link href="/status">Status</Link> page.
           </p>

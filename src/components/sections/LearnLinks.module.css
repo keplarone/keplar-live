@@ -7,3 +7,6 @@
 .card:focus-visible { outline: none; text-decoration: underline; text-underline-offset: 3px; }
 .title { color: var(--c-ink); font-weight: var(--w-medium); }
 .text { font-size: var(--t-small); line-height: 1.5; }
+
+/* Oct 2026 redesign: let the aura backdrop show through */
+.section { background: transparent; }

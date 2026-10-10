@@ -15,6 +15,7 @@ import { article, breadcrumbs, webPage } from "@/lib/seo-graph";
 import { brand } from "@/lib/site";
 import hero from "@/components/page/RoutePlaceholder.module.css";
 import s from "./editorial.module.css";
+import { TwoTone } from "@/components/page/TwoTone";
 
 const TOKEN = /\{\{(\w+)\}\}|\[([^\]]+)\]\((\/[^)\s]*)\)/g;
 
@@ -103,7 +104,7 @@ export function EditorialTemplate({ page }: { page: EditorialPage }) {
       <header className={hero.hero}>
         <div className={hero.header}>
           <p className={hero.label}>{page.label}</p>
-          <h1 className={hero.title}>{page.h1}</h1>
+          <h1 className={hero.title}><TwoTone text={page.h1} /></h1>
         </div>
       </header>
       <div className={s.wrap}>

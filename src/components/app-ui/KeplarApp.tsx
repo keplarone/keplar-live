@@ -40,6 +40,7 @@ import { HomeStart } from "./HomeStart";
 import { pathForView, viewForPath } from "./app-paths";
 import { AppOnboarding } from "@/components/onboarding/AppOnboarding";
 import { DeploymentsView } from "./DeploymentsView";
+import { BUSINESS_URL, BUSINESS_VIEWS } from "@/lib/business-site";
 import { businessProminent, examplesFor, readUseFor, useForOptions, writeUseFor, type UseFor } from "./use-for";
 import type { Ledger } from "./state/types";
 import { formatDailyReset } from "@/lib/usage/format";
@@ -687,6 +688,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     else applyView();
   }, [applyView]);
   const goView = useCallback((view: View, projectFilter?: string | null) => {
+    if (BUSINESS_VIEWS.has(view)) { window.location.assign(BUSINESS_URL); return; }
     tabFocusClear.current();
     switchView(view, projectFilter ?? null);
     setDrawerOpen(false);

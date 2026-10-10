@@ -92,3 +92,6 @@
     padding-right: 0;
   }
 }
+
+/* Oct 2026 redesign: let the aura backdrop show through */
+.section { background: transparent; }

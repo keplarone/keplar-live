@@ -1861,3 +1861,15 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 @media (prefers-reduced-motion: reduce) {
   .welcomeGreet { animation: none; }
 }
+
+/* App views (Projects, Agents, All chats, Approvals…) from the Oct 2026 canvas designs: light 44px titles, frosted inputs
+   and list rows on the aura backdrop. */
+.viewTitle { font-size: clamp(32px, 3vw, 44px); line-height: 1.08; letter-spacing: -0.035em; font-weight: var(--w-regular); }
+.viewLede { font-size: 17px; line-height: 1.6; color: var(--c-ink-3); }
+.textInput { height: 48px; border-radius: 999px; padding: 0 18px; background: color-mix(in srgb, var(--c-surface-1) 85%, transparent); box-shadow: inset 0 0 0 1px rgb(var(--rgb-ink) / 0.1); font-size: 15px; }
+.textInput:focus-visible { border-radius: 999px; }
+.inlineForm .secondaryBtn { min-height: 48px; border-radius: 999px; padding: 0 20px; }
+
+/* Sidebar "Business · Learn more": links out to business.keplar.one (Business, Agents and Approvals live there for now) */
+.learnMore { margin-left: auto; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: var(--w-medium); color: var(--c-ink-2); background: rgb(var(--rgb-ink) / 0.06); white-space: nowrap; }
+.sideItem:hover .learnMore { background: var(--c-ink); color: var(--c-canvas); }

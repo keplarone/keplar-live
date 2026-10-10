@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { BUSINESS_URL } from "@/lib/business-site";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { View } from "@/components/app-ui/state/types";
@@ -67,7 +68,7 @@ export function AppOnboarding({ onAsk, onView, refresh, onSettled }: Props) {
       if (sessionStorage.getItem("keplar.onboarding.open") === "apps") {
         sessionStorage.removeItem("keplar.onboarding.open");
         opened.current = true;
-        onView("business");
+        window.location.assign(BUSINESS_URL);
       }
     } catch { /* optional */ }
   }, [data, onView]);
@@ -85,7 +86,7 @@ export function AppOnboarding({ onAsk, onView, refresh, onSettled }: Props) {
   };
   const act = (id: ChecklistId) => {
     if (id === "create") { void mark("triedCreate"); onView("create"); }
-    else if (id === "connect") onView("business");
+    else if (id === "connect") window.location.assign(BUSINESS_URL);
   };
 
   // Not finished yet but already started: a link back in, never a gate.

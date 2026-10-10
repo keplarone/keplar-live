@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { FeedbackForm } from "@/components/feedback/FeedbackForm";
 import { FEEDBACK_KINDS, type FeedbackKind } from "@/lib/growth/research";
 import s from "@/components/feedback/Feedback.module.css";
+import { TwoTone } from "@/components/page/TwoTone";
 
 export const metadata: Metadata = {
   title: "Feedback",
@@ -17,7 +18,7 @@ export default async function FeedbackPage({ searchParams }: { searchParams: Pro
   return (
     <div className={s.page}>
       <p className={s.eyebrow}>Feedback</p>
-      <h1 className={s.title}>Tell us what to fix, keep or change.</h1>
+      <h1 className={s.title}><TwoTone text={"Tell us what to fix, keep or change."} /></h1>
       <p className={s.lede}>
         Keplar was built by two co-founders, Hassen and Hussain Keder. Every message is read by a person. Answers are stored as text you typed, shown only to the team, and used to decide what to build next. Leave your email out and it stays anonymous.
       </p>

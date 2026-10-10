@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { ButtonLink } from "@/components/ui/Button";
 import s from "./RoutePlaceholder.module.css";
+import { TwoTone } from "@/components/page/TwoTone";
 
 type Props = {
   label: string;
@@ -19,7 +20,7 @@ export function RoutePlaceholder({ label, title, lede, children, cta }: Props) {
     <div className={s.page}>
       <header className={s.header}>
         <p className={s.label}>{label}</p>
-        <h1 className={s.title}>{title}</h1>
+        <h1 className={s.title}><TwoTone text={title} /></h1>
         <p className={s.lede}>{lede}</p>
         {cta ? (
           <div className={s.cta}>

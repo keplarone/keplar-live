@@ -10,6 +10,7 @@ import { pageMeta } from "@/lib/seo";
 import { breadcrumbs, webPage } from "@/lib/seo-graph";
 import hero from "@/components/page/RoutePlaceholder.module.css";
 import prose from "@/components/sections/sections.module.css";
+import { TwoTone } from "@/components/page/TwoTone";
 
 export const metadata = pageMeta(page.path, page.metaTitle, page.metaDescription);
 
@@ -27,7 +28,7 @@ export default function AiAppBuilderPage() {
       <header className={hero.hero}>
         <div className={hero.header}>
           <p className={hero.label}>{page.label}</p>
-          <h1 className={hero.title}>{page.h1}</h1>
+          <h1 className={hero.title}><TwoTone text={page.h1} /></h1>
           <p className={hero.lede}>{page.lede}</p>
           <div className={hero.ctaRow}>
             <TrackedLink where={`${page.slug}:hero`} href="/app/create" size="lg" arrow>Start building free</TrackedLink>

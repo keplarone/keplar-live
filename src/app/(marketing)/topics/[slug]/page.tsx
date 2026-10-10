@@ -8,6 +8,7 @@ import { abs, pageMeta } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/seo-graph";
 import { TrackedLink } from "@/components/growth/TrackedLink";
 import s from "@/components/kb/kb.module.css";
+import { TwoTone } from "@/components/page/TwoTone";
 
 export const dynamic = "force-dynamic"; // the kill switch and rollback must show a 404 at once
 
@@ -34,7 +35,7 @@ export default async function Topic({ params }: Props) {
     <div className={s.shell}>
       <div className={s.hubWrap}>
         <p className={s.crumbs}><Link href="/topics">Topics</Link><span aria-hidden>/</span>{p.term}</p>
-        <h1 className={s.h1}>{p.title}</h1>
+        <h1 className={s.h1}><TwoTone text={p.title} /></h1>
         <p className={s.lede}>{p.intro}</p>
         <p className={s.meta}>
           <span>{`Published by ${CREATOR_CREDIT}`}</span>

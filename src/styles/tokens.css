@@ -83,8 +83,8 @@
   /* All sizes are rem-based so the browser's own text-size setting (and OS text scaling) scales them; at the default 16px they equal the old px values.
      Past ~1500px wide the body sizes keep growing smoothly with the window (linear in vw, capped), so there are no stepped jumps between 1800 / 2400 / 3200px. */
   --t-display: clamp(3.125rem, 7.6vw, 12.5rem);
-  --t-headline: clamp(2.375rem, 5.2vw, 8.5rem);
-  --t-title: clamp(1.75rem, 2.9vw, 4.25rem);
+  --t-headline: clamp(2.75rem, 5.2vw, 4.75rem);
+  --t-title: clamp(1.875rem, 3vw, 2.75rem);
   --t-lead: max(clamp(1.125rem, 1.45vw, 1.375rem), min(2.5rem, calc(0.824vw + 0.603rem)));
   --t-body: max(clamp(0.9375rem, 1.05vw, 1rem), min(1.875rem, calc(0.529vw + 0.504rem)));
   --t-small: max(clamp(0.8125rem, 0.9vw, 0.875rem), min(1.5rem, calc(0.412vw + 0.489rem)));

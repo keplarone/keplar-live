@@ -38,3 +38,6 @@
     padding: var(--s-16) var(--l-gutter) var(--s-24);
   }
 }
+
+/* Oct 2026 redesign: let the aura backdrop show through */
+.section { background: transparent; }

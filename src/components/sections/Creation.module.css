@@ -478,3 +478,6 @@
 :global(html[data-theme="dark"]) .f {
   color: #d3d5da;
 }
+
+/* Oct 2026 redesign: let the aura backdrop show through */
+.section { background: transparent; }

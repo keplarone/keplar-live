@@ -8,6 +8,7 @@ import { breadcrumbs } from "@/lib/seo-graph";
 import { getMessages } from "@/lib/i18n/server";
 import { localeInfo } from "@/lib/i18n/locales";
 import { localizedPath } from "@/lib/i18n/routing";
+import { TwoTone } from "@/components/page/TwoTone";
 
 /** /showcase in any locale. The demo items themselves (titles, lines, facts) are sample content and stay in English for now. */
 export async function ShowcaseView({ locale = "en" }: { locale?: string }) {
@@ -20,7 +21,7 @@ export async function ShowcaseView({ locale = "en" }: { locale?: string }) {
       <header className={s.head}>
         <div>
           <p className={s.kicker}><Link href="/app/create">Create</Link> / {sc.kicker}</p>
-          <h1 className={s.title}>{sc.title}</h1>
+          <h1 className={s.title}><TwoTone text={sc.title} /></h1>
         </div>
         <div>
           <p className={s.lead}>{sc.lead}</p>

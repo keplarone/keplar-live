@@ -11,3 +11,6 @@
   .head, .stage { grid-column: 1 / -1; position: static; padding-right: 0; }
   .stage { border-radius: 28px; padding: var(--s-2); }
 }
+
+/* Oct 2026 redesign: let the aura backdrop show through */
+.section { background: transparent; }

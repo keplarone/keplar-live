@@ -6,6 +6,7 @@ import { pageMeta, abs } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/seo-graph";
 import { softwareApp } from "@/lib/structuredData";
 import s from "@/components/kb/kb.module.css";
+import { TwoTone } from "@/components/page/TwoTone";
 
 export const metadata = pageMeta("/docs", "Keplar docs: guides, concepts and reference", "How to use Keplar, how routing, agreement, disagreement, verification and synthesis work, Create, connectors, agents, plans and limits, privacy and security.");
 
@@ -17,7 +18,7 @@ export default function DocsHome() {
   return (
     <DocsFrame current="/docs">
       <p className={s.crumbs}>Docs</p>
-      <h1 className={s.h1}>Keplar docs</h1>
+      <h1 className={s.h1}><TwoTone text={"Keplar docs"} /></h1>
       <p className={s.lede}>How to use Keplar, how it reaches an answer, and what it will and will not do. Written to be checked against the product: where a number can change, the page says where to see the current one.</p>
       <p className={s.meta}><span>{docs.length} pages</span><span>{docSections.length} sections</span></p>
       <div className={s.prose}>

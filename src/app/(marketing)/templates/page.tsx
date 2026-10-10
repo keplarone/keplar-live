@@ -7,6 +7,7 @@ import { abs, pageMeta } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/seo-graph";
 import { CATEGORY_LABEL } from "@/lib/templates/constants";
 import { listGallery, type GalleryTemplate } from "@/lib/templates/store";
+import { TwoTone } from "@/components/page/TwoTone";
 
 export const dynamic = "force-dynamic"; // a withdrawn or hidden template must disappear at once
 
@@ -37,7 +38,7 @@ export default async function Templates() {
   return (
     <div className={s.page}>
       <p className={s.eyebrow}>Templates</p>
-      <h1 className={s.title}>Start from a real site. Change it by describing it.</h1>
+      <h1 className={s.title}><TwoTone text={"Start from a real site. Change it by describing it."} /></h1>
       <p className={s.lead}>Pick a template, press Remix, and Keplar copies the pages into your workspace and opens Create so you can say what to change: your name, words, colors, photos, pages.</p>
       <p className={s.notice}>Remix copies pages, text, layout and styles only. Form messages, contacts, bookings, orders, members and uploaded photos never come with a template, and forms in your copy go to your own inbox.</p>
 

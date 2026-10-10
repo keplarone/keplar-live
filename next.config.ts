@@ -33,6 +33,8 @@ const nextConfig: NextConfig = {
       // Each /app tab has its own subfolder; bare /app is Ask.
       { source: "/app", destination: "/app/ask", permanent: true },
       { source: "/app/", destination: "/app/ask", permanent: true },
+      // Business, Agents and Approvals moved to business.keplar.one for now (src/lib/business.ts).
+      ...["/app/business", "/app/agents", "/app/approvals", "/enterprise", "/agents"].map((source) => ({ source, destination: "https://business.keplar.one", permanent: false })),
       // Marketing's draft URL for the comparison hub.
       { source: "/compare/best-multi-model-ai-tools", destination: "/compare", permanent: true },
       // Blog moved from /blog to /blogs (keep old URLs working for SEO and shared links).

@@ -7,6 +7,7 @@
  * The cards only ever show what the run's own steps and approvals say.
  */
 import Link from "next/link";
+import { BUSINESS_URL } from "@/lib/business-site";
 import { useEffect, useRef, useState } from "react";
 import { KeplarSymbol } from "@/components/brand";
 import { CHAT_INFO as INFO, CHAT_TEMPLATES, isInApp, outboundNoun, pickTemplate, plannedNodes, runNodes, type ChatTemplate, type FlowApproval, type FlowNode } from "@/lib/business/chat-flow";
@@ -148,7 +149,7 @@ export function AgentFlowTurn({ message: m, user, ledger, isLast, onPatch, onSet
 
       {f.phase === "done" && f.run?.needs?.length ? (
         <p className={s.note} role="note">
-          This workflow needs {f.run.needs.map((n) => n.label).join(" and ")} connected before it can run. Nothing was drafted or sent. <Link href="/app/business" className={s.inline}>Connect it in Business</Link>
+          This workflow needs {f.run.needs.map((n) => n.label).join(" and ")} connected before it can run. Nothing was drafted or sent. <a href={BUSINESS_URL} className={s.inline}>Connect it in Keplar Business</a>
         </p>
       ) : null}
 
@@ -160,7 +161,7 @@ export function AgentFlowTurn({ message: m, user, ledger, isLast, onPatch, onSet
         </p>
       ) : null}
 
-      {f.phase === "interrupted" ? <p className={s.note} role="note">The page reloaded while this run was going. It may have finished on the server; its drafts, if any, are in <Link href="/app/approvals" className={s.inline}>Approvals</Link>.</p> : null}
+      {f.phase === "interrupted" ? <p className={s.note} role="note">The page reloaded while this run was going. It may have finished on the server; its drafts, if any, are in <a href={BUSINESS_URL} className={s.inline}>Keplar Business</a>.</p> : null}
 
       {f.approvals.length ? <Approvals flow={f} template={template} name={name} onPatch={onPatch} onSettled={onSettled} /> : null}
     </section>
@@ -247,7 +248,7 @@ function Approvals({ flow: f, template, name, onPatch, onSettled }: { flow: Agen
             <button type="button" className={s.primary} disabled={busy !== null} onClick={() => void decide("approve")} data-approve="">{busy === "approve" ? "Sending…" : "Approve and send"}</button>
           </>
         ) : (
-          <Link href="/app/approvals" className={s.ghostLink}>Open Approvals</Link>
+          <a href={BUSINESS_URL} className={s.ghostLink}>Open Keplar Business</a>
         )}
       </div>
       {toast ? <div className={s.toast} role="status" data-ok={toast.ok || undefined}>{toast.ok ? <IconCheck size={14} /> : null} {toast.text}</div> : null}

@@ -4,6 +4,7 @@ import { approvedVs, VS_ACCESSED } from "@/lib/kb/vs";
 import { abs, pageMeta } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/seo-graph";
 import s from "@/components/kb/kb.module.css";
+import { TwoTone } from "@/components/page/TwoTone";
 
 export const metadata = pageMeta("/vs", "Keplar compared with other AI assistants", "Fair, dated comparisons of Keplar with ChatGPT, Claude and Gemini: what each is for, what each lists publicly, and when the other one is the better choice.");
 
@@ -16,7 +17,7 @@ export default function VsHub() {
       <div className={s.hubWrap}>
         <header>
           <p className={s.crumbs}>Compare</p>
-          <h1 className={s.h1}>Keplar compared with other assistants</h1>
+          <h1 className={s.h1}><TwoTone text={"Keplar compared with other assistants"} /></h1>
           <p className={s.lede}>These pages are written by Keplar, which makes us an interested party. We keep them factual: competitor details come from their own public pages with the date we read them, we make no claims about accuracy, safety or privacy being better, and each page says when the other product is the better choice.</p>
         </header>
         <div className={s.cards}>

@@ -4,6 +4,7 @@ import { allUseCases } from "@/lib/kb/usecases";
 import { abs, pageMeta } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/seo-graph";
 import s from "@/components/kb/kb.module.css";
+import { TwoTone } from "@/components/page/TwoTone";
 
 export const metadata = pageMeta("/use-cases", "What to use Keplar for: ten practical use cases", "Concrete ways to use Keplar: compare options before buying, check a claim, study for an exam, research a topic, review code, build a site and more, each with honest limits.");
 
@@ -14,7 +15,7 @@ export default function UseCasesPage() {
       <div className={s.hubWrap}>
         <header>
           <p className={s.crumbs}>Use cases</p>
-          <h1 className={s.h1}>What people use Keplar for</h1>
+          <h1 className={s.h1}><TwoTone text={"What people use Keplar for"} /></h1>
           <p className={s.lede}>Each page explains one job, how to ask, what Keplar does with the question, what you still have to check, and where it falls short.</p>
         </header>
         <div className={s.cards}>

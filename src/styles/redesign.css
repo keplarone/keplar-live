@@ -1,0 +1,68 @@
+/* ── Page 1 style for every marketing page (Oct 2026 canvas designs) ──
+ * One layer instead of 40 module rewrites: light-weight headlines with tight tracking, frosted pill kickers instead of mono
+ * all-caps labels, no ink glows, and pill buttons. Scoped to the marketing <main id="main"> so /app and /admin are untouched.
+ * Hooks use the readable CSS-module names Next emits ("Name-module__hash__class"), the same way aura.css targets shared modules.
+ * Both themes: colours come from the theme tokens. */
+
+#main h1 {
+  font-weight: var(--w-regular);
+  letter-spacing: -0.045em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+#main h2 {
+  font-weight: var(--w-regular);
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+#main h3 { letter-spacing: -0.02em; }
+
+/* Kickers / eyebrows / labels above titles: a frosted pill in sentence case */
+#main :is([class*="-module__"][class$="__eyebrow"], [class*="-module__"][class$="__kicker"], [class*="RoutePlaceholder-module__"][class$="__label"], [class*="compare-module__"][class$="__label"]) {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: auto;
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid rgb(var(--rgb-ink) / 0.07);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--c-surface-1) 80%, transparent);
+  box-shadow: none;
+  font-family: var(--f-sans);
+  font-size: 13px;
+  font-weight: var(--w-regular);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--c-ink-3);
+}
+#main :is([class$="__eyebrow"], [class$="__kicker"], [class$="__label"])::before { box-shadow: none !important; }
+#main :is([class*="RoutePlaceholder-module__"][class$="__label"], [class*="compare-module__"][class$="__label"], [class*="Legal-module__"][class$="__eyebrow"], [class*="Feedback-module__"][class$="__eyebrow"], [class*="auth-module__"][class$="__eyebrow"])::before {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--c-ink-3);
+}
+
+/* No glowing hairlines under headers */
+#main [class*="Legal-module__"][class$="__header"]::after { box-shadow: none; }
+
+/* Status words (Live / Beta / Soon) as soft chips */
+#main [data-s="live"], #main [data-s="beta"], #main [data-s="soon"] {
+  font-size: 12px;
+  font-weight: var(--w-medium);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Display-size titles capped at the design's 76px (several modules went to 110–170px) */
+#main :is([class*="RoutePlaceholder-module__"], [class*="Feedback-module__"], [class*="Legal-module__"], [class*="compare-module__"], [class*="how-module__"], [class*="Developers-module__"], [class*="Showcase-module__"], [class*="kb-module__"])[class$="__title"],
+#main :is([class*="compare-module__"], [class*="how-module__"], [class*="kb-module__"])[class$="__h1"] {
+  font-size: clamp(44px, 5.2vw, 76px);
+  line-height: 1.04;
+  letter-spacing: -0.045em;
+  font-weight: var(--w-regular);
+}
+
+/* Two-tone headlines (components/page/TwoTone.tsx) */
+.tt-g { color: var(--c-ink-3); }

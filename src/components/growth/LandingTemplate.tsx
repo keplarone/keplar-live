@@ -9,6 +9,7 @@ import { TrackedLink } from "./TrackedLink";
 import { TryBox } from "./TryBox";
 import hero from "@/components/page/RoutePlaceholder.module.css";
 import prose from "@/components/sections/sections.module.css";
+import { TwoTone } from "@/components/page/TwoTone";
 
 /** Shared layout for the indexable landing and use-case pages. One h1, a primary CTA above the fold, a no-signup try box, FAQ, related links. */
 export function LandingTemplate({ page }: { page: LandingPage }) {
@@ -19,7 +20,7 @@ export function LandingTemplate({ page }: { page: LandingPage }) {
       <header className={hero.hero}>
         <div className={hero.header}>
           <p className={hero.label}>{page.label}</p>
-          <h1 className={hero.title}>{page.h1}</h1>
+          <h1 className={hero.title}><TwoTone text={page.h1} /></h1>
           <p className={hero.lede}>{page.lede}</p>
           <div className={hero.ctaRow}>
             <TrackedLink where={`${page.slug}:hero`} href="/app" size="lg" arrow>Try Keplar free</TrackedLink>

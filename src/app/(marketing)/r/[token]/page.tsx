@@ -4,6 +4,7 @@ import { openShare } from "@/lib/growth/share";
 import { publicTitle } from "@/lib/growth/share-public";
 import s from "@/components/share/Shared.module.css";
 import { SharedBody, SharedCta } from "@/components/share/SharedBody";
+import { TwoTone } from "@/components/page/TwoTone";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +37,7 @@ export default async function SharedAnswer({ params }: { params: Promise<{ token
   return (
     <div className={s.page}>
       <p className={s.eyebrow}>A shared Keplar answer</p>
-      <h1 className={s.title}>One question, several models, one answer.</h1>
+      <h1 className={s.title}><TwoTone text={"One question, several models, one answer."} /></h1>
       <p className={s.notice}>
         Shared by a Keplar user, who chose to make this link. Keplar has not verified it. Models can be wrong, even when they agree, so check anything important. {r.publicAt && !r.hiddenAt ? "The owner also chose to publish this answer as a public page." : "This page is not listed in search engines."}
       </p>

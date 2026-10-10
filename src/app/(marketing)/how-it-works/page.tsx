@@ -9,6 +9,7 @@ import { pageMeta } from "@/lib/seo";
 import { brand } from "@/lib/site";
 import { formatPrice, tiers } from "@/lib/tiers";
 import s from "./how.module.css";
+import { TwoTone } from "@/components/page/TwoTone";
 
 // Copy: /workspace/marketing/launch/how-it-works-page.md (revision of Sep 27, 2026).
 export const metadata = pageMeta(
@@ -105,7 +106,7 @@ export default function HowItWorksPage() {
       <HeroField variant="how" />
       <header className={s.hero}>
         <p className={s.kicker}>How it works</p>
-        <h1 className={s.h1}>Stop trusting one AI.</h1>
+        <h1 className={s.h1}><TwoTone text={"Stop trusting one AI."} /></h1>
         <p className={s.sub}>One question. Multiple intelligences. One answer.</p>
         <p className={s.intro}>
           Every AI model has blind spots. {KO} asks the models your question needs, evaluates what they say, and gives you one

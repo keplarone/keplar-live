@@ -5,6 +5,7 @@ import { glossary, slugOfTerm } from "@/lib/kb/glossary";
 import { abs, pageMeta } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/seo-graph";
 import s from "@/components/kb/kb.module.css";
+import { TwoTone } from "@/components/page/TwoTone";
 
 export const metadata = pageMeta("/glossary", "AI glossary: plain-English definitions of AI terms", "Plain-English definitions of AI terms from agent and context window to RAG and sycophancy, with notes on how each applies to Keplar.");
 
@@ -22,7 +23,7 @@ export default function GlossaryPage() {
       <div className={s.hubWrap}>
         <header>
           <p className={s.crumbs}>Glossary</p>
-          <h1 className={s.h1}>AI glossary</h1>
+          <h1 className={s.h1}><TwoTone text={"AI glossary"} /></h1>
           <p className={s.lede}>{terms.length} terms in plain English. Where a term is part of how Keplar works, a note says exactly how, and links point to the longer explanation.</p>
           <nav aria-label="Jump to letter" className={s.pills} style={{ marginTop: "var(--s-5)" }}>
             {letters.map((l) => <a key={l} href={`#letter-${l}`} className={s.pill}>{l}</a>)}

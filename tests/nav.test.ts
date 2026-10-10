@@ -4,20 +4,22 @@ import { readFileSync } from "node:fs";
 
 const side = readFileSync("src/components/app-ui/Sidebar.tsx", "utf8");
 
-test("sidebar: New chat and Search, then Create, Agents, Projects in that order (Business takes Projects' row for business users)", () => {
+test("sidebar: New chat and Search, then Create and Projects, then Business · Learn more linking out to business.keplar.one", () => {
   assert.match(side, /<span>New chat<\/span>/);
   assert.match(side, /data-nav="search"/);
-  const block = side.slice(side.indexOf("const primary"), side.indexOf("const BUSINESS"));
+  const block = side.slice(side.indexOf("const primary"), side.indexOf("const secondary"));
   const labels = [...block.matchAll(/label: "([^"]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(labels, ["Create", "Agents", "Projects"]);
-  assert.match(side, /businessProminent \? primary\.map\(\(r\) => \(r\.view === "projects" \? BUSINESS : r\)\)/);
+  assert.deepEqual(labels, ["Create", "Projects"]);
+  assert.match(side, /<a href=\{BUSINESS_URL\}[^>]*data-nav="business"[\s\S]{0,200}<span>Business<\/span>[\s\S]{0,80}Learn more/);
+  assert.match(readFileSync("src/lib/business-site.ts", "utf8"), /https:\/\/business\.keplar\.one/);
+  assert.doesNotMatch(side, /label: "(Agents|Approvals|Business)"/, "Agents and Approvals are business-mode only");
 });
 
 test("sidebar: More holds every other view; Settings, Memory and Usage moved to the gear and the account menu", () => {
   const block = side.slice(side.indexOf("const secondary"), side.indexOf("const LOW_AT"));
   const labels = [...block.matchAll(/label: "([^"]+)"/g)].map((m) => m[1]);
-  for (const v of ["Slides", "Study", "Deployments", "Approvals", "All chats"]) assert.ok(labels.includes(v), v);
-  assert.match(block, /BUSINESS/);
+  for (const v of ["Slides", "Study", "Deployments", "All chats"]) assert.ok(labels.includes(v), v);
+  assert.ok(!labels.includes("Approvals") && !labels.includes("Business"));
   assert.match(side, /href="\/account" className=\{s\.iconBtn\} aria-label="Settings"/);
   const menu = readFileSync("src/components/app-ui/AccountMenu.tsx", "utf8");
   assert.match(menu, /<ThemeControl compact \/>/, "theme lives in the account menu");

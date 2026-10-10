@@ -7,8 +7,9 @@ import { formatResetAt, PLAN_ALLOWANCES, WINDOW_WARN_AT, windowResetText } from 
 import { brand } from "@/lib/site";
 import { dailyLeftText, formatDailyReset } from "@/lib/usage/format";
 import { extensionNote, usageMeter } from "@/lib/usage/meter";
-import { IconAgents, IconApprovals, IconBusiness, IconClose, IconCreate, IconDeploy, IconHistory, IconMore, IconPlus, IconProjects, IconSearch, IconSettings, IconSlides, IconStudy } from "./icons";
+import { IconBusiness, IconClose, IconCreate, IconDeploy, IconHistory, IconMore, IconPlus, IconProjects, IconSearch, IconSettings, IconSlides, IconStudy } from "./icons";
 import { pathForView } from "./app-paths";
+import { BUSINESS_URL } from "@/lib/business-site";
 import type { AccountInfo, AppState, View } from "./state/types";
 import { AccountMenu, ImportPrompt, type ImportOffer } from "./AccountMenu";
 import s from "./App.module.css";
@@ -37,24 +38,16 @@ type Props = {
 
 type Icon = typeof IconProjects;
 type NavRow = { view: View; label: string; Icon: Icon };
-/**
- * Primary: at most five rows in all (New chat and Search above, then these). Order is fixed. People who said they use Keplar
- * for business get Business in place of Projects (Projects then moves into More).
- */
+/** Primary rows under New chat and Search. Order is fixed. */
 const primary: NavRow[] = [
   { view: "create", label: "Create", Icon: IconCreate },
-  { view: "agents", label: "Agents", Icon: IconAgents },
   { view: "projects", label: "Projects", Icon: IconProjects },
 ];
-const BUSINESS: NavRow = { view: "business", label: "Business", Icon: IconBusiness };
-const PROJECTS: NavRow = primary[2];
 /** More: every other place. Settings, Memory and Usage live in Settings (the gear next to the account) and the account menu. */
 const secondary: NavRow[] = [
-  BUSINESS,
   { view: "slides", label: "Slides", Icon: IconSlides },
   { view: "study", label: "Study", Icon: IconStudy },
   { view: "deployments", label: "Deployments", Icon: IconDeploy },
-  { view: "approvals", label: "Approvals", Icon: IconApprovals },
   { view: "history", label: "All chats", Icon: IconHistory },
 ];
 /** Usage shows in the sidebar only when it is getting low (below this share left, or a usage window near its limit). */
@@ -71,8 +64,9 @@ function tabClick(e: MouseEvent, go: () => void) {
 }
 
 export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteChat, onClose, businessProminent = false, account = null, importOffer = null, modeView = null, id }: Props) {
-  const rows = businessProminent ? primary.map((r) => (r.view === "projects" ? BUSINESS : r)) : primary;
-  const more = businessProminent ? secondary.map((r) => (r.view === "business" ? PROJECTS : r)) : secondary;
+  void businessProminent;
+  const rows = primary;
+  const more = secondary;
   const moreViews = new Set<View>(more.map((n) => n.view));
   // Open More by choice, or whenever the current view lives in it.
   const [moreOpen, setMoreOpen] = useState(false);
@@ -171,6 +165,14 @@ export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteC
             </Link>
           </li>
         ))}
+        {/* Business, Agents and Approvals live at business.keplar.one for now (src/lib/business.ts) */}
+        <li>
+          <a href={BUSINESS_URL} className={s.sideItem} data-nav="business" data-primary="" target="_blank" rel="noopener">
+            <IconBusiness size={15} />
+            <span>Business</span>
+            <span className={s.learnMore}>Learn more</span>
+          </a>
+        </li>
         <li>
           <button type="button" className={s.sideItem} data-more="" aria-expanded={moreShown} aria-controls="side-more" onClick={() => setMoreOpen((v) => !v)}>
             <IconMore size={15} />

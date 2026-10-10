@@ -2,6 +2,7 @@ import Link from "next/link";
 import { pageMeta } from "@/lib/seo";
 import { brand } from "@/lib/site";
 import s from "@/components/feedback/Feedback.module.css";
+import { TwoTone } from "@/components/page/TwoTone";
 
 export const metadata = pageMeta("/security", "Security and vulnerability disclosure", "How to report a security problem to Keplar, what we ask of researchers, and an honest summary of what protects your account today.");
 
@@ -13,7 +14,7 @@ export default function SecurityPage() {
   return (
     <div className={s.page}>
       <p className={s.eyebrow}>Security</p>
-      <h1 className={s.title}>Report a security problem</h1>
+      <h1 className={s.title}><TwoTone text={"Report a security problem"} /></h1>
       <p className={s.lede}>
         If you think you found a vulnerability in Keplar, email <a href={`mailto:${brand.contactEmail}`}>{brand.contactEmail}</a>. A machine-readable copy of this policy is at <a href="/.well-known/security.txt">/.well-known/security.txt</a>.
       </p>
