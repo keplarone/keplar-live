@@ -2,13 +2,15 @@
 
 import { useEffect, useRef } from "react";
 import { LiquidLayer } from "./LiquidLayer";
+import { frameGap, liteFx } from "@/lib/fx/lite";
 import s from "./Sky.module.css";
 
 /**
  * The light backdrop from the canvas designs: soft colour auras (CSS), the scroll-driven liquid layer (LiquidLayer) and two drifting
  * ribbons of fine dots (a 2D canvas).
  * The dots follow slow sine waves, blue low on the left and coral high on the right, like the reference. Pauses when the tab is
- * hidden; prefers-reduced-motion draws one still frame. Dark theme dims the auras and uses deeper liquid colours (Sky.module.css).
+ * hidden or scrolled out of view; prefers-reduced-motion draws one still frame. Phones and modest devices (liteFx) draw a
+ * third of the dots at 1x pixel density and about 30 fps. Dark theme dims the auras and uses deeper liquid colours (Sky.module.css).
  */
 export function SkyBackdrop() {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -19,7 +21,11 @@ export function SkyBackdrop() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const lite = liteFx();
+    const dpr = lite ? 1 : Math.min(window.devicePixelRatio || 1, 2);
+    const gap = frameGap(lite);
+    let last = 0;
+    let onScreen = true;
     let w = 0, h = 0, raf = 0, t = 0;
 
     type P = { u: number; off: number; speed: number; size: number };
@@ -28,7 +34,7 @@ export function SkyBackdrop() {
       { color: "224 122 90", y: 0.3, amp: 0.08, tilt: -0.12, span: [0.45, 1.05] as const, alpha: 0.42 },
     ].map((r) => ({
       ...r,
-      pts: Array.from({ length: 1700 }, (): P => ({ u: Math.random(), off: (Math.random() + Math.random() + Math.random() - 1.5) * 0.11, speed: 0.00004 + Math.random() * 0.00006, size: Math.random() < 0.85 ? 0.7 : 1.15 })),
+      pts: Array.from({ length: lite ? 560 : 1700 }, (): P => ({ u: Math.random(), off: (Math.random() + Math.random() + Math.random() - 1.5) * 0.11, speed: 0.00004 + Math.random() * 0.00006, size: Math.random() < 0.85 ? 0.7 : 1.15 })),
     }));
 
     const resize = () => {
@@ -57,10 +63,17 @@ export function SkyBackdrop() {
     };
 
     const loop = (now: number) => {
-      t = now;
-      draw();
+      if (now - last >= gap) { last = now; t = now; draw(); }
       raf = requestAnimationFrame(loop);
     };
+    // Stop drawing once the dots are scrolled out of view (the canvas covers the first screen only).
+    const io = new IntersectionObserver(([e]) => {
+      onScreen = e.isIntersecting;
+      if (reduce) return;
+      cancelAnimationFrame(raf);
+      if (onScreen && !document.hidden) raf = requestAnimationFrame(loop);
+    });
+    io.observe(canvas);
 
     resize();
     window.addEventListener("resize", resize);
@@ -69,11 +82,12 @@ export function SkyBackdrop() {
     const onVis = () => {
       if (reduce) return;
       cancelAnimationFrame(raf);
-      if (!document.hidden) raf = requestAnimationFrame(loop);
+      if (!document.hidden && onScreen) raf = requestAnimationFrame(loop);
     };
     document.addEventListener("visibilitychange", onVis);
     return () => {
       cancelAnimationFrame(raf);
+      io.disconnect();
       window.removeEventListener("resize", resize);
       document.removeEventListener("visibilitychange", onVis);
     };

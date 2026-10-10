@@ -29,6 +29,8 @@ export const PRODUCTION_URL = `https://${PRODUCTION_HOST}`;
 /** Docs subdomain: same project, serves /docs (see src/proxy.ts rewrite). */
 export const DOCS_HOST = `docs.${PRODUCTION_HOST}`;
 export const DOCS_URL = `https://${DOCS_HOST}`;
+/** Business subdomain: same project; until Keplar Business is built it serves one landing page (src/proxy.ts businessHost). */
+export const BUSINESS_HOST = `business.${PRODUCTION_HOST}`;
 
 /**
  * Absolute site URL. Override per environment with NEXT_PUBLIC_SITE_URL

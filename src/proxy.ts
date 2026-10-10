@@ -10,7 +10,7 @@ import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server
 import { clientIpOf, rateLimit, RateLimitError } from "@/lib/create/platform/ratelimit";
 import { newRequestId, requestIdOf } from "@/lib/ops/log";
 import { hostOf, isAppHost, resolveCustomHost } from "@/lib/domains/routing";
-import { DOCS_HOST, PRODUCTION_URL } from "@/lib/site";
+import { BUSINESS_HOST, DOCS_HOST, PRODUCTION_URL } from "@/lib/site";
 import { DOC_SECTION_IDS } from "@/lib/kb/doc-sections";
 import { isOriginExempt, isSameOrigin, SAFE_METHODS } from "@/lib/security/origin";
 import { noteVisit } from "@/lib/traffic/visits";
@@ -89,10 +89,30 @@ export function docsHost(req: NextRequest) {
 }
 
 
+/**
+ * business.keplar.one: until Keplar Business is built, / serves its landing page (/business-landing, rewritten so the URL stays
+ * clean). Static files, /_next, /api and /og pass through; any other path is the main site's: 308 to keplar.one.
+ */
+export function businessHost(req: NextRequest) {
+  const { pathname, search } = req.nextUrl;
+  const last = pathname.slice(pathname.lastIndexOf("/") + 1);
+  if (pathname.startsWith("/_next/") || pathname.startsWith("/api/") || pathname.startsWith("/og/") || pathname.startsWith("/icons/") || pathname.startsWith("/fonts/") || pathname.startsWith("/models/") || last.includes(".")) {
+    return NextResponse.next();
+  }
+  if (pathname === "/" || pathname === "/business-landing") {
+    const url = req.nextUrl.clone();
+    url.pathname = "/business-landing";
+    url.search = search;
+    return NextResponse.rewrite(url);
+  }
+  return NextResponse.redirect(`${PRODUCTION_URL}${pathname}${search}`, 308);
+}
+
 export async function proxy(req: NextRequest, event?: NextFetchEvent) {
   const host = hostOf(req);
   if (!isAppHost(host)) return customHost(req, host);
   if (host === DOCS_HOST) return docsHost(req);
+  if (host === BUSINESS_HOST) return businessHost(req);
   const { pathname } = req.nextUrl;
   // Referral short link: /?ref=CODE → /invite/CODE (same cookies/claim flow).
   if ((pathname === "/" || pathname === "") && req.method === "GET") {

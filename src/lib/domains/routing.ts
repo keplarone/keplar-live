@@ -3,7 +3,7 @@
  * an active domain maps to its site, anything else is a 404. Used by src/proxy.ts (rewrite to /s/<slug>) and by the
  * /s route itself (which re-checks the host, so a rewritten URL can never serve another tenant's site).
  */
-import { DOCS_HOST, PRODUCTION_HOST, siteUrl } from "@/lib/site";
+import { BUSINESS_HOST, DOCS_HOST, PRODUCTION_HOST, siteUrl } from "@/lib/site";
 import { domainStore } from "./store";
 
 export function hostOf(req: Request): string {
@@ -22,7 +22,7 @@ const hostnameOfUrl = (u: string | undefined) => {
 };
 
 function appHosts(): Set<string> {
-  const s = new Set<string>([PRODUCTION_HOST, `www.${PRODUCTION_HOST}`, DOCS_HOST, "localhost", "127.0.0.1", "[::1]", "0.0.0.0"]);
+  const s = new Set<string>([PRODUCTION_HOST, `www.${PRODUCTION_HOST}`, DOCS_HOST, BUSINESS_HOST, "localhost", "127.0.0.1", "[::1]", "0.0.0.0"]);
   const own = hostnameOfUrl(siteUrl);
   if (own) {
     s.add(own);

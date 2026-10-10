@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { frameGap, liteFx } from "@/lib/fx/lite";
 import s from "./Sky.module.css";
 
 type Blob = { x: number; y: number; r: number; depth: number; phase: number; color: [number, number, number] };
@@ -13,7 +14,8 @@ const DARK: [number, number, number][] = [[38, 92, 140], [74, 58, 140], [30, 104
  * computed per pixel on a small canvas (about 1/8 of the screen) and scaled up, so edges stay smooth and the cost stays tiny.
  * Scroll animation: each blob drifts at its own depth as the page scrolls (parallax), and scroll speed stretches the blobs
  * vertically and swells them a little, settling back when scrolling stops. Colours follow the theme. Paused while the tab is
- * hidden; prefers-reduced-motion draws one still frame and ignores scrolling.
+ * hidden; prefers-reduced-motion draws one still frame and ignores scrolling. Phones and modest devices (liteFx) compute a
+ * quarter as many pixels at about 30 fps.
  */
 export function LiquidLayer() {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -23,8 +25,11 @@ export function LiquidLayer() {
     const ctx = canvas?.getContext("2d", { alpha: true });
     if (!canvas || !ctx) return;
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const W = 160;
-    const H = 96;
+    const lite = liteFx();
+    const W = lite ? 80 : 160;
+    const H = lite ? 48 : 96;
+    const gap = frameGap(lite);
+    let last = 0;
     canvas.width = W;
     canvas.height = H;
     const img = ctx.createImageData(W, H);
@@ -83,7 +88,10 @@ export function LiquidLayer() {
       ctx.putImageData(img, 0, 0);
     };
 
-    const loop = (now: number) => { draw(now); raf = requestAnimationFrame(loop); };
+    const loop = (now: number) => {
+      if (now - last >= gap) { last = now; draw(now); }
+      raf = requestAnimationFrame(loop);
+    };
     const start = () => { cancelAnimationFrame(raf); if (!document.hidden) raf = requestAnimationFrame(loop); };
     const mo = new MutationObserver(() => {
       dark = document.documentElement.getAttribute("data-theme") === "dark";
