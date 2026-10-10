@@ -1046,3 +1046,12 @@
 }
 
 /* Where the models disagree: a standout block under the answer, not a link to a collapsed row. */
+
+/* Oct 2026 redesign (canvas "Chat"), light theme: the answer sits on the page (no card), like the design; notices keep their card. */
+:global(:root[data-theme="light"]) .answer { background: transparent; box-shadow: none; padding-inline: 0; }
+:global(:root[data-theme="light"]) .notice, :global(:root[data-theme="light"]) .limit, :global(:root[data-theme="light"]) .upsell {
+  padding: 16px 20px;
+  background: rgb(255 255 255 / 0.9);
+  border-radius: 22px;
+  box-shadow: 0 0 0 1px rgb(14 15 18 / 0.06), 0 12px 28px -14px rgb(14 15 18 / 0.25);
+}

@@ -6,7 +6,7 @@ import { KeplarSymbol } from "@/components/brand";
 import type { Attachment, ComposerModes, KeplarRequest } from "@/lib/orchestration/types";
 import { UsageNotice } from "./UsageNotice";
 import { Composer, toMediaInput, type ComposerHandle } from "./Composer";
-import { IconArrowDown, IconMemory, IconMenu, IconPlus } from "./icons";
+import { IconArrowDown, IconMemory, IconPlus } from "./icons";
 import { KeplarTurn } from "./KeplarTurn";
 import { ChatToolsBar } from "./ChatTools";
 import { ThreadBar, EditMessage } from "./ThreadBar";
@@ -897,7 +897,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
       <div key={state.epoch} className={s.main} inert={drawerOpen || undefined}>
         <header className={s.topbar} data-keplar-drag>
           <button ref={menuBtnRef} type="button" className={`${s.iconBtn} ${s.menuBtn}`} onClick={() => setDrawerOpen(true)} aria-label="Open sidebar" aria-expanded={drawerOpen} aria-controls="keplar-sidebar">
-            <IconMenu size={18} />
+            <KeplarSymbol size={22} />
           </button>
           <p className={s.topTitle}>
             {projectName ? <span className={s.topProject}>{projectName} / </span> : null}

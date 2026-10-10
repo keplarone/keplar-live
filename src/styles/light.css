@@ -91,10 +91,10 @@ html[data-glass="lite"][data-theme="light"] { --lg-fill: var(--lg-solid); --lg-f
 :root[data-theme="light"] [class*="App-module__"][class*="__homeTile"]:not([class*="__homeTileDot"]) { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-shadow); }
 :root[data-theme="light"] [class*="App-module__"][class*="__homeTile"]:not([class*="__homeTileDot"]):hover { background: #fff; border-color: rgb(14 15 18 / 0.18); box-shadow: var(--lt-card-lift); }
 :root[data-theme="light"] [class*="App-module__"][class$="__emptyMark"] { filter: none; }
-:root[data-theme="light"] [class*="App-module__"][class$="__emptyTitle"] { text-shadow: none; color: #7a3e24; }
-:root[data-theme="light"] [class*="App-module__"][class$="__emptyLede"] { color: #0c5c66; }
-:root[data-theme="light"] [class*="App-module__"][class$="__welcomeTitle"] { color: #7a3e24; }
-:root[data-theme="light"] [class*="App-module__"][class$="__welcomeLede"] { color: #0c5c66; }
+:root[data-theme="light"] [class*="App-module__"][class$="__emptyTitle"] { text-shadow: none; color: #0e0f12; }
+:root[data-theme="light"] [class*="App-module__"][class$="__emptyLede"] { color: #686d78; }
+:root[data-theme="light"] [class*="App-module__"][class$="__welcomeTitle"] { color: #0e0f12; }
+:root[data-theme="light"] [class*="App-module__"][class$="__welcomeLede"] { color: #686d78; }
 :root[data-theme="light"] [class*="studio-module__"][class$="__calmTitle"] { color: #5c2f6e; }
 :root[data-theme="light"] [class*="studio-module__"][class$="__calmLede"] { color: #8a5a12; }
 :root[data-theme="light"] [class*="App-module__"][class$="__exampleHint"] { color: #0c5c66; }

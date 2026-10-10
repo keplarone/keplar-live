@@ -1546,3 +1546,132 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 .memoryChip.memoryChip[data-on] { color: var(--c-ink-2); }
 .memoryChip.memoryChip:hover { color: var(--c-ink); background: rgb(var(--rgb-ink) / 0.06); }
 .memoryChip.memoryChip:not([data-on])::after { content: ""; position: absolute; left: 9px; right: 9px; top: 50%; height: 1.5px; border-radius: 1px; background: currentColor; transform: rotate(-45deg); }
+
+/* ── Oct 2026 redesign (canvas "Chat"), light theme only ──────────────────────────────
+ * Full-width conversation on the aura ground. The sidebar becomes the slide-in drawer at every width, opened by a round
+ * logo button; the top bar is floating pills (logo · chat title · actions). Dark keeps the layout above. */
+:global(:root[data-theme="light"]) .app {
+  grid-template-columns: minmax(0, 1fr);
+  background:
+    radial-gradient(42% 52% at 0% 0%, rgb(169 216 245 / 0.75), transparent 70%),
+    radial-gradient(36% 46% at 100% 0%, rgb(214 205 245 / 0.7), transparent 70%),
+    radial-gradient(30% 40% at 0% 100%, rgb(205 238 221 / 0.55), transparent 70%),
+    radial-gradient(32% 40% at 100% 100%, rgb(249 214 196 / 0.55), transparent 70%),
+    #f7f8fa;
+}
+:global(:root[data-theme="light"]) .sideWrap {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 8;
+  width: min(340px, 88vw);
+  padding: 12px;
+  transform: translateX(calc(-100% - 12px));
+  visibility: hidden;
+  transition: transform var(--d-slow) var(--e-emphasized), visibility 0s linear var(--d-slow);
+  opacity: 1;
+}
+:global(:root[data-theme="light"]) .sideWrap[data-open] { transform: none; visibility: visible; transition: transform var(--d-slow) var(--e-emphasized), visibility 0s; }
+:global(:root[data-theme="light"]) .sidebar {
+  border-radius: 26px;
+  background: rgb(255 255 255 / 0.94);
+  box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 30px 80px -30px rgb(14 15 18 / 0.4);
+}
+:global(:root[data-theme="light"]) .drawerScrim {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 7;
+  background: rgb(14 15 18 / 0.14);
+  animation: fade var(--d-base) var(--e-standard) both;
+}
+
+/* floating pill top bar */
+:global(:root[data-theme="light"]) .topbar {
+  height: 92px;
+  padding: 20px 28px 0;
+  align-items: flex-start;
+  gap: 8px;
+  background: transparent;
+  opacity: 1;
+}
+:global(:root[data-theme="light"]) .topbar .iconBtn,
+:global(:root[data-theme="light"]) .memoryChip,
+:global(:root[data-theme="light"]) .upgradeTop {
+  height: 44px;
+  background: #ffffff;
+  color: #0e0f12;
+  box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 8px 24px -12px rgb(14 15 18 / 0.16);
+}
+:global(:root[data-theme="light"]) .topbar .iconBtn { width: 44px; margin-top: 4px; }
+:global(:root[data-theme="light"]) .topbar .iconBtn:hover { background: #ffffff; transform: translateY(-1px); }
+:global(:root[data-theme="light"]) .menuBtn { display: inline-grid; width: 52px !important; height: 52px !important; margin-top: 0 !important; }
+:global(:root[data-theme="light"]) .newBtnMobile { display: inline-grid; }
+:global(:root[data-theme="light"]) .memoryChip { padding: 0 16px; margin-top: 4px; }
+:global(:root[data-theme="light"]) .upgradeTop {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 4px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: #0e0f12;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+}
+:global(:root[data-theme="light"]) .topTitle {
+  flex: 0 1 auto;
+  max-width: min(520px, 50vw);
+  margin: 0 auto;
+  height: 52px;
+  line-height: 52px;
+  padding: 0 22px;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 8px 24px -12px rgb(14 15 18 / 0.16);
+  font-size: 15px;
+  text-align: center;
+}
+:global(:root[data-theme="light"]) .topTitle:empty { visibility: hidden; }
+
+/* conversation column */
+:global(:root[data-theme="light"]) .scroll { padding-top: 108px; }
+:global(:root[data-theme="light"]) .thread { max-width: 780px; gap: 32px; }
+:global(:root[data-theme="light"]) .userMsg {
+  padding: 14px 18px;
+  border-radius: 22px 22px 6px 22px;
+  background: #ffffff;
+  border: 1px solid rgb(14 15 18 / 0.07);
+  box-shadow: 0 1px 2px rgb(14 15 18 / 0.04);
+  font-size: 16px;
+  line-height: 1.55;
+}
+:global(:root[data-theme="light"]) .dock { background: linear-gradient(to top, #f7f8fa 55%, rgb(247 248 250 / 0)); }
+:global(:root[data-theme="light"]) .dock > * { max-width: 780px; }
+
+@media (prefers-reduced-motion: reduce) {
+  :global(:root[data-theme="light"]) .sideWrap { transition: none; }
+  :global(:root[data-theme="light"]) .drawerScrim { animation: none; }
+}
+
+/* canvas "Home" welcome: centered, light-weight near-black greeting, muted lede, round white tiles */
+:global(:root[data-theme="light"]) .empty.empty { max-width: 780px; }
+:global(:root[data-theme="light"]) .welcome { align-items: center; text-align: center; }
+:global(:root[data-theme="light"]) .welcomeMark { width: 40px; height: 40px; color: #0e0f12; }
+:global(:root[data-theme="light"]) .welcomeTitle { font-size: clamp(38px, 4.2vw, 58px); line-height: 1.08; font-weight: 400; letter-spacing: -0.035em; color: #0e0f12; }
+:global(:root[data-theme="light"]) .welcomeLede { max-width: 46ch; font-size: 17px; line-height: 1.6; color: #686d78; }
+:global(:root[data-theme="light"]) .homeTile, :global(:root[data-theme="light"]) .useForOption { background: rgb(255 255 255 / 0.85); box-shadow: 0 0 0 1px rgb(14 15 18 / 0.06), 0 12px 28px -14px rgb(14 15 18 / 0.25); }
+:global(:root[data-theme="light"]) .example.example { background: rgb(255 255 255 / 0.8); box-shadow: 0 0 0 1px rgb(14 15 18 / 0.06), 0 12px 28px -14px rgb(14 15 18 / 0.25); }
+/* the delete-chat trigger in the top bar matches the other round white buttons */
+:global(:root[data-theme="light"]) .topbar > :global([class*="delete-chat-module"][class*="__trigger"]) {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-top: 4px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0e0f12;
+  opacity: 1;
+  box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 8px 24px -12px rgb(14 15 18 / 0.16);
+}

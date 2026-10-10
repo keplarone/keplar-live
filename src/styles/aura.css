@@ -48,17 +48,7 @@
   pointer-events: none;
   background: var(--aura-hero);
 }
-:root[data-theme="light"] [class*="App-module__"][class$="__sideWrap"] { position: relative; isolation: isolate; }
-:root[data-theme="light"] [class*="App-module__"][class$="__sideWrap"]::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(120% 58% at 0% 0%, rgb(var(--aura-peach) / 0.5) 0%, transparent 64%),
-    radial-gradient(120% 58% at 0% 100%, rgb(var(--aura-cyan) / 0.36) 0%, transparent 64%);
-}
+/* The app sidebar is a slide-in drawer in the light theme (App.module.css), so it no longer gets its own aura layer here. */
 :root[data-theme="light"] [class*="App-module__"][class$="__sidebar"] { position: relative; z-index: 1; }
 /* The top bar and the working Create panels are translucent in light so the corner glow stays visible while you use the app. */
 :root[data-theme="light"] [class*="App-module__"][class$="__topbar"] {
