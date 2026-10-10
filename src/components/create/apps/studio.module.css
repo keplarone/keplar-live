@@ -543,3 +543,9 @@
 /* Scrolling Create: content fades out under the tab row instead of being cut by a hard edge right beneath the tabs. */
 .start { -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 36px); mask-image: linear-gradient(to bottom, transparent 0, #000 36px); }
 .calm { padding-top: max(36px, clamp(32px, 9vh, 96px)); }
+
+/* Kind tabs: inactive pills read as solid white chips with a soft shadow (they looked washed out on the aura) */
+.kindTabs .kindTab { background: var(--c-surface-1); color: var(--c-ink-2); box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 6px 16px -10px rgb(14 15 18 / 0.3); transition: background-color 220ms ease, color 220ms ease, translate 260ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+.kindTabs .kindTab:hover { translate: 0 -1px; color: var(--c-ink); }
+:global(:root[data-theme="dark"]) .kindTabs .kindTab:not([aria-selected="true"]) { background: rgb(255 255 255 / 0.08); }
+.kindBar.kindBar { padding-top: 0; padding-bottom: 12px; }

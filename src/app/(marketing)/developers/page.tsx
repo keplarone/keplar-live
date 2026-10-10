@@ -20,11 +20,10 @@ export const metadata = pageMeta(
 const fmt = (n: number) => n.toLocaleString("en-US");
 const range = (a: number, b: number) => (a === b ? fmt(a) : `${fmt(a)}–${fmt(b)}`);
 
-/** Free / Pro / Enterprise, mapped onto the real plans (Pro = Lite, Plus and Pro; Enterprise = Business). Numbers come from the policy modules. */
+/** Free / Pro, mapped onto the real plans (Pro = Lite, Plus and Pro). Business API access comes with Keplar Business (business.keplar.one). Numbers come from the policy modules. */
 const TIERS = [
   { id: "free", name: "Free", plans: "free", note: "OpenRouter :free models only. Good for prototypes and a small site widget.", api: API_POLICY.free, embed: EMBED_POLICY.free, cta: { href: "/signup?next=/account%23api", label: "Create a free key" } },
   { id: "pro", name: "Pro", plans: "lite · plus · pro", note: "Premium models and Keplar consensus, metered from your plan's credits exactly like the app.", api: { maxKeys: [API_POLICY.lite.maxKeys, API_POLICY.pro.maxKeys], keyPerMinute: [API_POLICY.lite.keyPerMinute, API_POLICY.pro.keyPerMinute], keyPerDay: [API_POLICY.lite.keyPerDay, API_POLICY.pro.keyPerDay] }, embed: { maxWidgets: [EMBED_POLICY.lite.maxWidgets, EMBED_POLICY.pro.maxWidgets] }, cta: { href: "/pricing", label: "See plans" }, featured: true },
-  { id: "enterprise", name: "Enterprise", plans: "business", note: "Highest limits, Team workspaces with roles, and a contract-set credit pool.", api: API_POLICY.business, embed: EMBED_POLICY.business, cta: { href: "/enterprise", label: "Talk to us" } },
 ] as const;
 
 const val = (v: number | readonly number[]) => (Array.isArray(v) ? range(v[0]!, v[1]!) : fmt(v as number));

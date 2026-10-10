@@ -296,19 +296,6 @@ const m: MarketingCatalog = {
           "Mayor prioridad y concurrencia"
         ],
         "cta": "Mejorar a Pro"
-      },
-      "business": {
-        "summary": "¿Tienes un negocio? Responde, luego crea, luego actúa.",
-        "features": [
-          "Comercio, CRM, bandeja de entrada y un panel de negocio",
-          "Agentes autónomos que siguen trabajando después de cerrar la pestaña",
-          "Topes de gasto estrictos y aprobaciones humanas",
-          "Permisos detallados y por herramienta",
-          "Registros de auditoría, reversión y parada de emergencia",
-          "Aislamiento de secretos y sandboxing",
-          "Aprobaciones para despliegues en producción y pagos"
-        ],
-        "cta": "Contactar con Keplar"
       }
     },
     "fitTitle": "¿Qué plan te encaja?",
@@ -327,11 +314,6 @@ const m: MarketingCatalog = {
         "who": "Construyes y creas mucho.",
         "outcome": "Más del doble de créditos que Plus, video, más proyectos y agentes, y mayor prioridad.",
         "cta": "Mejorar a Pro"
-      },
-      "business": {
-        "who": "Tu negocio funciona con ello.",
-        "outcome": "Comercio, CRM y agentes con topes de gasto, aprobaciones y registros de auditoría.",
-        "cta": "Contactar con Keplar"
       }
     },
     "compareTitle": "Compara todos los planes",

@@ -8,6 +8,7 @@
  */
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { TwoTone } from "@/components/page/TwoTone";
 import s from "../create.module.css";
 import { ReferencePicker, type RefItem, type RefLimits } from "./ReferencePicker";
 import v from "./video.module.css";
@@ -268,7 +269,7 @@ export function VideoStudio() {
   return (
     <div className={v.root} data-testid="video-studio">
       <div className={v.head}>
-        <h2 className={s.panelTitle}>Create video <span className={v.badge} data-state={off ? "off" : "on"} data-testid="video-badge">{label}</span></h2>
+        <h2 className={s.panelTitle}><TwoTone text="Create video" /> <span className={v.badge} data-state={off ? "off" : "on"} data-testid="video-badge">{label}</span></h2>
         <p className={s.muted}>Powered by Higgsfield. You see the cost first and are charged only for videos that are delivered.</p>
       </div>
       {off ? <p className={v.banner} role="status" data-testid="video-not-configured">Video generation isn&apos;t connected yet (Not configured). Nothing is generated until Higgsfield is connected.</p> : null}

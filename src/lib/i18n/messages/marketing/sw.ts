@@ -296,19 +296,6 @@ const m: MarketingCatalog = {
           "Kipaumbele na uwezo wa kufanya kazi sambamba wa juu zaidi"
         ],
         "cta": "Pandisha hadi Pro"
-      },
-      "business": {
-        "summary": "Unaendesha biashara? Jibu, kisha Tengeneza, kisha Tenda.",
-        "features": [
-          "Biashara mtandaoni, CRM, kikasha na dashibodi ya biashara",
-          "Mawakala huru wanaoendelea kufanya kazi baada ya kichupo kufungwa",
-          "Vikomo madhubuti vya matumizi na hatua za idhini ya binadamu",
-          "Ruhusa za kina hadi ngazi ya zana",
-          "Kumbukumbu za ukaguzi, kurudisha nyuma na kusimamisha kwa dharura",
-          "Utenganishaji wa siri na sandbox",
-          "Idhini za kupeleka kwenye uzalishaji na malipo"
-        ],
-        "cta": "Wasiliana na Keplar"
       }
     },
     "fitTitle": "Mpango upi unakufaa?",
@@ -327,11 +314,6 @@ const m: MarketingCatalog = {
         "who": "Unajenga na kubuni mengi.",
         "outcome": "Zaidi ya mara mbili ya krediti za Plus, video, miradi na mawakala zaidi, na kipaumbele cha juu.",
         "cta": "Pandisha hadi Pro"
-      },
-      "business": {
-        "who": "Unaendesha biashara yako kwa hii.",
-        "outcome": "Biashara mtandaoni, CRM na mawakala wenye vikomo vya matumizi, hatua za idhini na kumbukumbu za ukaguzi.",
-        "cta": "Wasiliana na Keplar"
       }
     },
     "compareTitle": "Linganisha mipango yote",

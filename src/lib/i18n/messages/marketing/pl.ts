@@ -296,19 +296,6 @@ const m: MarketingCatalog = {
           "Wyższy priorytet i więcej zadań równolegle"
         ],
         "cta": "Przejdź na Pro"
-      },
-      "business": {
-        "summary": "Prowadzisz firmę? Odpowiadaj, potem twórz, potem działaj.",
-        "features": [
-          "Sprzedaż, CRM, skrzynka odbiorcza i panel firmy",
-          "Autonomiczni agenci, którzy pracują dalej po zamknięciu karty",
-          "Twarde limity wydatków i akceptacja przez człowieka",
-          "Szczegółowe uprawnienia, aż do poziomu narzędzi",
-          "Dzienniki audytu, przywracanie i awaryjne zatrzymanie",
-          "Izolacja sekretów i sandboxing",
-          "Akceptacja wdrożeń produkcyjnych i płatności"
-        ],
-        "cta": "Skontaktuj się z Keplar"
       }
     },
     "fitTitle": "Który plan pasuje?",
@@ -327,11 +314,6 @@ const m: MarketingCatalog = {
         "who": "Dużo budujesz i tworzysz.",
         "outcome": "Ponad dwa razy więcej kredytów niż w Plus, wideo, więcej projektów i agentów oraz wyższy priorytet.",
         "cta": "Przejdź na Pro"
-      },
-      "business": {
-        "who": "Twoja firma na tym działa.",
-        "outcome": "Sprzedaż, CRM i agenci z limitami wydatków, akceptacjami i dziennikami audytu.",
-        "cta": "Skontaktuj się z Keplar"
       }
     },
     "compareTitle": "Porównaj wszystkie plany",

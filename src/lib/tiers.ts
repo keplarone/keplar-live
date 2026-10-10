@@ -91,23 +91,8 @@ export const tiers: Tier[] = [
     ],
     cta: { label: "Upgrade to Pro", href: "/checkout?plan=pro" },
   },
-  {
-    id: "business",
-    name: brand.plans.business,
-    price: null,
-    cadence: "custom",
-    summary: "Run a business? Answer, then Create, then Act.",
-    features: [
-      "Commerce, CRM, inbox, and a business dashboard",
-      "Autonomous agents that keep working after the tab closes",
-      "Hard spend caps and human approval gates",
-      "Granular and tool-level permissions",
-      "Audit logs, rollback, and emergency stop",
-      "Secrets isolation and sandboxing",
-      "Production deploy and payment approvals",
-    ],
-    cta: { label: `Contact ${brand.name}`, href: "/inquire" },
-  },
+  // Business is no longer sold on keplar.one: business.keplar.one has its own plans. The "business" plan id stays in the type
+  // (and in billing and limits) so accounts already on it keep working.
 ];
 
 export const formatPrice = (t: Tier) => (t.price === null ? "Custom" : `$${t.price}`);

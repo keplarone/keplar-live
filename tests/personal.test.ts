@@ -17,7 +17,7 @@ test("onboarding: personal by default; business tab prominent only for business/
 });
 
 test("honest copy: prices unchanged, Plus doesn't promise web lookups, health use case has a caveat", () => {
-  assert.deepEqual(tiers.map((t) => t.price), [0, 20, 45, 99, null]);
+  assert.deepEqual(tiers.map((t) => t.price), [0, 20, 45, 99]); // Business is sold at business.keplar.one
   const plus = tiers.find((t) => t.id === "plus")!;
   assert.ok(!plus.features.some((f) => /^web,/i.test(f)), "no 'Web, coding…' claim");
   assert.ok(plus.features.some((f) => /web lookups off/i.test(f)));

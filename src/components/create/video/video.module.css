@@ -54,3 +54,84 @@
 @media (max-width: 900px) {
   .root { min-width: 0; max-width: 100%; overflow-x: hidden; padding-left: max(12px, env(safe-area-inset-left)); padding-right: max(12px, env(safe-area-inset-right)); }
 }
+
+/* ── Oct 2026 redesign: the media studio in the site's light style, with smooth motion ──
+ * Centred column on the aura backdrop; a two-tone light title; frosted rounded panels; sentence-case labels; soft rounded
+ * inputs. Motion: the header, form and results rise in one after another; choices lift on hover and the chosen one gets an
+ * ink ring; the empty result area breathes a slow colour glow; anything still generating carries a soft shimmer; finished
+ * media fade and settle in. All of it stops under prefers-reduced-motion. */
+.root { max-width: 1240px; width: 100%; margin: 0 auto; padding: 8px 28px 48px; box-sizing: border-box; gap: 24px; }
+.head { gap: 10px; }
+.head h2 { margin: 0; font-size: clamp(32px, 3.4vw, 44px); line-height: 1.08; font-weight: var(--w-regular); letter-spacing: -0.035em; color: var(--c-ink); }
+.head p { margin: 0; font-size: 16px; line-height: 1.6; color: var(--c-ink-3); max-width: 60ch; }
+.grid { gap: 24px; }
+.panel { border: 0; border-radius: 26px; padding: 22px; gap: 18px; background: color-mix(in srgb, var(--c-surface-1) 84%, transparent); box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 24px 60px -32px rgb(14 15 18 / 0.32); }
+.banner { border-radius: 18px; background: color-mix(in srgb, var(--c-surface-1) 70%, transparent); box-shadow: inset 0 0 0 1px rgb(var(--rgb-ink) / 0.06); }
+.field > span, .lbl { font-size: 13px; font-weight: var(--w-medium); letter-spacing: 0; text-transform: none; color: var(--c-ink-2); }
+.root textarea, .root select, .root input[type="text"], .root input[type="url"], .root input[type="number"] {
+  border-radius: 16px;
+  border: 0;
+  background: rgb(var(--rgb-ink) / 0.045);
+  box-shadow: inset 0 0 0 1px rgb(var(--rgb-ink) / 0.08);
+  transition: box-shadow 220ms ease, background-color 220ms ease;
+}
+.root textarea:focus-visible, .root select:focus-visible, .root input:focus-visible { outline: none; background: var(--c-surface-1); box-shadow: inset 0 0 0 1.5px var(--c-ink), 0 8px 24px -12px rgb(14 15 18 / 0.25); }
+.root textarea { padding: 14px 16px; font-size: 16px; line-height: 1.5; }
+.confirm { border-radius: 18px; background: rgb(var(--rgb-ink) / 0.04); }
+.hint { font-size: 12.5px; line-height: 1.5; }
+
+@keyframes media-rise { from { opacity: 0; translate: 0 16px; } }
+@keyframes media-glow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes media-shimmer { from { background-position: 150% 0; } to { background-position: -50% 0; } }
+@keyframes media-in { from { opacity: 0; scale: 1.03; filter: blur(8px); } }
+@media (prefers-reduced-motion: no-preference) {
+  .head { animation: media-rise 600ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .grid > :nth-child(1) { animation: media-rise 640ms cubic-bezier(0.16, 1, 0.3, 1) 90ms both; }
+  .grid > :nth-child(2) { animation: media-rise 640ms cubic-bezier(0.16, 1, 0.3, 1) 180ms both; }
+}
+
+/* Video: models as rounded choice cards that lift and take an ink ring when chosen */
+.models { gap: 8px; }
+.model { gap: 12px; padding: 14px 16px; border: 0; border-radius: 18px; background: rgb(var(--rgb-ink) / 0.035); box-shadow: inset 0 0 0 1px rgb(var(--rgb-ink) / 0.06); transition: translate 280ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 240ms ease, background-color 240ms ease; }
+.model:hover { translate: 0 -2px; background: rgb(var(--rgb-ink) / 0.05); }
+.model[data-on="true"] { border: 0; background: var(--c-surface-1); box-shadow: inset 0 0 0 1.5px var(--c-ink), 0 10px 26px -14px rgb(14 15 18 / 0.35); }
+.model input { accent-color: var(--c-ink); margin-top: 4px; }
+.model small { margin-top: 3px; line-height: 1.45; }
+.tag { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: rgb(var(--rgb-ink) / 0.06); font-size: 11.5px; color: var(--c-ink-2); vertical-align: 2px; }
+.badge { border: 0; background: rgb(var(--rgb-ink) / 0.07); font-size: 12px; font-weight: var(--w-medium); vertical-align: 10px; }
+.ref { border: 0; border-radius: 18px; background: rgb(var(--rgb-ink) / 0.035); }
+.ref legend { font-size: 13px; font-weight: var(--w-medium); letter-spacing: 0; text-transform: none; color: var(--c-ink-2); }
+.thumb img, .thumb video, .tileMedia { border-radius: 16px; }
+@media (prefers-reduced-motion: no-preference) {
+  .model { animation: media-rise 520ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .model:nth-child(2) { animation-delay: 50ms; }
+  .model:nth-child(3) { animation-delay: 100ms; }
+  .model:nth-child(4) { animation-delay: 150ms; }
+  .model:nth-child(5) { animation-delay: 200ms; }
+  .model:nth-child(n + 6) { animation-delay: 250ms; }
+}
+
+/* Results: an empty stage that breathes a slow aura; tiles that rise, shimmer while generating and settle in when delivered */
+.empty {
+  display: grid; place-items: center; min-height: 420px; margin: 0; padding: 32px; border-radius: 26px; text-align: center;
+  font-size: 17px; color: var(--c-ink-2);
+  background: linear-gradient(120deg, rgb(169 216 245 / 0.45), rgb(214 205 245 / 0.45), rgb(249 214 196 / 0.4), rgb(205 238 221 / 0.4), rgb(169 216 245 / 0.45));
+  background-size: 300% 300%;
+  box-shadow: inset 0 0 0 1px rgb(var(--rgb-ink) / 0.06);
+}
+:global(:root[data-theme="dark"]) .empty { background-image: linear-gradient(120deg, rgb(38 92 140 / 0.35), rgb(74 58 140 / 0.35), rgb(128 70 52 / 0.3), rgb(34 104 80 / 0.3), rgb(38 92 140 / 0.35)); }
+.gallery { gap: 16px; }
+.tile { padding: 8px 8px 12px; border-radius: 22px; background: color-mix(in srgb, var(--c-surface-1) 84%, transparent); box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 14px 30px -18px rgb(14 15 18 / 0.3); transition: translate 300ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 240ms ease; }
+.tile:hover { translate: 0 -4px; }
+.tileMeta { padding: 0 6px; }
+.tile:not([data-status="completed"]):not([data-status="failed"]) .tileMedia {
+  background: linear-gradient(100deg, rgb(var(--rgb-ink) / 0.04) 30%, rgb(var(--rgb-ink) / 0.1) 50%, rgb(var(--rgb-ink) / 0.04) 70%);
+  background-size: 250% 100%;
+}
+.cmp { border: 0; border-radius: 22px; background: color-mix(in srgb, var(--c-surface-1) 80%, transparent); box-shadow: 0 14px 30px -18px rgb(14 15 18 / 0.3); }
+@media (prefers-reduced-motion: no-preference) {
+  .empty { animation: media-glow 14s ease-in-out infinite; }
+  .tile { animation: media-rise 520ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .tile:not([data-status="completed"]):not([data-status="failed"]) .tileMedia { animation: media-shimmer 1.8s ease-in-out infinite; }
+  .tileMedia video { animation: media-in 700ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+}

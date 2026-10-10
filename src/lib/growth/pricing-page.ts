@@ -78,12 +78,11 @@ export const compareGroups: CompareGroup[] = [
     title: "Developers and teams",
     rows: [
       { label: "API (Beta)", hint: "Requests per key per day.", values: per((p) => (API_POLICY[p].available ? `${n(API_POLICY[p].keyPerDay)} a day${p === "free" ? " (free models)" : ""}` : null)) },
-      { label: "Spend caps, approvals, audit logs", values: per((p) => (p === "business" ? "Included" : null)) },
     ],
   },
 ];
 
-/** Value-led plan chooser: who each paid step is for, in their words. Order: Free → Plus → Pro → Business. */
+/** Value-led plan chooser: who each paid step is for, in their words. Order: Free → Plus → Pro (Business lives at business.keplar.one). */
 export type PlanFit = { plan: PlanKey; who: string; outcome: string; cta: { label: string; href: string } };
 
 export const planFits: PlanFit[] = [
@@ -104,12 +103,6 @@ export const planFits: PlanFit[] = [
     who: "You build and create a lot.",
     outcome: "More than twice the credits of Plus, video, more projects and agents, and higher priority.",
     cta: { label: "Upgrade to Pro", href: "/checkout?plan=pro" },
-  },
-  {
-    plan: "business",
-    who: "You run a business on it.",
-    outcome: "Commerce, CRM and agents with spend caps, approval gates and audit logs.",
-    cta: { label: "Contact Keplar", href: "/inquire" },
   },
 ];
 
@@ -149,7 +142,7 @@ export function pricingFaq(opts: { overageLive?: boolean } = {}): { q: string; a
     },
     {
       q: "Do you have team or business pricing?",
-      a: "Individual plans are per person. For a team, or for business tools with spend caps and approvals, use the Contact form and we will put together a plan.",
+      a: "Plans on keplar.one are per person. Keplar Business, with its own plans for teams and companies, lives at business.keplar.one.",
     },
   ];
 }

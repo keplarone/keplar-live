@@ -1882,3 +1882,8 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 /* Empty chat: the centred composer follows the scroll (KeplarApp onScroll publishes --empty-scroll), so on phones and short
    windows the greeting, composer, starters and the "use Keplar for" card scroll as one column instead of passing under it. */
 :global(:root[data-theme]) .main[data-empty] .dock { translate: 0 calc(var(--empty-scroll, 0px) * -1); will-change: translate; }
+
+/* Create / Slides hosts clear the redesigned top bar (84px, 72px on phones), so the kind tabs sit below the title pill
+   instead of riding up under it. */
+:global(:root[data-theme]) .createHost { padding-top: 76px; }
+@media (max-width: 899px) { :global(:root[data-theme]) .createHost { padding-top: 68px; } }

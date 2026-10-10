@@ -296,19 +296,6 @@ const m: MarketingCatalog = {
           "Ưu tiên và số tác vụ đồng thời cao hơn"
         ],
         "cta": "Nâng cấp lên Pro"
-      },
-      "business": {
-        "summary": "Điều hành doanh nghiệp? Trả lời, rồi Tạo, rồi Hành động.",
-        "features": [
-          "Thương mại, CRM, hộp thư và bảng điều khiển kinh doanh",
-          "Tác tử tự hành vẫn làm việc sau khi đóng tab",
-          "Trần chi tiêu cứng và cổng phê duyệt của con người",
-          "Phân quyền chi tiết đến cấp công cụ",
-          "Nhật ký kiểm toán, quay lui và dừng khẩn cấp",
-          "Cô lập bí mật và sandbox",
-          "Phê duyệt triển khai production và thanh toán"
-        ],
-        "cta": "Liên hệ Keplar"
       }
     },
     "fitTitle": "Gói nào phù hợp?",
@@ -327,11 +314,6 @@ const m: MarketingCatalog = {
         "who": "Bạn xây dựng và sáng tạo rất nhiều.",
         "outcome": "Hơn gấp đôi tín dụng của Plus, video, nhiều dự án và tác tử hơn, và ưu tiên cao hơn.",
         "cta": "Nâng cấp lên Pro"
-      },
-      "business": {
-        "who": "Bạn điều hành doanh nghiệp bằng nó.",
-        "outcome": "Thương mại, CRM và tác tử với trần chi tiêu, cổng phê duyệt và nhật ký kiểm toán.",
-        "cta": "Liên hệ Keplar"
       }
     },
     "compareTitle": "So sánh mọi gói",

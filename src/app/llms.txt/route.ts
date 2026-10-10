@@ -33,7 +33,7 @@ export function GET() {
     line("/product", "Product overview", "what Keplar does and who it is for"),
     line("/how-it-works", "How it works", "the steps from question to one answer, and the limits"),
     line("/models", modelsPage.h1, "the Free and paid model rosters, built from the product"),
-    line("/pricing", "Pricing", "Free, Lite, Plus, Pro, Business"),
+    line("/pricing", "Pricing", "Free, Lite, Plus, Pro (Keplar Business has its own plans at business.keplar.one)"),
     line("/about", aboutPage.h1, "who made Keplar: two co-founders, Hassen and Hussain Keder"),
     "",
     "## Explainers (sourced, dated)",

@@ -296,19 +296,6 @@ const m: MarketingCatalog = {
           "Daha yüksek öncelik ve eşzamanlılık"
         ],
         "cta": "Pro’ya yükselt"
-      },
-      "business": {
-        "summary": "Bir işletmeniz mi var? Önce yanıtla, sonra oluştur, sonra harekete geç.",
-        "features": [
-          "Ticaret, CRM, gelen kutusu ve işletme paneli",
-          "Sekme kapandıktan sonra da çalışmaya devam eden otonom ajanlar",
-          "Kesin harcama sınırları ve insan onayı",
-          "Araç düzeyine kadar ayrıntılı izinler",
-          "Denetim kayıtları, geri alma ve acil durdurma",
-          "Gizli bilgilerin yalıtımı ve korumalı alan",
-          "Canlı ortam dağıtımları ve ödemeler için onay"
-        ],
-        "cta": "Keplar ile iletişime geçin"
       }
     },
     "fitTitle": "Hangi plan size uygun?",
@@ -327,11 +314,6 @@ const m: MarketingCatalog = {
         "who": "Çok şey geliştirip üretiyorsunuz.",
         "outcome": "Plus’ın iki katından fazla kredi, video, daha fazla proje ve ajan, daha yüksek öncelik.",
         "cta": "Pro’ya yükselt"
-      },
-      "business": {
-        "who": "İşletmeniz bununla çalışıyor.",
-        "outcome": "Harcama sınırları, onay adımları ve denetim kayıtlarıyla ticaret, CRM ve ajanlar.",
-        "cta": "Keplar ile iletişime geçin"
       }
     },
     "compareTitle": "Tüm planları karşılaştırın",

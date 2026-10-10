@@ -296,19 +296,6 @@ const m: MarketingCatalog = {
           "更高的優先順序和併發"
         ],
         "cta": "升級到 Pro"
-      },
-      "business": {
-        "summary": "經營企業？先回答，再建立，然後行動。",
-        "features": [
-          "電商、CRM、收件箱和業務儀表板",
-          "關閉標籤頁後仍持續工作的自主AI 代理",
-          "硬性支出上限和人工審批關卡",
-          "細粒度和工具級許可權",
-          "審計日誌、回滾和緊急停止",
-          "金鑰隔離和沙箱",
-          "生產部署和付款審批"
-        ],
-        "cta": "聯絡 Keplar"
       }
     },
     "fitTitle": "哪個方案適合你？",
@@ -327,11 +314,6 @@ const m: MarketingCatalog = {
         "who": "你經常構建和創作。",
         "outcome": "點數是 Plus 的兩倍以上，影片，更多專案和AI 代理，以及更高優先順序。",
         "cta": "升級到 Pro"
-      },
-      "business": {
-        "who": "你用它經營企業。",
-        "outcome": "電商、CRM 和AI 代理，配有支出上限、審批關卡和審計日誌。",
-        "cta": "聯絡 Keplar"
       }
     },
     "compareTitle": "比較所有方案",

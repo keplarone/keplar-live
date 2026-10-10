@@ -296,19 +296,6 @@ const m: MarketingCatalog = {
           "Prioridade e concorrência maiores"
         ],
         "cta": "Fazer upgrade para Pro"
-      },
-      "business": {
-        "summary": "Tem uma empresa? Responda, depois crie, depois aja.",
-        "features": [
-          "Comércio, CRM, caixa de entrada e um painel de negócios",
-          "Agentes autônomos que continuam trabalhando depois que a aba fecha",
-          "Limites de gasto rígidos e aprovações humanas",
-          "Permissões granulares, até o nível de ferramenta",
-          "Logs de auditoria, reversão e parada de emergência",
-          "Isolamento de segredos e sandboxing",
-          "Aprovações de deploy em produção e de pagamentos"
-        ],
-        "cta": "Falar com o Keplar"
       }
     },
     "fitTitle": "Qual plano combina com você?",
@@ -327,11 +314,6 @@ const m: MarketingCatalog = {
         "who": "Você constrói e cria muito.",
         "outcome": "Mais que o dobro dos créditos do Plus, vídeo, mais projetos e agentes, e prioridade maior.",
         "cta": "Fazer upgrade para Pro"
-      },
-      "business": {
-        "who": "Sua empresa funciona com ele.",
-        "outcome": "Comércio, CRM e agentes com limites de gasto, aprovações e logs de auditoria.",
-        "cta": "Falar com o Keplar"
       }
     },
     "compareTitle": "Compare todos os planos",

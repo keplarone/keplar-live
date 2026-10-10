@@ -296,19 +296,6 @@ const m: MarketingCatalog = {
           "Hogere prioriteit en meer gelijktijdigheid"
         ],
         "cta": "Upgraden naar Pro"
-      },
-      "business": {
-        "summary": "Heb je een bedrijf? Antwoorden, dan maken, dan handelen.",
-        "features": [
-          "Commerce, CRM, inbox en een bedrijfsdashboard",
-          "Autonome agents die doorwerken nadat het tabblad is gesloten",
-          "Harde uitgavenlimieten en menselijke goedkeuring",
-          "Fijnmazige rechten, tot op toolniveau",
-          "Auditlogs, terugdraaien en noodstop",
-          "Geïsoleerde secrets en sandboxing",
-          "Goedkeuring voor productie-deploys en betalingen"
-        ],
-        "cta": "Neem contact op met Keplar"
       }
     },
     "fitTitle": "Welk abonnement past bij je?",
@@ -327,11 +314,6 @@ const m: MarketingCatalog = {
         "who": "Je bouwt en maakt veel.",
         "outcome": "Meer dan twee keer zoveel credits als Plus, video, meer projecten en agents, en hogere prioriteit.",
         "cta": "Upgraden naar Pro"
-      },
-      "business": {
-        "who": "Je bedrijf draait erop.",
-        "outcome": "Commerce, CRM en agents met uitgavenlimieten, goedkeuringsstappen en auditlogs.",
-        "cta": "Neem contact op met Keplar"
       }
     },
     "compareTitle": "Vergelijk alle abonnementen",

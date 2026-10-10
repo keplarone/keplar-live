@@ -296,19 +296,6 @@ const m: MarketingCatalog = {
           "Höhere Priorität und mehr Parallelität"
         ],
         "cta": "Auf Pro upgraden"
-      },
-      "business": {
-        "summary": "Du führst ein Unternehmen? Antworten, dann erstellen, dann handeln.",
-        "features": [
-          "Commerce, CRM, Posteingang und ein Business-Dashboard",
-          "Autonome Agenten, die weiterarbeiten, nachdem der Tab geschlossen ist",
-          "Feste Ausgabenlimits und menschliche Freigaben",
-          "Feingranulare Berechtigungen bis auf Tool-Ebene",
-          "Audit-Logs, Zurücksetzen und Notstopp",
-          "Isolierte Secrets und Sandboxing",
-          "Freigaben für Produktions-Deployments und Zahlungen"
-        ],
-        "cta": "Keplar kontaktieren"
       }
     },
     "fitTitle": "Welcher Tarif passt?",
@@ -327,11 +314,6 @@ const m: MarketingCatalog = {
         "who": "Du baust und erstellst viel.",
         "outcome": "Mehr als doppelt so viele Credits wie Plus, Video, mehr Projekte und Agenten und höhere Priorität.",
         "cta": "Auf Pro upgraden"
-      },
-      "business": {
-        "who": "Dein Unternehmen läuft darauf.",
-        "outcome": "Commerce, CRM und Agenten mit Ausgabenlimits, Freigaben und Audit-Logs.",
-        "cta": "Keplar kontaktieren"
       }
     },
     "compareTitle": "Alle Tarife vergleichen",

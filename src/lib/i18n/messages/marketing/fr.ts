@@ -296,19 +296,6 @@ const m: MarketingCatalog = {
           "Priorité et simultanéité accrues"
         ],
         "cta": "Passer à Pro"
-      },
-      "business": {
-        "summary": "Vous dirigez une entreprise ? Répondre, puis créer, puis agir.",
-        "features": [
-          "Commerce, CRM, boîte de réception et tableau de bord",
-          "Agents autonomes qui continuent à travailler après la fermeture de l’onglet",
-          "Plafonds de dépenses stricts et validations humaines",
-          "Permissions fines, jusqu’au niveau de chaque outil",
-          "Journaux d’audit, retour arrière et arrêt d’urgence",
-          "Isolation des secrets et sandboxing",
-          "Validations des déploiements en production et des paiements"
-        ],
-        "cta": "Contacter Keplar"
       }
     },
     "fitTitle": "Quelle offre vous convient ?",
@@ -327,11 +314,6 @@ const m: MarketingCatalog = {
         "who": "Vous construisez et créez beaucoup.",
         "outcome": "Plus du double des crédits de Plus, la vidéo, davantage de projets et d’agents, et une priorité plus élevée.",
         "cta": "Passer à Pro"
-      },
-      "business": {
-        "who": "Votre entreprise en dépend.",
-        "outcome": "Commerce, CRM et agents avec plafonds de dépenses, validations et journaux d’audit.",
-        "cta": "Contacter Keplar"
       }
     },
     "compareTitle": "Comparer toutes les offres",

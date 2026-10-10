@@ -16,6 +16,7 @@ import {
   filterSlashCommands,
   type SlashCommand,
 } from "@/lib/images/slash-commands";
+import { TwoTone } from "@/components/page/TwoTone";
 import s from "./create.module.css";
 import b from "./images.module.css";
 
@@ -385,7 +386,7 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
     return (
       <div className={b.root}>
         <div className={`${b.panel} ${b.locked}`}>
-          <h2 className={b.h1}>Create images</h2>
+          <h2 className={b.h1}><TwoTone text="Create images" /></h2>
           <p className={s.muted}>{config.message}</p>
           <Link href="/pricing" className={s.btn}>See plans</Link>
         </div>
@@ -400,7 +401,7 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
   return (
     <div className={b.root}>
       <div className={b.head}>
-        <h2 className={b.h1}>Create images</h2>
+        <h2 className={b.h1}><TwoTone text="Create images" /></h2>
         <p className={s.muted}>Describe an image. You see the cost first, and you are charged only if the image is created.</p>
       </div>
       {!config.configured ? <p className={b.banner} role="status">Image generation isn&apos;t connected yet (Not configured).</p> : null}

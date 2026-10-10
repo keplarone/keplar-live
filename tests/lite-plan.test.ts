@@ -71,7 +71,7 @@ test("lite: entitlements - premium chat and Study yes; images, Slides, MCP, agen
 
 test("lite: pricing data has a Lite card between Free and Plus", () => {
   const ids = tiers.map((t) => t.id);
-  assert.deepEqual(ids, ["free", "lite", "plus", "pro", "business"]);
+  assert.deepEqual(ids, ["free", "lite", "plus", "pro"]); // Business is sold at business.keplar.one
   const t = tiers.find((x) => x.id === "lite")!;
   assert.equal(t.price, 20);
   assert.equal(t.cta.href, "/checkout?plan=lite");

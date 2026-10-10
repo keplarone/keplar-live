@@ -26,7 +26,7 @@ test("theme: Light by default for everyone (even on a dark device); Dark and Aut
   assert.equal(runScript({ stored: "light" }).theme, "light");
   assert.equal(runScript({ stored: "auto", osDark: false }).theme, "light");
   assert.equal(runScript({ stored: "auto", osDark: true }).theme, "dark");
-  assert.equal(runScript({ stored: null, cookie: "a=1; keplar-theme=light" }).theme, "light", "cookie used when storage is empty");
+  assert.equal(runScript({ stored: null, cookie: "a=1; keplar-theme-v2=light" }).theme, "light", "cookie used when storage is empty");
   assert.equal(runScript({ stored: "neon" }).pref, "light");
   assert.equal(resolveTheme("auto", true), "dark");
   assert.equal(resolveTheme("light", true), "light");
@@ -45,12 +45,12 @@ test("theme: storedThemePref reads the saved choice (storage, then cookie), not 
     g.localStorage = { getItem: () => stored };
     assert.equal(storedThemePref(), "light");
     stored = null;
-    (g.document as { cookie: string }).cookie = "x=1; keplar-theme=auto";
+    (g.document as { cookie: string }).cookie = "x=1; keplar-theme-v2=auto";
     assert.equal(storedThemePref(), "auto", "cookie when storage is empty");
-    (g.document as { cookie: string }).cookie = "keplar-theme=neon";
+    (g.document as { cookie: string }).cookie = "keplar-theme-v2=neon";
     assert.equal(storedThemePref(), null, "no valid saved choice");
     g.localStorage = { getItem: () => { throw new Error("blocked"); } };
-    (g.document as { cookie: string }).cookie = "keplar-theme=light";
+    (g.document as { cookie: string }).cookie = "keplar-theme-v2=light";
     assert.equal(storedThemePref(), "light", "storage blocked falls back to the cookie");
   } finally {
     g.document = prev.document;

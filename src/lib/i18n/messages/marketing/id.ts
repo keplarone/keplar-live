@@ -296,19 +296,6 @@ const m: MarketingCatalog = {
           "Prioritas dan konkurensi lebih tinggi"
         ],
         "cta": "Tingkatkan ke Pro"
-      },
-      "business": {
-        "summary": "Menjalankan bisnis? Jawab, lalu Buat, lalu Bertindak.",
-        "features": [
-          "Commerce, CRM, kotak masuk, dan dasbor bisnis",
-          "Agen otonom yang tetap bekerja setelah tab ditutup",
-          "Batas pengeluaran tegas dan gerbang persetujuan manusia",
-          "Izin terperinci hingga tingkat alat",
-          "Log audit, rollback, dan penghentian darurat",
-          "Isolasi rahasia dan sandbox",
-          "Persetujuan deploy produksi dan pembayaran"
-        ],
-        "cta": "Hubungi Keplar"
       }
     },
     "fitTitle": "Paket mana yang cocok?",
@@ -327,11 +314,6 @@ const m: MarketingCatalog = {
         "who": "Anda banyak membangun dan berkarya.",
         "outcome": "Lebih dari dua kali kredit Plus, video, lebih banyak proyek dan agen, serta prioritas lebih tinggi.",
         "cta": "Tingkatkan ke Pro"
-      },
-      "business": {
-        "who": "Anda menjalankan bisnis dengan ini.",
-        "outcome": "Commerce, CRM, dan agen dengan batas pengeluaran, gerbang persetujuan, dan log audit.",
-        "cta": "Hubungi Keplar"
       }
     },
     "compareTitle": "Bandingkan semua paket",

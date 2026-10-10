@@ -296,19 +296,6 @@ const m: MarketingCatalog = {
           "Mas mataas na priority at concurrency"
         ],
         "cta": "Mag-upgrade sa Pro"
-      },
-      "business": {
-        "summary": "May negosyo ka? Sumagot, saka Gumawa, saka Kumilos.",
-        "features": [
-          "Commerce, CRM, inbox at business dashboard",
-          "Mga autonomous agent na patuloy na nagtatrabaho kahit sarado na ang tab",
-          "Mahigpit na limit sa gastos at human approval gate",
-          "Detalyado at tool-level na permission",
-          "Audit log, rollback at emergency stop",
-          "Paghihiwalay ng secret at sandboxing",
-          "Approval para sa production deploy at pagbabayad"
-        ],
-        "cta": "Makipag-ugnayan sa Keplar"
       }
     },
     "fitTitle": "Aling plan ang bagay?",
@@ -327,11 +314,6 @@ const m: MarketingCatalog = {
         "who": "Marami kang binubuo at ginagawa.",
         "outcome": "Higit sa dobleng credit ng Plus, video, mas maraming proyekto at agent, at mas mataas na priority.",
         "cta": "Mag-upgrade sa Pro"
-      },
-      "business": {
-        "who": "Dito mo pinapatakbo ang negosyo mo.",
-        "outcome": "Commerce, CRM at agent na may limit sa gastos, approval gate at audit log.",
-        "cta": "Makipag-ugnayan sa Keplar"
       }
     },
     "compareTitle": "Ihambing ang lahat ng plan",

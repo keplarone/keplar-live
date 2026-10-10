@@ -296,19 +296,6 @@ const m: MarketingCatalog = {
           "Priorità e concorrenza maggiori"
         ],
         "cta": "Passa a Pro"
-      },
-      "business": {
-        "summary": "Hai un’attività? Rispondi, poi crea, poi agisci.",
-        "features": [
-          "Commercio, CRM, posta in arrivo e una dashboard aziendale",
-          "Agenti autonomi che continuano a lavorare dopo la chiusura della scheda",
-          "Tetti di spesa rigidi e approvazioni umane",
-          "Permessi granulari, fino al livello del singolo strumento",
-          "Log di audit, ripristino e arresto di emergenza",
-          "Isolamento dei segreti e sandboxing",
-          "Approvazioni per deploy in produzione e pagamenti"
-        ],
-        "cta": "Contatta Keplar"
       }
     },
     "fitTitle": "Quale piano fa per te?",
@@ -327,11 +314,6 @@ const m: MarketingCatalog = {
         "who": "Costruisci e crei molto.",
         "outcome": "Più del doppio dei crediti di Plus, video, più progetti e agenti e priorità più alta.",
         "cta": "Passa a Pro"
-      },
-      "business": {
-        "who": "La tua attività si basa su questo.",
-        "outcome": "Commercio, CRM e agenti con tetti di spesa, approvazioni e log di audit.",
-        "cta": "Contatta Keplar"
       }
     },
     "compareTitle": "Confronta tutti i piani",
