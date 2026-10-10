@@ -68,3 +68,10 @@ export function rankCommands(list: Command[], query: string, limit = 40): Comman
 }
 
 export const OPEN_PALETTE_EVENT = "keplar:palette";
+/** Opens the /app shell's own search (your chats), which takes the place of the site palette inside the app. */
+export const OPEN_APP_SEARCH_EVENT = "keplar:app-search";
+
+/** Search from shared chrome (the desktop title bar): the app's chat search inside /app, else the site palette. */
+export function openSearch(): void {
+  window.dispatchEvent(new Event(document.querySelector("[data-own-search]") ? OPEN_APP_SEARCH_EVENT : OPEN_PALETTE_EVENT));
+}

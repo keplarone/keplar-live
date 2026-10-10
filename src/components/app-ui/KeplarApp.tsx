@@ -23,6 +23,7 @@ import type { AccountInfo, ChatImage, KeplarMessage, Message, MessageMedia, Proj
 import { ChatImageTurn } from "./chat-image/ChatImageTurn";
 import { detectImageIntent } from "@/lib/images/chat-intent";
 import { expandPromptIfSlash } from "@/lib/images/slash-commands";
+import { OPEN_APP_SEARCH_EVENT } from "@/lib/nav/commands";
 import { followUpPrompt, newKey } from "@/lib/images/chat-flow";
 import { UserMedia } from "./UserMedia";
 import { RESUME_KEY } from "./SiteProjects";
@@ -174,6 +175,12 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   const dockRef = useDockHeight<HTMLDivElement>();
   const [searchOpen, setSearchOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  // The desktop title bar's search box (DesktopTitleBar) opens this search.
+  useEffect(() => {
+    const open = () => { setDrawerOpen(false); setSearchOpen(true); };
+    window.addEventListener(OPEN_APP_SEARCH_EVENT, open);
+    return () => window.removeEventListener(OPEN_APP_SEARCH_EVENT, open);
+  }, []);
   // Search (Cmd+K toggles it from outside) and the drawer scrim stay mounted while they animate out.
   const search = usePresence(searchOpen);
   const drawerScrim = usePresence(drawerOpen);
