@@ -7,6 +7,7 @@ import type { MonolithCanvasProps } from "./MonolithCanvas";
 import { afterPaint } from "@/lib/perf/after-paint";
 import { probeCaps, softwareRenderer } from "@/field/caps";
 import s from "./PageMonolith.module.css";
+import { THREE_D_ENABLED } from "@/lib/fx/three-d";
 
 /**
  * The page-wide Monolith layer behind every marketing, docs, legal and blog page: one fixed canvas, a different scene variant per family
@@ -27,7 +28,7 @@ export function PageMonolith() {
   useEffect(() => {
     // Docs (also docs.keplar.one, where the visible path has no /docs prefix) are flat white: no field. The head script sets data-docs.
     // The light theme (the default since the Oct 2026 redesign) uses the flat aura backdrop instead of the 3D scene.
-    if (!page || document.documentElement.getAttribute("data-docs") === "1" || document.documentElement.getAttribute("data-theme") === "light") return;
+    if (!THREE_D_ENABLED || !page || document.documentElement.getAttribute("data-docs") === "1" || document.documentElement.getAttribute("data-theme") === "light") return;
     let cancelled = false;
     const caps = probeCaps();
     const skip = !caps.webgl || caps.saveData || softwareRenderer(); // reduced motion still gets one still frame (MonolithCanvas)
@@ -47,6 +48,6 @@ export function PageMonolith() {
     return () => { if (root.getAttribute("data-field") === "page") root.removeAttribute("data-field"); };
   }, [page, down, Canvas]);
 
-  if (!page || down || !Canvas) return null;
+  if (!THREE_D_ENABLED || !page || down || !Canvas) return null;
   return <Canvas variant={page} className={s.layer} onUnavailable={() => setDownFor(page)} />;
 }

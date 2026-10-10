@@ -1,3 +1,4 @@
+import { THREE_D_ENABLED } from "@/lib/fx/three-d";
 import * as THREE from "three";
 import { adaptDpr, startDpr, type Caps, type Quality } from "@/lib/spatial/policy";
 
@@ -6,7 +7,7 @@ export function detectCaps(): Caps {
   let webgl = false;
   try {
     const c = document.createElement("canvas");
-    webgl = Boolean(c.getContext("webgl2") || c.getContext("webgl"));
+    webgl = THREE_D_ENABLED && Boolean(c.getContext("webgl2") || c.getContext("webgl"));
   } catch {
     webgl = false;
   }

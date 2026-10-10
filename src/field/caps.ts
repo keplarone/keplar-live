@@ -1,3 +1,4 @@
+import { THREE_D_ENABLED } from "@/lib/fx/three-d";
 import type { Caps } from "@/lib/spatial/policy";
 /** Device capability probe (no three import, so it is safe in the main bundle). */
 let webglOk: boolean | undefined;
@@ -20,7 +21,7 @@ export function probeCaps(): Caps {
       webglOk = false;
     }
   }
-  const webgl = webglOk;
+  const webgl = THREE_D_ENABLED && webglOk;
   return {
     webgl,
     reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,

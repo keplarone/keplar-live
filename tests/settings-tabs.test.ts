@@ -32,9 +32,9 @@ test("Plan & billing: admin accounts get plain wording, no billing period, and a
   assert.match(actions, /Manage billing &amp; invoices|Manage billing & invoices/);
 });
 
-test("Settings tabs: rounded rectangles that beat the sitewide pill rule, constant label weight, and selecting never scrolls the window by accident", () => {
+test("Settings tabs: pills (Oct 2026 canvas design), constant label weight, and selecting never scrolls the window by accident", () => {
   const css = read("src/components/account/account.module.css");
-  assert.match(css, /\.settingsChip\.settingsChip \{ border-radius: var\(--r-md\); \}/, "doubled class opts out of the pill rule in glass.css");
+  assert.match(css, /\.settingsChip\.settingsChip \{ border-radius: 999px; \}/, "category tabs are pills in the redesign");
   assert.match(css, /\.settingsChip\.settingsChip\[data-on\] \{[^}]*background: var\(--c-ink\)/);
   const chip = css.match(/\.settingsChip \{[^}]*\}/)?.[0] ?? "";
   assert.doesNotMatch(chip, /var\(--r-pill\)/);

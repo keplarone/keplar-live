@@ -1,3 +1,4 @@
+import { THREE_D_ENABLED } from "@/lib/fx/three-d";
 import * as THREE from "three";
 
 /** Shared bits for the two Create canvases. Both draw only white/grey light on dark and graphite ink on light (no blue), follow the app theme live, render only while on screen and visible, and dispose fully. */
@@ -6,7 +7,7 @@ export type Glow = { dispose: () => void };
 export function webglOk(): boolean {
   try {
     const c = document.createElement("canvas");
-    return Boolean(c.getContext("webgl2") || c.getContext("webgl"));
+    return THREE_D_ENABLED && Boolean(c.getContext("webgl2") || c.getContext("webgl"));
   } catch {
     return false;
   }

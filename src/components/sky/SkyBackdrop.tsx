@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { LiquidLayer } from "./LiquidLayer";
 import s from "./Sky.module.css";
 
 /**
- * The light backdrop from the canvas designs: soft colour auras (CSS) and two drifting ribbons of fine dots (a 2D canvas).
+ * The light backdrop from the canvas designs: soft colour auras (CSS), the scroll-driven liquid layer (LiquidLayer) and two drifting
+ * ribbons of fine dots (a 2D canvas).
  * The dots follow slow sine waves, blue low on the left and coral high on the right, like the reference. Pauses when the tab is
- * hidden; prefers-reduced-motion draws one still frame. Dark theme hides the whole layer (Sky.module.css).
+ * hidden; prefers-reduced-motion draws one still frame. Dark theme dims the auras and uses deeper liquid colours (Sky.module.css).
  */
 export function SkyBackdrop() {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -84,6 +86,7 @@ export function SkyBackdrop() {
       <i className={s.auraIce} />
       <i className={s.auraPeach} />
       <i className={s.auraMint} />
+      <LiquidLayer />
       <canvas ref={ref} className={s.dust} />
     </div>
   );

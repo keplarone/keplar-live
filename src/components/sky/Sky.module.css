@@ -243,3 +243,15 @@
 .floatScene { display: none; }
 .floatScene[data-on] { display: block; animation: sky-swap 0.3s var(--e-standard) both; }
 @keyframes sky-swap { from { opacity: 0; filter: blur(4px); } to { opacity: 1; filter: none; } }
+
+/* Liquid layer (LiquidLayer.tsx): a small canvas stretched to the viewport and softened, fixed so it animates with scrolling. */
+.liquid {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: blur(5px) saturate(1.1);
+  opacity: 0.85;
+  pointer-events: none;
+}
+:global(:root[data-theme="dark"]) .liquid { opacity: 1; filter: blur(6px); }

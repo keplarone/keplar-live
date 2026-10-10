@@ -1,5 +1,6 @@
 "use client";
 
+import { THREE_D_ENABLED } from "@/lib/fx/three-d";
 import { useEffect, useRef, useState } from "react";
 import { KLoader } from "./KLoader";
 import { workingPath } from "@/lib/working-hard";
@@ -37,7 +38,7 @@ export function WorkingHard({ progress, stage, pulseKey = 0, done, failed, heigh
     let mo: MutationObserver | null = null;
     const nav = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } };
     let webgl = false;
-    try { webgl = !!document.createElement("canvas").getContext("webgl"); } catch { webgl = false; }
+    try { webgl = THREE_D_ENABLED && !!document.createElement("canvas").getContext("webgl"); } catch { webgl = false; }
     const path = workingPath({
       reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
       saveData: !!nav.connection?.saveData,
