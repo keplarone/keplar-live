@@ -44,3 +44,14 @@
 :global(:root[data-theme="light"]) .tile { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-shadow); }
 :global(:root[data-theme="light"]) .tile:hover { border-color: rgb(28 24 18 / 0.18); box-shadow: var(--lt-card-lift); }
 :global(:root[data-theme="light"]) .q { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-shadow); }
+
+/* The toggle disc carries a plus that turns into a close (×) as the answer opens (the disc already rotates 45°). */
+.q summary::after {
+  border: 0;
+  background:
+    linear-gradient(var(--c-ink), var(--c-ink)) center / 11px 1.6px no-repeat,
+    linear-gradient(var(--c-ink), var(--c-ink)) center / 1.6px 11px no-repeat,
+    rgb(var(--rgb-ink) / 0.06);
+  transition: rotate 320ms cubic-bezier(0.34, 1.56, 0.64, 1), background-color 200ms ease;
+}
+.q summary:hover::after { background-color: rgb(var(--rgb-ink) / 0.1); }

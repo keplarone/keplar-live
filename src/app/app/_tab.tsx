@@ -15,6 +15,7 @@ const META: Record<View, { title: string; description: string }> = {
   slides: { title: "Slides", description: "Make a slideshow with Keplar." },
   study: { title: "Study", description: "Study with Keplar: flashcards, quizzes and notes." },
   history: { title: "History", description: "Your Keplar chat history." },
+  studio: { title: "Roblox Studio", description: "Build in Roblox Studio with Keplar from the desktop app." },
 };
 
 export function tabMeta(view: View): Metadata {

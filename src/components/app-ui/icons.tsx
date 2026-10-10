@@ -71,6 +71,8 @@ export const IconMemory = (p: P) => <Svg {...p}><circle cx="8" cy="8" r="1.4" />
 export const IconApprovals = (p: P) => <Svg {...p}><rect x="2.5" y="2.5" width="11" height="11" rx="2" /><path d="m5.5 8.2 1.8 1.8 3.2-3.6" /></Svg>;
 export const IconUsage = (p: P) => <Svg {...p}><path d="M3 13V8.5M7 13V4M11 13V6.5M14 13H2" /></Svg>;
 export const IconSettings = (p: P) => <Svg {...p}><path d="M2.5 5h6M11.5 5h2M2.5 11h2M7.5 11h6" /><circle cx="10" cy="5" r="1.5" /><circle cx="6" cy="11" r="1.5" /></Svg>;
+/** Roblox Studio mode: a tilted block with a window cut in it. */
+export const IconRobloxStudio = (p: P) => <Svg {...p}><path d="M4.2 2.6 13.4 4.2 11.8 13.4 2.6 11.8Z" /><path d="M7 7.1 9.1 7.5 8.7 9.6 6.6 9.2Z" /></Svg>;
 export const IconDeploy = (p: P) => <Svg {...p}><path d="M8 13.5V6M5 8.5 8 5.5l3 3" /><path d="M3 3h10" /></Svg>;
 
 export const IconThumb = ({ up, ...p }: P & { up?: boolean }) => (

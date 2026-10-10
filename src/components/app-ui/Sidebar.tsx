@@ -1,15 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type MouseEvent } from "react";
+import { useState, useSyncExternalStore, type MouseEvent } from "react";
 import { KeplarLogo } from "@/components/brand";
 import { formatResetAt, PLAN_ALLOWANCES, WINDOW_WARN_AT, windowResetText } from "@/lib/orchestration/plans";
 import { brand } from "@/lib/site";
 import { dailyLeftText, formatDailyReset } from "@/lib/usage/format";
 import { extensionNote, usageMeter } from "@/lib/usage/meter";
-import { IconBusiness, IconClose, IconCreate, IconDeploy, IconHistory, IconMore, IconPlus, IconProjects, IconSearch, IconSettings, IconSlides, IconStudy } from "./icons";
+import { IconBusiness, IconRobloxStudio, IconClose, IconCreate, IconDeploy, IconHistory, IconMore, IconPlus, IconProjects, IconSearch, IconSettings, IconSlides, IconStudy } from "./icons";
 import { pathForView } from "./app-paths";
 import { BUSINESS_URL } from "@/lib/business-site";
+import { studioBridge } from "@/lib/desktop/studio-bridge";
 import type { AccountInfo, AppState, View } from "./state/types";
 import { AccountMenu, ImportPrompt, type ImportOffer } from "./AccountMenu";
 import s from "./App.module.css";
@@ -50,6 +51,8 @@ const secondary: NavRow[] = [
   { view: "deployments", label: "Deployments", Icon: IconDeploy },
   { view: "history", label: "All chats", Icon: IconHistory },
 ];
+const noSubscribe = () => () => {};
+const STUDIO_ROW: NavRow = { view: "studio", label: "Roblox Studio", Icon: IconRobloxStudio };
 /** Usage shows in the sidebar only when it is getting low (below this share left, or a usage window near its limit). */
 const LOW_AT = 20;
 
@@ -66,7 +69,10 @@ function tabClick(e: MouseEvent, go: () => void) {
 export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteChat, onClose, businessProminent = false, account = null, importOffer = null, modeView = null, id }: Props) {
   void businessProminent;
   const rows = primary;
-  const more = secondary;
+  // Roblox Studio mode lives in the desktop app only: its row appears once the desktop bridge is seen (after mount, so the
+  // server render and the first client render match).
+  const desktopStudio = useSyncExternalStore(noSubscribe, () => Boolean(studioBridge()), () => false);
+  const more = desktopStudio ? [...secondary.slice(0, 3), STUDIO_ROW, ...secondary.slice(3)] : secondary;
   const moreViews = new Set<View>(more.map((n) => n.view));
   // Open More by choice, or whenever the current view lives in it.
   const [moreOpen, setMoreOpen] = useState(false);
