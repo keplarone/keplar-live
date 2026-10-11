@@ -11,15 +11,20 @@
   align-items: center;
   gap: 12px;
   padding-left: max(10px, calc(env(titlebar-area-x, 0px) + 8px));
-  padding-right: calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw) + 8px);
+  /* Where env() is not exposed (the Keplar desktop window), keep 146px for minimise/maximise/close, as the site nav does
+     (Nav.module.css): a 100vw fallback kept 0px and the search box could run under the controls in a narrow window. */
+  padding-right: calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, calc(100vw - 146px)) + 8px);
   background: var(--c-canvas);
   border-bottom: 1px solid rgb(var(--rgb-ink) / 0.06);
   color: var(--c-ink-2);
   font-size: 12.5px;
   user-select: none;
 }
-/* macOS: clear the traffic lights (the desktop app puts them at x 16). */
-.bar[data-mac] { padding-left: max(84px, calc(env(titlebar-area-x, 0px) + 8px)); }
+/* macOS: clear the traffic lights (the desktop app puts them at x 16); nothing is on the right. */
+.bar[data-mac] {
+  padding-left: max(84px, calc(env(titlebar-area-x, 0px) + 8px));
+  padding-right: calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw) + 8px);
+}
 .left { display: flex; align-items: center; gap: 2px; min-width: 0; }
 .right { min-width: 0; }
 .brand { display: inline-flex; align-items: center; gap: 7px; margin-right: 10px; font-weight: var(--w-medium); color: var(--c-ink); letter-spacing: -0.005em; }

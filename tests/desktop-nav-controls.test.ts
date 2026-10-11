@@ -13,6 +13,15 @@ test("desktop window: the site nav keeps clear of the window controls even where
   assert.match(css, /html\[data-desktop-os="mac"\]\) \.wrap \{\s*padding-left: max\(84px/, "macOS keeps the traffic lights clear on the left");
 });
 
+test("desktop title bar: back, forward and search stay clear of the window controls", () => {
+  const tsx = readFileSync("src/components/desktop/DesktopTitleBar.tsx", "utf8");
+  assert.match(tsx, /onClick=\{\(\) => history\.back\(\)\}/);
+  assert.match(tsx, /onClick=\{\(\) => history\.forward\(\)\}/);
+  const css = readFileSync("src/components/desktop/DesktopTitleBar.module.css", "utf8");
+  assert.match(css, /env\(titlebar-area-width, calc\(100vw - 146px\)\)/, "Windows/Linux fallback keeps room for minimise, maximise, close");
+  assert.match(css, /\.bar\[data-mac\] \{\s*padding-left: max\(84px[^}]*env\(titlebar-area-width, 100vw\)/, "macOS: traffic lights on the left, nothing reserved on the right");
+});
+
 test("desktop window: the floating Stats pill and its dock are gone", () => {
   assert.doesNotMatch(readFileSync("src/app/layout.tsx", "utf8"), /DesktopDock/);
   assert.equal(existsSync("src/components/desktop/DesktopDock.tsx"), false);
