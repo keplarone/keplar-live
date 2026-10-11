@@ -32,11 +32,11 @@ test("marketing nav: one primary CTA and Sign in; pages that left the nav and fo
 
 test("app sidebar: at most five primary items, Recents shown directly, usage only when low, compact account row", () => {
   const side = readFileSync("src/components/app-ui/Sidebar.tsx", "utf8");
-  const fixed = (side.match(/data-primary=""/g) ?? []).length; // New chat, Search, the mapped primary row template, Business link
+  const fixed = (side.match(/data-primary=""/g) ?? []).length; // New chat, Search, the mapped primary row template (Business is its own app now)
   const block = side.slice(side.indexOf("const primary"), side.indexOf("const secondary"));
   const mapped = [...block.matchAll(/view: "/g)].length;
-  assert.equal(fixed, 4, "New chat, Search, one template for the primary rows, and the Business link");
-  assert.ok(3 + mapped <= 5, `sidebar has ${3 + mapped} primary items`);
+  assert.equal(fixed, 3, "New chat, Search and one template for the primary rows");
+  assert.ok(2 + mapped <= 5, `sidebar has ${2 + mapped} primary items`);
   const recents = readFileSync("src/components/app-ui/Recents.tsx", "utf8");
   assert.match(recents, /useState\(true\)/, "Recents is open by default");
   assert.match(side, /const low = /);

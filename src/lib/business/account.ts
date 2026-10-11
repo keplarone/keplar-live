@@ -1,6 +1,6 @@
 /**
  * Keplar Business accounts: the company profile a Keplar account creates before buying a Business plan
- * (business.keplar.one -> keplar.one/business-account). One per workspace; the person who creates it owns it.
+ * (business.keplar.one/account). One per workspace; the person who creates it owns it.
  */
 import { collection } from "@/lib/create/platform/store";
 import { COMPANY_SIZES, INDUSTRIES } from "./account-fields";

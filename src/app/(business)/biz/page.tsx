@@ -3,12 +3,12 @@ import { Storefront } from "@/components/business-site/Storefront";
 import { annualDiscountPct } from "@/lib/business/tiers";
 
 export const metadata: Metadata = {
-  title: "Keplar Business: the AI operating system for your business",
+  title: { absolute: "Keplar Business: the AI operating system for your business" },
   description: "Research, design, build, automate and deploy from one desktop workspace. Plans from $199.99 a month, Enterprise by contract.",
   alternates: { canonical: "https://business.keplar.one/" },
 };
 
-/** business.keplar.one (src/proxy.ts businessHost rewrites / here): pricing, account status, download and sales inquiries. */
+/** business.keplar.one/ (src/proxy.ts maps it to /biz): pricing, account status, the workspace, download and sales inquiries. */
 export default function BusinessLanding() {
   return <Storefront discountPct={annualDiscountPct()} />;
 }

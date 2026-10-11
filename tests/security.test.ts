@@ -87,9 +87,8 @@ test("security headers: CSP, HSTS, framing, nosniff, referrer, permissions", () 
   assert.match(dir("connect-src"), /https:\/\/t\.whop\.tw/, "Whop Pixel beacons");
   assert.match(dir("img-src"), /https:\/\/cdn\.whop\.com/);
   assert.doesNotMatch(dir("img-src") + dir("frame-src"), /t\.whop\.tw/, "the pixel needs no images or frames");
-  // keplar.one itself, for connect-src only: business.keplar.one reads the visitor's Business status from it (same site).
-  assert.match(dir("connect-src"), /https:\/\/keplar\.one(\s|$)/);
-  assert.doesNotMatch(dir("script-src") + dir("frame-src") + dir("img-src"), /https:\/\/keplar\.one/);
+  // No cross-app calls: business.keplar.one serves its own API now, so neither app needs the other's origin.
+  assert.doesNotMatch(CSP, /https:\/\/keplar\.one/);
   assert.doesNotMatch(CSP.replace(/https:\/\/(cdn|api)\.whop\.com/g, "").replace(/https:\/\/t\.whop\.tw/g, "").replace(/https:\/\/keplar\.one(?=[\s;]|$)/g, ""), /https?:/, "no other remote origins anywhere");
   assert.doesNotMatch(dir("style-src") + dir("font-src") + dir("media-src") + dir("default-src"), /whop/, "Whop is not allowed for styles, fonts, media or default");
   assert.doesNotMatch(CSP, /\*/, "no wildcards");

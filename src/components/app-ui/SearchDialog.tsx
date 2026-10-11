@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { BUSINESS_URL } from "@/lib/business-site";
 import { IconSearch } from "./icons";
 import type { Thread, View } from "./state/types";
 import s from "./App.module.css";
@@ -55,7 +54,6 @@ export function SearchDialog({ threads, onClose, onOpen, onNew, onView, presence
       { kind: "action", group: "Go to", id: "new", title: "New chat", run: onNew, keywords: "ask question thread" },
       { kind: "action", group: "Go to", id: "create", title: "Create", run: () => onView("create"), keywords: "app site image video mobile build" },
       { kind: "action", group: "Go to", id: "projects", title: "Projects", run: () => onView("projects"), keywords: "folders files" },
-      { kind: "action", group: "Go to", id: "business", title: "Business", run: () => window.location.assign(BUSINESS_URL), keywords: "company inbox agents approvals business.keplar.one" },
       { kind: "action", group: "Go to", id: "slides", title: "Slides", run: () => onView("slides"), keywords: "deck presentation" },
       { kind: "action", group: "Go to", id: "study", title: "Study", run: () => onView("study"), keywords: "flashcards quiz learn" },
       { kind: "action", group: "Go to", id: "deployments", title: "Deployments", run: () => onView("deployments"), keywords: "publish live sites" },

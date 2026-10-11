@@ -4,13 +4,14 @@ import { readFileSync } from "node:fs";
 
 const side = readFileSync("src/components/app-ui/Sidebar.tsx", "utf8");
 
-test("sidebar: New chat and Search, then Create and Projects, then Business · Learn more linking out to business.keplar.one", () => {
+test("sidebar: New chat and Search, then Create and Projects; no Business entry (Keplar Business is its own app)", () => {
   assert.match(side, /<span>New chat<\/span>/);
   assert.match(side, /data-nav="search"/);
   const block = side.slice(side.indexOf("const primary"), side.indexOf("const secondary"));
   const labels = [...block.matchAll(/label: "([^"]+)"/g)].map((m) => m[1]);
   assert.deepEqual(labels, ["Create", "Projects"]);
-  assert.match(side, /<a href=\{BUSINESS_URL\}[^>]*data-nav="business"[\s\S]{0,200}<span>Business<\/span>[\s\S]{0,80}Learn more/);
+  assert.doesNotMatch(side, /data-nav="business"|BUSINESS_URL/, "Keplar One has no way into Business from its sidebar");
+  assert.doesNotMatch(readFileSync("src/components/app-ui/SearchDialog.tsx", "utf8"), /id: "business"/, "nor from search");
   assert.match(readFileSync("src/lib/business-site.ts", "utf8"), /https:\/\/business\.keplar\.one/);
   assert.doesNotMatch(side, /label: "(Agents|Approvals|Business)"/, "Agents and Approvals are business-mode only");
 });

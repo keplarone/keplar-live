@@ -1514,7 +1514,6 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 .kbd { opacity: 0; transition: opacity var(--d-fast) var(--e-standard); }
 :is(.newThread, .sideItem):is(:hover, :focus-visible) .kbd { opacity: 1; }
 @media (hover: none) { .kbd { display: none; } }
-.sideItem[data-nav="business"] .sideTag { display: none; }
 .sideMoreLabel { font-size: var(--t-small); letter-spacing: 0; text-transform: none; }
 .sideNav { gap: 3px; }
 .upgradeBtn.upgradeBtn[data-plan-cta="upgrade"]:not([data-low]) { background: transparent; color: var(--c-ink); border-color: var(--c-border-strong); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong); -webkit-backdrop-filter: none; backdrop-filter: none; }
@@ -1870,8 +1869,6 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 .inlineForm .secondaryBtn { min-height: 48px; border-radius: 999px; padding: 0 20px; }
 
 /* Sidebar "Business · Learn more": links out to business.keplar.one (Business, Agents and Approvals live there for now) */
-.learnMore { margin-left: auto; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: var(--w-medium); color: var(--c-ink-2); background: rgb(var(--rgb-ink) / 0.06); white-space: nowrap; }
-.sideItem:hover .learnMore { background: var(--c-ink); color: var(--c-canvas); }
 
 /* Memory button in the top bar: a 44px round button with its icon centred (a 16px side padding inside a 32px width had
    squeezed the icon to nothing, leaving an empty circle). */

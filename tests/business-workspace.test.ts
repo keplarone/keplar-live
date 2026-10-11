@@ -37,12 +37,12 @@ test("workspace APIs need an active Business plan; the summary uses only the acc
   assert.match(summary, /assertSameOrigin\(req\)/);
 });
 
-test("desktop: a Business account opening the ask page goes to /app/work unless it chose Keplar One (?stay=1)", () => {
+test("desktop: a Business account opening the ask page goes to the Business app's workspace unless it chose Keplar One (?stay=1)", () => {
   const app = readFileSync("src/components/app-ui/KeplarApp.tsx", "utf8");
   assert.match(app, /state\.ledger\.plan === "business"/);
   assert.match(app, /get\("stay"\) === "1"/);
   assert.match(app, /data-desktop"\) !== "1"/);
-  assert.match(app, /window\.location\.replace\("\/app\/work"\)/);
+  assert.match(app, /window\.location\.replace\(businessUrl\("\/work"\)\)/);
   const ws = readFileSync("src/components/business-app/BusinessWorkspace.tsx", "utf8");
   assert.doesNotMatch(ws, /study|skill/i, "no Study or Skills in Business");
 });

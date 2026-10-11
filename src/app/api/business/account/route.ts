@@ -8,15 +8,8 @@ import { getDesktopRelease } from "@/lib/desktop/releases";
 
 export const runtime = "nodejs";
 
-/** business.keplar.one reads this with the visitor's keplar.one session (same site, so the session cookie is sent). */
-const STOREFRONT = "https://business.keplar.one";
-
-function cors(req: Request, res: Response): Response {
-  if (req.headers.get("origin") === STOREFRONT) {
-    res.headers.set("access-control-allow-origin", STOREFRONT);
-    res.headers.set("access-control-allow-credentials", "true");
-    res.headers.set("vary", "Origin");
-  }
+/** Read on business.keplar.one itself (same origin, with its own Business session); never cached. */
+function noStore(res: Response): Response {
   res.headers.set("cache-control", "no-store");
   return res;
 }
@@ -29,7 +22,7 @@ export async function GET(req: Request) {
   try {
     await limitRequest(req, "business_account", { perIp: 60 });
     const ws = await currentWorkspace(req, { allowAnonymous: true });
-    if (ws.anonymous || !ws.userId) return cors(req, json({ signedIn: false }));
+    if (ws.anonymous || !ws.userId) return noStore(json({ signedIn: false }));
     const account = await getBusinessAccount(ws.id);
     const active = hasBusinessAccess(ws.plan, ws.admin);
     let download: { version: string; files: { os: string; arch: string; type: string; url: string; size: number }[]; notesUrl: string } | null = null;
@@ -39,7 +32,7 @@ export async function GET(req: Request) {
     }
     // The workspace's entitlements already carry the tier bought (its label is the tier's name; see tierEntitlements).
     const tier = !active ? null : ws.admin ? "enterprise" : (Object.values(BUSINESS_TIERS).find((t) => t.name === ws.entitlements.label)?.id ?? businessTierOf(null));
-    return cors(req, json({
+    return noStore(json({
       signedIn: true,
       email: ws.email,
       verified: ws.verified,
@@ -49,11 +42,11 @@ export async function GET(req: Request) {
       download,
     }));
   } catch (e) {
-    return cors(req, errorResponse(e));
+    return noStore(errorResponse(e));
   }
 }
 
-/** Create or update the business account (from keplar.one/business-account; same origin, signed in and verified). */
+/** Create or update the business account (from business.keplar.one/account; same origin, signed in and verified). */
 export async function POST(req: Request) {
   try {
     assertSameOrigin(req);

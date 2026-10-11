@@ -1,12 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { BUSINESS_TIERS, listPriceFor, priceFor, usd, type BillingCycle, type BusinessTier } from "@/lib/business/tiers";
 import { companySizes, estimatedUsers } from "@/lib/inquire/schema";
 import s from "./business-site.module.css";
 
+/** Keplar One (legal pages live there). Everything else is this app: the account API, /signin (the handoff from keplar.one), /account and /work. */
 const APP = "https://keplar.one";
-const ACCOUNT_API = `${APP}/api/business/account`;
+const ACCOUNT_API = "/api/business/account";
 
 type DownloadFile = { os: string; arch: string; type: string; url: string; size: number };
 type Status =
@@ -16,7 +18,7 @@ type Status =
 
 const ORDER: BusinessTier[] = ["starter", "growth", "scale", "enterprise"];
 const fmt = (n: number) => n.toLocaleString("en-US");
-const accountUrl = (tier?: string, cycle?: BillingCycle) => `${APP}/business-account${tier ? `?tier=${tier}&cycle=${cycle ?? "monthly"}` : ""}`;
+const accountUrl = (tier?: string, cycle?: BillingCycle) => `/account${tier ? `?tier=${tier}&cycle=${cycle ?? "monthly"}` : ""}`;
 
 const MODULES = [
   { title: "Dashboard", body: "Revenue, agents, approvals, spend and team activity from the data you connect." },
@@ -64,10 +66,12 @@ export function Storefront({ discountPct }: { discountPct: number }) {
   const [status, setStatus] = useState<Status>({ state: "loading" });
   const [cycle, setCycle] = useState<BillingCycle>("monthly");
   const [purchased] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("purchased") === "1");
+  // A sign-in handoff that failed (src/lib/business/handoff.ts) lands here with ?signin=<reason>.
+  const [signinFailed] = useState(() => typeof window !== "undefined" && Boolean(new URLSearchParams(window.location.search).get("signin")));
 
   useEffect(() => {
     let live = true;
-    fetch(ACCOUNT_API, { credentials: "include", cache: "no-store" })
+    fetch(ACCOUNT_API, { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : { signedIn: false }))
       .then((d) => {
         if (!live) return;
@@ -96,28 +100,31 @@ export function Storefront({ discountPct }: { discountPct: number }) {
   return (
     <div className={s.page}>
       <header className={s.nav}>
-        <a href="https://business.keplar.one/" className={s.brand} aria-label="Keplar Business home">
+        <Link href="/" className={s.brand} aria-label="Keplar Business home">
           <svg viewBox="0 0 398 398" width="20" height="20" fill="currentColor" aria-hidden="true"><rect x="0" y="0" width="229" height="229" rx="70" /><path d="M204.95 11.95A7 7 0 0 1 209.9 0L362 0A16 16 0 0 1 378 16L378 168.1A7 7 0 0 1 366.05 173.05Z" /><circle cx="281" cy="281" r="117" /></svg>
           Keplar Business
-        </a>
+        </Link>
         <nav className={s.navLinks} aria-label="Sections">
           <a href="#product">Product</a>
           <a href="#pricing">Pricing</a>
           <a href="#revenue-guard">Revenue Guard</a>
           <a href="#contact">Contact sales</a>
         </nav>
-        {status.state === "out" ? <a href={`${APP}/signin?next=${encodeURIComponent("/business-account")}`} className={s.btnGhostSm}>Sign in</a>
-          : status.state === "in" ? <span className={s.who}>{status.account?.company ?? status.email}</span> : <span />}
+        {status.state === "out" ? <a href={`/signin?next=${encodeURIComponent("/work")}`} className={s.btnGhostSm}>Sign in</a>
+          : status.state === "in" ? (status.active ? <Link href="/work" className={s.btnGhostSm}>Open workspace</Link> : <span className={s.who}>{status.account?.company ?? status.email}</span>) : <span />}
       </header>
 
       <section className={s.hero}>
         <span className={s.pill}>Early access · desktop app for Windows, macOS and Linux</span>
         <h1 className={s.h1}>The AI operating system <span className={s.dim}>for your business.</span></h1>
         <p className={s.lede}>Research, design, build, automate and deploy from one workspace. Several AI models work on every task, your agents run on schedules and budgets, and nothing that spends money or ships to customers happens without approval.</p>
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- /signin is a route handler (the sign-in handoff from keplar.one): it needs a full page load */}
+        {signinFailed && status.state === "out" ? <p className={s.notice} role="status">That sign-in didn&apos;t finish (the link expired or was opened in a different browser). <a href="/signin?next=%2Fwork" className={s.textLink}>Sign in again</a></p> : null}
         {purchased && !(status.state === "in" && status.active) ? <p className={s.notice} role="status">Thanks for your purchase. Your plan activates as soon as the payment confirms, usually within a minute. Refresh this page to see your download.</p> : null}
         {status.state === "in" && status.active ? (
           <div id="download" className={s.downloadBox}>
             <p className={s.downloadTitle}>{status.plan?.name ?? "Keplar Business"} is active{status.account ? ` for ${status.account.company}` : ""}.</p>
+            <div className={s.heroActions}><Link href="/work" className={s.btnPrimary}>Open workspace</Link></div>
             {status.download ? <DownloadPanel download={status.download} /> : <p className={s.muted}>The download is loading. If it does not appear, try again in a minute.</p>}
             <p className={s.muted}>Sign in to the desktop app with {status.email ?? "the same account"}.</p>
           </div>

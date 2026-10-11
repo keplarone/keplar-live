@@ -10,7 +10,8 @@ import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server
 import { clientIpOf, rateLimit, RateLimitError } from "@/lib/create/platform/ratelimit";
 import { newRequestId, requestIdOf } from "@/lib/ops/log";
 import { hostOf, isAppHost, resolveCustomHost } from "@/lib/domains/routing";
-import { BUSINESS_HOST, DOCS_HOST, PRODUCTION_URL } from "@/lib/site";
+import { DOCS_HOST, PRODUCTION_URL } from "@/lib/site";
+import { BUSINESS_PREFIX, businessUrl, isBusinessHost } from "@/lib/business-site";
 import { DOC_SECTION_IDS } from "@/lib/kb/doc-sections";
 import { isOriginExempt, isSameOrigin, SAFE_METHODS } from "@/lib/security/origin";
 import { noteVisit } from "@/lib/traffic/visits";
@@ -90,29 +91,52 @@ export function docsHost(req: NextRequest) {
 
 
 /**
- * business.keplar.one: until Keplar Business is built, / serves its landing page (/business-landing, rewritten so the URL stays
- * clean). Static files, /_next, /api and /og pass through; any other path is the main site's: 308 to keplar.one.
+ * business.keplar.one is the Keplar Business app (src/lib/business-site.ts): every page path maps onto its internal route
+ * under /biz ("/" → /biz, "/work" → /biz/work), so a Business page can never resolve to a Keplar One page. Static files pass
+ * through; /api is handled by the shared API guard below (rate limit, same-origin), like on keplar.one. Returns null for /api.
  */
-export function businessHost(req: NextRequest) {
+export function businessHost(req: NextRequest): NextResponse | null {
   const { pathname, search } = req.nextUrl;
+  if (pathname.startsWith("/api/")) return null;
   const last = pathname.slice(pathname.lastIndexOf("/") + 1);
-  if (pathname.startsWith("/_next/") || pathname.startsWith("/api/") || pathname.startsWith("/og/") || pathname.startsWith("/icons/") || pathname.startsWith("/fonts/") || pathname.startsWith("/models/") || last.includes(".")) {
+  if (pathname.startsWith("/_next/") || pathname.startsWith("/og/") || pathname.startsWith("/icons/") || pathname.startsWith("/fonts/") || pathname.startsWith("/models/") || last.includes(".")) {
     return NextResponse.next();
   }
-  if (pathname === "/" || pathname === "/business-landing") {
-    const url = req.nextUrl.clone();
-    url.pathname = "/business-landing";
-    url.search = search;
-    return NextResponse.rewrite(url);
-  }
-  return NextResponse.redirect(`${PRODUCTION_URL}${pathname}${search}`, 308);
+  // Old storefront link, and the internal prefix itself: one public URL per page.
+  if (pathname === "/business-landing") return NextResponse.redirect(new URL(`/${search}`, req.url), 308);
+  if (pathname === BUSINESS_PREFIX || pathname.startsWith(`${BUSINESS_PREFIX}/`)) return NextResponse.redirect(new URL(`${pathname.slice(BUSINESS_PREFIX.length) || "/"}${search}`, req.url), 308);
+  const url = req.nextUrl.clone();
+  url.pathname = pathname === "/" ? BUSINESS_PREFIX : `${BUSINESS_PREFIX}${pathname}`;
+  url.search = search;
+  const res = NextResponse.rewrite(url);
+  if (pathname !== "/") res.headers.set("x-robots-tag", "noindex");
+  return res;
+}
+
+/** keplar.one URLs that belonged to Business before it became its own app: 308 to the same page there. Null for every other path. */
+export function businessMoved(req: NextRequest): NextResponse | null {
+  const { pathname, search } = req.nextUrl;
+  const moved =
+    pathname === "/business-account" ? "/account"
+    : pathname === "/app/work" || pathname.startsWith("/app/work/") ? "/work"
+    : pathname === "/business-landing" ? "/"
+    : pathname === BUSINESS_PREFIX || pathname.startsWith(`${BUSINESS_PREFIX}/`) ? pathname.slice(BUSINESS_PREFIX.length) || "/"
+    : null;
+  return moved === null ? null : NextResponse.redirect(businessUrl(`${moved}${search}`), 308);
 }
 
 export async function proxy(req: NextRequest, event?: NextFetchEvent) {
   const host = hostOf(req);
   if (!isAppHost(host)) return customHost(req, host);
   if (host === DOCS_HOST) return docsHost(req);
-  if (host === BUSINESS_HOST) return businessHost(req);
+  const business = isBusinessHost(host);
+  if (business) {
+    const page = businessHost(req);
+    if (page) return page;
+  } else {
+    const moved = businessMoved(req);
+    if (moved) return moved;
+  }
   const { pathname } = req.nextUrl;
   // Referral short link: /?ref=CODE → /invite/CODE (same cookies/claim flow).
   if ((pathname === "/" || pathname === "") && req.method === "GET") {

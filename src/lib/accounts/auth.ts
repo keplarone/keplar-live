@@ -26,6 +26,8 @@ import { passkeyAuth } from "./passkeys/auth-plugin";
 import { statelessMagicLink } from "./stateless-magic-link";
 import { passwordAuth } from "./password-auth";
 import { desktopAuth } from "./desktop-auth";
+import { businessAuth } from "./business-auth";
+import { BUSINESS_URL } from "@/lib/business-site";
 import { userIdForEmail } from "./magic-token";
 import { enabledOAuthProviders, socialProvidersFromEnv } from "./oauth";
 import { devToolsEnabled, emailConfigured, sendEmail } from "./outbox";
@@ -64,7 +66,8 @@ export const auth = betterAuth({
   },
   rateLimit: { enabled: true, window: 60, max: 30, storage: "memory" },
   advanced: { useSecureCookies: (process.env.BETTER_AUTH_URL || siteUrl).startsWith("https://") },
-  trustedOrigins: [siteUrl, "http://localhost:3000", "http://localhost:3001"],
+  // business.keplar.one (Keplar Business) runs on this same server with its own session cookie (src/lib/business/handoff.ts).
+  trustedOrigins: [siteUrl, BUSINESS_URL, "http://localhost:3000", "http://localhost:3001"],
   databaseHooks: {
     user: {
       create: {
@@ -105,6 +108,7 @@ export const auth = betterAuth({
     passwordAuth({ secret: authSecret, origin: () => new URL(process.env.BETTER_AUTH_URL || siteUrl).origin }),
     passkeyAuth(),
     desktopAuth({ secret: authSecret, origin: () => new URL(process.env.BETTER_AUTH_URL || siteUrl).origin }),
+    businessAuth({ secret: authSecret }),
     nextCookies(),
   ],
 });

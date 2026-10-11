@@ -1,4 +1,4 @@
-/* Keplar Business site (business.keplar.one and keplar.one/business-account): permanently dark, Geist, quiet borders,
+/* Keplar Business site (business.keplar.one: / and /account): permanently dark, Geist, quiet borders,
    white primary actions. Independent of Keplar One's light/dark theme tokens. */
 .root {
   --bz-bg: #09090b;

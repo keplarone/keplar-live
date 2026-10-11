@@ -22,7 +22,7 @@ const hostnameOfUrl = (u: string | undefined) => {
 };
 
 function appHosts(): Set<string> {
-  const s = new Set<string>([PRODUCTION_HOST, `www.${PRODUCTION_HOST}`, DOCS_HOST, BUSINESS_HOST, "localhost", "127.0.0.1", "[::1]", "0.0.0.0"]);
+  const s = new Set<string>([PRODUCTION_HOST, `www.${PRODUCTION_HOST}`, DOCS_HOST, BUSINESS_HOST, "business.localhost", "localhost", "127.0.0.1", "[::1]", "0.0.0.0"]);
   const own = hostnameOfUrl(siteUrl);
   if (own) {
     s.add(own);

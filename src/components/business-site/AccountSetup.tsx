@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { COMPANY_SIZES, INDUSTRIES } from "@/lib/business/account-fields";
 import { BUSINESS_TIERS, listPriceFor, priceFor, usd, type BillingCycle, type SelfServeTier } from "@/lib/business/tiers";
@@ -9,7 +9,6 @@ import s from "./business-site.module.css";
 type Account = { company: string; website: string; size: string; industry: string; role: string };
 type Phase = { at: "loading" } | { at: "profile"; account: Account | null; email: string | null; verified: boolean } | { at: "plan"; account: Account; active: boolean };
 
-const STORE = "https://business.keplar.one";
 const TIERS: SelfServeTier[] = ["starter", "growth", "scale"];
 
 function readChoice(): { tier: SelfServeTier; cycle: BillingCycle } {
@@ -20,11 +19,10 @@ function readChoice(): { tier: SelfServeTier; cycle: BillingCycle } {
 }
 
 /**
- * keplar.one/business-account: create the business account (company profile) with the signed-in Keplar account, then choose
+ * business.keplar.one/account: create the business account (company profile) with the signed-in Keplar account, then choose
  * Starter, Growth or Scale and go to checkout. Signed out, it sends the person to sign in and back here.
  */
 export function AccountSetup({ discountPct }: { discountPct: number }) {
-  const router = useRouter();
   const [phase, setPhase] = useState<Phase>({ at: "loading" });
   const [choice, setChoice] = useState(readChoice);
   const [errors, setErrors] = useState<Partial<Record<keyof Account, string>>>({});
@@ -38,14 +36,14 @@ export function AccountSetup({ discountPct }: { discountPct: number }) {
       .then((d) => {
         if (!live) return;
         if (!d.signedIn) {
-          router.replace(`/signin?next=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+          window.location.replace(`/signin?next=${encodeURIComponent(window.location.pathname + window.location.search)}`);
           return;
         }
         setPhase(d.account ? { at: "plan", account: d.account, active: Boolean(d.active) } : { at: "profile", account: null, email: d.email ?? null, verified: Boolean(d.verified) });
       })
       .catch(() => { if (live) setMessage("Couldn't load your account. Refresh to try again."); });
     return () => { live = false; };
-  }, [router]);
+  }, []);
 
   const saveProfile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -80,10 +78,10 @@ export function AccountSetup({ discountPct }: { discountPct: number }) {
   return (
     <div className={s.page}>
       <header className={s.nav}>
-        <a href={STORE} className={s.brand}>
+        <Link href="/" className={s.brand}>
           <svg viewBox="0 0 398 398" width="20" height="20" fill="currentColor" aria-hidden="true"><rect x="0" y="0" width="229" height="229" rx="70" /><path d="M204.95 11.95A7 7 0 0 1 209.9 0L362 0A16 16 0 0 1 378 16L378 168.1A7 7 0 0 1 366.05 173.05Z" /><circle cx="281" cy="281" r="117" /></svg>
           Keplar Business
-        </a>
+        </Link>
         <ol className={s.stepper} aria-label="Setup steps">
           <li aria-current={phase.at === "profile" ? "step" : undefined} data-done={phase.at === "plan" || undefined}>Business account</li>
           <li aria-current={phase.at === "plan" ? "step" : undefined}>Plan and checkout</li>
@@ -116,8 +114,11 @@ export function AccountSetup({ discountPct }: { discountPct: number }) {
           phase.active ? (
             <>
               <h1 className={s.h2}>{phase.account.company} is on Keplar Business</h1>
-              <p className={s.muted}>Your plan is active. Download the desktop app from the Business site.</p>
-              <a href={`${STORE}/#download`} className={s.btnPrimary}>Go to download</a>
+              <p className={s.muted}>Your plan is active. Open the workspace here, or get the desktop app.</p>
+              <div className={s.heroActions}>
+                <Link href="/work" className={s.btnPrimary}>Open workspace</Link>
+                <Link href="/#download" className={s.btnGhost}>Get the desktop app</Link>
+              </div>
             </>
           ) : (
             <>
@@ -137,10 +138,10 @@ export function AccountSetup({ discountPct }: { discountPct: number }) {
                   </button>
                 ))}
               </div>
-              {message ? <p className={s.formError} role="alert">{message} <a href={`${STORE}/#contact`} className={s.textLink}>Contact sales</a></p> : null}
+              {message ? <p className={s.formError} role="alert">{message} <Link href="/#contact" className={s.textLink}>Contact sales</Link></p> : null}
               <div className={s.heroActions}>
                 <button type="button" className={s.btnPrimary} onClick={() => void checkout()} disabled={busy}>{busy ? "Opening checkout…" : "Continue to checkout"}</button>
-                <a href={`${STORE}/#contact`} className={s.btnGhost}>Need Enterprise? Talk to sales</a>
+                <Link href="/#contact" className={s.btnGhost}>Need Enterprise? Talk to sales</Link>
               </div>
               <p className={s.muted}>Payments are processed by Whop. Cancel any time from your account; annual plans run to the end of the paid year.</p>
             </>

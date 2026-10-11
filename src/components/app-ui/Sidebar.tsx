@@ -7,9 +7,8 @@ import { formatResetAt, PLAN_ALLOWANCES, WINDOW_WARN_AT, windowResetText } from 
 import { brand } from "@/lib/site";
 import { dailyLeftText, formatDailyReset } from "@/lib/usage/format";
 import { extensionNote, usageMeter } from "@/lib/usage/meter";
-import { IconBusiness, IconClose, IconCreate, IconDeploy, IconHistory, IconMore, IconPlus, IconProjects, IconSearch, IconSettings, IconSlides, IconStudy } from "./icons";
+import { IconClose, IconCreate, IconDeploy, IconHistory, IconMore, IconPlus, IconProjects, IconSearch, IconSettings, IconSlides, IconStudy } from "./icons";
 import { pathForView } from "./app-paths";
-import { BUSINESS_URL } from "@/lib/business-site";
 import type { AccountInfo, AppState, View } from "./state/types";
 import { AccountMenu, ImportPrompt, type ImportOffer } from "./AccountMenu";
 import s from "./App.module.css";
@@ -166,14 +165,6 @@ export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteC
             </Link>
           </li>
         ))}
-        {/* Business, Agents and Approvals live at business.keplar.one for now (src/lib/business.ts) */}
-        <li>
-          <a href={BUSINESS_URL} className={s.sideItem} data-nav="business" data-primary="" target="_blank" rel="noopener">
-            <IconBusiness size={15} />
-            <span>Business</span>
-            <span className={s.learnMore}>Learn more</span>
-          </a>
-        </li>
         <li>
           <button type="button" className={s.sideItem} data-more="" aria-expanded={moreShown} aria-controls="side-more" onClick={() => setMoreOpen((v) => !v)}>
             <IconMore size={15} />

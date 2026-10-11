@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { siteUrl } from "@/lib/site";
 import { useCallback, useEffect, useState } from "react";
 import { Analyst } from "./Analyst";
 import { Ask } from "./Ask";
@@ -20,7 +20,9 @@ type View =
   | { at: "projects"; projectId: string | null }
   | { at: "research" | "reason"; seed?: string; openId?: string; projectId?: string; key: string };
 
-const STORE = "https://business.keplar.one";
+/** This is the Business app (business.keplar.one): "/" is its storefront. Keplar One is a separate app on keplar.one. */
+const STORE = "/";
+const ONE = `${siteUrl}/app/ask?stay=1`;
 const SIDE_KEY = "keplar-biz-side";
 const k = () => Math.random().toString(36).slice(2, 9);
 
@@ -55,7 +57,7 @@ const Icon = ({ d, size = 15 }: { d: React.ReactNode; size?: number }) => (
 );
 
 /**
- * Keplar Business workspace (keplar.one/app/work; the desktop app opens it for Business accounts), laid out like Cursor's
+ * Keplar Business workspace (business.keplar.one/work; the desktop app opens it for Business accounts), laid out like Cursor's
  * agent window: a compact sidebar (new chat, search, the main places, Projects, Recent, account) and a quiet main area with
  * one centered composer. Dark Geist; none of Keplar One's consumer navigation. Only built modules are shown.
  */
@@ -117,8 +119,9 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
             <h1 className={s.h1}>Keplar Business</h1>
             <p className={s.muted}>{!acct.signedIn ? "Sign in with the account that has your Business plan." : "This workspace comes with a Keplar Business plan."}</p>
             <div className={s.row}>
-              {!acct.signedIn ? <Link className={s.btnPrimary} href="/signin?next=/app/work">Sign in</Link> : <a className={s.btnPrimary} href={STORE}>See Business plans</a>}
-              <Link className={s.btnGhost} href="/app/ask?stay=1">Open Keplar One</Link>
+              {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- /signin is a route handler (the sign-in handoff from keplar.one): it needs a full page load */}
+              {!acct.signedIn ? <a className={s.btnPrimary} href="/signin?next=%2Fwork">Sign in</a> : <a className={s.btnPrimary} href={STORE}>See Business plans</a>}
+              <a className={s.btnGhost} href={ONE}>Open Keplar One</a>
             </div>
           </div>
         </div>
@@ -197,7 +200,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
               <span className={c.ellipsis}>{acct.account?.company ?? acct.email}</span>
               <span className={c.footPlan}>{acct.plan?.name ?? "Keplar Business"}</span>
             </span>
-            <Link className={c.iconBtn} href="/account" aria-label="Account settings" title="Account settings"><Icon d={<><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></>} /></Link>
+            <a className={c.iconBtn} href={`${siteUrl}/account`} aria-label="Keplar account settings" title="Keplar account settings"><Icon d={<><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></>} /></a>
           </div>
         </aside>
 
@@ -205,7 +208,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
           <header className={c.mainTop}>
             {collapsed ? <button type="button" className={c.iconBtn} onClick={toggleSide} aria-label="Show sidebar"><Icon d={<><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16" /></>} /></button> : null}
             <span className={c.grow} />
-            <Link className={c.topLink} href="/app/ask?stay=1">Keplar One <Icon d={<path d="M7 17L17 7M9 7h8v8" />} size={12} /></Link>
+            <a className={c.topLink} href={ONE}>Keplar One <Icon d={<path d="M7 17L17 7M9 7h8v8" />} size={12} /></a>
           </header>
           <div className={c.mainBody}>
             {view.at === "home" ? <Home projects={projects} onSend={onSend} onNewProject={() => go({ at: "projects", projectId: null })} />
