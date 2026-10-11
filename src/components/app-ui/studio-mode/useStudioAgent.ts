@@ -3,24 +3,26 @@
  * The Studio co-creator's run loop on the page (server turn: src/lib/studio/agent.ts, Studio access: the desktop bridge).
  *
  * One run = the person's request, then turns until the model is done, the person pauses or stops, account credits run out,
- * or the step cap is reached. Before each request Keplar looks at the place (look): a screenshot of Studio's current
- * view and the Workspace tree go into the conversation with the studio_id to use, so it builds on what is really there.
+ * or the step cap is reached. Before each request Keplar looks at the place (look): the Workspace tree goes into the conversation
+ * with the studio_id to use, so it builds on what is really there; only the first request of a session adds a screenshot.
  * Each turn the server returns the model's reply and labelled actions. Reads run by themselves; changes wait for Approve (or
  * run when auto-approve is on); destructive actions always wait. Results go back into the conversation: text capped, and
  * Studio screenshots as images (only the newest kept in full, to keep turns cheap).
- * When the model first says it is finished after making changes, it gets one review pass (REVIEW_PROMPT): check every plan
- * step against a fresh screenshot and the output log, fix what falls short, then finish.
+ * Cost: the model does not screenshot or play-test its own work (each was a paid turn). When it finishes, the person play-tests
+ * with the Play test button (Studio directly, no model call) and says what to change.
+ * Each game's chat is saved on this device (saved-session.ts) and comes back when that game is opened again.
  * Alongside the feed it keeps what the side panel shows: the latest viewport, the plan and the current step ("Step N:"), the
  * changes made, and the run's numbers.
  */
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { resultText, type StudioBridge, type StudioContent } from "@/lib/desktop/studio-bridge";
+import { clearSaved, placeKey, readSaved, toSaved, writeSaved } from "./saved-session";
 import { scaleDataUrl } from "./references";
 
 export type Risk = "read" | "change" | "destructive";
 type ToolCall = { id: string; type: "function"; function: { name: string; arguments: string } };
 type Part = { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } };
-type Msg =
+export type Msg =
   | { role: "user"; content: string | Part[] }
   | { role: "assistant"; content: string | null; tool_calls?: ToolCall[]; reasoning_details?: unknown[] }
   | { role: "tool"; tool_call_id: string; content: string };
@@ -33,7 +35,8 @@ export type Item =
   | { kind: "look"; key: string; image?: string; text: string }
   | { kind: "note"; key: string; text: string; tone?: "warn" };
 
-export type Place = { id: string; name: string };
+/** An open Studio: id is this Studio session's (it changes every launch); placeId is the game's own, when Studio says it. */
+export type Place = { id: string; name: string; placeId?: string };
 export type PlanStep = { text: string; state: "done" | "doing" | "next" };
 export type Viewport = { image: string; at: number };
 
@@ -41,8 +44,8 @@ type Turn = { message: Extract<Msg, { role: "assistant" }>; text: string; action
 
 export const RUN_STEP_CAP = 80;
 
-/** Sent once per run when the model stops after making changes: a real self-review before it may finish. */
-export const REVIEW_PROMPT = "Before you finish, review your work like a lead developer would. Take a fresh screen_capture (more than one angle if it is a scene) and check get_console_output for errors. Compare against the request, your plan and any references: is every step done, does it look polished and complete, is anything placeholder, empty, misaligned or broken? Fix everything that falls short, verify again, then give your short summary. If it is truly complete, say so and summarize.";
+/** Shown when a run that changed the place finishes: the person tests it (no model turns spent on self-review or play tests). */
+export const YOUR_TURN = "Your turn: press Play test, try what Keplar built (it lists what to check), then stop the test and tell Keplar what to change.";
 
 /** A short human line for an action card ("Run Luau", "Read script ServerScriptService.Spawn"). */
 export function describeAction(name: string, args: Record<string, unknown>): string {
@@ -100,8 +103,11 @@ export function parsePlaces(text: string): Place[] {
       const o = (x ?? {}) as Record<string, unknown>;
       const id = o.id ?? o.studioId;
       if (id === undefined) return [];
-      const name = String(o.name ?? o.placeName ?? `Studio ${i + 1}`).replace(/\s*\(placeId:\s*\d+\)\s*$/, "");
-      return [{ id: String(id), name }];
+      const raw = String(o.name ?? o.placeName ?? `Studio ${i + 1}`);
+      const name = raw.replace(/\s*\(placeId:\s*\d+\)\s*$/, "");
+      // The game's own id (stable across launches): "Name (placeId: 123)", or a placeId field. 0 means an unpublished place.
+      const placeId = /\(placeId:\s*(\d+)\)\s*$/.exec(raw)?.[1] ?? (o.placeId != null ? String(o.placeId) : "");
+      return [{ id: String(id), name, ...(/^[1-9]\d*$/.test(placeId) ? { placeId } : {}) }];
     });
   } catch {
     return [];
@@ -166,7 +172,26 @@ export function useStudioAgent(bridge: StudioBridge | null) {
     setShots((xs) => [image, ...xs.filter((x) => x !== image)].slice(0, 4));
   }, []);
 
-  const setPlace = useCallback((p: Place | null) => { placeRef.current = p; setPlaceState(p); }, []);
+  /** Opening a game brings back its saved chat (this device), so work continues where it stopped. */
+  const restore = useCallback((p: Place | null) => {
+    const saved = readSaved(placeKey(p));
+    history.current = saved?.history ?? [];
+    flags.current.units = saved?.units ?? 0;
+    setUnits(saved?.units ?? 0);
+    setPlan(saved?.plan ?? []);
+    setCurrent(saved?.current ?? 0);
+    setFinished(saved?.finished ?? false);
+    setBuilt(saved?.built ?? []);
+    setStats(saved?.stats ?? { steps: 0, changes: 0, errors: 0 });
+    setItems(saved ? [...saved.items, { kind: "note", key: key(), text: `Picked up where you left off in ${p?.name ?? "this game"} (saved ${new Date(saved.savedAt).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}). Keplar will take a fresh look before your next request.` }] : []);
+  }, []);
+
+  const setPlace = useCallback((p: Place | null) => {
+    const changed = placeKey(p) !== placeKey(placeRef.current);
+    placeRef.current = p;
+    setPlaceState(p);
+    if (changed) restore(p);
+  }, [restore]);
 
   /** The open place to work in: the chosen one, else the first Studio lists. */
   const ensurePlace = useCallback(async (): Promise<Place | null> => {
@@ -207,12 +232,15 @@ export function useStudioAgent(bridge: StudioBridge | null) {
     if (!p) return;
     setLooking(true);
     try {
+      // A screenshot is the costly part of a look (image tokens on every later turn): one per session, on its first request
+      // (a resumed session counts as new, since saved chats keep no images). Follow-ups send the Workspace tree only.
+      const firstLook = !history.current.some((m) => m.role === "user" && Array.isArray(m.content) && m.content.some((c) => c.type === "image_url"));
       const [img, tree] = await Promise.all([
-        capture(p),
+        firstLook ? capture(p) : Promise.resolve(null),
         bridge.call("search_game_tree", { studio_id: p.id, datamodel_type: "Edit", path: "Workspace", max_depth: 2, head_limit: 80 }),
       ]);
       const treeText = tree.ok && !tree.result.isError ? treeLines(resultText(tree)) : "";
-      const intro = `Studio screenshot before this request: what the place "${p.name}" looks like right now. Use studio_id "${p.id}" in every call.${treeText ? `\nWorkspace contents:\n${treeText}` : ""}`;
+      const intro = `${img ? "Studio screenshot before this request" : "The place before this request"}: what "${p.name}" looks like right now. Use studio_id "${p.id}" in every call.${treeText ? `\nWorkspace contents:\n${treeText}` : ""}`;
       history.current.push({ role: "user", content: [{ type: "text", text: intro }, ...(img ? [{ type: "image_url" as const, image_url: { url: img } }] : [])] });
       if (img) showShot(img);
       const count = treeText ? treeText.split("\n").length : 0;
@@ -304,12 +332,7 @@ export function useStudioAgent(bridge: StudioBridge | null) {
         }
         if (shotsThisTurn.length) history.current.push({ role: "user", content: [{ type: "text", text: "Studio screenshot after these steps:" }, { type: "image_url", image_url: { url: shotsThisTurn[shotsThisTurn.length - 1]! } }] });
         if (data.done) {
-          if (flags.current.changed && !flags.current.reviewed) {
-            flags.current.reviewed = true;
-            history.current.push({ role: "user", content: REVIEW_PROMPT });
-            add({ kind: "note", key: key(), text: "Checking the work before finishing…" });
-            continue;
-          }
+          if (flags.current.changed) add({ kind: "note", key: key(), text: YOUR_TURN });
           setFinished(true);
           break;
         }
@@ -327,6 +350,8 @@ export function useStudioAgent(bridge: StudioBridge | null) {
   /** Start a request (text plus reference images as data URLs). Keplar looks at the place first. */
   const send = useCallback(async (text: string, images: string[]) => {
     if (!bridge || running || (!text.trim() && !images.length)) return;
+    // Resolve the game first: opening it restores its saved chat, which must happen before this message joins it.
+    await ensurePlace();
     add({ kind: "user", key: key(), text, images });
     flags.current = { ...flags.current, pause: false, stop: false, steps: 0, units: flags.current.units, changed: false, reviewed: false };
     setPaused(false);
@@ -336,7 +361,7 @@ export function useStudioAgent(bridge: StudioBridge | null) {
     if (images.length) parts.push({ type: "text", text: `Reference ${images.length === 1 ? "image" : "images"} for this request (match the style, layout, motion and feel):` }, ...images.map((url) => ({ type: "image_url" as const, image_url: { url } })));
     history.current.push({ role: "user", content: parts });
     await loop();
-  }, [bridge, running, add, look, loop]);
+  }, [bridge, running, add, look, loop, ensurePlace]);
 
   const pause = useCallback(() => { flags.current.pause = true; setPaused(true); }, []);
   const resume = useCallback(async () => { flags.current.pause = false; flags.current.stop = false; flags.current.steps = 0; setPaused(false); await loop(); }, [loop]);
@@ -356,7 +381,28 @@ export function useStudioAgent(bridge: StudioBridge | null) {
     setFinished(false);
     setBuilt([]);
     setStats({ steps: 0, changes: 0, errors: 0 });
+    clearSaved(placeKey(placeRef.current));
   }, [stop]);
+
+  /* Save this game's chat as it changes (debounced; the run loop's history is read at save time). */
+  useEffect(() => {
+    const k = placeKey(place);
+    if (!k || !items.length) return;
+    const t = setTimeout(() => {
+      writeSaved(k, toSaved({ name: place?.name ?? "", items, history: history.current, plan, current, finished, built, stats, units }));
+    }, running ? 3000 : 400);
+    return () => clearTimeout(t);
+  }, [place, items, plan, current, finished, built, stats, units, running]);
+
+  /* Play-testing is the person's: start and stop a play test in Studio directly (no model call, no credits). */
+  const [playing, setPlaying] = useState(false);
+  const playTest = useCallback(async (start: boolean) => {
+    const p = placeRef.current;
+    if (!bridge || !p) return;
+    const r = await bridge.call("start_stop_play", { studio_id: p.id, is_start: start });
+    if (r.ok && !r.result.isError) setPlaying(start);
+    else add({ kind: "note", key: key(), text: start ? "Studio could not start a play test. Press Play in Studio instead." : "Studio could not stop the play test. Press Stop in Studio instead.", tone: "warn" });
+  }, [bridge, add]);
   const setAuto = useCallback((v: boolean) => { flags.current.auto = v; setAutoApprove(v); }, []);
 
   const planSteps: PlanStep[] = plan.map((t, i) => ({ text: t, state: finished || i + 1 < current ? "done" : i + 1 === current ? "doing" : "next" }));
@@ -364,7 +410,7 @@ export function useStudioAgent(bridge: StudioBridge | null) {
 
   return {
     items, running, paused, looking, units, autoApprove, place, viewport, shots, plan: planSteps, current, finished, built, stats, pending,
-    send, decide, pause, resume, stop, reset, setAuto, setPlace, refreshViewport,
+    send, decide, pause, resume, stop, reset, setAuto, setPlace, refreshViewport, playing, playTest,
   };
 }
 

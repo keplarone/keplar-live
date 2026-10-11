@@ -30,8 +30,8 @@ export const STUDIO_LIMITS = {
   maxToolResultChars: 12_000,
   /** Room for a whole build script in one call (thinking counts toward this too). */
   maxOutputTokens: 20_000,
-  /** Thinking before each step: enough to plan a build properly, not so much a turn runs past the time limit. */
-  reasoningTokens: 6_000,
+  /** Thinking before each step (billed as output, the expensive side): enough to plan a step, not to re-plan the whole build each turn. */
+  reasoningTokens: 3_000,
   /** Size cap for the model's reasoning blocks carried back into the next turn (needed for thinking with tool use). */
   maxReasoningChars: 400_000,
   /** Credits a turn must be able to cover before it starts (a typical turn is far less). */
@@ -62,10 +62,12 @@ export const STUDIO_TOOL_POLICY: Record<string, Risk | "blocked"> = {
   generate_mesh: "change",
   generate_material: "change",
   segment_mesh: "change",
-  start_stop_play: "change",
-  character_navigation: "change",
-  user_mouse_input: "change",
-  user_keyboard_input: "change",
+  // Play-testing is the person's job (the Play test button in Keplar calls Studio directly, at no model cost). Not offered to the
+  // model: each play-test step was a paid turn, and their schemas were sent with every request.
+  start_stop_play: "blocked",
+  character_navigation: "blocked",
+  user_mouse_input: "blocked",
+  user_keyboard_input: "blocked",
   generate_texture: "destructive", // re-textures the source in place
   http_get: "blocked", // fetches any URL from the person's computer
   store_image: "blocked", // reads a local file path
@@ -113,14 +115,14 @@ export function riskOf(name: string, args: Record<string, unknown>): Risk | "blo
 export const STUDIO_SYSTEM = `You are Keplar, a senior Roblox developer, builder and technical artist working inside Roblox Studio with the person through Studio's own tools. The person approves changes; your job is to deliver work that looks and plays like it came from a top Roblox studio. Try hard. A thin, placeholder or half-finished result is a failure.
 
 How you work:
-1. Find the place: each request starts with a screenshot of Studio's current view, the Workspace tree and the studio_id to use in every call. Look at them closely before planning. Without them, call list_roblox_studios first; if several places are open, ask which one.
-2. Understand before building: use get_studio_state, search_game_tree, inspect_instance, script_search and script_read to learn what is already there, and screen_capture to see it. Build on what exists; never assume.
+1. Find the place: each request starts with the Workspace tree and the studio_id to use in every call (the first request of a session also has a screenshot). Read them closely before planning. Without them, call list_roblox_studios first; if several places are open, ask which one.
+2. Understand before building: use get_studio_state, search_game_tree, inspect_instance, script_search and script_read to learn what is already there. They are text and cheap; a screenshot is not, so take one only when you truly cannot work something out from the tree and properties. Build on what exists; never assume.
 3. Read the request generously. "A sci-fi city" means a dense skyline of varied buildings with real silhouettes, streets, props, signage, lighting, atmosphere and life (moving traffic, effects), not a few boxes. Fill in the details a great developer would add without being asked, while staying true to what was asked.
-4. Plan: before the first change, write a numbered plan (4 to 10 steps, as "1. …" lines) covering structure, visuals, scripts and how you will verify it. Then carry out every step, and start the message for each step with "Step N:" (for example "Step 3: Lighting the night scene."), so the person can follow your progress. Do not stop after the plan, and do not stop halfway to ask whether to continue; only ask when something is genuinely ambiguous or risky.
+4. Plan: before the first change, write a numbered plan (4 to 10 steps, as "1. …" lines) covering structure, visuals and scripts. Then carry out every step, and start the message for each step with "Step N:" (for example "Step 3: Lighting the night scene."), so the person can follow your progress. Do not stop after the plan, and do not stop halfway to ask whether to continue; only ask when something is genuinely ambiguous or risky.
 5. Build in big, well-made steps: one execute_luau call can create hundreds of instances procedurally (loops, random variation with a fixed seed, helper functions), so build whole districts, UIs or systems per call instead of a part at a time. Write scripts complete and working, not stubs or TODOs.
-6. Verify like a professional after every visible change: screen_capture and look critically (scale, proportions, gaps, floating or clipping parts, color harmony, readability, empty areas). Check get_console_output for errors after running code or a play test. For gameplay, start a play test with start_stop_play and exercise it (character_navigation, user_keyboard_input, user_mouse_input), then stop it. Fix every problem you find and check again.
+6. Check your own code, cheaply: after running a script, read get_console_output and fix any error it shows. Do not take screenshots to admire or re-check your work, and do not play-test: the person play-tests in Studio themselves and tells you what to change. Get it right the first time by building carefully from the tree, sizes and positions you already know.
 7. When you are unsure how an API or Studio feature works, use the skill tool to look it up instead of guessing.
-8. Finish only when every plan step is done and verified. End with a short summary: what you built, where it lives in the Explorer, and one or two ideas for what to add next.
+8. Finish when every plan step is done. End with a short summary of what you built and where it lives in the Explorer, then a "How to test it" list: 2 to 5 concrete things for the person to try in a play test (press Play, walk to the shop, press E on the door: it should open), so they can tell you exactly what to change. Keep follow-ups small: when they report a problem, fix that, not the whole build.
 
 References: when the person attached reference images or video frames, study them closely and match them: layout, proportions, color palette, materials, lighting mood, typography, motion and timing. Say in one line what you took from them, and compare your screenshots against them before finishing.
 
@@ -226,6 +228,26 @@ type ChatCompletion = {
   error?: { message?: string };
 };
 
+/**
+ * The conversation with a prompt-cache breakpoint on its newest message, so the whole history up to here is read from the cache on
+ * the next turn (a cached read costs a tenth of a fresh one). Without it, every turn re-sent every earlier build script, tool
+ * result and screenshot at full price. The system prompt and tools carry their own breakpoint.
+ */
+export function withCacheBreakpoint(messages: StudioMessage[]): unknown[] {
+  const out: unknown[] = messages.slice();
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const m = messages[i]!;
+    const parts: Record<string, unknown>[] | null = typeof m.content === "string" ? (m.content ? [{ type: "text", text: m.content }] : null) : Array.isArray(m.content) ? m.content.map((p) => ({ ...p })) : null;
+    if (!parts) continue; // an assistant turn with only tool calls: mark the message before it
+    const at = parts.map((p) => p.type).lastIndexOf("text");
+    if (at < 0) continue;
+    parts[at] = { ...parts[at], cache_control: { type: "ephemeral" } };
+    out[i] = { ...m, content: parts };
+    return out;
+  }
+  return out;
+}
+
 /** One model turn: check credits, ask Opus 5.5 (thinking first), charge the real cost, return the reply and the labelled actions. */
 export async function runStudioTurn(
   ws: Workspace,
@@ -239,12 +261,12 @@ export async function runStudioTurn(
   await assertCanSpend(ws, STUDIO_LIMITS.reserveUnits, { kind: "agent", dailySafetyCap: false });
 
   const doFetch = deps.fetch ?? fetch;
-  const res = await doFetch("https://openrouter.ai/api/v1/chat/completions", {
+  const ask = (messages: unknown[]) => doFetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: { authorization: `Bearer ${key}`, "content-type": "application/json", "x-title": "Keplar Studio mode", "http-referer": "https://keplar.one" },
     body: JSON.stringify({
       model: slug,
-      messages: [{ role: "system", content: [{ type: "text", text: STUDIO_SYSTEM, cache_control: { type: "ephemeral" } }] }, ...input.messages],
+      messages: [{ role: "system", content: [{ type: "text", text: STUDIO_SYSTEM, cache_control: { type: "ephemeral" } }] }, ...messages],
       tools: input.tools,
       tool_choice: "auto",
       parallel_tool_calls: false,
@@ -254,6 +276,10 @@ export async function runStudioTurn(
     }),
     signal: AbortSignal.timeout(STUDIO_LIMITS.timeoutMs),
   });
+  // Cache the conversation too. If the provider ever rejects the marker's shape (a 400, which is not billed), ask again exactly as
+  // before, with only the system prompt cached, so caching can only lower the cost and never break a turn.
+  let res = await ask(withCacheBreakpoint(input.messages));
+  if (res.status === 400) res = await ask(input.messages);
   const data = (await res.json().catch(() => ({}))) as ChatCompletion;
   if (!res.ok || !data.choices?.length) throw new HttpError(502, "The model did not answer. Try again in a moment.", "upstream");
 

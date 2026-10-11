@@ -31,7 +31,7 @@ test("studio run: reads Keplar's plan, its step markers and Studio's place list"
   assert.equal(stepMarker("Step 3: Lighting the night scene."), 3);
   assert.equal(stepMarker("**Step 12** done"), 12);
   assert.equal(stepMarker("Next step 2"), null);
-  assert.deepEqual(parsePlaces(JSON.stringify({ studios: [{ id: "a1", name: "Keplar Testing (placeId: 132547270460088)" }, { id: "b2", name: "Place1" }] })), [{ id: "a1", name: "Keplar Testing" }, { id: "b2", name: "Place1" }]);
+  assert.deepEqual(parsePlaces(JSON.stringify({ studios: [{ id: "a1", name: "Keplar Testing (placeId: 132547270460088)" }, { id: "b2", name: "Place1" }] })), [{ id: "a1", name: "Keplar Testing", placeId: "132547270460088" }, { id: "b2", name: "Place1" }]);
   assert.deepEqual(parsePlaces("not json"), []);
 });
 
