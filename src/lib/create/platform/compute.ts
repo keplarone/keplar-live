@@ -80,6 +80,8 @@ async function fund(ws: Workspace, units: number): Promise<{ base: number; ext: 
 export const usedThisMonth = usedThisPeriod;
 
 /** Stop before starting when the allowance can't cover the estimate. No silent downgrade. */
+export class CreditLimitError extends EntitlementError {}
+
 export async function assertCanSpend(ws: Workspace, units: number, opts: { paidMedia?: boolean; kind?: "text" | "media" | "agent" } = {}) {
   // Operator kill switches first: global stop, media pause, agent pause (nothing is charged).
   await assertOpsAllows(opts.kind ?? (opts.paidMedia ? "media" : "text"));
@@ -107,10 +109,10 @@ export async function assertCanSpend(ws: Workspace, units: number, opts: { paidM
   }
   // Opt-in pay-as-you-go overage (flag, Plus/Pro) continues past the plan's limits up to the person's cap.
   if (await overageInstead(ws, units, async () => Boolean(room.blocked) || (await usedThisPeriod(ws)) + units > ws.entitlements.monthlyUnits)) return;
-  if (room.blocked) throw new EntitlementError(room.blocked.message, ws.plan === "lite" ? "plus" : ws.plan === "plus" ? "pro" : undefined);
+  if (room.blocked) throw new CreditLimitError(room.blocked.message, ws.plan === "lite" ? "plus" : ws.plan === "plus" ? "pro" : undefined);
   const used = await usedThisPeriod(ws);
   if (used + units > ws.entitlements.monthlyUnits) {
-    throw new EntitlementError(`This needs about ${units} credits and ${Math.max(0, ws.entitlements.monthlyUnits - used)} are left this period.`);
+    throw new CreditLimitError(`This needs about ${units} credits and ${Math.max(0, ws.entitlements.monthlyUnits - used)} are left this period.`);
   }
 }
 

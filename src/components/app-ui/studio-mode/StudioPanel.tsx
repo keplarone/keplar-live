@@ -17,7 +17,6 @@ function ago(at: number, now: number): string {
 export function StudioPanel({ a, now }: { a: StudioAgent; now: number }) {
   const done = a.plan.filter((p) => p.state === "done").length;
   const pct = a.plan.length ? Math.round((done / a.plan.length) * 100) : 0;
-  const spent = Math.min(100, Math.round((a.units / Math.max(1, a.budget)) * 100));
   return (
     <aside className={s.panel} aria-label="Studio">
       <section className={s.panelCard}>
@@ -89,9 +88,8 @@ export function StudioPanel({ a, now }: { a: StudioAgent; now: number }) {
         <div className={s.panelHead}>
           <h2 className={s.panelTitle}>This run</h2>
           <span className={s.grow} />
-          <span className={s.meta}>{a.units.toLocaleString()} of {a.budget.toLocaleString()} credits</span>
+          <span className={s.meta}>{a.units.toLocaleString()} credits used</span>
         </div>
-        <div className={s.progress} data-tone="quiet"><span style={{ width: `${spent}%` }} /></div>
         <span className={s.meta}>{a.stats.steps} steps · {a.stats.changes} changes · {a.stats.errors} {a.stats.errors === 1 ? "error" : "errors"}</span>
       </section>
     </aside>

@@ -202,7 +202,7 @@ export function StudioView({ plan, signedIn }: { plan: string; signedIn: boolean
           </div>
           <div className={s.card}>
             <h3 className={s.cardTitle}>You stay in charge</h3>
-            <p className={s.text}>It never deletes, publishes or touches data stores without asking. Set a credit budget per run, and pause or stop any time.</p>
+            <p className={s.text}>It never deletes, publishes or touches data stores without asking. Pause or stop any time.</p>
           </div>
         </section>
       </div>

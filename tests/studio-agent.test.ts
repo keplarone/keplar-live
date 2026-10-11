@@ -58,7 +58,7 @@ test("messages: known roles only, images must be small data URLs, tool results c
   assert.throws(() => validateMessages([]), /non-empty/);
 });
 
-test("turn: asks Fable 5 with Keplar's system prompt and the tools, charges the real cost with margin, labels actions, answers blocked calls", async () => {
+test("turn: asks Opus 5.5 with Keplar's system prompt and the tools, charges the real cost with margin, labels actions, answers blocked calls", async () => {
   process.env.OPENROUTER_API_KEY = "sk-or-test";
   const ws = await testWorkspace("studio-turn", "lite");
   const before = await usedThisMonth(ws);
@@ -76,7 +76,7 @@ test("turn: asks Fable 5 with Keplar's system prompt and the tools, charges the 
   }) as unknown as typeof fetch;
   const turn = await runStudioTurn(ws, { messages: validateMessages([{ role: "user", content: "Build a lobby" }]), tools: buildTools([{ name: "list_roblox_studios" }, { name: "execute_luau" }]) }, { fetch: fakeFetch });
   const body = sent as unknown as { model: string; messages: { role: string; content: unknown }[]; tools: unknown[]; max_tokens: number };
-  assert.equal(body.model, "anthropic/claude-fable-5.1");
+  assert.equal(body.model, "anthropic/claude-opus-5.5");
   assert.equal(body.messages[0]!.role, "system");
   assert.match(JSON.stringify(body.messages[0]!.content), /working inside Roblox Studio/);
   assert.equal(body.tools.length, 2);

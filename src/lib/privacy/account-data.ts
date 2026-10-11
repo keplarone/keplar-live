@@ -22,6 +22,7 @@ export const RETAINED = [
   "traffic_daily", // one row per day of rolled-up visit totals (no visitor-level data)
   "ops_fixed_costs", // the founder's own fixed business costs (admin-entered, no personal data)
   "limit_extensions", // purchased limit-extension credits (one row per verified payment): a financial record
+  "studio_topup_attempts", // charge attempts and consent snapshots prevent duplicate automatic payments
   "referral_claims", // one row per referred new account: masked address, keyed hashes of mailbox/network/browser, outcome. Kept so deleting and re-registering cannot earn a second reward
   "referral_counters", // per-referrer monthly/lifetime and per-day program counters; numbers only
   "usage_cooldown",
@@ -48,12 +49,14 @@ export const RETAINED_PATTERNS = [/^usage_window_/, /^system_/, /^admin_/, /^ops
 
 /** Collections that hold user content/data. Listed so the file backend can enumerate and so new ones must be classified. */
 export const USER_COLLECTIONS = [
+  "studio_topup_settings", "studio_topup_quotes", // deleting an account also removes automatic-payment authorization
   "accounts_workspaces", "chat_threads", "chat_digests", "memory_items", "memory_settings", "projects", "project_notes", "project_files",
   "sb_sites", "sb_versions", "sb_leads", "sb_templates" /* site snapshots you chose to share as templates; removed with the site or the account */, "sb_template_likes" /* community templates you liked; exported and deleted with the account */, "sb_records" /* site features: visitor signups, bookings, table rows; exported and deleted with the account */, "sb_assets", "sb_shots", "app_builds" /* Keplar Apps build records: your prompt, plan and generated files; the apps' own end-user data lives in app_* tables and is deleted with each app */, "create_projects", "referral_profiles" /* your invite code and hashed network/browser markers */, "create_deploys", "create_domains", "create_media_jobs", "img_jobs", "hf_finalize",
   "collab_invites" /* live-session invite links you created (token hashes only) */, "collab_grants" /* who joined your creations by link */, "collab_branches" /* split-off records */, "critic_reports" /* AI critic reports on your creations */, "sb_deploys" /* deploy and rollback history with logs */,
   "slide_decks", "study_sets", "study_guides", "study_progress", "dev_outbox",
   "biz_settings", "biz_connect_accounts", "biz_connect_events", "biz_orders", "biz_contacts", "biz_deals", "biz_activities", "biz_inbox",
   "biz_connections", "biz_bank_items", "biz_agents", "biz_agent_runs", "biz_approvals", "biz_audit", "biz_table_rows", "biz_pageviews", "biz_schedule_claims", "biz_mock_v2_accounts",
+  "business_accounts", "business_reports", "business_layouts", "business_tasks", "business_summaries", // Business profiles and workspace content: exported and removed with their owner.
   "mcp_servers", "mcp_tools", "mcp_grants", "mcp_receipts", "mcp_oauth", "mobile_creds",
   "team_teams", "team_members", "team_invites", "team_audit" /* team workspaces (BETA): scoped by the team id, so exported and deleted with the team, never with a member's account */, "team_memberships" /* your own index of the teams you belong to */, "api_keys" /* hashed API keys (BETA): never exported with a secret, deleted with the account */, "embed_widgets" /* public embed widget configs (BETA): no secrets, deleted with the account */, "answer_shares", "chat_shares" /* shared chat links: the redacted turns you chose; revoked and deleted with the account */, "answer_prefs" /* your answer style and "about you" */, "specialists" /* your saved specialists: instructions, knowledge, starters */, "specialist_shares" /* specialist links you made: a snapshot of that specialist; revoked and deleted with the account */, "family_settings" /* Family mode on/off and homework guidance; the PIN hash is never exported */, "specialist_listings" /* your Specialist directory submissions and their review status */, "feedback", "support_tickets", "learn_settings", "learn_cases", "faq_settings", "core_prefs" /* Keplar Core: tracking opt-out and the learned shorter/longer preference */, "core_jobs" /* Keplar Core background work: the question, working notes and result; expire after 7 days */,
 ] as const;

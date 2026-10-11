@@ -5,7 +5,7 @@ import { pickChoices } from "./understand";
 import s from "./ws.module.css";
 
 /**
- * Shown in the chat right after the idea is sent and before any questions: what Keplar understood (kind, audience, goal, tone, pages)
+ * Panel shown right after the idea is sent and before any questions: what Keplar understood (kind, audience, goal, tone, pages)
  * and three quick directions to choose from. Nothing here calls a model; it reads the same free analysis the brief uses. Everything can be
  * skipped: "Continue" keeps the suggested direction, "Just build it" goes straight to the brief.
  */

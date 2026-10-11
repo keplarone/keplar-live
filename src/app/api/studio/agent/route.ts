@@ -2,6 +2,7 @@ import { body, errorResponse, HttpError, json } from "@/lib/create/platform/http
 import { EntitlementError } from "@/lib/create/platform/plans";
 import { rateLimit } from "@/lib/create/platform/ratelimit";
 import { currentWorkspace } from "@/lib/create/platform/workspace";
+import { CreditLimitError } from "@/lib/create/platform/compute";
 import { STUDIO_PLANS } from "@/lib/desktop/studio-bridge";
 import { buildTools, runStudioTurn, STUDIO_LIMITS, validateMessages } from "@/lib/studio/agent";
 
@@ -23,6 +24,7 @@ export async function POST(req: Request) {
     const turn = await runStudioTurn(ws, { messages: validateMessages(b.messages), tools: buildTools(b.tools) });
     return json(turn, { headers: { "cache-control": "no-store" } });
   } catch (e) {
+    if (e instanceof CreditLimitError) return json({ error: e.message, code: "studio_credits" }, { status: 402 });
     return errorResponse(e);
   }
 }

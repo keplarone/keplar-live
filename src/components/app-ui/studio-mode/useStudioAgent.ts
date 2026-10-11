@@ -2,8 +2,8 @@
 /**
  * The Studio co-creator's run loop on the page (server turn: src/lib/studio/agent.ts, Studio access: the desktop bridge).
  *
- * One run = the person's request, then turns until the model is done, the person pauses or stops, the run's credit budget is
- * spent, or the step cap is reached. Before each request Keplar looks at the place (look): a screenshot of Studio's current
+ * One run = the person's request, then turns until the model is done, the person pauses or stops, account credits run out,
+ * or the step cap is reached. Before each request Keplar looks at the place (look): a screenshot of Studio's current
  * view and the Workspace tree go into the conversation with the studio_id to use, so it builds on what is really there.
  * Each turn the server returns the model's reply and labelled actions. Reads run by themselves; changes wait for Approve (or
  * run when auto-approve is on); destructive actions always wait. Results go back into the conversation: text capped, and
@@ -40,10 +40,9 @@ export type Viewport = { image: string; at: number };
 type Turn = { message: Extract<Msg, { role: "assistant" }>; text: string; actions: { id: string; name: string; args: Record<string, unknown>; risk: Risk }[]; blocked: { id: string; name: string }[]; done: boolean; units: number };
 
 export const RUN_STEP_CAP = 80;
-export const DEFAULT_BUDGET = 3000;
 
 /** Sent once per run when the model stops after making changes: a real self-review before it may finish. */
-export const REVIEW_PROMPT = "Before you finish, review your work like a lead developer would. Take a fresh screen_capture (more than one angle if it is a scene) and check get_console_output for errors. Compare against the request, your plan and any references: is every step done, does it look polished and complete, is anything placeholder, empty, misaligned or broken? Fix everything that falls short, verify again, then give your short summary. If it is truly complete, say so and summarise.";
+export const REVIEW_PROMPT = "Before you finish, review your work like a lead developer would. Take a fresh screen_capture (more than one angle if it is a scene) and check get_console_output for errors. Compare against the request, your plan and any references: is every step done, does it look polished and complete, is anything placeholder, empty, misaligned or broken? Fix everything that falls short, verify again, then give your short summary. If it is truly complete, say so and summarize.";
 
 /** A short human line for an action card ("Run Luau", "Read script ServerScriptService.Spawn"). */
 export function describeAction(name: string, args: Record<string, unknown>): string {
@@ -145,7 +144,6 @@ export function useStudioAgent(bridge: StudioBridge | null) {
   const [paused, setPaused] = useState(false);
   const [looking, setLooking] = useState(false);
   const [units, setUnits] = useState(0);
-  const [budget, setBudget] = useState(DEFAULT_BUDGET);
   const [autoApprove, setAutoApprove] = useState(false);
   const [place, setPlaceState] = useState<Place | null>(null);
   const [viewport, setViewport] = useState<Viewport | null>(null);
@@ -158,7 +156,7 @@ export function useStudioAgent(bridge: StudioBridge | null) {
   const history = useRef<Msg[]>([]);
   const decisions = useRef(new Map<string, (ok: boolean) => void>());
   const placeRef = useRef<Place | null>(null);
-  const flags = useRef({ pause: false, stop: false, units: 0, steps: 0, budget: DEFAULT_BUDGET, auto: false, changed: false, reviewed: false });
+  const flags = useRef({ pause: false, stop: false, units: 0, steps: 0, auto: false, changed: false, reviewed: false });
 
   const add = useCallback((it: Item) => setItems((xs) => [...xs, it]), []);
   const patch = useCallback((k: string, p: Partial<Extract<Item, { kind: "action" }>>) => setItems((xs) => xs.map((x) => (x.key === k && x.kind === "action" ? { ...x, ...p } : x))), []);
@@ -236,12 +234,29 @@ export function useStudioAgent(bridge: StudioBridge | null) {
       const tools = await bridge.tools();
       while (!flags.current.stop && !flags.current.pause) {
         if (flags.current.steps >= RUN_STEP_CAP) { add({ kind: "note", key: key(), text: `Paused after ${RUN_STEP_CAP} steps. Continue when you are ready.`, tone: "warn" }); flags.current.pause = true; break; }
-        if (flags.current.units >= flags.current.budget) { add({ kind: "note", key: key(), text: `Paused at this run's budget (${flags.current.budget.toLocaleString()} credits). Raise it to continue.`, tone: "warn" }); flags.current.pause = true; break; }
+        const res = await fetch("/api/studio/agent", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ messages: compactScreenshots(history.current), tools }) });
+        const data = (await res.json().catch(() => ({}))) as Turn & { error?: string; code?: string };
+        if (res.status === 402 && data.code === "studio_credits") {
+          let ready = false;
+          const noteKey = key();
+          add({ kind: "note", key: noteKey, text: "Checking auto top-up…" });
+          for (let poll = 0; poll < 12 && !flags.current.stop && !flags.current.pause; poll++) {
+            const r = await fetch("/api/billing/studio-topup", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "recharge" }) });
+            const topup = await r.json() as { status?: string; message?: string; error?: string };
+            setItems((xs) => xs.map((x) => x.key === noteKey && x.kind === "note" ? { ...x, text: topup.error ?? topup.message ?? "Confirming your top-up…" } : x));
+            if (!r.ok) break;
+            if (topup.status === "ready") { ready = true; break; }
+            if (topup.status !== "pending") break;
+            await new Promise((resolve) => setTimeout(resolve, 2500));
+          }
+          if (flags.current.stop || flags.current.pause) break;
+          if (ready) continue;
+          add({ kind: "note", key: key(), text: "Studio is paused. Review auto top-up, then choose Continue. Any pending payment will be checked before another charge.", tone: "warn" });
+          flags.current.pause = true; break;
+        }
+        if (!res.ok) { add({ kind: "note", key: key(), text: data.error ?? "Keplar could not continue. Try again.", tone: "warn" }); flags.current.pause = true; break; }
         flags.current.steps++;
         setStats((st) => ({ ...st, steps: st.steps + 1 }));
-        const res = await fetch("/api/studio/agent", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ messages: compactScreenshots(history.current), tools }) });
-        const data = (await res.json().catch(() => ({}))) as Turn & { error?: string };
-        if (!res.ok) { add({ kind: "note", key: key(), text: data.error ?? "Keplar could not continue. Try again.", tone: "warn" }); flags.current.pause = true; break; }
         flags.current.units += data.units;
         setUnits(flags.current.units);
         history.current.push(data.message);
@@ -342,15 +357,14 @@ export function useStudioAgent(bridge: StudioBridge | null) {
     setBuilt([]);
     setStats({ steps: 0, changes: 0, errors: 0 });
   }, [stop]);
-  const setRunBudget = useCallback((n: number) => { flags.current.budget = n; setBudget(n); }, []);
   const setAuto = useCallback((v: boolean) => { flags.current.auto = v; setAutoApprove(v); }, []);
 
   const planSteps: PlanStep[] = plan.map((t, i) => ({ text: t, state: finished || i + 1 < current ? "done" : i + 1 === current ? "doing" : "next" }));
   const pending = items.filter((x) => x.kind === "action" && x.status === "waiting").length;
 
   return {
-    items, running, paused, looking, units, budget, autoApprove, place, viewport, shots, plan: planSteps, current, finished, built, stats, pending,
-    send, decide, pause, resume, stop, reset, setRunBudget, setAuto, setPlace, refreshViewport,
+    items, running, paused, looking, units, autoApprove, place, viewport, shots, plan: planSteps, current, finished, built, stats, pending,
+    send, decide, pause, resume, stop, reset, setAuto, setPlace, refreshViewport,
   };
 }
 

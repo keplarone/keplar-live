@@ -231,7 +231,7 @@ test("OpenAPI spec is served publicly and documents every v1 route that exists",
   assert.equal(spec.openapi, "3.1.0");
   assert.ok(spec.info.title.toLowerCase().includes("beta"));
   const walk = (d: string): string[] => readdirSync(d).flatMap((f) => (statSync(join(d, f)).isDirectory() ? walk(join(d, f)) : f === "route.ts" ? [d] : []));
-  const routes = walk("src/app/api/v1").map((d) => "/api/v1" + d.slice("src/app/api/v1".length));
+  const routes = walk("src/app/api/v1").map((d) => "/api/v1" + d.replace(/\\/g, "/").slice("src/app/api/v1".length));
   assert.ok(routes.length >= 3);
   for (const r of routes) assert.ok(spec.paths[r], `${r} is documented`);
   assert.ok(openApiSpec().paths["/api/v1/ask"].post.responses["402"]);

@@ -9,7 +9,7 @@ function walk(dir: string, out: string[] = []) {
   for (const f of readdirSync(dir)) {
     const p = path.join(dir, f);
     if (statSync(p).isDirectory()) walk(p, out);
-    else if (/\.(css|tsx?)$/.test(f)) out.push(p);
+    else if (/\.(css|tsx?)$/.test(f)) out.push(p.replace(/\\/g, "/"));
   }
   return out;
 }
@@ -34,8 +34,8 @@ test("font: Google Sans (open-source OFL family, variable, swap) via next/font/g
   assert.match(g, /font-family: "Keplar Sans Fallback"[\s\S]*size-adjust/);
   assert.match(read("src/styles/tokens.css"), /--f-sans: var\(--font-sans\), "Keplar Sans Fallback"/);
   // --f-mono is limited to code-like surfaces.
-  const mono = walk("src").filter((f) => f.endsWith(".css") && readFileSync(f, "utf8").includes("var(--f-mono)")).map((f) => path.relative("src", f)).sort();
-  assert.deepEqual(mono, ["components/app-ui/Markdown.module.css", "components/app-ui/create/create.module.css" /* chat Create card: Code tab */, "components/create/advanced/advanced.module.css" /* live editor, shared terminal, deploy logs */, "components/create/apps/VoiceLiveTheater.module.css" /* file tabs and the code being written live */, "components/create/apps/apps.module.css" /* generated file paths and raw records */, "components/create/apps/studio.module.css" /* studio Code and Changes panes */, "components/create/builder.module.css", "components/create/create.module.css", "components/developers/Developers.module.css" /* API reference: endpoints, code samples, request fields */, "components/kb/kb.module.css", "components/sections/Creation.module.css", "styles/globals.css"]);
+  const mono = walk("src").filter((f) => f.endsWith(".css") && readFileSync(f, "utf8").includes("var(--f-mono)")).map((f) => path.relative("src", f).replace(/\\/g, "/")).sort();
+  assert.deepEqual(mono, ["components/app-ui/Markdown.module.css", "components/app-ui/create/create.module.css" /* chat Create card: Code tab */, "components/app-ui/studio-mode/studio-mode.module.css" /* Luau code preview */, "components/create/advanced/advanced.module.css" /* live editor, shared terminal, deploy logs */, "components/create/apps/VoiceLiveTheater.module.css" /* file tabs and the code being written live */, "components/create/apps/apps.module.css" /* generated file paths and raw records */, "components/create/apps/studio.module.css" /* studio Code and Changes panes */, "components/create/builder.module.css", "components/developers/Developers.module.css" /* API reference: endpoints, code samples, request fields */, "components/kb/kb.module.css", "components/sections/Creation.module.css", "components/sky/MiniDemos.module.css" /* command and JSON examples */, "styles/globals.css"]);
 });
 
 test("usage label: sidebar says Keplar Usage, hides the meter when signed out; no stale 'Keplar Compute' copy", () => {

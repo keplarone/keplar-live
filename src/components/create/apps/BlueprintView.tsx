@@ -1,6 +1,6 @@
 "use client";
 /**
- * The canvas drawing of the app being made. Before the build it is a line blueprint inferred from the prompt, in the chosen
+ * The canvas view of the app being made. Before the build it is a line blueprint inferred from the prompt, in the chosen
  * look (accent, corners, display face). During the build each screen inks in as its code is written and gets a mark when the
  * browser test passes or fails. Pure SVG + CSS (no WebGL): it is cheap to render and says something real about the build.
  */

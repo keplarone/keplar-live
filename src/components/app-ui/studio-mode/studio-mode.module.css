@@ -24,6 +24,17 @@
 .text { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--c-ink-2); }
 .meta { font-size: 12.5px; color: var(--c-ink-3); }
 .grow { flex: 1; }
+.topup { flex: none; border-bottom: 1px solid rgb(var(--rgb-ink) / 0.07); font-size: 13px; color: var(--c-ink-2); }
+.topup summary { padding: 10px 18px; cursor: pointer; }
+.topup summary span { margin-left: 8px; color: var(--c-ink-3); }
+.topupBody { display: grid; gap: 12px; padding: 0 18px 16px; max-height: 50vh; overflow-y: auto; }
+.topupBody p { margin: 0; line-height: 1.5; }
+.topupBody form { display: grid; gap: 12px; }
+.topupBody label { display: grid; gap: 6px; }
+.topupBody select, .topupBody input[type="number"] { box-sizing: border-box; min-width: 0; width: 100%; padding: 9px 12px; border: 1px solid rgb(var(--rgb-ink) / 0.14); border-radius: 10px; background: var(--c-surface-1); color: var(--c-ink); font: inherit; }
+.topupBody .topupConsent { display: flex; align-items: flex-start; gap: 10px; line-height: 1.5; }
+.topupConsent input { margin-top: 3px; flex: none; }
+.topupActions { display: flex; flex-wrap: wrap; gap: 8px; }
 .note { align-self: center; margin: 0; padding: 8px 14px; border-radius: 999px; background: rgb(var(--rgb-ink) / 0.05); font-size: 13px; color: var(--c-ink-2); }
 .note[data-tone="warn"] { background: rgb(254 188 46 / 0.18); color: var(--c-ink); }
 .dot { width: 9px; height: 9px; flex: none; border-radius: 999px; background: rgb(var(--rgb-ink) / 0.25); }
@@ -106,8 +117,6 @@
 .runState { display: inline-flex; align-items: center; gap: 8px; color: var(--c-ink); }
 .runDot { width: 8px; height: 8px; border-radius: 999px; background: rgb(var(--rgb-ink) / 0.3); }
 .runState[data-running] .runDot { background: #febc2e; animation: st-pulse 1.2s ease-in-out infinite; }
-.budget { display: inline-flex; align-items: center; gap: 8px; }
-.budget select { height: 30px; padding: 0 10px; border: 0; border-radius: 999px; background: rgb(var(--rgb-ink) / 0.06); font: inherit; color: var(--c-ink); }
 .switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
 .switch input { accent-color: var(--c-ink); width: 16px; height: 16px; }
 .textBtn { border: 0; background: none; font: inherit; color: var(--c-ink-2); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
@@ -171,7 +180,6 @@
 .progress { height: 6px; border-radius: 999px; background: rgb(var(--rgb-ink) / 0.07); overflow: hidden; }
 .progress span { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #9b7bff, #45c8ec, #ff5fa8, #9b7bff); background-size: 200% 100%; transition: width 600ms var(--e-standard, ease); }
 .progress span[data-live] { animation: st-shimmer 3s linear infinite; }
-.progress[data-tone="quiet"] span { background: var(--c-ink-3); }
 @keyframes st-shimmer { from { background-position: -200% 0; } to { background-position: 200% 0; } }
 .planList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; font-size: 13.5px; line-height: 1.45; }
 .planList li { display: flex; gap: 10px; align-items: flex-start; color: var(--c-ink-2); }

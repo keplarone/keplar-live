@@ -8,3 +8,5 @@ screenshots
 bench/out
 tmp
 *.tsbuildinfo
+test-results
+playwright-report

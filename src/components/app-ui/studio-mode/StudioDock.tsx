@@ -2,12 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { referencesFromFiles } from "./references";
+import { StudioTopUp } from "./StudioTopUp";
 import { describeAction, type Item, type StudioAgent } from "./useStudioAgent";
 import s from "./studio-mode.module.css";
 
 const RISK_LABEL = { read: "Look", change: "Change", destructive: "Needs care" } as const;
 const STATUS_LABEL = { waiting: "Waiting for you", running: "Working…", done: "Done", failed: "Failed", skipped: "Skipped" } as const;
-const BUDGETS = [1500, 3000, 6000, 12000];
 const MAX_REFS = 8;
 
 function ActionCard({ it, onDecide, compact }: { it: Extract<Item, { kind: "action" }>; onDecide: (ok: boolean) => void; compact: boolean }) {
@@ -103,12 +103,6 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed }: { a:
             {a.looking ? "Looking at your place…" : a.running ? (a.current ? `Building · step ${a.current}${a.plan.length ? ` of ${a.plan.length}` : ""}` : "Planning…") : a.paused ? "Paused" : a.finished ? "Finished" : "Ready"}
           </span>
           <span className={s.grow} />
-          <label className={s.budget}>
-            Budget
-            <select value={a.budget} onChange={(e) => a.setRunBudget(Number(e.target.value))}>
-              {BUDGETS.map((b) => <option key={b} value={b}>{b.toLocaleString()}</option>)}
-            </select>
-          </label>
           <label className={s.switch}>
             <input type="checkbox" role="switch" checked={a.autoApprove} onChange={(e) => a.setAuto(e.target.checked)} />
             <span>Auto-approve safe changes</span>
@@ -117,6 +111,7 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed }: { a:
         </div>
       )}
 
+      <StudioTopUp />
       <ol className={s.feed} ref={listRef} aria-live="polite">
         {a.items.length === 0 ? (
           <li className={s.empty}>
@@ -188,7 +183,7 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed }: { a:
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" /><circle cx="9" cy="10" r="1.6" /><path d="M21 16l-5-5-8 8" /></svg>
             {compact ? null : refBusy ? "Reading…" : "Add reference"}
           </button>
-          {compact ? <span className={s.meta}>{a.units.toLocaleString()} of {a.budget.toLocaleString()} credits</span> : null}
+          {compact ? <span className={s.meta}>{a.units.toLocaleString()} credits used</span> : null}
           <span className={s.grow} />
           {a.running ? (
             <>
