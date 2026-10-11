@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import { geist, geistMono } from "@/components/business-site/fonts";
+import { BUSINESS_ICONS, BUSINESS_MANIFEST_PATH } from "@/lib/business-site";
 import s from "@/components/business-site/business-site.module.css";
 
 export const metadata: Metadata = {
   title: { default: "Keplar Business", template: "%s · Keplar Business" },
   applicationName: "Keplar Business",
   openGraph: { siteName: "Keplar Business" },
+  icons: BUSINESS_ICONS,
+  manifest: BUSINESS_MANIFEST_PATH,
 };
 
 /**

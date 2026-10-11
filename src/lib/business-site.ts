@@ -35,6 +35,33 @@ export function isBusinessHost(host: string): boolean {
 /** The public Business URL for a path ("/work" → https://business.keplar.one/work). */
 export const businessUrl = (path = "/") => `${BUSINESS_URL}${path.startsWith("/") ? path : `/${path}`}`;
 
+/**
+ * The Keplar Business favicon set (public/business): the glossy black mark on a transparent background, as supplied.
+ * Transparency is preserved in every size. Both Business layouts use it, and src/proxy.ts answers /favicon.ico
+ * (and the other well-known icon paths) on the Business host with these files.
+ */
+export const BUSINESS_ICONS = {
+  icon: [
+    { url: "/business/favicon.ico", sizes: "48x48" },
+    { url: "/business/icon.png", type: "image/png", sizes: "512x512" },
+    { url: "/business/icon-192.png", type: "image/png", sizes: "192x192" },
+  ],
+  shortcut: ["/business/favicon.ico"],
+  apple: [{ url: "/business/apple-icon.png", sizes: "180x180" }],
+};
+
+export const BUSINESS_MANIFEST_PATH = "/business/manifest.webmanifest";
+
+/** Well-known icon paths browsers ask for on their own, mapped to the Business files (src/proxy.ts). */
+export const BUSINESS_ICON_PATHS: Record<string, string> = {
+  "/favicon.ico": "/business/favicon.ico",
+  "/icon.png": "/business/icon.png",
+  "/icon.svg": "/business/icon.png",
+  "/apple-icon.png": "/business/apple-icon.png",
+  "/apple-touch-icon.png": "/business/apple-icon.png",
+  "/apple-touch-icon-precomposed.png": "/business/apple-icon.png",
+};
+
 /** A relative, same-app path safe to redirect to after sign-in ("/work?x=1"); anything else becomes "/work". */
 export function safeBusinessNext(raw: unknown): string {
   const v = typeof raw === "string" ? raw.trim() : "";

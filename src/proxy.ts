@@ -11,7 +11,7 @@ import { clientIpOf, rateLimit, RateLimitError } from "@/lib/create/platform/rat
 import { newRequestId, requestIdOf } from "@/lib/ops/log";
 import { hostOf, isAppHost, resolveCustomHost } from "@/lib/domains/routing";
 import { DOCS_HOST, PRODUCTION_URL } from "@/lib/site";
-import { BUSINESS_PREFIX, businessUrl, isBusinessHost } from "@/lib/business-site";
+import { BUSINESS_ICON_PATHS, BUSINESS_MANIFEST_PATH, BUSINESS_PREFIX, businessUrl, isBusinessHost } from "@/lib/business-site";
 import { DOC_SECTION_IDS } from "@/lib/kb/doc-sections";
 import { isOriginExempt, isSameOrigin, SAFE_METHODS } from "@/lib/security/origin";
 import { noteVisit } from "@/lib/traffic/visits";
@@ -98,6 +98,13 @@ export function docsHost(req: NextRequest) {
 export function businessHost(req: NextRequest): NextResponse | null {
   const { pathname, search } = req.nextUrl;
   if (pathname.startsWith("/api/")) return null;
+  // Browsers ask for /favicon.ico (and Apple's touch icons) on their own: the Business mark here, never Keplar One's.
+  const asset = pathname === "/manifest.webmanifest" ? BUSINESS_MANIFEST_PATH : BUSINESS_ICON_PATHS[pathname];
+  if (asset) {
+    const url = req.nextUrl.clone();
+    url.pathname = asset;
+    return NextResponse.rewrite(url);
+  }
   const last = pathname.slice(pathname.lastIndexOf("/") + 1);
   if (pathname.startsWith("/_next/") || pathname.startsWith("/og/") || pathname.startsWith("/icons/") || pathname.startsWith("/fonts/") || pathname.startsWith("/models/") || last.includes(".")) {
     return NextResponse.next();

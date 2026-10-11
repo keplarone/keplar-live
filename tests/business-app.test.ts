@@ -67,3 +67,24 @@ test("business host /api gets the same guard as keplar.one: a cross-site POST is
   assert.notEqual(ok.status, 403);
   assert.ok(ok.headers.get("x-request-id"), "it went through the API pipeline");
 });
+
+test("business host: the favicon and touch icons are the Keplar Business mark, kept transparent; Keplar One keeps its own", async () => {
+  const { BUSINESS_ICONS } = await import("@/lib/business-site");
+  const sharp = (await import("sharp")).default;
+  const { readFileSync } = await import("node:fs");
+  const target = (p: string) => businessHost(req(`https://business.keplar.one${p}`))?.headers.get("x-middleware-rewrite");
+  for (const [p, file] of [["/favicon.ico", "/business/favicon.ico"], ["/apple-touch-icon.png", "/business/apple-icon.png"], ["/icon.png", "/business/icon.png"], ["/icon.svg", "/business/icon.png"]]) {
+    assert.equal(new URL(target(p)!).pathname, file, p);
+  }
+  assert.equal(businessMoved(req("https://keplar.one/favicon.ico")), null, "keplar.one serves Keplar One's favicon");
+  assert.deepEqual(BUSINESS_ICONS.shortcut, ["/business/favicon.ico"]);
+  for (const f of ["icon.png", "icon-192.png", "apple-icon.png"]) {
+    const { data, info } = await sharp(`public/business/${f}`).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    assert.equal(data[3], 0, `${f}: transparent corner`);
+    const c = (Math.floor(info.height * 0.68) * info.width + Math.floor(info.width * 0.62)) * 4; // inside the circle
+    assert.ok(data[c + 3] > 240 && Math.max(data[c], data[c + 1], data[c + 2]) < 60, `${f}: the black mark`);
+  }
+  const ico = readFileSync("public/business/favicon.ico");
+  assert.equal(ico.readUInt16LE(2), 1, "ico type");
+  assert.equal(ico.readUInt16LE(4), 3, "16, 32 and 48 px frames");
+});
