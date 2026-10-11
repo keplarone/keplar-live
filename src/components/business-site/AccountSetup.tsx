@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { COMPANY_SIZES, INDUSTRIES } from "@/lib/business/account-fields";
-import { BUSINESS_TIERS, listPriceFor, priceFor, usd, type BillingCycle, type SelfServeTier } from "@/lib/business/tiers";
+import { BUSINESS_TIERS, listPriceFor, priceFor, usd, type SelfServeTier } from "@/lib/business/tiers";
+import { WhopEmbed, type EmbedConfig } from "@/components/billing/WhopEmbed";
 import s from "./business-site.module.css";
 
 type Account = { company: string; website: string; size: string; industry: string; role: string };
@@ -11,20 +12,20 @@ type Phase = { at: "loading" } | { at: "profile"; account: Account | null; email
 
 const TIERS: SelfServeTier[] = ["starter", "growth", "scale"];
 
-function readChoice(): { tier: SelfServeTier; cycle: BillingCycle } {
-  const q = typeof window === "undefined" ? null : new URLSearchParams(window.location.search);
-  const t = q?.get("tier");
-  const c = q?.get("cycle");
-  return { tier: t === "starter" || t === "scale" ? t : "growth", cycle: c === "annual" ? "annual" : "monthly" };
+function readChoice(): { tier: SelfServeTier } {
+  const t = typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("tier");
+  return { tier: t === "starter" || t === "scale" ? t : "growth" };
 }
 
 /**
  * business.keplar.one/account: create the business account (company profile) with the signed-in Keplar account, then choose
- * Starter, Growth or Scale and go to checkout. Signed out, it sends the person to sign in and back here.
+ * Starter, Growth or Scale and pay in Whop's embedded checkout on this page (the hosted Whop checkout is the fallback when the
+ * embed can't load). Signed out, it sends the person to sign in and back here.
  */
-export function AccountSetup({ discountPct }: { discountPct: number }) {
+export function AccountSetup() {
   const [phase, setPhase] = useState<Phase>({ at: "loading" });
   const [choice, setChoice] = useState(readChoice);
+  const [embed, setEmbed] = useState<{ tier: SelfServeTier; config: EmbedConfig; hosted: boolean } | null>(null);
   const [errors, setErrors] = useState<Partial<Record<keyof Account, string>>>({});
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -61,13 +62,15 @@ export function AccountSetup({ discountPct }: { discountPct: number }) {
     }
   };
 
-  const checkout = async () => {
+  const checkout = async (mode: "embed" | "hosted") => {
     setBusy(true);
     setMessage("");
     try {
-      const res = await fetch("/api/business/subscribe", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(choice) });
+      const res = await fetch("/api/business/subscribe", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ tier: choice.tier, mode }) });
       const d = await res.json().catch(() => ({}));
+      if (res.ok && mode === "embed" && d.embed) { setEmbed({ tier: choice.tier, config: d.embed, hosted: Boolean(d.hosted) }); return; }
       if (res.ok && d.url) { window.location.assign(d.url); return; }
+      setEmbed(null);
       setMessage(d.error ?? "Checkout couldn't start. Please try again.");
     } finally {
       setBusy(false);
@@ -120,30 +123,46 @@ export function AccountSetup({ discountPct }: { discountPct: number }) {
                 <Link href="/#download" className={s.btnGhost}>Get the desktop app</Link>
               </div>
             </>
+          ) : embed ? (
+            <>
+              <h1 className={s.h2}>{BUSINESS_TIERS[embed.tier].name} for {phase.account.company}</h1>
+              <p className={s.muted}>{usd(priceFor(embed.tier))} a month, plus any tax shown in the form. The exact amount is shown before you pay. Cancel any time from your account.</p>
+              <div className={s.checkout}>
+                <WhopEmbed
+                  config={embed.config}
+                  planName={BUSINESS_TIERS[embed.tier].name}
+                  theme="dark"
+                  // The webhook grants the plan; the storefront then shows it as active with the download.
+                  onPaid={() => window.location.assign("/?purchased=1")}
+                  onFallback={embed.hosted ? () => void checkout("hosted") : undefined}
+                />
+              </div>
+              {message ? <p className={s.formError} role="alert">{message}</p> : null}
+              <div className={s.heroActions}>
+                <button type="button" className={s.btnGhost} onClick={() => setEmbed(null)}>Change plan</button>
+              </div>
+              <p className={s.muted}>Payment is handled by Whop inside the form above; Keplar never sees your card.</p>
+            </>
           ) : (
             <>
               <h1 className={s.h2}>Choose a plan for {phase.account.company}</h1>
-              <div className={s.toggle} role="radiogroup" aria-label="Billing period">
-                <button type="button" role="radio" aria-checked={choice.cycle === "monthly"} onClick={() => setChoice((c) => ({ ...c, cycle: "monthly" }))}>Monthly</button>
-                <button type="button" role="radio" aria-checked={choice.cycle === "annual"} onClick={() => setChoice((c) => ({ ...c, cycle: "annual" }))}>Annual{discountPct > 0 ? <> <span className={s.save}>save {discountPct}%</span></> : null}</button>
-              </div>
               <div className={s.choices} role="radiogroup" aria-label="Plan">
                 {TIERS.map((t) => (
-                  <button key={t} type="button" role="radio" aria-checked={choice.tier === t} className={s.choice} onClick={() => setChoice((c) => ({ ...c, tier: t }))}>
+                  <button key={t} type="button" role="radio" aria-checked={choice.tier === t} className={s.choice} onClick={() => setChoice({ tier: t })}>
                     <strong>{BUSINESS_TIERS[t].name.replace("Keplar Business ", "")}</strong>
-                    {listPriceFor(t, choice.cycle, discountPct) !== null ? <s className={s.priceWas}>{usd(listPriceFor(t, choice.cycle, discountPct)!)}</s> : null}
-                    <span className={s.priceBig}>{usd(priceFor(t, choice.cycle, discountPct))}</span>
-                    <span className={s.priceNote}>{choice.cycle === "monthly" ? "per month" : "per year"}</span>
+                    {listPriceFor(t) !== null ? <s className={s.priceWas}>{usd(listPriceFor(t)!)}</s> : null}
+                    <span className={s.priceBig}>{usd(priceFor(t))}</span>
+                    <span className={s.priceNote}>per month</span>
                     <span className={s.muted}>{BUSINESS_TIERS[t].seats} {BUSINESS_TIERS[t].seats === 1 ? "seat" : "seats"} · {BUSINESS_TIERS[t].activeAgents} agents · {BUSINESS_TIERS[t].credits!.toLocaleString("en-US")} credits</span>
                   </button>
                 ))}
               </div>
               {message ? <p className={s.formError} role="alert">{message} <Link href="/#contact" className={s.textLink}>Contact sales</Link></p> : null}
               <div className={s.heroActions}>
-                <button type="button" className={s.btnPrimary} onClick={() => void checkout()} disabled={busy}>{busy ? "Opening checkout…" : "Continue to checkout"}</button>
+                <button type="button" className={s.btnPrimary} onClick={() => void checkout("embed")} disabled={busy}>{busy ? "Opening checkout…" : "Continue to checkout"}</button>
                 <Link href="/#contact" className={s.btnGhost}>Need Enterprise? Talk to sales</Link>
               </div>
-              <p className={s.muted}>Payments are processed by Whop. Cancel any time from your account; annual plans run to the end of the paid year.</p>
+              <p className={s.muted}>Payments are processed by Whop. Billed monthly. Cancel any time from your account; your plan runs to the end of the paid month.</p>
             </>
           )
         ) : null}

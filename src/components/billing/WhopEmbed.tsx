@@ -19,9 +19,10 @@ declare global {
 }
 
 export type EmbedConfig = { planId: string; metadata: Record<string, string>; returnUrl: string };
-type Props = { config: EmbedConfig; planName: string; onPaid: () => void; onFallback?: () => void };
+/** `theme` pins the checkout's colour scheme (Keplar Business is always dark); without it the embed follows the site theme. */
+type Props = { config: EmbedConfig; planName: string; onPaid: () => void; onFallback?: () => void; theme?: "light" | "dark" };
 
-const appearance = (): Appearance => ({ theme: { appearance: currentTheme() === "light" ? "light" : "dark" } });
+const siteAppearance = (): Appearance => ({ theme: { appearance: currentTheme() === "light" ? "light" : "dark" } });
 const LOAD_TIMEOUT_MS = 20_000;
 
 /**
@@ -30,7 +31,8 @@ const LOAD_TIMEOUT_MS = 20_000;
  * colour scheme follows the site theme (including live changes), and the container reserves its height so the page
  * doesn't jump. The buyer pays inside Whop's frame: card data never touches Keplar. Fulfilment comes from webhooks.
  */
-export function WhopEmbed({ config, planName, onPaid, onFallback }: Props) {
+export function WhopEmbed({ config, planName, onPaid, onFallback, theme }: Props) {
+  const appearance = useCallback((): Appearance => (theme ? { theme: { appearance: theme } } : siteAppearance()), [theme]);
   const mountRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<Handle | null>(null);
   const [scriptReady, setScriptReady] = useState(() => typeof window !== "undefined" && Boolean(window.WhopElements));
@@ -76,7 +78,7 @@ export function WhopEmbed({ config, planName, onPaid, onFallback }: Props) {
     } catch {
       queueMicrotask(() => !cancelled && setError("The secure checkout couldn't start."));
     }
-    const stopTheme = onThemeChange(() => {
+    const stopTheme = theme ? () => undefined : onThemeChange(() => {
       try {
         handleRef.current?.update?.({ appearance: appearance() });
       } catch {
@@ -94,7 +96,7 @@ export function WhopEmbed({ config, planName, onPaid, onFallback }: Props) {
       handleRef.current = null;
       el.replaceChildren();
     };
-  }, [scriptReady, config, attempt, planName]);
+  }, [scriptReady, config, attempt, planName, theme, appearance]);
 
   const retry = useCallback(() => {
     setError(null);

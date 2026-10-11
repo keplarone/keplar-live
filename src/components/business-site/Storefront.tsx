@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { BUSINESS_TIERS, listPriceFor, priceFor, usd, type BillingCycle, type BusinessTier } from "@/lib/business/tiers";
+import { BUSINESS_TIERS, listPriceFor, priceFor, usd, type BusinessTier } from "@/lib/business/tiers";
 import { companySizes, estimatedUsers } from "@/lib/inquire/schema";
 import s from "./business-site.module.css";
 
@@ -18,14 +18,14 @@ type Status =
 
 const ORDER: BusinessTier[] = ["starter", "growth", "scale", "enterprise"];
 const fmt = (n: number) => n.toLocaleString("en-US");
-const accountUrl = (tier?: string, cycle?: BillingCycle) => `/account${tier ? `?tier=${tier}&cycle=${cycle ?? "monthly"}` : ""}`;
+const accountUrl = (tier?: string) => `/account${tier ? `?tier=${tier}` : ""}`;
 
 const MODULES = [
   { title: "Dashboard", body: "Revenue, agents, approvals, spend and team activity from the data you connect." },
   { title: "Projects", body: "Workspaces with conversations, files, tasks, agents, research and creations together." },
   { title: "Deep Research", body: "Multi-model research with sources, competitor and market analysis, exportable reports." },
   { title: "Reason", body: "Upload documents and work through decisions with assumptions, calculations and risks shown." },
-  { title: "Images and Videos", body: "Generate, edit and organise brand assets, then reuse them in sites and campaigns." },
+  { title: "Images and Videos", body: "Generate, edit and organize brand assets, then reuse them in sites and campaigns." },
   { title: "Websites and apps", body: "Describe it, get a working project you can edit, version and deploy to your domain." },
   { title: "AI Design Canvas", body: "Design, code and AI modes on the same project, with previews and approved changes." },
   { title: "Make an Agent", body: "Agents that run your workflows on a schedule, within budgets, asking before they act." },
@@ -62,9 +62,8 @@ function DownloadPanel({ download }: { download: NonNullable<Extract<Status, { s
   );
 }
 
-export function Storefront({ discountPct }: { discountPct: number }) {
+export function Storefront() {
   const [status, setStatus] = useState<Status>({ state: "loading" });
-  const [cycle, setCycle] = useState<BillingCycle>("monthly");
   const [purchased] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("purchased") === "1");
   // A sign-in handoff that failed (src/lib/business/handoff.ts) lands here with ?signin=<reason>.
   const [signinFailed] = useState(() => typeof window !== "undefined" && Boolean(new URLSearchParams(window.location.search).get("signin")));
@@ -83,9 +82,8 @@ export function Storefront({ discountPct }: { discountPct: number }) {
 
   const price = (tier: BusinessTier) => {
     if (tier === "enterprise") return null;
-    const now = priceFor(tier, cycle, discountPct);
-    const was = listPriceFor(tier, cycle, discountPct);
-    return { now: usd(now), was: was === null ? null : usd(was), note: cycle === "monthly" ? "per month" : "per year, billed yearly" };
+    const was = listPriceFor(tier);
+    return { now: usd(priceFor(tier)), was: was === null ? null : usd(was), note: "per month" };
   };
 
   const hero = useMemo(() => {
@@ -147,10 +145,6 @@ export function Storefront({ discountPct }: { discountPct: number }) {
       <section id="pricing" className={s.section} aria-labelledby="pricing-h">
         <div className={s.sectionHead}>
           <h2 id="pricing-h" className={s.h2}>Pricing</h2>
-          <div className={s.toggle} role="radiogroup" aria-label="Billing period">
-            <button type="button" role="radio" aria-checked={cycle === "monthly"} onClick={() => setCycle("monthly")}>Monthly</button>
-            <button type="button" role="radio" aria-checked={cycle === "annual"} onClick={() => setCycle("annual")}>Annual{discountPct > 0 ? <> <span className={s.save}>save {discountPct}%</span></> : null}</button>
-          </div>
         </div>
         <p className={s.muted}>Every plan includes every Business module. Higher plans add seats, agents, usage and governance. Usage limits are shown in full and enforced in your account.</p>
         <div className={s.plans}>
@@ -164,10 +158,10 @@ export function Storefront({ discountPct }: { discountPct: number }) {
                   <h3 className={s.planName}>{t.name.replace("Keplar Business ", "")}</h3>
                   <p className={s.planFor}>{t.audience}</p>
                 </header>
-                <p className={s.price}>{p ? <>{p.was ? <s className={s.priceWas} aria-label={`Was ${p.was}`}>{p.was}</s> : null}<span className={s.priceBig}>{p.now}</span><span className={s.priceNote}>{p.note}</span></> : <><span className={s.priceBig}>Custom</span><span className={s.priceNote}>annual contract</span></>}</p>
+                <p className={s.price}>{p ? <>{p.was ? <s className={s.priceWas} aria-label={`Was ${p.was}`}>{p.was}</s> : null}<span className={s.priceBig}>{p.now}</span><span className={s.priceNote}>{p.note}</span></> : <><span className={s.priceBig}>Custom</span><span className={s.priceNote}>custom contract</span></>}</p>
                 {current ? <span className={s.btnGhost} aria-current="true">Your plan</span>
                   : id === "enterprise" ? <a href="#contact" className={s.btnGhost}>Contact sales</a>
-                  : <a href={accountUrl(id, cycle)} className={id === "growth" ? s.btnPrimary : s.btnGhost}>Choose {t.name.replace("Keplar Business ", "")}</a>}
+                  : <a href={accountUrl(id)} className={id === "growth" ? s.btnPrimary : s.btnGhost}>Choose {t.name.replace("Keplar Business ", "")}</a>}
                 <ul className={s.planList}>{t.includes.map((x) => <li key={x}>{x}</li>)}</ul>
               </article>
             );

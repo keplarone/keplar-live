@@ -42,9 +42,9 @@ export function summarize(input: { now: number; workspaces: WorkspaceRow[]; ledg
       activePaid[w.plan]++;
       mrr += PAID_PLANS[w.plan].usdMonthly;
     } else if (w.plan === "business" && w.billing.status === "active" && (!w.billing.periodEnd || Date.parse(w.billing.periodEnd) > now)) {
-      // Keplar Business: the tier's monthly price (an annual plan counts at its discounted monthly equivalent).
+      // Keplar Business: the tier's monthly price.
       const bt = businessTierForWhopPlanId(w.billing.lookupKey);
-      if (bt) mrr += Math.round(priceFor(bt.tier, bt.cycle) / (bt.cycle === "annual" ? 12 : 1));
+      if (bt) mrr += Math.round(priceFor(bt.tier));
     }
   }
   const pay30 = payments.filter((p) => Date.parse(p.at) >= now - 30 * DAY);

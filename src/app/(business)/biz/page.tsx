@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Storefront } from "@/components/business-site/Storefront";
-import { annualDiscountPct } from "@/lib/business/tiers";
 
 export const metadata: Metadata = {
   title: { absolute: "Keplar Business: the AI operating system for your business" },
@@ -10,5 +9,5 @@ export const metadata: Metadata = {
 
 /** business.keplar.one/ (src/proxy.ts maps it to /biz): pricing, account status, the workspace, download and sales inquiries. */
 export default function BusinessLanding() {
-  return <Storefront discountPct={annualDiscountPct()} />;
+  return <Storefront />;
 }
