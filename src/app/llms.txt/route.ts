@@ -11,6 +11,7 @@ import { allUseCases } from "@/lib/kb/usecases";
 import { promptCategories } from "@/lib/kb/prompts";
 import { approvedVs } from "@/lib/kb/vs";
 import { glossary } from "@/lib/kb/glossary";
+import { factsText } from "@/lib/content/product-facts";
 
 export const dynamic = "force-static";
 
@@ -24,13 +25,25 @@ export function GET() {
   const body = [
     `# ${brand.companyName}`,
     "",
-    `> ${site.tagline} ${brand.name} sends a question to multiple AI models, detects where they disagree, verifies, and writes one synthesized answer with the agreement and disagreements shown. It is a practical multi-model workspace. It is not AGI or superintelligence, and agreement between models does not prove an answer is correct.`,
+    `> ${site.tagline} ${brand.name} is an AI workspace. It sends a question to multiple AI models, detects where they disagree, verifies, and writes one synthesized answer with the agreement and disagreements shown, and around that engine it studies, researches, makes slides, images and video, builds and publishes websites and apps, builds Roblox games in Roblox Studio, and runs scheduled agents with approvals. It is a practical multi-model workspace. It is not AGI or superintelligence, and agreement between models does not prove an answer is correct.`,
     "",
     "Keplar was created by two co-founders, Hassen and Hussain Keder (two different people).",
     `Hassen Keder and Hussain Keder share the family name Keder; "Hassen" and "Hussain" are not two spellings of one name. Both are co-founders, and they founded ${brand.name} in 2026. Contact: ${brand.contactEmail}.`,
     "",
+    "## What Keplar is (the full picture)",
+    "",
+    factsText(u),
     "## Product",
+    line("/what-is-keplar", "What is Keplar?", "every part of Keplar on one page: the answer engine, modes, Study, Slides, Create, Roblox Studio, agents, the API and Keplar Business"),
     line("/product", "Product overview", "what Keplar does and who it is for"),
+    line("/features", "Everything in Keplar", "every feature with its status: live, beta or coming soon"),
+    line("/roadmap", "Roadmap", "what is being built now, what is in beta, and what shipped recently"),
+    line("/keplar-one", `${brand.engineName} engine`, "how the orchestration layer chooses models, handles disagreement and writes the answer"),
+    line("/agents", "Agents", "scheduled agents with spend caps, approval gates and an audit log"),
+    line("/download", "Desktop app", "Windows, macOS and Linux; adds the Roblox Studio co-builder"),
+    line("/developers", "Developers", "public API and embeddable Ask widget"),
+    line("/specialists", "Specialists", "custom specialists people made and shared"),
+    "- [Keplar Business](https://business.keplar.one): the separate desktop app and plans for companies",
     line("/how-it-works", "How it works", "the steps from question to one answer, and the limits"),
     line("/models", modelsPage.h1, "the Free and paid model rosters, built from the product"),
     line("/pricing", "Pricing", "Free, Lite, Plus, Pro (Keplar Business has its own plans at business.keplar.one)"),

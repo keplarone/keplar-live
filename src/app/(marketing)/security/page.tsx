@@ -1,3 +1,5 @@
+import { breadcrumbs } from "@/lib/seo-graph";
+import { JsonLd } from "@/components/seo/JsonLd";
 import Link from "next/link";
 import { pageMeta } from "@/lib/seo";
 import { brand } from "@/lib/site";
@@ -12,6 +14,8 @@ const list = { margin: 0, paddingLeft: "1.2em", display: "grid", gap: "var(--s-2
 /** Disclosure policy and a plain summary of protections. Keep every sentence true: nothing here claims a certification or audit. */
 export default function SecurityPage() {
   return (
+    <>
+    <JsonLd data={breadcrumbs([{ name: "Security", path: "/security" }])} />
     <div className={s.page}>
       <p className={s.eyebrow}>Security</p>
       <h1 className={s.title}><TwoTone text={"Report a security problem"} /></h1>
@@ -66,5 +70,6 @@ export default function SecurityPage() {
         <p className={s.note}>We will update this page when that changes, and not before.</p>
       </section>
     </div>
+    </>
   );
 }

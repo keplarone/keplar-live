@@ -1,3 +1,5 @@
+import { breadcrumbs } from "@/lib/seo-graph";
+import { JsonLd } from "@/components/seo/JsonLd";
 import Link from "next/link";
 import { pageMeta } from "@/lib/seo";
 import { site } from "@/lib/site";
@@ -49,6 +51,8 @@ export default function DevelopersPage() {
   const ref = referralConfig();
   const team = TEAM_POLICY.business;
   return (
+    <>
+    <JsonLd data={breadcrumbs([{ name: "Developers", path: "/developers" }])} />
     <div className={s.page}>
       <header className={s.hero}>
         <p className={s.kicker}><span>Developers</span><span>API v1</span><span>Embed</span><span>Teams</span></p>
@@ -223,5 +227,6 @@ export default function DevelopersPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

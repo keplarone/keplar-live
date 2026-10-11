@@ -1,3 +1,5 @@
+import { breadcrumbs } from "@/lib/seo-graph";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { Agents } from "@/components/sections/Agents";
 import { FinalCta } from "@/components/sections/FinalCta";
 import { pageMeta } from "@/lib/seo";
@@ -13,6 +15,7 @@ export const metadata = pageMeta(
 export default function AgentsPage() {
   return (
     <>
+      <JsonLd data={breadcrumbs([{ name: "Agents", path: "/agents" }])} />
       <div style={{ paddingTop: "var(--s-16)" }}>
         <Agents headingLevel="h1" />
       </div>

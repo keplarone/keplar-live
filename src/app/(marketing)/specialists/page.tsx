@@ -1,3 +1,5 @@
+import { breadcrumbs } from "@/lib/seo-graph";
+import { JsonLd } from "@/components/seo/JsonLd";
 import type { Metadata } from "next";
 import Link from "next/link";
 import s from "@/components/share/Shared.module.css";
@@ -19,6 +21,8 @@ export default async function SpecialistDirectory({ searchParams }: { searchPara
   const cat = validCategory(c) ? c : undefined;
   const items = await publicDirectory({ category: cat, q }).catch(() => []);
   return (
+    <>
+    <JsonLd data={breadcrumbs([{ name: "Specialists", path: "/specialists" }])} />
     <div className={s.page}>
       <p className={s.eyebrow}>Specialist directory</p>
       <h1 className={s.title}><TwoTone text={"Specialists people made and shared"} /></h1>
@@ -53,5 +57,6 @@ export default async function SpecialistDirectory({ searchParams }: { searchPara
         <Link className={s.btn} href="/account#specialists">Make your own specialist</Link>
       </div>
     </div>
+    </>
   );
 }

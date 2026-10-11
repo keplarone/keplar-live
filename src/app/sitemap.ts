@@ -15,6 +15,7 @@ import { localizedSitemapAlternates, localizedSitemapEntries } from "@/lib/i18n/
  */
 export const sitemapPaths: string[] = [
   "/",
+  "/what-is-keplar",
   "/product",
   "/how-it-works",
   "/keplar-one",

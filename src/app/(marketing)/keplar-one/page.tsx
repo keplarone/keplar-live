@@ -1,3 +1,5 @@
+import { breadcrumbs } from "@/lib/seo-graph";
+import { JsonLd } from "@/components/seo/JsonLd";
 import Link from "next/link";
 import { PageHero } from "@/components/page/PageHero";
 import { KeplarOnePipeline } from "@/components/sections/KeplarOnePipeline";
@@ -16,6 +18,7 @@ export const metadata = pageMeta(
 export default function KeplarOnePage() {
   return (
     <>
+      <JsonLd data={breadcrumbs([{ name: "Keplar-One engine", path: "/keplar-one" }])} />
       <PageHero
         label={brand.engineName}
         title="The intelligence behind the intelligences."
@@ -61,7 +64,8 @@ export default function KeplarOnePage() {
             ))}
           </ul>
           <p>
-            See it end to end on the <Link href="/how-it-works">how it works</Link> page, explore the{" "}
+            {brand.engineName} is the engine; see <Link href="/what-is-keplar">everything Keplar does</Link> around it. See it
+            end to end on the <Link href="/how-it-works">how it works</Link> page, explore the{" "}
             <Link href="/product">product</Link>, compare <Link href="/pricing">plans</Link>, or{" "}
             <Link href="/app">ask your first question</Link>.
           </p>

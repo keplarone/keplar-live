@@ -11,13 +11,14 @@ import { kbLastmod } from "../kb/paths";
 
 /** Hand-maintained static pages: path -> ISO date of last content change. */
 export const staticLastmod: Record<string, string> = {
-  "/": "2026-10-06",
+  "/": "2026-10-11",
+  "/what-is-keplar": "2026-10-11",
   "/features": "2026-10-06",
   "/showcase": "2026-10-06",
   "/roadmap": "2026-10-06",
-  "/product": "2026-10-03",
+  "/product": "2026-10-11",
   "/how-it-works": "2026-10-03",
-  "/keplar-one": "2026-10-01",
+  "/keplar-one": "2026-10-11",
   "/for-you": "2026-10-01",
   "/pricing": "2026-10-06",
   "/ai-app-builder": "2026-10-06",

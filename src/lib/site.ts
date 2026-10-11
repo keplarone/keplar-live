@@ -60,9 +60,9 @@ export const siteVerification = {
 export const site = {
   name: brand.name,
   url: siteUrl,
-  /** Root meta description (marketing-approved, verbatim). */
+  /** Root meta description: the answer engine first, then the rest of the workspace, so search and AI summaries see the whole product. */
   description:
-    "Keplar sends your question to the AI models it actually needs, finds where they agree, investigates where they don't, and gives you one synthesized answer with the agreement and disagreements shown.",
+    "Keplar asks the AI models your question needs and gives one checked answer, with disagreements shown. Plus Study mode, Deep Research, slides, images, video, websites, apps and agents.",
   /** On-page summary used in the hero. */
   summary:
     "Keplar asks multiple intelligences, finds where they agree, investigates where they don't, and gives you one synthesized answer.",

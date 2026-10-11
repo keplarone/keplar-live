@@ -1,3 +1,4 @@
+import { breadcrumbs } from "@/lib/seo-graph";
 import Link from "next/link";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { HELP, allHelpItems } from "@/lib/support/help";
@@ -13,6 +14,7 @@ export default function HelpPage() {
   const graph = { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: allHelpItems().map((i) => ({ "@type": "Question", name: i.q, acceptedAnswer: { "@type": "Answer", text: i.a.join(" ") } })) };
   return (
     <>
+      <JsonLd data={breadcrumbs([{ name: "Help", path: "/help" }])} />
       <JsonLd data={graph} />
       <header className={hero.hero}>
         <div className={hero.header}>

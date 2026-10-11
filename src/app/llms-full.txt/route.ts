@@ -1,6 +1,7 @@
 import { brand, isIndexable, site } from "@/lib/site";
 import { allDocs } from "@/lib/kb/docs";
 import { glossary } from "@/lib/kb/glossary";
+import { factsText } from "@/lib/content/product-facts";
 
 export const dynamic = "force-static";
 
@@ -18,6 +19,10 @@ export function GET() {
     "",
     "Keplar was created by two co-founders, Hassen and Hussain Keder (two different people).",
     "",
+    "# What Keplar is (the full picture)",
+    `Source: ${u("/what-is-keplar")}`,
+    "",
+    factsText(u),
     ...docs.flatMap((d) => [`## ${d.title}`, `Source: ${u(d.path)}`, `Last updated: ${d.updated}`, "", d.description, "", d.text, ""]),
     "# Glossary",
     "",

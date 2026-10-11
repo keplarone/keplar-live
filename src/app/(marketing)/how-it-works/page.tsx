@@ -1,3 +1,5 @@
+import { breadcrumbs } from "@/lib/seo-graph";
+import { JsonLd } from "@/components/seo/JsonLd";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui/Button";
@@ -102,6 +104,8 @@ const steps: { n: 1 | 2 | 3 | 4 | 5 | 6; title: string; lead: string; body: Reac
 
 export default function HowItWorksPage() {
   return (
+    <>
+    <JsonLd data={breadcrumbs([{ name: "How it works", path: "/how-it-works" }])} />
     <article className={s.page}>
       <HeroField variant="how" />
       <header className={s.hero}>
@@ -166,5 +170,6 @@ export default function HowItWorksPage() {
         <ButtonLink href="/app" arrow size="lg">Try it free</ButtonLink>
       </section>
     </article>
+    </>
   );
 }

@@ -3,6 +3,7 @@ import { abs } from "./seo";
 import { brand, PRODUCTION_URL, site } from "./site";
 import { tiers } from "./tiers";
 import { CREATOR_LINE, FOUNDERS } from "./identity";
+import { factLines, WHAT_IS_KEPLAR } from "./content/product-facts";
 
 /**
  * The two co-founders as two separate schema.org Person nodes, each with its own @id, so crawlers and answer engines never
@@ -34,7 +35,7 @@ export function organizationNode() {
     foundingDate: "2026",
     founder: founderPersons(),
     description:
-      `${brand.name} is the intelligence layer above AI models. ${brand.engineName} asks the models a question needs, investigates where they disagree, weighs the evidence and reasoning behind each response, and synthesizes one answer. ${CREATOR_LINE}`,
+      `${brand.name} is the intelligence layer above AI models and an AI workspace built on it. ${brand.engineName} asks the models a question needs, investigates where they disagree, weighs the evidence and reasoning behind each response, and synthesizes one answer; around it, ${brand.name} offers Study mode, Deep Research, a slideshow maker, image and video generation, Create for building and publishing websites and apps, a Roblox Studio co-builder in its desktop app, scheduled agents with approvals, a public API, and Keplar Business for companies. ${CREATOR_LINE}`,
     email: brand.contactEmail,
     // Real, verified profiles only (checked 4 Oct 2026). Add others here only once they exist and are owned by the co-founders.
     sameAs: ["https://github.com/keplarone"],
@@ -94,24 +95,16 @@ export function softwareApp() {
     "@id": abs("/#app"),
     name: site.name,
     applicationCategory: "BusinessApplication",
-    applicationSubCategory: "Multi-model AI assistant",
-    operatingSystem: "Web",
+    applicationSubCategory: "Multi-model AI assistant and AI workspace",
+    operatingSystem: "Web, Windows, macOS, Linux",
     url: abs("/"),
-    description:
-      `${brand.name} routes one question to multiple AI models, detects where they agree and disagree, weighs the evidence and reasoning behind each response, and synthesizes one answer with the agreement and disagreements shown.`,
+    description: WHAT_IS_KEPLAR,
     publisher: { "@id": abs("/#organization") },
     // Made by the two co-founders: two separate Person nodes (same @ids as the Organization's founder array).
     creator: founderPersons(),
     author: founderPersons().map((p) => ({ "@id": p["@id"] })),
-    featureList: [
-      `${brand.engineName} selects only the AI models each question needs (quality, reliability, latency, cost)`,
-      "Disagreement detection across models",
-      "Weighs the evidence and reasoning behind each response: evaluation, not voting",
-      "One synthesized answer with consensus shown",
-      "Everyday use: studying, health questions (not medical advice), money decisions, travel, writing, personal projects",
-      "Create personal sites, apps, images, and video",
-      "Autonomous agents with spend caps, approval gates, and audit logs (Business)",
-    ],
+    // Every product area, from the same facts as /what-is-keplar and llms.txt (src/lib/content/product-facts.ts).
+    featureList: factLines(),
     offers: tiers
       .filter((t) => t.price !== null)
       .map((t) => ({

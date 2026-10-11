@@ -1,3 +1,5 @@
+import { breadcrumbs } from "@/lib/seo-graph";
+import { JsonLd } from "@/components/seo/JsonLd";
 import Link from "next/link";
 import { HeroField } from "@/components/motion/HeroField";
 import { PageHero } from "@/components/page/PageHero";
@@ -18,6 +20,7 @@ export const metadata = pageMeta(
 export default function ForYouPage() {
   return (
     <>
+      <JsonLd data={breadcrumbs([{ name: "For you", path: "/for-you" }])} />
       <HeroField variant="foryou" />
       <PageHero
         label="For you"

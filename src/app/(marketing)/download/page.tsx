@@ -1,3 +1,4 @@
+import { breadcrumbs } from "@/lib/seo-graph";
 import Link from "next/link";
 import { PageHero } from "@/components/page/PageHero";
 import { DownloadView } from "@/components/download/DownloadView";
@@ -22,6 +23,7 @@ export default async function DownloadPage() {
   const state = await getDesktopRelease();
   return (
     <>
+      <JsonLd data={breadcrumbs([{ name: "Download", path: "/download" }])} />
       <PageHero
         label="Desktop app"
         title={`${brand.companyName} for your desktop`}

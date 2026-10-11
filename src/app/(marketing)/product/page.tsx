@@ -1,3 +1,5 @@
+import { breadcrumbs } from "@/lib/seo-graph";
+import { JsonLd } from "@/components/seo/JsonLd";
 import Link from "next/link";
 import { PageHero } from "@/components/page/PageHero";
 import { ProductShowcase } from "@/components/sections/ProductShowcase";
@@ -18,6 +20,7 @@ export const metadata = pageMeta(
 export default function ProductPage() {
   return (
     <>
+      <JsonLd data={breadcrumbs([{ name: "Product", path: "/product" }])} />
       <PageHero
         label="Product"
         title="One question. Multiple intelligences. One answer."
@@ -59,6 +62,11 @@ export default function ProductPage() {
             Business is optional: commerce, a CRM and inbox, a dashboard, and agents that work inside spend caps and approval
             gates. See <Link href="/enterprise">{brand.name} for business</Link>, everyday uses on{" "}
             <Link href="/for-you">for you</Link>, <Link href="/pricing">pricing</Link>, or <Link href="/app">try it now</Link>.
+          </p>
+          <p>
+            Answers are where {brand.name} starts. It also studies with you, researches, makes slides, images and video, builds and
+            publishes websites and apps, builds Roblox games in Roblox Studio, and runs agents. See{" "}
+            <Link href="/what-is-keplar">everything Keplar does</Link>.
           </p>
         </div>
       </section>
