@@ -70,7 +70,34 @@ const CLOSERS: RegExp[] = [
   /(?:\n|\s)+(?:i hope (?:this|that|it) helps(?: you)?(?: out)?|hope (?:this|that) helps|i hope that answers your question|let me know if you(?:'d| would)? (?:have|like|need|want)[^.!?\n]*|feel free to (?:ask|reach out)[^.!?\n]*|don'?t hesitate to (?:ask|reach out)[^.!?\n]*|is there anything else (?:i can help (?:you )?with|you'?d like to know)[^.!?\n]*)[.!]*\s*$/i,
 ];
 
-/** Boilerplate openers and closers removed, human claims replaced; code fences are never touched. Safe to call twice. */
+/**
+ * Chatbot tells, rewritten in place (prose only): filler lead-ins that add nothing ("It's important to note that X" → "X"),
+ * wrap-up labels at the start of a line ("In conclusion, X" → "X"), and "delve". Inline code spans are left alone.
+ */
+const upperAt = (s: string, i: number) => s.slice(0, i) + s.charAt(i).toUpperCase() + s.slice(i + 1);
+function untell(prose: string): string {
+  return prose
+    .split(/(`[^`\n]*`)/)
+    .map((seg, k) => {
+      if (k % 2 === 1) return seg;
+      let q = seg.replace(/(^|[.!?]\s+|\n\s*(?:[-*]\s+|\d+\.\s+)?)?\b(?:it'?s|it is) (?:important|worth|crucial|essential) (?:to note|noting|to remember|to mention|mentioning|to point out|pointing out) that\s+/gi, (_m, lead: string | undefined) => `${lead ?? ""}\u0000`);
+      q = q.replace(/(^|\n)(\s*)(?:in conclusion|in summary|to sum up|to summarize|all in all|ultimately),\s+/gi, (_m, nl: string, sp: string) => `${nl}${sp}\u0000`);
+      q = q.replace(/\bdelv(e|es|ed|ing)\b/gi, (w, end: string) => {
+        const out = { e: "dig", es: "digs", ed: "dug", ing: "digging" }[end.toLowerCase() as "e"] ?? w;
+        return w[0] === "D" ? out[0].toUpperCase() + out.slice(1) : out;
+      });
+      // A removed lead-in at the start of a sentence leaves the next word to be capitalized.
+      for (let i = q.indexOf("\u0000"); i >= 0; i = q.indexOf("\u0000")) {
+        const atStart = i === 0 || /(?:^|[.!?]\s+|\n\s*(?:[-*]\s+|\d+\.\s+)?)$/.test(q.slice(0, i));
+        q = q.slice(0, i) + q.slice(i + 1);
+        if (atStart) q = upperAt(q, i);
+      }
+      return q;
+    })
+    .join("");
+}
+
+/** Boilerplate openers and closers removed, chatbot tells rewritten, human claims replaced; code fences are never touched. Safe to call twice. */
 export function polish(text: string): string {
   if (!text) return text;
   const parts = text.split(/(^```[\s\S]*?^```|^~~~[\s\S]*?^~~~)/m);
@@ -78,7 +105,7 @@ export function polish(text: string): string {
   parts.forEach((p, i) => { if (i % 2 === 0 && p.trim()) { if (first < 0) first = i; last = i; } });
   const out = parts.map((p, i) => {
     if (i % 2 === 1) return p;
-    let q = p;
+    let q = untell(p);
     if (i === first) {
       let changed = false;
       for (let k = 0; k < 2; k++) for (const rx of OPENERS) { const r = q.replace(rx, ""); if (r !== q && r.trim()) { q = r; changed = true; } }

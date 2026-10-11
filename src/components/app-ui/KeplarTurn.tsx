@@ -28,6 +28,7 @@ const AgreementScene = dynamic(() => import("@/components/spatial/AgreementScene
 const ActivationScene = dynamic(() => import("@/components/spatial/ActivationScene").then((m) => m.ActivationScene), { ssr: false });
 import { useTypewriter } from "./useTypewriter";
 import { stageCopy } from "./copy";
+import { SynthesisView } from "./SynthesisView";
 import { DebateLive, DebateTranscript } from "./DebateView";
 import { ResearchHead, ResearchLive, ResearchSources, citeRenderer } from "./research/Research";
 import { CoreLive, CoreSummaryView } from "./core/CoreTrace";
@@ -62,6 +63,7 @@ export function KeplarTurn({ message: m, onRetry, onSignal, onAsk, isLast, ledge
   const finished = m.status === "done";
   const collapsed = finished && !showSteps;
   const count = m.modelCount ?? 0;
+  const activeStage = [...m.stages].reverse().find((x) => x.status === "active")?.id ?? m.stages[m.stages.length - 1]?.id ?? null;
 
   // Minimal first-party events (consent-gated, no text): an ask started here, and how it ended. Stored threads never fire.
   const reported = useRef<{ start: boolean; end: boolean }>({ start: false, end: false });
@@ -110,10 +112,11 @@ export function KeplarTurn({ message: m, onRetry, onSignal, onAsk, isLast, ledge
             </button>
           ) : null}
           {running && m.mode === "consensus" && !m.debate?.speakers.length ? (
-            <ActivationScene
-              running={running}
-              input={{ count: m.modelCount ?? 0, ticks: m.models.map((x) => x.status), stage: [...m.stages].reverse().find((x) => x.status === "active")?.id ?? m.stages[m.stages.length - 1]?.id ?? null }}
-            />
+            activeStage === "synthesize" && count > 1 ? (
+              <SynthesisView models={m.models} count={count} disagreement={m.disagreement} />
+            ) : (
+              <ActivationScene running={running} input={{ count, ticks: m.models.map((x) => x.status), stage: activeStage }} />
+            )
           ) : null}
           <ol id={`${uid}-steps`} className={s.steps} hidden={collapsed} aria-label="Keplar progress">
             {m.stages.map((st) => {
