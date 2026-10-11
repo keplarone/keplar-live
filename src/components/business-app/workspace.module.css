@@ -113,3 +113,27 @@
   .cols { grid-template-columns: minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) { .spinner, .skel { animation: none; } .widget { transition: none; } }
+
+/* Deep Research and Reason (Analyst.tsx) */
+.analyst { display: grid; grid-template-columns: minmax(300px, 380px) minmax(0, 1fr); gap: 12px; align-items: start; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { min-height: 30px; padding: 0 12px; border: 0; border-radius: 999px; background: rgb(255 255 255 / 0.05); color: var(--w-ink-2); font: inherit; font-size: 12.5px; cursor: pointer; }
+.chip[aria-checked="true"] { background: var(--w-ink); color: #0a0a0c; }
+.chip:focus-visible, .tagX:focus-visible { outline: 2px solid var(--w-accent); outline-offset: 2px; }
+.field { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: var(--w-ink-2); }
+.tagX { margin-left: 4px; padding: 0 2px; border: 0; background: none; color: var(--w-ink-3); font: inherit; cursor: pointer; }
+.history { display: flex; flex-direction: column; gap: 6px; padding-top: 10px; border-top: 1px solid var(--w-line); }
+.progress { display: flex; flex-direction: column; gap: 8px; }
+.queries { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; color: var(--w-ink-2); font-size: 13px; }
+.report { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.reportHead { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-bottom: 10px; border-bottom: 1px solid var(--w-line); }
+.reportTitle { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+.prose { font-size: 14px; line-height: 1.7; color: var(--w-ink); overflow-wrap: anywhere; }
+.prose :global(table) { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; font-size: 13px; }
+.prose :global(th), .prose :global(td) { padding: 6px 10px; border: 1px solid var(--w-line-2); text-align: left; vertical-align: top; }
+.prose :global(h1), .prose :global(h2), .prose :global(h3) { letter-spacing: -0.01em; }
+.prose :global(a) { color: var(--w-accent); }
+.prose :global(code) { font-family: var(--biz-mono), ui-monospace, monospace; }
+.sources ol { margin: 6px 0 0; padding-left: 22px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.sources a { color: var(--w-accent); }
+@media (max-width: 1100px) { .analyst { grid-template-columns: minmax(0, 1fr); } }

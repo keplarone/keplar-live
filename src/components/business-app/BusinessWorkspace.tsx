@@ -2,27 +2,29 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Analyst } from "./Analyst";
 import { Dashboard } from "./Dashboard";
 import { Projects } from "./Projects";
 import s from "./workspace.module.css";
 
 type Account = { signedIn: boolean; email?: string | null; account?: { company: string } | null; active?: boolean; plan?: { name: string } | null };
-type View = { at: "dashboard" } | { at: "projects"; projectId: string | null };
+type View = { at: "dashboard" } | { at: "projects"; projectId: string | null } | { at: "research" } | { at: "reason" };
 
 const STORE = "https://business.keplar.one";
 
 function readView(): View {
   if (typeof window === "undefined") return { at: "dashboard" };
   const q = new URLSearchParams(window.location.search);
-  return q.get("v") === "projects" ? { at: "projects", projectId: q.get("p") } : { at: "dashboard" };
+  const v = q.get("v");
+  if (v === "projects") return { at: "projects", projectId: q.get("p") };
+  if (v === "research" || v === "reason") return { at: v };
+  return { at: "dashboard" };
 }
 
 function writeView(v: View) {
   const q = new URLSearchParams();
-  if (v.at === "projects") {
-    q.set("v", "projects");
-    if (v.projectId) q.set("p", v.projectId);
-  }
+  if (v.at !== "dashboard") q.set("v", v.at);
+  if (v.at === "projects" && v.projectId) q.set("p", v.projectId);
   const qs = q.toString();
   window.history.pushState(null, "", `${window.location.pathname}${qs ? `?${qs}` : ""}`);
 }
@@ -30,11 +32,13 @@ function writeView(v: View) {
 const NAV = [
   { at: "dashboard", label: "Dashboard", icon: <><rect x="3" y="3" width="7" height="9" rx="1.5" /><rect x="14" y="3" width="7" height="5" rx="1.5" /><rect x="14" y="12" width="7" height="9" rx="1.5" /><rect x="3" y="16" width="7" height="5" rx="1.5" /></> },
   { at: "projects", label: "Projects", icon: <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /> },
+  { at: "research", label: "Deep Research", icon: <><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></> },
+  { at: "reason", label: "Reason", icon: <><path d="M12 3v4M12 17v4M3 12h4M17 12h4" /><circle cx="12" cy="12" r="4" /></> },
 ] as const;
 
 /**
  * Keplar Business workspace (keplar.one/app/work; the desktop app opens it for Business accounts). Dark Geist chrome of its
- * own, none of Keplar One's consumer navigation. Built so far: Dashboard and Projects. Other modules join the sidebar as
+ * own, none of Keplar One's consumer navigation. Built so far: Dashboard, Projects, Deep Research and Reason. Other modules join the sidebar as
  * they ship; nothing unbuilt is shown.
  */
 export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
@@ -96,7 +100,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
           </div>
           <nav className={s.nav}>
             {NAV.map((n) => (
-              <button key={n.at} type="button" className={s.navItem} aria-current={view.at === n.at ? "page" : undefined} onClick={() => go(n.at === "projects" ? { at: "projects", projectId: null } : { at: "dashboard" })}>
+              <button key={n.at} type="button" className={s.navItem} aria-current={view.at === n.at ? "page" : undefined} onClick={() => go(n.at === "projects" ? { at: "projects", projectId: null } : { at: n.at })}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" aria-hidden="true">{n.icon}</svg>
                 {n.label}
               </button>
@@ -109,7 +113,9 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
           </div>
         </aside>
         <section className={s.main}>
-          {view.at === "dashboard" ? <Dashboard onOpenProject={(id) => go({ at: "projects", projectId: id })} /> : <Projects projectId={view.projectId} onOpen={(id) => go({ at: "projects", projectId: id })} />}
+          {view.at === "dashboard" ? <Dashboard onOpenProject={(id) => go({ at: "projects", projectId: id })} />
+            : view.at === "projects" ? <Projects projectId={view.projectId} onOpen={(id) => go({ at: "projects", projectId: id })} />
+            : <Analyst key={view.at} kind={view.at} />}
         </section>
       </div>
     </div>
