@@ -117,7 +117,9 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPla
           <li className={s.empty}>
             <span className={s.orbit} aria-hidden="true"><span /><span /><span /></span>
             <strong>What should we build?</strong>
-            <span>Keplar looks at your place first, then plans and builds; you play-test it and say what to change. Attach screenshots or a clip of a UI, effect or gameplay you want to match. Each game&apos;s chat is saved, so you can come back to it.</span>
+            {canPlayTest
+              ? <span>Keplar looks at your place first, then plans and builds; you play-test it and say what to change. Attach screenshots or a clip of a UI, effect or gameplay you want to match. Each game&apos;s chat is saved, so you can come back to it.</span>
+              : <span>Keplar reads your scene first, then plans, models and textures it; you look it over and say what to change. Attach reference images of the look you want. Each file&apos;s chat is saved, so you can come back to it.</span>}
           </li>
         ) : null}
         {a.items.map((it) =>
