@@ -6,11 +6,12 @@
  * (tierEntitlements, applied in src/lib/create/platform/workspace.ts). Enterprise is sold by contract through an inquiry.
  *
  * Unit economics (credits are metered at real provider cost x METER_MARGIN 1.1; 1 credit = $0.002 of metered cost):
- *   AI credits are sized so a customer who spends every credit costs at most ~40% of the plan price in model spend,
+ *   Prices were raised (Oct 2026) with the same perks, for margin: a customer who spends every credit costs ~25% of the price in
+ *   model spend (it was ~37%),
  *   leaving room for Whop fees (~3-5%), hosting, storage, video/image providers' own metering and support:
- *     Starter $149  -> 30,000 credits  = $60 metered ($54.5 provider cost)   = 37% of price
- *     Growth  $349  -> 70,000 credits  = $140 metered ($127 provider cost)   = 36% of price
- *     Scale   $1,999 -> 400,000 credits = $800 metered ($727 provider cost) = 36% of price
+ *     Starter $199  -> 30,000 credits  = $60 metered ($54.5 provider cost)   = 27% of price
+ *     Growth  $499  -> 70,000 credits  = $140 metered ($127 provider cost)   = 25% of price
+ *     Scale   $2,999 -> 400,000 credits = $800 metered ($727 provider cost) = 24% of price
  *   Automation actions are a separate meter: one action is one step an agent takes (a tool call, a message sent, a record
  *   written). They cost almost nothing to run; the model calls behind them draw credits, so an action is never "free AI".
  *   The suggested 3,000 / 15,000 / 75,000 actions are therefore kept as proposed.
@@ -45,17 +46,17 @@ const CORE = ["Business dashboard", "Projects", "Images", "Deep Research", "Reas
 
 export const BUSINESS_TIERS: Record<BusinessTier, BusinessTierSpec> = {
   starter: {
-    id: "starter", name: "Keplar Business Starter", monthly: 149, audience: "Small businesses and startups",
+    id: "starter", name: "Keplar Business Starter", monthly: 199, audience: "Small businesses and startups",
     seats: 1, activeAgents: 5, actionsPerMonth: 3_000, credits: 30_000, projects: 10, customDomains: 3, rpm: 120, swarm: false,
     includes: [...CORE, "1 seat", "5 active agents", "3,000 automation actions a month", "10 projects", "High-priority AI requests", "Standard support"],
   },
   growth: {
-    id: "growth", name: "Keplar Business Growth", monthly: 349, audience: "Growing teams and agencies",
+    id: "growth", name: "Keplar Business Growth", monthly: 499, audience: "Growing teams and agencies",
     seats: 5, activeAgents: 25, actionsPerMonth: 15_000, credits: 70_000, projects: null, customDomains: 10, rpm: 240, swarm: false,
     includes: ["Everything in Starter", "5 seats", "25 active agents", "15,000 automation actions a month", "Unlimited projects (fair use)", "Shared team workspaces", "Multi-agent workflows", "Team permissions", "Priority support"],
   },
   scale: {
-    id: "scale", name: "Keplar Business Scale", monthly: 1_999, audience: "Automation-intensive organizations",
+    id: "scale", name: "Keplar Business Scale", monthly: 2_999, audience: "Automation-intensive organizations",
     seats: 15, activeAgents: 100, actionsPerMonth: 75_000, credits: 400_000, projects: null, customDomains: 50, rpm: 600, swarm: false,
     includes: ["Everything in Growth", "15 seats", "100 active agents", "75,000 automation actions a month", "Department workspaces", "Advanced model routing", "Audit logs", "API access", "Advanced approval workflows", "Priority technical support"],
   },
