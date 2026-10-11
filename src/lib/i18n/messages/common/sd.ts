@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "Keplar ۾ سڀ ڪجهه",
       "/#demo": "سڌو ڊيمو",
       "/app/create": "ٺاهيو",
-      "/enterprise": "ٽيمون",
       "/docs": "دستاويز",
       "/pricing": "قيمتون",
       "/download": "ڊائونلوڊ"

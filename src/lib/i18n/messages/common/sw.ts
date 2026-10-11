@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "Kila kitu ndani ya Keplar",
       "/#demo": "Onyesho la moja kwa moja",
       "/app/create": "Create",
-      "/enterprise": "Timu",
       "/docs": "Nyaraka",
       "/pricing": "Bei",
       "/download": "Pakua"
@@ -18,8 +17,7 @@ const m: CommonCatalog = {
     "hints": {
       "/features": "Kila kipengele na kama kinapatikana",
       "/#demo": "Uliza swali sasa, bila kujisajili",
-      "/app/create": "Eleza au tamka tovuti au programu",
-      "/enterprise": "Nafasi za kazi za pamoja, majukumu na idhini"
+      "/app/create": "Eleza au tamka tovuti au programu"
     },
     "signIn": "Ingia",
     "account": "Akaunti",
@@ -50,7 +48,6 @@ const m: CommonCatalog = {
       "/keplar-one": "Keplar-One",
       "/pricing": "Bei",
       "/download": "Pakua",
-      "/enterprise": "Kwa biashara",
       "/developers": "API na wijeti",
       "/guides": "Miongozo",
       "/docs": "Nyaraka",

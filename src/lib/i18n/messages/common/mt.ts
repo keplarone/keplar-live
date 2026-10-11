@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "Kollox f'Keplar",
       "/#demo": "Demo dirett",
       "/app/create": "Oħloq",
-      "/enterprise": "Timijiet",
       "/docs": "Dokumentazzjoni",
       "/pricing": "Prezzijiet",
       "/download": "Niżżel"

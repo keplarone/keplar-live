@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "Wax kasta oo Keplar ku jira",
       "/#demo": "Bandhig toos ah",
       "/app/create": "Abuur",
-      "/enterprise": "Kooxo",
       "/docs": "Dukumentiyo",
       "/pricing": "Qiimaha",
       "/download": "Soo deji"

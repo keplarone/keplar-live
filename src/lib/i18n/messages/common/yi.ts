@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "אַלץ אין Keplar",
       "/#demo": "לעבעדיקע דעמאָ",
       "/app/create": "שאַפֿן",
-      "/enterprise": "קאָמאַנדעס",
       "/docs": "דאָקומענטאַציע",
       "/pricing": "פּרייזן",
       "/download": "אַראָפּלאָדן"

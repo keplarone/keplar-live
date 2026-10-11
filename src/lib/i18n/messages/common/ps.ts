@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "په Keplar کې هر څه",
       "/#demo": "ژوندۍ ننداره",
       "/app/create": "جوړول",
-      "/enterprise": "ټیمونه",
       "/docs": "اسناد",
       "/pricing": "بیې",
       "/download": "ښکته کول"

@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "Keplar ရှိ အရာအားလုံး",
       "/#demo": "တိုက်ရိုက် သရုပ်ပြ",
       "/app/create": "ဖန်တီးရန်",
-      "/enterprise": "အဖွဲ့များ",
       "/docs": "စာရွက်စာတမ်းများ",
       "/pricing": "စျေးနှုန်း",
       "/download": "ဒေါင်းလုဒ်"

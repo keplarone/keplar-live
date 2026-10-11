@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "Minden a Keplarban",
       "/#demo": "Élő bemutató",
       "/app/create": "Létrehozás",
-      "/enterprise": "Csapatok",
       "/docs": "Dokumentáció",
       "/pricing": "Árak",
       "/download": "Letöltés"

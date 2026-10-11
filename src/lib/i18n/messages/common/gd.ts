@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "A h-uile rud ann an Keplar",
       "/#demo": "Taisbeanadh beò",
       "/app/create": "Cruthaich",
-      "/enterprise": "Sgiobaidhean",
       "/docs": "Docamaideadh",
       "/pricing": "Prìsean",
       "/download": "Luchdaich a-nuas"

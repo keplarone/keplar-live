@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "هەموو شتێک لە Keplar",
       "/#demo": "نمایشی ڕاستەوخۆ",
       "/app/create": "دروستکردن",
-      "/enterprise": "تیمەکان",
       "/docs": "بەڵگەنامەکان",
       "/pricing": "نرخەکان",
       "/download": "داگرتن"

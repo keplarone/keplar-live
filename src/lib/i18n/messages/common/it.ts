@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "Tutto Keplar",
       "/#demo": "Demo dal vivo",
       "/app/create": "Create",
-      "/enterprise": "Team",
       "/docs": "Documentazione",
       "/pricing": "Prezzi",
       "/download": "Scarica"
@@ -18,8 +17,7 @@ const m: CommonCatalog = {
     "hints": {
       "/features": "Ogni funzione e se è già disponibile",
       "/#demo": "Fai una domanda subito, senza registrarti",
-      "/app/create": "Descrivi o detta un sito o un’app",
-      "/enterprise": "Spazi condivisi, ruoli e approvazioni"
+      "/app/create": "Descrivi o detta un sito o un’app"
     },
     "signIn": "Accedi",
     "account": "Account",
@@ -50,7 +48,6 @@ const m: CommonCatalog = {
       "/keplar-one": "Keplar-One",
       "/pricing": "Prezzi",
       "/download": "Scarica",
-      "/enterprise": "Per le aziende",
       "/developers": "API e widget",
       "/guides": "Guide",
       "/docs": "Documentazione",

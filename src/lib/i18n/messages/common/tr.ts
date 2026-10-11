@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "Keplar’daki her şey",
       "/#demo": "Canlı demo",
       "/app/create": "Create",
-      "/enterprise": "Ekipler",
       "/docs": "Belgeler",
       "/pricing": "Fiyatlandırma",
       "/download": "İndir"
@@ -18,8 +17,7 @@ const m: CommonCatalog = {
     "hints": {
       "/features": "Her özellik ve kullanıma açık olup olmadığı",
       "/#demo": "Hemen bir soru sorun, kayıt gerekmez",
-      "/app/create": "Bir site ya da uygulamayı anlatın veya söyleyin",
-      "/enterprise": "Ortak çalışma alanları, roller ve onaylar"
+      "/app/create": "Bir site ya da uygulamayı anlatın veya söyleyin"
     },
     "signIn": "Giriş yap",
     "account": "Hesap",
@@ -50,7 +48,6 @@ const m: CommonCatalog = {
       "/keplar-one": "Keplar-One",
       "/pricing": "Fiyatlandırma",
       "/download": "İndir",
-      "/enterprise": "İşletmeler için",
       "/developers": "API ve widget",
       "/guides": "Rehberler",
       "/docs": "Belgeler",

@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "Keplar 全部功能",
       "/#demo": "在线演示",
       "/app/create": "Create",
-      "/enterprise": "团队",
       "/docs": "文档",
       "/pricing": "价格",
       "/download": "下载"
@@ -18,8 +17,7 @@ const m: CommonCatalog = {
     "hints": {
       "/features": "每项功能及其是否已上线",
       "/#demo": "现在就提问，无需注册",
-      "/app/create": "用文字或语音描述网站或应用",
-      "/enterprise": "共享工作区、角色和审批"
+      "/app/create": "用文字或语音描述网站或应用"
     },
     "signIn": "登录",
     "account": "账户",
@@ -50,7 +48,6 @@ const m: CommonCatalog = {
       "/keplar-one": "Keplar-One",
       "/pricing": "价格",
       "/download": "下载",
-      "/enterprise": "企业版",
       "/developers": "API 与小组件",
       "/guides": "指南",
       "/docs": "文档",

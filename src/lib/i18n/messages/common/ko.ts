@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "Keplar의 모든 것",
       "/#demo": "라이브 데모",
       "/app/create": "Create",
-      "/enterprise": "팀",
       "/docs": "문서",
       "/pricing": "요금",
       "/download": "다운로드"
@@ -18,8 +17,7 @@ const m: CommonCatalog = {
     "hints": {
       "/features": "모든 기능과 출시 여부",
       "/#demo": "가입 없이 지금 질문하기",
-      "/app/create": "사이트나 앱을 글이나 말로 설명",
-      "/enterprise": "공유 워크스페이스, 역할, 승인"
+      "/app/create": "사이트나 앱을 글이나 말로 설명"
     },
     "signIn": "로그인",
     "account": "계정",
@@ -50,7 +48,6 @@ const m: CommonCatalog = {
       "/keplar-one": "Keplar-One",
       "/pricing": "요금",
       "/download": "다운로드",
-      "/enterprise": "비즈니스용",
       "/developers": "API와 위젯",
       "/guides": "가이드",
       "/docs": "문서",

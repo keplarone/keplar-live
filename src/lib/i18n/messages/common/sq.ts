@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "Gjithçka në Keplar",
       "/#demo": "Demo e drejtpërdrejtë",
       "/app/create": "Krijo",
-      "/enterprise": "Ekipe",
       "/docs": "Dokumentacion",
       "/pricing": "Çmimet",
       "/download": "Shkarko"

@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "Ny zava-drehetra ao amin'ny Keplar",
       "/#demo": "Fampisehoana mivantana",
       "/app/create": "Mamorona",
-      "/enterprise": "Ekipa",
       "/docs": "Antontan-taratasy",
       "/pricing": "Vidiny",
       "/download": "Ampidino"

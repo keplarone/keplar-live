@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "Konke ku-Keplar",
       "/#demo": "Umboniso obukhoma",
       "/app/create": "Dala",
-      "/enterprise": "Amathimba",
       "/docs": "Imibhalo",
       "/pricing": "Amanani",
       "/download": "Landa"

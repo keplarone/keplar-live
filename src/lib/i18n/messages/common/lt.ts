@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "Viskas Keplar",
       "/#demo": "Tiesioginė demonstracija",
       "/app/create": "Kurti",
-      "/enterprise": "Komandos",
       "/docs": "Dokumentacija",
       "/pricing": "Kainos",
       "/download": "Atsisiųsti"

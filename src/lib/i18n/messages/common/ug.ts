@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "Keplar دىكى ھەممە نەرسە",
       "/#demo": "بىۋاسىتە كۆرسىتىش",
       "/app/create": "قۇرۇش",
-      "/enterprise": "گۇرۇپپىلار",
       "/docs": "ھۆججەتلەر",
       "/pricing": "باھا",
       "/download": "چۈشۈرۈش"

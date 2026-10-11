@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "Vše v Keplaru",
       "/#demo": "Živá ukázka",
       "/app/create": "Vytvořit",
-      "/enterprise": "Týmy",
       "/docs": "Dokumentace",
       "/pricing": "Ceník",
       "/download": "Stáhnout"

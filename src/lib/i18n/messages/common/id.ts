@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "Semua tentang Keplar",
       "/#demo": "Demo langsung",
       "/app/create": "Create",
-      "/enterprise": "Tim",
       "/docs": "Dokumentasi",
       "/pricing": "Harga",
       "/download": "Unduh"
@@ -18,8 +17,7 @@ const m: CommonCatalog = {
     "hints": {
       "/features": "Setiap fitur dan apakah sudah tersedia",
       "/#demo": "Ajukan pertanyaan sekarang, tanpa daftar",
-      "/app/create": "Jelaskan atau ucapkan situs atau aplikasi",
-      "/enterprise": "Ruang kerja bersama, peran, dan persetujuan"
+      "/app/create": "Jelaskan atau ucapkan situs atau aplikasi"
     },
     "signIn": "Masuk",
     "account": "Akun",
@@ -50,7 +48,6 @@ const m: CommonCatalog = {
       "/keplar-one": "Keplar-One",
       "/pricing": "Harga",
       "/download": "Unduh",
-      "/enterprise": "Untuk bisnis",
       "/developers": "API dan widget",
       "/guides": "Panduan",
       "/docs": "Dokumentasi",

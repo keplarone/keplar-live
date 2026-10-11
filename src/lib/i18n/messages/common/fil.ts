@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "Lahat ng nasa Keplar",
       "/#demo": "Live na demo",
       "/app/create": "Create",
-      "/enterprise": "Mga team",
       "/docs": "Docs",
       "/pricing": "Presyo",
       "/download": "I-download"
@@ -18,8 +17,7 @@ const m: CommonCatalog = {
     "hints": {
       "/features": "Bawat feature at kung live na ito",
       "/#demo": "Magtanong ngayon, walang sign-up",
-      "/app/create": "Ilarawan o sabihin ang isang site o app",
-      "/enterprise": "Mga shared workspace, role at approval"
+      "/app/create": "Ilarawan o sabihin ang isang site o app"
     },
     "signIn": "Mag-sign in",
     "account": "Account",
@@ -50,7 +48,6 @@ const m: CommonCatalog = {
       "/keplar-one": "Keplar-One",
       "/pricing": "Presyo",
       "/download": "I-download",
-      "/enterprise": "Para sa negosyo",
       "/developers": "API at widget",
       "/guides": "Mga gabay",
       "/docs": "Docs",

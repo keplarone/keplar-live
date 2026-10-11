@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "Keplar හි සියල්ල",
       "/#demo": "සජීවී ආදර්ශනය",
       "/app/create": "සාදන්න",
-      "/enterprise": "කණ්ඩායම්",
       "/docs": "ලේඛන",
       "/pricing": "මිල ගණන්",
       "/download": "බාගන්න"

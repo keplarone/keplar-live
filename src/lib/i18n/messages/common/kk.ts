@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "Keplar ішіндегі бәрі",
       "/#demo": "Тікелей демо",
       "/app/create": "Жасау",
-      "/enterprise": "Командалар",
       "/docs": "Құжаттама",
       "/pricing": "Бағалар",
       "/download": "Жүктеп алу"

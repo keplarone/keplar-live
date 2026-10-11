@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "Alles in Keplar",
       "/#demo": "Regstreekse demo",
       "/app/create": "Skep",
-      "/enterprise": "Spanne",
       "/docs": "Dokumentasie",
       "/pricing": "Pryse",
       "/download": "Laai af"

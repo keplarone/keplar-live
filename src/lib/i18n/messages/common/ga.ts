@@ -10,7 +10,6 @@ const m: CommonCatalog = {
       "/features": "Gach rud in Keplar",
       "/#demo": "Taispeántas beo",
       "/app/create": "Cruthaigh",
-      "/enterprise": "Foirne",
       "/docs": "Doiciméid",
       "/pricing": "Praghsáil",
       "/download": "Íoslódáil"
