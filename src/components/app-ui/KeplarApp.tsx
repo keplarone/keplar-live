@@ -187,6 +187,8 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   const [atBottom, setAtBottom] = useState(true);
   const [mac] = useState(() => typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.userAgent));
   const composerRef = useRef<ComposerHandle>(null);
+  // The welcome-back screen's own Composer (the same component, so it can attach, talk, switch modes and pick models).
+  const welcomeComposerRef = useRef<ComposerHandle>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const controllers = useRef(new Map<string, AbortController>());
@@ -923,9 +925,23 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
           firstName={firstName}
           plan={state.ledger.plan}
           threads={state.threads}
-          canResearch={["plus", "pro", "business"].includes(state.ledger.plan)}
-          onAsk={(q, research) => { setWelcomeBackDone(true); send(q, [], { web: false, deepResearch: research, create: false, agent: false }); }}
-          onSeed={(text) => { setWelcomeBackDone(true); seedComposer(text, {}); }}
+          composer={
+            <Composer
+              ref={welcomeComposerRef}
+              running={running}
+              onSend={(text, attachments, modes, media) => { setWelcomeBackDone(true); send(text, attachments, modes, media); }}
+              onStop={stop}
+              routing={state.settings.routing}
+              onRouting={(routing) => dispatch({ type: "settings", settings: { routing } })}
+              computeRemaining={remaining(state)}
+              resetsAt={state.ledger.resetsAt}
+              plan={state.ledger.plan}
+              signedIn={state.ledger.synced ? state.ledger.signedIn : undefined}
+              onModesChange={onComposerModes}
+              placeholder="Ask Keplar anything"
+            />
+          }
+          onStarter={(text, modes) => { welcomeComposerRef.current?.setModes(modes); welcomeComposerRef.current?.setText(text); welcomeComposerRef.current?.focus(); }}
           onOpenThread={(id) => { setWelcomeBackDone(true); openThread(id); }}
           onOpenChats={() => { setWelcomeBackDone(true); goView("history"); }}
           onMenu={() => { setWelcomeBackDone(true); if (window.innerWidth < 900) setDrawerOpen(true); }}

@@ -258,8 +258,15 @@
  * window controls; empty nav space opts in to dragging with data-keplar-drag (Nav.tsx). */
 :global(html:is([data-desktop], [data-keplar-desktop], .keplar-desktop)) .wrap {
   padding-left: calc(env(titlebar-area-x, 0px) + 12px);
-  padding-right: calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw) + 12px);
+  /* Where env() is not exposed (the Keplar desktop window), the fallback keeps 146px for minimise/maximise/close: before, it fell
+     back to 100vw, kept 0px, and the Try/Open Keplar pill sat under the window controls. */
+  padding-right: calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, calc(100vw - 146px)) + 12px);
   padding-top: max(6px, calc((env(titlebar-area-height, 40px) - 52px) / 2 + 6px));
+}
+/* macOS: the traffic lights are on the left (x 16) and nothing is on the right. */
+:global(html[data-desktop-os="mac"]) .wrap {
+  padding-left: max(84px, calc(env(titlebar-area-x, 0px) + 12px));
+  padding-right: calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw) + 12px);
 }
 
 @media print {

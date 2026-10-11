@@ -95,6 +95,9 @@ export function docsHost(req: NextRequest) {
  * under /biz ("/" → /biz, "/work" → /biz/work), so a Business page can never resolve to a Keplar One page. Static files pass
  * through; /api is handled by the shared API guard below (rate limit, same-origin), like on keplar.one. Returns null for /api.
  */
+/** The Business app's own pages (first path segment), each under /biz: storefront, account setup, sign-in handoff, workspace. */
+const BUSINESS_PAGES = new Set(["", "account", "signin", "work"]);
+
 export function businessHost(req: NextRequest): NextResponse | null {
   const { pathname, search } = req.nextUrl;
   if (pathname.startsWith("/api/")) return null;
@@ -112,6 +115,9 @@ export function businessHost(req: NextRequest): NextResponse | null {
   // Old storefront link, and the internal prefix itself: one public URL per page.
   if (pathname === "/business-landing") return NextResponse.redirect(new URL(`/${search}`, req.url), 308);
   if (pathname === BUSINESS_PREFIX || pathname.startsWith(`${BUSINESS_PREFIX}/`)) return NextResponse.redirect(new URL(`${pathname.slice(BUSINESS_PREFIX.length) || "/"}${search}`, req.url), 308);
+  // Every other path (/pricing, /terms, /showcase, /app/create: links inside Create and the Business OS modules) belongs to
+  // keplar.one: send it there instead of a Business 404. 307, so a Business page added at that path later is not shadowed by a cache.
+  if (!BUSINESS_PAGES.has(pathname.split("/")[1] ?? "")) return NextResponse.redirect(`${PRODUCTION_URL}${pathname}${search}`, 307);
   const url = req.nextUrl.clone();
   url.pathname = pathname === "/" ? BUSINESS_PREFIX : `${BUSINESS_PREFIX}${pathname}`;
   url.search = search;

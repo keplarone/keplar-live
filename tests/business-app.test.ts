@@ -1,6 +1,7 @@
 import "./setup";
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { NextRequest } from "next/server";
 import { businessHost, businessMoved, proxy } from "@/proxy";
 import { isBusinessHost, safeBusinessNext } from "@/lib/business-site";
@@ -24,7 +25,7 @@ test("handoff: a ticket signs in only the browser holding the matching nonce, wi
 });
 
 test("handoff: a 2FA user's Business session is complete, because only a fully verified keplar.one session can mint the ticket", async () => {
-  const { readFileSync } = await import("node:fs");
+
   // The Business host has no two-factor page; without this a 2FA user's Business session stays mfa_pending (signed out in a loop).
   assert.match(readFileSync("src/lib/accounts/business-auth.ts", "utf8"), /provider: "business", remember: true, secondFactorDone: true/);
   // ...which is safe only while keplar.one refuses to sign tickets for a session still waiting on its second factor.
@@ -80,7 +81,7 @@ test("business host /api gets the same guard as keplar.one: a cross-site POST is
 test("business host: the favicon and touch icons are the Keplar Business mark, kept transparent; Keplar One keeps its own", async () => {
   const { BUSINESS_ICONS } = await import("@/lib/business-site");
   const sharp = (await import("sharp")).default;
-  const { readFileSync } = await import("node:fs");
+
   const target = (p: string) => businessHost(req(`https://business.keplar.one${p}`))?.headers.get("x-middleware-rewrite");
   for (const [p, file] of [["/favicon.ico", "/business/favicon.ico"], ["/apple-touch-icon.png", "/business/apple-icon.png"], ["/icon.png", "/business/icon.png"], ["/icon.svg", "/business/icon.png"]]) {
     assert.equal(new URL(target(p)!).pathname, file, p);
@@ -96,4 +97,16 @@ test("business host: the favicon and touch icons are the Keplar Business mark, k
   const ico = readFileSync("public/business/favicon.ico");
   assert.equal(ico.readUInt16LE(2), 1, "ico type");
   assert.equal(ico.readUInt16LE(4), 3, "16, 32 and 48 px frames");
+});
+
+test("every workspace tab uses the Business theme: the embedded Keplar One screens read re-pointed tokens and Geist", () => {
+  const ws = readFileSync("src/components/business-app/workspace.module.css", "utf8");
+  const root = ws.slice(ws.indexOf(".root {"), ws.indexOf("}", ws.indexOf(".root {")));
+  // Create, Agents, Approvals, Operations and Integrations are Keplar One components: their palette, accent, buttons and fonts.
+  for (const token of ["--c-canvas: var(--w-bg)", "--c-surface-1: var(--w-panel)", "--c-ink: var(--w-ink)", "--c-border: var(--w-line)", "--c-accent: var(--w-accent)", "--btn-p-bg: var(--w-ink)", "--font-sans: var(--biz-sans)", "--f-sans: var(--biz-sans)"]) {
+    assert.ok(root.includes(token), `workspace root re-points ${token}`);
+  }
+  // Create redefines its own palette on its root, so it needs its own Business override (only while the workspace is open).
+  assert.match(readFileSync("src/components/create/workspace/ws.module.css", "utf8"), /:global\(html\[data-business-app\]\) \.root \{[^}]*--ws-bg: #141414;/);
+  assert.match(readFileSync("src/components/business-app/BusinessWorkspace.tsx", "utf8"), /root\.setAttribute\("data-business-app", ""\)/);
 });
