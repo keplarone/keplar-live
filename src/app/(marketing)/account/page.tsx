@@ -14,8 +14,6 @@ import { DailyLeft } from "@/components/account/DailyLeft";
 import { ensureWorkspaceForUser } from "@/lib/accounts/workspaces";
 import { currentWorkspace } from "@/lib/create/platform/workspace";
 import { meter } from "@/lib/create/platform/compute";
-import { adminDailyCapUsd } from "@/lib/billing/admin";
-import { adminSpendToday } from "@/lib/create/platform/spend";
 import { checkoutAvailable, whopCheckoutConfigured } from "@/lib/billing/whop";
 import { embedPlanId, isPaidPlan, PAID_PLANS } from "@/lib/billing/plans";
 import { WINDOW_WARN_AT, windowResetText } from "@/lib/orchestration/plans";
@@ -72,8 +70,6 @@ export default async function AccountPage({ searchParams }: Props) {
   if (onboarding.enabled && onboarding.required && !onboarding.progress.viewedPlan) await markProgress(session.user.id, "viewedPlan").catch(() => undefined);
   const payFailed = payStatus === "failed" || payStatus === "canceled";
   const pct = m.total ? Math.min(100, Math.round((m.used / m.total) * 100)) : 0;
-  const adminSpend = ws.admin ? await adminSpendToday().catch(() => 0) : 0;
-  const usd = (n: number) => `$${n.toFixed(2)}`;
   const checkoutReady = checkoutAvailable();
   const canRefresh = whopCheckoutConfigured();
   return (
@@ -105,7 +101,6 @@ export default async function AccountPage({ searchParams }: Props) {
         </div>
         <div className={s.panel} id="usage">
           <div className={s.row}><span className={s.k}>{ws.admin ? "Usage" : "Credits left"}</span><span className={s.v}>{ws.admin ? "Unlimited" : m.total ? `${Math.max(0, m.total - m.used).toLocaleString()} of ${m.total.toLocaleString()}` : plan === "free" ? "Not needed on Free (questions are counted daily, below)" : `${m.used.toLocaleString()} used`}</span></div>
-          {ws.admin ? <div className={s.row}><span className={s.k}>Daily safety cap</span><span className={s.v}>{usd(adminSpend)} of {usd(adminDailyCapUsd())} spent today<span className={s.sub}>Resets at 00:00 UTC. Use stops for the day if it&rsquo;s reached.</span></span></div> : null}
           {daily ? <div className={s.row} data-free-daily=""><span className={s.k}>Questions left today</span><span className={s.v}><DailyLeft initial={daily} /></span></div> : null}
           {m.total ? <div className={s.track} role="progressbar" aria-label="Credits used this period" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}><div className={s.fill} style={{ width: `${pct}%` }} /></div> : null}
           {m.windows?.map((w) => {

@@ -1,4 +1,4 @@
-/** Admin accounts: unlimited use, with a daily USD safety cap (spend.ts). */
+/** Admin accounts: unlimited use. Spend is still recorded (spend.ts) and does not stop a request. */
 export const adminEmails = (): string[] =>
   (process.env.KEPLAR_ADMIN_EMAILS || "team@keplar.one")
     .split(",")

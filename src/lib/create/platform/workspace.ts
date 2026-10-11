@@ -6,8 +6,8 @@
  * 2. No session → an anonymous Free context, only for routes that opt in
  *    (`allowAnonymous`): Keplar answers on free open models. It owns no data.
  * 3. Otherwise 401.
- * `ADMIN_EMAILS` (default team@keplar.one) get unlimited access with a daily
- * safety cap (spend.ts).
+ * `ADMIN_EMAILS` (default team@keplar.one) get unlimited access. Credits and
+ * auto top-up still apply to Roblox Studio on other accounts.
  */
 import { getSession } from "@/lib/accounts/auth";
 import { currentPeriod, emptyBilling, ensureWorkspaceForUser, getWorkspace, planLapsed, type WorkspaceRow } from "@/lib/accounts/workspaces";
@@ -30,7 +30,7 @@ export type Workspace = {
   entitlements: Entitlements;
   /** No account: Free, answers only, owns no data. */
   anonymous: boolean;
-  /** Unlimited access with a daily safety cap. */
+  /** Unlimited access. A daily spend counter is recorded and does not stop requests. */
   admin: boolean;
   userId: string | null;
   email: string | null;

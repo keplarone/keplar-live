@@ -24,6 +24,17 @@ export const caps = () => ({
   freeUsd: Number(process.env.KEPLAR_FREE_DAILY_USD_CAP ?? 5),
 });
 
+/** When today's shared usage budget lifts. */
+export function nextUtcMidnight(now = Date.now()): string {
+  const d = new Date(now);
+  d.setUTCHours(24, 0, 0, 0);
+  return d.toISOString();
+}
+
+/** Shown when Free is paused by the shared daily budget. The person's own questions were not used. */
+export const FREE_DAY_BUDGET_MESSAGE =
+  "Keplar has reached today's usage budget. Free is paused until 00:00 UTC. This question was not counted against your Free questions.";
+
 export async function spendToday() {
   return (await days().get(SYSTEM, today())) ?? { id: today(), workspaceId: SYSTEM, totalUsd: 0, freeUsd: 0, alerted: false, updatedAt: now() };
 }

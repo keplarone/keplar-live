@@ -159,7 +159,7 @@ before any work starts. Admins skip quotas and Free-model checks, but not kill s
   it is the owner's decision.
 - **What happens as spend rises** (existing breaker, `breaker.ts`):
   - from 70% of the cap, new Create jobs use cheaper models
-  - from 85%, paid images and video pause
+  - image and video keep running and still spend credits
   - at 100%, Free pauses until 00:00 UTC
 - **New: scale-aware warning** (`src/lib/cost/global-cap.ts`, run by the cost watch every 10 minutes):
   - The owner gets an email once per UTC day when today's spend reaches **80% of the cap** (`globalCap.alertPct`), and again if it hits 100%.

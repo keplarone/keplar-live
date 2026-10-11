@@ -4,8 +4,8 @@
  * Ratio = today's total spend (system_daily_spend, same counter as the Free pause) / KEPLAR_GLOBAL_DAILY_USD_CAP.
  *   normal   below 70%   nothing changes
  *   cheap    from 70%    new Create/site jobs use cheaper models (answers keep their routing)
- *   no_media from 85%    paid media (images, video) pauses; cheaper models stay
- *   capped   from 100%   Free pauses (spend.ts) and new paid image/video stay paused; paid text keeps working on the cheapest model
+ *   no_media from 85%    cheaper models stay; image and video keep running on credits
+ *   capped   from 100%   Free pauses (spend.ts); image and video keep running; paid text keeps working on the cheapest model
  * Thresholds: KEPLAR_BREAKER_CHEAP_AT and KEPLAR_BREAKER_MEDIA_AT (shares of the cap).
  */
 import { caps, spendToday } from "./spend";
@@ -43,11 +43,12 @@ export async function breakerLevel(): Promise<BreakerLevel> {
 }
 
 export const useCheaperModels = (l: BreakerLevel) => l !== "normal";
-export const paidMediaPaused = (l: BreakerLevel) => l === "no_media" || l === "capped";
+/** The daily budget does not pause image or video. Credits, plan limits, and an operator media pause still do. */
+export const paidMediaPaused = (_l: BreakerLevel) => false;
 
 export const BREAKER_NOTICE: Record<BreakerLevel, string | null> = {
   normal: null,
   cheap: "Demand is high today, so new builds use lighter models.",
-  no_media: "Demand is high today. Image and video generation is paused until 00:00 UTC; builds use lighter models.",
-  capped: "Keplar has reached today's usage budget. Image and video generation is paused until 00:00 UTC.",
+  no_media: "Demand is high today, so new builds use lighter models.",
+  capped: null,
 };

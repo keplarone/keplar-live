@@ -367,7 +367,28 @@ function DailyLimit({ daily, ledger }: { daily: NonNullable<NonNullable<KeplarMe
   );
 }
 
+/** Today's shared usage budget paused Free. The person's own questions were not used, and there is no monthly balance to show. */
+function DayBudget({ resetsAt }: { resetsAt?: string }) {
+  const when = resetsAt ? formatDailyReset(resetsAt) : "at 00:00 UTC";
+  return (
+    <section className={s.limit} aria-labelledby="limit-title" role="alert" data-day-budget="">
+      <h3 id="limit-title" className={s.limitTitle}>Keplar has reached today&rsquo;s usage budget.</h3>
+      <p className={s.limitBody}>
+        Free is paused until 00:00 UTC ({when}). This question did not run, and it was not counted against your Free questions.
+        Paid plans keep working, so upgrading is how you keep going now.
+      </p>
+      <div className={s.limitActions}>
+        <Link href="/checkout?plan=plus" className={s.primaryBtn}>
+          Upgrade to Plus <span aria-hidden="true">→</span>
+        </Link>
+        <Link href="/pricing?from=day-budget" className={s.textBtn}>Compare plans</Link>
+      </div>
+    </section>
+  );
+}
+
 function UsageLimit({ limit, ledger }: { limit: NonNullable<KeplarMessage["limit"]>; ledger: Ledger }) {
+  if (limit.budget === "day") return <DayBudget resetsAt={limit.resetsAt} />;
   if (limit.window) return <WindowLimit window={limit.window} ledger={ledger} />;
   if (limit.daily) return <DailyLimit daily={limit.daily} ledger={ledger} />;
   const total = ledger.total ?? Infinity;

@@ -236,7 +236,7 @@ export async function runStudioTurn(
   const slug = spec ? openRouterSlug(spec) : null;
   const key = liveEnv().openRouterKey;
   if (!spec || !slug || !key) throw new HttpError(503, "Studio mode is not available right now.", "unavailable");
-  await assertCanSpend(ws, STUDIO_LIMITS.reserveUnits, { kind: "agent" });
+  await assertCanSpend(ws, STUDIO_LIMITS.reserveUnits, { kind: "agent", dailySafetyCap: false });
 
   const doFetch = deps.fetch ?? fetch;
   const res = await doFetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -261,7 +261,7 @@ export async function runStudioTurn(
   const completion = data.usage?.completion_tokens ?? 0;
   const usd = typeof data.usage?.cost === "number" && data.usage.cost > 0 ? data.usage.cost : callCostUsd(spec, prompt, completion, (deps.now ?? (() => new Date().toISOString()))()) ?? 0;
   const metered = usd * METER_MARGIN;
-  const units = usd > 0 ? await chargeUnits(ws, "studio.agent", toUnits(metered), metered) : 0;
+  const units = usd > 0 ? await chargeUnits(ws, "studio.agent", toUnits(metered), metered, undefined, { dailySafetyCap: false }) : 0;
 
   const choice = data.choices[0]!;
   const actions: StudioTurn["actions"] = [];

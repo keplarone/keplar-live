@@ -38,6 +38,33 @@ test("reducer: the ledger keeps the extension; a Free daily limit sets today's c
   assert.equal(usageMeter(st.ledger).kind === "daily" && (usageMeter(st.ledger) as { pct: number }).pct, 0);
 });
 
+test("reducer: a shared daily budget pauses Free without using today's questions or the monthly balance", () => {
+  const free: Omit<Ledger, "synced"> = { ...base, plan: "free", total: null, used: 0, daily: { used: 1, limit: 50, left: 49, resetsAt: "2026-10-12T00:00:00.000Z" }, paused: false };
+  let st = reducer(initialState(), { type: "ledger", ledger: free });
+  const keplar = { id: "k", role: "keplar", status: "running", stages: [], capabilities: [], models: [], draft: "", startedAt: 1 } as unknown as KeplarMessage;
+  st = reducer(st, { type: "send", threadId: st.activeThreadId ?? "t", user: { id: "u", role: "user", text: "what can you do?", createdAt: 1 } as never, keplar });
+  const tid = st.threads[0].id;
+  st = reducer(st, { type: "event", threadId: tid, keplarId: "k", event: { type: "limit", required: 0, remaining: 0, budget: "day", resetsAt: "2026-10-12T00:00:00.000Z" } });
+  const m = st.threads[0].messages.find((x) => x.id === "k") as KeplarMessage;
+  assert.equal(m.limit!.budget, "day");
+  assert.equal(m.limit!.daily, undefined);
+  assert.equal(st.ledger.paused, true);
+  assert.equal(st.ledger.daily!.left, 49);
+  assert.equal(st.ledger.used, 0);
+});
+
+test("stream: a shared daily budget 429 becomes a day-budget limit, not a monthly credit limit", async () => {
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = (async () => new Response(JSON.stringify({ error: "paused", code: "daily_budget", resetsAt: "2026-10-12T00:00:00.000Z" }), { status: 429, headers: { "content-type": "application/json" } })) as typeof fetch;
+  try {
+    const events = [];
+    for await (const e of streamKeplar({ prompt: "what can you do?" } as never, new AbortController().signal)) events.push(e);
+    assert.deepEqual(events, [{ type: "limit", required: 0, remaining: 0, budget: "day", resetsAt: "2026-10-12T00:00:00.000Z" }]);
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
 test("stream: the server's Free daily 429 becomes a limit event (not a generic error)", async () => {
   const realFetch = globalThis.fetch;
   globalThis.fetch = (async () => new Response(JSON.stringify({ error: "x", code: "daily_limit", daily: { limit: 50, resetsAt: "2026-10-05T00:00:00.000Z" } }), { status: 429, headers: { "content-type": "application/json" } })) as typeof fetch;

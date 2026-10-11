@@ -9,10 +9,10 @@ import { collection } from "./store";
 import { id, now } from "./ids";
 import { EntitlementError } from "./plans";
 import type { Workspace } from "./workspace";
-import { adminCapped, freePaused, recordAdminSpend, recordSpend } from "./spend";
+import { freePaused, recordAdminSpend, recordSpend } from "./spend";
 import { recordWindowUsage, windowMeters, windowRoom } from "./windows";
 import { activeCooldown, assertNotCoolingDown, evaluateCooldown } from "./cooldown";
-import { BREAKER_NOTICE, breakerLevel, paidMediaPaused } from "./breaker";
+import { BREAKER_NOTICE, breakerLevel } from "./breaker";
 import { assertOpsAllows } from "@/lib/ops/controls";
 import { canBuyExtension } from "@/lib/billing/extensions";
 import { drawExtension, extensionBalance, extensionSummary } from "./extensions";
@@ -82,22 +82,17 @@ export const usedThisMonth = usedThisPeriod;
 /** Stop before starting when the allowance can't cover the estimate. No silent downgrade. */
 export class CreditLimitError extends EntitlementError {}
 
-export async function assertCanSpend(ws: Workspace, units: number, opts: { paidMedia?: boolean; kind?: "text" | "media" | "agent" } = {}) {
+export async function assertCanSpend(ws: Workspace, units: number, opts: { paidMedia?: boolean; kind?: "text" | "media" | "agent"; dailySafetyCap?: boolean } = {}) {
   // Operator kill switches first: global stop, media pause, agent pause (nothing is charged).
   await assertOpsAllows(opts.kind ?? (opts.paidMedia ? "media" : "text"));
   // Usage cooldown (spend velocity across every path); admin and Free are exempt.
   await assertNotCoolingDown(ws);
   // Cost guard (src/lib/cost): per-feature kill switch, negative-margin throttle, quotas, Free daily limits.
   await costGuardForSpend(ws);
-  if (opts.paidMedia && units > 0 && paidMediaPaused(await breakerLevel())) {
-    throw new EntitlementError("Image and video generation is paused for the rest of today because Keplar's daily budget is nearly used. It resumes at 00:00 UTC.");
-  }
   if (ws.plan === "free" && (await freePaused())) {
     throw new EntitlementError("Free usage is paused for the rest of today because of high demand. It resumes at midnight UTC, or upgrade to keep going.", "plus");
   }
-  if (ws.admin && (await adminCapped())) {
-    throw new EntitlementError("The daily safety cap for this account is reached. It resets at 00:00 UTC.");
-  }
+  // Credits, plan windows, and Studio auto top-up still stop a request. The daily safety cap does not.
   const room = await windowRoom(ws, units);
   // Bought extension credits cover what the allowance or a window cannot. Every cap above (cooldown, breakers, pauses) already applied.
   if (extendable(ws) && units > 0) {
@@ -131,7 +126,7 @@ export async function charge(ws: Workspace, action: MeteredAction, opts: { usd?:
 }
 
 /** Record units already computed elsewhere (the /app orchestrator's own estimate or billed cost). */
-export async function chargeUnits(ws: Workspace, action: string, units: number, usd: number, ref?: string) {
+export async function chargeUnits(ws: Workspace, action: string, units: number, usd: number, ref?: string, opts: { dailySafetyCap?: boolean } = {}) {
   if (!(units > 0)) return 0;
   units = applyChargeMultiplier(units, action);
   const f = await fund(ws, Math.ceil(units));
@@ -139,7 +134,8 @@ export async function chargeUnits(ws: Workspace, action: string, units: number, 
   await afterChargeOverage(ws, Math.ceil(units), usd, () => usedThisPeriod(ws));
   await recordSpend(usd, ws.plan);
   await recordWindowUsage(ws, f.base);
-  if (ws.admin) await recordAdminSpend(usd);
+  // Studio spend is not part of the admin daily safety cap. Other charges still are.
+  if (ws.admin && opts.dailySafetyCap !== false) await recordAdminSpend(usd);
   await evaluateCooldown(ws);
   return Math.ceil(units);
 }

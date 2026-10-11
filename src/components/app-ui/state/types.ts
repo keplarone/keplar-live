@@ -203,7 +203,7 @@ export type KeplarMessage = {
   create?: ChatCreate;
   /** A workspace card (apps, approvals, CRM, leads, dashboard, agents, projects, deployments, history) or a choice card. No panel answer. */
   workspace?: WorkspaceCard;
-  limit?: { required: number; remaining: number; window?: { id: "fiveHour" | "weekly"; label: string; resetsAt: string; message: string }; daily?: { limit: number; resetsAt: string } };
+  limit?: { required: number; remaining: number; window?: { id: "fiveHour" | "weekly"; label: string; resetsAt: string; message: string }; daily?: { limit: number; resetsAt: string }; budget?: "day"; resetsAt?: string };
   startedAt: number;
   finishedAt?: number;
 };

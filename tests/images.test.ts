@@ -489,21 +489,17 @@ test("storage quota: a full library refuses new images with a clear message", as
   assert.equal(((await res.json()) as { code: string }).code, "storage_full");
 });
 
-test("global breaker: paid images pause at 85% and stop at 100%, work below; ops pause and provider kill-switch also stop them", async () => {
+test("global breaker: images keep running at 85% and 100%; ops pause and provider kill-switch still stop them", async () => {
   reset();
   const { cookie } = await signIn("img-breaker@example.com", "business");
   try {
-  process.env.KEPLAR_BREAKER_FORCE = "no_media";
-  const paused = await create(cookie, "a calm lake with mountains");
-  assert.equal(paused.status, 402);
-  assert.match(((await paused.json()) as { error: string }).error, /paused for the rest of today/);
-  process.env.KEPLAR_BREAKER_FORCE = "capped";
-  assert.equal((await create(cookie, "a calm lake with mountains")).status, 402);
-  process.env.KEPLAR_BREAKER_FORCE = "cheap"; // 70%: media still allowed
-  const ok = await create(cookie, "a calm lake with mountains");
-  assert.equal(ok.status, 202);
-  await waitDone(cookie, ((await ok.json()) as { job: JobJson }).job.id);
-  assert.equal(genCalls.length, 1);
+  for (const level of ["no_media", "capped", "cheap"] as const) {
+    process.env.KEPLAR_BREAKER_FORCE = level;
+    const res = await create(cookie, "a calm lake with mountains");
+    assert.equal(res.status, 202, level);
+    await waitDone(cookie, ((await res.json()) as { job: JobJson }).job.id);
+  }
+  assert.equal(genCalls.length, 3);
   delete process.env.KEPLAR_BREAKER_FORCE;
   await new Promise((r) => setTimeout(r, 30));
 
@@ -518,7 +514,7 @@ test("global breaker: paid images pause at 85% and stop at 100%, work below; ops
   process.env.KEPLAR_IMAGES_OFF = "1";
   assert.equal((await create(cookie, "a calm lake with hills")).status, 503);
   delete process.env.KEPLAR_IMAGES_OFF;
-  assert.equal(genCalls.length, 1);
+  assert.equal(genCalls.length, 3);
   } finally {
     await setControls({ pauseMedia: false, disabledProviders: [] }, "test");
     resetOpsCache();
@@ -527,7 +523,7 @@ test("global breaker: paid images pause at 85% and stop at 100%, work below; ops
   }
 });
 
-test("a breaker that trips after the request was accepted still stops the job before the provider call", async () => {
+test("a daily budget cap that trips after the request was accepted does not stop the image", async () => {
   reset();
   const { cookie } = await signIn("img-latebreaker@example.com", "plus");
   let release!: () => void;
@@ -545,11 +541,10 @@ test("a breaker that trips after the request was accepted still stops the job be
     const id = ((await r.json()) as { job: JobJson }).job.id;
     process.env.KEPLAR_BREAKER_FORCE = "capped";
     holdMod!();
-    const j = await waitDone(cookie, id);
-    assert.equal(j.status, "failed");
-    assert.equal(j.errorCode, "paused");
-    assert.equal(genCalls.length, 0);
     release();
+    const j = await waitDone(cookie, id);
+    assert.equal(j.status, "ready");
+    assert.equal(genCalls.length, 1);
   } finally {
     globalThis.fetch = realMod;
     delete process.env.KEPLAR_BREAKER_FORCE;
@@ -570,7 +565,7 @@ test("cooldown: a user on the Keplar usage cooldown cannot start an image (429 c
   await clearCooldown(ws.id);
 });
 
-test("admin: exempt from the daily image count and the credit windows, but the $25/day admin cap still stops images", async () => {
+test("admin: exempt from the daily image count, and the daily safety cap does not stop a later image", async () => {
   reset();
   process.env.KEPLAR_ADMIN_DAILY_USD_CAP = "0.02";
   try {
@@ -581,12 +576,13 @@ test("admin: exempt from the daily image count and the credit windows, but the $
     const j = await waitDone(cookie, ((await first.json()) as { job: JobJson }).job.id);
     assert.equal(j.status, "ready");
     await new Promise((r) => setTimeout(r, 30));
-    // low 1024x1024: 1056? tokens differ; push the admin total past the tiny cap with a direct charge, then expect the cap message.
     const ws = (await workspaceById(workspaceId))!;
     await charge(ws, "image.generate", { usd: 0.05 });
-    const capped = await create(cookie, "an admin test image of a teapot 2", { quality: "low" });
-    assert.equal(capped.status, 402);
-    assert.match(((await capped.json()) as { error: string }).error, /daily safety cap/);
+    const again = await create(cookie, "an admin test image of a teapot 2", { quality: "low" });
+    assert.equal(again.status, 202);
+    const body = (await again.json()) as { error?: string; job?: JobJson };
+    assert.equal(body.error, undefined);
+    assert.equal((await waitDone(cookie, body.job!.id)).status, "ready");
   } finally {
     delete process.env.KEPLAR_ADMIN_DAILY_USD_CAP;
   }

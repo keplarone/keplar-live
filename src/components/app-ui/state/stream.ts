@@ -31,11 +31,16 @@ export async function* streamKeplar(req: KeplarRequest, signal: AbortSignal): As
     throw new StreamNetworkError("Couldn't reach Keplar.", false);
   }
   if (!res.ok || !res.body) {
-    const body = (await res.json().catch(() => null)) as { error?: string; code?: string; daily?: { limit: number; resetsAt: string } } | null;
+    const body = (await res.json().catch(() => null)) as { error?: string; code?: string; daily?: { limit: number; resetsAt: string }; resetsAt?: string } | null;
     // Free daily limit: say when it resets in the visitor's own clock.
     if (res.status === 429 && body?.code === "daily_limit" && body.daily?.resetsAt) {
       // Shown as the limit card (what resets when, why there is nothing to buy on Free, and the upgrade), not as a generic error.
       yield { type: "limit", required: 0, remaining: 0, daily: { limit: body.daily.limit, resetsAt: body.daily.resetsAt } };
+      return;
+    }
+    // Shared daily budget paused Free. Not this person's questions, and not a monthly credit balance.
+    if (res.status === 429 && body?.code === "daily_budget") {
+      yield { type: "limit", required: 0, remaining: 0, budget: "day", ...(body.resetsAt ? { resetsAt: body.resetsAt } : {}) };
       return;
     }
     throw new StreamHttpError(res.status, body?.error ?? "Keplar couldn't process that request.");
