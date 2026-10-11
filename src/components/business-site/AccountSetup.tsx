@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { COMPANY_SIZES, INDUSTRIES } from "@/lib/business/account-fields";
 import { BUSINESS_TIERS, listPriceFor, priceFor, usd, type SelfServeTier } from "@/lib/business/tiers";
 import { WhopEmbed, type EmbedConfig } from "@/components/billing/WhopEmbed";
+import { SignOutButton } from "./SignOutButton";
 import s from "./business-site.module.css";
 
 type Account = { company: string; website: string; size: string; industry: string; role: string };
@@ -90,7 +91,7 @@ export function AccountSetup() {
           <li aria-current={phase.at === "plan" ? "step" : undefined}>Plan and checkout</li>
           <li>Download</li>
         </ol>
-        <span />
+        {phase.at === "profile" || phase.at === "plan" ? <SignOutButton email={phase.at === "profile" ? phase.email : null} /> : <span />}
       </header>
 
       <section className={s.setup}>

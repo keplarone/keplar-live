@@ -8,6 +8,7 @@ import { Ask } from "./Ask";
 import { Dashboard } from "./Dashboard";
 import { Home, type HomeMode } from "./Home";
 import { Projects } from "./Projects";
+import { SIGN_OUT_FAILED, signOutOfBusiness } from "@/components/business-site/sign-out";
 import c from "./cursor.module.css";
 import s from "./workspace.module.css";
 
@@ -83,6 +84,16 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
   const [collapsed, setCollapsed] = useState(false);
   const [searching, setSearching] = useState(false);
   const [filter, setFilter] = useState("");
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState("");
+  const signOut = async () => {
+    setSigningOut(true);
+    setSignOutError("");
+    if (!(await signOutOfBusiness())) {
+      setSigningOut(false);
+      setSignOutError(SIGN_OUT_FAILED);
+    }
+  };
 
   useEffect(() => {
     let live = true;
@@ -136,7 +147,11 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
               {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- /signin is a route handler (the sign-in handoff from keplar.one): it needs a full page load */}
               {!acct.signedIn ? <a className={s.btnPrimary} href="/signin?next=%2Fwork">Sign in</a> : <a className={s.btnPrimary} href={STORE}>See Business plans</a>}
               <a className={s.btnGhost} href={ONE}>Open Keplar One</a>
+              {/* Signed in with an account that has no Business plan: let them switch to the right one. */}
+              {acct.signedIn ? <button type="button" className={s.btnGhost} onClick={() => void signOut()} disabled={signingOut}>{signingOut ? "Signing out…" : "Sign out"}</button> : null}
             </div>
+            {acct.signedIn && acct.email ? <p className={s.muted}>Signed in as {acct.email}.</p> : null}
+            {signOutError ? <p className={s.muted} role="alert">{signOutError}</p> : null}
           </div>
         </div>
       </div>
@@ -232,7 +247,9 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
               <span className={c.footPlan}>{acct.plan?.name ?? "Keplar Business"}</span>
             </span>
             <a className={c.iconBtn} href={`${siteUrl}/account`} aria-label="Keplar account settings" title="Keplar account settings"><Icon d={<><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></>} /></a>
+            <button type="button" className={c.iconBtn} onClick={() => void signOut()} disabled={signingOut} aria-label={signingOut ? "Signing out" : `Sign out${acct.email ? ` of ${acct.email}` : ""}`} title="Sign out"><Icon d={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="M16 17l5-5-5-5" /><path d="M21 12H9" /></>} /></button>
           </div>
+          {signOutError ? <p className={c.empty} role="alert">{signOutError}</p> : null}
         </aside>
 
         <section className={c.main}>

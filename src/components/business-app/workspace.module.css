@@ -6,6 +6,23 @@
   position: fixed; inset: var(--kp-titlebar, 0px) 0 0 0; z-index: calc(var(--z-overlay) + 1);
   background: var(--w-bg); color: var(--w-ink); color-scheme: dark;
   font-family: var(--biz-sans), "Geist", system-ui, sans-serif; -webkit-font-smoothing: antialiased; font-size: 14px;
+
+  /* The tabs that embed Keplar One screens (Create, Agents, Approvals, Operations, Integrations) read Keplar One's design tokens.
+     Re-pointing those tokens here makes them use the Business palette, accent and font, so every tab matches the desktop app.
+     Scoped to the workspace: Keplar One's own pages keep their theme. Semantic status colours (verified, attention, destructive,
+     disagreement) are left as they are: they carry meaning, not branding. */
+  --c-canvas: var(--w-bg); --c-surface-1: var(--w-panel); --c-surface-2: var(--w-panel-2);
+  --c-ink: var(--w-ink); --c-ink-2: var(--w-ink-2); --c-ink-3: var(--w-ink-3); --c-ink-hover: #ffffff;
+  --c-border: var(--w-line); --c-border-strong: var(--w-line-2);
+  --c-glass: rgb(28 28 28 / 0.72); --c-glass-strong: rgb(30 30 30 / 0.92); --c-glass-border: rgb(255 255 255 / 0.07);
+  --c-accent: var(--w-accent); --c-focus: var(--w-accent); --ring-rgb: 143 180 255; --nav-focus: var(--w-accent);
+  --rgb-canvas: 20 20 20; --rgb-surface: 28 28 28; --rgb-ink: 237 237 239;
+  --n-paper: #181818; --n-graphite: var(--w-panel-2); --c-night: #181818; --nav-solid: #181818; --nav-sheet: rgb(20 20 20 / 0.97); --nav-menu-fill: rgb(28 28 28 / 0.97);
+  --sh-hairline: 0 0 0 1px var(--w-line); --sh-float: 0 1px 1px rgb(0 0 0 / 0.3), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+  --btn-p-bg: var(--w-ink); --btn-p-ink: #0a0a0c; --btn-p-solid: var(--w-ink); --btn-p-shadow: none;
+  --font-sans: var(--biz-sans), "Geist", system-ui, sans-serif; --font-mono: var(--biz-mono), "Geist Mono", ui-monospace, monospace;
+  /* The global element rules (headings, inputs, buttons, labels) read --f-sans / --f-mono, not --font-*. */
+  --f-sans: var(--biz-sans), "Geist", system-ui, sans-serif; --f-mono: var(--biz-mono), "Geist Mono", ui-monospace, monospace;
 }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .center { height: 100%; display: grid; place-items: center; padding: 24px; }

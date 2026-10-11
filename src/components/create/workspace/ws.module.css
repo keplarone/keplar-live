@@ -36,6 +36,19 @@
   --lg-fill: rgb(9 9 11 / 0.05); --lg-solid: #ffffff;
   color-scheme: light;
 }
+/* Inside the Keplar Business workspace (and its desktop app) Create takes the Business palette: neutral greys, the Business
+   accent and Geist, so its tab matches the rest of the app. Only while the workspace is open (BusinessWorkspace sets
+   html[data-business-app]); Create on keplar.one is unchanged. Values mirror src/components/business-app/workspace.module.css. */
+:global(html[data-business-app]) .root {
+  --c-canvas: #141414; --c-surface-1: #1c1c1c; --c-surface-2: #232323; --c-ink: #ededef; --c-ink-2: #b5b5bd; --c-ink-3: #8e8e98;
+  --c-border: #2a2a2a; --c-border-strong: #383838; --c-focus: #8fb4ff; --c-ink-hover: #ffffff;
+  --ws-card: 28 28 28; --ws-sheet: 20 20 20; --ws-center: 20 20 20; --ws-stage: 20 20 20; --ws-rail-solid: #181818;
+  --ws-chrome: #1c1c1c; --ws-chrome-dot: #4a4a4a; --ws-chrome-ink: #b5b5bd; --ws-bezel: #232323; --ws-thumb: #1c1c1c;
+  --ws-bg: #141414; --ws-on-hi: #0a0a0c; --lg-solid: #1c1c1c;
+  --btn-p-bg: #ededef; --btn-p-ink: #0a0a0c; --btn-p-shadow: none; --btn-p-shadow-hover: 0 0 0 1px rgb(255 255 255 / 0.2);
+  --btn-s-shadow: inset 0 0 0 1px #383838;
+  color-scheme: dark;
+}
 .backdrop { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; z-index: 0; opacity: 0.9; }
 .shell { position: relative; z-index: 1; flex: 1; min-height: 0; display: grid; grid-template-columns: 248px minmax(340px, 1fr) minmax(360px, 1.15fr); }
 

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { BUSINESS_TIERS, listPriceFor, priceFor, usd, type BusinessTier } from "@/lib/business/tiers";
 import { companySizes, estimatedUsers } from "@/lib/inquire/schema";
+import { SignOutButton } from "./SignOutButton";
 import s from "./business-site.module.css";
 
 /** Keplar One (legal pages live there). Everything else is this app: the account API, /signin (the handoff from keplar.one), /account and /work. */
@@ -109,7 +110,12 @@ export function Storefront() {
           <a href="#contact">Contact sales</a>
         </nav>
         {status.state === "out" ? <a href={`/signin?next=${encodeURIComponent("/work")}`} className={s.btnGhostSm}>Sign in</a>
-          : status.state === "in" ? (status.active ? <Link href="/work" className={s.btnGhostSm}>Open workspace</Link> : <span className={s.who}>{status.account?.company ?? status.email}</span>) : <span />}
+          : status.state === "in" ? (
+            <span className={s.navAccount}>
+              {status.active ? <Link href="/work" className={s.btnGhostSm}>Open workspace</Link> : <span className={s.who} title={status.email ?? undefined}>{status.account?.company ?? status.email}</span>}
+              <SignOutButton email={status.email} />
+            </span>
+          ) : <span />}
       </header>
 
       <section className={s.hero}>
