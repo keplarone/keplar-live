@@ -15,7 +15,7 @@ import { applyEvent, runAppBuild, type BuildError, type BuildEvent } from "./bui
 import { takeAppHandoff } from "./handoff";
 import Link from "next/link";
 import { BuildTimeline, emptyLive, type Live } from "./BuildTimeline";
-import { Blueprint, type BlueprintLook } from "./Blueprint";
+import { Blueprint, type BlueprintLook } from "./BlueprintView";
 import { blueprintFromSpec, buildProgress, inferBlueprint } from "./blueprint";
 import { LookTiles, RADIUS_PX } from "./LookTiles";
 import { AppShelf } from "./AppShelf";

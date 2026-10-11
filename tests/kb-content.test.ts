@@ -1,7 +1,7 @@
 import "./setup";
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { test } from "node:test";
 import sitemap, { sitemapPaths } from "../src/app/sitemap";
 import { localizedSitemapEntries } from "../src/lib/i18n/sitemap";
@@ -342,7 +342,7 @@ test("page structure: one h1 per page file, canonical via pageMeta, no client pa
 });
 
 test("performance budget: the knowledge base ships client code only for copy, search, TOC, docs skin and the mobile menu", () => {
-  const clients = sourceFiles(join(ROOT, "src/components/kb")).filter((f) => /^["']use client["']/m.test(readFileSync(f, "utf8"))).map((f) => f.split("/").pop());
+  const clients = sourceFiles(join(ROOT, "src/components/kb")).filter((f) => /^["']use client["']/m.test(readFileSync(f, "utf8"))).map((f) => basename(f));
   assert.deepEqual(clients.sort(), ["CopyButton.tsx", "DocsSearch.tsx", "DocsSkin.tsx", "Toc.tsx"].sort());
   // content is read at build time only
   for (const dir of NEW_ROUTES) for (const f of sourceFiles(dir)) assert.doesNotMatch(readFileSync(f, "utf8"), /export const dynamic = ["']force-dynamic["']|revalidate\s*=\s*0/, `${f}: must be static`);

@@ -3,10 +3,12 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, statSync } from "node:fs";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { signIn, call, jsonReq } from "./helpers/session";
 import { projects, domains, mediaJobs } from "@/lib/create/repo";
 import { agents, approvals, deals, contacts } from "@/lib/business/repo";
 import { blobs } from "@/lib/create/platform/blob";
+import { newNonce, nonceHash } from "@/lib/business/handoff";
 
 /**
  * Authorization regression guard.
@@ -31,6 +33,23 @@ const OWN_PROTECTION = /^(auth|inngest|webhooks|health|inquire|business\/stripe\
 /** Method + route that may answer an anonymous caller with 2xx/4xx-validation on purpose. */
 const PUBLIC_OK = new Set(["GET compute", "GET v1/openapi.json" /* public API description */, "GET faq" /* the home "most frequently asked" list: pinned question, counts of questions >= 5 opted-in people asked, generic starters; no personal data */, "GET account/accounts" /* signed out: an empty list, no tokens */, "POST account/accounts" /* same-origin only; with nothing to act on it answers 200/400 and changes nothing */, "GET create/abuse", "POST create/abuse", "POST keplar", "POST keplar/link" /* signed-out Ask can share a link: same-origin, SSRF-safe reader (public hosts only), 20/min per IP + daily cap, returns only what the public page says */, "POST keplar/transcribe" /* signed-out Ask can attach audio/video: same-origin, WAV-only body capped at 2.3 MB, rate + daily caps, Free/anonymous use free models only, nothing stored */, "POST presence" /* cookie-free heartbeat: same-origin, 16-byte body, anonymous daily code only, always 204 */, "POST growth/event" /* consent-gated, allow-listed, always 204 */, "POST account/secure" /* emailed signed link is the credential; it can only sign sessions OUT, never in */, "POST report" /* "Report this answer": same-origin, honeypot, 10/hour per IP, stored for admin review only */, "POST support" /* contact form: same-origin, honeypot, rate-limited, stored as a ticket, nothing auto-sent */, "POST client-error" /* browser error beacon: same-origin, budgeted, scrubbed, stored for admin only */, "POST feedback" /* public feedback form: same-origin, honeypot, rate-limited */, "POST learning/signal" /* thumbs / copy on an answer: same-origin, rate-limited, only bumps content-free tallies of a turn the caller's own session produced */, "POST core/signal" /* outcome signals (confused / edit / complete) for Keplar Core: same-origin, 120/h per IP, content-free, honors the opt-out; 400 before anything is stored */, "POST embed/ask" /* the public Ask widget: the widget id is the credential (revocable), origin allowlist, per-widget minute/day and per-IP limits (src/lib/embed/store.ts), metered to the publisher; 400 for a malformed id */, "GET templates/[slug]/like" /* signed out: { liked: false }, reveals nothing; liking (POST) needs an account */, "POST seo/event" /* consent-gated, allow-listed, always 204 */, "POST business/checkout", "POST business/forms/[projectId]", "GET mcp/oauth/callback" /* redirects anonymous visitors to sign-in; reveals nothing */, "POST billing/checkout" /* 503 "opens soon" when unconfigured; 401 once configured */, "POST billing/apple/verify" /* 503 until APPLE_BUNDLE_ID; then 401 for anonymous */]);
 
+PUBLIC_OK.add("GET business/account"); // Storefront status: signed-out callers get only { signedIn: false }.
+PUBLIC_OK.add("GET business/handoff"); // Redirects to sign-in; a ticket requires an authenticated session.
+
+test("anonymous Business status and handoff expose no account data or sign-in ticket", async () => {
+  const { GET: account } = await import("@/app/api/business/account/route");
+  const status = await account(call(null, "/api/business/account"));
+  assert.equal(status.status, 200);
+  assert.equal(status.headers.get("cache-control"), "no-store");
+  assert.deepEqual(await status.json(), { signedIn: false });
+  const { GET: handoff } = await import("@/app/api/business/handoff/route");
+  const redirect = await handoff(call(null, `/api/business/handoff?n=${nonceHash(newNonce())}`));
+  assert.equal(redirect.status, 303);
+  const target = new URL(redirect.headers.get("location")!);
+  assert.equal(target.pathname, "/signin");
+  assert.equal(target.searchParams.has("t"), false);
+});
+
 test("every API route refuses anonymous callers unless reviewed as public", async (t) => {
   const devTools = process.env.KEPLAR_DEV_TOOLS;
   delete process.env.KEPLAR_DEV_TOOLS; // the session helper turns dev tools on; production has them off
@@ -40,7 +59,7 @@ test("every API route refuses anonymous callers unless reviewed as public", asyn
   for (const f of routeFiles.sort()) {
     const rel = path.relative(root, path.dirname(f)).replace(/\\/g, "/");
     if (OWN_PROTECTION.test(rel)) continue;
-    const mod = (await import(f)) as Record<string, (req: Request, ctx: unknown) => Promise<Response>>;
+    const mod = (await import(pathToFileURL(f).href)) as Record<string, (req: Request, ctx: unknown) => Promise<Response>>;
     for (const m of ["GET", "POST", "PUT", "PATCH", "DELETE"]) {
       if (typeof mod[m] !== "function") continue;
       checked++;

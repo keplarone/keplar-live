@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useState, useSyncExternalStore } from "react";
 import { KeplarSymbol } from "@/components/brand";
 import { prefersReducedMotion } from "@/lib/ui/presence";
 import { modelMark } from "./model-marks";
@@ -13,6 +13,15 @@ const H = 200;
 const CX = W / 2;
 const CY = H / 2;
 
+function subscribeMotionPreference(onChange: () => void) {
+  if (typeof window.matchMedia !== "function") return () => {};
+  const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+  media.addEventListener("change", onChange);
+  return () => media.removeEventListener("change", onChange);
+}
+
+const serverReducedMotion = () => true;
+
 /**
  * The consensus answer being written: every model that was asked sits on a ring around Keplar, each with its own mark.
  * Models that answered stream into the center (their answers are what is being combined); ones that failed or refused stay
@@ -21,15 +30,13 @@ const CY = H / 2;
  */
 export function SynthesisView({ models, count, disagreement }: { models: ModelTick[]; count: number; disagreement?: string }) {
   const gid = `kSynth${useId().replace(/[^A-Za-z0-9]/g, "")}`;
-  const [reduced, setReduced] = useState(false);
+  const reduced = useSyncExternalStore(subscribeMotionPreference, prefersReducedMotion, serverReducedMotion);
   const [beat, setBeat] = useState(0);
   useEffect(() => {
-    const r = prefersReducedMotion();
-    setReduced(r);
-    if (r) return;
+    if (reduced) return;
     const t = window.setInterval(() => setBeat((b) => b + 1), 2400);
     return () => window.clearInterval(t);
-  }, []);
+  }, [reduced]);
 
   const seats = Math.max(count, models.length, 2);
   const answered = models.filter((m) => m.status === "responded");

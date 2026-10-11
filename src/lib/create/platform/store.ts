@@ -11,6 +11,7 @@
  */
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
 import { ensureSchema, neonConfigured, neonQuery, parseData } from "./neon";
 
 export type Row = { id: string; workspaceId: string };
@@ -88,7 +89,22 @@ class FileCollection<T extends Row> implements Collection<T> {
     await fs.mkdir(path.dirname(this.file), { recursive: true });
     const tmp = `${this.file}.${process.pid}.tmp`;
     await fs.writeFile(tmp, JSON.stringify(rows, null, 2));
-    await fs.rename(tmp, this.file);
+    // Windows can briefly lock the destination while another reader or antivirus holds it.
+    // Retry the atomic replacement; never delete the last good copy to make room.
+    try {
+      for (let attempt = 0; ; attempt++) {
+        try {
+          await fs.rename(tmp, this.file);
+          break;
+        } catch (error) {
+          const code = (error as NodeJS.ErrnoException).code;
+          if (attempt >= 5 || !["EPERM", "EACCES", "EBUSY"].includes(code ?? "")) throw error;
+          await delay(20 * 2 ** attempt);
+        }
+      }
+    } finally {
+      await fs.unlink(tmp).catch(() => {});
+    }
   }
   async list(workspaceId: string, filter?: (row: T) => boolean) {
     const rows = (await this.read()).filter((r) => r.workspaceId === workspaceId);

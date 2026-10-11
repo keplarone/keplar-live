@@ -59,6 +59,25 @@ test("an active paid subscription blocks deletion until cancelled; one ending at
   assert.equal(activeSubscription({ status: "none", subscriptionId: null, cancelAtPeriodEnd: false }), false);
 });
 
+test("Business content is exported and deleted only for the owning workspace", async () => {
+  const names = ["business_accounts", "business_reports", "business_layouts", "business_tasks", "business_summaries"];
+  for (const name of names) {
+    const rows = collection<{ id: string; workspaceId: string; title: string }>(name);
+    await rows.insert({ id: "mine", workspaceId: "business_owner", title: "My business data" });
+    await rows.insert({ id: "other", workspaceId: "business_other", title: "Private to another business" });
+  }
+  let text = "";
+  for await (const part of exportChunks("business_owner", { id: "owner", email: "owner@example.com", name: "Owner" })) text += part;
+  const data = JSON.parse(text) as { collections: Record<string, { id: string }[]> };
+  for (const name of names) assert.deepEqual(data.collections[name].map((row) => row.id), ["mine"]);
+  await deleteWorkspaceData("business_owner");
+  for (const name of names) {
+    const rows = collection<{ id: string; workspaceId: string }>(name);
+    assert.deepEqual(await rows.list("business_owner"), []);
+    assert.equal((await rows.list("business_other")).length, 1);
+  }
+});
+
 test("delete route is guarded: same-origin, typed email, admin and subscription refusals", () => {
   const src = readFileSync("src/app/api/account/delete/route.ts", "utf8");
   for (const needle of ["assertSameOrigin", "requireAccount", "confirm_mismatch", "admin_protected", "subscription_active", "limitRequest"]) assert.ok(src.includes(needle), needle);

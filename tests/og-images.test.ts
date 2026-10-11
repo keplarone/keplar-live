@@ -26,7 +26,7 @@ import * as useCaseOg from "../src/app/og/use-cases/[slug]/route";
 const APP = "src/app";
 function walk(dir: string): string[] {
   return readdirSync(dir).flatMap((n) => {
-    const p = path.join(dir, n);
+    const p = path.join(dir, n).replace(/\\/g, "/");
     return statSync(p).isDirectory() ? walk(p) : [p];
   });
 }

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import type { Entry } from "./activity";
 import s from "./ws.module.css";
 
+/** A group of related build activity entries. */
 export type Group = { id: string; title: string; entries: Entry[]; running: boolean; open: boolean };
 
 const mark = (e: Entry) => (e.kind === "check" ? (e.tone === "bad" ? "✕" : "✓") : e.kind === "issue" ? "!" : e.kind === "file" ? "+" : e.kind === "done" ? "✓" : e.kind === "error" ? "✕" : e.kind === "repair" ? "↻" : e.kind === "critique" ? "◇" : "›");

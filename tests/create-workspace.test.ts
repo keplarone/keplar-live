@@ -88,8 +88,7 @@ test("build progress is computed from real counters only and never goes backward
 });
 
 test("the workspace has no blue anywhere in its own palette and no gradient template swatches", () => {
-  const root = new URL("..", import.meta.url).pathname;
-  const ws = readFileSync(`${root}src/components/create/workspace/ws.module.css`, "utf8");
+  const ws = readFileSync(new URL("../src/components/create/workspace/ws.module.css", import.meta.url), "utf8");
   assert.doesNotMatch(ws, /#(2457d6|2f63e8|8aa9ff)|rgb\(\s*(36|47)\s*,?\s*(87|99)/i, "the workspace palette has no blue");
-  assert.doesNotMatch(readFileSync(`${root}src/components/create/builder.module.css`, "utf8"), /^\.swatch/m, "no gradient template swatches");
+  assert.doesNotMatch(readFileSync(new URL("../src/components/create/builder.module.css", import.meta.url), "utf8"), /^\.swatch/m, "no gradient template swatches");
 });

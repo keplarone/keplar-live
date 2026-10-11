@@ -25,7 +25,7 @@ const MODULES = [
   { title: "Projects", body: "Workspaces with conversations, files, tasks, agents, research and creations together." },
   { title: "Deep Research", body: "Multi-model research with sources, competitor and market analysis, exportable reports." },
   { title: "Reason", body: "Upload documents and work through decisions with assumptions, calculations and risks shown." },
-  { title: "Images and Videos", body: "Generate, edit and organise brand assets, then reuse them in sites and campaigns." },
+  { title: "Images and Videos", body: "Generate, edit and organize brand assets, then reuse them in sites and campaigns." },
   { title: "Websites and apps", body: "Describe it, get a working project you can edit, version and deploy to your domain." },
   { title: "AI Design Canvas", body: "Design, code and AI modes on the same project, with previews and approved changes." },
   { title: "Make an Agent", body: "Agents that run your workflows on a schedule, within budgets, asking before they act." },

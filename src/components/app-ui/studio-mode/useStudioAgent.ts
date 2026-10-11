@@ -43,7 +43,7 @@ export const RUN_STEP_CAP = 80;
 export const DEFAULT_BUDGET = 3000;
 
 /** Sent once per run when the model stops after making changes: a real self-review before it may finish. */
-export const REVIEW_PROMPT = "Before you finish, review your work like a lead developer would. Take a fresh screen_capture (more than one angle if it is a scene) and check get_console_output for errors. Compare against the request, your plan and any references: is every step done, does it look polished and complete, is anything placeholder, empty, misaligned or broken? Fix everything that falls short, verify again, then give your short summary. If it is truly complete, say so and summarise.";
+export const REVIEW_PROMPT = "Before you finish, review your work like a lead developer would. Take a fresh screen_capture (more than one angle if it is a scene) and check get_console_output for errors. Compare against the request, your plan and any references: is every step done, does it look polished and complete, is anything placeholder, empty, misaligned or broken? Fix everything that falls short, verify again, then give your short summary. If it is truly complete, say so and summarize.";
 
 /** A short human line for an action card ("Run Luau", "Read script ServerScriptService.Spawn"). */
 export function describeAction(name: string, args: Record<string, unknown>): string {
