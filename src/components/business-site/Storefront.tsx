@@ -150,7 +150,7 @@ export function Storefront() {
 
       <section id="pricing" className={s.section} aria-labelledby="pricing-h">
         <div className={s.sectionHead}>
-          <h2 id="pricing-h" className={s.h2}>Pricing</h2>
+          <div><p className={s.planIntro}>Plans for your next stage</p><h2 id="pricing-h" className={s.h2}>One workspace. Room to grow.</h2></div><a href="#plan-comparison" className={s.textLink}>Compare every limit <span aria-hidden="true">↓</span></a>
         </div>
         <p className={s.muted}>Every plan includes every Business module. Higher plans add seats, agents, usage and governance. Usage limits are shown in full and enforced in your account.</p>
         <div className={s.plans}>
@@ -160,7 +160,8 @@ export function Storefront() {
             const current = status.state === "in" && status.active && status.plan?.tier === id;
             return (
               <article key={id} className={s.plan} data-featured={id === "growth" || undefined}>
-                <header>
+                <header className={s.planHeader}>
+                  <div className={s.planLabel}><span className={s.planIndex} aria-hidden="true">{String(ORDER.indexOf(id) + 1).padStart(2, "0")}</span>{id === "growth" ? <span className={s.planPill}>For growing teams</span> : null}</div>
                   <h3 className={s.planName}>{t.name.replace("Keplar Business ", "")}</h3>
                   <p className={s.planFor}>{t.audience}</p>
                 </header>
@@ -168,12 +169,17 @@ export function Storefront() {
                 {current ? <span className={s.btnGhost} aria-current="true">Your plan</span>
                   : id === "enterprise" ? <a href="#contact" className={s.btnGhost}>Contact sales</a>
                   : <a href={accountUrl(id)} className={id === "growth" ? s.btnPrimary : s.btnGhost}>Choose {t.name.replace("Keplar Business ", "")}</a>}
-                <ul className={s.planList}>{t.includes.map((x) => <li key={x}>{x}</li>)}</ul>
+                <dl className={s.planMetrics}>
+                  <div><dt>Seats</dt><dd>{t.seats === null ? "Custom" : fmt(t.seats)}</dd></div>
+                  <div><dt>AI credits / month</dt><dd>{t.credits === null ? "Custom" : fmt(t.credits)}</dd></div>
+                  <div><dt>Active agents</dt><dd>{t.activeAgents === null ? "Custom" : fmt(t.activeAgents)}</dd></div>
+                </dl>
+                <details className={s.planDetails}><summary>Everything included <span aria-hidden="true">+</span></summary><ul className={s.planList}>{t.includes.map((x) => <li key={x}>{x}</li>)}</ul></details>
               </article>
             );
           })}
         </div>
-        <div className={s.limitsWrap}>
+        <div id="plan-comparison" className={s.limitsWrap} role="region" aria-label="Compare Business plan limits" tabIndex={0}>
           <table className={s.limits}>
             <caption className={s.srOnly}>Plan limits</caption>
             <thead><tr><th scope="col">Included each month</th>{ORDER.map((id) => <th key={id} scope="col">{BUSINESS_TIERS[id].name.replace("Keplar Business ", "").replace("Keplar ", "")}</th>)}</tr></thead>

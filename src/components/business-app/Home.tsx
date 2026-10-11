@@ -7,7 +7,7 @@ export type HomeMode = "ask" | "research" | "reason";
 type Project = { id: string; name: string };
 
 const MODES: { id: HomeMode; label: string; model: string; placeholder: string }[] = [
-  { id: "ask", label: "Ask", model: "Keplar One · Auto", placeholder: "Ask, plan, research. Shift+Tab switches mode" },
+  { id: "ask", label: "Ask", model: "Keplar One · Auto", placeholder: "Ask, plan, research. Alt+M switches mode" },
   { id: "research", label: "Deep Research", model: "Keplar One · Research", placeholder: "What should Keplar research? It reads the web and cites every page" },
   { id: "reason", label: "Reason", model: "Keplar One · Thorough", placeholder: "Describe the decision. Attach documents in the next step" },
 ];
@@ -73,7 +73,7 @@ export function Home({ projects, onSend, onNewProject }: { projects: Project[]; 
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
-              if (e.key === "Tab" && e.shiftKey) { e.preventDefault(); cycle(); }
+              if (e.key.toLowerCase() === "m" && e.altKey) { e.preventDefault(); cycle(); }
             }}
             placeholder={m.placeholder}
           />
@@ -98,7 +98,7 @@ export function Home({ projects, onSend, onNewProject }: { projects: Project[]; 
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></svg>
             Research a market
           </button>
-          <button type="button" className={s.quickBtn} onClick={() => setMode("reason")}>Plan a decision <kbd>⇧Tab</kbd></button>
+          <button type="button" className={s.quickBtn} onClick={() => setMode("reason")}>Plan a decision <kbd>Alt M</kbd></button>
           <button type="button" className={s.quickBtn} onClick={onNewProject}>New project</button>
         </div>
       </div>

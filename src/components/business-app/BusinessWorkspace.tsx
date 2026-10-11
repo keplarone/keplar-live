@@ -8,6 +8,7 @@ import { Ask } from "./Ask";
 import { Dashboard } from "./Dashboard";
 import { Home, type HomeMode } from "./Home";
 import { Projects } from "./Projects";
+import { useBusinessNavigation } from "./useBusinessNavigation";
 import { SIGN_OUT_FAILED, signOutOfBusiness } from "@/components/business-site/sign-out";
 import c from "./cursor.module.css";
 import s from "./workspace.module.css";
@@ -77,6 +78,7 @@ const Icon = ({ d, size = 15 }: { d: React.ReactNode; size?: number }) => (
  * one centered composer. Dark Geist; none of Keplar One's consumer navigation. Only built modules are shown.
  */
 export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
+  const { mobile, open: drawerOpen, sideRef, menuRef, close: closeNavigation, toggle: toggleNavigation } = useBusinessNavigation();
   const [acct, setAcct] = useState<Account | null>(null);
   const [view, setView] = useState<View>(readView);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -127,8 +129,8 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
   const active = Boolean(acct?.signedIn && acct.active);
   useEffect(() => { if (active) queueMicrotask(loadSide); }, [active, loadSide]);
 
-  const go = (v: View) => { setView(v); writeView(v); };
-  const toggleSide = () => setCollapsed((x) => { try { localStorage.setItem(SIDE_KEY, x ? "open" : "closed"); } catch { /* ignore */ } return !x; });
+  const go = (v: View) => { setView(v); writeView(v); closeNavigation(); };
+  const toggleSide = () => { if (mobile) { toggleNavigation(); return; } setCollapsed((x) => { try { localStorage.setItem(SIDE_KEY, x ? "open" : "closed"); } catch { /* ignore */ } return !x; }); };
   const onSend = (mode: HomeMode, text: string, projectId: string | null) => {
     if (mode === "ask") go({ at: "ask", q: text, projectId, key: k() });
     else go({ at: mode, seed: text, projectId: projectId ?? undefined, key: k() });
@@ -188,10 +190,11 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
 
   return (
     <div className={`${s.root} ${c.cursor} ${fontClass}`}>
-      <div className={c.shell} data-collapsed={collapsed || undefined}>
-        <aside className={c.side} aria-label="Business workspace">
+      <div className={c.shell} data-collapsed={collapsed || undefined} data-menu-open={drawerOpen || undefined}>
+        {drawerOpen ? <button type="button" className={c.backdrop} onClick={closeNavigation} aria-label="Close navigation" tabIndex={-1} /> : null}
+        <aside id="business-navigation" ref={sideRef} className={c.side} aria-label="Business workspace" role={drawerOpen ? "dialog" : undefined} aria-modal={drawerOpen || undefined} tabIndex={-1}>
           <div className={c.sideTop}>
-            <button type="button" className={c.iconBtn} onClick={toggleSide} aria-label={collapsed ? "Show sidebar" : "Hide sidebar"} aria-expanded={!collapsed}>
+            <button type="button" className={c.iconBtn} onClick={toggleSide} aria-label={mobile ? "Close navigation" : collapsed ? "Show sidebar" : "Hide sidebar"} aria-expanded={mobile ? drawerOpen : !collapsed} aria-controls="business-navigation">
               <Icon d={<><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16" /></>} />
             </button>
             <span className={c.grow} />
@@ -199,7 +202,8 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
             <button type="button" className={c.iconBtn} onClick={() => history.forward()} aria-label="Forward"><Icon d={<path d="M5 12h14M13 6l6 6-6 6" />} /></button>
           </div>
 
-          <nav className={c.nav}>
+          <div className={c.sideBrand}><img src="/business/icon.png" width="28" height="28" alt="" /><span>Keplar Business</span></div>
+          <nav className={c.nav} aria-label="Workspace modules">
             <button type="button" className={c.item} aria-current={is("home") || is("ask") ? "page" : undefined} onClick={() => go({ at: "home" })}>
               <Icon d={<path d="M4 20l4-1 11-11-3-3L5 16l-1 4z" />} />New chat
             </button>
@@ -252,10 +256,11 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
           {signOutError ? <p className={c.empty} role="alert">{signOutError}</p> : null}
         </aside>
 
-        <section className={c.main}>
+        <section className={c.main} inert={drawerOpen || undefined}>
           <header className={c.mainTop}>
-            {collapsed ? <button type="button" className={c.iconBtn} onClick={toggleSide} aria-label="Show sidebar"><Icon d={<><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16" /></>} /></button> : null}
+            {collapsed || mobile ? <button ref={menuRef} type="button" className={c.iconBtn} onClick={toggleSide} aria-label={mobile ? "Open navigation" : "Show sidebar"} aria-expanded={mobile ? drawerOpen : !collapsed} aria-controls="business-navigation"><Icon d={<><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16" /></>} /></button> : null}
             <span className={c.grow} />
+            <span className={c.viewName}>{PLACES.find((place) => place.current)?.label ?? (view.at === "projects" ? "Projects" : view.at === "ask" ? "Chat" : "Workspace")}</span>
             <a className={c.topLink} href={ONE}>Keplar One <Icon d={<path d="M7 17L17 7M9 7h8v8" />} size={12} /></a>
           </header>
           <div className={c.mainBody}>
