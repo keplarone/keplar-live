@@ -55,3 +55,18 @@ test("blender: the route needs a signed-in Lite-and-up account", async () => {
   assert.equal(r.status, 402);
   assert.match(((await r.json()) as { error: string }).error, /Lite, Plus and Pro/);
 });
+
+test("overlay: works in Roblox Studio or Blender, chosen by the page that opens it and switchable in its header", () => {
+  const ov = readFileSync("src/components/app-ui/studio-mode/StudioOverlay.tsx", "utf8");
+  assert.match(ov, /useStudioAgent\(bb, "blender"\)/);
+  assert.match(ov, /useStudioAgent\(bridge, "studio"\)/);
+  assert.match(ov, /e\.key === OVERLAY_TARGET_KEY/, "switches when the main window picks the other app");
+  assert.match(ov, /disabled=\{a\.running\}/, "no switching in the middle of a build");
+  assert.match(ov, /canPlayTest=\{!isBlender\}/);
+  const bv = readFileSync("src/components/app-ui/studio-mode/BlenderView.tsx", "utf8");
+  assert.match(bv, /setOverlayTarget\("blender"\); void overlay\.open\(\);/, "Float over Blender");
+  assert.match(bv, /overlayTarget\(\) === "blender"/, "the page steps aside while the overlay builds in Blender");
+  const sv = readFileSync("src/components/app-ui/studio-mode/StudioView.tsx", "utf8");
+  assert.match(sv, /setOverlayTarget\("studio"\)/);
+  assert.match(sv, /overlay\?\.open && overlayTarget\(\) === "studio"/, "Studio's page steps aside only for a Studio overlay");
+});

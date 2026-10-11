@@ -6,7 +6,7 @@ import { TwoTone } from "@/components/page/TwoTone";
 import { resultText, STUDIO_PLANS, studioBridge, type OverlayState, type StudioStatus } from "@/lib/desktop/studio-bridge";
 import { StudioDock } from "./StudioDock";
 import { StudioPanel } from "./StudioPanel";
-import { parsePlaces, useStudioAgent, type Place } from "./useStudioAgent";
+import { overlayTarget, parsePlaces, setOverlayTarget, useStudioAgent, type Place } from "./useStudioAgent";
 import s from "./studio-mode.module.css";
 
 const noSubscribe = () => () => {};
@@ -231,12 +231,12 @@ export function StudioView({ plan, signedIn }: { plan: string; signedIn: boolean
           <button type="button" className={s.iconBtn} onClick={() => void refreshPlaces()} aria-label="Refresh the list of open places" title="Refresh places">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 4v7h-7" /></svg>
           </button>
-          {bridge.overlay ? <button type="button" className={s.ghost} onClick={() => void bridge.overlay?.open()} disabled={a.running}>Float over Studio</button> : null}
+          {bridge.overlay ? <button type="button" className={s.ghost} onClick={() => { setOverlayTarget("studio"); void bridge.overlay?.open(); }} disabled={a.running}>Float over Studio</button> : null}
           <button type="button" className={s.ghost} onClick={() => void disconnect()} disabled={busy || a.running}>Disconnect</button>
         </div>
       </header>
       {shownPlaces && shownPlaces.length === 0 ? <p className={s.note} data-tone="warn">No place is open. Open a place in Roblox Studio, then refresh.</p> : null}
-      {overlay?.open ? (
+      {overlay?.open && overlayTarget() === "studio" ? (
         <section className={s.card}>
           <h2 className={s.cardTitle}>Keplar is floating over Studio</h2>
           <p className={s.text}>Build from the overlay while you watch Studio. Close it to come back here.</p>

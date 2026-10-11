@@ -126,6 +126,21 @@ export function parsePlaces(text: string): Place[] {
 
 const key = () => Math.random().toString(36).slice(2, 10);
 
+/** Blender's "place": the open .blend file, whose chat is saved under its name. */
+export const blenderPlace = (file?: string | null): Place => {
+  const name = file || "untitled.blend";
+  return { id: "blender", name, saveKey: `name:blender/${name.toLowerCase()}` };
+};
+
+/** Which app the floating overlay works in; the page that opens the overlay sets it (same origin, so the overlay reads it). */
+export const OVERLAY_TARGET_KEY = "keplar-overlay-target";
+export function overlayTarget(): "studio" | "blender" {
+  try { return localStorage.getItem(OVERLAY_TARGET_KEY) === "blender" ? "blender" : "studio"; } catch { return "studio"; }
+}
+export function setOverlayTarget(target: "studio" | "blender"): void {
+  try { localStorage.setItem(OVERLAY_TARGET_KEY, target); } catch { /* storage blocked: the overlay opens on Studio */ }
+}
+
 function toolResult(content: StudioContent[]): { text: string; image?: string } {
   const text = content.filter((c) => c.type === "text" && c.text).map((c) => c.text).join("\n");
   const img = content.find((c) => c.type === "image" && c.data);
@@ -235,8 +250,7 @@ export function useStudioAgent(bridge: StudioBridge | BlenderBridge | null, mode
     if (blender) {
       // Blender's "place" is the open file: its chat is saved per .blend file.
       const st = await (bridge as BlenderBridge).status().catch(() => null);
-      const file = st?.file || "untitled.blend";
-      const p: Place = { id: "blender", name: file, saveKey: `name:blender/${file.toLowerCase()}` };
+      const p = blenderPlace(st?.file);
       setPlace(p);
       return p;
     }

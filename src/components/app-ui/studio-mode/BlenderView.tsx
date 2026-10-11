@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { TwoTone } from "@/components/page/TwoTone";
-import { blenderBridge, STUDIO_PLANS, type BlenderStatus } from "@/lib/desktop/studio-bridge";
+import { blenderBridge, STUDIO_PLANS, studioBridge, type BlenderStatus, type OverlayState } from "@/lib/desktop/studio-bridge";
 import { StudioDock } from "./StudioDock";
-import { useStudioAgent } from "./useStudioAgent";
+import { blenderPlace, overlayTarget, setOverlayTarget, useStudioAgent } from "./useStudioAgent";
 import s from "./studio-mode.module.css";
 
 const noSubscribe = () => () => {};
@@ -32,6 +32,9 @@ export function BlenderView({ plan, signedIn }: { plan: string; signedIn: boolea
   const [draft, setDraft] = useState("");
   const allowed = signedIn === true && STUDIO_PLANS.has(plan);
   const a = useStudioAgent(bridge, "blender");
+  const { setPlace } = a;
+  // The floating overlay (desktop app 0.1.7+) lives on the Studio bridge; it can work in Blender too.
+  const overlay = useSyncExternalStore(noSubscribe, () => studioBridge()?.overlay ?? null, () => null);
 
   useEffect(() => {
     if (!bridge || !allowed) return;
@@ -40,6 +43,23 @@ export function BlenderView({ plan, signedIn }: { plan: string; signedIn: boolea
     const off = bridge.onStatus((st) => setStatus(st));
     return () => { live = false; off(); };
   }, [bridge, allowed]);
+
+  // While the overlay builds in Blender, this page steps aside (one build per file at a time).
+  const [overlayState, setOverlayState] = useState<OverlayState | null>(null);
+  useEffect(() => {
+    if (!overlay) return;
+    let live = true;
+    void overlay.state().then((o) => { if (live) setOverlayState(o); });
+    const off = overlay.onState((o) => setOverlayState(o));
+    return () => { live = false; off(); };
+  }, [overlay]);
+  const floating = Boolean(overlayState?.open) && overlayTarget() === "blender";
+
+  // Connected: this file's saved chat comes back right away (not only on the first request).
+  const file = status?.state === "connected" ? status.file ?? null : null;
+  useEffect(() => {
+    if (file !== null) setPlace(blenderPlace(file));
+  }, [file, setPlace]);
 
   const connect = async () => {
     if (!bridge) return;
@@ -152,12 +172,21 @@ export function BlenderView({ plan, signedIn }: { plan: string; signedIn: boolea
             Blender {status?.blender ?? ""}
             {status?.file ? <span className={s.placeName}>{status.file}</span> : null}
           </span>
+          {overlay ? <button type="button" className={s.ghost} onClick={() => { setOverlayTarget("blender"); void overlay.open(); }} disabled={a.running}>Float over Blender</button> : null}
           <button type="button" className={s.ghost} onClick={() => void disconnect()} disabled={busy || a.running}>Disconnect</button>
         </div>
       </header>
-      <div className={s.workspace}>
-        <StudioDock a={a} draft={draft} onDraftUsed={() => setDraft("")} canPlayTest={false} />
-      </div>
+      {floating ? (
+        <section className={s.card}>
+          <h2 className={s.cardTitle}>Keplar is floating over Blender</h2>
+          <p className={s.text}>Build from the overlay while you watch Blender. Close it to come back here.</p>
+          <button type="button" className={s.primary} onClick={() => void overlay?.close()}>Bring it back here</button>
+        </section>
+      ) : (
+        <div className={s.workspace}>
+          <StudioDock a={a} draft={draft} onDraftUsed={() => setDraft("")} canPlayTest={false} />
+        </div>
+      )}
     </div>
   );
 }
