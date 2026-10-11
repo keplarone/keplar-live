@@ -24,8 +24,6 @@ export type EvalCase = {
     crossCheck?: boolean;
     /** The message is resolved from context (history/product), and states an assumption. */
     assumption?: boolean;
-    /** Unresolvable: a specific clarifying question with 2-3 chips. */
-    clarify?: boolean;
     /** Needs more than one model, or DEEP (complex) routing. */
     complexity?: "simple" | "moderate" | "complex";
     multiStep?: boolean;
@@ -64,11 +62,12 @@ export const EVAL_SET: EvalCase[] = [
   { id: "amb-07", category: "ambiguous", prompt: "prcing", expect: { intent: "pricing", assumption: true }, live: { must: [/Plus/] } },
   { id: "amb-08", category: "ambiguous", prompt: "wat is chatgtp", expect: { intent: "brand", crossCheck: true }, live: { must: [/OpenAI/] } },
   { id: "amb-09", category: "ambiguous", prompt: "pricing", history: ABOUT_CLAUDE, expect: { intent: "brand", crossCheck: true, assumption: true }, live: { must: [/Claude|Anthropic/] } },
-  { id: "amb-10", category: "ambiguous", prompt: "it", expect: { intent: "clarify", clarify: true } },
+  { id: "amb-10", category: "ambiguous", prompt: "it", expect: { intent: "infer" }, live: { minWords: 15, mustNot: [/not sure what you mean|don't know what you mean|could you clarify|which of these is closest/i] } },
   { id: "amb-11", category: "ambiguous", prompt: "why", history: ABOUT_CLAUDE, expect: { intent: "followup" } },
   { id: "amb-12", category: "ambiguous", prompt: "gemni or keplar one", expect: { intent: "compare", crossCheck: true, assumption: true }, live: { must: [/Google|Gemini/] } },
   { id: "amb-13", category: "ambiguous", prompt: "python", expect: { intent: "overview", crossCheck: true, assumption: true }, live: { must: [/programming|language/i] } },
-  { id: "amb-14", category: "ambiguous", prompt: "help", expect: { intent: "clarify", clarify: true } },
+  { id: "amb-14", category: "ambiguous", prompt: "help", expect: { intent: "infer" }, live: { minWords: 15, mustNot: [/not sure what you mean|don't know what you mean|could you clarify|what are you working on/i] } },
+  { id: "amb-15", category: "ambiguous", prompt: "the second one", history: [{ role: "user", text: "Suggest two names for a bakery" }, { role: "keplar", text: "1. Hearth & Honey\n2. Morning Crumb" }], expect: { intent: "followup" }, live: { must: [/Morning Crumb/], mustNot: [/not sure what|could you clarify|which.*mean/i] } },
   // ── identity guards ─────────────────────────────────────────────────────
   { id: "id-01", category: "identity", prompt: "are you human?", expect: { guard: "human" }, live: { must: [/^No\.$/] } },
   { id: "id-02", category: "identity", prompt: "is keplar human", expect: { guard: "human" }, live: { must: [/^No\.$/] } },

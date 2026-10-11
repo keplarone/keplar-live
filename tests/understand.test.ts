@@ -9,7 +9,7 @@ const WHO_MADE: Turn[] = [{ role: "user", text: "who made" }, { role: "keplar", 
 const CLAUDE: Turn[] = [{ role: "user", text: "tell me about claude" }, { role: "keplar", text: "Claude is an AI assistant." }];
 const ASKED: Turn[] = [{ role: "user", text: "i want to learn a language" }, { role: "keplar", text: "Nice! Which language do you have in mind?" }];
 
-type Row = { prompt: string; history?: Turn[]; intent: Intent; subject?: string; cross?: boolean; note?: RegExp | null; clarify?: boolean };
+type Row = { prompt: string; history?: Turn[]; intent: Intent; subject?: string; cross?: boolean; note?: RegExp | null };
 const TABLE: Row[] = [
   // the user's own examples
   { prompt: "who made", intent: "creator", subject: "keplar", note: /reading "who made" as who made Keplar One/ },
@@ -28,6 +28,10 @@ const TABLE: Row[] = [
   { prompt: "who made", history: CLAUDE, intent: "maker", subject: "claude", cross: true },
   { prompt: "why", history: CLAUDE, intent: "followup" },
   { prompt: "tell me more", history: CLAUDE, intent: "followup" },
+  { prompt: "help", history: CLAUDE, intent: "followup" },
+  { prompt: "who", history: CLAUDE, intent: "followup" },
+  { prompt: "what", history: CLAUDE, intent: "followup" },
+  { prompt: "the second one", history: CLAUDE, intent: "followup" },
   { prompt: "python", history: ASKED, intent: "plain" },
   // typos
   { prompt: "chatgtp", intent: "brand", subject: "chatgpt", cross: true },
@@ -49,12 +53,12 @@ const TABLE: Row[] = [
   { prompt: "who maed", intent: "creator", subject: "keplar" },
   { prompt: "whos behind", intent: "creator", subject: "keplar" },
   { prompt: "kepler one", history: WHO_MADE, intent: "creator", subject: "keplar" },
-  // unresolvable: a specific question with chips
-  { prompt: "it", intent: "clarify", clarify: true },
-  { prompt: "the second one", intent: "clarify", clarify: true },
-  { prompt: "tell me more", intent: "clarify", clarify: true },
-  { prompt: "help", intent: "clarify", clarify: true },
-  { prompt: "who", intent: "clarify", clarify: true },
+  // contextless fragments reach the models for a useful assumption
+  { prompt: "it", intent: "infer" },
+  { prompt: "the second one", intent: "infer" },
+  { prompt: "tell me more", intent: "infer" },
+  { prompt: "help", intent: "infer" },
+  { prompt: "who", intent: "infer" },
   // short topics get an overview with a note
   { prompt: "python", intent: "overview", cross: true, note: /quick overview of python/ },
   { prompt: "mars", intent: "overview", cross: true },
@@ -76,10 +80,7 @@ for (const r of TABLE) {
     assert.equal(u.crossCheck, Boolean(r.cross), "crossCheck");
     if (r.note) assert.match(u.assumption ?? "", r.note);
     if (r.note === null) assert.equal(u.assumption, null);
-    if (r.clarify) {
-      assert.ok(u.clarify && u.clarify.options.length >= 2 && u.clarify.options.length <= 3, "2-3 chips");
-      assert.equal(u.assumption, null);
-    } else assert.equal(u.clarify, null);
+    assert.equal(u.clarify, null);
     // every assumption is a plain, correctable sentence
     if (u.assumption) assert.match(u.assumption, /Tell me if you meant something else\.$/);
   });
@@ -87,6 +88,35 @@ for (const r of TABLE) {
 
 test("a best-guess reading is preferred over a bare clarifying question for fragments with a sensible default", () => {
   for (const p of ["who made", "chatgpt", "pricing", "claude vs you", "python", "keplar one"]) assert.equal(understand({ prompt: p }).clarify, null, p);
+});
+
+test("opening fragments preserve the actual words and defer the assumption without inventing history", () => {
+  for (const prompt of ["it", "the second one", "help", "who", "tell me more"]) {
+    const u = understand({ prompt });
+    assert.equal(u.intent, "infer");
+    assert.ok(u.rewritten?.startsWith(`${prompt}\n\n`));
+    assert.equal(u.usedContext, false);
+    assert.equal(u.assumption, null, "the model chooses the reading, not the heuristic");
+    assert.match(u.rewritten!, /Do not invent an earlier conversation/);
+    const guidance = understandingBlock(u, prompt);
+    assert.match(guidance, /state it briefly and continue/);
+    assert.doesNotMatch(guidance, /app already shows/);
+  }
+});
+
+test("contextual fragments keep the request in the conversation, without the opening-message fallback", () => {
+  const history: Turn[] = [
+    { role: "user", text: "Suggest two names for my bakery" },
+    { role: "keplar", text: "1. Hearth & Honey\n2. Morning Crumb" },
+  ];
+  for (const prompt of ["the second one", "help", "which", "what"]) {
+    const u = understand({ prompt, history });
+    assert.equal(u.intent, "followup");
+    assert.equal(u.usedContext, true);
+    assert.equal(u.assumption, null);
+    assert.match(u.rewritten!, /conversation/);
+    assert.doesNotMatch(u.rewritten!, /short opening message|get started with Keplar/);
+  }
 });
 
 test("rewrites carry the product context and tell models not to claim which models Keplar uses", () => {
@@ -101,7 +131,7 @@ test("rewrites carry the product context and tell models not to claim which mode
   const block = understandingBlock(brand, "chatgpt");
   assert.match(block, /Keplar One/);
   assert.match(block, /not ChatGPT, Claude or any single model/);
-  assert.match(block, /do not add your own/);
+  assert.match(block, /do not add your own/i);
   assert.equal(understandingBlock(understand({ prompt: "hello there friend" }), "hello there friend"), "");
 });
 

@@ -7,6 +7,7 @@ import { PATCH as itemPATCH } from "@/app/api/memory/items/[id]/route";
 import { addItems, listItems } from "@/lib/memory/repo";
 import { cleanFact, memoryUsedCount } from "@/lib/memory/facts";
 import type { KeplarEvent } from "@/lib/orchestration/types";
+import { ASSUMPTION_STYLE } from "@/lib/style/clarity";
 
 let ipn = 0;
 const ip = () => `10.88.${(++ipn >> 8) & 255}.${ipn & 255}`;
@@ -21,6 +22,26 @@ async function chat(cookie: string | null, prompt: string, history: Turn[] = [])
 }
 
 const ctx = (id: string) => ({ params: Promise.resolve({ id }) });
+
+/** Exercise routing and prompt assembly without calling a real provider. */
+async function withModels(run: (requests: string[]) => Promise<void>) {
+  const realFetch = globalThis.fetch;
+  const requests: string[] = [];
+  process.env.KEPLAR_LIVE_MODELS = "1";
+  process.env.OPENROUTER_API_KEY = "sk-or-test";
+  globalThis.fetch = (async (_url: string | URL, init?: RequestInit) => {
+    const body = JSON.parse(String(init?.body ?? "{}"));
+    requests.push(JSON.stringify(body));
+    return new Response(JSON.stringify({ model: body.model, choices: [{ message: { content: "Start with one small goal and take the first step today." }, finish_reason: "stop" }], usage: { prompt_tokens: 10, completion_tokens: 12, cost: 0 } }), { status: 200, headers: { "content-type": "application/json" } });
+  }) as typeof fetch;
+  try {
+    await run(requests);
+  } finally {
+    globalThis.fetch = realFetch;
+    delete process.env.KEPLAR_LIVE_MODELS;
+    delete process.env.OPENROUTER_API_KEY;
+  }
+}
 
 test("'who made' -> 'keplar one': the first is read as who made Keplar (stated as an assumption), the second is resolved from the conversation", async () => {
   const one = await chat(null, "who made");
@@ -49,16 +70,39 @@ test("'pricing' is answered from the plan data, instantly, with the reading stat
   assert.equal(r.a!.compute.units, 0);
 });
 
-test("an unresolvable message gets a specific question with 2-3 chips, not a bare 'could you clarify'", async () => {
-  const r = await chat(null, "it");
-  assert.ok(r.a?.clarify);
-  assert.ok(r.a!.clarify!.options.length >= 2 && r.a!.clarify!.options.length <= 3);
-  assert.match(r.a!.markdown, /start of our chat/);
-  assert.doesNotMatch(r.a!.markdown, /^could you clarify/i);
-  assert.equal(r.a!.compute.units, 0);
-  // the same message mid-conversation is a follow-up, never a clarifying question (it goes to the models, which are off in tests)
+test("ambiguous fragments reach the model path instead of returning fixed clarification chips", async () => {
+  for (const prompt of ["it", "help", "the second one", "who"]) {
+    const r = await chat(null, prompt);
+    assert.equal(r.res.status, 503, "models are off; no instant clarification");
+    assert.equal(r.a, undefined);
+  }
   const f = await chat(null, "why", [{ role: "user", text: "tell me about claude" }, { role: "keplar", text: "Claude is an AI assistant." }]);
   assert.equal(f.res.status, 503, "reaches the model path");
+});
+
+test("models receive the assumption policy, the original fragment and the relevant conversation", async () => {
+  await withModels(async (requests) => {
+    const opening = await chat(null, "help");
+    assert.equal(opening.res.status, 200);
+    assert.ok(opening.a?.markdown);
+    assert.equal(opening.a.clarify, undefined);
+    assert.ok(requests.some((r) => JSON.parse(r).messages.some((m: { content: string }) => typeof m.content === "string" && m.content.includes(ASSUMPTION_STYLE))));
+    assert.match(requests.join("\n"), /short opening message/);
+    assert.doesNotMatch(opening.a.markdown, /what are you working on|not sure what|which of these is closest/i);
+
+    requests.length = 0;
+    const followup = await chat(null, "the second one", [
+      { role: "user", text: "Suggest two names for my bakery" },
+      { role: "keplar", text: "1. Hearth & Honey\n2. Morning Crumb" },
+    ]);
+    assert.equal(followup.res.status, 200);
+    assert.ok(followup.a?.markdown);
+    assert.equal(followup.a.clarify, undefined);
+    const prompts = requests.join("\n");
+    assert.match(prompts, /the second one/);
+    assert.match(prompts, /Morning Crumb/);
+    assert.doesNotMatch(prompts, /short opening message/);
+  });
 });
 
 test("model-bound fragments reach the model path (not answered by a fixed string)", async () => {
@@ -86,8 +130,8 @@ test("memory hygiene: birthdates, addresses and secrets are never saved", () => 
   assert.equal(cleanFact("The user is 14 years old."), "The user is 14 years old.");
 });
 
-test("memory: edit a note, only your own, only valid text; the first name is used in instant replies; signed-out uses none", async () => {
-  const u = await signIn("tone-a@example.com", "free");
+test("memory: edit only your own valid notes; inference respects memory and provider privacy", async () => {
+  const u = await signIn("tone-a@example.com", "plus");
   const o = await signIn("tone-b@example.com", "free");
   const [item] = await addItems(u.workspaceId, [{ text: "The user is called Sam.", kind: "name" }], "auto");
   const edit = await itemPATCH(jsonReq(u.cookie, `/api/memory/items/${item.id}`, "PATCH", { text: "The user is called Samir." }), ctx(item.id));
@@ -99,10 +143,24 @@ test("memory: edit a note, only your own, only valid text; the first name is use
   assert.equal((await itemPATCH(jsonReq(o.cookie, `/api/memory/items/${item.id}`, "PATCH", { text: "The user is Eve." }), ctx(item.id))).status, 404, "another account can't edit it");
   assert.equal((await itemPATCH(call(null, `/api/memory/items/${item.id}`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: "x y z w" }) }), ctx(item.id))).status, 401);
 
-  const r = await chat(u.cookie, "it");
-  assert.match(r.a!.markdown, /^Samir, I'd like to answer "it"/);
-  const anon = await chat(null, "it");
-  assert.doesNotMatch(anon.a!.markdown, /Samir/);
+  await withModels(async (requests) => {
+    const r = await chat(u.cookie, "it");
+    assert.equal(r.res.status, 200);
+    assert.ok(r.a?.markdown);
+    assert.ok(requests.some((r) => r.includes("The user is called Samir")), "paid models receive the edited note");
+    requests.length = 0;
+    const anon = await chat(null, "it");
+    assert.equal(anon.res.status, 200);
+    assert.ok(anon.a?.markdown);
+    assert.doesNotMatch(requests.join("\n"), /Samir/);
+
+    const free = await signIn("tone-free@example.com", "free");
+    await addItems(free.workspaceId, [{ text: "The user is called Rowan.", kind: "name" }], "auto");
+    requests.length = 0;
+    const withheld = await chat(free.cookie, "it");
+    assert.equal(withheld.res.status, 200);
+    assert.doesNotMatch(requests.join("\n"), /Rowan/, "private saved notes stay off free hosts that may train");
+  });
 });
 
 test("'Using memory': the memory event reports how many saved notes this answer used (signed in, memory on)", async () => {

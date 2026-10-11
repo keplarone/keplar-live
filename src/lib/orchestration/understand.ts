@@ -5,11 +5,11 @@
  *   1. the conversation so far (what was just asked, and what Keplar just answered),
  *   2. what Keplar knows about itself (it IS Keplar One: what it does, who made it, what it costs),
  *   3. the person's saved notes (their name, from memory; never invented),
- * into the best reading, stated plainly as an assumption the person can correct. A bare clarifying question is the last resort,
- * and then it is specific, with 2-3 suggested readings the UI shows as chips.
+ * into the best reading, stated plainly as an assumption the person can correct. When heuristics cannot resolve a fragment,
+ * the models infer a useful reading instead of returning a fixed clarification question.
  *
  * Pure: no network, no model. The route turns the result into (a) an instant answer when the reading is a product fact (who made
- * Keplar, Keplar's pricing, a clarifying question) and (b) a rewritten question + a guidance block for the models otherwise.
+ * Keplar, Keplar's pricing) and (b) a rewritten question + a guidance block for the models otherwise.
  */
 import { playfulRead, type PlayKind } from "./playful";
 import { detectMood, type Mood } from "@/lib/persona-tone";
@@ -20,9 +20,7 @@ import { followupPrompt, followupRead, previousQuestion, resolveFollowup, type F
 
 type Turn = { role: "user" | "keplar"; text: string };
 
-export type Intent = "creator" | "pricing" | "brand" | "compare" | "maker" | "overview" | "followup" | "clarify" | "plain" | "playful";
-
-export type Clarify = { question: string; options: string[] };
+export type Intent = "creator" | "pricing" | "brand" | "compare" | "maker" | "overview" | "followup" | "infer" | "plain" | "playful";
 
 export type Understood = {
   intent: Intent;
@@ -32,8 +30,8 @@ export type Understood = {
   rewritten: string | null;
   /** One short sentence shown before the answer: how Keplar read the message. Null when the message was clear on its own. */
   assumption: string | null;
-  /** Only when the message cannot be resolved: a specific question plus 2-3 readings. */
-  clarify: Clarify | null;
+  /** Compatibility field: ambiguous fragments now reach the models rather than fixed clarification chips. */
+  clarify: null;
   mood: Mood;
   /** More than one model improves this answer (ambiguous or factual and short): the router raises a lone model to a small panel. */
   crossCheck: boolean;
@@ -193,15 +191,6 @@ function note(raw: string, as: string, withContext: boolean): string {
     : `I'm reading "${typed(raw)}" as ${as}. Tell me if you meant something else.`;
 }
 
-const CHIPS = {
-  makerAny: ["Who made Keplar One?", "Who makes ChatGPT?", "Who makes Claude?"],
-  pronoun: ["Tell me about Keplar One", "Compare two AI assistants", "Help me with something I'm working on"],
-  more: ["Explain something to me", "Help me write something", "Ask Keplar One a question"],
-  help: ["Help me write or edit something", "Answer a hard question with several AIs", "Explain a topic simply"],
-  who: ["Who made Keplar One?", "Who makes ChatGPT?", "Which AI is best for my question?"],
-  which: ["Which Keplar One plan fits me?", "Which AI assistant is best for coding?", "Which AI assistant is best for writing?"],
-} as const;
-
 /* ───────────────────────────── the entry point ───────────────────────────── */
 
 export type UnderstandInput = { prompt: string; history?: readonly Turn[]; facts?: readonly string[] };
@@ -288,17 +277,16 @@ export function understand(input: UnderstandInput): Understood {
     return { ...base, intent: "brand", subject: named.key, rewritten: overviewQuestion(named), assumption: explicit ? null : note(raw, `a request for a quick overview of ${named.display}`, false), crossCheck: true, usedContext: false };
   }
 
-  /* 5 · unresolved pronouns and follow-up stubs */
-  if (PRONOUNISH.test(t) || FOLLOWUPISH.test(t)) {
+  /* 5 · let the models infer unresolved fragments, using history before any default */
+  if (PRONOUNISH.test(t) || FOLLOWUPISH.test(t) || /^(?:who|what|when|where|which|help|help me|i need help|can you help|can you help me)$/.test(t)) {
     if (hasHistory) {
       return { ...base, intent: "followup", rewritten: `${raw}\n\n(This is a follow-up to the previous messages in the conversation above. Answer it in that context.)`, assumption: null, crossCheck: false, usedContext: true };
     }
-    const options = /^(?:which one|the first one|the second one|the other one|the last one|the first|the second)$/.test(t) ? CHIPS.which : /^(?:more|tell me more|go on|continue|keep going|elaborate|explain more|say more|expand|next)$/.test(t) ? CHIPS.more : CHIPS.pronoun;
-    return { ...base, intent: "clarify", rewritten: null, assumption: null, crossCheck: false, usedContext: false, clarify: { question: `I'd like to answer "${typed(raw)}", but this is the start of our chat, so I'm not sure what you're pointing at. Which of these is closest?`, options: [...options] } };
-  }
-  if (/^(?:who|what|why|how|when|where|which|help|help me|i need help|can you help|can you help me)$/.test(t)) {
-    const options = t === "who" ? CHIPS.who : t === "which" ? CHIPS.which : /^help|need help|can you help/.test(t) ? CHIPS.help : CHIPS.who;
-    return { ...base, intent: "clarify", clarify: { question: /help/.test(t) ? "Happy to help. What are you working on? Here are a few places to start:" : `"${typed(raw)}" could go a few ways, and I'd rather not guess wrong. Do you mean one of these?`, options: [...options] } , rewritten: null, assumption: null, crossCheck: false, usedContext: false };
+    return {
+      ...base,
+      intent: "infer",
+      rewritten: `${raw}\n\n(This is a short opening message. Infer a useful intent from the available context and relevant saved notes. If there is no clear subject, choose a practical starting point, such as a simple way to get started with Keplar, and briefly state that assumption. Give something immediately useful rather than asking what the person means or listing possible interpretations. Do not invent an earlier conversation, an unseen item or personal facts.)`,
+    };
   }
 
   /* 6 · a short bare topic ("python", "mars", "taylor swift"): a quick overview beats a refusal */
@@ -333,14 +321,17 @@ function compareQuestion(a: Entity, b: Entity): string {
 
 /**
  * The guidance block placed ahead of the question for the models (never shown). It carries the product context and the reading,
- * and tells the writer not to repeat the assumption line (the app adds it) and not to ask a bare question.
+ * and tells the writer not to repeat an assumption line when the app already adds it.
  */
 export function understandingBlock(u: Understood, raw: string): string {
-  if (u.intent === "plain" || u.intent === "clarify") return "";
+  if (u.intent === "plain") return "";
   const lines = [
     `How to read the message that follows (guidance, not part of the question; do not quote it): the person typed "${typed(raw)}".`,
     `Product context: ${productFacts()} The person is talking to Keplar One now; you are not ChatGPT, Claude or any single model, and you do not claim which specific models Keplar consults.`,
-    `Answer the most likely reading directly and concisely. Do not ask a clarifying question and do not add your own "I'm reading this as..." line; the app already shows how the message was read.`,
+    `Answer the most likely reading directly and concisely, using sensible defaults for optional details.`,
+    u.assumption
+      ? `Do not add your own "I'm reading this as..." line; the app already shows how the message was read.`
+      : `If a meaningful assumption is needed, state it briefly and continue with the answer. Skip the note when the context is clear.`,
   ];
   if (u.followup) lines.push(`This is a short follow-up in an ongoing conversation, resolved from the conversation as: "${clip(u.followup.question, 240)}". Answer that question; do not treat "${typed(raw)}" as a new topic or give an overview of the word.`);
   return lines.join("\n");
