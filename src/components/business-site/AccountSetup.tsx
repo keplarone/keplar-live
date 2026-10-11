@@ -124,7 +124,7 @@ export function AccountSetup({ discountPct }: { discountPct: number }) {
               <h1 className={s.h2}>Choose a plan for {phase.account.company}</h1>
               <div className={s.toggle} role="radiogroup" aria-label="Billing period">
                 <button type="button" role="radio" aria-checked={choice.cycle === "monthly"} onClick={() => setChoice((c) => ({ ...c, cycle: "monthly" }))}>Monthly</button>
-                <button type="button" role="radio" aria-checked={choice.cycle === "annual"} onClick={() => setChoice((c) => ({ ...c, cycle: "annual" }))}>Annual <span className={s.save}>save {discountPct}%</span></button>
+                <button type="button" role="radio" aria-checked={choice.cycle === "annual"} onClick={() => setChoice((c) => ({ ...c, cycle: "annual" }))}>Annual{discountPct > 0 ? <> <span className={s.save}>save {discountPct}%</span></> : null}</button>
               </div>
               <div className={s.choices} role="radiogroup" aria-label="Plan">
                 {TIERS.map((t) => (

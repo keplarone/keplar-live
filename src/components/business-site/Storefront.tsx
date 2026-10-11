@@ -142,7 +142,7 @@ export function Storefront({ discountPct }: { discountPct: number }) {
           <h2 id="pricing-h" className={s.h2}>Pricing</h2>
           <div className={s.toggle} role="radiogroup" aria-label="Billing period">
             <button type="button" role="radio" aria-checked={cycle === "monthly"} onClick={() => setCycle("monthly")}>Monthly</button>
-            <button type="button" role="radio" aria-checked={cycle === "annual"} onClick={() => setCycle("annual")}>Annual <span className={s.save}>save {discountPct}%</span></button>
+            <button type="button" role="radio" aria-checked={cycle === "annual"} onClick={() => setCycle("annual")}>Annual{discountPct > 0 ? <> <span className={s.save}>save {discountPct}%</span></> : null}</button>
           </div>
         </div>
         <p className={s.muted}>Every plan includes every Business module. Higher plans add seats, agents, usage and governance. Usage limits are shown in full and enforced in your account.</p>

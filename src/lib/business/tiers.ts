@@ -74,10 +74,10 @@ export type SelfServeTier = (typeof SELF_SERVE_TIERS)[number];
 export const isSelfServeTier = (t: unknown): t is SelfServeTier => t === "starter" || t === "growth" || t === "scale";
 export const isBillingCycle = (c: unknown): c is BillingCycle => c === "monthly" || c === "annual";
 
-/** Annual discount in percent (BUSINESS_ANNUAL_DISCOUNT_PCT, 0-50). Default 17%: about two months free. */
+/** Annual discount in percent (BUSINESS_ANNUAL_DISCOUNT_PCT, 0-50). Default 0: a year costs exactly 12 months. */
 export function annualDiscountPct(): number {
-  const n = Number(process.env.BUSINESS_ANNUAL_DISCOUNT_PCT ?? "17");
-  return Number.isFinite(n) && n >= 0 && n <= 50 ? Math.round(n) : 17;
+  const n = Number(process.env.BUSINESS_ANNUAL_DISCOUNT_PCT ?? "0");
+  return Number.isFinite(n) && n >= 0 && n <= 50 ? Math.round(n) : 0;
 }
 
 const cents = (usd: number) => Math.round(usd * 100) / 100;

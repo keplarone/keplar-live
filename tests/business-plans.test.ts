@@ -2,7 +2,7 @@ import "./setup";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { BUSINESS_TIERS, businessTierForWhopPlanId, businessTierOf, businessWhopPlanId, priceFor, tierEntitlements } from "@/lib/business/tiers";
+import { annualDiscountPct, BUSINESS_TIERS, businessTierForWhopPlanId, businessTierOf, businessWhopPlanId, listPriceFor, priceFor, tierEntitlements } from "@/lib/business/tiers";
 import { ENTITLEMENTS } from "@/lib/create/platform/plans";
 import { PLAN_ALLOWANCES } from "@/lib/orchestration/plans";
 import { normaliseWebsite, parseBusinessAccount } from "@/lib/business/account";
@@ -27,6 +27,10 @@ test("Business plans: names, prices and every tier pricier than Keplar One Pro (
   assert.equal(priceFor("starter", "monthly", 17), 199.99);
   assert.equal(priceFor("starter", "annual", 17), Math.round(199.99 * 12 * 0.83 * 100) / 100);
   assert.equal(priceFor("scale", "annual", 0), Math.round(2999.99 * 12 * 100) / 100);
+  // By default a year is exactly twelve months (no annual discount), list price included.
+  assert.equal(annualDiscountPct(), 0);
+  assert.equal(priceFor("growth", "annual"), 5999.88);
+  assert.equal(listPriceFor("starter", "annual"), 2639.88);
 });
 
 test("Business plans: the swarm is Enterprise-only; no Study or Skills anywhere in a Business plan", () => {
