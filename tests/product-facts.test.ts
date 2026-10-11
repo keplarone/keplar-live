@@ -10,7 +10,7 @@ import { faq } from "../src/lib/faq";
 
 test("product facts: every product area is described, not only the multi-model answer", () => {
   const all = [WHAT_IS_KEPLAR, NOT_JUST_MULTI_MODEL, ...factLines()].join("\n");
-  for (const area of ["Study mode", "Deep Research", "Debate", "slideshow", "Image generation", "Video generation", "websites", "Roblox Studio", "Scheduled agents", "Approvals", "Projects", "memory", "Specialists", "MCP", "Desktop app", "Public API", "Embeddable widget", "Keplar Business"]) {
+  for (const area of ["Study mode", "Deep Research", "Debate", "slideshow", "Image generation", "Video generation", "websites", "Roblox Studio", "Approvals", "Projects", "memory", "Specialists", "MCP", "Desktop app", "Public API", "Embeddable widget", "Keplar Business"]) {
     assert.match(all, new RegExp(area, "i"), area);
   }
   assert.ok(factLines().length >= 40, `${factLines().length} facts`);

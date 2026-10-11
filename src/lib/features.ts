@@ -4,6 +4,8 @@
  * limited to some plans; "soon" = being built, not usable yet (shown as "Coming soon", never linked as if it works).
  * Owners of each workstream: flip the status here when it ships to production.
  */
+import { BUSINESS_HOST } from "./site";
+
 export type FeatureStatus = "live" | "beta" | "soon";
 export type Feature = { id: string; name: string; line: string; href: string; status: FeatureStatus; note?: string };
 export type Chapter = { id: string; n: string; label: string; title: string; lede: string; features: Feature[] };
@@ -70,7 +72,7 @@ export const CHAPTERS: Chapter[] = [
     features: [
       { id: "api", name: "Public API", line: "Bearer keys, per-plan limits, OpenAPI spec. Free keys use free models only.", href: "/developers", status: "beta" },
       { id: "embed", name: "Embeddable widget", line: "One script tag puts Keplar Ask on your site, limited to origins you allow.", href: "/developers#embed", status: "beta" },
-      { id: "teams", name: "Keplar for Teams", line: "Shared workspaces with owner, admin, editor and viewer roles.", href: "/enterprise", status: "beta", note: "Business plan." },
+      { id: "teams", name: "Keplar for Teams", line: "Shared workspaces with owner, admin, editor and viewer roles.", href: `https://${BUSINESS_HOST}`, status: "beta", note: "Business plan." },
       { id: "referrals", name: "Referral program", line: "Invite a friend; you both get extra usage, never cash.", href: "/referral-terms", status: "live" },
     ],
   },

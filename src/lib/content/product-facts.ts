@@ -26,10 +26,10 @@ const statusOf = (f: Fact): FeatureStatus => (f.feature ? ALL_FEATURES.find((x) 
 export const factStatus = statusOf;
 
 /** One paragraph: the short answer. */
-export const WHAT_IS_KEPLAR = `${brand.companyName} (keplar.one) is an AI workspace for everyday questions, studying, research and making things. Its engine, ${brand.engineName}, sends a question to the AI models it needs, compares their answers claim by claim, investigates where they disagree and writes one answer with the agreement and disagreements shown. Around that engine, ${brand.name} is a full set of tools: Reason, Deep Research and Debate modes; Study mode with flashcards, quizzes and study plans; a slideshow maker; image and video generation; Create, which builds and publishes real websites and apps; a Roblox Studio co-builder in the desktop app; scheduled agents with approvals; projects, memory and connected apps; and a public API and embeddable widget. Keplar Business (business.keplar.one) is a separate desktop app for companies.`;
+export const WHAT_IS_KEPLAR = `${brand.companyName} (keplar.one) is an AI workspace for everyday questions, studying, research and making things. Its engine, ${brand.engineName}, sends a question to the AI models it needs, compares their answers claim by claim, investigates where they disagree and writes one answer with the agreement and disagreements shown. Around that engine, ${brand.name} is a full set of tools: Reason, Deep Research and Debate modes; Study mode with flashcards, quizzes and study plans; a slideshow maker; image and video generation; Create, which builds and publishes real websites and apps; a Roblox Studio co-builder in the desktop app; projects, memory, specialists and connected apps; and a public API and embeddable widget. Keplar Business (business.keplar.one) is a separate desktop app for companies, with scheduled agents, approvals, team workspaces and a business dashboard.`;
 
 /** A few sentences that correct the narrow reading ("it just asks several models"). */
-export const NOT_JUST_MULTI_MODEL = `Asking several models at once is how ${brand.name} answers, not all it does. The same account also studies with you, researches, writes and presents slides, makes images and video, builds and hosts websites and apps, builds Roblox games inside Roblox Studio, and runs agents on a schedule that wait for your approval before anything leaves ${brand.name}.`;
+export const NOT_JUST_MULTI_MODEL = `Asking several models at once is how ${brand.name} answers, not all it does. The same account also studies with you, researches, writes and presents slides, makes images and video, builds and hosts websites and apps, and builds Roblox games inside Roblox Studio, all from one account. Companies that want agents running on a schedule, with approvals before anything goes out, use Keplar Business.`;
 
 export const FACT_SECTIONS: FactSection[] = [
   {
@@ -109,11 +109,9 @@ export const FACT_SECTIONS: FactSection[] = [
     ],
   },
   {
-    id: "organize", title: "Agents, projects, memory and connected apps",
+    id: "organize", title: "Projects, memory, specialists and connected apps",
     intro: "The parts that make Keplar a workspace you come back to, not a one-off chat.",
     facts: [
-      { name: "Scheduled agents", what: "Hand off a recurring task: daily briefs, page monitors and lead follow-ups run on the server on a schedule, with run history, pause, resume and run-now.", plans: "Plus and Pro (advanced agents on Pro)", status: "beta", href: "/agents" },
-      { name: "Approvals", what: "Anything an agent wants to send outside Keplar, such as an email, waits as a draft in Approvals until you approve it.", plans: "Plans with agents", status: "beta" },
       { name: "Projects", what: "Keep related chats, files and work together in a project.", plans: "Signed-in users" },
       { name: "Chat history and memory", what: "Chats are saved to your account to reopen, rename and delete. With memory on, Keplar remembers durable things you tell it (name, goals, preferences) and keeps short summaries of recent chats. Memory is optional and under your control.", plans: "Every plan, signed in" },
       { name: "Specialists", what: "Custom specialists people make and share. Add one to your account and Keplar's panel of models answers with it; shared ones are reviewed before listing.", plans: "Signed-in users", href: "/specialists" },
@@ -128,7 +126,6 @@ export const FACT_SECTIONS: FactSection[] = [
       { name: "Desktop app", what: "For Windows, macOS and Linux. Keeps the app in its own window and adds the Roblox Studio co-builder; your account and data stay in the cloud.", plans: "Every plan", href: "/download" },
       { name: "Public API", what: "Ask Keplar from your own code with Bearer keys, streaming, an OpenAPI spec and per-plan limits. Free keys use free models only.", feature: "api", href: "/developers" },
       { name: "Embeddable widget", what: "One script tag puts Keplar Ask on your site, limited to the origins you allow.", feature: "embed", href: "/developers#embed" },
-      { name: "Teams", what: "Shared workspaces with owner, admin, editor and viewer roles.", feature: "teams", href: "/enterprise" },
       { name: "Referral program", what: "Invite a friend and you both get extra usage, never cash.", feature: "referrals", href: "/referral-terms" },
       { name: "Languages", what: `The website is published in ${INDEXABLE.length} languages, and you can ask questions in your own language.`, plans: "Everyone" },
     ],
@@ -148,7 +145,7 @@ export const FACT_SECTIONS: FactSection[] = [
 const BUSINESS_CORE = BUSINESS_TIERS.starter.includes.slice(0, 11);
 export const BUSINESS_FACTS = {
   title: "Keplar Business (business.keplar.one)",
-  intro: `A separate desktop app for companies, on the same ${brand.name} accounts. business.keplar.one shows the plans, takes inquiries and business-account sign-up, and offers the download once a subscription is active.`,
+  intro: `A separate desktop app for companies, on the same ${brand.name} accounts. business.keplar.one shows the plans, takes inquiries and business-account sign-up, and offers the download once a subscription is active. Agents live here: daily briefs, page monitors and lead follow-ups run on a schedule with run history, and anything an agent wants to send outside Keplar, such as an email, waits in Approvals until someone approves it. Team workspaces have owner, admin, editor and viewer roles.`,
   includes: BUSINESS_CORE,
   plans: Object.values(BUSINESS_TIERS).map((t) => ({ name: t.name, price: t.monthly === null ? "Custom pricing" : `$${t.monthly.toLocaleString("en-US", { minimumFractionDigits: 2 })} a month`, audience: t.audience, highlights: t.includes.filter((x) => !x.startsWith("Everything in") && !BUSINESS_CORE.includes(x)).slice(0, 6) })),
 };

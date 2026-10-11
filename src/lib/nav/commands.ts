@@ -2,7 +2,7 @@
  * Command palette catalogue: every major destination in one flat, searchable list.
  * Paths are real routes in the tree; anything without its own page links to a section anchor on a page that exists.
  */
-import { footerNav, paletteOnlyPages, primaryNav, brand } from "@/lib/site";
+import { footerNav, paletteOnlyPages, primaryNav, brand, BUSINESS_HOST } from "@/lib/site";
 
 export type Command = { id: string; label: string; href: string; group: "Go to" | "Features" | "Learn" | "Account" | "Docs" | "On this page"; hint?: string; keywords?: string };
 
@@ -11,10 +11,10 @@ export const FEATURE_COMMANDS: Command[] = [
   { id: "create", label: "Create", href: "/app/create", group: "Features", hint: "Build sites and apps", keywords: "builder site app studio make" },
   { id: "slides", label: "Slides", href: "/app/slides", group: "Features", hint: "Decks from a prompt or file", keywords: "presentation deck" },
   { id: "study", label: "Study", href: "/app/study", group: "Features", hint: "Flashcards and quizzes", keywords: "learn exam cards quiz" },
-  { id: "agents", label: "Agents", href: "/agents", group: "Features", hint: "Scheduled work that asks before acting", keywords: "automation business" },
   { id: "gallery", label: "Community gallery", href: "/templates", group: "Features", hint: "Templates people built and shared — remix one", keywords: "showcase examples community templates remix starter" },
   { id: "api", label: "API docs", href: "/developers", group: "Features", hint: "Keys, endpoints, OpenAPI", keywords: "developer api key rest openapi" },
-  { id: "teams", label: "Teams", href: "/enterprise", group: "Features", hint: "Shared workspaces, roles and approvals", keywords: "team business seats" },
+  // Agents, approvals and team workspaces are part of Keplar Business, on its own site (the old /agents and /enterprise URLs only redirect there).
+  { id: "business", label: "Keplar Business", href: `https://${BUSINESS_HOST}`, group: "Features", hint: "Agents, approvals and team workspaces", keywords: "agents automation approvals teams seats business enterprise" },
   { id: "changelog", label: "Changelog", href: "/changelog", group: "Learn", hint: "Release notes", keywords: "release notes updates new roadmap" },
   { id: "docs", label: "Docs", href: "/docs", group: "Learn", hint: "How everything works", keywords: "help documentation guide" },
   { id: "status", label: "Status", href: "/status", group: "Learn", hint: "Live system checks", keywords: "uptime health" },

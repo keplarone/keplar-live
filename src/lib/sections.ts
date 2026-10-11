@@ -1,5 +1,5 @@
 /** Copy for the homepage sections after the narrative and the marketing pages. */
-import { brand } from "./site";
+import { brand, BUSINESS_HOST } from "./site";
 
 export type PipelineStage = {
   id: "prompt" | "classify" | "route" | "compare" | "verify" | "synthesize" | "answer";
@@ -163,7 +163,7 @@ export const pathsCopy = {
     title: `Run a business? ${brand.name} can run it with you.`,
     points: ["Storefront, checkout, and orders", "CRM and inbox", "One dashboard for the business", "Agents inside spend caps and approval gates", "An audit log of every action"],
     note: "Opens soon.",
-    primary: { label: "Explore Business", href: "/enterprise" },
+    primary: { label: "Explore Business", href: `https://${BUSINESS_HOST}` },
     secondary: { label: `Contact ${brand.name}`, href: "/inquire" },
   },
 };

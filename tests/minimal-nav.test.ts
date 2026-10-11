@@ -6,6 +6,7 @@ import { footerNav, paletteOnlyPages, primaryNav } from "../src/lib/site";
 import { staticCommands } from "../src/lib/nav/commands";
 
 const routeExists = (href: string) => {
+  if (href === "https://business.keplar.one") return true; // Keplar Business: its own site, not a route on keplar.one
   const p = href.split("#")[0].replace(/^\//, "");
   return !p || existsSync(`src/app/(marketing)/${p}`) || existsSync(`src/app/${p}`);
 };

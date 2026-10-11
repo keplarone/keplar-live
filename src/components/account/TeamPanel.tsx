@@ -6,6 +6,7 @@
  * by role; the buttons here only hide what your role can't do.
  */
 import Link from "next/link";
+import { businessUrl } from "@/lib/business-site";
 import { useCallback, useEffect, useState } from "react";
 import s from "./account.module.css";
 
@@ -76,7 +77,7 @@ export function TeamPanel() {
         <div className={s.row}><span className={s.k}>Never shared</span><span className={s.v}>{me.scope.notShared.join(" · ")}</span></div>
       </div>
 
-      {!me.eligible && !me.teams.length ? <p className={s.note} data-team-ineligible="">Team workspaces start on the Business plan, and your plan is {me.plan}. Business is arranged with our team: <Link className={s.link} href="/enterprise">see Business</Link>.</p> : null}
+      {!me.eligible && !me.teams.length ? <p className={s.note} data-team-ineligible="">Team workspaces start on the Business plan, and your plan is {me.plan}. Business is arranged with our team: <a className={s.link} href={businessUrl()}>see Business</a>.</p> : null}
       {me.eligible && !me.owned ? (
         <form className={s.form} onSubmit={(e) => { e.preventDefault(); void act(async () => { const r = await api<{ team: { id: string } }>("/api/team", "POST", { name }); setName(""); await loadMe(); setOpen(r.team.id); }); }}>
           <label className={s.fieldLabel} htmlFor="team-name">Name your team</label>

@@ -4,19 +4,25 @@ import { existsSync, readFileSync } from "node:fs";
 import { FEATURE_COMMANDS, rankCommands, staticCommands } from "@/lib/nav/commands";
 
 const routeExists = (href: string) => {
+  if (href === "https://business.keplar.one") return true; // Keplar Business: its own site, not a route on keplar.one
   const p = href.split("#")[0].replace(/^\//, "");
   if (!p) return true;
   const candidates = [`src/app/(marketing)/${p}/page.tsx`, `src/app/${p}/page.tsx`, `src/app/(marketing)/${p}/[[...slug]]/page.tsx`];
   return candidates.some((c) => existsSync(c)) || existsSync(`src/app/(marketing)/${p}`) || existsSync(`src/app/${p}`);
 };
 
+test("palette: no destination is a keplar.one URL that only redirects to Keplar Business", () => {
+  const redirected = ["/enterprise", "/agents", "/app/agents", "/app/approvals", "/app/business"];
+  for (const c of staticCommands()) assert.ok(!redirected.includes(c.href.split("#")[0]), `${c.label} → ${c.href} redirects to business.keplar.one; link it directly`);
+});
+
 test("palette: every static destination is a real route in the tree", () => {
   for (const c of staticCommands()) assert.ok(routeExists(c.href), `${c.label} → ${c.href} has no route`);
 });
 
-test("palette: major features are all present (Create, live demo, gallery, changelog, API, Teams)", () => {
+test("palette: major features are all present (Create, live demo, gallery, changelog, API, Keplar Business)", () => {
   const hrefs = FEATURE_COMMANDS.map((c) => c.href);
-  for (const h of ["/app/create", "/app/ask", "/templates", "/changelog", "/developers", "/enterprise"]) assert.ok(hrefs.includes(h), h);
+  for (const h of ["/app/create", "/app/ask", "/templates", "/changelog", "/developers", "https://business.keplar.one"]) assert.ok(hrefs.includes(h), h);
 });
 
 test("palette ranking: label prefix first, keywords match, empty query keeps order, no dupes", () => {

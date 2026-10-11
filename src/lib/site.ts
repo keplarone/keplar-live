@@ -62,7 +62,7 @@ export const site = {
   url: siteUrl,
   /** Root meta description: the answer engine first, then the rest of the workspace, so search and AI summaries see the whole product. */
   description:
-    "Keplar asks the AI models your question needs and gives one checked answer, with disagreements shown. Plus Study mode, Deep Research, slides, images, video, websites, apps and agents.",
+    "Keplar asks the AI models your question needs and gives one checked answer, with disagreements shown. Plus Study mode, Deep Research, slides, images, video, websites, apps and Roblox games.",
   /** On-page summary used in the hero. */
   summary:
     "Keplar asks multiple intelligences, finds where they agree, investigates where they don't, and gives you one synthesized answer.",
@@ -142,7 +142,6 @@ export const footerNav: { heading: string; links: NavLink[] }[] = [
 export const paletteOnlyPages: NavLink[] = [
   { href: "/product", label: "Overview", hint: "Keplar in one page" },
   { href: "/for-you", label: "For you", hint: "What Keplar does for you" },
-  { href: "/agents", label: "Agents", hint: "Scheduled work that asks before acting" },
   { href: "/referral-terms", label: "Referral program", hint: "Invite a friend; you both get extra usage" },
   { href: "/signup", label: "Create an account" },
   { href: "/inquire", label: "Inquire", hint: "Business and press inquiries" },

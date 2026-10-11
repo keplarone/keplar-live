@@ -35,7 +35,7 @@ export function organizationNode() {
     foundingDate: "2026",
     founder: founderPersons(),
     description:
-      `${brand.name} is the intelligence layer above AI models and an AI workspace built on it. ${brand.engineName} asks the models a question needs, investigates where they disagree, weighs the evidence and reasoning behind each response, and synthesizes one answer; around it, ${brand.name} offers Study mode, Deep Research, a slideshow maker, image and video generation, Create for building and publishing websites and apps, a Roblox Studio co-builder in its desktop app, scheduled agents with approvals, a public API, and Keplar Business for companies. ${CREATOR_LINE}`,
+      `${brand.name} is the intelligence layer above AI models and an AI workspace built on it. ${brand.engineName} asks the models a question needs, investigates where they disagree, weighs the evidence and reasoning behind each response, and synthesizes one answer; around it, ${brand.name} offers Study mode, Deep Research, a slideshow maker, image and video generation, Create for building and publishing websites and apps, a Roblox Studio co-builder in its desktop app, a public API, and Keplar Business for companies (scheduled agents, approvals and team workspaces). ${CREATOR_LINE}`,
     email: brand.contactEmail,
     // Real, verified profiles only (checked 4 Oct 2026). Add others here only once they exist and are owned by the co-founders.
     sameAs: ["https://github.com/keplarone"],

@@ -66,7 +66,7 @@ export default function ProductPage() {
           </p>
           <p>
             Answers are where {brand.name} starts. It also studies with you, researches, makes slides, images and video, builds and
-            publishes websites and apps, builds Roblox games in Roblox Studio, and runs agents. See{" "}
+            publishes websites and apps, and builds Roblox games in Roblox Studio. See{" "}
             <Link href="/what-is-keplar">everything Keplar does</Link>.
           </p>
         </div>

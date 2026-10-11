@@ -37,6 +37,9 @@ const nextConfig: NextConfig = {
       { source: "/app/", destination: "/app/ask", permanent: true },
       // Business, Agents and Approvals moved to business.keplar.one for now (src/lib/business.ts).
       ...["/app/business", "/app/agents", "/app/approvals", "/enterprise", "/agents"].map((source) => ({ source, destination: "https://business.keplar.one", permanent: false })),
+      // Common account URLs people type or other sites link to (/login answered 404 on the live site).
+      ...["/login", "/log-in", "/sign-in"].map((source) => ({ source, destination: "/signin", permanent: true })),
+      ...["/register", "/sign-up", "/join"].map((source) => ({ source, destination: "/signup", permanent: true })),
       // Marketing's draft URL for the comparison hub.
       { source: "/compare/best-multi-model-ai-tools", destination: "/compare", permanent: true },
       // Blog moved from /blog to /blogs (keep old URLs working for SEO and shared links).
