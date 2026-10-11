@@ -24,11 +24,12 @@
 .table tr[data-s="soon"] th { color: var(--c-ink-2); }
 .note { color: var(--c-ink-3); }
 .status { white-space: nowrap; text-align: right !important; padding-right: 0 !important; font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); }
-.status[data-s="live"] { color: var(--v-verified, var(--c-ok)); }
-.status[data-s="beta"] { color: var(--v-attention, var(--c-attention)); }
+/* Text uses the text-safe tokens (≥5.9:1 in both themes); the vivid --v-* fills were 3.1:1 and 2.1:1 as text on white. */
+.status[data-s="live"] { color: var(--c-verified, var(--c-ok)); }
+.status[data-s="beta"] { color: var(--c-attention); }
 @media (max-width: 560px) { .table th { width: auto; display: block; padding-bottom: 0; } .table td { display: inline-block; } .table tr { display: block; padding: var(--s-2) 0; } }
 .foot { margin-top: var(--s-10); color: var(--c-ink-2); font-size: var(--t-small); }
-.foot a { color: var(--c-ink); text-underline-offset: 3px; }
+.foot a { color: var(--c-ink); text-decoration: underline; text-underline-offset: 3px; } /* in running text a link needs more than colour (WCAG 1.4.1) */
 
 /* Oct 2026 canvas design: each chapter's list sits on a frosted card, statuses are soft chips */
 .table { border-collapse: separate; border-spacing: 0; border-radius: 24px; background: color-mix(in srgb, var(--c-surface-1) 80%, transparent); box-shadow: inset 0 0 0 1px rgb(var(--rgb-ink) / 0.07), 0 12px 28px -14px rgb(0 0 0 / 0.18); overflow: hidden; }
