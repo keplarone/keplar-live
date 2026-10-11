@@ -21,7 +21,6 @@ import { InsertMode } from "@/components/glass/InsertMode";
 import { PageMonolith } from "@/components/monolith/PageMonolith";
 import { StaticAssetSw } from "@/components/perf/StaticAssetSw";
 import { CommandPalette } from "@/components/nav/CommandPalette";
-import { DesktopDock } from "@/components/desktop/DesktopDock";
 import { LocaleHtml } from "@/components/i18n/LocaleHtml";
 import "@/styles/globals.css";
 import "@/styles/redesign.css";
@@ -105,7 +104,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <PageMonolith />
         <StaticAssetSw />
         <CommandPalette />
-        <DesktopDock />
         <GlassDefs />
         <CookieBanner />
         <PresenceBeacon />
