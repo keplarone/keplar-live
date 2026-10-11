@@ -1,6 +1,7 @@
 "use client";
 
 import { siteUrl } from "@/lib/site";
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import { Analyst } from "./Analyst";
 import { Ask } from "./Ask";
@@ -10,6 +11,13 @@ import { Projects } from "./Projects";
 import c from "./cursor.module.css";
 import s from "./workspace.module.css";
 
+/** The Business operating system (orders, CRM, inbox, agents, approvals, connectors, audit) and Create, loaded only when opened. */
+type OsTab = "overview" | "orders" | "crm" | "inbox" | "agents" | "approvals" | "connectors" | "apps" | "audit";
+const OS_TABS: readonly OsTab[] = ["overview", "orders", "crm", "inbox", "agents", "approvals", "connectors", "apps", "audit"];
+const Loading = () => <div className={s.center}><span className={s.spinner} aria-label="Loading" /></div>;
+const BusinessOS = dynamic(() => import("@/components/business/BusinessOS").then((m) => m.BusinessOS), { ssr: false, loading: Loading });
+const CreateStudio = dynamic(() => import("@/components/create/CreateStudio").then((m) => m.CreateStudio), { ssr: false, loading: Loading });
+
 type Account = { signedIn: boolean; email?: string | null; account?: { company: string } | null; active?: boolean; plan?: { name: string } | null };
 type Project = { id: string; name: string; createdAt: string };
 type Recent = { id: string; kind: "research" | "reason"; title: string; createdAt: string };
@@ -18,6 +26,8 @@ type View =
   | { at: "ask"; q: string; projectId: string | null; key: string }
   | { at: "dashboard" }
   | { at: "projects"; projectId: string | null }
+  | { at: "create" }
+  | { at: "os"; tab: OsTab }
   | { at: "research" | "reason"; seed?: string; openId?: string; projectId?: string; key: string };
 
 /** This is the Business app (business.keplar.one): "/" is its storefront. Keplar One is a separate app on keplar.one. */
@@ -32,6 +42,8 @@ function readView(): View {
   const v = q.get("v");
   if (v === "projects") return { at: "projects", projectId: q.get("p") };
   if (v === "dashboard") return { at: "dashboard" };
+  if (v === "create") return { at: "create" };
+  if (v === "os") { const tab = q.get("t") as OsTab | null; return { at: "os", tab: tab && OS_TABS.includes(tab) ? tab : "overview" }; }
   if (v === "research" || v === "reason") return { at: v, openId: q.get("r") ?? undefined, key: k() };
   return { at: "home" };
 }
@@ -40,6 +52,8 @@ function writeView(v: View) {
   const q = new URLSearchParams();
   if (v.at === "projects") { q.set("v", "projects"); if (v.projectId) q.set("p", v.projectId); }
   else if (v.at === "dashboard") q.set("v", "dashboard");
+  else if (v.at === "create") q.set("v", "create");
+  else if (v.at === "os") { q.set("v", "os"); if (v.tab !== "overview") q.set("t", v.tab); }
   else if (v.at === "research" || v.at === "reason") { q.set("v", v.at); if (v.openId) q.set("r", v.openId); }
   const qs = q.toString();
   window.history.pushState(null, "", `${window.location.pathname}${qs ? `?${qs}` : ""}`);
@@ -133,11 +147,28 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
   const shownProjects = projects.filter((p) => !f || p.name.toLowerCase().includes(f)).slice(0, f ? 20 : 6);
   const shownRecent = recent.filter((r) => !f || r.title.toLowerCase().includes(f)).slice(0, f ? 30 : 12);
   const is = (at: View["at"]) => view.at === at;
+  const osAt = (...tabs: OsTab[]) => view.at === "os" && tabs.includes(view.tab);
 
-  const PLACES = [
-    { at: "dashboard" as const, label: "Dashboard", icon: <><rect x="3" y="3" width="7" height="9" rx="1.5" /><rect x="14" y="3" width="7" height="5" rx="1.5" /><rect x="14" y="12" width="7" height="9" rx="1.5" /><rect x="3" y="16" width="7" height="5" rx="1.5" /></> },
-    { at: "research" as const, label: "Deep Research", icon: <><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></> },
-    { at: "reason" as const, label: "Reason", icon: <><path d="M9 18h6M10 21h4" /><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z" /></> },
+  const I = {
+    dashboard: <><rect x="3" y="3" width="7" height="9" rx="1.5" /><rect x="14" y="3" width="7" height="5" rx="1.5" /><rect x="14" y="12" width="7" height="9" rx="1.5" /><rect x="3" y="16" width="7" height="5" rx="1.5" /></>,
+    create: <><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.4z" /><path d="M19 15l.8 1.9L21.7 18l-1.9.8L19 20.7l-.8-1.9-1.9-.8 1.9-1.1z" /></>,
+    agents: <><rect x="5" y="8" width="14" height="11" rx="3" /><path d="M12 8V4M9.5 13h.01M14.5 13h.01" /><path d="M2.5 13.5v2M21.5 13.5v2" /></>,
+    approvals: <><path d="M9 11l2 2 4-4" /><path d="M5 4h14v13l-7 4-7-4z" /></>,
+    operations: <><path d="M3 9l1.5-5h15L21 9" /><path d="M4 9v11h16V9" /><path d="M3 9h18M9 20v-6h6v6" /></>,
+    integrations: <><path d="M9 7V3M15 7V3" /><path d="M7 7h10v4a5 5 0 0 1-10 0z" /><path d="M12 16v5" /></>,
+    research: <><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></>,
+    reason: <><path d="M9 18h6M10 21h4" /><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z" /></>,
+  };
+  /** Sidebar places: each opens a real module. Business OS sections share one component, opened at their own tab. */
+  const PLACES: { id: string; label: string; icon: React.ReactNode; view: () => View; current: boolean }[] = [
+    { id: "dashboard", label: "Dashboard", icon: I.dashboard, view: () => ({ at: "dashboard" }), current: is("dashboard") },
+    { id: "create", label: "Create", icon: I.create, view: () => ({ at: "create" }), current: is("create") },
+    { id: "agents", label: "Agents", icon: I.agents, view: () => ({ at: "os", tab: "agents" }), current: osAt("agents") },
+    { id: "approvals", label: "Approvals", icon: I.approvals, view: () => ({ at: "os", tab: "approvals" }), current: osAt("approvals") },
+    { id: "operations", label: "Operations", icon: I.operations, view: () => ({ at: "os", tab: "overview" }), current: osAt("overview", "orders", "crm", "inbox", "audit") },
+    { id: "integrations", label: "Integrations", icon: I.integrations, view: () => ({ at: "os", tab: "connectors" }), current: osAt("connectors", "apps") },
+    { id: "research", label: "Deep Research", icon: I.research, view: () => ({ at: "research", key: k() }), current: is("research") },
+    { id: "reason", label: "Reason", icon: I.reason, view: () => ({ at: "reason", key: k() }), current: is("reason") },
   ];
 
   return (
@@ -164,7 +195,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
               <input className={c.search} autoFocus value={filter} onChange={(e) => setFilter(e.target.value)} onKeyDown={(e) => { if (e.key === "Escape") { setSearching(false); setFilter(""); } }} placeholder="Search projects and reports" aria-label="Search projects and reports" />
             ) : null}
             {PLACES.map((p) => (
-              <button key={p.at} type="button" className={c.item} aria-current={is(p.at) ? "page" : undefined} onClick={() => go(p.at === "dashboard" ? { at: "dashboard" } : { at: p.at, key: k() })}>
+              <button key={p.id} type="button" className={c.item} aria-current={p.current ? "page" : undefined} onClick={() => go(p.view())}>
                 <Icon d={p.icon} />{p.label}
               </button>
             ))}
@@ -215,6 +246,8 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
               : view.at === "ask" ? <Ask key={view.key} first={view.q} projectId={view.projectId} />
               : view.at === "dashboard" ? <Dashboard onOpenProject={(id) => go({ at: "projects", projectId: id })} />
               : view.at === "projects" ? <Projects projectId={view.projectId} onOpen={(id) => { go({ at: "projects", projectId: id }); loadSide(); }} />
+              : view.at === "create" ? <div className={s.module}><CreateStudio signedIn plan="business" /></div>
+              : view.at === "os" ? <div className={s.module}><BusinessOS key={view.tab} initialTab={view.tab} embedded /></div>
               : <Analyst key={view.key} kind={view.at} seed={view.seed} openId={view.openId} projectSeed={view.projectId} onSaved={loadSide} />}
           </div>
         </section>
