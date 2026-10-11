@@ -3,7 +3,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { checkStyle, readability, syllables, proseOf } from "../src/lib/style/readability";
 import { STYLE_EVAL, STYLE_COUNTEREXAMPLES, scoreAnswers } from "../src/lib/style/eval-set";
-import { CLARITY_STYLE, CLARITY_STYLE_SHORT, GROUNDING_STYLE } from "../src/lib/style/clarity";
+import { ASSUMPTION_STYLE, CLARITY_STYLE, CLARITY_STYLE_SHORT, GROUNDING_STYLE } from "../src/lib/style/clarity";
+import { INSIGHT, PLANNER, REVISER, STEP } from "../src/lib/core/prompts";
 import { BASE_SYSTEM_PROMPT } from "../src/lib/orchestration/providers/shared";
 import { SYNTH_SYSTEM_PROMPT, CRITIQUE_SYSTEM_PROMPT } from "../src/lib/orchestration/live-synthesizer";
 
@@ -67,6 +68,17 @@ test("prompts: the panel, the synthesizer and the critique all carry the clarity
   assert.ok(SYNTH_SYSTEM_PROMPT.includes(GROUNDING_STYLE));
   assert.match(CRITIQUE_SYSTEM_PROMPT, /clear|plain|jargon/i);
   assert.match(CLARITY_STYLE, /grade 8–10/);
+});
+
+test("assumption-first rules reach ordinary answers, synthesis and Core without permitting invented facts", () => {
+  for (const prompt of [BASE_SYSTEM_PROMPT, SYNTH_SYSTEM_PROMPT, PLANNER(), STEP(), REVISER, INSIGHT()]) {
+    assert.ok(prompt.includes(ASSUMPTION_STYLE));
+  }
+  assert.match(ASSUMPTION_STYLE, /Respect explicit instructions and corrections/);
+  assert.match(ASSUMPTION_STYLE, /never invent evidence/);
+  assert.match(ASSUMPTION_STYLE, /essential input cannot safely be inferred/);
+  assert.match(INSIGHT(), /Optional preferences are not blockers/);
+  assert.doesNotMatch(INSIGHT(), /missing detail would materially change/);
 });
 
 import { PRESENCE_EVAL, scorePresence } from "../src/lib/style/eval-set";

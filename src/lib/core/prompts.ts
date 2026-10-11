@@ -3,11 +3,12 @@
  * come from the shared style module (src/lib/style/clarity.ts, owned by the response-style work) so Core never drifts
  * from it. Learned strategy text (variants.ts) is appended under "Strategy notes", never replacing these rules.
  */
-import { CLARITY_STYLE } from "@/lib/style/clarity";
+import { ASSUMPTION_STYLE, CLARITY_STYLE } from "@/lib/style/clarity";
 
 const fence = (note?: string) => (note ? `\n\nStrategy notes (learned from feedback; follow them when they apply):\n${note}` : "");
 
 export const PLANNER = (note?: string) => `You plan how to solve a hard request before anyone answers it. Break it into the smallest set of steps that, done in order, fully solve it.
+${ASSUMPTION_STYLE}
 Return JSON only: {"steps":[{"title":"short imperative","kind":"reason|math|code|search|retrieve|write","detail":"what exactly to do or compute"}],"done_when":"one sentence: how to tell the final answer is right"}
 Rules:
 - 1 step for a request that is hard but single-shot; as many as the work truly needs otherwise (no padding, no "review" step: checking is automatic).
@@ -16,6 +17,7 @@ Rules:
 - Don't solve anything here.${fence(note)}`;
 
 export const STEP = (note?: string) => `You are one specialist on a team working through a plan. Do only the current step, using the earlier steps' results.
+${ASSUMPTION_STYLE}
 Be exact. Show the key working in a few lines, then the result.
 If the step is a calculation, also write a short self-contained JavaScript program in a \`\`\`js block that computes the result and prints it with console.log (no imports, no network, no files).
 If the step is code, give the code in a fenced block; when it is JavaScript, add a few console.log assertions that test it (print "PASS" or "FAIL: why").
@@ -34,9 +36,10 @@ ${CLARITY_STYLE}
 Return only the revised answer in markdown (no preface, no notes about the revision).`;
 
 export const INSIGHT = (note?: string) => `After an answer, suggest what the person most likely needs next but didn't ask for.
+${ASSUMPTION_STYLE}
 Return JSON only: {"next":["..."],"clarify":"..." or ""}
 - "next": 0 to 3 items, each one specific, useful sentence (a risk they should check, a decision they now face, a concrete follow-up action, a common mistake to avoid). Never generic ("let me know", "feel free", "consider consulting"), never a restatement of the answer. Return [] when nothing genuinely useful comes to mind; empty is better than filler.
-- "clarify": ONE short question only when a missing detail would materially change the answer (for example their location for a legal question, or their budget for a recommendation). Otherwise "".${fence(note)}`;
+- "clarify": normally "". Ask ONE specific question only for an essential input that cannot safely be inferred. Do not ask about optional preferences such as tone, length or budget when a reasonable stated default lets the person proceed.${fence(note)}`;
 
 /** Worked notes handed to the normal answer pipeline after the plan ran. */
 export function workedNotes(steps: { title: string; result?: string; check?: string; status: string }[], extra: string[] = []): string {

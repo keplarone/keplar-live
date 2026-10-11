@@ -213,7 +213,7 @@ export async function POST(request: Request) {
     const topic = voiceTopic(req);
     if (topic) memoryReply = pickConsciousnessAnswer(topic);
   }
-  // Signed in with memory on: the person's saved notes (used below for context, and for a first name in instant replies).
+  // Signed in with memory on: the person's saved notes, used to understand the request below.
   let memoryOn = false;
   let notes: string[] = [];
   // Shared team projects still bring their own saved material (each project has its own switch); personal memory does not.
@@ -228,7 +228,7 @@ export async function POST(request: Request) {
   }
   // Query understanding (understand.ts): short or fragmentary messages ("who made", "chatgpt", "keplar one", "pricing", "claude vs you") are
   // resolved with the conversation, what Keplar knows about itself and the person's notes into the best reading, stated as an assumption.
-  // Product facts (who made Keplar, Keplar's pricing) and unresolvable messages (a specific question with chips) are answered here, instantly.
+  // Product facts (who made Keplar, Keplar's pricing) are instant; unresolved fragments reach the models to infer a useful reading.
   const askedPrompt = req.prompt;
   let understood: Understood | null = null;
   let assumptionPrefix = "";
@@ -239,7 +239,6 @@ export async function POST(request: Request) {
       console.error("[understand] failed:", e instanceof Error ? e.name : "error");
     }
     if (understood) {
-      const hi = understood.name ? `${understood.name}, ` : "";
       const note = understood.assumption ? `${assumptionLine(understood.assumption)}\n\n` : "";
       if (understood.intent === "creator") {
         memoryReply = `${note}${pickCreatorAnswer()}`;
@@ -247,9 +246,6 @@ export async function POST(request: Request) {
       } else if (understood.intent === "pricing") {
         memoryReply = `${note}${pricingReply()}`;
         extra = { interpretation: understood.assumption ?? undefined };
-      } else if (understood.intent === "clarify" && understood.clarify) {
-        memoryReply = `${hi}${understood.clarify.question}`.replace(/^([a-z])/, (c) => c.toUpperCase());
-        extra = { clarify: understood.clarify };
       } else if (understood.intent === "playful" && understood.play?.fixed) {
         // A turn of knock-knock or a classic riddle: fixed text, instant, no model, no charge.
         memoryReply = understood.play.fixed;

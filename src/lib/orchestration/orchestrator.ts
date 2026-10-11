@@ -40,6 +40,7 @@ import { sharedPool } from "./pool-governor";
 import { debateCostFactor, debatePolicy, debaterSystem, runDebate, type DebateSummary } from "./debate";
 import type {
   Retriever,
+  Classification,
   Classifier,
   Comparator,
   GenerationParams,
@@ -186,6 +187,9 @@ export function liveDeps(providers: Provider[], env: ReturnType<typeof liveEnv>)
 const LIVE_PANEL_PARAMS: GenerationParams = { reasoningEffort: "low", maxOutputTokens: 1400 };
 /** Reason mode: more thinking and room for the visible steps. */
 const REASON_PANEL_PARAMS: GenerationParams = { reasoningEffort: "medium", maxOutputTokens: 2200 };
+/** Live panel on a complex question: more thinking before answering, a little more room (simple and moderate stay cheap and fast). */
+const LIVE_COMPLEX_PANEL_PARAMS: GenerationParams = { reasoningEffort: "medium", maxOutputTokens: 1800 };
+export const livePanelParams = (c: Classification, reason?: boolean) => (reason ? REASON_PANEL_PARAMS : c.complexity === "complex" ? LIVE_COMPLEX_PANEL_PARAMS : LIVE_PANEL_PARAMS);
 
 function paramsFor(slot: "panel" | "verifier" | "judge", index: number): GenerationParams {
   if (slot === "verifier") return { reasoningEffort: "low" };
@@ -478,7 +482,7 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
     const origCtl = new AbortController();
     const finish = (r: ProviderResult) => { if (!done) { done = true; resolve(r); } };
     registry
-      .generate({ model: p.model, prompt: panelPrompt, system: panelSystem, classification, params: sanitizeParams(p.model, live ? (req.modes?.reason ? REASON_PANEL_PARAMS : LIVE_PANEL_PARAMS) : paramsFor("panel", i)), tier, slot: "panel", signal: AbortSignal.any([panelSignal ?? origCtl.signal, origCtl.signal]), avoid: seatModels, onToken: early.tokens(i), ...vision })
+      .generate({ model: p.model, prompt: panelPrompt, system: panelSystem, classification, params: sanitizeParams(p.model, live ? livePanelParams(classification, req.modes?.reason) : paramsFor("panel", i)), tier, slot: "panel", signal: AbortSignal.any([panelSignal ?? origCtl.signal, origCtl.signal]), avoid: seatModels, onToken: early.tokens(i), ...vision })
       .then((r): ProviderResult => {
         // A substitute answered (the planned model was busy or missing): show the model that actually answered.
         if (r.ok && r.fellBackFrom && r.model.id !== p.model.id && !done) {

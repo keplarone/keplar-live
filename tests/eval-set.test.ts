@@ -33,10 +33,9 @@ for (const c of EVAL_SET) {
     assert.equal(detectMood(c.prompt), u.mood);
     if (e.crossCheck !== undefined) assert.equal(u.crossCheck, e.crossCheck);
     if (e.assumption !== undefined) assert.equal(Boolean(u.assumption), e.assumption);
-    if (e.clarify) {
-      assert.ok(u.clarify, "a clarifying question");
-      assert.ok(u.clarify!.options.length >= 2 && u.clarify!.options.length <= 3, "2-3 chips");
-      assert.ok(u.clarify!.question.length > 20, "specific, not a bare question");
+    if (e.intent === "infer") {
+      assert.equal(u.clarify, null, "the model infers intent instead of fixed clarification chips");
+      assert.ok(u.rewritten?.startsWith(c.prompt));
     }
     if (e.support !== undefined) {
       const sreq: KeplarRequest = { prompt: u.rewritten ?? c.prompt, understanding: { intent: u.intent, crossCheck: u.crossCheck, mood: u.mood, interpretation: u.assumption } };
@@ -44,7 +43,7 @@ for (const c of EVAL_SET) {
     }
     if (e.multiStep !== undefined) assert.equal(isMultiStep(c.prompt), e.multiStep);
     if (e.complexity) {
-      const req: KeplarRequest = { prompt: u.rewritten ?? c.prompt, ...(u.intent !== "plain" && u.intent !== "clarify" ? { understanding: { intent: u.intent, crossCheck: u.crossCheck, mood: u.mood, interpretation: u.assumption } } : {}) };
+      const req: KeplarRequest = { prompt: u.rewritten ?? c.prompt, ...(u.intent !== "plain" ? { understanding: { intent: u.intent, crossCheck: u.crossCheck, mood: u.mood, interpretation: u.assumption } } : {}) };
       assert.equal(new HeuristicClassifier().classify(req).complexity, e.complexity);
     }
   });
