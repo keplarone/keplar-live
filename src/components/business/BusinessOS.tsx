@@ -30,6 +30,44 @@ const TABS: { id: Tab; label: string }[] = [
 /** Minimal pass: four sections stay visible; Agents, Approvals, Connectors, Connected apps and Audit log open from More. */
 const MAIN_TABS: Tab[] = ["overview", "orders", "crm", "inbox"];
 
+/**
+ * Inside the Keplar Business workspace the sidebar already picks the section (Agents, Approvals, Operations, Integrations),
+ * so this component shows a page like the workspace's own (Dashboard, Reason): the section's title, one line about it, and
+ * underline tabs for that section's pages only. Keplar One keeps the tab rail above.
+ */
+const SECTIONS: { id: string; title: string; lead: string; tabs: Tab[] }[] = [
+  { id: "operations", title: "Operations", lead: "Revenue, orders, customers and messages from your sites, with a log of every change.", tabs: ["overview", "orders", "crm", "inbox", "audit"] },
+  { id: "agents", title: "Agents", lead: "Agents that work inside spend caps and ask before they send anything.", tabs: ["agents"] },
+  { id: "approvals", title: "Approvals", lead: "Everything an agent wants to send or change waits here for your decision.", tabs: ["approvals"] },
+  { id: "integrations", title: "Integrations", lead: "The services and apps your agents and reports can read from and act in.", tabs: ["connectors", "apps"] },
+];
+const sectionOf = (t: Tab) => SECTIONS.find((x) => x.tabs.includes(t)) ?? SECTIONS[0]!;
+
+function EmbeddedHead({ tab, onTab, pending, usage }: { tab: Tab; onTab: (t: Tab) => void; pending: number; usage: React.ReactNode }) {
+  const sec = sectionOf(tab);
+  return (
+    <>
+      <header className={s.eHead}>
+        <div>
+          <h1 className={s.eTitle}>{sec.title}</h1>
+          <p className={s.eLead}>{sec.lead}</p>
+        </div>
+        {usage}
+      </header>
+      {sec.tabs.length > 1 ? (
+        <div className={s.eTabs} role="tablist" aria-label={`${sec.title} pages`}>
+          {sec.tabs.map((id) => (
+            <button key={id} type="button" role="tab" data-tab={id} aria-selected={tab === id} className={s.eTab} onClick={() => onTab(id)}>
+              {TABS.find((t) => t.id === id)!.label}
+              {id === "approvals" && pending > 0 ? <span className={s.badge} aria-label={`${pending} pending`}>{pending}</span> : null}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </>
+  );
+}
+
 /** The less-used Business sections in one small menu (the open one shows as a tab). */
 function MoreSections({ tabs, pending, onPick }: { tabs: { id: Tab; label: string }[]; pending: number; onPick: (t: Tab) => void }) {
   const [open, setOpen] = useState(false);
@@ -94,7 +132,7 @@ function Pill({ tone, children }: { tone?: "on" | "warn" | "attn"; children: Rea
   return <span className={`${s.pill} ${tone === "on" ? s.on : tone === "warn" ? s.warn : tone === "attn" ? s.attn : ""}`}>{children}</span>;
 }
 
-export function BusinessOS({ initialTab = "overview" }: { initialTab?: Tab; embedded?: boolean }) {
+export function BusinessOS({ initialTab = "overview", embedded = false }: { initialTab?: Tab; embedded?: boolean }) {
   const [tab, setTab] = useState<Tab>(() => (peekConnectorBack() ? "connectors" : initialTab));
   const [dash, setDash] = useState<Dash | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -112,9 +150,19 @@ export function BusinessOS({ initialTab = "overview" }: { initialTab?: Tab; embe
   }, [tick]);
 
   const pending = dash?.approvals.pending ?? 0;
+  const usage = dash ? (
+    <span className={s.meter} title="Usage this billing period (shared across Keplar)">
+      <span className={s.label}>{dash.entitlements.label}</span>
+      {dash.compute.total ? (
+        <span className={s.label}>
+          {dash.compute.used.toLocaleString()} / {dash.compute.total.toLocaleString()}
+        </span>
+      ) : null}
+    </span>
+  ) : null;
   return (
-    <div className={s.shell}>
-      <div className={s.bar}>
+    <div className={s.shell} data-embedded={embedded || undefined}>
+      {embedded ? null : <div className={s.bar}>
         <span className={s.title}>Business</span>
         <div className={s.tabs} role="tablist" aria-label="Business sections">
           {TABS.filter((t) => MAIN_TABS.includes(t.id) || t.id === tab).map((t) => (
@@ -126,18 +174,10 @@ export function BusinessOS({ initialTab = "overview" }: { initialTab?: Tab; embe
         </div>
         <MoreSections tabs={TABS.filter((t) => !MAIN_TABS.includes(t.id) && t.id !== tab)} pending={pending} onPick={setTab} />
         <span className={s.spacer} />
-        {dash ? (
-          <span className={s.meter} title="Usage this billing period (shared across Keplar)">
-            <span className={s.label}>{dash.entitlements.label}</span>
-            {dash.compute.total ? (
-              <span className={s.label}>
-                {dash.compute.used.toLocaleString()} / {dash.compute.total.toLocaleString()}
-              </span>
-            ) : null}
-          </span>
-        ) : null}
-      </div>
+        {usage}
+      </div>}
       <div className={s.body} role="tabpanel">
+        {embedded && error !== SIGN_IN_ERROR ? <EmbeddedHead tab={tab} onTab={setTab} pending={pending} usage={usage} /> : null}
         {error === SIGN_IN_ERROR ? (
           <SignInGate
             title="Sign in to use Business"

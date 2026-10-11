@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Gated production deploy. Usage: node scripts/deploy.mjs [gitRef=HEAD] [--dry-run] [--quick]
- *   1. checks out <gitRef> into a throwaway git worktree under /tmp (your working tree and other people's uncommitted files are never deployed)
+ *   1. checks out <gitRef> into a throwaway git worktree under the OS temp dir (your working tree and other people's uncommitted files are never deployed)
  *   2. runs `npm run verify` there; if anything fails the script exits 1 and NOTHING is deployed
  *   3. deploys with `vercel --prod --yes` using a fresh HOME and VERCEL_TOKEN from the environment (never printed)
  *   4. runs the post-deploy smoke check against the live site; a failure exits 1 and tells you to roll back (docs/runbooks/rollback.md)
@@ -9,9 +9,24 @@
  * Env: KEPLAR_NODE_MODULES (path to a node_modules to link; default: this repo's), VERCEL_TOKEN, KEPLAR_SMOKE_BASE (default https://keplar.one).
  */
 import { execFileSync, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { copyFileSync, existsSync, linkSync, mkdirSync, mkdtempSync, readdirSync, readlinkSync, statSync, symlinkSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { delimiter, join, resolve } from "node:path";
+import { run } from "./spawn.mjs";
+
+const win = process.platform === "win32";
+
+/** `cp -al` in Node, for Windows (no cp): mirror dirs, hard-link files (copy when a link fails, e.g. across volumes), re-create
+ *  directory links as junctions (npm's own links on Windows; file symlinks need admin there, so those are copied). */
+function linkTree(src, dst) {
+  mkdirSync(dst, { recursive: true });
+  for (const e of readdirSync(src, { withFileTypes: true })) {
+    const s = join(src, e.name), d = join(dst, e.name);
+    if (e.isSymbolicLink()) { if (statSync(s).isDirectory()) symlinkSync(resolve(dst, readlinkSync(s)), d, "junction"); else copyFileSync(s, d); }
+    else if (e.isDirectory()) linkTree(s, d);
+    else { try { linkSync(s, d); } catch { copyFileSync(s, d); } }
+  }
+}
 
 const argv = process.argv.slice(2);
 const flags = new Set(argv.filter((a) => a.startsWith("--")));
@@ -28,8 +43,12 @@ if (!dry && !process.env.VERCEL_TOKEN) fail("VERCEL_TOKEN is not set");
 if (existsSync(dir)) { spawnSync("git", ["worktree", "remove", "--force", dir], { cwd: repo }); rmSync(dir, { recursive: true, force: true }); }
 execFileSync("git", ["worktree", "add", "-q", "--detach", dir, sha], { cwd: repo, stdio: "ignore" });
 // Turbopack rejects a node_modules symlink that points outside the project, so hard-link a copy (same filesystem: instant, no extra disk).
-const link = spawnSync("cp", ["-al", resolve(nm), join(dir, "node_modules")]);
-if (link.status !== 0) { const copy = spawnSync("cp", ["-a", resolve(nm), join(dir, "node_modules")]); if (copy.status !== 0) fail("could not set up node_modules in the worktree"); }
+if (win) {
+  try { linkTree(resolve(nm), join(dir, "node_modules")); } catch (e) { fail(`could not set up node_modules in the worktree: ${e.message}`); }
+} else {
+  const link = spawnSync("cp", ["-al", resolve(nm), join(dir, "node_modules")]);
+  if (link.status !== 0) { const copy = spawnSync("cp", ["-a", resolve(nm), join(dir, "node_modules")]); if (copy.status !== 0) fail("could not set up node_modules in the worktree"); }
+}
 console.log(`deploy: ${sha} checked out at ${dir}`);
 
 const verify = spawnSync("node", ["scripts/verify.mjs", ...(flags.has("--quick") ? ["--quick"] : [])], { cwd: dir, stdio: "inherit" });
@@ -39,8 +58,11 @@ if (dry) { console.log(`\ndeploy: dry run OK, ${sha} passes the gate. Nothing wa
 mkdirSync(join(dir, ".vercel"), { recursive: true });
 writeFileSync(join(dir, ".vercel", "project.json"), JSON.stringify({ projectId: "prj_cM3koE7T8rr1JnVSgW6MSVV8PX94", orgId: "team_nS1LQFUJNE9aln2WTbUjuJ5v" }));
 const home = mkdtempSync(join(tmpdir(), "keplar-vhome-"));
-const env = { ...process.env, HOME: home, PATH: `/home/box/.local/bin:${process.env.PATH}`, VERCEL_ORG_ID: "team_nS1LQFUJNE9aln2WTbUjuJ5v", VERCEL_PROJECT_ID: "prj_cM3koE7T8rr1JnVSgW6MSVV8PX94" };
-const dep = spawnSync("vercel", ["--prod", "--yes", "--token", process.env.VERCEL_TOKEN], { cwd: dir, env, encoding: "utf8" });
+const env = { ...process.env, HOME: home, VERCEL_ORG_ID: "team_nS1LQFUJNE9aln2WTbUjuJ5v", VERCEL_PROJECT_ID: "prj_cM3koE7T8rr1JnVSgW6MSVV8PX94" };
+// Windows: the env key is "Path" (adding "PATH" would make a second, conflicting entry) and the home dir comes from USERPROFILE.
+if (win) env.USERPROFILE = home;
+else env.PATH = `/home/box/.local/bin${delimiter}${process.env.PATH}`;
+const dep = run("vercel", ["--prod", "--yes", "--token", process.env.VERCEL_TOKEN], { cwd: dir, env, encoding: "utf8" });
 const out = `${dep.stdout}\n${dep.stderr}`.replaceAll(process.env.VERCEL_TOKEN, "***");
 console.log(out.split("\n").slice(-12).join("\n"));
 rmSync(home, { recursive: true, force: true });
