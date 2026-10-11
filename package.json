@@ -47,7 +47,7 @@
     "inngest": "^4.21.0",
     "katex": "^0.19.0",
     "lib0": "^0.2.119",
-    "next": "^16.3.6",
+    "next": "~16.3.8",
     "pdf-lib": "^1.17.1",
     "playwright-core": "^1.63.0",
     "pptxgenjs": "^4.0.1",
@@ -67,12 +67,16 @@
     "@types/react-dom": "^19.3.0",
     "@types/three": "^0.186.0",
     "eslint": "^9.39.5",
-    "eslint-config-next": "^16.3.6",
+    "eslint-config-next": "~16.3.8",
     "htm": "^3.1.1",
     "playwright": "^1.63.0",
     "preact": "^10.29.8",
     "sharp": "^0.35.5",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3"
+  },
+  "overrides": {
+    "image-size": "^2.0.4",
+    "source-map-js": "^1.2.2"
   }
 }
