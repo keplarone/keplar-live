@@ -155,3 +155,18 @@ test("route: signed-out is refused; a plain topic gets the model's vetted title;
   assert.equal(((await (await ask(a.cookie, { question: "Explain quantum entanglement" })).json()) as { source: string }).source, "topic"); // no model available
   assert.equal((await ask(a.cookie, { question: "" })).status, 400);
 });
+
+test("code blocks are content, not the title: the language names the chat (\"```js … ```\" was titled \"Js\")", () => {
+  assert.equal(topicTitle("```js\nconsole.log(1)\n``` why does this fail"), "JavaScript fail");
+  assert.equal(topicTitle("```python\nprint(1)\n```\nHow do I make this print twice?"), "Python print twice");
+  assert.equal(topicTitle("```\nSELECT * FROM users\n```"), "Code help");
+  assert.equal(topicTitle("```sql\nSELECT 1\n``` explain SQL joins"), "Explain SQL joins", "the language is not repeated");
+});
+
+test("a bare link is titled by its site; a vague one-word leftover is not a title", () => {
+  assert.equal(topicTitle("https://example.com/foo"), "Example.com link");
+  assert.equal(topicTitle("www.nytimes.com/2026/10/article"), "Nytimes.com link");
+  assert.equal(topicTitle("what about this one?"), "Quick question");
+  assert.equal(topicTitle("What is one plus one"), "One plus one", "\"one\" is still a real word");
+  assert.equal(topicTitle("One Piece anime recommendations"), "One Piece anime recommendations");
+});

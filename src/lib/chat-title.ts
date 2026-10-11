@@ -25,7 +25,14 @@ const STOP = new Set((
   "a an the is are was were be been being am do does did to of in on at for with about my me i you your it its this that these those please can could would should will shall " +
   "just really very some any there here have has had get got want need like know tell show give let let's lets what whats what's how why who whom where when which whose also then so " +
   "if as by from into up out over than too much many more most make makes making use using i'm i've i'd i'll we our us they them their he she him her his hers or but not no yes " +
-  "hey hi hello ok okay um uh well maybe kindly pls plz thanks thank anyone someone something anything everything best way ways good new").split(" "));
+  "hey hi hello ok okay um uh well maybe kindly pls plz thanks thank anyone someone something anything everything best way ways good new " +
+  // filler that never names a topic
+  "thing things stuff").split(" "));
+/** A title that is only one of these says nothing ("what about this one?" was titled "One"). */
+const VAGUE = /^(one|ones|it|this|that|these|those|question|questions|bit|part|interesting)$/i;
+/** Fenced code: its language names the chat ("```js … ``` why does this fail" was titled "Js"). */
+const FENCE = /```\s*([\w#+.-]*)[^\n]*\n?[\s\S]*?(?:```|$)/g;
+const LANGS: Record<string, string> = { js: "JavaScript", javascript: "JavaScript", jsx: "JavaScript", ts: "TypeScript", typescript: "TypeScript", tsx: "TypeScript", py: "Python", python: "Python", rb: "Ruby", ruby: "Ruby", go: "Go", rs: "Rust", rust: "Rust", java: "Java", kt: "Kotlin", swift: "Swift", c: "C", cpp: "C++", "c++": "C++", cs: "C#", csharp: "C#", php: "PHP", sql: "SQL", sh: "Shell", bash: "Shell", html: "HTML", css: "CSS", json: "JSON", yaml: "YAML", lua: "Luau", luau: "Luau" };
 const LEAD = /^(?:(?:please|pls|hey|hi|hello|ok|okay|so|um|kindly|yo)\b[\s,]*)+/i;
 const URLISH = /^(https?:|www\.)|@|^\d{5,}$|^[\w.-]+\.(com|org|net|io|ai|co|app|dev)\b/i;
 
@@ -78,6 +85,21 @@ export function topicTitle(question: string): string {
   const kind = titleKind(question);
   if (kind !== "topic" && kind !== "abuse") return FIXED[kind];
   if (kind === "abuse") return FIXED.abuse;
+  // Code blocks are content, not the topic: title from the words around them, named by the language.
+  let lang = "";
+  let hadCode = false;
+  const prose = question.replace(FENCE, (_, l: string) => { hadCode = true; lang ||= LANGS[l.toLowerCase()] ?? ""; return " "; }).trim();
+  if (hadCode) {
+    const around = prose ? topicTitle(prose) : "Quick question";
+    const label = `${lang || "Code"} ${lang ? "code" : "help"}`;
+    const lower = (w: string) => (w.length > 1 && w === w.toUpperCase() ? w : w[0].toLowerCase() + w.slice(1));
+    if (around === "Quick question" || around === "Casual chat") return label;
+    if (lang && around.toLowerCase().split(" ").includes(lang.toLowerCase())) return around;
+    return lang ? fit([lang, ...around.split(" ").map((w, i) => (i ? w : lower(w)))]) : around;
+  }
+  // A message that is only a link: name the site.
+  const link = /^\s*(?:https?:\/\/)?(?:www\.)?([a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,})(?:[/?#]\S*)?\s*$/i.exec(question);
+  if (link) return fit([link[1].toLowerCase(), "link"]);
   let q = question.split(/(?<=[.!?])\s+|\n/)[0].replace(PROFANITY, " ");
   PROFANITY.lastIndex = 0;
   q = q.replace(LEAD, "").replace(/^(?:what|how|why|who|where|when|which)(?:['’]s)?\s+(?:(?:is|are|was|were|do|does|did|can|could|would|should|to|many|much)\b)?\s*(?:(?:i|we|you|the)\b)?\s*/i, "");
@@ -98,7 +120,8 @@ export function topicTitle(question: string): string {
     if (STOP.has(lw)) continue;
     kept.push(w.length > 3 && w === w.toUpperCase() && !/\d/.test(w) && w.length > 5 ? w[0] + w.slice(1).toLowerCase() : w);
   }
-  return fit(kept) || "Quick question";
+  const title = fit(kept);
+  return title && !VAGUE.test(title) ? title : "Quick question";
 }
 
 /** Vet a title a model wrote: returns the cleaned title, or null (then the caller uses `topicTitle`). */
