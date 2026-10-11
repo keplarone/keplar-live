@@ -143,7 +143,8 @@
 .composer { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px 16px; border-top: 1px solid rgb(var(--rgb-ink) / 0.06); }
 .dock[data-compact] .composer { padding: 10px 12px 12px; gap: 8px; }
 .input { width: 100%; box-sizing: border-box; resize: none; border: 0; border-radius: 18px; padding: 12px 14px; background: rgb(var(--rgb-ink) / 0.05); font: inherit; font-size: 14.5px; line-height: 1.5; color: var(--c-ink); }
-.input:focus-visible { outline: none; box-shadow: inset 0 0 0 1.5px var(--c-ink); background: var(--c-surface-1); }
+.input:focus, .input:focus-visible { outline: none; box-shadow: none; background: rgb(var(--rgb-ink) / 0.075); }
+.input { transition: background-color 200ms ease; }
 .composerBar { display: flex; align-items: center; gap: 8px; }
 .refRow { display: flex; gap: 8px; flex-wrap: wrap; }
 .refRow img { width: 72px; height: 54px; object-fit: cover; border-radius: 10px; }
@@ -193,4 +194,35 @@
   .idea { transition: none; }
   .idea:hover { transform: none; }
   .feed { scroll-behavior: auto; }
+}
+
+/* ── chat motion: your messages slide in from the right, Keplar's from the left, steps rise; typing dots while thinking ── */
+.feed > .userMsg { animation: st-from-right 420ms cubic-bezier(.2, .8, .2, 1) both; transform-origin: right bottom; }
+.feed > .keplarMsg { animation: st-from-left 460ms cubic-bezier(.2, .8, .2, 1) both; }
+.feed > .lookItem, .feed > .action { animation: st-rise 420ms cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes st-from-right { from { opacity: 0; transform: translateX(16px) scale(0.97); filter: blur(4px); } }
+@keyframes st-from-left { from { opacity: 0; transform: translateX(-12px); filter: blur(4px); } }
+@keyframes st-rise { from { opacity: 0; transform: translateY(10px) scale(0.985); } }
+.typing { align-self: flex-start; display: inline-flex; gap: 5px; padding: 12px 14px; border-radius: 16px 16px 16px 6px; background: rgb(var(--rgb-ink) / 0.06); animation: st-from-left 300ms ease both; }
+.typing span { width: 6px; height: 6px; border-radius: 999px; background: var(--c-ink-3); animation: st-bounce 1.1s ease-in-out infinite; }
+.typing span:nth-child(2) { animation-delay: 150ms; }
+.typing span:nth-child(3) { animation-delay: 300ms; }
+@keyframes st-bounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.45; } 30% { transform: translateY(-5px); opacity: 1; } }
+
+/* empty state: a small orbit above "What should we build?" */
+.empty { align-items: center; animation: st-rise 520ms cubic-bezier(.2, .8, .2, 1) both; }
+.orbit { position: relative; width: 44px; height: 44px; margin-bottom: 6px; }
+.orbit span { position: absolute; inset: 0; border-radius: 999px; animation: st-orbit 4.5s linear infinite; }
+.orbit span::before { content: ""; position: absolute; left: 50%; top: 0; width: 7px; height: 7px; margin-left: -3.5px; border-radius: 999px; background: #b77cff; }
+.orbit span:nth-child(2) { animation-duration: 6s; animation-direction: reverse; inset: 7px; }
+.orbit span:nth-child(2)::before { background: #45d8ec; }
+.orbit span:nth-child(3) { inset: 16px; border-radius: 6px; animation: none; background: rgb(var(--rgb-ink) / 0.85); }
+.orbit span:nth-child(3)::before { display: none; }
+@keyframes st-orbit { to { transform: rotate(360deg); } }
+
+/* dark mode: the aura fields a notch quieter */
+:global(:root[data-theme="dark"]) .aura span[data-a] { opacity: 0.7; }
+
+@media (prefers-reduced-motion: reduce) {
+  .feed > .userMsg, .feed > .keplarMsg, .feed > .lookItem, .feed > .action, .typing, .typing span, .empty, .orbit span { animation: none; }
 }

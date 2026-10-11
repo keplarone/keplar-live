@@ -112,6 +112,7 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed }: { a:
       <ol className={s.feed} ref={listRef} aria-live="polite">
         {a.items.length === 0 ? (
           <li className={s.empty}>
+            <span className={s.orbit} aria-hidden="true"><span /><span /><span /></span>
             <strong>What should we build?</strong>
             <span>Keplar looks at your place first, then plans and builds. Attach screenshots or a clip of a UI, effect or gameplay you want to match.</span>
           </li>
@@ -145,6 +146,10 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed }: { a:
             <ActionCard key={it.key} it={it} compact={compact} onDecide={(ok) => a.decide(it.key, ok)} />
           ),
         )}
+        {/* Typing dots while Keplar is thinking (running, and not busy with or waiting on a Studio step). */}
+        {a.running && !a.items.some((x) => x.kind === "action" && (x.status === "running" || x.status === "waiting")) ? (
+          <li className={s.typing} aria-label={a.looking ? "Keplar is looking at your place" : "Keplar is thinking"}><span /><span /><span /></li>
+        ) : null}
       </ol>
 
       <form className={s.composer} onSubmit={(e) => { e.preventDefault(); submit(); }}>

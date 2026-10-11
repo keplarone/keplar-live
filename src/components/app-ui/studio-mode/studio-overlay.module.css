@@ -71,3 +71,34 @@
 @media (prefers-reduced-motion: reduce) {
   .aura span, .dot[data-tone="busy"], .progress span[data-live], .view[data-looking] .scan { animation: none; }
 }
+
+/* ── opening: the panel eases in; a thin light runs around its edge; buttons respond ── */
+@property --ov-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.panel { animation: ov-pop 560ms cubic-bezier(.2, .9, .25, 1) both; }
+@keyframes ov-pop { from { opacity: 0; transform: translateY(12px) scale(0.965); filter: blur(8px); } }
+.panel::before {
+  content: ""; position: absolute; inset: 0; z-index: 3; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: conic-gradient(from var(--ov-angle), transparent 0 68%, rgb(183 124 255 / 0.55) 78%, rgb(69 216 236 / 0.55) 86%, transparent 94%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  animation: ov-rim 7s linear infinite;
+}
+@keyframes ov-rim { to { --ov-angle: 360deg; } }
+.head > * { animation: ov-fade 500ms ease both; }
+.head > *:nth-child(2) { animation-delay: 60ms; }
+.head > *:nth-child(3) { animation-delay: 100ms; }
+.head > *:nth-child(n + 4) { animation-delay: 140ms; }
+@keyframes ov-fade { from { opacity: 0; transform: translateY(-4px); } }
+.icon { transition: background-color 120ms ease, color 120ms ease, transform 160ms cubic-bezier(.2, .8, .2, 1); }
+.icon:hover:not(:disabled) { transform: translateY(-1px); }
+.icon:active:not(:disabled) { transform: scale(0.9); }
+.view { animation: ov-fade 420ms ease both; }
+.pill { animation: ov-pop 420ms cubic-bezier(.2, .9, .25, 1) both; }
+
+/* dark mode: the aura a notch quieter */
+:global(:root[data-theme="dark"]) .aura span { opacity: 0.6; }
+
+@media (prefers-reduced-motion: reduce) {
+  .panel, .panel::before, .head > *, .view, .pill { animation: none; }
+  .icon:hover:not(:disabled), .icon:active:not(:disabled) { transform: none; }
+}
