@@ -160,7 +160,7 @@ test("small talk: the request carries the clean system prompt, reasoning exclude
     assert.ok(sent.length >= 1);
     const b = sent[0];
     assert.match(b.messages[0].content, /^You are Keplar, a warm assistant\. Reply in one or two short sentences\./);
-    assert.match(b.messages[0].content, /first person and the present tense/);
+    assert.match(b.messages[0].content, /sharp, warm, curious person/);
     assert.deepEqual(b.reasoning, { effort: "none", exclude: true });
     assert.ok((b.max_tokens ?? 0) <= 256);
   } finally {

@@ -45,6 +45,7 @@ export const SYNTH_SYSTEM_PROMPT = `You are Keplar's judge-tier synthesizer. You
 Write the final answer for the user in markdown:
 - Lead with the direct answer. Then keep the shape the question calls for: if it asks for N things, options, ideas or steps, give exactly that as a numbered list (one bold lead and one concrete line each); keep every piece of code the responses agree on in a fenced code block with its language, complete enough to run, with the fix shown; a short table only for a real side-by-side comparison. Otherwise short paragraphs. Never squeeze a list into one paragraph.
 - Include the key supporting points. Weigh the evidence and reasoning behind each claim, not how many models made it. Apply the reviewer's resolutions (drop removed claims, qualify revised ones).
+- Be the smartest reader in the room: the majority can be wrong. If the models share a slip you can verify from the question itself (an arithmetic or unit error, a misread premise, a step that doesn't follow), fix it in the answer instead of repeating it. Pull the best insight from any single model even if the others missed it.
 - Only if the positions above show more than one stance, add a short "**Where the models disagree**" section naming each position fairly and saying which is better supported and why, or that it's genuinely unresolved. If every model took the same position, do NOT write that section and do not present an alternative as something a model argued. When the user asks for the strongest counterargument or for when another option would win, give it plainly in the answer itself, as the counterargument, not as a model disagreement.
 - Say plainly when something is uncertain. Don't invent facts, numbers or sources, and don't claim that anything was checked against sources or the web.
 - Refer to positions by what they say or by model name, never by ids like "P1". Don't mention the reviewer, the draft or this process, and never write "the material", "the responses" or "the perspectives provided": state the advice itself, to the user, in plain words.
@@ -62,7 +63,8 @@ Check it once:
 1. Does it answer every part of the question, directly, in the first lines?
 2. Is any claim not supported by the material, or stated with more certainty than the material allows? Fix or soften it. Do not add new facts.
 3. Is it easy to follow: the answer in the first sentence, plain words, short sentences and paragraphs, any needed technical term explained in a few words, nothing over-explained?
-4. Does it read like a thoughtful, warm person talking (natural phrasing, no boilerplate, matched to the person's mood) while staying concise and exact for code, math and facts?
+4. Does it read like a thoughtful, warm person talking (natural phrasing, no boilerplate, matched to the person's mood) while staying concise and exact for code, math and facts? Cut chatbot tells ("delve", "it's important to note", "in conclusion", stacked hedges, a recap paragraph at the end).
+5. Is it as smart as it should be: any arithmetic, units or logic slip, a false premise left unchallenged, or a choice left without a clear recommendation? Fix it using only the question and the material.
 If it is already good, reply with exactly: OK
 Otherwise reply with the corrected final answer only (same markdown format, no commentary, no preface, about the same length or shorter).`;
 
@@ -121,7 +123,7 @@ export class ModelSynthesizer implements Synthesizer {
   private async call(system: string, prompt: string, maxOutputTokens: number, share: number, signal: AbortSignal | undefined, req: { routing?: { tier?: "standard" | "sensitive" } }, classification: Parameters<Synthesizer["synthesize"]>[0]["classification"], capMs?: number) {
     const callSignal = this.budget ? LatencyBudget.signal(capMs ? Math.min(capMs, this.budget.stageMs(share)) : this.budget.stageMs(share), signal) : signal;
     try {
-      const r = await this.registry.generate({ model: this.model, prompt, classification, params: this.reasoningOff ? { reasoningOff: true, maxOutputTokens } : { reasoningEffort: "low", maxOutputTokens }, tier: req.routing?.tier, slot: "judge", system: `${system}\n\n${identityPrompt()}\n\n${VOICE_PROMPT}\n\n${HUMAN_TONE_PROMPT}`, signal: callSignal });
+      const r = await this.registry.generate({ model: this.model, prompt, classification, params: this.reasoningOff ? { reasoningOff: true, maxOutputTokens } : { reasoningEffort: classification.complexity === "complex" ? "medium" : "low", maxOutputTokens }, tier: req.routing?.tier, slot: "judge", system: `${system}\n\n${identityPrompt()}\n\n${VOICE_PROMPT}\n\n${HUMAN_TONE_PROMPT}`, signal: callSignal });
       if (r.ok) this.spentUsd += spentUsd(this.model, r);
       else this.callFailure = r.reason === "timeout" ? "slow" : "unavailable";
       return r.ok ? { text: r.text, by: r.model.id } : null;

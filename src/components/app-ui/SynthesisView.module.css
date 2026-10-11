@@ -1,0 +1,168 @@
+/* Consensus synthesis (SynthesisView.tsx): model marks on a ring, streaming into Keplar at the center. */
+.wrap {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-2);
+  width: 100%;
+  max-width: 440px;
+  padding: var(--s-2) 0 var(--s-1);
+  animation: synthIn var(--d-slow) var(--e-emphasized) both;
+}
+
+.scene {
+  position: relative;
+  width: 100%;
+}
+
+.streams {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.glow {
+  transform-origin: center;
+  transform-box: fill-box;
+  animation: glow 2.4s var(--e-glide) infinite alternate;
+}
+
+.line {
+  fill: none;
+  stroke: var(--n-line);
+  stroke-width: 1;
+  stroke-linecap: round;
+  opacity: 0.5;
+}
+.line[data-state="responded"] {
+  stroke: var(--v-reasoning);
+  opacity: 0.55;
+  stroke-dasharray: 3 5;
+  animation: flow 0.9s linear infinite;
+}
+.line[data-state="failed"],
+.line[data-state="refused"] {
+  stroke-dasharray: 2 6;
+  opacity: 0.35;
+}
+.line[data-state="pending"] { opacity: 0.2; }
+
+.packet { fill: var(--v-reasoning); }
+
+/* Each seat sits on the ring and drifts a little toward the center and back, staggered, as if leaning in. */
+.seat {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+.disc {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-pill);
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(14 15 18 / 0.14), 0 0 0 1px rgb(var(--rgb-ink) / 0.06);
+  transform: translate(-50%, -50%);
+  animation: seatIn var(--d-slow) var(--e-emphasized) both, lean 3.2s var(--e-glide) infinite;
+  animation-delay: calc(var(--i) * 60ms), calc(var(--i) * 260ms);
+  transition: opacity var(--d-slow) var(--e-standard), filter var(--d-slow) var(--e-standard);
+}
+.disc img { display: block; }
+.mono {
+  font-size: var(--t-label);
+  font-weight: var(--w-semibold);
+  letter-spacing: -0.01em;
+  color: var(--n-graphite);
+}
+.seat[data-state="responded"] .disc {
+  box-shadow: 0 1px 3px rgb(14 15 18 / 0.14), 0 0 0 2px rgb(var(--rgb-reasoning) / 0.28), 0 0 14px rgb(var(--rgb-reasoning) / 0.22);
+}
+.seat[data-state="failed"] .disc,
+.seat[data-state="refused"] .disc {
+  opacity: 0.45;
+  filter: grayscale(1);
+  animation: seatIn var(--d-slow) var(--e-emphasized) both;
+}
+.seat[data-state="pending"] .disc {
+  opacity: 0.4;
+  background: var(--c-surface-2);
+  box-shadow: inset 0 0 0 1px var(--c-border-strong);
+  animation: seatIn var(--d-slow) var(--e-emphasized) both, wait 1.4s var(--e-glide) infinite alternate;
+}
+
+.core {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 60px;
+  height: 60px;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+}
+.ring {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-pill);
+  background: conic-gradient(from 0deg, transparent 0deg, var(--v-reasoning) 110deg, transparent 200deg, var(--v-research) 300deg, transparent 360deg);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
+  animation: spin 2.6s linear infinite;
+}
+.coreDisc {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-pill);
+  background: var(--c-ink);
+  color: var(--c-canvas);
+  box-shadow: 0 6px 20px rgb(var(--rgb-reasoning) / 0.3);
+  animation: beat 1.6s var(--e-glide) infinite alternate;
+}
+
+.caption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+  min-height: 2.6em;
+}
+.headline {
+  font-size: var(--t-small);
+  font-weight: var(--w-medium);
+  color: var(--c-ink);
+  animation: lineIn var(--d-slow) var(--e-emphasized) both;
+}
+.sub {
+  font-size: var(--t-label);
+  color: var(--c-ink-3);
+}
+
+/* Discs stay white in both themes (the marks are drawn for white); the center follows --c-ink, so it flips on its own. */
+
+@keyframes synthIn { from { opacity: 0; transform: translateY(4px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes seatIn { from { opacity: 0; transform: translate(calc(-50% + var(--dx) * 0.5), calc(-50% + var(--dy) * 0.5)) scale(0.6); } }
+@keyframes lean {
+  0%, 100% { transform: translate(-50%, -50%); }
+  50% { transform: translate(calc(-50% + var(--dx) * 0.1), calc(-50% + var(--dy) * 0.1)) scale(0.96); }
+}
+@keyframes wait { from { opacity: 0.25; } to { opacity: 0.5; } }
+@keyframes flow { to { stroke-dashoffset: -8; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes beat { from { transform: scale(1); } to { transform: scale(1.05); } }
+@keyframes glow { from { opacity: 0.6; transform: scale(0.94); } to { opacity: 1; transform: scale(1.04); } }
+@keyframes lineIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .wrap, .glow, .line[data-state="responded"], .disc, .ring, .coreDisc, .headline,
+  .seat[data-state="pending"] .disc, .seat[data-state="failed"] .disc, .seat[data-state="refused"] .disc { animation: none; }
+}

@@ -9,8 +9,9 @@ import { SMALLTALK_VOICE_FALLBACK } from "@/lib/persona";
 import { POST as keplarPOST } from "@/app/api/keplar/route";
 import { readFileSync } from "node:fs";
 
-test("the voice prompt asks for first person, present, reflective, warm, curious, and forbids the claims", () => {
-  for (const w of ["first person", "present tense", "reflective", "warm", "curious", "inner life"]) assert.match(VOICE_PROMPT, new RegExp(w));
+test("the voice prompt asks for a sharp, warm, curious, human voice without chatbot tells, and forbids the claims", () => {
+  for (const w of ["first person", "sharp, warm, curious", "contractions, plain words", "real opinions", "not a chatbot", "delve", "Don't narrate your own thinking"]) assert.match(VOICE_PROMPT, new RegExp(w));
+  assert.doesNotMatch(VOICE_PROMPT, /someone with an inner life|I find myself drawn to\.\.\.", for example/, "no performed introspection");
   assert.match(VOICE_PROMPT, /Never state as fact that you are conscious, sentient, self-aware, alive, superintelligent or AGI/);
   assert.match(VOICE_PROMPT, /candid that you do not know/);
   assert.match(VOICE_PROMPT, /never changes a fact, number, quote, code, math or the format/);

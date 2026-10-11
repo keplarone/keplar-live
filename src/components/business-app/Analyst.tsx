@@ -31,14 +31,14 @@ async function call<T>(url: string, init?: RequestInit): Promise<T> {
  * (assumptions, calculations, evidence, uncertainty, recommendation, next actions). Finished reports are kept in history and
  * can be downloaded or filed into a project.
  */
-export function Analyst({ kind }: { kind: Kind }) {
+export function Analyst({ kind, seed, openId, projectSeed, onSaved }: { kind: Kind; seed?: string; openId?: string; projectSeed?: string; onSaved?: () => void }) {
   const research = kind === "research";
-  const [template, setTemplate] = useState<string>(research ? "competitors" : "decision");
-  const [topic, setTopic] = useState("");
+  const [template, setTemplate] = useState<string>(research ? (seed ? "custom" : "competitors") : "decision");
+  const [topic, setTopic] = useState(seed ?? "");
   const [extra, setExtra] = useState("");
   const [docs, setDocs] = useState<EngineDoc[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [projectId, setProjectId] = useState("");
+  const [projectId, setProjectId] = useState(projectSeed ?? "");
   const [running, setRunning] = useState(false);
   const [live, setLive] = useState<Live>(EMPTY_LIVE);
   const [report, setReport] = useState<Full | null>(null);
@@ -78,8 +78,8 @@ export function Analyst({ kind }: { kind: Kind }) {
     if (e.type === "limit") setErr(e.window?.message ?? "You've reached your usage limit for now.");
   };
 
-  const start = async (ev: React.FormEvent) => {
-    ev.preventDefault();
+  const start = async (ev?: React.FormEvent) => {
+    ev?.preventDefault();
     if (!topic.trim() || running) return;
     abort.current?.abort();
     const ctl = new AbortController();
@@ -99,6 +99,7 @@ export function Analyst({ kind }: { kind: Kind }) {
       const saved = await call<{ report: { id: string } }>("/api/business/reports", { method: "POST", body: JSON.stringify({ ...full, template, projectId: projectId || null }) }).catch(() => null);
       setReport({ ...full, id: saved?.report.id ?? "" });
       loadHistory();
+      onSaved?.();
     } catch (e2) {
       if ((e2 as Error).name !== "AbortError") setErr(e2 instanceof Error ? e2.message : "Something went wrong.");
     } finally {
@@ -116,6 +117,16 @@ export function Analyst({ kind }: { kind: Kind }) {
       setErr(e instanceof Error ? e.message : "Couldn't open that report.");
     }
   };
+  // Started from the home composer (seed) or opened from Recent (openId): run or open once, on arrival.
+  const arrived = useRef(false);
+  useEffect(() => {
+    if (arrived.current) return;
+    arrived.current = true;
+    if (openId) queueMicrotask(() => void open(openId));
+    else if (seed?.trim()) queueMicrotask(() => void start());
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, on arrival
+  }, []);
+
   const remove = async (id: string) => {
     await call(`/api/business/reports/${encodeURIComponent(id)}`, { method: "DELETE" }).catch(() => undefined);
     if (report?.id === id) setReport(null);

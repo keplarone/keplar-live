@@ -60,3 +60,16 @@ test("polish also removes any claim to be human, and leaves negations alone", ()
   // composes with the consciousness guard
   assert.doesNotMatch(polish(guardVoice("I am conscious. I'm a person. Here you go.")), /conscious|person/);
 });
+
+test("polish: chatbot tells are rewritten in prose, never in code", () => {
+  assert.equal(polish("It's important to note that the cache expires daily."), "The cache expires daily.");
+  assert.equal(polish("Use a lock. It is worth noting that reads stay fast."), "Use a lock. Reads stay fast.");
+  assert.equal(polish("Pick B, but it's worth noting that A is cheaper."), "Pick B, but A is cheaper.");
+  assert.equal(polish("Go with Postgres.\n\nIn conclusion, it scales fine."), "Go with Postgres.\n\nIt scales fine.");
+  assert.equal(polish("Let's delve into the logs. Delving deeper helps."), "Let's dig into the logs. Digging deeper helps.");
+  const code = "```js\n// it's important to note that delve stays\n```";
+  assert.equal(polish(code), code);
+  assert.equal(polish("Run `delve debug` to start."), "Run `delve debug` to start.");
+  const once = polish("It's worth noting that X holds. In summary, fine.");
+  assert.equal(polish(once), once, "safe to call twice");
+});

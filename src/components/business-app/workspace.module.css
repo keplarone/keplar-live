@@ -1,7 +1,7 @@
 /* Keplar Business workspace (BusinessWorkspace, Dashboard, Projects): permanently dark, Geist, quiet hairlines. A fixed full-window
    surface below the desktop title bar, independent of Keplar One's theme. */
 .root {
-  --w-bg: #09090b; --w-panel: #111114; --w-panel-2: #17171b; --w-line: rgb(255 255 255 / 0.08); --w-line-2: rgb(255 255 255 / 0.14);
+  --w-bg: #141414; --w-panel: #1c1c1c; --w-panel-2: #232323; --w-line: #2a2a2a; --w-line-2: #383838;
   --w-ink: #ededef; --w-ink-2: #b5b5bd; --w-ink-3: #8e8e98; --w-accent: #8fb4ff; --w-ok: #4ade80; --w-warn: #fbbf24; --w-bad: #f2777a;
   position: fixed; inset: var(--kp-titlebar, 0px) 0 0 0; z-index: calc(var(--z-overlay) + 1);
   background: var(--w-bg); color: var(--w-ink); color-scheme: dark;
