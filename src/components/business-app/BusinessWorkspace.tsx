@@ -22,7 +22,7 @@ type View =
 
 /** This is the Business app (business.keplar.one): "/" is its storefront. Keplar One is a separate app on keplar.one. */
 const STORE = "/";
-const ONE = `${siteUrl}/app/ask?stay=1`;
+const ONE = `${siteUrl}/app`;
 const SIDE_KEY = "keplar-biz-side";
 const k = () => Math.random().toString(36).slice(2, 9);
 

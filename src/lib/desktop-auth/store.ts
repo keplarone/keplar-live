@@ -5,12 +5,14 @@
  * Times are epoch milliseconds, passed in by the caller so tests control the clock.
  */
 import { neonConfigured, neonQuery } from "@/lib/create/platform/neon";
-import type { Status } from "./core";
+import type { DesktopApp, Status } from "./core";
 
 export type Row = {
   id: string;
   challenge: string;
   label: string;
+  /** Which desktop app started it (Keplar One or Keplar Business): decides the link scheme and where the session is issued. */
+  app: DesktopApp;
   createdAt: number;
   expiresAt: number;
   status: Status;
@@ -25,6 +27,8 @@ export type Row = {
 };
 
 export type Who = { userId: string; email: string; name: string | null };
+/** A redeemed finish ticket: whose session to start, and for which app. */
+export type Finished = Who & { app: DesktopApp };
 
 export interface DesktopAuthStore {
   create(row: Row, now: number): Promise<void>;
@@ -38,7 +42,7 @@ export interface DesktopAuthStore {
   /** approved + this code + unexpired + this challenge -> used, with a finish ticket. Exactly one caller can win. */
   exchange(id: string, codeHash: string, challenge: string, finishHash: string, finishExpiresAt: number, now: number): Promise<boolean>;
   /** used + this ticket + unexpired -> finished. Exactly one caller can win. */
-  finish(finishHash: string, now: number): Promise<Who | null>;
+  finish(finishHash: string, now: number): Promise<Finished | null>;
 }
 
 /* ───────────── memory ───────────── */
@@ -86,7 +90,7 @@ export const memoryStore: DesktopAuthStore = {
       if (r.status === "used" && r.finishHash === finishHash && (r.finishExpiresAt ?? 0) > now && r.userId && r.email) {
         r.status = "finished";
         r.finishHash = null;
-        return { userId: r.userId, email: r.email, name: r.name };
+        return { userId: r.userId, email: r.email, name: r.name, app: r.app };
       }
     }
     return null;
@@ -102,6 +106,8 @@ const ensure = (): Promise<void> => {
       "CREATE TABLE IF NOT EXISTS keplar_desktop_auth (id text PRIMARY KEY, challenge text NOT NULL, label text NOT NULL DEFAULT '', created_at bigint NOT NULL, expires_at bigint NOT NULL, status text NOT NULL, user_id text, email text, name text, code_hash text, code_expires_at bigint, finish_hash text, finish_expires_at bigint, attempts integer NOT NULL DEFAULT 0)",
     );
     await neonQuery("CREATE INDEX IF NOT EXISTS keplar_desktop_auth_finish ON keplar_desktop_auth (finish_hash) WHERE finish_hash IS NOT NULL");
+    // Added for the Keplar Business desktop app; existing rows (and older deploys, which never write it) are Keplar One.
+    await neonQuery("ALTER TABLE keplar_desktop_auth ADD COLUMN IF NOT EXISTS app text NOT NULL DEFAULT 'one'");
   })().catch((e) => {
     ready = null;
     throw e;
@@ -118,6 +124,7 @@ const toRow = (r: Record<string, unknown>): Row => ({
   id: String(r.id),
   challenge: String(r.challenge),
   label: String(r.label ?? ""),
+  app: r.app === "business" ? "business" : "one",
   createdAt: Number(r.created_at),
   expiresAt: Number(r.expires_at),
   status: String(r.status) as Status,
@@ -135,8 +142,8 @@ export const sqlStore: DesktopAuthStore = {
   async create(row, now) {
     await q("DELETE FROM keplar_desktop_auth WHERE expires_at < $1", [String(now - 3_600_000)]).catch(() => undefined);
     await q(
-      "INSERT INTO keplar_desktop_auth (id, challenge, label, created_at, expires_at, status) VALUES ($1,$2,$3,$4,$5,'pending')",
-      [row.id, row.challenge, row.label, String(row.createdAt), String(row.expiresAt)],
+      "INSERT INTO keplar_desktop_auth (id, challenge, label, app, created_at, expires_at, status) VALUES ($1,$2,$3,$4,$5,$6,'pending')",
+      [row.id, row.challenge, row.label, row.app, String(row.createdAt), String(row.expiresAt)],
     );
   },
   async get(id) {
@@ -167,11 +174,11 @@ export const sqlStore: DesktopAuthStore = {
   },
   async finish(finishHash, now) {
     const rows = await q(
-      "UPDATE keplar_desktop_auth SET status='finished', finish_hash=NULL WHERE finish_hash=$1 AND status='used' AND finish_expires_at > $2 RETURNING user_id, email, name",
+      "UPDATE keplar_desktop_auth SET status='finished', finish_hash=NULL WHERE finish_hash=$1 AND status='used' AND finish_expires_at > $2 RETURNING user_id, email, name, app",
       [finishHash, String(now)],
     );
     const r = rows[0];
-    return r && r.user_id && r.email ? { userId: String(r.user_id), email: String(r.email), name: str(r.name) } : null;
+    return r && r.user_id && r.email ? { userId: String(r.user_id), email: String(r.email), name: str(r.name), app: r.app === "business" ? "business" : "one" } : null;
   },
 };
 

@@ -17,8 +17,9 @@ import type { BetterAuthPlugin } from "better-auth";
 import { APIError, createAuthEndpoint } from "better-auth/api";
 import { clientIpOf, rateLimit, RateLimitError } from "@/lib/create/platform/ratelimit";
 import { afterSignInPath } from "@/lib/onboarding/redirect";
-import { connectPath, REQUEST_TTL_SECONDS } from "@/lib/desktop-auth/core";
+import { connectPath, DESKTOP_APPS, REQUEST_TTL_SECONDS } from "@/lib/desktop-auth/core";
 import { approveRequest, cancelRequest, denyRequest, exchangeCode, pollRequest, redeemTicket, startRequest, type Deps } from "@/lib/desktop-auth/service";
+import { isBusinessHost } from "@/lib/business-site";
 import { defaultStore } from "@/lib/desktop-auth/store";
 import { startSession } from "./session-issue";
 
@@ -58,7 +59,7 @@ export const desktopAuth = (opts: Opts) => {
       desktopStart: createAuthEndpoint("/desktop/start", { method: "POST", requireHeaders: true }, async (ctx) => {
         await limit(`desktop:start:ip:${ipOf(ctx)}`, 20, 600);
         const b = obj(ctx.body);
-        const r = await startRequest(d(), { challenge: b.challenge, label: b.label });
+        const r = await startRequest(d(), { challenge: b.challenge, label: b.label, app: b.app });
         if (!r.ok) throw new APIError("BAD_REQUEST", { message: "Invalid sign-in request.", code: "BAD_CHALLENGE" });
         return ctx.json({ rid: r.rid, code: r.code, url: new URL(connectPath(r.rid), opts.origin()).toString(), expiresIn: REQUEST_TTL_SECONDS });
       }),
@@ -102,9 +103,13 @@ export const desktopAuth = (opts: Opts) => {
 
       desktopFinish: createAuthEndpoint("/desktop/finish", { method: "GET", requireHeaders: true }, async (ctx) => {
         await limit(`desktop:finish:ip:${ipOf(ctx)}`, 40, 600);
+        // Each desktop app gets its session on its own host: Keplar One on keplar.one, Keplar Business on business.keplar.one.
+        // A ticket opened on the other host is used up without signing anyone in (only misuse gets there).
+        const onBusiness = isBusinessHost((ctx.headers?.get("host") ?? "").toLowerCase().replace(/:\d+$/, "").replace(/\.$/, ""));
         const who = await redeemTicket(d(), (ctx.query as Record<string, unknown> | undefined)?.ticket);
-        if (!who) throw ctx.redirect("/signin?error=desktop_link_used&next=%2Fapp");
-        const { userId } = await startSession(ctx, { email: who.email, name: who.name, provider: "desktop", remember: true });
+        if (!who || (who.app === "business") !== onBusiness) throw ctx.redirect(onBusiness ? "/?signin=expired" : "/signin?error=desktop_link_used&next=%2Fapp");
+        const { userId } = await startSession(ctx, { email: who.email, name: who.name, provider: who.app === "business" ? "desktop-business" : "desktop", remember: true });
+        if (who.app === "business") throw ctx.redirect(DESKTOP_APPS.business.home);
         throw ctx.redirect(await afterSignInPath(userId, "/app"));
       }),
     },

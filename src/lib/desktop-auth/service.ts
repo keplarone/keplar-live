@@ -11,6 +11,7 @@ import {
   FINISH_TTL_SECONDS,
   MAX_BAD_ATTEMPTS,
   REQUEST_TTL_SECONDS,
+  appOf,
   cleanLabel,
   deepLinkFor,
   displayCode,
@@ -23,9 +24,10 @@ import {
   newSecret,
   secretMatches,
   verifierMatches,
+  type DesktopApp,
   type Status,
 } from "./core";
-import type { DesktopAuthStore, Row, Who } from "./store";
+import type { DesktopAuthStore, Finished, Row, Who } from "./store";
 
 export type Clock = () => number;
 export type Deps = { store: DesktopAuthStore; key: string; now?: Clock };
@@ -33,14 +35,16 @@ const nowOf = (d: Deps) => (d.now ?? Date.now)();
 
 export type StartResult = { ok: true; rid: string; code: string; expiresAt: number } | { ok: false; reason: "bad_challenge" };
 
-export async function startRequest(d: Deps, input: { challenge: unknown; label?: unknown }): Promise<StartResult> {
+export async function startRequest(d: Deps, input: { challenge: unknown; label?: unknown; app?: unknown }): Promise<StartResult> {
   if (!isChallenge(input.challenge)) return { ok: false, reason: "bad_challenge" };
   const now = nowOf(d);
   const rid = newRequestId();
+  const app = appOf(input.app);
   const row: Row = {
     id: rid,
     challenge: input.challenge,
-    label: cleanLabel(input.label),
+    label: cleanLabel(input.label, app),
+    app,
     createdAt: now,
     expiresAt: now + REQUEST_TTL_SECONDS * 1000,
     status: "pending",
@@ -59,8 +63,8 @@ export async function startRequest(d: Deps, input: { challenge: unknown; label?:
 
 export type PageState =
   | { state: "unknown" }
-  | { state: "ready"; code: string; label: string; expiresAt: number }
-  | { state: "approved" | "finished" | "cancelled" | "denied" | "expired"; code: string; label: string };
+  | { state: "ready"; code: string; label: string; app: DesktopApp; expiresAt: number }
+  | { state: "approved" | "finished" | "cancelled" | "denied" | "expired"; code: string; label: string; app: DesktopApp };
 
 /** What the browser page shows for a request id (no secrets). */
 export async function describeRequest(d: Deps, rid: unknown): Promise<PageState> {
@@ -68,7 +72,7 @@ export async function describeRequest(d: Deps, rid: unknown): Promise<PageState>
   const row = await d.store.get(rid);
   if (!row) return { state: "unknown" };
   const code = displayCode(d.key, rid);
-  const base = { code, label: row.label };
+  const base = { code, label: row.label, app: row.app };
   if (row.status === "cancelled" || row.status === "denied") return { state: row.status, ...base };
   if (row.status === "finished" || row.status === "used") return { state: "finished", ...base };
   if (row.expiresAt <= nowOf(d)) return { state: "expired", ...base };
@@ -91,7 +95,7 @@ export async function approveRequest(d: Deps, rid: unknown, who: Who): Promise<A
   const secret = newSecret();
   const ok = await d.store.approve(rid, who, hashSecret(secret), now + CODE_TTL_SECONDS * 1000, now);
   if (!ok) return { ok: false, reason: "closed" };
-  return { ok: true, deepLink: deepLinkFor(secret, rid), code: secret };
+  return { ok: true, deepLink: deepLinkFor(secret, rid, row.app), code: secret };
 }
 
 export type PollResult =
@@ -140,7 +144,7 @@ export async function exchangeCode(d: Deps, input: { rid: unknown; code: unknown
 }
 
 /** The window loads /desktop/finish?ticket=...; this redeems it once and says whose session to start. */
-export async function redeemTicket(d: Deps, ticket: unknown): Promise<Who | null> {
+export async function redeemTicket(d: Deps, ticket: unknown): Promise<Finished | null> {
   if (!isSecret(ticket)) return null;
   return d.store.finish(hashSecret(ticket), nowOf(d));
 }

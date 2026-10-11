@@ -43,7 +43,7 @@ import { pathForView, viewForPath } from "./app-paths";
 import { AppOnboarding } from "@/components/onboarding/AppOnboarding";
 import { DeploymentsView } from "./DeploymentsView";
 import { StudioView } from "./studio-mode/StudioView";
-import { BUSINESS_URL, BUSINESS_VIEWS, businessUrl } from "@/lib/business-site";
+import { BUSINESS_URL, BUSINESS_VIEWS } from "@/lib/business-site";
 import { businessProminent, examplesFor, readUseFor, useForOptions, writeUseFor, type UseFor } from "./use-for";
 import type { Ledger } from "./state/types";
 import { formatDailyReset } from "@/lib/usage/format";
@@ -244,19 +244,8 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   // Coming back signed in (a new visit, landing on the ask page): the welcome-back screen (WelcomeBack, Keplar Canvas Page 1).
   const [welcomeBackOk] = useState(() => typeof window !== "undefined" && !welcome && /^\/app(\/ask)?\/?$/.test(window.location.pathname) && shouldWelcomeBack());
   const [welcomeBackDone, setWelcomeBackDone] = useState(false);
-  // Keplar Business is its own app (business.keplar.one): a Business account opening the desktop app's ask page goes to its workspace there.
-  // "Switch to Keplar One" there links back with ?stay=1, which keeps Keplar One for the rest of the session.
-  const businessDesktop = state.ledger.synced && state.ledger.signedIn && state.ledger.plan === "business";
-  useEffect(() => {
-    if (!businessDesktop) return;
-    try {
-      if (new URLSearchParams(window.location.search).get("stay") === "1") { sessionStorage.setItem("keplar-stay-one", "1"); return; }
-      if (sessionStorage.getItem("keplar-stay-one")) return;
-    } catch { /* storage blocked: still redirect once */ }
-    if (document.documentElement.getAttribute("data-desktop") !== "1") return;
-    if (!/^\/app(\/ask)?\/?$/.test(window.location.pathname)) return;
-    window.location.replace(businessUrl("/work"));
-  }, [businessDesktop]);
+  // Keplar Business has its own desktop app (keplarone/keplar-business) and site (business.keplar.one): Keplar One never sends
+  // a Business account over. Keplar One's desktop window only shows keplar.one, so a redirect to the Business host would leave it.
   const chooseUseFor = useCallback((v: UseFor) => {
     writeUseFor(v);
     setUseFor(v);

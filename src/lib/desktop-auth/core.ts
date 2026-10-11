@@ -24,6 +24,18 @@ export const FINISH_TTL_SECONDS = 60;
 export const MAX_BAD_ATTEMPTS = 6;
 export const DEEP_LINK_SCHEME = "keplar:";
 
+/**
+ * Which desktop app started a sign-in. Keplar One (keplar.one, keplar:// links) and Keplar Business (business.keplar.one,
+ * keplar-business:// links, its own repo) share this protocol; each finishes on its own host, so each gets its own session.
+ */
+export type DesktopApp = "one" | "business";
+export const DESKTOP_APPS: Record<DesktopApp, { name: string; scheme: string; home: string }> = {
+  one: { name: "Keplar One", scheme: DEEP_LINK_SCHEME, home: "/app" },
+  business: { name: "Keplar Business", scheme: "keplar-business:", home: "/work" },
+};
+/** Anything but "business" is Keplar One (older apps send nothing). */
+export const appOf = (raw: unknown): DesktopApp => (raw === "business" ? "business" : "one");
+
 export type Status = "pending" | "approved" | "used" | "finished" | "cancelled" | "denied";
 
 const B64URL = /^[A-Za-z0-9_-]+$/;
@@ -60,29 +72,30 @@ export function displayCode(key: string, requestId: string): string {
   return `${out.slice(0, 3)}-${out.slice(3)}`;
 }
 
-export function deepLinkFor(code: string, requestId: string): string {
-  return `keplar://auth?code=${encodeURIComponent(code)}&rid=${encodeURIComponent(requestId)}`;
+export function deepLinkFor(code: string, requestId: string, app: DesktopApp = "one"): string {
+  return `${DESKTOP_APPS[app].scheme}//auth?code=${encodeURIComponent(code)}&rid=${encodeURIComponent(requestId)}`;
 }
 
-/** What the app does with a keplar:// link. Returns null for anything that is not a well-formed auth link. */
-export function parseAuthDeepLink(raw: string): { code: string; rid: string } | null {
+/** What the app does with its auth link (keplar:// or keplar-business://). Returns null for anything that is not a well-formed auth link. */
+export function parseAuthDeepLink(raw: string, app: DesktopApp = "one"): { code: string; rid: string } | null {
   let url: URL;
   try {
     url = new URL(raw);
   } catch {
     return null;
   }
-  if (url.protocol !== DEEP_LINK_SCHEME || url.hostname !== "auth" || url.username || url.password) return null;
+  if (url.protocol !== DESKTOP_APPS[app].scheme || url.hostname !== "auth" || url.username || url.password) return null;
   const code = url.searchParams.get("code");
   const rid = url.searchParams.get("rid");
   return isSecret(code) && isRequestId(rid) ? { code, rid } : null;
 }
 
 /** A device label for the confirm page ("Keplar One on Windows"): short, printable, nothing the sender can use to impersonate. */
-export function cleanLabel(raw: unknown): string {
-  if (typeof raw !== "string") return "Keplar One desktop";
+export function cleanLabel(raw: unknown, app: DesktopApp = "one"): string {
+  const fallback = `${DESKTOP_APPS[app].name} desktop`;
+  if (typeof raw !== "string") return fallback;
   const s = raw.replace(/[^\p{L}\p{N} ._()-]/gu, "").replace(/\s+/g, " ").trim().slice(0, 40);
-  return s || "Keplar One desktop";
+  return s || fallback;
 }
 
 /** The page that opens in the browser. `rid` is unguessable, so the link itself is the capability to approve. */

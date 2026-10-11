@@ -82,7 +82,7 @@ test("happy path: start -> approve -> exchange -> redeem ticket, and the state m
   const x = await exchangeCode(r.deps, { rid, code, verifier: p.verifier });
   assert.ok(x.ok);
   const who2 = await redeemTicket(r.deps, x.ticket);
-  assert.deepEqual(who2, who);
+  assert.deepEqual(who2, { ...who, app: "one" }, "a request with no app is Keplar One");
   assert.equal((await describeRequest(r.deps, rid)).state, "finished");
 });
 
@@ -227,4 +227,16 @@ test("the database never holds the code or the ticket in the clear", async () =>
   const x = await exchangeCode(r.deps, { rid, code, verifier: p.verifier });
   assert.ok(x.ok);
   assert.ok(!JSON.stringify(await memoryStore.get(rid)).includes(x.ticket));
+});
+
+test("Keplar Business: its own link scheme and default label; unknown apps are Keplar One", async () => {
+  const { appOf, deepLinkFor, parseAuthDeepLink: parse, cleanLabel: label, newRequestId: rid, newSecret: secret } = await import("@/lib/desktop-auth/core");
+  const r = rid(), c = secret();
+  assert.match(deepLinkFor(c, r, "business"), /^keplar-business:\/\/auth\?code=/);
+  assert.deepEqual(parse(deepLinkFor(c, r, "business"), "business"), { code: c, rid: r });
+  assert.equal(parse(deepLinkFor(c, r, "business")), null);
+  assert.equal(parse(deepLinkFor(c, r), "business"), null);
+  assert.equal(label(undefined, "business"), "Keplar Business desktop");
+  assert.equal(appOf("business"), "business");
+  for (const x of [undefined, "one", "Business", "evil", 1]) assert.equal(appOf(x), "one");
 });

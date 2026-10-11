@@ -100,7 +100,7 @@ test("Business account: company profile is validated and the website normalised"
 
 test("Business site: storefront on business.keplar.one, download only for active plans, dark Geist chrome", () => {
   const route = readFileSync("src/app/api/business/account/route.ts", "utf8");
-  assert.match(route, /if \(active\) \{\s*const r = await getDesktopRelease\(\)/, "download links are computed only for an active Business plan");
+  assert.match(route, /if \(active\) \{\s*(?:\/\/[^\n]*\n\s*)?const r = await getDesktopRelease\(fetch, "business"\)/, "download links (the Business app's own) are computed only for an active Business plan");
   assert.doesNotMatch(route, /access-control-allow-origin/, "same origin now: business.keplar.one serves its own account API");
   const layout = readFileSync("src/app/(business)/layout.tsx", "utf8");
   assert.match(readFileSync("src/components/business-site/fonts.ts", "utf8"), /Geist\(/);

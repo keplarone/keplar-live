@@ -149,3 +149,43 @@ test("an unknown or malformed request id is refused everywhere", async () => {
   assert.equal((await app("poll", { rid: "nope", verifier: "y" })).json.status, "invalid");
   assert.equal((await finish("not-a-ticket")).status, 302);
 });
+
+test("Keplar Business desktop app: keplar-business:// link, and the session is issued only on business.keplar.one", async () => {
+  const verifier = newSecret();
+  const st = await app("start", { challenge: challengeOf(verifier), label: "", app: "business" });
+  assert.equal(st.res.status, 200);
+  assert.equal(new URL(st.json.url).origin, ORIGIN, "the browser still approves on keplar.one, where the account signs in");
+  const { cookie: browser } = await signIn("flow-business@example.com");
+  const ok = await post("approve", { rid: st.json.rid }, { cookie: browser });
+  assert.equal(ok.res.status, 200);
+  assert.match(ok.json.deepLink, /^keplar-business:\/\/auth\?/);
+  assert.equal(parseAuthDeepLink(ok.json.deepLink), null, "Keplar One's app ignores a Business link");
+  const link = parseAuthDeepLink(ok.json.deepLink, "business");
+  assert.ok(link);
+
+  const a = await auth();
+  const finishOn = async (host: string) => {
+    const ex = await app("exchange", { rid: st.json.rid, code: link.code, verifier });
+    return { ex, fin: ex.res.status === 200 ? await a.handler(new Request(`https://${host}/api/auth/desktop/finish?ticket=${ex.json.ticket}`, { method: "GET", redirect: "manual", headers: { host, "x-forwarded-for": ip() } } as RequestInit)) : null };
+  };
+  // Opened on keplar.one (the wrong host): no session, and the ticket is spent.
+  const wrong = await finishOn("keplar.one");
+  assert.equal(wrong.fin?.status, 302);
+  assert.match(wrong.fin?.headers.get("location") ?? "", /error=desktop_link_used/);
+  assert.equal(cookieOf(wrong.fin!), "");
+
+  // A fresh request finished on the Business host: a Business session, straight into the workspace.
+  const v2 = newSecret();
+  const st2 = await app("start", { challenge: challengeOf(v2), app: "business" });
+  const ok2 = await post("approve", { rid: st2.json.rid }, { cookie: browser });
+  const l2 = parseAuthDeepLink(ok2.json.deepLink, "business")!;
+  const ex2 = await app("exchange", { rid: st2.json.rid, code: l2.code, verifier: v2 });
+  assert.equal(ex2.res.status, 200);
+  const fin = await a.handler(new Request(`https://business.keplar.one/api/auth/desktop/finish?ticket=${ex2.json.ticket}`, { method: "GET", redirect: "manual", headers: { host: "business.keplar.one", "x-forwarded-for": ip() } } as RequestInit));
+  assert.equal(fin.status, 302);
+  assert.equal(fin.headers.get("location"), "/work");
+  const cookie = cookieOf(fin);
+  assert.match(cookie, /session_token=/);
+  const session = await (await import("@/lib/accounts/auth")).getSession(new Headers({ cookie }));
+  assert.equal(session?.user.email, "flow-business@example.com");
+});

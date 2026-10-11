@@ -27,7 +27,8 @@ export async function GET(req: Request) {
     const active = hasBusinessAccess(ws.plan, ws.admin);
     let download: { version: string; files: { os: string; arch: string; type: string; url: string; size: number }[]; notesUrl: string } | null = null;
     if (active) {
-      const r = await getDesktopRelease();
+      // The Keplar Business desktop app, from its own repo (keplarone/keplar-business).
+      const r = await getDesktopRelease(fetch, "business");
       if (r.status === "ok") download = { version: r.release.version, notesUrl: r.release.notesUrl, files: r.release.files.filter((f) => ["exe", "dmg", "AppImage", "deb"].includes(f.type)).map((f) => ({ os: f.os, arch: f.arch, type: f.type, url: f.url, size: f.size })) };
     }
     // The workspace's entitlements already carry the tier bought (its label is the tier's name; see tierEntitlements).

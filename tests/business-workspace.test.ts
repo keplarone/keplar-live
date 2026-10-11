@@ -37,12 +37,11 @@ test("workspace APIs need an active Business plan; the summary uses only the acc
   assert.match(summary, /assertSameOrigin\(req\)/);
 });
 
-test("desktop: a Business account opening the ask page goes to the Business app's workspace unless it chose Keplar One (?stay=1)", () => {
+test("desktop: Keplar One never redirects a Business account; Business has its own desktop app", () => {
   const app = readFileSync("src/components/app-ui/KeplarApp.tsx", "utf8");
-  assert.match(app, /state\.ledger\.plan === "business"/);
-  assert.match(app, /get\("stay"\) === "1"/);
-  assert.match(app, /data-desktop"\) !== "1"/);
-  assert.match(app, /window\.location\.replace\(businessUrl\("\/work"\)\)/);
+  assert.doesNotMatch(app, /businessUrl\("\/work"\)|keplar-stay-one/, "Keplar One's window only shows keplar.one");
+  assert.match(readFileSync("src/lib/desktop/releases.ts", "utf8"), /business: \{ repo: "keplarone\/keplar-business"/);
+  assert.match(readFileSync("src/app/api/business/account/route.ts", "utf8"), /getDesktopRelease\(fetch, "business"\)/, "the storefront offers the Business app's installers");
   const ws = readFileSync("src/components/business-app/BusinessWorkspace.tsx", "utf8");
   assert.doesNotMatch(ws, /study|skill/i, "no Study or Skills in Business");
 });
