@@ -22,11 +22,11 @@ test("Business plans: names, prices and every tier pricier than Keplar One Pro (
   assert.equal(BUSINESS_TIERS.growth.name, "Keplar Business Growth");
   assert.equal(BUSINESS_TIERS.scale.name, "Keplar Business Scale");
   assert.equal(BUSINESS_TIERS.enterprise.name, "Keplar Enterprise");
-  assert.deepEqual([BUSINESS_TIERS.starter.monthly, BUSINESS_TIERS.growth.monthly, BUSINESS_TIERS.scale.monthly, BUSINESS_TIERS.enterprise.monthly], [149, 349, 1999, null]);
+  assert.deepEqual([BUSINESS_TIERS.starter.monthly, BUSINESS_TIERS.growth.monthly, BUSINESS_TIERS.scale.monthly, BUSINESS_TIERS.enterprise.monthly], [199, 499, 2999, null]);
   for (const t of ["starter", "growth", "scale"] as const) assert.ok(BUSINESS_TIERS[t].monthly! > 99);
-  assert.equal(priceFor("starter", "monthly", 17), 149);
-  assert.equal(priceFor("starter", "annual", 17), Math.round(149 * 12 * 0.83));
-  assert.equal(priceFor("scale", "annual", 0), 1999 * 12);
+  assert.equal(priceFor("starter", "monthly", 17), 199);
+  assert.equal(priceFor("starter", "annual", 17), Math.round(199 * 12 * 0.83));
+  assert.equal(priceFor("scale", "annual", 0), 2999 * 12);
 });
 
 test("Business plans: the swarm is Enterprise-only; no Study or Skills anywhere in a Business plan", () => {
@@ -34,11 +34,11 @@ test("Business plans: the swarm is Enterprise-only; no Study or Skills anywhere 
   for (const t of Object.values(BUSINESS_TIERS)) assert.equal(t.includes.some((x) => /study|skill/i.test(x)), false, t.id);
 });
 
-test("Business plans: AI credits keep model spend at or under ~40% of the price (unit economics)", () => {
+test("Business plans: AI credits keep model spend at or under ~40% of the price (unit economics, with room after the price rise)", () => {
   const COST_PER_CREDIT = 0.002 / 1.1; // a credit is $0.002 of metered cost, which is provider cost x 1.1
   for (const t of ["starter", "growth", "scale"] as const) {
     const share = (BUSINESS_TIERS[t].credits! * COST_PER_CREDIT) / BUSINESS_TIERS[t].monthly!;
-    assert.ok(share <= 0.4, `${t}: ${Math.round(share * 100)}%`);
+    assert.ok(share <= 0.3, `${t}: ${Math.round(share * 100)}%`);
   }
 });
 
