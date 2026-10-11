@@ -68,6 +68,10 @@ export function describeAction(name: string, args: Record<string, unknown>): str
     case "generate_mesh": return `Generate a mesh: ${s(args.textPrompt).slice(0, 60)}`;
     case "generate_material": return `Create a material: ${s(args.materialDescription).slice(0, 60)}`;
     case "generate_texture": return `Re-texture: ${s(args.textPrompt).slice(0, 60)}`;
+    case "upload_image": {
+      const n = Array.isArray(args.imagePaths) ? args.imagePaths.length : 0;
+      return `Upload ${n === 1 ? "an image" : `${n} images`} to your Roblox account`;
+    }
     case "segment_mesh": return "Split a mesh into parts";
     case "start_stop_play": return args.is_start ? "Start a play test" : "Stop the play test";
     case "character_navigation": return "Move the test character";

@@ -226,3 +226,8 @@
 @media (prefers-reduced-motion: reduce) {
   .feed > .userMsg, .feed > .keplarMsg, .feed > .lookItem, .feed > .action, .typing, .typing span, .empty, .orbit span { animation: none; }
 }
+
+/* Images Keplar asks to upload to the person's Roblox account, listed on the approval card. */
+.uploadList { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 12.5px; }
+.uploadList a { color: var(--c-ink-2); text-decoration: underline; text-underline-offset: 2px; word-break: break-all; }
+.uploadList a:hover { color: var(--c-ink); }

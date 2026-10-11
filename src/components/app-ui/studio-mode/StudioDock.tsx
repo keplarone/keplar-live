@@ -12,6 +12,7 @@ const MAX_REFS = 8;
 
 function ActionCard({ it, onDecide, compact }: { it: Extract<Item, { kind: "action" }>; onDecide: (ok: boolean) => void; compact: boolean }) {
   const code = it.name === "execute_luau" && typeof it.args.code === "string" ? it.args.code : null;
+  const uploads = it.name === "upload_image" && Array.isArray(it.args.imagePaths) ? it.args.imagePaths.filter((x): x is string => typeof x === "string") : [];
   const [showCode, setShowCode] = useState(!compact);
   return (
     <li className={s.action} data-status={it.status} data-risk={it.risk}>
@@ -22,6 +23,13 @@ function ActionCard({ it, onDecide, compact }: { it: Extract<Item, { kind: "acti
         <span className={s.actionStatus}>{STATUS_LABEL[it.status]}</span>
       </div>
       {code && it.status === "waiting" && showCode ? <pre className={s.code}>{code.slice(0, 4000)}</pre> : null}
+      {uploads.length && it.status === "waiting" ? (
+        <ul className={s.uploadList}>
+          {uploads.map((src) => (
+            <li key={src}><a href={src} target="_blank" rel="noreferrer noopener" title={src}>{src.replace(/^https:\/\//, "").slice(0, 90)}</a></li>
+          ))}
+        </ul>
+      ) : null}
       {it.summary && it.status !== "waiting" && !compact ? <p className={s.actionSummary}>{it.summary}</p> : null}
       {it.image ? (
         // eslint-disable-next-line @next/next/no-img-element -- a data URL from Studio, shown as is

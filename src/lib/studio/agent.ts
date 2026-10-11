@@ -69,15 +69,33 @@ export const STUDIO_TOOL_POLICY: Record<string, Risk | "blocked"> = {
   generate_texture: "destructive", // re-textures the source in place
   http_get: "blocked", // fetches any URL from the person's computer
   store_image: "blocked", // reads a local file path
-  upload_image: "blocked", // publishes images to the person's Roblox account
+  upload_image: "destructive", // publishes images to the person's Roblox account: always asks, public https images only
   subagent: "blocked", // hands the session to another AI outside Keplar's approvals
 };
 
 /** Luau that deletes, wipes, publishes, spends or reaches outside the place is always shown for approval. */
 const DESTRUCTIVE_LUAU = /:\s*Destroy\s*\(|ClearAllChildren|:\s*Remove\s*\(|\.Parent\s*=\s*nil|Debris\s*:|DataStoreService|MessagingService|MarketplaceService|TeleportService|HttpService|SavePlace|PublishAsync|SetAsync|RemoveAsync|loadstring|require\s*\(\s*\d/i;
 
+/** An image the uploader may fetch: a public https URL, never a file, localhost or a private network address. */
+export function isUploadableImageUrl(v: unknown): boolean {
+  if (typeof v !== "string" || v.length > 2048) return false;
+  let u: URL;
+  try { u = new URL(v); } catch { return false; }
+  if (u.protocol !== "https:" || u.username || u.password) return false;
+  const h = u.hostname.toLowerCase().replace(/^\[|\]$/g, "");
+  if (!h.includes(".") && !h.includes(":")) return false;
+  if (/(^|\.)(localhost|local|internal|lan|home|test)$/.test(h)) return false;
+  if (/^(127\.|10\.|0\.|169\.254\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.)/.test(h)) return false;
+  if (h.includes(":") && (h === "::1" || /^(fc|fd|fe80|::ffff:)/.test(h))) return false;
+  return true;
+}
+
 export function riskOf(name: string, args: Record<string, unknown>): Risk | "blocked" {
   const base = STUDIO_TOOL_POLICY[name] ?? "blocked";
+  if (name === "upload_image") {
+    const paths = args.imagePaths;
+    return Array.isArray(paths) && paths.length > 0 && paths.length <= 10 && paths.every(isUploadableImageUrl) ? "destructive" : "blocked";
+  }
   if (base !== "change") return base;
   if (name === "execute_luau" && typeof args.code === "string" && DESTRUCTIVE_LUAU.test(args.code)) return "destructive";
   if (name === "multi_edit" && Array.isArray(args.edits) && args.edits.some((e) => e && typeof e === "object" && (e as { new_string?: unknown }).new_string === "")) return "destructive";
@@ -100,8 +118,8 @@ References: when the person attached reference images or video frames, study the
 
 Textures for VFX and UI (always for effects or interface work, and above all when matching reference images):
 - First look through Zonito's particle pack, the free VFX texture pack by its creator Z0nito on the Creator Store (asset id 14605502518): insert it into ServerStorage as a library (a folder named TextureLibrary), inspect its ParticleEmitters, Beams, Trails and Decals, and reuse the texture ids and emitter settings that fit the request. Copy only what you use into the build; leave the library out of Workspace. Use search_asset (creator_store, free) for anything else you need, preferring free assets from the original creator, never reuploads.
-- If nothing there fits, make your own textures in Studio instead of settling: for VFX, Roblox's built-in particle textures (rbxasset://textures/particles/...), layered Beams and Trails with tuned width, curve, light emission and Color/Transparency sequences, flipbook-style emitters and Neon or ForceField parts; for UI, UIGradient, UIStroke, UICorner, layered Frames, 9-slice images and built-in icons, so the look matches the reference without new uploads.
-- You cannot upload new image files; say so if the reference needs custom artwork that only an upload could provide.
+- If nothing there fits, make your own textures in Studio instead of settling: for VFX, Roblox's built-in particle textures (rbxasset://textures/particles/...), layered Beams and Trails with tuned width, curve, light emission and Color/Transparency sequences, flipbook-style emitters and Neon or ForceField parts; for UI, UIGradient, UIStroke, UICorner, layered Frames, 9-slice images and built-in icons, so the look matches the reference without needing new uploads.
+- When the reference needs custom artwork that neither the pack nor Studio-made textures can match (a logo, a hand-drawn icon set, a specific flipbook or decal), you may upload new images with upload_image: it publishes them to the person's Roblox account as new image assets, so each upload waits for their approval. Pass public https image URLs only (up to 10 per call; no local files or private addresses), say in one line what each image is for, upload only what the build uses, then apply the returned rbxassetid:// ids. Uploaded images go through Roblox moderation and can take a moment before they show.
 
 Quality bar:
 - Luau: clean, organised, typed where useful, no deprecated APIs (use task.wait/task.spawn, not wait/spawn). Server code in ServerScriptService, shared ModuleScripts in ReplicatedStorage with clear APIs, client code in StarterPlayerScripts or StarterGui. Every new script starts with a short comment header: what it does and how it connects. Handle edge cases (players leaving, respawns, nil checks).

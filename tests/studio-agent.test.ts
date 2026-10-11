@@ -20,6 +20,16 @@ test("risk: reads run alone, changes need approval, deletes/data stores/publishi
   for (const t of ["http_get", "store_image", "upload_image", "subagent", "some_new_tool"]) assert.equal(riskOf(t, {}), "blocked", t);
 });
 
+test("upload_image: public https images always wait for approval; files, localhost and private addresses are blocked", () => {
+  assert.equal(riskOf("upload_image", { imagePaths: ["https://cdn.example.com/slash.png", "https://images.example.org/a/b.jpg?x=1"] }), "destructive");
+  for (const bad of ["http://cdn.example.com/a.png", "file:///C:/secret.png", "C:\\a.png", "https://localhost/a.png", "https://127.0.0.1/a.png", "https://192.168.1.4/a.png", "https://10.0.0.2/a.png", "https://172.20.1.1/a.png", "https://169.254.169.254/latest", "https://[::1]/a.png", "https://intranet/a.png", "https://user:pw@cdn.example.com/a.png", "https://printer.local/a.png"]) {
+    assert.equal(riskOf("upload_image", { imagePaths: [bad] }), "blocked", bad);
+  }
+  assert.equal(riskOf("upload_image", { imagePaths: [] }), "blocked");
+  assert.equal(riskOf("upload_image", { imagePaths: Array.from({ length: 11 }, (_, i) => `https://cdn.example.com/${i}.png`) }), "blocked");
+  assert.equal(riskOf("upload_image", { imagePaths: "https://cdn.example.com/a.png" }), "blocked");
+});
+
 test("tools: only allowed Studio tools are offered, with capped descriptions; blocked ones never reach the model", () => {
   const tools = buildTools([
     { name: "execute_luau", description: "x".repeat(5000), inputSchema: { type: "object", properties: { code: { type: "string" } } } },
@@ -92,10 +102,13 @@ test("system prompt: plan first, studio_id on every call, organised Luau, approv
   for (const s of ["list_roblox_studios", "numbered plan", "comment header", "Folders", "TweenService", "ParticleEmitter", "reference images", "approval"]) assert.match(STUDIO_SYSTEM, new RegExp(s), s);
 });
 
-test("system prompt: VFX and UI textures come from Zonito's particle pack first, else Keplar makes its own (no uploads)", () => {
+test("system prompt: VFX and UI textures come from Zonito's particle pack first, else Keplar makes its own, uploading only with approval", () => {
   assert.match(STUDIO_SYSTEM, /Zonito's particle pack/);
   assert.match(STUDIO_SYSTEM, /14605502518/);
   assert.match(STUDIO_SYSTEM, /never reuploads/);
   assert.match(STUDIO_SYSTEM, /make your own textures in Studio/);
-  assert.match(STUDIO_SYSTEM, /cannot upload new image files/);
+  assert.doesNotMatch(STUDIO_SYSTEM, /cannot upload/);
+  assert.match(STUDIO_SYSTEM, /upload_image/);
+  assert.match(STUDIO_SYSTEM, /waits for their approval/);
+  assert.match(STUDIO_SYSTEM, /public https image URLs only/);
 });
