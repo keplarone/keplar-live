@@ -110,3 +110,26 @@ test("every workspace tab uses the Business theme: the embedded Keplar One scree
   assert.match(readFileSync("src/components/create/workspace/ws.module.css", "utf8"), /:global\(html\[data-business-app\]\) \.root \{[^}]*--ws-bg: #141414;/);
   assert.match(readFileSync("src/components/business-app/BusinessWorkspace.tsx", "utf8"), /root\.setAttribute\("data-business-app", ""\)/);
 });
+
+test("Agents, Approvals, Operations, Integrations and Create look like the workspace's own pages inside Business", () => {
+  const os = readFileSync("src/components/business/BusinessOS.tsx", "utf8");
+  // Embedded: the section's own title, one line and underline tabs for that section only (no "Business" bar or pill rail).
+  assert.match(os, /\{embedded \? null : <div className=\{s\.bar\}>/);
+  assert.match(os, /<EmbeddedHead tab=\{tab\}/);
+  for (const t of ["Operations", "Agents", "Approvals", "Integrations"]) assert.match(os, new RegExp(`title: "${t}"`));
+  const osCss = readFileSync("src/components/business/business.module.css", "utf8");
+  assert.match(osCss, /\.shell\[data-embedded\] \.card, \.shell\[data-embedded\] \.notice, \.shell\[data-embedded\] \.col \{\s*border: 0; border-radius: 12px; padding: 16px;/);
+  // Create: underline tabs and the New chat composer, only while the workspace is open.
+  assert.match(readFileSync("src/components/create/apps/studio.module.css", "utf8"), /:global\(html\[data-business-app\]\) \.calm \.calmCard \{/);
+  for (const f of ["src/components/create/images.module.css", "src/components/create/video/video.module.css"]) {
+    assert.match(readFileSync(f, "utf8"), /:global\(html\[data-business-app\]\) \.root \.panel \{ border-radius: 12px;/, f);
+  }
+  // Keplar One's global button lift and drop shadow stay out of the whole workspace (they are !important, so this is the only way).
+  const redesign = readFileSync("src/styles/redesign.css", "utf8");
+  assert.equal((redesign.match(/:not\(html\[data-business-app\] \*\)/g) ?? []).length, 5);
+  // Icon-only detection needs an aria-label: CSS can't see text, so "Options ▾" was squashed to 28px.
+  const ws = readFileSync("src/components/business-app/workspace.module.css", "utf8");
+  assert.match(ws, /\[aria-label\]:has\(> svg:only-child\)\) \{\s*width: 28px;/);
+  // No Keplar One brand in the Business window's title bar.
+  assert.match(readFileSync("src/components/desktop/DesktopTitleBar.module.css", "utf8"), /:global\(html\[data-business-app\]\) \.brand \{ visibility: hidden; \}|\.search, :global\(html\[data-business-app\]\) \.brand \{ visibility: hidden; \}/);
+});

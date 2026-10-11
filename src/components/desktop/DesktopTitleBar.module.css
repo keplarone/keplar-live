@@ -44,4 +44,4 @@
 @media (max-width: 640px) { .brand span { display: none; } .bar { grid-template-columns: auto minmax(0, 1fr) 0; } }
 /* In the Keplar Business workspace the sidebar has its own back, forward and search: the title bar is a plain strip in its colour. */
 :global(html[data-business-app]) .bar { background: #181818; border-bottom-color: #262626; }
-:global(html[data-business-app]) .nav, :global(html[data-business-app]) .search { visibility: hidden; }
+:global(html[data-business-app]) .nav, :global(html[data-business-app]) .search, :global(html[data-business-app]) .brand { visibility: hidden; }
