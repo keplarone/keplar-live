@@ -127,3 +127,34 @@ export function clearSaved(key: string | null): void {
   if (!key) return;
   try { localStorage.removeItem(key); } catch { /* storage blocked */ }
 }
+
+/* ── account sync (/api/studio/chats): the device copy above is the instant, offline one; the account copy follows the person ── */
+
+/** The account's save of this game, or null (signed out, offline, or none yet). */
+export async function fetchRemote(key: string | null): Promise<SavedSession | null> {
+  if (!key) return null;
+  try {
+    const r = await fetch(`/api/studio/chats?key=${encodeURIComponent(key)}`, { cache: "no-store", credentials: "same-origin" });
+    if (!r.ok) return null;
+    const d = (await r.json()) as { chat?: { session?: SavedSession } | null };
+    const s = d.chat?.session;
+    return s && s.v === SAVE_VERSION && Array.isArray(s.items) && Array.isArray(s.history) ? { ...s, history: repairHistory(s.history) } : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Sends this game's save to the account. Quietly does nothing when signed out or offline: the device copy still has it. */
+export async function pushRemote(key: string | null, s: SavedSession): Promise<void> {
+  if (!key) return;
+  try {
+    await fetch("/api/studio/chats", { method: "PUT", headers: { "content-type": "application/json" }, credentials: "same-origin", body: JSON.stringify({ key, session: s }) });
+  } catch { /* offline: the next save tries again */ }
+}
+
+export async function deleteRemote(key: string | null): Promise<void> {
+  if (!key) return;
+  try {
+    await fetch(`/api/studio/chats?key=${encodeURIComponent(key)}`, { method: "DELETE", credentials: "same-origin" });
+  } catch { /* offline */ }
+}

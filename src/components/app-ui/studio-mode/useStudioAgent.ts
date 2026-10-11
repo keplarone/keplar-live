@@ -16,7 +16,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { resultText, type StudioBridge, type StudioContent } from "@/lib/desktop/studio-bridge";
-import { clearSaved, placeKey, readSaved, toSaved, writeSaved } from "./saved-session";
+import { clearSaved, deleteRemote, fetchRemote, placeKey, pushRemote, readSaved, toSaved, writeSaved, type SavedSession } from "./saved-session";
 import { scaleDataUrl } from "./references";
 
 export type Risk = "read" | "change" | "destructive";
@@ -173,8 +173,14 @@ export function useStudioAgent(bridge: StudioBridge | null) {
   }, []);
 
   /** Opening a game brings back its saved chat (this device), so work continues where it stopped. */
-  const restore = useCallback((p: Place | null) => {
-    const saved = readSaved(placeKey(p));
+  /** A restore is not a change: it must not be saved back (stamped "now") before the account's copy has been compared. */
+  const skipSave = useRef(false);
+  /** Set by the person's own activity after a restore; a slower account copy then no longer replaces what is on screen. */
+  const touched = useRef(false);
+  const lastPush = useRef(0);
+
+  const apply = useCallback((saved: SavedSession | null, p: Place | null) => {
+    skipSave.current = true;
     history.current = saved?.history ?? [];
     flags.current.units = saved?.units ?? 0;
     setUnits(saved?.units ?? 0);
@@ -185,6 +191,20 @@ export function useStudioAgent(bridge: StudioBridge | null) {
     setStats(saved?.stats ?? { steps: 0, changes: 0, errors: 0 });
     setItems(saved ? [...saved.items, { kind: "note", key: key(), text: `Picked up where you left off in ${p?.name ?? "this game"} (saved ${new Date(saved.savedAt).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}). Keplar will take a fresh look before your next request.` }] : []);
   }, []);
+
+  /** Opening a game brings back its saved chat: this device's copy at once, then the account's if it is newer (another computer). */
+  const restore = useCallback((p: Place | null) => {
+    const k = placeKey(p);
+    const local = readSaved(k);
+    touched.current = false;
+    apply(local, p);
+    void fetchRemote(k).then((remote) => {
+      if (!remote || touched.current || placeKey(placeRef.current) !== k) return;
+      if (remote.savedAt <= (local?.savedAt ?? 0)) return;
+      writeSaved(k, remote);
+      apply(remote, p);
+    });
+  }, [apply]);
 
   const setPlace = useCallback((p: Place | null) => {
     const changed = placeKey(p) !== placeKey(placeRef.current);
@@ -352,6 +372,7 @@ export function useStudioAgent(bridge: StudioBridge | null) {
     if (!bridge || running || (!text.trim() && !images.length)) return;
     // Resolve the game first: opening it restores its saved chat, which must happen before this message joins it.
     await ensurePlace();
+    touched.current = true;
     add({ kind: "user", key: key(), text, images });
     flags.current = { ...flags.current, pause: false, stop: false, steps: 0, units: flags.current.units, changed: false, reviewed: false };
     setPaused(false);
@@ -382,16 +403,21 @@ export function useStudioAgent(bridge: StudioBridge | null) {
     setBuilt([]);
     setStats({ steps: 0, changes: 0, errors: 0 });
     clearSaved(placeKey(placeRef.current));
+    void deleteRemote(placeKey(placeRef.current));
   }, [stop]);
 
-  /* Save this game's chat as it changes (debounced; the run loop's history is read at save time). */
+  /* Save this game's chat as it changes: on this device soon, on the account a little later (debounced; history is read at save time). */
   useEffect(() => {
     const k = placeKey(place);
+    if (skipSave.current) { skipSave.current = false; return; }
     if (!k || !items.length) return;
-    const t = setTimeout(() => {
-      writeSaved(k, toSaved({ name: place?.name ?? "", items, history: history.current, plan, current, finished, built, stats, units }));
-    }, running ? 3000 : 400);
-    return () => clearTimeout(t);
+    const snapshot = () => toSaved({ name: place?.name ?? "", items, history: history.current, plan, current, finished, built, stats, units });
+    const local = setTimeout(() => writeSaved(k, snapshot()), running ? 3000 : 400);
+    const push = () => { lastPush.current = Date.now(); void pushRemote(k, snapshot()); };
+    // Debounced, but a long build (a change every few seconds) still reaches the account at least every 30 seconds.
+    if (running && Date.now() - lastPush.current > 30_000) push();
+    const remote = setTimeout(push, running ? 15_000 : 4000);
+    return () => { clearTimeout(local); clearTimeout(remote); };
   }, [place, items, plan, current, finished, built, stats, units, running]);
 
   /* Play-testing is the person's: start and stop a play test in Studio directly (no model call, no credits). */
