@@ -1,6 +1,7 @@
 /**
  * Metadata for the localized pages: translated title and description, a self-canonical in the page's locale, hreflang to every
- * indexable locale plus x-default (English), og:locale with its alternates. Beta locales and auth pages are noindex.
+ * indexable locale plus x-default (English), og:locale with its alternates. Every locale is indexable, Beta ones included; auth
+ * pages (sign in, sign up) stay noindex.
  */
 import type { Metadata } from "next";
 import { site } from "@/lib/site";
@@ -17,7 +18,7 @@ export async function localeMetadata(locale: string, page: PageKey): Promise<Met
   const info = localeInfo(locale);
   const path = PATH[page];
   const alternates = localeAlternates(path, locale);
-  const indexable = info.status === "stable" && INDEXABLE_PATHS.includes(path as (typeof INDEXABLE_PATHS)[number]);
+  const indexable = INDEXABLE_PATHS.includes(path as (typeof INDEXABLE_PATHS)[number]);
   const fullTitle = page === "home" ? m.title : `${m.title} · ${site.name}`;
   return {
     title: page === "home" ? { absolute: m.title } : m.title,

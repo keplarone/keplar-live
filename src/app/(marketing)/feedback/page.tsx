@@ -7,7 +7,6 @@ import { TwoTone } from "@/components/page/TwoTone";
 export const metadata: Metadata = {
   title: "Feedback",
   description: "Tell the Keplar team what works, what doesn't and what you would change. Anonymous by default.",
-  robots: { index: false, follow: true },
   alternates: { canonical: "/feedback" },
 };
 

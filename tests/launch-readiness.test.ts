@@ -40,8 +40,18 @@ test("cron routes record a heartbeat on success and on failure", () => {
   }
 });
 
-test("/status is linked in the footer, noindex and not in the sitemap", () => {
+test("/status is linked in the footer, indexable and not in the sitemap", () => {
   assert.ok(footerNav.some((c) => c.links.some((l) => l.href === "/status")));
   assert.ok(!sitemapPaths.includes("/status"));
-  assert.match(readFileSync("src/app/(marketing)/status/page.tsx", "utf8"), /noindex: true/);
+  assert.doesNotMatch(readFileSync("src/app/(marketing)/status/page.tsx", "utf8"), /noindex/);
+});
+
+test("public content pages carry no noindex; private, auth and missing pages keep theirs", () => {
+  for (const f of ["status", "simulation", "feedback", "vs/[slug]"]) {
+    assert.doesNotMatch(readFileSync(`src/app/(marketing)/${f}/page.tsx`, "utf8"), /noindex|index: false/, f);
+  }
+  assert.doesNotMatch(readFileSync("src/lib/i18n/seo.ts", "utf8"), /status === "stable"/, "Beta locales are indexable");
+  for (const f of ["r/[token]/page.tsx", "c/[token]/page.tsx", "signin/page.tsx", "templates/[slug]/page.tsx"]) {
+    assert.match(readFileSync(`src/app/(marketing)/${f}`, "utf8"), /noindex|index: false/, f);
+  }
 });

@@ -8,7 +8,7 @@ import { liveMode } from "@/lib/orchestration/providers";
 import s from "@/components/status/Status.module.css";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = pageMeta("/status", "Status", "Is Keplar up? Live checks of the website, accounts and data, answers, checkout and scheduled jobs.", { noindex: true });
+export const metadata: Metadata = pageMeta("/status", "Status", "Is Keplar up? Live checks of the website, accounts and data, answers, checkout and scheduled jobs.");
 
 type Line = { name: string; detail: string; state: "ok" | "degraded" | "down" | "info"; badge?: string };
 const utc = (iso: string | null) => (iso ? `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC` : "never");
