@@ -285,7 +285,7 @@
   font-size: var(--t-label);
   letter-spacing: 0;
   text-transform: none;
-  color: color-mix(in srgb, var(--c-dissent) 85%, var(--c-ink));
+  color: var(--c-dissent-text);
 }
 
 .reviewText {
@@ -303,7 +303,7 @@
   border-radius: 6px;
   font-family: var(--f-sans);
   font-size: 0.9em;
-  color: color-mix(in srgb, var(--c-dissent) 85%, var(--c-ink));
+  color: var(--c-dissent-text);
   background: color-mix(in srgb, var(--c-warm) 12%, var(--c-canvas));
   box-shadow: inset 0 0 0 var(--b-hairline) color-mix(in srgb, var(--c-warm) 40%, transparent);
 }
