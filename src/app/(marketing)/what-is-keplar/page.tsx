@@ -47,11 +47,12 @@ export default function WhatIsKeplarPage() {
       <PageHero
         label="What is Keplar?"
         title="Much more than one answer from many models."
-        lede={WHAT_IS_KEPLAR}
+        lede="An answer engine that asks several AI models and shows where they disagree, inside a workspace that also studies, researches, presents, creates, builds games and runs agents."
         ctas={[{ href: "/app", label: `Try ${brand.name} free` }, { href: "/features", label: "Every feature and its status", variant: "secondary" }]}
       />
       <section className={s.section} style={{ paddingTop: "var(--s-12)" }}>
         <div className={`${s.inner} ${s.prose}`}>
+          <p>{WHAT_IS_KEPLAR}</p>
           <p>{NOT_JUST_MULTI_MODEL}</p>
           <p>
             On this page: {FACT_SECTIONS.map((sec, i) => (
