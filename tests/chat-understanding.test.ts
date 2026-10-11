@@ -195,3 +195,18 @@ test("memoryUsedCount counts the notes and past-chat lines in a prepared context
   assert.equal(memoryUsedCount("The question:\n"), 0);
   assert.equal(memoryUsedCount(undefined), 0);
 });
+
+test("revision follow-ups send the original task and draft to the model without an overview", async () => {
+  await withModels(async (requests) => {
+    const r = await chat(null, "shorter", [
+      { role: "user", text: "Write a friendly email about the Friday workshop. Keep the venue as Elm Hall." },
+      { role: "keplar", text: "Hi everyone, our Friday workshop is at Elm Hall. Bring your notes and arrive at 10 am." },
+    ]);
+    assert.equal(r.res.status, 200);
+    const sent = requests.join("\n");
+    assert.match(sent, /Elm Hall/);
+    assert.match(sent, /Return the revised text itself/);
+    assert.doesNotMatch(sent, /overview of \"shorter/);
+    assert.equal(r.a?.clarify, undefined);
+  });
+});

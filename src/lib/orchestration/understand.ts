@@ -12,6 +12,7 @@
  * Keplar, Keplar's pricing) and (b) a rewritten question + a guidance block for the models otherwise.
  */
 import { playfulRead, type PlayKind } from "./playful";
+import { readAnswerFollowup } from "./answer-followup";
 import { detectMood, type Mood } from "@/lib/persona-tone";
 import { tiers } from "@/lib/tiers";
 import { CREATOR_CREDIT, TAGLINE } from "@/lib/identity";
@@ -206,6 +207,8 @@ export function understand(input: UnderstandInput): Understood {
   if (!raw || raw.length > 160) return base;
   // Code, links and markup are never fragments.
   if (/[`{}<>\\|~[\]_=@#$%^*+]|https?:|www\./i.test(raw)) return base;
+  const answerEdit = readAnswerFollowup(raw, history);
+  if (answerEdit) return { ...base, intent: "followup", rewritten: raw + "\n\n(" + answerEdit.instruction + ")", assumption: null, contextRead: answerEdit.summary, usedContext: true };
   // Jokes, riddles, knock-knock, banter (playful.ts): a short, human, funny reply; never an overview of the format. Before every other rule.
   const play = playfulRead(raw, history, { mood });
   if (play) return { ...base, intent: "playful", rewritten: null, assumption: null, clarify: null, crossCheck: false, play };
