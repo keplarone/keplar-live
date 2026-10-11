@@ -91,3 +91,11 @@ test("turn: no model key means Studio mode says it is unavailable, and nothing i
 test("system prompt: plan first, studio_id on every call, organised Luau, approval for anything destructive", () => {
   for (const s of ["list_roblox_studios", "numbered plan", "comment header", "Folders", "TweenService", "ParticleEmitter", "reference images", "approval"]) assert.match(STUDIO_SYSTEM, new RegExp(s), s);
 });
+
+test("system prompt: VFX and UI textures come from Zonito's particle pack first, else Keplar makes its own (no uploads)", () => {
+  assert.match(STUDIO_SYSTEM, /Zonito's particle pack/);
+  assert.match(STUDIO_SYSTEM, /14605502518/);
+  assert.match(STUDIO_SYSTEM, /never reuploads/);
+  assert.match(STUDIO_SYSTEM, /make your own textures in Studio/);
+  assert.match(STUDIO_SYSTEM, /cannot upload new image files/);
+});
