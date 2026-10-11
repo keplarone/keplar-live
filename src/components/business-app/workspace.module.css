@@ -141,3 +141,23 @@
 /* A full Keplar module (Create, the Business OS sections) inside the workspace's main area: it fills it and scrolls with it. */
 .module { min-height: 100%; display: flex; flex-direction: column; }
 .module > * { flex: 1; min-width: 0; }
+
+/* Compact controls inside the modules (Create, Operations, Integrations, Agents, Approvals): Business is a dense desktop tool.
+   Only button-like controls are touched (their CSS-module class names: btn, tab, primary, ghost, quiet, chip, seg, pill); card-like
+   buttons, inputs and text links keep their size. Icon-only buttons stay square. Keplar One's own screens are not affected. */
+.module :global(:is(button, a, [role="tab"]):is([class*="__btn"], [class*="Btn"], [class*="__tab"], [class*="__primary"], [class*="__ghost"], [class*="__quiet"], [class*="__chip"], [class*="__seg"], [class*="__pill"], [class*="__segBtn"]):not([class*="__tabs"]):not(:has(> svg:only-child))) {
+  height: auto;
+  min-height: 26px;
+  padding-block: 3px;
+  padding-inline: 10px;
+  font-size: 12.5px;
+  line-height: 1.25;
+  gap: 6px;
+}
+.module :global(:is(button, a):is([class*="__btn"], [class*="Btn"], [class*="__primary"], [class*="__ghost"], [class*="__quiet"]):has(> svg:only-child)) {
+  width: 28px;
+  height: 28px;
+  min-height: 0;
+  padding: 0;
+}
+.module :global(:is(button, a, [role="tab"]) svg) { max-width: 15px; max-height: 15px; }
