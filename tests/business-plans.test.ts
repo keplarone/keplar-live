@@ -99,7 +99,8 @@ test("Business site: storefront on business.keplar.one, download only for active
   assert.match(route, /if \(active\) \{\s*const r = await getDesktopRelease\(\)/, "download links are computed only for an active Business plan");
   assert.match(route, /access-control-allow-origin", STOREFRONT/);
   const layout = readFileSync("src/app/(business)/layout.tsx", "utf8");
-  assert.match(layout, /Geist\(/);
+  assert.match(readFileSync("src/components/business-site/fonts.ts", "utf8"), /Geist\(/);
+  assert.match(layout, /geist\.variable/);
   const store = readFileSync("src/components/business-site/Storefront.tsx", "utf8");
   assert.doesNotMatch(store, /study|skills/i);
   assert.match(readFileSync("src/proxy.ts", "utf8"), /url\.pathname = "\/business-landing"/);

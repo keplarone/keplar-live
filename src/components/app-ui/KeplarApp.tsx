@@ -244,6 +244,19 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   // Coming back signed in (a new visit, landing on the ask page): the welcome-back screen (WelcomeBack, Keplar Canvas Page 1).
   const [welcomeBackOk] = useState(() => typeof window !== "undefined" && !welcome && /^\/app(\/ask)?\/?$/.test(window.location.pathname) && shouldWelcomeBack());
   const [welcomeBackDone, setWelcomeBackDone] = useState(false);
+  // Keplar Business lives in the desktop app: a Business account opening the app's ask page goes to its workspace (/app/work).
+  // "Switch to Keplar One" there links back with ?stay=1, which keeps Keplar One for the rest of the session.
+  const businessDesktop = state.ledger.synced && state.ledger.signedIn && state.ledger.plan === "business";
+  useEffect(() => {
+    if (!businessDesktop) return;
+    try {
+      if (new URLSearchParams(window.location.search).get("stay") === "1") { sessionStorage.setItem("keplar-stay-one", "1"); return; }
+      if (sessionStorage.getItem("keplar-stay-one")) return;
+    } catch { /* storage blocked: still redirect once */ }
+    if (document.documentElement.getAttribute("data-desktop") !== "1") return;
+    if (!/^\/app(\/ask)?\/?$/.test(window.location.pathname)) return;
+    window.location.replace("/app/work");
+  }, [businessDesktop]);
   const chooseUseFor = useCallback((v: UseFor) => {
     writeUseFor(v);
     setUseFor(v);
