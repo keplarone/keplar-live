@@ -21,7 +21,8 @@ export type Assessment = {
 };
 
 const RX = {
-  mathOp: /\b(solve|equation|integral|derivative|probability|expected value|how many|how much|total|percent|ratio|rate|average|mean|median|compound|interest|minimum|maximum|optimi[sz]e|prove|proof|theorem|combinations?|permutations?|factorial|prime|modulo|remainder|area|volume|perimeter|speed|distance)\b/i,
+  // Stems take their usual endings ("compounded", "percentage", "averaged"): a bare \b after the stem missed them.
+  mathOp: /\b(solve|equations?|integrals?|derivatives?|probabilit(y|ies)|expected value|how many|how much|total|percent(age)?s?|ratios?|rates?|averag(e|ed|es)|mean|median|compound(ed|ing)?|interest|minimum|maximum|optimi[sz]e|prove|proof|theorem|combinations?|permutations?|factorial|primes?|modulo|remainder|area|volume|perimeter|speed|distance|annual(ly)?|monthly|per year|per month)\b|\d\s*%/i,
   code: /\b(code|function|implement|algorithm|bug|debug|refactor|typescript|javascript|python|rust|sql|regex|api|class|unit tests?|complexity|big-?o|recursion|compile|stack trace)\b|```/i,
   science: /\b(physics|chemistry|biology|molecule|quantum|energy|force|reaction|cell|gene|evolution|thermodynamic|entropy)\b/i,
   finance: /\b(revenue|margin|valuation|cash flow|npv|irr|roi|budget|invest|loan|mortgage|tax|pricing|profit)\b/i,
@@ -69,16 +70,26 @@ export function assess(req: KeplarRequest, asked: Depth = "auto"): Assessment {
 
   let d = 0;
   d += c.complexity === "complex" ? 0.4 : c.complexity === "moderate" ? 0.2 : 0;
-  if (RX.hard.test(p)) d += 0.2;
+  // Each distinct hard signal counts ("design" + "distributed" is harder than either alone), up to three.
+  const hardHits = new Set((p.match(new RegExp(RX.hard.source, "gi")) ?? []).map((h) => h.toLowerCase())).size;
+  d += Math.min(hardHits, 3) * 0.1 + (hardHits ? 0.1 : 0);
+  // A proof is checked work by definition.
+  if (/\b(prove|proof|derive)\b/i.test(p)) d += 0.15;
   if (needs.multiStep) d += 0.15;
-  if (needs.math && nums >= 3) d += 0.15;
+  // Arithmetic with real quantities (money over time, percentages, word problems) gets its numbers computed and checked.
+  if (needs.math && nums >= 2) d += 0.15;
+  if (needs.math && nums >= 3) d += 0.05;
+  // Money over time (compounding, loans, mortgages, APR) is multi-step arithmetic models often get wrong: compute it.
+  const moneyOverTime = needs.math && nums >= 2 && /\b(compound(ed|ing)?|loan|mortgage|apr|amorti[sz]|invest(ed|ing|ment)?|annuit(y|ies)|refinanc)/i.test(p);
   if (needs.code && /\b(implement|write|build|design|fix|debug)\b/i.test(p)) d += 0.1;
   if (needs.longContext) d += 0.1;
   if (n > 80) d += 0.1;
   if (domains.length >= 3) d += 0.05;
   if (c.kind === "factual" && n <= 14 && !needs.math) d = Math.min(d, 0.15);
+  if (moneyOverTime) d = Math.max(d, 0.55);
   if (req.media?.images?.length) d = Math.min(d, 0.5); // vision questions keep the vision panel; Core can't see the pixels
-  d = Math.max(0, Math.min(1, d));
+  // Round before the threshold: 0.2 + 0.15 + 0.05 + 0.15 is 0.5499999… in floating point and silently missed 0.55.
+  d = Math.round(Math.max(0, Math.min(1, d)) * 100) / 100;
 
   let depth: ResolvedDepth;
   let reason: string;

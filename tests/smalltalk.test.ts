@@ -44,6 +44,18 @@ test("small talk: anything that could be a real question goes through full Kepla
   }
 });
 
+test("small talk: a greeting word run into another pleasantry, with no comma, is still small talk (never a paid panel)", () => {
+  assert.equal(smallTalkKind({ prompt: "hey how are you" }), "how-are-you");
+  assert.equal(smallTalkKind({ prompt: "hi there how's it going" }), "how-are-you");
+  assert.equal(smallTalkKind({ prompt: "hello who are you" }), "identity");
+  assert.equal(smallTalkKind({ prompt: "hi thanks" }), "thanks");
+  for (const p of ["gm", "bonjour", "Salut!", "ciao"]) assert.equal(smallTalkKind({ prompt: p }), "greeting", p);
+  // a greeting word followed by a real request still goes to the full engine
+  for (const p of ["hey how are you different from ChatGPT", "hi explain quantum tunneling", "hello world in python", "hey how do I fix this", "gm plan my day"]) {
+    assert.equal(talk(p), false, p);
+  }
+});
+
 test("small talk: attachments, media and modes disable it", () => {
   assert.equal(talk("hi", { attachments: [{ name: "a.pdf", size: 10, type: "application/pdf" }] }), false);
   assert.equal(talk("hi", { media: { images: [{ name: "a.png", mime: "image/png", dataUrl: "data:image/png;base64,AAAA" }] } as unknown as KeplarRequest["media"] }), false);

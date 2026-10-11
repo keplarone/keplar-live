@@ -26,13 +26,16 @@ const MAX_SEGMENTS = 3;
 
 /** Each pattern must match a whole segment (text between , . ! ? ;). Order = priority. */
 const PHRASES: { kind: SmallTalkKind; rx: RegExp }[] = [
-  { kind: "greeting", rx: /^(hi+|hello+|hey+|heya|hiya|yo|howdy|greetings|sup|hola|good (morning|afternoon|evening)|morning|evening|hey there|hi there|hello there)( (keplar|there|everyone|friend))?$/ },
+  { kind: "greeting", rx: /^(hi+|hello+|hey+|heya|hiya|yo|howdy|greetings|sup|hola|bonjour|salut|ciao|hallo|gm|good (morning|afternoon|evening)|morning|evening|hey there|hi there|hello there)( (keplar|there|everyone|friend))?$/ },
   { kind: "how-are-you", rx: /^(how are you( doing| today| doing today)?|how r u|how are you feeling|how('?s| is) it going|how('?s| is) everything|how('?s| is) your day( going)?|how you doing|how do you do|what'?s up|whats up|wassup|how have you been|hope you('?re| are) (well|good|doing well)|you good|are you ok(ay)?)( (keplar|today))?$/ },
   { kind: "thanks", rx: /^((ok(ay)? )?(thanks|thank you|thx|ty|thank u|cheers|much appreciated|appreciate it|appreciated)( (so|very))?( (a lot|so much|very much|a ton|keplar|again|for (that|the help|your help)))*|(that|this) (helps|helped|was (helpful|great|perfect))|(great|perfect|awesome|nice)[ ]?(thanks|thank you))$/ },
   { kind: "bye", rx: /^(bye+|goodbye|good bye|bye bye|see (you|ya)( (later|soon|tomorrow))?|see you around|later|cya|ttyl|talk (to you )?later|take care|have a (good|great|nice) (day|night|one|evening|weekend)|good night|night|gotta go|i('?m| am) (off|leaving|going)|that('?s| is) all|that'?s it for now)( (keplar|now|for now|everyone))?$/ },
   { kind: "identity", rx: /^(who are you|what are you|who is this|what('?s| is) your name|who (made|built|created) you|are you (a )?(bot|ai|robot|human|real|keplar)|introduce yourself|are you there|you there|can you hear me|hello\?)( (keplar|exactly))?$/ },
   { kind: "ack", rx: /^(ok(ay)?|cool|great|nice|awesome|got it|i see|alright|sounds good|lol|haha+|hehe|wow|neat|sweet|perfect|test(ing)?( test)?|ping|nm|nothing|never ?mind)( (keplar|thanks|then))?$/ },
 ];
+
+/** A greeting word that may start a segment before another small-talk phrase ("hey how are you"). */
+const GREETING_LEAD = /^(hi+|hello+|hey+|heya|hiya|yo|howdy|hola)( (keplar|there))? /;
 
 /** Tidy for matching only: lowercase, curly quotes, no emoji or stray symbols, single spaces. */
 function normalize(text: string): string {
@@ -68,8 +71,13 @@ export function smallTalkKind(req: Pick<KeplarRequest, "prompt" | "attachments" 
   const kinds: SmallTalkKind[] = [];
   for (const seg of segments) {
     const hit = PHRASES.find((p) => p.rx.test(seg));
-    if (!hit) return null;
-    kinds.push(hit.kind);
+    if (hit) { kinds.push(hit.kind); continue; }
+    // "hey how are you", "hi thanks", "hello who are you": a greeting word, then another small-talk phrase, with no comma between.
+    const lead = GREETING_LEAD.exec(seg);
+    const rest = lead ? seg.slice(lead[0].length).trim() : "";
+    const tail = rest ? PHRASES.find((p) => p.rx.test(rest)) : undefined;
+    if (!tail) return null;
+    kinds.push("greeting", tail.kind);
   }
   // Priority for the reply tone: identity > how-are-you > thanks > bye > greeting > ack.
   const order: SmallTalkKind[] = ["identity", "how-are-you", "thanks", "bye", "greeting", "ack"];

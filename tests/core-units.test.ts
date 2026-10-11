@@ -27,6 +27,30 @@ test("assess: auto sends hard multi-step math deep and keeps simple questions qu
   assert.equal(depthOf("thorough"), "thorough");
 });
 
+test("assess: proofs, trick word problems and money-over-time math get checked working; everyday questions stay quick", () => {
+  for (const q of [
+    "Prove that the square root of 2 is irrational",
+    "A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How much does the ball cost?",
+    "If I invest $10,000 at 7% compounded monthly for 15 years, what will I have?", // "compounded" used to miss the \bcompound\b stem
+    "My mortgage is $300,000 at 6.5% over 30 years. What's the monthly payment?",
+  ]) {
+    const a = assess({ prompt: q }, "auto");
+    assert.equal(a.depth, "thorough", `${q} (${a.difficulty})`);
+  }
+  for (const q of ["What is the capital of France?", "Is 7 prime?", "What is a mortgage?", "Should I invest in index funds?", "Write a haiku about autumn", "Give me 3 dinner ideas", "How many people live in Japan?", "What's 17 * 23?"]) {
+    assert.equal(assess({ prompt: q }, "auto").depth, "quick", q);
+  }
+});
+
+test("assess: the depth threshold is not missed by floating-point sums", () => {
+  // 0.2 + 0.15 + 0.05 + 0.15 is 0.5499999… in floating point; difficulty is rounded before it is compared.
+  for (const q of ["If I invest $10,000 at 7% compounded monthly for 15 years, what will I have?", "Prove that the square root of 2 is irrational"]) {
+    const a = assess({ prompt: q }, "auto");
+    assert.equal(a.difficulty, Math.round(a.difficulty * 100) / 100);
+    if (a.difficulty >= 0.55) assert.equal(a.depth, "thorough", q);
+  }
+});
+
 test("coreApplies: Create, agents, deep research and debate keep their own pipelines", () => {
   assert.equal(coreApplies({ prompt: "x" }), true);
   assert.equal(coreApplies({ prompt: "x", modes: { create: true } as never }), false);
