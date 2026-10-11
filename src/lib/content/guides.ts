@@ -54,44 +54,7 @@ export const guides: Guide[] = [
         p: ["Models trained on similar data can share the same mistake. Treat agreement as a mild reassurance and still verify anything that matters."],
       },
     ],
-    related: ["/ai-fact-check", "/guides/check-an-ai-answer", "/compare-ai-models"],
-  },
-  {
-    slug: "check-an-ai-answer",
-    path: "/guides/check-an-ai-answer",
-    title: "How to check an AI answer before you rely on it",
-    metaDescription: "A short checklist for verifying what an AI tells you: what to look for, what to check, and when to go to a primary source.",
-    published: "2026-10-01",
-    updated: "2026-10-01",
-    readingMinutes: 5,
-    summary: "A practical checklist. None of it needs special tools.",
-    sections: [
-      {
-        h2: "1. Decide how much it matters",
-        p: ["A recipe tweak and a medication question deserve different effort. The higher the stakes, the more you should verify and the more you should involve a professional."],
-      },
-      {
-        h2: "2. Look for specifics you can test",
-        p: ["Names, dates, numbers, quotes and references are the easiest things for a model to get wrong and the easiest for you to check. Pick the two or three the answer depends on and look them up."],
-      },
-      {
-        h2: "3. Ask again, a different way",
-        p: ["Rephrase the question, or ask a second model. If the answers differ, find out why before you pick one."],
-      },
-      {
-        h2: "4. Be careful with citations",
-        p: ["Models can produce references that look real and aren't. Open every link and confirm the page says what the answer claims."],
-      },
-      {
-        h2: "5. Go to a primary source",
-        p: ["For health, law, money and anything official, use the source that's responsible for the facts: the agency, the statute, the manufacturer, the textbook, or a qualified person."],
-      },
-      {
-        h2: "Where Keplar fits",
-        p: [`${K} does step 3 for you by asking several models and showing where they differ. It doesn't do steps 4 and 5: it hasn't checked the sources the models cite, and it doesn't browse the web yet.`],
-      },
-    ],
-    related: ["/ai-fact-check", "/guides/why-ai-models-disagree", "/ai-answer-engine"],
+    related: ["/ai-fact-check", "/blogs/how-to-check-an-ai-answer", "/compare-ai-models"],
   },
   {
     slug: "study-from-a-pdf",

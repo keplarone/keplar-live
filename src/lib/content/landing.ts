@@ -276,7 +276,7 @@ export const landingPages: LandingPage[] = [
       { q: "Does it cite sources?", a: "It shows sources the models cite. Keplar hasn't checked those sources, and it doesn't browse the web yet." },
       { q: "Can I rely on it for medical or legal advice?", a: "No. Answers are general information, not professional advice." },
     ],
-    related: ["/guides/check-an-ai-answer", "/guides/why-ai-models-disagree", "/ai-answer-engine", "/compare-ai-models"],
+    related: ["/blogs/how-to-check-an-ai-answer", "/guides/why-ai-models-disagree", "/ai-answer-engine", "/compare-ai-models"],
   },
   {
     slug: "for-students",
@@ -310,7 +310,7 @@ export const landingPages: LandingPage[] = [
       { q: "Is there a student discount?", a: "Not currently. The Free plan includes Study mode." },
       { q: "Will it write my essay?", a: "It can help you outline and explain. Whether to use generated text is up to you and your school's rules." },
     ],
-    related: ["/ai-study-tool", "/guides/study-from-a-pdf", "/ai-slideshow-maker", "/for-writers", "/for-you"],
+    related: ["/ai-study-tool", "/guides/study-from-a-pdf", "/ai-slideshow-maker", "/for-researchers", "/for-writers", "/for-you"],
   },
   {
     slug: "for-writers",
@@ -381,7 +381,7 @@ export const landingPages: LandingPage[] = [
       { q: "Is it good for market research?", a: "It can help you think and structure. It doesn't browse the web yet, so check market figures and competitor facts against primary sources." },
       { q: "Can my team use it?", a: "Individual plans are per person. For teams and business tools, use the Inquire form." },
     ],
-    related: ["/ai-slideshow-maker", "/for-small-business", "/enterprise", "/pricing"],
+    related: ["/ai-slideshow-maker", "/for-small-business", "/for-developers", "/pricing"],
   },
   {
     slug: "for-researchers",
@@ -408,7 +408,7 @@ export const landingPages: LandingPage[] = [
       { q: "Can I trust the citations?", a: "Check them. Keplar hasn't verified the sources models cite, and models can produce references that don't exist." },
       { q: "Can I upload papers?", a: "Study mode reads text-based PDFs and lets you ask questions of the text, with citations back to the passage." },
     ],
-    related: ["/ai-fact-check", "/guides/check-an-ai-answer", "/ai-study-tool", "/compare-ai-models"],
+    related: ["/ai-fact-check", "/blogs/how-to-check-an-ai-answer", "/ai-study-tool", "/compare-ai-models"],
   },
   {
     slug: "for-small-business",
@@ -435,7 +435,7 @@ export const landingPages: LandingPage[] = [
       { q: "Can Keplar send emails for me?", a: "On the individual plans it drafts text for you to send. Autonomous actions are part of the optional Business plan, with approval gates." },
       { q: "Is it right for legal or tax questions?", a: "No. Answers are general information. For legal and tax decisions, talk to a professional." },
     ],
-    related: ["/for-founders", "/enterprise", "/agents", "/pricing"],
+    related: ["/for-founders", "/for-writers", "/ai-slideshow-maker", "/pricing"],
   },
 ];
 

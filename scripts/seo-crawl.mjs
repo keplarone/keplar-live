@@ -1,6 +1,7 @@
 // Crawl a base URL: sitemap URLs + extras. Reports status, redirects, title, description, canonical, robots meta,
 // h1 count, OG/Twitter, JSON-LD validity+types, internal links (broken check), words in initial HTML (no JS).
 // Usage: node scripts/seo-crawl.mjs https://keplar.one [--json out.json]
+import { siteIssues } from "./seo-site-issues.mjs";
 const base = (process.argv[2] || "https://keplar.one").replace(/\/$/, "");
 const jsonOut = process.argv.includes("--json") ? process.argv[process.argv.indexOf("--json") + 1] : null;
 const extras = ["/signin", "/signup", "/app", "/welcome", "/account", "/checkout", "/llms.txt", "/robots.txt", "/compare", "/definitely-missing-page"];
@@ -48,11 +49,13 @@ for (const r of res) {
   if (r.inSitemap) {
     if (r.status !== 200) issues.push(`${r.path}: sitemap URL status ${r.status}`);
     if (r.robots && /noindex/.test(r.robots)) issues.push(`${r.path}: noindex in sitemap`);
-    if (r.canonical && r.canonical.replace(base, "") !== r.path && !(r.path === "/" && r.canonical === base + "/")) issues.push(`${r.path}: canonical ${r.canonical}`);
+    if (r.canonical && r.canonical.replace(base, "") !== r.path && !(r.path === "/" && (r.canonical === base + "/" || r.canonical === base))) issues.push(`${r.path}: canonical ${r.canonical}`);
     if (!r.title) issues.push(`${r.path}: no title`); if (r.h1 !== 1) issues.push(`${r.path}: h1=${r.h1}`);
     if (!r.desc) issues.push(`${r.path}: no description`); if (r.ldBad) issues.push(`${r.path}: invalid JSON-LD`);
   }
 }
 for (const [l, s] of broken) if (s >= 300) issues.push(`link ${l}: status ${s}`);
+issues.push(...siteIssues(res.filter((r) => r.inSitemap && r.status === 200 && r.title !== undefined)));
+if (process.argv.includes("--strict") && issues.length) process.exitCode = 1;
 console.log("\nISSUES:", issues.length ? "\n" + issues.join("\n") : "none");
 if (jsonOut) (await import("node:fs")).writeFileSync(jsonOut, JSON.stringify({ base, urls, lastmods, res, issues }, null, 1));

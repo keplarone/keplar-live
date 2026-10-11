@@ -5,6 +5,7 @@ import { TrackedLink } from "@/components/growth/TrackedLink";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { guideBySlug, guides } from "@/lib/content/guides";
 import { landingBySlug } from "@/lib/content/landing";
+import { allPosts } from "@/lib/kb/blog";
 import { pageMeta } from "@/lib/seo";
 import { article, breadcrumbs } from "@/lib/seo-graph";
 import hero from "@/components/page/RoutePlaceholder.module.css";
@@ -27,7 +28,7 @@ export async function generateMetadata({ params }: Props) {
 }
 
 const titleOf = (path: string) =>
-  landingBySlug(path.slice(1))?.label ?? guides.find((g) => g.path === path)?.title ?? path;
+  landingBySlug(path.slice(1))?.label ?? guides.find((g) => g.path === path)?.title ?? allPosts().find((b) => b.path === path)?.title ?? path;
 
 export default async function GuidePage({ params }: Props) {
   const g = guideBySlug((await params).slug);

@@ -9,6 +9,7 @@ import { LearnLinks } from "@/components/sections/LearnLinks";
 import { howItWorks } from "@/lib/sections";
 import { pageMeta } from "@/lib/seo";
 import { brand } from "@/lib/site";
+import { businessUrl } from "@/lib/business-site";
 import s from "@/components/sections/sections.module.css";
 
 export const metadata = pageMeta(
@@ -60,7 +61,7 @@ export default function ProductPage() {
           <h2>Run a business? It can run with you</h2>
           <p>
             Business is optional: commerce, a CRM and inbox, a dashboard, and agents that work inside spend caps and approval
-            gates. See <Link href="/enterprise">{brand.name} for business</Link>, everyday uses on{" "}
+            gates. See <a href={businessUrl("/")}>{brand.name} Business</a>, everyday uses on{" "}
             <Link href="/for-you">for you</Link>, <Link href="/pricing">pricing</Link>, or <Link href="/app">try it now</Link>.
           </p>
           <p>

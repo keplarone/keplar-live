@@ -66,11 +66,10 @@ const RELATED_LABELS: Record<string, string> = {
   "/how-it-works": "How Keplar works",
   "/pricing": "Plans and pricing",
   "/compare": "Keplar compared with other tools",
-  "/enterprise": "Keplar for business",
-  "/agents": "Agents",
   "/for-you": "Keplar for you",
+  "/for-developers": "Keplar for developers",
   "/guides/study-from-a-pdf": "How to study from a PDF with AI",
   "/guides/slide-deck-from-notes": "How to turn rough notes into a slide deck",
-  "/guides/check-an-ai-answer": "How to check an AI answer",
+  "/blogs/how-to-check-an-ai-answer": "How to check an AI answer",
   "/guides/why-ai-models-disagree": "Why AI models disagree",
 };

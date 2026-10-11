@@ -9,6 +9,7 @@ import { Faq } from "@/components/sections/Faq";
 import { FinalCta } from "@/components/sections/FinalCta";
 import { pageMeta } from "@/lib/seo";
 import { brand } from "@/lib/site";
+import { businessUrl } from "@/lib/business-site";
 import s from "@/components/sections/sections.module.css";
 
 export const metadata = pageMeta(
@@ -50,7 +51,7 @@ export default function ForYouPage() {
             <Link href="/how-it-works">how it works</Link>.
           </p>
           <p>
-            Run a business as well? <Link href="/enterprise">{brand.name} for business</Link> is optional, and adds the tools
+            Run a business as well? <a href={businessUrl("/")}>{brand.name} Business</a> is optional, and adds the tools
             around your work.
           </p>
         </div>

@@ -42,6 +42,8 @@ const nextConfig: NextConfig = {
       // Blog moved from /blog to /blogs (keep old URLs working for SEO and shared links).
       { source: "/blog", destination: "/blogs", permanent: true },
       { source: "/blog/:slug", destination: "/blogs/:slug", permanent: true },
+      // The short guide duplicated the fuller blog post's search intent and title; one page now owns it.
+      { source: "/guides/check-an-ai-answer", destination: "/blogs/how-to-check-an-ai-answer", permanent: true },
       {
         // www → apex, permanent
         source: "/:path*",
