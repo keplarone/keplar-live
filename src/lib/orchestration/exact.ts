@@ -5,7 +5,7 @@
  */
 
 export type ExactCheck = {
-  kind: "letter-count" | "letters" | "vowels" | "arithmetic";
+  kind: "letter-count" | "letters" | "vowels" | "arithmetic" | "number" | "conversion";
   /** One plain sentence, safe to show to the user and to give to the models. */
   statement: string;
 };
@@ -129,6 +129,13 @@ function show(v: number) {
   return Math.abs(r) >= 1e15 || (Math.abs(r) < 1e-6 && r !== 0) ? r.toExponential(8) : String(r);
 }
 
+/** "calculated exactly", or, when the shown value had to be rounded (√2, 100/7), say so instead of claiming exactness. */
+function how(v: number): string {
+  // Compare at 15 significant digits so float noise (0.1 + 0.2 = 0.30000000000000004) still counts as the exact 0.3.
+  const exact = Number.isInteger(v) || Number(v.toPrecision(15)) === Number(show(v).replace(/,/g, ""));
+  return exact ? "calculated exactly" : "calculated, shown to 12 significant digits";
+}
+
 function arithmetic(p: string): ExactCheck | null {
   const pct = /^(?:what(?:'s|’s| is)\s+)?(\d+(?:\.\d+)?)\s*%\s*of\s*(\d[\d,]*(?:\.\d+)?)\s*[?.!]*$/i.exec(p.trim());
   if (pct) {
@@ -143,14 +150,93 @@ function arithmetic(p: string): ExactCheck | null {
   const toks = tokenize(expr);
   const v = toks ? evaluate(toks) : null;
   if (v == null) return null;
-  return { kind: "arithmetic", statement: `${expr.replace(/\s+/g, " ")} = ${show(v)} (calculated exactly).` };
+  return { kind: "arithmetic", statement: `${expr.replace(/\s+/g, " ")} = ${show(v)} (${how(v)}).` };
 }
 
-/** The exact check for this question, or null when it is not clearly a counting or arithmetic question. */
+// ---- plain-English number questions: whole-question patterns only, so anything else falls through ----
+
+const WHAT = String.raw`(?:what(?:'s|’s| is)\s+|calculate\s+|compute\s+|work out\s+|find\s+)?(?:the\s+)?`;
+const NUM = String.raw`(-?\d[\d,]*(?:\.\d+)?)`;
+const END = String.raw`\s*[?.!]*$`;
+const num = (s: string) => Number(s.replace(/,/g, ""));
+
+/** n! exactly, with BigInt (no rounding), for n up to 100. */
+function factorial(n: number): string {
+  let f = BigInt(1);
+  for (let i = 2; i <= n; i++) f *= BigInt(i);
+  return f.toLocaleString("en-US");
+}
+
+/** Smallest factor above 1, or null when n is prime. n must be an integer ≥ 2 and ≤ 1e12 (≤ 1e6 trial divisions). */
+function smallestFactor(n: number): number | null {
+  if (n % 2 === 0) return n === 2 ? null : 2;
+  for (let d = 3; d * d <= n; d += 2) if (n % d === 0) return d;
+  return null;
+}
+
+function numberWords(p: string): ExactCheck | null {
+  // "100 divided by 7", "12 times 4", "3 plus 5", "10 minus 4": operators in words, then the same safe evaluator.
+  const ops = new RegExp(`^${WHAT}${NUM}\\s+(divided by|over|multiplied by|times|plus|minus)\\s+${NUM}${END}`, "i").exec(p);
+  if (ops) {
+    const sym = { "divided by": "/", over: "/", "multiplied by": "*", times: "*", plus: "+", minus: "-" }[ops[2].toLowerCase()]!;
+    const toks = tokenize(`${ops[1]}${sym}${ops[3].startsWith("-") ? `(${ops[3]})` : ops[3]}`);
+    const v = toks ? evaluate(toks) : null;
+    if (v != null) return { kind: "arithmetic", statement: `${ops[1]} ${ops[2].toLowerCase()} ${ops[3]} = ${show(v)} (${how(v)}).` };
+  }
+  const root = new RegExp(`^${WHAT}(?:square root|sqrt)\\s*(?:of\\s*)?${NUM}${END}`, "i").exec(p);
+  if (root && num(root[1]) >= 0) {
+    const v = Math.sqrt(num(root[1]));
+    return { kind: "arithmetic", statement: `The square root of ${root[1]} = ${show(v)} (${how(v)}).` };
+  }
+  const pow = new RegExp(`^${WHAT}${NUM}\\s+(squared|cubed)${END}`, "i").exec(p);
+  if (pow) {
+    const v = num(pow[1]) ** (pow[2].toLowerCase() === "squared" ? 2 : 3);
+    if (Number.isFinite(v)) return { kind: "arithmetic", statement: `${pow[1]} ${pow[2].toLowerCase()} = ${show(v)} (${how(v)}).` };
+  }
+  const fact = new RegExp(`^${WHAT}(?:factorial of\\s+(\\d{1,3})|(\\d{1,3})\\s*(?:!|factorial))${END}`, "i").exec(p);
+  if (fact) {
+    const n = Number(fact[1] ?? fact[2]);
+    if (n <= 100) return { kind: "arithmetic", statement: `${n}! = ${factorial(n)} (calculated exactly).` };
+  }
+  const prime = /^is\s+(\d[\d,]*)\s+(?:a\s+)?prime(?:\s+number)?\s*[?.!]*$/i.exec(p);
+  if (prime) {
+    const n = num(prime[1]);
+    if (Number.isSafeInteger(n) && n <= 1e12) {
+      if (n < 2) return { kind: "number", statement: `${prime[1]} is not a prime number: primes are whole numbers greater than 1 (checked exactly).` };
+      const f = smallestFactor(n);
+      return { kind: "number", statement: f === null ? `${prime[1]} is a prime number (checked exactly by trial division).` : `${prime[1]} is not a prime number: it is divisible by ${f} (${f} × ${show(n / f)} = ${show(n)}; checked exactly).` };
+    }
+  }
+  const off = new RegExp(`^${WHAT}(\\d+(?:\\.\\d+)?)\\s*%\\s*off\\s*(?:of\\s*)?(\\$)?${NUM}${END}`, "i").exec(p);
+  if (off && num(off[1]) <= 100) {
+    const price = num(off[3]);
+    const v = Math.round(price * (1 - num(off[1]) / 100) * 100) / 100;
+    const $ = off[2] ?? "";
+    return { kind: "arithmetic", statement: `${off[1]}% off ${$}${off[3]} = ${$}${$ ? v.toFixed(2) : show(v)} (you save ${$}${$ ? (Math.round((price - v) * 100) / 100).toFixed(2) : show(price - v)}; calculated exactly).` };
+  }
+  const temp = new RegExp(`^(?:convert\\s+|what(?:'s|’s| is)\\s+)?${NUM}\\s*°?\\s*(f|fahrenheit|c|celsius)\\s+(?:to|in|into)\\s+°?\\s*(c|celsius|f|fahrenheit)${END}`, "i").exec(p);
+  if (temp) {
+    const from = temp[2][0].toLowerCase(), to = temp[3][0].toLowerCase();
+    if (from !== to) {
+      const t = num(temp[1]);
+      const v = from === "f" ? ((t - 32) * 5) / 9 : (t * 9) / 5 + 32;
+      return { kind: "conversion", statement: `${temp[1]}°${from.toUpperCase()} = ${show(Math.round(v * 100) / 100)}°${to.toUpperCase()} (converted exactly: ${from === "f" ? "(°F − 32) × 5/9" : "°C × 9/5 + 32"}).` };
+    }
+  }
+  const days = /^how many days (?:are )?(?:there )?in (?:the year )?(\d{4})\s*[?.!]*$/i.exec(p);
+  if (days) {
+    const y = Number(days[1]);
+    const leap = (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+    return { kind: "number", statement: `${y} has ${leap ? 366 : 365} days (${leap ? "a leap year" : "not a leap year"}; checked exactly with the Gregorian rule).` };
+  }
+  return null;
+}
+
+/** The exact check for this question, or null when it is not clearly a counting, arithmetic or number question. */
 export function exactCheck(prompt: string): ExactCheck | null {
   const p = prompt.trim();
   if (!p || p.length > 600 || p.includes("\n")) return null;
-  return letters(p) ?? arithmetic(p);
+  return letters(p) ?? arithmetic(p) ?? numberWords(p);
 }
 
 /** Added to the models' prompt: a verified fact they must not contradict. */

@@ -88,7 +88,9 @@ test("exact checker: letter counts, totals, vowels and arithmetic are computed b
   const sentence = "the quick brown fox jumps over the lazy dog while the others sleep";
   const n = [...sentence].filter((c) => c === "e").length;
   assert.match(exactCheck(`How many times does the letter e appear in "${sentence}"?`)!.statement, new RegExp(`${n} times`));
-  for (const q of ["how many people live in Japan?", "Is 7 prime?", "What is 2+", "1/0", "write a poem about 2+2", "tell me about strawberries"]) assert.equal(exactCheck(q), null, q);
+  for (const q of ["how many people live in Japan?", "What is 2+", "1/0", "write a poem about 2+2", "tell me about strawberries"]) assert.equal(exactCheck(q), null, q);
+  // primality is now checked by code too (tests/exact-numbers.test.ts)
+  assert.match(exactCheck("Is 7 prime?")!.statement, /7 is a prime number/);
   assert.match(exactNote(exactCheck("17*23")!), /Verified by Keplar's exact checker/);
 });
 
