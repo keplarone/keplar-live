@@ -9,9 +9,9 @@
  *   Prices were raised (Oct 2026) with the same perks, for margin: a customer who spends every credit costs ~25% of the price in
  *   model spend (it was ~37%),
  *   leaving room for Whop fees (~3-5%), hosting, storage, video/image providers' own metering and support:
- *     Starter $199  -> 30,000 credits  = $60 metered ($54.5 provider cost)   = 27% of price
- *     Growth  $499  -> 70,000 credits  = $140 metered ($127 provider cost)   = 25% of price
- *     Scale   $2,999 -> 400,000 credits = $800 metered ($727 provider cost) = 24% of price
+ *     Starter $199.99 -> 30,000 credits  = $60 metered ($54.5 provider cost)   = 27% of price
+ *     Growth  $499.99 -> 70,000 credits  = $140 metered ($127 provider cost)   = 25% of price
+ *     Scale   $2,999.99 -> 400,000 credits = $800 metered ($727 provider cost) = 24% of price
  *   Automation actions are a separate meter: one action is one step an agent takes (a tool call, a message sent, a record
  *   written). They cost almost nothing to run; the model calls behind them draw credits, so an action is never "free AI".
  *   The suggested 3,000 / 15,000 / 75,000 actions are therefore kept as proposed.
@@ -26,8 +26,10 @@ export type BillingCycle = "monthly" | "annual";
 export type BusinessTierSpec = {
   id: BusinessTier;
   name: string;
-  /** USD per month; null = custom contract. */
+  /** USD per month (to the cent); null = custom contract. */
   monthly: number | null;
+  /** The crossed-out list price shown above `monthly`; null when there is none. */
+  listMonthly: number | null;
   audience: string;
   seats: number | null;
   activeAgents: number | null;
@@ -46,22 +48,22 @@ const CORE = ["Business dashboard", "Projects", "Images", "Deep Research", "Reas
 
 export const BUSINESS_TIERS: Record<BusinessTier, BusinessTierSpec> = {
   starter: {
-    id: "starter", name: "Keplar Business Starter", monthly: 199, audience: "Small businesses and startups",
+    id: "starter", name: "Keplar Business Starter", monthly: 199.99, listMonthly: 219.99, audience: "Small businesses and startups",
     seats: 1, activeAgents: 5, actionsPerMonth: 3_000, credits: 30_000, projects: 10, customDomains: 3, rpm: 120, swarm: false,
     includes: [...CORE, "1 seat", "5 active agents", "3,000 automation actions a month", "10 projects", "High-priority AI requests", "Standard support"],
   },
   growth: {
-    id: "growth", name: "Keplar Business Growth", monthly: 499, audience: "Growing teams and agencies",
+    id: "growth", name: "Keplar Business Growth", monthly: 499.99, listMonthly: 549.99, audience: "Growing teams and agencies",
     seats: 5, activeAgents: 25, actionsPerMonth: 15_000, credits: 70_000, projects: null, customDomains: 10, rpm: 240, swarm: false,
     includes: ["Everything in Starter", "5 seats", "25 active agents", "15,000 automation actions a month", "Unlimited projects (fair use)", "Shared team workspaces", "Multi-agent workflows", "Team permissions", "Priority support"],
   },
   scale: {
-    id: "scale", name: "Keplar Business Scale", monthly: 2_999, audience: "Automation-intensive organizations",
+    id: "scale", name: "Keplar Business Scale", monthly: 2_999.99, listMonthly: 3_349.99, audience: "Automation-intensive organizations",
     seats: 15, activeAgents: 100, actionsPerMonth: 75_000, credits: 400_000, projects: null, customDomains: 50, rpm: 600, swarm: false,
     includes: ["Everything in Growth", "15 seats", "100 active agents", "75,000 automation actions a month", "Department workspaces", "Advanced model routing", "Audit logs", "API access", "Advanced approval workflows", "Priority technical support"],
   },
   enterprise: {
-    id: "enterprise", name: "Keplar Enterprise", monthly: null, audience: "Large organizations",
+    id: "enterprise", name: "Keplar Enterprise", monthly: null, listMonthly: null, audience: "Large organizations",
     seats: null, activeAgents: null, actionsPerMonth: null, credits: null, projects: null, customDomains: 200, rpm: 1_200, swarm: true,
     includes: ["Everything in Scale", "Revenue Guard: autonomous testing swarm", "Negotiated seats, usage and concurrency", "SSO / SAML and SCIM", "Custom retention and security policies", "Dedicated onboarding", "Contractual service commitments"],
   },
@@ -78,11 +80,23 @@ export function annualDiscountPct(): number {
   return Number.isFinite(n) && n >= 0 && n <= 50 ? Math.round(n) : 17;
 }
 
-/** USD for one billing period: the monthly price, or a year at the annual discount (rounded to whole dollars). */
+const cents = (usd: number) => Math.round(usd * 100) / 100;
+
+/** USD for one billing period, to the cent: the monthly price, or twelve months at the annual discount. */
 export function priceFor(tier: SelfServeTier, cycle: BillingCycle, discountPct = annualDiscountPct()): number {
   const m = BUSINESS_TIERS[tier].monthly!;
-  return cycle === "monthly" ? m : Math.round(m * 12 * (1 - discountPct / 100));
+  return cycle === "monthly" ? m : cents(m * 12 * (1 - discountPct / 100));
 }
+
+/** The crossed-out list price for the same period (the annual one gets the same annual discount, so the % off matches). */
+export function listPriceFor(tier: SelfServeTier, cycle: BillingCycle, discountPct = annualDiscountPct()): number | null {
+  const l = BUSINESS_TIERS[tier].listMonthly;
+  if (l === null) return null;
+  return cycle === "monthly" ? l : cents(l * 12 * (1 - discountPct / 100));
+}
+
+/** US dollars with cents, e.g. $2,999.99. */
+export const usd = (n: number) => `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const PLAN_ID_RE = /^plan_[A-Za-z0-9]{6,40}$/;
 const envKey = (tier: SelfServeTier, cycle: BillingCycle) => `WHOP_PLAN_BIZ_${tier.toUpperCase()}_${cycle.toUpperCase()}`;

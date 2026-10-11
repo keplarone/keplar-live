@@ -22,11 +22,11 @@ test("Business plans: names, prices and every tier pricier than Keplar One Pro (
   assert.equal(BUSINESS_TIERS.growth.name, "Keplar Business Growth");
   assert.equal(BUSINESS_TIERS.scale.name, "Keplar Business Scale");
   assert.equal(BUSINESS_TIERS.enterprise.name, "Keplar Enterprise");
-  assert.deepEqual([BUSINESS_TIERS.starter.monthly, BUSINESS_TIERS.growth.monthly, BUSINESS_TIERS.scale.monthly, BUSINESS_TIERS.enterprise.monthly], [199, 499, 2999, null]);
+  assert.deepEqual([BUSINESS_TIERS.starter.monthly, BUSINESS_TIERS.growth.monthly, BUSINESS_TIERS.scale.monthly, BUSINESS_TIERS.enterprise.monthly], [199.99, 499.99, 2999.99, null]);
   for (const t of ["starter", "growth", "scale"] as const) assert.ok(BUSINESS_TIERS[t].monthly! > 99);
-  assert.equal(priceFor("starter", "monthly", 17), 199);
-  assert.equal(priceFor("starter", "annual", 17), Math.round(199 * 12 * 0.83));
-  assert.equal(priceFor("scale", "annual", 0), 2999 * 12);
+  assert.equal(priceFor("starter", "monthly", 17), 199.99);
+  assert.equal(priceFor("starter", "annual", 17), Math.round(199.99 * 12 * 0.83 * 100) / 100);
+  assert.equal(priceFor("scale", "annual", 0), Math.round(2999.99 * 12 * 100) / 100);
 });
 
 test("Business plans: the swarm is Enterprise-only; no Study or Skills anywhere in a Business plan", () => {

@@ -4,7 +4,7 @@ import { annualDiscountPct } from "@/lib/business/tiers";
 
 export const metadata: Metadata = {
   title: "Keplar Business: the AI operating system for your business",
-  description: "Research, design, build, automate and deploy from one desktop workspace. Plans from $199 a month, Enterprise by contract.",
+  description: "Research, design, build, automate and deploy from one desktop workspace. Plans from $199.99 a month, Enterprise by contract.",
   alternates: { canonical: "https://business.keplar.one/" },
 };
 

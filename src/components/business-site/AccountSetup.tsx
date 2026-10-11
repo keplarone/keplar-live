@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { COMPANY_SIZES, INDUSTRIES } from "@/lib/business/account-fields";
-import { BUSINESS_TIERS, type BillingCycle, type SelfServeTier } from "@/lib/business/tiers";
+import { BUSINESS_TIERS, listPriceFor, priceFor, usd, type BillingCycle, type SelfServeTier } from "@/lib/business/tiers";
 import s from "./business-site.module.css";
 
 type Account = { company: string; website: string; size: string; industry: string; role: string };
@@ -76,7 +76,6 @@ export function AccountSetup({ discountPct }: { discountPct: number }) {
     }
   };
 
-  const yearly = (t: SelfServeTier) => Math.round(BUSINESS_TIERS[t].monthly! * 12 * (1 - discountPct / 100));
 
   return (
     <div className={s.page}>
@@ -131,7 +130,8 @@ export function AccountSetup({ discountPct }: { discountPct: number }) {
                 {TIERS.map((t) => (
                   <button key={t} type="button" role="radio" aria-checked={choice.tier === t} className={s.choice} onClick={() => setChoice((c) => ({ ...c, tier: t }))}>
                     <strong>{BUSINESS_TIERS[t].name.replace("Keplar Business ", "")}</strong>
-                    <span className={s.priceBig}>${choice.cycle === "monthly" ? BUSINESS_TIERS[t].monthly!.toLocaleString("en-US") : yearly(t).toLocaleString("en-US")}</span>
+                    {listPriceFor(t, choice.cycle, discountPct) !== null ? <s className={s.priceWas}>{usd(listPriceFor(t, choice.cycle, discountPct)!)}</s> : null}
+                    <span className={s.priceBig}>{usd(priceFor(t, choice.cycle, discountPct))}</span>
                     <span className={s.priceNote}>{choice.cycle === "monthly" ? "per month" : "per year"}</span>
                     <span className={s.muted}>{BUSINESS_TIERS[t].seats} {BUSINESS_TIERS[t].seats === 1 ? "seat" : "seats"} · {BUSINESS_TIERS[t].activeAgents} agents · {BUSINESS_TIERS[t].credits!.toLocaleString("en-US")} credits</span>
                   </button>

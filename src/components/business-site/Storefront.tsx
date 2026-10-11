@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { BUSINESS_TIERS, type BillingCycle, type BusinessTier } from "@/lib/business/tiers";
+import { BUSINESS_TIERS, listPriceFor, priceFor, usd, type BillingCycle, type BusinessTier } from "@/lib/business/tiers";
 import { companySizes, estimatedUsers } from "@/lib/inquire/schema";
 import s from "./business-site.module.css";
 
@@ -78,9 +78,10 @@ export function Storefront({ discountPct }: { discountPct: number }) {
   }, []);
 
   const price = (tier: BusinessTier) => {
-    const m = BUSINESS_TIERS[tier].monthly;
-    if (m === null) return null;
-    return cycle === "monthly" ? { big: m, note: "per month" } : { big: Math.round((m * 12 * (1 - discountPct / 100)) / 12), note: `per month, billed $${fmt(Math.round(m * 12 * (1 - discountPct / 100)))} yearly` };
+    if (tier === "enterprise") return null;
+    const now = priceFor(tier, cycle, discountPct);
+    const was = listPriceFor(tier, cycle, discountPct);
+    return { now: usd(now), was: was === null ? null : usd(was), note: cycle === "monthly" ? "per month" : "per year, billed yearly" };
   };
 
   const hero = useMemo(() => {
@@ -156,7 +157,7 @@ export function Storefront({ discountPct }: { discountPct: number }) {
                   <h3 className={s.planName}>{t.name.replace("Keplar Business ", "")}</h3>
                   <p className={s.planFor}>{t.audience}</p>
                 </header>
-                <p className={s.price}>{p ? <><span className={s.priceBig}>${fmt(p.big)}</span><span className={s.priceNote}>{p.note}</span></> : <><span className={s.priceBig}>Custom</span><span className={s.priceNote}>annual contract</span></>}</p>
+                <p className={s.price}>{p ? <>{p.was ? <s className={s.priceWas} aria-label={`Was ${p.was}`}>{p.was}</s> : null}<span className={s.priceBig}>{p.now}</span><span className={s.priceNote}>{p.note}</span></> : <><span className={s.priceBig}>Custom</span><span className={s.priceNote}>annual contract</span></>}</p>
                 {current ? <span className={s.btnGhost} aria-current="true">Your plan</span>
                   : id === "enterprise" ? <a href="#contact" className={s.btnGhost}>Contact sales</a>
                   : <a href={accountUrl(id, cycle)} className={id === "growth" ? s.btnPrimary : s.btnGhost}>Choose {t.name.replace("Keplar Business ", "")}</a>}

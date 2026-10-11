@@ -146,3 +146,6 @@
   .stepper { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+
+/* Crossed-out list price above the plan price */
+.priceWas { font-size: 15px; color: var(--bz-ink-3); text-decoration: line-through; text-decoration-thickness: 1.5px; font-variant-numeric: tabular-nums; }
