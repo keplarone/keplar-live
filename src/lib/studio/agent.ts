@@ -75,6 +75,14 @@ export const STUDIO_TOOL_POLICY: Record<string, Risk | "blocked"> = {
 
 /** Luau that deletes, wipes, publishes, spends or reaches outside the place is always shown for approval. */
 const DESTRUCTIVE_LUAU = /:\s*Destroy\s*\(|ClearAllChildren|:\s*Remove\s*\(|\.Parent\s*=\s*nil|Debris\s*:|DataStoreService|MessagingService|MarketplaceService|TeleportService|HttpService|SavePlace|PublishAsync|SetAsync|RemoveAsync|loadstring|require\s*\(\s*\d/i;
+/**
+ * Luau that hides what it calls, so the word list above can't see it, also always asks. The model reads scripts from Creator Store
+ * assets it inserts; text in a malicious asset can try to get destructive code past "auto-approve safe changes" by spelling it
+ * indirectly: obj["Des".."troy"](obj), obj["Destroy"](obj), game:GetService("Http".."Service"), game:GetService(name),
+ * string.char(...), "\68\101..." escapes, getfenv / setfenv / rawget / debug, or ["Parent"] = nil. Ordinary procedural builds
+ * ("Tree"..i names, tables, loops) don't match.
+ */
+const HIDDEN_LUAU = /\bDestroy\b|\[\s*["']Parent["']\s*\]\s*=\s*nil|\[[^\]\n]*\.\.[^\]\n]*\]|:\s*GetService\s*\(\s*(?!["'][A-Za-z]+["']\s*\))|\b(?:getfenv|setfenv|rawget|rawset|newproxy)\b|\bdebug\s*\.|\bstring\s*\.\s*char\b|\(\s*["'][^"']*["']\s*\)\s*:\s*char\b|\\(?:\d{1,3}|x[0-9a-fA-F]{2}|u\{)/;
 
 /** An image the uploader may fetch: a public https URL, never a file, localhost or a private network address. */
 export function isUploadableImageUrl(v: unknown): boolean {
@@ -97,7 +105,7 @@ export function riskOf(name: string, args: Record<string, unknown>): Risk | "blo
     return Array.isArray(paths) && paths.length > 0 && paths.length <= 10 && paths.every(isUploadableImageUrl) ? "destructive" : "blocked";
   }
   if (base !== "change") return base;
-  if (name === "execute_luau" && typeof args.code === "string" && DESTRUCTIVE_LUAU.test(args.code)) return "destructive";
+  if (name === "execute_luau" && typeof args.code === "string" && (DESTRUCTIVE_LUAU.test(args.code) || HIDDEN_LUAU.test(args.code))) return "destructive";
   if (name === "multi_edit" && Array.isArray(args.edits) && args.edits.some((e) => e && typeof e === "object" && (e as { new_string?: unknown }).new_string === "")) return "destructive";
   return "change";
 }

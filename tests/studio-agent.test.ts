@@ -20,6 +20,30 @@ test("risk: reads run alone, changes need approval, deletes/data stores/publishi
   for (const t of ["http_get", "store_image", "upload_image", "subagent", "some_new_tool"]) assert.equal(riskOf(t, {}), "blocked", t);
 });
 
+test("risk: Luau that hides what it calls always asks, so injected text in an inserted asset can't slip it past auto-approve", () => {
+  for (const code of [
+    `workspace.Map["Des".."troy"](workspace.Map)`,
+    `local m = workspace.Map m["Destroy"](m)`,
+    `workspace.Map.Destroy(workspace.Map)`,
+    `game:GetService("Http".."Service"):PostAsync(u, d)`,
+    `local s = "HttpService" game:GetService(s)`,
+    `game:GetService(string.char(72,116,116,112,83,101,114,118,105,99,101))`,
+    `local n = ("\\72\\116\\116\\112") print(n)`,
+    `local env = getfenv(1) env.game.Workspace:ClearAllChildren()`,
+    `rawget(game, "Workspace")`,
+    `debug.info(1, "s")`,
+    `workspace.Map["Parent"] = nil`,
+  ]) assert.equal(riskOf("execute_luau", { code }), "destructive", code);
+
+  // Ordinary procedural building stays a normal change (auto-approvable when the person turned that on).
+  for (const code of [
+    `for i = 1, 40 do local p = Instance.new("Part") p.Name = "Tree" .. i p.Position = Vector3.new(i * 4, 0, 0) p.Parent = workspace end`,
+    `local Players = game:GetService("Players") local Lighting = game:GetService('Lighting') Lighting.ClockTime = 14`,
+    `local colors = { Color3.fromRGB(20, 30, 40), Color3.new(1, 1, 1) } local p = Instance.new("Part") p.Color = colors[2] p.Parent = workspace`,
+    `local label = Instance.new("TextLabel") label.Text = "Score: " .. tostring(10) label.Parent = game:GetService("StarterGui")`,
+  ]) assert.equal(riskOf("execute_luau", { code }), "change", code);
+});
+
 test("upload_image: public https images always wait for approval; files, localhost and private addresses are blocked", () => {
   assert.equal(riskOf("upload_image", { imagePaths: ["https://cdn.example.com/slash.png", "https://images.example.org/a/b.jpg?x=1"] }), "destructive");
   for (const bad of ["http://cdn.example.com/a.png", "file:///C:/secret.png", "C:\\a.png", "https://localhost/a.png", "https://127.0.0.1/a.png", "https://192.168.1.4/a.png", "https://10.0.0.2/a.png", "https://172.20.1.1/a.png", "https://169.254.169.254/latest", "https://[::1]/a.png", "https://intranet/a.png", "https://user:pw@cdn.example.com/a.png", "https://printer.local/a.png"]) {

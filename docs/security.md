@@ -64,7 +64,21 @@ Report issues to team@keplar.one (`/.well-known/security.txt`).
   Stream failures in `/api/keplar` return "Something went wrong."
 
 ## Dependencies
-- `npm audit --omit=dev`: 0 vulnerabilities. `npm audit` (dev tree): 0 vulnerabilities. (The 5 moderate issues in the dev-only wordmark tracer `potrace → jimp → phin` are gone: `potrace` and `svgo` were removed in the Oct 4 cleanup; the traced wordmark is committed in `brand/geometry.ts`.)
+- `npm audit --omit=dev`: 0 vulnerabilities (Oct 11, 2026). Next.js 16.3.6 → 16.3.8 fixed the high-severity cache-poisoning and Draft Mode
+  leak advisories; `overrides` in package.json pin `image-size` ≥ 2.0.4 (pulled in by `pptxgenjs`, whose only call to it is commented
+  out) and `source-map-js` ≥ 1.2.2.
+- `npm audit` (dev tree): 5 high, all one advisory (`braces` ≤ 3.0.3 stack exhaustion, GHSA-vfj7-8cjw-p6xm) reached only through
+  ESLint's file globbing on our own source. No patched `braces` exists yet. Accepted: dev-only, never shipped, no untrusted input.
+- The deploy gate (`scripts/verify.mjs`) now fails on any high or critical advisory in production dependencies and on any secret
+  found by `scripts/secret-scan.mjs` (tracked files plus untracked, non-ignored files, since a folder deploy uploads those).
+
+## Admin accounts
+- Admin = a verified session whose email is in `KEPLAR_ADMIN_EMAILS`; every `/admin` page and `/api/admin` route uses
+  `src/lib/ops/admin-auth.ts`, and non-admins get 404.
+- `KEPLAR_ADMIN_REQUIRE_MFA=1` additionally requires the admin account to have an authenticator app turned on, which means
+  every admin session passed a second factor. Fails closed. **Off until the founder turns it on**: set up the authenticator
+  first (Account > Two-factor), then set the variable in Vercel Production and redeploy. Turning it on before that locks
+  admin out (recover by unsetting it). Test: `tests/admin-mfa.test.ts`.
 
 ## Tests
 `tests/security.test.ts` (origin including X-Forwarded-Host CSRF, proxy, headers including CORP, security.txt, open redirect, rate limit, input validation, cookies, health security flags),

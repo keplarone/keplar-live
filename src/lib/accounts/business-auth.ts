@@ -31,7 +31,10 @@ export const businessAuth = (opts: Opts) => ({
       ctx.setCookie(HANDOFF_NONCE_COOKIE, "", { maxAge: 0, path: "/", httpOnly: true, sameSite: "lax", secure: ctx.context.authCookies.sessionToken.attributes.secure });
       // A stale or foreign ticket never loops back into another handoff: the storefront says what happened.
       if (!check.ok) throw ctx.redirect(`/?signin=${check.reason}`);
-      await startSession(ctx, { email: check.user.email, name: check.user.name, provider: "business", remember: true });
+      // The ticket is minted only from a keplar.one session that already passed its second factor (getSession refuses a session
+      // whose mfa_pending is still set), and business.keplar.one has no two-factor page: asking again would leave a 2FA user's
+      // Business session pending forever, i.e. signed out in a loop.
+      await startSession(ctx, { email: check.user.email, name: check.user.name, provider: "business", remember: true, secondFactorDone: true });
       throw ctx.redirect(safeBusinessNext(q.next));
     }),
   },

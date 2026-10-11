@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * Release gate: `npm run verify`. Runs, in order, and stops at the first failure:
- *   1. typecheck   2. lint (errors fail; warnings are listed, not fatal)   3. unit tests   4. production build   5. smoke Playwright test
+ *   1. secret scan   2. production dependency audit (high/critical fails)   3. typecheck   4. lint (errors fail; warnings are listed,
+ *   not fatal)   5. unit tests   6. production build   7. smoke Playwright test
  * Flags: --quick (typecheck + lint + unit tests only)   --no-e2e (skip the browser smoke test)
  * Logs: $KEPLAR_VERIFY_LOGS (default /tmp/keplar-verify). Exit code 0 only when every step passed.
  */
@@ -19,6 +20,10 @@ const E2E_SECRET = "e2e-secret-0123456789abcdefghijklmnopqrstuv";
 const e2eEnv = { BETTER_AUTH_SECRET: E2E_SECRET, BETTER_AUTH_URL: "http://localhost:3199", KEPLAR_DEV_TOOLS: "1", KEPLAR_MX_CHECK: "off", RESEND_API_KEY: "" };
 
 const steps = [
+  // Security gates first: a committed or uploadable secret, or a known high/critical hole in a production dependency, stops the
+  // deploy before anything else runs. Dev-only advisories (tooling that never ships) are tracked in docs/security.md instead.
+  { name: "secret scan", cmd: "node", args: ["scripts/secret-scan.mjs"] },
+  { name: "dependency audit", cmd: "npm", args: ["audit", "--omit=dev", "--audit-level=high"] },
   { name: "typecheck", cmd: "npx", args: ["tsc", "--noEmit"] },
   { name: "lint", cmd: "npx", args: ["eslint", ".", "--quiet"] },
   { name: "unit tests", cmd: "npm", args: ["test"] },

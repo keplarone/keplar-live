@@ -23,6 +23,15 @@ test("handoff: a ticket signs in only the browser holding the matching nonce, wi
   for (const bad of [undefined, "", "x", "a.b.c", `${payload}.`, 42]) assert.equal(verifyTicket(SECRET, bad, nonce).ok, false);
 });
 
+test("handoff: a 2FA user's Business session is complete, because only a fully verified keplar.one session can mint the ticket", async () => {
+  const { readFileSync } = await import("node:fs");
+  // The Business host has no two-factor page; without this a 2FA user's Business session stays mfa_pending (signed out in a loop).
+  assert.match(readFileSync("src/lib/accounts/business-auth.ts", "utf8"), /provider: "business", remember: true, secondFactorDone: true/);
+  // ...which is safe only while keplar.one refuses to sign tickets for a session still waiting on its second factor.
+  assert.match(readFileSync("src/app/api/business/handoff/route.ts", "utf8"), /const session = await getSession\(req\.headers\);\s*if \(!session\)/);
+  assert.match(readFileSync("src/lib/accounts/persist.ts", "utf8"), /if \(bool\(r\.mfa_pending\)\) return \{ ok: false, reason: "mfa_required" \}/);
+});
+
 test("handoff: cookie parsing and safe next paths (no open redirect, no internal /biz or /api)", () => {
   assert.equal(cookieValue(new Headers({ cookie: "a=1; kb_handoff=abc%3D; b=2" }), "kb_handoff"), "abc=");
   assert.equal(cookieValue(new Headers({ cookie: "a=1" }), "kb_handoff"), null);

@@ -13,8 +13,12 @@ import { primaryNav, footerNav } from "../src/lib/site";
 import { RESERVED_SLUGS } from "../src/lib/site-builder/store";
 
 const page = (route: string) => {
+  // business.keplar.one is served by this same app: its "/" is the storefront at /biz (src/proxy.ts, src/lib/business-site.ts).
+  const biz = /^https:\/\/business\.keplar\.one(\/[^#?]*)?/.exec(route);
+  if (biz) return page(`/biz${biz[1] && biz[1] !== "/" ? biz[1] : ""}`.replace(/^\/biz$/, "/biz/"));
   const p = route.split("#")[0].split("?")[0];
   if (p === "/") return "src/app/(marketing)/page.tsx";
+  if (p === "/biz/") return existsSync("src/app/(business)/biz/page.tsx") ? "src/app/(business)/biz/page.tsx" : null;
   for (const base of [`src/app/(marketing)${p}/page.tsx`, `src/app${p}/page.tsx`]) if (existsSync(base)) return base;
   return null;
 };
