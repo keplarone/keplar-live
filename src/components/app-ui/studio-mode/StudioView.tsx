@@ -28,7 +28,7 @@ export const STUDIO_IDEAS = [
   { title: "Sword slash VFX", line: "Layered trail, sparks and impact burst on hit", tone: "vfx", prompt: "Create a sword slash effect: a layered trail while swinging, sparks, and an impact burst with a short camera shake when it hits something." },
 ] as const;
 
-const CAN_DO = ["Scripts and systems", "Maps and models", "Lighting and mood", "UI that works on phones", "Particles, beams, trails", "Play tests and fixes", "Creator Store assets"];
+const CAN_DO = ["Scripts and systems", "Maps and models", "Lighting and mood", "UI that works on phones", "Particles, beams, trails", "Fixes from your play tests", "Creator Store assets"];
 
 /** The soft colour fields behind the Studio page (decorative, still when reduced motion is on). */
 export function StudioAura() {
@@ -159,7 +159,7 @@ export function StudioView({ plan, signedIn }: { plan: string; signedIn: boolean
           <div className={s.heroText}>
             {kicker}
             <h1 className={s.heroTitle}><TwoTone text="Build in Roblox Studio" /></h1>
-            <p className={s.lede}>Describe a game, a map, a UI or an effect. Keplar looks at your place, plans it, builds it in Studio on this computer, checks its own work with screenshots and play tests, and asks before every major change.</p>
+            <p className={s.lede}>Describe a game, a map, a UI or an effect. Keplar looks at your place, plans it, builds it in Studio on this computer and asks before every major change. Then you play-test it and say what to change.</p>
             <div className={s.heroActions} aria-live="polite">
               {st !== "unsupported" ? (
                 <button type="button" className={s.primary} data-size="lg" onClick={() => void connect()} disabled={busy || st === "connecting"}>

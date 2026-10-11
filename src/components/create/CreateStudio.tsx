@@ -29,11 +29,13 @@ const MobileStudio = lazy(() => loadMobile().then((m) => ({ default: m.MobileStu
 const SiteBuilder = lazy(() => loadSite().then((m) => ({ default: m.SiteBuilder })));
 const loadRoblox = () => import("@/components/app-ui/studio-mode/StudioView");
 const RobloxStudio = lazy(() => loadRoblox().then((m) => ({ default: m.StudioView })));
+const loadBlender = () => import("@/components/app-ui/studio-mode/BlenderView");
+const BlenderStudio = lazy(() => loadBlender().then((m) => ({ default: m.BlenderView })));
 const noSubscribe = () => () => {};
-const WARM: Record<string, () => Promise<unknown>> = { images: loadImages, video: loadVideo, mobile: loadMobile, roblox: loadRoblox };
+const WARM: Record<string, () => Promise<unknown>> = { images: loadImages, video: loadVideo, mobile: loadMobile, roblox: loadRoblox, blender: loadBlender };
 
 /** "roblox" is Roblox Studio mode: desktop app only, so its tab appears only when the desktop bridge is there. */
-type View = "app" | "images" | "video" | "mobile" | "roblox";
+type View = "app" | "images" | "video" | "mobile" | "roblox" | "blender";
 type Auth = "loading" | "in" | "out";
 
 type Props = { embedded?: boolean; initialTab?: string; /** null while the app shell is still resolving the account. undefined when Create is mounted on its own. */ signedIn?: boolean | null; /** The plan, for Roblox Studio mode (Lite and up). */ plan?: string };
@@ -41,7 +43,7 @@ type Props = { embedded?: boolean; initialTab?: string; /** null while the app s
 const SITE_HANDOFF_KEY = "keplar:create-site";
 
 function resolveTab(raw?: string | null): View {
-  if (raw === "images" || raw === "video" || raw === "mobile" || raw === "roblox") return raw;
+  if (raw === "images" || raw === "video" || raw === "mobile" || raw === "roblox" || raw === "blender") return raw;
   // "site" and anything else land on App (Site Create UI removed).
   return "app";
 }
@@ -83,6 +85,7 @@ export function CreateStudio({ initialTab, signedIn, plan = "free" }: Props) {
   const [videoSeen, setVideoSeen] = useState(() => resolveTab(initialTab ?? tabFromLocation()) === "video");
   const [mobileSeen, setMobileSeen] = useState(() => resolveTab(initialTab ?? tabFromLocation()) === "mobile");
   const [robloxSeen, setRobloxSeen] = useState(() => resolveTab(initialTab ?? tabFromLocation()) === "roblox");
+  const [blenderSeen, setBlenderSeen] = useState(() => resolveTab(initialTab ?? tabFromLocation()) === "blender");
   const [siteHandoff, setSiteHandoff] = useState(() => peekSiteHandoff());
   const [auth, setAuth] = useState<Auth>(signedIn === true ? "in" : signedIn === false ? "out" : "loading");
   const shown: Auth = signedIn === true ? "in" : signedIn === false ? "out" : auth;
@@ -94,9 +97,10 @@ export function CreateStudio({ initialTab, signedIn, plan = "free" }: Props) {
     if (v === "video") setVideoSeen(true);
     if (v === "mobile") setMobileSeen(true);
     if (v === "roblox") setRobloxSeen(true);
+    if (v === "blender") setBlenderSeen(true);
   };
   // Outside the desktop app a Roblox Studio link lands on App.
-  const current: View = view === "roblox" && !desktop ? "app" : view;
+  const current: View = (view === "roblox" || view === "blender") && !desktop ? "app" : view;
 
   // Strip ?tab=site from the URL after mount (redirects cover full navigations; this covers client deep links).
   useEffect(() => {
@@ -188,6 +192,7 @@ export function CreateStudio({ initialTab, signedIn, plan = "free" }: Props) {
           {tab("video", <>Video <span aria-hidden="true">(Beta)</span></>)}
           {tab("mobile", <>Mobile <span aria-hidden="true">(Beta)</span></>)}
           {desktop ? tab("roblox", "Roblox Studio") : null}
+          {desktop ? tab("blender", "Blender") : null}
           <span className="m-tab-indicator" aria-hidden="true" />
         </div>
       </div>
@@ -207,6 +212,11 @@ export function CreateStudio({ initialTab, signedIn, plan = "free" }: Props) {
       {mobileSeen ? (
         <div style={current === "mobile" ? { overflowY: "auto", flex: 1 } : { display: "none" }}>
           <Suspense fallback={loading}><MobileStudio /></Suspense>
+        </div>
+      ) : null}
+      {desktop && blenderSeen ? (
+        <div style={current === "blender" ? { overflowY: "auto", flex: 1, padding: "24px 20px" } : { display: "none" }}>
+          <Suspense fallback={loading}><BlenderStudio plan={plan} signedIn={shown === "in"} /></Suspense>
         </div>
       ) : null}
       {desktop && robloxSeen ? (

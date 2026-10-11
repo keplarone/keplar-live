@@ -30,8 +30,9 @@ export type SavedSession = {
 };
 
 /** The game this chat belongs to: its placeId, or its name for an unpublished place. Null when there is no place yet. */
-export function placeKey(place: Pick<Place, "name" | "placeId"> | null): string | null {
+export function placeKey(place: Pick<Place, "name" | "placeId" | "saveKey"> | null): string | null {
   if (!place) return null;
+  if (place.saveKey) return `${SAVE_PREFIX}${place.saveKey}`;
   if (place.placeId) return `${SAVE_PREFIX}id:${place.placeId}`;
   const name = place.name.trim().toLowerCase();
   return name ? `${SAVE_PREFIX}name:${name}` : null;

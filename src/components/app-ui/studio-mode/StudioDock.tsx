@@ -50,7 +50,7 @@ function ActionCard({ it, onDecide, compact }: { it: Extract<Item, { kind: "acti
  * The Studio co-creator's chat dock (run loop: useStudioAgent, passed in so the side panel shares it). Shown once Keplar is
  * connected to Studio, on the Studio page and, compact, in the desktop overlay.
  */
-export function StudioDock({ a, compact = false, draft = "", onDraftUsed }: { a: StudioAgent; compact?: boolean; draft?: string; onDraftUsed?: () => void }) {
+export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPlayTest = true }: { a: StudioAgent; compact?: boolean; draft?: string; onDraftUsed?: () => void; /** Roblox Studio has a play test; Blender does not. */ canPlayTest?: boolean }) {
   const [text, setText] = useState(draft);
   const [refs, setRefs] = useState<string[]>([]);
   const [refBusy, setRefBusy] = useState(false);
@@ -198,7 +198,7 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed }: { a:
           ) : (
             <>
               {/* The person play-tests (Studio directly, no model call): the model no longer spends turns testing its own work. */}
-              {a.items.length ? (
+              {canPlayTest && a.items.length ? (
                 <button type="button" className={s.ghost} aria-pressed={a.playing} onClick={() => void a.playTest(!a.playing)}>
                   {a.playing ? "Stop test" : "Play test"}
                 </button>

@@ -159,12 +159,12 @@ export type StudioToolDef = { name: string; description?: string; inputSchema?: 
 const bad = (msg: string) => new HttpError(400, msg, "bad_request");
 
 /** Tools offered to the model: only allowed Studio tools, with capped descriptions and schemas. */
-export function buildTools(defs: unknown): { type: "function"; function: { name: string; description: string; parameters: unknown } }[] {
+export function buildTools(defs: unknown, policyOf: (name: string) => Risk | "blocked" | undefined = (n) => STUDIO_TOOL_POLICY[n]): { type: "function"; function: { name: string; description: string; parameters: unknown } }[] {
   if (!Array.isArray(defs)) throw bad("tools must be a list.");
   const out: { type: "function"; function: { name: string; description: string; parameters: unknown } }[] = [];
   for (const d of defs.slice(0, 80) as StudioToolDef[]) {
     if (!d || typeof d.name !== "string") continue;
-    const policy = STUDIO_TOOL_POLICY[d.name];
+    const policy = policyOf(d.name);
     if (!policy || policy === "blocked") continue;
     const schema = d.inputSchema && typeof d.inputSchema === "object" ? d.inputSchema : { type: "object", properties: {} };
     if (JSON.stringify(schema).length > STUDIO_LIMITS.maxSchemaBytes) continue;
@@ -248,11 +248,23 @@ export function withCacheBreakpoint(messages: StudioMessage[]): unknown[] {
   return out;
 }
 
+/** What differs between the desktop co-builders (Roblox Studio, Blender): prompt, tool policy, budgets and the meter label. */
+export type TurnProfile = {
+  system: string;
+  riskOf: (name: string, args: Record<string, unknown>) => Risk | "blocked";
+  meter: string;
+  title: string;
+  maxOutputTokens: number;
+  reasoningTokens: number;
+};
+export const STUDIO_PROFILE: TurnProfile = { system: STUDIO_SYSTEM, riskOf, meter: "studio.agent", title: "Keplar Studio mode", maxOutputTokens: STUDIO_LIMITS.maxOutputTokens, reasoningTokens: STUDIO_LIMITS.reasoningTokens };
+
 /** One model turn: check credits, ask Opus 5.5 (thinking first), charge the real cost, return the reply and the labelled actions. */
 export async function runStudioTurn(
   ws: Workspace,
   input: { messages: StudioMessage[]; tools: ReturnType<typeof buildTools> },
   deps: { fetch?: typeof fetch; now?: () => string } = {},
+  profile: TurnProfile = STUDIO_PROFILE,
 ): Promise<StudioTurn> {
   const spec = catalogById.get(STUDIO_MODEL);
   const slug = spec ? openRouterSlug(spec) : null;
@@ -263,15 +275,15 @@ export async function runStudioTurn(
   const doFetch = deps.fetch ?? fetch;
   const ask = (messages: unknown[]) => doFetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
-    headers: { authorization: `Bearer ${key}`, "content-type": "application/json", "x-title": "Keplar Studio mode", "http-referer": "https://keplar.one" },
+    headers: { authorization: `Bearer ${key}`, "content-type": "application/json", "x-title": profile.title, "http-referer": "https://keplar.one" },
     body: JSON.stringify({
       model: slug,
-      messages: [{ role: "system", content: [{ type: "text", text: STUDIO_SYSTEM, cache_control: { type: "ephemeral" } }] }, ...messages],
+      messages: [{ role: "system", content: [{ type: "text", text: profile.system, cache_control: { type: "ephemeral" } }] }, ...messages],
       tools: input.tools,
       tool_choice: "auto",
       parallel_tool_calls: false,
-      max_tokens: STUDIO_LIMITS.maxOutputTokens,
-      reasoning: { max_tokens: STUDIO_LIMITS.reasoningTokens },
+      max_tokens: profile.maxOutputTokens,
+      reasoning: { max_tokens: profile.reasoningTokens },
       usage: { include: true },
     }),
     signal: AbortSignal.timeout(STUDIO_LIMITS.timeoutMs),
@@ -287,7 +299,7 @@ export async function runStudioTurn(
   const completion = data.usage?.completion_tokens ?? 0;
   const usd = typeof data.usage?.cost === "number" && data.usage.cost > 0 ? data.usage.cost : callCostUsd(spec, prompt, completion, (deps.now ?? (() => new Date().toISOString()))()) ?? 0;
   const metered = usd * METER_MARGIN;
-  const units = usd > 0 ? await chargeUnits(ws, "studio.agent", toUnits(metered), metered, undefined, { dailySafetyCap: false }) : 0;
+  const units = usd > 0 ? await chargeUnits(ws, profile.meter, toUnits(metered), metered, undefined, { dailySafetyCap: false }) : 0;
 
   const choice = data.choices[0]!;
   const actions: StudioTurn["actions"] = [];
@@ -298,7 +310,7 @@ export async function runStudioTurn(
       const parsed = JSON.parse(c.function.arguments || "{}");
       if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) args = parsed;
     } catch { /* malformed arguments: the call is returned with none and Studio will say so */ }
-    const risk = riskOf(c.function.name, args);
+    const risk = profile.riskOf(c.function.name, args);
     if (risk === "blocked") blocked.push({ id: c.id, name: c.function.name });
     else actions.push({ id: c.id, name: c.function.name, args, risk });
   }
