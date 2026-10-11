@@ -7,6 +7,7 @@ import { ScrollZoom } from "./ScrollZoom";
 import { ModelStack } from "./ModelStack";
 import { DemoWindow } from "./DemoWindow";
 import { FeatureList } from "./FeatureList";
+import { HeroCta } from "@/components/growth/HeroCta";
 import s from "./Sky.module.css";
 
 /** Use cases shown on the home, in this order (slugs from content/use-cases), each with its icon stroke colour. */
@@ -45,7 +46,7 @@ export function SkyHome({ pricing }: { pricing?: React.ReactNode }) {
         </h1>
         <p className={s.lede}>{brand.name} uses multiple AI models, compares their perspectives, and gives you one clear, synthesized answer.</p>
         <div className={s.ctas}>
-          <Link href={tryHref} className={s.btnPrimary}>Try {brand.name}</Link>
+          <HeroCta href={tryHref} className={s.btnPrimary} />
           <Link href="/download" className={s.btnSecondary}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
             Download for desktop

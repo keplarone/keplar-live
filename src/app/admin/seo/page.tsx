@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { adminFromHeaders } from "@/lib/ops/admin-auth";
-import { seoSnapshot } from "@/lib/seo/events";
+import { funnel, seoRows, seoSnapshot, type FunnelRow } from "@/lib/seo/events";
 import { sitemapPaths } from "@/app/sitemap";
 import { lastmodFor } from "@/lib/content/lastmod";
 import s from "@/components/admin/Admin.module.css";
@@ -14,6 +14,8 @@ export default async function AdminSeoPage() {
   const admin = await adminFromHeaders(await headers());
   if (!admin) notFound();
   const { at: nowMs, report } = await seoSnapshot(28);
+  const rows = await seoRows(28, nowMs).catch(() => null);
+  const f = rows ? funnel(rows) : null;
   const pages = sitemapPaths.map((p) => {
     const lm = lastmodFor(p);
     const age = lm ? Math.floor((nowMs - Date.parse(lm)) / 864e5) : null;
@@ -21,6 +23,7 @@ export default async function AdminSeoPage() {
   });
   const stale = pages.filter((p) => p.age !== null && p.age > STALE_DAYS);
   const pct = (a: number, b: number) => (b ? `${Math.round((a / b) * 100)}%` : "—");
+  const step = (r: FunnelRow) => (r.previous === null ? "—" : pct(r.browsers, r.previous));
   return (
     <div className={s.page}>
       <header className={s.head}>
@@ -30,6 +33,46 @@ export default async function AdminSeoPage() {
           Counts come from visitors who allowed Analytics (and send no Global Privacy Control or Do Not Track signal), so they are a floor, not a total. Impressions, clicks, queries and rankings live in Google Search Console and Bing Webmaster Tools; Keplar cannot see them.
         </p>
       </header>
+
+      <section className={s.panel} aria-labelledby="steps-h">
+        <h2 id="steps-h">Funnel, step by step (distinct browsers)</h2>
+        {!f ? (
+          <p className={s.empty}>The store could not be read.</p>
+        ) : (
+          <div className={s.scroll}>
+            <table className={s.table}>
+              <thead>
+                <tr>
+                  {["Step", "All", "Of previous step", "Mobile", "Desktop", "Device not recorded"].map((h) => (
+                    <th key={h} scope="col">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {f.steps.map((r, i) => (
+                  <tr key={r.event}>
+                    <td>{r.label}</td>
+                    <td>{r.browsers}</td>
+                    <td>{step(r)}</td>
+                    <td>{f.byDevice.mobile[i].browsers} ({step(f.byDevice.mobile[i])})</td>
+                    <td>{f.byDevice.desktop[i].browsers} ({step(f.byDevice.desktop[i])})</td>
+                    <td>{f.byDevice.unknown[i].browsers}</td>
+                  </tr>
+                ))}
+                {f.revenue.map((r) => (
+                  <tr key={r.event}>
+                    <td>{r.label}</td>
+                    <td>{r.browsers}</td>
+                    <td>{step(r)}</td>
+                    <td colSpan={3}>—</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <p className={s.sub}>Each rate is out of the browsers that reached the step above it (pricing → plan → checkout is its own chain). A browser can skip steps, so a rate can pass 100%. Device is the viewport class, recorded since this table was added; older events show as not recorded. Billing truth (paid subscriptions, MRR) is on /admin/growth from Whop.</p>
+      </section>
 
       <section className={s.panel} aria-labelledby="funnel-h">
         <h2 id="funnel-h">First page of the visit → sign-up → first answer</h2>

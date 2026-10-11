@@ -11,7 +11,7 @@ const vid = "a".repeat(24);
 
 test("sanitize keeps only allow-listed fields and rejects free text", () => {
   const ok = sanitizeSeoEvent({ e: "landing_view", landing: "/superintelligence", src: "search", vid, utmSource: "x", prompt: "my secret question", email: "a@b.co" });
-  assert.deepEqual(ok, { event: "landing_view", landing: "/superintelligence", src: "search", vid, where: undefined, utmSource: "x", utmCampaign: undefined, level: undefined });
+  assert.deepEqual(ok, { event: "landing_view", landing: "/superintelligence", src: "search", vid, where: undefined, utmSource: "x", utmCampaign: undefined, level: undefined, dev: undefined });
   assert.equal(JSON.stringify(ok).includes("secret"), false);
   assert.equal(sanitizeSeoEvent({ e: "evil", landing: "/", src: "search", vid }), null);
   assert.equal(sanitizeSeoEvent({ e: "landing_view", landing: "https://evil.com/x?q=1", src: "search", vid }), null);

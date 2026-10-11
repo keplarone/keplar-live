@@ -12,8 +12,22 @@ import { allows, parseRecord } from "@/lib/consent";
 import { collection } from "@/lib/create/platform/store";
 import { id } from "@/lib/create/platform/ids";
 
-export const SEO_EVENTS = ["landing_view", "cta_click", "signup_complete", "first_prompt", "synthesis_success"] as const;
+export const SEO_EVENTS = [
+  "landing_view",
+  "cta_click",
+  "signup_start",
+  "signup_complete",
+  "first_prompt",
+  "synthesis_success",
+  "pricing_view",
+  "checkout_start",
+  "subscription_complete",
+  "experiment_exposure",
+] as const;
 export type SeoEvent = (typeof SEO_EVENTS)[number];
+/** Coarse device class from the viewport (never the user agent string). */
+export const SEO_DEVICES = ["mobile", "desktop"] as const;
+export type SeoDevice = (typeof SEO_DEVICES)[number];
 export const SEO_SOURCES = ["search", "ai", "social", "direct", "other", "internal"] as const;
 export type SeoSource = (typeof SEO_SOURCES)[number];
 
@@ -30,6 +44,7 @@ export type SeoEventRow = {
   utmSource?: string;
   utmCampaign?: string;
   level?: string;
+  dev?: SeoDevice;
 };
 
 const SYSTEM = "system";
@@ -38,7 +53,7 @@ const rows = () => collection<SeoEventRow>("seo_events");
 const LEVELS = new Set(["consensus", "partial", "none", "single", "unscored"]);
 const tag = (v: unknown, re: RegExp) => (typeof v === "string" && re.test(v) ? v : undefined);
 
-export type SeoInput = { event: SeoEvent; landing: string; src: SeoSource; vid: string; where?: string; utmSource?: string; utmCampaign?: string; level?: string };
+export type SeoInput = { event: SeoEvent; landing: string; src: SeoSource; vid: string; where?: string; utmSource?: string; utmCampaign?: string; level?: string; dev?: SeoDevice };
 
 /** Strict allow-list validation. Anything else is dropped; free text never reaches the database. */
 export function sanitizeSeoEvent(body: unknown): SeoInput | null {
@@ -60,6 +75,7 @@ export function sanitizeSeoEvent(body: unknown): SeoInput | null {
     utmSource: tag(b.utmSource, /^[\w.\-]{1,40}$/),
     utmCampaign: tag(b.utmCampaign, /^[\w.\-]{1,60}$/),
     level,
+    dev: SEO_DEVICES.find((d) => d === b.dev),
   };
 }
 
@@ -95,7 +111,7 @@ export function summarize(list: SeoEventRow[]): LandingStats[] {
   const by = new Map<string, { sets: Record<SeoEvent, Set<string>>; src: Map<SeoSource, Set<string>> }>();
   for (const r of list) {
     let e = by.get(r.landing);
-    if (!e) by.set(r.landing, (e = { sets: { landing_view: new Set(), cta_click: new Set(), signup_complete: new Set(), first_prompt: new Set(), synthesis_success: new Set() }, src: new Map() }));
+    if (!e) by.set(r.landing, (e = { sets: Object.fromEntries(SEO_EVENTS.map((k) => [k, new Set<string>()])) as Record<SeoEvent, Set<string>>, src: new Map() }));
     e.sets[r.event].add(r.vid);
     if (r.event === "landing_view") (e.src.get(r.src) ?? e.src.set(r.src, new Set()).get(r.src)!).add(r.vid);
   }
@@ -121,4 +137,50 @@ export async function seoReport(days = 28, at = Date.now()): Promise<LandingStat
 export async function seoSnapshot(days = 28): Promise<{ at: number; report: LandingStats[] | null }> {
   const at = Date.now();
   return { at, report: await seoReport(days, at).catch(() => null) };
+}
+
+/* ── funnel ────────────────────────────────────────────────────────────────── */
+
+/** The funnel in order. Each step's rate uses the step before it as the denominator, so every percentage says what it is out of. */
+export const FUNNEL_STEPS: { event: SeoEvent; label: string }[] = [
+  { event: "landing_view", label: "Visited a public page" },
+  { event: "cta_click", label: "Clicked a call to action" },
+  { event: "signup_start", label: "Opened sign-up" },
+  { event: "signup_complete", label: "Created an account" },
+  { event: "first_prompt", label: "Asked a first question" },
+  { event: "synthesis_success", label: "Saw a combined answer" },
+];
+/** Separate, because people reach pricing from anywhere (it is not a step after the first answer). */
+export const REVENUE_STEPS: { event: SeoEvent; label: string }[] = [
+  { event: "pricing_view", label: "Viewed pricing" },
+  { event: "checkout_start", label: "Chose a plan" },
+  { event: "subscription_complete", label: "Finished checkout" },
+];
+
+export type FunnelRow = { event: SeoEvent; label: string; browsers: number; ofPrevious: number | null; previous: number | null };
+export type FunnelReport = { steps: FunnelRow[]; revenue: FunnelRow[]; byDevice: Record<SeoDevice | "unknown", FunnelRow[]> };
+
+function steps(list: SeoEventRow[], order: { event: SeoEvent; label: string }[]): FunnelRow[] {
+  const sets = new Map<SeoEvent, Set<string>>(order.map((s) => [s.event, new Set()]));
+  for (const r of list) sets.get(r.event)?.add(r.vid);
+  return order.map((s, i) => {
+    const n = sets.get(s.event)!.size;
+    const prev = i ? sets.get(order[i - 1].event)!.size : null;
+    return { event: s.event, label: s.label, browsers: n, previous: prev, ofPrevious: prev ? n / prev : null };
+  });
+}
+
+/** Distinct browsers per funnel step, overall and per device class. Pure over rows. */
+export function funnel(list: SeoEventRow[]): FunnelReport {
+  const dev = (d: SeoDevice | "unknown") => list.filter((r) => (r.dev ?? "unknown") === d);
+  return {
+    steps: steps(list, FUNNEL_STEPS),
+    revenue: steps(list, REVENUE_STEPS),
+    byDevice: { mobile: steps(dev("mobile"), FUNNEL_STEPS), desktop: steps(dev("desktop"), FUNNEL_STEPS), unknown: steps(dev("unknown"), FUNNEL_STEPS) },
+  };
+}
+
+/** Raw rows for the last `days` days (admin reports build funnels and experiment results from them). */
+export async function seoRows(days = 28, at = Date.now()): Promise<SeoEventRow[]> {
+  return rows().listSystemRange({ field: "at", gte: new Date(at - days * 864e5).toISOString() }, 50_000);
 }

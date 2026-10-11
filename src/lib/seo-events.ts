@@ -67,9 +67,27 @@ function vid(): string {
   return v;
 }
 
+/** The random first-party browser id, only once the visitor allowed Analytics (experiments assign arms from it). */
+export function consentedBrowserId(): string | null {
+  try {
+    return consentAllows("analytics") ? vid() : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Coarse device class from the viewport width only (no user agent, no screen fingerprint). */
+const device = () => {
+  try {
+    return window.matchMedia("(max-width: 767px)").matches ? "mobile" : "desktop";
+  } catch {
+    return undefined;
+  }
+};
+
 function send(body: Record<string, unknown>) {
   try {
-    const data = JSON.stringify(body);
+    const data = JSON.stringify({ ...body, dev: device() });
     if (navigator.sendBeacon?.("/api/seo/event", new Blob([data], { type: "application/json" }))) return;
     void fetch("/api/seo/event", { method: "POST", headers: { "content-type": "application/json" }, body: data, keepalive: true });
   } catch {
