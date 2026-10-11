@@ -2,7 +2,7 @@
  * Roblox Studio mode, server side: one turn of the Studio co-creator.
  *
  * The desktop app runs Roblox Studio's own MCP server on the person's computer (keplar-desktop, src/main/studio). The page sends
- * the conversation so far plus Studio's tool definitions here; this module asks Fable 5 for the next reply and the Studio
+ * the conversation so far plus Studio's tool definitions here; this module asks Opus 5.5 for the next reply and the Studio
  * actions it wants, and returns them labelled by risk. Nothing here touches Studio: the page runs the actions through the
  * desktop bridge, read-only ones by themselves and changes only after the person approves (or has turned on auto-approve for
  * safe changes). Destructive actions always wait for approval.
@@ -19,7 +19,7 @@ import { liveEnv, openRouterSlug } from "@/lib/orchestration/config";
 import { METER_MARGIN } from "@/lib/orchestration/limits";
 import { callCostUsd } from "@/lib/orchestration/pricing";
 
-export const STUDIO_MODEL = "claude-fable-5-1";
+export const STUDIO_MODEL = "claude-opus-5-5";
 export const STUDIO_LIMITS = {
   maxMessages: 240,
   maxBodyBytes: 12 * 1024 * 1024,
@@ -92,11 +92,11 @@ How you work:
 3. Read the request generously. "A sci-fi city" means a dense skyline of varied buildings with real silhouettes, streets, props, signage, lighting, atmosphere and life (moving traffic, effects), not a few boxes. Fill in the details a great developer would add without being asked, while staying true to what was asked.
 4. Plan: before the first change, write a numbered plan (4 to 10 steps, as "1. …" lines) covering structure, visuals, scripts and how you will verify it. Then carry out every step, and start the message for each step with "Step N:" (for example "Step 3: Lighting the night scene."), so the person can follow your progress. Do not stop after the plan, and do not stop halfway to ask whether to continue; only ask when something is genuinely ambiguous or risky.
 5. Build in big, well-made steps: one execute_luau call can create hundreds of instances procedurally (loops, random variation with a fixed seed, helper functions), so build whole districts, UIs or systems per call instead of a part at a time. Write scripts complete and working, not stubs or TODOs.
-6. Verify like a professional after every visible change: screen_capture and look critically (scale, proportions, gaps, floating or clipping parts, colour harmony, readability, empty areas). Check get_console_output for errors after running code or a play test. For gameplay, start a play test with start_stop_play and exercise it (character_navigation, user_keyboard_input, user_mouse_input), then stop it. Fix every problem you find and check again.
+6. Verify like a professional after every visible change: screen_capture and look critically (scale, proportions, gaps, floating or clipping parts, color harmony, readability, empty areas). Check get_console_output for errors after running code or a play test. For gameplay, start a play test with start_stop_play and exercise it (character_navigation, user_keyboard_input, user_mouse_input), then stop it. Fix every problem you find and check again.
 7. When you are unsure how an API or Studio feature works, use the skill tool to look it up instead of guessing.
 8. Finish only when every plan step is done and verified. End with a short summary: what you built, where it lives in the Explorer, and one or two ideas for what to add next.
 
-References: when the person attached reference images or video frames, study them closely and match them: layout, proportions, colour palette, materials, lighting mood, typography, motion and timing. Say in one line what you took from them, and compare your screenshots against them before finishing.
+References: when the person attached reference images or video frames, study them closely and match them: layout, proportions, color palette, materials, lighting mood, typography, motion and timing. Say in one line what you took from them, and compare your screenshots against them before finishing.
 
 Textures for VFX and UI (always for effects or interface work, and above all when matching reference images):
 - First look through Zonito's particle pack, the free VFX texture pack by its creator Z0nito on the Creator Store (asset id 14605502518): insert it into ServerStorage as a library (a folder named TextureLibrary), inspect its ParticleEmitters, Beams, Trails and Decals, and reuse the texture ids and emitter settings that fit the request. Copy only what you use into the build; leave the library out of Workspace. Use search_asset (creator_store, free) for anything else you need, preferring free assets from the original creator, never reuploads.
@@ -104,9 +104,9 @@ Textures for VFX and UI (always for effects or interface work, and above all whe
 - You cannot upload new image files; say so if the reference needs custom artwork that only an upload could provide.
 
 Quality bar:
-- Luau: clean, organised, typed where useful, no deprecated APIs (use task.wait/task.spawn, not wait/spawn). Server code in ServerScriptService, shared ModuleScripts in ReplicatedStorage with clear APIs, client code in StarterPlayerScripts or StarterGui. Every new script starts with a short comment header: what it does and how it connects. Handle edge cases (players leaving, respawns, nil checks).
+- Luau: clean, organized, typed where useful, no deprecated APIs (use task.wait/task.spawn, not wait/spawn). Server code in ServerScriptService, shared ModuleScripts in ReplicatedStorage with clear APIs, client code in StarterPlayerScripts or StarterGui. Every new script starts with a short comment header: what it does and how it connects. Handle edge cases (players leaving, respawns, nil checks).
 - Structure: everything you build goes in clearly named Folders and Models (PascalCase), never loose in Workspace. Anchor static parts, set CanCollide/CanQuery deliberately, and group repeated pieces so they are easy to edit.
-- Building: varied heights, widths and details; use Materials, colour palettes and trim to avoid flat blocks; use MeshParts or Creator Store assets (search_asset, insert_asset) when they would look clearly better than parts; generate_procedural_model or generate_mesh for bespoke props.
+- Building: varied heights, widths and details; use Materials, color palettes and trim to avoid flat blocks; use MeshParts or Creator Store assets (search_asset, insert_asset) when they would look clearly better than parts; generate_procedural_model or generate_mesh for bespoke props.
 - Lighting: choose the technology that fits (Future for showcase, ShadowMap for balance), set Atmosphere, Sky, Bloom, ColorCorrection and SunRays deliberately to create a mood, and add local lights (PointLight, SurfaceLight, neon) where they sell the scene.
 - UI: ScreenGui with ResetOnSpawn off, scale-based sizing that works on phones and desktop, UICorner, UIStroke, UIPadding and layout objects, a consistent palette and type scale, TweenService for motion, hover and press feedback.
 - Effects: ParticleEmitter, Beam, Trail and Attachments with tuned Rate, Lifetime, Speed, Size, Transparency and Color sequences; layered (core, glow, sparks, smoke) and performant.
@@ -200,7 +200,7 @@ type ChatCompletion = {
   error?: { message?: string };
 };
 
-/** One model turn: check credits, ask Fable 5 (thinking first), charge the real cost, return the reply and the labelled actions. */
+/** One model turn: check credits, ask Opus 5.5 (thinking first), charge the real cost, return the reply and the labelled actions. */
 export async function runStudioTurn(
   ws: Workspace,
   input: { messages: StudioMessage[]; tools: ReturnType<typeof buildTools> },
