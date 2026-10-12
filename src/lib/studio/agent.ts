@@ -301,10 +301,11 @@ export type TurnProfile = {
   creditRate?: number;
 };
 /**
- * Roblox building (Studio mode and Roblox Cloud) is charged half the usual credits: Opus 5.5 turns are long and a build takes
- * many of them. Keplar carries the other half, so a Roblox turn is billed at about 55% of its provider cost (1.1 margin × 0.5).
+ * Roblox building (Studio mode and Roblox Cloud) is charged 30% fewer credits than the usual rate: Opus 5.5 turns are long and a
+ * build takes many of them. At 0.7 a credit stands for $0.0026 of provider cost, so credits sold at $0.0073-0.0083 (Lite, Plus,
+ * Pro, Studio top-ups) still keep a ~64-69% gross margin when every credit is used.
  */
-export const ROBLOX_CREDIT_RATE = 0.5;
+export const ROBLOX_CREDIT_RATE = 0.7;
 export const STUDIO_PROFILE: TurnProfile = { system: STUDIO_SYSTEM, riskOf, meter: "studio.agent", title: "Keplar Studio mode", maxOutputTokens: STUDIO_LIMITS.maxOutputTokens, reasoningTokens: STUDIO_LIMITS.reasoningTokens, lockedModel: true, creditRate: ROBLOX_CREDIT_RATE };
 
 /** One model turn: check credits, ask Opus 5.5 (thinking first), charge the real cost, return the reply and the labelled actions. */
