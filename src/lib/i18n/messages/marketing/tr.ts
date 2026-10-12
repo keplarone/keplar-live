@@ -109,6 +109,11 @@ const m: MarketingCatalog = {
         "name": "Sesli mod",
         "line": "Sesli sorun, yanıtı dinleyin. Keplar sesinizi asla kaydetmez veya saklamaz."
       },
+      "live-research": {
+        "name": "Canlı Araştırma",
+        "line": "Masaüstü uygulamasında Keplar web’de arar ve sayfaları bilgisayarınızda okur, ardından her birini kaynak gösterir ve alıntıları denetler.",
+        "note": "Masaüstü uygulaması 0.2.0 veya üzeri."
+      },
       "images": {
         "name": "Görseller ve ekran görüntüleri",
         "line": "Grafikler, fişler, beyaz tahtalar, arayüzler. Yalnızca görebilen modellere gönderilir."

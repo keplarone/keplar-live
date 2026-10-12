@@ -50,6 +50,7 @@ import { freeEndpointsMayTrain } from "@/lib/orchestration/config";
 import { isSupportRequest } from "@/lib/orchestration/support";
 import { FREE_DOCS_NOT_SENT } from "@/lib/privacy/free-gate";
 import { clampHistory, limitsFor, sizeProblem, type LimitPlan } from "@/lib/orchestration/limits";
+import { PLAN_ALLOWANCES, type PlanId } from "@/lib/orchestration/plans";
 import { MEDIA_LIMITS, parseMedia } from "@/lib/orchestration/media";
 import { createSettler, type RunState } from "@/lib/orchestration/settle";
 import { isEmptyAnswer, noResponseEvent } from "@/lib/orchestration/no-response";
@@ -73,6 +74,7 @@ import { bumpFanout, fanoutUsedToday } from "@/lib/usage/fanout-day";
 import { enterCostScope, newScope, recordRequestCost } from "@/lib/ops/request-cost";
 import { requestIdOf } from "@/lib/ops/log";
 import { clampDocs, docsBlock, docsFrom, freeAllowsDoc } from "@/lib/documents/chat-docs";
+import { clampLiveResearch, LIVE_BRIEF_CHARS, liveModes, liveResearchBlock, liveResearchFrom, liveResearchOff, liveRouting } from "@/lib/research/live-request";
 import { withReadSources } from "@/lib/attachments/sources";
 import { validProjectId } from "@/lib/projects/repo";
 import { projectContextFor } from "@/lib/projects/load";
@@ -101,7 +103,11 @@ function parse(body: unknown): KeplarRequest | string {
   // Images / video frames: untrusted. Types, magic bytes, sizes and counts are re-checked here.
   const media = parseMedia(b.media);
   if (typeof media === "string") return media;
+  // Live Research from the Keplar One desktop app (live-request.ts): validated and capped; malformed data is dropped and the question runs as a web question.
+  // Not even parsed while the kill switch is on.
+  const live = liveResearchOff() ? undefined : liveResearchFrom(b.liveResearch);
   return {
+    ...(live ? { liveResearch: live } : {}),
     ...(media ? { media } : {}),
     ...(validChatId(b.chatId) ? { chatId: b.chatId } : {}),
     ...(validProjectId(b.projectId) ? { projectId: b.projectId } : {}),
@@ -121,6 +127,8 @@ function parse(body: unknown): KeplarRequest | string {
     ...(b.private === true ? { private: true } : {}),
     // The person's saved specialist for this chat: only an id, looked up in their own workspace server-side.
     ...(validSpecialistId(b.specialistId) ? { specialistId: b.specialistId } : {}),
+    // The person's modes as sent. With Live Research the route switches them to liveModes() once it keeps the brief, so a brief it drops
+    // (kill switch, plan clamp) leaves the question exactly as asked.
     modes: { web: modes.web === true, deepResearch: modes.deepResearch === true, create: modes.create === true, agent: modes.agent === true, ...(modes.debate === true ? { debate: true } : {}), ...(modes.reason === true ? { reason: true } : {}) },
     routing: {
       strategy: STRATEGIES.includes(routing.strategy as RoutingStrategy) ? (routing.strategy as RoutingStrategy) : "auto",
@@ -273,6 +281,21 @@ export async function POST(request: Request) {
   }
   const smallTalk = creator || isSmallTalk(req) || req.understanding?.intent === "playful";
   const limits = limitsFor(ws.plan as LimitPlan);
+  // Live Research only for a real question in the app: never for API keys or the embed widget (they never send it; this is defence in depth),
+  // never for fixed replies, never while KEPLAR_LIVE_RESEARCH_OFF=1. Then clamped to the plan's share at whole-source boundaries (the fence
+  // stays closed).
+  // The desktop sent pages (even ones dropped while the kill switch is on, which parse() doesn't read).
+  const sentLive = Boolean(req.liveResearch) || Boolean((json as { liveResearch?: unknown } | null)?.liveResearch);
+  if (req.liveResearch && (liveResearchOff() || creator || smallTalk || memoryReply !== null || ws.via === "api" || ws.via === "embed")) delete req.liveResearch;
+  if (req.liveResearch) {
+    const clamped = clampLiveResearch(req.liveResearch, LIVE_BRIEF_CHARS[ws.plan as LimitPlan] ?? LIVE_BRIEF_CHARS.free);
+    if (clamped) req.liveResearch = clamped;
+    else delete req.liveResearch;
+  }
+  // Kept: the pages are already read, so it is a web question (no server Deep Research, Debate, Create or Agent on top). Dropped: the
+  // question runs as asked, except Deep Research on a plan without it (the desktop offered it there), which becomes a web question.
+  if (req.liveResearch) req.modes = liveModes(req.modes);
+  else if (sentLive && req.modes?.deepResearch && !PLAN_ALLOWANCES[ws.plan as PlanId]?.deepResearch) req.modes = { ...req.modes, web: true, deepResearch: false };
   // Plan size caps: prompt, history, attachments, images (cheaper plans get smaller caps).
   const tooBig = creator ? null : sizeProblem(req, limits, ws.plan as LimitPlan);
   if (tooBig) return Response.json({ error: tooBig, code: "too_large" }, { status: 413 });
@@ -376,6 +399,9 @@ export async function POST(request: Request) {
     const level = await breakerLevel();
     const used = ws.plan === "free" || ws.admin ? 0 : await fanoutUsedToday(ws.id);
     const policy = fanoutPolicy({ plan: ws.plan as LimitPlan, usedToday: used, loadInflight: loadInflight(), admin: ws.admin });
+    // Live Research: the desktop's depth picks the panel (fast: one model; standard: balanced; deep: thorough) unless the person chose a strategy.
+    // Free answers with one model: its combined free writer never reads the brief (free-merged.ts), the single panel model does.
+    if (req.liveResearch) req.routing = ws.plan === "free" ? { ...(req.routing ?? {}), strategy: "fast", maxModels: 1 } : liveRouting(req.liveResearch.depth, req.routing);
     req.routing = applyFanout(lighterRouting(req.routing, level), policy);
     // Free pool running low: one model answers (strictest cap wins).
     if (singleBy) req.routing = { ...(req.routing ?? {}), strategy: "fast", maxModels: 1 };
@@ -414,6 +440,8 @@ export async function POST(request: Request) {
   // Read links (public pages) and the transcript of the person's own attached video/audio also go when other context is withheld (Free): the media itself already does.
   const sendDocs = withheld ? req.docs?.filter(freeAllowsDoc) : req.docs;
   if (sendDocs?.length) req.memory = `${docsBlock(clampDocs(sendDocs, ws.plan === "free"))}\n\n${req.memory ?? "The question:\n"}`;
+  // Live Research: the desktop's brief goes first, fenced as data. In memory before the engine classifies, so the estimate and every cost cap count it.
+  if (req.liveResearch) req.memory = `${liveResearchBlock(req.liveResearch)}\n\n${req.memory ?? "The question:\n"}`;
   if (!smallTalk && ws.plan !== "free") req.limits = { maxRequestUsd: limits.maxRequestUsd, maxDeepResearchUsd: limits.maxDeepResearchUsd };
   // Rolling 5-hour / weekly limit (Plus/Pro). When it binds tighter than the monthly credits, a stop says so, with the reset time.
   let windowBound: WindowBlock | null = null;

@@ -1019,3 +1019,7 @@ html[data-lens] .composer { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 .shareBtn { height: 26px; padding: 0 10px; border: 0; border-radius: 7px; background: rgb(var(--rgb-ink) / 0.07); color: var(--c-ink); font: inherit; font-size: 12.5px; cursor: pointer; }
 .shareBtn:hover { background: rgb(var(--rgb-ink) / 0.12); }
 .shareBtn:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+
+/* Live Research depth (desktop app only): the routing panel's segmented control, compact enough for the status row. */
+.liveDepth { display: inline-grid; grid-auto-flow: column; grid-auto-columns: auto; padding: 2px; }
+.liveDepth .segment span { height: 26px; padding: 0 10px; font-size: 12px; }

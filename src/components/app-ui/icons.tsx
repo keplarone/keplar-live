@@ -47,6 +47,7 @@ export const IconAgentMode = IconAgents;
 export const IconStop = (p: P) => <Svg {...p}><rect x="4.5" y="4.5" width="7" height="7" rx="1.5" fill="currentColor" stroke="none" /></Svg>;
 export const IconMenu = (p: P) => <Svg {...p}><path d="M2.5 5.5h11M2.5 10.5h7" /></Svg>;
 export const IconClose = (p: P) => <Svg {...p}><path d="m4 4 8 8M12 4l-8 8" /></Svg>;
+export const IconSave = (p: P) => <Svg {...p}><path d="M8 2.5v7.5M4.5 6.5 8 10l3.5-3.5" /><path d="M3 12.5h10" /></Svg>;
 export const IconCopy = (p: P) => <Svg {...p}><rect x="5.5" y="5.5" width="8" height="8" rx="1.6" /><path d="M10.5 3.5A1.5 1.5 0 0 0 9 2.5H4A1.5 1.5 0 0 0 2.5 4v5A1.5 1.5 0 0 0 3.5 10.5" /></Svg>;
 export const IconCheck = (p: P) => <Svg {...p}><path d="m3.5 8.5 3 3 6-7" /></Svg>;
 export const IconChevron = (p: P) => <Svg {...p}><path d="m6 4 4 4-4 4" /></Svg>;

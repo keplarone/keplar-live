@@ -70,7 +70,7 @@ export function Analyst({ kind, seed, seedMedia, openId, projectSeed, onSaved }:
           if (e.research.phase === "plan") return { ...l, queries: e.research.queries };
           if (e.research.phase === "source") return { ...l, sources: [...l.sources, e.research.source] };
           if (e.research.phase === "step") { const st = e.research; return { ...l, steps: [...l.steps.filter((x) => x.id !== st.step), { id: st.step, status: st.status, detail: st.detail }] }; }
-          return { ...l, stage: e.research.reason };
+          return e.research.phase === "off" ? { ...l, stage: e.research.reason } : l; // "live" is client-only Live Research progress, never sent here
         case "stage": return e.status === "active" ? { ...l, stage: e.detail ?? e.stage } : l;
         case "model": return { ...l, models: [...l.models.filter((m) => m.name !== e.name), { name: e.name, status: e.status }] };
         case "delta": return { ...l, text: l.text + e.text };

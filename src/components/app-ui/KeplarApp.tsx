@@ -1,11 +1,15 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useMemo, useReducer, useRef, useState, type ComponentType } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore, type ComponentType } from "react";
 import Link from "next/link";
 import { KeplarSymbol } from "@/components/brand";
 import { SkyBackdrop } from "@/components/sky/SkyBackdrop";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
-import type { Attachment, ComposerModes, KeplarRequest } from "@/lib/orchestration/types";
+import type { Attachment, ComposerModes, KeplarRequest, ResearchEvent } from "@/lib/orchestration/types";
+import { hasResearchBridge, noSubscribe, researchBridge } from "@/lib/desktop/research-bridge";
+import { deepResearchRunsLeft, PLAN_ALLOWANCES } from "@/lib/orchestration/plans";
+import { checkLiveAnswer, modesWithoutLive, prepareLiveResearch, previousRunIds, researchQuestion, wantsLiveResearch, type LiveSession } from "./state/live-run";
+import { liveFallbackNote } from "./state/live-research";
 import { UsageNotice } from "./UsageNotice";
 import { Composer, toMediaInput, type ComposerHandle } from "./Composer";
 import { IconArrowDown, IconMemory, IconPlus } from "./icons";
@@ -193,6 +197,10 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const controllers = useRef(new Map<string, AbortController>());
+  /** Turns started by Refresh research: their Live Research run skips the desktop's cache. */
+  const freshResearch = useRef(new Set<string>());
+  // In the Keplar One desktop app (Live Research): only there can Refresh research read the pages again. False on the server render.
+  const desktopResearch = useSyncExternalStore(noSubscribe, hasResearchBridge, () => false);
   const seedRef = useRef<{ text: string; modes: Partial<ComposerModes> } | null>(null);
   // Bumped on every seed: from the empty home thread "new-thread" changes neither view nor activeThreadId, so without it the
   // "Research a topic" / "Hand off a task" cards did nothing (Deep Research / Agent never switched on).
@@ -445,14 +453,55 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
       routing: st.settings.routing,
       ...(toolsRef.current[threadId] ? { tools: true } : {}),
     };
+    // Live Research (Keplar One desktop app 0.2.0+, state/live-run.ts): a web question is researched on this computer first, and the pages
+    // it read go with the question. In a browser there is no bridge and nothing here runs. If research can't run, the question still goes.
+    const bridge = researchBridge();
+    const emitResearch = (research: ResearchEvent) => dispatch({ type: "event", threadId, keplarId: keplar.id, event: { type: "research", research } });
+    let live: LiveSession | null = null;
+    // Not when the answer can't come anyway (Free out of questions for today, or paused): the server's reply says so at once.
+    const L = stateRef.current.ledger;
+    // Keplar's own Deep Research takes over from the desktop only where it can run now (a plan with it and a run left).
+    const serverDeep = PLAN_ALLOWANCES[L.plan]?.deepResearch === true && deepResearchRunsLeft(remaining(stateRef.current)) >= 1;
+    if (bridge && wantsLiveResearch(user.modes) && !wantsLiveResearch(user.modes, user.text)) {
+      // Small talk ("thanks!") with Web or Deep Research still on: nothing to research, and never a Deep Research run.
+      req.modes = { ...user.modes, deepResearch: false };
+    } else if (bridge && wantsLiveResearch(user.modes) && (L.paused || L.daily?.left === 0)) {
+      req.modes = modesWithoutLive(user.modes, serverDeep);
+    } else if (bridge && wantsLiveResearch(user.modes)) {
+      const fresh = freshResearch.current.delete(keplar.id);
+      const prep = await prepareLiveResearch({ bridge, question: researchQuestion(user.text, history), depth: user.modes.liveDepth ?? (user.modes.deepResearch ? "deep" : undefined), previousRunIds: previousRunIds(existingThread?.messages, user.id), fresh, signal: ctl.signal, emit: emitResearch });
+      if (ctl.signal.aborted) { controllers.current.delete(keplar.id); return; }
+      if (prep.ok) {
+        live = prep.session;
+        // The modes go as the person set them: the server makes it a web question once it keeps the pages (never a second, server Deep
+        // Research), and runs the question as asked if it can't use them.
+        req.liveResearch = live.field;
+        emitResearch({ phase: "step", step: "write", status: "active" });
+      } else {
+        req.modes = modesWithoutLive(user.modes, serverDeep);
+        // Keplar's own Deep Research starts its own card; otherwise the card says why no pages were read.
+        if (user.modes.deepResearch && serverDeep) emitResearch({ phase: "reset" });
+        else {
+          emitResearch({ phase: "live", label: "Live Research didn\u2019t run" });
+          emitResearch({ phase: "off", reason: liveFallbackNote(prep.error) });
+        }
+      }
+    }
     // Free: the question count drops the moment the question is sent (the server confirms it, or gives it back if no answer comes).
     const L0 = stateRef.current.ledger;
     const took = L0.plan === "free" && Boolean(L0.daily);
     if (took && L0.daily) dispatch({ type: "ledger", ledger: { ...L0, daily: takeOne(L0.daily) } });
     let unreached = false;
     try {
+      let handedOver = false;
       for await (const event of streamKeplar(req, ctl.signal)) {
-        dispatch({ type: "event", threadId, keplarId: keplar.id, event });
+        // The server sends research steps only when it runs its own Deep Research (it couldn't use the pages): its card replaces the desktop's.
+        if (live && event.type === "research" && !handedOver) { handedOver = true; emitResearch({ phase: "reset" }); }
+        // Live Research: the desktop checks the answer's citations against the pages it read before the answer is shown.
+        const shown = live && bridge && event.type === "answer" && event.answer.research?.live && !ctl.signal.aborted ? { ...event, answer: await checkLiveAnswer({ bridge, session: live, answer: event.answer, emit: emitResearch }) } : event;
+        // Stopped while the desktop was checking: the turn stays stopped.
+        if (ctl.signal.aborted) break;
+        dispatch({ type: "event", threadId, keplarId: keplar.id, event: shown });
         if (event.type === "memory") setMemory(event.enabled);
         // Soft upsell (Free only, real answers only: never small talk or the creator reply).
         if (event.type === "answer" && !event.answer.smalltalk && stateRef.current.ledger.synced && stateRef.current.ledger.plan === "free") {
@@ -645,7 +694,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   }, [run]);
 
   const retry = useCallback(
-    (k: KeplarMessage) => {
+    (k: KeplarMessage, opts?: { freshResearch?: boolean }) => {
       const st = stateRef.current;
       const t = st.threads.find((x) => x.messages.some((m) => m.id === k.id));
       const user = t?.messages.find((m): m is UserMessage => m.id === k.replyTo && m.role === "user");
@@ -653,6 +702,8 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
       // A Study turn that never got its set tries again with the new answer; a made set stays where it is.
       const next: KeplarMessage = k.studio?.kind === "study" && k.studio.phase !== "ready" ? { ...newKeplar(user.id), studio: { kind: "study", phase: "waiting" } } : newKeplar(user.id);
       signalFor(t, k, "regenerate");
+      // Refresh research (Live Research): the desktop reads the pages again instead of using its cache.
+      if (opts?.freshResearch) freshResearch.current.add(next.id);
       dispatch({ type: "retry", threadId: t.id, keplarId: k.id, next });
       void run(t.id, next, user, historyFor(t, user.id));
     },
@@ -1147,6 +1198,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                         message={m}
                         isLast={m.id === lastKeplar?.id}
                         onRetry={() => retry(m)}
+                        onRefreshResearch={m.answer?.research?.live && desktopResearch ? () => retry(m, { freshResearch: true }) : undefined}
                         onSignal={(kind) => signalFor(thread, m, kind)}
                         onAsk={(text) => send(text, [], { web: false, deepResearch: false, create: false, agent: false })}
                         ledger={state.ledger}

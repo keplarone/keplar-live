@@ -109,6 +109,11 @@ const m: MarketingCatalog = {
         "name": "Voice mode",
         "line": "Magtanong nang malakas, pakinggan ang sagot na binabasa. Hindi kailanman nire-record o sine-save ng Keplar ang audio mo."
       },
+      "live-research": {
+        "name": "Live Research",
+        "line": "Sa desktop app, naghahanap ang Keplar sa web at nagbabasa ng mga page sa computer mo, saka sinisipi ang bawat isa at sinusuri ang mga sipi.",
+        "note": "Desktop app 0.2.0 o mas bago."
+      },
       "images": {
         "name": "Mga larawan at screenshot",
         "line": "Mga chart, resibo, whiteboard, UI. Ipinapadala lang sa mga model na nakakakita."

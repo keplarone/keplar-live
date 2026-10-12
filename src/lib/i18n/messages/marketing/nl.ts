@@ -109,6 +109,11 @@ const m: MarketingCatalog = {
         "name": "Spraakmodus",
         "line": "Stel je vraag hardop en hoor het antwoord voorgelezen. Keplar neemt je audio nooit op en slaat die niet op."
       },
+      "live-research": {
+        "name": "Live-onderzoek",
+        "line": "In de desktopapp zoekt Keplar op het web en leest pagina’s op je computer, citeert daarna elke pagina en controleert de citaten.",
+        "note": "Desktopapp 0.2.0 of nieuwer."
+      },
       "images": {
         "name": "Afbeeldingen en screenshots",
         "line": "Grafieken, bonnetjes, whiteboards, interfaces. Alleen verstuurd naar modellen die kunnen zien."

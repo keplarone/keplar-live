@@ -11,7 +11,7 @@ import { formatResetAt, upgradesFrom, WINDOW_WARN_AT, windowResetText } from "@/
 import { computeLevelLabel } from "@/lib/orchestration/compute";
 import { modelStatusSentence, summarizeModels } from "@/lib/orchestration/model-status";
 import type { KeplarAnswer, VerificationCheck } from "@/lib/orchestration/types";
-import { IconCheck, IconChevron, IconCopy, IconRetry, IconThumb } from "./icons";
+import { IconCheck, IconChevron, IconCopy, IconRetry, IconSave, IconThumb, IconWeb } from "./icons";
 import { ListenButton } from "./ListenButton";
 import { Markdown } from "./Markdown";
 import { ToolUses } from "./ToolUses";
@@ -30,7 +30,10 @@ import { useTypewriter } from "./useTypewriter";
 import { stageCopy } from "./copy";
 import { SynthesisView } from "./SynthesisView";
 import { DebateLive, DebateTranscript } from "./DebateView";
-import { ResearchHead, ResearchLive, ResearchSources, citeRenderer } from "./research/Research";
+import { LiveChecks, ResearchHead, ResearchLive, ResearchSources, citeRenderer } from "./research/Research";
+import { liveCopyText } from "./state/live-research";
+import { researchBridge, safe } from "@/lib/desktop/research-bridge";
+import { downloadText } from "./chat-export";
 import { CoreLive, CoreSummaryView } from "./core/CoreTrace";
 import { asSentence } from "@/lib/sentence";
 import { needsChargeNote } from "@/lib/orchestration/no-response";
@@ -40,6 +43,8 @@ import s from "./KeplarTurn.module.css";
 type Props = {
   message: KeplarMessage;
   onRetry: () => void;
+  /** Live Research answers: ask again with the desktop reading every page afresh. */
+  onRefreshResearch?: () => void;
   /** Router learning: thumbs and copy on the answer. */
   onSignal?: (kind: "up" | "down" | "copy") => void;
   /** Sends a suggested question (a clarifying chip) as the next message. */
@@ -51,7 +56,7 @@ type Props = {
 
 const seconds = (ms: number) => `${(ms / 1000).toFixed(1)}s`;
 
-export function KeplarTurn({ message: m, onRetry, onSignal, onAsk, isLast, ledger, onDismissUpsell }: Props) {
+export function KeplarTurn({ message: m, onRetry, onRefreshResearch, onSignal, onAsk, isLast, ledger, onDismissUpsell }: Props) {
   const uid = useId();
   // Only answers streamed in this session type out; stored threads render at once.
   const [live] = useState(m.status === "running");
@@ -174,13 +179,13 @@ export function KeplarTurn({ message: m, onRetry, onSignal, onAsk, isLast, ledge
         <article className={s.answer} aria-busy="true" data-typing="" data-continued={live || undefined}>
           <header className={s.answerHead}><AnswerTitle /></header>
           {m.answer?.research ? <ResearchHead research={m.answer.research} /> : null}
-          <Markdown source={tw.text} streaming caret cite={citeRenderer(m.answer?.research?.sources ?? m.research?.sources)} />
+          <Markdown source={tw.text} streaming caret cite={citeRenderer(m.answer ? m.answer.research?.sources : m.research?.sources)} />
           <TypingBar text={fullText} onSkip={tw.skip} canSkip={!running} />
         </article>
       ) : null}
 
       {finished && m.answer && !typingAnswer && (m.smalltalk || m.answer.smalltalk) ? <PlainReply answer={m.answer} onRetry={onRetry} onSignal={onSignal} isLast={isLast} onAsk={onAsk} /> : null}
-      {finished && m.answer && !typingAnswer && !(m.smalltalk || m.answer.smalltalk) ? <Answer answer={m.answer} onRetry={onRetry} onSignal={onSignal} isLast={isLast} continued={live} /> : null}
+      {finished && m.answer && !typingAnswer && !(m.smalltalk || m.answer.smalltalk) ? <Answer answer={m.answer} onRetry={onRetry} onRefreshResearch={onRefreshResearch} onSignal={onSignal} isLast={isLast} continued={live} /> : null}
       {finished && m.answer?.core && !typingAnswer && !(m.smalltalk || m.answer.smalltalk) ? <CoreSummaryView core={m.answer.core} onAsk={onAsk} enabled={isLast} /> : null}
       {finished && m.answer?.debate && !typingAnswer ? <DebateTranscript debate={m.answer.debate} /> : null}
       {finished && m.memory && m.memory.used && m.memory.used > 0 ? <UsingMemory used={m.memory.used} /> : null}
@@ -615,12 +620,23 @@ function PlainReply({ answer: a, onRetry, onSignal, isLast, onAsk }: { answer: K
 }
 
 /** The footer every answer card shares: a meta line, then copy, (rating when offered), share, and ask again on the latest one. */
-function AnswerFooter({ answer: a, meta, onRetry, onSignal, isLast }: { answer: KeplarAnswer; meta: ReactNode; onRetry: () => void; onSignal?: (kind: "up" | "down" | "copy") => void; isLast: boolean }) {
+function AnswerFooter({ answer: a, meta, onRetry, onRefreshResearch, onSignal, isLast }: { answer: KeplarAnswer; meta: ReactNode; onRetry: () => void; onRefreshResearch?: () => void; onSignal?: (kind: "up" | "down" | "copy") => void; isLast: boolean }) {
   const [vote, setVote] = useState<"up" | "down" | null>(null);
   const [copied, setCopied] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const live = a.research?.live;
+  // Live Research: the desktop app saves a self-contained report with the sources; without it (a browser, an expired run) a Markdown file.
+  const save = async () => {
+    const bridge = researchBridge();
+    const r = bridge && live ? await safe(() => bridge.export(live.runId, a.markdown, "html")) : null;
+    if (r?.ok) { if (r.result.saved) setSaved(true); }
+    else { downloadText(`keplar-research-${new Date().toISOString().slice(0, 10)}.md`, liveCopyText(a)); setSaved(true); }
+    window.setTimeout(() => setSaved(false), 1600);
+  };
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(a.markdown);
+      // Live Research answers are copied with their numbered sources, so the citations still mean something when pasted.
+      await navigator.clipboard.writeText(live ? liveCopyText(a) : a.markdown);
       growthTrack("answer_action", { action: "copy" });
       onSignal?.("copy");
       setCopied(true);
@@ -647,6 +663,16 @@ function AnswerFooter({ answer: a, meta, onRetry, onSignal, isLast }: { answer: 
           </>
         ) : null}
         <ListenButton id={a.id} markdown={a.markdown} isLast={isLast} className={s.iconBtn} />
+        {live ? (
+          <button type="button" className={s.iconBtn} onClick={() => void save()} aria-label={saved ? "Saved research" : "Save research with its sources"} title="Save the answer with its sources">
+            {saved ? <IconCheck size={15} /> : <IconSave size={15} />}
+          </button>
+        ) : null}
+        {live && isLast && onRefreshResearch ? (
+          <button type="button" className={s.iconBtn} onClick={() => { growthTrack("answer_action", { action: "retry" }); onRefreshResearch(); }} aria-label="Refresh research" title="Research again, reading every page afresh">
+            <IconWeb size={15} />
+          </button>
+        ) : null}
         <ShareAnswer answer={a} triggerClass={s.iconBtn} />
         <ReportAnswer answerId={a.id} excerpt={a.markdown} triggerClass={s.iconBtn} />
         {isLast ? (
@@ -672,7 +698,7 @@ function SplitView({ a, onMore }: { a: KeplarAnswer; onMore: () => void }) {
 const slotLabel = { panel: "Panel", verifier: "Verifier", judge: "Judge" } as const;
 const statusLabel = { responded: "Responded", failed: "No response", refused: "Declined", "not-needed": "Not needed" } as const;
 
-function Answer({ answer: a, onRetry, onSignal, isLast, continued }: { answer: KeplarAnswer; onRetry: () => void; onSignal?: (kind: "up" | "down" | "copy") => void; isLast: boolean; continued?: boolean }) {
+function Answer({ answer: a, onRetry, onRefreshResearch, onSignal, isLast, continued }: { answer: KeplarAnswer; onRetry: () => void; onRefreshResearch?: () => void; onSignal?: (kind: "up" | "down" | "copy") => void; isLast: boolean; continued?: boolean }) {
   const uid = useId();
   const [open, setOpen] = useState<string | null>(null);
   const c = a.consensus;
@@ -821,6 +847,7 @@ function Answer({ answer: a, onRetry, onSignal, isLast, continued }: { answer: K
       ) : null}
 
       {a.research ? <ResearchSources research={a.research} /> : null}
+      {a.research?.live ? <LiveChecks live={a.research.live} /> : null}
       {a.sourcing ? <SourceChecks sourcing={a.sourcing} /> : null}
 
       <ul className={s.sections}>
@@ -850,7 +877,7 @@ function Answer({ answer: a, onRetry, onSignal, isLast, continued }: { answer: K
         })}
       </ul>
 
-      <AnswerFooter answer={a} onRetry={onRetry} onSignal={onSignal} isLast={isLast} meta={<span className={s.compute}>{brand.usage} · {computeLevelLabel[a.compute.level]}</span>} />
+      <AnswerFooter answer={a} onRetry={onRetry} onRefreshResearch={onRefreshResearch} onSignal={onSignal} isLast={isLast} meta={<span className={s.compute}>{brand.usage} · {computeLevelLabel[a.compute.level]}</span>} />
     </article>
   );
 }

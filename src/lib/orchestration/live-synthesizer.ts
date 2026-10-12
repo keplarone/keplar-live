@@ -125,6 +125,8 @@ export class ModelSynthesizer implements Synthesizer {
   noExtraCalls = false;
   /** Deep Research ran and found pages (research.ts): the writer may use them and cites them as [n]; the brief rides in req.memory. */
   research = false;
+  /** The citation rules the writer gets when `research` is on: server Deep Research's, or Live Research's (live-request.ts) for a desktop brief. */
+  researchRules = RESEARCH_SYNTH_RULES;
 
   constructor(
     private readonly registry: ReturnType<typeof createRegistry>,
@@ -203,7 +205,7 @@ export class ModelSynthesizer implements Synthesizer {
         : undefined;
       this.keptReply = Boolean(keep);
       if (this.noExtraCalls) this.callFailure = "unavailable";
-      const synthSystem = `${SYNTH_SYSTEM_PROMPT}${this.research ? `\n${RESEARCH_SYNTH_RULES}` : ""}${guide ? `\n${GUIDE_SYNTH_RULES}` : ""}`;
+      const synthSystem = `${SYNTH_SYSTEM_PROMPT}${this.research ? `\n${this.researchRules}` : ""}${guide ? `\n${GUIDE_SYNTH_RULES}` : ""}`;
       const out = keep ? { text: keep.text, by: keep.modelId } : this.prewritten ? this.prewritten : this.noExtraCalls ? null : await this.call(quick ? `${synthSystem}\nThis is a quick lookup: answer in at most 120 words (state the answer first, then at most two supporting points).` : synthSystem, `Question:\n${req.memory ?? ""}${req.prompt}${textOnlyMediaNote(req.media)}\n\n${material}${guideMaterial}\n\nReviewer findings:\n${findings}\n\nDraft:\n${draft.slice(0, 3000)}`, quick ? 500 : guide ? 4000 : 1200, 1, signal, req, classification, guide ? Math.max(this.synthCapMs, 60_000) : this.synthCapMs);
       let text = out?.text;
       this.writer = out?.by ?? null;

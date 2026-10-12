@@ -26,6 +26,7 @@ Written Oct 4, 2026. Everything below needs a person, an account, a payment, a l
 - **Google/Microsoft app verification** for sensitive OAuth scopes (Google's review takes weeks).
 
 ## Desktop app
+- **Live Research runs only in the Keplar One desktop app (0.2.0+).** keplar.one in a browser has no way to read web pages on the person's computer, so there it keeps the server's Deep Research. The desktop's citation check compares words and numbers with the pages it read (lexical), not meaning, so a paraphrase can show as "not verified" and a sentence that reuses a page's words can show as "supported" without the page saying the same thing. Without a Brave Search or Tavily key in the desktop, only reference, scholarly and news indexes are searched, and the card says so.
 - **Installers are unsigned and not notarized.** Buying code-signing certificates (Windows EV/OV, Apple Developer ID + notarization) is a founder purchase. Until then users see SmartScreen/Gatekeeper warnings; `/download` explains it and shows SHA-256 checksums.
 
 ## Testing we could not do
