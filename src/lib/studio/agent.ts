@@ -364,7 +364,8 @@ export async function runStudioTurn(
     usd: Math.round(usd * 1e6) / 1e6,
     latencyMs,
   };
-  console.info(`[${profile.meter}] ${usage.model} via ${usage.provider ?? "?"}: ${prompt} in (${usage.cachedTokens} cached), ${completion} out, ${usage.usd} in ${latencyMs} ms`);
+  const cachedIn = usage.cachedTokens;
+  console.info(`[${profile.meter}] ${usage.model} via ${usage.provider ?? "?"}: ${prompt} in (${cachedIn} cached), ${completion} out, $${usage.usd} in ${latencyMs} ms`);
 
   const choice = data.choices[0]!;
   const actions: StudioTurn["actions"] = [];
