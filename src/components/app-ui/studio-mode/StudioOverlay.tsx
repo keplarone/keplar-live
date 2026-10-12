@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { KeplarSymbol } from "@/components/brand";
 import { blenderBridge, resultText, STUDIO_PLANS, studioBridge, type BlenderStatus, type OverlayState, type StudioStatus } from "@/lib/desktop/studio-bridge";
+import { SolarCore, type SolarState } from "./SolarCore";
 import { StudioDock } from "./StudioDock";
 import { blenderPlace, OVERLAY_TARGET_KEY, overlayTarget, parsePlaces, setOverlayTarget, useStudioAgent } from "./useStudioAgent";
 import s from "./studio-overlay.module.css";
@@ -10,6 +11,24 @@ import s from "./studio-overlay.module.css";
 const noSubscribe = () => () => {};
 type Target = "studio" | "blender";
 const APP: Record<Target, string> = { studio: "Studio", blender: "Blender" };
+/** What Solar runs on (src/lib/studio/agent.ts STUDIO_MODEL; Blender uses the same runStudioTurn). Shown in the model details. */
+const SOLAR_MODEL = { name: "Claude Opus 5.5", maker: "Anthropic", id: "claude-opus-5-5" };
+
+/** The core's state, from what the build is really doing (never a timer). */
+function solarState(a: ReturnType<typeof useStudioAgent>, draftLength: number): SolarState {
+  const last = a.items[a.items.length - 1];
+  if (a.looking) return "looking";
+  if (a.playing) return "testing";
+  if (a.running) {
+    if (a.items.some((x) => x.kind === "action" && x.status === "running")) return "building";
+    return a.plan.length ? "thinking" : "planning";
+  }
+  if (last?.kind === "note" && last.tone === "warn") return "error";
+  if (last?.kind === "action" && last.status === "failed") return "error";
+  if (draftLength) return "typing";
+  if (a.finished) return "done";
+  return "idle";
+}
 
 /**
  * The floating overlay (/app/studio/overlay): the build in a small always-on-top desktop window over Roblox Studio or Blender
@@ -32,6 +51,34 @@ export function StudioOverlay() {
   const status = isBlender ? blenderStatus : studioStatus;
   const allowed = !!account?.signedIn && STUDIO_PLANS.has(account.plan);
   const { setPlace: setStudioPlace } = studio;
+  const [draft, setDraft] = useState(0);
+  const [keys, setKeys] = useState(0);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // A specular highlight follows the pointer across the glass (CSS variables, at most once per frame).
+  useEffect(() => {
+    const el = panelRef.current;
+    if (!el) return;
+    let raf = 0;
+    let x = 0, y = 0;
+    const onMove = (e: PointerEvent) => {
+      const r = el.getBoundingClientRect();
+      x = ((e.clientX - r.left) / r.width) * 100; y = ((e.clientY - r.top) / r.height) * 100;
+      if (!raf) raf = requestAnimationFrame(() => { raf = 0; el.style.setProperty("--mx", `${x.toFixed(1)}%`); el.style.setProperty("--my", `${y.toFixed(1)}%`); el.dataset.lit = ""; });
+    };
+    const onLeave = () => { delete el.dataset.lit; };
+    el.addEventListener("pointermove", onMove, { passive: true });
+    el.addEventListener("pointerleave", onLeave);
+    return () => { cancelAnimationFrame(raf); el.removeEventListener("pointermove", onMove); el.removeEventListener("pointerleave", onLeave); };
+  }, [win.collapsed]);
+
+  useEffect(() => {
+    if (!aboutOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setAboutOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [aboutOpen]);
   const { setPlace: setBlenderPlace } = blender;
 
   // The window is see-through: no page background, no site chrome.
@@ -109,6 +156,9 @@ export function StudioOverlay() {
   const done = a.plan.filter((p) => p.state === "done").length;
   const pct = a.plan.length ? Math.round((done / a.plan.length) * 100) : 0;
   const tone = a.running || a.looking ? "busy" : connected ? "ok" : "off";
+  const solar = solarState(a, draft);
+  const pulse = a.items.filter((x) => x.kind === "action" && x.status === "done").length;
+  const active = a.items.length > 0;
 
   if (win.collapsed) {
     return (
@@ -127,24 +177,26 @@ export function StudioOverlay() {
   }
 
   return (
-    <div className={s.panel}>
+    <div className={s.panel} ref={panelRef} data-solar={solar}>
       <div className={s.aura} aria-hidden="true"><span data-a="1" /><span data-a="2" /><span data-a="3" /></div>
+      <div className={s.glass} aria-hidden="true" />
+      <svg className={s.defs} aria-hidden="true" width="0" height="0">
+        <filter id="solar-liquid" x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.012 0.02" numOctaves="2" seed="7" result="n" />
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="9" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </svg>
+      <div className={s.rim} aria-hidden="true" />
       <header className={s.head}>
         <svg className={s.grip} width="10" height="16" viewBox="0 0 12 18" fill="currentColor" aria-hidden="true"><circle cx="3" cy="3" r="1.5" /><circle cx="9" cy="3" r="1.5" /><circle cx="3" cy="9" r="1.5" /><circle cx="9" cy="9" r="1.5" /><circle cx="3" cy="15" r="1.5" /><circle cx="9" cy="15" r="1.5" /></svg>
-        <KeplarSymbol size={18} />
+        <span className={s.mark} data-busy={tone === "busy" || undefined}><KeplarSymbol size={18} /></span>
         <span className={s.headText}>
-          <span className={s.name}>Keplar</span>
+          <span className={s.name}>
+            Keplar Studio
+            <button type="button" className={s.solar} onClick={() => setAboutOpen((v) => !v)} aria-expanded={aboutOpen} aria-controls="solar-about">Solar 5.8 Ultra</button>
+          </span>
           <span className={s.status}><span className={s.dot} data-tone={tone} aria-hidden="true" />{statusText}</span>
         </span>
-        {bb ? (
-          <span className={s.targets} role="group" aria-label="Work in">
-            {(["studio", "blender"] as const).map((t) => (
-              <button key={t} type="button" className={s.target} aria-pressed={(isBlender ? "blender" : "studio") === t} onClick={() => pick(t)} disabled={a.running} title={a.running ? "Finish or stop this build first" : undefined}>
-                {APP[t]}
-              </button>
-            ))}
-          </span>
-        ) : null}
         {!isBlender ? (
           <button type="button" className={s.icon} onClick={() => void a.refreshViewport()} disabled={!connected || a.looking} aria-label="Let Keplar look at Studio again" title="Look again">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
@@ -160,7 +212,30 @@ export function StudioOverlay() {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
         </button>
       </header>
+      {bb ? (
+        <div className={s.switchRow}>
+          <span className={s.targets} role="group" aria-label="Work in" data-on={isBlender ? "1" : "0"}>
+            {(["studio", "blender"] as const).map((t) => (
+              <button key={t} type="button" className={s.target} aria-pressed={(isBlender ? "blender" : "studio") === t} onClick={() => pick(t)} disabled={a.running} title={a.running ? "Finish or stop this build first" : undefined}>
+                {APP[t]}
+              </button>
+            ))}
+          </span>
+        </div>
+      ) : null}
       <div className={s.progress} aria-hidden="true"><span style={{ width: `${a.running && !pct ? 8 : pct}%` }} data-live={a.running || undefined} /></div>
+      {aboutOpen ? (
+        <div id="solar-about" className={s.about} role="dialog" aria-label="About Solar 5.8 Ultra">
+          <strong>Solar 5.8 Ultra</strong>
+          <p>Keplar&apos;s building experience for Roblox Studio and Blender: it looks at your place, plans, makes changes through Keplar&apos;s tools and asks before risky ones.</p>
+          <dl>
+            <dt>Model</dt><dd>{SOLAR_MODEL.name} by {SOLAR_MODEL.maker}</dd>
+            <dt>Model ID</dt><dd><code>{SOLAR_MODEL.id}</code></dd>
+          </dl>
+          <p className={s.aboutNote}>Solar is Keplar&apos;s name for this experience, not a separately trained model.</p>
+          <button type="button" className={s.aboutClose} onClick={() => setAboutOpen(false)}>Close</button>
+        </div>
+      ) : null}
       {!bridge ? (
         <p className={s.message}>Open this from the Keplar desktop app.</p>
       ) : account && !allowed ? (
@@ -172,6 +247,23 @@ export function StudioOverlay() {
         </div>
       ) : (
         <div className={s.body}>
+          <div className={s.stage} data-mode={active ? "strip" : "hero"}>
+            <SolarCore state={solar} pulse={pulse} typing={keys} className={s.coreCanvas} />
+            {active ? (
+              <div className={s.stageText} aria-live="polite">
+                <span className={s.stageState}>{statusText}</span>
+                {a.plan.length ? <span className={s.stageMeta}>{done} of {a.plan.length} steps · {pct}%</span> : <span className={s.stageMeta}>Solar 5.8 Ultra</span>}
+              </div>
+            ) : null}
+          </div>
+          {a.plan.length ? (
+            <details className={s.timeline} open={a.running || undefined}>
+              <summary>Plan <span>{done}/{a.plan.length}</span></summary>
+              <ol>
+                {a.plan.map((p, i) => <li key={i} data-state={p.state} style={{ ["--i" as string]: i }}><span aria-hidden="true" />{p.text}</li>)}
+              </ol>
+            </details>
+          ) : null}
           {!isBlender && a.viewport ? (
             <figure className={s.view} data-looking={a.looking || undefined}>
               {/* eslint-disable-next-line @next/next/no-img-element -- a data URL from Studio */}
@@ -179,7 +271,7 @@ export function StudioOverlay() {
               <span className={s.scan} aria-hidden="true" />
             </figure>
           ) : null}
-          <StudioDock key={isBlender ? "blender" : "studio"} a={a} compact canPlayTest={!isBlender} />
+          <StudioDock key={isBlender ? "blender" : "studio"} a={a} compact canPlayTest={!isBlender} onTyping={(n) => { setDraft(n); setKeys((k) => k + 1); }} />
         </div>
       )}
     </div>

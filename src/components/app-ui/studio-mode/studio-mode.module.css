@@ -272,3 +272,79 @@
 .code[data-diff] span[data-op="del"] { color: #ff9a92; }
 .code[data-diff] span[data-op="gap"] { color: #8b8d98; }
 @media (max-width: 720px) { .cloudForm { grid-template-columns: minmax(0, 1fr); } }
+
+/* ═════════ Solar 5.8 Ultra overlay (compact dock) ═════════
+   Content sits on denser glass than the panel, so text stays readable over a bright Studio scene. */
+.dock[data-compact] { background: transparent; }
+.dock[data-compact] .feed { scrollbar-width: thin; }
+.dock[data-compact] .keplarMsg { padding: 10px 13px; border-radius: 6px 18px 18px 18px; background: color-mix(in srgb, var(--c-canvas) 58%, transparent); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), inset 0 0 0 1px rgb(var(--rgb-ink) / 0.06); font-size: 13.5px; line-height: 1.55; }
+.dock[data-compact] .userMsg { background: linear-gradient(145deg, rgb(183 124 255 / 0.32), rgb(69 216 236 / 0.2)); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25), 0 6px 18px rgb(0 0 0 / 0.18); font-size: 13.5px; }
+.dock[data-compact] .action, .dock[data-compact] .lookItem { background: color-mix(in srgb, var(--c-canvas) 55%, transparent); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), inset 0 0 0 1px rgb(var(--rgb-ink) / 0.07); }
+.dock[data-compact] .action[data-status="running"] { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), inset 0 0 0 1px rgb(69 216 236 / 0.45), 0 0 22px rgb(69 216 236 / 0.18); }
+.dock[data-compact] .action[data-status="done"] { animation: st-rise 420ms cubic-bezier(.2, .8, .2, 1) both, sol-done 900ms ease-out both; }
+@keyframes sol-done { 0% { box-shadow: inset 0 0 0 1px rgb(94 242 166 / 0.9), 0 0 26px rgb(94 242 166 / 0.4); } 100% { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), inset 0 0 0 1px rgb(var(--rgb-ink) / 0.07); } }
+.dock[data-compact] .note { background: color-mix(in srgb, var(--c-canvas) 60%, transparent); }
+.dock[data-compact] .empty { padding: 4px 16px 12px; gap: 8px; font-size: 13px; line-height: 1.55; color: var(--c-ink-2); }
+.dock[data-compact] .empty > span:not(.ideas) { padding: 8px 12px; border-radius: 14px; background: color-mix(in srgb, var(--c-canvas) 45%, transparent); }
+.dock[data-compact] .empty strong { font-size: 21px; font-weight: 650; letter-spacing: -0.02em; background: linear-gradient(100deg, var(--c-ink) 30%, #b9a6ff 55%, #7fe6f2 70%, var(--c-ink) 90%); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: sol-title 7s ease-in-out infinite; }
+@keyframes sol-title { 50% { background-position: 100% 0; } }
+
+/* Ideas: they fill the box only. */
+.ideas { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 6px; }
+.ideaChip { height: 30px; padding: 0 12px; border: 0; border-radius: 999px; cursor: pointer; font: inherit; font-size: 12px; color: var(--c-ink);
+  background: color-mix(in srgb, var(--c-canvas) 50%, transparent); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 0 0 1px rgb(var(--rgb-ink) / 0.1);
+  animation: st-rise 520ms cubic-bezier(.2, .8, .2, 1) both; animation-delay: calc(240ms + var(--i) * 70ms);
+  transition: transform 260ms cubic-bezier(.34, 1.56, .64, 1), box-shadow 200ms ease; }
+.ideaChip:hover { transform: translateY(-2px); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2), inset 0 0 0 1px rgb(183 124 255 / 0.55), 0 8px 20px rgb(0 0 0 / 0.2); }
+.ideaChip:active { transform: scale(0.94); transition-duration: 80ms; }
+.ideaChip:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+
+/* Composer: a floating glass capsule; a light runs round it while it has focus; it flashes when a request goes. */
+@property --sol-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.dock[data-compact] .composer { position: relative; margin: 6px 10px 10px; padding: 8px 10px 10px; border-top: 0; border-radius: 22px;
+  background: color-mix(in srgb, var(--c-canvas) 62%, transparent); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.16), inset 0 0 0 1px rgb(var(--rgb-ink) / 0.08), 0 14px 36px rgb(0 0 0 / 0.28);
+  transition: box-shadow 300ms ease, transform 300ms cubic-bezier(.16, 1, .3, 1); }
+.dock[data-compact] .composer::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none; opacity: 0;
+  background: conic-gradient(from var(--sol-a), #b77cff, #45d8ec, #ff6fb2, #b77cff);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  transition: opacity 360ms ease; animation: sol-spin 4s linear infinite; }
+@keyframes sol-spin { to { --sol-a: 360deg; } }
+.dock[data-compact] .composer:focus-within { transform: translateY(-1px); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2), 0 18px 44px rgb(0 0 0 / 0.34), 0 0 30px rgb(183 124 255 / 0.18); }
+.dock[data-compact] .composer:focus-within::before { opacity: 0.85; }
+.dock[data-compact] .composer[data-sent="a"] { animation: sol-send-a 620ms cubic-bezier(.16, 1, .3, 1); }
+.dock[data-compact] .composer[data-sent="b"] { animation: sol-send-b 620ms cubic-bezier(.16, 1, .3, 1); }
+@keyframes sol-send-a { 30% { transform: translateY(-4px) scale(1.01); box-shadow: 0 0 0 1px rgb(69 216 236 / 0.8), 0 0 40px rgb(69 216 236 / 0.45); } }
+@keyframes sol-send-b { 30% { transform: translateY(-4px) scale(1.01); box-shadow: 0 0 0 1px rgb(69 216 236 / 0.8), 0 0 40px rgb(69 216 236 / 0.45); } }
+.dock[data-compact] .input { background: transparent; padding: 8px 6px; font-size: 14px; field-sizing: content; min-height: 38px; max-height: 140px; transition: min-height 260ms ease; }
+.dock[data-compact] .input:focus { background: transparent; min-height: 58px; }
+
+/* Build: leans toward the pointer (--tx/--ty, StudioDock), springs on press; while a run is going the same spot holds Stop with a turning ring. */
+.dock[data-compact] .primary[data-morph] { position: relative; min-height: 38px; padding: 0 18px; isolation: isolate; overflow: hidden;
+  background: linear-gradient(120deg, #b77cff, #2fb8d6 60%, #ff5fa8); background-size: 180% 100%; color: #fff; text-shadow: none;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 8px 22px rgb(183 124 255 / 0.4);
+  transform: translate(var(--tx, 0), var(--ty, 0));
+  transition: transform 300ms cubic-bezier(.34, 1.56, .64, 1), background-position 600ms ease, box-shadow 300ms ease, opacity 200ms ease;
+  animation: sol-morph 520ms cubic-bezier(.34, 1.4, .64, 1); }
+.dock[data-compact] .primary[data-morph]:hover:not(:disabled) { background-position: 100% 0; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4), 0 12px 28px rgb(183 124 255 / 0.5); }
+.dock[data-compact] .primary[data-morph]:active:not(:disabled) { transform: translate(var(--tx, 0), var(--ty, 0)) scale(0.92); transition-duration: 90ms; }
+.dock[data-compact] .primary[data-morph]:disabled { background: rgb(var(--rgb-ink) / 0.14); color: var(--c-ink-3); box-shadow: none; opacity: 1; }
+.dock[data-compact] .primary[data-morph="stop"] { background: color-mix(in srgb, #ff5d5d 82%, #b77cff); padding-left: 34px; }
+.dock[data-compact] .primary[data-morph="stop"]::before { content: ""; position: absolute; left: 12px; top: 50%; width: 14px; height: 14px; margin-top: -7px; border-radius: 50%;
+  border: 2px solid rgb(255 255 255 / 0.35); border-top-color: #fff; animation: sol-ring 800ms linear infinite; }
+@keyframes sol-ring { to { transform: rotate(360deg); } }
+@keyframes sol-morph { from { transform: scale(0.7); opacity: 0; border-radius: 12px; } }
+
+/* Auto top-up: a slim expandable row in the overlay (the full panel opens on demand). */
+.dock[data-compact] .topup { margin: 0 10px; border-bottom: 0; border-radius: 14px; font-size: 12.5px; background: color-mix(in srgb, var(--c-canvas) 40%, transparent); box-shadow: inset 0 0 0 1px rgb(var(--rgb-ink) / 0.06); }
+.dock[data-compact] .topup summary { padding: 7px 12px; list-style: none; display: flex; align-items: center; gap: 8px; }
+.dock[data-compact] .topup summary::-webkit-details-marker { display: none; }
+.dock[data-compact] .topup summary::before { content: ""; width: 14px; height: 14px; flex: none; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #ffe08a, #f5b860 55%, #b97a1a); box-shadow: 0 0 8px rgb(245 184 96 / 0.5); }
+.dock[data-compact] .topup summary span { margin-left: auto; padding: 1px 8px; border-radius: 999px; background: rgb(var(--rgb-ink) / 0.08); font-size: 11px; }
+.dock[data-compact] .topup::details-content { block-size: 0; overflow: hidden; transition: block-size 380ms cubic-bezier(.16, 1, .3, 1), content-visibility 380ms allow-discrete; }
+.dock[data-compact] .topup[open]::details-content { block-size: auto; }
+.dock[data-compact] .topupBody { padding: 0 12px 12px; font-size: 12.5px; interpolate-size: allow-keywords; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dock[data-compact] .empty strong, .ideaChip, .dock[data-compact] .composer::before, .dock[data-compact] .composer[data-sent], .dock[data-compact] .primary[data-morph], .dock[data-compact] .primary[data-morph="stop"]::before, .dock[data-compact] .action[data-status="done"] { animation: none; }
+  .dock[data-compact] .primary[data-morph] { transform: none; }
+}

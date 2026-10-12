@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { referencesFromFiles } from "./references";
 import { StudioTopUp } from "./StudioTopUp";
 import { describeAction, type Item, type StudioAgent } from "./useStudioAgent";
@@ -9,6 +9,24 @@ import s from "./studio-mode.module.css";
 const RISK_LABEL = { read: "Look", change: "Change", destructive: "Needs care" } as const;
 const STATUS_LABEL = { waiting: "Waiting for you", running: "Working…", done: "Done", failed: "Failed", skipped: "Skipped" } as const;
 const MAX_REFS = 8;
+/** Starting points for the overlay's empty state. They only fill the box; nothing is sent until the person chooses Build. */
+const IDEAS = {
+  studio: ["A lava obby with checkpoints", "A shop UI with coins", "A day and night cycle", "Better lighting for this place"],
+  blender: ["A low-poly tree set", "Studio lighting for this model", "Worn metal materials", "A stylised rock pile"],
+} as const;
+
+/** The Build button leans a little toward the pointer (a few pixels at most) and springs back. */
+function magnetic(e: ReactPointerEvent<HTMLButtonElement>) {
+  const el = e.currentTarget;
+  if (el.disabled || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const r = el.getBoundingClientRect();
+  el.style.setProperty("--tx", `${(((e.clientX - r.left) / r.width) - 0.5) * 6}px`);
+  el.style.setProperty("--ty", `${(((e.clientY - r.top) / r.height) - 0.5) * 5}px`);
+}
+function unmagnet(e: ReactPointerEvent<HTMLButtonElement>) {
+  e.currentTarget.style.removeProperty("--tx");
+  e.currentTarget.style.removeProperty("--ty");
+}
 
 function ActionCard({ it, onDecide, compact }: { it: Extract<Item, { kind: "action" }>; onDecide: (ok: boolean) => void; compact: boolean }) {
   const code = it.name === "execute_luau" && typeof it.args.code === "string" ? it.args.code : null;
@@ -50,8 +68,9 @@ function ActionCard({ it, onDecide, compact }: { it: Extract<Item, { kind: "acti
  * The Studio co-creator's chat dock (run loop: useStudioAgent, passed in so the side panel shares it). Shown once Keplar is
  * connected to Studio, on the Studio page and, compact, in the desktop overlay.
  */
-export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPlayTest = true }: { a: StudioAgent; compact?: boolean; draft?: string; onDraftUsed?: () => void; /** Roblox Studio has a play test; Blender does not. */ canPlayTest?: boolean }) {
+export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPlayTest = true, onTyping }: { a: StudioAgent; compact?: boolean; draft?: string; onDraftUsed?: () => void; /** Roblox Studio has a play test; Blender does not. */ canPlayTest?: boolean; /** The overlay's Solar core reacts to typing (the draft's length). */ onTyping?: (length: number) => void }) {
   const [text, setText] = useState(draft);
+  const [sent, setSent] = useState(0);
   const [refs, setRefs] = useState<string[]>([]);
   const [refBusy, setRefBusy] = useState(false);
   const [refErr, setRefErr] = useState("");
@@ -91,6 +110,8 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPla
     const r = refs;
     setText("");
     setRefs([]);
+    onTyping?.(0);
+    setSent((n) => n + 1);
     void a.send(t, r);
   };
 
@@ -115,11 +136,18 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPla
       <ol className={s.feed} ref={listRef} aria-live="polite">
         {a.items.length === 0 ? (
           <li className={s.empty}>
-            <span className={s.orbit} aria-hidden="true"><span /><span /><span /></span>
+            {compact ? null : <span className={s.orbit} aria-hidden="true"><span /><span /><span /></span>}
             <strong>What should we build?</strong>
             {canPlayTest
               ? <span>Keplar looks at your place first, then plans and builds; you play-test it and say what to change. Attach screenshots or a clip of a UI, effect or gameplay you want to match. Each game&apos;s chat is saved, so you can come back to it.</span>
               : <span>Keplar reads your scene first, then plans, models and textures it; you look it over and say what to change. Attach reference images of the look you want. Each file&apos;s chat is saved, so you can come back to it.</span>}
+            {compact ? (
+              <span className={s.ideas} role="group" aria-label="Ideas to start from">
+                {IDEAS[canPlayTest ? "studio" : "blender"].map((idea, i) => (
+                  <button key={idea} type="button" className={s.ideaChip} style={{ ["--i" as string]: i }} onClick={() => { setText(idea); onTyping?.(idea.length); }}>{idea}</button>
+                ))}
+              </span>
+            ) : null}
           </li>
         ) : null}
         {a.items.map((it) =>
@@ -157,7 +185,7 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPla
         ) : null}
       </ol>
 
-      <form className={s.composer} onSubmit={(e) => { e.preventDefault(); submit(); }}>
+      <form className={s.composer} data-sent={compact && sent ? (sent % 2 ? "a" : "b") : undefined} onSubmit={(e) => { e.preventDefault(); submit(); }}>
         {refs.length ? (
           <div className={s.refRow}>
             {refs.map((src, i) => (
@@ -174,7 +202,7 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPla
           rows={compact ? 1 : 2}
           value={text}
           placeholder={a.running ? "Keplar is working. You can pause or stop." : a.playing ? "Play-testing. Note what to change, then stop the test and build." : a.items.length ? "Change something or add to it…" : "Describe what to build or change…"}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => { setText(e.target.value); onTyping?.(e.target.value.length); }}
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && !a.running) { e.preventDefault(); submit(); } }}
           aria-label="Describe what to build in Roblox Studio"
           disabled={a.running}
@@ -190,7 +218,7 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPla
           {a.running ? (
             <>
               <button type="button" className={s.ghost} onClick={a.pause}>Pause</button>
-              <button type="button" className={s.ghost} onClick={a.stop}>Stop</button>
+              <button type="button" className={compact ? s.primary : s.ghost} data-morph={compact ? "stop" : undefined} onClick={a.stop}>Stop</button>
             </>
           ) : a.paused ? (
             <>
@@ -205,7 +233,7 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPla
                   {a.playing ? "Stop test" : "Play test"}
                 </button>
               ) : null}
-              <button type="submit" className={s.primary} disabled={a.playing || (!text.trim() && !refs.length)} title={a.playing ? "Stop the play test, then build" : undefined}>Build</button>
+              <button type="submit" className={s.primary} data-morph={compact ? "build" : undefined} onPointerMove={compact ? magnetic : undefined} onPointerLeave={compact ? unmagnet : undefined} disabled={a.playing || (!text.trim() && !refs.length)} title={a.playing ? "Stop the play test, then build" : undefined}>Build</button>
             </>
           )}
         </div>
