@@ -76,6 +76,23 @@ ${lockup(30, "#121318")}
 <div class="pop"><img src="${popup}" alt=""></div>
 </body></html>`;
 
+/** A 1280x800 Keplar Lens screenshot: headline on the left, a real frame of Lens on a page (from extension-lens-e2e.mjs) on the right. */
+const lensShotHtml = ({ title, line, chips, shot }) => `<!doctype html><html><head><meta charset="utf-8">${FONT}<style>${BASE}
+body{width:1280px;height:800px;background:radial-gradient(90% 120% at 100% 0%,#e8eefc 0%,#f5f4f0 46%,#f3f1ec 100%);color:#121318;position:relative}
+.lockup{position:absolute;left:64px;top:64px;display:flex;align-items:center}
+.copy{position:absolute;left:64px;top:200px;width:340px}
+h1{margin:0;font-size:44px;line-height:1.06;font-weight:700;letter-spacing:-.035em}
+.line{margin:20px 0 0;font-size:18px;line-height:1.5;color:#4a4e58}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}.chips span{padding:8px 14px;border-radius:999px;background:#fff;box-shadow:0 0 0 1px rgba(18,19,24,.08);font-size:14px;color:#30333b}
+.win{position:absolute;left:440px;top:120px;width:800px;border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 50px 100px -30px rgba(15,18,30,.45),0 0 0 1px rgba(15,18,30,.1)}
+.top{height:36px;display:flex;align-items:center;gap:7px;padding:0 14px;background:#eceae4;border-bottom:1px solid #e0ddd5}.top i{width:10px;height:10px;border-radius:50%;background:#d3cfc6;display:block}
+.win img{display:block;width:800px}
+</style></head><body>
+${lockup(30, "#121318")}
+<div class="copy"><h1>${title}</h1><p class="line">${line}</p><div class="chips">${chips.map((c) => `<span>${c}</span>`).join("")}</div></div>
+<div class="win"><div class="top"><i></i><i></i><i></i></div><img src="${shot}" alt=""></div>
+</body></html>`;
+
 const promoSmallHtml = () => `<!doctype html><html><head><meta charset="utf-8">${FONT}<style>${BASE}
 body{width:440px;height:280px;background:radial-gradient(120% 140% at 100% 0%,#2b3a66 0%,#111319 58%);color:#fff;position:relative}
 .lockup{position:absolute;left:36px;top:40px;display:flex;align-items:center}
@@ -155,9 +172,16 @@ try {
   const answer = await capture(p);
   await p.close();
 
-  await render(screenshotHtml({ title: "One answer from several AI models", line: "Ask about the page you're on. Keplar One shows how many models agreed, and where they split.", chips: ["Agreement at a glance", "Formatted answers", "Your words only"], popup: answer.src, popupH: answer.h }), 1280, 800, "screenshot-1-answer.png");
-  await render(screenshotHtml({ title: "Ask about any page in one click", line: "Right-click a page or a selection, or drag over part of the tab, and ask.", chips: ["Selected text", "Whole page", "Drag an area"], popup: added.src, popupH: added.h }), 1280, 800, "screenshot-2-page-text.png");
-  await render(screenshotHtml({ title: "Your key stays on your device", line: "Paste a Keplar API key once. Text is sent to Keplar only when you press Ask.", chips: ["No tracking", "No remote code", "Nothing saved but your key"], popup: setup.src, popupH: setup.h }), 1280, 800, "screenshot-3-setup.png");
+  // Keplar Lens: real frames from scripts/extension-lens-e2e.mjs (run it first with the same folder in KEPLAR_LENS_FRAMES).
+  const frames = process.env.KEPLAR_LENS_FRAMES;
+  if (frames) {
+    const shot = (f) => `data:image/png;base64,${readFileSync(join(frames, f)).toString("base64")}`;
+    await render(lensShotHtml({ title: "Search anything on the page", line: "Drag over text or a picture. Keplar One answers in a side panel, with how many models agreed.", chips: ["Text and images", "Ask a follow-up", "Copy or translate"], shot: shot("4-answer.png") }), 1280, 800, "screenshot-1-lens.png");
+    await render(lensShotHtml({ title: "Just drag over it", line: "Right-click and choose Search with Keplar One, then drag over anything on the page.", chips: ["Works on any page", "Asks before it sends"], shot: shot("3-dragging.png") }), 1280, 800, "screenshot-2-lens-select.png");
+  }
+  await render(screenshotHtml({ title: "One answer from several AI models", line: "Ask about the page you're on. Keplar One shows how many models agreed, and where they split.", chips: ["Agreement at a glance", "Formatted answers", "Your words only"], popup: answer.src, popupH: answer.h }), 1280, 800, "screenshot-3-answer.png");
+  await render(screenshotHtml({ title: "Ask about any page in one click", line: "Right-click a page or a selection, or drag over part of the tab, and ask.", chips: ["Selected text", "Whole page", "Drag an area"], popup: added.src, popupH: added.h }), 1280, 800, "screenshot-4-page-text.png");
+  await render(screenshotHtml({ title: "Your key stays on your device", line: "Paste a Keplar API key once. Text is sent to Keplar only when you press Ask.", chips: ["No tracking", "No remote code", "Nothing saved but your key"], popup: setup.src, popupH: setup.h }), 1280, 800, "screenshot-5-setup.png");
   await render(promoSmallHtml(), 440, 280, "promo-small.png");
   await render(marqueeHtml(answer.src), 1400, 560, "promo-marquee.png");
 } finally {

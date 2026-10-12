@@ -45,6 +45,36 @@ export function composeQuestion({ ask, context, kind, url }) {
   return { question: head + label + ctx.slice(0, room), truncated };
 }
 
+/** The API's limits for an image (src/lib/api/policy.ts imageChars) and follow-up history (historyTurns, historyTurnChars). */
+export const MAX_IMAGE_CHARS = 2_800_000;
+export const MAX_HISTORY = 10;
+export const MAX_HISTORY_CHARS = 4000;
+const IMAGE_URL = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/;
+
+/**
+ * The /api/v1/ask body for a Keplar Lens search: the person's question (or a sensible default), the words inside the area,
+ * one picture of the area, and earlier turns for follow-ups. Returns null when there is nothing to ask about.
+ * Only called after the person agreed to Lens sending the picture (lens.js asks once).
+ */
+export function lensRequest({ ask, words, url, image, history }) {
+  const own = String(ask ?? "").trim();
+  const text = String(words ?? "").trim();
+  const pic = image && typeof image.dataUrl === "string" && IMAGE_URL.test(image.dataUrl) && image.dataUrl.length <= MAX_IMAGE_CHARS
+    && Number.isInteger(image.width) && Number.isInteger(image.height) && image.width > 0 && image.height > 0 ? image : null;
+  if (!own && !text && !pic) return null;
+  let question;
+  if (text) {
+    question = composeQuestion({ ask: own || (pic ? "Explain what is in this area of the page (the picture and the words in it), and say what is uncertain." : ""), context: text, kind: "region", url }).question;
+  } else {
+    question = (own || "What is in this picture? Explain it briefly, and say what is uncertain.").slice(0, MAX_QUESTION);
+  }
+  const turns = (Array.isArray(history) ? history : [])
+    .filter((t) => t && (t.role === "user" || t.role === "assistant") && typeof t.content === "string" && t.content.trim())
+    .slice(-MAX_HISTORY)
+    .map((t) => ({ role: t.role, content: t.content.slice(0, MAX_HISTORY_CHARS) }));
+  return { question, stream: true, ...(turns.length ? { history: turns } : {}), ...(pic ? { image: { data_url: pic.dataUrl, width: pic.width, height: pic.height } } : {}) };
+}
+
 /**
  * Map a CSS-pixel rectangle onto a screenshot of the same viewport.
  * rect: { left, top, width, height }. viewport: { w, h }. Returns image pixels, or null if the area is too small.

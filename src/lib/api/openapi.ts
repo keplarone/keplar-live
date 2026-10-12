@@ -51,6 +51,7 @@ export function openApiSpec(origin = "https://keplar.one") {
           required: ["question"],
           properties: {
             question: { type: "string", maxLength: API_ASK_LIMITS.questionChars },
+            image: { type: "object", required: ["data_url", "width", "height"], description: "Optional: one image the question is about (a screenshot, a photo, an area of a page). Answered only by models that can see; never stored.", properties: { data_url: { type: "string", maxLength: API_ASK_LIMITS.imageChars, description: "data:image/png, image/jpeg or image/webp, base64." }, width: { type: "integer", minimum: 1, maximum: 8192 }, height: { type: "integer", minimum: 1, maximum: 8192 } } },
             history: { type: "array", maxItems: API_ASK_LIMITS.historyTurns, description: "Earlier turns, for follow-ups. Stateless: you send them each time.", items: { type: "object", required: ["role", "content"], properties: { role: { enum: ["user", "assistant"] }, content: { type: "string", maxLength: API_ASK_LIMITS.historyTurnChars } } } },
             routing: { type: "object", properties: { strategy: { enum: ["auto", "fast", "balanced", "deep"] } } },
             stream: { type: "boolean", default: false },

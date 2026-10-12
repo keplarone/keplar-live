@@ -7,7 +7,7 @@ import { execFileSync } from "node:child_process";
 // @ts-expect-error plain ES module build script, no types
 import { ALLOWED_PERMISSIONS, SHIPPED, buildExtension, validateExtension, zip } from "../scripts/build-extension.mjs";
 // @ts-expect-error plain ES module shared with the popup
-import { ASK_URL, MAX_QUESTION, composeQuestion, cropRect, describeAnswer, errorText, hostOf, looksLikeKey, parseSse, textInRect } from "../extension/lib.js";
+import { ASK_URL, MAX_QUESTION, composeQuestion, cropRect, describeAnswer, errorText, hostOf, lensRequest, looksLikeKey, markdownBlocks, parseSse, textInRect } from "../extension/lib.js";
 import { openApiSpec } from "../src/lib/api/openapi";
 
 const manifest = JSON.parse(readFileSync("extension/manifest.json", "utf8"));
@@ -99,22 +99,53 @@ test("textInRect reads intersecting words in order, and cropRect maps the drag o
   assert.equal(cropRect({ left: 0, top: 0, width: 10, height: 10 }, { w: 0, h: 10 }, 10, 10), null);
 });
 
-test("the lens overlay is packaged, sends words only, and does not phone home on its own", () => {
+test("Keplar Lens: asks once before anything is sent, then sends the words and a picture of the area; no network of its own", () => {
   const lens = readFileSync("extension/lens.js", "utf8");
   const bg = readFileSync("extension/background.js", "utf8");
-  assert.match(lens, /Drag to search/);
-  assert.match(lens, /Ask anything/);
-  assert.match(lens, /Click to exit/);
-  assert.match(lens, /type: "ask", ask, context, kind, url: location\.href/);
-  assert.match(lens, /lensPorts|keplar-lens/);
-  assert.match(readFileSync("extension/background.js", "utf8"), /const lensPorts = new Set/);
-  assert.doesNotMatch(lens, /https?:\/\//);
-  assert.match(bg, /Search this tab with Keplar One/);
+  for (const s of ["Select any text or image to search with Keplar One", "Drag to search", "Ask a follow-up", "Copy text", "Translate", "Copy as image", "Search anything on this page with Keplar One"]) assert.ok(lens.includes(s), s);
+  // Consent: nothing is searched until agreed; the agreement is remembered (lensConsent) so it is asked once.
+  assert.match(lens, /function search\(ask\) \{\n {4}if \(!agreed\) return;/);
+  assert.match(lens, /api\.storage\.local\.set\(\{ lensConsent: 1 \}\)/);
+  assert.match(lens, /the words inside the area you drag and a picture of that area are sent to Keplar/);
+  // What a search sends: the words, the JPEG the background cropped, and earlier turns for follow-ups.
+  assert.match(lens, /type: "ask", lens: true, ask, context: regionText, url: location\.href, image: sendImage, history/);
+  assert.match(bg, /body = lensRequest\(\{ ask: msg\.ask, words: msg\.context, url: msg\.url, image: msg\.image, history: msg\.history \}\)/);
+  assert.match(bg, /type: "image\/jpeg", quality: 0\.85/);
+  // The overlay itself never contacts anything (the SVG namespace is an identifier, not a request).
+  assert.doesNotMatch(lens.replaceAll("http://www.w3.org/2000/svg", ""), /https?:\/\//);
+  const code = (src: string) => src.replace(/\/\/.*$/gm, "");
+  assert.doesNotMatch(code(lens), /\bfetch\(/, "decodes the picture itself; a page's CSP can block fetch(data:)");
+  assert.doesNotMatch(code(bg), /fetch\(shot\)/, "the extension CSP blocks fetch(data:), so the crop decodes the capture directly");
+  assert.match(bg, /Search with Keplar One/);
   assert.match(bg, /files:\s*\["lens\.js"\]/);
-  assert.match(bg, /body: JSON\.stringify\(\{ question, stream: true \}\)/);
-  assert.doesNotMatch(bg, /body: JSON\.stringify\(\{[^}]*dataUrl/);
+  assert.match(bg, /const lensPorts = new Set/);
   assert.match(readFileSync("extension/popup.js", "utf8"), /keplar-lens-open/);
-  // The popup and the overlay use keplar.one's own theme tokens (light by default, dark with the browser), read from the site's CSS.
+  assert.match(lens, /prefers-reduced-motion:reduce/);
+});
+
+test("lensRequest: words and/or a picture with sensible default questions, follow-up history, and the API's limits", () => {
+  const jpeg = { dataUrl: "data:image/jpeg;base64,/9j/4AAQ", width: 640, height: 320 };
+  const both = lensRequest({ ask: "", words: "Critics point out most trials are short.", url: "https://news.example/a", image: jpeg, history: [] })!;
+  assert.match(both.question, /^Explain what is in this area of the page \(the picture and the words in it\)/);
+  assert.match(both.question, /Critics point out most trials are short\./);
+  assert.match(both.question, /from news\.example/, "the page is labeled by host only");
+  assert.deepEqual(both.image, { data_url: jpeg.dataUrl, width: 640, height: 320 });
+  assert.equal(both.history, undefined);
+  const picOnly = lensRequest({ ask: "", words: "", url: "", image: jpeg })!;
+  assert.match(picOnly.question, /^What is in this picture\?/);
+  assert.equal(lensRequest({ ask: "", words: "", url: "", image: null }), null, "nothing to ask about");
+  assert.equal(lensRequest({ ask: "", words: "", image: { dataUrl: "javascript:alert(1)", width: 1, height: 1 } }), null, "not an image: dropped");
+  assert.equal(lensRequest({ ask: "q", words: "", image: { ...jpeg, dataUrl: `data:image/jpeg;base64,${"A".repeat(2_800_001)}` } })!.image, undefined, "over the API limit: not sent");
+  const many = Array.from({ length: 14 }, (_, i) => ({ role: i % 2 ? "assistant" : "user", content: `turn ${i}` }));
+  const follow = lensRequest({ ask: "Which side has better evidence?", words: "w", image: jpeg, history: [...many, { role: "system", content: "x" }] })!;
+  assert.equal(follow.history!.length, 10, "the last 10 turns");
+  assert.equal(follow.history![9]!.content, "turn 13");
+  assert.match(follow.question, /^Which side has better evidence\?/);
+});
+
+test("the popup and the overlay use keplar.one's own theme tokens, and the privacy policy describes Lens accurately", () => {
+  const lens = readFileSync("extension/lens.js", "utf8");
+  // Light by default, dark with the browser, read from the site's CSS so the two can't drift apart.
   const popupCss = readFileSync("extension/popup.css", "utf8");
   const token = (file: string, name: string, block = ":root") => { const css = readFileSync(file, "utf8"); const at = css.indexOf(block); return new RegExp(`--${name}:\\s*(#[0-9a-f]{6})`, "i").exec(css.slice(at))![1]!.toLowerCase(); };
   const light = { canvas: token("src/styles/light.css", "c-canvas"), ink: token("src/styles/light.css", "c-ink"), ink2: token("src/styles/light.css", "c-ink-2") };
@@ -127,7 +158,10 @@ test("the lens overlay is packaged, sends words only, and does not phone home on
   assert.doesNotMatch(popupCss, /#8fb4ff|#faf9f7|#2c241e/, "no leftovers of the old palette");
   assert.match(lens, /data-keplar/);
   assert.match(lens, /prefers-color-scheme: dark/, "the overlay follows the browser's light or dark mode");
-  assert.match(readFileSync("src/components/legal/content/privacy.ts", "utf8"), /picture stays on your device/);
+  const privacy = readFileSync("src/components/legal/content/privacy.ts", "utf8");
+  assert.match(privacy, /Search with Keplar One/);
+  assert.match(privacy, /a picture of that area/);
+  assert.doesNotMatch(privacy, /picture stays on your device and is not sent to Keplar/, "the old promise no longer matches what Lens does");
 });
 
 test("keys and SSE parsing", () => {
@@ -141,7 +175,7 @@ test("keys and SSE parsing", () => {
 });
 
 test("answers render as Markdown blocks built from text: Keplar's one-point-per-line answers, bold, lists, code; never HTML", async () => {
-  const { markdownBlocks, describeAnswer } = await import("../extension/lib.js");
+
   const real = JSON.parse(readFileSync("extension/store/sample-answer.json", "utf8")).answer;
   const blocks = markdownBlocks(real.answer);
   assert.equal(blocks[0].type, "p");
@@ -171,9 +205,9 @@ test("store listing and README exist, say Keplar One, and nothing was submitted"
   const listing = readFileSync("extension/STORE_LISTING.md", "utf8");
   assert.match(listing, /ready to submit/i);
   assert.match(listing, /NOT submitted/i);
-  for (const f of ["screenshot-1-answer.png", "screenshot-2-page-text.png", "screenshot-3-setup.png", "promo-small.png", "promo-marquee.png"]) assert.ok(existsSync(`extension/store/${f}`) && listing.includes(f), f);
+  for (const f of ["screenshot-1-lens.png", "screenshot-2-lens-select.png", "screenshot-3-answer.png", "screenshot-4-page-text.png", "screenshot-5-setup.png", "promo-small.png", "promo-marquee.png"]) assert.ok(existsSync(`extension/store/${f}`) && listing.includes(f), f);
   const png = (f: string) => { const b = readFileSync(f); return [b.readUInt32BE(16), b.readUInt32BE(20)]; };
-  assert.deepEqual(png("extension/store/screenshot-1-answer.png"), [1280, 800]);
+  assert.deepEqual(png("extension/store/screenshot-1-lens.png"), [1280, 800]);
   assert.deepEqual(png("extension/store/promo-small.png"), [440, 280]);
   assert.deepEqual(png("extension/store/promo-marquee.png"), [1400, 560]);
   assert.deepEqual(png("extension/icons/icon128.png"), [128, 128]);

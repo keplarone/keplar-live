@@ -7,6 +7,7 @@ import { authenticateKey, recordKeyUse, ApiError } from "@/lib/api/keys";
 import { parseAsk, runAsk, type PublicEvent } from "@/lib/api/ask";
 import { CORS, preflight, v1Failure, v1Json } from "@/lib/api/http";
 import { v1Error } from "@/lib/api/format";
+import { API_ASK_LIMITS } from "@/lib/api/policy";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,7 +21,7 @@ export async function POST(req: Request) {
     let raw: unknown;
     try {
       const text = await req.text();
-      if (text.length > 100_000) throw new ApiError(413, "too_large", "The request body is too large.");
+      if (text.length > API_ASK_LIMITS.bodyChars) throw new ApiError(413, "too_large", "The request body is too large.");
       raw = JSON.parse(text);
     } catch (e) {
       if (e instanceof ApiError) throw e;

@@ -26,7 +26,7 @@ export const staticLastmod: Record<string, string> = {
   "/agents": "2026-09-28",
   "/enterprise": "2026-10-01",
   "/inquire": "2026-09-27",
-  "/privacy": "2026-10-04",
+  "/privacy": "2026-10-12",
   "/developers": "2026-10-04",
   "/terms": "2026-10-01",
   "/referral-terms": "2026-10-04",

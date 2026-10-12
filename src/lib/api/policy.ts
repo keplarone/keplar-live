@@ -37,7 +37,11 @@ export const apiAvailable = (plan: PlanId) => API_POLICY[plan].available;
 
 export const KEY_PREFIX = "kpl_";
 export const KEY_NAME_MAX = 40;
-export const API_ASK_LIMITS = { questionChars: 8_000, historyTurns: 10, historyTurnChars: 4_000 } as const;
+/**
+ * imageChars: one optional image as a data URL (about 2 MB decoded), checked again in full by the app's own media validator
+ * (src/lib/orchestration/media.ts parseMedia: type from the bytes, decoded size, dimensions). bodyChars: the whole JSON body.
+ */
+export const API_ASK_LIMITS = { questionChars: 8_000, historyTurns: 10, historyTurnChars: 4_000, imageChars: 2_800_000, bodyChars: 3_000_000 } as const;
 export const KEY_EXPIRY_CHOICES = [30, 90, 365] as const;
 
 export const API_STATEMENT =
