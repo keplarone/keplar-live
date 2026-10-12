@@ -1,6 +1,7 @@
 "use client";
 
 import { siteUrl } from "@/lib/site";
+import { KeplarSymbol } from "@/components/brand/KeplarSymbol";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import { Analyst } from "./Analyst";
@@ -202,7 +203,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
             <button type="button" className={c.iconBtn} onClick={() => history.forward()} aria-label="Forward"><Icon d={<path d="M5 12h14M13 6l6 6-6 6" />} /></button>
           </div>
 
-          <div className={c.sideBrand}><img src="/business/icon.png" width="28" height="28" alt="" /><span>Keplar Business</span></div>
+          <div className={c.sideBrand}><KeplarSymbol size={18} /><span className={c.wordmark}>Keplar <span>Business</span></span></div>
           <nav className={c.nav} aria-label="Workspace modules">
             <button type="button" className={c.item} aria-current={is("home") || is("ask") ? "page" : undefined} onClick={() => go({ at: "home" })}>
               <Icon d={<path d="M4 20l4-1 11-11-3-3L5 16l-1 4z" />} />New chat

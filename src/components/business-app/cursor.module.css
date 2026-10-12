@@ -43,8 +43,12 @@
 .main { min-width: 0; display: flex; flex-direction: column; background: #141414; }
 .mainTop { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 18px; flex: none; border-bottom: 1px solid #262626; }
 .viewName { order: -1; color: #d6d6d6; font-size: 13px; font-weight: 500; }
-.sideBrand { display: flex; align-items: center; gap: 10px; padding: 2px 10px 10px; font-size: 13px; font-weight: 600; color: #ececec; }
-.sideBrand img { padding: 4px; border-radius: 8px; background: #f4f4f6; }
+.sideBrand { display: flex; align-items: center; gap: 9px; padding: 4px 10px 12px; color: #ececec; }
+/* The mark is drawn in the text colour on the sidebar itself: no tile behind it. */
+.sideBrand svg { flex: none; }
+/* Wordmark: Inter, "Keplar" semibold with "Business" lighter and muted, like a product lockup ("Claude Code"). */
+.wordmark { font-family: var(--biz-brand), "Inter", var(--biz-sans), system-ui, sans-serif; font-size: 14px; font-weight: 600; letter-spacing: -0.015em; line-height: 1; white-space: nowrap; }
+.wordmark span { font-weight: 500; color: #9a9a9a; }
 .backdrop { display: none; }
 .topLink { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 6px; color: #9a9a9a; font-size: 12.5px; text-decoration: none; }
 .topLink:hover { background: #222222; color: #e6e6e6; }
