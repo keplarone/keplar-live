@@ -43,3 +43,14 @@
   .run { grid-template-columns: 1fr; }
   .view { order: -1; }
 }
+
+.task { margin: 0 0 var(--s-2); color: var(--c-ink-2); font-size: var(--t-small); }
+.history { margin-top: var(--s-10); max-width: 720px; }
+.histHead { font-size: var(--t-label); text-transform: uppercase; letter-spacing: 0.06em; color: var(--c-ink-2); margin: 0 0 var(--s-2); }
+.histList { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-1); }
+.histItem { width: 100%; display: grid; gap: 2px; text-align: left; font: inherit; color: inherit; background: transparent; border: var(--b-hairline) solid transparent; border-radius: var(--r-md); padding: var(--s-2) var(--s-3); cursor: pointer; }
+.histItem:hover, .histItem[aria-current="true"] { background: var(--c-surface-1); border-color: var(--c-border); }
+.histGoal { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.histMeta { font-size: var(--t-small); color: var(--c-ink-3); }
+.histMeta[data-status="needs_you"] { color: var(--c-attention); }
+.histMeta[data-status="failed"], .histMeta[data-status="interrupted"] { color: var(--c-err); }

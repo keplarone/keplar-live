@@ -112,10 +112,82 @@ test("Keplar Browser acceptance: private addresses are blocked, including throug
   }
 });
 
-test("Keplar Browser route: signed-in, same-origin, rate limited, and runs only in the serverless browser bundle", () => {
-  const src = readFileSync("src/app/api/browser/run/route.ts", "utf8");
-  assert.match(src, /isSameOrigin\(req\)/);
-  assert.match(src, /allowAnonymous: false/);
-  assert.match(src, /limitRequest\(req, "browser-run"/);
-  assert.match(readFileSync("next.config.ts", "utf8"), /"\/api\/browser\/run": \["\.\/node_modules\/@sparticuz\/chromium\/bin\/\*\*"/);
+test("Keplar Cloud browser tasks: saved step by step, stoppable, one at a time, interrupted tasks say so", async () => {
+  const { createTask, listTasks, runStoredTask, taskRows, taskView, TaskBusy, LEASE_MS, MAX_KEPT } = await import("../src/lib/browser/tasks");
+  const ws = "ws_bt_" + Date.now();
+  const fakeBrowser = <T,>(fn: (b: never) => Promise<T>) => fn({} as never);
+
+  // A finished task: every step is saved, only the newest screenshot is kept, the answer is stored.
+  const t = await createTask(ws, "price of the kettle", "https://shop.example.com/");
+  assert.equal(taskView(t).status, "running");
+  await assert.rejects(createTask(ws, "another one"), TaskBusy, "one running task per account");
+  const seenMidway: number[] = [];
+  await runStoredTask(t, {
+    decide: async () => null,
+    withBrowser: fakeBrowser,
+    run: async (_in, d) => {
+      d.onStep({ n: 0, note: "Opened", url: "https://shop.example.com/", title: "Shop", shot: "data:image/jpeg;base64,AAA" });
+      d.onStep({ n: 1, note: "Clicked", url: "https://shop.example.com/kettle", title: "Kettle", shot: "data:image/jpeg;base64,BBB" });
+      await new Promise((r) => setTimeout(r, 50));
+      seenMidway.push((await taskRows().get(ws, t.id))!.steps.length);
+      return { status: "done", answer: "$39.00", steps: 1 };
+    },
+  });
+  assert.deepEqual(seenMidway, [2], "steps are saved while the task runs (a closed tab can come back to them)");
+  const done = taskView((await taskRows().get(ws, t.id))!);
+  assert.equal(done.status, "done");
+  assert.equal(done.answer, "$39.00");
+  assert.deepEqual(done.steps.map((s) => !!s.shot), [false, true], "only the newest screenshot is kept");
+  assert.ok(!("workspaceId" in done) && !("stopRequested" in done), "the view carries no internals");
+
+  // Stop: the person's request is seen between steps, and the task ends as stopped.
+  const t2 = await createTask(ws, "keep looking");
+  await taskRows().update(ws, t2.id, { stopRequested: true });
+  await runStoredTask(t2, {
+    decide: async () => null,
+    withBrowser: fakeBrowser,
+    run: async (_in, d) => {
+      d.onStep({ n: 0, note: "Opened", url: "https://a.example.com/", title: "" });
+      await new Promise((r) => setTimeout(r, 50));
+      assert.equal(d.signal?.aborted, true, "the stop request reaches the running task");
+      return { status: "stopped", reason: "Stopped.", steps: 0 };
+    },
+  });
+  const stopped = taskView((await taskRows().get(ws, t2.id))!);
+  assert.equal(stopped.status, "stopped");
+  assert.match(stopped.reason ?? "", /You stopped the task/);
+
+  // A crash in the browser layer is reported, never left "running".
+  const t3 = await createTask(ws, "will crash");
+  await runStoredTask(t3, { decide: async () => null, withBrowser: async () => { throw new Error("The test browser could not start (no binary)."); } });
+  const crashed = taskView((await taskRows().get(ws, t3.id))!);
+  assert.equal(crashed.status, "failed");
+  assert.match(crashed.reason ?? "", /couldn't start on the server/);
+
+  // A task whose server invocation died reads as interrupted once its lease runs out (and frees the slot).
+  const t4 = await createTask(ws, "lost");
+  assert.equal(taskView(t4, Date.now() + LEASE_MS + 1000).status, "interrupted");
+  await taskRows().update(ws, t4.id, { leaseUntil: new Date(Date.now() - 1000).toISOString() });
+  await createTask(ws, "after an interrupted one");
+
+  // Other accounts never see these tasks; old tasks are pruned past the cap.
+  assert.equal((await listTasks("ws_someone_else")).length, 0);
+  for (const row of await listTasks(ws)) await taskRows().update(ws, row.id, { status: "done", leaseUntil: undefined });
+  for (let i = 0; i < MAX_KEPT + 3; i++) {
+    const r = await createTask(ws, "task " + i);
+    await taskRows().update(ws, r.id, { status: "done" });
+  }
+  assert.equal((await listTasks(ws)).length, MAX_KEPT);
+});
+
+test("Keplar Browser routes: signed-in, same-origin, rate limited, owner-scoped, and the task route ships the serverless browser", () => {
+  const src = readFileSync("src/app/api/browser/tasks/route.ts", "utf8");
+  assert.ok(src.includes("isSameOrigin(req)"));
+  assert.ok(src.includes("allowAnonymous: false"));
+  assert.ok(src.includes(`limitRequest(req, "browser-run"`));
+  assert.ok(src.includes("after(work)"), "the task outlives the request");
+  const one = readFileSync("src/app/api/browser/tasks/[id]/route.ts", "utf8");
+  assert.ok(one.includes("taskRows().get(ws.id"), "a task is looked up inside the signed-in account only");
+  assert.ok(one.includes("isSameOrigin(req)"));
+  assert.ok(readFileSync("next.config.ts", "utf8").includes(`"/api/browser/tasks": ["./node_modules/@sparticuz/chromium/bin/**"`));
 });
