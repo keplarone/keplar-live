@@ -8,6 +8,8 @@ export type Live = {
   stageText: string;
   spec: PublicSpec | null;
   files: { path: string; bytes: number }[];
+  /** Text of each file as it was written during this build (live code view). */
+  code: Record<string, string>;
   writing: Record<string, number>;
   images: { slot: string; ok: boolean }[];
   checks: Check[];
@@ -17,7 +19,7 @@ export type Live = {
   log: string[];
 };
 
-export const emptyLive = (): Live => ({ stage: "", stageText: "", spec: null, files: [], writing: {}, images: [], checks: [], verdicts: [], visual: null, problems: null, log: [] });
+export const emptyLive = (): Live => ({ stage: "", stageText: "", spec: null, files: [], code: {}, writing: {}, images: [], checks: [], verdicts: [], visual: null, problems: null, log: [] });
 
 const ORDER = ["plan", "generate", "verify", "visual", "fix", "save", "done"];
 function dot(stage: string, mine: string[]) {

@@ -14,6 +14,7 @@ import { api } from "../api";
 import { applyEvent, runAppBuild, type BuildError, type BuildEvent } from "./build-client";
 import { takeAppHandoff } from "./handoff";
 import Link from "next/link";
+import { LiveCode } from "./LiveCode";
 import { BuildTimeline, emptyLive, type Live } from "./BuildTimeline";
 import { Blueprint, type BlueprintLook } from "./BlueprintView";
 import { blueprintFromSpec, buildProgress, inferBlueprint } from "./blueprint";
@@ -602,6 +603,8 @@ export function AppBuilder() {
             {/* The stage line above (with the timer) already says what is happening, so the timeline does not repeat it. */}
             <BuildTimeline live={!running && !live.spec && current?.spec ? { ...live, stage: "done", spec: current.spec } : { ...live, stageText: "" }} report={current?.report ?? null} running={running} />
           </div>
+          {/* The code as it is written (this build only; saved versions are in the Code tab). */}
+          <LiveCode live={live} running={running} />
           {current?.spec && !running ? (
             <div className={s.refine}>
               <label className={s.refineLabel} htmlFor="kc-refine">Refine</label>
