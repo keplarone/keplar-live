@@ -23,6 +23,7 @@ const nextConfig: NextConfig = {
     // Roblox Cloud checks scripts with the official Luau analyzer (WebAssembly), loaded from vendor/luau at run time.
     "/api/roblox-cloud/worker": ["./vendor/luau/**"],
     "/api/roblox-cloud/jobs/[id]/start": ["./vendor/luau/**"],
+    "/api/health": ["./vendor/luau/**"],
   },
   async redirects() {
     return [
