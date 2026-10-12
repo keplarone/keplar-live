@@ -952,7 +952,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
       ) : null}
       {drawerScrim.mounted ? <div className={s.drawerScrim} onClick={() => setDrawerOpen(false)} aria-hidden="true" {...drawerScrim.motion("fade")} /> : null}
 
-      <div key={state.epoch} className={s.main} inert={drawerOpen || undefined} data-empty={(state.view === "thread" && messages.length === 0) || undefined}>
+      <div key={state.epoch} className={s.main} inert={drawerOpen || undefined} data-view={state.view} data-empty={(state.view === "thread" && messages.length === 0) || undefined}>
         <header className={s.topbar} data-keplar-drag>
           <button ref={menuBtnRef} type="button" className={`${s.iconBtn} ${s.menuBtn}`} onClick={() => setDrawerOpen(true)} aria-label="Open sidebar" aria-expanded={drawerOpen} aria-controls="keplar-sidebar">
             <KeplarSymbol size={22} />
@@ -963,7 +963,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
           </p>
           {sync.memory !== null ? (
             // Minimal pass: a quiet icon, not a chip. The state is in its name and tooltip (and a slash when off); one click opens the setting.
-            <Link href="/account#memory" className={s.memoryChip} data-memory-status="" data-on={sync.memory || undefined} aria-label={sync.memory ? "Memory on" : "Memory off"} title={sync.memory ? "Memory is on: Keplar remembers your name, goals and past chats. Click to manage." : "Memory is off. Click to turn it on."}>
+            <Link href="/account#memory" className={`${s.memoryChip} ${s.phoneHide}`} data-memory-status="" data-on={sync.memory || undefined} aria-label={sync.memory ? "Memory on" : "Memory off"} title={sync.memory ? "Memory is on: Keplar remembers your name, goals and past chats. Click to manage." : "Memory is off. Click to turn it on."}>
               <IconMemory size={16} />
             </Link>
           ) : null}
@@ -984,7 +984,8 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
             </>
           ) : null}
           {state.view === "thread" && thread && thread.messages.length ? <DeleteChatAction variant="header" title={thread.title} onDelete={() => del.request(thread.id)} /> : null}
-          <ThemeToggle className={s.iconBtn} />
+          {/* Phones signed in: the theme lives in the account menu and memory in Settings, so the bar keeps the title room. */}
+          <ThemeToggle className={`${s.iconBtn} ${state.ledger.signedIn ? s.phoneHide : ""}`} />
           <button type="button" className={`${s.iconBtn} ${s.newBtnMobile}`} onClick={() => newThread()} aria-label="New chat">
             <IconPlus size={18} />
           </button>

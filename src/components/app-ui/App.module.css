@@ -1887,3 +1887,20 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
    instead of riding up under it. */
 :global(:root[data-theme]) .createHost { padding-top: 76px; }
 @media (max-width: 899px) { :global(:root[data-theme]) .createHost { padding-top: 68px; } }
+
+/* An open chat: the top bar gets a soft band (the page colour, fading out downward), the twin of the dock's fade at the bottom.
+   The title pill and round actions used to float straight over the thread, so the answer's first lines ran underneath them. */
+.main { --kp-band: 247 248 250; }
+:global(:root[data-theme="dark"]) .main { --kp-band: 11 11 13; }
+.main[data-view="thread"]:not([data-empty]) .topbar::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 -28px 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgb(var(--kp-band) / 0.94) 0%, rgb(var(--kp-band) / 0.86) 62%, rgb(var(--kp-band) / 0) 100%);
+}
+/* Phones (signed in): the theme and memory buttons live in the account menu and Settings, so the bar keeps room for the title. */
+@media (max-width: 640px) {
+  .topbar .phoneHide { display: none !important; }
+}

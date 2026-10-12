@@ -103,6 +103,6 @@ test("agents: schedule notes speak plainly, with no hosting provider or plan nam
 
 test("app top bar: memory status is a quiet icon with its state in the name, one click from its setting", () => {
   const app = readFileSync("src/components/app-ui/KeplarApp.tsx", "utf8");
-  assert.match(app, /href="\/account#memory" className=\{s\.memoryChip\}[^>]*aria-label=\{sync\.memory \? "Memory on" : "Memory off"\}/);
+  assert.match(app, /href="\/account#memory" className=\{`\$\{s\.memoryChip\}[^`]*`\}[^>]*aria-label=\{sync\.memory \? "Memory on" : "Memory off"\}/);
   assert.doesNotMatch(app, /Memory \{sync\.memory \? "on" : "off"\}/, "no text chip");
 });
