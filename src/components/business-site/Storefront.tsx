@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { BUSINESS_TIERS, listPriceFor, priceFor, usd, type BusinessTier } from "@/lib/business/tiers";
 import { companySizes, estimatedUsers } from "@/lib/inquire/schema";
 import { BuildDemo } from "./BuildDemo";
+import { ProductTiles } from "./ProductTiles";
 import { SignOutButton } from "./SignOutButton";
 import { BusinessMark } from "./BusinessMark";
 import s from "./business-site.module.css";
@@ -174,6 +175,7 @@ export function Storefront() {
             {status.state === "out" ? (
               <>
                 <a href={`/signin?next=${encodeURIComponent("/work")}`} className={s.navLink}>Sign in</a>
+                <a href="#contact" className={s.btnDarkSm}>Contact sales</a>
                 <a href={accountUrl()} className={s.btnPrimarySm}>Start Building</a>
               </>
             ) : status.state === "in" ? (
@@ -199,7 +201,7 @@ export function Storefront() {
 
       <section className={s.hero} aria-labelledby="hero-h">
         <a href="#download-app" className={s.chip}><span className={s.chipTag}>Desktop app</span>Windows, macOS and Linux<span aria-hidden="true">→</span></a>
-        <h1 id="hero-h" className={s.h1}>Build anything.{" "}<span className={s.h1Dim}>Let intelligence handle the complexity.</span></h1>
+        <h1 id="hero-h" className={s.h1}>Build anything.{" "}<span className={s.h1Line}>Let intelligence handle the complexity.</span></h1>
         <p className={s.lede}>Coding agents that plan, write, test and preview real software across several AI models, with research, design and automation in the same workspace. You review the result before anything ships.</p>
         {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- /signin is a route handler (the sign-in handoff from keplar.one): it needs a full page load */}
         {signinFailed && status.state === "out" ? <p className={s.notice} role="status">That sign-in didn&apos;t finish (the link expired or was opened in a different browser). <a href="/signin?next=%2Fwork" className={s.textLink}>Sign in again</a></p> : null}
@@ -211,9 +213,24 @@ export function Storefront() {
         {start.sub ? <p className={s.heroSub}>{start.sub}</p> : null}
       </section>
 
-      <div className={s.stage} data-reveal="">
-        <BuildDemo />
+      <div className={s.tiles}>
+        <ProductTiles />
       </div>
+
+      <section className={s.section} aria-labelledby="session-h">
+        <div className={s.container}>
+          <div className={s.headRow} data-reveal="">
+            <div>
+              <p className={s.overline}>Build</p>
+              <h2 id="session-h" className={s.h2}>From a sentence<br />to a reviewed change.</h2>
+            </div>
+            <p className={s.body}>Agents plan the work, read the code, write it, run the tests and open a preview. You get a diff to approve, not a black box.</p>
+          </div>
+          <div data-reveal="">
+            <BuildDemo />
+          </div>
+        </div>
+      </section>
 
       {status.state === "in" && status.active ? (
         <section id="download" className={s.band} aria-labelledby="download-h">
@@ -346,18 +363,32 @@ export function Storefront() {
         </div>
       </section>
 
-      <section id="download-app" className={s.section} aria-labelledby="desktop-h">
+      <section id="download-app" className={s.section} aria-labelledby="start-h">
         <div className={s.container}>
-          <div className={s.desktop} data-reveal="">
-            <div>
-              <p className={s.overline}>Desktop app</p>
-              <h2 id="desktop-h" className={s.h3}>The workspace, in its own window.</h2>
-              <p className={s.body}>Keplar Business runs in the browser at business.keplar.one/work and as a desktop app for Windows, macOS and Linux. The download unlocks with an active plan.</p>
-            </div>
-            <div className={s.heroActions}>
-              {status.state === "in" && status.active ? <a href="#download" className={s.btnPrimary}>Get the download</a> : <a href={start.href} className={s.btnPrimary}>Start Building</a>}
-              <a href="#pricing" className={s.btnGhost}>See plans</a>
-            </div>
+          <h2 id="start-h" className={`${s.h2} ${s.center}`} data-reveal="">Choose how to get started</h2>
+          <div className={s.starts} data-reveal="">
+            <article className={s.start}>
+              <h3 className={s.h4}>Start on your own</h3>
+              <p className={s.muted}>Pick a plan and start building today.</p>
+              <ul className={s.checks}>
+                <li>Every module in every plan</li>
+                <li>Monthly billing, cancel any time</li>
+                <li>Browser and desktop app for Windows, macOS and Linux</li>
+                <li>Usage limits shown in full</li>
+              </ul>
+              {status.state === "in" && status.active ? <a href="#download" className={s.btnPrimary}>Get the desktop app</a> : <a href={start.href} className={s.btnPrimary}>Start Building</a>}
+            </article>
+            <article className={s.start}>
+              <h3 className={s.h4}>Get extra support</h3>
+              <p className={s.muted}>Custom terms and hands-on help for your team.</p>
+              <ul className={s.checks}>
+                <li>SSO / SAML and SCIM</li>
+                <li>Negotiated seats, usage and concurrency</li>
+                <li>Revenue Guard testing swarm</li>
+                <li>Dedicated onboarding</li>
+              </ul>
+              <a href="#contact" className={s.btnGhost}>Contact sales</a>
+            </article>
           </div>
         </div>
       </section>

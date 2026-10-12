@@ -3,8 +3,8 @@ import s from "./business-mark.module.css";
 
 /**
  * The Keplar Business icon (public/business/icon.png) drawn as SVG: the glossy black square, triangle and circle on a
- * transparent background, each with a thin white outline so they read on the dark chrome. Crisp at any size (the outline stays
- * one CSS pixel), and its three shapes move apart a little when the icon (or the link around it) is hovered or focused, then
+ * transparent background with no outline: a brighter lit edge makes the black shapes read on the dark chrome. Its three
+ * shapes move apart a little when the icon (or the link around it) is hovered or focused, then
  * spring back. Still for people who prefer reduced motion.
  */
 export function BusinessMark({ size = 24 }: { size?: number }) {
@@ -16,27 +16,27 @@ export function BusinessMark({ size = 24 }: { size?: number }) {
       <defs>
         {/* Black with a light catching the top-left edge, like the app icon. */}
         <linearGradient id={gloss} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#6e6e70" />
-          <stop offset="0.28" stopColor="#262628" />
-          <stop offset="0.62" stopColor="#0d0d0e" />
-          <stop offset="1" stopColor="#050505" />
+          <stop offset="0" stopColor="#a8a8ac" />
+          <stop offset="0.3" stopColor="#4a4a4e" />
+          <stop offset="0.66" stopColor="#1c1c1e" />
+          <stop offset="1" stopColor="#111112" />
         </linearGradient>
         <radialGradient id={sheen} cx="0.22" cy="0.18" r="0.55">
-          <stop offset="0" stopColor="#ffffff" stopOpacity="0.22" />
+          <stop offset="0" stopColor="#ffffff" stopOpacity="0.3" />
           <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
         </radialGradient>
       </defs>
-      {/* The shapes span 0-398; with no tile around them they fill the icon, with a small margin for the outline. */}
+      {/* The shapes span 0-398; with no tile around them they fill the icon, with a small margin. */}
       <g transform="translate(11 11) scale(1.231)">
         <g className={s.square}>
-          <rect className={s.outline} x="0" y="0" width="229" height="229" rx="70" fill={`url(#${gloss})`} />
+          <rect x="0" y="0" width="229" height="229" rx="70" fill={`url(#${gloss})`} />
           <rect x="0" y="0" width="229" height="229" rx="70" fill={`url(#${sheen})`} />
         </g>
         <g className={s.triangle}>
-          <path className={s.outline} d="M204.95 11.95A7 7 0 0 1 209.9 0L362 0A16 16 0 0 1 378 16L378 168.1A7 7 0 0 1 366.05 173.05Z" fill={`url(#${gloss})`} />
+          <path d="M204.95 11.95A7 7 0 0 1 209.9 0L362 0A16 16 0 0 1 378 16L378 168.1A7 7 0 0 1 366.05 173.05Z" fill={`url(#${gloss})`} />
         </g>
         <g className={s.circle}>
-          <circle className={s.outline} cx="281" cy="281" r="117" fill={`url(#${gloss})`} />
+          <circle cx="281" cy="281" r="117" fill={`url(#${gloss})`} />
           <circle cx="281" cy="281" r="117" fill={`url(#${sheen})`} />
         </g>
       </g>
