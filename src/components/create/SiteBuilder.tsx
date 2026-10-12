@@ -616,7 +616,7 @@ export function SiteBuilder() {
                   </button>
                 ))}
               </div>
-              <label className={w.field}><span>Site name</span><input className={w.input} value={startName} maxLength={60} placeholder="e.g. Fig & Oat Cafe" onChange={(e) => setStartName(e.target.value)} /></label>
+              <label className={w.field}><span>Site name</span><input spellCheck={false} className={w.input} value={startName} maxLength={60} placeholder="e.g. Fig & Oat Cafe" onChange={(e) => setStartName(e.target.value)} /></label>
               <div className={w.row}>
                 <button type="button" className={w.btn} disabled={working || startTpl === "blank"} onClick={() => void startFromTemplate()}>Use this template</button>
                 <span className={w.muted}>{config?.limits.pages} pages · up to {config?.limits.siteKB} KB · {config?.limits.jobsPerDay} AI builds a day</span>
@@ -1009,7 +1009,7 @@ function PublishPane({ detail, verified, onChanged, onDelete }: { detail: Detail
         <p className={b.hint}>Published pages are checked for phishing and malware patterns first, contain no scripts, and carry a “Report abuse” link.</p>
       </div>
       <div className={b.card}>
-        <label className={b.field}><span>Site name</span><input className={s.input} value={name} maxLength={60} onChange={(e) => setName(e.target.value)} /></label>
+        <label className={b.field}><span>Site name</span><input spellCheck={false} className={s.input} value={name} maxLength={60} onChange={(e) => setName(e.target.value)} /></label>
         <label className={b.field}><span>Address</span><span className={b.row}><span className={s.address}>{origin}/s/</span><input className={s.input} value={slug} maxLength={40} disabled={live} onChange={(e) => setSlug(e.target.value.toLowerCase())} aria-label="Address" /></span>{live ? <span className={b.hint}>Unpublish to change the address.</span> : null}</label>
         <div className={b.row}><button type="button" className={`${s.btn} ${s.btnGhost}`} disabled={busy || (slug === site.slug && name === site.name)} onClick={() => run(() => api(`/api/sites/${site.id}`, { method: "PATCH", body: JSON.stringify({ name, slug }) }))}>Save</button></div>
       </div>
