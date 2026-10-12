@@ -193,7 +193,7 @@ export async function control(ws: Workspace, job: RenderJob, action: unknown, de
   if (action === "stop") {
     if (job.status === "uploading") {
       await (await (deps.machines ?? sandboxMachines).get(job.machine?.name ?? "", false).catch(() => null))?.stop().catch(() => undefined);
-      return (await jobs().update(ws.id, job.id, { status: "stopped", stopReason: "Cancelled before the render started. Nothing was charged.", finishedAt: now, updatedAt: now, machineState: "stopped" }))!;
+      return (await jobs().update(ws.id, job.id, { status: "stopped", stopReason: "Canceled before the render started. Nothing was charged.", finishedAt: now, updatedAt: now, machineState: "stopped" }))!;
     }
     if (job.status === "paused") return (await jobs().update(ws.id, job.id, { status: "stopped", stopReason: `Stopped by you. ${job.done.length} frame${job.done.length === 1 ? "" : "s"} rendered.`, finishedAt: now, updatedAt: now }))!;
     if (job.status !== "queued" && job.status !== "rendering") throw new HttpError(409, "This render has already ended.", "ended");
