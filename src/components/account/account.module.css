@@ -100,6 +100,8 @@ button.link { background: none; border: 0; padding: 0; font: inherit; cursor: po
 .searchWrap { position: relative; display: flex; }
 .searchInput { width: 100%; border-radius: var(--r-pill); padding-inline: var(--s-5); padding-right: 76px; min-width: 0; text-overflow: ellipsis; }
 .searchInput::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; display: none; }
+/* The caret sits where the placeholder starts and was drawn through its first letter; nudge only the placeholder so the caret has room. */
+.searchInput::placeholder { text-indent: 3px; }
 .searchClear { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); height: 36px; padding: 0 var(--s-4); border-radius: var(--r-pill); border: 0; background: rgb(var(--rgb-ink) / 0.1); color: var(--c-ink); font: inherit; font-size: var(--t-small); cursor: pointer; }
 .searchClear:hover { background: rgb(var(--rgb-ink) / 0.16); }
 .searchClear:focus-visible { outline: none; }
