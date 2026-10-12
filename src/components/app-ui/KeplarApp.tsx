@@ -944,7 +944,9 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
           onStarter={(text, modes) => { welcomeComposerRef.current?.setModes(modes); welcomeComposerRef.current?.setText(text); welcomeComposerRef.current?.focus(); }}
           onOpenThread={(id) => { setWelcomeBackDone(true); openThread(id); }}
           onOpenChats={() => { setWelcomeBackDone(true); goView("history"); }}
-          onMenu={() => { setWelcomeBackDone(true); if (window.innerWidth < 900) setDrawerOpen(true); }}
+          onView={(v) => { setWelcomeBackDone(true); goView(v); }}
+          onNewChat={() => { setWelcomeBackDone(true); requestAnimationFrame(() => composerRef.current?.focus()); }}
+          onSearch={() => { setWelcomeBackDone(true); setSearchOpen(true); }}
           onClose={() => setWelcomeBackDone(true)}
         />
       ) : null}

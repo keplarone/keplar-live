@@ -60,7 +60,6 @@ test("no electric blue-dominant spam (teal OK: green channel stays close to blue
   const sceneColors: Record<string, string[]> = {
     "src/components/app-ui/App.module.css": ["74,99,184"],
     "src/components/app-ui/studio-mode/studio-mode.module.css": ["150,120,255", "155,123,255"],
-    "src/components/app-ui/WelcomeBack.module.css": ["91,116,201"],
     "src/components/business-app/BusinessWorkspace.tsx": ["167,139,250"],
     "src/components/business-app/cursor.module.css": ["167,139,250"],
     "src/components/create/images.module.css": ["38,92,140"],

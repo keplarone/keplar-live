@@ -1,23 +1,33 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState, type MouseEvent } from "react";
+import { KeplarSymbol } from "@/components/brand";
+import { usePresence } from "@/components/motion/usePresence";
+import { ModelStack } from "@/components/sky/ModelStack";
+import { SkyBackdrop } from "@/components/sky/SkyBackdrop";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { brand, footerNav } from "@/lib/site";
 import type { ComposerModes } from "@/lib/orchestration/types";
-import type { Thread } from "./state/types";
+import { pathForView } from "./app-paths";
+import type { Thread, View } from "./state/types";
+import nav from "@/components/chrome/Nav.module.css";
 import s from "./WelcomeBack.module.css";
 
 /** sessionStorage key: the welcome-back screen shows once per visit (a new tab or window is a new visit). */
 export const WELCOME_BACK_KEY = "keplar-welcome-back";
 
-const MODELS = [
-  { src: "/models/claude.svg", name: "Claude" },
-  { src: "/models/chatgpt.svg", name: "ChatGPT" },
-  { src: "/models/gemini.svg", name: "Gemini" },
-  { src: "/models/deepseek.svg", name: "DeepSeek" },
-  { src: "/models/mistral.svg", name: "Mistral" },
-  { src: "/models/grok.svg", name: "Grok" },
+/** The Menu panel's app places (big links), in the sidebar's order. */
+const PLACES: { view: View; label: string }[] = [
+  { view: "create", label: "Create" },
+  { view: "projects", label: "Projects" },
+  { view: "slides", label: "Slides" },
+  { view: "study", label: "Study" },
+  { view: "history", label: "All chats" },
 ];
+/** Its small links: settings and plans, then the site's Learn column; Company sits in the panel foot. */
+const MORE_LINKS = [{ href: "/account", label: "Settings" }, { href: "/pricing", label: "Plans and pricing" }, ...(footerNav.find((c) => c.heading === "Learn")?.links ?? [])];
+const COMPANY_LINKS = footerNav.find((c) => c.heading === "Company")?.links ?? [];
 
 /** Starters: each fills the composer with a beginning to finish (the person still writes the question), and may switch a mode on. */
 const STARTERS: { label: string; seed: string; tone: string; icon: React.ReactNode; modes?: Partial<ComposerModes> }[] = [
@@ -60,17 +70,28 @@ type Props = {
   onStarter: (text: string, modes: Partial<ComposerModes>) => void;
   onOpenThread: (id: string) => void;
   onOpenChats: () => void;
-  onMenu: () => void;
+  /** A place from the Menu panel (Create, Projects, ...). */
+  onView: (view: View) => void;
+  onNewChat: () => void;
+  onSearch: () => void;
   onClose: () => void;
 };
 
 /**
  * The screen a signed-in person sees when they come back to Keplar (Keplar Canvas, Page 1 "Home"): a greeting by name, one
- * question box, quick starters and the last three chats, over the canvas auras. Anything they do here moves into the app and the
- * screen does not come back until their next visit. Escape or the menu closes it.
+ * question box, quick starters and the last three chats, over the home page's moving backdrop (SkyBackdrop). The top pills are
+ * the site nav's (Nav.module.css): the logo grows to show the wordmark on hover, and Menu morphs into a panel of app places.
+ * Anything they do here moves into the app and the screen does not come back until their next visit. Escape closes the menu
+ * first, then the screen.
  */
-export function WelcomeBack({ firstName, plan, threads, composer, onStarter, onOpenThread, onOpenChats, onMenu, onClose }: Props) {
+export function WelcomeBack({ firstName, plan, threads, composer, onStarter, onOpenThread, onOpenChats, onView, onNewChat, onSearch, onClose }: Props) {
   const [leaving, setLeaving] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const panel = usePresence(menuOpen); // stays mounted while its exit plays
+  const morphRef = useRef<HTMLDivElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const menuOpenRef = useRef(menuOpen);
+  useEffect(() => { menuOpenRef.current = menuOpen; });
   const [now] = useState(() => Date.now());
   const [hour] = useState(() => new Date().getHours());
   const titleId = useId();
@@ -85,37 +106,119 @@ export function WelcomeBack({ firstName, plan, threads, composer, onStarter, onO
   useEffect(() => {
     // Seen once it has shown: a reload in the same visit goes straight to the app.
     markSeen();
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") { e.preventDefault(); markSeen(); onClose(); } };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      e.preventDefault();
+      if (menuOpenRef.current) { setMenuOpen(false); return; }
+      markSeen();
+      onClose();
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
+  // The open menu (as in Nav.tsx): focus its first link, arrow keys move through it, an outside click closes it, focus returns to the pill.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const toggle = toggleRef.current;
+    const first = morphRef.current?.querySelector<HTMLElement>("[data-panel] a");
+    const focusTimer = window.setTimeout(() => first?.focus({ preventScroll: true }), 160);
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.key === "ArrowDown" || e.key === "ArrowUp") && morphRef.current?.contains(document.activeElement)) {
+        const items = [...morphRef.current.querySelectorAll<HTMLElement>("[data-panel] a, [data-panel] button")];
+        if (!items.length) return;
+        e.preventDefault();
+        const i = items.indexOf(document.activeElement as HTMLElement);
+        items[e.key === "ArrowDown" ? (i + 1) % items.length : i <= 0 ? items.length - 1 : i - 1].focus();
+      }
+    };
+    const onDown = (e: PointerEvent) => { if (morphRef.current && !morphRef.current.contains(e.target as Node)) setMenuOpen(false); };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("pointerdown", onDown);
+    return () => {
+      window.clearTimeout(focusTimer);
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("pointerdown", onDown);
+      toggle?.focus({ preventScroll: true });
+    };
+  }, [menuOpen]);
+
+  /** Same-tab clicks stay in the app shell; modified clicks open the real route in a new tab (like the sidebar). */
+  const place = (e: MouseEvent, go: () => void) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    leave(go);
+  };
+  let i = 0; // stagger index for the panel links
+
   return (
     <div className={s.screen} role="dialog" aria-modal="true" aria-labelledby={titleId} data-leaving={leaving || undefined}>
-      <div className={s.auras} aria-hidden="true">
-        <span data-a="sky" /><span data-a="lilac" /><span data-a="ice" /><span data-a="peach" /><span data-a="mint" />
-        <span className={s.dust} data-d="a" /><span className={s.dust} data-d="b" /><span className={s.dust} data-d="c" />
-      </div>
+      <div className={s.sky} aria-hidden="true"><SkyBackdrop /></div>
 
       <header className={s.top}>
-        <button type="button" className={s.round} onClick={() => leave(onOpenChats)} aria-label="Open chats">
-          <svg viewBox="0 0 398 398" width="22" height="22" fill="currentColor" aria-hidden="true"><rect x="0" y="0" width="229" height="229" rx="70" /><path d="M204.95 11.95A7 7 0 0 1 209.9 0L362 0A16 16 0 0 1 378 16L378 168.1A7 7 0 0 1 366.05 173.05Z" /><circle cx="281" cy="281" r="117" /></svg>
+        <button type="button" className={nav.brand} onClick={() => leave(onOpenChats)} aria-label="Open chats">
+          <KeplarSymbol size={22} className={nav.mark} />
+          <span className={nav.word} aria-hidden="true">{brand.name}</span>
         </button>
-        <button type="button" className={s.menu} onClick={() => leave(onMenu)}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M5 9h14M5 15h14" /></svg>
-          Menu
-        </button>
-        {plan === "free" ? <Link href="/pricing" className={s.upgrade} onClick={markSeen}>Upgrade</Link> : <span className={s.topSpacer} />}
+
+        <div ref={morphRef} className={nav.morph} data-open={menuOpen || undefined}>
+          <button ref={toggleRef} type="button" className={nav.toggle} aria-expanded={menuOpen} aria-controls={`${titleId}-menu`} aria-label={menuOpen ? "Close menu" : "Open menu"} onClick={() => setMenuOpen((v) => !v)}>
+            <span className={nav.toggleIcon} aria-hidden="true"><i /><i /></span>
+            <span className={nav.toggleLabel}>{menuOpen ? "Close" : "Menu"}</span>
+          </button>
+
+          <nav id={`${titleId}-menu`} className={nav.panel} aria-label="Keplar" data-panel hidden={!panel.mounted} {...panel.motion("drop")}>
+            <div className={nav.cols}>
+              <div className={nav.col}>
+                <p className={nav.colHead}>{brand.name}</p>
+                <ul className={nav.bigLinks}>
+                  <li style={{ ["--i" as string]: i++ }}>
+                    <Link href="/app" onClick={(e) => place(e, onNewChat)}>New chat</Link>
+                  </li>
+                  {PLACES.map((p) => (
+                    <li key={p.view} style={{ ["--i" as string]: i++ }}>
+                      <Link href={pathForView(p.view)} onClick={(e) => place(e, () => onView(p.view))}>{p.label}</Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className={nav.col}>
+                <p className={nav.colHead}>More</p>
+                <ul className={nav.smallLinks}>
+                  {MORE_LINKS.map((c) => (
+                    <li key={c.href} style={{ ["--i" as string]: i++ }}>
+                      <Link href={c.href} onClick={markSeen}>{c.label}</Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div className={nav.panelFoot} style={{ ["--i" as string]: i++ }}>
+              <button type="button" className={nav.search} onClick={() => leave(onSearch)}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></svg>
+                Search chats
+              </button>
+              <ul className={nav.footLinks}>
+                {COMPANY_LINKS.map((c) => (
+                  <li key={c.href}><Link href={c.href} onClick={markSeen}>{c.label}</Link></li>
+                ))}
+              </ul>
+            </div>
+          </nav>
+        </div>
+
+        <div className={s.actions}>
+          <ThemeToggle className={nav.theme} />
+          {plan === "free" ? <Link href="/pricing" className={nav.cta} onClick={markSeen}>Upgrade</Link> : null}
+        </div>
       </header>
 
       <main className={s.body}>
         <div className={s.hero}>
-          <div className={s.models}>
-            <span className={s.faces}>
-              {MODELS.map((m) => <Image key={m.name} src={m.src} alt={m.name} title={m.name} width={18} height={18} className={s.face} />)}
-            </span>
-            Top AI models, one answer
-          </div>
+          <p className={s.models}>
+            <ModelStack />
+            <span>Top AI models, one answer</span>
+          </p>
           <h1 id={titleId} className={s.title}>
             <span>{dayGreeting(hour)}{firstName ? `, ${firstName}` : ""}</span>
             <span className={s.titleGrey}>What should we look into?</span>
