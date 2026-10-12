@@ -46,7 +46,11 @@ export function literalOf(message: string): { text: string; standing: boolean } 
     if (m && raw.split(/\s+/).length <= 24) text = m[1].trim();
   }
   if (!text || text.length > 60 || /[<>{}]/.test(text)) return null;
-  if (/^(?:it|that|this|so|nothing|something|anything|yes or no|what|why|how|hi to|hello to)\b/i.test(text) && !new RegExp(QUOTE).test(raw)) return null;
+  const quoted = new RegExp(QUOTE).test(raw);
+  // Unquoted words that read as a request, not a literal: "just say who Hassen is" (an indirect question to answer) and
+  // "just say X, not Y" (a correction of an earlier answer). Before this, "who hassen is" came back word for word.
+  if (!quoted && /^(?:it|that|this|so|nothing|something|anything|yes or no|what|whats|what's|who|whom|whose|which|when|where|why|how|if|whether|hi to|hello to)\b/i.test(text)) return null;
+  if (!quoted && /,\s*(?:not|instead of|rather than)\s+\S/i.test(raw)) return null;
   return { text, standing: STANDING.test(raw) };
 }
 

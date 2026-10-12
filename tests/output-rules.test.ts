@@ -51,7 +51,21 @@ test("ordinary requests that happen to contain 'just say' or 'only' are not rule
     "I only want to know who won",
     "Explain how photosynthesis works, like I'm studying for an exam",
     "say hi",
+    // Indirect questions and corrections are requests to answer, never text to echo back.
+    "just say who hassen is, not hussain, fuck hussain",
+    "just say who hassen is",
+    "only say where Paris is",
+    "just say when it opens",
+    "just say if it's safe",
+    "just say whether it rains tomorrow",
+    "just say the capital, not the country",
   ]) assert.equal(activeOutputRule([], t), null, t);
+});
+
+test("a mis-read correction does not linger: the next message is answered normally", () => {
+  const history = [u("who is hussain"), k("Hussain is ..."), u("just say who hassen is, not hussain")];
+  assert.equal(activeOutputRule(history, "just say who hassen is, not hussain"), null);
+  assert.equal(activeOutputRule([...history, u("just say who hassen is, not hussain")], "nevermind"), null);
 });
 
 test("long or markup-looking literals are refused", () => {
