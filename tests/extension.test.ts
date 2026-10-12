@@ -133,6 +133,23 @@ test("keys and SSE parsing", () => {
   assert.equal(second.rest, "");
 });
 
+test("answers render as Markdown blocks built from text: Keplar's one-point-per-line answers, bold, lists, code; never HTML", async () => {
+  const { markdownBlocks, describeAnswer } = await import("../extension/lib.js");
+  const real = JSON.parse(readFileSync("extension/store/sample-answer.json", "utf8")).answer;
+  const blocks = markdownBlocks(real.answer);
+  assert.equal(blocks[0].type, "p");
+  assert.ok(blocks.length >= 6, "each hard-broken line is its own block");
+  const bias = blocks.find((b: { parts: { text: string }[] }) => b.parts.some((p) => p.text === "Self-selection bias"));
+  assert.ok(bias && bias.parts[0].bold === true, "**bold** leads become bold parts");
+  assert.ok(!JSON.stringify(blocks).includes("**"), "no raw Markdown markers left");
+  assert.deepEqual(markdownBlocks("Intro\n\n- one\n- **two**\n1. three\n\n```lua\nprint(1)\n```\n## Next\nuse `x` and *y*").map((b: { type: string }) => b.type), ["p", "li", "li", "li", "code", "h", "p"]);
+  assert.deepEqual(markdownBlocks("<img src=x onerror=alert(1)> **b**")[0].parts, [{ text: "<img src=x onerror=alert(1)> " }, { text: "b", bold: true }], "markup stays text");
+  assert.ok(Array.isArray(describeAnswer(real).blocks));
+  assert.equal(describeAnswer(real).meta, "2 models consulted. 1 credit. Answers can be wrong; agreement isn't proof.", "the API's consulted count (a stand-in is listed twice in models) and singular credit");
+  assert.match(describeAnswer({ answer: "x", usage: { credits: 3 }, models: [{ name: "A" }] }).meta, /^1 model consulted\. 3 credits\./);
+  for (const f of ["extension/popup.js", "extension/lens.js"]) assert.match(readFileSync(f, "utf8"), /renderBlocks\(/, f);
+});
+
 test("describeAnswer and errorText handle the v1 shapes", () => {
   const d = describeAnswer({ answer: "A", agreement: { summary: "3 of 4 agreed" }, disagreement: { headline: "Split on timing", positions: [{ count: 3, of: 4, summary: "Wait", stance: "wait" }, { count: 1, of: 4, summary: "", stance: "Go now" }] }, models: [{ name: "M1" }], usage: { credits: 7 } });
   assert.deepEqual(d.positions, ["3 of 4: Wait", "1 of 4: Go now"]);
@@ -145,8 +162,15 @@ test("describeAnswer and errorText handle the v1 shapes", () => {
 
 test("store listing and README exist, are honest about beta, and nothing was submitted", () => {
   const listing = readFileSync("extension/STORE_LISTING.md", "utf8");
-  assert.match(listing, /DRAFT/);
+  assert.match(listing, /ready to submit/i);
   assert.match(listing, /NOT submitted/i);
+  for (const f of ["screenshot-1-answer.png", "screenshot-2-page-text.png", "screenshot-3-setup.png", "promo-small.png", "promo-marquee.png"]) assert.ok(existsSync(`extension/store/${f}`) && listing.includes(f), f);
+  const png = (f: string) => { const b = readFileSync(f); return [b.readUInt32BE(16), b.readUInt32BE(20)]; };
+  assert.deepEqual(png("extension/store/screenshot-1-answer.png"), [1280, 800]);
+  assert.deepEqual(png("extension/store/promo-small.png"), [440, 280]);
+  assert.deepEqual(png("extension/store/promo-marquee.png"), [1400, 560]);
+  assert.deepEqual(png("extension/icons/icon128.png"), [128, 128]);
+  assert.match(listing, /Remote code:\*\* No/);
   assert.match(listing, /beta/i);
   for (const p of manifest.permissions) assert.ok(listing.includes(`\`${p}\``), `justification for ${p}`);
   assert.ok(!/\b(best|most accurate|always right|guaranteed)\b/i.test(listing), "no inflated claims");

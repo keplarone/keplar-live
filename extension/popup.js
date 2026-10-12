@@ -96,15 +96,39 @@ async function ask() {
   }
 }
 
+/** Builds the answer from blocks (markdownBlocks in lib.js) with DOM APIs only: text never becomes HTML. */
+function renderBlocks(blocks) {
+  const out = [];
+  let list = null;
+  for (const b of blocks) {
+    if (b.type === "li") {
+      if (!list) { list = document.createElement("ul"); out.push(list); }
+      list.append(inlineEl("li", b.parts));
+      continue;
+    }
+    list = null;
+    out.push(b.type === "code" ? inlineEl("pre", b.parts) : inlineEl(b.type === "h" ? "h3" : "p", b.parts));
+  }
+  return out;
+}
+function inlineEl(tag, parts) {
+  const el = document.createElement(tag);
+  for (const p of parts) {
+    const node = p.bold ? document.createElement("strong") : p.em ? document.createElement("em") : p.code ? document.createElement("code") : null;
+    if (node) { node.textContent = p.text; el.append(node); } else el.append(document.createTextNode(p.text));
+  }
+  return el;
+}
+
 function renderAnswer(a) {
   const d = describeAnswer(a);
   $("agreement").textContent = d.agreement;
-  $("answer").textContent = d.answer;
+  $("answer").replaceChildren(...renderBlocks(d.blocks));
   show("differ", Boolean(d.headline));
   $("headline").textContent = d.headline;
   const ul = $("positions");
   ul.replaceChildren(...d.positions.map((t) => { const li = document.createElement("li"); li.textContent = t; return li; }));
-  $("meta").textContent = `${d.models.length ? `${d.models.length} models consulted. ` : ""}${d.credits} credits. Answers can be wrong; agreement isn't proof.`;
+  $("meta").textContent = d.meta;
   show("result", true);
 }
 

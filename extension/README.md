@@ -2,7 +2,7 @@
 
 Manifest V3 extension (Chrome and Edge). Ask Keplar about text you selected, the page you're on, or an area you drag on the current tab. The answer comes back with a summary of where the models agreed and differed. The drag picture stays on the device; only the words are sent, and only when you press Ask.
 
-**Status: BETA.** Built and tested locally. Not listed in any browser store; store text is drafted in `STORE_LISTING.md` and has **not** been submitted anywhere. Firefox and Safari are not supported yet.
+**Status: BETA.** Built and tested locally. Ready for the Chrome Web Store but **not** submitted yet: `STORE_LISTING.md` has every dashboard field, and `extension/store/` has the screenshots and promo tiles (`node scripts/extension-store-assets.mjs` regenerates them from the real extension). Firefox and Safari are not supported yet.
 
 ## Install for testing
 1. `npm run build:extension` writes `extension/dist/keplar-extension-0.1.0-beta.zip` (or load the `extension/` folder directly).

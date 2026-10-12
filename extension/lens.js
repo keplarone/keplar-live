@@ -44,7 +44,9 @@
     ".status.bad{color:var(--err)}",
     ".result{margin-top:10px}",
     ".agreement{font-weight:650;margin:0 0 6px}",
-    ".answer{white-space:pre-wrap;overflow-wrap:anywhere}",
+    ".answer{overflow-wrap:anywhere}",
+    ".answer p,.answer h3{margin:0 0 6px}.answer h3{font-size:13px}.answer ul{color:inherit;margin:0 0 6px}",
+    ".answer code,.answer pre{font:12px ui-monospace,Consolas,monospace;background:var(--panel);border-radius:6px}.answer code{padding:0 4px}.answer pre{padding:8px;white-space:pre-wrap;margin:0 0 6px}",
     "ul{margin:6px 0 0;padding-left:18px;color:var(--muted)}",
     "img{display:block;width:100%;max-height:120px;object-fit:contain;border-radius:10px;margin-top:8px;background:var(--panel)}",
     ":focus-visible{outline:2px solid var(--accent);outline-offset:2px}",
@@ -337,9 +339,30 @@
       catch { busy = false; awaiting = false; go.disabled = false; say("Keplar can't run on this page.", true); }
     }
   }
+  // The answer arrives as blocks (markdownBlocks in lib.js, via the background); built with DOM APIs, never as HTML.
+  function inline(tag, parts) {
+    const node = document.createElement(tag);
+    for (const p of parts || []) {
+      const wrap = p.bold ? "strong" : p.em ? "em" : p.code ? "code" : null;
+      if (wrap) { const w = document.createElement(wrap); w.textContent = String(p.text ?? ""); node.append(w); }
+      else node.append(document.createTextNode(String(p.text ?? "")));
+    }
+    return node;
+  }
+  function renderBlocks(blocks) {
+    const out = [];
+    let list = null;
+    for (const b of blocks || []) {
+      if (b.type === "li") { if (!list) { list = document.createElement("ul"); out.push(list); } list.append(inline("li", b.parts)); continue; }
+      list = null;
+      out.push(inline(b.type === "code" ? "pre" : b.type === "h" ? "h3" : "p", b.parts));
+    }
+    return out;
+  }
   function showAnswer(d) {
     agreement.textContent = d.agreement || "";
-    answer.textContent = d.answer || "";
+    if (Array.isArray(d.blocks)) answer.replaceChildren(...renderBlocks(d.blocks));
+    else answer.textContent = d.answer || "";
     headline.textContent = d.headline || "";
     positions.replaceChildren();
     for (const p of d.positions || []) {
@@ -348,8 +371,7 @@
       positions.append(li);
     }
     differ.hidden = !d.headline;
-    const models = Array.isArray(d.models) ? d.models.length : 0;
-    meta.textContent = `${models ? `${models} models consulted. ` : ""}${Number(d.credits) || 0} credits. Answers can be wrong; agreement isn't proof.`;
+    meta.textContent = typeof d.meta === "string" ? d.meta : "Answers can be wrong; agreement isn't proof.";
     result.hidden = false;
   }
   function close() {

@@ -129,14 +129,61 @@ export const STAGE_TEXT = {
 };
 
 /** Turn an API answer into plain lines for display. Everything is rendered with textContent, never as HTML. */
+/** Bold, inline code and italics inside one line, as text parts (never HTML). */
+function inlineParts(text) {
+  const parts = [];
+  for (const piece of String(text).split(/(\*\*[^*\n]+\*\*|`[^`\n]+`|(?<![*\w])\*[^*\n]+\*(?![*\w]))/)) {
+    if (!piece) continue;
+    if (/^\*\*[^*]+\*\*$/.test(piece)) parts.push({ text: piece.slice(2, -2), bold: true });
+    else if (/^`[^`]+`$/.test(piece)) parts.push({ text: piece.slice(1, -1), code: true });
+    else if (/^\*[^*]+\*$/.test(piece)) parts.push({ text: piece.slice(1, -1), em: true });
+    else parts.push({ text: piece });
+  }
+  return parts;
+}
+
+/**
+ * A Markdown answer as blocks to build with DOM APIs (the extension never injects HTML): headings, paragraphs and list items
+ * with bold, italic and inline-code parts. A line ending in two spaces (a Markdown line break) starts a new block, which is how
+ * Keplar writes one point per line. Code fences become one code block.
+ */
+export function markdownBlocks(md) {
+  const blocks = [];
+  let para = [];
+  const flush = () => { if (para.length) { blocks.push({ type: "p", parts: inlineParts(para.join(" ")) }); para = []; } };
+  const lines = String(md ?? "").replace(/\r\n/g, "\n").split("\n");
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i];
+    if (/^\s*```/.test(raw)) {
+      flush();
+      const code = [];
+      while (++i < lines.length && !/^\s*```/.test(lines[i])) code.push(lines[i]);
+      blocks.push({ type: "code", parts: [{ text: code.join("\n") }] });
+      continue;
+    }
+    const line = raw.trim();
+    if (!line) { flush(); continue; }
+    let m;
+    if ((m = /^#{1,6}\s+(.*)$/.exec(line))) { flush(); blocks.push({ type: "h", parts: inlineParts(m[1]) }); }
+    else if ((m = /^(?:[-*•]|\d+[.)])\s+(.*)$/.exec(line))) { flush(); blocks.push({ type: "li", parts: inlineParts(m[1]) }); }
+    else { para.push(line); if (/ {2}$/.test(raw)) flush(); }
+  }
+  flush();
+  return blocks;
+}
+
 export function describeAnswer(a) {
-  const out = { answer: String(a?.answer ?? ""), agreement: String(a?.agreement?.summary ?? ""), headline: "", positions: [], credits: Number(a?.usage?.credits ?? 0), models: [] };
+  const out = { answer: String(a?.answer ?? ""), blocks: markdownBlocks(a?.answer), agreement: String(a?.agreement?.summary ?? ""), headline: "", positions: [], credits: Number(a?.usage?.credits ?? 0), models: [] };
   const d = a?.disagreement;
   if (d) {
     out.headline = String(d.headline ?? "");
     out.positions = (Array.isArray(d.positions) ? d.positions : []).map((p) => `${p.count} of ${p.of}: ${p.summary || p.stance}`);
   }
   out.models = (Array.isArray(a?.models) ? a.models : []).map((m) => String(m.name));
+  // The API's own count of models consulted (a model that stood in for another is listed twice in `models`).
+  const consulted = Number(a?.agreement?.consulted) || new Set(out.models).size;
+  const plural = (n, one) => `${n} ${one}${n === 1 ? "" : "s"}`;
+  out.meta = `${consulted ? `${plural(consulted, "model")} consulted. ` : ""}${plural(out.credits, "credit")}. Answers can be wrong; agreement isn't proof.`;
   return out;
 }
 
