@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import type { MediaInput } from "@/lib/orchestration/media";
 import { AttachButton, mediaHandlers, MediaTray, useMediaAttach } from "./attach";
+import { count, usd, type Pulse } from "./pulse";
 import s from "./cursor.module.css";
 
 export type HomeMode = "ask" | "research" | "reason";
+export type HomePlace = "dashboard" | "agents" | "approvals" | "settings";
 type Project = { id: string; name: string };
 
 const MODES: { id: HomeMode; label: string; model: string; placeholder: string }[] = [
@@ -14,11 +16,69 @@ const MODES: { id: HomeMode; label: string; model: string; placeholder: string }
   { id: "reason", label: "Reason", model: "Keplar One · Thorough", placeholder: "Describe the decision. Attach documents in the next step" },
 ];
 
+const greeting = () => { const h = new Date().getHours(); return h < 5 ? "Working late" : h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening"; };
+const clock = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+const STATUS_WORD: Record<string, string> = { succeeded: "finished", done: "finished", failed: "failed", error: "failed", running: "is running", waiting: "is waiting for approval" };
+
+/** Four live tiles (agents, approvals, revenue, credits) and the latest agent runs: the account's own numbers, never samples. */
+function Mission({ pulse, onOpen }: { pulse: Pulse | null; onOpen: (place: HomePlace) => void }) {
+  if (!pulse) {
+    return <div className={s.tiles} aria-busy="true">{["Agents", "Approvals", "Revenue", "Credits"].map((t) => <div key={t} className={s.tile} aria-hidden="true"><span className={s.tileLabel}><i />{t}</span><span className={s.tileValue}>—</span></div>)}</div>;
+  }
+  const pct = pulse.compute.total ? Math.min(100, Math.round((pulse.compute.used / pulse.compute.total) * 100)) : null;
+  const max = Math.max(1, ...pulse.traffic.days.map((d) => d.views));
+  const runs = pulse.agents.recentRuns.slice(0, 5);
+  return (
+    <>
+      <div className={s.tiles}>
+        <button type="button" className={s.tile} data-tone="ai" onClick={() => onOpen("agents")}>
+          <span className={s.tileLabel}><i />Agents</span>
+          <span className={s.tileValue}>{count(pulse.agents.active)} <small>live of {count(pulse.agents.total)}</small></span>
+          <span className={s.tileSub}>{pulse.agents.halted ? "All agents are paused" : pulse.agents.total ? "Open to manage schedules and budgets" : "Make your first agent"}</span>
+        </button>
+        <button type="button" className={s.tile} data-tone="warn" data-alert={pulse.approvals.pending ? "" : undefined} onClick={() => onOpen("approvals")}>
+          <span className={s.tileLabel}><i />Approvals</span>
+          <span className={s.tileValue}>{count(pulse.approvals.pending)} <small>waiting</small></span>
+          <span className={s.tileSub}>{pulse.approvals.pending ? "Review before anything goes out" : "Nothing is waiting for you"}</span>
+        </button>
+        <button type="button" className={s.tile} data-tone="ok" onClick={() => onOpen("dashboard")}>
+          <span className={s.tileLabel}><i />Revenue · 30d</span>
+          <span className={s.tileValue}>{usd(pulse.revenue.last30)}</span>
+          {pulse.traffic.days.length ? <span className={s.tileSpark} aria-hidden="true">{pulse.traffic.days.map((d) => <span key={d.day} style={{ height: `${Math.max(8, (d.views / max) * 100)}%` }} />)}</span> : null}
+          <span className={s.tileSub}>{pulse.payments ? `${count(pulse.orders.last30)} orders · ${count(pulse.traffic.last14)} site views (14d)` : "Payments aren't connected yet"}</span>
+        </button>
+        <button type="button" className={s.tile} onClick={() => onOpen("settings")}>
+          <span className={s.tileLabel}><i />AI credits</span>
+          <span className={s.tileValue}>{count(pulse.compute.used)} <small>{pulse.compute.total ? `of ${count(pulse.compute.total)}` : "used"}</small></span>
+          {pct !== null ? <span className={s.tileMeter} aria-hidden="true"><i style={{ width: `${pct}%` }} /></span> : null}
+          <span className={s.tileSub}>{pulse.compute.resetsAt ? `Resets ${new Date(pulse.compute.resetsAt).toLocaleDateString()}` : "This period"}</span>
+        </button>
+      </div>
+      <section className={s.feed} aria-labelledby="home-feed">
+        <div className={s.feedHead}><span id="home-feed">Agent activity</span><button type="button" onClick={() => onOpen("agents")}>Open agents</button></div>
+        {runs.length ? (
+          <ul className={s.feedList}>
+            {runs.map((r) => (
+              <li key={r.id}>
+                <span className={s.feedTime}>{clock(r.startedAt)}</span>
+                <span className={s.feedText}><strong>{r.agentName}</strong> {STATUS_WORD[r.status] ?? r.status}</span>
+                <span className={s.feedTime}>{r.status}</span>
+              </li>
+            ))}
+          </ul>
+        ) : <p className={s.feedEmpty}>No agent runs yet. Agents you make show their work here.</p>}
+      </section>
+    </>
+  );
+}
+
 /**
- * The Business workspace's home (Cursor-style): one centered composer with the project and mode pickers above it, quick starts
- * below, and a tip at the foot. Sending opens a chat (Ask) or starts Deep Research / Reason with the text.
+ * The Business workspace's home, mission control: a greeting, one wide composer with the project and mode pickers above it and
+ * quick starts below, then the account's live tiles and agent activity. Sending opens a chat (Ask) or starts Deep Research /
+ * Reason with the text.
  */
-export function Home({ projects, onSend, onNewProject }: { projects: Project[]; onSend: (mode: HomeMode, text: string, projectId: string | null, media?: MediaInput) => void; onNewProject: () => void }) {
+export function Home({ projects, onSend, onNewProject, company, pulse, onOpen }: { projects: Project[]; onSend: (mode: HomeMode, text: string, projectId: string | null, media?: MediaInput) => void; onNewProject: () => void; company?: string | null; pulse: Pulse | null; onOpen: (place: HomePlace) => void }) {
+  const [hello] = useState(greeting);
   const [mode, setMode] = useState<HomeMode>("ask");
   const [text, setText] = useState("");
   const [projectId, setProjectId] = useState("");
@@ -50,6 +110,10 @@ export function Home({ projects, onSend, onNewProject }: { projects: Project[]; 
 
   return (
     <div className={s.home}>
+      <header className={s.hello}>
+        <p className={s.helloKicker}>Mission control{company ? ` · ${company}` : ""}</p>
+        <h1 className={s.helloTitle}>{hello}. <span>What should we run today?</span></h1>
+      </header>
       <div className={s.composeWrap}>
         <div className={s.pickers}>
           <label className={s.picker}>
@@ -107,7 +171,8 @@ export function Home({ projects, onSend, onNewProject }: { projects: Project[]; 
           <button type="button" className={s.quickBtn} onClick={onNewProject}>New project</button>
         </div>
       </div>
-      <p className={s.tip}>Tip: pick a project above and Keplar uses its instructions, notes and files in every answer.</p>
+      <Mission pulse={pulse} onOpen={onOpen} />
+      <p className={s.tip}>Tip: press Ctrl+K (⌘K on a Mac) to jump anywhere. Pick a project above and Keplar uses its instructions, notes and files in every answer.</p>
     </div>
   );
 }

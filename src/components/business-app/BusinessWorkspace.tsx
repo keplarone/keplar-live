@@ -7,12 +7,14 @@ import { useCallback, useEffect, useState } from "react";
 import type { MediaInput } from "@/lib/orchestration/media";
 import { Analyst } from "./Analyst";
 import { Ask } from "./Ask";
+import { CommandPalette, type Command } from "./CommandPalette";
 import { Dashboard } from "./Dashboard";
-import { Home, type HomeMode } from "./Home";
+import { Home, type HomeMode, type HomePlace } from "./Home";
 import { Projects } from "./Projects";
+import { count, usePulse, type Pulse } from "./pulse";
 import { useBusinessNavigation } from "./useBusinessNavigation";
 import { SIGN_OUT_FAILED, signOutOfBusiness } from "@/components/business-site/sign-out";
-import { isSettingsSection, type SettingsSection } from "./settings-sections";
+import { isSettingsSection, SETTINGS_SECTIONS, type SettingsSection } from "./settings-sections";
 import c from "./cursor.module.css";
 import s from "./workspace.module.css";
 
@@ -84,6 +86,43 @@ const Icon = ({ d, size = 15 }: { d: React.ReactNode; size?: number }) => (
 );
 
 /**
+ * The live status bar over the main area: agents running, approvals waiting and credits used, from the account's own data
+ * (usePulse), plus the local time and the command palette. Each reading opens the place it is about.
+ */
+function StatusBar({ pulse, onAgents, onApprovals, onUsage, onPalette }: { pulse: Pulse | null; onAgents: () => void; onApprovals: () => void; onUsage: () => void; onPalette: () => void }) {
+  const [time, setTime] = useState("");
+  useEffect(() => {
+    const show = () => setTime(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false }));
+    show();
+    const t = window.setInterval(show, 20_000);
+    return () => window.clearInterval(t);
+  }, []);
+  const pct = pulse?.compute.total ? Math.min(100, Math.round((pulse.compute.used / pulse.compute.total) * 100)) : null;
+  return (
+    <div className={c.status}>
+      {pulse ? (
+        <>
+          <button type="button" className={c.statusItem} onClick={onAgents} title="Agents">
+            <span className={c.statusDot} data-on={pulse.agents.active > 0 && !pulse.agents.halted ? "" : undefined} data-tone={pulse.agents.halted ? "off" : undefined} aria-hidden="true" />
+            <span><strong>{count(pulse.agents.active)}</strong> {pulse.agents.halted ? "agents paused" : pulse.agents.active === 1 ? "agent live" : "agents live"}</span>
+          </button>
+          <button type="button" className={c.statusItem} onClick={onApprovals} data-alert={pulse.approvals.pending ? "" : undefined} title="Approvals">
+            <span className={c.statusDot} data-tone={pulse.approvals.pending ? "warn" : undefined} aria-hidden="true" />
+            <span><strong>{count(pulse.approvals.pending)}</strong> to approve</span>
+          </button>
+          <button type="button" className={c.statusItem} data-optional="" onClick={onUsage} title="Plan and usage">
+            <span>Credits <strong>{count(pulse.compute.used)}</strong>{pulse.compute.total ? ` / ${count(pulse.compute.total)}` : ""}</span>
+            {pct !== null ? <span className={c.statusMeter} aria-hidden="true"><i style={{ width: `${pct}%` }} /></span> : null}
+          </button>
+        </>
+      ) : null}
+      <span className={c.statusClock} aria-hidden="true">{time}</span>
+      <button type="button" className={c.kbdBtn} onClick={onPalette} aria-label="Open the command palette" aria-keyshortcuts="Control+K Meta+K">Jump to<kbd>⌘K</kbd></button>
+    </div>
+  );
+}
+
+/**
  * Keplar Business workspace (business.keplar.one/work; the desktop app opens it for Business accounts), laid out like Cursor's
  * agent window: a compact sidebar (new chat, search, the main places, Projects, Recent, account) and a quiet main area with
  * one centered composer. Dark Geist; none of Keplar One's consumer navigation. Only built modules are shown.
@@ -139,6 +178,18 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
   }, []);
   const active = Boolean(acct?.signedIn && acct.active);
   useEffect(() => { if (active) queueMicrotask(loadSide); }, [active, loadSide]);
+  const { pulse } = usePulse(active);
+
+  // Ctrl+K (Cmd+K on a Mac) opens the command palette anywhere in the workspace.
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  useEffect(() => {
+    if (!active) return;
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "k") { e.preventDefault(); setPaletteOpen((x) => !x); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [active]);
 
   const go = (v: View) => { setView(v); writeView(v); closeNavigation(); };
   const toggleSide = () => { if (mobile) { toggleNavigation(); return; } setCollapsed((x) => { try { localStorage.setItem(SIDE_KEY, x ? "open" : "closed"); } catch { /* ignore */ } return !x; }); };
@@ -204,6 +255,18 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
     { id: "research", label: "Deep Research", icon: I.research, view: () => ({ at: "research", key: k() }), current: is("research") },
     { id: "reason", label: "Reason", icon: I.reason, view: () => ({ at: "reason", key: k() }), current: is("reason") },
   ];
+  const openPlace = (p: HomePlace) => go(p === "dashboard" ? { at: "dashboard" } : p === "settings" ? { at: "settings", section: "plan" } : { at: "os", tab: p });
+  /** Everything the command palette can do: the places, quick actions, projects, recent reports, settings and the account. */
+  const COMMANDS: Command[] = [
+    ...PLACES.map((p) => ({ id: `place-${p.id}`, label: p.label, section: "Go to", icon: <Icon d={p.icon} />, run: () => go(p.view()) })),
+    { id: "new-chat", label: "New chat", section: "Actions", keywords: "ask home", icon: <Icon d={<path d="M4 20l4-1 11-11-3-3L5 16l-1 4z" />} />, run: () => go({ at: "home" }) },
+    { id: "new-project", label: "New project", section: "Actions", icon: <Icon d={<path d="M12 5v14M5 12h14" />} />, run: () => go({ at: "projects", projectId: null }) },
+    { id: "keplar-one", label: "Open Keplar One", section: "Actions", icon: <Icon d={<path d="M7 17L17 7M9 7h8v8" />} />, run: () => { window.location.href = ONE; } },
+    ...projects.map((p) => ({ id: `project-${p.id}`, label: p.name, section: "Projects", keywords: "project", icon: <Icon d={<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />} />, run: () => go({ at: "projects", projectId: p.id }) })),
+    ...recent.map((r) => ({ id: `report-${r.id}`, label: r.title, section: "Recent reports", hint: ago(r.createdAt), keywords: r.kind === "research" ? "deep research report" : "reason decision", icon: <Icon d={r.kind === "research" ? I.research : I.reason} />, run: () => go({ at: r.kind, openId: r.id, key: k() }) })),
+    ...SETTINGS_SECTIONS.map((x) => ({ id: `settings-${x.id}`, label: `Settings: ${x.label}`, section: "Settings", keywords: "settings preferences", run: () => go({ at: "settings", section: x.id }) })),
+    { id: "sign-out", label: "Sign out", section: "Account", keywords: "log out leave", run: () => void signOut() },
+  ];
 
   return (
     <div className={`${s.root} ${c.cursor} ${fontClass}`}>
@@ -220,6 +283,9 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
           </div>
 
           <div className={c.sideBrand}><KeplarSymbol size={18} /><span className={c.wordmark}>Keplar <span>Business</span></span></div>
+          <button type="button" className={c.jump} onClick={() => setPaletteOpen(true)} aria-keyshortcuts="Control+K Meta+K">
+            <Icon d={<><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></>} size={14} />Jump to…<kbd>⌘K</kbd>
+          </button>
           <nav className={c.nav} aria-label="Workspace modules">
             <button type="button" className={c.item} aria-current={is("home") || is("ask") ? "page" : undefined} onClick={() => go({ at: "home" })}>
               <Icon d={<path d="M4 20l4-1 11-11-3-3L5 16l-1 4z" />} />New chat
@@ -277,11 +343,12 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
           <header className={c.mainTop}>
             {collapsed || mobile ? <button ref={menuRef} type="button" className={c.iconBtn} onClick={toggleSide} aria-label={mobile ? "Open navigation" : "Show sidebar"} aria-expanded={mobile ? drawerOpen : !collapsed} aria-controls="business-navigation"><Icon d={<><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16" /></>} /></button> : null}
             <span className={c.grow} />
-            <span className={c.viewName}>{PLACES.find((place) => place.current)?.label ?? (view.at === "projects" ? "Projects" : view.at === "ask" ? "Chat" : view.at === "settings" ? "Settings" : "Workspace")}</span>
+            <span className={c.viewName}>{PLACES.find((place) => place.current)?.label ?? (view.at === "projects" ? "Projects" : view.at === "ask" ? "Chat" : view.at === "settings" ? "Settings" : "Mission control")}</span>
+            <StatusBar pulse={pulse} onAgents={() => openPlace("agents")} onApprovals={() => openPlace("approvals")} onUsage={() => openPlace("settings")} onPalette={() => setPaletteOpen(true)} />
             <a className={c.topLink} href={ONE}>Keplar One <Icon d={<path d="M7 17L17 7M9 7h8v8" />} size={12} /></a>
           </header>
           <div className={c.mainBody}>
-            {view.at === "home" ? <Home projects={projects} onSend={onSend} onNewProject={() => go({ at: "projects", projectId: null })} />
+            {view.at === "home" ? <Home projects={projects} onSend={onSend} onNewProject={() => go({ at: "projects", projectId: null })} company={acct.account?.company ?? null} pulse={pulse} onOpen={openPlace} />
               : view.at === "ask" ? <Ask key={view.key} first={view.q} firstMedia={sentMedia?.key === view.key ? sentMedia.media : undefined} projectId={view.projectId} />
               : view.at === "dashboard" ? <Dashboard onOpenProject={(id) => go({ at: "projects", projectId: id })} />
               : view.at === "projects" ? <Projects projectId={view.projectId} onOpen={(id) => { go({ at: "projects", projectId: id }); loadSide(); }} />
@@ -293,6 +360,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
           </div>
         </section>
       </div>
+      <CommandPalette open={paletteOpen} commands={COMMANDS} onClose={() => setPaletteOpen(false)} />
     </div>
   );
 }

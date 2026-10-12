@@ -107,7 +107,7 @@ test("every workspace tab uses the Business theme: the embedded Keplar One scree
     assert.ok(root.includes(token), `workspace root re-points ${token}`);
   }
   // Create redefines its own palette on its root, so it needs its own Business override (only while the workspace is open).
-  assert.match(readFileSync("src/components/create/workspace/ws.module.css", "utf8"), /:global\(html\[data-business-app\]\) \.root \{[^}]*--ws-bg: #141414;/);
+  assert.match(readFileSync("src/components/create/workspace/ws.module.css", "utf8"), /:global\(html\[data-business-app\]\) \.root \{[^}]*--ws-bg: #06090f;/);
   assert.match(readFileSync("src/components/business-app/BusinessWorkspace.tsx", "utf8"), /root\.setAttribute\("data-business-app", ""\)/);
 });
 
