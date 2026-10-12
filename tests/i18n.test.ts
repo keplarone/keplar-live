@@ -121,7 +121,7 @@ test("answers: language of the question first, the saved interface language when
   assert.match(ja, /日本語/);
   assert.match(ja, /language of the question/);
   assert.match(readFileSync("src/app/api/keplar/route.ts", "utf8"), /answerLanguageNote\(request\.headers\.get\("cookie"\)\)/);
-  const account = readFileSync("src/app/(marketing)/account/page.tsx", "utf8");
+  const account = readFileSync("src/components/account/AccountSettings.tsx", "utf8");
   assert.match(account, /sub\("language", null, <LanguageSettings \/>\)/); // Settings > General > Language (minimal pass groups)
   assert.match(readFileSync("src/components/i18n/LanguageSettings.tsx", "utf8"), /<LanguagePicker variant="settings" \/>/);
 });

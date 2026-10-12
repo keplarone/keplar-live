@@ -1,0 +1,39 @@
+/*
+ * Device preferences from Settings (src/lib/prefs.ts). PREFS_SCRIPT sets these <html data-pref-*> attributes before paint; only
+ * non-default values are present, so with no attribute nothing here applies. Chat width lives in App.module.css (.thread).
+ */
+
+/* Text size: the type scale is rem-based (tokens.css), so the root size scales all text and rem spacing together. */
+:root[data-pref-text-size="sm"] { font-size: 93.75%; }
+:root[data-pref-text-size="lg"] { font-size: 112.5%; }
+:root[data-pref-text-size="xl"] { font-size: 125%; }
+
+/* Font */
+:root[data-pref-font="serif"] { --f-sans: ui-serif, "Iowan Old Style", "Charter", Georgia, Cambria, "Times New Roman", serif; }
+:root[data-pref-font="readable"] { --f-sans: "Atkinson Hyperlegible", Verdana, Tahoma, system-ui, sans-serif; }
+:root[data-pref-font="readable"] body { letter-spacing: 0.01em; word-spacing: 0.04em; }
+
+/* Code blocks wrap instead of scrolling sideways */
+:root[data-pref-code-wrap] pre,
+:root[data-pref-code-wrap] pre code { white-space: pre-wrap !important; overflow-wrap: anywhere; }
+
+/* Reduce motion (on top of the OS setting, which motion.css already honors) */
+:root[data-pref-reduce-motion] *,
+:root[data-pref-reduce-motion] *::before,
+:root[data-pref-reduce-motion] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Increase contrast: darker secondary text and stronger hairlines; glass surfaces turn solid. */
+:root[data-pref-contrast][data-theme="light"] { --c-ink-2: #2b2e35; --c-ink-3: #40444d; --c-border: rgb(14 15 18 / 0.22); --c-border-strong: rgb(14 15 18 / 0.4); }
+:root[data-pref-contrast][data-theme="dark"] { --c-ink-2: #d2d4da; --c-ink-3: #b6b9c1; --c-border: rgb(255 255 255 / 0.24); --c-border-strong: rgb(255 255 255 / 0.42); }
+:root[data-pref-contrast] * { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+
+/* Underline links */
+:root[data-pref-underline-links] a:not([role="menuitem"]):not([role="tab"]):not([class*="btn"]):not([class*="Btn"]) { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Always-visible focus rings (the glass UI otherwise shows focus subtly) */
+:root[data-pref-focus-rings] :focus-visible { outline: 2px solid var(--c-ink) !important; outline-offset: 2px !important; }

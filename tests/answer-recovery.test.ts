@@ -233,7 +233,10 @@ test("turn API: another person's key reads as missing; malformed keys are refuse
   const key = newTurnKey();
   await withStub(async () => { await events(await ask({ prompt: PROMPT, turnKey: key }, { cookie: a.cookie })); });
   const get = (cookie: string, k: string) => turnGET(new Request(`https://keplar.one/api/keplar/turn?key=${k}`, { headers: { cookie, origin: "https://keplar.one", "x-forwarded-for": "10.88.210.1" } }));
-  assert.equal(((await (await get(a.cookie, key)).json()) as { status: string }).status, "done");
+  // The stream closes before the run saves how it ended (until then the turn reads as running); wait for the save.
+  let status = "";
+  for (let i = 0; i < 50 && (status = ((await (await get(a.cookie, key)).json()) as { status: string }).status) === "running"; i++) await new Promise((r) => setTimeout(r, 40));
+  assert.equal(status, "done");
   const theirs = (await (await get(b.cookie, key)).json()) as { status: string; answer?: unknown };
   assert.equal(theirs.status, "missing");
   assert.equal(theirs.answer, undefined);

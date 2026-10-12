@@ -58,7 +58,7 @@ test("insert mode is on by default (only an explicit \"0\" disables it): wired i
   assert.match(comp, /if \(!enabled\) return;/); // Insert key ignored while disabled
   assert.match(comp, /execCommand\("insertText"/); // keeps native undo
   assert.match(read("src/styles/glass.css"), /data-typing-mode="ovr"\][^{]*\{[^}]*caret-shape: block/);
-  assert.match(read("src/app/(marketing)/account/page.tsx"), /<TypingSettings \/>/);
+  assert.match(read("src/components/account/AccountSettings.tsx"), /<TypingSettings \/>/);
   assert.match(read("src/components/account/TypingSettings.tsx"), /role="switch"/);
   assert.equal(INSERT_PREF_KEY, "kp-insert-key");
 });

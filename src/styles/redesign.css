@@ -4,21 +4,21 @@
  * Hooks use the readable CSS-module names Next emits ("Name-module__hash__class"), the same way aura.css targets shared modules.
  * Both themes: colours come from the theme tokens. */
 
-#main h1 {
+#main:not([data-kb]) h1 {
   font-weight: var(--w-regular);
   letter-spacing: -0.045em;
   line-height: 1.04;
   text-wrap: balance;
 }
-#main h2 {
+#main:not([data-kb]) h2 {
   font-weight: var(--w-regular);
   letter-spacing: -0.035em;
   text-wrap: balance;
 }
-#main h3 { letter-spacing: -0.02em; }
+#main:not([data-kb]) h3 { letter-spacing: -0.02em; }
 
 /* Kickers / eyebrows / labels above titles: a frosted pill in sentence case */
-#main :is([class*="-module__"][class$="__eyebrow"], [class*="-module__"][class$="__kicker"], [class*="RoutePlaceholder-module__"][class$="__label"], [class*="compare-module__"][class$="__label"]) {
+#main:not([data-kb]) :is([class*="-module__"][class$="__eyebrow"], [class*="-module__"][class$="__kicker"], [class*="RoutePlaceholder-module__"][class$="__label"], [class*="compare-module__"][class$="__label"]) {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -80,11 +80,11 @@
   --button-shadow: 0 1px 2px rgb(0 0 0 / 0.45), 0 10px 24px -12px rgb(0 0 0 / 0.75);
   --button-shadow-hover: 0 1px 2px rgb(0 0 0 / 0.5), 0 14px 30px -12px rgb(0 0 0 / 0.85);
 }
-:is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *) {
+:is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *):not([data-kb] *) {
   border-color: transparent !important;
   box-shadow: var(--button-shadow) !important;
 }
-:is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *):hover:not(:disabled) {
+:is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *):not([data-kb] *):hover:not(:disabled) {
   box-shadow: var(--button-shadow-hover) !important;
 }
 
@@ -109,28 +109,28 @@
   }
 
   /* Buttons: lift on hover, press in on click (same selector family as the shadow rule above) */
-  :is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *) {
+  :is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *):not([data-kb] *) {
     transition: translate 260ms var(--m-ease-spring), scale 160ms var(--m-ease-out), box-shadow 220ms var(--m-ease-out), background-color 160ms ease, color 160ms ease;
   }
-  :is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *):hover:not(:disabled) {
+  :is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *):not([data-kb] *):hover:not(:disabled) {
     translate: 0 -2px;
   }
-  :is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *):active:not(:disabled) {
+  :is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *):not([data-kb] *):active:not(:disabled) {
     translate: 0 0;
     scale: var(--m-press);
     transition-duration: 90ms;
   }
 
   /* Linked cards (blog, docs, prompts, help, showcase, templates, featured post): rise a little on hover */
-  #main a:is([class*="__card"], [class*="__featured"], [class*="__tile"], [class*="__product"]) {
+  #main:not([data-kb]) a:is([class*="__card"], [class*="__featured"], [class*="__tile"], [class*="__product"]) {
     transition: translate 300ms var(--m-ease-spring), box-shadow 240ms var(--m-ease-out);
   }
-  #main a:is([class*="__card"], [class*="__featured"], [class*="__tile"], [class*="__product"]):hover { translate: 0 -4px; }
+  #main:not([data-kb]) a:is([class*="__card"], [class*="__featured"], [class*="__tile"], [class*="__product"]):hover { translate: 0 -4px; }
 
   /* Page entry: the page's top-level blocks ease up into place, a beat apart (the backdrop and nav stay put). Not the Keplar
      Business workspace: it is an app window, and sliding its shell in pushed the bottom 18px off-screen while it ran. */
   @keyframes kp-page-in { from { opacity: 0; translate: 0 18px; } }
-  #main > :not([class*="Sky-module__"][class$="__backdrop"]):not([class*="workspace-module__"]) > :is(header, section, div, article, nav, form):nth-child(-n + 6) {
+  #main:not([data-kb]) > :not([class*="Sky-module__"][class$="__backdrop"]):not([class*="workspace-module__"]) > :is(header, section, div, article, nav, form):nth-child(-n + 6) {
     animation: kp-page-in 560ms var(--m-ease-out) both;
   }
   #main > * > :nth-child(2) { animation-delay: 70ms; }

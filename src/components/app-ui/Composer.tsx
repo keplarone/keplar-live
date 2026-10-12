@@ -35,6 +35,7 @@ import { useVoice } from "./useVoice";
 import { VoiceTalk } from "./VoiceTalk";
 import { armReadback, disarmReadback, stopSpeaking } from "./speech";
 import { voiceStatusText } from "@/lib/voice";
+import { usePrefs } from "@/lib/use-prefs";
 import s from "./Composer.module.css";
 import { usePopupOrigin, usePresence } from "@/components/motion/usePresence";
 import { SlashCommandMenu } from "./SlashCommandMenu";
@@ -153,6 +154,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
 ) {
   const uid = useId();
   const taRef = useRef<HTMLTextAreaElement>(null);
+  const prefs = usePrefs();
   const [text, setTextState] = useState("");
   // The latest text, updated synchronously (typing and dictation both write here), so dictation never mistakes its own write for an edit.
   const textRef = useRef("");
@@ -885,7 +887,9 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
         return;
       }
     }
-    if (e.key === "Enter" && !e.nativeEvent.isComposing && e.keyCode !== 229 && (e.metaKey || e.ctrlKey || !e.shiftKey)) {
+    // Settings → Chat → Send with: Enter (Shift+Enter for a new line) or Ctrl/⌘+Enter (Enter adds a new line).
+    const sendCombo = prefs.sendKey === "mod-enter" ? e.metaKey || e.ctrlKey : e.metaKey || e.ctrlKey || !e.shiftKey;
+    if (e.key === "Enter" && !e.nativeEvent.isComposing && e.keyCode !== 229 && sendCombo) {
       e.preventDefault();
       submit();
     }
@@ -1072,6 +1076,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
           onKeyDown={onKeyDown}
           onPaste={onPaste}
           aria-describedby={`${uid}-hint`}
+          spellCheck={prefs.spellcheck}
           aria-autocomplete={slashOpen ? "list" : undefined}
           aria-controls={slashOpen ? slashListId : undefined}
           aria-expanded={slashOpen || undefined}
@@ -1383,7 +1388,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
             )}
           </div>
         </div>
-        <p id={`${uid}-hint`} className="visually-hidden">Press Enter or Command Enter to send, Shift Enter for a new line. {modes.image ? "Type / for image slash commands. " : "Type / for chat commands such as /slides, /quiz and /approvals. Turn on Create image to use / image commands. "}Paste a link to have Keplar read it. Paste or drop images, video, audio, documents, code or data files to attach them.</p>
+        <p id={`${uid}-hint`} className="visually-hidden">{prefs.sendKey === "mod-enter" ? "Press Control or Command Enter to send; Enter adds a new line. " : "Press Enter or Command Enter to send, Shift Enter for a new line. "}{modes.image ? "Type / for image slash commands. " : "Type / for chat commands such as /slides, /quiz and /approvals. Turn on Create image to use / image commands. "}Paste a link to have Keplar read it. Paste or drop images, video, audio, documents, code or data files to attach them.</p>
         <p id={`${uid}-attach-hint`} className="visually-hidden">{LIMITS_TEXT}. {plan === "free" ? FREE_MEDIA_NOTE : PAID_MEDIA_NOTE}.</p>
       </form>
     </div>

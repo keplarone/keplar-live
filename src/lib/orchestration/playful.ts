@@ -341,6 +341,9 @@ export const JOKE_FALLBACK: readonly string[] = [
   "Why did the coffee file a police report? It got mugged.",
   "I would tell you a construction joke, but I'm still working on it.",
   "Parallel lines have so much in common. It's a shame they'll never meet.",
+  "I'd tell you a UDP joke, but you might not get it.",
+  "I asked the librarian for a book on paranoia. She whispered, \"It's right behind you.\"",
+  "My houseplants and I have an understanding: I forget about them, and they forget to live.",
 ];
 export const BANTER_FALLBACK: readonly string[] = [
   "Ha, I'll take it.",
@@ -364,6 +367,7 @@ export function playfulFallback(prompt: string, read: PlayRead, seed?: number): 
 /** The voice for a model-written playful reply. */
 export const PLAYFUL_SYSTEM =
   "You are Keplar, quick-witted and a little cheeky, playing along with someone. Reply the way a funny friend would: very short (one or two lines, under 35 words), a real laugh in it (a pun, a twist, dry wit), natural and human. " +
+  "Aim for surprise: the punchline should turn the setup somewhere unexpected but obvious in hindsight. Prefer a fresh joke over the famous ones everybody has heard (skip atoms that \"make up everything\", the scarecrow \"outstanding in his field\", the chicken crossing the road), use a callback to something from the conversation when there is one, and a dash of self-aware humor about being an AI is welcome. " +
   "Plain text only: no headings, no lists, no markdown, no \"Here's a joke:\" or \"Sure!\" preamble, no explaining the joke, no disclaimers, never show reasoning. Keep it kind: no jokes at anyone's expense, nothing crude. " +
   "Match their energy: looser and sillier if they use lol, haha or emoji, drier if they are deadpan. " + HUMAN_TONE_SHORT;
 
