@@ -173,6 +173,8 @@ export function KeplarTurn({ message: m, onRetry, onSignal, onAsk, isLast, ledge
       {typingAnswer && !(m.smalltalk || m.answer?.smalltalk) ? (
         <article className={s.answer} aria-busy="true" data-typing="" data-continued={live || undefined}>
           <header className={s.answerHead}><AnswerTitle /></header>
+          {/* A panel's first words are one model's early draft (early-stream.ts): say so, so the checked answer replacing it is no surprise. */}
+          {running && m.mode === "consensus" && !m.answer ? <p className={s.draftNote} role="status" data-early-note="">Early draft from the first model to answer. Keplar is checking it with the others; the final answer will replace it.</p> : null}
           {m.answer?.research ? <ResearchHead research={m.answer.research} /> : null}
           <Markdown source={tw.text} streaming caret cite={citeRenderer(m.answer?.research?.sources ?? m.research?.sources)} />
           <TypingBar text={fullText} />
