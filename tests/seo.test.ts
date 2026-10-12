@@ -38,7 +38,8 @@ test("internal links point at real pages", () => {
 test("sitemap lists the new pages and keeps private and noindexed routes out", () => {
   const urls = sitemap().map((e) => new URL(e.url).pathname);
   for (const p of [...landingPages.map((x) => x.path), ...guides.map((g) => g.path), "/guides"]) assert.ok(urls.includes(p), p);
-  for (const p of ["/app", "/account", "/checkout", "/signin", "/signup", "/compare/perplexity-model-council"]) assert.ok(!urls.includes(p), p);
+  for (const p of ["/app", "/account", "/checkout", "/signin", "/signup"]) assert.ok(!urls.includes(p), p);
+  assert.ok(urls.includes("/compare/perplexity-model-council"), "comparison pages are approved and listed (2026-10-12)");
 });
 
 test("utm tags are validated and appended only to internal links", () => {

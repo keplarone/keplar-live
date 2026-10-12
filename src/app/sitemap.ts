@@ -6,11 +6,12 @@ import { editorialPages } from "@/lib/content/editorial";
 import { lastmodFor } from "@/lib/content/lastmod";
 import { kbPaths } from "@/lib/kb/paths";
 import { SHOWCASE } from "@/lib/create/showcase/data";
+import { comparePages, hub as compareHub } from "@/lib/compare";
 import { localizedSitemapAlternates, localizedSitemapEntries } from "@/lib/i18n/sitemap";
 
 /**
  * Canonical, indexable, 200 public URLs only. /app, /api, auth, checkout and account are excluded (noindex or private);
- * /compare stays out until its competitor facts are approved. lastmod is the real content date (src/lib/content/lastmod.ts).
+ * The /compare pages were approved on 2026-10-12. lastmod is the real content date (src/lib/content/lastmod.ts).
  * changeFrequency and priority are omitted on purpose: Google ignores them.
  */
 export const sitemapPaths: string[] = [
@@ -40,6 +41,8 @@ export const sitemapPaths: string[] = [
   ...landingPages.map((p) => p.path),
   ...guides.map((g) => g.path),
   ...kbPaths().map((p) => p.path), // docs, blog, glossary, prompts, use cases, approved comparisons
+  compareHub.path,
+  ...comparePages.map((p) => p.path),
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

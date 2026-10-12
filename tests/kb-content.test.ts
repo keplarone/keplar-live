@@ -248,7 +248,8 @@ test("sitemap: every knowledge-base page is listed once with a real, non-future 
     assert.equal(lastmodFor(k.path), k.lastmod);
   }
   for (const v of vsPages.filter((x) => !x.approved)) assert.ok(!set.has(`/vs/${v.slug}`), `${v.slug} is pending approval and must stay out of the sitemap`);
-  assert.ok(!sitemapPaths.some((p) => p.includes("search-index") || p === "/compare" || p.startsWith("/compare/")));
+  assert.ok(!sitemapPaths.some((p) => p.includes("search-index")));
+  for (const p of ["/compare", "/compare/perplexity-model-council", "/compare/poe", "/compare/chathub"]) assert.ok(set.has(p), `${p} (approved 2026-10-12) missing from sitemap`);
   // English paths first, then every translated page of every indexable locale (src/lib/i18n/sitemap.ts); every URL listed once.
   const entries = sitemap();
   assert.equal(entries.length, sitemapPaths.length + localizedSitemapEntries(lastmodFor).length);

@@ -3,9 +3,11 @@
  * last checked Sep 27, 2026). Publishing rules applied: [WHEN RETRIEVAL IS LIVE] lines cut
  * (retrieval is not live); internal editorial notes omitted. The marketer's source/date HTML
  * comments are kept below as code comments next to the facts they back.
- * Pages are noindex, out of the sitemap, and unlinked until approved.
+ * Approved and published 2026-10-12 (indexable, in the sitemap). Keplar's own prices are generated from the plan data below.
  */
 import { brand } from "./site";
+import { tiers } from "./tiers";
+import { BUSINESS_TIERS, SELF_SERVE_TIERS } from "./business/tiers";
 
 const K = brand.name;
 /** Company name for titles, H1s and first mentions (Marketer rule: "Keplar One" first, "Keplar" after). */
@@ -43,7 +45,13 @@ export type ComparePage = {
 
 const LAST_CHECKED = "September 27, 2026";
 const panel = `Consensus (percentage and agree/disagree count), Models consulted, Sources (the sources the models cite; ${K} hasn't checked them), Disagreements, Verification, and a Reasoning summary`;
-const plans = "Free $0; Plus $45/mo; Pro $99/mo; Business custom";
+const short = (name: string) => name.replace(/^Keplar\s+/, "");
+const consumer = tiers.filter((t) => t.price !== null).map((t) => `${short(t.name)} $${t.price}${t.price ? "/mo" : ""}`);
+const businessFrom = Math.min(...SELF_SERVE_TIERS.map((id) => BUSINESS_TIERS[id].monthly ?? Infinity));
+/** "Free $0; Lite $20/mo; Plus $45/mo; Pro $99/mo; Business from $199.99/mo", from tiers.ts and business/tiers.ts. */
+export const keplarPlans = [...consumer, `Business from $${businessFrom.toFixed(2)}/mo`].join("; ");
+const plans = keplarPlans;
+const plansFreeNote = keplarPlans.replace(/^Free \$0/, "Free $0 (free open models only)");
 
 export const perplexity: ComparePage = {
   slug: "perplexity-model-council",
@@ -89,7 +97,7 @@ export const perplexity: ComparePage = {
       caption: `${K} and Perplexity Model Council compared`,
       head: ["", KO, "Perplexity Model Council"],
       rows: [
-        ["Price to use it", `Free $0 (free open models only); Plus $45/mo; Pro $99/mo; Business custom`, "Web/iOS: Perplexity Max, $200/mo or $2,000/yr, or Enterprise Max. Not on Free, Pro, Education Pro, or Enterprise Pro. Computer version on all paid plans, charged in credits. Monthly Model Council query cap on web/iOS."],
+        ["Price to use it", plansFreeNote, "Web/iOS: Perplexity Max, $200/mo or $2,000/yr, or Enterprise Max. Not on Free, Pro, Education Pro, or Enterprise Pro. Computer version on all paid plans, charged in credits. Monthly Model Council query cap on web/iOS."],
         // Confirmed 2026-09-27: https://www.perplexity.ai/help-center/en/articles/11680686-perplexity-max ($200/mo or
         // $2,000/yr; last modified Sep 14, 2026) and https://www.perplexity.ai/help-center/en/articles/13641704-what-is-model-council
         // (plan availability, monthly cap, Computer on all paid plans). Read via search index; direct fetch 403.
@@ -322,7 +330,7 @@ export const hub: ComparePage = {
       caption: "Multi-model AI tools at a glance",
       head: ["Tool", "Type", "One synthesized answer?", "Starting paid price", "Best for"],
       rows: [
-        [KO, "Council", "Yes; disagreement summary, shows consensus level", "Free $0; Plus $45/mo", "One weighed answer, with models picked per question"],
+        [KO, "Council", "Yes; disagreement summary, shows consensus level", plans, "One weighed answer, with models picked per question"],
         ["Perplexity Model Council", "Council (inside Perplexity)", "Yes; shows agreement and differences", "Perplexity Max $200/mo (web/iOS)", "Perplexity Max subscribers who want search-grounded answers"],
         ["Microsoft 365 Copilot Researcher: Council", "Council (enterprise preview)", "Yes; full reports plus a summary of agreement and divergence", "Microsoft Copilot license + Frontier program", "Microsoft 365 enterprises"],
         ["MultipleChat", "Workspace with several modes", "Yes, in Ensemble mode; also Compare, Debate, and more", "Pro $20/mo", "People who want many modes and team plans"],
@@ -340,7 +348,7 @@ export const hub: ComparePage = {
       name: KO,
       text: `${KO}'s engine can route across multiple model families, and picks the models per question based on need and cost. It gives you one synthesized answer. The synthesizer weighs the evidence and reasoning behind each response rather than taking a majority vote. A disagreement summary shows which models split and what they concluded differently, and every answer shows its consensus percentage and agree/disagree count. The answer panel also lists the models consulted, the sources the models cite, verification, and a reasoning summary. Web only, responsive on mobile browsers.`,
       bullets: [
-        { b: "Plans:", text: "Free $0 (free open models only), Plus $45/mo (includes Deep Research for occasional use), Pro $99/mo, Business custom." },
+        { b: "Plans:", text: `${plansFreeNote}. Plus includes Deep Research for occasional use.` },
         { b: "Why pick it:", text: "a model council for $45, not $200, with a disagreement summary that shows where models split, and no need to pick models yourself." },
         { b: "Consider another tool if:", text: "you want to read every model's full reply side by side, want native apps, or want the cheapest consensus app." },
       ],
