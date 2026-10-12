@@ -5,7 +5,7 @@ import { signIn } from "./helpers/session";
 import { POST as keplarPOST } from "@/app/api/keplar/route";
 import { GET as turnGET, POST as turnPOST } from "@/app/api/keplar/turn/route";
 import { claimTurn, finishTurn, readTurn, TURN_STALE_MS, TURN_TTL_MS, turnOwner } from "@/lib/orchestration/turn-recovery";
-import { newDeviceId } from "@/lib/usage/daily";
+import { newDeviceId, readDeviceId } from "@/lib/usage/daily";
 import { newTurnKey, pollTurn } from "@/components/app-ui/state/recovery";
 import { collection } from "@/lib/create/platform/store";
 import type { KeplarEvent } from "@/lib/orchestration/types";
@@ -118,6 +118,9 @@ test("route: signed out with the device cookie recovers; without it, or in a pri
   await withStub(async () => {
     const key = newTurnKey();
     await events(await ask({ prompt: PROMPT, turnKey: key }, { cookie }));
+    // The stream closes before the run saves how it ended (a reconnect in between gets 409 and polls); wait for the save.
+    const owner = turnOwner({ id: "anon", anonymous: true }, readDeviceId(cookie))!;
+    for (let i = 0; i < 100 && (await readTurn(owner, key))?.status !== "done"; i++) await new Promise((r) => setTimeout(r, 20));
     assert.equal((await ask({ prompt: PROMPT, turnKey: key }, { cookie })).headers.get("x-keplar-turn"), "replayed");
     const noDevice = newTurnKey();
     await events(await ask({ prompt: PROMPT, turnKey: noDevice }));
