@@ -6,6 +6,7 @@ import type commonEn from "./messages/common/en";
 import type clientEn from "./messages/client/en";
 import type marketingEn from "./messages/marketing/en";
 import type appEn from "./messages/app/en";
+import type consentEn from "./messages/consent/en";
 
 type Widen<T> = T extends string ? string : T extends readonly (infer U)[] ? Widen<U>[] : T extends object ? { [K in keyof T]: Widen<T[K]> } : T;
 /** Objects may omit keys; arrays are all-or-nothing (a translated list replaces the English one only when it has the same length). */
@@ -25,3 +26,7 @@ export type ClientCatalog = DeepPartial<ClientMessages>;
 export type MarketingCatalog = DeepPartial<MarketingMessages>;
 export type AppCatalog = DeepPartial<AppMessages>;
 export type Catalog<N extends Namespace> = DeepPartial<Messages[N]>;
+
+/** The cookie banner's copy: its own tiny namespace (not in NAMESPACES), loaded on every page in the page's language. */
+export type ConsentMessages = Widen<typeof consentEn>;
+export type ConsentCatalog = DeepPartial<ConsentMessages>;

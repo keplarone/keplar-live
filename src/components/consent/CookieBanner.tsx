@@ -6,6 +6,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { acceptAll, CONSENT_OPEN_EVENT, readConsent, rejectAll, saveConsent } from "@/lib/consent";
 import s from "./CookieBanner.module.css";
 import { usePresence } from "@/components/motion/usePresence";
+import { useConsentText } from "@/lib/i18n/consent-client";
+import { localeInfo } from "@/lib/i18n/locales";
 
 /**
  * First-visit cookie choice. Non-modal (never traps focus or blocks the page), fixed-position (no layout shift),
@@ -20,6 +22,8 @@ export function CookieBanner() {
   const path = usePathname() ?? "";
   const region = useRef<HTMLDivElement>(null);
   const wasOpenedByUser = useRef(false);
+  // In the page's language (or the app's saved one); a non-English banner waits for its strings instead of flashing English.
+  const { t, ready, locale } = useConsentText();
 
   useEffect(() => {
     const rec = readConsent();
@@ -50,39 +54,40 @@ export function CookieBanner() {
   }, []);
 
   if (path === "/embed" || path.startsWith("/embed/")) return null; // framed widget on other sites: essential cookies only, no banner inside someone else's page
-  if (!banner.mounted) return <p className={s.sr} role="status" aria-live="polite">{status}</p>;
+  if (!banner.mounted || !ready) return <p className={s.sr} role="status" aria-live="polite">{status}</p>;
+  const info = localeInfo(locale);
   const placement = path.startsWith("/app") ? "top" : path.startsWith("/welcome") ? "side" : "bottom";
   return (
-    <div ref={region} className={s.banner} data-placement={placement} {...banner.motion(placement === "top" ? "drop" : "toast")} role="region" aria-labelledby="cookie-title" onKeyDown={(e) => { if (e.key === "Escape" && wasOpenedByUser.current) setOpen(false); }}>
-      <h2 id="cookie-title" className={s.title}>Cookies</h2>
+    <div ref={region} className={s.banner} data-placement={placement} {...banner.motion(placement === "top" ? "drop" : "toast")} role="region" aria-labelledby="cookie-title" lang={info?.code ?? "en"} dir={info?.dir ?? "ltr"} onKeyDown={(e) => { if (e.key === "Escape" && wasOpenedByUser.current) setOpen(false); }}>
+      <h2 id="cookie-title" className={s.title}>{t.title}</h2>
       <p className={s.text}>
-        Keplar always uses the cookies it needs to work: sign-in, security, your plan and usage counts, and your theme. Optional page-view and speed analytics stay off unless you allow them. Keplar also counts visits and who is online now on its own server without cookies or storing your IP address.{" "}
-        <Link href="/privacy#cookies" className={s.link}>Details</Link>
+        {t.text}{" "}
+        <Link href="/privacy#cookies" className={s.link}>{t.details}</Link>
       </p>
       {custom ? (
         <fieldset className={s.cats}>
-          <legend className={s.sr}>Cookie categories</legend>
+          <legend className={s.sr}>{t.categories}</legend>
           <label className={s.cat}>
             <input type="checkbox" checked disabled />
-            <span><b>Essential</b> Always on. Sign-in session, security, plan and usage counters, theme, and this choice.</span>
+            <span><b>{t.essential}</b> {t.essentialDesc}</span>
           </label>
           <label className={s.cat}>
             <input type="checkbox" checked={analytics} onChange={(e) => setAnalytics(e.target.checked)} />
-            <span><b>Analytics</b> Page views, button clicks and page speed on the public site (Vercel), plus which page a visit started on and whether it led to a sign-up or answer. Never your questions. No ads, no cross-site tracking.</span>
+            <span><b>{t.analytics}</b> {t.analyticsDesc}</span>
           </label>
         </fieldset>
       ) : null}
       <div className={s.actions}>
         {custom ? (
-          <button type="button" className={s.primary} onClick={() => done({ analytics }, "Cookie choices saved.")}>Save choices</button>
+          <button type="button" className={s.primary} onClick={() => done({ analytics }, t.saved)}>{t.save}</button>
         ) : (
           <>
-            <button type="button" className={s.primary} onClick={() => done(acceptAll(), "All cookies accepted.")}>Accept all</button>
-            <button type="button" className={s.secondary} onClick={() => done(rejectAll(), "Only essential cookies in use.")}>Reject non-essential</button>
-            <button type="button" className={s.tertiary} onClick={() => setCustom(true)} aria-expanded={custom}>Customize</button>
+            <button type="button" className={s.primary} onClick={() => done(acceptAll(), t.accepted)}>{t.acceptAll}</button>
+            <button type="button" className={s.secondary} onClick={() => done(rejectAll(), t.rejected)}>{t.reject}</button>
+            <button type="button" className={s.tertiary} onClick={() => setCustom(true)} aria-expanded={custom}>{t.customize}</button>
           </>
         )}
-        {custom ? <button type="button" className={s.tertiary} onClick={() => done(rejectAll(), "Only essential cookies in use.")}>Reject non-essential</button> : null}
+        {custom ? <button type="button" className={s.tertiary} onClick={() => done(rejectAll(), t.rejected)}>{t.reject}</button> : null}
       </div>
     </div>
   );
