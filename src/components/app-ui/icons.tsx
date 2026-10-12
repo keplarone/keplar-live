@@ -71,7 +71,8 @@ export const IconAsk = (p: P) => <Svg {...p}><path d="M3 4.5A1.5 1.5 0 0 1 4.5 3
 export const IconMemory = (p: P) => <Svg {...p}><circle cx="8" cy="8" r="1.4" /><circle cx="3.6" cy="4.4" r="1" /><circle cx="12.4" cy="5" r="1" /><circle cx="11" cy="12.2" r="1" /><path d="M4.4 5 7 7.2M11.5 5.7 9.2 7.3M9.8 11.4 8.8 9.2" /></Svg>;
 export const IconApprovals = (p: P) => <Svg {...p}><rect x="2.5" y="2.5" width="11" height="11" rx="2" /><path d="m5.5 8.2 1.8 1.8 3.2-3.6" /></Svg>;
 export const IconUsage = (p: P) => <Svg {...p}><path d="M3 13V8.5M7 13V4M11 13V6.5M14 13H2" /></Svg>;
-export const IconSettings = (p: P) => <Svg {...p}><path d="M2.5 5h6M11.5 5h2M2.5 11h2M7.5 11h6" /><circle cx="10" cy="5" r="1.5" /><circle cx="6" cy="11" r="1.5" /></Svg>;
+// Gear: drawn on a 24px grid and scaled to 16, so the stroke is widened to keep the 1.4px hairline.
+export const IconSettings = (p: P) => <Svg {...p}><g transform="scale(0.6667)" strokeWidth={2.1}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></g></Svg>;
 /** Roblox Studio mode: a tilted block with a window cut in it. */
 export const IconRobloxStudio = (p: P) => <Svg {...p}><path d="M4.2 2.6 13.4 4.2 11.8 13.4 2.6 11.8Z" /><path d="M7 7.1 9.1 7.5 8.7 9.6 6.6 9.2Z" /></Svg>;
 export const IconDeploy = (p: P) => <Svg {...p}><path d="M8 13.5V6M5 8.5 8 5.5l3 3" /><path d="M3 3h10" /></Svg>;
