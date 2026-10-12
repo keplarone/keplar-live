@@ -1,12 +1,16 @@
 /**
  * Typing animation maths (pure: no DOM, no React), shared by the hook and the tests.
  *
- * The answer text arrives faster (and in bigger lumps) than anyone can read. The reveal
- * runs on its own clock: a steady base pace that speeds up in proportion to how far the
- * stream is ahead (so it always catches up within a few seconds), eased so the speed
- * never jumps, with a short natural pause at sentence ends while it is not catching up.
- * Words appear whole (the visible text is always cut at a word boundary), which keeps
- * half-typed words from hopping to the next line.
+ * The reveal smooths a streamed answer so text flows instead of landing in lumps, but it never
+ * holds back text that has arrived: it keeps a steady base pace while it is close behind the
+ * stream, speeds up in proportion to how far the stream is ahead (a burst is cleared in about
+ * half a second), and once the stream has finished the rest appears within a few frames.
+ * It used to cap at 480 characters a second, so a 3,000-character answer that arrived at once
+ * took six seconds or more to "type" while it was already complete: a delay that made Keplar
+ * look slower than it is. Speed changes are eased so they never jump, with a short natural
+ * pause at sentence ends only while the reveal is close behind a live stream. Words appear
+ * whole (the visible text is always cut at a word boundary), which keeps half-typed words
+ * from hopping to the next line.
  */
 
 import { hasMathHint, maskMath, unmaskMath } from "@/lib/math/extract";
@@ -14,10 +18,12 @@ import { hasMathHint, maskMath, unmaskMath } from "@/lib/math/extract";
 export const TYPING = {
   /** Steady pace when the stream is not ahead, characters per second. */
   baseCps: 58,
-  /** Upper bound while catching up. */
-  maxCps: 480,
-  /** The backlog is cleared in about this long (before the cap). */
-  catchUpSeconds: 1.2,
+  /** Upper bound while catching up (high enough that a burst never queues for long). */
+  maxCps: 6000,
+  /** A backlog in a live stream is cleared in about this long (before the cap). */
+  catchUpSeconds: 0.5,
+  /** Once the stream has finished, whatever is left appears within about this long. */
+  doneSeconds: 0.3,
   /** Time constant for easing speed changes. */
   smoothingMs: 240,
   /** Pause after . ! ? : when the reveal is close behind the stream. */
@@ -38,26 +44,31 @@ export function frameCap(prevDtMs: number, dtMs: number): number {
 export type TypingState = { pos: number; cps: number; pauseMs: number };
 export const initialTyping = (pos = 0): TypingState => ({ pos, cps: TYPING.baseCps, pauseMs: 0 });
 
-/** Characters per second the reveal is aiming for. */
-export function desiredCps(backlog: number): number {
+/** Characters per second the reveal is aiming for. `done`: the stream has finished, so nothing is waiting to arrive. */
+export function desiredCps(backlog: number, done = false): number {
   if (backlog <= 0) return TYPING.baseCps;
+  if (done) return Math.max(TYPING.baseCps, backlog / TYPING.doneSeconds);
   return Math.min(TYPING.maxCps, Math.max(TYPING.baseCps, backlog / TYPING.catchUpSeconds));
 }
 
-/** Advance the reveal by one frame. `text` is the full target (used for sentence pauses). */
-export function stepTyping(state: TypingState, dtMs: number, text: string, maxFrameMs: number = TYPING.maxFrameMs): TypingState {
+/**
+ * Advance the reveal by one frame. `text` is the full target (used for sentence pauses); `done` says the stream has finished:
+ * the remainder is shown at the finishing pace with no sentence pauses (nothing is held back once it has all arrived).
+ */
+export function stepTyping(state: TypingState, dtMs: number, text: string, maxFrameMs: number = TYPING.maxFrameMs, done = false): TypingState {
   const len = text.length;
   if (state.pos >= len) return { ...state, pos: len, pauseMs: 0 };
   const dt = Math.min(Math.max(dtMs, 0), maxFrameMs);
-  if (state.pauseMs > 0) return { ...state, pauseMs: Math.max(0, state.pauseMs - dt) };
+  if (state.pauseMs > 0 && !done) return { ...state, pauseMs: Math.max(0, state.pauseMs - dt) };
   const backlog = len - state.pos;
-  const want = desiredCps(backlog);
-  const cps = state.cps + (want - state.cps) * (1 - Math.exp(-dt / TYPING.smoothingMs));
+  const want = desiredCps(backlog, done);
+  // Finishing: no easing up to speed (the eased start is what made a finished answer crawl for its first second).
+  const cps = done ? Math.max(state.cps, want) : state.cps + (want - state.cps) * (1 - Math.exp(-dt / TYPING.smoothingMs));
   const before = Math.floor(state.pos);
   const pos = Math.min(len, state.pos + (cps * dt) / 1000);
   let pauseMs = 0;
   const after = Math.floor(pos);
-  if (after > before && backlog < TYPING.pauseBelowBacklog && after < len) {
+  if (!done && after > before && backlog < TYPING.pauseBelowBacklog && after < len) {
     // A sentence end between the old and new position, followed by whitespace: breathe.
     for (let i = before; i < after; i++) {
       if (/[.!?:]/.test(text[i]) && /\s/.test(text[i + 1] ?? "")) {

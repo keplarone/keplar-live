@@ -25,8 +25,8 @@ const reducedNow = () => Boolean(window.matchMedia?.(QUERY).matches);
 /**
  * Word-level typing reveal for streamed answers (maths in src/lib/typing.ts).
  *
- * - `target` is the text received so far; `done` says the stream has finished (the rest of the
- *   backlog still types out, at the catch-up speed, unless `skip()` is called).
+ * - `target` is the text received so far; `done` says the stream has finished (whatever is left
+ *   appears within about 0.3 s: text that has arrived is never held back to look like typing).
  * - `live` false (a stored answer, an old thread) renders the target as is, with no animation.
  * - prefers-reduced-motion, a hidden tab, `skip()` and Esc (once the stream is done) show everything at once.
  * - The Markdown is healed for the partial text so no raw markers flash and nothing changes shape later.
@@ -68,7 +68,7 @@ export function useTypewriter(target: string, opts: { live: boolean; done: boole
       setPos(t.length);
     };
     const tick = (now: number) => {
-      const { target: t } = latest.current;
+      const { target: t, done: streamDone } = latest.current;
       if (document.hidden) {
         jumpToEnd();
         raf.current = requestAnimationFrame(tick);
@@ -82,7 +82,7 @@ export function useTypewriter(target: string, opts: { live: boolean; done: boole
       }
       const dt = lastT.current ? now - lastT.current : 16;
       lastT.current = now;
-      motion.current = stepTyping(motion.current, dt, t, frameCap(lastDt.current, dt));
+      motion.current = stepTyping(motion.current, dt, t, frameCap(lastDt.current, dt), streamDone);
       lastDt.current = dt;
       setPos((cur) => (Math.abs(cur - motion.current.pos) < 0.01 ? cur : motion.current.pos));
       raf.current = requestAnimationFrame(tick);

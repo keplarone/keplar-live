@@ -31,16 +31,26 @@ test("reveal advances smoothly and never overshoots", () => {
   assert.equal(st.pos, TEXT.length);
 });
 
-test("catches up: a long backlog is cleared in a few seconds, not at reading speed", () => {
+test("catches up: a burst in a live stream is cleared in about a second, not at reading speed", () => {
   const long = "word ".repeat(400); // 2000 chars
-  const st = run(long, 7000);
-  assert.equal(st.pos, long.length, "2000 chars revealed within 7 s");
-  assert.ok(TYPING.baseCps * 7 < 450, "at the base pace it would still be far from done");
+  const st = run(long, 1200);
+  assert.equal(st.pos, long.length, "2000 chars revealed within 1.2 s");
+  assert.ok(TYPING.baseCps * 1.2 < 100, "at the base pace it would still be far from done");
+});
+
+test("a finished answer is never held back: the rest appears within a few frames", () => {
+  const long = "Sentence one. Sentence two! ".repeat(110); // ~3000 chars, sentence ends everywhere
+  let st = initialTyping(0);
+  let ms = 0;
+  for (; ms < 2000 && st.pos < long.length; ms += 16) st = stepTyping(st, 16, long, TYPING.maxFrameMs, true);
+  assert.equal(st.pos, long.length);
+  assert.ok(ms <= TYPING.doneSeconds * 1000 + 50, `finished in ${ms} ms`);
+  assert.equal(stepTyping({ pos: 10, cps: 100, pauseMs: 100 }, 16, long, TYPING.maxFrameMs, true).pauseMs, 0, "no sentence pauses once it has all arrived");
 });
 
 test("a stalled frame (busy tab) does not teleport the reveal", () => {
   const st = stepTyping(initialTyping(0), 5000, "x".repeat(2000));
-  assert.ok(st.pos < 100);
+  assert.ok(st.pos < 200, "one hiccup reveals at most a tenth of a long backlog");
 });
 
 test("sentence pause applies only when close behind the stream", () => {

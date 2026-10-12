@@ -166,7 +166,7 @@ export function KeplarTurn({ message: m, onRetry, onSignal, onAsk, isLast, ledge
           <header className={s.answerHead}><AnswerTitle /></header>
           {running && m.mode === "consensus" ? <p className={s.draftNote} role="status" data-early-note="">Early draft from the first model to answer. Keplar is checking it with the others; the final answer will replace it.</p> : null}
           <Markdown source={tw.text} streaming caret />
-          <TypingBar text={fullText} onSkip={tw.skip} canSkip={!running} />
+          <TypingBar text={fullText} />
         </article>
       ) : null}
 
@@ -175,7 +175,7 @@ export function KeplarTurn({ message: m, onRetry, onSignal, onAsk, isLast, ledge
           <header className={s.answerHead}><AnswerTitle /></header>
           {m.answer?.research ? <ResearchHead research={m.answer.research} /> : null}
           <Markdown source={tw.text} streaming caret cite={citeRenderer(m.answer?.research?.sources ?? m.research?.sources)} />
-          <TypingBar text={fullText} onSkip={tw.skip} canSkip={!running} />
+          <TypingBar text={fullText} />
         </article>
       ) : null}
 
@@ -272,7 +272,8 @@ function NoticeCard({ children }: { children: ReactNode }) {
  * Shown under a typing answer: Copy always copies the full text (not the part revealed so far),
  * and Skip shows the rest at once once the stream has finished.
  */
-function TypingBar({ text, onSkip, canSkip }: { text: string; onSkip: () => void; canSkip: boolean }) {
+/** While an answer streams in: copy the full text so far. (No "Skip": once the stream ends the rest appears within ~0.3 s.) */
+function TypingBar({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
     try {
@@ -288,9 +289,6 @@ function TypingBar({ text, onSkip, canSkip }: { text: string; onSkip: () => void
       <button type="button" className={s.iconBtn} onClick={copy} aria-label={copied ? "Copied answer" : "Copy full answer"}>
         {copied ? <IconCheck size={15} /> : <IconCopy size={15} />}
       </button>
-      {canSkip ? (
-        <button type="button" className={s.textBtn} onClick={onSkip}>Skip</button>
-      ) : null}
     </div>
   );
 }
