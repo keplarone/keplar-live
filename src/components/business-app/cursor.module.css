@@ -51,10 +51,10 @@
 .mainTop { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px 0 18px; flex: none; border-bottom: 1px solid var(--w-line); background: var(--w-bg); }
 .viewName { order: -1; color: var(--w-ink); font-size: 13px; font-weight: 500; }
 .sideBrand { display: flex; align-items: center; gap: 9px; padding: 4px 10px 12px; color: var(--w-ink); }
-/* The mark is drawn in the text colour on the sidebar itself: no tile behind it. */
+/* The mark sits on the sidebar itself: no tile behind it, only its thin white outline. */
 .sideBrand svg { flex: none; }
-/* Wordmark: IBM Plex Sans, "Keplar" semibold with "Business" lighter and muted, like a product lockup ("Claude Code"). */
-.wordmark { font-family: var(--biz-brand), "IBM Plex Sans", var(--biz-sans), system-ui, sans-serif; font-size: 14px; font-weight: 600; letter-spacing: -0.015em; line-height: 1; white-space: nowrap; }
+/* Wordmark: Google Sans (Keplar's own face), "Keplar" semibold with "Business" lighter and muted, like a product lockup ("Claude Code"). */
+.wordmark { font-family: var(--biz-brand), "Google Sans", var(--biz-sans), system-ui, sans-serif; font-size: 14px; font-weight: 600; letter-spacing: -0.015em; line-height: 1; white-space: nowrap; }
 .wordmark span { font-weight: 500; color: var(--w-ink-3); }
 .backdrop { display: none; }
 .topLink { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 6px; color: var(--w-ink-3); font-size: 12.5px; text-decoration: none; }
