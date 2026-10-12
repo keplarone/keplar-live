@@ -495,8 +495,8 @@ export const landingPages: LandingPage[] = [
         h2: "What it makes",
         bullets: [
           "Models with clean topology and modifiers at real-world scale, every object named and grouped in a collection.",
-          "Real PBR textures from Poly Haven (free, CC0): colour, roughness, normal, ambient occlusion and displacement, unwrapping meshes that have no UVs.",
-          "Procedural node materials for stylised looks, HDRI lighting and Poly Haven model import.",
+          "Real PBR textures from Poly Haven (free, CC0): color, roughness, normal, ambient occlusion and displacement, unwrapping meshes that have no UVs.",
+          "Procedural node materials for stylized looks, HDRI lighting and Poly Haven model import.",
           "Exports to FBX (imports into Roblox Studio), GLB or OBJ.",
         ],
       },
