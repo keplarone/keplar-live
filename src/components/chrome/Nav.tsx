@@ -10,6 +10,7 @@ import s from "./Nav.module.css";
 import { useCommon, useLocale } from "@/lib/i18n/client";
 import { localizedPath } from "@/lib/i18n/routing";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { CtaLabel } from "@/components/ui/CtaLabel";
 import { lockScroll } from "@/lib/ui/scroll-lock";
 import { usePresence } from "@/components/motion/usePresence";
 
@@ -159,8 +160,9 @@ export function Nav() {
         <Link href={me.signedIn ? "/account" : href(signInHref)} className={s.signIn}>
           {me.signedIn ? t.account : t.signIn}
         </Link>
+        {/* "Try Keplar" signed out, "Open Keplar" signed in (CtaLabel: both in the HTML, CSS shows one from <html data-signed>). */}
         <Link href={tryHref} className={s.cta}>
-          {en ? <>Try {brand.name}</> : t.try}
+          <CtaLabel tryText={en ? `Try ${brand.name}` : t.try} openText={t.open} />
         </Link>
       </div>
     </header>
