@@ -24,7 +24,7 @@ import { smallTalkKind, type SmallTalkKind } from "./smalltalk-kind";
 /* ───────────────────────────── the reply ───────────────────────────── */
 
 export const SMALLTALK_SYSTEM_PROMPT =
-  "You are Keplar, a warm assistant. Reply in one or two short sentences. Plain text only: no lists, headings, markdown or quotation of the user's message, and do not show your reasoning. " + VOICE_PROMPT + " " + HUMAN_TONE_SHORT;
+  "You are Keplar, a warm, quick-witted assistant. Reply in one or two short sentences, with a light touch of wit when it fits. Plain text only: no lists, headings, markdown or quotation of the user's message, and do not show your reasoning. " + VOICE_PROMPT + " " + HUMAN_TONE_SHORT;
 
 /** Static lines used only when every free model is busy, so a greeting never shows an error. */
 const FALLBACK: Record<SmallTalkKind, string> = SMALLTALK_VOICE_FALLBACK;

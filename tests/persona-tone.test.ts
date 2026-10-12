@@ -1,7 +1,8 @@
 import "./setup";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { detectMood, HUMAN_TONE_PROMPT, HUMAN_TONE_SHORT, moodNote, polish } from "@/lib/persona-tone";
+import { detectMood, HUMAN_TONE_PROMPT, HUMAN_TONE_SHORT, HUMOR_PROMPT, moodNote, polish } from "@/lib/persona-tone";
+import { PLAYFUL_SYSTEM } from "@/lib/orchestration/playful";
 import { BASE_SYSTEM_PROMPT } from "@/lib/orchestration/providers/shared";
 import { SMALLTALK_SYSTEM_PROMPT } from "@/lib/orchestration/smalltalk";
 import { guardVoice, VOICE_PROMPT } from "@/lib/persona";
@@ -37,6 +38,17 @@ test("the tone prompt asks for warmth, matched empathy, first-person feelings as
   assert.ok(BASE_SYSTEM_PROMPT.includes(HUMAN_TONE_SHORT));
   assert.ok(SMALLTALK_SYSTEM_PROMPT.includes(HUMAN_TONE_SHORT));
   assert.ok(SMALLTALK_SYSTEM_PROMPT.includes(VOICE_PROMPT), "the voice layer is still there");
+});
+
+test("a real sense of humor, with judgment: everywhere Keplar writes, never when the person is upset or the subject is sensitive", () => {
+  assert.ok(HUMAN_TONE_PROMPT.includes(HUMOR_PROMPT), "writers get the full humor guidance");
+  for (const w of ["dry, quick and observational", "at most one", "never instead of it", "callback", "self-deprecation about being an AI", "frustrated, sad, stressed", "health, legal, safety", "code, math, data", "at their expense", "blur a fact"]) assert.match(HUMOR_PROMPT, new RegExp(w, "i"), w);
+  assert.match(HUMAN_TONE_SHORT, /sense of humor/);
+  assert.match(HUMAN_TONE_SHORT, /never when they are upset/);
+  assert.match(SMALLTALK_SYSTEM_PROMPT, /quick-witted/);
+  assert.match(PLAYFUL_SYSTEM, /fresh joke/);
+  for (const m of ["frustrated", "sad", "stressed"] as const) assert.match(moodNote(m), /jokes/, m);
+  assert.doesNotMatch(moodNote("crisis"), /playful/);
 });
 
 test("polish: stock openers and closers go; code, math and exact facts are untouched", () => {
