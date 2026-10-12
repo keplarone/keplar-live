@@ -303,7 +303,7 @@
 @property --sol-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
 .dock .composer { margin: 6px 10px 10px; padding: 8px 10px 10px; border-radius: 22px; --lg-fill-rgb: 10 10 14; --lg-fill: 0.5; --lg-ring: 0.32;
   transition: border-color 360ms ease, background-color 360ms ease, padding 420ms cubic-bezier(.34, 1.4, .64, 1); }
-.dock .composer:focus-within { --lg-ring: 0.85; --lg-fill: 0.58; padding-top: 12px; padding-bottom: 12px; }
+.dock .composer:focus-within { --lg-fill: 0.58; padding-top: 12px; padding-bottom: 12px; outline: 1.5px solid rgb(255 255 255 / 0.7); outline-offset: 2px; }
 @keyframes sol-spin { to { --sol-a: 360deg; } }
 .dock .composer[data-sent="a"] { animation: sol-send-a 620ms cubic-bezier(.16, 1, .3, 1); }
 .dock .composer[data-sent="b"] { animation: sol-send-b 620ms cubic-bezier(.16, 1, .3, 1); }
@@ -315,6 +315,7 @@
 /* Build: leans toward the pointer (--tx/--ty, StudioDock), springs on press; while a run is going the same spot holds Stop with a turning ring. */
 .dock .primary[data-morph] { position: relative; min-height: 38px; padding: 0 18px; isolation: isolate; overflow: hidden;
   --lg-fill-rgb: 255 255 255; --lg-fill: 0.86; --lg-ring: 0.7; color: #0b0b0d; text-shadow: none;
+  background: rgb(var(--lg-fill-rgb) / var(--lg-fill)); /* the glass tint, whatever order the stylesheets load in */
   transform: translate(var(--tx, 0), var(--ty, 0));
   transition: transform 300ms cubic-bezier(.34, 1.56, .64, 1), background-position 600ms ease, box-shadow 300ms ease, opacity 200ms ease;
   animation: sol-morph 520ms cubic-bezier(.34, 1.4, .64, 1); }
@@ -386,7 +387,7 @@
 
 /* ═════════ Liquid glass in the dock ═════════ */
 .dock { position: relative; }
-.dock .ghost[data-glass-pill] { --lg-fill: 0.1; --lg-ring: 0.45; }
+.dock .ghost[data-glass-pill] { --lg-fill: 0.1; --lg-ring: 0.45; background: rgb(var(--lg-fill-rgb, 255 255 255) / var(--lg-fill)); }
 :global(:root[data-theme="light"]) .dock .composer { --lg-fill-rgb: 255 255 255; --lg-fill: 0.6; --lg-ring: 0.7; }
 .pageStage[data-mode="strip"] { --lg-fill: 0.05; --lg-ring: 0.4; }
 

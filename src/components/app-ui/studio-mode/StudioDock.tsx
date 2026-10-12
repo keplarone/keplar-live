@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { referencesFromFiles } from "./references";
-import { morphGlass } from "./liquid-glass/glass";
-import { useGlass } from "./liquid-glass/useGlass";
+import { GlassLayer, morphGlass } from "./liquid-glass/glass";
 import g from "./liquid-glass/glass.module.css";
 import { SolarCore } from "./SolarCore";
 import { solarPulse, solarState } from "./solar-state";
@@ -85,7 +84,8 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPla
   const buildRef = useRef<HTMLButtonElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const dockRef = useRef<HTMLElement>(null);
-  const composerGlass = useGlass(composerRef, { shape: "rounded", strength: 26, band: 0.4 });
+  const pauseRef = useRef<HTMLButtonElement>(null);
+  const stopRef = useRef<HTMLButtonElement>(null);
   // Overlay: the composer floats over the bottom of the conversation, which scrolls on beneath it (and is refracted by its
   // glass); the feed keeps room for it at rest, so nothing is hidden.
   useEffect(() => {
@@ -95,8 +95,6 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPla
     ro.observe(form);
     return () => ro.disconnect();
   }, [compact]);
-  const buildGlass = useGlass(buildRef, { shape: "rounded", strength: 9, band: 0.5 });
-  const pageStageGlass = useGlass(stageRef, { shape: "rounded", strength: 16 }, !compact && a.items.length > 0);
 
   useEffect(() => {
     const el = listRef.current;
@@ -135,7 +133,6 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPla
     setSent((n) => n + 1);
     const button = buildRef.current;
     if (button) {
-      buildGlass.current?.surge(1.4);
       // Measured now: once the run starts this button is replaced by Stop.
       const r = button.getBoundingClientRect();
       const from = { left: r.left, top: r.top, width: r.width, height: r.height };
@@ -145,7 +142,7 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPla
         const st = stageRef.current, dock = dockRef.current;
         requestAnimationFrame(() => requestAnimationFrame(() => {
           const t = st.getBoundingClientRect();
-          void morphGlass(from, { left: t.left + 14, top: t.top + 10, width: t.width - 28, height: 64 }, dock, { radiusTo: 16 }).then(() => pageStageGlass.current?.surge(1));
+          void morphGlass(from, { left: t.left + 14, top: t.top + 10, width: t.width - 28, height: 64 }, dock, { radiusTo: 16 });
         }));
       }
     }
@@ -175,6 +172,7 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPla
       {/* One core for the whole session: a hero above the empty state, then a strip while a build runs (one WebGL scene, never re-created). */}
       {compact ? null : (
         <div ref={stageRef} className={`${a.items.length ? g.surface : ""} ${s.pageStage}`} data-mode={a.items.length ? "strip" : "hero"}>
+          {a.items.length ? <GlassLayer host={stageRef} radius={16} look={{ displacement: 52, blur: 0.1 }} /> : null}
           <SolarCore state={solarState(a, text.length)} pulse={solarPulse(a)} className={s.pageCore} />
           {a.items.length ? (
             <span className={s.pageStageText}>
@@ -236,7 +234,8 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPla
         ) : null}
       </ol>
 
-      <form ref={composerRef} className={`${g.surface} ${s.composer}`} onFocus={() => composerGlass.current?.surge(0.9)} data-sent={sent ? (sent % 2 ? "a" : "b") : undefined} onSubmit={(e) => { e.preventDefault(); submit(); }}>
+      <form ref={composerRef} className={`${g.surface} ${s.composer}`} data-sent={sent ? (sent % 2 ? "a" : "b") : undefined} onSubmit={(e) => { e.preventDefault(); submit(); }}>
+        <GlassLayer host={composerRef} radius={22} look={{ displacement: 64, blur: 0.1, aberration: 2.5, elasticity: 0.05 }} />
         {refs.length ? (
           <div className={s.refRow}>
             {refs.map((src, i) => (
@@ -268,8 +267,8 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPla
           <span className={s.grow} />
           {a.running ? (
             <>
-              <button type="button" className={`${g.surface} ${s.ghost}`} data-glass-pill="" onClick={a.pause}>Pause</button>
-              <button type="button" className={`${g.surface} ${s.primary}`} data-morph="stop" onClick={a.stop}>Stop</button>
+              <button ref={pauseRef} type="button" className={`${g.surface} ${s.ghost}`} data-glass-pill="" onClick={a.pause}><GlassLayer host={pauseRef} radius={999} look={{ displacement: 30, aberration: 1.2 }} />Pause</button>
+              <button ref={stopRef} type="button" className={`${g.surface} ${s.primary}`} data-morph="stop" onClick={a.stop}><GlassLayer host={stopRef} radius={999} look={{ displacement: 30, aberration: 1.2 }} />Stop</button>
             </>
           ) : a.paused ? (
             <>
@@ -284,7 +283,7 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPla
                   {a.playing ? "Stop test" : "Play test"}
                 </button>
               ) : null}
-              <button ref={buildRef} type="submit" className={`${g.surface} ${s.primary}`} data-morph="build" onPointerMove={magnetic} onPointerLeave={unmagnet} disabled={a.playing || (!text.trim() && !refs.length)} title={a.playing ? "Stop the play test, then build" : undefined}>Build</button>
+              <button ref={buildRef} type="submit" className={`${g.surface} ${s.primary}`} data-morph="build" onPointerMove={magnetic} onPointerLeave={unmagnet} disabled={a.playing || (!text.trim() && !refs.length)} title={a.playing ? "Stop the play test, then build" : undefined}><GlassLayer host={buildRef} radius={999} look={{ displacement: 30, aberration: 1.2, overLight: true }} />Build</button>
             </>
           )}
         </div>

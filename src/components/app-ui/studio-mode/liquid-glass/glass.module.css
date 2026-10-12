@@ -1,24 +1,20 @@
-/* The liquid-glass material (engine.ts adds the refraction as a backdrop filter). No outer box-shadow on a glass surface:
-   Chromium places the displacement map against the element's visual overflow, so a drop shadow shifts the lens off the
-   element. Depth comes from the border and inset shading; any drop shadow goes on a parent. */
+/* A liquid-glass surface: the refraction, frost and edge highlights are drawn by liquid-glass-react in `.layer`
+   (GlassLayer in glass.tsx), under the surface's content; the surface adds a tint and a ring. */
 .surface {
   position: relative;
   isolation: isolate;
   background: rgb(var(--lg-fill-rgb, 255 255 255) / var(--lg-fill, 0.07));
-  border: 1.5px solid rgb(255 255 255 / var(--lg-ring, 0.5));
+  /* The rim is liquid-glass-react's own edge highlight (it follows the glass as it leans toward the pointer); a border
+     here would draw a second, fixed outline beside it. */
+  border: 1.5px solid transparent;
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.32), inset 0 -8px 18px rgb(0 0 0 / 0.1);
   transition: background-color 500ms ease, border-color 300ms ease;
 }
-/* A rim light that follows the pointer round the edge (--mx/--my set on the surface by pointer tracking). */
-.surface::before {
-  content: ""; position: absolute; inset: -1.5px; border-radius: inherit; padding: 1.5px; pointer-events: none; opacity: 0;
-  background: radial-gradient(120px circle at var(--mx, 50%) var(--my, 0%), rgb(255 255 255 / 0.95), transparent 70%) border-box;
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-  transition: opacity 260ms ease;
-}
-.surface:hover::before, .surface[data-lit]::before { opacity: 1; }
-.surface > * { position: relative; z-index: 1; }
+/* Behind the content (inside the surface's own stacking context), clipped to its shape. */
+.layer { position: absolute; inset: 0; z-index: -1; overflow: hidden; border-radius: inherit; pointer-events: none; animation: lg-in 80ms; }
+/* Hidden for its first frames, so the glass is never seen before it has measured itself (visibility, not opacity: an
+   opacity below 1 would cut the glass off from the backdrop it refracts). */
+@keyframes lg-in { from, to { visibility: hidden; } }
 
 /* Round glass control: the pen's look (a full lens, white ring, a light fill), sized for a title bar. */
 .icon {
@@ -42,10 +38,10 @@
 .switchBtn:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 1px; }
 
 /* The travelling surface of a morph (Build → execution panel, badge → details). */
-.morph { position: absolute; z-index: 20; pointer-events: none; border-radius: 999px; --lg-fill: 0.12; --lg-ring: 0.6; }
+.morph { position: absolute; z-index: 20; pointer-events: none; border-radius: 999px; --lg-fill: 0.12; border-color: rgb(255 255 255 / 0.6); backdrop-filter: blur(10px) saturate(1.6); -webkit-backdrop-filter: blur(10px) saturate(1.6); }
 
 @media (prefers-reduced-motion: reduce) {
   .icon, .switchPill { transition: none; }
   .icon:hover:not(:disabled), .icon:active:not(:disabled) { transform: none; }
 }
-@media (forced-colors: active) { .surface::before { display: none; } .surface { border-color: CanvasText; } }
+@media (forced-colors: active) { .layer { display: none; } .surface { border-color: CanvasText; } }

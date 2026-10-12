@@ -257,7 +257,7 @@
 .switchRow .target { flex: 1; height: 28px; font-size: 12.5px; font-weight: 600; }
 .target:not([aria-pressed="true"]) { color: var(--c-ink-2); }
 
-/* ═════════ Liquid glass (Bespalov's pen as the material, liquid-glass/) ═════════ */
+/* ═════════ Liquid glass (liquid-glass-react, through liquid-glass/glass.tsx) ═════════ */
 /* Tint is separate from the optics, and follows the scene behind the overlay (useSceneTone: Keplar's own latest screenshot of
    Studio): thicker over bright scenes so text stays readable, thinner over dark ones so the glass stays clear. */
 .panel { transition: background-color 700ms ease; }

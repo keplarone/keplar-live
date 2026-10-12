@@ -1,42 +1,86 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from "react";
-import { attachGlass } from "./engine";
-import { SPRING, useGlass } from "./useGlass";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ButtonHTMLAttributes, type ReactNode, type RefObject } from "react";
+import LiquidGlass from "liquid-glass-react";
 import g from "./glass.module.css";
 
-const reduced = () => typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+/** One overshoot, then settle (a CSS linear() spring for the Web Animations API). */
+export const SPRING = "linear(0, 0.06 2%, 0.23 5%, 0.5 9.5%, 0.86 16%, 1.04 22%, 1.1 27%, 1.09 32%, 1.03 40%, 0.99 50%, 0.995 62%, 1)";
 
-/** Tracks the pointer over a glass surface for its rim light (--mx/--my, at most once a frame). */
-export function usePointerLight(ref: React.RefObject<HTMLElement | null>) {
+const reduced = () => typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+const noop = () => () => {};
+/** liquid-glass-react reads `navigator` while rendering, so it is drawn only in the browser, after hydration. */
+const useClient = () => useSyncExternalStore(noop, () => true, () => false);
+/**
+ * liquid-glass-react measures itself on mount and on window resize only. When a surface has settled at a new size, one
+ * resize event (shared by every surface that changed) lets each glass re-measure in place, without being re-created.
+ */
+let remeasureTimer = 0;
+const remeasure = () => {
+  window.clearTimeout(remeasureTimer);
+  remeasureTimer = window.setTimeout(() => window.dispatchEvent(new Event("resize")), 120);
+};
+
+export type GlassLook = {
+  /** Displacement at the rim (liquid-glass-react's displacementScale). */
+  displacement?: number;
+  /** Frost (its blurAmount). */
+  blur?: number;
+  saturation?: number;
+  /** Chromatic aberration at the edge. */
+  aberration?: number;
+  /** How far the glass leans toward the pointer. */
+  elasticity?: number;
+  /** A bright scene behind: the glass darkens itself and refracts less, so text on it stays readable. */
+  overLight?: boolean;
+  mode?: "standard" | "polar" | "prominent" | "shader";
+};
+
+/**
+ * The liquid glass behind a surface, drawn by liquid-glass-react (https://github.com/rdev/liquid-glass-react, MIT,
+ * (c) 2025 Max Rovensky). The library centres its glass on a point; here it fills `host` instead: an empty block of the
+ * host's size is its content, the host's own content sits above it, and the pointer is tracked over the whole host.
+ * Put it first inside a surface (`g.surface`).
+ */
+export function GlassLayer({ host, radius, look = {} }: { host: RefObject<HTMLElement | null>; radius: number; look?: GlassLook }) {
+  const client = useClient();
+  const [size, setSize] = useState<{ w: number; h: number } | null>(null);
   useEffect(() => {
-    const el = ref.current;
+    const el = host.current;
     if (!el) return;
-    let raf = 0, x = 0, y = 0;
-    const move = (e: PointerEvent) => {
-      const r = el.getBoundingClientRect();
-      x = ((e.clientX - r.left) / r.width) * 100; y = ((e.clientY - r.top) / r.height) * 100;
-      if (!raf) raf = requestAnimationFrame(() => { raf = 0; el.style.setProperty("--mx", `${x.toFixed(1)}%`); el.style.setProperty("--my", `${y.toFixed(1)}%`); });
-    };
-    el.addEventListener("pointermove", move, { passive: true });
-    return () => { cancelAnimationFrame(raf); el.removeEventListener("pointermove", move); };
-  }, [ref]);
+    const ro = new ResizeObserver(() => { setSize({ w: el.offsetWidth, h: el.offsetHeight }); remeasure(); });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [host]);
+  if (!client || !size || size.w < 2 || size.h < 2) return null;
+  return (
+    <span className={g.layer} aria-hidden="true" data-glass="liquid">
+      <LiquidGlass
+        mouseContainer={host}
+        cornerRadius={Math.min(radius, size.h / 2)}
+        padding="0"
+        displacementScale={look.displacement ?? 48}
+        blurAmount={look.blur ?? 0.08}
+        saturation={look.saturation ?? 150}
+        aberrationIntensity={look.aberration ?? 2}
+        elasticity={reduced() ? 0 : (look.elasticity ?? 0.12)}
+        overLight={look.overLight ?? false}
+        mode={look.mode ?? "standard"}
+        // Sized explicitly: placed at left 50%, the wrapper would otherwise only have half the host's width to fit into.
+        style={{ position: "absolute", top: "50%", left: "50%", width: size.w, height: size.h }}
+      >
+        <span style={{ display: "block", width: size.w, height: size.h }} />
+      </LiquidGlass>
+    </span>
+  );
 }
 
-/** A round glass control with the pen's lens: the lens swells on hover (scale 1 → 1.4, as in the pen) and kicks on press. */
-export function GlassIconButton({ children, className, ...rest }: ButtonHTMLAttributes<HTMLButtonElement> & { children: ReactNode }) {
+/** A round glass control. */
+export function GlassIconButton({ children, className, overLight, ...rest }: ButtonHTMLAttributes<HTMLButtonElement> & { children: ReactNode; overLight?: boolean }) {
   const ref = useRef<HTMLButtonElement>(null);
-  const glass = useGlass(ref, { shape: "circle", strength: 1 });
   return (
-    <button
-      ref={ref}
-      type="button"
-      {...rest}
-      className={`${g.surface} ${g.icon} ${className ?? ""}`}
-      onPointerEnter={(e) => { glass.current?.setStrength(1.4); rest.onPointerEnter?.(e); }}
-      onPointerLeave={(e) => { glass.current?.setStrength(1); rest.onPointerLeave?.(e); }}
-      onPointerDown={(e) => { glass.current?.surge(0.6); rest.onPointerDown?.(e); }}
-    >
+    <button ref={ref} type="button" {...rest} className={`${g.surface} ${g.icon} ${className ?? ""}`}>
+      <GlassLayer host={ref} radius={999} look={{ displacement: 40, aberration: 1.5, elasticity: 0.3, overLight }} />
       {children}
     </button>
   );
@@ -44,11 +88,10 @@ export function GlassIconButton({ children, className, ...rest }: ButtonHTMLAttr
 
 /**
  * Studio / Blender: a single glass indicator that slides to the chosen side. On the way it stretches (wider and flatter,
- * like a drop being pulled), and its refraction swells and settles.
+ * like a drop being pulled) and settles.
  */
-export function GlassSwitch<T extends string>({ value, options, onChange, disabled, label, disabledTitle }: { value: T; options: readonly { value: T; label: string }[]; onChange: (v: T) => void; disabled?: boolean; label: string; disabledTitle?: string }) {
+export function GlassSwitch<T extends string>({ value, options, onChange, disabled, label, disabledTitle, overLight }: { value: T; options: readonly { value: T; label: string }[]; onChange: (v: T) => void; disabled?: boolean; label: string; disabledTitle?: string; overLight?: boolean }) {
   const pill = useRef<HTMLSpanElement>(null);
-  const glass = useGlass(pill, { shape: "rounded", strength: 10, band: 0.5 });
   const index = Math.max(0, options.findIndex((o) => o.value === value));
   const last = useRef(index);
   useLayoutEffect(() => {
@@ -60,14 +103,15 @@ export function GlassSwitch<T extends string>({ value, options, onChange, disabl
       const from = `translateX(${last.current * 100}%)`;
       const mid = `translateX(${((last.current + index) / 2) * 100}%) scaleX(1.32) scaleY(0.84)`;
       el.animate([{ transform: from }, { transform: mid, offset: 0.45 }, { transform: to }], { duration: 620, easing: SPRING });
-      glass.current?.surge(1);
     }
     el.style.transform = to;
     last.current = index;
-  }, [index, options.length, glass]);
+  }, [index, options.length]);
   return (
     <span className={g.switch} role="group" aria-label={label}>
-      <span ref={pill} className={`${g.surface} ${g.switchPill}`} aria-hidden="true" />
+      <span ref={pill} className={`${g.surface} ${g.switchPill}`} aria-hidden="true">
+        <GlassLayer host={pill} radius={999} look={{ displacement: 36, aberration: 1.5, overLight }} />
+      </span>
       {options.map((o) => (
         <button key={o.value} type="button" className={g.switchBtn} aria-pressed={o.value === value} onClick={() => onChange(o.value)} disabled={disabled} title={disabled ? disabledTitle : undefined}>
           {o.label}
@@ -82,11 +126,11 @@ export function GlassSwitch<T extends string>({ value, options, onChange, disabl
  * settles into the target's shape. Resolves when it has landed (then the target takes over). Interrupting is safe: a new
  * morph cancels the old one.
  */
-let current: { anim: Animation; el: HTMLElement; dispose: () => void } | null = null;
+let current: { anim: Animation; el: HTMLElement } | null = null;
 export type Box = { left: number; top: number; width: number; height: number };
 export function morphGlass(from: Box, to: HTMLElement | { left: number; top: number; width: number; height: number }, container: HTMLElement, opts: { toHeight?: number; radiusTo?: number; duration?: number } = {}): Promise<void> {
   if (reduced()) return Promise.resolve();
-  if (current) { current.anim.cancel(); current.el.remove(); current.dispose(); current = null; }
+  if (current) { current.anim.cancel(); current.el.remove(); current = null; }
   const c = container.getBoundingClientRect();
   // `from` is measured when the press happens: the pressed button may already be gone (Build becomes Stop).
   const a = from;
@@ -101,7 +145,6 @@ export function morphGlass(from: Box, to: HTMLElement | { left: number; top: num
   el.className = `${g.surface} ${g.morph}`;
   Object.assign(el.style, start);
   container.appendChild(el);
-  const glass = attachGlass(el, { shape: "rounded", strength: 14, band: 0.45 });
   const radiusTo = `${opts.radiusTo ?? 16}px`;
   const anim = el.animate(
     [
@@ -112,13 +155,11 @@ export function morphGlass(from: Box, to: HTMLElement | { left: number; top: num
     ],
     { duration: opts.duration ?? 820, easing: "cubic-bezier(.2, .9, .1, 1)", fill: "forwards" },
   );
-  glass.surge(0.8);
-  const kick = window.setTimeout(() => glass.surge(1.2), (opts.duration ?? 820) * 0.42);
-  current = { anim, el, dispose: () => { window.clearTimeout(kick); glass.dispose(); } };
+  current = { anim, el };
   return anim.finished.then(
     () => {
       const fade = el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, easing: "ease-out", fill: "forwards" });
-      return fade.finished.then(() => { el.remove(); window.clearTimeout(kick); glass.dispose(); if (current?.el === el) current = null; });
+      return fade.finished.then(() => { el.remove(); if (current?.el === el) current = null; });
     },
     () => undefined,
   );

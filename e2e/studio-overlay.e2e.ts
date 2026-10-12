@@ -64,10 +64,14 @@ test("Solar overlay: see-through glass, a live core that follows the run, honest
   await page.keyboard.press("Escape");
   await expect(about).toHaveCount(0);
 
-  // Liquid glass: each surface has its own refraction filter (the pen's lens on round controls), and the tint follows the scene.
-  const glass = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>("[data-glass]")].map((e) => ({ shape: e.dataset.glass, filter: getComputedStyle(e).backdropFilter })));
-  expect(glass.filter((g) => g.shape === "circle").length).toBeGreaterThanOrEqual(3);
-  for (const g of glass) expect(g.filter).toMatch(/^url\("#kp-lg-\d+"\)$/);
+  // Liquid glass (liquid-glass-react): every glass surface draws its own displacement filter over a frosted backdrop, at
+  // the surface's own size; the header's four round controls are among them.
+  const glass = await page.locator("[data-glass]").evaluateAll((layers) => layers.map((l) => {
+    const warp = l.querySelector<HTMLElement>(".glass__warp"), host = l.parentElement!;
+    return { filter: warp ? getComputedStyle(warp).filter : "", backdrop: warp ? getComputedStyle(warp).backdropFilter : "", fits: !!warp && Math.abs(warp.offsetWidth - host.offsetWidth) <= 4 && Math.abs(warp.offsetHeight - host.offsetHeight) <= 4, round: getComputedStyle(host).borderTopLeftRadius === "50%" };
+  }));
+  expect(glass.filter((g) => g.round).length).toBeGreaterThanOrEqual(3);
+  for (const g of glass) { expect(g.filter).toMatch(/^url\("#.+"\)$/); expect(g.backdrop).toMatch(/blur\(/); expect(g.fits).toBe(true); }
   await expect(page.locator("[data-scene]")).toHaveAttribute("data-scene", /^(bright|mixed|dark)$/);
 
   const box = page.locator("textarea");
