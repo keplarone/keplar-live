@@ -63,7 +63,7 @@ function routes(dir: string, out: string[] = []) {
 const API = "src/app/api";
 const LIMITER = /limitRequest\(|rateLimit\(|enterUsage|dailyLimit\(|minuteLimit\(|chargeUnits/;
 /** Helpers that apply a per-account limit before returning. Each is checked below. */
-const HELPERS: Record<string, string> = { "owner(": "src/app/api/business/_owner.ts", "mcpOwner(": "src/app/api/mcp/_ctx.ts", "projectOwner(": "src/lib/projects/api.ts", "authenticateKey(": "src/lib/api/keys.ts", "teamAs(": "src/lib/team/api.ts", "accountOf(": "src/lib/team/api.ts", "requireBusiness(": "src/lib/business/require.ts" };
+const HELPERS: Record<string, string> = { "owner(": "src/app/api/business/_owner.ts", "mcpOwner(": "src/app/api/mcp/_ctx.ts", "projectOwner(": "src/lib/projects/api.ts", "authenticateKey(": "src/lib/api/keys.ts", "teamAs(": "src/lib/team/api.ts", "accountOf(": "src/lib/team/api.ts", "requireBusiness(": "src/lib/business/require.ts", "cloudOwner(": "src/lib/roblox-cloud/api.ts" };
 /** Cost-bearing work whose limits live in the library the route calls (checked: that file must contain a limiter). */
 const LIB_LIMITED: Record<string, string> = {
   "sites/[id]/generate": "src/lib/site-builder/job.ts",
@@ -83,6 +83,7 @@ const SIGNED: Record<string, RegExp> = {
   "business/stripe/webhook": /signature|constructEvent|verify/i,
   "admin/trends": /requireAdmin\(/,
   "create/abuse/[id]": /KEPLAR_ADMIN_TOKEN/,
+  "roblox-cloud/worker": /CRON_SECRET[\s\S]*timingSafeEqual/, // internal hand-over between Roblox Cloud slices: Keplar itself only
 };
 /** Cheap signed-in deletes and preference writes: no model, mail, payment or domain call. */
 const CRUD = ["chats", "sites/assets/[id]", "images/[id]", "create/projects/[id]", "learning/consent", "memory/erase", "faq/consent", "slides/decks/[id]", "study/sets/[id]", "study/sets/[id]/progress"];
