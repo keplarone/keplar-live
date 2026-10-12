@@ -230,6 +230,14 @@
   color-scheme: dark;
 }
 
+/* Phones: labels (footer headings, status tags, table headers, kickers) come out at 11px from the fluid scale above. 12px is the
+   floor for text people have to read on a small screen. In rem, so the person's own text-size setting still scales it. */
+@media (max-width: 760px) {
+  :root {
+    --t-label: 0.75rem;
+  }
+}
+
 @media (min-width: 900px) {
   :root {
     --l-gutter: clamp(calc(40px * var(--ui-scale)), calc(3.2vw * var(--ui-scale)), calc(128px * var(--ui-scale)));

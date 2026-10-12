@@ -318,3 +318,8 @@ textarea[data-scrolls] { overscroll-behavior: contain; }
     color-scheme: light;
   }
 }
+
+/* Phones: <small> shrinks to 83% of its context, which put table notes at 10.8px. Never under 12px on a phone. */
+@media (max-width: 760px) {
+  small { font-size: max(0.75rem, 0.8333em); }
+}

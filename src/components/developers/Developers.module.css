@@ -34,7 +34,7 @@
 .products { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1px; background: var(--c-border); border: 1px solid var(--c-border); border-radius: var(--r-card); overflow: hidden; margin-top: var(--s-12); }
 .product { background: var(--c-canvas); padding: var(--s-6); display: grid; gap: var(--s-3); align-content: start; text-decoration: none; color: inherit; transition: background-color 140ms ease; }
 .product:hover, .product:focus-visible { background: var(--c-surface-1); outline: none; }
-.productTag { font-family: var(--f-sans); font-size: 11px; letter-spacing: 0; color: var(--c-ink-2); text-transform: none; }
+.productTag { font-family: var(--f-sans); font-size: var(--t-label); letter-spacing: 0; color: var(--c-ink-2); text-transform: none; }
 .productName { font-size: 20px; font-weight: var(--w-medium); letter-spacing: -0.02em; margin: 0; }
 .productText { margin: 0; color: var(--c-ink-2); font-size: var(--t-small); line-height: 1.55; }
 .productLink { font-size: var(--t-small); color: var(--c-ink); margin-top: var(--s-2); }
@@ -45,7 +45,7 @@
 .tier { border: 1px solid var(--c-border-strong); border-radius: var(--r-card); padding: var(--s-6); display: grid; gap: var(--s-4); align-content: start; background: var(--c-canvas); }
 .tier[data-featured] { box-shadow: inset 0 0 0 1px var(--c-ink); border-color: var(--c-ink); }
 .tierName { margin: 0; font-size: 18px; font-weight: var(--w-medium); display: flex; justify-content: space-between; align-items: baseline; gap: var(--s-2); }
-.tierPlans { font-family: var(--f-sans); font-size: 11px; color: var(--c-ink-2); font-weight: 400; }
+.tierPlans { font-family: var(--f-sans); font-size: var(--t-label); color: var(--c-ink-2); font-weight: 400; }
 .tierRows { display: grid; gap: var(--s-2); margin: 0; }
 .tierRow { display: flex; justify-content: space-between; gap: var(--s-3); font-size: var(--t-small); padding-bottom: var(--s-2); border-bottom: 1px dashed var(--c-border); }
 .tierRow dt { color: var(--c-ink-2); }
@@ -93,19 +93,19 @@
 .segBtn:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; }
 .swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.2); }
 .previewWrap { display: grid; gap: var(--s-2); justify-items: center; padding: var(--s-6); border-radius: var(--r-card); background: var(--c-surface-1); box-shadow: inset 0 0 0 1px var(--c-border); }
-.previewCaption { font-family: var(--f-sans); font-size: 11px; color: var(--c-ink-2); letter-spacing: 0.04em; }
+.previewCaption { font-family: var(--f-sans); font-size: var(--t-label); color: var(--c-ink-2); letter-spacing: 0.04em; }
 
 /* Miniature of the real widget (same tokens as EmbedAsk.module.css) */
 .mini { width: 100%; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; gap: 10px; padding: 14px; font-size: 13px; box-sizing: border-box; }
 .mini[data-theme="dark"] { background: #0b0b0d; color: #e8e8ea; box-shadow: inset 0 0 0 1px #2a2a30; }
 .mini[data-theme="light"] { background: #f6f6f7; color: #141418; box-shadow: inset 0 0 0 1px #d8d8de; }
-.miniTop { display: flex; justify-content: space-between; font-size: 11px; opacity: 0.75; }
+.miniTop { display: flex; justify-content: space-between; font-size: var(--t-label); opacity: 0.75; }
 .miniTop strong { font-size: 13px; opacity: 1; }
 .miniBubble { border-radius: 10px; padding: 10px 12px; line-height: 1.5; }
 .mini[data-theme="dark"] .miniBubble { background: #16161a; box-shadow: inset 0 0 0 1px #2a2a30; }
 .mini[data-theme="light"] .miniBubble { background: #fff; box-shadow: inset 0 0 0 1px #d8d8de; }
 .miniBubble[data-role="user"] { border-left: 3px solid var(--mini-accent); }
-.miniMeta { display: block; margin-top: 6px; font-size: 11px; opacity: 0.65; }
+.miniMeta { display: block; margin-top: 6px; font-size: var(--t-label); opacity: 0.65; }
 .miniInput { border-radius: 10px; padding: 10px 12px; font-size: 12px; opacity: 0.7; }
 .mini[data-theme="dark"] .miniInput { box-shadow: inset 0 0 0 1px #2a2a30; }
 .mini[data-theme="light"] .miniInput { box-shadow: inset 0 0 0 1px #d8d8de; }

@@ -38,3 +38,8 @@
   background: transparent;
   color: inherit;
 }
+
+/* Touch: "Switch to <language>" and "No thanks" were 32px tall. */
+@media (pointer: coarse) {
+  .go, .no { min-height: 44px; padding-inline: var(--s-4); }
+}
