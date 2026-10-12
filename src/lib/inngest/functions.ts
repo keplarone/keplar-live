@@ -81,4 +81,13 @@ export const telemetryRetention = inngest.createFunction(
   async ({ step }) => step.run("prune", () => pruneTelemetry()),
 );
 
-export const functions = [agentScheduleTick, agentScheduledRun, agentEventRun, telemetryRetention];
+export const modelObservatory = inngest.createFunction(
+  { id: "ops-model-observatory", name: "Ops: model drift and feature regressions (alert only)", triggers: [{ cron: "53 * * * *" }], retries: 1, concurrency: { limit: 1 } },
+  async ({ step }) => step.run("observe", async () => {
+    const { runObservatory } = await import("@/lib/ops/observatory");
+    const r = await runObservatory();
+    return { drift: r.drift.length, alerted: r.alerted, regressions: r.regressions };
+  }),
+);
+
+export const functions = [agentScheduleTick, agentScheduledRun, agentEventRun, telemetryRetention, modelObservatory];
