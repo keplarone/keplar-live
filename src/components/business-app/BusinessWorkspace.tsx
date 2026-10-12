@@ -11,6 +11,7 @@ import { Home, type HomeMode } from "./Home";
 import { Projects } from "./Projects";
 import { useBusinessNavigation } from "./useBusinessNavigation";
 import { SIGN_OUT_FAILED, signOutOfBusiness } from "@/components/business-site/sign-out";
+import { isSettingsSection, type SettingsSection } from "./settings-sections";
 import c from "./cursor.module.css";
 import s from "./workspace.module.css";
 
@@ -20,6 +21,7 @@ const OS_TABS: readonly OsTab[] = ["overview", "orders", "crm", "inbox", "agents
 const Loading = () => <div className={s.center}><span className={s.spinner} aria-label="Loading" /></div>;
 const BusinessOS = dynamic(() => import("@/components/business/BusinessOS").then((m) => m.BusinessOS), { ssr: false, loading: Loading });
 const DesignCanvas = dynamic(() => import("./DesignCanvas").then((m) => m.DesignCanvas), { ssr: false, loading: Loading });
+const Settings = dynamic(() => import("./Settings").then((m) => m.Settings), { ssr: false, loading: Loading });
 const CreateStudio = dynamic(() => import("@/components/create/CreateStudio").then((m) => m.CreateStudio), { ssr: false, loading: Loading });
 
 type Account = { signedIn: boolean; email?: string | null; account?: { company: string } | null; active?: boolean; plan?: { name: string } | null };
@@ -32,6 +34,7 @@ type View =
   | { at: "projects"; projectId: string | null }
   | { at: "create" }
   | { at: "canvas" }
+  | { at: "settings"; section: SettingsSection }
   | { at: "os"; tab: OsTab }
   | { at: "research" | "reason"; seed?: string; openId?: string; projectId?: string; key: string };
 
@@ -49,6 +52,7 @@ function readView(): View {
   if (v === "dashboard") return { at: "dashboard" };
   if (v === "create") return { at: "create" };
   if (v === "canvas") return { at: "canvas" };
+  if (v === "settings") { const sec = q.get("s"); return { at: "settings", section: isSettingsSection(sec) ? sec : "general" }; }
   if (v === "os") { const tab = q.get("t") as OsTab | null; return { at: "os", tab: tab && OS_TABS.includes(tab) ? tab : "overview" }; }
   if (v === "research" || v === "reason") return { at: v, openId: q.get("r") ?? undefined, key: k() };
   return { at: "home" };
@@ -60,6 +64,7 @@ function writeView(v: View) {
   else if (v.at === "dashboard") q.set("v", "dashboard");
   else if (v.at === "create") q.set("v", "create");
   else if (v.at === "canvas") q.set("v", "canvas");
+  else if (v.at === "settings") { q.set("v", "settings"); if (v.section !== "general") q.set("s", v.section); }
   else if (v.at === "os") { q.set("v", "os"); if (v.tab !== "overview") q.set("t", v.tab); }
   else if (v.at === "research" || v.at === "reason") { q.set("v", v.at); if (v.openId) q.set("r", v.openId); }
   const qs = q.toString();
@@ -257,7 +262,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
               <span className={c.ellipsis}>{acct.account?.company ?? acct.email}</span>
               <span className={c.footPlan}>{acct.plan?.name ?? "Keplar Business"}</span>
             </span>
-            <a className={c.iconBtn} href={`${siteUrl}/account`} aria-label="Keplar account settings" title="Keplar account settings"><Icon d={<><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></>} /></a>
+            <button type="button" className={c.iconBtn} onClick={() => go({ at: "settings", section: "general" })} aria-label="Settings" title="Settings" aria-current={view.at === "settings" ? "page" : undefined}><Icon d={<><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></>} /></button>
             <button type="button" className={c.iconBtn} onClick={() => void signOut()} disabled={signingOut} aria-label={signingOut ? "Signing out" : `Sign out${acct.email ? ` of ${acct.email}` : ""}`} title="Sign out"><Icon d={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="M16 17l5-5-5-5" /><path d="M21 12H9" /></>} /></button>
           </div>
           {signOutError ? <p className={c.empty} role="alert">{signOutError}</p> : null}
@@ -267,7 +272,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
           <header className={c.mainTop}>
             {collapsed || mobile ? <button ref={menuRef} type="button" className={c.iconBtn} onClick={toggleSide} aria-label={mobile ? "Open navigation" : "Show sidebar"} aria-expanded={mobile ? drawerOpen : !collapsed} aria-controls="business-navigation"><Icon d={<><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16" /></>} /></button> : null}
             <span className={c.grow} />
-            <span className={c.viewName}>{PLACES.find((place) => place.current)?.label ?? (view.at === "projects" ? "Projects" : view.at === "ask" ? "Chat" : "Workspace")}</span>
+            <span className={c.viewName}>{PLACES.find((place) => place.current)?.label ?? (view.at === "projects" ? "Projects" : view.at === "ask" ? "Chat" : view.at === "settings" ? "Settings" : "Workspace")}</span>
             <a className={c.topLink} href={ONE}>Keplar One <Icon d={<path d="M7 17L17 7M9 7h8v8" />} size={12} /></a>
           </header>
           <div className={c.mainBody}>
@@ -277,6 +282,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
               : view.at === "projects" ? <Projects projectId={view.projectId} onOpen={(id) => { go({ at: "projects", projectId: id }); loadSide(); }} />
               : view.at === "create" ? <div className={s.module}><CreateStudio signedIn plan="business" /></div>
               : view.at === "canvas" ? <div className={s.module}><DesignCanvas /></div>
+              : view.at === "settings" ? <Settings section={view.section} onSection={(section) => go({ at: "settings", section })} />
               : view.at === "os" ? <div className={s.module}><BusinessOS key={view.tab} initialTab={view.tab} embedded /></div>
               : <Analyst key={view.key} kind={view.at} seed={view.seed} openId={view.openId} projectSeed={view.projectId} onSaved={loadSide} />}
           </div>

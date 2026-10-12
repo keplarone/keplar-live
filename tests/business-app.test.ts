@@ -133,3 +133,19 @@ test("Agents, Approvals, Operations, Integrations and Create look like the works
   // No Keplar One brand in the Business window's title bar.
   assert.match(readFileSync("src/components/desktop/DesktopTitleBar.module.css", "utf8"), /:global\(html\[data-business-app\]\) \.brand \{ visibility: hidden; \}|\.search, :global\(html\[data-business-app\]\) \.brand \{ visibility: hidden; \}/);
 });
+
+test("Business settings: its own page with a section bar (like Claude's), opened from the sidebar gear, every section on a real endpoint", async () => {
+  const { SETTINGS_SECTIONS, isSettingsSection } = await import("@/components/business-app/settings-sections");
+  assert.deepEqual(SETTINGS_SECTIONS.map((x) => x.id), ["general", "plan", "preferences", "security", "privacy", "desktop"]);
+  assert.equal(isSettingsSection("plan"), true);
+  assert.equal(isSettingsSection("billing"), false);
+  const ws = readFileSync("src/components/business-app/BusinessWorkspace.tsx", "utf8");
+  assert.match(ws, /onClick=\{\(\) => go\(\{ at: "settings", section: "general" \}\)\} aria-label="Settings"/, "the gear opens Business settings, not Keplar One");
+  assert.match(ws, /if \(v === "settings"\) \{ const sec = q\.get\("s"\); return \{ at: "settings", section: isSettingsSection\(sec\) \? sec : "general" \}; \}/);
+  const page = readFileSync("src/components/business-app/Settings.tsx", "utf8");
+  for (const endpoint of ['"/api/business/account", { method: "POST"', '"/api/billing/portal"', 'href="/api/account/export"', '"/api/business/dashboard"']) assert.ok(page.includes(endpoint), endpoint);
+  assert.match(page, /signOutOfBusiness\(\)/);
+  // Claims stay within the privacy policy: paid requests go only to endpoints that say they do not train on prompts.
+  assert.match(page, /send requests only to model endpoints that say they do not train on prompts/);
+  assert.doesNotMatch(page, /never used to train|not used to train/i);
+});
