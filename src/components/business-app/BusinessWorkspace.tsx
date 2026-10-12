@@ -78,8 +78,6 @@ const ago = (iso: string) => {
   const m = Math.max(1, Math.round((Date.now() - Date.parse(iso)) / 60_000));
   return m < 60 ? `${m}m` : m < 1440 ? `${Math.round(m / 60)}h` : `${Math.round(m / 1440)}d`;
 };
-const TONES = ["#4ade80", "#f472b6", "#f87171", "#60a5fa", "#fbbf24", "#a78bfa"];
-const tone = (id: string) => TONES[[...id].reduce((a, ch) => a + ch.charCodeAt(0), 0) % TONES.length];
 
 const Icon = ({ d, size = 15 }: { d: React.ReactNode; size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>
@@ -310,7 +308,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
             </div>
             {shownProjects.length ? shownProjects.map((p) => (
               <button key={p.id} type="button" className={c.item} aria-current={view.at === "projects" && view.projectId === p.id ? "page" : undefined} onClick={() => go({ at: "projects", projectId: p.id })}>
-                <span className={c.projIcon} style={{ color: tone(p.id) }} aria-hidden="true"><Icon d={<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />} size={14} /></span>
+                <span className={c.projIcon} aria-hidden="true"><Icon d={<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />} size={14} /></span>
                 <span className={c.ellipsis}>{p.name}</span>
               </button>
             )) : <p className={c.empty}>{f ? "No matching projects." : "No projects yet."}</p>}

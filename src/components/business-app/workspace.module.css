@@ -11,8 +11,9 @@
 
   /* The tabs that embed Keplar One screens (Create, Agents, Approvals, Operations, Integrations) read Keplar One's design tokens.
      Re-pointing those tokens here makes them use the Business palette, accent and font, so every tab matches the desktop app.
-     Scoped to the workspace: Keplar One's own pages keep their theme. Semantic status colours (verified, attention, destructive,
-     disagreement) are left as they are: they carry meaning, not branding. */
+     Scoped to the workspace: Keplar One's own pages keep their theme. Business is black, grey and white, so the mode and status
+     colours (reasoning, research, creation, verified, attention, disagreement, destructive) become greys here too: their labels
+     ("Failed", "Waiting", "Delete"…) carry the meaning. */
   --c-canvas: var(--w-bg); --c-surface-1: var(--w-panel); --c-surface-2: var(--w-panel-2);
   --c-ink: var(--w-ink); --c-ink-2: var(--w-ink-2); --c-ink-3: var(--w-ink-3); --c-ink-hover: #ffffff;
   --c-border: var(--w-line); --c-border-strong: var(--w-line-2);
@@ -25,6 +26,11 @@
   --font-sans: var(--biz-sans), "Geist", system-ui, sans-serif; --font-mono: var(--biz-mono), "Geist Mono", ui-monospace, monospace;
   /* The global element rules (headings, inputs, buttons, labels) read --f-sans / --f-mono, not --font-*. */
   --f-sans: var(--biz-sans), "Geist", system-ui, sans-serif; --f-mono: var(--biz-mono), "Geist Mono", ui-monospace, monospace;
+  --c-dissent: #d4d4d4;
+  --c-reasoning: #e5e5e5; --rgb-reasoning: 229 229 229; --c-research: #d4d4d4; --rgb-research: 212 212 212; --c-creation: #d4d4d4; --rgb-creation: 212 212 212;
+  --c-verified: #e5e5e5; --rgb-verified: 229 229 229; --c-attention: #fafafa; --rgb-attention: 250 250 250;
+  --c-disagree: #bdbdbd; --rgb-disagree: 189 189 189; --c-destructive: #fafafa; --rgb-destructive: 250 250 250;
+  --v-reasoning: #e5e5e5; --v-research: #d4d4d4; --v-creation: #d4d4d4; --v-memory: #d4d4d4; --v-disagree: #bdbdbd; --v-attention: #fafafa;
 }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .center { height: 100%; display: grid; place-items: center; padding: 24px; }
