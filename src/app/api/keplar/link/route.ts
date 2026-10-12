@@ -1,7 +1,8 @@
 /**
  * POST /api/keplar/link { url, purpose?: "answer" | "reference" } → what Keplar read at that link (src/lib/attachments/link.ts).
  * Works signed out too (a public page is not private data), same-origin only, rate limited per IP and per account.
- * Nothing is stored: the text goes back to the composer and travels with the question for this message only.
+ * Nothing is stored: the text goes back to the composer and travels with the question for this message only. The same person reading the
+ * same URL again within 10 minutes reuses the result held in this instance's memory (lib/reuse): no second fetch, no second daily count.
  */
 import { errorResponse, HttpError, json } from "@/lib/create/platform/http";
 import { currentWorkspace } from "@/lib/create/platform/workspace";
@@ -10,6 +11,8 @@ import { isSameOrigin } from "@/lib/security/origin";
 import { dailyLimit } from "@/lib/tools/access";
 import { limitsForPlan } from "@/lib/attachments/kinds";
 import { LinkError, readLink } from "@/lib/attachments/link";
+import { REUSE, reuse, reuseScope } from "@/lib/reuse/cache";
+import { readDeviceId } from "@/lib/usage/daily";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,12 +24,16 @@ export async function POST(req: Request) {
     const ws = await currentWorkspace(req, { allowAnonymous: true });
     await limitRequest(req, "keplar-link", { perIp: 20, perAccount: 30, accountId: ws.anonymous ? null : ws.id, windowSec: 60 });
     const L = limitsForPlan(ws.anonymous ? "free" : ws.plan);
-    await dailyLimit(`link:${ws.anonymous ? `ip:${clientIpOf(req)}` : ws.id}`, ws.anonymous ? 20 : L.linkReadsPerDay, "reading links");
     const b = (await req.json().catch(() => null)) as { url?: unknown; purpose?: unknown } | null;
     const url = typeof b?.url === "string" ? b.url.trim() : "";
     if (!url || url.length > 2048) throw new HttpError(400, "Send the link to read.", "invalid");
     const free = ws.anonymous || ws.plan === "free";
-    const r = await readLink(url, { ...L, linkChars: free ? 14_000 : 32_000 });
+    const linkChars = free ? 14_000 : 32_000;
+    const scope = reuseScope(ws, { deviceId: readDeviceId(req.headers.get("cookie")), ip: clientIpOf(req) });
+    const { value: r } = await reuse(REUSE.link, scope, `${linkChars}:${url}`, async () => {
+      await dailyLimit(`link:${ws.anonymous ? `ip:${clientIpOf(req)}` : ws.id}`, ws.anonymous ? 20 : L.linkReadsPerDay, "reading links");
+      return readLink(url, { ...L, linkChars });
+    });
     return json({ ...r, design: b?.purpose === "reference" ? r.design : undefined }, { headers: { "cache-control": "no-store" } });
   } catch (e) {
     if (e instanceof LinkError) return json({ error: e.message, code: e.code }, { status: e.code === "private" || e.code === "invalid_url" ? 400 : 422 });

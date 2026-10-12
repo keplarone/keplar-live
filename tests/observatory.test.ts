@@ -63,7 +63,7 @@ test("observatory run: real stored calls -> one drift alert for the model that g
   assert.equal(sent.filter((s) => s.includes("test/drifty")).length, 1);
   const again = await runObservatory(at + 60_000, async (subject) => { sent.push(subject); });
   assert.equal(again.alerted, 0, "the same finding is not alerted twice in a day");
-  const audit = await collection<{ action: string; detail: string; actor: string }>("admin_audit").listSystem((a) => a.action === "model_drift" && a.detail.includes("test/drifty"));
+  const audit = await collection<{ id: string; workspaceId: string; action: string; detail: string; actor: string }>("admin_audit").listSystem((a) => a.action === "model_drift" && a.detail.includes("test/drifty"));
   assert.equal(audit.length, 1, "audited once");
   assert.equal(audit[0].actor, "system:observatory");
 });

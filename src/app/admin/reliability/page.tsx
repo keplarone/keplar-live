@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { adminFromHeaders } from "@/lib/ops/admin-auth";
 import { DRIFT, observatorySnapshot, type ModelStats } from "@/lib/ops/observatory";
+import { REUSE, reuseDays } from "@/lib/reuse/cache";
 import s from "@/components/admin/Admin.module.css";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +16,7 @@ const delta = (cur: number | null, base: number | null) => (cur === null || base
 export default async function AdminReliabilityPage() {
   const admin = await adminFromHeaders(await headers());
   if (!admin) notFound();
-  const snap = await observatorySnapshot().catch(() => null);
+  const [snap, reused] = await Promise.all([observatorySnapshot().catch(() => null), reuseDays(7).catch(() => null)]);
   if (!snap) {
     return <div className={s.page}><p className={s.empty}>Could not read model calls or flight records.</p></div>;
   }
@@ -58,6 +59,19 @@ export default async function AdminReliabilityPage() {
                   </tr>
                 ))}
               </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      <section aria-label="Computation reuse">
+        <h2>Computation reuse, 7 days</h2>
+        <p className={s.sub}>Exact results kept in server memory per person for minutes (transcripts {REUSE.transcribe.ttlMs / 60_000} min, link reads {REUSE.link.ttlMs / 60_000} min); answers are never reused. Counts flushed from every instance once a minute.</p>
+        {!reused ? <p className={s.empty}>Could not read the reuse counts.</p> : !reused.length ? <p className={s.empty}>Nothing reused or looked up yet.</p> : (
+          <div className={s.scroll}>
+            <table className={s.table}>
+              <thead><tr><th scope="col">What</th><th scope="col">Hit rate</th><th scope="col">Hits</th><th scope="col">Shared in flight</th><th scope="col">Misses</th><th scope="col">Kept</th><th scope="col">Not eligible</th></tr></thead>
+              <tbody>{reused.map((r) => <tr key={r.ns}><td>{r.ns}</td><td>{pct(r.hitRate)}</td><td>{r.hit}</td><td>{r.shared}</td><td>{r.miss}</td><td>{r.store}</td><td>{r.skip}</td></tr>)}</tbody>
             </table>
           </div>
         )}
