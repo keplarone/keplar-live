@@ -85,21 +85,30 @@ class FileCollection<T extends Row> implements Collection<T> {
       return [];
     }
   }
+  /**
+   * A read outside withLock. On Windows a rename cannot replace a file while anything has it open, so a read that overlaps a write makes
+   * the write's rename fail (EPERM) until the read is done; with a few concurrent requests that took up to ~2 s. There, reads wait their
+   * turn behind writes to the same file instead. Elsewhere reads stay lock-free.
+   */
+  private snapshot(): Promise<T[]> {
+    return process.platform === "win32" ? withLock(this.file, () => this.read()) : this.read();
+  }
   private async write(rows: T[]) {
     await fs.mkdir(path.dirname(this.file), { recursive: true });
     const tmp = `${this.file}.${process.pid}.tmp`;
     await fs.writeFile(tmp, JSON.stringify(rows, null, 2));
-    // Windows can briefly lock the destination while another reader or antivirus holds it.
-    // Retry the atomic replacement; never delete the last good copy to make room.
+    // Windows can still briefly lock the destination while another process (a second server, antivirus) holds it.
+    // Retry the atomic replacement for a few seconds; never delete the last good copy to make room.
     try {
+      const giveUpAt = Date.now() + 5_000;
       for (let attempt = 0; ; attempt++) {
         try {
           await fs.rename(tmp, this.file);
           break;
         } catch (error) {
           const code = (error as NodeJS.ErrnoException).code;
-          if (attempt >= 5 || !["EPERM", "EACCES", "EBUSY"].includes(code ?? "")) throw error;
-          await delay(20 * 2 ** attempt);
+          if (Date.now() >= giveUpAt || !["EPERM", "EACCES", "EBUSY"].includes(code ?? "")) throw error;
+          await delay(Math.min(250, 20 * 2 ** attempt));
         }
       }
     } finally {
@@ -107,11 +116,11 @@ class FileCollection<T extends Row> implements Collection<T> {
     }
   }
   async list(workspaceId: string, filter?: (row: T) => boolean) {
-    const rows = (await this.read()).filter((r) => r.workspaceId === workspaceId);
+    const rows = (await this.snapshot()).filter((r) => r.workspaceId === workspaceId);
     return filter ? rows.filter(filter) : rows;
   }
   async get(workspaceId: string, id: string) {
-    return (await this.read()).find((r) => r.workspaceId === workspaceId && r.id === id) ?? null;
+    return (await this.snapshot()).find((r) => r.workspaceId === workspaceId && r.id === id) ?? null;
   }
   insert(row: T) {
     return withLock(this.file, async () => {
@@ -141,16 +150,16 @@ class FileCollection<T extends Row> implements Collection<T> {
     });
   }
   async findSystem(pred: (row: T) => boolean) {
-    return (await this.read()).find(pred) ?? null;
+    return (await this.snapshot()).find(pred) ?? null;
   }
   async listSystem(pred?: (row: T) => boolean) {
-    const rows = await this.read();
+    const rows = await this.snapshot();
     return pred ? rows.filter(pred) : rows;
   }
   async listSystemRange(range: { field: string; gte: string; lt?: string }, limit = 20_000) {
     checkField(range.field);
     const at = (r: T) => String((r as Record<string, unknown>)[range.field] ?? "");
-    return (await this.read())
+    return (await this.snapshot())
       .filter((r) => at(r) >= range.gte && (range.lt === undefined || at(r) < range.lt))
       .sort((a, b) => (at(a) < at(b) ? 1 : -1))
       .slice(0, limit);
@@ -197,7 +206,7 @@ class FileCollection<T extends Row> implements Collection<T> {
     checkField(field);
     const norm = (v: unknown) => (typeof v === "string" ? (opts.ci ? v.toLowerCase() : v) : null);
     const want = norm(value);
-    return (await this.read()).find((r) => norm(field.split(".").reduce<unknown>((o, k) => (o as Record<string, unknown> | null | undefined)?.[k], r)) === want) ?? null;
+    return (await this.snapshot()).find((r) => norm(field.split(".").reduce<unknown>((o, k) => (o as Record<string, unknown> | null | undefined)?.[k], r)) === want) ?? null;
   }
   increment(workspaceId: string, id: string, deltas: Record<string, number>, init: T) {
     return withLock(this.file, async () => {
