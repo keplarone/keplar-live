@@ -13,6 +13,8 @@ import type { KeplarAnswer, KeplarEvent, KeplarRequest, ResearchEvent, Retriever
 import { signIn } from "./helpers/session";
 import { DEEP_RESEARCH_UNITS } from "@/lib/orchestration/plans";
 import { POST as keplarPOST } from "@/app/api/keplar/route";
+/** A source file as text with LF line endings, so the source checks below read the same on a Windows (CRLF) checkout. */
+const source = (file: string) => readFileSync(file, "utf8").replace(/\r\n/g, "\n");
 
 /** Source text with LF line endings: a Windows checkout (core.autocrlf) has CRLF, and the multi-line patterns below expect LF. */
 const readFileSync = (path: string, encoding: "utf8") => readRaw(path, encoding).replace(/\r\n/g, "\n");
@@ -576,7 +578,7 @@ test("route: KEPLAR_LIVE_RESEARCH_OFF=1 and API keys drop the brief; the questio
     assert.equal(a.research?.live, undefined);
     assert.ok(!s.seen.some((x) => x.user.includes("<research_brief")), "no model saw the brief");
   } finally { s.restore(); }
-  const route = readFileSync("src/app/api/keplar/route.ts", "utf8");
+  const route = source("src/app/api/keplar/route.ts");
   assert.match(route, /liveResearchOff\(\) \|\| creator \|\| smallTalk \|\| memoryReply !== null \|\| ws\.via === "api" \|\| ws\.via === "embed"\)\) delete req\.liveResearch/);
   assert.match(route, /const live = liveResearchOff\(\) \? undefined : liveResearchFrom\(b\.liveResearch\)/, "not even parsed while off");
 });
@@ -600,7 +602,7 @@ test("route: a brief the server drops leaves the question as asked: Deep Researc
 /* ─────────────── the page wiring (source contracts) ─────────────── */
 
 test("page: Live Research runs only inside the desktop app, only for web or research questions, before the request is sent", () => {
-  const app = readFileSync("src/components/app-ui/KeplarApp.tsx", "utf8");
+  const app = source("src/components/app-ui/KeplarApp.tsx");
   assert.match(app, /const bridge = researchBridge\(\);/);
   assert.match(app, /\} else if \(bridge && wantsLiveResearch\(user\.modes\) && \(L\.paused \|\| L\.daily\?\.left === 0\)\) \{\n\s*req\.modes = modesWithoutLive\(user\.modes, serverDeep\);\n\s*\} else if \(bridge && wantsLiveResearch\(user\.modes\)\) \{/, "never when the answer can't come anyway");
   assert.match(app, /previousRunIds\(existingThread\?\.messages, user\.id\)/);
@@ -610,26 +612,26 @@ test("page: Live Research runs only inside the desktop app, only for web or rese
   assert.match(app, /if \(user\.modes\.deepResearch && serverDeep\) emitResearch\(\{ phase: "reset" \}\);/);
   assert.match(app, /if \(live && event\.type === "research" && !handedOver\) \{ handedOver = true; emitResearch\(\{ phase: "reset" \}\); \}/, "the server's own Deep Research gets its own card");
   assert.match(app, /await checkLiveAnswer\([^\n]*\n[^\n]*\n\s*if \(ctl\.signal\.aborted\) break;/, "Stop during the desktop's check keeps the turn stopped");
-  const kind = readFileSync("src/lib/orchestration/smalltalk-kind.ts", "utf8");
+  const kind = source("src/lib/orchestration/smalltalk-kind.ts");
   assert.deepEqual(kind.match(/^import .*$/gm), ['import type { KeplarRequest } from "./types";'], "the page's small-talk check ships no prompts");
-  assert.match(readFileSync("src/components/app-ui/state/live-run.ts", "utf8"), /from "@\/lib\/orchestration\/smalltalk-kind"/);
+  assert.match(source("src/components/app-ui/state/live-run.ts"), /from "@\/lib\/orchestration\/smalltalk-kind"/);
   assert.match(app, /req\.modes = modesWithoutLive\(user\.modes, serverDeep\)/);
   assert.doesNotMatch(app, /deepResearch: false \};\n\s*emitResearch\(\{ phase: "step", step: "write"/, "the server, not the page, turns the modes into a web question");
   assert.ok(app.indexOf("prepareLiveResearch(") < app.indexOf("streamKeplar(req, ctl.signal)"), "research finishes before the request");
   assert.match(app, /req\.liveResearch = live\.field/);
   assert.match(app, /checkLiveAnswer\(/);
-  const composer = readFileSync("src/components/app-ui/Composer.tsx", "utf8");
+  const composer = source("src/components/app-ui/Composer.tsx");
   assert.match(composer, /useSyncExternalStore\(noSubscribe, hasResearchBridge, \(\) => false\)/, "server render never shows the desktop controls");
   assert.match(composer, /data-live-research/);
   assert.match(composer, /liveDepth/);
   assert.match(composer, /const liveOn = liveDesktop && liveEnabled && wantsLiveResearch\(modes\);/);
   assert.match(composer, /const drBlocked = modes\.deepResearch && drRuns < 1 && !liveOn;/, "the Deep Research budget gate is lifted only when Live Research will run");
-  const research = readFileSync("src/components/app-ui/research/Research.tsx", "utf8");
+  const research = source("src/components/app-ui/research/Research.tsx");
   assert.match(research, /e\.preventDefault\(\);\n\s*e\.stopPropagation\(\);\n\s*setOpen\(false\)/, "Esc on a preview never also stops the running answer");
   assert.match(research, /"Pages read by the Keplar desktop app"/, "a saved answer is read on any device: its labels don't say 'this computer'");
   assert.doesNotMatch(research, /pages read on this computer|read on this computer for this question/i);
-  const turn = readFileSync("src/components/app-ui/KeplarTurn.tsx", "utf8");
+  const turn = source("src/components/app-ui/KeplarTurn.tsx");
   assert.match(turn, /cite=\{citeRenderer\(m\.answer \? m\.answer\.research\?\.sources : m\.research\?\.sources\)\}/, "once the answer is in, only its own sources make chips");
-  const orch = readFileSync("src/lib/orchestration/orchestrator.ts", "utf8");
+  const orch = source("src/lib/orchestration/orchestrator.ts");
   assert.equal((orch.match(/prompt: panelPrompt, system: panelSystem/g) ?? []).length, 3, "panel, hedge and the sanity retry all get the Live Research rules");
 });
