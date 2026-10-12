@@ -25,6 +25,7 @@ import type { ImportOffer } from "./AccountMenu";
 import { StreamHttpError, StreamNetworkError, streamKeplar } from "./state/stream";
 import { newTurnKey, pollTurn, stopTurn } from "./state/recovery";
 import { notePreloaded, predictNext, recordTransition } from "./predict";
+import { draftKeyFor } from "./drafts";
 import type { AccountInfo, ChatImage, KeplarMessage, Message, MessageMedia, Project, Thread, UserMessage, View } from "./state/types";
 import { ChatImageTurn } from "./chat-image/ChatImageTurn";
 import { detectImageIntent } from "@/lib/images/chat-intent";
@@ -1052,6 +1053,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
               signedIn={state.ledger.synced ? state.ledger.signedIn : undefined}
               onModesChange={onComposerModes}
               placeholder="Ask Keplar anything"
+              draftKey={draftKeyFor(state.scope, null, Boolean(state.privateNext))}
             />
           }
           onStarter={(text, modes) => { welcomeComposerRef.current?.setModes(modes); welcomeComposerRef.current?.setText(text); welcomeComposerRef.current?.focus(); }}
@@ -1339,6 +1341,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                 signedIn={state.ledger.synced ? state.ledger.signedIn : undefined}
                 onModesChange={onComposerModes}
                 placeholder={messages.length ? "Reply to Keplar…" : "How can Keplar help you today?"}
+                draftKey={draftKeyFor(state.scope, state.activeThreadId, Boolean(state.threads.find((x) => x.id === state.activeThreadId)?.private ?? state.privateNext))}
               />
               <p className={s.dockNote}>Keplar can be wrong, even when models agree. Verify important decisions.</p>
             </div>

@@ -4,6 +4,7 @@ import { SEND_EVENT } from "@/lib/spatial/events";
 import { forwardRef, useCallback, useDeferredValue, useEffect, useId, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { hasResearchBridge, noSubscribe, researchCapabilities } from "@/lib/desktop/research-bridge";
 import { wantsLiveResearch } from "./state/live-run";
+import { readDraft, writeDraft } from "./drafts";
 import { HeuristicClassifier } from "@/lib/orchestration/classifier";
 import { computeLevel, computeLevelLabel } from "@/lib/orchestration/compute";
 import { CostAwareRouter } from "@/lib/orchestration/router";
@@ -65,6 +66,8 @@ type Props = {
   signedIn?: boolean;
   /** The modes as they change (the sidebar highlights Study / Slides while their chip is on). */
   onModesChange?: (m: ComposerModes) => void;
+  /** Session continuity (drafts.ts): this chat's unsent draft is restored and kept as it is typed. null = keep nothing (private chats). */
+  draftKey?: string | null;
 };
 
 const MB = 1024 * 1024;
@@ -145,7 +148,7 @@ const router = new CostAwareRouter();
 
 
 export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
-  { running, onSend, onStop, routing, onRouting, placeholder, computeRemaining, resetsAt, plan, signedIn, onModesChange },
+  { running, onSend, onStop, routing, onRouting, placeholder, computeRemaining, resetsAt, plan, signedIn, onModesChange, draftKey = null },
   ref,
 ) {
   const uid = useId();
@@ -162,6 +165,20 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
     setTextState(v);
   }, []);
   const voice = useVoice({ getText: () => textRef.current, setText });
+  // Drafts (drafts.ts): opening a chat shows its unsent draft; typing keeps it (debounced); sending clears it (the text goes blank).
+  const draftFor = useRef<string | null>(null);
+  useEffect(() => {
+    // Switching chats: keep what was just typed in the previous one (a pending debounced save is cancelled below), then load this one's.
+    if (draftFor.current && draftFor.current !== draftKey) writeDraft(draftFor.current, textRef.current);
+    draftFor.current = draftKey;
+    if (draftKey === null) return;
+    setText(readDraft(draftKey) ?? "");
+  }, [draftKey, setText]);
+  useEffect(() => {
+    if (draftKey === null) return;
+    const t = setTimeout(() => writeDraft(draftKey, text), 400);
+    return () => clearTimeout(t);
+  }, [draftKey, text]);
   /** Voice mode (BETA): a note about voice that isn't an error, and the "ask by voice" hand-off. */
   const [voiceNote, setVoiceNote] = useState<string | null>(null);
   const [voiceAsk, setVoiceAsk] = useState(0);
