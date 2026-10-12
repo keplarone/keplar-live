@@ -24,6 +24,7 @@ import { activeScopeHeaders, declineImport, importCandidates, importDeclined, im
 import type { ImportOffer } from "./AccountMenu";
 import { StreamHttpError, StreamNetworkError, streamKeplar } from "./state/stream";
 import { newTurnKey, pollTurn, stopTurn } from "./state/recovery";
+import { notePreloaded, predictNext, recordTransition } from "./predict";
 import type { AccountInfo, ChatImage, KeplarMessage, Message, MessageMedia, Project, Thread, UserMessage, View } from "./state/types";
 import { ChatImageTurn } from "./chat-image/ChatImageTurn";
 import { detectImageIntent } from "@/lib/images/chat-intent";
@@ -227,6 +228,26 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     if (!ric) { const t = setTimeout(() => warmViews(false), 3000); return () => clearTimeout(t); }
     const id = ric(() => warmViews(false), { timeout: 6000 });
     return () => (window as Window & { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback?.(id);
+  }, [state.view]);
+  // Predictive preloading (predict.ts): learn which studio usually comes next on this browser and download its code while idle.
+  // Code only (never an action or a model call); off with Save-Data or the switch in /account#personalization.
+  const prevView = useRef<View | null>(null);
+  useEffect(() => {
+    const from = prevView.current;
+    const to = state.view;
+    prevView.current = to;
+    if (from && from !== to) recordTransition(from, to);
+    const warmers: Partial<Record<View, () => Promise<unknown>>> = { create: create.warm, slides: slides.warm, study: study.warm };
+    const go = () => {
+      const next = (predictNext(to, 2, undefined, to === "thread") as View[]).filter((v) => v !== to && warmers[v]);
+      if (!next.length) return;
+      notePreloaded(next);
+      for (const v of next) void warmers[v]!().catch(() => {});
+    };
+    const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number; cancelIdleCallback?: (id: number) => void };
+    if (!w.requestIdleCallback) { const t = setTimeout(go, 2000); return () => clearTimeout(t); }
+    const id = w.requestIdleCallback(go, { timeout: 5000 });
+    return () => w.cancelIdleCallback?.(id);
   }, [state.view]);
   // Account-bound UI state resets whenever the account on screen changes (adjusting state while rendering, the React way).
   const [seenEpoch, setSeenEpoch] = useState(0);

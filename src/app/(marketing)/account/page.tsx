@@ -28,6 +28,7 @@ import { ApiKeysPanel } from "@/components/account/ApiKeysPanel";
 import { EmbedPanel } from "@/components/account/EmbedPanel";
 import { MemorySettings } from "@/components/account/MemorySettings";
 import { FamilySettings, PersonalizationSettings, SharedLinksSettings, SpecialistsSettings } from "@/components/account/PersonalSettings";
+import { PredictionSettings } from "@/components/account/PredictionSettings";
 import { DeleteAllChats } from "@/components/account/DeleteAllChats";
 import { TypingSettings } from "@/components/account/TypingSettings";
 import { ThemeControl } from "@/components/theme/ThemeControl";
@@ -133,6 +134,7 @@ export default async function AccountPage({ searchParams }: Props) {
             </>) },
             { id: "personalization", label: "Personalization", keywords: "custom instructions about you style tone answer preferences brief formal teaching plain language how to answer remember memories saved preferences forget clear constellation assistant custom bot persona instructions knowledge starters expert kids teen parental controls pin child safety homework family", node: (<>
         {sub(null, null, <PersonalizationSettings />)}
+        {sub(null, null, <PredictionSettings />)}
         {sub(null, null, <MemorySettings />)}
         {sub(null, null, <SpecialistsSettings />)}
         {sub(null, null, <FamilySettings />)}
