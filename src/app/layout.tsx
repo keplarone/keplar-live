@@ -49,7 +49,8 @@ export const metadata: Metadata = {
   title: { default: site.seoTitle, template: `%s · ${brand.name}` },
   description: site.description,
   applicationName: site.name,
-  alternates: { canonical: "/" },
+  // No default canonical here: a page without its own would point Google at the home page ("alternate page" / "Google chose
+  // different canonical"). Each public page sets its own via pageMeta(); the home page sets "/" itself.
   openGraph: {
     type: "website",
     siteName: site.name,

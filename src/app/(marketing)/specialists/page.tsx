@@ -1,4 +1,5 @@
 import { breadcrumbs } from "@/lib/seo-graph";
+import { pageMeta } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/JsonLd";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -8,10 +9,7 @@ import { TwoTone } from "@/components/page/TwoTone";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Specialist directory · Keplar",
-  description: "Specialists shared by Keplar users and reviewed before listing. Add one to your account and Keplar's panel of models answers with it.",
-};
+export const metadata: Metadata = pageMeta("/specialists", "Specialist directory", "Specialists shared by Keplar users and reviewed before listing. Add one to your account and Keplar's panel of models answers with it.");
 
 const chip: React.CSSProperties = { display: "inline-flex", alignItems: "center", minHeight: 36, padding: "0 var(--s-4)", borderRadius: "var(--r-pill)", boxShadow: "inset 0 0 0 var(--b-hairline) var(--c-border-strong)", color: "var(--c-ink)", textDecoration: "none", fontSize: "var(--t-small)" };
 

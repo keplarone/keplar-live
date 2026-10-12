@@ -112,7 +112,7 @@ export const landingPages: LandingPage[] = [
       { q: "Can I choose the models myself?", a: "Not today. Keplar picks the models a question needs. You can choose how thorough it should be: Fastest, Balanced or Most thorough." },
       { q: "How is this different from a model-comparison site?", a: "Keplar also writes one answer from the replies and summarizes the disagreement, so you don't have to read every model's response." },
     ],
-    related: ["/ai-answer-engine", "/ai-fact-check", "/compare", "/pricing"],
+    related: ["/ai-answer-engine", "/ai-fact-check", "/how-it-works", "/pricing"],
   },
   {
     slug: "chatgpt-alternative",
@@ -153,7 +153,7 @@ export const landingPages: LandingPage[] = [
       { q: "Does Keplar use OpenAI models?", a: "Paid plans can include OpenAI models among others. Which models answer depends on your plan and the question." },
       { q: "How much does it cost?", a: "Free is $0. Lite is $20 a month, Plus is $45 a month and Pro is $99 a month. Business is custom." },
     ],
-    related: ["/ai-answer-engine", "/compare-ai-models", "/compare", "/pricing"],
+    related: ["/ai-answer-engine", "/compare-ai-models", "/how-it-works", "/pricing"],
   },
   {
     slug: "ai-study-tool",

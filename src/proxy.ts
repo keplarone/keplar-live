@@ -139,7 +139,7 @@ export function businessMoved(req: NextRequest): NextResponse | null {
   const moved =
     pathname === "/business-account" ? "/account"
     : pathname === "/app/work" || pathname.startsWith("/app/work/") ? "/work"
-    : pathname === "/business-landing" ? "/"
+    : pathname === "/business-landing" || pathname === "/business" ? "/" // keplar.one/business is the address people guess (it was a 404)
     : pathname === BUSINESS_PREFIX || pathname.startsWith(`${BUSINESS_PREFIX}/`) ? pathname.slice(BUSINESS_PREFIX.length) || "/"
     : null;
   return moved === null ? null : NextResponse.redirect(businessUrl(`${moved}${search}`), 308);
