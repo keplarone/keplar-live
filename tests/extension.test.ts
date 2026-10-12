@@ -7,7 +7,7 @@ import { execFileSync } from "node:child_process";
 // @ts-expect-error plain ES module build script, no types
 import { ALLOWED_PERMISSIONS, SHIPPED, buildExtension, validateExtension, zip } from "../scripts/build-extension.mjs";
 // @ts-expect-error plain ES module shared with the popup
-import { ASK_URL, MAX_QUESTION, composeQuestion, cropRect, describeAnswer, errorText, hostOf, lensRequest, looksLikeKey, markdownBlocks, parseSse, textInRect } from "../extension/lib.js";
+import { ASK_URL, CONNECT_URL, DISCONNECT_URL, MAX_QUESTION, TOKEN_URL, composeQuestion, connectStatusText, cropRect, describeAnswer, errorText, hostOf, lensRequest, looksLikeKey, markdownBlocks, parseSse, pkcePair, textInRect } from "../extension/lib.js";
 import { openApiSpec } from "../src/lib/api/openapi";
 
 const manifest = JSON.parse(readFileSync("extension/manifest.json", "utf8"));
@@ -138,6 +138,36 @@ test("Keplar Lens: a click chooses the picture, card or block of words under the
   assert.match(lens, /const right = Math\.min\(window\.innerWidth, r\.right\);/);
 });
 
+test("Connect instead of an API key: PKCE in the extension, keplar.one only, credits, and only the popup can start or end it", async () => {
+  // The verifier never leaves the extension; the challenge is its SHA-256, both in the shapes the server accepts (43 base64url chars).
+  const { verifier, challenge } = await pkcePair();
+  assert.match(verifier, /^[A-Za-z0-9_-]{43}$/);
+  assert.match(challenge, /^[A-Za-z0-9_-]{43}$/);
+  const { createHash } = await import("node:crypto");
+  assert.equal(challenge, createHash("sha256").update(verifier).digest("base64url"));
+  assert.notEqual((await pkcePair()).verifier, verifier, "fresh every time");
+  for (const u of [CONNECT_URL, TOKEN_URL, DISCONNECT_URL]) assert.equal(new URL(u).origin, "https://keplar.one", "covered by connect-src https://keplar.one");
+  for (const s of ["denied", "expired", "cancelled", "used", "invalid"]) assert.match(connectStatusText(s), /Press Connect to try again/);
+
+  const popup = readFileSync("extension/popup.html", "utf8");
+  const popupJs = readFileSync("extension/popup.js", "utf8");
+  const bg = readFileSync("extension/background.js", "utf8");
+  assert.match(popup, /<button id="connect" type="button">Connect Keplar<\/button>/);
+  assert.match(popup, /use your plan&rsquo;s credits/);
+  assert.match(popup, /<summary>Use an API key instead<\/summary>/, "a pasted key still works, tucked away");
+  assert.doesNotMatch(popup, /Keys are for paid plans/, "the old key-first setup is gone");
+  assert.match(popupJs, /type: "keplar-connect"/);
+  assert.match(popupJs, /credits left this period/);
+  // The verifier is kept in session storage (cleared when the browser closes) and sent only to the token endpoint.
+  assert.match(bg, /api\.storage\.session\.set\(\{ connect: \{ rid: body\.rid, verifier,/);
+  assert.match(bg, /post\(TOKEN_URL, \{ rid: connect\.rid, verifier: connect\.verifier \}\)/);
+  assert.match(bg, /if \(url\.origin !== API_ORIGIN\) return/, "only ever opens a keplar.one page");
+  // A script on a web page can't start or end a connection: only the extension's own pages can.
+  assert.match(bg, /const ownPage = String\(sender\?\.url \?\? ""\)\.startsWith\(api\.runtime\.getURL\(""\)\);/);
+  for (const t of ["keplar-connect", "keplar-connect-resume", "keplar-connect-cancel", "keplar-disconnect"]) assert.match(bg, new RegExp(`ownPage && msg\\?\\.type === "${t}"`), t);
+  assert.match(bg, /credentials: "omit"/, "never cookies");
+});
+
 test("lensRequest: words and/or a picture with sensible default questions, follow-up history, and the API's limits", () => {
   const jpeg = { dataUrl: "data:image/jpeg;base64,/9j/4AAQ", width: 640, height: 320 };
   const both = lensRequest({ ask: "", words: "Critics point out most trials are short.", url: "https://news.example/a", image: jpeg, history: [] })!;
@@ -211,7 +241,7 @@ test("describeAnswer and errorText handle the v1 shapes", () => {
   assert.deepEqual(d.positions, ["3 of 4: Wait", "1 of 4: Go now"]);
   assert.equal(d.credits, 7);
   assert.equal(describeAnswer({ answer: "A", disagreement: null }).headline, "");
-  assert.match(errorText(401, null), /revoked or expired/);
+  assert.match(errorText(401, null), /isn't connected anymore[\s\S]*press Connect/);
   assert.equal(errorText(402, { error: { message: "Used up; resets Friday." } }), "Used up; resets Friday.");
   assert.match(errorText(429, { error: { message: "Slow." } }), /Slow\. Try again/);
 });

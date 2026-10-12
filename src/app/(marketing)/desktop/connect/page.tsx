@@ -33,19 +33,21 @@ export default async function DesktopConnectPage({ searchParams }: Props) {
   if (!isRequestId(rid)) return problem("This sign-in link isn't valid. Click Sign in in the Keplar app to start again.");
   const info = await describeRequest({ store: defaultStore(), key: magicLinkSecret() }, rid);
   if (info.state === "unknown") return problem("This sign-in link isn't valid. Click Sign in in the Keplar app to start again.");
-  // Keplar One or Keplar Business: the app that started this sign-in.
+  // Keplar One, Keplar Business or the browser extension: what started this sign-in.
   const name = DESKTOP_APPS[info.app].name;
-  if (info.state === "expired") return problem(`This sign-in link expired. Click Sign in in the ${name} app to start again.`, name);
-  if (info.state === "cancelled") return problem(`This sign-in was canceled in the app. Click Sign in in the ${name} app to start again.`, name);
-  if (info.state === "denied") return problem(`You stopped this sign-in. Click Sign in in the ${name} app to start again.`, name);
+  const extension = info.app === "extension";
+  const again = extension ? "Press Connect in the Keplar One extension to start again." : `Click Sign in in the ${name} app to start again.`;
+  if (info.state === "expired") return problem(`This sign-in link expired. ${again}`, name);
+  if (info.state === "cancelled") return problem(`This sign-in was canceled in the ${extension ? "extension" : "app"}. ${again}`, name);
+  if (info.state === "denied") return problem(`You stopped this sign-in. ${again}`, name);
   if (info.state === "finished") return problem("This sign-in is already complete. You can close this tab.", name);
   const h = await headers();
   const session = await getSession(h);
   if (!session) redirect(`/signin?next=${encodeURIComponent(connectPath(rid))}`);
   const switchTo = `/signin?add=1&next=${encodeURIComponent(connectPath(rid))}`;
   return (
-    <AuthShell variant="recover" title={`Connect ${name}`} lead="Check that the code below matches the one in the app, then connect.">
-      <DesktopConnect rid={rid} code={info.code} label={info.label} email={session.user.email} switchHref={switchTo} appName={name} scheme={DESKTOP_APPS[info.app].scheme} />
+    <AuthShell variant="recover" title={`Connect ${name}`} lead={`Check that the code below matches the one in the ${extension ? "extension" : "app"}, then connect.`}>
+      <DesktopConnect rid={rid} code={info.code} label={info.label} email={session.user.email} switchHref={switchTo} appName={name} scheme={DESKTOP_APPS[info.app].scheme} extension={extension} />
     </AuthShell>
   );
 }

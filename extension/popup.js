@@ -1,4 +1,4 @@
-import { ASK_URL, STAGE_TEXT, composeQuestion, describeAnswer, errorText, looksLikeKey, parseSse, MAX_PAGE_CHARS } from "./lib.js";
+import { ASK_URL, STAGE_TEXT, USAGE_URL, composeQuestion, describeAnswer, errorText, looksLikeKey, parseSse, MAX_PAGE_CHARS } from "./lib.js";
 
 const api = globalThis.chrome;
 const $ = (id) => document.getElementById(id);
@@ -18,6 +18,29 @@ async function render() {
   show("setup", !key);
   show("ask", Boolean(key));
   show("forget", Boolean(key));
+  if (key) { void showWho(key); return; }
+  // Connecting: the person is approving on keplar.one; the service worker collects the connection and storage changes re-render.
+  const { connect, connectError } = await api.storage.session.get(["connect", "connectError"]);
+  const waiting = Boolean(connect?.rid);
+  show("connect-wait", waiting);
+  show("connect-cancel", waiting);
+  $("connect").disabled = waiting;
+  if (waiting) $("connect-wait").textContent = `Approve in the keplar.one tab that opened. It shows the code ${connect.code || "this extension started"}.`;
+  say($("setup-msg"), connectError || "", Boolean(connectError));
+}
+
+/** Which account is connected, and the credits left this period (the usage endpoint spends nothing). */
+async function showWho(key) {
+  const { account } = await api.storage.local.get("account");
+  const who = account?.email ? `Connected as ${account.email}.` : "Using an API key.";
+  $("who").textContent = who;
+  try {
+    const res = await fetch(USAGE_URL, { headers: { authorization: `Bearer ${key}` }, credentials: "omit", cache: "no-store" });
+    if (res.status === 401) { await api.storage.local.remove(["apiKey", "account"]); return; } // disconnected elsewhere: render() runs again
+    const u = res.ok ? await res.json() : null;
+    const left = u?.credits?.left;
+    if (typeof left === "number") $("who").textContent = `${who} ${left.toLocaleString("en-US")} credits left this period.`;
+  } catch { /* offline: the line without the count */ }
 }
 
 function setContext(c) {
@@ -68,6 +91,7 @@ async function ask() {
     if (!res.ok || !res.body) {
       const body = await res.json().catch(() => null);
       say($("status"), errorText(res.status, body), true);
+      if (res.status === 401) await api.storage.local.remove(["apiKey", "account"]); // disconnected or expired: offer Connect again
       return;
     }
     const reader = res.body.getReader();
@@ -136,12 +160,25 @@ $("save").addEventListener("click", async () => {
   const v = $("key").value.trim();
   if (!looksLikeKey(v)) { say($("setup-msg"), "That doesn't look like a Keplar key. It starts with kpl_.", true); return; }
   await api.storage.local.set({ apiKey: v });
+  await api.storage.local.remove("account");
   $("key").value = "";
   say($("setup-msg"), "");
   await render();
 });
+$("connect").addEventListener("click", async () => {
+  say($("setup-msg"), "");
+  $("connect").disabled = true;
+  const res = await api.runtime.sendMessage({ type: "keplar-connect" }).catch(() => null);
+  if (!res?.ok) { $("connect").disabled = false; say($("setup-msg"), res?.text || "Couldn't reach Keplar. Check your connection and try again.", true); return; }
+  await render();
+});
+$("connect-cancel").addEventListener("click", async () => {
+  await api.runtime.sendMessage({ type: "keplar-connect-cancel" }).catch(() => null);
+  await render();
+});
 $("forget").addEventListener("click", async () => {
-  await api.storage.local.remove("apiKey");
+  await api.runtime.sendMessage({ type: "keplar-disconnect" }).catch(() => null);
+  await api.storage.local.remove(["apiKey", "account"]);
   controller?.abort();
   show("result", false);
   setContext({ kind: "selection", text: "", url: "" });
@@ -170,8 +207,12 @@ $("clear-ctx").addEventListener("click", () => setContext({ kind: "selection", t
 $("go").addEventListener("click", () => void ask());
 $("q").addEventListener("keydown", (e) => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") void ask(); });
 
+// The connection finishing (or being removed) anywhere re-renders this popup.
+api.storage.onChanged.addListener((changes) => { if (changes.apiKey || changes.connect || changes.connectError) void render(); });
+
 (async () => {
   await render();
+  void api.runtime.sendMessage({ type: "keplar-connect-resume" }).catch(() => null); // a worker that was asleep picks the poll back up
   if (new URLSearchParams(location.search).has("menu")) {
     const { pending } = await api.storage.session.get("pending");
     await api.storage.session.remove("pending");
