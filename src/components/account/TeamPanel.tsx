@@ -81,7 +81,7 @@ export function TeamPanel() {
       {me.eligible && !me.owned ? (
         <form className={s.form} onSubmit={(e) => { e.preventDefault(); void act(async () => { const r = await api<{ team: { id: string } }>("/api/team", "POST", { name }); setName(""); await loadMe(); setOpen(r.team.id); }); }}>
           <label className={s.fieldLabel} htmlFor="team-name">Name your team</label>
-          <input id="team-name" className={s.input} value={name} maxLength={60} placeholder="Acme Studio" onChange={(e) => setName(e.target.value)} />
+          <input spellCheck={false} id="team-name" className={s.input} value={name} maxLength={60} placeholder="Acme Studio" onChange={(e) => setName(e.target.value)} />
           <div className={s.actions}><button type="submit" className={`${s.btn} ${s.btnSm}`} disabled={busy}>Create team</button></div>
         </form>
       ) : null}

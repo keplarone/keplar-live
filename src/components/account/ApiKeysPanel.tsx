@@ -68,7 +68,7 @@ export function ApiKeysPanel() {
           ) : null}
           <form className={s.form} onSubmit={(e) => { e.preventDefault(); void act(async () => { const r = await api<{ key: string }>("/api/keys", "POST", { name, scopes: usage ? ["ask", "usage"] : ["ask"], expiresInDays: days === "none" ? null : Number(days) }); setFresh(r.key); setCopied(false); setName(""); await load(); }); }}>
             <label className={s.fieldLabel} htmlFor="key-name">Key name</label>
-            <input id="key-name" className={s.input} value={name} maxLength={60} required placeholder="Laptop script" onChange={(e) => setName(e.target.value)} autoComplete="off" />
+            <input spellCheck={false} id="key-name" className={s.input} value={name} maxLength={60} required placeholder="Laptop script" onChange={(e) => setName(e.target.value)} autoComplete="off" />
             <label className={s.fieldLabel} htmlFor="key-exp">Expires</label>
             <select id="key-exp" className={s.input} value={days} onChange={(e) => setDays(e.target.value)}>
               <option value="30">in 30 days</option><option value="90">in 90 days</option><option value="365">in 1 year</option><option value="none">never</option>

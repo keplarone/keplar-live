@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * Keplar Lens end to end, in a real browser: consent once, drag an area, the search sends the words and a JPEG of the area,
- * the answer appears in the side panel, a follow-up sends the earlier turns. Also writes screenshots of each step.
+ * the answer appears in the side panel, a follow-up sends the earlier turns; hovering outlines a picture or card and a click
+ * searches just that, like Google Lens. Also writes screenshots of each step.
  *
  * Opening Lens needs the person's click on the menu (activeTab), which automation can't give. So this loads a COPY of the
  * extension with host access added for the test page only; the shipped manifest is never changed. The API is served from
@@ -104,7 +105,47 @@ try {
   assert.ok(bodies[1].image?.data_url, "the follow-up still has the picture");
   assert.match(bodies[1].question, /Which side has better evidence\?/);
 
-  // 4. Second time Lens opens: no consent card (agreed once).
+  // 4. Click to search, like Google Lens: hovering outlines what a click would choose; a click searches it, no drag needed.
+  const lens = (sel) => page.locator(`#keplar-lens-host >> ${sel}`);
+  const near = (a, b, what) => assert.ok(Math.abs(a - b) <= 4, `${what}: ${a} vs ${b}`);
+  const swatch = await page.locator(".swatch").boundingBox();
+  await page.mouse.move(swatch.x + 20, swatch.y + 20, { steps: 4 });
+  await page.waitForSelector("#keplar-lens-host >> .hint:not([hidden])");
+  await page.waitForTimeout(250); // the outline follows the pointer once per frame
+  const hintBox = await lens(".hint").boundingBox();
+  near(hintBox.width, swatch.width + 6, "the outline sits around the picture (width)");
+  near(hintBox.height, swatch.height + 6, "the outline sits around the picture (height)");
+  await page.mouse.click(swatch.x + swatch.width / 2, swatch.y + swatch.height / 2);
+  await page.waitForFunction(() => document.getElementById("keplar-lens-host")?.shadowRoot?.querySelectorAll(".turn").length === 1);
+  assert.equal(bodies.length, 3, "one click, one search");
+  near(bodies[2].image?.width, swatch.width, "only the picture is sent (width)");
+  near(bodies[2].image?.height, swatch.height, "only the picture is sent (height)");
+  assert.match(bodies[2].question, /What is in this picture\?/, "a picture with no words in it");
+  assert.equal(bodies[2].history, undefined, "a new choice starts a new search");
+
+  // The words of a card: the whole card is chosen (as Lens picks a tile), not the paragraph and not the page.
+  const words = await page.locator("#card p").boundingBox();
+  await page.mouse.move(words.x + 30, words.y + 8, { steps: 4 });
+  await page.waitForTimeout(150);
+  await page.screenshot({ path: join(OUT, "6-hover.png") });
+  await page.mouse.click(words.x + 30, words.y + 8);
+  for (let i = 0; i < 80 && bodies.length < 4; i++) await page.waitForTimeout(100);
+  assert.equal(bodies.length, 4);
+  assert.match(bodies[3].question, /self-selected/, "the card's words are sent");
+  assert.doesNotMatch(bodies[3].question, /32-hour|redesigned/, "nothing outside the card");
+  near(bodies[3].image?.width, box.width, "the picture is the card (width)");
+  near(bodies[3].image?.height, box.height, "the picture is the card (height)");
+  await page.waitForSelector("#keplar-lens-host >> .turn");
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: join(OUT, "7-clicked-card.png") });
+
+  // A click on empty page chooses nothing and sends nothing; the drag above still worked the old way.
+  await page.mouse.click(20, 760);
+  await page.waitForTimeout(400);
+  assert.equal(bodies.length, 4, "an empty click sends nothing");
+  assert.equal(await lens(".frame:not([hidden])").count(), 0, "and clears the choice");
+
+  // 5. Second time Lens opens: no consent card (agreed once).
   await page.keyboard.press("Escape");
   await open();
   await page.waitForSelector("#keplar-lens-host >> .pill:not([hidden])");

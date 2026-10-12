@@ -42,7 +42,7 @@ export function RemixPanel({ slug, title, credit }: { slug: string; title: strin
       <p className={s.meta}>Makes a copy in your workspace and opens Create so you can describe what to change. The original is never touched.</p>
       <label className={s.field}>
         <span>Name of your site</span>
-        <input className={s.input} value={name} maxLength={60} onChange={(e) => setName(e.target.value)} required />
+        <input spellCheck={false} className={s.input} value={name} maxLength={60} onChange={(e) => setName(e.target.value)} required />
       </label>
       <label className={s.check}>
         <input type="checkbox" checked={credited} onChange={(e) => setCredited(e.target.checked)} />
