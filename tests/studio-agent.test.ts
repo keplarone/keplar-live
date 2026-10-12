@@ -114,7 +114,7 @@ test("turn: asks Opus 5.5 with Keplar's system prompt and the tools, charges the
   assert.deepEqual(turn.blocked, [{ id: "c", name: "http_get" }]);
   assert.equal(turn.done, false);
   assert.equal(turn.message.tool_calls?.length, 3, "the reply goes back into history exactly, blocked call included");
-  assert.equal(turn.units, Math.ceil((0.25 * 1.1) / 0.002));
+  assert.equal(turn.units, Math.ceil((0.25 * 1.1 * 0.5) / 0.002), "Roblox building is charged half the usual credits");
   assert.equal((await usedThisMonth(ws)) - before, turn.units);
   assert.deepEqual(turn.usage, { provider: "Anthropic", model: "anthropic/claude-opus-5.5", promptTokens: 20_000, cachedTokens: 0, completionTokens: 1_000, reasoningTokens: 0, usd: 0.25, latencyMs: turn.usage.latencyMs });
 });

@@ -297,8 +297,15 @@ export type TurnProfile = {
   reasoningTokens: number;
   /** Roblox Studio: always Claude Opus 5.5 (robloxModelId), never substituted, even by the cost meter's guardrails. */
   lockedModel?: boolean;
+  /** Share of the metered cost charged as credits (default 1). The ledger still records the full provider cost. */
+  creditRate?: number;
 };
-export const STUDIO_PROFILE: TurnProfile = { system: STUDIO_SYSTEM, riskOf, meter: "studio.agent", title: "Keplar Studio mode", maxOutputTokens: STUDIO_LIMITS.maxOutputTokens, reasoningTokens: STUDIO_LIMITS.reasoningTokens, lockedModel: true };
+/**
+ * Roblox building (Studio mode and Roblox Cloud) is charged half the usual credits: Opus 5.5 turns are long and a build takes
+ * many of them. Keplar carries the other half, so a Roblox turn is billed at about 55% of its provider cost (1.1 margin × 0.5).
+ */
+export const ROBLOX_CREDIT_RATE = 0.5;
+export const STUDIO_PROFILE: TurnProfile = { system: STUDIO_SYSTEM, riskOf, meter: "studio.agent", title: "Keplar Studio mode", maxOutputTokens: STUDIO_LIMITS.maxOutputTokens, reasoningTokens: STUDIO_LIMITS.reasoningTokens, lockedModel: true, creditRate: ROBLOX_CREDIT_RATE };
 
 /** One model turn: check credits, ask Opus 5.5 (thinking first), charge the real cost, return the reply and the labelled actions. */
 export async function runStudioTurn(
@@ -353,7 +360,7 @@ export async function runStudioTurn(
   const completion = data.usage?.completion_tokens ?? 0;
   const usd = typeof data.usage?.cost === "number" && data.usage.cost > 0 ? data.usage.cost : callCostUsd(spec, prompt, completion, (deps.now ?? (() => new Date().toISOString()))()) ?? 0;
   const metered = usd * METER_MARGIN;
-  const units = usd > 0 ? await chargeUnits(ws, profile.meter, toUnits(metered), metered, undefined, { dailySafetyCap: false }) : 0;
+  const units = usd > 0 ? await chargeUnits(ws, profile.meter, toUnits(metered * (profile.creditRate ?? 1)), metered, undefined, { dailySafetyCap: false }) : 0;
   const usage: StudioUsage = {
     provider: typeof data.provider === "string" ? data.provider.slice(0, 40) : null,
     model: typeof data.model === "string" ? data.model.slice(0, 80) : slug,

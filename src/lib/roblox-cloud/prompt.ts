@@ -2,7 +2,7 @@
  * The Roblox Cloud model profile: Claude Opus 5.5 only (the same lock as Roblox Studio mode, src/lib/studio/agent.ts), a
  * cached system prompt, and the snapshot tools (tools.ts).
  */
-import type { TurnProfile } from "@/lib/studio/agent";
+import { ROBLOX_CREDIT_RATE, type TurnProfile } from "@/lib/studio/agent";
 import { CLOUD_TOOL_POLICY } from "./tools";
 import type { StopMode } from "./model";
 
@@ -49,4 +49,5 @@ export const ROBLOX_CLOUD_PROFILE: TurnProfile = {
   maxOutputTokens: 16_000,
   reasoningTokens: 3_000,
   lockedModel: true,
+  creditRate: ROBLOX_CREDIT_RATE,
 };
