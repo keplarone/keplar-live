@@ -210,6 +210,36 @@ export async function saveFileEdit(ws: Workspace, site: Site, path: string, cont
   ]);
 }
 
+/**
+ * Save several hand edits at once (the Business Design Canvas's "Approve and save"): only files that already exist, websites only,
+ * and only on top of the version the edits started from, so a change made elsewhere meanwhile is never overwritten.
+ */
+export async function saveFilesEdit(ws: Workspace, site: Site, edits: Record<string, string>, opts: { baseVersion: number; note: string }) {
+  if (site.kind === "app") throw new HttpError(400, "The Design Canvas edits websites. Change apps in Create.");
+  if (opts.baseVersion !== site.headVersion) throw new HttpError(409, "This project changed somewhere else since you opened it. Reload it, then make your changes again.", "conflict");
+  const head = await headFiles(site);
+  const next = { ...head };
+  const changed: string[] = [];
+  for (const [path, content] of Object.entries(edits)) {
+    const key = Object.keys(head).find((k) => k.toLowerCase() === path.trim().replace(/^\.?\//, "").toLowerCase());
+    if (!key) throw new HttpError(404, `${path.slice(0, 60)} isn't in the current version.`, "not_found");
+    if (typeof content !== "string" || !content.trim()) throw new HttpError(400, `${key} is empty.`);
+    if (content.length > 400_000) throw new HttpError(400, `${key} is too large.`);
+    if (content !== head[key]) { next[key] = content; changed.push(key); }
+  }
+  if (!changed.length) throw new HttpError(400, "There are no changes to save.");
+  let files: Record<string, string>;
+  try {
+    files = normalizeFiles(next, ws.plan).files;
+  } catch (e) {
+    throw new HttpError(400, e instanceof Error ? e.message : "Those edits didn't pass the file checks.");
+  }
+  const note = opts.note.replace(/\s+/g, " ").trim().slice(0, 300) || `Edited ${changed.join(", ")}.`;
+  return addVersion(ws, site, files, { kind: "edit", summary: note, prompt: `Design Canvas: ${note}`, model: null, units: 0 }, [
+    { id: newId("msg"), role: "system", text: `Design Canvas: ${note}`, at: now() },
+  ]);
+}
+
 /** Restore (and "undo") = a new version holding an older version's files. Nothing is lost; redo is restoring again. */
 export async function restoreVersion(ws: Workspace, site: Site, n: number) {
   const v = await getVersion(site, n);
@@ -385,6 +415,7 @@ export const toSummary = (s: Site, origin = "") => ({
   id: s.id,
   name: s.name,
   slug: s.slug,
+  kind: s.kind ?? "site",
   template: s.template,
   headVersion: s.headVersion,
   versionCount: s.versionCount,

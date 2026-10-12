@@ -42,4 +42,4 @@
 .status[data-s]::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 999px; background: currentColor; vertical-align: 1px; }
 .jump a { min-height: 38px; align-items: center; padding: 0 15px; border-radius: 999px; border: 1px solid rgb(var(--rgb-ink) / 0.1); background: color-mix(in srgb, var(--c-surface-1) 70%, transparent); }
 .jump { gap: var(--s-2); }
-.num { display: inline-flex; }
+.num { display: inline-flex; color: var(--c-ink-2); } /* 4.5:1 on the tinted section backgrounds (ink-3 was 4.3:1) */

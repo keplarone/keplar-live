@@ -57,7 +57,7 @@ export function EmbedConfigurator({ origin }: { origin: string }) {
         <fieldset className={s.group}>
           <legend className={s.groupLabel}>Size</legend>
           <div className={s.seg}>
-            {EMBED_SIZES.map((t) => <button key={t} type="button" className={s.segBtn} aria-pressed={t === size} onClick={() => setSize(t)}>{t} <span style={{ opacity: 0.6, fontFamily: "var(--f-mono)", fontSize: 11 }}>{EMBED_SIZE_PX[t].width}×{EMBED_SIZE_PX[t].height}</span></button>)}
+            {EMBED_SIZES.map((t) => <button key={t} type="button" className={s.segBtn} aria-pressed={t === size} onClick={() => setSize(t)}>{t} <span style={{ opacity: 0.85, fontFamily: "var(--f-mono)", fontSize: 11 }}>{EMBED_SIZE_PX[t].width}×{EMBED_SIZE_PX[t].height}</span></button>)}
           </div>
         </fieldset>
         <fieldset className={s.group}>

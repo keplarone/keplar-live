@@ -210,6 +210,7 @@ export const CAPABILITY_MATRIX: MatrixRow[] = [
   { feature: "Floating overlay over Studio or Blender", cells: ["no", "beta", "no", "no"] },
   { feature: "Scheduled agents and Approvals", cells: ["no", "no", "beta", "beta"] },
   { feature: "Operations: orders, CRM, inbox, audit log", cells: ["no", "no", "beta", "beta"] },
+  { feature: "AI Design Canvas", cells: ["no", "no", "beta", "beta"], note: "Design, code and AI edits to a website project in one draft, saved only when you approve." },
   { feature: "Connected apps (MCP)", cells: ["beta", "beta", "beta", "beta"] },
   { feature: "Projects", cells: ["yes", "yes", "yes", "yes"] },
   { feature: "Chat history and optional memory", cells: ["yes", "yes", "no", "no"], note: "Business keeps projects and report history instead." },

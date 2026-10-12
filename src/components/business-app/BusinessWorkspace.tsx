@@ -19,6 +19,7 @@ type OsTab = "overview" | "orders" | "crm" | "inbox" | "agents" | "approvals" | 
 const OS_TABS: readonly OsTab[] = ["overview", "orders", "crm", "inbox", "agents", "approvals", "connectors", "apps", "audit"];
 const Loading = () => <div className={s.center}><span className={s.spinner} aria-label="Loading" /></div>;
 const BusinessOS = dynamic(() => import("@/components/business/BusinessOS").then((m) => m.BusinessOS), { ssr: false, loading: Loading });
+const DesignCanvas = dynamic(() => import("./DesignCanvas").then((m) => m.DesignCanvas), { ssr: false, loading: Loading });
 const CreateStudio = dynamic(() => import("@/components/create/CreateStudio").then((m) => m.CreateStudio), { ssr: false, loading: Loading });
 
 type Account = { signedIn: boolean; email?: string | null; account?: { company: string } | null; active?: boolean; plan?: { name: string } | null };
@@ -30,6 +31,7 @@ type View =
   | { at: "dashboard" }
   | { at: "projects"; projectId: string | null }
   | { at: "create" }
+  | { at: "canvas" }
   | { at: "os"; tab: OsTab }
   | { at: "research" | "reason"; seed?: string; openId?: string; projectId?: string; key: string };
 
@@ -46,6 +48,7 @@ function readView(): View {
   if (v === "projects") return { at: "projects", projectId: q.get("p") };
   if (v === "dashboard") return { at: "dashboard" };
   if (v === "create") return { at: "create" };
+  if (v === "canvas") return { at: "canvas" };
   if (v === "os") { const tab = q.get("t") as OsTab | null; return { at: "os", tab: tab && OS_TABS.includes(tab) ? tab : "overview" }; }
   if (v === "research" || v === "reason") return { at: v, openId: q.get("r") ?? undefined, key: k() };
   return { at: "home" };
@@ -56,6 +59,7 @@ function writeView(v: View) {
   if (v.at === "projects") { q.set("v", "projects"); if (v.projectId) q.set("p", v.projectId); }
   else if (v.at === "dashboard") q.set("v", "dashboard");
   else if (v.at === "create") q.set("v", "create");
+  else if (v.at === "canvas") q.set("v", "canvas");
   else if (v.at === "os") { q.set("v", "os"); if (v.tab !== "overview") q.set("t", v.tab); }
   else if (v.at === "research" || v.at === "reason") { q.set("v", v.at); if (v.openId) q.set("r", v.openId); }
   const qs = q.toString();
@@ -170,6 +174,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
   const I = {
     dashboard: <><rect x="3" y="3" width="7" height="9" rx="1.5" /><rect x="14" y="3" width="7" height="5" rx="1.5" /><rect x="14" y="12" width="7" height="9" rx="1.5" /><rect x="3" y="16" width="7" height="5" rx="1.5" /></>,
     create: <><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.4z" /><path d="M19 15l.8 1.9L21.7 18l-1.9.8L19 20.7l-.8-1.9-1.9-.8 1.9-1.1z" /></>,
+    canvas: <><rect x="3" y="4" width="18" height="14" rx="2" /><path d="M8 21h8M12 18v3" /><path d="M7 9h5M7 12.5h3" /><path d="M14.5 8.5l2.5 2.5-3 3h-2.5v-2.5z" /></>,
     agents: <><rect x="5" y="8" width="14" height="11" rx="3" /><path d="M12 8V4M9.5 13h.01M14.5 13h.01" /><path d="M2.5 13.5v2M21.5 13.5v2" /></>,
     approvals: <><path d="M9 11l2 2 4-4" /><path d="M5 4h14v13l-7 4-7-4z" /></>,
     operations: <><path d="M3 9l1.5-5h15L21 9" /><path d="M4 9v11h16V9" /><path d="M3 9h18M9 20v-6h6v6" /></>,
@@ -181,6 +186,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
   const PLACES: { id: string; label: string; icon: React.ReactNode; view: () => View; current: boolean }[] = [
     { id: "dashboard", label: "Dashboard", icon: I.dashboard, view: () => ({ at: "dashboard" }), current: is("dashboard") },
     { id: "create", label: "Create", icon: I.create, view: () => ({ at: "create" }), current: is("create") },
+    { id: "canvas", label: "Design Canvas", icon: I.canvas, view: () => ({ at: "canvas" }), current: is("canvas") },
     { id: "agents", label: "Agents", icon: I.agents, view: () => ({ at: "os", tab: "agents" }), current: osAt("agents") },
     { id: "approvals", label: "Approvals", icon: I.approvals, view: () => ({ at: "os", tab: "approvals" }), current: osAt("approvals") },
     { id: "operations", label: "Operations", icon: I.operations, view: () => ({ at: "os", tab: "overview" }), current: osAt("overview", "orders", "crm", "inbox", "audit") },
@@ -270,6 +276,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
               : view.at === "dashboard" ? <Dashboard onOpenProject={(id) => go({ at: "projects", projectId: id })} />
               : view.at === "projects" ? <Projects projectId={view.projectId} onOpen={(id) => { go({ at: "projects", projectId: id }); loadSide(); }} />
               : view.at === "create" ? <div className={s.module}><CreateStudio signedIn plan="business" /></div>
+              : view.at === "canvas" ? <div className={s.module}><DesignCanvas /></div>
               : view.at === "os" ? <div className={s.module}><BusinessOS key={view.tab} initialTab={view.tab} embedded /></div>
               : <Analyst key={view.key} kind={view.at} seed={view.seed} openId={view.openId} projectSeed={view.projectId} onSaved={loadSide} />}
           </div>

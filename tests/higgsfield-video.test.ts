@@ -9,6 +9,9 @@ process.env.BETTER_AUTH_SECRET ||= "test-secret-for-sessions-0123456789abcdefghi
 process.env.KEPLAR_HIGGSFIELD_BASE = HF_HOST;
 process.env.HIGGSFIELD_API = HF_TEST_KEY;
 process.env.KEPLAR_PUBLIC_URL = "https://keplar.one";
+// The spend-spike detector (src/lib/ops/telemetry.ts, tested in ops.test.ts) checks at most every 10 s. Under a loaded parallel run this
+// file outlives that window, the second check sees every test charge so far and auto-pauses media, failing the later tests.
+process.env.KEPLAR_SPIKE_USD = "1000000";
 
 import { blobs } from "@/lib/create/platform/blob";
 import { toUnits, usedThisPeriod } from "@/lib/create/platform/compute";
@@ -35,7 +38,7 @@ beforeEach(async () => {
   process.env.HIGGSFIELD_API = HF_TEST_KEY;
   delete process.env.KEPLAR_HIGGSFIELD_OFF;
   delete process.env.VERCEL;
-  await setControls({ pauseMedia: false, disabledProviders: [] }, "test");
+  await setControls({ pauseMedia: false, disabledProviders: [], autoPauseUntil: null }, "test");
   resetOpsCache();
 });
 
