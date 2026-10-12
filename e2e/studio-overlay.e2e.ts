@@ -64,10 +64,18 @@ test("Solar overlay: see-through glass, a live core that follows the run, honest
   await page.keyboard.press("Escape");
   await expect(about).toHaveCount(0);
 
+  // Liquid glass: each surface has its own refraction filter (the pen's lens on round controls), and the tint follows the scene.
+  const glass = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>("[data-glass]")].map((e) => ({ shape: e.dataset.glass, filter: getComputedStyle(e).backdropFilter })));
+  expect(glass.filter((g) => g.shape === "circle").length).toBeGreaterThanOrEqual(3);
+  for (const g of glass) expect(g.filter).toMatch(/^url\("#kp-lg-\d+"\)$/);
+  await expect(page.locator("[data-scene]")).toHaveAttribute("data-scene", /^(bright|mixed|dark)$/);
+
   const box = page.locator("textarea");
   await box.fill("A lava obby");
   await expect(core).toHaveAttribute("data-state", "typing");
   await box.press("Enter");
+  // The Build press sends a piece of glass up to the status strip.
+  await expect(page.locator("div[class*='__morph']")).toHaveCount(1, { timeout: 5_000 });
   await page.getByRole("button", { name: /^Approve/ }).click();
   await expect(core).toHaveAttribute("data-state", "building");
   await expect(page.getByRole("button", { name: "Stop" })).toBeVisible();

@@ -3,6 +3,9 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { KeplarSymbol } from "@/components/brand";
 import { blenderBridge, resultText, STUDIO_PLANS, studioBridge, type BlenderStatus, type OverlayState, type StudioStatus } from "@/lib/desktop/studio-bridge";
+import { GlassIconButton, GlassSwitch, morphGlass, useAnchoredMorph, useSceneTone } from "./liquid-glass/glass";
+import { useGlass } from "./liquid-glass/useGlass";
+import g from "./liquid-glass/glass.module.css";
 import { SolarCore } from "./SolarCore";
 import { solarPulse, solarState } from "./solar-state";
 import { StudioDock } from "./StudioDock";
@@ -39,6 +42,9 @@ export function StudioOverlay() {
   const [keys, setKeys] = useState(0);
   const [aboutOpen, setAboutOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
+  const badgeRef = useRef<HTMLButtonElement>(null);
+  const aboutRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
 
   // A specular highlight follows the pointer across the glass (CSS variables, at most once per frame).
   useEffect(() => {
@@ -143,6 +149,24 @@ export function StudioOverlay() {
   const solar = solarState(a, draft);
   const pulse = solarPulse(a);
   const active = a.items.length > 0;
+  const finishedRun = a.finished && !a.running;
+  const scene = useSceneTone(a.viewport?.image);
+  const aboutShown = useAnchoredMorph(aboutOpen, aboutRef, badgeRef);
+  const badgeGlass = useGlass(badgeRef, { shape: "rounded", strength: 8, band: 0.5 }, !win.collapsed);
+  useGlass(aboutRef, { shape: "rounded", strength: 16 }, aboutShown && !win.collapsed);
+  const stageGlass = useGlass(stageRef, { shape: "rounded", strength: 16 }, active && !win.collapsed);
+  // The strip re-forms when the run finishes (it becomes the results panel).
+  useEffect(() => { if (finishedRun) stageGlass.current?.surge(1.2); }, [finishedRun, stageGlass]);
+  /** Build: the button's glass travels up and becomes the execution strip (its final shape, while the stage is still resizing). */
+  const launch = (button: { left: number; top: number; width: number; height: number }) => {
+    const panel = panelRef.current, stage = stageRef.current;
+    if (!panel || !stage) return;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const body = stage.parentElement?.getBoundingClientRect();
+      if (!body) return;
+      void morphGlass(button, { left: body.left + 12, top: body.top + 6, width: body.width - 24, height: 64 }, panel, { radiusTo: 16 }).then(() => stageGlass.current?.surge(1));
+    }));
+  };
 
   if (win.collapsed) {
     return (
@@ -161,15 +185,9 @@ export function StudioOverlay() {
   }
 
   return (
-    <div className={s.panel} ref={panelRef} data-solar={solar}>
+    <div className={s.panel} ref={panelRef} data-solar={solar} data-scene={scene}>
       <div className={s.aura} aria-hidden="true"><span data-a="1" /><span data-a="2" /><span data-a="3" /></div>
       <div className={s.glass} aria-hidden="true" />
-      <svg className={s.defs} aria-hidden="true" width="0" height="0">
-        <filter id="solar-liquid" x="-5%" y="-5%" width="110%" height="110%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.012 0.02" numOctaves="2" seed="7" result="n" />
-          <feDisplacementMap in="SourceGraphic" in2="n" scale="9" xChannelSelector="R" yChannelSelector="G" />
-        </filter>
-      </svg>
       <div className={s.rim} aria-hidden="true" />
       <header className={s.head}>
         <svg className={s.grip} width="10" height="16" viewBox="0 0 12 18" fill="currentColor" aria-hidden="true"><circle cx="3" cy="3" r="1.5" /><circle cx="9" cy="3" r="1.5" /><circle cx="3" cy="9" r="1.5" /><circle cx="9" cy="9" r="1.5" /><circle cx="3" cy="15" r="1.5" /><circle cx="9" cy="15" r="1.5" /></svg>
@@ -177,39 +195,33 @@ export function StudioOverlay() {
         <span className={s.headText}>
           <span className={s.name}>
             Keplar Studio
-            <button type="button" className={s.solar} onClick={() => setAboutOpen((v) => !v)} aria-expanded={aboutOpen} aria-controls="solar-about">Solar 5.8 Ultra</button>
+            <button ref={badgeRef} type="button" className={`${g.surface} ${s.solar}`} onClick={() => { badgeGlass.current?.surge(1); setAboutOpen((v) => !v); }} aria-expanded={aboutOpen} aria-controls="solar-about">Solar 5.8 Ultra</button>
           </span>
           <span className={s.status}><span className={s.dot} data-tone={tone} aria-hidden="true" />{statusText}</span>
         </span>
         {!isBlender ? (
-          <button type="button" className={s.icon} onClick={() => void a.refreshViewport()} disabled={!connected || a.looking} aria-label="Let Keplar look at Studio again" title="Look again">
+          <GlassIconButton onClick={() => void a.refreshViewport()} disabled={!connected || a.looking} aria-label="Let Keplar look at Studio again" title="Look again">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
-          </button>
+          </GlassIconButton>
         ) : null}
-        <button type="button" className={s.icon} onClick={() => void bridge?.overlay?.seeThrough(!win.seeThrough)} aria-pressed={win.seeThrough} aria-label="See-through" title="See-through">
+        <GlassIconButton onClick={() => void bridge?.overlay?.seeThrough(!win.seeThrough)} aria-pressed={win.seeThrough} aria-label="See-through" title="See-through">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" /></svg>
-        </button>
-        <button type="button" className={s.icon} onClick={() => void bridge?.overlay?.collapse(true)} aria-label="Collapse to a pill" title="Collapse">
+        </GlassIconButton>
+        <GlassIconButton onClick={() => void bridge?.overlay?.collapse(true)} aria-label="Collapse to a pill" title="Collapse">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 12h12" /></svg>
-        </button>
-        <button type="button" className={s.icon} onClick={() => void bridge?.overlay?.close()} aria-label="Close the overlay and go back to Keplar" title="Back to Keplar">
+        </GlassIconButton>
+        <GlassIconButton onClick={() => void bridge?.overlay?.close()} aria-label="Close the overlay and go back to Keplar" title="Back to Keplar">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
-        </button>
+        </GlassIconButton>
       </header>
       {bb ? (
         <div className={s.switchRow}>
-          <span className={s.targets} role="group" aria-label="Work in" data-on={isBlender ? "1" : "0"}>
-            {(["studio", "blender"] as const).map((t) => (
-              <button key={t} type="button" className={s.target} aria-pressed={(isBlender ? "blender" : "studio") === t} onClick={() => pick(t)} disabled={a.running} title={a.running ? "Finish or stop this build first" : undefined}>
-                {APP[t]}
-              </button>
-            ))}
-          </span>
+          <GlassSwitch label="Work in" value={isBlender ? "blender" : "studio"} options={[{ value: "studio", label: APP.studio }, { value: "blender", label: APP.blender }]} onChange={(t) => pick(t)} disabled={a.running} disabledTitle="Finish or stop this build first" />
         </div>
       ) : null}
       <div className={s.progress} aria-hidden="true"><span style={{ width: `${a.running && !pct ? 8 : pct}%` }} data-live={a.running || undefined} /></div>
-      {aboutOpen ? (
-        <div id="solar-about" className={s.about} role="dialog" aria-label="About Solar 5.8 Ultra">
+      {aboutShown ? (
+        <div ref={aboutRef} id="solar-about" className={`${g.surface} ${s.about}`} role="dialog" aria-label="About Solar 5.8 Ultra">
           <strong>Solar 5.8 Ultra</strong>
           <p>Keplar&apos;s building experience for Roblox Studio and Blender: it looks at your place, plans, makes changes through Keplar&apos;s tools and asks before risky ones.</p>
           <p className={s.aboutNote}>Solar is Keplar&apos;s name for this experience, not a separately trained model.</p>
@@ -227,12 +239,14 @@ export function StudioOverlay() {
         </div>
       ) : (
         <div className={s.body}>
-          <div className={s.stage} data-mode={active ? "strip" : "hero"}>
+          <div ref={stageRef} className={`${active ? g.surface : ""} ${s.stage}`} data-mode={active ? "strip" : "hero"} data-done={finishedRun || undefined}>
             <SolarCore state={solar} pulse={pulse} typing={keys} className={s.coreCanvas} />
             {active ? (
               <div className={s.stageText} aria-live="polite">
                 <span className={s.stageState}>{statusText}</span>
-                {a.plan.length ? <span className={s.stageMeta}>{done} of {a.plan.length} steps · {pct}%</span> : <span className={s.stageMeta}>Solar 5.8 Ultra</span>}
+                {finishedRun ? (
+                  <span className={s.stageMeta}>{a.stats.changes} {a.stats.changes === 1 ? "change" : "changes"} · {a.stats.steps} {a.stats.steps === 1 ? "step" : "steps"} · {a.units.toLocaleString()} credits</span>
+                ) : a.plan.length ? <span className={s.stageMeta}>{done} of {a.plan.length} steps · {pct}%</span> : <span className={s.stageMeta}>Solar 5.8 Ultra</span>}
               </div>
             ) : null}
           </div>
@@ -251,7 +265,7 @@ export function StudioOverlay() {
               <span className={s.scan} aria-hidden="true" />
             </figure>
           ) : null}
-          <StudioDock key={isBlender ? "blender" : "studio"} a={a} compact canPlayTest={!isBlender} onTyping={(n) => { setDraft(n); setKeys((k) => k + 1); }} />
+          <StudioDock key={isBlender ? "blender" : "studio"} a={a} compact canPlayTest={!isBlender} onTyping={(n) => { setDraft(n); setKeys((k) => k + 1); }} onLaunch={launch} />
         </div>
       )}
     </div>

@@ -1,0 +1,51 @@
+/* The liquid-glass material (engine.ts adds the refraction as a backdrop filter). No outer box-shadow on a glass surface:
+   Chromium places the displacement map against the element's visual overflow, so a drop shadow shifts the lens off the
+   element. Depth comes from the border and inset shading; any drop shadow goes on a parent. */
+.surface {
+  position: relative;
+  isolation: isolate;
+  background: rgb(var(--lg-fill-rgb, 255 255 255) / var(--lg-fill, 0.07));
+  border: 1.5px solid rgb(255 255 255 / var(--lg-ring, 0.5));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.32), inset 0 -8px 18px rgb(0 0 0 / 0.1);
+  transition: background-color 500ms ease, border-color 300ms ease;
+}
+/* A rim light that follows the pointer round the edge (--mx/--my set on the surface by pointer tracking). */
+.surface::before {
+  content: ""; position: absolute; inset: -1.5px; border-radius: inherit; padding: 1.5px; pointer-events: none; opacity: 0;
+  background: radial-gradient(120px circle at var(--mx, 50%) var(--my, 0%), rgb(255 255 255 / 0.95), transparent 70%) border-box;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  transition: opacity 260ms ease;
+}
+.surface:hover::before, .surface[data-lit]::before { opacity: 1; }
+.surface > * { position: relative; z-index: 1; }
+
+/* Round glass control: the pen's look (a full lens, white ring, a light fill), sized for a title bar. */
+.icon {
+  display: inline-grid; place-items: center; width: 32px; height: 32px; flex: none; padding: 0; border-radius: 50%;
+  color: var(--c-ink); cursor: pointer; --lg-fill: 0.06; --lg-ring: 0.38;
+  transition: transform 340ms cubic-bezier(.34, 1.56, .64, 1), background-color 200ms ease;
+  -webkit-app-region: no-drag; app-region: no-drag;
+}
+.icon:hover:not(:disabled) { transform: scale(1.08); --lg-fill: 0.12; }
+.icon:active:not(:disabled) { transform: scale(0.88); transition-duration: 90ms; }
+.icon:disabled { opacity: 0.4; cursor: default; }
+.icon[aria-pressed="true"] { --lg-fill: 0.2; }
+.icon:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+
+/* Studio / Blender: one piece of glass slides between them and stretches as it goes. */
+.switch { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; padding: 3px; border-radius: 999px; background: rgb(var(--rgb-ink) / 0.07); box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.18); -webkit-app-region: no-drag; app-region: no-drag; }
+.switchPill { position: absolute; top: 3px; bottom: 3px; left: 3px; border-radius: 999px; --lg-fill: 0.16; --lg-ring: 0.55; will-change: transform; }
+.switchBtn { position: relative; z-index: 1; height: 28px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: var(--c-ink-2); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: color 300ms ease; }
+.switchBtn[aria-pressed="true"] { color: var(--c-ink); }
+.switchBtn:disabled:not([aria-pressed="true"]) { opacity: 0.45; cursor: default; }
+.switchBtn:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 1px; }
+
+/* The travelling surface of a morph (Build → execution panel, badge → details). */
+.morph { position: absolute; z-index: 20; pointer-events: none; border-radius: 999px; --lg-fill: 0.12; --lg-ring: 0.6; }
+
+@media (prefers-reduced-motion: reduce) {
+  .icon, .switchPill { transition: none; }
+  .icon:hover:not(:disabled), .icon:active:not(:disabled) { transform: none; }
+}
+@media (forced-colors: active) { .surface::before { display: none; } .surface { border-color: CanvasText; } }

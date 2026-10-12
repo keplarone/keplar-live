@@ -8,3 +8,5 @@
 }
 @keyframes sc-breathe { 50% { transform: scale(1.08); } }
 @media (prefers-reduced-motion: reduce) { .core[data-fallback]::before { animation: none; } }
+.core { cursor: grab; touch-action: none; }
+.core:active { cursor: grabbing; }

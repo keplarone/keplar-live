@@ -162,7 +162,9 @@
  * (its low-res upscale is already soft) and the auras use a smaller blur radius. Long pages skip rendering sections that are
  * off-screen until they come near (content-visibility), which cuts first paint and scroll work. */
 @media (pointer: coarse), (max-width: 767px) {
-  *, *::before, *::after { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  /* Not in the desktop app's Studio overlay (html[data-overlay]): a narrow desktop window, not a phone, whose liquid glass
+     is its backdrop filters (studio-mode/liquid-glass). */
+  :root:not([data-overlay]) :is(*, *::before, *::after) { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
   [class*="Sky-module__"][class$="__liquid"] { filter: none; }
   [class*="Sky-module__"][class$="__backdrop"] > i { filter: blur(64px); }
   #main section:not(:first-of-type) { content-visibility: auto; contain-intrinsic-size: auto 720px; }
