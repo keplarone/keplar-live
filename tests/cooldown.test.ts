@@ -10,6 +10,10 @@ import { recordSpend, spendToday } from "@/lib/create/platform/spend";
 import { acquireJobSlot, activeJobs } from "@/lib/create/platform/jobs";
 import { modelChain, estimateJob, MODELS, creditsFor } from "@/lib/site-builder/limits";
 import type { Workspace } from "@/lib/create/platform/workspace";
+
+// The spend-spike detector (src/lib/ops/telemetry.ts, tested in ops.test.ts) checks at most every 10 s. Under a loaded parallel run this
+// file outlives that window, the second check sees the test spend so far and auto-pauses media ("media_paused" in the breaker test).
+process.env.KEPLAR_SPIKE_USD = "1000000";
 import { errorResponse } from "@/lib/create/platform/http";
 
 const ws = (plan: "plus" | "pro" | "free" | "business" = "plus", over: Partial<Workspace> = {}): Workspace => ({
