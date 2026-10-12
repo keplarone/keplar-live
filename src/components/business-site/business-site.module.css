@@ -66,7 +66,7 @@
 
 /* ── nav ── */
 .nav { position: sticky; top: 0; z-index: 20; transition: background-color var(--kb-d-2) var(--kb-ease), box-shadow var(--kb-d-2) var(--kb-ease); }
-.nav[data-scrolled] { background: var(--kb-overlay); box-shadow: 0 1px 0 var(--kb-border); backdrop-filter: saturate(140%) blur(14px); -webkit-backdrop-filter: saturate(140%) blur(14px); }
+.nav[data-scrolled] { background: var(--kb-bg); box-shadow: 0 1px 0 var(--kb-border); }
 .navInner { display: flex; align-items: center; gap: var(--kb-s-5); height: 64px; max-width: var(--kb-max); margin: 0 auto; padding: 0 var(--kb-gutter); box-sizing: border-box; }
 .brand { display: inline-flex; align-items: center; gap: 10px; color: var(--kb-ink); text-decoration: none; }
 /* Wordmark: Google Sans (Keplar's own face), "Keplar" semibold with "Business" lighter and muted (same lockup as the workspace). */
