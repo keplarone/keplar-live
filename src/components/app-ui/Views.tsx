@@ -98,7 +98,7 @@ export function HistoryView({ state, signedIn, onRename, onOpen, onDelete, onMov
                       <span className={s.rowMeta}>{t.remote ? "Saved in your account" : preview(t) || `${t.messages.filter((m) => m.role === "user").length} questions`}</span>
                     </button>
                   )}
-                  <button type="button" className={s.iconBtn} aria-label={`Rename ${t.title}`} onMouseDown={(e) => e.preventDefault()} onClick={() => { setDraft(t.title); setEditing(t.id); }}>
+                  <button type="button" className={s.rowAction} aria-label={`Rename ${t.title}`} onMouseDown={(e) => e.preventDefault()} onClick={() => { setDraft(t.title); setEditing(t.id); }}>
                     <IconEdit size={15} />
                   </button>
                   {state.projects.length ? (

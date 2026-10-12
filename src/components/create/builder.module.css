@@ -76,7 +76,8 @@
    so labels broke mid-word ("Sit / e", "Imag / es"). Labels never wrap; tighter padding and a quieter "(Beta)" fit them at 320, and the
    strip scrolls sideways rather than wrap if a translation runs longer. */
 .stageBar > .seg { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
-@media (max-width: 380px) { .stageBar .segBtn { padding: 0 10px; } .stageBar .segBtn span { font-size: 0.85em; color: var(--c-ink-3); } }
+/* Up to 440px: 390 and 414px phones also cut "Mobile (Beta)" off at the edge with the full padding. */
+@media (max-width: 440px) { .stageBar .segBtn { padding: 0 10px; } .stageBar .segBtn span { font-size: 0.85em; color: var(--c-ink-3); } }
 
 .more { border: var(--b-hairline) solid var(--c-border); border-radius: var(--r-card); padding: var(--s-4); display: flex; flex-direction: column; gap: var(--s-4); background: var(--c-canvas); }
 .more > summary { cursor: pointer; color: var(--c-ink-2); font-size: var(--t-small); }

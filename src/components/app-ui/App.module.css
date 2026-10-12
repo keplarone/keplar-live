@@ -322,6 +322,26 @@
   background: rgb(var(--rgb-ink) / 0.05);
 }
 
+/* A quiet icon action inside a list row (rename in All chats): flat like the row's delete action. Its name has no "btn", so the
+   global lifted-pill rule (redesign.css) leaves it alone; the round top-bar buttons keep .iconBtn and their lift. */
+.rowAction {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: var(--r-pill);
+  color: var(--c-ink-2);
+  transition: color var(--d-fast) var(--e-standard), background-color var(--d-fast) var(--e-standard);
+}
+.rowAction:hover {
+  color: var(--c-ink);
+  background: rgb(var(--rgb-ink) / 0.05);
+}
+@media (pointer: coarse) {
+  .rowAction { width: 44px; height: 44px; }
+}
+
 .iconBtn:focus-visible,
 .sideItem:focus-visible,
 .threadLink:focus-visible,
