@@ -72,7 +72,12 @@ function loopCheck(t: string): GateVerdict {
       grams.set(g, (grams.get(g) ?? 0) + 1);
     }
     const worst = Math.max(...grams.values());
-    if (worst >= 6) return { ok: false, reason: "loop", detail: "a phrase repeats over and over" };
+    // A loop is repetition that takes over the text, not a technical term used often: a knot guide says "the working end" 13 times
+    // in 430 words, and that is good writing. So: the most repeated phrase must be a real share of the text, or most of the text must
+    // be phrases that keep recurring (a paragraph pasted six times). Before, any phrase seen 6 times failed long how-to guides.
+    const total = toks.length - 2;
+    const recurring = [...grams.values()].filter((n) => n >= 4).reduce((a, n) => a + n, 0);
+    if (worst >= 6 && (worst / total >= 0.08 || recurring / total >= 0.3)) return { ok: false, reason: "loop", detail: "a phrase repeats over and over" };
     if (new Set(toks).size / toks.length < 0.2 && toks.length >= 60) return { ok: false, reason: "loop", detail: "very low word variety" };
   }
   return { ok: true };
