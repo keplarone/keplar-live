@@ -43,9 +43,14 @@ export function DemoWindow() {
     const el = ref.current;
     if (!el || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let visible = false;
-    let elapsed = 0; // carried across pauses, so the demo resumes where it stopped instead of restarting
+    // Never snap the finished frame (the server render) to an empty window in front of someone: if the window is on screen at load,
+    // the loop carries on from the finished answer (hold, fade, then replay); below the fold it rewinds now, while nobody can see it,
+    // so it plays from the first keystroke when it scrolls in.
+    const box = el.getBoundingClientRect();
+    const onScreen = box.top < window.innerHeight && box.bottom > 0;
+    let elapsed = onScreen ? DISSENT_AT : 0; // carried across pauses, so the demo resumes where it stopped instead of restarting
     let prev = 0;
-    let raf = 0;
+    let raf = onScreen ? 0 : requestAnimationFrame(() => setT(0));
     let last = 0;
     const tick = (now: number) => {
       if (prev) elapsed += Math.min(now - prev, 100);
