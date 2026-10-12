@@ -179,6 +179,31 @@ test("route: Stop is honoured even after the connection drops (cancel first, the
   }
 });
 
+test("route: Stop works even when the server never hears about the disconnect (Vercel) -> the run stops itself", async () => {
+  const { cookie } = await signIn(`recover-stop-vercel-${Math.random().toString(36).slice(2, 8)}@example.com`, "pro");
+  const key = newTurnKey();
+  delayMs = 700;
+  try {
+    await withStub(async () => {
+      const t0 = Date.now();
+      const res = await ask({ prompt: PROMPT, turnKey: key }, { cookie });
+      const reader = res.body!.getReader();
+      await reader.read();
+      const stop = await turnPOST(new Request("https://keplar.one/api/keplar/turn", { method: "POST", headers: { "content-type": "application/json", cookie, origin: "https://keplar.one", "x-forwarded-for": "10.88.203.1" }, body: JSON.stringify({ key, action: "cancel" }) }));
+      assert.equal(stop.status, 200);
+      // The stream is never cancelled here (like production, where the function isn't told the browser left): keep reading to the end.
+      while (!(await reader.read()).done) { /* drain */ }
+      const res2 = await turnGET(new Request(`https://keplar.one/api/keplar/turn?key=${key}`, { headers: { cookie, origin: "https://keplar.one", "x-forwarded-for": "10.88.204.1" } }));
+      const turn = (await res2.json()) as { status: string; answer?: unknown };
+      assert.equal(turn.status, "cancelled", "the run checked for the Stop and ended");
+      assert.equal(turn.answer, undefined);
+      assert.ok(Date.now() - t0 < 15_000);
+    });
+  } finally {
+    delayMs = 0;
+  }
+});
+
 test("route: a second send of a turn still being answered gets 409 turn_running (no duplicate run)", async () => {
   const { cookie } = await signIn(`recover-race-${Math.random().toString(36).slice(2, 8)}@example.com`, "pro");
   const key = newTurnKey();

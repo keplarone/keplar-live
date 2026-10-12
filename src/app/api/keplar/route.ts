@@ -506,18 +506,24 @@ export async function POST(request: Request) {
   const stamp = stamper(); // the event contract: protocol version and a sequence per response
   const abort = new AbortController();
   // The browser went away. A recoverable turn keeps running so its answer is saved (the person can come back to it); only a Stop
-  // (the browser posts a cancel first, /api/keplar/turn) ends it, checked now and every 1.5 s. Anything else stops as before.
+  // ends it. Anything else stops as before.
+  // Stop on a recoverable turn: the browser posts a cancel (/api/keplar/turn) and the run checks for it every 2 s from the start, not only
+  // after a disconnect: on Vercel the function is not told when the browser closes the stream (measured on production 2026-10-12: a
+  // stopped answer ran to the end), so waiting for a disconnect would never stop it.
   let clientGone = false;
   let cancelWatch: ReturnType<typeof setInterval> | null = null;
+  const checkCancel = () => {
+    const t = turn;
+    if (!t || abort.signal.aborted) return;
+    void cancelRequested(t.owner, t.key).then((yes) => { if (yes && !abort.signal.aborted) { flightPush(costScope.flight, { k: "cancel", code: "stop_requested" }); abort.abort(); } }).catch(() => undefined);
+  };
+  if (recoverable) cancelWatch = setInterval(checkCancel, 2000);
   const onClientGone = () => {
     if (clientGone) return;
     clientGone = true;
     if (!recoverable || !turn) { abort.abort(); return; }
     flightPush(costScope.flight, { k: "note", code: "client_gone_recoverable" });
-    const t = turn;
-    const check = () => { void cancelRequested(t.owner, t.key).then((yes) => { if (yes) { flightPush(costScope.flight, { k: "cancel", code: "stop_requested" }); abort.abort(); } }).catch(() => undefined); };
-    check();
-    cancelWatch = setInterval(check, 1500);
+    checkCancel(); // when the disconnect is seen (local runtimes), a Stop is honoured at once
   };
   request.signal.addEventListener("abort", onClientGone, { once: true });
   let finishRun: () => void = () => undefined;
