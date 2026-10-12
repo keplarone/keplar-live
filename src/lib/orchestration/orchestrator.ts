@@ -28,7 +28,7 @@ import { isSmallTalk, runSmallTalk } from "./smalltalk";
 import { isSupportRequest, runSupport } from "./support";
 import { runPlayful } from "./playful";
 import { earlyStream } from "./early-stream";
-import { shapeHint } from "./answer-shape";
+import { isGuideRequest, shapeHint } from "./answer-shape";
 import { answeredAsQuestion, IMAGE_ONLY_PROMPT, imageQuestionMode, isImageOnlyPrompt, QUESTION_IMAGE_NOTE } from "./image-question";
 import { systemPrompt } from "./providers/shared";
 import { createRetriever, retrievalApplies, retrievalEstimateUsd } from "./retriever";
@@ -189,7 +189,10 @@ const LIVE_PANEL_PARAMS: GenerationParams = { reasoningEffort: "low", maxOutputT
 const REASON_PANEL_PARAMS: GenerationParams = { reasoningEffort: "medium", maxOutputTokens: 2200 };
 /** Live panel on a complex question: more thinking before answering, a little more room (simple and moderate stay cheap and fast). */
 const LIVE_COMPLEX_PANEL_PARAMS: GenerationParams = { reasoningEffort: "medium", maxOutputTokens: 1800 };
-export const livePanelParams = (c: Classification, reason?: boolean) => (reason ? REASON_PANEL_PARAMS : c.complexity === "complex" ? LIVE_COMPLEX_PANEL_PARAMS : LIVE_PANEL_PARAMS);
+/** A how-to guide (answer-shape.ts): room for every step, check and fix (a full guide runs 500 to 1,500 words), and enough thinking to get the order right. */
+const GUIDE_BUDGET_MS = 120_000;
+const GUIDE_PANEL_PARAMS: GenerationParams = { reasoningEffort: "medium", maxOutputTokens: 3600 };
+export const livePanelParams = (c: Classification, reason?: boolean, guide?: boolean) => (guide ? (reason ? { ...GUIDE_PANEL_PARAMS, maxOutputTokens: 4200 } : GUIDE_PANEL_PARAMS) : reason ? REASON_PANEL_PARAMS : c.complexity === "complex" ? LIVE_COMPLEX_PANEL_PARAMS : LIVE_PANEL_PARAMS);
 
 function paramsFor(slot: "panel" | "verifier" | "judge", index: number): GenerationParams {
   if (slot === "verifier") return { reasoningEffort: "low" };
@@ -424,6 +427,9 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
   const tier = req.routing?.tier ?? "standard";
   // Shared latency budget (live): one panel-wide abort, re-armed earlier once a quorum has answered.
   const budget = deps.budget ?? null;
+  // A how-to gets a full step-by-step guide (answer-shape.ts): more words from every model, so more time (the route allows 300 s).
+  const guide = !hasMedia(req.media) && classification.errorProne !== "exact" && isGuideRequest(req.prompt);
+  if (guide) budget?.atLeast(GUIDE_BUDGET_MS);
   const panelCtl = budget ? new AbortController() : null;
   let panelTimer: ReturnType<typeof setTimeout> | undefined;
   const arm = (at: number) => {
@@ -501,7 +507,7 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
     const origCtl = new AbortController();
     const finish = (r: ProviderResult) => { if (!done) { done = true; resolve(r); } };
     registry
-      .generate({ model: p.model, prompt: panelPrompt, system: panelSystem, classification, params: sanitizeParams(p.model, live ? livePanelParams(classification, req.modes?.reason) : paramsFor("panel", i)), tier, slot: "panel", signal: AbortSignal.any([panelSignal ?? origCtl.signal, origCtl.signal]), avoid: seatModels, onToken: early.tokens(i), ...vision })
+      .generate({ model: p.model, prompt: panelPrompt, system: panelSystem, classification, params: sanitizeParams(p.model, live ? livePanelParams(classification, req.modes?.reason, guide) : paramsFor("panel", i)), tier, slot: "panel", signal: AbortSignal.any([panelSignal ?? origCtl.signal, origCtl.signal]), avoid: seatModels, onToken: early.tokens(i), ...vision })
       .then((r): ProviderResult => {
         // A substitute answered (the planned model was busy or missing): show the model that actually answered.
         if (r.ok && r.fellBackFrom && r.model.id !== p.model.id && !done) {
@@ -532,7 +538,7 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
       hedgeRunning = true;
       seatModels.add(alt.id);
       registry
-        .generate({ model: alt, prompt: panelPrompt, system: panelSystem, classification, params: sanitizeParams(alt, LIVE_PANEL_PARAMS), tier, slot: "panel", signal: panelSignal, avoid: seatModels })
+        .generate({ model: alt, prompt: panelPrompt, system: panelSystem, classification, params: sanitizeParams(alt, guide ? GUIDE_PANEL_PARAMS : LIVE_PANEL_PARAMS), tier, slot: "panel", signal: panelSignal, avoid: seatModels })
         .then((r) => {
           if (r.ok && !done) {
             plan.panel[i] = { ...p, model: r.model, reason: `Stood in for ${p.model.name}, which was slow to answer.` };

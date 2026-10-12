@@ -16,11 +16,12 @@
 import { UNCLASSIFIED } from "./comparator";
 import { applyExtraction, parseExtraction } from "./extractor";
 import { isBudgetAbort, LatencyBudget } from "./latency";
-import { textOnlyMediaNote } from "./media";
+import { hasMedia, textOnlyMediaNote } from "./media";
+import { isGuideRequest } from "./answer-shape";
 import { spentUsd } from "./pricing";
 import type { createRegistry, RegistryResult } from "./providers";
 import { parseChecks } from "./verifier";
-import { SYNTH_SYSTEM_PROMPT } from "./live-synthesizer";
+import { GUIDE_SYNTH_RULES, SYNTH_SYSTEM_PROMPT } from "./live-synthesizer";
 import { identityPrompt } from "@/lib/identity";
 import { VOICE_PROMPT } from "@/lib/persona";
 import { HUMAN_TONE_PROMPT } from "@/lib/persona-tone";
@@ -87,19 +88,22 @@ export class MergedFreeReview {
       };
     }
     const ids = new Map(ok.map((r, i) => [r.modelId, `R${i + 1}`]));
-    const body = ok.map((r) => `### ${ids.get(r.modelId)}\n${r.text.slice(0, 4000)}`).join("\n\n");
+    // How-to: the written part is a full guide (answer-shape.ts), so it needs each model's whole guide, more output and more time.
+    const guide = classification.errorProne !== "exact" && !hasMedia(req.media) && isGuideRequest(req.prompt);
+    const body = ok.map((r) => `### ${ids.get(r.modelId)}\n${r.text.slice(0, guide ? 7000 : 4000)}`).join("\n\n");
     const stage = this.budget ? this.budget.stageMs(0.5) : undefined;
-    const callSignal = stage !== undefined ? LatencyBudget.signal(Math.min(this.capMs, stage), signal) : signal;
+    const cap = guide ? Math.max(this.capMs, 50_000) : this.capMs;
+    const callSignal = stage !== undefined ? LatencyBudget.signal(Math.min(cap, stage), signal) : signal;
     let r: RegistryResult;
     try {
       r = await this.registry.generate({
         model: this.model,
         prompt: `Question:\n${req.prompt}${textOnlyMediaNote(req.media)}\n\nResponses:\n${body}`,
         classification,
-        params: { reasoningOff: true, maxOutputTokens: 1800 },
+        params: { reasoningOff: true, maxOutputTokens: guide ? 4800 : 1800 },
         tier: req.routing?.tier,
         slot: "verifier",
-        system: `${MERGED_SYSTEM_PROMPT}\n\n${identityPrompt()}\n\n${VOICE_PROMPT}\n\n${HUMAN_TONE_PROMPT}`,
+        system: `${MERGED_SYSTEM_PROMPT}${guide ? `\n${GUIDE_SYNTH_RULES}` : ""}\n\n${identityPrompt()}\n\n${VOICE_PROMPT}\n\n${HUMAN_TONE_PROMPT}`,
         signal: callSignal,
       });
     } catch (e) {
