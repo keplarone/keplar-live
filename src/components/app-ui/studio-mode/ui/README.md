@@ -6,7 +6,7 @@
 import { StudioRoot, Button, IconButton, Icon, MorphIcon, Tabs } from "@/components/app-ui/studio-mode/ui";
 ```
 
-The direction: minimal, monochrome first, built to look engineered rather than decorated. The design system has no glass, blur, gradients, glow or overshoot. The accent appears only where it means something (selection, focus, progress). Both themes are complete, and the system uses the standard cursor. `tests/studio-ui-tokens.test.ts` enforces the colour and styling rules.
+The direction: minimal, monochrome first, built to look engineered rather than decorated. The design system has no glass, blur, gradients, glow or overshoot. The accent appears only where it means something (selection, focus, progress). Both themes are complete, and the system uses the standard cursor. `tests/studio-ui-tokens.test.ts` enforces the color and styling rules.
 
 ## 1. Root and theming
 
@@ -28,7 +28,7 @@ Render every Studio screen inside one `<StudioRoot>`:
 
 | Group | Tokens |
 |---|---|
-| Surfaces | `--ks-bg` (canvas) < `--ks-surface-1` (panels) < `--ks-surface-2` (popovers, dialogs, toasts) < `--ks-surface-3` (hover / pressed solid), `--ks-surface-inset` (code, editors). Dark uses layered graphite (#0f0f11 → #25252a); Light uses white surfaces on #f5f6f8 with grey borders. |
+| Surfaces | `--ks-bg` (canvas) < `--ks-surface-1` (panels) < `--ks-surface-2` (popovers, dialogs, toasts) < `--ks-surface-3` (hover / pressed solid), `--ks-surface-inset` (code, editors). Dark uses layered graphite (#0f0f11 → #25252a); Light uses white surfaces on #f5f6f8 with gray borders. |
 | Fills | `--ks-fill-hover`, `--ks-fill-active`, `--ks-fill-selected`. These are translucent, so they work on any surface. |
 | Text | `--ks-text-1`, `--ks-text-2`, `--ks-text-3` (all at least 4.5:1 on every surface and fill), `--ks-text-disabled` |
 | Lines | `--ks-border`, `--ks-border-strong`, `--ks-divider` |
@@ -109,7 +109,7 @@ Activation is automatic. Left/Right and Home/End move between tabs, and the unde
 
 **Badge** `tone: neutral | accent | success | warning | danger | info`, `variant: subtle | outline`, `icon`. A badge always has text.
 
-**StatusDot** `status: idle | running | success | warning | error | offline`, `label` (always announced), `hideLabel`. Each status has its own shape as well as its colour: ring, half ring, disc, triangle, diamond, and ring with a bar.
+**StatusDot** `status: idle | running | success | warning | error | offline`, `label` (always announced), `hideLabel`. Each status has its own shape as well as its color: ring, half ring, disc, triangle, diamond, and ring with a bar.
 
 **Kbd** `<Kbd keys={["Mod", "K"]} />` renders ⌘ on macOS and Ctrl elsewhere, with a spoken label. `KeyCombo` with `plain` gives the bare text. The helpers `formatKey`, `spokenKey`, `detectPlatform` and `useKeyPlatform` are exported.
 
@@ -139,7 +139,7 @@ The Roblox Studio and Blender marks are generic pictograms (a studded block and 
 | `menu` | menu, close |
 | `plus` | plus, close |
 | `play` | play, pause |
-| `send` | send, working (a still diamond with a centre point: a run is in flight, not a spinner), complete |
+| `send` | send, working (a still diamond with a center point: a run is in flight, not a spinner), complete |
 | `expand` | expand, collapse |
 | `eye` | visible, hidden |
 | `code` | code, diff |

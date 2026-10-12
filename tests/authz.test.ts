@@ -35,6 +35,7 @@ const PUBLIC_OK = new Set(["GET compute", "GET v1/openapi.json" /* public API de
 
 PUBLIC_OK.add("GET business/account"); // Storefront status: signed-out callers get only { signedIn: false }.
 PUBLIC_OK.add("GET business/handoff"); // Redirects to sign-in; a ticket requires an authenticated session.
+PUBLIC_OK.add("GET studio/modes"); // Solar mode table: budgets, prices and the provider disclosure; no account data, read-only.
 
 test("anonymous Business status and handoff expose no account data or sign-in ticket", async () => {
   const { GET: account } = await import("@/app/api/business/account/route");
