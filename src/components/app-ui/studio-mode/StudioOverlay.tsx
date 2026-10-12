@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { KeplarSymbol } from "@/components/brand";
 import { blenderBridge, resultText, STUDIO_PLANS, studioBridge, type BlenderStatus, type OverlayState, type StudioStatus } from "@/lib/desktop/studio-bridge";
-import { SolarCore, type SolarState } from "./SolarCore";
+import { SolarCore } from "./SolarCore";
+import { solarPulse, solarState } from "./solar-state";
 import { StudioDock } from "./StudioDock";
 import { blenderPlace, OVERLAY_TARGET_KEY, overlayTarget, parsePlaces, setOverlayTarget, useStudioAgent } from "./useStudioAgent";
 import s from "./studio-overlay.module.css";
@@ -11,24 +12,7 @@ import s from "./studio-overlay.module.css";
 const noSubscribe = () => () => {};
 type Target = "studio" | "blender";
 const APP: Record<Target, string> = { studio: "Studio", blender: "Blender" };
-/** What Solar runs on (src/lib/studio/agent.ts STUDIO_MODEL; Blender uses the same runStudioTurn). Shown in the model details. */
-const SOLAR_MODEL = { name: "Claude Opus 5.5", maker: "Anthropic", id: "claude-opus-5-5" };
 
-/** The core's state, from what the build is really doing (never a timer). */
-function solarState(a: ReturnType<typeof useStudioAgent>, draftLength: number): SolarState {
-  const last = a.items[a.items.length - 1];
-  if (a.looking) return "looking";
-  if (a.playing) return "testing";
-  if (a.running) {
-    if (a.items.some((x) => x.kind === "action" && x.status === "running")) return "building";
-    return a.plan.length ? "thinking" : "planning";
-  }
-  if (last?.kind === "note" && last.tone === "warn") return "error";
-  if (last?.kind === "action" && last.status === "failed") return "error";
-  if (draftLength) return "typing";
-  if (a.finished) return "done";
-  return "idle";
-}
 
 /**
  * The floating overlay (/app/studio/overlay): the build in a small always-on-top desktop window over Roblox Studio or Blender
@@ -157,7 +141,7 @@ export function StudioOverlay() {
   const pct = a.plan.length ? Math.round((done / a.plan.length) * 100) : 0;
   const tone = a.running || a.looking ? "busy" : connected ? "ok" : "off";
   const solar = solarState(a, draft);
-  const pulse = a.items.filter((x) => x.kind === "action" && x.status === "done").length;
+  const pulse = solarPulse(a);
   const active = a.items.length > 0;
 
   if (win.collapsed) {
@@ -228,10 +212,6 @@ export function StudioOverlay() {
         <div id="solar-about" className={s.about} role="dialog" aria-label="About Solar 5.8 Ultra">
           <strong>Solar 5.8 Ultra</strong>
           <p>Keplar&apos;s building experience for Roblox Studio and Blender: it looks at your place, plans, makes changes through Keplar&apos;s tools and asks before risky ones.</p>
-          <dl>
-            <dt>Model</dt><dd>{SOLAR_MODEL.name} by {SOLAR_MODEL.maker}</dd>
-            <dt>Model ID</dt><dd><code>{SOLAR_MODEL.id}</code></dd>
-          </dl>
           <p className={s.aboutNote}>Solar is Keplar&apos;s name for this experience, not a separately trained model.</p>
           <button type="button" className={s.aboutClose} onClick={() => setAboutOpen(false)}>Close</button>
         </div>

@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { referencesFromFiles } from "./references";
+import { SolarCore } from "./SolarCore";
+import { solarPulse, solarState } from "./solar-state";
 import { StudioTopUp } from "./StudioTopUp";
 import { describeAction, type Item, type StudioAgent } from "./useStudioAgent";
 import s from "./studio-mode.module.css";
@@ -119,10 +121,13 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPla
     <section className={s.dock} data-compact={compact || undefined} aria-label="Build with Keplar in Roblox Studio">
       {compact ? null : (
         <div className={s.dockBar}>
-          <span className={s.runState} data-running={a.running || undefined}>
-            <span className={s.runDot} aria-hidden="true" />
-            {a.looking ? "Looking at your place…" : a.running ? (a.current ? `Building · step ${a.current}${a.plan.length ? ` of ${a.plan.length}` : ""}` : "Planning…") : a.paused ? "Paused" : a.finished ? "Finished" : "Ready"}
-          </span>
+          {/* Once a build has started, the Solar strip below shows the state. */}
+          {a.items.length ? null : (
+            <span className={s.runState} data-running={a.running || undefined}>
+              <span className={s.runDot} aria-hidden="true" />
+              {a.looking ? "Looking at your place…" : a.running ? (a.current ? `Building · step ${a.current}${a.plan.length ? ` of ${a.plan.length}` : ""}` : "Planning…") : a.paused ? "Paused" : a.finished ? "Finished" : "Ready"}
+            </span>
+          )}
           <span className={s.grow} />
           <label className={s.switch}>
             <input type="checkbox" role="switch" checked={a.autoApprove} onChange={(e) => a.setAuto(e.target.checked)} />
@@ -132,22 +137,33 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPla
         </div>
       )}
 
+      {/* One core for the whole session: a hero above the empty state, then a strip while a build runs (one WebGL scene, never re-created). */}
+      {compact ? null : (
+        <div className={s.pageStage} data-mode={a.items.length ? "strip" : "hero"}>
+          <SolarCore state={solarState(a, text.length)} pulse={solarPulse(a)} className={s.pageCore} />
+          {a.items.length ? (
+            <span className={s.pageStageText}>
+              <strong>{a.looking ? "Looking at your place" : a.running ? (a.current ? `Building step ${a.current}${a.plan.length ? ` of ${a.plan.length}` : ""}` : "Planning") : a.paused ? "Paused" : a.finished ? "Finished" : "Ready"}</strong>
+              <span>Solar 5.8 Ultra{a.plan.length ? ` · ${a.plan.filter((p) => p.state === "done").length} of ${a.plan.length} steps` : ""}</span>
+            </span>
+          ) : null}
+        </div>
+      )}
       <StudioTopUp />
       <ol className={s.feed} ref={listRef} aria-live="polite">
         {a.items.length === 0 ? (
           <li className={s.empty}>
-            {compact ? null : <span className={s.orbit} aria-hidden="true"><span /><span /><span /></span>}
             <strong>What should we build?</strong>
             {canPlayTest
               ? <span>Keplar looks at your place first, then plans and builds; you play-test it and say what to change. Attach screenshots or a clip of a UI, effect or gameplay you want to match. Each game&apos;s chat is saved, so you can come back to it.</span>
               : <span>Keplar reads your scene first, then plans, models and textures it; you look it over and say what to change. Attach reference images of the look you want. Each file&apos;s chat is saved, so you can come back to it.</span>}
-            {compact ? (
+            {(
               <span className={s.ideas} role="group" aria-label="Ideas to start from">
                 {IDEAS[canPlayTest ? "studio" : "blender"].map((idea, i) => (
                   <button key={idea} type="button" className={s.ideaChip} style={{ ["--i" as string]: i }} onClick={() => { setText(idea); onTyping?.(idea.length); }}>{idea}</button>
                 ))}
               </span>
-            ) : null}
+            )}
           </li>
         ) : null}
         {a.items.map((it) =>
@@ -185,7 +201,7 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPla
         ) : null}
       </ol>
 
-      <form className={s.composer} data-sent={compact && sent ? (sent % 2 ? "a" : "b") : undefined} onSubmit={(e) => { e.preventDefault(); submit(); }}>
+      <form className={s.composer} data-sent={sent ? (sent % 2 ? "a" : "b") : undefined} onSubmit={(e) => { e.preventDefault(); submit(); }}>
         {refs.length ? (
           <div className={s.refRow}>
             {refs.map((src, i) => (
@@ -218,7 +234,7 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPla
           {a.running ? (
             <>
               <button type="button" className={s.ghost} onClick={a.pause}>Pause</button>
-              <button type="button" className={compact ? s.primary : s.ghost} data-morph={compact ? "stop" : undefined} onClick={a.stop}>Stop</button>
+              <button type="button" className={s.primary} data-morph="stop" onClick={a.stop}>Stop</button>
             </>
           ) : a.paused ? (
             <>
@@ -233,7 +249,7 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPla
                   {a.playing ? "Stop test" : "Play test"}
                 </button>
               ) : null}
-              <button type="submit" className={s.primary} data-morph={compact ? "build" : undefined} onPointerMove={compact ? magnetic : undefined} onPointerLeave={compact ? unmagnet : undefined} disabled={a.playing || (!text.trim() && !refs.length)} title={a.playing ? "Stop the play test, then build" : undefined}>Build</button>
+              <button type="submit" className={s.primary} data-morph="build" onPointerMove={magnetic} onPointerLeave={unmagnet} disabled={a.playing || (!text.trim() && !refs.length)} title={a.playing ? "Stop the play test, then build" : undefined}>Build</button>
             </>
           )}
         </div>

@@ -90,7 +90,12 @@ export function StudioPanel({ a, now }: { a: StudioAgent; now: number }) {
           <span className={s.grow} />
           <span className={s.meta}>{a.units.toLocaleString()} credits used</span>
         </div>
-        <span className={s.meta}>{a.stats.steps} steps · {a.stats.changes} changes · {a.stats.errors} {a.stats.errors === 1 ? "error" : "errors"}</span>
+        <div className={s.stats}>
+          {/* Keyed by value, so each number re-animates when it changes. */}
+          <span className={s.stat}><strong key={a.stats.steps} data-bump="">{a.stats.steps}</strong><span>{a.stats.steps === 1 ? "step" : "steps"}</span></span>
+          <span className={s.stat}><strong key={a.stats.changes} data-bump="">{a.stats.changes}</strong><span>{a.stats.changes === 1 ? "change" : "changes"}</span></span>
+          <span className={s.stat} data-tone={a.stats.errors ? "bad" : undefined}><strong key={a.stats.errors} data-bump="">{a.stats.errors}</strong><span>{a.stats.errors === 1 ? "error" : "errors"}</span></span>
+        </div>
       </section>
     </aside>
   );

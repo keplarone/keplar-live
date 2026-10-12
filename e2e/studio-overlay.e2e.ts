@@ -59,9 +59,8 @@ test("Solar overlay: see-through glass, a live core that follows the run, honest
 
   await page.getByRole("button", { name: "Solar 5.8 Ultra" }).click();
   const about = page.getByRole("dialog", { name: "About Solar 5.8 Ultra" });
-  await expect(about).toContainText("Claude Opus 5.5 by Anthropic");
-  await expect(about).toContainText("claude-opus-5-5");
-  await expect(about).toContainText("not a separately trained model");
+  await expect(about).toContainText("Keplar's building experience");
+  await expect(about).not.toContainText("claude-opus");
   await page.keyboard.press("Escape");
   await expect(about).toHaveCount(0);
 

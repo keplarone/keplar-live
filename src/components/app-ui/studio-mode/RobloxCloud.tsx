@@ -139,7 +139,6 @@ export function RobloxCloud({ bridge, place, busy }: { bridge: StudioBridge; pla
       <div className={s.panelHead}>
         <h2 id="cloud-title" className={s.cardTitle}>Roblox Cloud: work while you&apos;re away</h2>
         <span className={s.grow} />
-        <span className={s.meta}>Claude Opus 5.5 · runs on Keplar&apos;s servers</span>
       </div>
       <p className={s.text}>
         Keplar copies this game&apos;s scripts, works on them in the cloud with your Studio closed, checks every edit with Luau&apos;s own analyzer, and leaves the changes for you to review. Nothing touches your game until you apply it here. Studio doesn&apos;t run in the cloud, so overnight jobs work on scripts; anything that needs parts, UI objects or a play test is listed in the report.
