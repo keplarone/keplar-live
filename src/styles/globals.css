@@ -226,29 +226,29 @@ canvas { outline: none; }
   font-family: var(--f-mono);
 }
 
-/* Scroll reveal (see components/motion/RevealRoot). Opacity and transform only: no layout shift. */
-[data-rv="out"] {
-  opacity: 0;
-  transform: translate3d(0, 18px, 0);
-}
-[data-rv="in"] {
-  opacity: 1;
-  transform: none;
-  transition:
-    opacity var(--d-slow) var(--e-standard) var(--rv-delay, 0ms),
-    transform var(--d-slow) var(--e-standard) var(--rv-delay, 0ms);
-}
-@media (prefers-reduced-motion: reduce) {
-  [data-rv] {
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
+/* Scroll reveal: [data-reveal] blocks fade and rise as they enter the viewport. A scroll-driven animation tied to the block's own
+   position, so content is visible by default and is never left hidden: browsers without scroll timelines, reduced motion, print,
+   find-in-page and full-page captures all just show it. Opacity and translate only: no layout shift. */
+@keyframes kp-reveal {
+  from {
+    opacity: 0;
+    translate: 0 16px;
   }
 }
-
-/* Diagram streams drift once when their step scrolls into view. */
-[data-rv="in"] .kp-flow {
-  animation: kp-flow 1.6s var(--e-standard) 1;
+@supports (animation-timeline: view()) {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    [data-reveal] {
+      animation: kp-reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 28%;
+    }
+    /* Diagram streams drift as their step comes into view. */
+    [data-reveal] .kp-flow {
+      animation: kp-flow linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 45%;
+    }
+  }
 }
 @keyframes kp-flow {
   from {
@@ -287,16 +287,11 @@ input:not([type]) {
 textarea[data-scrolls] { overscroll-behavior: contain; }
 
 /*
- * Print (QA 2026-10-05: printing /pricing gave 8 mostly blank pages). Scroll-reveal blocks that were never scrolled into view stayed at
- * opacity 0 (the plan cards and FAQ vanished), the fixed nav and skip link repeated on every sheet, and Dark printed near-white ink on
- * white paper. Paper always gets the Light ink; nothing changes on screen.
+ * Print (QA 2026-10-05: printing /pricing gave 8 mostly blank pages). The scroll reveal is screen-only now (see above), so plan cards
+ * and the FAQ always print; the fixed nav and skip link repeated on every sheet, and Dark printed near-white ink on white paper.
+ * Paper always gets the Light ink; nothing changes on screen.
  */
 @media print {
-  [data-rv] {
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
-  }
   .skip-link {
     display: none !important;
   }

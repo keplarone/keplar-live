@@ -3,7 +3,6 @@ import { PlanCta } from "@/components/billing/PlanCta";
 import { computeAllowance, computeScale, formatPrice, SHOW_COMPUTE_ALLOWANCES, tiers } from "@/lib/tiers";
 import { pricingCopy } from "@/lib/sections";
 import { getMessages } from "@/lib/i18n/server";
-import { CountUp } from "@/components/motion/CountUp";
 import { SectionHeader } from "./SectionHeader";
 import s from "./Pricing.module.css";
 
@@ -24,7 +23,8 @@ export async function Pricing({ headingLevel = "h2", showCompute = true, locale 
             <li key={t.id} className={s.plan} data-plan={t.id} data-reveal>
               <Sub className={s.name}>{t.name}</Sub>
               <p className={s.price}>
-                <span className={s.amount}><CountUp text={t.price === null ? p.custom : formatPrice(t)} /></span>
+                {/* The real price, always: a count-up from $0 read as "$0 per month" to find-in-page, translation and assistive tech. */}
+                <span className={s.amount}>{t.price === null ? p.custom : formatPrice(t)}</span>
                 <span className={s.cadence}>{t.price === null ? p.tailored : (p.cadence[t.cadence] ?? t.cadence)}</span>
               </p>
               <p className={s.summary}>{x.summary}</p>

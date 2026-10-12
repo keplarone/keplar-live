@@ -56,7 +56,8 @@ export function CookieBanner() {
     <div ref={region} className={s.banner} data-placement={placement} {...banner.motion(placement === "top" ? "drop" : "toast")} role="region" aria-labelledby="cookie-title" onKeyDown={(e) => { if (e.key === "Escape" && wasOpenedByUser.current) setOpen(false); }}>
       <h2 id="cookie-title" className={s.title}>Cookies</h2>
       <p className={s.text}>
-        Keplar always uses the cookies it needs to work: sign-in, security, your plan and usage counts, and your theme. Optional page-view and speed analytics stay off unless you allow them. Keplar also counts visits and who is online now on its own server without cookies or storing your IP address.{" "}
+        {/* One decision, said plainly; the cookie-free visit counting and the full list live behind Details (/privacy#cookies). */}
+        Keplar uses the cookies it needs to work, like sign-in and your theme. Analytics stay off unless you allow them.{" "}
         <Link href="/privacy#cookies" className={s.link}>Details</Link>
       </p>
       {custom ? (

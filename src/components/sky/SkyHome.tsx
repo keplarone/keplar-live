@@ -47,7 +47,7 @@ export function SkyHome({ pricing }: { pricing?: React.ReactNode }) {
         <p className={s.lede}>{brand.name} uses multiple AI models, compares their perspectives, and gives you one clear, synthesized answer.</p>
         <div className={s.ctas}>
           <HeroCta href={tryHref} className={s.btnPrimary} />
-          <Link href="/download" className={s.btnSecondary}>
+          <Link href="/download" className={s.btnSecondary} data-desktop-only="">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
             Download for desktop
           </Link>
@@ -61,7 +61,8 @@ export function SkyHome({ pricing }: { pricing?: React.ReactNode }) {
 
       <section className={s.section} aria-labelledby="everything-title">
         <h2 id="everything-title" className={s.h2}><span>Everything in {brand.name}.</span> <span className={s.muted}>One place.</span></h2>
-        <FeatureList rows={chapters.map(({ id, n, label, title }) => ({ id, n, label, title }))} />
+        {/* The hero already covers chapter 01 (Ask), so the list numbers what it shows: 01-06, not 02-07. */}
+        <FeatureList rows={chapters.map(({ id, label, title }, i) => ({ id, n: String(i + 1).padStart(2, "0"), label, title }))} />
       </section>
 
       <section className={s.section} aria-labelledby="how-title">

@@ -240,6 +240,15 @@
   .featureRow { grid-template-columns: 40px minmax(0, 1fr); }
   .featureLede { grid-column: 2; }
 }
+/* Phones: one call to action (the desktop download is no use on a phone) and a badge that stays on one line. */
+@media (max-width: 640px) {
+  .ctas [data-desktop-only] { display: none; }
+}
+@media (max-width: 480px) {
+  .badge { gap: 8px; padding-right: 14px; font-size: 13px; }
+  .badge .stack { width: calc(var(--disc) * 3 + var(--gap) * 2); }
+  .badge > span:last-child { white-space: nowrap; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .hero { animation: none; }
