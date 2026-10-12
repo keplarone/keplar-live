@@ -4,6 +4,7 @@ import { siteUrl } from "@/lib/site";
 import { KeplarSymbol } from "@/components/brand/KeplarSymbol";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
+import type { MediaInput } from "@/lib/orchestration/media";
 import { Analyst } from "./Analyst";
 import { Ask } from "./Ask";
 import { Dashboard } from "./Dashboard";
@@ -141,9 +142,13 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
 
   const go = (v: View) => { setView(v); writeView(v); closeNavigation(); };
   const toggleSide = () => { if (mobile) { toggleNavigation(); return; } setCollapsed((x) => { try { localStorage.setItem(SIDE_KEY, x ? "open" : "closed"); } catch { /* ignore */ } return !x; }); };
-  const onSend = (mode: HomeMode, text: string, projectId: string | null) => {
-    if (mode === "ask") go({ at: "ask", q: text, projectId, key: k() });
-    else go({ at: mode, seed: text, projectId: projectId ?? undefined, key: k() });
+  // Attached images and video go to the opened chat or report in memory only (the view itself is saved in the address).
+  const [sentMedia, setSentMedia] = useState<{ key: string; media: MediaInput } | null>(null);
+  const onSend = (mode: HomeMode, text: string, projectId: string | null, media?: MediaInput) => {
+    const key = k();
+    setSentMedia(media ? { key, media } : null);
+    if (mode === "ask") go({ at: "ask", q: text, projectId, key });
+    else go({ at: mode, seed: text, projectId: projectId ?? undefined, key });
   };
 
   if (!acct) return <div className={`${s.root} ${c.cursor} ${fontClass}`}><div className={s.center}><span className={s.spinner} aria-label="Loading" /></div></div>;
@@ -277,14 +282,14 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
           </header>
           <div className={c.mainBody}>
             {view.at === "home" ? <Home projects={projects} onSend={onSend} onNewProject={() => go({ at: "projects", projectId: null })} />
-              : view.at === "ask" ? <Ask key={view.key} first={view.q} projectId={view.projectId} />
+              : view.at === "ask" ? <Ask key={view.key} first={view.q} firstMedia={sentMedia?.key === view.key ? sentMedia.media : undefined} projectId={view.projectId} />
               : view.at === "dashboard" ? <Dashboard onOpenProject={(id) => go({ at: "projects", projectId: id })} />
               : view.at === "projects" ? <Projects projectId={view.projectId} onOpen={(id) => { go({ at: "projects", projectId: id }); loadSide(); }} />
               : view.at === "create" ? <div className={s.module}><CreateStudio signedIn plan="business" /></div>
               : view.at === "canvas" ? <div className={s.module}><DesignCanvas /></div>
               : view.at === "settings" ? <Settings section={view.section} onSection={(section) => go({ at: "settings", section })} />
               : view.at === "os" ? <div className={s.module}><BusinessOS key={view.tab} initialTab={view.tab} embedded /></div>
-              : <Analyst key={view.key} kind={view.at} seed={view.seed} openId={view.openId} projectSeed={view.projectId} onSaved={loadSide} />}
+              : <Analyst key={view.key} kind={view.at} seed={view.seed} seedMedia={sentMedia?.key === view.key ? sentMedia.media : undefined} openId={view.openId} projectSeed={view.projectId} onSaved={loadSide} />}
           </div>
         </section>
       </div>
