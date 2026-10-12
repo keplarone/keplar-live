@@ -1,7 +1,9 @@
-/* The Keplar Business icon (BusinessMark.tsx): a light tile with the glossy mark. On hover or keyboard focus (of the icon or the
-   link it sits in) the square, triangle and circle part a little and spring back; the tile lifts slightly. */
+/* The Keplar Business icon (BusinessMark.tsx): the glossy mark on a transparent background, each shape with a thin white
+   outline. On hover or keyboard focus (of the icon or the link it sits in) the square, triangle and circle part a little and
+   spring back, and the icon tilts slightly. */
 .mark { display: block; flex: none; overflow: visible; }
-.tile { fill: #f2f2f2; transition: fill 200ms ease; }
+/* One CSS pixel at any icon size. */
+.outline { stroke: #ffffff; stroke-width: 1px; vector-effect: non-scaling-stroke; }
 .square, .triangle, .circle {
   transform-box: fill-box;
   transform-origin: center;
@@ -12,7 +14,6 @@
 :is(.mark:hover, :global(a):hover .mark, :global(a):focus-visible .mark, :global(button):hover .mark, :global(div):hover > .mark) .square { transform: translate(-14px, -14px) rotate(-6deg); }
 :is(.mark:hover, :global(a):hover .mark, :global(a):focus-visible .mark, :global(button):hover .mark, :global(div):hover > .mark) .triangle { transform: translate(16px, -16px); }
 :is(.mark:hover, :global(a):hover .mark, :global(a):focus-visible .mark, :global(button):hover .mark, :global(div):hover > .mark) .circle { transform: translate(12px, 14px) scale(1.05); }
-:is(.mark:hover, :global(a):hover .mark, :global(a):focus-visible .mark, :global(button):hover .mark, :global(div):hover > .mark) .tile { fill: #ffffff; }
 :is(.mark:hover, :global(a):hover .mark, :global(a):focus-visible .mark, :global(div):hover > .mark) { transform: rotate(-4deg); }
 
 @media (prefers-reduced-motion: reduce) {
