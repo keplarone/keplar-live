@@ -264,3 +264,55 @@ test("learning: a real answer triggers free extraction in the background and sav
     for (const [k, v] of Object.entries(prev)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
   }
 });
+
+test("Remembrance acceptance: save a preference, recall it in a new chat, update it (the update wins), delete it (gone)", async () => {
+  const sent: string[] = [];
+  const real = globalThis.fetch;
+  const env = { OPENROUTER_API_KEY: "sk-or-test", OPENAI_API_KEY: "sk-test", NVIDIA_API_KEY: "nvapi-test", KEPLAR_LIVE_MODELS: "1" };
+  const prev: Record<string, string | undefined> = {};
+  for (const [k, v] of Object.entries(env)) { prev[k] = process.env[k]; process.env[k] = v; }
+  globalThis.fetch = (async (_u: unknown, init?: RequestInit) => { sent.push(String(init?.body ?? "")); return new Response(JSON.stringify({ error: { code: 500 } }), { status: 500 }); }) as typeof fetch;
+  const ask = "Explain how compound interest works for a savings account";
+  const toModels = async (cookie: string) => { sent.length = 0; await chat(cookie, ask); assert.ok(sent.length > 0, "the question reached the models"); return sent.join("\n"); };
+  try {
+    const u = await signIn("remembrance@example.com", "plus");
+    // 1. Save an approved preference (handled before the engine, no model call).
+    const saved = await chat(u.cookie, "Remember that I prefer short answers");
+    assert.match(saved.answer ?? saved.text, /Got it\. I'll remember/);
+    assert.deepEqual((await listItems(u.workspaceId)).map((i) => i.kind), ["preference"]);
+    // 2-5. A new conversation (a separate request with no history) is given the preference as memory.
+    const first = await toModels(u.cookie);
+    assert.ok(first.includes("prefer short answers") && first.includes("KEPLAR_MEMORY"), "recalled in a new chat");
+    // 6-7. Update it: the new preference replaces the old one, so only the update reaches the models.
+    await chat(u.cookie, "Remember that I prefer long, detailed answers");
+    const notes = await listItems(u.workspaceId);
+    assert.equal(notes.length, 1, "the old preference was replaced, not kept beside the new one");
+    assert.match(notes[0]!.text, /long, detailed answers/);
+    const second = await toModels(u.cookie);
+    assert.ok(second.includes("long, detailed answers"), "the update is used");
+    assert.ok(!second.includes("prefer short answers"), "the old preference is gone");
+    // 8-9. Delete it: no longer stored, no longer sent.
+    const del = await itemDELETE(jsonReq(u.cookie, `/api/memory/items/${notes[0]!.id}`, "DELETE"), ctx(notes[0]!.id));
+    assert.equal(del.status, 200);
+    assert.equal((await listItems(u.workspaceId)).length, 0);
+    const third = await toModels(u.cookie);
+    assert.ok(!third.includes("detailed answers") && !third.includes("short answers"), "deleted means never retrieved");
+  } finally {
+    globalThis.fetch = real;
+    for (const [k, v] of Object.entries(prev)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
+  }
+});
+
+test("contradiction handling: preferences and names update; facts and goals are never overwritten by a guess", async () => {
+  const { supersedes, kindOfNote } = await import("@/lib/memory/facts");
+  const note = (text: string, kind: MemoryItem["kind"]) => ({ text, kind });
+  assert.equal(supersedes(note("The user prefers long, detailed answers", "preference"), note("The user prefers short answers", "preference")), true);
+  assert.equal(supersedes(note("Call me Sam", "name"), note("Call me Samuel", "name")), true);
+  assert.equal(supersedes(note("The user prefers dark mode in apps", "preference"), note("The user prefers short answers", "preference")), false, "different subject");
+  assert.equal(supersedes(note("The user lives in Berlin", "fact"), note("The user lives in Paris", "fact")), false, "facts are not guessed at");
+  assert.equal(supersedes(note("Run a marathon in May", "goal"), note("Run a marathon in April", "goal")), false);
+  assert.equal(kindOfNote("I prefer short answers"), "preference");
+  assert.equal(kindOfNote("I don't like emojis in replies"), "preference");
+  assert.equal(kindOfNote("call me Sam"), "name");
+  assert.equal(kindOfNote("I have two dogs"), "fact");
+});

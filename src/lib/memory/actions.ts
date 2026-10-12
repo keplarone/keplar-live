@@ -1,6 +1,6 @@
 /** Runs a memory command from chat and returns the plain-text confirmation. Deterministic; no model; zero cost. */
 import type { Workspace } from "@/lib/create/platform/workspace";
-import { cleanFact } from "./facts";
+import { cleanFact, kindOfNote } from "./facts";
 import type { MemoryIntent } from "./intent";
 import { eraseAllDigests } from "./digest";
 import { deleteAllChats } from "./delete-chat";
@@ -40,7 +40,7 @@ export async function runMemoryIntent(ws: Pick<Workspace, "id" | "anonymous">, i
       if (!(await memoryEnabled(ws.id))) return "Memory is turned off, so I didn't save that. Say \"turn memory on\" or switch it on in Account → Memory.";
       const text = cleanFact(intent.text.startsWith("I ") || /^(i'm|im|my|we|our)\b/i.test(intent.text) ? `The user says: ${intent.text}` : intent.text);
       if (!text) return "I can't save that one. I only keep short, personal facts like your name, goals and preferences, not instructions, links or sensitive details like passwords or card numbers.";
-      const added = await addItems(ws.id, [{ text, kind: "fact" }], "user");
+      const added = await addItems(ws.id, [{ text, kind: kindOfNote(intent.text) }], "user");
       return added.length ? `Got it. I'll remember: "${text}" You can delete it any time by saying "forget that".` : "I already have that in my memory.";
     }
   }
