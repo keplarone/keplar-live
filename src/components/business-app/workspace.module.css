@@ -1,13 +1,13 @@
-/* Keplar Business workspace (BusinessWorkspace, Dashboard, Projects): a monochrome command center. Black, greys and white, no
-   glow; Geist with Geist Mono for labels and numbers. A fixed full-window surface below the desktop title bar, independent of
-   Keplar One's theme; the same palette as the storefront (src/components/business-site/business-site.module.css). */
+/* Keplar Business workspace (BusinessWorkspace, Dashboard, Projects and every embedded module): a fixed full-window surface
+   below the desktop title bar, independent of Keplar One's theme. Its --w-* palette is the Business design system
+   (src/components/business-site/tokens.css), the same tokens the storefront reads, so the two surfaces never drift. */
 .root {
-  --w-bg: #0a0a0a; --w-panel: #111111; --w-panel-2: #1a1a1a; --w-line: #222222; --w-line-2: #303030; --w-side: #070707;
-  --w-ink: #fafafa; --w-ink-2: #a3a3a3; --w-ink-3: #8a8a8a; --w-accent: #fafafa; --w-ok: #fafafa; --w-warn: #fafafa; --w-bad: #fafafa;
-  --w-mono: var(--biz-mono), "Geist Mono", ui-monospace, monospace;
+  --w-bg: var(--kb-bg); --w-panel: var(--kb-surface); --w-panel-2: var(--kb-surface-2); --w-line: var(--kb-border); --w-line-2: var(--kb-border-strong); --w-side: #0c0c0c;
+  --w-ink: var(--kb-ink); --w-ink-2: var(--kb-ink-2); --w-ink-3: var(--kb-ink-3); --w-accent: var(--kb-ink); --w-ok: var(--kb-add); --w-warn: var(--kb-ink); --w-bad: var(--kb-del);
+  --w-mono: var(--kb-mono);
   position: fixed; inset: var(--kp-titlebar, 0px) 0 0 0; z-index: calc(var(--z-overlay) + 1);
   background: var(--w-bg); color: var(--w-ink); color-scheme: dark;
-  font-family: var(--biz-sans), "Geist", system-ui, sans-serif; -webkit-font-smoothing: antialiased; font-size: 14px;
+  font-family: var(--kb-sans); -webkit-font-smoothing: antialiased; font-size: 14px;
 
   /* The tabs that embed Keplar One screens (Create, Agents, Approvals, Operations, Integrations) read Keplar One's design tokens.
      Re-pointing those tokens here makes them use the Business palette, accent and font, so every tab matches the desktop app.
@@ -51,9 +51,8 @@
 
 .page { max-width: 1240px; margin: 0 auto; padding: 28px 32px 48px; display: flex; flex-direction: column; gap: 18px; }
 .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-.overline { margin: 0 0 6px; display: inline-flex; align-items: center; gap: 8px; font-family: var(--w-mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--w-ink-3); }
-.liveDot { width: 6px; height: 6px; border-radius: 999px; background: var(--w-ink); }
-.h1 { margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.035em; }
+.overline { margin: 0 0 6px; display: inline-flex; align-items: center; gap: 8px; font-family: var(--w-mono); font-size: 11px; color: var(--w-ink-3); }
+.h1 { margin: 0; font-size: 24px; font-weight: 500; letter-spacing: -0.025em; }
 .h2 { margin: 0; font-size: 14px; font-weight: 600; }
 .muted { margin: 0; color: var(--w-ink-3); font-size: 12.5px; line-height: 1.55; }
 .error { margin: 0; color: var(--w-ink); font-size: 13px; }
@@ -62,7 +61,7 @@
 .linkBtn { padding: 0; border: 0; background: none; color: var(--w-ink); font: inherit; text-align: left; cursor: pointer; text-decoration: underline; text-decoration-color: var(--w-line-2); text-underline-offset: 3px; }
 .linkBtn:hover { text-decoration-color: var(--w-ink); }
 
-.btnPrimary, .btnGhost { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 34px; padding: 0 14px; border: 0; border-radius: 8px; font: inherit; font-size: 13px; font-weight: 500; text-decoration: none; cursor: pointer; white-space: nowrap; }
+.btnPrimary, .btnGhost { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 32px; padding: 0 14px; border: 0; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 500; text-decoration: none; cursor: pointer; white-space: nowrap; }
 .btnPrimary { background: var(--w-ink); color: #0a0a0a; }
 .btnPrimary:hover:not(:disabled) { background: #d4d4d4; }
 .btnGhost { background: transparent; color: var(--w-ink); box-shadow: inset 0 0 0 1px var(--w-line-2); }
@@ -91,7 +90,7 @@
 .widget[data-dragging] { opacity: 0.45; }
 /* Each panel's header bar: the title in mono capitals, like a terminal pane. */
 .widgetHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 36px; margin: 0 -16px; padding: 0 12px 0 16px; border-bottom: 1px solid var(--w-line); background: rgb(255 255 255 / 0.015); }
-.widgetHead h2 { display: inline-flex; align-items: center; gap: 8px; margin: 0; font-family: var(--w-mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--w-ink-3); }
+.widgetHead h2 { display: inline-flex; align-items: center; gap: 8px; margin: 0; font-size: 12px; font-weight: 400; letter-spacing: 0; color: var(--w-ink-3); }
 .widgetBody { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .tools { display: flex; gap: 2px; }
 .tools button { min-width: 26px; height: 24px; padding: 0 6px; border: 0; border-radius: 6px; background: rgb(255 255 255 / 0.05); color: var(--w-ink-2); font: inherit; font-size: 11.5px; cursor: pointer; }
@@ -109,7 +108,7 @@
 .list li { display: flex; align-items: center; gap: 10px; min-height: 34px; padding: 6px 0; border-bottom: 1px solid var(--w-line); min-width: 0; }
 .list li:last-child { border-bottom: 0; }
 .list li > span:first-child, .list li > button:first-child { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tag { padding: 1px 8px; border-radius: 5px; font-family: var(--w-mono); font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; background: rgb(255 255 255 / 0.06); color: var(--w-ink-2); white-space: nowrap; }
+.tag { padding: 1px 8px; border-radius: 5px; font-family: var(--w-mono); font-size: 10.5px; background: rgb(255 255 255 / 0.06); color: var(--w-ink-2); white-space: nowrap; }
 /* State is in the word and the fill, not in colour: done is quiet, running is outlined, failed is inverted. */
 .tag[data-tone="ok"], .tag[data-tone="succeeded"], .tag[data-tone="done"] { color: var(--w-ink-2); background: var(--w-panel-2); }
 .tag[data-tone="failed"], .tag[data-tone="error"] { color: #0a0a0a; background: var(--w-ink); }
@@ -158,7 +157,7 @@
 .queries { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; color: var(--w-ink-2); font-size: 13px; }
 .report { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .reportHead { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-bottom: 10px; border-bottom: 1px solid var(--w-line); }
-.reportTitle { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+.reportTitle { margin: 0; font-size: 18px; font-weight: 500; letter-spacing: -0.015em; }
 .prose { font-size: 14px; line-height: 1.7; color: var(--w-ink); overflow-wrap: anywhere; }
 .prose :global(table) { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; font-size: 13px; }
 .prose :global(th), .prose :global(td) { padding: 6px 10px; border: 1px solid var(--w-line-2); text-align: left; vertical-align: top; }
@@ -196,42 +195,7 @@
 }
 .module :global(:is(button, a, [role="tab"]) svg) { max-width: 15px; max-height: 15px; }
 
-/* ── Settings (Settings.tsx): a section bar on the left and one section at a time, like Claude's settings ── */
-.settings { min-height: 100%; display: grid; grid-template-columns: 220px minmax(0, 1fr); }
-.setNav { display: flex; flex-direction: column; gap: 2px; padding: 24px 12px; border-right: 1px solid var(--w-line); }
-.setNavHead { padding: 0 10px 12px; color: var(--w-ink-3); font-family: var(--w-mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; }
-.setNavItem { display: flex; align-items: center; min-height: 32px; padding: 0 10px; border: 0; border-radius: 7px; background: transparent; color: var(--w-ink-2); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
-.setNavItem:hover { background: rgb(255 255 255 / 0.04); color: var(--w-ink); }
-.setNavItem[aria-current="page"] { background: var(--w-panel-2); color: var(--w-ink); font-weight: 500; }
-.setNavItem:focus-visible { outline: 2px solid var(--w-accent); outline-offset: -2px; }
-.setBody { width: 100%; max-width: 760px; padding: 28px 40px 48px; display: flex; flex-direction: column; gap: 18px; box-sizing: border-box; }
-.setToast { margin: 0; padding: 8px 12px; border-radius: 8px; background: var(--w-panel); box-shadow: inset 0 0 0 1px var(--w-line-2); font-size: 12.5px; }
-.setGroup { display: flex; flex-direction: column; border-radius: 12px; background: var(--w-panel); box-shadow: inset 0 0 0 1px var(--w-line); padding: 4px 16px; }
-.setGroup > .muted { padding: 10px 0 2px; }
-.setGroupHead { padding: 12px 0 4px; color: var(--w-ink-2); font-size: 12.5px; font-weight: 600; }
-.setRow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 300px); align-items: center; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--w-line); }
-.setRow:last-child { border-bottom: 0; }
-.setLabel { font-size: 13px; font-weight: 500; color: var(--w-ink); }
-.setRow .muted { margin-top: 2px; }
-.setControl { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; min-width: 0; }
-.setValue { font-size: 13px; color: var(--w-ink-2); text-align: right; overflow-wrap: anywhere; }
-.setInput { width: 100%; height: 32px; box-sizing: border-box; padding: 0 10px; border: 0; border-radius: 8px; background: var(--w-bg); box-shadow: inset 0 0 0 1px var(--w-line-2); color: var(--w-ink); font: inherit; font-size: 13px; }
-.setInput:focus-visible { outline: none; box-shadow: inset 0 0 0 1px var(--w-ink-2); }
-.setInput[aria-invalid] { box-shadow: inset 0 0 0 2px var(--w-ink-2); }
-.setErr { color: var(--w-ink); font-size: 12px; font-style: normal; }
-.setActions { display: flex; gap: 10px; padding: 12px 0; }
-.setMeter { width: 100%; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; font-size: 12.5px; color: var(--w-ink-2); }
-.setBar { width: 100%; height: 6px; border-radius: 3px; background: var(--w-panel-2); overflow: hidden; }
-.setBar i { display: block; height: 100%; background: var(--w-ink); border-radius: 3px; }
-.setSwitch { appearance: none; width: 34px; height: 20px; margin: 0; border-radius: 10px; background: var(--w-line-2); position: relative; cursor: pointer; transition: background-color 0.15s ease; }
-.setSwitch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--w-ink-2); transition: translate 0.15s ease; }
-.setSwitch:checked { background: var(--w-ink); }
-.setSwitch:checked::after { background: #0a0a0a; }
-.setSwitch:checked::after { translate: 14px 0; }
-.setSwitch:focus-visible { outline: 2px solid var(--w-accent); outline-offset: 2px; }
-@media (max-width: 760px) { .settings { grid-template-columns: minmax(0, 1fr); } .setNav { flex-direction: row; flex-wrap: wrap; padding: 12px; border-right: 0; border-bottom: 1px solid var(--w-line); } .setNavHead { display: none; } .setBody { padding: 20px 16px 32px; } .setRow { grid-template-columns: minmax(0, 1fr); } .setControl { align-items: stretch; } }
 
 /* Keplar One's marketing layer sets every #main h1 and h2 to regular weight (src/styles/redesign.css); the workspace's
    headings are semibold, so they say so with the same id in the selector. */
-:global(#main) .h1, :global(#main) .reportTitle { font-weight: 600; }
 :global(#main) .widgetHead h2 { font-weight: 500; letter-spacing: 0.1em; }

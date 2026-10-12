@@ -275,3 +275,4 @@
   .sheet { animation: none; }
 }
 @media (min-width: 901px) { .sheet { display: none; } }
+.setup .h2 { font-size: clamp(28px, 3.4vw, 36px); }

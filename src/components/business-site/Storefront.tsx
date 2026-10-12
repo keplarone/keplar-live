@@ -173,7 +173,6 @@ export function Storefront() {
           <div className={s.navEnd}>
             {status.state === "out" ? (
               <>
-                {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- /signin is a route handler (the sign-in handoff from keplar.one): it needs a full page load */}
                 <a href={`/signin?next=${encodeURIComponent("/work")}`} className={s.navLink}>Sign in</a>
                 <a href={accountUrl()} className={s.btnPrimarySm}>Start Building</a>
               </>
@@ -192,7 +191,6 @@ export function Storefront() {
           <nav id="business-menu" className={s.sheet} aria-label="Sections">
             {links.map((l) => <a key={l.href} href={l.href} onClick={() => setMenu(false)}>{l.label}</a>)}
             {status.state === "out" ? (
-              // eslint-disable-next-line @next/next/no-html-link-for-pages -- /signin is a route handler: it needs a full page load
               <a href={`/signin?next=${encodeURIComponent("/work")}`}>Sign in</a>
             ) : status.state === "in" ? <div className={s.sheetAccount}><span>{status.email}</span><SignOutButton email={status.email} /></div> : null}
           </nav>

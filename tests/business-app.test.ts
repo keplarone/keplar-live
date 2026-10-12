@@ -134,18 +134,48 @@ test("Agents, Approvals, Operations, Integrations and Create look like the works
   assert.match(readFileSync("src/components/desktop/DesktopTitleBar.module.css", "utf8"), /:global\(html\[data-business-app\]\) \.brand \{ visibility: hidden; \}|\.search, :global\(html\[data-business-app\]\) \.brand \{ visibility: hidden; \}/);
 });
 
-test("Business settings: its own page with a section bar (like Claude's), opened from the sidebar gear, every section on a real endpoint", async () => {
-  const { SETTINGS_SECTIONS, isSettingsSection } = await import("@/components/business-app/settings-sections");
-  assert.deepEqual(SETTINGS_SECTIONS.map((x) => x.id), ["general", "plan", "preferences", "security", "privacy", "desktop"]);
-  assert.equal(isSettingsSection("plan"), true);
-  assert.equal(isSettingsSection("billing"), false);
+test("Business settings: a popover over the workspace (never a page), from the account button, the gear or Ctrl+,; every section on a real endpoint", async () => {
+  const { SETTINGS_SECTIONS, isSettingsSection, settingsSectionFrom } = await import("@/components/business-app/settings-sections");
+  assert.deepEqual(SETTINGS_SECTIONS.map((x) => x.id), ["general", "ai", "editor", "agents", "connections", "security", "computer", "billing", "team"]);
+  assert.equal(isSettingsSection("billing"), true);
+  assert.equal(isSettingsSection("plan"), false);
+  assert.equal(settingsSectionFrom("plan"), "billing", "links saved before the popover still land on the right section");
+  assert.equal(settingsSectionFrom("nope"), "general");
   const ws = readFileSync("src/components/business-app/BusinessWorkspace.tsx", "utf8");
-  assert.match(ws, /onClick=\{\(\) => go\(\{ at: "settings", section: "general" \}\)\} aria-label="Settings"/, "the gear opens Business settings, not Keplar One");
-  assert.match(ws, /if \(v === "settings"\) \{ const sec = q\.get\("s"\); return \{ at: "settings", section: isSettingsSection\(sec\) \? sec : "general" \}; \}/);
+  assert.ok(ws.includes(`onClick={() => openSettings("general")} aria-label="Settings"`), "the gear opens Business settings, not Keplar One");
+  assert.ok(ws.includes(`key === ",") { e.preventDefault(); setSettings(`), "Ctrl+, (⌘,) opens it");
+  assert.ok(!ws.includes(`at: "settings"`), "settings is never a view: the work underneath stays mounted");
+  assert.ok(ws.includes(`{settings ? <Settings section={settings}`));
   const page = readFileSync("src/components/business-app/Settings.tsx", "utf8");
-  for (const endpoint of ['"/api/business/account", { method: "POST"', '"/api/billing/portal"', 'href="/api/account/export"', '"/api/business/dashboard"']) assert.ok(page.includes(endpoint), endpoint);
-  assert.match(page, /signOutOfBusiness\(\)/);
+  assert.ok(page.includes(`role="dialog" aria-modal="true"`));
+  assert.ok(page.includes(`e.key === "Escape"`));
+  for (const endpoint of ['"/api/business/account", { method: "POST"', '"/api/billing/portal"', 'href="/api/account/export"', '"/api/business/dashboard"', '"/api/business/agents/halt"']) assert.ok(page.includes(endpoint), endpoint);
+  assert.ok(page.includes("signOutOfBusiness()"));
+  // What the workspace can't do yet is labelled, never simulated.
+  assert.ok(page.includes("Not available yet"));
   // Claims stay within the privacy policy: paid requests go only to endpoints that say they do not train on prompts.
   assert.match(page, /send requests only to model endpoints that say they do not train on prompts/);
   assert.doesNotMatch(page, /never used to train|not used to train/i);
+});
+
+test("one Business design system: the site and the workspace read the same tokens, and Keplar One's marketing layer stays out", () => {
+  const tokens = readFileSync("src/components/business-site/tokens.css", "utf8");
+  for (const t of ["--kb-bg:", "--kb-ink:", "--kb-border:", "--kb-r-pill:", "--kb-ease:"]) assert.ok(tokens.includes(t), t);
+  assert.ok(tokens.includes("[data-kb] { --kb-d-1: 0ms;"), "reduced motion zeroes every duration");
+  assert.ok(readFileSync("src/app/(business)/layout.tsx", "utf8").includes(`data-kb=""`));
+  assert.ok(readFileSync("src/app/(business-app)/layout.tsx", "utf8").includes(`data-kb=""`));
+  assert.ok(readFileSync("src/components/business-app/workspace.module.css", "utf8").includes("--w-bg: var(--kb-bg)"));
+  const redesign = readFileSync("src/styles/redesign.css", "utf8");
+  assert.ok(redesign.includes("#main:not([data-kb]) h1 {"));
+  assert.equal(redesign.split(":not([data-kb] *)").length - 1, 5, "no button lift or shadow inside Business");
+});
+
+test("Business storefront: the hero and its demo are honest", () => {
+  const store = readFileSync("src/components/business-site/Storefront.tsx", "utf8");
+  for (const copy of ["Build anything.", "Let intelligence handle the complexity.", ">Start Building<", ">Explore Keplar Business<"]) assert.ok(store.includes(copy), copy);
+  assert.doesNotMatch(store, /testimonial|trusted by|customers love|SOC ?2|ISO ?27001|99\.9/i, "no invented credibility");
+  const demo = readFileSync("src/components/business-site/BuildDemo.tsx", "utf8");
+  assert.ok(demo.includes("Demo · example session"), "the demo says it is a demo");
+  assert.ok(demo.includes("prefers-reduced-motion: reduce"));
+  for (const stage of ["Understand the task", "Inspect the code", "Write the change", "Run the tests", "Open a live preview", "Hand over for review"]) assert.ok(demo.includes(stage), stage);
 });

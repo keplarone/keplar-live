@@ -15,7 +15,7 @@ export default function BusinessAppLayout({ children }: { children: React.ReactN
   return (
     <>
       <DesktopTitleBar />
-      <main id="main" data-business-app="">{children}</main>
+      <main id="main" data-business-app="" data-kb="">{children}</main>
     </>
   );
 }
