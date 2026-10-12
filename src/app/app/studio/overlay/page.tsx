@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { StudioOverlay } from "@/components/app-ui/studio-mode/StudioOverlay";
+import { OverlayShell } from "@/components/app-ui/studio-mode/workspace/OverlayShell";
 
 export const metadata: Metadata = { title: "Keplar · Studio overlay" };
 
@@ -9,7 +9,7 @@ export default function Page() {
     <>
       {/* Mark the page before first paint so the transparent window never flashes the site background. */}
       <script dangerouslySetInnerHTML={{ __html: `document.documentElement.setAttribute("data-overlay","")` }} />
-      <StudioOverlay />
+      <OverlayShell />
     </>
   );
 }

@@ -1,0 +1,109 @@
+/* Progress (determinate, real counts only), ActivityIndicator (real in-flight work), EmptyState. */
+
+.progress {
+  display: grid;
+  gap: var(--ks-space-1-5);
+  min-width: 0;
+}
+.progressHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ks-space-2);
+  font-size: var(--ks-text-sm);
+  line-height: var(--ks-leading-sm);
+  color: var(--ks-text-2);
+}
+.progressValue {
+  font-variant-numeric: tabular-nums;
+  color: var(--ks-text-3);
+}
+.track {
+  position: relative;
+  height: 4px;
+  border-radius: var(--ks-radius-pill);
+  background: var(--ks-fill-active);
+  overflow: hidden;
+}
+.fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--ks-accent);
+  transform-origin: 0 50%;
+  transition: transform var(--ks-dur-base) var(--ks-ease-standard);
+}
+.progress[data-tone="success"] .fill { background: var(--ks-success); }
+.progress[data-tone="danger"] .fill { background: var(--ks-danger); }
+
+/* A square traced by a short segment: precise, quiet, and only ever shown while real work is in flight. */
+.activity {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ks-space-1-5);
+  color: inherit;
+  font-size: var(--ks-text-sm);
+  line-height: var(--ks-leading-sm);
+}
+.activityGlyph {
+  flex: none;
+  overflow: visible;
+}
+.activityTrack,
+.activitySeg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.activityTrack { opacity: 0.22; }
+.activitySeg {
+  stroke-dasharray: 0.22 0.78;
+  stroke-dashoffset: 0;
+  animation: trace 1.1s linear infinite;
+}
+@keyframes trace {
+  to { stroke-dashoffset: -1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .activitySeg { animation: none; stroke-dasharray: 0.5 0.5; }
+  .fill { transition: none; }
+}
+
+.empty {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: var(--ks-space-2);
+  padding: var(--ks-space-8) var(--ks-space-4);
+  text-align: center;
+  color: var(--ks-text-2);
+}
+.emptyIcon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-bottom: var(--ks-space-1);
+  border: 1px solid var(--ks-border);
+  border-radius: var(--ks-radius-md);
+  color: var(--ks-text-3);
+}
+.emptyTitle {
+  margin: 0;
+  font-size: var(--ks-text-md);
+  line-height: var(--ks-leading-md);
+  font-weight: var(--ks-weight-medium);
+  color: var(--ks-text-1);
+  letter-spacing: var(--ks-tracking-tight);
+}
+.emptyHint {
+  margin: 0;
+  max-width: 32ch;
+  font-size: var(--ks-text-sm);
+  line-height: var(--ks-leading-sm);
+  color: var(--ks-text-3);
+  text-wrap: balance;
+}
+.emptyAction { margin-top: var(--ks-space-2); }

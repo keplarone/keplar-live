@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <style>
+    .mark { fill: #0a0a0a; }
+    @media (prefers-color-scheme: dark) {
+      .mark { fill: #fff; }
+    }
+  </style>
+  <rect class="mark" x="76" y="76" width="232" height="232" rx="74"/>
+  <path class="mark" d="M295 76h143c11 0 18 7 18 18v151c0 8-4 12-9 9L283 92c-8-8-2-16 12-16Z"/>
+  <circle class="mark" cx="358" cy="358" r="119"/>
+</svg>

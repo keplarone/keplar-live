@@ -18,6 +18,17 @@ export type StudioOverlayApi = {
   collapse(on: boolean): Promise<OverlayState>;
   seeThrough(on: boolean): Promise<OverlayState>;
   onState(listener: (state: OverlayState) => void): () => void;
+  /**
+   * Spring drag (desktop app 0.2.4+, keplar-desktop src/main/studio/overlay-drag.ts). Present means the three calls below
+   * exist; older apps leave it undefined and the overlay drags its title bar as a -webkit-app-region instead.
+   */
+  supports?: { springDrag?: boolean };
+  /** False where the app cannot place windows (Linux Wayland). */
+  dragAvailable?(): Promise<boolean>;
+  /** Overlay page only. `offset` is where the window was grabbed (event.clientX/clientY). */
+  dragStart?(offset?: { x: number; y: number }): Promise<{ dragging: boolean; reason?: "unavailable" | "no-window" }>;
+  /** Overlay page only; settles on the exact target. Idempotent. */
+  dragEnd?(): Promise<{ dragging: false }>;
 };
 
 export type StudioBridge = {

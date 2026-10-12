@@ -10,14 +10,21 @@
  * Only the App studio ships with the Create chunk; Images, Video and Mobile are separate chunks fetched the first
  * time their tab is opened (and warmed when the pointer reaches the tab), so opening Create costs only what the
  * App studio needs.
+ *
+ * Keplar Studio (desktop app only) is one tab with an environment switch, Roblox Studio | Blender, and mounts the Keplar
+ * Studio Workspace for the chosen one (each environment's stays mounted once opened). Links: ?tab=studio&env=roblox|blender is canonical; ?tab=roblox and ?tab=blender still
+ * work; ?tab=studio alone opens the environment used last. Outside the desktop app these links land on App with a note
+ * pointing to the download page (see ./studio/keplar-studio-nav.ts).
  */
-import { lazy, Suspense, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { lazy, Suspense, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { studioBridge } from "@/lib/desktop/studio-bridge";
 import { useTabIndicator } from "@/components/motion/useTabIndicator";
 import { SignInGate } from "@/components/app-ui/SignInGate";
 import { AppBuilder } from "./apps/AppBuilder";
 import b from "./builder.module.css";
 import st from "./apps/studio.module.css";
+import { KeplarStudioElsewhere, KeplarStudioPane } from "./studio/KeplarStudioPane";
+import { createSearch, locationFromUrl, pickEnv, readRememberedEnv, rememberEnv, resolveCreateLocation, studioRequested, type CreateLocation, type CreateView, type StudioEnv } from "./studio/keplar-studio-nav";
 
 const loadImages = () => import("./ImageStudio");
 const loadVideo = () => import("./video/VideoStudio");
@@ -27,34 +34,35 @@ const ImageStudio = lazy(() => loadImages().then((m) => ({ default: m.ImageStudi
 const VideoStudio = lazy(() => loadVideo().then((m) => ({ default: m.VideoStudio })));
 const MobileStudio = lazy(() => loadMobile().then((m) => ({ default: m.MobileStudio })));
 const SiteBuilder = lazy(() => loadSite().then((m) => ({ default: m.SiteBuilder })));
-const loadRoblox = () => import("@/components/app-ui/studio-mode/StudioView");
-const RobloxStudio = lazy(() => loadRoblox().then((m) => ({ default: m.StudioView })));
-const loadBlender = () => import("@/components/app-ui/studio-mode/BlenderView");
-const BlenderStudio = lazy(() => loadBlender().then((m) => ({ default: m.BlenderView })));
+// One chunk serves both environments (Roblox Studio and Blender share the Keplar Studio Workspace).
+const loadWorkspace = () => import("@/components/app-ui/studio-mode/workspace/Workspace");
+const StudioWorkspace = lazy(() => loadWorkspace().then((m) => ({ default: m.Workspace })));
 const noSubscribe = () => () => {};
-const WARM: Record<string, () => Promise<unknown>> = { images: loadImages, video: loadVideo, mobile: loadMobile, roblox: loadRoblox, blender: loadBlender };
+const WARM: Record<string, () => Promise<unknown>> = { images: loadImages, video: loadVideo, mobile: loadMobile, roblox: loadWorkspace, blender: loadWorkspace };
 
-/** "roblox" is Roblox Studio mode: desktop app only, so its tab appears only when the desktop bridge is there. */
-type View = "app" | "images" | "video" | "mobile" | "roblox" | "blender";
+/** "studio" is Keplar Studio: desktop app only, so its tab appears only when the desktop bridge is there. */
+type View = CreateView;
 type Auth = "loading" | "in" | "out";
 
-type Props = { embedded?: boolean; initialTab?: string; /** null while the app shell is still resolving the account. undefined when Create is mounted on its own. */ signedIn?: boolean | null; /** The plan, for Roblox Studio mode (Lite and up). */ plan?: string };
+type Props = {
+  embedded?: boolean;
+  /** A `?tab=` value (see ./studio/keplar-studio-nav.ts); falls back to the page URL. */
+  initialTab?: string;
+  /** A `?env=` value for Keplar Studio ("roblox" | "blender"); falls back to the page URL. */
+  initialEnv?: string;
+  /** null while the app shell is still resolving the account. undefined when Create is mounted on its own. */
+  signedIn?: boolean | null;
+  /** The plan, for Keplar Studio (Lite and up). */
+  plan?: string;
+};
 
 const SITE_HANDOFF_KEY = "keplar:create-site";
 
-function resolveTab(raw?: string | null): View {
-  if (raw === "images" || raw === "video" || raw === "mobile" || raw === "roblox" || raw === "blender") return raw;
-  // "site" and anything else land on App (Site Create UI removed).
-  return "app";
-}
-
-function tabFromLocation(): string | null {
-  try {
-    if (typeof window === "undefined") return null;
-    return new URL(window.location.href).searchParams.get("tab");
-  } catch {
-    return null;
-  }
+function initialLocation(initialTab?: string, initialEnv?: string): CreateLocation {
+  const fromUrl = typeof window === "undefined" ? { view: "app" as const, env: null } : locationFromUrl(window.location.href);
+  if (initialTab === undefined) return fromUrl;
+  const given = resolveCreateLocation(initialTab, initialEnv ?? null);
+  return given.view === "studio" && !given.env && fromUrl.view === "studio" ? { ...given, env: fromUrl.env } : given;
 }
 
 function peekSiteHandoff(): boolean {
@@ -66,41 +74,61 @@ function peekSiteHandoff(): boolean {
   }
 }
 
-function setTabQuery(v: View) {
+function setCreateQuery(v: View, env: StudioEnv) {
   try {
     const url = new URL(window.location.href);
-    if (v === "app") url.searchParams.delete("tab");
-    else url.searchParams.set("tab", v);
-    window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+    window.history.replaceState(null, "", `${url.pathname}${createSearch(url.search, v, env)}${url.hash}`);
   } catch {
     /* ignore */
   }
 }
 
-export function CreateStudio({ initialTab, signedIn, plan = "free" }: Props) {
-  // Roblox Studio mode needs the desktop app; the server render and the first client render see no bridge.
+export function CreateStudio({ initialTab, initialEnv, signedIn, plan = "free" }: Props) {
+  // Keplar Studio needs the desktop app; the server render and the first client render see no bridge.
   const desktop = useSyncExternalStore(noSubscribe, () => Boolean(studioBridge()), () => false);
-  const [view, setView] = useState<View>(() => resolveTab(initialTab ?? tabFromLocation()));
-  const [imagesSeen, setImagesSeen] = useState(() => resolveTab(initialTab ?? tabFromLocation()) === "images");
-  const [videoSeen, setVideoSeen] = useState(() => resolveTab(initialTab ?? tabFromLocation()) === "video");
-  const [mobileSeen, setMobileSeen] = useState(() => resolveTab(initialTab ?? tabFromLocation()) === "mobile");
-  const [robloxSeen, setRobloxSeen] = useState(() => resolveTab(initialTab ?? tabFromLocation()) === "roblox");
-  const [blenderSeen, setBlenderSeen] = useState(() => resolveTab(initialTab ?? tabFromLocation()) === "blender");
+  const [start] = useState(() => initialLocation(initialTab, initialEnv));
+  const [view, setView] = useState<View>(start.view);
+  const [env, setEnv] = useState<StudioEnv>(() => pickEnv(start.env, readRememberedEnv()));
+  const [imagesSeen, setImagesSeen] = useState(start.view === "images");
+  const [videoSeen, setVideoSeen] = useState(start.view === "video");
+  const [mobileSeen, setMobileSeen] = useState(start.view === "mobile");
+  // Which environments have been opened (each stays mounted after that, so switching keeps its work).
+  const [envSeen, setEnvSeen] = useState<Record<StudioEnv, boolean>>(() => ({ roblox: start.view === "studio" && env === "roblox", blender: start.view === "studio" && env === "blender" }));
+  const [elsewhereDismissed, setElsewhereDismissed] = useState(false);
   const [siteHandoff, setSiteHandoff] = useState(() => peekSiteHandoff());
   const [auth, setAuth] = useState<Auth>(signedIn === true ? "in" : signedIn === false ? "out" : "loading");
   const shown: Auth = signedIn === true ? "in" : signedIn === false ? "out" : auth;
 
   const pick = (v: View) => {
     setView(v);
-    setTabQuery(v);
+    setCreateQuery(v, env);
     if (v === "images") setImagesSeen(true);
     if (v === "video") setVideoSeen(true);
     if (v === "mobile") setMobileSeen(true);
-    if (v === "roblox") setRobloxSeen(true);
-    if (v === "blender") setBlenderSeen(true);
+    if (v === "studio") setEnvSeen((s) => (s[env] ? s : { ...s, [env]: true }));
   };
-  // Outside the desktop app a Roblox Studio link lands on App.
-  const current: View = (view === "roblox" || view === "blender") && !desktop ? "app" : view;
+  const pickEnvironment = (next: StudioEnv) => {
+    setEnv(next);
+    rememberEnv(next);
+    setEnvSeen((s) => (s[next] ? s : { ...s, [next]: true }));
+    setCreateQuery("studio", next);
+  };
+  // Outside the desktop app a Keplar Studio link lands on App (with a note saying where it runs).
+  const current: View = view === "studio" && !desktop ? "app" : view;
+  const showElsewhere = studioRequested(view, desktop) && !elsewhereDismissed;
+
+  // A deep link that named an environment is remembered like a pick, so the next plain Keplar Studio visit opens it.
+  useEffect(() => {
+    if (start.view === "studio" && start.env) rememberEnv(start.env);
+  }, [start]);
+  // Inside the desktop app a Studio link in an older form (?tab=roblox, ?tab=blender, ?tab=studio) is rewritten to the
+  // canonical ?tab=studio&env=…, once, when the bridge is first seen. Later switches write the URL themselves.
+  const canonical = useRef(false);
+  useEffect(() => {
+    if (!desktop || canonical.current || start.view !== "studio") return;
+    canonical.current = true;
+    setCreateQuery("studio", env);
+  }, [desktop, start, env]);
 
   // Strip ?tab=site from the URL after mount (redirects cover full navigations; this covers client deep links).
   useEffect(() => {
@@ -133,12 +161,12 @@ export function CreateStudio({ initialTab, signedIn, plan = "free" }: Props) {
     };
   }, [signedIn]);
 
-  // The underline slides between App, Images, Video, Mobile and (desktop app) Roblox Studio (placed once the tab bar renders after the auth probe).
+  // The underline slides between App, Images, Video, Mobile and (desktop app) Keplar Studio (placed once the tab bar renders after the auth probe).
   const kindTabsRef = useRef<HTMLDivElement>(null);
   useTabIndicator(kindTabsRef, `${shown}:${current}:${desktop}`);
 
-  const warm = (v: string) => () => void WARM[v]?.().catch(() => undefined);
-  const tab = (v: View, label: React.ReactNode) => (
+  const warm = (v: string) => () => void WARM[v === "studio" ? env : v]?.().catch(() => undefined);
+  const tab = (v: View, label: ReactNode) => (
     <button type="button" role="tab" aria-selected={current === v} className={`${b.segBtn} ${st.kindTab}`} onClick={() => pick(v)} onPointerEnter={v === "app" ? undefined : warm(v)} onFocus={v === "app" ? undefined : warm(v)}>{label}</button>
   );
   const loading = <div className={st.paneMsg}>Loading…</div>;
@@ -191,11 +219,11 @@ export function CreateStudio({ initialTab, signedIn, plan = "free" }: Props) {
           {tab("images", "Images")}
           {tab("video", <>Video <span aria-hidden="true">(Beta)</span></>)}
           {tab("mobile", <>Mobile <span aria-hidden="true">(Beta)</span></>)}
-          {desktop ? tab("roblox", "Roblox Studio") : null}
-          {desktop ? tab("blender", "Blender") : null}
+          {desktop ? tab("studio", "Keplar Studio") : null}
           <span className="m-tab-indicator" aria-hidden="true" />
         </div>
       </div>
+      {showElsewhere && current === "app" ? <KeplarStudioElsewhere onDismiss={() => setElsewhereDismissed(true)} /> : null}
       <div className={b.root} style={current === "app" ? undefined : { display: "none" }}>
         <AppBuilder />
       </div>
@@ -214,15 +242,17 @@ export function CreateStudio({ initialTab, signedIn, plan = "free" }: Props) {
           <Suspense fallback={loading}><MobileStudio /></Suspense>
         </div>
       ) : null}
-      {desktop && blenderSeen ? (
-        <div style={current === "blender" ? { overflowY: "auto", flex: 1, padding: "24px 20px" } : { display: "none" }}>
-          <Suspense fallback={loading}><BlenderStudio plan={plan} signedIn={shown === "in"} /></Suspense>
-        </div>
-      ) : null}
-      {desktop && robloxSeen ? (
-        <div style={current === "roblox" ? { overflowY: "auto", flex: 1, padding: "24px 20px" } : { display: "none" }}>
-          <Suspense fallback={loading}><RobloxStudio plan={plan} signedIn={shown === "in"} /></Suspense>
-        </div>
+      {desktop && (envSeen.roblox || envSeen.blender) ? (
+        <KeplarStudioPane
+          env={env}
+          onEnvChange={pickEnvironment}
+          onWarm={(e) => void WARM[e]?.().catch(() => undefined)}
+          hidden={current !== "studio"}
+          views={{
+            roblox: envSeen.roblox ? <Suspense fallback={loading}><StudioWorkspace env="roblox" plan={plan} signedIn={shown === "in"} onEnvChange={pickEnvironment} /></Suspense> : null,
+            blender: envSeen.blender ? <Suspense fallback={loading}><StudioWorkspace env="blender" plan={plan} signedIn={shown === "in"} onEnvChange={pickEnvironment} /></Suspense> : null,
+          }}
+        />
       ) : null}
     </div>
   );

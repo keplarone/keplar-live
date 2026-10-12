@@ -1,0 +1,299 @@
+/*
+ * Keplar Studio design tokens.
+ *
+ * Every Studio surface renders inside <StudioRoot> (StudioRoot.tsx), which puts the `.root` class below on its element. All
+ * tokens are custom properties on that element, so they cascade to everything inside it, including top-layer popovers, tooltips,
+ * toasts and dialogs (they stay in the DOM under the root; the top layer only changes painting, not inheritance).
+ *
+ * Theme: follows the site's own mechanism. The inline THEME_SCRIPT (src/lib/theme.ts) resolves the saved preference (dark /
+ * light / auto → prefers-color-scheme) before paint and writes <html data-theme="dark|light">. `.root` is Light by default
+ * (like :root in src/styles/tokens.css) and switches to Dark under :root[data-theme="dark"]. A subtree can pin a theme with
+ * <StudioRoot theme="dark|light"> (data-ks-theme), e.g. a capture or a surface that must stay dark.
+ *
+ * The palette is derived from the site's genuine theme tokens (src/styles/tokens.css + light.css): the same graphite ink
+ * (#0e0f12 / #ededf0), the same teal accent (--c-accent #0a7a8a light, #5ecad8 dark) and the same text-safe semantic hues
+ * (--c-verified, --c-attention, --c-destructive, --c-research). tests/studio-ui-tokens.test.ts parses this file and checks that
+ * both themes define the same tokens and that every text level holds WCAG AA (4.5:1) on every surface it can sit on.
+ *
+ * Naming: --ks-<group>-<role>. Nothing outside ui/ should hard-code a colour, size or duration that has a token here.
+ */
+
+.root {
+  /* ── Light palette (default) ─────────────────────────────────────────────────────────────── */
+  /* surfaces: canvas < panel < raised; light layers by border + elevation rather than by tint */
+  --ks-bg: #f5f6f8;
+  --ks-surface-1: #ffffff;
+  --ks-surface-2: #ffffff;
+  --ks-surface-3: #eef0f3;
+  --ks-surface-inset: #f9fafb;
+  /* fills layer on any surface (hover / pressed / selected rows) */
+  --ks-fill-hover: rgb(14 15 18 / 0.045);
+  --ks-fill-active: rgb(14 15 18 / 0.08);
+  --ks-fill-selected: rgb(10 122 138 / 0.1);
+  /* text */
+  --ks-text-1: #0e0f12;
+  --ks-text-2: #4b4f58;
+  --ks-text-3: #60646e;
+  --ks-text-disabled: #a3a7b0;
+  /* lines */
+  --ks-border: rgb(14 15 18 / 0.1);
+  --ks-border-strong: rgb(14 15 18 / 0.17);
+  --ks-divider: rgb(14 15 18 / 0.07);
+  /* accent: one restrained teal (site --c-accent), used only for selection, focus, progress */
+  --ks-accent: #0a7a8a;
+  --ks-accent-text: #0a6f7c;
+  --ks-accent-ink: #ffffff;
+  --ks-accent-subtle: rgb(10 122 138 / 0.1);
+  --ks-focus: #0a7a8a;
+  /* primary (monochrome inverse pill) */
+  --ks-primary-bg: #0e0f12;
+  --ks-primary-bg-hover: #26272c;
+  --ks-primary-text: #ffffff;
+  /* status (text-safe on every surface) + subtle backgrounds */
+  --ks-success: #1f7a4a;
+  --ks-warning: #8a5a00;
+  --ks-danger: #b42318;
+  --ks-info: #0b5f70;
+  --ks-success-subtle: rgb(31 122 74 / 0.1);
+  --ks-warning-subtle: rgb(138 90 0 / 0.1);
+  --ks-danger-subtle: rgb(180 35 24 / 0.08);
+  --ks-info-subtle: rgb(11 95 112 / 0.09);
+  --ks-danger-solid: #b42318;
+  --ks-danger-solid-hover: #9a1d13;
+  --ks-danger-ink: #ffffff;
+  /* code diff */
+  --ks-diff-add-bg: rgb(31 122 74 / 0.09);
+  --ks-diff-add-emph: rgb(31 122 74 / 0.2);
+  --ks-diff-del-bg: rgb(180 35 24 / 0.07);
+  --ks-diff-del-emph: rgb(180 35 24 / 0.17);
+  /* elevation: three levels at most; 0 = flat, borders do the work */
+  --ks-elev-1: 0 1px 2px rgb(14 15 18 / 0.05), 0 4px 12px -6px rgb(14 15 18 / 0.12);
+  --ks-elev-2: 0 1px 2px rgb(14 15 18 / 0.06), 0 16px 36px -14px rgb(14 15 18 / 0.22);
+  --ks-scrim: rgb(14 15 18 / 0.28);
+  color-scheme: light;
+
+  /* ── Theme-independent scales ──────────────────────────────────────────────────────────── */
+  /* spacing: 4px base (fixed px: the Studio is a dense tool surface, it does not grow with the window) */
+  --ks-space-0: 0;
+  --ks-space-px: 1px;
+  --ks-space-0-5: 2px;
+  --ks-space-1: 4px;
+  --ks-space-1-5: 6px;
+  --ks-space-2: 8px;
+  --ks-space-2-5: 10px;
+  --ks-space-3: 12px;
+  --ks-space-4: 16px;
+  --ks-space-5: 20px;
+  --ks-space-6: 24px;
+  --ks-space-8: 32px;
+  --ks-space-10: 40px;
+  --ks-space-12: 48px;
+  --ks-space-16: 64px;
+
+  /* radius: small for panels / editors / code, pill for buttons */
+  --ks-radius-xs: 3px;
+  --ks-radius-sm: 6px;
+  --ks-radius-md: 8px;
+  --ks-radius-lg: 10px;
+  --ks-radius-pill: 999px;
+
+  /* control heights */
+  --ks-control-sm: 24px;
+  --ks-control-md: 28px;
+  --ks-control-lg: 34px;
+
+  /* type: the site UI font (Google Sans via next/font, --f-sans) and IBM Plex Mono for code (--f-mono) */
+  --ks-font-sans: var(--f-sans, "Google Sans", "Keplar Sans Fallback", ui-sans-serif, system-ui, sans-serif);
+  --ks-font-mono: var(--f-mono, "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace);
+  --ks-text-xs: 0.6875rem; /* 11px: meta, kbd, badges */
+  --ks-text-sm: 0.75rem; /* 12px: secondary UI, code */
+  --ks-text-base: 0.8125rem; /* 13px: default UI text */
+  --ks-text-md: 0.875rem; /* 14px: composer, messages */
+  --ks-text-lg: 1rem; /* 16px: panel / dialog titles */
+  --ks-text-xl: 1.25rem; /* 20px: empty-state and page titles */
+  --ks-leading-xs: 1rem;
+  --ks-leading-sm: 1.125rem;
+  --ks-leading-base: 1.25rem;
+  --ks-leading-md: 1.375rem;
+  --ks-leading-lg: 1.5rem;
+  --ks-leading-xl: 1.75rem;
+  --ks-leading-code: 1.125rem;
+  --ks-weight-regular: 400;
+  --ks-weight-medium: 500;
+  --ks-weight-semibold: 600;
+  --ks-tracking-tight: -0.012em;
+  --ks-tracking-normal: -0.003em;
+  --ks-tracking-label: 0.04em;
+  --ks-tracking-mono: 0;
+
+  /* motion (TS twin: motion.ts) */
+  --ks-dur-instant: 80ms;
+  --ks-dur-fast: 140ms;
+  --ks-dur-base: 200ms;
+  --ks-dur-morph: 220ms;
+  --ks-dur-slow: 300ms;
+  --ks-dur-sequence: 900ms;
+  --ks-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ks-ease-enter: cubic-bezier(0, 0, 0, 1);
+  --ks-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  /* critically damped spring, no overshoot (generated by springLinear() in motion.ts) */
+  --ks-ease-spring: linear(0, 0.0571, 0.1793, 0.3192, 0.4533, 0.571, 0.6691, 0.7483, 0.8106, 0.8587, 0.8954, 0.9231, 0.9437, 0.959, 0.9703, 0.9785, 0.9845, 0.9889, 0.992, 0.9943, 0.9959, 0.9971, 0.9979, 0.9985, 1);
+
+  /* focus: a 2px accent ring offset by the surface colour (keyboard focus only, :focus-visible) */
+  --ks-focus-ring: 0 0 0 1px var(--ks-surface-1), 0 0 0 3px var(--ks-focus);
+
+  /* icon stroke: one style everywhere (24 grid) */
+  --ks-icon-stroke: 1.5;
+
+  /* stacking inside the Studio (top-layer elements ignore these; they are for in-flow overlays) */
+  --ks-z-sticky: 10;
+  --ks-z-overlay: 50;
+
+  /* base text for everything inside the root */
+  font-family: var(--ks-font-sans);
+  font-size: var(--ks-text-base);
+  line-height: var(--ks-leading-base);
+  letter-spacing: var(--ks-tracking-normal);
+  font-weight: var(--ks-weight-regular);
+  color: var(--ks-text-1);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Dark palette: layered graphite neutrals (not solid black), site ink #ededf0, site accent #5ecad8 ─────────────────── */
+:global(:root[data-theme="dark"]) .root,
+:global(:root) .root[data-ks-theme="dark"] {
+  --ks-bg: #0f0f11;
+  --ks-surface-1: #151518;
+  --ks-surface-2: #1c1c20;
+  --ks-surface-3: #25252a;
+  --ks-surface-inset: #121214;
+  --ks-fill-hover: rgb(237 237 240 / 0.05);
+  --ks-fill-active: rgb(237 237 240 / 0.09);
+  --ks-fill-selected: rgb(94 202 216 / 0.13);
+  --ks-text-1: #ededf0;
+  --ks-text-2: #a6a8b0;
+  --ks-text-3: #989aa3;
+  --ks-text-disabled: #55575e;
+  --ks-border: rgb(237 237 240 / 0.09);
+  --ks-border-strong: rgb(237 237 240 / 0.16);
+  --ks-divider: rgb(237 237 240 / 0.06);
+  --ks-accent: #5ecad8;
+  --ks-accent-text: #5ecad8;
+  --ks-accent-ink: #09090b;
+  --ks-accent-subtle: rgb(94 202 216 / 0.13);
+  --ks-focus: #5ecad8;
+  --ks-primary-bg: #ededf0;
+  --ks-primary-bg-hover: #ffffff;
+  --ks-primary-text: #0f0f11;
+  --ks-success: #6fd3a0;
+  --ks-warning: #f0c060;
+  --ks-danger: #ff8c7e;
+  --ks-info: #7ab8c8;
+  --ks-success-subtle: rgb(111 211 160 / 0.12);
+  --ks-warning-subtle: rgb(240 192 96 / 0.12);
+  --ks-danger-subtle: rgb(255 140 126 / 0.12);
+  --ks-info-subtle: rgb(122 184 200 / 0.12);
+  --ks-danger-solid: #ff8c7e;
+  --ks-danger-solid-hover: #ffa093;
+  --ks-danger-ink: #0f0f11;
+  --ks-diff-add-bg: rgb(111 211 160 / 0.1);
+  --ks-diff-add-emph: rgb(111 211 160 / 0.22);
+  --ks-diff-del-bg: rgb(255 140 126 / 0.09);
+  --ks-diff-del-emph: rgb(255 140 126 / 0.2);
+  --ks-elev-1: 0 1px 2px rgb(0 0 0 / 0.35), 0 4px 12px -6px rgb(0 0 0 / 0.5);
+  --ks-elev-2: 0 1px 2px rgb(0 0 0 / 0.4), 0 18px 40px -14px rgb(0 0 0 / 0.65);
+  --ks-scrim: rgb(0 0 0 / 0.55);
+  color-scheme: dark;
+}
+
+/* A subtree pinned to Light inside a Dark page (specificity 0,4,0 beats the Dark rule's 0,3,0). Same values as `.root`. */
+:global(:root) .root.root[data-ks-theme="light"] {
+  --ks-bg: #f5f6f8;
+  --ks-surface-1: #ffffff;
+  --ks-surface-2: #ffffff;
+  --ks-surface-3: #eef0f3;
+  --ks-surface-inset: #f9fafb;
+  --ks-fill-hover: rgb(14 15 18 / 0.045);
+  --ks-fill-active: rgb(14 15 18 / 0.08);
+  --ks-fill-selected: rgb(10 122 138 / 0.1);
+  --ks-text-1: #0e0f12;
+  --ks-text-2: #4b4f58;
+  --ks-text-3: #60646e;
+  --ks-text-disabled: #a3a7b0;
+  --ks-border: rgb(14 15 18 / 0.1);
+  --ks-border-strong: rgb(14 15 18 / 0.17);
+  --ks-divider: rgb(14 15 18 / 0.07);
+  --ks-accent: #0a7a8a;
+  --ks-accent-text: #0a6f7c;
+  --ks-accent-ink: #ffffff;
+  --ks-accent-subtle: rgb(10 122 138 / 0.1);
+  --ks-focus: #0a7a8a;
+  --ks-primary-bg: #0e0f12;
+  --ks-primary-bg-hover: #26272c;
+  --ks-primary-text: #ffffff;
+  --ks-success: #1f7a4a;
+  --ks-warning: #8a5a00;
+  --ks-danger: #b42318;
+  --ks-info: #0b5f70;
+  --ks-success-subtle: rgb(31 122 74 / 0.1);
+  --ks-warning-subtle: rgb(138 90 0 / 0.1);
+  --ks-danger-subtle: rgb(180 35 24 / 0.08);
+  --ks-info-subtle: rgb(11 95 112 / 0.09);
+  --ks-danger-solid: #b42318;
+  --ks-danger-solid-hover: #9a1d13;
+  --ks-danger-ink: #ffffff;
+  --ks-diff-add-bg: rgb(31 122 74 / 0.09);
+  --ks-diff-add-emph: rgb(31 122 74 / 0.2);
+  --ks-diff-del-bg: rgb(180 35 24 / 0.07);
+  --ks-diff-del-emph: rgb(180 35 24 / 0.17);
+  --ks-elev-1: 0 1px 2px rgb(14 15 18 / 0.05), 0 4px 12px -6px rgb(14 15 18 / 0.12);
+  --ks-elev-2: 0 1px 2px rgb(14 15 18 / 0.06), 0 16px 36px -14px rgb(14 15 18 / 0.22);
+  --ks-scrim: rgb(14 15 18 / 0.28);
+  color-scheme: light;
+}
+
+/* Reduced motion: every duration collapses, so token-driven transitions become instant. Components also guard in script. */
+@media (prefers-reduced-motion: reduce) {
+  .root {
+    --ks-dur-instant: 0ms;
+    --ks-dur-fast: 0ms;
+    --ks-dur-base: 0ms;
+    --ks-dur-morph: 0ms;
+    --ks-dur-slow: 0ms;
+    --ks-dur-sequence: 0ms;
+  }
+}
+
+/* <StudioRoot paint>: the root also paints the canvas colour (full pages; the overlay window paints its own panel). */
+.paint {
+  background: var(--ks-bg);
+}
+
+/*
+ * Focus. The site's global rule (src/styles/globals.css) gives keyboard focus a brightness filter, an underline and, on
+ * aria-labelled controls, a 2px background-image bar. Inside the Studio those are replaced by one consistent ring
+ * (--ks-focus-ring, a box-shadow drawn by each component on :focus-visible), so neutralise the site cues here.
+ * `:not(#ks-n)` lifts specificity above the global selectors without !important.
+ */
+.root :focus-visible:not(#ks-n) {
+  filter: none;
+}
+.root :is(button, summary, [role="button"], [role="tab"], [role="menuitem"], [role="menuitemcheckbox"], [role="switch"], [role="radio"], [role="checkbox"], [role="separator"]):focus-visible:not(#ks-n) {
+  text-decoration-line: none;
+  background-image: none;
+}
+
+/* Visually hidden, still read by assistive tech. */
+.srOnly {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

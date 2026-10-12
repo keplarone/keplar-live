@@ -443,9 +443,9 @@ export const landingPages: LandingPage[] = [
     metaTitle: "Roblox Studio AI: build games with Claude inside Studio",
     metaDescription: `The ${K} desktop app connects to Roblox Studio and builds with you on Claude Opus 5.5: maps, UI, flipbook effects and Luau scripts, plus overnight Roblox Cloud jobs.`,
     ogTitle: "An AI co-builder for Roblox Studio",
-    label: "Roblox Studio AI",
+    label: "Keplar Studio · Roblox Studio",
     h1: "Build Roblox games with an AI inside Studio.",
-    lede: `In the ${K} desktop app, a co-builder connects to Roblox Studio through Studio's own tools. It looks at your place, writes a plan, and builds it step by step while you watch and approve.`,
+    lede: `Keplar Studio, the co-builder in the ${K} desktop app, connects to Roblox Studio through Studio's own tools. It looks at your place, writes a plan, and builds it step by step while you watch and approve.`,
     examples: ["A lobby with a spawn area, a shop stall and a leaderboard", "A round-based obby with checkpoints and a timer", "A health bar UI that matches this screenshot"],
     sections: [
       {
@@ -500,9 +500,9 @@ export const landingPages: LandingPage[] = [
     metaTitle: "Blender AI: models and PBR textures from a description",
     metaDescription: `The ${K} desktop app connects to Blender 4.2+ and models, textures and lights with you, exports FBX, GLB or OBJ, and renders scenes in the cloud.`,
     ogTitle: "An AI co-builder for Blender",
-    label: "Blender AI",
+    label: "Keplar Studio · Blender",
     h1: "Model and texture in Blender by describing what you want.",
-    lede: `In the ${K} desktop app (0.1.8 or newer), a co-builder connects to Blender through a small Keplar add-on. It reads your scene, plans, and builds models with real textures while you approve each change.`,
+    lede: `Keplar Studio, the co-builder in the ${K} desktop app (0.1.8 or newer), connects to Blender through a small Keplar add-on. It reads your scene, plans, and builds models with real textures while you approve each change.`,
     examples: ["A low-poly wooden crate with worn edges", "A stone well with a rope and bucket, textured", "Light this scene with an outdoor HDRI"],
     sections: [
       {

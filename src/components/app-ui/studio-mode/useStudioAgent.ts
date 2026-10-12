@@ -13,11 +13,19 @@
  * Each game's chat is saved on this device (saved-session.ts) and comes back when that game is opened again.
  * Alongside the feed it keeps what the side panel shows: the latest viewport, the plan and the current step ("Step N:"), the
  * changes made, and the run's numbers.
+ *
+ * Live code engine (code/): every real moment of a run is also appended to an event log (`events`, code/events.ts), and the code
+ * Keplar reads, proposes and changes is derived from it as per-file documents (`code`, code/documents.ts). Script edits
+ * (multi_edit) are bracketed by the page's own script_read calls (read-only, no model cost): before the edit runs for the true
+ * before-content, and after it ran to confirm what was applied. A confirmed edit can be reverted (`revert`), and a failed action
+ * re-run unchanged (`retry`); both go through the same approval flow as the model's own actions.
  */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { resultText, type BlenderBridge, type StudioBridge, type StudioContent } from "@/lib/desktop/studio-bridge";
 import { clearSaved, deleteRemote, fetchRemote, placeKey, pushRemote, readSaved, toSaved, writeSaved, type SavedSession } from "./saved-session";
 import { scaleDataUrl } from "./references";
+import { appendEvent, clip, eventStamper, MAX_EVENT_TEXT, type ActionOrigin, type ReadPurpose, type StudioEvent, type StudioEventBody, type TurnUsage } from "./code/events";
+import { applyEdits, buildRevert, deriveDocuments, editOutcome, isRevertLineage, multiEditSchema, parseMultiEdit, parseScriptRead, retryAvailabilityFor, type ScriptSource } from "./code/documents";
 
 export type Risk = "read" | "change" | "destructive";
 type ToolCall = { id: string; type: "function"; function: { name: string; arguments: string } };
@@ -31,7 +39,7 @@ export type ActionStatus = "waiting" | "running" | "done" | "failed" | "skipped"
 export type Item =
   | { kind: "user"; key: string; text: string; images: string[] }
   | { kind: "keplar"; key: string; text: string }
-  | { kind: "action"; key: string; name: string; args: Record<string, unknown>; risk: Risk; status: ActionStatus; summary?: string; image?: string }
+  | { kind: "action"; key: string; name: string; args: Record<string, unknown>; risk: Risk; status: ActionStatus; summary?: string; image?: string; /** Set on actions the person started from the page (revert, retry); absent on the model's. */ origin?: Exclude<ActionOrigin, "model">; /** The action a revert or retry refers to. */ of?: string }
   | { kind: "look"; key: string; image?: string; text: string }
   | { kind: "note"; key: string; text: string; tone?: "warn" };
 
@@ -40,7 +48,16 @@ export type Place = { id: string; name: string; placeId?: string; /** The saved-
 export type PlanStep = { text: string; state: "done" | "doing" | "next" };
 export type Viewport = { image: string; at: number };
 
-type Turn = { message: Extract<Msg, { role: "assistant" }>; text: string; actions: { id: string; name: string; args: Record<string, unknown>; risk: Risk }[]; blocked: { id: string; name: string }[]; done: boolean; units: number };
+type Turn = { message: Extract<Msg, { role: "assistant" }>; text: string; actions: { id: string; name: string; args: Record<string, unknown>; risk: Risk }[]; blocked: { id: string; name: string }[]; done: boolean; units: number; /** Real usage (servers that send it). */ usage?: TurnUsage & { usd?: number }; /** The Solar mode the server ran (servers that send it). */ mode?: string | null };
+
+/** One action to run: the model's tool call (id = its call id), or a page action (revert, retry: id null). */
+type RunnableAction = { id: string | null; name: string; args: Record<string, unknown>; risk: Risk; /** Always wait for the person (a revert, or a retry of one), whatever auto-approve says. */ ask?: boolean };
+type ActionResult = { outcome: "skipped" } | { outcome: "failed"; text: string } | { outcome: "done"; text: string; image?: string };
+
+export type StudioAgentOptions = {
+  /** The Solar mode to send with each request (src/lib/studio/solar-modes.ts). Omitted: the server's default (Medium). */
+  solarMode?: string | null;
+};
 
 export const RUN_STEP_CAP = 80;
 
@@ -173,8 +190,10 @@ function treeLines(text: string): string {
  * mode "studio" works in Roblox Studio; mode "blender" works in Blender through the Keplar add-on (same loop, approvals, saving).
  * Blender looks with the text scene summary only (no screenshot) and has no play test.
  */
-export function useStudioAgent(bridge: StudioBridge | BlenderBridge | null, mode: "studio" | "blender" = "studio") {
+export function useStudioAgent(bridge: StudioBridge | BlenderBridge | null, mode: "studio" | "blender" = "studio", options: StudioAgentOptions = {}) {
   const blender = mode === "blender";
+  const solarMode = useRef<string | null>(options.solarMode ?? null);
+  useEffect(() => { solarMode.current = options.solarMode ?? null; }, [options.solarMode]);
   const [items, setItems] = useState<Item[]>([]);
   const [running, setRunning] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -194,6 +213,23 @@ export function useStudioAgent(bridge: StudioBridge | BlenderBridge | null, mode
   const placeRef = useRef<Place | null>(null);
   const flags = useRef({ pause: false, stop: false, units: 0, steps: 0, auto: false, changed: false, reviewed: false });
 
+  /* The execution event log (code/events.ts): append-only, timestamped; `turn` is the model request it belongs to. */
+  const [events, setEvents] = useState<StudioEvent[]>([]);
+  const eventsRef = useRef<StudioEvent[]>([]);
+  const stamper = useRef(eventStamper());
+  const turnNo = useRef(0);
+  const toolDefs = useRef<{ name: string; description?: string; inputSchema?: unknown }[]>([]);
+  const emit = useCallback((body: StudioEventBody) => {
+    eventsRef.current = appendEvent(eventsRef.current, stamper.current.stamp(body, turnNo.current));
+    setEvents(eventsRef.current);
+  }, []);
+  const clearEvents = useCallback(() => {
+    eventsRef.current = [];
+    stamper.current.reset();
+    turnNo.current = 0;
+    setEvents([]);
+  }, []);
+
   const add = useCallback((it: Item) => setItems((xs) => [...xs, it]), []);
   const patch = useCallback((k: string, p: Partial<Extract<Item, { kind: "action" }>>) => setItems((xs) => xs.map((x) => (x.key === k && x.kind === "action" ? { ...x, ...p } : x))), []);
 
@@ -211,6 +247,7 @@ export function useStudioAgent(bridge: StudioBridge | BlenderBridge | null, mode
 
   const apply = useCallback((saved: SavedSession | null, p: Place | null) => {
     skipSave.current = true;
+    clearEvents();
     history.current = saved?.history ?? [];
     flags.current.units = saved?.units ?? 0;
     setUnits(saved?.units ?? 0);
@@ -220,7 +257,7 @@ export function useStudioAgent(bridge: StudioBridge | BlenderBridge | null, mode
     setBuilt(saved?.built ?? []);
     setStats(saved?.stats ?? { steps: 0, changes: 0, errors: 0 });
     setItems(saved ? [...saved.items, { kind: "note", key: key(), text: `Picked up where you left off in ${p?.name ?? "this game"} (saved ${new Date(saved.savedAt).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}). Keplar will take a fresh look before your next request.` }] : []);
-  }, []);
+  }, [clearEvents]);
 
   /** Opening a game brings back its saved chat: this device's copy at once, then the account's if it is newer (another computer). */
   const restore = useCallback((p: Place | null) => {
@@ -277,10 +314,11 @@ export function useStudioAgent(bridge: StudioBridge | BlenderBridge | null, mode
     try {
       const img = await capture(p);
       if (img) showShot(img);
+      emit({ kind: "studio.looked", via: "refresh", screenshot: Boolean(img), items: null, action: null });
     } finally {
       setLooking(false);
     }
-  }, [ensurePlace, capture, showShot]);
+  }, [ensurePlace, capture, showShot, emit]);
 
   /** Keplar looks at the place before a request: screenshot plus the Workspace tree, added to the conversation. */
   const look = useCallback(async () => {
@@ -295,8 +333,9 @@ export function useStudioAgent(bridge: StudioBridge | BlenderBridge | null, mode
         const text = r.ok && !r.result.isError ? resultText(r) : "";
         history.current.push({ role: "user", content: `The Blender scene before this request (${p.name}):
 ${text || "(could not read the scene)"}` });
-        const count = /(d+) objects:/.exec(text)?.[1];
+        const count = /(\d+) objects:/.exec(text)?.[1];
         add({ kind: "look", key: key(), text: count ? `Looked at ${p.name}: ${count} object${count === "1" ? "" : "s"}.` : `Looked at ${p.name}.` });
+        emit({ kind: "studio.looked", via: "scene", screenshot: false, items: count ? Number(count) : null, action: null });
       } finally {
         setLooking(false);
       }
@@ -316,25 +355,132 @@ ${text || "(could not read the scene)"}` });
       if (img) showShot(img);
       const count = treeText ? treeText.split("\n").length : 0;
       add({ kind: "look", key: key(), ...(img ? { image: img } : {}), text: count ? `Looked at ${p.name}: ${count} item${count === 1 ? "" : "s"} in the Workspace.` : `Looked at ${p.name}.` });
+      emit({ kind: "studio.looked", via: "look", screenshot: Boolean(img), items: count || null, action: null });
     } finally {
       setLooking(false);
     }
-  }, [bridge, blender, ensurePlace, capture, showShot, add]);
+  }, [bridge, blender, ensurePlace, capture, showShot, add, emit]);
 
   const decide = useCallback((k: string, ok: boolean) => {
     decisions.current.get(k)?.(ok);
     decisions.current.delete(k);
   }, []);
 
+  /** Studio's tool definitions, fetched once per run (the loop) or on demand (page actions). */
+  const toolList = useCallback(async () => {
+    if (!bridge) return [];
+    if (!toolDefs.current.length) toolDefs.current = await bridge.tools().catch(() => []);
+    return toolDefs.current;
+  }, [bridge]);
+
+  /**
+   * The page's own read of a script (read-only, no model call), recorded as a script.read event. Uses the arguments the page
+   * already relies on for script_read (studio_id, target_file); when Studio's own definition of script_read does not take
+   * target_file, nothing is called and the read is recorded as unavailable.
+   */
+  const readScript = useCallback(async (path: string, purpose: ReadPurpose, action: string, studioId: string | null): Promise<ScriptSource | null> => {
+    if (!bridge) return null;
+    const def = toolDefs.current.find((d) => d.name === "script_read");
+    const props = (def?.inputSchema as { properties?: Record<string, unknown> } | undefined)?.properties;
+    if (props && !("target_file" in props)) {
+      emit({ kind: "script.read", path, purpose, action, ok: false, error: "Studio's script_read does not take target_file, so Keplar cannot read the script around this edit." });
+      return null;
+    }
+    const r = await bridge.call("script_read", { ...(studioId ? { studio_id: studioId } : {}), target_file: path }).catch((e: unknown) => ({ ok: false as const, error: e instanceof Error ? e.message : "The read failed." }));
+    if (!r.ok || r.result.isError) {
+      emit({ kind: "script.read", path, purpose, action, ok: false, error: clip(r.ok ? toolResult(r.result.content).text : r.error, 600) });
+      return null;
+    }
+    const src = parseScriptRead(resultText(r));
+    emit({ kind: "script.read", path, purpose, action, ok: true, ...src });
+    return src;
+  }, [bridge, emit]);
+
+  /**
+   * Runs one action: shows it, waits for approval when it needs one, calls the bridge, records the result. Reads run by
+   * themselves; changes wait for Approve unless auto-approve is on; destructive actions and reverts always wait. A script edit
+   * (multi_edit in the known shape) is read before (preview while waiting, then the true before-content right before it runs)
+   * and re-read after, to confirm what was applied.
+   */
+  const execute = useCallback(async (a: RunnableAction, origin: ActionOrigin = "model", of: string | null = null): Promise<ActionResult> => {
+    if (!bridge) return { outcome: "skipped" };
+    const k = key();
+    const needsYes = origin === "revert" || a.ask === true || a.risk === "destructive" || (a.risk === "change" && !flags.current.auto);
+    add({ kind: "action", key: k, name: a.name, args: a.args, risk: a.risk, status: needsYes ? "waiting" : "running", ...(origin !== "model" ? { origin, ...(of ? { of } : {}) } : {}) });
+    emit({ kind: "action.proposed", action: k, callId: a.id, name: a.name, args: a.args, risk: a.risk, title: describeAction(a.name, a.args), origin, of });
+    const edit = !blender && a.name === "multi_edit" && multiEditSchema(toolDefs.current) !== "differs" ? parseMultiEdit(a.args) : null;
+    const studioId = edit ? edit.studioId ?? placeRef.current?.id ?? null : null;
+    let ok = true;
+    if (needsYes) {
+      // Registered before the preview read, so an Approve pressed meanwhile is not lost.
+      const decision = flags.current.stop ? Promise.resolve(false) : new Promise<boolean>((resolve) => decisions.current.set(k, resolve));
+      emit({ kind: "approval.requested", action: k });
+      if (edit) await readScript(edit.path, "preview", k, studioId);
+      ok = await decision;
+      if (ok) { patch(k, { status: "running" }); emit({ kind: "approval.granted", action: k, by: "person" }); }
+      else emit({ kind: "approval.declined", action: k, by: flags.current.stop ? "stop" : "person" });
+    } else if (a.risk !== "read") {
+      emit({ kind: "approval.granted", action: k, by: "auto-approve" });
+    }
+    if (!ok) {
+      patch(k, { status: "skipped" });
+      return { outcome: "skipped" };
+    }
+    const before = edit ? await readScript(edit.path, "before", k, studioId) : null;
+    emit({ kind: "action.running", action: k, name: a.name });
+    const t0 = Date.now();
+    const r = await bridge.call(a.name, a.args);
+    if (!r.ok || r.result.isError) {
+      const msg = r.ok ? toolResult(r.result.content).text : r.error;
+      patch(k, { status: "failed", summary: msg.slice(0, 300) });
+      setStats((st) => ({ ...st, errors: st.errors + 1 }));
+      emit({ kind: "action.failed", action: k, name: a.name, ms: Date.now() - t0, error: clip(msg) });
+      return { outcome: "failed", text: msg };
+    }
+    const out = toolResult(r.result.content);
+    const image = out.image ? await scaleDataUrl(out.image) : undefined;
+    patch(k, { status: "done", summary: out.text.slice(0, 300), ...(image ? { image } : {}) });
+    emit({ kind: "action.done", action: k, name: a.name, ms: Date.now() - t0, result: clip(out.text, MAX_EVENT_TEXT), image: Boolean(image) });
+    if (a.risk !== "read") {
+      flags.current.changed = true;
+      setBuilt((xs) => [...xs, { key: k, title: describeAction(a.name, a.args) }]);
+      setStats((st) => ({ ...st, changes: st.changes + 1 }));
+    }
+    if (a.name === "script_read" && typeof a.args.target_file === "string") {
+      // A read of a line range is a part of the script, whatever its numbering says: shown, never trusted as the whole source.
+      const src = parseScriptRead(out.text);
+      const ranged = Object.keys(a.args).some((x) => /^(start|end)_?line|^line_?(start|end|range)|^offset$|^limit$|^lines?$/i.test(x));
+      emit({ kind: "script.read", path: a.args.target_file, purpose: "model", action: k, ok: true, ...src, complete: src.complete && !ranged });
+    }
+    if (a.name === "screen_capture" && image) emit({ kind: "studio.looked", via: "screen_capture", screenshot: true, items: null, action: k });
+    if (edit) {
+      const proposed = before ? applyEdits(before.source, edit.edits) : null;
+      const after = await readScript(edit.path, "after", k, studioId);
+      emit({ kind: "edit.applied", action: k, path: edit.path, outcome: editOutcome(proposed?.ok ? proposed.content : null, after) });
+    } else if (a.name === "multi_edit" && !blender) {
+      // Not bracketed by reads (Studio's multi_edit takes other arguments): it ran, but what it applied was not checked.
+      const p = parseMultiEdit(a.args);
+      if (p) emit({ kind: "edit.applied", action: k, path: p.path, outcome: "unconfirmed" });
+    }
+    return { outcome: "done", text: out.text, ...(image ? { image } : {}) };
+  }, [bridge, blender, add, patch, emit, readScript]);
+
   const loop = useCallback(async () => {
     if (!bridge) return;
     setRunning(true);
     try {
       const tools = await bridge.tools();
+      toolDefs.current = tools;
       while (!flags.current.stop && !flags.current.pause) {
-        if (flags.current.steps >= RUN_STEP_CAP) { add({ kind: "note", key: key(), text: `Paused after ${RUN_STEP_CAP} steps. Continue when you are ready.`, tone: "warn" }); flags.current.pause = true; break; }
-        const res = await fetch(blender ? "/api/blender/agent" : "/api/studio/agent", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ messages: compactScreenshots(history.current), tools }) });
+        if (flags.current.steps >= RUN_STEP_CAP) { add({ kind: "note", key: key(), text: `Paused after ${RUN_STEP_CAP} steps. Continue when you are ready.`, tone: "warn" }); flags.current.pause = true; emit({ kind: "run.paused", reason: "step-cap" }); break; }
+        const sentMode = solarMode.current;
+        turnNo.current++;
+        emit({ kind: "request.sent", surface: mode, mode: sentMode, messages: history.current.length });
+        const t0 = Date.now();
+        const res = await fetch(blender ? "/api/blender/agent" : "/api/studio/agent", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ messages: compactScreenshots(history.current), tools, ...(sentMode ? { mode: sentMode } : {}) }) });
         const data = (await res.json().catch(() => ({}))) as Turn & { error?: string; code?: string };
+        const latencyMs = Date.now() - t0;
+        if (!res.ok) emit({ kind: "reply.failed", latencyMs, status: res.status, code: data.code ?? null, error: clip(data.error ?? "Keplar could not continue.", 600) });
         if (res.status === 402 && data.code === "studio_credits") {
           let ready = false;
           const noteKey = key();
@@ -351,9 +497,11 @@ ${text || "(could not read the scene)"}` });
           if (flags.current.stop || flags.current.pause) break;
           if (ready) continue;
           add({ kind: "note", key: key(), text: "Studio is paused. Review auto top-up, then choose Continue. Any pending payment will be checked before another charge.", tone: "warn" });
-          flags.current.pause = true; break;
+          flags.current.pause = true; emit({ kind: "run.paused", reason: "credits" }); break;
         }
-        if (!res.ok) { add({ kind: "note", key: key(), text: data.error ?? "Keplar could not continue. Try again.", tone: "warn" }); flags.current.pause = true; break; }
+        if (!res.ok) { add({ kind: "note", key: key(), text: data.error ?? "Keplar could not continue. Try again.", tone: "warn" }); flags.current.pause = true; emit({ kind: "run.paused", reason: "error" }); break; }
+        const u = data.usage;
+        emit({ kind: "reply.received", latencyMs, units: data.units, usage: u ? { model: u.model, provider: u.provider, promptTokens: u.promptTokens, cachedTokens: u.cachedTokens, completionTokens: u.completionTokens, reasoningTokens: u.reasoningTokens, latencyMs: u.latencyMs } : null, mode: data.mode ?? null, actions: data.actions.length, blocked: data.blocked.length, done: data.done, text: clip(data.text ?? "", 600) });
         flags.current.steps++;
         setStats((st) => ({ ...st, steps: st.steps + 1 }));
         flags.current.units += data.units;
@@ -362,61 +510,43 @@ ${text || "(could not read the scene)"}` });
         if (data.text) {
           add({ kind: "keplar", key: key(), text: data.text });
           const steps = parsePlan(data.text);
-          if (steps) { setPlan(steps); setCurrent(0); setFinished(false); }
+          if (steps) { setPlan(steps); setCurrent(0); setFinished(false); emit({ kind: "plan.parsed", steps }); }
           const n = stepMarker(data.text);
-          if (n) setCurrent(n);
+          if (n) { setCurrent(n); emit({ kind: "plan.step", step: n }); }
         }
-        for (const b of data.blocked) history.current.push({ role: "tool", tool_call_id: b.id, content: `The tool ${b.name} is not available in Keplar.` });
+        for (const b of data.blocked) { history.current.push({ role: "tool", tool_call_id: b.id, content: `The tool ${b.name} is not available in Keplar.` }); emit({ kind: "action.blocked", callId: b.id, name: b.name }); }
         const shotsThisTurn: string[] = [];
         for (const a of data.actions) {
-          const k = key();
-          const needsYes = a.risk === "destructive" || (a.risk === "change" && !flags.current.auto);
-          add({ kind: "action", key: k, name: a.name, args: a.args, risk: a.risk, status: needsYes ? "waiting" : "running" });
-          let ok = true;
-          if (needsYes) {
-            ok = flags.current.stop ? false : await new Promise<boolean>((resolve) => decisions.current.set(k, resolve));
-            if (ok) patch(k, { status: "running" });
-          }
-          if (!ok) {
-            patch(k, { status: "skipped" });
+          const r = await execute(a);
+          if (r.outcome === "skipped") {
             history.current.push({ role: "tool", tool_call_id: a.id, content: "The person skipped this step. Do not retry it unchanged; ask or try another approach." });
             continue;
           }
-          const r = await bridge.call(a.name, a.args);
-          if (!r.ok || r.result.isError) {
-            const msg = r.ok ? toolResult(r.result.content).text : r.error;
-            patch(k, { status: "failed", summary: msg.slice(0, 300) });
-            setStats((st) => ({ ...st, errors: st.errors + 1 }));
-            history.current.push({ role: "tool", tool_call_id: a.id, content: `Error: ${msg}`.slice(0, 12_000) });
+          if (r.outcome === "failed") {
+            history.current.push({ role: "tool", tool_call_id: a.id, content: `Error: ${r.text}`.slice(0, 12_000) });
             continue;
           }
-          const out = toolResult(r.result.content);
-          const image = out.image ? await scaleDataUrl(out.image) : undefined;
-          patch(k, { status: "done", summary: out.text.slice(0, 300), ...(image ? { image } : {}) });
-          if (a.risk !== "read") {
-            flags.current.changed = true;
-            setBuilt((xs) => [...xs, { key: k, title: describeAction(a.name, a.args) }]);
-            setStats((st) => ({ ...st, changes: st.changes + 1 }));
-          }
-          history.current.push({ role: "tool", tool_call_id: a.id, content: out.text.slice(0, 12_000) });
-          if (image) { shotsThisTurn.push(image); showShot(image); }
+          history.current.push({ role: "tool", tool_call_id: a.id, content: r.text.slice(0, 12_000) });
+          if (r.image) { shotsThisTurn.push(r.image); showShot(r.image); }
         }
         if (shotsThisTurn.length) history.current.push({ role: "user", content: [{ type: "text", text: "Studio screenshot after these steps:" }, { type: "image_url", image_url: { url: shotsThisTurn[shotsThisTurn.length - 1]! } }] });
         if (data.done) {
           if (flags.current.changed) add({ kind: "note", key: key(), text: blender ? "Your turn: look it over in Blender, then tell Keplar what to change (or ask it to export)." : YOUR_TURN });
           setFinished(true);
+          emit({ kind: "run.finished", changed: flags.current.changed });
           break;
         }
       }
     } catch (e) {
       add({ kind: "note", key: key(), text: e instanceof Error ? e.message : "Something went wrong.", tone: "warn" });
+      emit({ kind: "error", message: clip(e instanceof Error ? e.message : "Something went wrong.", 600) });
     } finally {
       setRunning(false);
       setPaused(flags.current.pause && !flags.current.stop);
       // A fresh look at the result for the viewport panel (no model call).
       if (flags.current.changed && !blender) void refreshViewport();
     }
-  }, [bridge, blender, add, patch, showShot, refreshViewport]);
+  }, [bridge, blender, mode, add, showShot, refreshViewport, emit, execute]);
 
   /** Start a request (text plus reference images as data URLs). Keplar looks at the place first. */
   const send = useCallback(async (text: string, images: string[]) => {
@@ -435,13 +565,17 @@ ${text || "(could not read the scene)"}` });
     await loop();
   }, [bridge, running, add, look, loop, ensurePlace]);
 
-  const pause = useCallback(() => { flags.current.pause = true; setPaused(true); }, []);
-  const resume = useCallback(async () => { flags.current.pause = false; flags.current.stop = false; flags.current.steps = 0; setPaused(false); await loop(); }, [loop]);
+  const pause = useCallback(() => {
+    if (!flags.current.pause) emit({ kind: "run.paused", reason: "person" });
+    flags.current.pause = true; setPaused(true);
+  }, [emit]);
+  const resume = useCallback(async () => { flags.current.pause = false; flags.current.stop = false; flags.current.steps = 0; setPaused(false); emit({ kind: "run.resumed" }); await loop(); }, [loop, emit]);
   const stop = useCallback(() => {
+    if (!flags.current.stop) emit({ kind: "run.stopped" });
     flags.current.stop = true;
     for (const [k, r] of decisions.current) { r(false); decisions.current.delete(k); }
     setPaused(false);
-  }, []);
+  }, [emit]);
   const reset = useCallback(() => {
     stop();
     history.current = [];
@@ -453,9 +587,10 @@ ${text || "(could not read the scene)"}` });
     setFinished(false);
     setBuilt([]);
     setStats({ steps: 0, changes: 0, errors: 0 });
+    clearEvents();
     clearSaved(placeKey(placeRef.current));
     void deleteRemote(placeKey(placeRef.current));
-  }, [stop]);
+  }, [stop, clearEvents]);
 
   /* Save this game's chat as it changes: on this device soon, on the account a little later (debounced; history is read at save time). */
   useEffect(() => {
@@ -482,12 +617,75 @@ ${text || "(could not read the scene)"}` });
   }, [bridge, add]);
   const setAuto = useCallback((v: boolean) => { flags.current.auto = v; setAutoApprove(v); }, []);
 
+  /* Live code engine: documents, changes and the active document, derived from the event log (code/documents.ts). */
+  const code = useMemo(() => deriveDocuments(events, { surface: mode, busy: running }), [events, mode, running]);
+  const codeRef = useRef(code);
+  useEffect(() => { codeRef.current = code; }, [code]);
+
+  /**
+   * A page action (revert, retry) through the same flow as the model's: shown in the feed, approval when it needs one, the
+   * bridge call, and a note in the conversation so the model knows on its next turn. Only between runs.
+   */
+  /** Set synchronously, so a second click before the re-render cannot start a second page action. */
+  const pageBusy = useRef(false);
+  const pageAction = useCallback(async (a: RunnableAction, origin: Exclude<ActionOrigin, "model">, of: string, note: (r: ActionResult) => string | null): Promise<ActionResult> => {
+    if (!bridge || running || pageBusy.current) return { outcome: "skipped" };
+    pageBusy.current = true;
+    touched.current = true;
+    flags.current.stop = false;
+    setRunning(true);
+    try {
+      await toolList();
+      const r = await execute(a, origin, of);
+      const text = note(r);
+      if (text) history.current.push({ role: "user", content: text });
+      return r;
+    } catch (e) {
+      emit({ kind: "error", message: clip(e instanceof Error ? e.message : "Something went wrong.", 600) });
+      return { outcome: "failed", text: e instanceof Error ? e.message : "Something went wrong." };
+    } finally {
+      pageBusy.current = false;
+      setRunning(false);
+    }
+  }, [bridge, running, toolList, execute, emit]);
+
+  /** Restores a script to its exact content before one of Keplar's edits (a new multi_edit, always asks first). */
+  const revert = useCallback(async (changeId: string): Promise<ActionResult> => {
+    const c = codeRef.current.documents.flatMap((d) => d.changes).find((x) => x.id === changeId);
+    const r = c && c.revert.ok ? buildRevert(c) : null;
+    if (!c || !r) return { outcome: "skipped" };
+    return pageAction({ id: null, ...r }, "revert", c.id, (res) =>
+      res.outcome === "done" ? `(The person reverted ${c.path} through Keplar's Revert: it is back to its exact content from before your edit "${describeAction(c.name, { file_path: c.path })}". Read it again before editing it.)`
+      : res.outcome === "failed" ? `(The person tried to revert ${c.path} to its content before your edit; Studio answered: ${res.text.slice(0, 2000)})`
+      : null);
+  }, [pageAction]);
+
+  /** Re-runs a failed action exactly as it was, through the same approval flow. */
+  const retry = useCallback(async (actionKey: string): Promise<ActionResult> => {
+    const p = eventsRef.current.find((e): e is Extract<StudioEvent, { kind: "action.proposed" }> => e.kind === "action.proposed" && e.action === actionKey);
+    if (!p || !retryAvailabilityFor(eventsRef.current, actionKey, false).ok) return { outcome: "skipped" };
+    // A failed revert (or a retry of one) is retried under the same rule as a revert: it always waits for the person.
+    const ask = isRevertLineage(eventsRef.current, actionKey);
+    return pageAction({ id: null, name: p.name, args: p.args, risk: p.risk, ask }, "retry", actionKey, (res) =>
+      res.outcome === "done" ? `(The person re-ran your earlier ${p.name} call unchanged, and it worked this time. Result: ${res.text.slice(0, 4000)})`
+      : res.outcome === "failed" ? `(The person re-ran your earlier ${p.name} call unchanged; it failed again: ${res.text.slice(0, 2000)})`
+      : null);
+  }, [pageAction]);
+
   const planSteps: PlanStep[] = plan.map((t, i) => ({ text: t, state: finished || i + 1 < current ? "done" : i + 1 === current ? "doing" : "next" }));
   const pending = items.filter((x) => x.kind === "action" && x.status === "waiting").length;
 
   return {
     items, running, paused, looking, units, autoApprove, place, viewport, shots, plan: planSteps, current, finished, built, stats, pending,
     send, decide, pause, resume, stop, reset, setAuto, setPlace, refreshViewport, playing, playTest,
+    /** The run's execution events, oldest first (code/events.ts). */
+    events,
+    /** Code documents, the changes list and the document to show now (code/documents.ts). */
+    code,
+    /** Reverts a confirmed script change (see ScriptChange.revert for availability). Asks for approval like any change. */
+    revert,
+    /** Re-runs a failed action unchanged (see ScriptChange.retry / ChangeEntry.retry). */
+    retry,
   };
 }
 

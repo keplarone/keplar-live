@@ -1,0 +1,540 @@
+/*
+ * Keplar Studio shell: the full-page Workspace (nav | conversation | inspector, control strip + composer at the bottom), the
+ * overlay (title bar, control strip, one content area, composer), the Solar selector, the control center and the inspector.
+ * Design-system tokens only (ui/tokens.module.css). Monochrome; the accent only marks selection, focus and progress. No blur,
+ * gradients, glow or heavy shadows; panels are lightly rounded, buttons are pills. Class names avoid the substrings that
+ * redesign.css turns into shadowed buttons (btn, button, cta, primary, ghost, pill on buttons, chip, __tab).
+ */
+
+/* ════════════════════════════ Workspace (full page) ════════════════════════════ */
+
+.workspaceRoot {
+  /* Sized by its host, not the window: inside the app shell (its own sidebar) or Create, the space left is what counts. */
+  container: ks-workspace / inline-size;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 560px;
+  min-width: 0;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+  border: 1px solid var(--ks-border);
+  border-radius: var(--ks-radius-sm);
+  background: var(--ks-bg);
+  overflow: hidden;
+  transition: grid-template-columns var(--ks-dur-base) var(--ks-ease-standard);
+}
+.workspace[data-nav="rail"] { grid-template-columns: 48px minmax(0, 1fr); }
+
+/* ── Nav ── */
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ks-space-3);
+  min-width: 0;
+  min-height: 0;
+  padding: var(--ks-space-2);
+  border-right: 1px solid var(--ks-border);
+  background: var(--ks-surface-1);
+  overflow: hidden;
+}
+.navHead {
+  display: flex;
+  align-items: center;
+  gap: var(--ks-space-2);
+  height: var(--ks-control-md);
+  min-width: 0;
+}
+.navTitle {
+  font-size: var(--ks-text-base);
+  font-weight: var(--ks-weight-semibold);
+  letter-spacing: var(--ks-tracking-tight);
+  color: var(--ks-text-1);
+  white-space: nowrap;
+}
+.workspace[data-nav="rail"] .navTitle { display: none; }
+.navGroup { display: flex; flex-direction: column; gap: var(--ks-space-1); min-height: 0; }
+.navGroup[data-grow] { flex: 1; overflow: auto; }
+.navGrow { flex: 1; }
+.navLabel {
+  margin: 0;
+  padding: 0 var(--ks-space-2);
+  font-size: var(--ks-text-xs);
+  line-height: var(--ks-leading-xs);
+  font-weight: var(--ks-weight-medium);
+  letter-spacing: var(--ks-tracking-label);
+  text-transform: uppercase;
+  color: var(--ks-text-3);
+}
+.navItems { display: flex; flex-direction: column; gap: 1px; min-height: 0; }
+.navEntry {
+  display: flex;
+  align-items: center;
+  gap: var(--ks-space-2);
+  width: 100%;
+  height: var(--ks-control-md);
+  padding: 0 var(--ks-space-2);
+  border: 0;
+  border-radius: var(--ks-radius-sm);
+  background: transparent;
+  color: var(--ks-text-2);
+  font: inherit;
+  font-size: var(--ks-text-base);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--ks-dur-fast) var(--ks-ease-standard), color var(--ks-dur-fast) var(--ks-ease-standard);
+}
+.navEntry:hover { background: var(--ks-fill-hover); color: var(--ks-text-1); }
+.navEntry[aria-current="page"] { background: var(--ks-fill-selected); color: var(--ks-text-1); cursor: default; }
+.navEntry:focus-visible { outline: none; box-shadow: var(--ks-focus-ring); }
+.navIcon { display: inline-flex; flex: none; color: var(--ks-text-2); }
+.navEntry[aria-current="page"] .navIcon { color: var(--ks-accent-text); }
+.navText { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.workspace[data-nav="rail"] .navEntry { justify-content: center; padding: 0; }
+
+/* ── Main column ── */
+.main { display: flex; flex-direction: column; min-width: 0; min-height: 0; container: ks-main / inline-size; }
+.mainHead {
+  display: flex;
+  align-items: center;
+  gap: var(--ks-space-2);
+  min-height: 44px;
+  padding: var(--ks-space-1-5) var(--ks-space-3);
+  border-bottom: 1px solid var(--ks-border);
+  background: var(--ks-surface-1);
+  flex-wrap: wrap;
+}
+.headPlace { display: flex; align-items: center; gap: var(--ks-space-2); min-width: 0; flex: 1 1 160px; }
+.placeText { display: inline-flex; align-items: baseline; gap: var(--ks-space-2); min-width: 0; }
+.placeKind { font-size: var(--ks-text-sm); color: var(--ks-text-3); white-space: nowrap; }
+.placeName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--ks-text-base);
+  font-weight: var(--ks-weight-medium);
+  color: var(--ks-text-1);
+}
+.placeSelect {
+  min-width: 0;
+  max-width: 260px;
+  height: var(--ks-control-sm);
+  padding: 0 var(--ks-space-2);
+  border: 1px solid var(--ks-border-strong);
+  border-radius: var(--ks-radius-sm);
+  background: var(--ks-surface-1);
+  color: var(--ks-text-1);
+  font: inherit;
+  font-size: var(--ks-text-base);
+}
+.placeSelect:focus-visible { outline: none; box-shadow: var(--ks-focus-ring); }
+.headTools { display: flex; align-items: center; gap: var(--ks-space-2); margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+
+/* A row of pressed toggles (focus presets, the overlay's Work in switch): aria-pressed, monochrome. */
+.pressGroup {
+  display: inline-flex;
+  padding: 2px;
+  gap: 2px;
+  border-radius: var(--ks-radius-pill);
+  background: var(--ks-fill-active);
+}
+.pressGroup button {
+  height: calc(var(--ks-control-sm) - 4px);
+  padding: 0 var(--ks-space-2-5);
+  border: 0;
+  border-radius: var(--ks-radius-pill);
+  background: transparent;
+  color: var(--ks-text-2);
+  font: inherit;
+  font-size: var(--ks-text-sm);
+  font-weight: var(--ks-weight-medium);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--ks-dur-fast) var(--ks-ease-standard), color var(--ks-dur-fast) var(--ks-ease-standard);
+}
+.pressGroup button:hover:not(:disabled) { color: var(--ks-text-1); }
+.pressGroup button[aria-pressed="true"] { background: var(--ks-surface-1); color: var(--ks-text-1); box-shadow: 0 0 0 1px var(--ks-border); }
+.pressGroup button:disabled { color: var(--ks-text-disabled); cursor: not-allowed; }
+.pressGroup button[aria-pressed="true"]:disabled { color: var(--ks-text-2); }
+.pressGroup button:focus-visible { outline: none; box-shadow: var(--ks-focus-ring); }
+
+/* Narrow: the focus presets move to the More menu only, so the head stays one row. */
+@container ks-main (max-width: 900px) {
+  .headTools .pressGroup { display: none; }
+}
+
+.body { position: relative; flex: 1; min-height: 0; display: flex; }
+.body > * { flex: 1; min-width: 0; min-height: 0; }
+.split { height: 100%; }
+.center { display: flex; flex-direction: column; height: 100%; min-height: 0; min-width: 0; background: var(--ks-bg); }
+.center > :last-child { flex: 1; min-height: 0; }
+.warnLine {
+  display: flex;
+  align-items: center;
+  gap: var(--ks-space-2);
+  margin: 0;
+  padding: var(--ks-space-2) var(--ks-space-4);
+  border-bottom: 1px solid var(--ks-border);
+  background: var(--ks-warning-subtle);
+  color: var(--ks-warning);
+  font-size: var(--ks-text-sm);
+}
+.screen { display: flex; align-items: center; justify-content: center; padding: var(--ks-space-6) var(--ks-space-4); overflow: auto; }
+.floating {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ks-space-3);
+  padding: var(--ks-space-2) var(--ks-space-2) var(--ks-space-2) var(--ks-space-4);
+  border: 1px solid var(--ks-border);
+  border-radius: var(--ks-radius-pill);
+  background: var(--ks-surface-1);
+  color: var(--ks-text-1);
+  font-size: var(--ks-text-base);
+}
+
+.bottom {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ks-space-2);
+  padding: var(--ks-space-2) var(--ks-space-3) var(--ks-space-3);
+  border-top: 1px solid var(--ks-border);
+  background: var(--ks-surface-1);
+}
+
+@container ks-workspace (max-width: 900px) {
+  .workspace { grid-template-columns: 48px minmax(0, 1fr); }
+  .workspace .navTitle, .workspace .navLabel, .workspace .navText { display: none; }
+  .workspace .navGroup[data-grow] { display: none; }
+  .workspace .navEntry { justify-content: center; padding: 0; }
+}
+
+/* ════════════════════════════ Inspector ════════════════════════════ */
+
+.inspector {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  border-left: 1px solid var(--ks-border);
+  background: var(--ks-surface-1);
+  container: ks-inspector / inline-size;
+}
+.inspectorTabs { flex: none; padding: 0 var(--ks-space-2); }
+/* A narrow inspector (1024px window inside the app shell) keeps all five tabs in view instead of hiding Activity off the
+ * end of a scroller with no visible scrollbar. */
+@container ks-inspector (max-width: 380px) {
+  .inspectorTabs[role="tablist"] { padding: 0 var(--ks-space-1); gap: 0; }
+  .inspectorTabs [role="tab"] { padding: 0 var(--ks-space-1-5); font-size: var(--ks-text-sm); }
+}
+.inspectorPane { flex: 1; min-height: 0; overflow: auto; padding: var(--ks-space-2); }
+.inspectorPane[hidden] { display: none; }
+.inspectorPane:focus-visible { outline: none; box-shadow: inset var(--ks-focus-ring); }
+.inspectorCompact { height: 100%; min-height: 0; overflow: auto; }
+.fill { height: 100%; min-height: 0; }
+
+.planTab, .changes, .viewport { display: flex; flex-direction: column; gap: var(--ks-space-3); padding: var(--ks-space-1); }
+.planList { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; font-size: var(--ks-text-base); }
+.planList li {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: start;
+  gap: var(--ks-space-2);
+  padding: var(--ks-space-1-5) var(--ks-space-2);
+  border-radius: var(--ks-radius-sm);
+  color: var(--ks-text-2);
+}
+.planList li[data-state="doing"] { background: var(--ks-fill-selected); color: var(--ks-text-1); }
+.planList li[data-state="done"] { color: var(--ks-text-3); }
+.planList[data-compact] { font-size: var(--ks-text-sm); }
+.planList[data-compact] li { padding: var(--ks-space-1) var(--ks-space-1-5); }
+.planMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--ks-border-strong);
+  border-radius: var(--ks-radius-pill);
+  font-size: var(--ks-text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--ks-text-3);
+}
+.planList li[data-state="doing"] .planMark { border-color: var(--ks-accent); color: var(--ks-accent-text); }
+.planList li[data-state="done"] .planMark { border-color: transparent; background: var(--ks-fill-active); color: var(--ks-success); }
+.srState { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  border: 1px solid var(--ks-border);
+  border-radius: var(--ks-radius-sm);
+  background: var(--ks-border);
+  overflow: hidden;
+}
+.statGrid > div { padding: var(--ks-space-2) var(--ks-space-3); background: var(--ks-surface-1); }
+.statGrid dt { font-size: var(--ks-text-xs); color: var(--ks-text-3); }
+.statGrid dd { margin: 0; font-size: var(--ks-text-md); font-weight: var(--ks-weight-medium); font-variant-numeric: tabular-nums; color: var(--ks-text-1); }
+.statGrid > div[data-tone="bad"] dd { color: var(--ks-danger); }
+
+.viewportBar { display: flex; align-items: center; gap: var(--ks-space-2); flex-wrap: wrap; }
+.viewportMeta { flex: 1; min-width: 0; font-size: var(--ks-text-sm); color: var(--ks-text-3); }
+.shot {
+  position: relative;
+  margin: 0;
+  border: 1px solid var(--ks-border);
+  border-radius: var(--ks-radius-sm);
+  background: var(--ks-surface-inset);
+  overflow: hidden;
+}
+.shot img { display: block; width: 100%; height: auto; }
+.shot[data-looking] img { opacity: 0.6; transition: opacity var(--ks-dur-base) var(--ks-ease-standard); }
+.thumbs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--ks-space-2); margin: 0; padding: 0; list-style: none; }
+.thumbs img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border: 1px solid var(--ks-border); border-radius: var(--ks-radius-xs); }
+.muted { margin: 0; font-size: var(--ks-text-sm); color: var(--ks-text-3); }
+.restored h3 { margin: 0 0 var(--ks-space-1); font-size: var(--ks-text-sm); font-weight: var(--ks-weight-medium); color: var(--ks-text-2); }
+.restored ul { margin: 0; padding: 0 0 0 var(--ks-space-4); font-size: var(--ks-text-sm); color: var(--ks-text-2); }
+
+/* ════════════════════════════ Control center ════════════════════════════ */
+
+.control { display: flex; flex-direction: column; min-width: 0; font-size: var(--ks-text-sm); color: var(--ks-text-2); }
+.controlStrip { display: flex; align-items: center; gap: var(--ks-space-2); min-width: 0; min-height: var(--ks-control-sm); }
+.controlToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ks-space-2);
+  flex: 1 1 auto;
+  min-width: 0;
+  height: var(--ks-control-sm);
+  padding: 0 var(--ks-space-2);
+  margin-left: calc(-1 * var(--ks-space-2));
+  border: 0;
+  border-radius: var(--ks-radius-pill);
+  background: transparent;
+  color: var(--ks-text-1);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.controlToggle:hover { background: var(--ks-fill-hover); }
+.controlToggle:focus-visible { outline: none; box-shadow: var(--ks-focus-ring); }
+.controlOp { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: var(--ks-weight-medium); }
+.controlPlan, .mono { font-family: var(--ks-font-mono); font-size: var(--ks-text-xs); letter-spacing: var(--ks-tracking-mono); color: var(--ks-text-3); font-variant-numeric: tabular-nums; }
+.controlFields { display: inline-flex; align-items: center; gap: var(--ks-space-3); flex: none; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.controlField b { font-weight: var(--ks-weight-medium); color: var(--ks-text-1); }
+.unit { color: var(--ks-text-3); }
+.controlLink { display: inline-flex; padding: 0; border: 0; background: none; cursor: pointer; border-radius: var(--ks-radius-pill); }
+.controlLink:focus-visible { outline: none; box-shadow: var(--ks-focus-ring); }
+.controlDetails {
+  display: grid;
+  gap: var(--ks-space-3);
+  margin-top: var(--ks-space-2);
+  padding: var(--ks-space-3);
+  border: 1px solid var(--ks-border);
+  border-radius: var(--ks-radius-sm);
+  background: var(--ks-surface-inset);
+  animation: ks-shell-in var(--ks-dur-fast) var(--ks-ease-enter) both;
+}
+.controlGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--ks-space-2) var(--ks-space-4); margin: 0; }
+.controlGrid dt { font-size: var(--ks-text-xs); color: var(--ks-text-3); }
+.controlGrid dd { margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ks-text-1); }
+.path { font-family: var(--ks-font-mono); font-size: var(--ks-text-xs); }
+.controlPlanBlock { display: grid; gap: var(--ks-space-2); }
+.controlWarn {
+  display: flex;
+  align-items: center;
+  gap: var(--ks-space-2);
+  flex-wrap: wrap;
+  margin: var(--ks-space-1) 0 0;
+  color: var(--ks-warning);
+}
+.controlActions { display: flex; gap: var(--ks-space-2); flex-wrap: wrap; }
+.controlShot { margin: 0; }
+.controlShot img { display: block; width: 100%; border: 1px solid var(--ks-border); border-radius: var(--ks-radius-xs); }
+.control[data-compact] .controlGrid { grid-template-columns: minmax(0, 1fr); gap: var(--ks-space-1-5); }
+.control[data-compact] .controlGrid > div { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: var(--ks-space-2); align-items: baseline; }
+.control[data-compact] .controlDetails { max-height: 320px; overflow: auto; }
+
+@keyframes ks-shell-in { from { opacity: 0; transform: translateY(-2px); } }
+
+/* ════════════════════════════ Solar selector ════════════════════════════ */
+
+.solarTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ks-space-1-5);
+  height: var(--ks-control-sm);
+  padding: 0 var(--ks-space-2-5);
+  border: 1px solid var(--ks-border-strong);
+  border-radius: var(--ks-radius-pill);
+  background: var(--ks-surface-1);
+  color: var(--ks-text-1);
+  font: inherit;
+  font-size: var(--ks-text-sm);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--ks-dur-fast) var(--ks-ease-standard), border-color var(--ks-dur-fast) var(--ks-ease-standard);
+}
+.solarTrigger:hover:not(:disabled) { background: var(--ks-fill-hover); }
+.solarTrigger[aria-expanded="true"] { border-color: var(--ks-text-3); }
+.solarTrigger:focus-visible { outline: none; box-shadow: var(--ks-focus-ring); }
+.solarTrigger:disabled { color: var(--ks-text-disabled); cursor: not-allowed; }
+.solarTrigger[data-compact] { padding: 0 var(--ks-space-2); gap: var(--ks-space-1); }
+/* A dropdown: the disclosure chevron turned to point down while closed (it turns a quarter as the menu opens). */
+/* Down when closed, up when open: the chevron morph (down -> right) plus a quarter turn of its box adds up to a half turn. */
+.solarChevron { display: inline-flex; color: var(--ks-text-3); transition: transform var(--ks-dur-base) var(--ks-ease-standard); }
+.solarTrigger[aria-expanded="true"] .solarChevron { transform: rotate(-90deg); }
+@media (prefers-reduced-motion: reduce) { .solarChevron { transition: none; } }
+.solarName { font-weight: var(--ks-weight-medium); }
+.solarSep { color: var(--ks-text-3); }
+.solarMode { color: var(--ks-text-2); }
+.solarTrigger[data-ultimate] .solarMode { color: var(--ks-text-1); font-weight: var(--ks-weight-medium); }
+
+.solarMenu { width: 300px; max-width: calc(100vw - 16px); -webkit-app-region: no-drag; }
+.solarList { position: relative; display: grid; --row: 48px; }
+.solarIndicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--row);
+  border-radius: var(--ks-radius-sm);
+  background: var(--ks-fill-selected);
+  transform: translateY(calc(var(--i) * var(--row)));
+  transition: transform var(--ks-dur-base) var(--ks-ease-spring);
+  pointer-events: none;
+}
+.solarIndicator::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 2px;
+  border-radius: var(--ks-radius-pill);
+  background: var(--ks-accent);
+}
+.solarItem {
+  position: relative;
+  display: grid;
+  align-content: center;
+  gap: 1px;
+  height: var(--row);
+  padding: 0 var(--ks-space-3);
+  border: 0;
+  border-radius: var(--ks-radius-sm);
+  background: transparent;
+  color: var(--ks-text-1);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.solarItem:hover:not([aria-checked="true"]) { background: var(--ks-fill-hover); }
+.solarItem:focus { outline: none; }
+.solarItem:focus-visible { box-shadow: inset 0 0 0 1px var(--ks-focus); }
+.solarItemHead { display: flex; align-items: center; justify-content: space-between; gap: var(--ks-space-2); }
+.solarItemLabel { display: inline-flex; align-items: center; gap: var(--ks-space-1-5); font-size: var(--ks-text-base); font-weight: var(--ks-weight-medium); }
+.solarCredits { font-family: var(--ks-font-mono); font-size: var(--ks-text-xs); letter-spacing: var(--ks-tracking-mono); color: var(--ks-text-3); font-variant-numeric: tabular-nums; }
+.solarItem[aria-checked="true"] .solarCredits { color: var(--ks-text-2); }
+.solarLine { font-size: var(--ks-text-sm); color: var(--ks-text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.solarFoot { display: grid; gap: var(--ks-space-1-5); margin-top: var(--ks-space-1); padding: var(--ks-space-2) var(--ks-space-2) var(--ks-space-1); border-top: 1px solid var(--ks-divider); }
+.solarNote { margin: 0; font-size: var(--ks-text-xs); line-height: var(--ks-leading-xs); color: var(--ks-text-3); }
+.solarDetailsToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ks-space-1);
+  justify-self: start;
+  height: 22px;
+  padding: 0 var(--ks-space-1-5) 0 var(--ks-space-1);
+  border: 0;
+  border-radius: var(--ks-radius-pill);
+  background: transparent;
+  color: var(--ks-text-2);
+  font: inherit;
+  font-size: var(--ks-text-xs);
+  cursor: pointer;
+}
+.solarDetailsToggle:hover { background: var(--ks-fill-hover); color: var(--ks-text-1); }
+.solarDetailsToggle:focus-visible { outline: none; box-shadow: var(--ks-focus-ring); }
+.solarDetails { display: grid; gap: var(--ks-space-1-5); max-height: 180px; overflow: auto; }
+.solarDetails p { margin: 0; font-size: var(--ks-text-xs); line-height: var(--ks-leading-xs); color: var(--ks-text-2); }
+.solarDetails p:first-child { color: var(--ks-text-1); }
+
+/* ════════════════════════════ Overlay (/app/studio/overlay) ════════════════════════════ */
+
+.overlayRoot { height: 100vh; }
+.overlay {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid var(--ks-border-strong);
+  border-radius: var(--ks-radius-lg);
+  background: var(--ks-surface-1);
+  color: var(--ks-text-1);
+  overflow: hidden;
+}
+
+/* The drag handle. Region mode: the desktop window drags by app-region (older apps, Linux Wayland). Spring mode: the page
+   reports pointer down / up and the desktop app moves the window on its spring, so the handle must not be an app region. */
+.titleBar {
+  display: flex;
+  align-items: center;
+  gap: var(--ks-space-1-5);
+  flex: none;
+  height: 40px;
+  padding: 0 var(--ks-space-1-5) 0 var(--ks-space-2);
+  border-bottom: 1px solid var(--ks-border);
+  user-select: none;
+}
+.titleBar[data-drag="region"], .capsuleDrag[data-drag="region"] { -webkit-app-region: drag; }
+.titleBar[data-drag="spring"], .capsuleDrag[data-drag="spring"] { cursor: grab; touch-action: none; }
+.titleBar :is(button, select, input, a, [role="group"]), .capsule :is(button, a) { -webkit-app-region: no-drag; }
+.grip { flex: none; color: var(--ks-text-3); }
+.titleSpacer { flex: 1; min-width: 0; }
+
+.overlay .control { flex: none; padding: var(--ks-space-1) var(--ks-space-3); border-bottom: 1px solid var(--ks-border); }
+.overlaySwitch { flex: none; padding: var(--ks-space-2) var(--ks-space-3) 0; }
+.overlayContent { display: flex; flex-direction: column; flex: 1; min-height: 0; padding-top: var(--ks-space-1); }
+.overlayContent > * { flex: 1; min-height: 0; }
+.overlayComposer { flex: none; padding: var(--ks-space-2); border-top: 1px solid var(--ks-border); }
+.overlayGate { flex: 1; min-height: 0; overflow: auto; display: flex; align-items: center; justify-content: center; padding: var(--ks-space-4); }
+
+.overlay[data-see-through] { border-color: var(--ks-border); }
+
+/* Collapsed: a pill window. */
+.overlayRoot[data-collapsed] { display: flex; align-items: stretch; }
+.capsule {
+  display: flex;
+  align-items: center;
+  gap: var(--ks-space-1);
+  width: 100%;
+  height: 100%;
+  min-height: 40px;
+  padding: 0 var(--ks-space-1) 0 var(--ks-space-2-5);
+  border: 1px solid var(--ks-border-strong);
+  border-radius: var(--ks-radius-pill);
+  background: var(--ks-surface-1);
+  color: var(--ks-text-1);
+}
+.capsuleDrag { display: flex; align-items: center; gap: var(--ks-space-2); flex: 1; min-width: 0; height: 100%; color: var(--ks-text-3); user-select: none; }
+.capsuleText { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--ks-text-sm); font-weight: var(--ks-weight-medium); color: var(--ks-text-1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace, .solarIndicator, .controlDetails { transition: none; animation: none; }
+}
+
+/* ════════════════════════════ Hosts (/app/studio, Create > Keplar Studio) ════════════════════════════ */
+/* A definite-height box for the Workspace: it fills what the app shell gives it and never scrolls the page itself. */
+.host { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0; }
+.hostPane { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0; }
+.hostPane[hidden] { display: none; }
+.hostPane > [data-ks-root] { flex: 1; }

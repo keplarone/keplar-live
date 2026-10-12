@@ -138,6 +138,8 @@
   #main > * > :nth-child(4) { animation-delay: 210ms; }
   #main > * > :nth-child(5) { animation-delay: 280ms; }
   #main > * > :nth-child(6) { animation-delay: 350ms; }
+  /* Not Keplar Studio (the overlay window mounts it straight under #main): an app surface, not a page; it never slides in. */
+  #main > [data-ks-root] > * { animation: none !important; } /* outranks the page-entry selector above */
 
   /* App: each view's header and content ease in when the view opens */
   [class*="App-module__"][class$="__view"] > * { animation: kp-page-in 480ms var(--m-ease-out) both; }
@@ -162,9 +164,7 @@
  * (its low-res upscale is already soft) and the auras use a smaller blur radius. Long pages skip rendering sections that are
  * off-screen until they come near (content-visibility), which cuts first paint and scroll work. */
 @media (pointer: coarse), (max-width: 767px) {
-  /* Not in the desktop app's Studio overlay (html[data-overlay]): a narrow desktop window, not a phone, whose liquid glass
-     is its backdrop filters (studio-mode/liquid-glass). */
-  :root:not([data-overlay]) :is(*, *::before, *::after) { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  :is(*, *::before, *::after) { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
   [class*="Sky-module__"][class$="__liquid"] { filter: none; }
   [class*="Sky-module__"][class$="__backdrop"] > i { filter: blur(64px); }
   #main section:not(:first-of-type) { content-visibility: auto; contain-intrinsic-size: auto 720px; }
@@ -193,9 +193,10 @@
 }
 
 /* Phones: floating overlays keep their blur (they rely on it to stay readable over the page, and are on screen briefly);
-   only in-page cards drop it (see "Mobile performance" above). */
+   only in-page cards drop it (see "Mobile performance" above). Not Keplar Studio ([data-ks-root], including the narrow
+   desktop overlay window): its dialogs and menus are opaque token surfaces and never blur. */
 @media (pointer: coarse), (max-width: 767px) {
-  :is([role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], [role="tooltip"],
+  :not([data-ks-root], [data-ks-root] *):is([role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], [role="tooltip"],
       [class*="CookieBanner-module__"][class$="__banner"], [class*="Nav-module__"][class$="__panel"], [class*="Nav-module__"][class*="__morph"],
       [class*="App-module__"][class$="__sidebar"], [class*="CommandPalette-module__"]) {
     -webkit-backdrop-filter: blur(18px) saturate(1.3) !important;

@@ -50,7 +50,7 @@ import { HomeStart } from "./HomeStart";
 import { pathForView, viewForPath } from "./app-paths";
 import { AppOnboarding } from "@/components/onboarding/AppOnboarding";
 import { DeploymentsView } from "./DeploymentsView";
-import { StudioView } from "./studio-mode/StudioView";
+import { KeplarStudio } from "./studio-mode/workspace/KeplarStudio";
 import { BUSINESS_URL, BUSINESS_VIEWS } from "@/lib/business-site";
 import { businessProminent, examplesFor, readUseFor, useForOptions, writeUseFor, type UseFor } from "./use-for";
 import type { Ledger } from "./state/types";
@@ -1367,8 +1367,8 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
             <BusinessOS embedded initialTab="approvals" />
           </div>
         ) : state.view === "studio" ? (
-          <div className={s.scroll}>
-            <StudioView plan={state.ledger.plan} signedIn={state.ledger.synced ? state.ledger.signedIn : null} />
+          <div className={s.createHost}>
+            <KeplarStudio plan={state.ledger.plan} signedIn={state.ledger.synced ? state.ledger.signedIn : null} />
           </div>
         ) : state.view === "deployments" ? (
           <div className={s.scroll}>

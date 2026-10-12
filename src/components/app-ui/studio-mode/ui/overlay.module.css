@@ -1,0 +1,187 @@
+/*
+ * Floating and modal surfaces: Tooltip, Popover, Menu, Toast, Dialog.
+ * All of them set data-motion="ks" so the site's generic overlay animations (motion.css / redesign.css, which use an
+ * overshooting spring) do not apply; the motion below is the Studio's own: short, no overshoot, reduced-motion aware.
+ */
+
+/* shared reset for elements shown with the Popover API (UA styles centre them and paint Canvas colours) */
+.layer {
+  position: fixed;
+  inset: auto;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: visible;
+  color: var(--ks-text-1);
+  background: transparent;
+}
+
+/* ── Tooltip ── */
+.tip {
+  max-width: 260px;
+  padding: 5px 8px;
+  border-radius: var(--ks-radius-sm);
+  background: var(--ks-primary-bg);
+  color: var(--ks-primary-text);
+  font-size: var(--ks-text-sm);
+  line-height: var(--ks-leading-sm);
+  font-weight: var(--ks-weight-medium);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ks-space-2);
+  pointer-events: none;
+  animation: fadeIn var(--ks-dur-fast) var(--ks-ease-enter) both;
+}
+.tipKeys { display: inline-flex; gap: 2px; opacity: 0.72; font-weight: var(--ks-weight-regular); }
+
+/* ── Popover / Menu surface ── */
+.float {
+  min-width: 180px;
+  max-width: min(320px, calc(100vw - 16px));
+  max-height: min(420px, calc(100vh - 16px));
+  overflow: auto;
+  padding: var(--ks-space-1);
+  border: 1px solid var(--ks-border-strong);
+  border-radius: var(--ks-radius-md);
+  background: var(--ks-surface-2);
+  box-shadow: var(--ks-elev-1);
+  animation: rise var(--ks-dur-fast) var(--ks-ease-enter) both;
+}
+.float[data-side="top"] { animation-name: drop; }
+.float:focus-visible { outline: none; }
+
+.menu { display: grid; gap: 1px; }
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--ks-space-2);
+  width: 100%;
+  min-height: 28px;
+  padding: 0 var(--ks-space-2);
+  border: 0;
+  border-radius: var(--ks-radius-sm);
+  background: transparent;
+  color: var(--ks-text-1);
+  font-size: var(--ks-text-base);
+  line-height: var(--ks-leading-base);
+  text-align: left;
+  cursor: pointer;
+  scale: none;
+  transition: background-color var(--ks-dur-instant) var(--ks-ease-standard);
+}
+.item:hover:not([aria-disabled="true"]),
+.item:focus-visible { background: var(--ks-fill-hover); }
+.item:focus { outline: none; }
+.item:focus-visible { box-shadow: inset 0 0 0 1px var(--ks-focus); }
+.item[aria-disabled="true"] { color: var(--ks-text-disabled); cursor: default; }
+.item[data-danger] { color: var(--ks-danger); }
+.item[data-danger]:hover:not([aria-disabled="true"]) { background: var(--ks-danger-subtle); }
+.itemIcon { display: inline-flex; flex: none; color: var(--ks-text-2); }
+.item[data-danger] .itemIcon { color: inherit; }
+.itemLabel { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.itemCheck { display: inline-flex; flex: none; width: 16px; color: var(--ks-text-1); }
+.itemHint { flex: none; color: var(--ks-text-3); font-size: var(--ks-text-xs); }
+.sep { height: 1px; margin: var(--ks-space-1) calc(-1 * var(--ks-space-1)); background: var(--ks-divider); border: 0; }
+.groupLabel {
+  padding: var(--ks-space-1-5) var(--ks-space-2) var(--ks-space-1);
+  font-size: var(--ks-text-xs);
+  line-height: var(--ks-leading-xs);
+  font-weight: var(--ks-weight-medium);
+  letter-spacing: var(--ks-tracking-label);
+  text-transform: uppercase;
+  color: var(--ks-text-3);
+}
+
+/* ── Toasts ── */
+.toasts {
+  position: fixed;
+  z-index: 2147483000;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--ks-space-2);
+  width: min(360px, calc(100vw - 24px));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+}
+.toasts[data-placement="bottom-right"] { right: 12px; bottom: 12px; }
+.toasts[data-placement="bottom-center"] { left: 50%; bottom: 12px; transform: translateX(-50%); }
+.toasts[data-placement="top-right"] { right: 12px; top: 12px; flex-direction: column; }
+.toast {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  gap: var(--ks-space-2);
+  padding: var(--ks-space-2-5) var(--ks-space-2-5) var(--ks-space-2-5) var(--ks-space-3);
+  border: 1px solid var(--ks-border-strong);
+  border-radius: var(--ks-radius-md);
+  background: var(--ks-surface-2);
+  box-shadow: var(--ks-elev-2);
+  pointer-events: auto;
+  animation: toastIn var(--ks-dur-base) var(--ks-ease-spring) both;
+}
+.toast[data-leaving] { animation: toastOut var(--ks-dur-fast) var(--ks-ease-exit) both; }
+.toastMark { display: inline-flex; margin-top: 2px; color: var(--ks-text-2); }
+.toast[data-tone="success"] .toastMark { color: var(--ks-success); }
+.toast[data-tone="warning"] .toastMark { color: var(--ks-warning); }
+.toast[data-tone="danger"] .toastMark { color: var(--ks-danger); }
+.toast[data-tone="info"] .toastMark { color: var(--ks-info); }
+.toastBody { display: grid; gap: 2px; min-width: 0; }
+.toastTitle { font-size: var(--ks-text-base); line-height: var(--ks-leading-base); font-weight: var(--ks-weight-medium); color: var(--ks-text-1); }
+.toastText { font-size: var(--ks-text-sm); line-height: var(--ks-leading-sm); color: var(--ks-text-2); overflow-wrap: anywhere; }
+.toastActions { display: flex; align-items: center; gap: var(--ks-space-1); }
+
+/* ── Dialog (native <dialog>, modal) ── */
+.dialog {
+  width: min(var(--dialog-w, 440px), calc(100vw - 24px));
+  max-height: calc(100vh - 48px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--ks-border-strong);
+  border-radius: var(--ks-radius-lg);
+  background: var(--ks-surface-2);
+  color: var(--ks-text-1);
+  box-shadow: var(--ks-elev-2);
+  overflow: hidden;
+  opacity: 1;
+  scale: none;
+  transition: none;
+}
+.dialog[data-size="sm"] { --dialog-w: 360px; }
+.dialog[data-size="lg"] { --dialog-w: 600px; }
+.dialog[open] { display: flex; flex-direction: column; animation: dialogIn var(--ks-dur-slow) var(--ks-ease-spring) both; }
+.dialog::backdrop { background: var(--ks-scrim); opacity: 1; transition: none; animation: fadeIn var(--ks-dur-base) var(--ks-ease-enter) both; }
+.dialog:focus-visible { outline: none; }
+.dialogHead {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ks-space-2);
+  padding: var(--ks-space-4) var(--ks-space-4) var(--ks-space-2);
+}
+.dialogTitles { flex: 1; min-width: 0; display: grid; gap: var(--ks-space-1); }
+.dialogTitle { margin: 0; font-size: var(--ks-text-lg); line-height: var(--ks-leading-lg); font-weight: var(--ks-weight-semibold); letter-spacing: var(--ks-tracking-tight); }
+.dialogDesc { margin: 0; font-size: var(--ks-text-base); line-height: var(--ks-leading-base); color: var(--ks-text-2); }
+.dialogBody { padding: var(--ks-space-2) var(--ks-space-4) var(--ks-space-4); overflow: auto; min-height: 0; }
+.dialogFoot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ks-space-2);
+  padding: var(--ks-space-3) var(--ks-space-4);
+  border-top: 1px solid var(--ks-divider);
+}
+
+@keyframes fadeIn { from { opacity: 0; } }
+@keyframes rise { from { opacity: 0; transform: translateY(-3px); } }
+@keyframes drop { from { opacity: 0; transform: translateY(3px); } }
+@keyframes toastIn { from { opacity: 0; transform: translateY(8px) scale(0.98); } }
+@keyframes toastOut { to { opacity: 0; transform: translateY(4px) scale(0.98); } }
+@keyframes dialogIn { from { opacity: 0; transform: translateY(6px) scale(0.985); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .tip, .float, .toast, .dialog[open], .dialog::backdrop { animation: none; }
+  /* keep a 1ms exit so animationend still fires and the leaving toast is removed from the DOM */
+  .toast[data-leaving] { animation: toastOut 1ms linear both; }
+}

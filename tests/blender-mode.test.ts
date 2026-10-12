@@ -57,16 +57,15 @@ test("blender: the route needs a signed-in Lite-and-up account", async () => {
 });
 
 test("overlay: works in Roblox Studio or Blender, chosen by the page that opens it and switchable in its header", () => {
-  const ov = readFileSync("src/components/app-ui/studio-mode/StudioOverlay.tsx", "utf8");
-  assert.match(ov, /useStudioAgent\(bb, "blender"\)/);
-  assert.match(ov, /useStudioAgent\(bridge, "studio"\)/);
+  const ov = readFileSync("src/components/app-ui/studio-mode/workspace/OverlayShell.tsx", "utf8");
+  assert.match(ov, /useStudioAgent\(bb, "blender", \{ solarMode: mode \}\)/);
+  assert.match(ov, /useStudioAgent\(bridge, "studio", \{ solarMode: mode \}\)/);
   assert.match(ov, /e\.key === OVERLAY_TARGET_KEY/, "switches when the main window picks the other app");
   assert.match(ov, /disabled=\{a\.running\}/, "no switching in the middle of a build");
   assert.match(ov, /canPlayTest=\{!isBlender\}/);
-  const bv = readFileSync("src/components/app-ui/studio-mode/BlenderView.tsx", "utf8");
-  assert.match(bv, /setOverlayTarget\("blender"\); void overlay\.open\(\);/, "Float over Blender");
-  assert.match(bv, /overlayTarget\(\) === "blender"/, "the page steps aside while the overlay builds in Blender");
-  const sv = readFileSync("src/components/app-ui/studio-mode/StudioView.tsx", "utf8");
-  assert.match(sv, /setOverlayTarget\("studio"\)/);
-  assert.match(sv, /overlay\?\.open && overlayTarget\(\) === "studio"/, "Studio's page steps aside only for a Studio overlay");
+  // One Workspace serves both environments: it floats over the app it is in, and steps aside only for an overlay working there.
+  const ws = readFileSync("src/components/app-ui/studio-mode/workspace/Workspace.tsx", "utf8");
+  assert.match(ws, /setOverlayTarget\("blender"\); void overlay\.open\(\);/, "Float over Blender");
+  assert.match(ws, /setOverlayTarget\("studio"\); void overlay\.open\(\);/, "Float over Studio");
+  assert.match(ws, /Boolean\(overlayState\?\.open\) && overlayTarget\(\) === \(isBlender \? "blender" : "studio"\)/, "the page steps aside only while the overlay builds in this app");
 });

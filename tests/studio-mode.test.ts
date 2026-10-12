@@ -12,10 +12,10 @@ test("Roblox Studio mode: Lite and up only, desktop-only (no bridge outside the 
   assert.equal(studioBridge(), null, "no window here, so no bridge");
   assert.equal(pathForView("studio"), "/app/studio");
   assert.equal(viewForPath("/app/studio"), "studio");
-  // It lives in Create as a tab that only appears with the desktop bridge, not in the sidebar.
+  // It lives in Create under one Keplar Studio tab (Roblox Studio | Blender) that only appears with the desktop bridge, not in the sidebar.
   const create = readFileSync("src/components/create/CreateStudio.tsx", "utf8");
   assert.match(create, /useSyncExternalStore\(noSubscribe, \(\) => Boolean\(studioBridge\(\)\), \(\) => false\)/);
-  assert.match(create, /\{desktop \? tab\("roblox", "Roblox Studio"\) : null\}/);
+  assert.match(create, /\{desktop \? tab\("studio", "Keplar Studio"\) : null\}/);
   assert.doesNotMatch(readFileSync("src/components/app-ui/Sidebar.tsx", "utf8"), /studioBridge/);
 });
 
@@ -39,8 +39,10 @@ test("studio overlay: its own bare page, transparent, and the main page offers i
   const page = read("src/app/app/studio/overlay/page.tsx");
   assert.match(page, /data-overlay/);
   assert.match(read("src/styles/redesign.css"), /html\[data-overlay\], html\[data-overlay\] body \{ background: transparent !important/);
-  const view = read("src/components/app-ui/studio-mode/StudioView.tsx");
-  assert.match(view, /\{bridge\.overlay \? <button/);
+  assert.match(page, /<OverlayShell \/>/, "the overlay page renders the new overlay shell");
+  const view = read("src/components/app-ui/studio-mode/workspace/Workspace.tsx");
+  assert.match(view, /\{overlay \? \(\s*<Button/, "Float over … only when the desktop build has the overlay");
   assert.match(view, />Float over Studio</);
-  assert.match(read("src/components/app-ui/studio-mode/studio-overlay.module.css"), /-webkit-app-region: drag/);
+  // Older desktop apps (no spring drag) drag the frameless window by its title bar.
+  assert.match(read("src/components/app-ui/studio-mode/workspace/shell.module.css"), /-webkit-app-region: drag/);
 });
