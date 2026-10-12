@@ -260,6 +260,9 @@
 :global(:root[data-theme="light"]) .name { text-transform: none; letter-spacing: -0.01em; font-size: 22px; color: var(--c-ink); }
 :global(:root[data-theme="light"]) .amount { font-weight: 400; }
 :global(:root[data-theme="light"]) .cadence { text-transform: none; letter-spacing: 0; font-size: 15px; }
+/* Dark: the cards are translucent over the aura, which lifts their fill to ~#3c3736 in places; ink-3 there was 3.5:1 (axe,
+   serious). ink-2 holds ≥4.5:1 on the lightest spot. */
+:global(:root[data-theme="dark"]) .cadence { color: var(--c-ink-2); }
 :global(:root[data-theme="light"]) .summary { font-size: 15px; line-height: 1.5; }
 :global(:root[data-theme="light"]) .features { border-top: 0; padding-top: 0; }
 :global(:root[data-theme="light"]) .features li { padding-left: 28px; font-size: 15px; line-height: 1.5; }
