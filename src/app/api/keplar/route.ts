@@ -72,6 +72,7 @@ import { freeQuestionLimit } from "@/lib/cost/hooks";
 import { applyFanout, beginRun, fanoutPolicy, loadInflight } from "@/lib/orchestration/fanout";
 import { bumpFanout, fanoutUsedToday } from "@/lib/usage/fanout-day";
 import { enterCostScope, newScope, recordRequestCost } from "@/lib/ops/request-cost";
+import { flightFromStreamEvent, flightPush, flightRow, recordFlight, startFlight } from "@/lib/ops/flight";
 import { requestIdOf } from "@/lib/ops/log";
 import { clampDocs, docsBlock, docsFrom, freeAllowsDoc } from "@/lib/documents/chat-docs";
 import { clampLiveResearch, LIVE_BRIEF_CHARS, liveModes, liveResearchBlock, liveResearchFrom, liveResearchOff, liveRouting } from "@/lib/research/live-request";
@@ -478,6 +479,10 @@ export async function POST(request: Request) {
   if (deps && traced) deps.router = traced.router;
   const startedAt = Date.now();
   const costScope = newScope();
+  costScope.flight = startFlight(startedAt); // the request's execution timeline (ops/flight.ts): stages, provider requests, outcome; no text
+  let flightError: string | null = null;
+  let flightLimited = false;
+  let flightFirst = false;
   if (callBudget) costScope.callBudget = callBudget;
   costScope.tag = { feature: featureForAsk(req), userId: ws.anonymous ? null : ws.id, plan: ws.plan, admin: Boolean(ws.admin) }; // cost meter attribution (src/lib/cost)
   const endRun = creator || smallTalk ? () => undefined : beginRun();
@@ -489,7 +494,13 @@ export async function POST(request: Request) {
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       enterCostScope(costScope); // every provider call made below is attributed to this request (ops/request-cost.ts)
-      const send = (e: KeplarEvent) => controller.enqueue(encoder.encode(JSON.stringify(e) + "\n"));
+      const send = (e: KeplarEvent) => {
+        flightFromStreamEvent(costScope.flight, e as { type: string } & Record<string, unknown>);
+        if (!flightFirst && (e.type === "delta" || e.type === "answer")) { flightFirst = true; flightPush(costScope.flight, { k: "note", code: "first_output" }); }
+        if (e.type === "error") flightError = e.code;
+        if (e.type === "limit") flightLimited = true;
+        controller.enqueue(encoder.encode(JSON.stringify(e) + "\n"));
+      };
       // Free: a question only keeps its count if an answer reached the screen. Failures, "no reliable answer", no model
       // responding and stops all give it back, and the meter is re-sent so the UI shows the true number.
       let answered = false;
@@ -592,10 +603,12 @@ export async function POST(request: Request) {
         releaseReserved?.();
         gate?.release();
         endRun();
+        if (!creator) recordFlight(flightRow(costScope.flight!, { reqId: reqIdForCost, plan: ws.plan, feature: costScope.tag?.feature, kind: smallTalk ? "instant" : "answer", answered: answeredOk, aborted: abort.signal.aborted, errorCode: flightError, limited: flightLimited, usd: costScope.usd }));
         if (!creator) recordRequestCost(costScope, { reqId: reqIdForCost, plan: ws.plan, accountId: ws.anonymous ? null : ws.id, kind: smallTalk ? "instant" : "answer", units: billedUnits, durationMs: Date.now() - startedAt, answered: answeredOk, degraded: degradedBy, maxModels: fanoutCap });
       }
     },
     cancel() {
+      flightPush(costScope.flight, { k: "cancel", code: "client_closed" });
       abort.abort();
     },
   });
