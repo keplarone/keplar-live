@@ -104,7 +104,7 @@ test("Keplar Lens: asks once before anything is sent, then sends the words and a
   const bg = readFileSync("extension/background.js", "utf8");
   for (const s of ["Select any text or image to search with Keplar One", "Drag to search", "Ask a follow-up", "Copy text", "Translate", "Copy as image", "Search anything on this page with Keplar One"]) assert.ok(lens.includes(s), s);
   // Consent: nothing is searched until agreed; the agreement is remembered (lensConsent) so it is asked once.
-  assert.match(lens, /function search\(ask\) \{\n {4}if \(!agreed\) return;/);
+  assert.match(lens, /function search\(ask\) \{\r?\n {4}if \(!agreed\) return;/);
   assert.match(lens, /api\.storage\.local\.set\(\{ lensConsent: 1 \}\)/);
   assert.match(lens, /the words inside the area you drag and a picture of that area are sent to Keplar/);
   // What a search sends: the words, the JPEG the background cropped, and earlier turns for follow-ups.
