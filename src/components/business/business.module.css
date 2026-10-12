@@ -31,7 +31,7 @@
 .warn { border-color: var(--c-dissent); color: var(--c-dissent); }
 .warn::before { background: var(--c-dissent); }
 .bars { display: flex; align-items: flex-end; gap: 4px; height: 72px; }
-.barCol { flex: 1; background: var(--c-surface-2); border-radius: 2px; position: relative; min-height: 2px; }
+.barCol { flex: 1; align-self: stretch; background: var(--c-surface-2); border-radius: 2px; position: relative; min-height: 2px; } /* stretch: a column is the chart's full height, so the bar inside can take its share (it was 2px tall, so every bar looked empty) */
 .barCol > span { position: absolute; inset: auto 0 0; background: var(--c-ink); border-radius: 2px; }
 .list { display: flex; flex-direction: column; }
 .item { display: flex; gap: var(--s-3); padding: var(--s-3) 0; border-bottom: var(--b-hairline) solid var(--c-border); align-items: flex-start; }
