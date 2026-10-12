@@ -18,7 +18,7 @@ const SYSTEM = "system";
 
 export function recordModelCall(c: Omit<ModelCallRow, "id" | "workspaceId" | "at">): void {
   maybePrune();
-  noteModelCall({ model: c.model, ok: c.ok, usd: c.usd, reason: c.reason }); // attributes the call to the /api/keplar request in progress, if any
+  noteModelCall({ model: c.model, ok: c.ok, usd: c.usd, reason: c.reason, latencyMs: c.latencyMs, provider: c.provider }); // attributes the call to the /api/keplar request in progress, if any
   calls()
     .insert({ id: id("mc"), workspaceId: SYSTEM, at: now(), ...c, usd: Number.isFinite(c.usd) ? Math.max(0, c.usd) : 0, latencyMs: Math.max(0, Math.round(c.latencyMs || 0)) })
     .catch((e) => console.error("[ops] model call not recorded:", e instanceof Error ? e.name : "error"));

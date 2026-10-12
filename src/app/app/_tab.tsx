@@ -20,7 +20,7 @@ const META: Record<View, { title: string; description: string }> = {
 
 export function tabMeta(view: View): Metadata {
   const m = META[view];
-  return pageMeta(pathForView(view), m.title, m.description, { noindex: true, absoluteTitle: view === "thread" });
+  return pageMeta(pathForView(view), m.title, m.description, { absoluteTitle: view === "thread" });
 }
 
 export function TabPage({ view }: { view: View }) {

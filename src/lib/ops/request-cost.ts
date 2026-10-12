@@ -7,6 +7,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { collection } from "@/lib/create/platform/store";
 import { id } from "@/lib/create/platform/ids";
+import { flightPush, type FlightLog } from "./flight";
 
 export type CostScope = {
   calls: number;
@@ -27,6 +28,8 @@ export type CostScope = {
   callBudget?: { key: string; limit: number };
   /** Cost-meter attribution for every provider call in this request (src/lib/cost/meter.ts): feature from the modes, user, plan. */
   tag?: { feature?: string; userId?: string | null; plan?: string; admin?: boolean };
+  /** The request's execution timeline (flight.ts): stages, provider requests and outcome. Text-free by construction. */
+  flight?: FlightLog;
 };
 const als = new AsyncLocalStorage<CostScope>();
 
@@ -36,9 +39,10 @@ export const runInCostScope = <T>(scope: CostScope, fn: () => T): T => als.run(s
 export const currentCostScope = (): CostScope | null => als.getStore() ?? null;
 
 /** Called from recordModelCall. A call outside any scope (cron, agents) is simply not attributed to a request. */
-export function noteModelCall(c: { model: string; ok: boolean; usd: number; reason?: string }): void {
+export function noteModelCall(c: { model: string; ok: boolean; usd: number; reason?: string; latencyMs?: number; provider?: string }): void {
   const s = als.getStore();
   if (!s) return;
+  flightPush(s.flight, { k: "call", model: c.model, provider: c.provider, ok: c.ok, reason: c.reason, ms: c.latencyMs, usd: c.usd });
   s.calls++;
   if (!c.ok) s.failed++;
   if (c.reason === "rate_limited") s.rateLimited = (s.rateLimited ?? 0) + 1;
@@ -51,9 +55,10 @@ export function noteModelCall(c: { model: string; ok: boolean; usd: number; reas
 export const callBudgetOf = (): { key: string; limit: number } | null => als.getStore()?.callBudget ?? null;
 
 /** Called by the registry right before a request goes out to a live provider (a count and a stage label only; never text). */
-export function noteCallSent(slot: string): void {
+export function noteCallSent(slot: string, model?: string): void {
   const s = als.getStore();
   if (!s) return;
+  flightPush(s.flight, { k: "sent", slot, model });
   s.sent = (s.sent ?? 0) + 1;
   const by = (s.sentBySlot ??= {});
   by[slot] = (by[slot] ?? 0) + 1;

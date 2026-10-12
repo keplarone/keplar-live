@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { StudioOverlay } from "@/components/app-ui/studio-mode/StudioOverlay";
 
-export const metadata: Metadata = { title: "Keplar · Studio overlay", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Keplar · Studio overlay" };
 
 /** The page the desktop app's always-on-top Studio overlay window loads (keplar-desktop src/main/studio/overlay.ts). */
 export default function Page() {

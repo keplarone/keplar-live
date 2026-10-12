@@ -14,7 +14,7 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
   const r = await openPublic(slug).catch(() => null);
-  if (!r || !r.question) return { robots: { index: false, follow: false } };
+  if (!r || !r.question) return {};
   return pageMeta(`/answers/${slug}`, publicTitle(r.question), publicSummary(r.markdown), { image: `/answers/${slug}/og`, article: { published: r.publicAt!.slice(0, 10), modified: r.publicAt!.slice(0, 10) } });
 }
 

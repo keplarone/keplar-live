@@ -30,7 +30,7 @@ test("cron matcher", () => {
 
 test("scheduled runs execute once, queue outbound for approval, and audit", async () => {
   assert.equal(inngestEnabled(), false, "in-process scheduler without Inngest keys");
-  assert.equal(functions.length, 4); // 3 business-agent functions + telemetry retention
+  assert.equal(functions.length, 5); // 3 business-agent functions + telemetry retention + the model observatory (alert only)
   const ws = await testWorkspace("sched", "pro");
   // The weekly report needs Slack: fixture a connected workspace with the post tool on (the OAuth flow itself is tested in connectors-oauth).
   await connections().insert({ id: "conn_sched_slack", workspaceId: ws.id, connector: "slack", status: "connected", account: "Test workspace", tokenEnc: null, scopes: ["chat:write"], connectedAt: now(), tools: { post_message: true } });

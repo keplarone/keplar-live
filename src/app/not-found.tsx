@@ -5,7 +5,7 @@ import { Footer } from "@/components/chrome/Footer";
 import { SkyBackdrop } from "@/components/sky/SkyBackdrop";
 import s from "@/components/page/NotFound.module.css";
 
-export const metadata: Metadata = { title: "Page not found", robots: { index: false } };
+export const metadata: Metadata = { title: "Page not found" };
 
 /** 404 from the Oct 2026 canvas design: a large soft "404", a two-tone line and two ways out, on the aura backdrop. */
 export default function NotFound() {

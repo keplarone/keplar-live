@@ -5,7 +5,6 @@ import { BUSINESS_ICONS, BUSINESS_MANIFEST_PATH } from "@/lib/business-site";
 export const metadata: Metadata = {
   title: { default: "Keplar Business", template: "%s · Keplar Business" },
   applicationName: "Keplar Business",
-  robots: { index: false, follow: false },
   icons: BUSINESS_ICONS,
   manifest: BUSINESS_MANIFEST_PATH,
 };

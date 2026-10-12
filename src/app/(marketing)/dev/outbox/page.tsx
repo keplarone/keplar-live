@@ -3,7 +3,7 @@ import { pageMeta } from "@/lib/seo";
 import { devToolsEnabled, listOutbox } from "@/lib/accounts/outbox";
 import s from "@/components/account/account.module.css";
 
-export const metadata = pageMeta("/dev/outbox", "Dev outbox", "Development email outbox.", { noindex: true });
+export const metadata = pageMeta("/dev/outbox", "Dev outbox", "Development email outbox.");
 export const dynamic = "force-dynamic";
 
 /** Dev-only: emails captured when RESEND_API_KEY is unset. 404 unless KEPLAR_DEV_TOOLS=1. */

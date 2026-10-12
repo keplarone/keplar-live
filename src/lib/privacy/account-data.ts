@@ -44,6 +44,7 @@ export const RETAINED = [
   "cost_state", // throttles and provider-balance state (no personal data)
   "overage_settings", // overage opt-in and monthly cap: the billing authorization behind any overage charge
   "overage_usage", // overage amounts billed per month: a financial record
+  "answer_turns", // answer recovery checkpoints (orchestration/turn-recovery.ts): workspace "system", keyed by a hash of owner + turn key (no account id), the last answer as sent; unreadable after 30 minutes and deleted within a day, so they expire on their own
 ] as const;
 export const RETAINED_PATTERNS = [/^usage_window_/, /^system_/, /^admin_/, /^ops_/, /^_health$/, /^_cron_beats$/ /* cron heartbeat timestamps, no personal data */];
 

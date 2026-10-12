@@ -200,6 +200,11 @@ export type KeplarRequest = {
    * and never presents it as checked by Keplar's servers. When present, server-side web research and source checks are skipped.
    */
   liveResearch?: LiveResearchInput;
+  /**
+   * Answer recovery (turn-recovery.ts): a random key per send, reused by a retry after a dropped connection so the saved answer is
+   * replayed instead of a second run. Validated in the route ([A-Za-z0-9_-]{16,64}); ignored for private chats, API keys and embeds.
+   */
+  turnKey?: string;
   routing?: RoutingPreferences;
   /** Remaining Keplar Usage in the caller's allowance. Set server-side from the ledger; never trusted from the client. */
   computeRemaining?: number;
@@ -735,6 +740,12 @@ export type KeplarEvent =
   | { type: "model"; modelId: string; name: string; status: "responded" | "failed" | "refused"; note?: string }
   | { type: "disagreement"; summary: string }
   | { type: "smalltalk" }
+  /**
+   * Answer recovery, always reporting a real state: "replayed" (this answer was saved by an earlier run of the same turn and is shown
+   * again: no second run, no second charge), "recovering" (the browser lost the stream and is fetching the saved answer), "recovered"
+   * (it got it), "lost" (nothing to recover: the run failed or never started). `headless`: the run finished after the browser left.
+   */
+  | { type: "recovery"; state: "replayed" | "recovering" | "recovered" | "lost"; headless?: boolean }
   | { type: "delta"; text: string }
   | { type: "answer"; answer: KeplarAnswer }
   /** A connected-app tool use started, finished, failed, or is waiting for the owner's approval. Upsert by `use.id`. */

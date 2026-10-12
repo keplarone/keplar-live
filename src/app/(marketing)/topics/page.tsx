@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata() {
   const rows = await publishedRows().catch(() => []);
   // Nothing published yet: a thin index. Keep it out of search until it lists something.
-  return pageMeta("/topics", "AI topics explained: what the terms mean and how to check claims", "Short, dated orientation pages for AI terms people are searching for, built from the Keplar glossary and library. Each says what it is and how to check what you read.", { noindex: rows.length === 0 });
+  return pageMeta("/topics", "AI topics explained: what the terms mean and how to check claims", "Short, dated orientation pages for AI terms people are searching for, built from the Keplar glossary and library. Each says what it is and how to check what you read.");
 }
 
 export default async function Topics() {
