@@ -126,6 +126,24 @@ test("system prompt: plan first, studio_id on every call, organised Luau, approv
   for (const s of ["list_roblox_studios", "numbered plan", "comment header", "Folders", "TweenService", "ParticleEmitter", "reference images", "approval"]) assert.match(STUDIO_SYSTEM, new RegExp(s), s);
 });
 
+test("system prompt: flipbook VFX are built correctly (1024 sheets, stated grid, mode by effect, decal ids resolved, validity checked)", () => {
+  for (const s of ["exactly 1024x1024", "Grid2x2", "Grid4x4", "Grid8x8", "FlipbookSizeX", "OneShot", "FlipbookFramerate", "FlipbookStartRandom", "never guess a grid", "InsertService:LoadAsset", "never parent it", "FlipbookIncompatible", "never ship a broken flipbook"]) assert.ok(STUDIO_SYSTEM.includes(s), s);
+});
+
+test("system prompt: emission and light settings are tuned per effect type, layered, bloomed and kept performant", () => {
+  for (const s of ["LightEmission 1 (additive), LightInfluence 0", "LightEmission 0 and LightInfluence 1", "ZOffset", "Bloom", "Threshold", "EmitCount", "PointLight", "few hundred live particles", "overdraw"]) assert.ok(STUDIO_SYSTEM.includes(s), s);
+});
+
+test("system prompt: high-quality flipbook sheets are listed as image ids with their stated layout, and low-quality sources are skipped", () => {
+  const ids = [...STUDIO_SYSTEM.matchAll(/rbxassetid:\/\/(\d+)/g)].map((m) => m[1]);
+  assert.ok(ids.length >= 10, `${ids.length} sheets`);
+  assert.equal(new Set(ids).size, ids.length, "no duplicates");
+  for (const id of ["13026594575", "12360899465", "18350947061"]) assert.ok(ids.includes(id), id);
+  assert.match(STUDIO_SYSTEM, /transparent smoke 1, 8x8 loop, rbxassetid:\/\/13026594575/);
+  assert.match(STUDIO_SYSTEM, /skip reuploads/);
+  assert.ok(STUDIO_SYSTEM.indexOf("Zonito's particle pack (above)") > STUDIO_SYSTEM.indexOf("asset id 14605502518"), "Zonito's pack stays first");
+});
+
 test("system prompt: VFX and UI textures come from Zonito's particle pack first, else Keplar makes its own, uploading only with approval", () => {
   assert.match(STUDIO_SYSTEM, /Zonito's particle pack/);
   assert.match(STUDIO_SYSTEM, /14605502518/);
