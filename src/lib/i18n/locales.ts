@@ -5,7 +5,7 @@
  * - `lang` is the value for <html lang> and Intl; `hreflang` is what search engines get (ISO 639-1 + region where it exists).
  * - `status`: "stable" locales are fully translated for every localized page: they are indexable and listed in hreflang and
  *   the sitemap. "beta" locales have the core strings (navigation, footer, hero, pricing headings, auth, the app composer) and
- *   fall back to English for the rest: they work and show a Beta badge in the picker, but stay noindex and out of hreflang
+ *   fall back to English for the rest: they work, show a Beta badge in the picker and are indexable, but stay out of hreflang
  *   until their catalogs are complete (tests/i18n-catalogs.test.ts enforces that a stable locale has every key).
  * - `wave`: the rollout batch it shipped in (1 = launch set; 2 = EU official languages; 3 = Indian; 4 = African;
  *   5 = Central and Southeast Asian; 6 = Middle East; 7 = other languages with an established written standard).

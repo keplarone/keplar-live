@@ -10,7 +10,7 @@ import s from "@/components/admin/Admin.module.css";
 import p from "@/components/admin/Profit.module.css";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Profitability", robots: { index: false, follow: false } };
+export const metadata = { title: "Profitability" };
 
 const usd = (n: number | null | undefined) => (n === null || n === undefined ? "—" : `${n < 0 ? "−" : ""}$${Math.abs(n).toFixed(Math.abs(n) < 1 && n !== 0 ? 4 : 2)}`);
 const pctTxt = (n: number | null | undefined) => (n === null || n === undefined ? "—" : `${n.toFixed(1)}%`);

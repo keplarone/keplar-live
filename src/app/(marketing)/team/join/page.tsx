@@ -2,7 +2,7 @@ import { pageMeta } from "@/lib/seo";
 import { JoinTeam } from "@/components/account/JoinTeam";
 import s from "@/components/account/account.module.css";
 
-export const metadata = pageMeta("/team/join", "Join a team", "Accept an invitation to a Keplar team workspace.", { noindex: true });
+export const metadata = pageMeta("/team/join", "Join a team", "Accept an invitation to a Keplar team workspace.");
 
 export default function JoinTeamPage() {
   return (

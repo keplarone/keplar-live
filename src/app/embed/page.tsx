@@ -6,7 +6,7 @@ import { embedWidgets, normalizeOrigin, widgetAllows } from "@/lib/embed/store";
 import { pageMeta } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
-export const metadata = pageMeta("/embed", "Keplar Ask", "Embeddable Ask widget.", { noindex: true });
+export const metadata = pageMeta("/embed", "Keplar Ask", "Embeddable Ask widget.");
 
 type Props = { searchParams: Promise<{ id?: string; theme?: string; accent?: string; parent?: string }> };
 

@@ -128,9 +128,7 @@ export function businessHost(req: NextRequest): NextResponse | null {
   const url = req.nextUrl.clone();
   url.pathname = pathname === "/" ? BUSINESS_PREFIX : `${BUSINESS_PREFIX}${pathname}`;
   url.search = search;
-  const res = NextResponse.rewrite(url);
-  if (pathname !== "/") res.headers.set("x-robots-tag", "noindex");
-  return res;
+  return NextResponse.rewrite(url);
 }
 
 /** keplar.one URLs that belonged to Business before it became its own app: 308 to the same page there. Null for every other path. */

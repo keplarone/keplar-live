@@ -34,7 +34,7 @@ import { ThemeControl } from "@/components/theme/ThemeControl";
 import { LanguageSettings } from "@/components/i18n/LanguageSettings";
 import s from "@/components/account/account.module.css";
 
-export const metadata = pageMeta("/account", "Account", "Your Keplar account.", { noindex: true });
+export const metadata = pageMeta("/account", "Account", "Your Keplar account.");
 export const dynamic = "force-dynamic";
 
 const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—");

@@ -10,7 +10,7 @@ import { comparePages, hub as compareHub } from "@/lib/compare";
 import { localizedSitemapAlternates, localizedSitemapEntries } from "@/lib/i18n/sitemap";
 
 /**
- * Canonical, indexable, 200 public URLs only. /app, /api, auth, checkout and account are excluded (noindex or private);
+ * Canonical, indexable, 200 public URLs only. /app, /api, auth, checkout and account are excluded (private or transactional);
  * The /compare pages were approved on 2026-10-12. lastmod is the real content date (src/lib/content/lastmod.ts).
  * changeFrequency and priority are omitted on purpose: Google ignores them.
  */

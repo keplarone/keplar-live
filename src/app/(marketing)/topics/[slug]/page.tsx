@@ -16,7 +16,7 @@ type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props) {
   const r = await livePage((await params).slug);
-  if (!r?.page) return { robots: { index: false, follow: false } };
+  if (!r?.page) return {};
   const mod = (r.publishedAt ?? r.createdAt).slice(0, 10);
   return pageMeta(`/topics/${r.id}`, r.page.title, r.page.description, { image: `/topics/${r.id}/og`, article: { published: mod, modified: mod, authors: [brand.companyName] } });
 }
