@@ -65,7 +65,10 @@ export function stepTyping(state: TypingState, dtMs: number, text: string, maxFr
   // Finishing: no easing up to speed (the eased start is what made a finished answer crawl for its first second).
   const cps = done ? Math.max(state.cps, want) : state.cps + (want - state.cps) * (1 - Math.exp(-dt / TYPING.smoothingMs));
   const before = Math.floor(state.pos);
-  const pos = Math.min(len, state.pos + (cps * dt) / 1000);
+  // Snap the last hair to the end: with even frames a constant pace can land at 29.9999999 of 30 (floating point), and the hook
+  // ignores moves under 0.01, so the reveal sat one word short of the end for good ("Use a hash map for the").
+  const raw = state.pos + (cps * dt) / 1000;
+  const pos = len - raw < 0.01 ? len : raw;
   let pauseMs = 0;
   const after = Math.floor(pos);
   if (!done && after > before && backlog < TYPING.pauseBelowBacklog && after < len) {

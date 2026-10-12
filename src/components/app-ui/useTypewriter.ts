@@ -84,7 +84,9 @@ export function useTypewriter(target: string, opts: { live: boolean; done: boole
       lastT.current = now;
       motion.current = stepTyping(motion.current, dt, t, frameCap(lastDt.current, dt), streamDone);
       lastDt.current = dt;
-      setPos((cur) => (Math.abs(cur - motion.current.pos) < 0.01 ? cur : motion.current.pos));
+      // Small moves are skipped to save renders, but reaching the end is always recorded (a skipped final move left the reveal
+      // one word short, still "typing", for good).
+      setPos((cur) => (motion.current.pos >= t.length ? t.length : Math.abs(cur - motion.current.pos) < 0.01 ? cur : motion.current.pos));
       raf.current = requestAnimationFrame(tick);
     };
     lastT.current = 0;

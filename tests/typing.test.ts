@@ -48,6 +48,27 @@ test("a finished answer is never held back: the rest appears within a few frames
   assert.equal(stepTyping({ pos: 10, cps: 100, pauseMs: 100 }, 16, long, TYPING.maxFrameMs, true).pauseMs, 0, "no sentence pauses once it has all arrived");
 });
 
+test("the reveal always reaches the end: never parked a hair short of it (the hook skips moves under 0.01)", () => {
+  // Even frames and a constant finishing pace used to land at e.g. 29.9999999 of 30: the hook kept that position (the final move was
+  // under 0.01), so the answer stayed "typing", one word short, for good. Simulate the hook's own update rule, for many lengths and rates.
+  const hookStep = (cur: number, next: number, len: number) => (next >= len ? len : Math.abs(cur - next) < 0.01 ? cur : next);
+  for (const frame of [16, 1000 / 60, 1000 / 120, 1000 / 30, 33.3]) {
+    for (let n = 1; n <= 400; n++) {
+      const text = "w".repeat(n);
+      for (const done of [true, false]) {
+        let st = initialTyping(0);
+        let shown = 0;
+        for (let i = 0; i < 2000 && shown < n; i++) {
+          st = stepTyping(st, frame, text, TYPING.maxFrameMs, done);
+          assert.ok(st.pos === n || n - st.pos >= 0.01, `parked a hair short: ${st.pos} of ${n} (frame ${frame}, done ${done})`);
+          shown = hookStep(shown, st.pos, n);
+        }
+        assert.equal(shown, n, `revealed ${shown} of ${n} (frame ${frame}, done ${done})`);
+      }
+    }
+  }
+});
+
 test("a stalled frame (busy tab) does not teleport the reveal", () => {
   const st = stepTyping(initialTyping(0), 5000, "x".repeat(2000));
   assert.ok(st.pos < 200, "one hiccup reveals at most a tenth of a long backlog");
