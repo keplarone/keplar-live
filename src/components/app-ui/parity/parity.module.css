@@ -13,9 +13,16 @@
 .toggle:focus-visible, .select:focus-visible, .link:focus-visible, .btn:focus-visible, .area:focus-visible, .input:focus-visible, .tab:focus-visible { outline: var(--b-focus) solid var(--c-focus); outline-offset: 1px; }
 
 .tools { display: flex; flex-direction: column; gap: var(--s-2); margin: calc(var(--s-2) * -1) 0 var(--s-4); }
+/* Under a finished answer, close to it (the thread's 32px gap less 24px), so "Open as draft" reads as part of that answer. */
+.tools.answerTools { margin: calc(var(--s-6) * -1) 0 var(--s-2); }
 .row { display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; }
 .btn { min-height: 32px; padding: 0 var(--s-3); border-radius: 7px; font: inherit; font-size: var(--t-small); font-weight: var(--w-medium); background: var(--c-canvas); color: var(--c-ink); border: 0; box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong); cursor: pointer; }
 .btn[data-primary] { background: var(--c-ink); color: var(--c-canvas); box-shadow: none; }
+/* Secondary answer actions ("Open as draft"): a quiet text action under the answer, not another floating pill. */
+.toolLink { display: inline-flex; align-items: center; min-height: 32px; padding: 0; border: 0; background: none; font: inherit; font-size: var(--t-small); color: var(--c-ink-3); cursor: pointer; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: color var(--d-fast) var(--e-standard), text-decoration-color var(--d-fast) var(--e-standard); }
+.toolLink:hover { color: var(--c-ink); text-decoration-color: currentColor; }
+.toolLink:focus-visible { outline: var(--b-focus) solid var(--c-focus); outline-offset: 1px; border-radius: 4px; }
+@media (pointer: coarse) { .toolLink { min-height: 44px; } }
 .btn:disabled { opacity: 0.5; cursor: default; }
 .trail { padding: var(--s-3) var(--s-4); border-radius: var(--r-md); background: var(--c-surface-1); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border); font-size: var(--t-small); color: var(--c-ink-2); }
 .trail summary { cursor: pointer; color: var(--c-ink); font-weight: var(--w-medium); }

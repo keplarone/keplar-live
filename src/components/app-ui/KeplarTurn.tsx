@@ -603,7 +603,7 @@ function VerificationBody({ v }: { v: KeplarAnswer["verification"] }) {
 /** Casual chat, fixed replies, instant answers, jokes and support: the same card as every answer (header, body, footer), without the sections that have nothing to say. */
 function PlainReply({ answer: a, onRetry, onSignal, isLast, onAsk }: { answer: KeplarAnswer; onRetry: () => void; onSignal?: (kind: "up" | "down" | "copy") => void; isLast: boolean; onAsk?: (text: string) => void }) {
   return (
-    <article className={`${s.answer} ${s.plainReply}`} data-plain="">
+    <article className={`${s.answer} ${s.plainReply}`} data-plain="" data-last={isLast || undefined}>
       <header className={s.answerHead}><AnswerTitle /></header>
       <Markdown source={a.markdown} />
       {a.clarify ? <ClarifyChips clarify={a.clarify} onAsk={onAsk} enabled={isLast} /> : null}
@@ -670,9 +670,25 @@ function SplitView({ a, onMore }: { a: KeplarAnswer; onMore: () => void }) {
 const slotLabel = { panel: "Panel", verifier: "Verifier", judge: "Judge" } as const;
 const statusLabel = { responded: "Responded", failed: "No response", refused: "Declined", "not-needed": "Not needed" } as const;
 
+/**
+ * The one-line summary on the "How Keplar answered" row: who answered and what is inside, in plain words
+ * ("3 of 3 models · agreed · 4 sources"), so the row says something useful before anyone opens it.
+ */
+export function howMeta(a: KeplarAnswer): string {
+  const c = a.consensus;
+  const who = c.level === "single" ? a.models.find((m) => m.status === "responded")?.name ?? "1 model" : `${c.responded} of ${c.consulted} models`;
+  const agreement = c.level === "consensus" ? "agreed" : c.level === "partial" ? "mostly agreed" : c.level === "none" ? "no majority" : null;
+  const sources = a.sources.length ? `${a.sources.length} source${a.sources.length === 1 ? "" : "s"}` : null;
+  const split = a.disagreements.length ? `${a.disagreements.length} disagreement${a.disagreements.length === 1 ? "" : "s"}` : null;
+  return [who, agreement, split, sources].filter(Boolean).join(" · ");
+}
+
 function Answer({ answer: a, onRetry, onSignal, isLast, continued }: { answer: KeplarAnswer; onRetry: () => void; onSignal?: (kind: "up" | "down" | "copy") => void; isLast: boolean; continued?: boolean }) {
   const uid = useId();
   const [open, setOpen] = useState<string | null>(null);
+  // The detail rows (consensus, models, sources, disagreements, verification, reasoning) sit behind one row: the answer leads,
+  // the working is one click away. Opening a section from elsewhere (the comparison's "Open the full comparison") opens this too.
+  const [howOpen, setHowOpen] = useState(false);
   const c = a.consensus;
   const checkedOnWeb = a.sourcing?.state === "checked" || a.sourcing?.state === "no_sources";
   const toggle = (id: string) => {
@@ -788,7 +804,7 @@ function Answer({ answer: a, onRetry, onSignal, isLast, continued }: { answer: K
 
 
   return (
-    <article className={s.answer} aria-labelledby={`${uid}-title`} data-level={c.level} data-continued={continued || undefined}>
+    <article className={s.answer} aria-labelledby={`${uid}-title`} data-level={c.level} data-continued={continued || undefined} data-last={isLast || undefined}>
       <header className={s.answerHead}>
         <h3 id={`${uid}-title`} className={s.answerTitle}>
           <KeplarSymbol size={15} />
@@ -813,7 +829,7 @@ function Answer({ answer: a, onRetry, onSignal, isLast, continued }: { answer: K
       ) : null}
 
       {hasSplit ? (
-        <SplitView a={a} onMore={() => { setOpen("disagreements"); growthTrack("answer_action", { action: "open_disagreements" }); }} />
+        <SplitView a={a} onMore={() => { setHowOpen(true); setOpen("disagreements"); growthTrack("answer_action", { action: "open_disagreements" }); }} />
       ) : c.level === "consensus" && c.consulted > 1 ? (
         <p className={s.agreeNote}>The models that responded took the same position. That is a good sign, not proof: they can share the same mistake{checkedOnWeb ? ", so the key claims were searched on the web (below)" : ", and this answer was not looked up on the web"}.</p>
       ) : null}
@@ -821,7 +837,20 @@ function Answer({ answer: a, onRetry, onSignal, isLast, continued }: { answer: K
       {a.research ? <ResearchSources research={a.research} /> : null}
       {a.sourcing ? <SourceChecks sourcing={a.sourcing} /> : null}
 
-      <ul className={s.sections}>
+      <div className={s.how} data-open={howOpen || undefined}>
+        <button
+          type="button"
+          className={s.howBtn}
+          aria-expanded={howOpen}
+          aria-controls={`${uid}-how`}
+          onClick={() => { const next = !howOpen; setHowOpen(next); if (next) growthTrack("answer_action", { action: "open_how" }); }}
+          data-section="how"
+        >
+          <span className={s.sectionTitle}>How Keplar answered</span>
+          <span className={s.sectionMeta}>{howMeta(a)}</span>
+          <span className={s.chev} data-open={howOpen || undefined} aria-hidden="true"><IconChevron size={12} /></span>
+        </button>
+      <ul id={`${uid}-how`} className={s.sections} hidden={!howOpen}>
         {shownSections.map((sec) => {
           const isOpen = open === sec.id;
           return (
@@ -847,6 +876,7 @@ function Answer({ answer: a, onRetry, onSignal, isLast, continued }: { answer: K
           );
         })}
       </ul>
+      </div>
 
       <AnswerFooter answer={a} onRetry={onRetry} onSignal={onSignal} isLast={isLast} meta={<span className={s.compute}>{brand.usage} · {computeLevelLabel[a.compute.level]}</span>} />
     </article>

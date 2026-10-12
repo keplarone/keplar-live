@@ -15,7 +15,7 @@ export const GROWTH_EVENTS = ["ask_started", "ask_done", "ask_error", "answer_ac
 export type GrowthEvent = (typeof GROWTH_EVENTS)[number];
 
 /** What a person did with a finished answer. Used to define activation. */
-export const ANSWER_ACTIONS = ["open_consensus", "open_models", "open_disagreements", "open_verification", "open_reasoning", "copy", "retry", "share"] as const;
+export const ANSWER_ACTIONS = ["open_how", "open_consensus", "open_models", "open_disagreements", "open_verification", "open_reasoning", "copy", "retry", "share"] as const;
 export type AnswerAction = (typeof ANSWER_ACTIONS)[number];
 
 export type GrowthRow = {

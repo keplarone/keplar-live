@@ -22,7 +22,7 @@
 .chip:disabled { opacity: 0.5; cursor: default; }
 
 .usingMemory {
-  margin: var(--s-2) 0 0;
+  margin: calc(-1 * var(--s-3)) 0 0; /* 4px under the line above it: part of the group under the answer */
   font-size: var(--t-small);
   color: var(--c-ink-3);
 }

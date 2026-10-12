@@ -307,11 +307,40 @@
   background: var(--c-dissent);
 }
 
+/* "How Keplar answered": one quiet row that holds the detail sections (consensus, models, sources, disagreements, verification,
+   reasoning). Same grid as a section row, so its summary truncates inside its column at any width. */
+.how {
+  border-top: var(--b-hairline) solid var(--c-border);
+  border-bottom: var(--b-hairline) solid var(--c-border);
+}
+.howBtn {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 16px;
+  align-items: center;
+  gap: var(--s-4);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--s-2) var(--s-1);
+  text-align: left;
+  font-size: var(--t-small);
+  color: var(--c-ink-2);
+  border-radius: var(--r-xs);
+  transition: background-color var(--d-fast) var(--e-standard), color var(--d-fast) var(--e-standard);
+}
+.howBtn:hover { background: rgb(var(--rgb-ink) / 0.025); color: var(--c-ink); }
+.howBtn .chev { justify-self: end; }
+.how[data-open] > .howBtn { color: var(--c-ink); }
+.how > .sections { margin: 0 0 var(--s-2) var(--s-3); border-left: var(--b-hairline) solid var(--c-border); padding-left: var(--s-3); }
+.how > .sections[hidden] { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .how > .sections:not([hidden]) { animation: m-rise-in var(--m-dur-2) var(--m-ease-out) both; --m-rise: var(--m-dist-1); }
+}
+
 .sections {
   display: flex;
   flex-direction: column;
-  border-top: var(--b-hairline) solid var(--c-border);
 }
+.how > .sections > .section:last-child { border-bottom: 0; }
 
 .section {
   border-bottom: var(--b-hairline) solid var(--c-border);
@@ -539,6 +568,14 @@
 .iconBtn:hover {
   color: var(--c-ink);
   background: rgb(var(--rgb-ink) / 0.05);
+}
+
+/* Long threads: every answer's actions stay one hover (or Tab) away, but only the latest answer shows its row all the time, so the
+   thread is not striped with the same seven icons. Touch screens have no hover: they always show it. */
+@media (hover: hover) and (pointer: fine) {
+  .answer:not([data-last]) .footActions { opacity: 0; transition: opacity var(--d-fast) var(--e-standard); }
+  .answer:not([data-last]):is(:hover, :focus-within) .footActions,
+  .answer:not([data-last]) .footActions:has([aria-pressed="true"], [aria-expanded="true"]) { opacity: 1; }
 }
 
 /* Touch screens: answer-card actions (copy, listen, share, report, ask again) are 44px targets. */

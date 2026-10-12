@@ -19,7 +19,7 @@ export function AnswerTools({ message: m, user }: { message: KeplarMessage; user
   const fromDraft = user ? draftIdIn(user.text) : null;
   const title = (user?.text ?? "Draft").replace(/\s+/g, " ").slice(0, 60);
   return (
-    <div className={s.tools} data-answer-tools="">
+    <div className={`${s.tools} ${s.answerTools}`} data-answer-tools="">
       {reason ? (
         <details className={s.trail} open data-reason-trail="">
           <summary>Reason · how this answer was checked ({steps.length} step{steps.length === 1 ? "" : "s"})</summary>
@@ -36,7 +36,7 @@ export function AnswerTools({ message: m, user }: { message: KeplarMessage; user
         {fromDraft ? (
           <button type="button" className={s.btn} data-primary="" onClick={() => openDraft({ kind: "apply", draftId: fromDraft, markdown: a.markdown })}>Apply to draft</button>
         ) : null}
-        <button type="button" className={s.btn} onClick={() => openDraft({ kind: "open", markdown: a.markdown, title })} data-open-draft="">Open as draft</button>
+        <button type="button" className={s.toolLink} onClick={() => openDraft({ kind: "open", markdown: a.markdown, title })} data-open-draft="">Open as draft</button>
         {user && !fromDraft ? <XPostsTool question={user.text} /> : null}
       </div>
     </div>

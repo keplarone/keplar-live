@@ -48,7 +48,9 @@
 .stepMeta { font-size: var(--t-label); color: var(--c-ink-3); }
 .meta { margin: 0; font-size: var(--t-label); color: var(--c-ink-3); font-variant-numeric: tabular-nums; }
 
-.summary { display: flex; flex-direction: column; gap: var(--s-2); margin: var(--s-2) 0 0; }
+/* Sits right under the answer card's footer (the turn's 16px gap less 8px): one group with the memory note and the draft action,
+   not three loose lines. */
+.summary { display: flex; flex-direction: column; gap: var(--s-2); margin: calc(-1 * var(--s-2)) 0 0; }
 .row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); }
 .conf { margin: 0; font-size: var(--t-small); color: var(--c-ink-2); }
 .conf[data-level="low"] { color: var(--c-ink); }
