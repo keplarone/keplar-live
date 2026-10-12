@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DesktopTitleBar } from "@/components/desktop/DesktopTitleBar";
 import { BUSINESS_ICONS, BUSINESS_MANIFEST_PATH } from "@/lib/business-site";
+import "@/components/business-site/tokens.css";
 
 export const metadata: Metadata = {
   title: { default: "Keplar Business", template: "%s · Keplar Business" },

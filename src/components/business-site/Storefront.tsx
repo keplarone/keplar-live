@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BUSINESS_TIERS, listPriceFor, priceFor, usd, type BusinessTier } from "@/lib/business/tiers";
 import { companySizes, estimatedUsers } from "@/lib/inquire/schema";
-import { CommandDemo } from "./CommandDemo";
+import { BuildDemo } from "./BuildDemo";
 import { SignOutButton } from "./SignOutButton";
 import { BusinessMark } from "./BusinessMark";
 import s from "./business-site.module.css";
@@ -22,42 +22,42 @@ type Status =
 const ORDER: BusinessTier[] = ["starter", "growth", "scale", "enterprise"];
 const fmt = (n: number) => n.toLocaleString("en-US");
 const accountUrl = (tier?: string) => `/account${tier ? `?tier=${tier}` : ""}`;
+const short = (tier: BusinessTier) => BUSINESS_TIERS[tier].name.replace("Keplar Business ", "").replace("Keplar ", "");
 
-const MODULES = [
-  { title: "Dashboard", body: "Revenue, agents, approvals, spend and team activity from the data you connect.", glyph: "▦" },
-  { title: "Projects", body: "Workspaces with conversations, files, tasks, agents, research and creations together.", glyph: "▤" },
-  { title: "Deep Research", body: "Multi-model research with sources, competitor and market analysis, exportable reports.", glyph: "◎" },
-  { title: "Reason", body: "Upload documents and work through decisions with assumptions, calculations and risks shown.", glyph: "△" },
-  { title: "Images and Videos", body: "Generate, edit and organize brand assets, then reuse them in sites and campaigns.", glyph: "◐" },
-  { title: "Websites and apps", body: "Describe it, get a working project you can edit, version and deploy to your domain.", glyph: "⌘" },
-  { title: "AI Design Canvas", body: "Design, code and AI modes on the same project, with previews and approved changes.", glyph: "◇" },
-  { title: "Make an Agent", body: "Agents that run your workflows on a schedule, within budgets, asking before they act.", glyph: "◉" },
+/** What the workspace does. Each line describes a module that exists in it today. */
+const CAPABILITIES = [
+  { title: "Coding agents", body: "Agents read the project, write the change, run it and open a live preview. Every edit arrives as a diff you can review." },
+  { title: "Several models on every task", body: "Work is routed to the models suited to it, and research and reasoning are cross-checked across more than one." },
+  { title: "Websites and apps", body: "Describe what you need and get a working project you can edit, version and deploy to your own domain." },
+  { title: "Design canvas", body: "Design, code and AI modes on the same project, with previews and changes you approve." },
+  { title: "Deep Research and Reason", body: "Research with every claim cited, and decisions worked through with the assumptions and math shown." },
+  { title: "Agents that keep working", body: "Workflows that run on schedules within a budget, and ask before anything spends money or reaches a customer." },
+  { title: "Images and video", body: "Generate and edit brand assets, then use them in the sites and campaigns you build." },
 ];
 
-/** The capability strip under the hero: what the workspace does, not numbers about it. */
-const TICKER = ["Deep Research · every claim cited", "Agents · schedules and budgets", "Approvals before anything goes out", "Create · sites and apps on your domain", "Reason · decisions with the math shown", "Audit log · every agent action recorded"];
-
-/** How work moves through the workspace: from your data to an action you approved. */
-const LOOP = [
-  { n: "01", title: "Signal", body: "Your payments, site, inbox and connected apps feed the dashboard and the agents." },
-  { n: "02", title: "Agents", body: "They run on schedules with a budget each, using several AI models on every task." },
-  { n: "03", title: "Approval", body: "Anything that spends money or reaches customers waits for a person to approve it." },
-  { n: "04", title: "Action", body: "Sent, published or deployed, and written to the audit log with what it cost." },
-];
-
-const GUARDRAILS = [
-  { title: "Budgets per agent", body: "Each agent has its own spending limit; it stops when the limit is reached." },
-  { title: "Approval before it acts", body: "Payments, emails to customers and deploys wait in Approvals." },
-  { title: "One switch to pause", body: "Pause every agent at once from the workspace." },
-  { title: "Full audit trail", body: "Who or what did each thing, when, and at what cost." },
+/** The guarantees behind agent work: each is enforced in the workspace, not a promise in copy. */
+const CONTROLS = [
+  { title: "Approval before it acts", body: "Payments, messages to customers and deploys wait for a person in Approvals." },
+  { title: "A budget per agent", body: "Each agent has its own spending limit and stops when it reaches it." },
+  { title: "One switch to pause", body: "Pause every agent in the workspace at once." },
+  { title: "A complete audit log", body: "Who or what did each thing, when, and what it cost." },
 ];
 
 const GUARD_STEPS = [
-  { n: "01", title: "Explore", body: "Agents walk your app's signup, checkout, billing, cancellation and account recovery in real browsers." },
-  { n: "02", title: "Screen", body: "Every report needs evidence: steps, screenshots and network log. Duplicates and guesses are dropped." },
-  { n: "03", title: "Reproduce", body: "A separate agent replays each report in a clean session. Only failures it can repeat go forward." },
-  { n: "04", title: "Patch", body: "For each confirmed bug, a proposed fix plus a regression test that fails before and passes after." },
-  { n: "05", title: "Review", body: "A different reviewer checks every patch. Nothing merges or deploys without your approval." },
+  { title: "Explore", body: "Agents walk signup, checkout, billing, cancellation and recovery in real browsers." },
+  { title: "Screen", body: "Every report needs steps, screenshots and a network log. Guesses are dropped." },
+  { title: "Reproduce", body: "A separate agent replays each report in a clean session." },
+  { title: "Patch", body: "A proposed fix with a regression test that fails before and passes after." },
+  { title: "Review", body: "A different reviewer checks it. Nothing merges without your approval." },
+];
+
+const TRUST = [
+  { title: "Your approval gates every external action", body: "Agents prepare; people decide. Approvals are on by default." },
+  { title: "Paid model requests stay out of training", body: "Requests go only to model endpoints that say they do not train on prompts." },
+  { title: "Everything is recorded", body: "The audit log keeps each agent action with its time, actor and cost." },
+  { title: "Your data leaves when you do", body: "Export your account's data at any time from Settings." },
+  { title: "Payments handled by Whop", body: "Checkout runs in Whop's own form. Keplar never sees your card." },
+  { title: "Testing only what you own", body: "Revenue Guard runs only against apps your company has verified." },
 ];
 
 function osOf(ua: string): "windows" | "macos" | "linux" {
@@ -83,24 +83,22 @@ function DownloadPanel({ download }: { download: NonNullable<Extract<Status, { s
   );
 }
 
-/** The status strip at the very top: the product's name, its stage, the platforms and the visitor's own clock. */
-function SystemBar() {
-  const [clock, setClock] = useState("");
+/**
+ * Sections ease up as they enter the viewport. Content is visible by default: only blocks below the fold are hidden, and only
+ * once this runs, so a page without JavaScript (or with reduced motion) shows everything at once.
+ */
+function useReveal(root: React.RefObject<HTMLElement | null>) {
   useEffect(() => {
-    const show = () => setClock(new Date().toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit" }));
-    show();
-    const t = window.setInterval(show, 15_000);
-    return () => window.clearInterval(t);
-  }, []);
-  return (
-    <div className={s.sysbar}>
-      <span className={s.sysItem}><span className={s.live} aria-hidden="true" />Keplar Business</span>
-      <span className={s.sysItem} data-hide-sm="">Early access</span>
-      <span className={s.sysItem} data-hide-sm="">Windows · macOS · Linux</span>
-      <span className={s.grow} />
-      <span className={s.sysItem} aria-hidden="true">{clock ? `Local ${clock}` : ""}</span>
-    </div>
-  );
+    const el = root.current;
+    if (!el || typeof IntersectionObserver === "undefined" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const items = [...el.querySelectorAll<HTMLElement>("[data-reveal]")].filter((x) => x.getBoundingClientRect().top > window.innerHeight * 0.92);
+    for (const x of items) x.dataset.reveal = "out";
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) if (e.isIntersecting) { (e.target as HTMLElement).dataset.reveal = "in"; io.unobserve(e.target); }
+    }, { rootMargin: "0px 0px -8% 0px" });
+    for (const x of items) io.observe(x);
+    return () => io.disconnect();
+  }, [root]);
 }
 
 export function Storefront() {
@@ -108,6 +106,10 @@ export function Storefront() {
   const [purchased] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("purchased") === "1");
   // A sign-in handoff that failed (src/lib/business/handoff.ts) lands here with ?signin=<reason>.
   const [signinFailed] = useState(() => typeof window !== "undefined" && Boolean(new URLSearchParams(window.location.search).get("signin")));
+  const [scrolled, setScrolled] = useState(false);
+  const [menu, setMenu] = useState(false);
+  const root = useRef<HTMLDivElement | null>(null);
+  useReveal(root);
 
   useEffect(() => {
     let live = true;
@@ -121,204 +123,279 @@ export function Storefront() {
     return () => { live = false; };
   }, []);
 
+  useEffect(() => {
+    const on = () => setScrolled(window.scrollY > 8);
+    on();
+    window.addEventListener("scroll", on, { passive: true });
+    return () => window.removeEventListener("scroll", on);
+  }, []);
+
+  useEffect(() => {
+    if (!menu) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMenu(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menu]);
+
   const price = (tier: BusinessTier) => {
     if (tier === "enterprise") return null;
     const was = listPriceFor(tier);
-    return { now: usd(priceFor(tier)), was: was === null ? null : usd(was), note: "per month" };
+    return { now: usd(priceFor(tier)), was: was === null ? null : usd(was) };
   };
 
-  const hero = useMemo(() => {
-    if (status.state === "loading") return null;
-    if (status.state === "out") return { href: accountUrl(), label: "Create a business account", sub: "Sign in with your Keplar account, then add your company." };
-    if (status.active && status.download) return null;
-    if (status.active) return { href: "#download", label: "Download Keplar Business", sub: "" };
-    if (!status.account) return { href: accountUrl(), label: "Create your business account", sub: `Signed in as ${status.email ?? "you"}.` };
-    return { href: "#pricing", label: "Choose a plan", sub: `${status.account.company} is set up. Pick a plan to download the desktop app.` };
+  /** Where "Start Building" goes for this visitor: the workspace, setup, a plan, or the download. */
+  const start = useMemo(() => {
+    if (status.state === "loading" || status.state === "out") return { href: accountUrl(), sub: "" };
+    if (status.active) return { href: "/work", sub: "" };
+    if (!status.account) return { href: accountUrl(), sub: `Signed in as ${status.email ?? "you"}.` };
+    return { href: "#pricing", sub: `${status.account.company} is set up. Choose a plan to start.` };
   }, [status]);
 
+  const links = [
+    { href: "#product", label: "Product" },
+    { href: "#control", label: "Control" },
+    { href: "#pricing", label: "Pricing" },
+    { href: "#security", label: "Security" },
+    { href: "#contact", label: "Contact sales" },
+  ];
+
   return (
-    <div className={s.frame}>
-      <SystemBar />
-      <div className={s.page}>
-        <header className={s.nav}>
+    <div className={s.frame} ref={root}>
+      <header className={s.nav} data-scrolled={scrolled || undefined}>
+        <div className={s.navInner}>
           <Link href="/" className={s.brand} aria-label="Keplar Business home">
-            <BusinessMark size={26} />
+            <BusinessMark size={24} />
             <span className={s.wordmark}>Keplar <span>Business</span></span>
           </Link>
           <nav className={s.navLinks} aria-label="Sections">
-            <a href="#product">Product</a>
-            <a href="#control">How it runs</a>
-            <a href="#pricing">Pricing</a>
-            <a href="#revenue-guard">Revenue Guard</a>
-            <a href="#contact">Contact sales</a>
+            {links.map((l) => <a key={l.href} href={l.href}>{l.label}</a>)}
           </nav>
-          {status.state === "out" ? <a href={`/signin?next=${encodeURIComponent("/work")}`} className={s.btnGhostSm}>Sign in</a>
-            : status.state === "in" ? (
+          <div className={s.navEnd}>
+            {status.state === "out" ? (
+              <>
+                {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- /signin is a route handler (the sign-in handoff from keplar.one): it needs a full page load */}
+                <a href={`/signin?next=${encodeURIComponent("/work")}`} className={s.navLink}>Sign in</a>
+                <a href={accountUrl()} className={s.btnPrimarySm}>Start Building</a>
+              </>
+            ) : status.state === "in" ? (
               <span className={s.navAccount}>
-                {status.active ? <Link href="/work" className={s.btnGhostSm}>Open workspace</Link> : <span className={s.who} title={status.email ?? undefined}>{status.account?.company ?? status.email}</span>}
-                <SignOutButton email={status.email} />
+                {status.active ? <Link href="/work" className={s.btnPrimarySm}>Open workspace</Link> : <span className={s.who} title={status.email ?? undefined}>{status.account?.company ?? status.email}</span>}
+                <span className={s.navSignOut}><SignOutButton email={status.email} /></span>
               </span>
-            ) : <span />}
-        </header>
+            ) : <span className={s.navSkeleton} aria-hidden="true" />}
+            <button type="button" className={s.menuBtn} aria-expanded={menu} aria-controls="business-menu" aria-label={menu ? "Close menu" : "Open menu"} onClick={() => setMenu((x) => !x)}>
+              <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d={menu ? "M4 4l10 10M14 4L4 14" : "M3 6h12M3 12h12"} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+            </button>
+          </div>
+        </div>
+        {menu ? (
+          <nav id="business-menu" className={s.sheet} aria-label="Sections">
+            {links.map((l) => <a key={l.href} href={l.href} onClick={() => setMenu(false)}>{l.label}</a>)}
+            {status.state === "out" ? (
+              // eslint-disable-next-line @next/next/no-html-link-for-pages -- /signin is a route handler: it needs a full page load
+              <a href={`/signin?next=${encodeURIComponent("/work")}`}>Sign in</a>
+            ) : status.state === "in" ? <div className={s.sheetAccount}><span>{status.email}</span><SignOutButton email={status.email} /></div> : null}
+          </nav>
+        ) : null}
+      </header>
 
-        <section className={s.hero}>
-          <div className={s.heroCopy}>
-            <span className={s.overline}>{"The AI operating system for your business"}</span>
-            <h1 className={s.h1}>Run the whole company <span className={s.glow}>from one command center.</span></h1>
-            <p className={s.lede}>Research, design, build, automate and deploy from one workspace. Several AI models work on every task, your agents run on schedules and budgets, and nothing that spends money or ships to customers happens without approval.</p>
-            {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- /signin is a route handler (the sign-in handoff from keplar.one): it needs a full page load */}
-            {signinFailed && status.state === "out" ? <p className={s.notice} role="status">That sign-in didn&apos;t finish (the link expired or was opened in a different browser). <a href="/signin?next=%2Fwork" className={s.textLink}>Sign in again</a></p> : null}
-            {purchased && !(status.state === "in" && status.active) ? <p className={s.notice} role="status">Thanks for your purchase. Your plan activates as soon as the payment confirms, usually within a minute. Refresh this page to see your download.</p> : null}
-            {status.state === "in" && status.active ? (
-              <div id="download" className={s.downloadBox}>
-                <p className={s.downloadTitle}><span className={s.live} aria-hidden="true" />{status.plan?.name ?? "Keplar Business"} is active{status.account ? ` for ${status.account.company}` : ""}.</p>
-                <div className={s.heroActions}><Link href="/work" className={s.btnPrimary}>Open workspace</Link></div>
-                {status.download ? <DownloadPanel download={status.download} /> : <p className={s.muted}>The download is loading. If it does not appear, try again in a minute.</p>}
+      <section className={s.hero} aria-labelledby="hero-h">
+        <a href="#download-app" className={s.chip}><span className={s.chipTag}>Desktop app</span>Windows, macOS and Linux<span aria-hidden="true">→</span></a>
+        <h1 id="hero-h" className={s.h1}>Build anything.{" "}<span className={s.h1Dim}>Let intelligence handle the complexity.</span></h1>
+        <p className={s.lede}>Coding agents that plan, write, test and preview real software across several AI models, with research, design and automation in the same workspace. You review the result before anything ships.</p>
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- /signin is a route handler (the sign-in handoff from keplar.one): it needs a full page load */}
+        {signinFailed && status.state === "out" ? <p className={s.notice} role="status">That sign-in didn&apos;t finish (the link expired or was opened in a different browser). <a href="/signin?next=%2Fwork" className={s.textLink}>Sign in again</a></p> : null}
+        {purchased && !(status.state === "in" && status.active) ? <p className={s.notice} role="status">Thanks for your purchase. Your plan activates as soon as the payment confirms, usually within a minute. Refresh this page to see your download.</p> : null}
+        <div className={s.heroActions}>
+          {status.state === "loading" ? <span className={s.skeleton} aria-hidden="true" /> : <a href={start.href} className={s.btnPrimary}>Start Building<Arrow /></a>}
+          <a href="#product" className={s.btnGhost}>Explore Keplar Business</a>
+        </div>
+        {start.sub ? <p className={s.heroSub}>{start.sub}</p> : null}
+      </section>
+
+      <div className={s.stage} data-reveal="">
+        <BuildDemo />
+      </div>
+
+      {status.state === "in" && status.active ? (
+        <section id="download" className={s.band} aria-labelledby="download-h">
+          <div className={s.container}>
+            <div className={s.activeBox}>
+              <div>
+                <h2 id="download-h" className={s.h4}>{status.plan?.name ?? "Keplar Business"} is active{status.account ? ` for ${status.account.company}` : ""}.</h2>
                 <p className={s.muted}>Sign in to the desktop app with {status.email ?? "the same account"}.</p>
               </div>
-            ) : hero ? (
-              <div className={s.heroActions}>
-                <a href={hero.href} className={s.btnPrimary}>{hero.label} <span aria-hidden="true">→</span></a>
-                <a href="#contact" className={s.btnGhost}>Talk to sales</a>
-                {hero.sub ? <p className={s.muted}>{hero.sub}</p> : null}
-              </div>
-            ) : <div className={s.heroActions} aria-hidden="true"><span className={s.skeleton} /></div>}
-            <dl className={s.heroFacts}>
-              <div><dt>Plans</dt><dd>Monthly, from {usd(priceFor("starter"))}</dd></div>
-              <div><dt>Desktop app</dt><dd>Windows, macOS, Linux</dd></div>
-              <div><dt>Approvals</dt><dd>On by default</dd></div>
-            </dl>
-          </div>
-          <CommandDemo />
-        </section>
-      </div>
-
-      <div className={s.ticker}>
-        <ul className={s.tickerTrack}>
-          {TICKER.map((t) => <li key={t}>{t}</li>)}
-        </ul>
-      </div>
-
-      <div className={s.page}>
-        <section id="product" className={s.section} aria-labelledby="product-h">
-          <div className={s.sectionHead}>
-            <div>
-              <span className={s.overline}>{"System modules"}</span>
-              <h2 id="product-h" className={s.h2}>Everything your team does with AI, <span className={s.dim}>in one place.</span></h2>
+              {status.download ? <DownloadPanel download={status.download} /> : <p className={s.muted}>The download is loading. If it does not appear, try again in a minute.</p>}
             </div>
-            <span className={s.badge}><span className={s.live} aria-hidden="true" />{MODULES.length} modules in every plan</span>
           </div>
-          <ul className={s.modules}>
-            {MODULES.map((m, i) => (
-              <li key={m.title} className={s.module}>
-                <div className={s.moduleTop}><span className={s.moduleIndex}>{String(i + 1).padStart(2, "0")}</span><span className={s.moduleGlyph} aria-hidden="true">{m.glyph}</span></div>
-                <h3>{m.title}</h3>
-                <p>{m.body}</p>
+        </section>
+      ) : null}
+
+      <section id="product" className={s.section} aria-labelledby="product-h">
+        <div className={s.split}>
+          <div className={s.splitHead} data-reveal="">
+            <p className={s.overline}>Product</p>
+            <h2 id="product-h" className={s.h2}>One workspace, from idea to shipped.</h2>
+            <p className={s.body}>Describe the outcome. Agents do the work in the open, and every step leaves something you can read, run or reject.</p>
+          </div>
+          <ol className={s.capabilities}>
+            {CAPABILITIES.map((c, i) => (
+              <li key={c.title} data-reveal="">
+                <span className={s.index}>{String(i + 1).padStart(2, "0")}</span>
+                <div><h3 className={s.h5}>{c.title}</h3><p>{c.body}</p></div>
               </li>
             ))}
-          </ul>
-        </section>
-
-        <section id="control" className={s.section} aria-labelledby="control-h">
-          <div className={s.sectionHead}>
-            <div>
-              <span className={s.overline}>{"The control loop"}</span>
-              <h2 id="control-h" className={s.h2}>Agents do the work. <span className={s.dim}>You stay in command.</span></h2>
-            </div>
-          </div>
-          <ol className={s.loop}>
-            {LOOP.map((x) => <li key={x.n} className={s.loopNode}><span className={s.stepN}>{x.n}</span><h3>{x.title}</h3><p>{x.body}</p></li>)}
           </ol>
-          <ul className={s.guardrails}>
-            {GUARDRAILS.map((g) => <li key={g.title}><span className={s.guardMark} aria-hidden="true">✓</span><div><h3>{g.title}</h3><p>{g.body}</p></div></li>)}
-          </ul>
-        </section>
+        </div>
+      </section>
 
-        <section id="pricing" className={s.section} aria-labelledby="pricing-h">
-          <div className={s.sectionHead}>
-            <div><span className={s.overline}>{"Plans for your next stage"}</span><h2 id="pricing-h" className={s.h2}>One workspace. Room to grow.</h2></div><a href="#plan-comparison" className={s.textLink}>Compare every limit <span aria-hidden="true">↓</span></a>
+      <section id="control" className={s.section} aria-labelledby="control-h">
+        <div className={s.container}>
+          <div className={s.head} data-reveal="">
+            <p className={s.overline}>Control</p>
+            <h2 id="control-h" className={s.h2}>Agents do the work.<br /><span className={s.dim}>You decide what ships.</span></h2>
           </div>
-          <p className={s.muted}>Every plan includes every Business module. Higher plans add seats, agents, usage and governance. Usage limits are shown in full and enforced in your account.</p>
-          <div className={s.plans}>
+          <ul className={s.columns} data-reveal="">
+            {CONTROLS.map((g) => <li key={g.title}><h3 className={s.h5}>{g.title}</h3><p>{g.body}</p></li>)}
+          </ul>
+
+          <div id="revenue-guard" className={s.guard} data-reveal="">
+            <div className={s.guardHead}>
+              <div>
+                <p className={s.overline}>Revenue Guard · Enterprise · Early access</p>
+                <h3 className={s.h3}>A swarm that tests where money changes hands.</h3>
+              </div>
+              <p className={s.body}>For example: a customer cancels, reopens an old checkout tab and is charged again. Revenue Guard finds it, proves it, and proposes the fix with a test. Results depend on your product; we report what was found and fixed, never a promised amount.</p>
+            </div>
+            <ol className={s.guardSteps}>
+              {GUARD_STEPS.map((x, i) => <li key={x.title}><span className={s.index}>{String(i + 1).padStart(2, "0")}</span><h4 className={s.h6}>{x.title}</h4><p>{x.body}</p></li>)}
+            </ol>
+            <a href="#contact" className={s.textLink}>Request early access <Arrow /></a>
+          </div>
+        </div>
+      </section>
+
+      <section id="pricing" className={s.section} aria-labelledby="pricing-h">
+        <div className={s.container}>
+          <div className={s.headRow} data-reveal="">
+            <div>
+              <p className={s.overline}>Pricing</p>
+              <h2 id="pricing-h" className={s.h2}>Every module on every plan.</h2>
+            </div>
+            <p className={s.body}>Monthly plans. Higher plans add seats, agents and usage. Limits are shown in full and enforced in your account.</p>
+          </div>
+          <div className={s.plans} data-reveal="">
             {ORDER.map((id) => {
               const t = BUSINESS_TIERS[id];
               const p = price(id);
               const current = status.state === "in" && status.active && status.plan?.tier === id;
               return (
-                <article key={id} className={s.plan} data-featured={id === "growth" || undefined}>
-                  <header className={s.planHeader}>
-                    <div className={s.planLabel}><span className={s.planIndex} aria-hidden="true">{String(ORDER.indexOf(id) + 1).padStart(2, "0")}</span>{id === "growth" ? <span className={s.planPill}>For growing teams</span> : null}</div>
-                    <h3 className={s.planName}>{t.name.replace("Keplar Business ", "")}</h3>
+                <article key={id} className={s.plan} data-featured={id === "growth" || undefined} aria-labelledby={`plan-${id}`}>
+                  <div className={s.planTop}>
+                    <h3 id={`plan-${id}`} className={s.planName}>{short(id)}</h3>
                     <p className={s.planFor}>{t.audience}</p>
-                  </header>
-                  <p className={s.price}>{p ? <>{p.was ? <s className={s.priceWas} aria-label={`Was ${p.was}`}>{p.was}</s> : null}<span className={s.priceBig}>{p.now}</span><span className={s.priceNote}>{p.note}</span></> : <><span className={s.priceBig}>Custom</span><span className={s.priceNote}>custom contract</span></>}</p>
+                  </div>
+                  <p className={s.price}>
+                    {p ? <>{p.was ? <s className={s.priceWas} aria-label={`Was ${p.was}`}>{p.was}</s> : null}<span className={s.priceBig}>{p.now}</span><span className={s.priceNote}>per month</span></>
+                      : <><span className={s.priceBig}>Custom</span><span className={s.priceNote}>custom contract</span></>}
+                  </p>
                   {current ? <span className={s.btnGhost} aria-current="true">Your plan</span>
                     : id === "enterprise" ? <a href="#contact" className={s.btnGhost}>Contact sales</a>
-                    : <a href={accountUrl(id)} className={id === "growth" ? s.btnPrimary : s.btnGhost}>Choose {t.name.replace("Keplar Business ", "")}</a>}
+                    : <a href={accountUrl(id)} className={id === "growth" ? s.btnPrimary : s.btnGhost}>Choose {short(id)}</a>}
                   <dl className={s.planMetrics}>
                     <div><dt>Seats</dt><dd>{t.seats === null ? "Custom" : fmt(t.seats)}</dd></div>
-                    <div><dt>AI credits / month</dt><dd>{t.credits === null ? "Custom" : fmt(t.credits)}</dd></div>
                     <div><dt>Active agents</dt><dd>{t.activeAgents === null ? "Custom" : fmt(t.activeAgents)}</dd></div>
+                    <div><dt>AI credits a month</dt><dd>{t.credits === null ? "Custom" : fmt(t.credits)}</dd></div>
                   </dl>
-                  <details className={s.planDetails}><summary>Everything included <span aria-hidden="true">+</span></summary><ul className={s.planList}>{t.includes.map((x) => <li key={x}>{x}</li>)}</ul></details>
+                  <ul className={s.planList}>{t.includes.filter((x) => !/^\d|seat|active agents|projects$/i.test(x)).slice(0, 6).map((x) => <li key={x}>{x}</li>)}</ul>
                 </article>
               );
             })}
           </div>
-          <div id="plan-comparison" className={s.limitsWrap} role="region" aria-label="Compare Business plan limits" tabIndex={0}>
-            <table className={s.limits}>
-              <caption className={s.srOnly}>Plan limits</caption>
-              <thead><tr><th scope="col">Included each month</th>{ORDER.map((id) => <th key={id} scope="col">{BUSINESS_TIERS[id].name.replace("Keplar Business ", "").replace("Keplar ", "")}</th>)}</tr></thead>
-              <tbody>
-                <tr><th scope="row">Seats</th>{ORDER.map((id) => <td key={id}>{BUSINESS_TIERS[id].seats === null ? "Negotiated" : fmt(BUSINESS_TIERS[id].seats!)}</td>)}</tr>
-                <tr><th scope="row">Active agents</th>{ORDER.map((id) => <td key={id}>{BUSINESS_TIERS[id].activeAgents === null ? "Negotiated" : fmt(BUSINESS_TIERS[id].activeAgents!)}</td>)}</tr>
-                <tr><th scope="row">Automation actions</th>{ORDER.map((id) => <td key={id}>{BUSINESS_TIERS[id].actionsPerMonth === null ? "Negotiated" : fmt(BUSINESS_TIERS[id].actionsPerMonth!)}</td>)}</tr>
-                <tr><th scope="row">AI credits</th>{ORDER.map((id) => <td key={id}>{BUSINESS_TIERS[id].credits === null ? "Negotiated" : fmt(BUSINESS_TIERS[id].credits!)}</td>)}</tr>
-                <tr><th scope="row">Projects</th>{ORDER.map((id) => <td key={id}>{BUSINESS_TIERS[id].projects === null ? "Unlimited (fair use)" : fmt(BUSINESS_TIERS[id].projects!)}</td>)}</tr>
-                <tr><th scope="row">Custom domains</th>{ORDER.map((id) => <td key={id}>{fmt(BUSINESS_TIERS[id].customDomains)}</td>)}</tr>
-                <tr><th scope="row">Revenue Guard</th>{ORDER.map((id) => <td key={id}>{BUSINESS_TIERS[id].swarm ? "Included" : "—"}</td>)}</tr>
-              </tbody>
-            </table>
-          </div>
-          <p className={s.muted}>An automation action is one step an agent takes, like sending a message or updating a record. The AI behind it uses credits. Images, video, research and deployments use credits at their listed rates.</p>
-        </section>
+          <details className={s.compare}>
+            <summary>Compare every limit<Chevron /></summary>
+            <div className={s.limitsWrap} role="region" aria-label="Compare Business plan limits" tabIndex={0}>
+              <table className={s.limits}>
+                <caption className={s.srOnly}>Plan limits</caption>
+                <thead><tr><th scope="col">Included each month</th>{ORDER.map((id) => <th key={id} scope="col">{short(id)}</th>)}</tr></thead>
+                <tbody>
+                  <tr><th scope="row">Seats</th>{ORDER.map((id) => <td key={id}>{BUSINESS_TIERS[id].seats === null ? "Negotiated" : fmt(BUSINESS_TIERS[id].seats!)}</td>)}</tr>
+                  <tr><th scope="row">Active agents</th>{ORDER.map((id) => <td key={id}>{BUSINESS_TIERS[id].activeAgents === null ? "Negotiated" : fmt(BUSINESS_TIERS[id].activeAgents!)}</td>)}</tr>
+                  <tr><th scope="row">Automation actions</th>{ORDER.map((id) => <td key={id}>{BUSINESS_TIERS[id].actionsPerMonth === null ? "Negotiated" : fmt(BUSINESS_TIERS[id].actionsPerMonth!)}</td>)}</tr>
+                  <tr><th scope="row">AI credits</th>{ORDER.map((id) => <td key={id}>{BUSINESS_TIERS[id].credits === null ? "Negotiated" : fmt(BUSINESS_TIERS[id].credits!)}</td>)}</tr>
+                  <tr><th scope="row">Projects</th>{ORDER.map((id) => <td key={id}>{BUSINESS_TIERS[id].projects === null ? "Unlimited (fair use)" : fmt(BUSINESS_TIERS[id].projects!)}</td>)}</tr>
+                  <tr><th scope="row">Custom domains</th>{ORDER.map((id) => <td key={id}>{fmt(BUSINESS_TIERS[id].customDomains)}</td>)}</tr>
+                  <tr><th scope="row">Revenue Guard</th>{ORDER.map((id) => <td key={id}>{BUSINESS_TIERS[id].swarm ? "Included" : "—"}</td>)}</tr>
+                </tbody>
+              </table>
+            </div>
+            <p className={s.fine}>An automation action is one step an agent takes, like sending a message or updating a record. The AI behind it uses credits. Images, video, research and deployments use credits at their listed rates.</p>
+          </details>
+        </div>
+      </section>
 
-        <section id="revenue-guard" className={s.section} aria-labelledby="guard-h">
-          <div className={s.sectionHead}>
-            <div><span className={s.overline}>{"Revenue Guard"}</span><h2 id="guard-h" className={s.h2}>A swarm that tests where money changes hands. <span className={s.dim}>For Enterprise.</span></h2></div>
-            <span className={s.badge}>Early access</span>
+      <section id="security" className={s.section} aria-labelledby="security-h">
+        <div className={s.split}>
+          <div className={s.splitHead} data-reveal="">
+            <p className={s.overline}>Security</p>
+            <h2 id="security-h" className={s.h2}>Trusted with real work.</h2>
+            <p className={s.body}>How Keplar handles your data is written down in full.</p>
+            <p className={s.inlineLinks}><a href={`${APP}/security`} className={s.textLink}>Security</a><a href={`${APP}/privacy`} className={s.textLink}>Privacy policy</a><a href={`${APP}/status`} className={s.textLink}>Status</a></p>
           </div>
-          <p className={s.lede}>A swarm of agents tests the parts of your product where money changes hands, and hands you evidence-backed fixes instead of guesses. Example: a customer cancels, reopens an old checkout tab, and is charged again. Revenue Guard finds it, proves it, and proposes the fix with a test.</p>
-          <ol className={s.steps}>
-            {GUARD_STEPS.map((x) => <li key={x.n}><span className={s.stepN}>{x.n}</span><h3>{x.title}</h3><p>{x.body}</p></li>)}
-          </ol>
-          <p className={s.muted}>Runs only against apps your company has verified it owns, inside the desktop app, with a credit budget per run. Results depend on your product; we report what was found and fixed, never a guaranteed amount of money.</p>
-          <a href="#contact" className={s.btnGhost}>Request early access</a>
-        </section>
+          <ul className={s.trust} data-reveal="">
+            {TRUST.map((x) => <li key={x.title}><h3 className={s.h5}>{x.title}</h3><p>{x.body}</p></li>)}
+          </ul>
+        </div>
+      </section>
 
-        <section id="contact" className={s.section} aria-labelledby="contact-h">
-          <div className={s.console}>
-            <div className={s.consoleHead}><span className={s.live} aria-hidden="true" />Sales channel · replies by email</div>
-            <div className={s.consoleBody}>
-              <h2 id="contact-h" className={s.h2}>Talk to sales</h2>
-              <p className={s.muted}>Enterprise plans, Revenue Guard early access, security reviews and custom terms. We reply by email, usually within one business day.</p>
-              <InquiryForm defaultEmail={status.state === "in" ? status.email ?? "" : ""} defaultCompany={status.state === "in" ? status.account?.company ?? "" : ""} />
+      <section id="download-app" className={s.section} aria-labelledby="desktop-h">
+        <div className={s.container}>
+          <div className={s.desktop} data-reveal="">
+            <div>
+              <p className={s.overline}>Desktop app</p>
+              <h2 id="desktop-h" className={s.h3}>The workspace, in its own window.</h2>
+              <p className={s.body}>Keplar Business runs in the browser at business.keplar.one/work and as a desktop app for Windows, macOS and Linux. The download unlocks with an active plan.</p>
+            </div>
+            <div className={s.heroActions}>
+              {status.state === "in" && status.active ? <a href="#download" className={s.btnPrimary}>Get the download</a> : <a href={start.href} className={s.btnPrimary}>Start Building</a>}
+              <a href="#pricing" className={s.btnGhost}>See plans</a>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <footer className={s.footer}>
-          <span className={s.footBrand}><span className={s.live} aria-hidden="true" />© Keplar</span>
-          <a href={`${APP}/terms`}>Terms</a>
-          <a href={`${APP}/privacy`}>Privacy</a>
-          <a href={`${APP}/security`}>Security</a>
-          <a href={`${APP}/status`}>Status</a>
-          <a href={APP}>Keplar One</a>
-        </footer>
-      </div>
+      <section id="contact" className={s.section} aria-labelledby="contact-h">
+        <div className={s.split}>
+          <div className={s.splitHead} data-reveal="">
+            <p className={s.overline}>Contact sales</p>
+            <h2 id="contact-h" className={s.h2}>Talk to the team.</h2>
+            <p className={s.body}>Enterprise plans, Revenue Guard early access, security reviews and custom terms. We reply by email, usually within one business day.</p>
+          </div>
+          <div className={s.formWrap} data-reveal="">
+            <InquiryForm defaultEmail={status.state === "in" ? status.email ?? "" : ""} defaultCompany={status.state === "in" ? status.account?.company ?? "" : ""} />
+          </div>
+        </div>
+      </section>
+
+      <footer className={s.footer}>
+        <div className={s.footInner}>
+          <div className={s.footBrand}>
+            <span className={s.brand}><BusinessMark size={22} /><span className={s.wordmark}>Keplar <span>Business</span></span></span>
+            <p>© Keplar</p>
+          </div>
+          <nav className={s.footCols} aria-label="Footer">
+            <div><h2>Product</h2><Link href="/work">Workspace</Link><a href="#pricing">Pricing</a><a href="#download-app">Desktop app</a><a href="#revenue-guard">Revenue Guard</a></div>
+            <div><h2>Company</h2><a href={APP}>Keplar One</a><a href="#contact">Contact sales</a><a href={`${APP}/status`}>Status</a></div>
+            <div><h2>Legal</h2><a href={`${APP}/terms`}>Terms</a><a href={`${APP}/privacy`}>Privacy</a><a href={`${APP}/security`}>Security</a></div>
+          </nav>
+        </div>
+      </footer>
     </div>
   );
 }
+
+const Arrow = () => <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+const Chevron = () => <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M4 5.5L7 8.5l3-3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 
 const TOPICS = [
   { id: "Enterprise", label: "Enterprise plan" },
@@ -374,7 +451,7 @@ function InquiryForm({ defaultEmail, defaultCompany }: { defaultEmail: string; d
       <label className={`${s.field} ${s.wide}`}><span>How can we help?</span><textarea name="message" rows={5} required aria-invalid={Boolean(fields.message) || undefined} />{fields.message ? <em>{fields.message}</em> : null}</label>
       <input name="website" tabIndex={-1} autoComplete="off" className={s.honeypot} aria-hidden="true" />
       {error ? <p className={`${s.formError} ${s.wide}`} role="alert">{error}</p> : null}
-      <div className={s.wide}><button type="submit" className={s.btnPrimary} disabled={busy}>{busy ? "Sending…" : "Send"}</button></div>
+      <div className={s.wide}><button type="submit" className={s.btnPrimary} disabled={busy}>{busy ? "Sending…" : "Send message"}</button></div>
     </form>
   );
 }
