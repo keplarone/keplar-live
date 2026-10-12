@@ -1,5 +1,6 @@
 import type { KeplarEvent, KeplarRequest } from "@/lib/orchestration/types";
 import { activeScopeHeaders } from "./scope";
+import { sequencer, validEvent } from "@/lib/orchestration/event-contract";
 
 export class StreamNetworkError extends Error {
   /** false when the request never got a response (offline, DNS, refused): nothing can have been charged for it. */
@@ -51,6 +52,10 @@ export async function* streamKeplar(req: KeplarRequest, signal: AbortSignal): As
   const decoder = new TextDecoder();
   let buffer = "";
   let sawTerminal = false;
+  // The event contract (event-contract.ts): a malformed or unknown line is skipped (it used to end the answer as a dropped
+  // connection), and a duplicate or stale event (seq not newer) is dropped.
+  const inOrder = sequencer();
+  let skipped = 0;
   try {
     while (true) {
       const { value, done } = await reader.read();
@@ -61,7 +66,11 @@ export async function* streamKeplar(req: KeplarRequest, signal: AbortSignal): As
         const line = buffer.slice(0, nl).trim();
         buffer = buffer.slice(nl + 1);
         if (!line) continue;
-        const event = JSON.parse(line) as KeplarEvent;
+        let parsed: unknown;
+        try { parsed = JSON.parse(line); } catch { skipped++; continue; }
+        const event = validEvent(parsed);
+        if (!event) { skipped++; continue; }
+        if (!inOrder(event as KeplarEvent & { seq?: unknown })) continue;
         if (event.type === "answer" || event.type === "limit" || event.type === "error") sawTerminal = true;
         yield event;
       }
@@ -70,5 +79,6 @@ export async function* streamKeplar(req: KeplarRequest, signal: AbortSignal): As
     if (signal.aborted) throw e;
     throw new StreamNetworkError("The connection dropped before the answer finished.");
   }
+  if (skipped) console.warn(`[keplar] skipped ${skipped} malformed stream event(s)`);
   if (!sawTerminal && !signal.aborted) throw new StreamNetworkError("The connection closed before the answer finished.");
 }

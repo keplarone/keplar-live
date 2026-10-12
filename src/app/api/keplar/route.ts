@@ -74,6 +74,7 @@ import { applyFanout, beginRun, fanoutPolicy, loadInflight } from "@/lib/orchest
 import { bumpFanout, fanoutUsedToday } from "@/lib/usage/fanout-day";
 import { enterCostScope, newScope, recordRequestCost } from "@/lib/ops/request-cost";
 import { flightFromStreamEvent, flightPush, flightRow, recordFlight, startFlight } from "@/lib/ops/flight";
+import { EVENT_PROTOCOL, PROTOCOL_HEADER, stamper } from "@/lib/orchestration/event-contract";
 import { requestIdOf } from "@/lib/ops/log";
 import { clampDocs, docsBlock, docsFrom, freeAllowsDoc } from "@/lib/documents/chat-docs";
 import { clampLiveResearch, LIVE_BRIEF_CHARS, liveModes, liveResearchBlock, liveResearchFrom, liveResearchOff, liveRouting } from "@/lib/research/live-request";
@@ -502,6 +503,7 @@ export async function POST(request: Request) {
   const recoverable = turn !== null;
 
   const encoder = new TextEncoder();
+  const stamp = stamper(); // the event contract: protocol version and a sequence per response
   const abort = new AbortController();
   // The browser went away. A recoverable turn keeps running so its answer is saved (the person can come back to it); only a Stop
   // (the browser posts a cancel first, /api/keplar/turn) ends it, checked now and every 1.5 s. Anything else stops as before.
@@ -555,7 +557,7 @@ export async function POST(request: Request) {
         if (e.type === "answer") turnAnswer = e.answer; // what recovery replays: the answer exactly as it was sent
         if (clientGone) return; // the browser left: the run carries on (recoverable) and its answer is saved below
         try {
-          controller.enqueue(encoder.encode(JSON.stringify(e) + "\n"));
+          controller.enqueue(encoder.encode(JSON.stringify(stamp(e)) + "\n")); // v + seq (event-contract.ts)
         } catch {
           onClientGone(); // the stream closed under us: same as a disconnect
         }
@@ -685,7 +687,7 @@ export async function POST(request: Request) {
     try { after(runDone); } catch { /* outside a request scope (tests): the run still completes */ }
   }
 
-  const headers = new Headers({ "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store, no-transform" });
+  const headers = new Headers({ "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store, no-transform", [PROTOCOL_HEADER]: String(EVENT_PROTOCOL) });
   if (gate?.setCookie) headers.append("Set-Cookie", gate.setCookie);
   if (dailyClaim?.setCookie) headers.append("Set-Cookie", dailyClaim.setCookie);
   return new Response(stream, { headers });
@@ -694,7 +696,8 @@ export async function POST(request: Request) {
 /** Answer recovery: the saved answer of an earlier run of this turn, as a normal answer stream (no run, no charge, no daily question). */
 function replayTurn(row: TurnRow): Response {
   const events: KeplarEvent[] = [{ type: "recovery", state: "replayed", ...(row.headless ? { headless: true } : {}) }, { type: "answer", answer: row.answer as Extract<KeplarEvent, { type: "answer" }>["answer"] }];
-  return new Response(events.map((e) => JSON.stringify(e)).join("\n") + "\n", { headers: { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store, no-transform", "x-keplar-turn": "replayed" } });
+  const stamp = stamper();
+  return new Response(events.map((e) => JSON.stringify(stamp(e))).join("\n") + "\n", { headers: { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store, no-transform", "x-keplar-turn": "replayed", [PROTOCOL_HEADER]: String(EVENT_PROTOCOL) } });
 }
 
 /** Answer recovery: the same turn is still being worked on (a reconnect raced it). The browser polls /api/keplar/turn. */
