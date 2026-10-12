@@ -109,6 +109,11 @@ const m: MarketingCatalog = {
         "name": "Chế độ giọng nói",
         "line": "Hỏi thành tiếng, nghe câu trả lời được đọc lại. Keplar không bao giờ ghi âm hay lưu âm thanh của bạn."
       },
+      "live-research": {
+        "name": "Nghiên cứu trực tiếp",
+        "line": "Trong ứng dụng máy tính, Keplar tìm kiếm trên web và đọc các trang ngay trên máy của bạn, rồi trích dẫn từng trang và kiểm tra các trích dẫn.",
+        "note": "Ứng dụng máy tính 0.2.0 trở lên."
+      },
       "images": {
         "name": "Hình ảnh và ảnh chụp màn hình",
         "line": "Biểu đồ, hóa đơn, bảng trắng, giao diện. Chỉ gửi tới các mô hình nhìn được."

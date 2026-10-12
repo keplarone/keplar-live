@@ -34,6 +34,7 @@ import { systemPrompt } from "./providers/shared";
 import { createRetriever, retrievalApplies, retrievalEstimateUsd } from "./retriever";
 import { budgetSkipped, runSourcing, signSourcing, sourcingGate } from "./sourcing";
 import { linkCitations, OFF_BUDGET, OFF_NOT_ENABLED, OFF_SENSITIVE, researchEstimateUsd, runResearch } from "./research";
+import { LIVE_RESEARCH_RULES, liveResearchSummary } from "@/lib/research/live-request";
 import { ModelVerifier } from "./verifier";
 import { MergedFreeReview } from "./free-merged";
 import { sharedPool } from "./pool-governor";
@@ -320,14 +321,17 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
     yield { type: "error", code: "bad_request", message: "Deep Research is available on Plus and up.", retryable: false };
     return;
   }
+  // Live Research (live-request.ts): the pages were read on the person's desktop, which also checks the answer's citations. No server search
+  // runs for it (retrieval checks, Verified answers), so nothing is searched or paid for twice and no "not checked against the web" note is added.
+  const liveResearch = req.liveResearch;
   // Retrieval (flag off by default) adds a conservative search estimate to the check.
-  const retrieve = Boolean(deps.retriever) && retrievalApplies(req, plan);
+  const retrieve = !liveResearch && Boolean(deps.retriever) && retrievalApplies(req, plan);
   const retrievalUnits = retrieve ? Math.ceil(retrievalEstimateUsd(plan) / USD_PER_UNIT) : 0;
   let plannedUnits = (deep ? Math.max(plan.estimate.units, DEEP_RESEARCH_UNITS) : plan.estimate.units) + retrievalUnits;
 
   // Verified answers (BETA, sourcing.ts): factual questions on paid plans get their key claims searched on the web after the answer is written.
   // Free never runs it (it would spend the shared request pool); a check that doesn't fit the allowance or the per-request cap is skipped, never a refusal.
-  const gate = sourcingGate({ plan: req.plan, classification, req, hasRetriever: Boolean(deps.retriever) });
+  const gate: ReturnType<typeof sourcingGate> = liveResearch ? { run: false } : sourcingGate({ plan: req.plan, classification, req, hasRetriever: Boolean(deps.retriever) });
   let sourcing: Sourcing | undefined = gate.run ? undefined : gate.sourcing;
   let sourcingOn = false;
   if (gate.run) {
@@ -416,6 +420,10 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
       research = { queries: [], sources: [], cited: [], off: researchOff };
     }
     if (deps.synthesizer instanceof ModelSynthesizer) deps.synthesizer.research = research.sources.length > 0;
+  } else if (liveResearch) {
+    // The brief is already in req.memory (the route put it there before classifying); the writer gets the citation rules.
+    research = liveResearchSummary(liveResearch);
+    if (deps.synthesizer instanceof ModelSynthesizer) { deps.synthesizer.research = true; deps.synthesizer.researchRules = LIVE_RESEARCH_RULES; }
   }
 
   // 3 · Run the panel in parallel, reporting each model as it lands.
@@ -456,7 +464,8 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
   const panelPrompt = (req.memory ?? "") + req.prompt + (exact ? exactNote(exact) : "");
   // The shape of a good answer to a comparison, a how-to, an explanation or a piece of writing (see answer-shape.ts); nothing for quick facts, code or exact checks.
   const shape = media?.question ? "" : shapeHint(req.prompt, classification);
-  const panelSystem = shape ? `${systemPrompt()}\n\n${shape}` : undefined;
+  // Live Research: every panel model reads the brief and cites it, because with one model (fast depth, Free) its text is the answer itself.
+  const panelSystem = liveResearch ? `${systemPrompt()}\n\n${LIVE_RESEARCH_RULES}${shape ? `\n\n${shape}` : ""}` : shape ? `${systemPrompt()}\n\n${shape}` : undefined;
   // Real token streaming: the first panel model to speak is shown word by word while the rest of the panel, the review and the synthesis work.
   const liveEvents: KeplarEvent[] = [];
   let wakeLoop: (() => void) | null = null;
@@ -621,7 +630,7 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
   if (!multi && sanityEnabled() && live) {
     const first = results.find((r) => r.ok);
     if (first && first.ok && first.text.length >= 40 && (await sanityCheck(registry, { question: req.prompt, answer: first.text, answeredBy: plan.panel[0].model.id, signal })) === "bad") {
-      const again = await registry.generate({ model: plan.panel[0].model, prompt: panelPrompt, classification, params: sanitizeParams(plan.panel[0].model, LIVE_PANEL_PARAMS), tier, slot: "panel", signal, avoid: new Set([plan.panel[0].model.id, ...seatModels]) });
+      const again = await registry.generate({ model: plan.panel[0].model, prompt: panelPrompt, system: panelSystem, classification, params: sanitizeParams(plan.panel[0].model, LIVE_PANEL_PARAMS), tier, slot: "panel", signal, avoid: new Set([plan.panel[0].model.id, ...seatModels]) });
       const second = again.ok && again.model.id !== plan.panel[0].model.id ? await sanityCheck(registry, { question: req.prompt, answer: again.text, answeredBy: again.model.id, signal }) : "bad";
       if (again.ok && second !== "bad") {
         plan.panel[0] = { ...plan.panel[0], model: again.model, reason: "Replaced the first model after a coherence check." };

@@ -22,6 +22,7 @@ export const CHAPTERS: Chapter[] = [
       { id: "disagreement", name: "Disagreement map", line: "Where the models agree, where they split, and why the answer went the way it did.", href: "/how-it-works", status: "live" },
       { id: "debate", name: "Debate mode", line: "Watch the models argue in rounds before Keplar answers.", href: "/app/ask", status: "beta" },
       { id: "voice", name: "Voice mode", line: "Ask out loud, hear the answer read back. Keplar never records or stores your audio.", href: "/app/ask", status: "beta" },
+      { id: "live-research", name: "Live Research", line: "In the desktop app, Keplar searches the web and reads pages on your computer, then cites each one and checks the citations.", href: "/app/ask", status: "beta", note: "Desktop app 0.2.0 or newer." },
     ],
   },
   {

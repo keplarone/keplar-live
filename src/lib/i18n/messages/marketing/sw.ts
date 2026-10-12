@@ -109,6 +109,11 @@ const m: MarketingCatalog = {
         "name": "Hali ya sauti",
         "line": "Uliza kwa sauti, sikiliza jibu likisomwa. Keplar kamwe hairekodi wala kuhifadhi sauti yako."
       },
+      "live-research": {
+        "name": "Utafiti wa Moja kwa Moja",
+        "line": "Katika programu ya kompyuta, Keplar hutafuta kwenye wavuti na kusoma kurasa kwenye kompyuta yako, kisha hunukuu kila ukurasa na kukagua manukuu.",
+        "note": "Programu ya kompyuta 0.2.0 au mpya zaidi."
+      },
       "images": {
         "name": "Picha na picha za skrini",
         "line": "Chati, risiti, ubao mweupe, UI. Hutumwa tu kwa miundo inayoweza kuona."

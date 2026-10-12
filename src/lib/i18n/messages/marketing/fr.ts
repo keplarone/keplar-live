@@ -109,6 +109,11 @@ const m: MarketingCatalog = {
         "name": "Mode vocal",
         "line": "Posez votre question à voix haute et écoutez la réponse. Keplar n’enregistre ni ne conserve jamais votre audio."
       },
+      "live-research": {
+        "name": "Recherche en direct",
+        "line": "Dans l’application de bureau, Keplar cherche sur le web et lit les pages sur votre ordinateur, puis cite chacune et vérifie les citations.",
+        "note": "Application de bureau 0.2.0 ou plus récente."
+      },
       "images": {
         "name": "Images et captures d’écran",
         "line": "Graphiques, tickets, tableaux blancs, interfaces. Envoyés uniquement aux modèles capables de voir."

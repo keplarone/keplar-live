@@ -109,6 +109,11 @@ const m: MarketingCatalog = {
         "name": "Mode suara",
         "line": "Bertanya dengan suara, dengarkan jawabannya dibacakan. Keplar tidak pernah merekam atau menyimpan audio Anda."
       },
+      "live-research": {
+        "name": "Riset Langsung",
+        "line": "Di aplikasi desktop, Keplar mencari di web dan membaca halaman di komputer Anda, lalu mengutip setiap halaman dan memeriksa kutipannya.",
+        "note": "Aplikasi desktop 0.2.0 atau lebih baru."
+      },
       "images": {
         "name": "Gambar dan tangkapan layar",
         "line": "Grafik, struk, papan tulis, UI. Hanya dikirim ke model yang bisa melihat."

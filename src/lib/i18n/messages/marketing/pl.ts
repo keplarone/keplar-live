@@ -109,6 +109,11 @@ const m: MarketingCatalog = {
         "name": "Tryb głosowy",
         "line": "Zapytaj na głos i posłuchaj odpowiedzi. Keplar nigdy nie nagrywa ani nie przechowuje Twojego dźwięku."
       },
+      "live-research": {
+        "name": "Badanie na żywo",
+        "line": "W aplikacji desktopowej Keplar przeszukuje sieć i czyta strony na Twoim komputerze, a potem cytuje każdą z nich i sprawdza cytowania.",
+        "note": "Aplikacja desktopowa 0.2.0 lub nowsza."
+      },
       "images": {
         "name": "Obrazy i zrzuty ekranu",
         "line": "Wykresy, paragony, tablice, interfejsy. Wysyłane tylko do modeli, które widzą."

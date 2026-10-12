@@ -109,6 +109,11 @@ const m: MarketingCatalog = {
         "name": "Sprachmodus",
         "line": "Frag laut und hör dir die Antwort an. Keplar nimmt dein Audio nie auf und speichert es nicht."
       },
+      "live-research": {
+        "name": "Live-Recherche",
+        "line": "In der Desktop-App durchsucht Keplar das Web und liest Seiten auf deinem Computer, zitiert dann jede Seite und prüft die Zitate.",
+        "note": "Desktop-App 0.2.0 oder neuer."
+      },
       "images": {
         "name": "Bilder und Screenshots",
         "line": "Diagramme, Belege, Whiteboards, Oberflächen. Nur an Modelle gesendet, die Bilder verstehen."

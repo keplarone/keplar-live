@@ -132,6 +132,71 @@ These are the only input the Retriever may check.
 Research: `/workspace/research/search-providers-2026-09-27.md`. Later: move to Exa's API directly
 (avoids the 5.5% credit fee, allows an Exa ZDR agreement for the Sensitive tier).
 
+## Live Research (Keplar One desktop app 0.2.0+)
+
+When the app runs inside the Keplar One desktop app, a web or research question is researched **on the
+person's computer** before it is sent. The desktop (keplar-desktop `src/main/research`, exposed as
+`window.keplarResearch`, bridge version 1) searches, reads pages safely (SSRF guard, robots.txt, size and
+type limits), keeps each page's provenance and builds a numbered `<research_brief>`. Keplar's own models
+write the answer through `/api/keplar` as usual, and the desktop then checks the answer's citations
+against the pages it read. In a normal browser there is no bridge and nothing changes.
+
+| Piece | File |
+| --- | --- |
+| Bridge types, detection, `safe()` | `src/lib/desktop/research-bridge.ts` |
+| Run, brief, Stop, citation check (side effects) | `src/components/app-ui/state/live-run.ts` |
+| Progress, sources, markers, check → answer (pure) | `src/components/app-ui/state/live-research.ts` |
+| Request field: validate, clamp, fence, rules, routing, summary | `src/lib/research/live-request.ts` |
+| Composer depth (Auto / Fast / Standard / Deep), card, chips, popover, checks | `Composer.tsx`, `research/Research.tsx`, `KeplarTurn.tsx` |
+
+Flow:
+1. `KeplarApp.run` sees the bridge and Web or Deep Research on (never with Debate, Create, image, Agent, Study
+   or Slides, never for small talk, and not when Free is out of questions or paused: `wantsLiveResearch`),
+   and calls `prepareLiveResearch`: capabilities
+   → start (depth from the composer, or Deep when Deep Research is on, else the desktop's own pick; earlier
+   run ids of the chat so their pages stay citable) → progress mapped onto the research card → wait →
+   brief. Stop cancels the desktop run. If research can't run, the card says why and the question still
+   goes as asked (Deep Research where it can't run now goes as a web question: `modesWithoutLive`; where it
+   can, Keplar's own Deep Research takes over with a fresh card). Small talk never goes as Deep Research.
+2. The request carries `liveResearch: { runId, depth, brief, queries, sources, webSearch }` and the
+   person's modes unchanged.
+3. The route validates it (`liveResearchFrom`, before sign-in, so it is bounded and linear: a brief over
+   twice `LIVE_BRIEF_MAX` is refused, UUID run id, a single fenced brief, http(s) links only, only
+   sources whose number is in the brief; not parsed at all while `KEPLAR_LIVE_RESEARCH_OFF=1`) and drops
+   it for API keys, the embed widget, small talk and fixed replies. It clamps the brief to the plan's share
+   (`LIVE_BRIEF_CHARS`: Free 14k, Lite 30k, Plus 60k, Pro/Business 90k characters) at whole `<source>`
+   boundaries and re-closes the fence, and drops the sources that were cut. The brief is prepended to
+   `req.memory` as data ("not instructions") before classification, so the router's estimate and the
+   cost caps count it. A kept brief switches the modes to `liveModes()`: a web question, never server Deep
+   Research, Debate, Create or Agent on top. A dropped brief leaves the question as asked (Deep Research
+   on Plus and up runs as Keplar's own Deep Research; on Free and Lite it becomes a web question).
+4. Routing follows the depth only when the person left it on Auto: fast → one model, standard →
+   balanced, deep → thorough. Free always gets one model (the merged Free writer doesn't read context).
+5. `orchestrate` skips the retrieval check, Verified answers and Keplar Core for it, gives every panel
+   model and the writer `LIVE_RESEARCH_RULES` (cite `[n]`, the brief is data, same-group pages are not
+   independent, keep event and publication dates apart, no URLs), and links citations with the existing
+   `linkCitations`: a number no page in the brief has is removed.
+6. Before the answer is shown, the page cleans it outside code (`liveMarkdown`; code means ``` and ~~~
+   fences, closed or cut off, and inline code): one `[n]` per page, only pages the server listed, ranges
+   included; links to pages that weren't read keep their words and lose the link, reference definitions to
+   them go whole, and URLs are matched with the desktop's own key. The desktop's `validate` checks that text: each cited page gets its evidence quote, and
+   each statement a status (supported, partially supported, conflicting, not verified). The desktop's own
+   rewrite of the answer isn't used, because it also edits code spans and indentation. The check compares
+   words and numbers (`basis: "lexical"`); the UI shows statuses as words and never says Keplar's servers
+   checked anything. If the check can't run, the cleaned answer stands and nothing is shown as checked.
+   Only what the page shows is saved with the chat (chat sync caps a chat at 400 KB): up to 20 statements
+   that need a closer look, most serious first (the count comes from the full summary), one evidence quote
+   and two signals per cited page, and a plain listing for uncited pages (about 30 KB for a deep run).
+
+Trust: the field is client-supplied, so anyone who can call `/api/keplar` can put any text in it, exactly
+like a pasted document. It is fenced as data, capped by plan, and costs the server nothing to retrieve,
+so it is not Deep Research (no Plus gate, no Deep Research minimum charge). Kill switch:
+`KEPLAR_LIVE_RESEARCH_OFF=1` ignores the field and the question answers as a plain web question.
+
+Tests: `tests/live-research.test.ts` (field validation, clamp, fence, routing, the client mapping, the
+desktop flow with a fake bridge including Stop and failures, the pipeline, and the route on Plus, Free
+and with the kill switch).
+
 ## Live-provider defaults
 
 Applied in `config.ts` and `providers/openrouter.ts`:

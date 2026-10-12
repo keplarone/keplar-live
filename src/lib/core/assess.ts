@@ -39,8 +39,10 @@ const wordCount = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
 
 const classifier = new HeuristicClassifier();
 
-/** Paths Core never takes over: they have their own engines (small talk, Create, agents, Deep Research, Debate, vision). */
+/** Paths Core never takes over: they have their own engines (small talk, Create, agents, Deep Research, Live Research, Debate, vision). */
 export function coreApplies(req: KeplarRequest): boolean {
+  // Live Research: the desktop already did the research, and Core's own search steps would number their own sources ([1]…) against its brief.
+  if (req.liveResearch) return false;
   const m = req.modes ?? {};
   if (m.create || m.agent || m.deepResearch || m.debate) return false;
   if (req.understanding?.intent === "playful") return false;

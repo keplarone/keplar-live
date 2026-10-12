@@ -109,6 +109,11 @@ const m: MarketingCatalog = {
         "name": "Modo voz",
         "line": "Pergunte em voz alta e ouça a resposta. O Keplar nunca grava nem armazena seu áudio."
       },
+      "live-research": {
+        "name": "Pesquisa ao vivo",
+        "line": "No app para desktop, o Keplar pesquisa na web e lê páginas no seu computador, depois cita cada uma e confere as citações.",
+        "note": "App para desktop 0.2.0 ou mais recente."
+      },
       "images": {
         "name": "Imagens e capturas de tela",
         "line": "Gráficos, recibos, quadros brancos, interfaces. Enviados só para modelos que enxergam."
