@@ -1,7 +1,7 @@
 "use client";
 
 import { siteUrl } from "@/lib/site";
-import { KeplarSymbol } from "@/components/brand/KeplarSymbol";
+import { BusinessMark } from "@/components/business-site/BusinessMark";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import type { MediaInput } from "@/lib/orchestration/media";
@@ -282,7 +282,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
             <button type="button" className={c.iconBtn} onClick={() => history.forward()} aria-label="Forward"><Icon d={<path d="M5 12h14M13 6l6 6-6 6" />} /></button>
           </div>
 
-          <div className={c.sideBrand}><KeplarSymbol size={18} /><span className={c.wordmark}>Keplar <span>Business</span></span></div>
+          <div className={c.sideBrand}><BusinessMark size={24} /><span className={c.wordmark}>Keplar <span>Business</span></span></div>
           <button type="button" className={c.jump} onClick={() => setPaletteOpen(true)} aria-keyshortcuts="Control+K Meta+K">
             <Icon d={<><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></>} size={14} />Jump to…<kbd>⌘K</kbd>
           </button>

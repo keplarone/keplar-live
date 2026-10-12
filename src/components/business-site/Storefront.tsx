@@ -6,6 +6,7 @@ import { BUSINESS_TIERS, listPriceFor, priceFor, usd, type BusinessTier } from "
 import { companySizes, estimatedUsers } from "@/lib/inquire/schema";
 import { CommandDemo } from "./CommandDemo";
 import { SignOutButton } from "./SignOutButton";
+import { BusinessMark } from "./BusinessMark";
 import s from "./business-site.module.css";
 
 /** Keplar One (legal pages live there). Everything else is this app: the account API, /signin (the handoff from keplar.one), /account and /work. */
@@ -33,8 +34,8 @@ const MODULES = [
   { title: "Make an Agent", body: "Agents that run your workflows on a schedule, within budgets, asking before they act.", glyph: "◉" },
 ];
 
-/** The ticker under the hero: what the workspace does, not numbers about it. */
-const TICKER = ["Deep Research · every claim cited", "Agents · schedules and budgets", "Approvals · nothing spends or ships without you", "Create · sites and apps on your domain", "Design Canvas · design, code and AI on one project", "Reason · decisions with the math shown", "Several AI models on every task", "Audit log · every agent action recorded", "Revenue Guard · checkout bugs found with evidence"];
+/** The capability strip under the hero: what the workspace does, not numbers about it. */
+const TICKER = ["Deep Research · every claim cited", "Agents · schedules and budgets", "Approvals before anything goes out", "Create · sites and apps on your domain", "Reason · decisions with the math shown", "Audit log · every agent action recorded"];
 
 /** How work moves through the workspace: from your data to an action you approved. */
 const LOOP = [
@@ -141,7 +142,7 @@ export function Storefront() {
       <div className={s.page}>
         <header className={s.nav}>
           <Link href="/" className={s.brand} aria-label="Keplar Business home">
-            <svg viewBox="0 0 398 398" width="20" height="20" fill="currentColor" aria-hidden="true"><rect x="0" y="0" width="229" height="229" rx="70" /><path d="M204.95 11.95A7 7 0 0 1 209.9 0L362 0A16 16 0 0 1 378 16L378 168.1A7 7 0 0 1 366.05 173.05Z" /><circle cx="281" cy="281" r="117" /></svg>
+            <BusinessMark size={26} />
             <span className={s.wordmark}>Keplar <span>Business</span></span>
           </Link>
           <nav className={s.navLinks} aria-label="Sections">
@@ -162,7 +163,7 @@ export function Storefront() {
 
         <section className={s.hero}>
           <div className={s.heroCopy}>
-            <span className={s.kicker}>{"// The AI operating system for your business"}</span>
+            <span className={s.overline}>{"The AI operating system for your business"}</span>
             <h1 className={s.h1}>Run the whole company <span className={s.glow}>from one command center.</span></h1>
             <p className={s.lede}>Research, design, build, automate and deploy from one workspace. Several AI models work on every task, your agents run on schedules and budgets, and nothing that spends money or ships to customers happens without approval.</p>
             {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- /signin is a route handler (the sign-in handoff from keplar.one): it needs a full page load */}
@@ -194,7 +195,7 @@ export function Storefront() {
 
       <div className={s.ticker}>
         <ul className={s.tickerTrack}>
-          {[...TICKER, ...TICKER].map((t, i) => <li key={i} aria-hidden={i >= TICKER.length || undefined}>{t}</li>)}
+          {TICKER.map((t) => <li key={t}>{t}</li>)}
         </ul>
       </div>
 
@@ -202,7 +203,7 @@ export function Storefront() {
         <section id="product" className={s.section} aria-labelledby="product-h">
           <div className={s.sectionHead}>
             <div>
-              <span className={s.kicker}>{"// System modules"}</span>
+              <span className={s.overline}>{"System modules"}</span>
               <h2 id="product-h" className={s.h2}>Everything your team does with AI, <span className={s.dim}>in one place.</span></h2>
             </div>
             <span className={s.badge}><span className={s.live} aria-hidden="true" />{MODULES.length} modules in every plan</span>
@@ -221,7 +222,7 @@ export function Storefront() {
         <section id="control" className={s.section} aria-labelledby="control-h">
           <div className={s.sectionHead}>
             <div>
-              <span className={s.kicker}>{"// The control loop"}</span>
+              <span className={s.overline}>{"The control loop"}</span>
               <h2 id="control-h" className={s.h2}>Agents do the work. <span className={s.dim}>You stay in command.</span></h2>
             </div>
           </div>
@@ -235,7 +236,7 @@ export function Storefront() {
 
         <section id="pricing" className={s.section} aria-labelledby="pricing-h">
           <div className={s.sectionHead}>
-            <div><span className={s.kicker}>{"// Plans for your next stage"}</span><h2 id="pricing-h" className={s.h2}>One workspace. Room to grow.</h2></div><a href="#plan-comparison" className={s.textLink}>Compare every limit <span aria-hidden="true">↓</span></a>
+            <div><span className={s.overline}>{"Plans for your next stage"}</span><h2 id="pricing-h" className={s.h2}>One workspace. Room to grow.</h2></div><a href="#plan-comparison" className={s.textLink}>Compare every limit <span aria-hidden="true">↓</span></a>
           </div>
           <p className={s.muted}>Every plan includes every Business module. Higher plans add seats, agents, usage and governance. Usage limits are shown in full and enforced in your account.</p>
           <div className={s.plans}>
@@ -284,7 +285,7 @@ export function Storefront() {
 
         <section id="revenue-guard" className={s.section} aria-labelledby="guard-h">
           <div className={s.sectionHead}>
-            <div><span className={s.kicker}>{"// Revenue Guard"}</span><h2 id="guard-h" className={s.h2}>A swarm that tests where money changes hands. <span className={s.dim}>For Enterprise.</span></h2></div>
+            <div><span className={s.overline}>{"Revenue Guard"}</span><h2 id="guard-h" className={s.h2}>A swarm that tests where money changes hands. <span className={s.dim}>For Enterprise.</span></h2></div>
             <span className={s.badge}>Early access</span>
           </div>
           <p className={s.lede}>A swarm of agents tests the parts of your product where money changes hands, and hands you evidence-backed fixes instead of guesses. Example: a customer cancels, reopens an old checkout tab, and is charged again. Revenue Guard finds it, proves it, and proposes the fix with a test.</p>

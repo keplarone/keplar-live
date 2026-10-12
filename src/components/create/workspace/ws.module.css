@@ -40,12 +40,12 @@
    accent and Geist, so its tab matches the rest of the app. Only while the workspace is open (BusinessWorkspace sets
    html[data-business-app]); Create on keplar.one is unchanged. Values mirror src/components/business-app/workspace.module.css. */
 :global(html[data-business-app]) .root {
-  --c-canvas: #06090f; --c-surface-1: #0b111b; --c-surface-2: #101826; --c-ink: #e7eef8; --c-ink-2: #a7b3c6; --c-ink-3: #7c889d;
-  --c-border: #18222f; --c-border-strong: #263346; --c-focus: #4cc9f0; --c-ink-hover: #ffffff;
-  --ws-card: 11 17 27; --ws-sheet: 6 9 15; --ws-center: 6 9 15; --ws-stage: 6 9 15; --ws-rail-solid: #04070c;
-  --ws-chrome: #0b111b; --ws-chrome-dot: #3a4a62; --ws-chrome-ink: #a7b3c6; --ws-bezel: #101826; --ws-thumb: #0b111b;
-  --ws-bg: #06090f; --ws-on-hi: #05080d; --lg-solid: #0b111b;
-  --btn-p-bg: #e7eef8; --btn-p-ink: #05080d; --btn-p-shadow: none; --btn-p-shadow-hover: 0 0 0 1px rgb(255 255 255 / 0.2);
+  --c-canvas: #0a0a0a; --c-surface-1: #111111; --c-surface-2: #1a1a1a; --c-ink: #fafafa; --c-ink-2: #a3a3a3; --c-ink-3: #8a8a8a;
+  --c-border: #222222; --c-border-strong: #303030; --c-focus: #fafafa; --c-ink-hover: #ffffff;
+  --ws-card: 17 17 17; --ws-sheet: 10 10 10; --ws-center: 10 10 10; --ws-stage: 10 10 10; --ws-rail-solid: #070707;
+  --ws-chrome: #111111; --ws-chrome-dot: #444444; --ws-chrome-ink: #a3a3a3; --ws-bezel: #1a1a1a; --ws-thumb: #111111;
+  --ws-bg: #0a0a0a; --ws-on-hi: #0a0a0a; --lg-solid: #111111;
+  --btn-p-bg: #fafafa; --btn-p-ink: #0a0a0a; --btn-p-shadow: none; --btn-p-shadow-hover: 0 0 0 1px rgb(255 255 255 / 0.2);
   --btn-s-shadow: inset 0 0 0 1px #383838;
   color-scheme: dark;
 }

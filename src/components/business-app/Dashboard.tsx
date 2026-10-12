@@ -155,7 +155,7 @@ export function Dashboard({ onOpenProject }: { onOpenProject: (id: string) => vo
     <div className={s.page}>
       <header className={s.head}>
         <div>
-          <p className={s.eyebrow}><span className={s.liveDot} aria-hidden="true" />Live{loadedAt ? ` · updated ${loadedAt}` : ""}</p>
+          <p className={s.overline}><span className={s.liveDot} aria-hidden="true" />Live{loadedAt ? ` · updated ${loadedAt}` : ""}</p>
           <h1 className={s.h1}>Dashboard</h1>
           <p className={s.muted}>From your connected payments, site, agents and usage.</p>
         </div>
