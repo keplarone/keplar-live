@@ -49,6 +49,9 @@ test("app: the composer dock floats as an overlay over the thread; one-row grid 
   const hook = read("src/components/app-ui/dock-height.ts");
   assert.match(hook, /ResizeObserver/);
   assert.match(hook, /--dock-h/);
+  // A callback ref, so a dock remounted after Create / Slides / Study is measured again (a mount-once effect left --dock-h at 0px).
+  assert.match(hook, /useCallback\(\(el: T \| null\)/);
+  assert.match(hook, /box: "border-box"/);
   const app = read("src/components/app-ui/KeplarApp.tsx");
   assert.match(app, /useDockHeight/);
   assert.match(app, /ref=\{dockRef\}\s+className=\{s\.dock\}/);
