@@ -59,3 +59,23 @@ test("tasks: each step's state follows the build stage; a finished build is all 
   assert.equal(screenWritten("/profile/:id", written), false);
   assert.equal(screenWritten("/profile/:id", [...written, "pages/profile.js"]), true);
 });
+
+test("Business workspace scrolls: the shell's one grid row is pinned to the window and the main column can shrink", () => {
+  const css = readFileSync("src/components/business-app/cursor.module.css", "utf8");
+  // An auto grid row grew with the page, so the scrolling main body was never shorter than its content (Create could not scroll).
+  assert.match(css, /\.shell \{[^}]*grid-template-rows: minmax\(0, 1fr\);/);
+  assert.match(css, /\.main \{ min-width: 0; min-height: 0;/);
+  assert.match(css, /\.mainBody \{ flex: 1; min-height: 0; overflow-y: auto; \}/);
+  // Keplar One's page-entry slide never moves the workspace window.
+  assert.match(readFileSync("src/styles/redesign.css", "utf8"), /#main > :not\(\[class\*="Sky-module__"\]\[class\$="__backdrop"\]\):not\(\[class\*="workspace-module__"\]\) >/);
+});
+
+test("Create in Business is an IDE: Explorer, editor, Pipeline and a status bar that fit the window; Keplar One keeps its layout", () => {
+  const frame = readFileSync("src/components/create/apps/IdeFrame.tsx", "utf8");
+  assert.match(frame, /if \(!enabled\) return <>\{children\}<\/>;/, "outside Business the start screen renders unchanged");
+  for (const label of ["Explorer", "Build pipeline", "Brief"]) assert.match(frame, new RegExp(`aria-label="${label}"`));
+  assert.match(frame, /el\.hasAttribute\("data-business-app"\)/);
+  assert.match(readFileSync("src/components/create/apps/AppBuilder.tsx", "utf8"), /<IdeFrame enabled=\{biz\}[\s\S]*?<\/IdeFrame>/);
+  assert.match(readFileSync("src/components/business-app/workspace.module.css", "utf8"), /\.module:has\(\[data-ide\]\) \{ height: 100%; \}/);
+  assert.match(readFileSync("src/components/create/apps/studio.module.css", "utf8"), /\.ide \{ height: 100%; min-height: 0; display: grid;/);
+});

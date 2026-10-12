@@ -15,6 +15,7 @@ import { applyEvent, runAppBuild, type BuildError, type BuildEvent } from "./bui
 import { takeAppHandoff } from "./handoff";
 import Link from "next/link";
 import { LiveCode } from "./LiveCode";
+import { IdeFrame, useBusinessApp } from "./IdeFrame";
 import { BuildTimeline, emptyLive, type Live } from "./BuildTimeline";
 import { Blueprint, type BlueprintLook } from "./BlueprintView";
 import { blueprintFromSpec, buildProgress, inferBlueprint } from "./blueprint";
@@ -65,6 +66,7 @@ function paletteOf(d: Design, cfg: Config | null) {
 
 export function AppBuilder() {
   const [cfg, setCfg] = useState<Config | null>(null);
+  const biz = useBusinessApp();
   const [apps, setApps] = useState<AppSummary[]>([]);
   const [current, setCurrent] = useState<AppDetail | null>(null);
   const [versions, setVersions] = useState<VersionMeta[]>([]);
@@ -382,6 +384,7 @@ export function AppBuilder() {
     return (
       <div className={s.root}>
         <div className={s.start}>
+          <IdeFrame enabled={biz} cfg={cfg} apps={apps} starters={STARTERS} running={running} onStarter={(t) => promptRef.current?.set(t)} onOpenApp={(id) => openApp(id)}>
           {/* Minimal pass: one prompt, like Ask. Surprise me, Voice, References, Look and the screen preview sit behind Options. */}
           <div className={s.calm}>
             <header className={s.calmIntro}>
@@ -495,6 +498,7 @@ export function AppBuilder() {
           <AppShelf apps={apps} busy={busy} onOpen={(id) => openApp(id)} onRefine={(id) => openApp(id, true)} onDuplicate={duplicate} onPublish={publish} />
 
           <p className={s.calmShowcase}>Need ideas? <Link href="/showcase">Browse the showcase</Link></p>
+          </IdeFrame>
         </div>
         {tuneOpen && cfg ? (
           <div className={s.sheetWrap} role="dialog" aria-modal="true" aria-label="Fine-tune the look" onClick={(e) => { if (e.target === e.currentTarget) setTuneOpen(false); }}>

@@ -157,6 +157,8 @@
 
 /* A full Keplar module (Create, the Business OS sections) inside the workspace's main area: it fills it and scrolls with it. */
 .module { min-height: 100%; display: flex; flex-direction: column; }
+/* Create as an IDE (IdeFrame.tsx) fills the window exactly and its columns scroll on their own; other modules grow and scroll the page. */
+.module:has([data-ide]) { height: 100%; }
 .module > * { flex: 1; min-width: 0; }
 
 /* Compact controls inside the modules (Create, Operations, Integrations, Agents, Approvals): Business is a dense desktop tool.
