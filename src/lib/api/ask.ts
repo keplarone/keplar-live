@@ -13,7 +13,21 @@ import { parseTools, prepareTools, type ApiTool } from "./tools";
 
 export const STRATEGIES = ["auto", "fast", "balanced", "deep"] as const;
 
-export type AskInput = { prompt: string; history: { role: "user" | "keplar"; text: string }[]; strategy?: string; tools?: ApiTool[] };
+/** One image the question is about (a screenshot, a photo, an area of a page). Answered by vision-capable models only. */
+export type AskImage = { dataUrl: string; width: number; height: number };
+export type AskInput = { prompt: string; history: { role: "user" | "keplar"; text: string }[]; strategy?: string; tools?: ApiTool[]; image?: AskImage };
+
+/** `image: { data_url, width, height }`: shape-checked here; the full check (real type, size) is the app's parseMedia. */
+function parseImage(raw: unknown): AskImage | undefined {
+  if (raw === undefined || raw === null) return undefined;
+  const o = (typeof raw === "object" && !Array.isArray(raw) ? raw : {}) as Record<string, unknown>;
+  const dataUrl = o.data_url;
+  const bad = () => new ApiError(400, "invalid_request", `"image" must be { "data_url": "data:image/(png|jpeg|webp);base64,...", "width": px, "height": px } and at most ${Math.round(API_ASK_LIMITS.imageChars / 1e6 * 10) / 10} MB as a data URL.`);
+  if (typeof dataUrl !== "string" || !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(dataUrl) || dataUrl.length > API_ASK_LIMITS.imageChars) throw bad();
+  const width = Number(o.width), height = Number(o.height);
+  if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1 || width > 8192 || height > 8192) throw bad();
+  return { dataUrl, width, height };
+}
 
 export function parseAsk(raw: unknown): AskInput {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new ApiError(400, "invalid_request", "Send a JSON object like {\"question\": \"...\"}.");
@@ -39,7 +53,8 @@ export function parseAsk(raw: unknown): AskInput {
     strategy = s as string | undefined;
   }
   const tools = parseTools(b.tools);
-  return { prompt: b.question.trim(), history, strategy, ...(tools.length ? { tools } : {}) };
+  const image = parseImage(b.image);
+  return { prompt: b.question.trim(), history, strategy, ...(tools.length ? { tools } : {}), ...(image ? { image } : {}) };
 }
 
 /** Public stage names; the app's internal ids are not part of the contract. */
@@ -86,7 +101,11 @@ export async function* runAsk(ws: Workspace, input: AskInput, passHeaders: Heade
     method: "POST",
     headers,
     signal,
-    body: JSON.stringify({ prompt: input.prompt, history: input.history, modes: prepared?.modes ?? {}, ...(prepared?.docs.length ? { docs: prepared.docs } : {}), routing: input.strategy ? { strategy: input.strategy } : {} }),
+    body: JSON.stringify({
+      prompt: input.prompt, history: input.history, modes: prepared?.modes ?? {}, ...(prepared?.docs.length ? { docs: prepared.docs } : {}), routing: input.strategy ? { strategy: input.strategy } : {},
+      // The app's media path: validated again there, sent only to models that can see, never stored.
+      ...(input.image ? { media: { images: [{ dataUrl: input.image.dataUrl, width: input.image.width, height: input.image.height, name: "image" }], videos: [] } } : {}),
+    }),
   });
   injectWorkspace(inner, ws);
   const res = await runKeplar(inner);

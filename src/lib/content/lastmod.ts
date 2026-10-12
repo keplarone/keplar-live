@@ -26,7 +26,7 @@ export const staticLastmod: Record<string, string> = {
   "/agents": "2026-09-28",
   "/enterprise": "2026-10-01",
   "/inquire": "2026-09-27",
-  "/privacy": "2026-10-04",
+  "/privacy": "2026-10-12",
   "/developers": "2026-10-04",
   "/terms": "2026-10-01",
   "/referral-terms": "2026-10-04",
@@ -38,12 +38,19 @@ export const staticLastmod: Record<string, string> = {
   "/ai-study-tool": "2026-10-01",
   "/ai-slideshow-maker": "2026-10-01",
   "/ai-fact-check": "2026-10-01",
+  "/roblox-studio-ai": "2026-10-11",
+  "/blender-ai": "2026-10-11",
   "/for-students": "2026-10-01",
   "/for-writers": "2026-10-04",
   "/for-founders": "2026-10-01",
   "/for-researchers": "2026-10-01",
   "/for-small-business": "2026-10-01",
   "/for-developers": "2026-10-03", // src/lib/growth/developers-page.ts (added 2026-10-03)
+  // Comparison pages (src/lib/compare.ts): published 2026-10-12 with Keplar's prices updated from the plan data.
+  "/compare": "2026-10-12",
+  "/compare/perplexity-model-council": "2026-10-12",
+  "/compare/poe": "2026-10-12",
+  "/compare/chathub": "2026-10-12",
 };
 
 export function lastmodFor(path: string): string | undefined {

@@ -35,6 +35,7 @@ import { voiceStatusText } from "@/lib/voice";
 import s from "./Composer.module.css";
 import { usePopupOrigin, usePresence } from "@/components/motion/usePresence";
 import { SlashCommandMenu } from "./SlashCommandMenu";
+import { useScreenShare } from "./screen-share";
 import {
   activeSlashToken,
   expandSlashCommand,
@@ -539,6 +540,9 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
     setAnnounce(accepted.length === 1 ? `Preparing ${accepted[0].file.name}.` : `Preparing ${accepted.length} files.`);
     for (const a of accepted) void prepare(a);
   };
+
+  // Keplar Vision: frames from a screen the person chose to share become ordinary image attachments (screen-share.ts).
+  const share = useScreenShare((f) => addFiles([f]), (m) => setMediaError(m));
 
   const addDocs = (files: File[]) => {
     const room = MAX_FILES - docs.length;
@@ -1126,6 +1130,15 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
           </div>
         ) : null}
 
+        {share.active ? (
+          <div className={s.shareBar} role="status" aria-live="polite">
+            <span className={s.shareDot} aria-hidden="true" />
+            <span className={s.shareLabel}>Sharing {share.label}</span>
+            <span className={s.shareNote}>Keplar sees it only when you capture.</span>
+            <button type="button" className={s.shareBtn} onClick={() => void share.capture()}>Capture</button>
+            <button type="button" className={s.shareBtn} onClick={share.stop}>Stop</button>
+          </div>
+        ) : null}
         <div className={s.row}>
           <div ref={toolsRef} className={s.tools} role="group" aria-label="Tools">
             <input
@@ -1230,6 +1243,10 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
               <button type="button" role="menuitem" className={s.attachItem} data-attach-item="photos" onClick={() => { setAttachOpen(false); photoRef.current?.click(); }}>
                 <GlyphCamera size={16} />
                 <span className={s.attachText}><span>Photos and video</span><span className={s.attachSub}>Screenshots, charts, handwriting, clips up to 3 min</span></span>
+              </button>
+              <button type="button" role="menuitem" className={s.attachItem} data-attach-item="screen" onClick={() => { setAttachOpen(false); void share.start(); }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2" /><path d="M8 21h8M12 17v4" /></svg>
+                <span className={s.attachText}><span>{share.active ? "Capture the shared screen" : "Share screen"}</span><span className={s.attachSub}>{share.active ? "Attach what it shows now" : "Pick a screen, window or tab; Keplar sees it only when you capture"}</span></span>
               </button>
               {linkDraft === null ? (
                 <button type="button" role="menuitem" className={s.attachItem} data-attach-item="link" onClick={() => setLinkDraft("")}>

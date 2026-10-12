@@ -14,6 +14,9 @@ import { api } from "../api";
 import { applyEvent, runAppBuild, type BuildError, type BuildEvent } from "./build-client";
 import { takeAppHandoff } from "./handoff";
 import Link from "next/link";
+import { LiveCode } from "./LiveCode";
+import { ScaledViewport } from "../ScaledViewport";
+import { IdeFrame, useBusinessApp } from "./IdeFrame";
 import { BuildTimeline, emptyLive, type Live } from "./BuildTimeline";
 import { Blueprint, type BlueprintLook } from "./BlueprintView";
 import { blueprintFromSpec, buildProgress, inferBlueprint } from "./blueprint";
@@ -64,6 +67,7 @@ function paletteOf(d: Design, cfg: Config | null) {
 
 export function AppBuilder() {
   const [cfg, setCfg] = useState<Config | null>(null);
+  const biz = useBusinessApp();
   const [apps, setApps] = useState<AppSummary[]>([]);
   const [current, setCurrent] = useState<AppDetail | null>(null);
   const [versions, setVersions] = useState<VersionMeta[]>([]);
@@ -381,6 +385,7 @@ export function AppBuilder() {
     return (
       <div className={s.root}>
         <div className={s.start}>
+          <IdeFrame enabled={biz} cfg={cfg} apps={apps} starters={STARTERS} running={running} onStarter={(t) => promptRef.current?.set(t)} onOpenApp={(id) => openApp(id)} getBrief={() => store.text()} auto={auto} design={design} log={live.log}>
           {/* Minimal pass: one prompt, like Ask. Surprise me, Voice, References, Look and the screen preview sit behind Options. */}
           <div className={s.calm}>
             <header className={s.calmIntro}>
@@ -494,6 +499,7 @@ export function AppBuilder() {
           <AppShelf apps={apps} busy={busy} onOpen={(id) => openApp(id)} onRefine={(id) => openApp(id, true)} onDuplicate={duplicate} onPublish={publish} />
 
           <p className={s.calmShowcase}>Need ideas? <Link href="/showcase">Browse the showcase</Link></p>
+          </IdeFrame>
         </div>
         {tuneOpen && cfg ? (
           <div className={s.sheetWrap} role="dialog" aria-modal="true" aria-label="Fine-tune the look" onClick={(e) => { if (e.target === e.currentTarget) setTuneOpen(false); }}>
@@ -602,6 +608,8 @@ export function AppBuilder() {
             {/* The stage line above (with the timer) already says what is happening, so the timeline does not repeat it. */}
             <BuildTimeline live={!running && !live.spec && current?.spec ? { ...live, stage: "done", spec: current.spec } : { ...live, stageText: "" }} report={current?.report ?? null} running={running} />
           </div>
+          {/* The code as it is written (this build only; saved versions are in the Code tab). */}
+          <LiveCode live={live} running={running} />
           {current?.spec && !running ? (
             <div className={s.refine}>
               <label className={s.refineLabel} htmlFor="kc-refine">Refine</label>
@@ -627,7 +635,11 @@ export function AppBuilder() {
               </div>
               {showFrame ? (
                 <div className={s.frameLayer} data-ready={frameReady ? "true" : undefined}>
-                  <iframe key={frameKey} className={s.frame} data-device={device} src={current!.previewUrl!} title="App preview" onLoad={() => setFrameReady(true)} sandbox="allow-scripts allow-forms allow-popups allow-modals allow-downloads" />
+                  {(() => {
+                    const frame = <iframe key={frameKey} className={s.frame} data-device={device} src={current!.previewUrl!} title="App preview" onLoad={() => setFrameReady(true)} sandbox="allow-scripts allow-forms allow-popups allow-modals allow-downloads" />;
+                    // Desktop is a real 1920x1080 viewport scaled to fit, so the app lays out as on a 1080p monitor, not at the pane's width.
+                    return device === "desktop" ? <ScaledViewport>{frame}</ScaledViewport> : frame;
+                  })()}
                 </div>
               ) : null}
             </div>

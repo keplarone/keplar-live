@@ -1,0 +1,46 @@
+{
+ "note": "A real answer from keplar.one (anonymous demo, 2026-10-12) to the question shown in screenshot 1, converted with src/lib/api/format.ts toV1Answer: the same shape /api/v1/ask returns. Used only to render store screenshots.",
+ "answer": {
+  "object": "answer",
+  "id": "ans_mv4o7whabrpjc",
+  "answer": "A four-day week can work well for small teams if output stays steady and coverage is handled.  \nThe strongest evidence comes from self-selected trials that already had low turnover and good processes.  \nWhere people disagree is whether the gains are real or just a result of those pre-existing conditions.\n\n**Self-selection bias**: Most trials are run by firms already doing well, so results may not generalize.  \n**Coverage gaps**: Customer-facing teams often struggle to maintain service levels without extra staff or rotating schedules.  \n**Work redesign vs. compression**: Gains only appear when work is redesigned, not when 40 hours are simply squeezed into 4 days.  \n**Trial duration**: Critics note that most studies are short-term, leaving long-term sustainability unproven.",
+  "agreement": {
+   "level": "consensus",
+   "agree": 2,
+   "disagree": 0,
+   "responded": 2,
+   "consulted": 2,
+   "summary": "2 agree, 0 disagree"
+  },
+  "disagreement": null,
+  "models": [
+   {
+    "name": "Dots3-Note Preview (free)",
+    "provider": "Dots Studio",
+    "status": "responded"
+   },
+   {
+    "name": "Nemotron 3 Super (free)",
+    "provider": "NVIDIA",
+    "status": "responded"
+   },
+   {
+    "name": "Nemotron 3 Super (free)",
+    "provider": "NVIDIA",
+    "status": "responded"
+   }
+  ],
+  "sources": [
+   {
+    "kind": "note",
+    "title": "No sources cited",
+    "url": null
+   }
+  ],
+  "source_check": null,
+  "usage": {
+   "credits": 1
+  },
+  "created": "2026-10-12T00:00:00.000Z"
+ }
+}

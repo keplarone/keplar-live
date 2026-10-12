@@ -7,7 +7,7 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { allDocs, docBySlug, docSections, docsIn, neighbors, sectionById } from "@/lib/kb/docs";
 import { faqLd, faqPairs, howToLd, techArticle, tocOf } from "@/lib/kb/jsonld";
 import { pageMeta } from "@/lib/seo";
-import { breadcrumbs } from "@/lib/seo-graph";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import s from "@/components/kb/kb.module.css";
 
 export const dynamicParams = false;
@@ -37,7 +37,7 @@ export default async function DocPage({ params }: Props) {
     const pages = docsIn(sec.id);
     return (
       <DocsFrame current={`/docs/${sec.id}`}>
-        <p className={s.crumbs}><Link href="/docs">Docs</Link><span aria-hidden>/</span>{sec.title}</p>
+        <Breadcrumbs trail={[{ name: "Docs", path: "/docs" }, { name: sec.title, path: `/docs/${sec.id}` }]} />
         <h1 className={s.h1}>{sec.title}</h1>
         <p className={s.lede}>{sec.blurb}</p>
         <ul className={s.list} style={{ marginTop: "var(--s-8)" }}>
@@ -46,7 +46,6 @@ export default async function DocPage({ params }: Props) {
           ))}
         </ul>
         <JsonLd data={{ "@context": "https://schema.org", "@type": "CollectionPage", name: `${sec.title} | Keplar docs`, url: `https://keplar.one/docs/${sec.id}`, isPartOf: { "@id": "https://keplar.one/#website" }, inLanguage: "en" }} />
-        <JsonLd data={breadcrumbs([{ name: "Docs", path: "/docs" }, { name: sec.title, path: `/docs/${sec.id}` }])} />
       </DocsFrame>
     );
   }
@@ -61,7 +60,7 @@ export default async function DocPage({ params }: Props) {
 
   return (
     <DocsFrame current={d.path} toc={toc}>
-      <p className={s.crumbs}><Link href="/docs">Docs</Link><span aria-hidden>/</span><Link href={`/docs/${section.id}`}>{section.title}</Link></p>
+      <Breadcrumbs trail={[{ name: "Docs", path: "/docs" }, { name: section.title, path: `/docs/${section.id}` }, { name: d.title, path: d.path }]} />
       <h1 className={s.h1}>{d.title}</h1>
       <p className={s.lede}>{d.description}</p>
       <p className={s.meta}><span>Updated <time dateTime={d.updated}>{longDate(d.updated)}</time></span><span>{Math.max(1, Math.round(d.words / 220))} min read</span></p>
@@ -87,7 +86,6 @@ export default async function DocPage({ params }: Props) {
         <div className={s.ctaRow}><TrackedLink where={`docs:${d.slug}`} href="/app" size="md" arrow>Try Keplar free</TrackedLink></div>
       </div>
       <JsonLd data={techArticle({ path: d.path, title: d.title, description: d.description, published: d.updated, updated: d.updated, section: section.title, keywords: d.keywords, words: d.words, image: `/og/docs/${d.slug}` })} />
-      <JsonLd data={breadcrumbs([{ name: "Docs", path: "/docs" }, { name: section.title, path: `/docs/${section.id}` }, { name: d.title, path: d.path }])} />
       {faq.length ? <JsonLd data={faqLd(faq)} /> : null}
       {how ? <JsonLd data={how} /> : null}
     </DocsFrame>

@@ -43,7 +43,6 @@ export function validateExtension(dir = root) {
   let m;
   try { m = JSON.parse(read("manifest.json")); } catch { return ["manifest.json is missing or not valid JSON"]; }
   if (m.manifest_version !== 3) problems.push("manifest_version must be 3");
-  if (!/beta/i.test(`${m.name} ${m.version_name ?? ""}`)) problems.push("the name or version_name must say beta");
   for (const p of m.permissions ?? []) if (!ALLOWED_PERMISSIONS.includes(p)) problems.push(`permission not on the allow-list: ${p}`);
   if (m.optional_permissions?.length) problems.push("no optional permissions");
   if (m.host_permissions?.length || m.optional_host_permissions?.length) problems.push("no host permissions: the API allows cross-origin calls with a bearer key");

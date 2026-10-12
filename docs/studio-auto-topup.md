@@ -1,6 +1,6 @@
 # Studio auto top-up
 
-Studio has no per-run credit budget. It keeps its normal account allowance, usage cooldowns, safety gates, manual pause/stop, and 80-step pause. The shared Studio dock includes auto top-up on both the page and the desktop overlay.
+Studio has no per-run credit budget and does not use the admin daily safety cap. It keeps its normal account credits, auto top-up, usage cooldowns, safety gates, manual pause/stop, and 80-step pause. The shared Studio dock includes auto top-up on both the page and the desktop overlay.
 
 Auto top-up is off by default. A verified personal Lite/Plus/Pro account owner reviews a saved Whop card, price, credits, expiry and a limit of 1–10 top-ups per calendar month (UTC), then explicitly authorizes automatic purchases. Enabling does not charge. Disabling prevents new purchases; an already-started payment can finish.
 

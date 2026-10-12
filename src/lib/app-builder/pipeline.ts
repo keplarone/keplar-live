@@ -47,7 +47,7 @@ export type BuildEvent =
   | { type: "build"; id: string; stage: AppBuild["stage"] }
   | { type: "stage"; stage: AppBuild["stage"]; text: string }
   | { type: "plan"; spec: PublicSpec }
-  | { type: "file"; path: string; bytes: number }
+  | { type: "file"; path: string; bytes: number; text?: string }
   | { type: "progress"; group: string; chars: number }
   | { type: "image"; slot: string; ok: boolean }
   | { type: "check"; check: CheckResult }

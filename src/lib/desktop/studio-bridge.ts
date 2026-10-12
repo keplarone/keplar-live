@@ -31,7 +31,28 @@ export type StudioBridge = {
   onStatus(listener: (status: StudioStatus) => void): () => void;
   /** Present on desktop builds that can float Keplar over Studio. */
   overlay?: StudioOverlayApi;
+  /** Blender, through the Keplar add-on (desktop app with bridge version 3+). */
+  blender?: BlenderBridge;
 };
+
+/** Blender bridge (keplar-desktop: src/main/blender): the same shape as Studio's, plus setup, which installs the add-on. */
+export type BlenderState = "idle" | "connecting" | "connected" | "missing" | "error";
+export type BlenderStatus = { state: BlenderState; message?: string; blender?: string; file?: string; tools: string[] };
+export type BlenderBridge = {
+  status(): Promise<BlenderStatus>;
+  connect(): Promise<BlenderStatus>;
+  setup(): Promise<{ ok: boolean; message: string }>;
+  disconnect(): Promise<BlenderStatus>;
+  tools(): Promise<{ name: string; description?: string; inputSchema?: unknown }[]>;
+  call(name: string, args?: Record<string, unknown>): Promise<StudioCall>;
+  onStatus(listener: (status: BlenderStatus) => void): () => void;
+};
+
+/** The Blender bridge inside the Keplar desktop app (0.1.8+), else null. */
+export function blenderBridge(): BlenderBridge | null {
+  const b = studioBridge()?.blender;
+  return b && typeof b.connect === "function" && typeof b.setup === "function" ? b : null;
+}
 
 /** The bridge when running inside the Keplar desktop app on a keplar.one app page, else null. */
 export function studioBridge(): StudioBridge | null {

@@ -80,7 +80,7 @@ const m: MarketingCatalog = {
       "platform": {
         "label": "Plataforma",
         "title": "Usa Keplar desde cualquier lugar.",
-        "lede": "El mismo motor, detrás de una API, dentro de un widget en tu sitio y compartido en un equipo."
+        "lede": "El mismo motor, detrás de una API, en tu navegador, dentro de un widget en tu sitio y compartido en un equipo."
       },
       "trust": {
         "label": "Confianza",
@@ -199,6 +199,31 @@ const m: MarketingCatalog = {
       "referrals": {
         "name": "Programa de referidos",
         "line": "Invita a alguien; ambos reciben uso extra, nunca dinero."
+      },
+      "roblox-studio": {
+        "name": "Modo Roblox Studio",
+        "line": "Un compañero de construcción dentro de Roblox Studio: mapas, UI, efectos flipbook y scripts Luau, con Claude Opus 5.5.",
+        "note": "App de escritorio, desde Lite."
+      },
+      "roblox-cloud": {
+        "name": "Roblox Cloud",
+        "line": "Trabajos nocturnos en los scripts de tu juego, cada cambio revisado por el analizador de Luau y aplicado en Studio cuando tú digas.",
+        "note": "Solo scripts; no puede probar el juego."
+      },
+      "blender": {
+        "name": "Modo Blender",
+        "line": "Modela, texturiza con sets PBR de Poly Haven, ilumina y exporta en Blender 4.2 o posterior.",
+        "note": "App de escritorio 0.1.8 o posterior."
+      },
+      "extension": {
+        "name": "Extensión de navegador Keplar One",
+        "line": "Pregunta sobre una selección o una página desde Chrome o Edge, con tu clave de API.",
+        "note": "Enviada a Chrome Web Store."
+      },
+      "lens": {
+        "name": "Search with Keplar One",
+        "line": "Arrastra sobre cualquier texto o imagen de una página; la respuesta se abre en un panel lateral.",
+        "note": "Parte de la extensión de navegador."
       },
       "security": {
         "name": "Seguridad",

@@ -25,7 +25,8 @@ test("Plan & billing: admin accounts get plain wording, no billing period, and a
   const page = read("src/app/(marketing)/account/page.tsx");
   assert.doesNotMatch(page, /Not applicable/);
   assert.match(page, /No subscription needed/);
-  assert.match(page, /Daily safety cap/);
+  assert.doesNotMatch(page, /Daily safety cap/);
+  assert.match(page, /ws\.admin \? "Unlimited"/);
   assert.match(page, /ws\.admin \? \(\s*<div className=\{s\.row\}><span className=\{s\.k\}>Billing</);
   const actions = read("src/components/account/AccountActions.tsx");
   assert.match(actions, /href="\/admin"/);

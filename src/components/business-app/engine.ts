@@ -4,9 +4,10 @@
  * reports its streamed events (one JSON object per line). Business screens decide the modes and the report structure.
  */
 import type { KeplarAnswer, KeplarEvent } from "@/lib/orchestration/types";
+import type { MediaInput } from "@/lib/orchestration/media";
 
 export type EngineDoc = { name: string; text: string; truncated?: boolean };
-export type EngineRequest = { prompt: string; mode: "ask" | "research" | "reason"; projectId?: string | null; docs?: EngineDoc[]; history?: { role: "user" | "keplar"; text: string }[] };
+export type EngineRequest = { prompt: string; mode: "ask" | "research" | "reason"; projectId?: string | null; docs?: EngineDoc[]; history?: { role: "user" | "keplar"; text: string }[]; media?: MediaInput };
 
 export async function runEngine(req: EngineRequest, onEvent: (e: KeplarEvent) => void, signal: AbortSignal): Promise<KeplarAnswer | null> {
   const res = await fetch("/api/keplar", {
@@ -20,6 +21,7 @@ export async function runEngine(req: EngineRequest, onEvent: (e: KeplarEvent) =>
       routing: { strategy: "auto", depth: req.mode === "ask" ? "auto" : "thorough" },
       ...(req.projectId ? { projectId: req.projectId } : {}),
       ...(req.docs?.length ? { docs: req.docs } : {}),
+      ...(req.media?.images.length ? { media: req.media } : {}),
       tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
     }),
   });

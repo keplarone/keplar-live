@@ -6,7 +6,8 @@ import { TwoTone } from "@/components/page/TwoTone";
 import { resultText, STUDIO_PLANS, studioBridge, type OverlayState, type StudioStatus } from "@/lib/desktop/studio-bridge";
 import { StudioDock } from "./StudioDock";
 import { StudioPanel } from "./StudioPanel";
-import { parsePlaces, useStudioAgent, type Place } from "./useStudioAgent";
+import { RobloxCloud } from "./RobloxCloud";
+import { overlayTarget, parsePlaces, setOverlayTarget, useStudioAgent, type Place } from "./useStudioAgent";
 import s from "./studio-mode.module.css";
 
 const noSubscribe = () => () => {};
@@ -28,7 +29,7 @@ export const STUDIO_IDEAS = [
   { title: "Sword slash VFX", line: "Layered trail, sparks and impact burst on hit", tone: "vfx", prompt: "Create a sword slash effect: a layered trail while swinging, sparks, and an impact burst with a short camera shake when it hits something." },
 ] as const;
 
-const CAN_DO = ["Scripts and systems", "Maps and models", "Lighting and mood", "UI that works on phones", "Particles, beams, trails", "Play tests and fixes", "Creator Store assets"];
+const CAN_DO = ["Scripts and systems", "Maps and models", "Lighting and mood", "UI that works on phones", "Particles, beams, trails", "Fixes from your play tests", "Creator Store assets"];
 
 /** The soft colour fields behind the Studio page (decorative, still when reduced motion is on). */
 export function StudioAura() {
@@ -159,7 +160,7 @@ export function StudioView({ plan, signedIn }: { plan: string; signedIn: boolean
           <div className={s.heroText}>
             {kicker}
             <h1 className={s.heroTitle}><TwoTone text="Build in Roblox Studio" /></h1>
-            <p className={s.lede}>Describe a game, a map, a UI or an effect. Keplar looks at your place, plans it, builds it in Studio on this computer, checks its own work with screenshots and play tests, and asks before every major change.</p>
+            <p className={s.lede}>Describe a game, a map, a UI or an effect. Keplar looks at your place, plans it, builds it in Studio on this computer and asks before every major change. Then you play-test it and say what to change.</p>
             <div className={s.heroActions} aria-live="polite">
               {st !== "unsupported" ? (
                 <button type="button" className={s.primary} data-size="lg" onClick={() => void connect()} disabled={busy || st === "connecting"}>
@@ -231,22 +232,25 @@ export function StudioView({ plan, signedIn }: { plan: string; signedIn: boolean
           <button type="button" className={s.iconBtn} onClick={() => void refreshPlaces()} aria-label="Refresh the list of open places" title="Refresh places">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 4v7h-7" /></svg>
           </button>
-          {bridge.overlay ? <button type="button" className={s.ghost} onClick={() => void bridge.overlay?.open()} disabled={a.running}>Float over Studio</button> : null}
+          {bridge.overlay ? <button type="button" className={s.ghost} onClick={() => { setOverlayTarget("studio"); void bridge.overlay?.open(); }} disabled={a.running}>Float over Studio</button> : null}
           <button type="button" className={s.ghost} onClick={() => void disconnect()} disabled={busy || a.running}>Disconnect</button>
         </div>
       </header>
       {shownPlaces && shownPlaces.length === 0 ? <p className={s.note} data-tone="warn">No place is open. Open a place in Roblox Studio, then refresh.</p> : null}
-      {overlay?.open ? (
+      {overlay?.open && overlayTarget() === "studio" ? (
         <section className={s.card}>
           <h2 className={s.cardTitle}>Keplar is floating over Studio</h2>
           <p className={s.text}>Build from the overlay while you watch Studio. Close it to come back here.</p>
           <button type="button" className={s.primary} onClick={() => void bridge.overlay?.close()}>Bring it back here</button>
         </section>
       ) : (
-        <div className={s.workspace}>
-          <StudioDock a={a} draft={draft} onDraftUsed={() => setDraft("")} />
-          <StudioPanel a={a} now={now} />
-        </div>
+        <>
+          <div className={s.workspace}>
+            <StudioDock a={a} draft={draft} onDraftUsed={() => setDraft("")} />
+            <StudioPanel a={a} now={now} />
+          </div>
+          <RobloxCloud bridge={bridge} place={a.place} busy={a.running} />
+        </>
       )}
     </div>
   );

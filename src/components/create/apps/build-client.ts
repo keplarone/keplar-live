@@ -19,6 +19,7 @@ export function applyEvent(l: Live, ev: BuildEvent): Live {
   else if (t === "plan") n.spec = ev.spec as Live["spec"];
   else if (t === "file") {
     n.files = [...l.files.filter((f) => f.path !== ev.path), { path: ev.path as string, bytes: Number(ev.bytes) || 0 }];
+    if (typeof ev.text === "string") n.code = { ...l.code, [ev.path as string]: ev.text };
     const w = { ...l.writing };
     for (const k of Object.keys(w)) if (String(ev.path).includes(k)) delete w[k];
     n.writing = w;

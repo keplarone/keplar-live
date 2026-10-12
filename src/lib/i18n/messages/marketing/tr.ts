@@ -80,7 +80,7 @@ const m: MarketingCatalog = {
       "platform": {
         "label": "Platform",
         "title": "Keplar’ı her yerden kullanın.",
-        "lede": "Aynı motor; bir API’nin arkasında, sitenizdeki bir widget’ın içinde ve bir ekiple paylaşılarak."
+        "lede": "Aynı motor; bir API’nin arkasında, tarayıcınızda, sitenizdeki bir widget’ın içinde ve bir ekiple paylaşılarak."
       },
       "trust": {
         "label": "Güven",
@@ -199,6 +199,31 @@ const m: MarketingCatalog = {
       "referrals": {
         "name": "Davet programı",
         "line": "Bir arkadaşınızı davet edin; ikiniz de ek kullanım kazanırsınız, asla para değil."
+      },
+      "roblox-studio": {
+        "name": "Roblox Studio modu",
+        "line": "Roblox Studio içinde bir yardımcı yapımcı: haritalar, arayüz, flipbook efektleri ve Luau betikleri, Claude Opus 5.5 ile.",
+        "note": "Masaüstü uygulaması, Lite ve üzeri."
+      },
+      "roblox-cloud": {
+        "name": "Roblox Cloud",
+        "line": "Oyununuzun betikleri üzerinde gece boyu çalışma; her düzenleme Luau çözümleyicisiyle denetlenir, siz istediğinizde Studio’da uygulanır.",
+        "note": "Yalnızca betikler; oyunu test edemez."
+      },
+      "blender": {
+        "name": "Blender modu",
+        "line": "Blender 4.2 veya üzerinde modelleme, Poly Haven PBR setleriyle doku, ışık ve dışa aktarma.",
+        "note": "Masaüstü uygulaması 0.1.8 veya üzeri."
+      },
+      "extension": {
+        "name": "Keplar One tarayıcı uzantısı",
+        "line": "Chrome veya Edge’de seçili metin ya da bir sayfa hakkında API anahtarınızla soru sorun.",
+        "note": "Chrome Web Store’a gönderildi."
+      },
+      "lens": {
+        "name": "Search with Keplar One",
+        "line": "Sayfadaki herhangi bir metnin veya resmin üzerinden sürükleyin; yanıt yan panelde açılır.",
+        "note": "Tarayıcı uzantısının bir parçası."
       },
       "security": {
         "name": "Güvenlik",

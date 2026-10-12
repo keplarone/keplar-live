@@ -102,3 +102,12 @@
   .panel, .panel::before, .head > *, .view, .pill { animation: none; }
   .icon:hover:not(:disabled), .icon:active:not(:disabled) { transform: none; }
 }
+
+/* Which app the overlay works in (Roblox Studio or Blender): a small two-way switch in the header. */
+.targets { display: inline-flex; flex: none; padding: 2px; border-radius: 999px; background: rgb(var(--rgb-ink) / 0.06); -webkit-app-region: no-drag; app-region: no-drag; }
+.target { height: 24px; padding: 0 9px; border: 0; border-radius: 999px; background: transparent; color: var(--c-ink-3); font: inherit; font-size: 11.5px; cursor: pointer; transition: background-color 120ms ease, color 120ms ease; }
+.target[aria-pressed="true"] { background: var(--c-ink); color: var(--c-canvas); }
+.target:disabled:not([aria-pressed="true"]) { opacity: 0.45; cursor: default; }
+.target:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 1px; }
+.message p { margin: 0 0 10px; }
+.retry { height: 30px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--c-ink); color: var(--c-canvas); font: inherit; font-size: 13px; cursor: pointer; }

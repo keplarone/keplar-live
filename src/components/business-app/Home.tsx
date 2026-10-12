@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { MediaInput } from "@/lib/orchestration/media";
+import { AttachButton, mediaHandlers, MediaTray, useMediaAttach } from "./attach";
 import s from "./cursor.module.css";
 
 export type HomeMode = "ask" | "research" | "reason";
 type Project = { id: string; name: string };
 
 const MODES: { id: HomeMode; label: string; model: string; placeholder: string }[] = [
-  { id: "ask", label: "Ask", model: "Keplar One · Auto", placeholder: "Ask, plan, research. Shift+Tab switches mode" },
+  { id: "ask", label: "Ask", model: "Keplar One · Auto", placeholder: "Ask, plan, research. Alt+M switches mode" },
   { id: "research", label: "Deep Research", model: "Keplar One · Research", placeholder: "What should Keplar research? It reads the web and cites every page" },
   { id: "reason", label: "Reason", model: "Keplar One · Thorough", placeholder: "Describe the decision. Attach documents in the next step" },
 ];
@@ -16,7 +18,7 @@ const MODES: { id: HomeMode; label: string; model: string; placeholder: string }
  * The Business workspace's home (Cursor-style): one centered composer with the project and mode pickers above it, quick starts
  * below, and a tip at the foot. Sending opens a chat (Ask) or starts Deep Research / Reason with the text.
  */
-export function Home({ projects, onSend, onNewProject }: { projects: Project[]; onSend: (mode: HomeMode, text: string, projectId: string | null) => void; onNewProject: () => void }) {
+export function Home({ projects, onSend, onNewProject }: { projects: Project[]; onSend: (mode: HomeMode, text: string, projectId: string | null, media?: MediaInput) => void; onNewProject: () => void }) {
   const [mode, setMode] = useState<HomeMode>("ask");
   const [text, setText] = useState("");
   const [projectId, setProjectId] = useState("");
@@ -24,10 +26,11 @@ export function Home({ projects, onSend, onNewProject }: { projects: Project[]; 
   const ref = useRef<HTMLTextAreaElement>(null);
   const rec = useRef<{ stop(): void } | null>(null);
   const m = MODES.find((x) => x.id === mode)!;
+  const media = useMediaAttach();
 
   useEffect(() => { ref.current?.focus({ preventScroll: true }); }, []);
 
-  const send = () => { if (text.trim()) onSend(mode, text.trim(), projectId || null); };
+  const send = () => { if (text.trim() && !media.busy) onSend(mode, text.trim(), projectId || null, media.take()); };
   const cycle = () => setMode((cur) => MODES[(MODES.findIndex((x) => x.id === cur) + 1) % MODES.length]!.id);
 
   // Dictation with the browser's own speech recognition where available (Chromium, so the desktop app); nothing is uploaded by us.
@@ -63,7 +66,8 @@ export function Home({ projects, onSend, onNewProject }: { projects: Project[]; 
             </select>
           </label>
         </div>
-        <form className={s.composer} onSubmit={(e) => { e.preventDefault(); send(); }}>
+        <form className={s.composer} onSubmit={(e) => { e.preventDefault(); send(); }} {...mediaHandlers(media)}>
+          <MediaTray media={media} />
           <label htmlFor="biz-compose" className={s.srOnly}>Message</label>
           <textarea
             id="biz-compose"
@@ -73,7 +77,7 @@ export function Home({ projects, onSend, onNewProject }: { projects: Project[]; 
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
-              if (e.key === "Tab" && e.shiftKey) { e.preventDefault(); cycle(); }
+              if (e.key.toLowerCase() === "m" && e.altKey) { e.preventDefault(); cycle(); }
             }}
             placeholder={m.placeholder}
           />
@@ -81,6 +85,7 @@ export function Home({ projects, onSend, onNewProject }: { projects: Project[]; 
             <button type="button" className={s.roundBtn} onClick={onNewProject} aria-label="New project" title="New project">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
             </button>
+            <AttachButton media={media} />
             <span className={s.model}><span className={s.modelDot} aria-hidden="true" />{m.model}</span>
             <span className={s.grow} />
             {SpeechCtor ? (
@@ -88,7 +93,7 @@ export function Home({ projects, onSend, onNewProject }: { projects: Project[]; 
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></svg>
               </button>
             ) : null}
-            <button type="submit" className={s.sendBtn} disabled={!text.trim()} aria-label="Send">
+            <button type="submit" className={s.sendBtn} disabled={!text.trim() || media.busy} aria-label="Send">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
             </button>
           </div>
@@ -98,7 +103,7 @@ export function Home({ projects, onSend, onNewProject }: { projects: Project[]; 
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></svg>
             Research a market
           </button>
-          <button type="button" className={s.quickBtn} onClick={() => setMode("reason")}>Plan a decision <kbd>⇧Tab</kbd></button>
+          <button type="button" className={s.quickBtn} onClick={() => setMode("reason")}>Plan a decision <kbd>Alt M</kbd></button>
           <button type="button" className={s.quickBtn} onClick={onNewProject}>New project</button>
         </div>
       </div>

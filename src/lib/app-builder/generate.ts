@@ -124,7 +124,9 @@ export function parseFileBlocks(text: string): Record<string, string> {
   return out;
 }
 
-export type GenEvent = { type: "file"; path: string; bytes: number } | { type: "progress"; group: string; chars: number };
+/** Live code view: a file event carries its text (capped) so the owner can watch the code being written. */
+export const LIVE_TEXT_MAX = 64_000;
+export type GenEvent = { type: "file"; path: string; bytes: number; text?: string } | { type: "progress"; group: string; chars: number };
 
 /** Runs one wave (groups in parallel, bounded by the plan's parallelism). */
 export async function runWave(o: {
@@ -168,7 +170,7 @@ export async function runWave(o: {
         for (const [p, c] of Object.entries(got)) {
           if (!allowed.has(p)) continue;
           files[p] = c;
-          o.onEvent({ type: "file", path: p, bytes: c.length });
+          o.onEvent({ type: "file", path: p, bytes: c.length, text: c.slice(0, LIVE_TEXT_MAX) });
         }
         for (const f of group.files) if (files[f.path] === undefined) failed.push(f.path);
       } catch (e) {

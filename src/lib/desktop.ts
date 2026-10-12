@@ -6,3 +6,9 @@
 // Also sets data-desktop-os ("mac" or "other"): where env(titlebar-area-*) is not exposed, CSS still knows which side the window
 // controls are on (traffic lights on the left on macOS; minimise/maximise/close on the right elsewhere) and how much room to keep.
 export const DESKTOP_SCRIPT = `(function(){try{var n=navigator,w=n.windowControlsOverlay,d=document.documentElement;if(/\\bElectron\\//.test(n.userAgent)||/keplar-desktop/.test(n.userAgent)||d.hasAttribute("data-keplar-desktop")||(w&&w.visible)||window.keplarDesktop){d.setAttribute("data-desktop","1");d.setAttribute("data-desktop-os",/Mac/.test(n.platform||n.userAgent)?"mac":"other")}}catch(e){}})();`;
+
+/**
+ * In the Keplar desktop app (the marker DESKTOP_SCRIPT sets before first paint)? False on the server. The desktop window is the
+ * app, not a mirror of keplar.one: the site's home-page pieces (the welcome-back screen, the moving backdrop) stay out of it.
+ */
+export const inDesktopApp = () => typeof document !== "undefined" && document.documentElement.getAttribute("data-desktop") === "1";

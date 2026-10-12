@@ -4,6 +4,7 @@ import { test } from "node:test";
 import { guides } from "../src/lib/content/guides";
 import { landingPages } from "../src/lib/content/landing";
 import { allPosts } from "../src/lib/kb/blog";
+import { allDocs } from "../src/lib/kb/docs";
 import sitemap from "../src/app/sitemap";
 import { parseUtm, withUtm } from "../src/lib/utm";
 
@@ -29,7 +30,7 @@ test("every page has a unique title, description, and path", () => {
 });
 
 test("internal links point at real pages", () => {
-  const known = new Set(["/how-it-works", "/pricing", "/compare", "/for-you", "/for-developers", ...landingPages.map((p) => p.path), ...guides.map((g) => g.path), ...allPosts().map((b) => b.path)]);
+  const known = new Set(["/how-it-works", "/pricing", "/compare", "/for-you", "/for-developers", "/download", "/what-is-keplar", ...landingPages.map((p) => p.path), ...guides.map((g) => g.path), ...allPosts().map((b) => b.path), ...allDocs().map((d) => d.path)]);
   for (const p of landingPages) for (const r of p.related) assert.ok(known.has(r), `${p.path} -> ${r}`);
   for (const g of guides) for (const r of g.related) assert.ok(known.has(r), `${g.path} -> ${r}`);
 });
@@ -37,7 +38,8 @@ test("internal links point at real pages", () => {
 test("sitemap lists the new pages and keeps private and noindexed routes out", () => {
   const urls = sitemap().map((e) => new URL(e.url).pathname);
   for (const p of [...landingPages.map((x) => x.path), ...guides.map((g) => g.path), "/guides"]) assert.ok(urls.includes(p), p);
-  for (const p of ["/app", "/account", "/checkout", "/signin", "/signup", "/compare/perplexity-model-council"]) assert.ok(!urls.includes(p), p);
+  for (const p of ["/app", "/account", "/checkout", "/signin", "/signup"]) assert.ok(!urls.includes(p), p);
+  assert.ok(urls.includes("/compare/perplexity-model-council"), "comparison pages are approved and listed (2026-10-12)");
 });
 
 test("utm tags are validated and appended only to internal links", () => {

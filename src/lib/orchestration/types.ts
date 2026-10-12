@@ -697,6 +697,12 @@ export type KeplarEvent =
       window?: { id: "fiveHour" | "weekly"; label: string; resetsAt: string; message: string };
       /** Set when the Free plan's questions for today are used up (the server refused before starting). */
       daily?: { limit: number; resetsAt: string };
+      /**
+       * Set when today's shared usage budget paused Free. Not this person's questions and not monthly credits.
+       * `resetsAt` is the next 00:00 UTC.
+       */
+      budget?: "day";
+      resetsAt?: string;
     }
   | {
       type: "error";

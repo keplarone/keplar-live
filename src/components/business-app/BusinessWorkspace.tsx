@@ -1,14 +1,18 @@
 "use client";
 
 import { siteUrl } from "@/lib/site";
+import { KeplarSymbol } from "@/components/brand/KeplarSymbol";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
+import type { MediaInput } from "@/lib/orchestration/media";
 import { Analyst } from "./Analyst";
 import { Ask } from "./Ask";
 import { Dashboard } from "./Dashboard";
 import { Home, type HomeMode } from "./Home";
 import { Projects } from "./Projects";
+import { useBusinessNavigation } from "./useBusinessNavigation";
 import { SIGN_OUT_FAILED, signOutOfBusiness } from "@/components/business-site/sign-out";
+import { isSettingsSection, type SettingsSection } from "./settings-sections";
 import c from "./cursor.module.css";
 import s from "./workspace.module.css";
 
@@ -17,6 +21,8 @@ type OsTab = "overview" | "orders" | "crm" | "inbox" | "agents" | "approvals" | 
 const OS_TABS: readonly OsTab[] = ["overview", "orders", "crm", "inbox", "agents", "approvals", "connectors", "apps", "audit"];
 const Loading = () => <div className={s.center}><span className={s.spinner} aria-label="Loading" /></div>;
 const BusinessOS = dynamic(() => import("@/components/business/BusinessOS").then((m) => m.BusinessOS), { ssr: false, loading: Loading });
+const DesignCanvas = dynamic(() => import("./DesignCanvas").then((m) => m.DesignCanvas), { ssr: false, loading: Loading });
+const Settings = dynamic(() => import("./Settings").then((m) => m.Settings), { ssr: false, loading: Loading });
 const CreateStudio = dynamic(() => import("@/components/create/CreateStudio").then((m) => m.CreateStudio), { ssr: false, loading: Loading });
 
 type Account = { signedIn: boolean; email?: string | null; account?: { company: string } | null; active?: boolean; plan?: { name: string } | null };
@@ -28,6 +34,8 @@ type View =
   | { at: "dashboard" }
   | { at: "projects"; projectId: string | null }
   | { at: "create" }
+  | { at: "canvas" }
+  | { at: "settings"; section: SettingsSection }
   | { at: "os"; tab: OsTab }
   | { at: "research" | "reason"; seed?: string; openId?: string; projectId?: string; key: string };
 
@@ -44,6 +52,8 @@ function readView(): View {
   if (v === "projects") return { at: "projects", projectId: q.get("p") };
   if (v === "dashboard") return { at: "dashboard" };
   if (v === "create") return { at: "create" };
+  if (v === "canvas") return { at: "canvas" };
+  if (v === "settings") { const sec = q.get("s"); return { at: "settings", section: isSettingsSection(sec) ? sec : "general" }; }
   if (v === "os") { const tab = q.get("t") as OsTab | null; return { at: "os", tab: tab && OS_TABS.includes(tab) ? tab : "overview" }; }
   if (v === "research" || v === "reason") return { at: v, openId: q.get("r") ?? undefined, key: k() };
   return { at: "home" };
@@ -54,6 +64,8 @@ function writeView(v: View) {
   if (v.at === "projects") { q.set("v", "projects"); if (v.projectId) q.set("p", v.projectId); }
   else if (v.at === "dashboard") q.set("v", "dashboard");
   else if (v.at === "create") q.set("v", "create");
+  else if (v.at === "canvas") q.set("v", "canvas");
+  else if (v.at === "settings") { q.set("v", "settings"); if (v.section !== "general") q.set("s", v.section); }
   else if (v.at === "os") { q.set("v", "os"); if (v.tab !== "overview") q.set("t", v.tab); }
   else if (v.at === "research" || v.at === "reason") { q.set("v", v.at); if (v.openId) q.set("r", v.openId); }
   const qs = q.toString();
@@ -77,6 +89,7 @@ const Icon = ({ d, size = 15 }: { d: React.ReactNode; size?: number }) => (
  * one centered composer. Dark Geist; none of Keplar One's consumer navigation. Only built modules are shown.
  */
 export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
+  const { mobile, open: drawerOpen, sideRef, menuRef, close: closeNavigation, toggle: toggleNavigation } = useBusinessNavigation();
   const [acct, setAcct] = useState<Account | null>(null);
   const [view, setView] = useState<View>(readView);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -127,11 +140,15 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
   const active = Boolean(acct?.signedIn && acct.active);
   useEffect(() => { if (active) queueMicrotask(loadSide); }, [active, loadSide]);
 
-  const go = (v: View) => { setView(v); writeView(v); };
-  const toggleSide = () => setCollapsed((x) => { try { localStorage.setItem(SIDE_KEY, x ? "open" : "closed"); } catch { /* ignore */ } return !x; });
-  const onSend = (mode: HomeMode, text: string, projectId: string | null) => {
-    if (mode === "ask") go({ at: "ask", q: text, projectId, key: k() });
-    else go({ at: mode, seed: text, projectId: projectId ?? undefined, key: k() });
+  const go = (v: View) => { setView(v); writeView(v); closeNavigation(); };
+  const toggleSide = () => { if (mobile) { toggleNavigation(); return; } setCollapsed((x) => { try { localStorage.setItem(SIDE_KEY, x ? "open" : "closed"); } catch { /* ignore */ } return !x; }); };
+  // Attached images and video go to the opened chat or report in memory only (the view itself is saved in the address).
+  const [sentMedia, setSentMedia] = useState<{ key: string; media: MediaInput } | null>(null);
+  const onSend = (mode: HomeMode, text: string, projectId: string | null, media?: MediaInput) => {
+    const key = k();
+    setSentMedia(media ? { key, media } : null);
+    if (mode === "ask") go({ at: "ask", q: text, projectId, key });
+    else go({ at: mode, seed: text, projectId: projectId ?? undefined, key });
   };
 
   if (!acct) return <div className={`${s.root} ${c.cursor} ${fontClass}`}><div className={s.center}><span className={s.spinner} aria-label="Loading" /></div></div>;
@@ -167,6 +184,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
   const I = {
     dashboard: <><rect x="3" y="3" width="7" height="9" rx="1.5" /><rect x="14" y="3" width="7" height="5" rx="1.5" /><rect x="14" y="12" width="7" height="9" rx="1.5" /><rect x="3" y="16" width="7" height="5" rx="1.5" /></>,
     create: <><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.4z" /><path d="M19 15l.8 1.9L21.7 18l-1.9.8L19 20.7l-.8-1.9-1.9-.8 1.9-1.1z" /></>,
+    canvas: <><rect x="3" y="4" width="18" height="14" rx="2" /><path d="M8 21h8M12 18v3" /><path d="M7 9h5M7 12.5h3" /><path d="M14.5 8.5l2.5 2.5-3 3h-2.5v-2.5z" /></>,
     agents: <><rect x="5" y="8" width="14" height="11" rx="3" /><path d="M12 8V4M9.5 13h.01M14.5 13h.01" /><path d="M2.5 13.5v2M21.5 13.5v2" /></>,
     approvals: <><path d="M9 11l2 2 4-4" /><path d="M5 4h14v13l-7 4-7-4z" /></>,
     operations: <><path d="M3 9l1.5-5h15L21 9" /><path d="M4 9v11h16V9" /><path d="M3 9h18M9 20v-6h6v6" /></>,
@@ -178,6 +196,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
   const PLACES: { id: string; label: string; icon: React.ReactNode; view: () => View; current: boolean }[] = [
     { id: "dashboard", label: "Dashboard", icon: I.dashboard, view: () => ({ at: "dashboard" }), current: is("dashboard") },
     { id: "create", label: "Create", icon: I.create, view: () => ({ at: "create" }), current: is("create") },
+    { id: "canvas", label: "Design Canvas", icon: I.canvas, view: () => ({ at: "canvas" }), current: is("canvas") },
     { id: "agents", label: "Agents", icon: I.agents, view: () => ({ at: "os", tab: "agents" }), current: osAt("agents") },
     { id: "approvals", label: "Approvals", icon: I.approvals, view: () => ({ at: "os", tab: "approvals" }), current: osAt("approvals") },
     { id: "operations", label: "Operations", icon: I.operations, view: () => ({ at: "os", tab: "overview" }), current: osAt("overview", "orders", "crm", "inbox", "audit") },
@@ -188,10 +207,11 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
 
   return (
     <div className={`${s.root} ${c.cursor} ${fontClass}`}>
-      <div className={c.shell} data-collapsed={collapsed || undefined}>
-        <aside className={c.side} aria-label="Business workspace">
+      <div className={c.shell} data-collapsed={collapsed || undefined} data-menu-open={drawerOpen || undefined}>
+        {drawerOpen ? <button type="button" className={c.backdrop} onClick={closeNavigation} aria-label="Close navigation" tabIndex={-1} /> : null}
+        <aside id="business-navigation" ref={sideRef} className={c.side} aria-label="Business workspace" role={drawerOpen ? "dialog" : undefined} aria-modal={drawerOpen || undefined} tabIndex={-1}>
           <div className={c.sideTop}>
-            <button type="button" className={c.iconBtn} onClick={toggleSide} aria-label={collapsed ? "Show sidebar" : "Hide sidebar"} aria-expanded={!collapsed}>
+            <button type="button" className={c.iconBtn} onClick={toggleSide} aria-label={mobile ? "Close navigation" : collapsed ? "Show sidebar" : "Hide sidebar"} aria-expanded={mobile ? drawerOpen : !collapsed} aria-controls="business-navigation">
               <Icon d={<><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16" /></>} />
             </button>
             <span className={c.grow} />
@@ -199,7 +219,8 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
             <button type="button" className={c.iconBtn} onClick={() => history.forward()} aria-label="Forward"><Icon d={<path d="M5 12h14M13 6l6 6-6 6" />} /></button>
           </div>
 
-          <nav className={c.nav}>
+          <div className={c.sideBrand}><KeplarSymbol size={18} /><span className={c.wordmark}>Keplar <span>Business</span></span></div>
+          <nav className={c.nav} aria-label="Workspace modules">
             <button type="button" className={c.item} aria-current={is("home") || is("ask") ? "page" : undefined} onClick={() => go({ at: "home" })}>
               <Icon d={<path d="M4 20l4-1 11-11-3-3L5 16l-1 4z" />} />New chat
             </button>
@@ -246,26 +267,29 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
               <span className={c.ellipsis}>{acct.account?.company ?? acct.email}</span>
               <span className={c.footPlan}>{acct.plan?.name ?? "Keplar Business"}</span>
             </span>
-            <a className={c.iconBtn} href={`${siteUrl}/account`} aria-label="Keplar account settings" title="Keplar account settings"><Icon d={<><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></>} /></a>
+            <button type="button" className={c.iconBtn} onClick={() => go({ at: "settings", section: "general" })} aria-label="Settings" title="Settings" aria-current={view.at === "settings" ? "page" : undefined}><Icon d={<><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></>} /></button>
             <button type="button" className={c.iconBtn} onClick={() => void signOut()} disabled={signingOut} aria-label={signingOut ? "Signing out" : `Sign out${acct.email ? ` of ${acct.email}` : ""}`} title="Sign out"><Icon d={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="M16 17l5-5-5-5" /><path d="M21 12H9" /></>} /></button>
           </div>
           {signOutError ? <p className={c.empty} role="alert">{signOutError}</p> : null}
         </aside>
 
-        <section className={c.main}>
+        <section className={c.main} inert={drawerOpen || undefined}>
           <header className={c.mainTop}>
-            {collapsed ? <button type="button" className={c.iconBtn} onClick={toggleSide} aria-label="Show sidebar"><Icon d={<><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16" /></>} /></button> : null}
+            {collapsed || mobile ? <button ref={menuRef} type="button" className={c.iconBtn} onClick={toggleSide} aria-label={mobile ? "Open navigation" : "Show sidebar"} aria-expanded={mobile ? drawerOpen : !collapsed} aria-controls="business-navigation"><Icon d={<><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16" /></>} /></button> : null}
             <span className={c.grow} />
+            <span className={c.viewName}>{PLACES.find((place) => place.current)?.label ?? (view.at === "projects" ? "Projects" : view.at === "ask" ? "Chat" : view.at === "settings" ? "Settings" : "Workspace")}</span>
             <a className={c.topLink} href={ONE}>Keplar One <Icon d={<path d="M7 17L17 7M9 7h8v8" />} size={12} /></a>
           </header>
           <div className={c.mainBody}>
             {view.at === "home" ? <Home projects={projects} onSend={onSend} onNewProject={() => go({ at: "projects", projectId: null })} />
-              : view.at === "ask" ? <Ask key={view.key} first={view.q} projectId={view.projectId} />
+              : view.at === "ask" ? <Ask key={view.key} first={view.q} firstMedia={sentMedia?.key === view.key ? sentMedia.media : undefined} projectId={view.projectId} />
               : view.at === "dashboard" ? <Dashboard onOpenProject={(id) => go({ at: "projects", projectId: id })} />
               : view.at === "projects" ? <Projects projectId={view.projectId} onOpen={(id) => { go({ at: "projects", projectId: id }); loadSide(); }} />
               : view.at === "create" ? <div className={s.module}><CreateStudio signedIn plan="business" /></div>
+              : view.at === "canvas" ? <div className={s.module}><DesignCanvas /></div>
+              : view.at === "settings" ? <Settings section={view.section} onSection={(section) => go({ at: "settings", section })} />
               : view.at === "os" ? <div className={s.module}><BusinessOS key={view.tab} initialTab={view.tab} embedded /></div>
-              : <Analyst key={view.key} kind={view.at} seed={view.seed} openId={view.openId} projectSeed={view.projectId} onSaved={loadSide} />}
+              : <Analyst key={view.key} kind={view.at} seed={view.seed} seedMedia={sentMedia?.key === view.key ? sentMedia.media : undefined} openId={view.openId} projectSeed={view.projectId} onSaved={loadSide} />}
           </div>
         </section>
       </div>

@@ -80,7 +80,7 @@ const m: MarketingCatalog = {
       "platform": {
         "label": "Platforma",
         "title": "Korzystaj z Keplar wszędzie.",
-        "lede": "Ten sam silnik: za API, w widżecie na Twojej stronie i współdzielony w zespole."
+        "lede": "Ten sam silnik: za API, w Twojej przeglądarce, w widżecie na Twojej stronie i współdzielony w zespole."
       },
       "trust": {
         "label": "Zaufanie",
@@ -199,6 +199,31 @@ const m: MarketingCatalog = {
       "referrals": {
         "name": "Program poleceń",
         "line": "Zaproś znajomego; oboje dostajecie dodatkowe zużycie, nigdy pieniądze."
+      },
+      "roblox-studio": {
+        "name": "Tryb Roblox Studio",
+        "line": "Współtwórca w Roblox Studio: mapy, UI, efekty flipbook i skrypty Luau, z Claude Opus 5.5.",
+        "note": "Aplikacja desktopowa, od planu Lite."
+      },
+      "roblox-cloud": {
+        "name": "Roblox Cloud",
+        "line": "Nocne zadania na skryptach Twojej gry, każda zmiana sprawdzona analizatorem Luau i zastosowana w Studio, gdy zdecydujesz.",
+        "note": "Tylko skrypty; nie może testować rozgrywki."
+      },
+      "blender": {
+        "name": "Tryb Blender",
+        "line": "Modelowanie, teksturowanie zestawami PBR z Poly Haven, oświetlenie i eksport w Blenderze 4.2 lub nowszym.",
+        "note": "Aplikacja desktopowa 0.1.8 lub nowsza."
+      },
+      "extension": {
+        "name": "Rozszerzenie przeglądarki Keplar One",
+        "line": "Pytaj o zaznaczenie lub stronę w Chrome albo Edge, używając swojego klucza API.",
+        "note": "Zgłoszone do Chrome Web Store."
+      },
+      "lens": {
+        "name": "Search with Keplar One",
+        "line": "Przeciągnij po dowolnym tekście lub obrazie na stronie; odpowiedź otworzy się w panelu bocznym.",
+        "note": "Część rozszerzenia przeglądarki."
       },
       "security": {
         "name": "Bezpieczeństwo",

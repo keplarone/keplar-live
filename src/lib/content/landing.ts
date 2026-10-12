@@ -437,6 +437,103 @@ export const landingPages: LandingPage[] = [
     ],
     related: ["/for-founders", "/for-writers", "/ai-slideshow-maker", "/pricing"],
   },
+  {
+    slug: "roblox-studio-ai",
+    path: "/roblox-studio-ai",
+    metaTitle: "Roblox Studio AI: build games with Claude inside Studio",
+    metaDescription: `The ${K} desktop app connects to Roblox Studio and builds with you on Claude Opus 5.5: maps, UI, flipbook effects and Luau scripts, plus overnight Roblox Cloud jobs.`,
+    ogTitle: "An AI co-builder for Roblox Studio",
+    label: "Roblox Studio AI",
+    h1: "Build Roblox games with an AI inside Studio.",
+    lede: `In the ${K} desktop app, a co-builder connects to Roblox Studio through Studio's own tools. It looks at your place, writes a plan, and builds it step by step while you watch and approve.`,
+    examples: ["A lobby with a spawn area, a shop stall and a leaderboard", "A round-based obby with checkpoints and a timer", "A health bar UI that matches this screenshot"],
+    sections: [
+      {
+        h2: "What it builds",
+        bullets: [
+          "Maps, buildings and lighting, organized in named folders.",
+          "UI and effects, matched to screenshots or a clip you attach.",
+          "Working Luau scripts. It reads the output log for script errors and fixes them.",
+        ],
+      },
+      {
+        h2: "Effects that look right",
+        p: ["Flipbook particles come from valid 1024 by 1024 sheets in the grid their creator states, played once for bursts or looped at a steady rate. Glows are self-lit with bright cores, smoke is lit by the scene and sits behind them, and layered effects are kept light on performance. Textures come from vetted packs first, then a filtered Creator Store search; uploading anything to your account asks first."],
+      },
+      {
+        h2: "Roblox Cloud: work while you sleep",
+        p: ["Give it a goal, a credit budget and a time limit of up to 12 hours, then close your computer. It works on your game's scripts on Keplar's servers, checks every edit with Luau's own analyzer, and leaves a list of changes you review and apply in Studio, each as one Undo step. It only touches scripts and can't play-test, so test what it made before you publish."],
+      },
+      {
+        h2: "Always Claude Opus 5.5",
+        p: ["Studio mode and Roblox Cloud run on Claude Opus 5.5 only. If it can't be reached, the build pauses and tells you, instead of quietly switching to another model."],
+      },
+      {
+        h2: "You play-test it",
+        p: ["When a step is done it gives you a short \"How to test it\" list. The Play test button starts and stops play mode in Studio, so testing costs no AI usage; you tell it what to change."],
+      },
+      {
+        h2: "You stay in control",
+        p: ["Reads run on their own. Changes wait for your approval unless you turn on auto-approve for safe changes. Deleting, publishing, data stores and uploading images to your Roblox account always ask first."],
+      },
+      {
+        h2: "Pick up where you left off",
+        p: ["Each game has its own saved chat, plan and progress, synced to your Keplar account, so you can close Studio and come back later, even on another computer. A floating overlay keeps the chat next to Studio."],
+      },
+      {
+        h2: "Honest about limits",
+        p: ["It's in beta. It needs Roblox Studio and the Keplar desktop app on the same computer, and it can make mistakes, so play-test before you publish. It doesn't publish your game for you."],
+      },
+    ],
+    faq: [
+      { q: "Which plans include it?", a: "Keplar Lite, Plus and Pro, in the desktop app for Windows, macOS and Linux." },
+      { q: "Does it work in the browser?", a: "No. It needs the desktop app running on the same computer as Roblox Studio." },
+      { q: "Can it upload images to my Roblox account?", a: "Yes, and it always asks first." },
+      { q: "Can it keep working when Studio is closed?", a: "Yes, with Roblox Cloud: it edits your game's scripts on Keplar's servers within the budget and time limit you set, and you apply the changes in Studio later. It can't play-test while you're away." },
+      { q: "Which model does it use?", a: "Claude Opus 5.5, every time. If that model is unavailable the build pauses rather than switching." },
+    ],
+    related: ["/blender-ai", "/download", "/docs/studio/roblox-studio-mode", "/docs/studio/roblox-cloud", "/docs/studio/effects-and-textures", "/pricing"],
+  },
+  {
+    slug: "blender-ai",
+    path: "/blender-ai",
+    metaTitle: "Blender AI: models and PBR textures from a description",
+    metaDescription: `The ${K} desktop app connects to Blender 4.2+ through a small add-on and models, textures and lights with you, then exports FBX, GLB or OBJ. Lite, Plus and Pro.`,
+    ogTitle: "An AI co-builder for Blender",
+    label: "Blender AI",
+    h1: "Model and texture in Blender by describing what you want.",
+    lede: `In the ${K} desktop app (0.1.8 or newer), a co-builder connects to Blender through a small Keplar add-on. It reads your scene, plans, and builds models with real textures while you approve each change.`,
+    examples: ["A low-poly wooden crate with worn edges", "A stone well with a rope and bucket, textured", "Light this scene with an outdoor HDRI"],
+    sections: [
+      {
+        h2: "What it makes",
+        bullets: [
+          "Models with clean topology and modifiers at real-world scale, every object named and grouped in a collection.",
+          "Real PBR textures from Poly Haven (free, CC0): color, roughness, normal, ambient occlusion and displacement, unwrapping meshes that have no UVs.",
+          "Procedural node materials for stylized looks, HDRI lighting and Poly Haven model import.",
+          "Exports to FBX (imports into Roblox Studio), GLB or OBJ.",
+        ],
+      },
+      {
+        h2: "Safe by default",
+        p: ["The add-on only listens on your computer behind a secret key. Keplar's Python may not touch files, the network or other apps, or save or close Blender. Deleting always asks, and every change waits for approval unless you turn on auto-approve."],
+      },
+      {
+        h2: "Cheap to run",
+        p: ["A short cached prompt, text scene summaries instead of screenshots, and small thinking budgets keep each step's AI usage low. Each .blend file's chat is saved and synced to your account."],
+      },
+      {
+        h2: "Honest about limits",
+        p: ["It's in beta. It needs Blender 4.2 or newer and the Keplar desktop app on the same computer. Results are a starting point; check proportions and topology before you ship an asset."],
+      },
+    ],
+    faq: [
+      { q: "Which plans include it?", a: "Keplar Lite, Plus and Pro, in the desktop app for Windows, macOS and Linux." },
+      { q: "Do I install anything in Blender?", a: "The desktop app installs and enables the small Keplar add-on for you." },
+      { q: "Are the textures free to use?", a: "They come from Poly Haven, whose assets are CC0, free for any use." },
+    ],
+    related: ["/roblox-studio-ai", "/download", "/docs/studio/blender-mode", "/pricing"],
+  },
 ];
 
 export const landingBySlug = (slug: string) => landingPages.find((p) => p.slug === slug);

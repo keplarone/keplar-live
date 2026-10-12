@@ -34,7 +34,7 @@ import { usedThisPeriod } from "@/lib/create/platform/compute";
 import { extensionBalance } from "@/lib/create/platform/extensions";
 import { canBuyExtension } from "@/lib/billing/extensions";
 import { windowRoom, type WindowBlock } from "@/lib/create/platform/windows";
-import { adminCapped, freePaused } from "@/lib/create/platform/spend";
+import { FREE_DAY_BUDGET_MESSAGE, freePaused, nextUtcMidnight } from "@/lib/create/platform/spend";
 import { breakerLevel } from "@/lib/create/platform/breaker";
 import { lighterRouting } from "@/lib/orchestration/breaker-routing";
 import { limitRequest } from "@/lib/create/platform/ratelimit";
@@ -271,9 +271,6 @@ export async function POST(request: Request) {
   if (!deps && !creator) {
     return Response.json({ error: "Keplar isn't connected to its models yet. Please check back soon.", code: "not_configured" }, { status: 503 });
   }
-  if (!creator && ws.admin && (await adminCapped())) {
-    return Response.json({ error: "The daily safety cap for this account is reached. It resets at 00:00 UTC.", code: "admin_cap" }, { status: 429 });
-  }
   const smallTalk = creator || isSmallTalk(req) || req.understanding?.intent === "playful";
   const limits = limitsFor(ws.plan as LimitPlan);
   // Plan size caps: prompt, history, attachments, images (cheaper plans get smaller caps).
@@ -319,6 +316,17 @@ export async function POST(request: Request) {
       }
       return errorResponse(e);
     }
+  }
+  // Shared daily budget (spend.ts): Free pauses until 00:00 UTC. This is not the person's questions and not monthly credits.
+  // Refuse before a question is counted, so the meter stays where it was. Paid plans are not paused here.
+  if (ws.plan === "free" && !ws.admin && !smallTalk && (await freePaused())) {
+    gate?.release();
+    const resetsAt = nextUtcMidnight();
+    const secs = Math.max(1, Math.ceil((Date.parse(resetsAt) - Date.now()) / 1000));
+    return Response.json(
+      { error: FREE_DAY_BUDGET_MESSAGE, code: "daily_budget", resetsAt, plan: ws.plan },
+      { status: 429, headers: { "retry-after": String(secs), "cache-control": "no-store" } },
+    );
   }
   // Free plan: take one of today's questions (exactly one per question; given back below if no answer reaches the screen).
   let dailyClaim: Claim | null = null;
@@ -411,7 +419,8 @@ export async function POST(request: Request) {
   let windowBound: WindowBlock | null = null;
   try {
     if (smallTalk) req.computeRemaining = Infinity; // casual chat is never metered and never blocked by an allowance
-    else if (ws.plan === "free") req.computeRemaining = (await freePaused()) ? 0 : Infinity;
+    // Free has no monthly credit balance. A shared-budget pause is refused above; never report it as "0 credits left this month".
+    else if (ws.plan === "free") req.computeRemaining = Infinity;
     else {
       const monthly = Math.max(0, ws.entitlements.monthlyUnits - (await usedThisPeriod(ws)) - (gate ? inflight(gate.wsKey).units : 0));
       const room = await windowRoom(ws);

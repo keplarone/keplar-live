@@ -80,7 +80,7 @@ const m: MarketingCatalog = {
       "platform": {
         "label": "Platform",
         "title": "Gebruik Keplar overal.",
-        "lede": "Dezelfde engine, achter een API, in een widget op je site en gedeeld binnen een team."
+        "lede": "Dezelfde engine, achter een API, in je browser, in een widget op je site en gedeeld binnen een team."
       },
       "trust": {
         "label": "Vertrouwen",
@@ -199,6 +199,31 @@ const m: MarketingCatalog = {
       "referrals": {
         "name": "Verwijsprogramma",
         "line": "Nodig iemand uit; jullie krijgen allebei extra verbruik, nooit geld."
+      },
+      "roblox-studio": {
+        "name": "Roblox Studio-modus",
+        "line": "Een medebouwer in Roblox Studio: maps, UI, flipbook-effecten en Luau-scripts, met Claude Opus 5.5.",
+        "note": "Desktopapp, vanaf Lite."
+      },
+      "roblox-cloud": {
+        "name": "Roblox Cloud",
+        "line": "Nachtelijke taken aan de scripts van je game, elke wijziging gecontroleerd door de Luau-analyzer en in Studio toegepast wanneer jij dat wilt.",
+        "note": "Alleen scripts; het kan niet playtesten."
+      },
+      "blender": {
+        "name": "Blender-modus",
+        "line": "Modelleer, textureer met PBR-sets van Poly Haven, belicht en exporteer in Blender 4.2 of nieuwer.",
+        "note": "Desktopapp 0.1.8 of nieuwer."
+      },
+      "extension": {
+        "name": "Browserextensie Keplar One",
+        "line": "Stel vanuit Chrome of Edge een vraag over een selectie of een pagina, met je API-sleutel.",
+        "note": "Ingediend bij de Chrome Web Store."
+      },
+      "lens": {
+        "name": "Search with Keplar One",
+        "line": "Sleep over tekst of een afbeelding op een pagina; het antwoord opent in een zijpaneel.",
+        "note": "Onderdeel van de browserextensie."
       },
       "security": {
         "name": "Beveiliging",

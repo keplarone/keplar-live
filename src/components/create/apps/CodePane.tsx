@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../api";
 import { langOf, sortFiles, tokenize } from "./highlight";
+import { FileFinder, useGoToFile } from "./FileFinder";
 import s from "./studio.module.css";
 
 export default function CodePane({ appId, version, onSaved }: { appId: string; version: number; onSaved?: (n: number) => void }) {
@@ -28,10 +29,12 @@ export default function CodePane({ appId, version, onSaved }: { appId: string; v
   const text = pick && files ? files[pick] : "";
   const toks = useMemo(() => (pick && !editing ? tokenize(text.slice(0, 200_000), langOf(pick)) : []), [pick, text, editing]);
   const lines = useMemo(() => text.split("\n").length, [text]);
+  const [finding, setFinding] = useGoToFile();
   if (err) return <div className={s.paneMsg} role="alert">{err}</div>;
   if (!files) return <div className={s.paneMsg}>Opening the code…</div>;
   return (
     <div className={s.code}>
+      {finding ? <FileFinder paths={paths} onPick={(p) => { setSel(p); setEditing(false); setSaveErr(""); }} onClose={() => setFinding(false)} /> : null}
       <nav className={s.files} aria-label="Files">
         {paths.map((p) => (
           <button key={p} type="button" className={s.file} aria-current={p === pick || undefined} onClick={() => { setSel(p); setEditing(false); setSaveErr(""); }}>
@@ -44,6 +47,7 @@ export default function CodePane({ appId, version, onSaved }: { appId: string; v
           <span className={s.codePath}>{pick}</span>
           <span className={s.codeMeta}>{lines} lines · {(text.length / 1024).toFixed(1)} KB</span>
           <span className={s.grow} />
+          <button type="button" className={s.textBtn} onClick={() => setFinding(true)} title="Go to file (Ctrl+P)">Go to file <kbd className={s.kbdHint}>Ctrl P</kbd></button>
           <button type="button" className={s.textBtn} onClick={() => { void navigator.clipboard?.writeText(editing ? draft : text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1400); }); }}>{copied ? "Copied" : "Copy"}</button>
           {editing ? (
             <>

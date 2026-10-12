@@ -152,6 +152,10 @@ export function pricingFaq(opts: { overageLive?: boolean } = {}): { q: string; a
  * Each says what happened and what changes on a paid plan, without urgency or countdowns.
  */
 export const pricingContext = {
+  "day-budget": {
+    title: "Free is paused for today.",
+    body: "Keplar has reached its shared daily usage budget. Free resumes at 00:00 UTC; this request did not use any of your Free questions. Paid plans keep working within their own allowances.",
+  },
   "daily-limit": {
     title: "You've used today's Free questions.",
     body: `Free includes up to ${FREE_DAILY_QUESTIONS} questions a day on free models; they come back at 00:00 UTC. Paid plans run premium models on a monthly allowance instead.`,

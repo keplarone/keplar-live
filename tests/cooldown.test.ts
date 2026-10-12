@@ -10,6 +10,10 @@ import { recordSpend, spendToday } from "@/lib/create/platform/spend";
 import { acquireJobSlot, activeJobs } from "@/lib/create/platform/jobs";
 import { modelChain, estimateJob, MODELS, creditsFor } from "@/lib/site-builder/limits";
 import type { Workspace } from "@/lib/create/platform/workspace";
+
+// The spend-spike detector (src/lib/ops/telemetry.ts, tested in ops.test.ts) checks at most every 10 s. Under a loaded parallel run this
+// file outlives that window, the second check sees the test spend so far and auto-pauses media ("media_paused" in the breaker test).
+process.env.KEPLAR_SPIKE_USD = "1000000";
 import { errorResponse } from "@/lib/create/platform/http";
 
 const ws = (plan: "plus" | "pro" | "free" | "business" = "plus", over: Partial<Workspace> = {}): Workspace => ({
@@ -108,34 +112,40 @@ test("repeats escalate 30 -> 45 -> 60 minutes (and stay at 60); spend before a c
   assert.equal(await activeCooldown(w), null);
 });
 
-test("admin (team@keplar.one) and Free are exempt; the admin keeps the $25/day cap", async () => {
+test("admin (team@keplar.one) and Free are exempt from cooldown, and the daily safety cap does not stop the admin", async () => {
   const admin = ws("business", { admin: true, email: "team@keplar.one", entitlements: { ...ENTITLEMENTS.business, monthlyUnits: Infinity } });
   await chargeUnits(admin, "answer", usd(10), 10);
   assert.equal(await evaluateCooldown(admin), null);
   assert.equal(await activeCooldown(admin), null);
   await assertCanSpend(admin, 5);
   await chargeUnits(admin, "answer", usd(16), 16);
-  await assert.rejects(() => assertCanSpend(admin, 5), /daily safety cap/);
+  // The daily safety cap is recorded and does not stop chat, Create, or Studio.
+  await assertCanSpend(admin, 5);
+  await assertCanSpend(admin, 5, { kind: "agent", dailySafetyCap: false });
+  // Credits still apply: a paid account with too few credits is refused.
+  const short = ws("plus", { entitlements: { ...ENTITLEMENTS.plus, monthlyUnits: 10 } });
+  await assert.rejects(() => assertCanSpend(short, 50, { kind: "agent", dailySafetyCap: false }), /credits/);
   const free = ws("free");
   await chargeUnits(free, "answer", usd(50), 50);
   assert.equal(await activeCooldown(free), null);
 });
 
-test("global circuit breaker: lighter models at 70%, paid media pauses at 85%, at 100% the cap holds", async () => {
+test("global circuit breaker: lighter models from 70%; image and video keep running", async () => {
   assert.equal(levelFor(10, 25), "normal");
   assert.equal(levelFor(17.5, 25), "cheap");
   assert.equal(levelFor(21.25, 25), "no_media");
   assert.equal(levelFor(25, 25), "capped");
   assert.equal(useCheaperModels("cheap"), true);
   assert.equal(paidMediaPaused("cheap"), false);
-  assert.equal(paidMediaPaused("no_media"), true);
+  assert.equal(paidMediaPaused("no_media"), false);
+  assert.equal(paidMediaPaused("capped"), false);
   assert.equal(modelChain("pro", "normal")[0].id, MODELS.pro.id);
   assert.equal(modelChain("pro", "cheap")[0].id, MODELS.cheap.id);
   assert.equal(modelChain("plus", "cheap")[0].id, MODELS.cheap.id);
   assert.ok(modelChain("free", "capped").every((m) => m.free));
   const base = await breakerLevel();
   assert.equal(base === "normal" || base === "cheap" || base === "no_media" || base === "capped", true);
-  // Real spend counter: push today's total over 85% of the cap and paid media is refused; text still works.
+  // Real spend counter: past 85% and at the cap, image and video credits are still allowed.
   const day = new Date().toISOString().slice(0, 10);
   void day;
   await recordSpend(1, "plus");
@@ -144,9 +154,10 @@ test("global circuit breaker: lighter models at 70%, paid media pauses at 85%, a
   assert.equal(await breakerLevel(), "no_media");
   process.env.KEPLAR_GLOBAL_DAILY_USD_CAP = String(total / 0.75);
   assert.equal(await breakerLevel(), "cheap");
-  process.env.KEPLAR_GLOBAL_DAILY_USD_CAP = String(total / 0.9);
+  process.env.KEPLAR_GLOBAL_DAILY_USD_CAP = String(Math.max(total, 0.01));
+  assert.equal(await breakerLevel(), "capped");
   const w = ws("pro");
-  await assert.rejects(() => assertCanSpend(w, 10, { paidMedia: true }), /Image and video generation is paused/);
+  await assertCanSpend(w, 10, { paidMedia: true });
   await assertCanSpend(w, 10);
 });
 

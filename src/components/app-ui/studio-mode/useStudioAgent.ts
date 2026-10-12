@@ -3,24 +3,26 @@
  * The Studio co-creator's run loop on the page (server turn: src/lib/studio/agent.ts, Studio access: the desktop bridge).
  *
  * One run = the person's request, then turns until the model is done, the person pauses or stops, account credits run out,
- * or the step cap is reached. Before each request Keplar looks at the place (look): a screenshot of Studio's current
- * view and the Workspace tree go into the conversation with the studio_id to use, so it builds on what is really there.
+ * or the step cap is reached. Before each request Keplar looks at the place (look): the Workspace tree goes into the conversation
+ * with the studio_id to use, so it builds on what is really there; only the first request of a session adds a screenshot.
  * Each turn the server returns the model's reply and labelled actions. Reads run by themselves; changes wait for Approve (or
  * run when auto-approve is on); destructive actions always wait. Results go back into the conversation: text capped, and
  * Studio screenshots as images (only the newest kept in full, to keep turns cheap).
- * When the model first says it is finished after making changes, it gets one review pass (REVIEW_PROMPT): check every plan
- * step against a fresh screenshot and the output log, fix what falls short, then finish.
+ * Cost: the model does not screenshot or play-test its own work (each was a paid turn). When it finishes, the person play-tests
+ * with the Play test button (Studio directly, no model call) and says what to change.
+ * Each game's chat is saved on this device (saved-session.ts) and comes back when that game is opened again.
  * Alongside the feed it keeps what the side panel shows: the latest viewport, the plan and the current step ("Step N:"), the
  * changes made, and the run's numbers.
  */
-import { useCallback, useRef, useState } from "react";
-import { resultText, type StudioBridge, type StudioContent } from "@/lib/desktop/studio-bridge";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { resultText, type BlenderBridge, type StudioBridge, type StudioContent } from "@/lib/desktop/studio-bridge";
+import { clearSaved, deleteRemote, fetchRemote, placeKey, pushRemote, readSaved, toSaved, writeSaved, type SavedSession } from "./saved-session";
 import { scaleDataUrl } from "./references";
 
 export type Risk = "read" | "change" | "destructive";
 type ToolCall = { id: string; type: "function"; function: { name: string; arguments: string } };
 type Part = { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } };
-type Msg =
+export type Msg =
   | { role: "user"; content: string | Part[] }
   | { role: "assistant"; content: string | null; tool_calls?: ToolCall[]; reasoning_details?: unknown[] }
   | { role: "tool"; tool_call_id: string; content: string };
@@ -33,7 +35,8 @@ export type Item =
   | { kind: "look"; key: string; image?: string; text: string }
   | { kind: "note"; key: string; text: string; tone?: "warn" };
 
-export type Place = { id: string; name: string };
+/** An open Studio: id is this Studio session's (it changes every launch); placeId is the game's own, when Studio says it. */
+export type Place = { id: string; name: string; placeId?: string; /** The saved-chat key when it is not a Roblox place (Blender: the .blend file). */ saveKey?: string };
 export type PlanStep = { text: string; state: "done" | "doing" | "next" };
 export type Viewport = { image: string; at: number };
 
@@ -41,8 +44,8 @@ type Turn = { message: Extract<Msg, { role: "assistant" }>; text: string; action
 
 export const RUN_STEP_CAP = 80;
 
-/** Sent once per run when the model stops after making changes: a real self-review before it may finish. */
-export const REVIEW_PROMPT = "Before you finish, review your work like a lead developer would. Take a fresh screen_capture (more than one angle if it is a scene) and check get_console_output for errors. Compare against the request, your plan and any references: is every step done, does it look polished and complete, is anything placeholder, empty, misaligned or broken? Fix everything that falls short, verify again, then give your short summary. If it is truly complete, say so and summarize.";
+/** Shown when a run that changed the place finishes: the person tests it (no model turns spent on self-review or play tests). */
+export const YOUR_TURN = "Your turn: press Play test, try what Keplar built (it lists what to check), then stop the test and tell Keplar what to change.";
 
 /** A short human line for an action card ("Run Luau", "Read script ServerScriptService.Spawn"). */
 export function describeAction(name: string, args: Record<string, unknown>): string {
@@ -76,6 +79,16 @@ export function describeAction(name: string, args: Record<string, unknown>): str
     case "character_navigation": return "Move the test character";
     case "user_mouse_input": return "Click in the play test";
     case "user_keyboard_input": return "Type in the play test";
+    // Blender (keplar-desktop build/blender/keplar_blender.py)
+    case "scene": return "Read the scene";
+    case "object": return `Inspect ${s(args.name) || "an object"}`;
+    case "python": return "Run Python in Blender";
+    case "view": return "Look at the viewport";
+    case "ph_search": return `Search Poly Haven for “${s(args.query)}”`;
+    case "ph_texture": return `Texture with ${s(args.id) || "a Poly Haven set"}`;
+    case "ph_hdri": return `Light with ${s(args.id) || "an HDRI"}`;
+    case "ph_model": return `Import ${s(args.id) || "a model"}`;
+    case "export": return `Export ${(s(args.format) || "fbx").toUpperCase()}`;
     default: return name;
   }
 }
@@ -100,8 +113,11 @@ export function parsePlaces(text: string): Place[] {
       const o = (x ?? {}) as Record<string, unknown>;
       const id = o.id ?? o.studioId;
       if (id === undefined) return [];
-      const name = String(o.name ?? o.placeName ?? `Studio ${i + 1}`).replace(/\s*\(placeId:\s*\d+\)\s*$/, "");
-      return [{ id: String(id), name }];
+      const raw = String(o.name ?? o.placeName ?? `Studio ${i + 1}`);
+      const name = raw.replace(/\s*\(placeId:\s*\d+\)\s*$/, "");
+      // The game's own id (stable across launches): "Name (placeId: 123)", or a placeId field. 0 means an unpublished place.
+      const placeId = /\(placeId:\s*(\d+)\)\s*$/.exec(raw)?.[1] ?? (o.placeId != null ? String(o.placeId) : "");
+      return [{ id: String(id), name, ...(/^[1-9]\d*$/.test(placeId) ? { placeId } : {}) }];
     });
   } catch {
     return [];
@@ -109,6 +125,21 @@ export function parsePlaces(text: string): Place[] {
 }
 
 const key = () => Math.random().toString(36).slice(2, 10);
+
+/** Blender's "place": the open .blend file, whose chat is saved under its name. */
+export const blenderPlace = (file?: string | null): Place => {
+  const name = file || "untitled.blend";
+  return { id: "blender", name, saveKey: `name:blender/${name.toLowerCase()}` };
+};
+
+/** Which app the floating overlay works in; the page that opens the overlay sets it (same origin, so the overlay reads it). */
+export const OVERLAY_TARGET_KEY = "keplar-overlay-target";
+export function overlayTarget(): "studio" | "blender" {
+  try { return localStorage.getItem(OVERLAY_TARGET_KEY) === "blender" ? "blender" : "studio"; } catch { return "studio"; }
+}
+export function setOverlayTarget(target: "studio" | "blender"): void {
+  try { localStorage.setItem(OVERLAY_TARGET_KEY, target); } catch { /* storage blocked: the overlay opens on Studio */ }
+}
 
 function toolResult(content: StudioContent[]): { text: string; image?: string } {
   const text = content.filter((c) => c.type === "text" && c.text).map((c) => c.text).join("\n");
@@ -138,7 +169,12 @@ function treeLines(text: string): string {
   }
 }
 
-export function useStudioAgent(bridge: StudioBridge | null) {
+/**
+ * mode "studio" works in Roblox Studio; mode "blender" works in Blender through the Keplar add-on (same loop, approvals, saving).
+ * Blender looks with the text scene summary only (no screenshot) and has no play test.
+ */
+export function useStudioAgent(bridge: StudioBridge | BlenderBridge | null, mode: "studio" | "blender" = "studio") {
+  const blender = mode === "blender";
   const [items, setItems] = useState<Item[]>([]);
   const [running, setRunning] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -166,17 +202,63 @@ export function useStudioAgent(bridge: StudioBridge | null) {
     setShots((xs) => [image, ...xs.filter((x) => x !== image)].slice(0, 4));
   }, []);
 
-  const setPlace = useCallback((p: Place | null) => { placeRef.current = p; setPlaceState(p); }, []);
+  /** Opening a game brings back its saved chat (this device), so work continues where it stopped. */
+  /** A restore is not a change: it must not be saved back (stamped "now") before the account's copy has been compared. */
+  const skipSave = useRef(false);
+  /** Set by the person's own activity after a restore; a slower account copy then no longer replaces what is on screen. */
+  const touched = useRef(false);
+  const lastPush = useRef(0);
+
+  const apply = useCallback((saved: SavedSession | null, p: Place | null) => {
+    skipSave.current = true;
+    history.current = saved?.history ?? [];
+    flags.current.units = saved?.units ?? 0;
+    setUnits(saved?.units ?? 0);
+    setPlan(saved?.plan ?? []);
+    setCurrent(saved?.current ?? 0);
+    setFinished(saved?.finished ?? false);
+    setBuilt(saved?.built ?? []);
+    setStats(saved?.stats ?? { steps: 0, changes: 0, errors: 0 });
+    setItems(saved ? [...saved.items, { kind: "note", key: key(), text: `Picked up where you left off in ${p?.name ?? "this game"} (saved ${new Date(saved.savedAt).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}). Keplar will take a fresh look before your next request.` }] : []);
+  }, []);
+
+  /** Opening a game brings back its saved chat: this device's copy at once, then the account's if it is newer (another computer). */
+  const restore = useCallback((p: Place | null) => {
+    const k = placeKey(p);
+    const local = readSaved(k);
+    touched.current = false;
+    apply(local, p);
+    void fetchRemote(k).then((remote) => {
+      if (!remote || touched.current || placeKey(placeRef.current) !== k) return;
+      if (remote.savedAt <= (local?.savedAt ?? 0)) return;
+      writeSaved(k, remote);
+      apply(remote, p);
+    });
+  }, [apply]);
+
+  const setPlace = useCallback((p: Place | null) => {
+    const changed = placeKey(p) !== placeKey(placeRef.current);
+    placeRef.current = p;
+    setPlaceState(p);
+    if (changed) restore(p);
+  }, [restore]);
 
   /** The open place to work in: the chosen one, else the first Studio lists. */
   const ensurePlace = useCallback(async (): Promise<Place | null> => {
     if (!bridge) return null;
     if (placeRef.current) return placeRef.current;
+    if (blender) {
+      // Blender's "place" is the open file: its chat is saved per .blend file.
+      const st = await (bridge as BlenderBridge).status().catch(() => null);
+      const p = blenderPlace(st?.file);
+      setPlace(p);
+      return p;
+    }
     const r = await bridge.call("list_roblox_studios", {});
     const first = r.ok ? parsePlaces(resultText(r))[0] ?? null : null;
     setPlace(first);
     return first;
-  }, [bridge, setPlace]);
+  }, [bridge, blender, setPlace]);
 
   /** A screenshot of Studio's current view (scaled down), or null when Studio could not take one. */
   const capture = useCallback(async (p: Place): Promise<string | null> => {
@@ -206,13 +288,30 @@ export function useStudioAgent(bridge: StudioBridge | null) {
     const p = await ensurePlace();
     if (!p) return;
     setLooking(true);
+    if (blender) {
+      // Blender: the compact text summary only. A viewport image is a tool the model asks for when it truly needs one.
+      try {
+        const r = await bridge.call("scene", {});
+        const text = r.ok && !r.result.isError ? resultText(r) : "";
+        history.current.push({ role: "user", content: `The Blender scene before this request (${p.name}):
+${text || "(could not read the scene)"}` });
+        const count = /(d+) objects:/.exec(text)?.[1];
+        add({ kind: "look", key: key(), text: count ? `Looked at ${p.name}: ${count} object${count === "1" ? "" : "s"}.` : `Looked at ${p.name}.` });
+      } finally {
+        setLooking(false);
+      }
+      return;
+    }
     try {
+      // A screenshot is the costly part of a look (image tokens on every later turn): one per session, on its first request
+      // (a resumed session counts as new, since saved chats keep no images). Follow-ups send the Workspace tree only.
+      const firstLook = !history.current.some((m) => m.role === "user" && Array.isArray(m.content) && m.content.some((c) => c.type === "image_url"));
       const [img, tree] = await Promise.all([
-        capture(p),
+        firstLook ? capture(p) : Promise.resolve(null),
         bridge.call("search_game_tree", { studio_id: p.id, datamodel_type: "Edit", path: "Workspace", max_depth: 2, head_limit: 80 }),
       ]);
       const treeText = tree.ok && !tree.result.isError ? treeLines(resultText(tree)) : "";
-      const intro = `Studio screenshot before this request: what the place "${p.name}" looks like right now. Use studio_id "${p.id}" in every call.${treeText ? `\nWorkspace contents:\n${treeText}` : ""}`;
+      const intro = `${img ? "Studio screenshot before this request" : "The place before this request"}: what "${p.name}" looks like right now. Use studio_id "${p.id}" in every call.${treeText ? `\nWorkspace contents:\n${treeText}` : ""}`;
       history.current.push({ role: "user", content: [{ type: "text", text: intro }, ...(img ? [{ type: "image_url" as const, image_url: { url: img } }] : [])] });
       if (img) showShot(img);
       const count = treeText ? treeText.split("\n").length : 0;
@@ -220,7 +319,7 @@ export function useStudioAgent(bridge: StudioBridge | null) {
     } finally {
       setLooking(false);
     }
-  }, [bridge, ensurePlace, capture, showShot, add]);
+  }, [bridge, blender, ensurePlace, capture, showShot, add]);
 
   const decide = useCallback((k: string, ok: boolean) => {
     decisions.current.get(k)?.(ok);
@@ -234,7 +333,7 @@ export function useStudioAgent(bridge: StudioBridge | null) {
       const tools = await bridge.tools();
       while (!flags.current.stop && !flags.current.pause) {
         if (flags.current.steps >= RUN_STEP_CAP) { add({ kind: "note", key: key(), text: `Paused after ${RUN_STEP_CAP} steps. Continue when you are ready.`, tone: "warn" }); flags.current.pause = true; break; }
-        const res = await fetch("/api/studio/agent", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ messages: compactScreenshots(history.current), tools }) });
+        const res = await fetch(blender ? "/api/blender/agent" : "/api/studio/agent", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ messages: compactScreenshots(history.current), tools }) });
         const data = (await res.json().catch(() => ({}))) as Turn & { error?: string; code?: string };
         if (res.status === 402 && data.code === "studio_credits") {
           let ready = false;
@@ -304,12 +403,7 @@ export function useStudioAgent(bridge: StudioBridge | null) {
         }
         if (shotsThisTurn.length) history.current.push({ role: "user", content: [{ type: "text", text: "Studio screenshot after these steps:" }, { type: "image_url", image_url: { url: shotsThisTurn[shotsThisTurn.length - 1]! } }] });
         if (data.done) {
-          if (flags.current.changed && !flags.current.reviewed) {
-            flags.current.reviewed = true;
-            history.current.push({ role: "user", content: REVIEW_PROMPT });
-            add({ kind: "note", key: key(), text: "Checking the work before finishing…" });
-            continue;
-          }
+          if (flags.current.changed) add({ kind: "note", key: key(), text: blender ? "Your turn: look it over in Blender, then tell Keplar what to change (or ask it to export)." : YOUR_TURN });
           setFinished(true);
           break;
         }
@@ -320,13 +414,16 @@ export function useStudioAgent(bridge: StudioBridge | null) {
       setRunning(false);
       setPaused(flags.current.pause && !flags.current.stop);
       // A fresh look at the result for the viewport panel (no model call).
-      if (flags.current.changed) void refreshViewport();
+      if (flags.current.changed && !blender) void refreshViewport();
     }
-  }, [bridge, add, patch, showShot, refreshViewport]);
+  }, [bridge, blender, add, patch, showShot, refreshViewport]);
 
   /** Start a request (text plus reference images as data URLs). Keplar looks at the place first. */
   const send = useCallback(async (text: string, images: string[]) => {
     if (!bridge || running || (!text.trim() && !images.length)) return;
+    // Resolve the game first: opening it restores its saved chat, which must happen before this message joins it.
+    await ensurePlace();
+    touched.current = true;
     add({ kind: "user", key: key(), text, images });
     flags.current = { ...flags.current, pause: false, stop: false, steps: 0, units: flags.current.units, changed: false, reviewed: false };
     setPaused(false);
@@ -336,7 +433,7 @@ export function useStudioAgent(bridge: StudioBridge | null) {
     if (images.length) parts.push({ type: "text", text: `Reference ${images.length === 1 ? "image" : "images"} for this request (match the style, layout, motion and feel):` }, ...images.map((url) => ({ type: "image_url" as const, image_url: { url } })));
     history.current.push({ role: "user", content: parts });
     await loop();
-  }, [bridge, running, add, look, loop]);
+  }, [bridge, running, add, look, loop, ensurePlace]);
 
   const pause = useCallback(() => { flags.current.pause = true; setPaused(true); }, []);
   const resume = useCallback(async () => { flags.current.pause = false; flags.current.stop = false; flags.current.steps = 0; setPaused(false); await loop(); }, [loop]);
@@ -356,7 +453,33 @@ export function useStudioAgent(bridge: StudioBridge | null) {
     setFinished(false);
     setBuilt([]);
     setStats({ steps: 0, changes: 0, errors: 0 });
+    clearSaved(placeKey(placeRef.current));
+    void deleteRemote(placeKey(placeRef.current));
   }, [stop]);
+
+  /* Save this game's chat as it changes: on this device soon, on the account a little later (debounced; history is read at save time). */
+  useEffect(() => {
+    const k = placeKey(place);
+    if (skipSave.current) { skipSave.current = false; return; }
+    if (!k || !items.length) return;
+    const snapshot = () => toSaved({ name: place?.name ?? "", items, history: history.current, plan, current, finished, built, stats, units });
+    const local = setTimeout(() => writeSaved(k, snapshot()), running ? 3000 : 400);
+    const push = () => { lastPush.current = Date.now(); void pushRemote(k, snapshot()); };
+    // Debounced, but a long build (a change every few seconds) still reaches the account at least every 30 seconds.
+    if (running && Date.now() - lastPush.current > 30_000) push();
+    const remote = setTimeout(push, running ? 15_000 : 4000);
+    return () => { clearTimeout(local); clearTimeout(remote); };
+  }, [place, items, plan, current, finished, built, stats, units, running]);
+
+  /* Play-testing is the person's: start and stop a play test in Studio directly (no model call, no credits). */
+  const [playing, setPlaying] = useState(false);
+  const playTest = useCallback(async (start: boolean) => {
+    const p = placeRef.current;
+    if (!bridge || !p) return;
+    const r = await bridge.call("start_stop_play", { studio_id: p.id, is_start: start });
+    if (r.ok && !r.result.isError) setPlaying(start);
+    else add({ kind: "note", key: key(), text: start ? "Studio could not start a play test. Press Play in Studio instead." : "Studio could not stop the play test. Press Stop in Studio instead.", tone: "warn" });
+  }, [bridge, add]);
   const setAuto = useCallback((v: boolean) => { flags.current.auto = v; setAutoApprove(v); }, []);
 
   const planSteps: PlanStep[] = plan.map((t, i) => ({ text: t, state: finished || i + 1 < current ? "done" : i + 1 === current ? "doing" : "next" }));
@@ -364,7 +487,7 @@ export function useStudioAgent(bridge: StudioBridge | null) {
 
   return {
     items, running, paused, looking, units, autoApprove, place, viewport, shots, plan: planSteps, current, finished, built, stats, pending,
-    send, decide, pause, resume, stop, reset, setAuto, setPlace, refreshViewport,
+    send, decide, pause, resume, stop, reset, setAuto, setPlace, refreshViewport, playing, playTest,
   };
 }
 

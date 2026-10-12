@@ -72,7 +72,7 @@ print(a["agreement"]["summary"])`;
 export const ERRORS: [status: string, code: string, meaning: string][] = [
   ["400", "invalid_request", "Bad JSON or a field out of range. The message says which."],
   ["401", "invalid_api_key", "Missing, malformed, revoked or expired key. Repeated bad keys from one address are throttled."],
-  ["402", "limit_reached", "Your plan's credits, a rolling limit or the daily safety cap is used up. The message says when it resets."],
+  ["402", "limit_reached", "Your plan's credits or a rolling limit is used up. The message says when it resets."],
   ["403", "insufficient_scope / plan_required", "The key lacks the scope, or the account's plan no longer includes the API."],
   ["413", "too_large", "The request body is too large."],
   ["429", "key_rate_limited / rate_limited", "Over the per-key or per-address limit. Wait for the Retry-After header."],

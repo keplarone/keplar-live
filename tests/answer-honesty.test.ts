@@ -197,24 +197,35 @@ test("a slow free model: a different free model stands in while it is still runn
   }
 });
 
-test("counting question end to end: the exact result is given to the models, a small panel answers, and the page says it was computed", async () => {
-  const seen: { model: string; prompt: string }[] = [];
+test("a bare counting or arithmetic question is answered instantly by the exact checker: correct, no model asked, no charge", async () => {
+  const seen: string[] = [];
   await withFreeEngine(
     (body) => {
-      const t = textOf(body);
-      if (t.includes("strawberry") && !t.includes("Positions") && !t.includes("Responses")) seen.push({ model: body.model, prompt: t });
+      seen.push(body.model);
       return ok(body.model, "The letter r appears 3 times in strawberry.");
     },
     async () => {
       const { a } = await ask("How many r's are in strawberry?");
       assert.ok(a);
-      const panelCalls = seen.filter((s) => s.prompt.includes("Verified by Keplar's exact checker"));
-      assert.ok(new Set(panelCalls.map((s) => s.model)).size >= 2, "at least two different models were asked");
-      for (const s of panelCalls) assert.match(s.prompt, /appears 3 times in "strawberry"/);
-      assert.ok(a!.sources.some((x) => x.title === "Exact check" && /3 times/.test(x.detail ?? "")), JSON.stringify(a!.sources));
-      assert.equal(a!.consensus.consulted, 2);
+      assert.match(a!.markdown, /appears 3 times in "strawberry"/);
+      assert.match(a!.markdown, /Worked out by code, not by an AI model/);
+      const m = await ask("What is 12 times 9?");
+      assert.match(m.a!.markdown, /12 times 9 = 108/);
+      assert.deepEqual(seen, [], "no model call for either question");
+      assert.equal(a!.consensus.consulted, 1);
+      assert.deepEqual(a!.models, []);
     },
   );
+});
+
+test("the exact checker answers alone only for bare questions; files, images or a mode still go to the models with the verified result", async () => {
+  const { instantExact } = await import("@/lib/orchestration/orchestrator");
+  assert.match(instantExact({ prompt: "What is 12 times 9?" }) ?? "", /= 108/);
+  assert.equal(instantExact({ prompt: "What is 12 times 9?", modes: { reason: true } }), null);
+  assert.equal(instantExact({ prompt: "What is 12 times 9?", attachments: [{ name: "a.txt", type: "text/plain", text: "x" }] as never }), null);
+  assert.equal(instantExact({ prompt: "What is 12 times 9?", media: { kind: "image" } as never }), null);
+  assert.equal(instantExact({ prompt: "Explain why 12 times 9 is 108 and how to check it" }), null, "anything beyond the calculation goes to the models");
+  assert.equal(instantExact({ prompt: "hi" }), null);
 });
 
 // ---------- (4) the next plan above Free is Lite ----------

@@ -3,7 +3,9 @@ import { afterEach, test } from "node:test";
 import assert from "node:assert/strict";
 import { testWorkspace } from "./helpers/workspace";
 import { usedThisMonth } from "../src/lib/create/platform/compute";
-import { buildTools, riskOf, runStudioTurn, STUDIO_LIMITS, STUDIO_SYSTEM, validateMessages } from "../src/lib/studio/agent";
+import { answeredByLockedModel, buildTools, riskOf, ROBLOX_MODEL_DEFAULT, robloxModelId, runStudioTurn, STUDIO_LIMITS, STUDIO_PROFILE, STUDIO_SYSTEM, validateMessages } from "../src/lib/studio/agent";
+import { createMeteredFetch, MODEL_LOCK_HEADER } from "../src/lib/cost/meter";
+import { costConfig } from "../src/lib/cost/config";
 
 const ENV = process.env.OPENROUTER_API_KEY;
 afterEach(() => { if (ENV === undefined) delete process.env.OPENROUTER_API_KEY; else process.env.OPENROUTER_API_KEY = ENV; });
@@ -90,6 +92,8 @@ test("turn: asks Opus 5.5 with Keplar's system prompt and the tools, charges the
   const fakeFetch = (async (_url: string, init: RequestInit) => {
     sent = JSON.parse(String(init.body));
     return new Response(JSON.stringify({
+      model: "anthropic/claude-opus-5.5",
+      provider: "Anthropic",
       choices: [{ finish_reason: "tool_calls", message: { content: "Looking at what is open.", tool_calls: [
         { id: "a", type: "function", function: { name: "list_roblox_studios", arguments: "{}" } },
         { id: "b", type: "function", function: { name: "execute_luau", arguments: JSON.stringify({ code: "workspace.Old:Destroy()" }) } },
@@ -110,8 +114,81 @@ test("turn: asks Opus 5.5 with Keplar's system prompt and the tools, charges the
   assert.deepEqual(turn.blocked, [{ id: "c", name: "http_get" }]);
   assert.equal(turn.done, false);
   assert.equal(turn.message.tool_calls?.length, 3, "the reply goes back into history exactly, blocked call included");
-  assert.equal(turn.units, Math.ceil((0.25 * 1.1) / 0.002));
+  assert.equal(turn.units, Math.ceil((0.25 * 1.1 * 0.7) / 0.002), "Roblox building is charged 30% fewer credits");
   assert.equal((await usedThisMonth(ws)) - before, turn.units);
+  assert.deepEqual(turn.usage, { provider: "Anthropic", model: "anthropic/claude-opus-5.5", promptTokens: 20_000, cachedTokens: 0, completionTokens: 1_000, reasoningTokens: 0, usd: 0.25, latencyMs: turn.usage.latencyMs });
+});
+
+const reply = (over: Record<string, unknown> = {}, status = 200, headers: Record<string, string> = {}) =>
+  new Response(JSON.stringify({ model: "anthropic/claude-opus-5.5", choices: [{ finish_reason: "stop", message: { content: "Done." } }], usage: { prompt_tokens: 1000, completion_tokens: 100, cost: 0.01, prompt_tokens_details: { cached_tokens: 800 } }, ...over }), { status, headers: { "content-type": "application/json", ...headers } });
+const studioTurn = async (name: string, f: typeof fetch) => {
+  const ws = await testWorkspace(name, "plus");
+  return { ws, run: () => runStudioTurn(ws, { messages: validateMessages([{ role: "user", content: "hi" }]), tools: [] }, { fetch: f }) };
+};
+
+test("Roblox model lock: Opus 5.5 only, from KEPLAR_ROBLOX_MODEL_ID; any other id pauses Studio instead of running on it", () => {
+  assert.equal(ROBLOX_MODEL_DEFAULT, "anthropic/claude-opus-5.5");
+  assert.equal(robloxModelId({}), "anthropic/claude-opus-5.5");
+  assert.equal(robloxModelId({ KEPLAR_ROBLOX_MODEL_ID: " anthropic/claude-opus-5.5 " }), "anthropic/claude-opus-5.5");
+  for (const bad of ["anthropic/claude-sonnet-5.5", "openai/gpt-5", "anthropic/claude-opus-5.5:free", "~anthropic/claude-opus-latest", "anthropic/claude-opus-4.8"]) {
+    assert.throws(() => robloxModelId({ KEPLAR_ROBLOX_MODEL_ID: bad }), /not Claude Opus 5.5/, bad);
+  }
+  assert.equal(STUDIO_PROFILE.lockedModel, true);
+  assert.ok(answeredByLockedModel("anthropic/claude-opus-5.5", "anthropic/claude-opus-5.5"));
+  assert.ok(answeredByLockedModel("anthropic/claude-opus-5.5", "anthropic/claude-opus-5.5-20261001"));
+  assert.ok(!answeredByLockedModel("anthropic/claude-opus-5.5", "anthropic/claude-opus-5"));
+  assert.ok(!answeredByLockedModel("anthropic/claude-opus-5.5", undefined));
+});
+
+test("Roblox model lock: every turn asks for Opus 5.5 with the lock header and no fallback models, and reports real usage", async () => {
+  process.env.OPENROUTER_API_KEY = "sk-or-test";
+  let body: Record<string, unknown> = {};
+  let headers = new Headers();
+  const { run } = await studioTurn("studio-lock-ok", (async (_u: string, init: RequestInit) => {
+    body = JSON.parse(String(init.body));
+    headers = new Headers(init.headers);
+    return reply();
+  }) as unknown as typeof fetch);
+  const turn = await run();
+  assert.equal(body.model, "anthropic/claude-opus-5.5");
+  assert.equal(body.models, undefined, "no OpenRouter model fallback list");
+  assert.equal(headers.get(MODEL_LOCK_HEADER), "1");
+  assert.equal(turn.usage.cachedTokens, 800);
+  assert.equal(turn.usage.usd, 0.01);
+});
+
+test("Roblox model lock: an answer from another model is discarded and not charged", async () => {
+  process.env.OPENROUTER_API_KEY = "sk-or-test";
+  const { ws, run } = await studioTurn("studio-lock-mismatch", (async () => reply({ model: "anthropic/claude-sonnet-5.5" })) as unknown as typeof fetch);
+  const before = await usedThisMonth(ws);
+  await assert.rejects(run(), /did not come from Claude Opus 5.5/);
+  assert.equal(await usedThisMonth(ws), before);
+});
+
+test("Roblox model lock: out of credit, a guardrail swap or a busy model pause the build with an honest message, never a substitute", async () => {
+  process.env.OPENROUTER_API_KEY = "sk-or-test";
+  const err = (status: number, h: Record<string, string> = {}) => (async () => new Response(JSON.stringify({ error: { message: "x" } }), { status, headers: { "content-type": "application/json", ...h } })) as unknown as typeof fetch;
+  await assert.rejects((await studioTurn("studio-lock-402", err(402))).run(), /never switches to another model/);
+  await assert.rejects((await studioTurn("studio-lock-guard", err(503, { "x-keplar-guard": "model_locked" }))).run(), /never switches to another model/);
+  await assert.rejects((await studioTurn("studio-lock-429", err(429))).run(), /Opus 5.5 is busy/);
+});
+
+test("cost meter: a locked call is never rewritten to another model or retried on a free one, and the lock header never leaves", async () => {
+  const seen: { model: string; lock: string | null }[] = [];
+  const orig = (async (_u: string | URL | Request, init?: RequestInit) => {
+    seen.push({ model: JSON.parse(String(init?.body)).model, lock: new Headers(init?.headers).get(MODEL_LOCK_HEADER) });
+    return new Response(JSON.stringify({ error: { message: "no credit" } }), { status: 402, headers: { "content-type": "application/json" } });
+  }) as typeof fetch;
+  const base = await costConfig();
+  const cfg = async () => ({ ...base, flags: { ...base.flags, degradeOnLowBalance: true }, degrade: { ...base.degrade, freeFallbackModels: ["some/free-model:free"] } });
+  const metered = createMeteredFetch({ orig, sink: async () => {}, config: cfg, onExhausted: async () => {} });
+  const call = (lock: boolean) => metered("https://openrouter.ai/api/v1/chat/completions", { method: "POST", headers: { "content-type": "application/json", ...(lock ? { [MODEL_LOCK_HEADER]: "1" } : {}) }, body: JSON.stringify({ model: "anthropic/claude-opus-5.5", messages: [] }) });
+  const locked = await call(true);
+  assert.equal(locked.status, 402);
+  assert.deepEqual(seen, [{ model: "anthropic/claude-opus-5.5", lock: null }], "one call, Opus only, header stripped");
+  seen.length = 0;
+  await call(false);
+  assert.deepEqual(seen.map((s) => s.model), ["anthropic/claude-opus-5.5", "some/free-model:free"], "unlocked calls keep the existing degrade behavior");
 });
 
 test("turn: no model key means Studio mode says it is unavailable, and nothing is charged", async () => {
@@ -124,6 +201,24 @@ test("turn: no model key means Studio mode says it is unavailable, and nothing i
 
 test("system prompt: plan first, studio_id on every call, organised Luau, approval for anything destructive", () => {
   for (const s of ["list_roblox_studios", "numbered plan", "comment header", "Folders", "TweenService", "ParticleEmitter", "reference images", "approval"]) assert.match(STUDIO_SYSTEM, new RegExp(s), s);
+});
+
+test("system prompt: flipbook VFX are built correctly (1024 sheets, stated grid, mode by effect, decal ids resolved, validity checked)", () => {
+  for (const s of ["exactly 1024x1024", "Grid2x2", "Grid4x4", "Grid8x8", "FlipbookSizeX", "OneShot", "FlipbookFramerate", "FlipbookStartRandom", "never guess a grid", "InsertService:LoadAsset", "never parent it", "FlipbookIncompatible", "never ship a broken flipbook"]) assert.ok(STUDIO_SYSTEM.includes(s), s);
+});
+
+test("system prompt: emission and light settings are tuned per effect type, layered, bloomed and kept performant", () => {
+  for (const s of ["LightEmission 1 (additive), LightInfluence 0", "LightEmission 0 and LightInfluence 1", "ZOffset", "Bloom", "Threshold", "EmitCount", "PointLight", "few hundred live particles", "overdraw"]) assert.ok(STUDIO_SYSTEM.includes(s), s);
+});
+
+test("system prompt: high-quality flipbook sheets are listed as image ids with their stated layout, and low-quality sources are skipped", () => {
+  const ids = [...STUDIO_SYSTEM.matchAll(/rbxassetid:\/\/(\d+)/g)].map((m) => m[1]);
+  assert.ok(ids.length >= 10, `${ids.length} sheets`);
+  assert.equal(new Set(ids).size, ids.length, "no duplicates");
+  for (const id of ["13026594575", "12360899465", "18350947061"]) assert.ok(ids.includes(id), id);
+  assert.match(STUDIO_SYSTEM, /transparent smoke 1, 8x8 loop, rbxassetid:\/\/13026594575/);
+  assert.match(STUDIO_SYSTEM, /skip reuploads/);
+  assert.ok(STUDIO_SYSTEM.indexOf("Zonito's particle pack (above)") > STUDIO_SYSTEM.indexOf("asset id 14605502518"), "Zonito's pack stays first");
 });
 
 test("system prompt: VFX and UI textures come from Zonito's particle pack first, else Keplar makes its own, uploading only with approval", () => {

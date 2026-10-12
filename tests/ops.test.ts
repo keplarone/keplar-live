@@ -11,7 +11,7 @@ import { percentile, summarize } from "@/lib/ops/metrics";
 import { createRegistry, MODEL_OFF_MESSAGE } from "@/lib/orchestration/providers";
 import { liveRoster } from "@/lib/orchestration/live-catalog";
 import { errorResponse } from "@/lib/create/platform/http";
-import { freePaused } from "@/lib/create/platform/spend";
+import { FREE_DAY_BUDGET_MESSAGE, freePaused, nextUtcMidnight } from "@/lib/create/platform/spend";
 import type { Provider } from "@/lib/orchestration/types";
 import type { Workspace } from "@/lib/create/platform/workspace";
 import type { WorkspaceRow } from "@/lib/accounts/workspaces";
@@ -225,6 +225,14 @@ test("hourly limits: recorded spend blocks the next call on this instance", asyn
   await new Promise((r) => setTimeout(r, 20));
   assert.match((await hourlyBlockFor("prov-x", "model-x")) ?? "", /Hourly spend limit for this model/);
   delete process.env.KEPLAR_MODEL_HOURLY_USD;
+});
+
+test("the shared daily budget lifts at the next 00:00 UTC and does not describe a personal monthly balance", () => {
+  assert.equal(nextUtcMidnight(Date.parse("2026-10-11T15:16:00.000Z")), "2026-10-12T00:00:00.000Z");
+  assert.equal(nextUtcMidnight(Date.parse("2026-10-12T00:00:00.000Z")), "2026-10-13T00:00:00.000Z");
+  assert.match(FREE_DAY_BUDGET_MESSAGE, /today's usage budget/);
+  assert.match(FREE_DAY_BUDGET_MESSAGE, /not counted against your Free questions/);
+  assert.doesNotMatch(FREE_DAY_BUDGET_MESSAGE, /month/i);
 });
 
 test("hourly limits are enforced in the registry: over-limit live model is refused as rate-limited, nothing is sent", async () => {

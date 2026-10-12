@@ -45,6 +45,9 @@ export const CHAPTERS: Chapter[] = [
       { id: "versions", name: "Version history", line: "Every build is a version. Restore any one, or branch it into a new draft.", href: "/app/create", status: "live" },
       { id: "community", name: "Community gallery", line: "Sites people chose to share. Like, remix, report.", href: "/templates", status: "beta" },
       { id: "anti-vibe", name: "Anti-generic design rules", line: "A written rubric and a lint pass that reject the usual AI look before you see it.", href: "/showcase", status: "live" },
+      { id: "roblox-studio", name: "Roblox Studio mode", line: "A co-builder inside Roblox Studio: maps, UI, flipbook effects and Luau scripts, on Claude Opus 5.5.", href: "/roblox-studio-ai", status: "beta", note: "Desktop app, Lite and up." },
+      { id: "roblox-cloud", name: "Roblox Cloud", line: "Overnight jobs on your game's scripts, each edit checked by Luau's analyzer, applied in Studio when you say so.", href: "/roblox-studio-ai", status: "beta", note: "Scripts only; it can't play-test." },
+      { id: "blender", name: "Blender mode", line: "Model, texture with Poly Haven PBR sets, light and export in Blender 4.2 or newer.", href: "/blender-ai", status: "beta", note: "Desktop app 0.1.8 or newer." },
     ],
   },
   {
@@ -68,9 +71,11 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: "platform", n: "06", label: "Platform", title: "Use Keplar from anywhere.",
-    lede: "The same engine, behind an API, inside a widget on your site, and shared across a team.",
+    lede: "The same engine, behind an API, in your browser, inside a widget on your site, and shared across a team.",
     features: [
       { id: "api", name: "Public API", line: "Bearer keys, per-plan limits, OpenAPI spec. Free keys use free models only.", href: "/developers", status: "beta" },
+      { id: "extension", name: "Keplar One browser extension", line: "Ask about a selection or a page from Chrome or Edge, using your API key.", href: "/developers", status: "beta", note: "Submitted to the Chrome Web Store." },
+      { id: "lens", name: "Search with Keplar One", line: "Drag over any text or picture on a page; the answer opens in a side panel.", href: "/developers", status: "beta", note: "Part of the browser extension." },
       { id: "embed", name: "Embeddable widget", line: "One script tag puts Keplar Ask on your site, limited to origins you allow.", href: "/developers#embed", status: "beta" },
       { id: "teams", name: "Keplar for Teams", line: "Shared workspaces with owner, admin, editor and viewer roles.", href: `https://${BUSINESS_HOST}`, status: "beta", note: "Business plan." },
       { id: "referrals", name: "Referral program", line: "Invite a friend; you both get extra usage, never cash.", href: "/referral-terms", status: "live" },

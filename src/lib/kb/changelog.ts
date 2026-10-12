@@ -7,6 +7,22 @@ export type Release = { id: string; date: string; title: string; summary: string
 
 export const releases: Release[] = [
   {
+    id: "2026-10-12",
+    date: "2026-10-12",
+    title: "Roblox Cloud overnight jobs, better Studio effects, and the Keplar One browser extension (beta)",
+    summary: "Roblox Studio mode can now keep working on your game's scripts while your computer is off, its effects follow real flipbook and lighting rules, and Keplar One brings Keplar into Chrome and Edge.",
+    items: [
+      "Roblox Cloud (beta): give a goal, a credit budget and a time limit of up to 12 hours, and it works on your game's scripts on Keplar's servers. Every edit is checked with Luau's own analyzer, and you review and apply the changes in Studio, each as one Undo step. Scripts only; it can't play-test.",
+      "Studio effects: flipbook particles use valid 1024 by 1024 sheets in the grid their creator states, glows are self-lit with bright cores, smoke is lit by the scene, and textures come from vetted packs before a filtered Creator Store search.",
+      "Roblox Studio mode and Roblox Cloud run on Claude Opus 5.5 only. If it can't be reached, the build pauses and says so instead of switching models.",
+      "Keplar One for Chrome and Edge (beta): ask about a selection or a page from the toolbar or right-click menu with your API key. It has been submitted to the Chrome Web Store.",
+      "Search with Keplar One: drag over any text or picture on a page and the answer opens in a side panel, with follow-ups, Translate, Copy text and Copy as image. It asks once before sending anything.",
+      "The API accepts one optional image with a question, checked like an image in the app and not stored.",
+      "New docs for Roblox Studio mode, Roblox Cloud, effects and textures, Blender mode and the extension.",
+    ],
+    links: [{ href: "/docs/studio/roblox-cloud", label: "Roblox Cloud" }, { href: "/docs/studio/effects-and-textures", label: "Effects and textures" }, { href: "/docs/extension/search-with-keplar-one", label: "Search with Keplar One" }, { href: "/docs/studio/blender-mode", label: "Blender mode" }],
+  },
+  {
     id: "2026-10-06",
     date: "2026-10-06",
     title: "A home page that shows everything, a live demo, the Create showcase and Voice Live Create (beta)",

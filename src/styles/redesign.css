@@ -127,9 +127,10 @@
   }
   #main a:is([class*="__card"], [class*="__featured"], [class*="__tile"], [class*="__product"]):hover { translate: 0 -4px; }
 
-  /* Page entry: the page's top-level blocks ease up into place, a beat apart (the backdrop and nav stay put) */
+  /* Page entry: the page's top-level blocks ease up into place, a beat apart (the backdrop and nav stay put). Not the Keplar
+     Business workspace: it is an app window, and sliding its shell in pushed the bottom 18px off-screen while it ran. */
   @keyframes kp-page-in { from { opacity: 0; translate: 0 18px; } }
-  #main > :not([class*="Sky-module__"][class$="__backdrop"]) > :is(header, section, div, article, nav, form):nth-child(-n + 6) {
+  #main > :not([class*="Sky-module__"][class$="__backdrop"]):not([class*="workspace-module__"]) > :is(header, section, div, article, nav, form):nth-child(-n + 6) {
     animation: kp-page-in 560ms var(--m-ease-out) both;
   }
   #main > * > :nth-child(2) { animation-delay: 70ms; }

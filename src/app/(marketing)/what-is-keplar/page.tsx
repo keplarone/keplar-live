@@ -3,19 +3,21 @@ import { PageHero } from "@/components/page/PageHero";
 import { Faq } from "@/components/sections/Faq";
 import { FinalCta } from "@/components/sections/FinalCta";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { BUSINESS_FACTS, FACT_SECTIONS, factStatus, NOT_JUST_MULTI_MODEL, WHAT_IS_KEPLAR } from "@/lib/content/product-facts";
+import { BUSINESS_FACTS, CAPABILITY_MATRIX, FACT_SECTIONS, factStatus, MATRIX_COLUMNS, NOT_JUST_MULTI_MODEL, WHAT_IS_KEPLAR } from "@/lib/content/product-facts";
 import { abs, pageMeta } from "@/lib/seo";
 import { breadcrumbs, webPage } from "@/lib/seo-graph";
 import { brand } from "@/lib/site";
 import { tiers } from "@/lib/tiers";
 import s from "@/components/sections/sections.module.css";
+import kb from "@/components/kb/kb.module.css";
 
 const PATH = "/what-is-keplar";
 const TITLE = `What is ${brand.companyName}? Everything Keplar does`;
-const DESCRIPTION = "Keplar is an AI workspace: a multi-model answer engine plus Study mode, Deep Research, slides, image and video generation, website and app building, a Roblox Studio co-builder, an API, and Keplar Business for companies.";
+const DESCRIPTION = "Keplar is an AI workspace: a multi-model answer engine plus Study mode, Deep Research, slides, image and video generation, website and app building, Roblox Studio and Blender co-builders, an API, and Keplar Business for companies.";
 
 export const metadata = pageMeta(PATH, TITLE, DESCRIPTION);
 
+const CELL = { yes: "Yes", beta: "Beta", no: "No", "n/a": "Not applicable" } as const;
 const STATUS = { live: null, beta: "Beta", soon: "Coming soon" } as const;
 const paid = tiers.filter((t) => t.price && t.price > 0).map((t) => `${t.name} $${t.price}`).join(", ");
 
@@ -23,7 +25,7 @@ const paid = tiers.filter((t) => t.price && t.price > 0).map((t) => `${t.name} $
 const QA = [
   { q: `What is ${brand.companyName}?`, a: WHAT_IS_KEPLAR },
   { q: "Is Keplar just a tool that asks several AI models?", a: NOT_JUST_MULTI_MODEL },
-  { q: "What can Keplar make?", a: "Websites and web apps it builds, tests and publishes (with custom domains), mobile app projects (beta), images, short videos (beta, Pro), slide decks you can export to PowerPoint or PDF, study sets with flashcards and quizzes, research reports, and Roblox games built inside Roblox Studio from the desktop app (beta)." },
+  { q: "What can Keplar make?", a: "Websites and web apps it builds, tests and publishes (with custom domains), mobile app projects (beta), images, short videos (beta, Pro), slide decks you can export to PowerPoint or PDF, study sets with flashcards and quizzes, research reports, Roblox games built inside Roblox Studio, and 3D models with real textures in Blender, both from the desktop app (beta)." },
   { q: "Is there a free plan?", a: `Yes. Free is $0 and runs on free open models with up to 50 questions a day (fair use), image and video questions, Study mode, saved chats and optional memory. Paid plans: ${paid} a month, adding premium models, more usage, Deep Research, slides, image and video generation, and Create.` },
   { q: "What is Keplar Business?", a: `${BUSINESS_FACTS.intro} Plans: ${BUSINESS_FACTS.plans.map((p) => `${p.name} (${p.price})`).join(", ")}.` },
   { q: "Is Keplar AGI or superintelligence?", a: "No. Keplar is a practical multi-model workspace. Agreement between models does not prove an answer is correct, which is why Keplar shows the disagreements and the reasoning, and why health, legal and money answers are general information, not professional advice." },
@@ -57,7 +59,7 @@ export default function WhatIsKeplarPage() {
           <p>
             On this page: {FACT_SECTIONS.map((sec, i) => (
               <span key={sec.id}>{i ? " · " : ""}<a href={`#${sec.id}`}>{sec.title}</a></span>
-            ))} · <a href="#business">Keplar Business</a>
+            ))} · <a href="#business">Keplar Business</a> · <a href="#where">Where each feature runs</a>
           </p>
           {FACT_SECTIONS.map((sec) => (
             <div key={sec.id} id={sec.id}>
@@ -87,6 +89,23 @@ export default function WhatIsKeplarPage() {
               ))}
             </ul>
             <p><a href="https://business.keplar.one">Visit business.keplar.one</a></p>
+          </div>
+          <div id="where">
+            <h2>Where each feature runs</h2>
+            <p>Keplar One (keplar.one) and Keplar Business (business.keplar.one) are separate products on the same account. This table shows which surface has what; the same data is published as <a href="/capabilities.json">capabilities.json</a>.</p>
+            <div className={kb.tableWrap} tabIndex={0} role="region" aria-label="Feature availability by product and platform">
+              <table className={kb.table}>
+                <thead><tr><th scope="col">Feature</th>{MATRIX_COLUMNS.map((c) => <th key={c} scope="col">{c}</th>)}</tr></thead>
+                <tbody>
+                  {CAPABILITY_MATRIX.map((r) => (
+                    <tr key={r.feature}>
+                      <th scope="row">{r.feature}{r.note ? <><br /><small>{r.note}</small></> : null}</th>
+                      {r.cells.map((c, i) => <td key={MATRIX_COLUMNS[i]}>{CELL[c]}</td>)}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
           <p>
             Next: see <Link href="/how-it-works">how the answer engine works</Link>, every feature with its status on{" "}

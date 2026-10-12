@@ -84,7 +84,7 @@ export function AccountSetup() {
       <header className={s.nav}>
         <Link href="/" className={s.brand}>
           <svg viewBox="0 0 398 398" width="20" height="20" fill="currentColor" aria-hidden="true"><rect x="0" y="0" width="229" height="229" rx="70" /><path d="M204.95 11.95A7 7 0 0 1 209.9 0L362 0A16 16 0 0 1 378 16L378 168.1A7 7 0 0 1 366.05 173.05Z" /><circle cx="281" cy="281" r="117" /></svg>
-          Keplar Business
+          <span className={s.wordmark}>Keplar <span>Business</span></span>
         </Link>
         <ol className={s.stepper} aria-label="Setup steps">
           <li aria-current={phase.at === "profile" ? "step" : undefined} data-done={phase.at === "plan" || undefined}>Business account</li>

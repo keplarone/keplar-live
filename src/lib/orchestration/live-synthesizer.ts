@@ -30,6 +30,7 @@ import { HUMAN_TONE_PROMPT, polish } from "@/lib/persona-tone";
 import { guardDisagreement } from "./disagreement-guard";
 import { RESEARCH_CRITIQUE_RULES, RESEARCH_SYNTH_RULES } from "./research";
 import { CLARITY_STYLE, GROUNDING_STYLE } from "@/lib/style/clarity";
+import { isGuideRequest } from "./answer-shape";
 
 type Ok = Extract<ProviderResult, { ok: true }>;
 const nameOf = (id: string) => catalogById.get(id)?.name ?? id;
@@ -56,6 +57,17 @@ If the question has several parts, answer each part in order and make sure none 
 ${CLARITY_STYLE}
 ${GROUNDING_STYLE}
 After the answer, on its own final line, write: RESOLUTION: <one sentence on how the disagreement was resolved, or "No disagreement.">`;
+
+/**
+ * How-to questions (answer-shape.ts isGuideRequest): these rules override the length and list rules above. The writer gets every model's
+ * full guide, not only the extracted claims, so the exact commands, values and checks survive into the final answer.
+ */
+export const GUIDE_SYNTH_RULES = `THIS IS A HOW-TO. These rules override the length and list rules above.
+- Write ONE complete, expert step-by-step guide that is better than any single response: the clearest correct order of steps, with every precise detail that holds up (exact menu paths, commands in fenced code blocks, settings, amounts, sizes, temperatures, timings), a "*Check:*" line per step saying what they should see when it worked, and the warnings that matter in bold at the step where they apply.
+- Merge, don't average: take the most complete sequence, then add any step, check, warning, troubleshooting fix or pro tip that only one model had and that is correct. Where models give different values or orders, use the one that is safer and better reasoned, and say in that step when it depends on the version or situation.
+- Use the parts that apply: a one-line overview (result, time, difficulty, cost, and any assumption about their setup), "**Before you start**", "**Steps**" (numbered, lettered sub-steps for big ones), a short variation for the other common case only where it really differs, "**If something goes wrong**" (symptom → cause → fix), "**Pro tips**".
+- Scale to the task: a one-line fix stays short; a real project can run to about 1,500 words. Never invent a command, menu name, part number or value; say what to look for when unsure. If a professional is genuinely needed for part of it, say so plainly at that step.
+- Only add "**Where the models disagree**" when they disagree on something that changes what the person should do.`;
 
 /** The last pass on hard (DEEP) questions: one editor check for completeness, overclaiming and tone. Replies "OK" when nothing needs changing. */
 export const CRITIQUE_SYSTEM_PROMPT = `You are Keplar's final editor. You get the question, the answer that is about to be shown, and the material it was written from.
@@ -178,8 +190,11 @@ export class ModelSynthesizer implements Synthesizer {
         ? `Positions:\n${positionsBlock(comparison, this.summaries)}\n\nClaims:\n${claimsBlock(results)}`
         : `Responses (positions could not be extracted):\n${ok.map((r) => `### ${nameOf(r.modelId)}\n${r.text.slice(0, 3000)}`).join("\n\n")}`;
       const draft = this.lastDraft ?? "";
+      // How-to: the writer merges every model's full guide (claims alone lose the exact commands, values and checks), with room to write it.
+      const guide = classification.errorProne !== "exact" && !hasMedia(req.media) && isGuideRequest(req.prompt);
+      const guideMaterial = guide ? `\n\nFull responses (use their exact steps, commands and values):\n${ok.map((r) => `### ${nameOf(r.modelId)}\n${r.text.slice(0, 7000)}`).join("\n\n")}` : "";
       // A quick factual lookup or an exact check needs a sentence or two, not 350 words: shorter output is also the fastest part to save.
-      const quick = classification.kind === "factual" || classification.errorProne === "exact";
+      const quick = !guide && (classification.kind === "factual" || classification.errorProne === "exact");
       // Free plan, every responding model took the same position, nothing was flagged, and the question is not an exact one (counting, arithmetic, exact facts): the reply the
       // person is already reading is the answer. A separate write-up would only take another 4-9 s (measured) to say the same thing.
       const keep = req.plan === "free" && scored && comparison.positions.length === 1 && ok.length >= 2 && !classification.errorProne
@@ -188,8 +203,8 @@ export class ModelSynthesizer implements Synthesizer {
         : undefined;
       this.keptReply = Boolean(keep);
       if (this.noExtraCalls) this.callFailure = "unavailable";
-      const synthSystem = `${SYNTH_SYSTEM_PROMPT}${this.research ? `\n${RESEARCH_SYNTH_RULES}` : ""}`;
-      const out = keep ? { text: keep.text, by: keep.modelId } : this.prewritten ? this.prewritten : this.noExtraCalls ? null : await this.call(quick ? `${synthSystem}\nThis is a quick lookup: answer in at most 120 words (state the answer first, then at most two supporting points).` : synthSystem, `Question:\n${req.memory ?? ""}${req.prompt}${textOnlyMediaNote(req.media)}\n\n${material}\n\nReviewer findings:\n${findings}\n\nDraft:\n${draft.slice(0, 3000)}`, quick ? 500 : 1200, 1, signal, req, classification, this.synthCapMs);
+      const synthSystem = `${SYNTH_SYSTEM_PROMPT}${this.research ? `\n${RESEARCH_SYNTH_RULES}` : ""}${guide ? `\n${GUIDE_SYNTH_RULES}` : ""}`;
+      const out = keep ? { text: keep.text, by: keep.modelId } : this.prewritten ? this.prewritten : this.noExtraCalls ? null : await this.call(quick ? `${synthSystem}\nThis is a quick lookup: answer in at most 120 words (state the answer first, then at most two supporting points).` : synthSystem, `Question:\n${req.memory ?? ""}${req.prompt}${textOnlyMediaNote(req.media)}\n\n${material}${guideMaterial}\n\nReviewer findings:\n${findings}\n\nDraft:\n${draft.slice(0, 3000)}`, quick ? 500 : guide ? 4000 : 1200, 1, signal, req, classification, guide ? Math.max(this.synthCapMs, 60_000) : this.synthCapMs);
       let text = out?.text;
       this.writer = out?.by ?? null;
       // Hard (DEEP) questions get one self-critique pass before the answer is shown: completeness, overclaiming, tone.
@@ -197,7 +212,7 @@ export class ModelSynthesizer implements Synthesizer {
       if (text && !this.noExtraCalls && classification.complexity === "complex" && (!this.budget || this.budget.remaining() > 12_000)) {
         const body = (text.match(/\n?\s*RESOLUTION:\s*(.+)\s*$/i) ? text.slice(0, text.search(/\n?\s*RESOLUTION:/i)) : text).trim();
         const res = (text.match(/\n?\s*(RESOLUTION:\s*.+)\s*$/i)?.[1] ?? "").trim();
-        const crit = await this.call(this.research ? `${CRITIQUE_SYSTEM_PROMPT}\n${RESEARCH_CRITIQUE_RULES}` : CRITIQUE_SYSTEM_PROMPT, `Question:\n${req.prompt}${textOnlyMediaNote(req.media)}\n\nAnswer about to be shown:\n${body}\n\nMaterial:\n${material.slice(0, 3000)}${this.research ? `\n\n${(req.memory ?? "").slice(0, 4000)}` : ""}`, 1200, 0.5, signal, req, classification);
+        const crit = await this.call(this.research ? `${CRITIQUE_SYSTEM_PROMPT}\n${RESEARCH_CRITIQUE_RULES}` : CRITIQUE_SYSTEM_PROMPT, `Question:\n${req.prompt}${textOnlyMediaNote(req.media)}\n\nAnswer about to be shown:\n${body}\n\nMaterial:\n${material.slice(0, 3000)}${this.research ? `\n\n${(req.memory ?? "").slice(0, 4000)}` : ""}`, guide ? 4000 : 1200, 0.5, signal, req, classification);
         const fixed = crit?.text ? stripVerdict(crit.text) : undefined;
         if (!fixed) this.critique = "skipped";
         else if (/^OK\.?$/i.test(fixed)) this.critique = "ok";

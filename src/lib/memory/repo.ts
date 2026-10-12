@@ -5,6 +5,8 @@
 import { collection } from "@/lib/create/platform/store";
 import { id as newId, now } from "@/lib/create/platform/ids";
 import type { ChatRow, MemoryItem, MemoryKind, MemorySettings } from "./types";
+// facts.ts imports ITEM_MAX_CHARS from here; supersedes() is only called inside addItems, so the cycle is safe.
+import { supersedes } from "./facts";
 
 export const MAX_ITEMS = 100;
 export const MAX_CHATS = 200;
@@ -34,15 +36,24 @@ export async function listItems(workspaceId: string): Promise<MemoryItem[]> {
 
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
 
-/** Add facts (deduplicated; the oldest are dropped past the cap). Returns the items actually stored. */
+/**
+ * Add facts (deduplicated; the oldest are dropped past the cap). Returns the items actually stored.
+ * A new note that updates an older one on the same subject (a new name, a changed preference: see supersedes() in facts.ts)
+ * replaces it, so the models are never handed both "prefers short answers" and "prefers long answers".
+ */
 export async function addItems(workspaceId: string, facts: { text: string; kind: MemoryKind }[], source: "auto" | "user"): Promise<MemoryItem[]> {
-  const existing = await listItems(workspaceId);
+  let existing = await listItems(workspaceId);
   const seen = new Set(existing.map((i) => norm(i.text)));
   const added: MemoryItem[] = [];
   const batch = newId("mb");
   for (const f of facts) {
     const key = norm(f.text);
     if (!key || seen.has(key)) continue;
+    for (const old of existing.filter((o) => supersedes(f, o))) {
+      await items().remove(workspaceId, old.id);
+      seen.delete(norm(old.text));
+    }
+    existing = existing.filter((o) => !supersedes(f, o));
     seen.add(key);
     const t = now();
     const row: MemoryItem = { id: newId("mem"), workspaceId, text: f.text, kind: f.kind, source, batch, createdAt: t, updatedAt: t };

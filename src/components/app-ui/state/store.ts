@@ -197,7 +197,7 @@ export function applyEvent(m: KeplarMessage, e: KeplarEvent): KeplarMessage {
     case "memory":
       return { ...m, memory: { saved: e.saved, ...(e.summarized ? { summarized: true } : {}), ...(e.used ? { used: e.used } : {}) } };
     case "limit":
-      return { ...m, status: "limit", limit: { required: e.required, remaining: e.remaining, ...(e.window ? { window: e.window } : {}), ...(e.daily ? { daily: e.daily } : {}) }, finishedAt: Date.now() };
+      return { ...m, status: "limit", limit: { required: e.required, remaining: e.remaining, ...(e.window ? { window: e.window } : {}), ...(e.daily ? { daily: e.daily } : {}), ...(e.budget === "day" ? { budget: "day" as const, ...(e.resetsAt ? { resetsAt: e.resetsAt } : {}) } : {}) }, finishedAt: Date.now() };
     case "error":
       return {
         ...m,
@@ -305,7 +305,8 @@ export function reducer(state: AppState, a: Action): AppState {
       // Optimistic until the next /api/compute sync (the server already charged it).
       if (a.event.type === "answer") next = { ...next, ledger: { ...next.ledger, used: next.ledger.used + a.event.answer.compute.units } };
       if (a.event.type === "daily") next = { ...next, ledger: { ...next.ledger, daily: a.event.daily } };
-      if (a.event.type === "limit" && a.event.daily) next = { ...next, ledger: { ...next.ledger, daily: { used: a.event.daily.limit, limit: a.event.daily.limit, left: 0, resetsAt: a.event.daily.resetsAt } } };
+      if (a.event.type === "limit" && a.event.budget === "day") next = { ...next, ledger: { ...next.ledger, paused: true } };
+      else if (a.event.type === "limit" && a.event.daily) next = { ...next, ledger: { ...next.ledger, daily: { used: a.event.daily.limit, limit: a.event.daily.limit, left: 0, resetsAt: a.event.daily.resetsAt } } };
       else if (a.event.type === "limit" && !a.event.window) next = { ...next, ledger: { ...next.ledger, used: Math.max(next.ledger.used, allowance(next) - a.event.remaining) } };
       return next;
     }

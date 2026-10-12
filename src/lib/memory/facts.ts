@@ -42,6 +42,29 @@ export const asKind = (k: unknown): MemoryKind => (KINDS.has(k as MemoryKind) ? 
 const STOP = new Set("the and for you that with this what how are was were have has from your about can will would could should into they them their there which when where who why not but all any one out use just like get make some more most other than then only also its it's i'm my me we our".split(" "));
 export const words = (s: string) => (s.toLowerCase().match(/[a-z0-9]{3,}/g) ?? []).filter((w) => !STOP.has(w));
 
+/** Stance and degree words: they say how the person feels about a subject, not what the subject is ("prefers SHORT answers"). */
+const STANCE = new Set("user person prefer prefers preferred preference preferences like likes liked love loves hate hates dislike dislikes want wants wanted don dont doesn didn never always usually rather really very much more less most least short shorter shortest long longer longest brief briefer concise detailed detail details simple simpler plain fancy formal casual lot little keep keeps please".split(" "));
+const subject = (t: string) => new Set(words(t).filter((w) => !STANCE.has(w)));
+
+/**
+ * Does a newly learned note replace an older one (contradiction handling)? Only where an update is the obvious reading:
+ *  - a new name replaces the old name (a person has one name they want to be called);
+ *  - a new preference or style note replaces an older preference/style note on the same subject, judged by the content
+ *    words left once stance words are removed ("prefers short answers" vs "prefers longer, detailed answers": subject {answers}).
+ * Facts, goals, projects and corrections are never replaced automatically: two of them can both be true. Pure.
+ */
+export function supersedes(next: { text: string; kind: MemoryKind }, old: Pick<MemoryItem, "text" | "kind">): boolean {
+  if (next.kind === "name" && old.kind === "name") return true;
+  const pref = (k: MemoryKind) => k === "preference" || k === "style";
+  if (!pref(next.kind) || !pref(old.kind)) return false;
+  const a = subject(next.text);
+  const b = subject(old.text);
+  if (!a.size || !b.size) return false;
+  let shared = 0;
+  for (const w of a) if (b.has(w)) shared++;
+  return shared / (a.size + b.size - shared) >= 0.6;
+}
+
 /**
  * The facts worth sending with this question, within a token cap (about 4 characters per token).
  * Names and preferences always qualify; others need overlap with the question; newest first within a tie.
@@ -95,4 +118,15 @@ export function memoryUsedCount(preface: string | undefined): number {
     if (m) n += m[1].split("\n").filter((l) => l.trim().startsWith("- ")).length;
   }
   return n;
+}
+
+/**
+ * The kind of a note the person asked Keplar to remember ("remember that ..."), decided without a model, so an explicit
+ * update ("remember I prefer long answers now") replaces the old preference instead of sitting next to it.
+ */
+export function kindOfNote(text: string): MemoryKind {
+  const t = text.toLowerCase();
+  if (/\b(call me|my name is|my name's|i go by)\b/.test(t)) return "name";
+  if (/\b(i|i'd|i would)\s+(prefer|like|love|hate|dislike|want|rather)\b|\b(i\s+(?:don't|do not|dont)\s+(?:like|want))\b|\bprefer(?:s|red)?\b|\b(answers?|repl(?:y|ies)|responses?|tone|format|bullet points?|emojis?)\b/.test(t)) return "preference";
+  return "fact";
 }

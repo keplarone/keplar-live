@@ -5,8 +5,8 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { faqLd } from "@/lib/kb/jsonld";
 import { vsBySlug, vsPages, VS_ACCESSED } from "@/lib/kb/vs";
 import { abs, pageMeta } from "@/lib/seo";
-import { breadcrumbs } from "@/lib/seo-graph";
 import { softwareApp } from "@/lib/structuredData";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import s from "@/components/kb/kb.module.css";
 
 export const dynamicParams = false;
@@ -29,7 +29,7 @@ export default async function VsPage({ params }: Props) {
   return (
     <div className={s.shell}>
       <div style={{ maxWidth: "var(--l-max)", margin: "0 auto" }}>
-        <p className={s.crumbs}><Link href="/vs">Compare</Link></p>
+        <Breadcrumbs trail={[{ name: "Compare", path: "/vs" }, { name: `Keplar vs ${v.name}`, path }]} />
         <h1 className={s.h1}>{v.title.replace(": what each is for and how they differ", "")}</h1>
         <p className={s.lede}>{v.description}</p>
         <p className={s.meta}><span>Details about {v.name} read on <time dateTime={VS_ACCESSED}>{date(VS_ACCESSED)}</time></span></p>
@@ -66,7 +66,6 @@ export default async function VsPage({ params }: Props) {
         </div>
       </div>
       <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", "@id": abs(`${path}#page`), name: v.title, description: v.description, url: abs(path), dateModified: VS_ACCESSED, inLanguage: "en", about: softwareApp() }} />
-      <JsonLd data={breadcrumbs([{ name: "Compare", path: "/vs" }, { name: `Keplar vs ${v.name}`, path }])} />
       <JsonLd data={faqLd(v.faq)} />
     </div>
   );

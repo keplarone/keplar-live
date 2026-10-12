@@ -80,7 +80,7 @@ const m: MarketingCatalog = {
       "platform": {
         "label": "平台",
         "title": "随处使用 Keplar。",
-        "lede": "同一个引擎，可通过 API 调用，嵌在你网站的小组件里，也可以在团队中共享。"
+        "lede": "同一个引擎，可通过 API 调用，在你的浏览器里，嵌在你网站的小组件里，也可以在团队中共享。"
       },
       "trust": {
         "label": "信任",
@@ -199,6 +199,31 @@ const m: MarketingCatalog = {
       "referrals": {
         "name": "推荐计划",
         "line": "邀请好友，你们都能获得额外用量，绝不是现金。"
+      },
+      "roblox-studio": {
+        "name": "Roblox Studio 模式",
+        "line": "Roblox Studio 里的共同搭建者：地图、界面、序列帧特效和 Luau 脚本，由 Claude Opus 5.5 驱动。",
+        "note": "桌面应用，Lite 及以上。"
+      },
+      "roblox-cloud": {
+        "name": "Roblox Cloud",
+        "line": "通宵处理你游戏的脚本，每处修改都经 Luau 分析器检查，由你决定何时在 Studio 中应用。",
+        "note": "只处理脚本；无法试玩测试。"
+      },
+      "blender": {
+        "name": "Blender 模式",
+        "line": "在 Blender 4.2 或更高版本中建模、用 Poly Haven 的 PBR 材质贴图、布光并导出。",
+        "note": "桌面应用 0.1.8 或更高版本。"
+      },
+      "extension": {
+        "name": "Keplar One 浏览器扩展",
+        "line": "在 Chrome 或 Edge 中，用你的 API 密钥询问选中的文字或整个页面。",
+        "note": "已提交至 Chrome 网上应用店。"
+      },
+      "lens": {
+        "name": "Search with Keplar One",
+        "line": "在页面上框选任意文字或图片，答案会在侧边面板中打开。",
+        "note": "浏览器扩展的一部分。"
       },
       "security": {
         "name": "安全",

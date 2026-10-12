@@ -108,6 +108,13 @@ export function businessHost(req: NextRequest): NextResponse | null {
     url.pathname = asset;
     return NextResponse.rewrite(url);
   }
+  // The Business host's own crawl files (src/app/(business)/biz): before, these fell through to keplar.one's, so the Business
+  // sitemap listed keplar.one's URLs and none of its own.
+  if (pathname === "/robots.txt" || pathname === "/sitemap.xml" || pathname === "/llms.txt" || pathname === "/opengraph-image" || pathname === "/twitter-image") {
+    const url = req.nextUrl.clone();
+    url.pathname = `${BUSINESS_PREFIX}${pathname === "/twitter-image" ? "/opengraph-image" : pathname}`;
+    return NextResponse.rewrite(url);
+  }
   const last = pathname.slice(pathname.lastIndexOf("/") + 1);
   if (pathname.startsWith("/_next/") || pathname.startsWith("/og/") || pathname.startsWith("/icons/") || pathname.startsWith("/fonts/") || pathname.startsWith("/models/") || last.includes(".")) {
     return NextResponse.next();
@@ -132,7 +139,7 @@ export function businessMoved(req: NextRequest): NextResponse | null {
   const moved =
     pathname === "/business-account" ? "/account"
     : pathname === "/app/work" || pathname.startsWith("/app/work/") ? "/work"
-    : pathname === "/business-landing" ? "/"
+    : pathname === "/business-landing" || pathname === "/business" ? "/" // keplar.one/business is the address people guess (it was a 404)
     : pathname === BUSINESS_PREFIX || pathname.startsWith(`${BUSINESS_PREFIX}/`) ? pathname.slice(BUSINESS_PREFIX.length) || "/"
     : null;
   return moved === null ? null : NextResponse.redirect(businessUrl(`${moved}${search}`), 308);

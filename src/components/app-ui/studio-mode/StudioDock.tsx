@@ -50,7 +50,7 @@ function ActionCard({ it, onDecide, compact }: { it: Extract<Item, { kind: "acti
  * The Studio co-creator's chat dock (run loop: useStudioAgent, passed in so the side panel shares it). Shown once Keplar is
  * connected to Studio, on the Studio page and, compact, in the desktop overlay.
  */
-export function StudioDock({ a, compact = false, draft = "", onDraftUsed }: { a: StudioAgent; compact?: boolean; draft?: string; onDraftUsed?: () => void }) {
+export function StudioDock({ a, compact = false, draft = "", onDraftUsed, canPlayTest = true }: { a: StudioAgent; compact?: boolean; draft?: string; onDraftUsed?: () => void; /** Roblox Studio has a play test; Blender does not. */ canPlayTest?: boolean }) {
   const [text, setText] = useState(draft);
   const [refs, setRefs] = useState<string[]>([]);
   const [refBusy, setRefBusy] = useState(false);
@@ -117,7 +117,9 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed }: { a:
           <li className={s.empty}>
             <span className={s.orbit} aria-hidden="true"><span /><span /><span /></span>
             <strong>What should we build?</strong>
-            <span>Keplar looks at your place first, then plans and builds. Attach screenshots or a clip of a UI, effect or gameplay you want to match.</span>
+            {canPlayTest
+              ? <span>Keplar looks at your place first, then plans and builds; you play-test it and say what to change. Attach screenshots or a clip of a UI, effect or gameplay you want to match. Each game&apos;s chat is saved, so you can come back to it.</span>
+              : <span>Keplar reads your scene first, then plans, models and textures it; you look it over and say what to change. Attach reference images of the look you want. Each file&apos;s chat is saved, so you can come back to it.</span>}
           </li>
         ) : null}
         {a.items.map((it) =>
@@ -171,7 +173,7 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed }: { a:
           className={s.input}
           rows={compact ? 1 : 2}
           value={text}
-          placeholder={a.running ? "Keplar is working. You can pause or stop." : a.items.length ? "Change something or add to it…" : "Describe what to build or change…"}
+          placeholder={a.running ? "Keplar is working. You can pause or stop." : a.playing ? "Play-testing. Note what to change, then stop the test and build." : a.items.length ? "Change something or add to it…" : "Describe what to build or change…"}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && !a.running) { e.preventDefault(); submit(); } }}
           aria-label="Describe what to build in Roblox Studio"
@@ -196,7 +198,15 @@ export function StudioDock({ a, compact = false, draft = "", onDraftUsed }: { a:
               <button type="button" className={s.primary} onClick={() => void a.resume()}>Continue</button>
             </>
           ) : (
-            <button type="submit" className={s.primary} disabled={!text.trim() && !refs.length}>Build</button>
+            <>
+              {/* The person play-tests (Studio directly, no model call): the model no longer spends turns testing its own work. */}
+              {canPlayTest && a.items.length ? (
+                <button type="button" className={s.ghost} aria-pressed={a.playing} onClick={() => void a.playTest(!a.playing)}>
+                  {a.playing ? "Stop test" : "Play test"}
+                </button>
+              ) : null}
+              <button type="submit" className={s.primary} disabled={a.playing || (!text.trim() && !refs.length)} title={a.playing ? "Stop the play test, then build" : undefined}>Build</button>
+            </>
           )}
         </div>
       </form>

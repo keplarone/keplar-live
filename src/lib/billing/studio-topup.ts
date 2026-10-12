@@ -159,7 +159,7 @@ async function settle(a: Attempt, paymentId = a.paymentId) {
 export async function runStudioTopUp(ws: Workspace) {
   await owner(ws);
   try {
-    await assertCanSpend(ws, STUDIO_LIMITS.reserveUnits, { kind: "agent" });
+    await assertCanSpend(ws, STUDIO_LIMITS.reserveUnits, { kind: "agent", dailySafetyCap: false });
     return { status: "ready" as const, message: "Credits are available." };
   } catch (e) { if (!(e instanceof CreditLimitError)) throw e; }
   await eligible(ws);
@@ -187,7 +187,7 @@ export async function runStudioTopUp(ws: Workspace) {
   }
   // Another tab or a manual checkout may have added credits while we verified the card.
   try {
-    await assertCanSpend(ws, STUDIO_LIMITS.reserveUnits, { kind: "agent" });
+    await assertCanSpend(ws, STUDIO_LIMITS.reserveUnits, { kind: "agent", dailySafetyCap: false });
     await attempts().update(ws.id, a.id, { status: "skipped" });
     return { status: "ready" as const, message: "Credits are available." };
   } catch (e) {

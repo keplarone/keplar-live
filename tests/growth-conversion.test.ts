@@ -64,6 +64,8 @@ test("pricing copy and landing copy make no fake-proof claims", () => {
 
 test("context notes only render for known keys", () => {
   assert.equal(asPricingFrom("daily-limit"), "daily-limit");
+  assert.equal(asPricingFrom("day-budget"), "day-budget");
+  assert.match(pricingContext["day-budget"].body, /shared daily usage budget.*00:00 UTC.*did not use any of your Free questions/);
   assert.equal(asPricingFrom("constructor"), null);
   assert.equal(asPricingFrom("<script>"), null);
   assert.equal(asPricingFrom(null), null);

@@ -14,9 +14,15 @@ export class BudgetExceeded extends Error {
 export class LatencyBudget {
   private startedAt = 0;
   constructor(
-    readonly totalMs: number,
+    public totalMs: number,
     readonly opts: { panelShare?: number; minStageMs?: number; graceMinMs?: number; graceMaxMs?: number } = {},
   ) {}
+
+  /** A run that legitimately needs longer (a full how-to guide) raises its own budget; never lowers it. */
+  atLeast(ms: number) {
+    this.totalMs = Math.max(this.totalMs, ms);
+    return this;
+  }
 
   start(now = Date.now()) {
     this.startedAt = now;

@@ -45,6 +45,36 @@ export function composeQuestion({ ask, context, kind, url }) {
   return { question: head + label + ctx.slice(0, room), truncated };
 }
 
+/** The API's limits for an image (src/lib/api/policy.ts imageChars) and follow-up history (historyTurns, historyTurnChars). */
+export const MAX_IMAGE_CHARS = 2_800_000;
+export const MAX_HISTORY = 10;
+export const MAX_HISTORY_CHARS = 4000;
+const IMAGE_URL = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/;
+
+/**
+ * The /api/v1/ask body for a Keplar Lens search: the person's question (or a sensible default), the words inside the area,
+ * one picture of the area, and earlier turns for follow-ups. Returns null when there is nothing to ask about.
+ * Only called after the person agreed to Lens sending the picture (lens.js asks once).
+ */
+export function lensRequest({ ask, words, url, image, history }) {
+  const own = String(ask ?? "").trim();
+  const text = String(words ?? "").trim();
+  const pic = image && typeof image.dataUrl === "string" && IMAGE_URL.test(image.dataUrl) && image.dataUrl.length <= MAX_IMAGE_CHARS
+    && Number.isInteger(image.width) && Number.isInteger(image.height) && image.width > 0 && image.height > 0 ? image : null;
+  if (!own && !text && !pic) return null;
+  let question;
+  if (text) {
+    question = composeQuestion({ ask: own || (pic ? "Explain what is in this area of the page (the picture and the words in it), and say what is uncertain." : ""), context: text, kind: "region", url }).question;
+  } else {
+    question = (own || "What is in this picture? Explain it briefly, and say what is uncertain.").slice(0, MAX_QUESTION);
+  }
+  const turns = (Array.isArray(history) ? history : [])
+    .filter((t) => t && (t.role === "user" || t.role === "assistant") && typeof t.content === "string" && t.content.trim())
+    .slice(-MAX_HISTORY)
+    .map((t) => ({ role: t.role, content: t.content.slice(0, MAX_HISTORY_CHARS) }));
+  return { question, stream: true, ...(turns.length ? { history: turns } : {}), ...(pic ? { image: { data_url: pic.dataUrl, width: pic.width, height: pic.height } } : {}) };
+}
+
 /**
  * Map a CSS-pixel rectangle onto a screenshot of the same viewport.
  * rect: { left, top, width, height }. viewport: { w, h }. Returns image pixels, or null if the area is too small.
@@ -129,14 +159,61 @@ export const STAGE_TEXT = {
 };
 
 /** Turn an API answer into plain lines for display. Everything is rendered with textContent, never as HTML. */
+/** Bold, inline code and italics inside one line, as text parts (never HTML). */
+function inlineParts(text) {
+  const parts = [];
+  for (const piece of String(text).split(/(\*\*[^*\n]+\*\*|`[^`\n]+`|(?<![*\w])\*[^*\n]+\*(?![*\w]))/)) {
+    if (!piece) continue;
+    if (/^\*\*[^*]+\*\*$/.test(piece)) parts.push({ text: piece.slice(2, -2), bold: true });
+    else if (/^`[^`]+`$/.test(piece)) parts.push({ text: piece.slice(1, -1), code: true });
+    else if (/^\*[^*]+\*$/.test(piece)) parts.push({ text: piece.slice(1, -1), em: true });
+    else parts.push({ text: piece });
+  }
+  return parts;
+}
+
+/**
+ * A Markdown answer as blocks to build with DOM APIs (the extension never injects HTML): headings, paragraphs and list items
+ * with bold, italic and inline-code parts. A line ending in two spaces (a Markdown line break) starts a new block, which is how
+ * Keplar writes one point per line. Code fences become one code block.
+ */
+export function markdownBlocks(md) {
+  const blocks = [];
+  let para = [];
+  const flush = () => { if (para.length) { blocks.push({ type: "p", parts: inlineParts(para.join(" ")) }); para = []; } };
+  const lines = String(md ?? "").replace(/\r\n/g, "\n").split("\n");
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i];
+    if (/^\s*```/.test(raw)) {
+      flush();
+      const code = [];
+      while (++i < lines.length && !/^\s*```/.test(lines[i])) code.push(lines[i]);
+      blocks.push({ type: "code", parts: [{ text: code.join("\n") }] });
+      continue;
+    }
+    const line = raw.trim();
+    if (!line) { flush(); continue; }
+    let m;
+    if ((m = /^#{1,6}\s+(.*)$/.exec(line))) { flush(); blocks.push({ type: "h", parts: inlineParts(m[1]) }); }
+    else if ((m = /^(?:[-*•]|\d+[.)])\s+(.*)$/.exec(line))) { flush(); blocks.push({ type: "li", parts: inlineParts(m[1]) }); }
+    else { para.push(line); if (/ {2}$/.test(raw)) flush(); }
+  }
+  flush();
+  return blocks;
+}
+
 export function describeAnswer(a) {
-  const out = { answer: String(a?.answer ?? ""), agreement: String(a?.agreement?.summary ?? ""), headline: "", positions: [], credits: Number(a?.usage?.credits ?? 0), models: [] };
+  const out = { answer: String(a?.answer ?? ""), blocks: markdownBlocks(a?.answer), agreement: String(a?.agreement?.summary ?? ""), headline: "", positions: [], credits: Number(a?.usage?.credits ?? 0), models: [] };
   const d = a?.disagreement;
   if (d) {
     out.headline = String(d.headline ?? "");
     out.positions = (Array.isArray(d.positions) ? d.positions : []).map((p) => `${p.count} of ${p.of}: ${p.summary || p.stance}`);
   }
   out.models = (Array.isArray(a?.models) ? a.models : []).map((m) => String(m.name));
+  // The API's own count of models consulted (a model that stood in for another is listed twice in `models`).
+  const consulted = Number(a?.agreement?.consulted) || new Set(out.models).size;
+  const plural = (n, one) => `${n} ${one}${n === 1 ? "" : "s"}`;
+  out.meta = `${consulted ? `${plural(consulted, "model")} consulted. ` : ""}${plural(out.credits, "credit")}. Answers can be wrong; agreement isn't proof.`;
   return out;
 }
 

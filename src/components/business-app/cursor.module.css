@@ -5,7 +5,8 @@
 .grow { flex: 1; }
 .ellipsis { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.shell { height: 100%; display: grid; grid-template-columns: 260px minmax(0, 1fr); transition: grid-template-columns 200ms ease; }
+/* One row pinned to the window height (an auto row grew with the page, so the main column never scrolled: Create could not scroll). */
+.shell { height: 100%; display: grid; grid-template-columns: 260px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); transition: grid-template-columns 200ms ease; }
 .shell[data-collapsed] { grid-template-columns: 0 minmax(0, 1fr); }
 .shell[data-collapsed] .side { visibility: hidden; }
 
@@ -40,8 +41,16 @@
 .footPlan { color: #7a7a7a; font-size: 11.5px; }
 
 /* main */
-.main { min-width: 0; display: flex; flex-direction: column; background: #141414; }
-.mainTop { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; flex: none; }
+.main { min-width: 0; min-height: 0; display: flex; flex-direction: column; background: #141414; }
+.mainTop { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 18px; flex: none; border-bottom: 1px solid #262626; }
+.viewName { order: -1; color: #d6d6d6; font-size: 13px; font-weight: 500; }
+.sideBrand { display: flex; align-items: center; gap: 9px; padding: 4px 10px 12px; color: #ececec; }
+/* The mark is drawn in the text colour on the sidebar itself: no tile behind it. */
+.sideBrand svg { flex: none; }
+/* Wordmark: IBM Plex Sans, "Keplar" semibold with "Business" lighter and muted, like a product lockup ("Claude Code"). */
+.wordmark { font-family: var(--biz-brand), "IBM Plex Sans", var(--biz-sans), system-ui, sans-serif; font-size: 14px; font-weight: 600; letter-spacing: -0.015em; line-height: 1; white-space: nowrap; }
+.wordmark span { font-weight: 500; color: #9a9a9a; }
+.backdrop { display: none; }
 .topLink { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 6px; color: #9a9a9a; font-size: 12.5px; text-decoration: none; }
 .topLink:hover { background: #222222; color: #e6e6e6; }
 .mainBody { flex: 1; min-height: 0; overflow-y: auto; }
@@ -92,6 +101,28 @@
 @media (max-width: 900px) {
   .shell { grid-template-columns: minmax(0, 1fr); }
   .side { display: none; }
+  .shell[data-menu-open] .side { display: flex; visibility: visible; position: fixed; inset: 0 auto 0 0; z-index: 51; width: min(320px, calc(100vw - 48px)); box-sizing: border-box; padding-top: max(16px, env(safe-area-inset-top)); padding-bottom: max(12px, env(safe-area-inset-bottom)); box-shadow: 20px 0 60px rgb(0 0 0 / 0.35); }
+  .backdrop { display: block; position: fixed; inset: 0; z-index: 50; border: 0; background: rgb(0 0 0 / 0.6); }
+  .side .item, .side .recent { min-height: 40px; }
+  .side .iconBtn, .mainTop .iconBtn { width: 40px; height: 40px; }
+  .mainTop .viewName { order: 0; }
+  .mainTop .grow { order: 1; }
+  .mainTop .topLink { order: 2; }
+  .mainTop { padding: 0 10px; }
   .shell[data-collapsed] { grid-template-columns: minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) { .shell { transition: none; } }
+
+/* Images and video attached to a prompt (attach.tsx) */
+.mediaTray { display: grid; gap: 6px; }
+.mediaList { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.mediaItem { display: flex; align-items: center; gap: 8px; max-width: 240px; padding: 4px 6px 4px 4px; border-radius: 9px; background: #262626; box-shadow: inset 0 0 0 1px #333; }
+.mediaThumb { flex: none; width: 34px; height: 34px; border-radius: 6px; object-fit: cover; background: #333; }
+.mediaMeta { display: grid; min-width: 0; }
+.mediaName { overflow: hidden; color: #ececec; font-size: 12.5px; text-overflow: ellipsis; white-space: nowrap; }
+.mediaSub { color: #8a8a8a; font-size: 11.5px; }
+.mediaRemove { flex: none; width: 20px; height: 20px; padding: 0; border: 0; border-radius: 999px; background: transparent; color: #9a9a9a; font-size: 15px; line-height: 1; cursor: pointer; }
+.mediaRemove:hover { background: #363636; color: #ececec; }
+.mediaError { margin: 0; color: #f2a2a4; font-size: 12.5px; }
+.qMedia { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; align-self: flex-end; margin-bottom: 6px; }
+.qMedia img { width: 72px; height: 72px; border-radius: 8px; object-fit: cover; box-shadow: inset 0 0 0 1px #333; }

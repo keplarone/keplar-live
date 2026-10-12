@@ -5,9 +5,9 @@ import { CREATOR_CREDIT } from "@/lib/identity";
 import { brand, PRODUCTION_URL } from "@/lib/site";
 import { livePage } from "@/lib/trends/store";
 import { abs, pageMeta } from "@/lib/seo";
-import { breadcrumbs } from "@/lib/seo-graph";
 import { TrackedLink } from "@/components/growth/TrackedLink";
 import s from "@/components/kb/kb.module.css";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { TwoTone } from "@/components/page/TwoTone";
 
 export const dynamic = "force-dynamic"; // the kill switch and rollback must show a 404 at once
@@ -34,7 +34,7 @@ export default async function Topic({ params }: Props) {
   return (
     <div className={s.shell}>
       <div className={s.hubWrap}>
-        <p className={s.crumbs}><Link href="/topics">Topics</Link><span aria-hidden>/</span>{p.term}</p>
+        <Breadcrumbs trail={[{ name: "Topics", path: "/topics" }, { name: p.term, path }]} />
         <h1 className={s.h1}><TwoTone text={p.title} /></h1>
         <p className={s.lede}>{p.intro}</p>
         <p className={s.meta}>
@@ -87,7 +87,6 @@ export default async function Topic({ params }: Props) {
       </div>
       <JsonLd data={{ "@context": "https://schema.org", "@type": "Article", "@id": abs(`${path}#article`), headline: p.title, description: p.description, datePublished: date, dateModified: date, mainEntityOfPage: abs(path), url: abs(path), image: abs(`${path}/og`), author: orgNode, publisher: orgNode, inLanguage: "en", isPartOf: { "@type": "CollectionPage", name: "Keplar topics", url: abs("/topics") }, about: { "@type": "DefinedTerm", name: p.term, description: p.definition, inDefinedTermSet: abs("/glossary#set") } }} />
       <JsonLd data={{ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: p.faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) }} />
-      <JsonLd data={breadcrumbs([{ name: "Topics", path: "/topics" }, { name: p.term, path }])} />
     </div>
   );
 }

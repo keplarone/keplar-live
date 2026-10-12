@@ -245,3 +245,24 @@ test("a key can't be created from a team workspace context or by an API key", as
   const r = await keysPost(new Request("https://keplar.one/api/keys", { method: "POST", headers: { authorization: `Bearer ${key}`, origin: "https://keplar.one", "content-type": "application/json" }, body: JSON.stringify({ name: "child" }) }));
   assert.equal(r.status, 401);
 });
+
+test("image: one picture rides with the question, shape-checked here and fully validated by the app's media path", async () => {
+  const png = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+  assert.deepEqual(parseAsk({ question: "What is this?", image: { data_url: png, width: 1, height: 1 } }).image, { dataUrl: png, width: 1, height: 1 });
+  assert.equal(parseAsk({ question: "x" }).image, undefined);
+  for (const bad of [{ data_url: "https://x.test/a.png", width: 1, height: 1 }, { data_url: png, width: 0, height: 1 }, { data_url: png, width: 1.5, height: 1 }, { data_url: "data:image/svg+xml;base64,PHN2Zz4=", width: 1, height: 1 }, "nope", [png]]) {
+    assert.throws(() => parseAsk({ question: "x", image: bad }), /"image" must be/, JSON.stringify(bad).slice(0, 60));
+  }
+  assert.throws(() => parseAsk({ question: "x", image: { data_url: `data:image/jpeg;base64,${"A".repeat(2_800_000)}`, width: 10, height: 10 } }), /"image" must be/);
+  // End to end: the picture reaches the app's own validator, which checks the real bytes (a "PNG" that isn't one is refused).
+  const u = await signIn(email("img"), "plus");
+  const { key } = await mint(u.cookie);
+  const fake = await ask(key, { question: "What is this?", image: { data_url: "data:image/png;base64,QUFBQUFBQUFBQUFBQUFBQQ==", width: 4, height: 4 } });
+  assert.equal(fake.status, 400, await fake.clone().text());
+  assert.match(JSON.stringify(await j(fake)), /isn't the image type it claims to be/);
+  const big = await askPost(bearer(key, "/api/v1/ask", { method: "POST", body: JSON.stringify({ question: "x", pad: "y".repeat(3_000_001) }) }));
+  assert.equal(big.status, 413, "the body cap still applies");
+  const spec = openApiSpec() as any;
+  const props = spec.paths["/api/v1/ask"].post.requestBody.content["application/json"].schema.properties ?? spec.components?.schemas?.AskRequest?.properties;
+  assert.ok(props?.image?.properties?.data_url, "documented in the OpenAPI spec");
+});
