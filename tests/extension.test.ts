@@ -44,7 +44,7 @@ test("the shipped files pass the validator, and the validator catches the things
 
 test("build writes a valid zip with exactly the shipped files and a readable manifest", () => {
   const r = buildExtension();
-  assert.ok(existsSync(r.out) && r.out.endsWith("keplar-extension-0.1.0.zip"));
+  assert.ok(existsSync(r.out) && r.out.endsWith(`keplar-extension-${manifest.version}.zip`));
   const listing = execFileSync("unzip", ["-Z1", r.out]).toString().trim().split("\n").sort();
   assert.deepEqual(listing, [...SHIPPED].sort());
   execFileSync("unzip", ["-tq", r.out]); // integrity check (CRC)
@@ -121,6 +121,21 @@ test("Keplar Lens: asks once before anything is sent, then sends the words and a
   assert.match(bg, /const lensPorts = new Set/);
   assert.match(readFileSync("extension/popup.js", "utf8"), /keplar-lens-open/);
   assert.match(lens, /prefers-reduced-motion:reduce/);
+});
+
+test("Keplar Lens: a click chooses the picture, card or block of words under the pointer, like Google Lens; dragging still works", () => {
+  const lens = readFileSync("extension/lens.js", "utf8");
+  assert.ok(lens.includes("Click to search, or drag"), "the tip says both");
+  assert.match(lens, /Only the area you choose: what you drag over, or the picture or block you click\./, "the consent card covers clicking");
+  // Chosen from the page's layout (elementsFromPoint), outlined on hover, searched on click; the overlay itself is skipped.
+  assert.match(lens, /document\.elementsFromPoint\(x, y\)\.filter\(\(n\) => n !== host/);
+  assert.match(lens, /detected = pictureIn\(stack\) \|\| blockFrom\(stack\[0\]\)/);
+  assert.match(lens, /if \(!dragging\) \{ trackHover\(e\.clientX, e\.clientY\); return; \}/);
+  // A click (under 12px of movement) searches what is under the pointer; a real drag still searches the dragged area.
+  assert.match(lens, /if \(width < 12 && height < 12\) \{[\s\S]*?const picked = detectAt\(e\.clientX, e\.clientY\);[\s\S]*?if \(picked\) \{ void lockRegion\(picked\); return; \}/);
+  assert.match(lens, /void lockRegion\(\{ left, top, width, height \}\);/);
+  // Only what is visible is chosen, so the words and the picture stay inside the outlined area.
+  assert.match(lens, /const right = Math\.min\(window\.innerWidth, r\.right\);/);
 });
 
 test("lensRequest: words and/or a picture with sensible default questions, follow-up history, and the API's limits", () => {

@@ -1,11 +1,11 @@
 # Keplar One browser extension
 
-Manifest V3 extension (Chrome and Edge). Ask Keplar about text you selected or the page you're on, or use **Search with Keplar One** (Keplar Lens): drag over text or a picture on the tab and the answer opens in a side panel, with follow-ups. The answer comes back with a summary of where the models agreed and differed. Lens asks once before its first search; after that a search sends the words in the area and a JPEG of it. Nothing is stored.
+Manifest V3 extension (Chrome and Edge). Ask Keplar about text you selected or the page you're on, or use **Search with Keplar One** (Keplar Lens): point at a picture, card or paragraph and click it (like Google Lens), or drag over any area, and the answer opens in a side panel, with follow-ups. The answer comes back with a summary of where the models agreed and differed. Lens asks once before its first search; after that a search sends the words in the area and a JPEG of it. Nothing is stored.
 
-**Status:** built and tested locally. Ready for the Chrome Web Store but **not** submitted yet: `STORE_LISTING.md` has every dashboard field, and `extension/store/` has the screenshots and promo tiles (`node scripts/extension-store-assets.mjs` regenerates them from the real extension). Firefox and Safari are not supported yet.
+**Status:** built and tested locally. 0.1.0 was submitted to the Chrome Web Store by hand; 0.1.1 (click to search) is ready as an update but **not** submitted yet: `STORE_LISTING.md` has every dashboard field, and `extension/store/` has the screenshots and promo tiles (`node scripts/extension-store-assets.mjs` regenerates them from the real extension). Firefox and Safari are not supported yet.
 
 ## Install for testing
-1. `npm run build:extension` writes `extension/dist/keplar-extension-0.1.0.zip` (or load the `extension/` folder directly).
+1. `npm run build:extension` writes `extension/dist/keplar-extension-0.1.1.zip` (or load the `extension/` folder directly).
 2. Chrome → `chrome://extensions` → turn on Developer mode → "Load unpacked" → pick the `extension/` folder (or unzip the build and pick that folder).
 3. Create a key in Keplar → Account → Developer API (paid plans only), click the extension, paste it.
 
@@ -13,7 +13,7 @@ Manifest V3 extension (Chrome and Edge). Ask Keplar about text you selected or t
 The extension uses a Keplar **API key** with the `ask` scope, kept in `chrome.storage.local`. Keys are revocable, scoped, rate-limited, and can't sign in or reach your account, chats, or memory. It deliberately does **not** use your signed-in browser session or cookies: that would hand an extension your whole account. Pairing the extension to your account with a short-lived approval code (device flow) is **COMING SOON**.
 
 ## Privacy and permissions
-- `activeTab` + `scripting`: after you click "Add selected text", "Add page text", "Search with Keplar One", or a context-menu item, read that tab's selection, page text, or the area you drag (its words, and a picture of it captured from the visible tab). The same click draws the overlay. It does not run on other tabs, and it cannot see the rest of the screen outside the browser.
+- `activeTab` + `scripting`: after you click "Add selected text", "Add page text", "Search with Keplar One", or a context-menu item, read that tab's selection, page text, or the area you drag over or click (its words, and a picture of it captured from the visible tab). The same click draws the overlay. It does not run on other tabs, and it cannot see the rest of the screen outside the browser.
 - `contextMenus`: "Ask Keplar One about the selection", "Ask Keplar One about this page", and "Search with Keplar One". `storage`: your key (local) and a one-time menu → popup hand-off (session).
 - No host permissions, no content scripts in the manifest, no remote code (`script-src 'self'`), no analytics. The only network destination is `https://keplar.one/api/v1/ask`. The ask body is the question text, plus for Lens the area's picture (`image`, after the one-time consent) and earlier turns (`history`). Questions, answers and pictures aren't saved by the extension. `node scripts/extension-lens-e2e.mjs` runs the whole Lens flow in a real browser and checks every request body.
 - Pages are labeled to the API by host only (never the full address).

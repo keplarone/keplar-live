@@ -47,6 +47,8 @@
     ".frame::before{content:\"\";position:absolute;inset:-3px;border-radius:17px;padding:3px;background:linear-gradient(90deg,var(--g1),var(--g2),var(--g3),var(--g4),var(--g1));background-size:300% 100%;animation:flow 3s linear infinite;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}",
     ".frame::after{content:\"\";position:absolute;inset:-10px;border-radius:24px;background:linear-gradient(90deg,var(--g1),var(--g2),var(--g3),var(--g4),var(--g1));background-size:300% 100%;animation:flow 3s linear infinite;filter:blur(16px);opacity:.45;z-index:-1;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;padding:10px}",
     "@keyframes flow{to{background-position:300% 0}}",
+    // Click to search (like Google Lens): the picture or block under the pointer gets a white outline before it is clicked.
+    ".hint{position:fixed;z-index:3;pointer-events:none;border-radius:12px;box-shadow:0 0 0 2px #fff,0 0 0 3px rgb(0 0 0 / .35),0 8px 24px -8px rgb(0 0 0 / .45);transition:left .12s,top .12s,width .12s,height .12s}",
     ".tools{position:fixed;z-index:4;display:flex;gap:6px;background:var(--panel);color:var(--ink);border-radius:999px;padding:5px;box-shadow:var(--sh),inset 0 0 0 1px var(--line)}",
     "button{font:inherit;cursor:pointer;border:0}",
     ".tools button,.chip{background:transparent;color:var(--ink);border-radius:999px;padding:6px 12px;font-weight:500;font-size:13px}",
@@ -85,7 +87,7 @@
     "input{flex:1;min-width:0;background:var(--panel);color:var(--ink);border:1px solid var(--strong);border-radius:999px;padding:10px 14px;font-size:14px}input::placeholder{color:var(--faint)}input:focus{outline:none;border-color:var(--focus)}",
     ":focus-visible{outline:2px solid var(--focus);outline-offset:2px}",
     "[hidden]{display:none!important}",
-    "@media (prefers-reduced-motion:reduce){.wash{display:none}.frame::before,.frame::after,.skeleton i{animation:none}.panel{animation:none}}",
+    "@media (prefers-reduced-motion:reduce){.wash{display:none}.frame::before,.frame::after,.skeleton i{animation:none}.panel{animation:none}.hint{transition:none}}",
   ].join("");
 
   function el(tag, cls, text) {
@@ -122,6 +124,8 @@
   pill.append(mark(), el("span", "", "Select any text or image to search with Keplar One"));
   const tip = el("div", "tip", "Drag to search");
   tip.hidden = true;
+  const hint = el("div", "hint");
+  hint.hidden = true;
   const frame = el("div", "frame");
   frame.hidden = true;
   const tools = el("div", "tools");
@@ -142,7 +146,7 @@
   consent.append(
     el("div", "art"),
     el("h2", "", "Search anything on this page with Keplar One"),
-    el("p", "", "When you search, the words inside the area you drag and a picture of that area are sent to Keplar with your API key, so several AI models can answer. Only the area you choose, only when you drag it."),
+    el("p", "", "When you search, the words inside the area you drag and a picture of that area are sent to Keplar with your API key, so several AI models can answer. Only the area you choose: what you drag over, or the picture or block you click."),
     el("p", "", "Nothing is saved by the extension or by Keplar. Each search uses credits like a question in the app."),
     consentRow,
   );
@@ -180,7 +184,7 @@
   form.append(input, go);
   panel.append(bar, scroll, form);
 
-  shadow.append(style, wash, veil, pill, tip, frame, tools, consent, panel);
+  shadow.append(style, wash, veil, pill, tip, hint, frame, tools, consent, panel);
   page.append(host);
 
   // ── state ───────────────────────────────────────────────────────────────────
@@ -205,7 +209,7 @@
   }
   function placeTip(x, y) {
     tip.hidden = false;
-    tip.style.left = `${Math.min(x + 16, window.innerWidth - 140)}px`;
+    tip.style.left = `${Math.max(8, Math.min(x + 16, window.innerWidth - (tip.offsetWidth || 140) - 8))}px`;
     tip.style.top = `${Math.max(8, y + 18)}px`;
   }
   function showFrame(left, top, width, height) {
@@ -335,6 +339,118 @@
     });
   }
 
+  // ── clicking (like Google Lens): the picture, card or block of words under the pointer ─────────
+  // Read from the page's layout, never from its pixels. What a click would choose gets a white outline first.
+  const BLOCKS = new Set(["block", "list-item", "flex", "grid", "table", "table-cell", "flow-root"]);
+  let hovered = null;
+  let hoverAt = null;
+  let hoverFrame = 0;
+  let detectedFor = null;
+  let detected = null;
+  function visibleRect(n) {
+    const r = n.getBoundingClientRect();
+    const left = Math.max(0, r.left);
+    const top = Math.max(0, r.top);
+    const right = Math.min(window.innerWidth, r.right);
+    const bottom = Math.min(window.innerHeight, r.bottom);
+    return right - left >= 1 && bottom - top >= 1 ? { left, top, width: right - left, height: bottom - top } : null;
+  }
+  const share = (r) => (r.width * r.height) / Math.max(1, window.innerWidth * window.innerHeight);
+  const ownText = (n) => [...n.childNodes].some((c) => c.nodeType === 3 && c.nodeValue.trim());
+  /** A computed colour that shows (not transparent, alpha above 4%). */
+  function painted(c) {
+    if (!c || c === "transparent") return false;
+    const alpha = /[,/]\s*([\d.]+%?)\s*\)$/.exec(c);
+    if (!alpha) return true;
+    return (alpha[1].endsWith("%") ? parseFloat(alpha[1]) / 100 : parseFloat(alpha[1])) > 0.04;
+  }
+  function backdrop(n) {
+    for (let i = 0; n && i < 25; n = n.parentElement, i++) {
+      const c = getComputedStyle(n).backgroundColor;
+      if (painted(c)) return c;
+    }
+    return "rgb(255, 255, 255)";
+  }
+  function isPicture(n) {
+    if (/^(IMG|VIDEO|CANVAS|IFRAME|EMBED|OBJECT)$/.test(n.tagName) || n instanceof SVGSVGElement) return true;
+    return /url\(/.test(getComputedStyle(n).backgroundImage);
+  }
+  /** A card, tile or button: its own background, a picture or gradient, a full border, or a shadow. */
+  function looksLikeABox(n, cs) {
+    if (cs.display === "inline" || cs.display === "contents") return false;
+    if (cs.backgroundImage !== "none") return true;
+    if (cs.boxShadow !== "none" && (cs.boxShadow.match(/rgba?\([^)]*\)/g) || ["shown"]).some((c) => c === "shown" || painted(c))) return true;
+    const sides = ["Top", "Right", "Bottom", "Left"].filter((s) => cs[`border${s}Style`] !== "none" && parseFloat(cs[`border${s}Width`]) > 0 && painted(cs[`border${s}Color`]));
+    if (sides.length === 4) return true;
+    return painted(cs.backgroundColor) && cs.backgroundColor !== backdrop(n.parentElement);
+  }
+  /** A picture on top, or under layers with no words of their own (many sites cover pictures with an empty layer). */
+  function pictureIn(stack) {
+    for (const n of stack.slice(0, 8)) {
+      const pic = n instanceof SVGElement && !(n instanceof SVGSVGElement) ? n.ownerSVGElement : n;
+      if (pic && isPicture(pic)) {
+        const r = visibleRect(pic);
+        if (r && r.width >= 28 && r.height >= 28 && share(r) <= 0.9) return r;
+      }
+      if (ownText(n)) return null;
+    }
+    return null;
+  }
+  /** A link or button drawn as its own box (an icon button, a tile), not a link inside a sentence. */
+  function isControl(n, cs) {
+    if (cs.display === "inline" || cs.display === "contents") return false;
+    return /^(A|BUTTON|INPUT|SELECT|TEXTAREA|SUMMARY)$/.test(n.tagName) || /^(button|link|tab|menuitem|option)$/.test(n.getAttribute("role") || "");
+  }
+  /** The nearest card or control around the pointer when it is card-sized, else the block of words under it. */
+  function blockFrom(hit) {
+    let words = null;
+    for (let n = hit, i = 0; n && n !== document.body && n !== page && i < 14; n = n.parentElement, i++) {
+      const r = visibleRect(n);
+      if (!r) continue;
+      const s = share(r);
+      if (s > 0.6) break;
+      const cs = getComputedStyle(n);
+      if (r.width >= 20 && r.height >= 20 && (isControl(n, cs) || looksLikeABox(n, cs))) {
+        if (s <= (words ? 0.25 : 0.45)) return r;
+        if (words) return words;
+      }
+      if (!words && BLOCKS.has(cs.display) && r.width >= 24 && r.height >= 8 && s <= 0.35 && n.textContent.trim()) words = r;
+    }
+    return words;
+  }
+  function detectAt(x, y) {
+    const stack = document.elementsFromPoint(x, y).filter((n) => n !== host && n !== page && n !== document.body);
+    if (!stack.length) return null;
+    // The page can't scroll while Lens is open, so the answer for an element holds until the pointer leaves it.
+    if (stack[0] === detectedFor) return detected;
+    detectedFor = stack[0];
+    detected = pictureIn(stack) || blockFrom(stack[0]);
+    return detected;
+  }
+  const sameRect = (a, b) => Boolean(a && b) && ["left", "top", "width", "height"].every((k) => Math.abs(a[k] - b[k]) < 2);
+  function showHint(r) {
+    hovered = r;
+    if (!r || sameRect(r, region)) { hint.hidden = true; return; }
+    hint.hidden = false;
+    hint.style.left = `${r.left - 3}px`;
+    hint.style.top = `${r.top - 3}px`;
+    hint.style.width = `${r.width + 6}px`;
+    hint.style.height = `${r.height + 6}px`;
+  }
+  function trackHover(x, y) {
+    hoverAt = { x, y };
+    if (hoverFrame) return;
+    hoverFrame = requestAnimationFrame(() => {
+      hoverFrame = 0;
+      if (dragging || busy || !hoverAt) { showHint(null); return; }
+      showHint(detectAt(hoverAt.x, hoverAt.y));
+      if (!region) {
+        tip.textContent = hovered ? "Click to search, or drag" : "Drag to search";
+        placeTip(hoverAt.x, hoverAt.y);
+      }
+    });
+  }
+
   // ── asking ──────────────────────────────────────────────────────────────────
   function wire(p) {
     p.onMessage.addListener((msg) => {
@@ -379,7 +495,7 @@
     const p = ensurePort();
     if (!p) { say("Keplar can't run on this page.", true); return; }
     if (busy) return;
-    if (!regionText.trim() && !sendImage && !ask) { say("Drag over part of the page, or type a question.", true); return; }
+    if (!regionText.trim() && !sendImage && !ask) { say("Click or drag over part of the page, or type a question.", true); return; }
     busy = true;
     awaiting = true;
     go.disabled = true;
@@ -455,6 +571,7 @@
     veil.setAttribute("data-clear", "");
     showFrame(rect.left, rect.top, rect.width, rect.height);
     tip.hidden = true;
+    hint.hidden = true;
     say("");
     await takeShot(rect);
     placeTools(rect);
@@ -484,10 +601,11 @@
   veil.addEventListener("wheel", (e) => e.preventDefault(), { passive: false });
   veil.addEventListener("pointermove", (e) => {
     if (!agreed) return;
-    if (!dragging) { if (!region) placeTip(e.clientX, e.clientY); return; }
+    if (!dragging) { trackHover(e.clientX, e.clientY); return; }
     showFrame(Math.min(x0, e.clientX), Math.min(y0, e.clientY), Math.abs(e.clientX - x0), Math.abs(e.clientY - y0));
   });
-  veil.addEventListener("pointerleave", () => { tip.hidden = true; });
+  veil.addEventListener("pointerleave", () => { tip.hidden = true; hoverAt = null; showHint(null); });
+  window.addEventListener("resize", () => { detectedFor = null; showHint(null); });
   veil.addEventListener("pointerdown", (e) => {
     if (e.button !== 0 || !agreed || busy) return;
     dragging = true;
@@ -497,6 +615,7 @@
     veil.setAttribute("data-clear", "");
     tools.hidden = true;
     tip.hidden = true;
+    hint.hidden = true;
     showFrame(x0, y0, 0, 0);
   });
   veil.addEventListener("pointerup", (e) => {
@@ -506,8 +625,14 @@
     const top = Math.min(y0, e.clientY);
     const width = Math.abs(e.clientX - x0);
     const height = Math.abs(e.clientY - y0);
+    if (width < 12 && height < 12) {
+      // A click: search the picture, card or block of words under the pointer, like Google Lens.
+      const picked = detectAt(e.clientX, e.clientY);
+      if (picked && sameRect(picked, region)) { showFrame(region.left, region.top, region.width, region.height); placeTools(region); return; }
+      if (picked) { void lockRegion(picked); return; }
+    }
     if (width < 12 || height < 12) {
-      // A click (no drag): back to choosing, keeping any answer in the panel.
+      // Nothing there to choose, or too thin a drag: back to choosing, keeping any answer in the panel.
       frame.hidden = true;
       region = null;
       veil.removeAttribute("data-clear");
@@ -521,7 +646,7 @@
     catch { say("Couldn't copy the words.", true); }
   });
   translate.addEventListener("click", () => {
-    if (!regionText.trim() && !sendImage) { say("Drag over some words first.", true); return; }
+    if (!regionText.trim() && !sendImage) { say("Click or drag over some words first.", true); return; }
     const code = String(navigator.language || "en").split("-")[0].toLowerCase();
     let name = "English";
     try { name = new Intl.DisplayNames(["en"], { type: "language" }).of(code) || "English"; } catch { /* keep English */ }
