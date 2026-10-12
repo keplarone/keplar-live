@@ -1,11 +1,11 @@
-# Keplar browser extension — BETA
+# Keplar One browser extension
 
 Manifest V3 extension (Chrome and Edge). Ask Keplar about text you selected, the page you're on, or an area you drag on the current tab. The answer comes back with a summary of where the models agreed and differed. The drag picture stays on the device; only the words are sent, and only when you press Ask.
 
-**Status: BETA.** Built and tested locally. Ready for the Chrome Web Store but **not** submitted yet: `STORE_LISTING.md` has every dashboard field, and `extension/store/` has the screenshots and promo tiles (`node scripts/extension-store-assets.mjs` regenerates them from the real extension). Firefox and Safari are not supported yet.
+**Status:** built and tested locally. Ready for the Chrome Web Store but **not** submitted yet: `STORE_LISTING.md` has every dashboard field, and `extension/store/` has the screenshots and promo tiles (`node scripts/extension-store-assets.mjs` regenerates them from the real extension). Firefox and Safari are not supported yet.
 
 ## Install for testing
-1. `npm run build:extension` writes `extension/dist/keplar-extension-0.1.0-beta.zip` (or load the `extension/` folder directly).
+1. `npm run build:extension` writes `extension/dist/keplar-extension-0.1.0.zip` (or load the `extension/` folder directly).
 2. Chrome → `chrome://extensions` → turn on Developer mode → "Load unpacked" → pick the `extension/` folder (or unzip the build and pick that folder).
 3. Create a key in Keplar → Account → Developer API (paid plans only), click the extension, paste it.
 
@@ -14,7 +14,7 @@ The extension uses a Keplar **API key** with the `ask` scope, kept in `chrome.st
 
 ## Privacy and permissions
 - `activeTab` + `scripting`: after you click "Add selected text", "Add page text", "Search this tab", or a context-menu item, read that tab's selection, page text, or the words inside a drag. The same click draws the overlay. It does not run on other tabs, and it cannot see the rest of the screen outside the browser.
-- `contextMenus`: "Ask Keplar about the selection", "Ask Keplar about this page", and "Search this tab with Keplar (beta)". `storage`: your key (local) and a one-time menu → popup hand-off (session).
+- `contextMenus`: "Ask Keplar One about the selection", "Ask Keplar One about this page", and "Search this tab with Keplar One". `storage`: your key (local) and a one-time menu → popup hand-off (session).
 - No host permissions, no content scripts in the manifest, no remote code (`script-src 'self'`), no analytics. The only network destination is `https://keplar.one/api/v1/ask`. The ask body is the question text. Questions and answers aren't saved by the extension. A cropped picture of a drag is held in memory for the preview and "Copy as image", then discarded.
 - Pages are labeled to the API by host only (never the full address).
 

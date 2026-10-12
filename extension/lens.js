@@ -1,4 +1,4 @@
-// In-tab overlay, injected only after "Search this tab with Keplar" or the toolbar button.
+// In-tab overlay, injected only after "Search this tab with Keplar One" or the toolbar button.
 // Classic script (not a module). Draws with DOM APIs. The picture never leaves this page; Ask sends words only.
 (() => {
   const HOST_ID = "keplar-lens-host";
@@ -8,7 +8,13 @@
   const api = globalThis.chrome;
   const host = document.createElement("div");
   host.id = HOST_ID;
-  const syncTheme = () => host.setAttribute("data-keplar", document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark");
+  // Like keplar.one: the page's own light/dark choice when it states one, else the browser's setting.
+  const darkQuery = globalThis.matchMedia ? matchMedia("(prefers-color-scheme: dark)") : null;
+  const syncTheme = () => {
+    const t = document.documentElement.getAttribute("data-theme");
+    host.setAttribute("data-keplar", t === "light" || t === "dark" ? t : darkQuery?.matches ? "dark" : "light");
+  };
+  darkQuery?.addEventListener?.("change", syncTheme);
   syncTheme();
   const themeObs = new MutationObserver(syncTheme);
   themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
@@ -22,34 +28,35 @@
 
   const style = document.createElement("style");
   style.textContent = [
-    ":host,[data-keplar='dark']{--bg:#0b0b0d;--panel:#141417;--ink:#ededf0;--muted:#a4a6ad;--line:rgba(255,255,255,.14);--accent:#5ecad8;--on:#0b0b0d;--veil:rgba(11,11,13,.46);--err:#ffb4a8}",
-    ":host([data-keplar='light']){--bg:#faf9f7;--panel:#ffffff;--ink:#2c241e;--muted:#5a4638;--line:rgba(44,36,30,.16);--accent:#0a7a8a;--on:#ffffff;--veil:rgba(44,36,30,.28);--err:#8a3b32}",
+    ":host,:host([data-keplar='light']){--bg:#f7f8fa;--panel:#ffffff;--panel2:#f1f3f6;--ink:#0e0f12;--muted:#4b4f58;--faint:#686d78;--line:rgb(14 15 18 / .09);--strong:rgb(14 15 18 / .15);--btn:#0e0f12;--btnInk:#ffffff;--focus:#0a7a8a;--veil:rgb(14 15 18 / .34);--err:#b42318;--sh:0 1px 2px rgb(14 15 18 / .05),0 18px 48px -18px rgb(14 15 18 / .28)}",
+    ":host([data-keplar='dark']){--bg:#0b0b0d;--panel:#141417;--panel2:#1c1c20;--ink:#ededf0;--muted:#a4a6ad;--faint:#8b8d94;--line:rgb(255 255 255 / .09);--strong:rgb(255 255 255 / .17);--btn:#ededf0;--btnInk:#0b0b0d;--focus:#5ecad8;--veil:rgb(11 11 13 / .5);--err:#ff9a8f;--sh:0 1px 2px rgb(0 0 0 / .4),0 20px 50px -20px rgb(0 0 0 / .75)}",
     ":host{all:initial}",
-    "*{box-sizing:border-box;font:14px/1.45 system-ui,-apple-system,sans-serif}",
+    "*{box-sizing:border-box;font:14px/1.5 \"Google Sans\",\"Product Sans\",system-ui,-apple-system,\"Segoe UI\",sans-serif;-webkit-font-smoothing:antialiased}",
     ".veil{position:fixed;inset:0;background:var(--veil);cursor:crosshair}",
-    ".tip{position:fixed;z-index:3;pointer-events:none;background:var(--panel);color:var(--ink);border-radius:8px;padding:6px 10px;font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,.28)}",
-    ".frame{position:fixed;z-index:2;pointer-events:none;border-radius:4px;box-shadow:0 0 0 2px var(--accent),0 0 22px 2px rgba(94,202,216,.35),0 0 0 9999px var(--veil)}",
-    ".menu{position:fixed;z-index:4;display:flex;gap:6px;background:var(--panel);color:var(--ink);border-radius:999px;padding:6px;box-shadow:0 8px 24px rgba(0,0,0,.32)}",
-    ".menu button,.chip,.ask{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:6px 10px;cursor:pointer}",
-    ".ask{background:var(--accent);color:var(--on);border-color:var(--accent);font-weight:650}",
-    ".panel{position:fixed;z-index:5;top:16px;right:16px;width:min(360px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px;box-shadow:0 16px 48px rgba(0,0,0,.28)}",
+    ".tip{position:fixed;z-index:3;pointer-events:none;background:var(--panel);color:var(--ink);border-radius:999px;padding:7px 13px;font-size:13px;box-shadow:var(--sh),inset 0 0 0 1px var(--line)}",
+    ".frame{position:fixed;z-index:2;pointer-events:none;border-radius:6px;box-shadow:0 0 0 2px var(--btn),0 0 0 9999px var(--veil)}",
+    ".menu{position:fixed;z-index:4;display:flex;gap:6px;background:var(--panel);color:var(--ink);border-radius:999px;padding:6px;box-shadow:var(--sh),inset 0 0 0 1px var(--line)}",
+    ".menu button,.chip,.ask{background:var(--panel);color:var(--ink);border:0;box-shadow:inset 0 0 0 1px var(--line);border-radius:999px;padding:7px 13px;cursor:pointer;font-weight:500}",
+    ".menu button:hover,.chip:hover{background:var(--panel2)}",
+    ".ask{background:var(--btn);color:var(--btnInk);box-shadow:0 1px 2px rgb(14 15 18 / .2),0 8px 20px -12px rgb(14 15 18 / .45);padding:7px 18px}",
+    ".panel{position:fixed;z-index:5;top:16px;right:16px;width:min(380px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;background:var(--bg);color:var(--ink);border-radius:20px;padding:16px 16px 14px;box-shadow:var(--sh),inset 0 0 0 1px var(--line)}",
     ".head{display:flex;align-items:center;justify-content:space-between;gap:8px}",
-    "h1{font-size:16px;margin:0;font-weight:650}",
-    ".x{background:transparent;color:var(--ink);border:0;font-size:20px;line-height:1;cursor:pointer;padding:4px 8px;border-radius:8px}",
+    "h1{font-size:16px;margin:0;font-weight:500;letter-spacing:-.01em}",
+    ".x{background:transparent;color:var(--muted);border:0;font-size:20px;line-height:1;cursor:pointer;padding:4px 9px;border-radius:999px}.x:hover{background:var(--panel2);color:var(--ink)}",
     ".chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}",
-    ".note{color:var(--muted);font-size:12px;margin:8px 0}",
+    ".note{color:var(--faint);font-size:12px;margin:8px 0}",
     "form{display:flex;gap:8px;margin-top:8px}",
-    "input{flex:1;min-width:0;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:10px 12px}",
+    "input{flex:1;min-width:0;background:var(--panel);color:var(--ink);border:1px solid var(--strong);border-radius:999px;padding:10px 14px}input::placeholder{color:var(--faint)}input:focus{outline:none;border-color:var(--focus)}",
     ".status{min-height:1.3em;color:var(--muted);margin:8px 0 0}",
     ".status.bad{color:var(--err)}",
-    ".result{margin-top:10px}",
-    ".agreement{font-weight:650;margin:0 0 6px}",
+    ".result{margin-top:12px;background:var(--panel);border-radius:16px;padding:12px 14px;box-shadow:inset 0 0 0 1px var(--line)}",
+    ".agreement{font-weight:600;margin:0 0 8px}",
     ".answer{overflow-wrap:anywhere}",
-    ".answer p,.answer h3{margin:0 0 6px}.answer h3{font-size:13px}.answer ul{color:inherit;margin:0 0 6px}",
-    ".answer code,.answer pre{font:12px ui-monospace,Consolas,monospace;background:var(--panel);border-radius:6px}.answer code{padding:0 4px}.answer pre{padding:8px;white-space:pre-wrap;margin:0 0 6px}",
+    ".answer p,.answer h3{margin:0 0 8px}.answer h3{font-size:13px}.answer ul{color:inherit;margin:0 0 8px}.answer strong{font-weight:600}",
+    ".answer code,.answer pre{font:12px \"IBM Plex Mono\",ui-monospace,Consolas,monospace;background:var(--panel2);border-radius:8px}.answer code{padding:1px 5px}.answer pre{padding:8px 10px;white-space:pre-wrap;margin:0 0 8px}",
     "ul{margin:6px 0 0;padding-left:18px;color:var(--muted)}",
-    "img{display:block;width:100%;max-height:120px;object-fit:contain;border-radius:10px;margin-top:8px;background:var(--panel)}",
-    ":focus-visible{outline:2px solid var(--accent);outline-offset:2px}",
+    "img{display:block;width:100%;max-height:120px;object-fit:contain;border-radius:12px;margin-top:8px;background:var(--panel2)}",
+    ":focus-visible{outline:2px solid var(--focus);outline-offset:2px}",
   ].join("");
 
   function el(tag, cls) {
@@ -74,7 +81,7 @@
   menu.hidden = true;
   const panel = el("div", "panel");
   panel.setAttribute("role", "dialog");
-  panel.setAttribute("aria-label", "Search this tab with Keplar");
+  panel.setAttribute("aria-label", "Search this tab with Keplar One");
   const head = el("div", "head");
   const title = document.createElement("h1");
   title.textContent = "Ask about this page";

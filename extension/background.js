@@ -7,9 +7,9 @@ const api = globalThis.chrome;
 
 api.runtime.onInstalled.addListener(() => {
   api.contextMenus.removeAll(() => {
-    api.contextMenus.create({ id: "ask-selection", title: "Ask Keplar about “%s” (beta)", contexts: ["selection"] });
-    api.contextMenus.create({ id: "ask-page", title: "Ask Keplar about this page (beta)", contexts: ["page"] });
-    api.contextMenus.create({ id: "search-tab", title: "Search this tab with Keplar (beta)", contexts: ["page", "selection", "image", "link", "video", "audio", "editable"] });
+    api.contextMenus.create({ id: "ask-selection", title: "Ask Keplar One about “%s”", contexts: ["selection"] });
+    api.contextMenus.create({ id: "ask-page", title: "Ask Keplar One about this page", contexts: ["page"] });
+    api.contextMenus.create({ id: "search-tab", title: "Search this tab with Keplar One", contexts: ["page", "selection", "image", "link", "video", "audio", "editable"] });
   });
 });
 

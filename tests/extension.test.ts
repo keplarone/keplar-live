@@ -13,9 +13,10 @@ import { openApiSpec } from "../src/lib/api/openapi";
 const manifest = JSON.parse(readFileSync("extension/manifest.json", "utf8"));
 const copy = () => { const d = mkdtempSync(join(tmpdir(), "kext-")); cpSync("extension", d, { recursive: true, filter: (s) => !s.includes("dist") }); return d; };
 
-test("manifest: MV3, labeled beta, minimal permissions, no host access, no content scripts, strict CSP", () => {
+test("manifest: MV3, named Keplar One, minimal permissions, no host access, no content scripts, strict CSP", () => {
   assert.equal(manifest.manifest_version, 3);
-  assert.match(manifest.name, /beta/i);
+  assert.equal(manifest.name, "Keplar One");
+  assert.ok(!/beta/i.test(JSON.stringify(manifest)), "no beta label anywhere in the manifest");
   assert.deepEqual([...manifest.permissions].sort(), [...ALLOWED_PERMISSIONS].sort());
   for (const banned of ["tabs", "cookies", "webRequest", "history", "<all_urls>", "clipboardRead", "downloads", "identity"]) assert.ok(!manifest.permissions.includes(banned), banned);
   assert.equal(manifest.host_permissions, undefined);
@@ -43,7 +44,7 @@ test("the shipped files pass the validator, and the validator catches the things
 
 test("build writes a valid zip with exactly the shipped files and a readable manifest", () => {
   const r = buildExtension();
-  assert.ok(existsSync(r.out) && r.out.endsWith("keplar-extension-0.1.0-beta.zip"));
+  assert.ok(existsSync(r.out) && r.out.endsWith("keplar-extension-0.1.0.zip"));
   const listing = execFileSync("unzip", ["-Z1", r.out]).toString().trim().split("\n").sort();
   assert.deepEqual(listing, [...SHIPPED].sort());
   execFileSync("unzip", ["-tq", r.out]); // integrity check (CRC)
@@ -108,18 +109,24 @@ test("the lens overlay is packaged, sends words only, and does not phone home on
   assert.match(lens, /lensPorts|keplar-lens/);
   assert.match(readFileSync("extension/background.js", "utf8"), /const lensPorts = new Set/);
   assert.doesNotMatch(lens, /https?:\/\//);
-  assert.match(bg, /Search this tab with Keplar \(beta\)/);
+  assert.match(bg, /Search this tab with Keplar One/);
   assert.match(bg, /files:\s*\["lens\.js"\]/);
   assert.match(bg, /body: JSON\.stringify\(\{ question, stream: true \}\)/);
   assert.doesNotMatch(bg, /body: JSON\.stringify\(\{[^}]*dataUrl/);
   assert.match(readFileSync("extension/popup.js", "utf8"), /keplar-lens-open/);
+  // The popup and the overlay use keplar.one's own theme tokens (light by default, dark with the browser), read from the site's CSS.
   const popupCss = readFileSync("extension/popup.css", "utf8");
-  assert.match(popupCss, /#0b0b0d/);
-  assert.match(popupCss, /#faf9f7/);
-  assert.match(popupCss, /#5ecad8/);
-  assert.doesNotMatch(popupCss, /#8fb4ff/);
+  const token = (file: string, name: string, block = ":root") => { const css = readFileSync(file, "utf8"); const at = css.indexOf(block); return new RegExp(`--${name}:\\s*(#[0-9a-f]{6})`, "i").exec(css.slice(at))![1]!.toLowerCase(); };
+  const light = { canvas: token("src/styles/light.css", "c-canvas"), ink: token("src/styles/light.css", "c-ink"), ink2: token("src/styles/light.css", "c-ink-2") };
+  const dark = { canvas: token("src/styles/tokens.css", "c-canvas", ':root[data-theme="dark"]'), panel: token("src/styles/tokens.css", "c-surface-1", ':root[data-theme="dark"]'), ink: token("src/styles/tokens.css", "c-ink", ':root[data-theme="dark"]') };
+  for (const v of [...Object.values(light), ...Object.values(dark)]) {
+    assert.ok(popupCss.toLowerCase().includes(v), `popup uses the site's ${v}`);
+    assert.ok(lens.toLowerCase().includes(v), `overlay uses the site's ${v}`);
+  }
+  assert.match(popupCss, /border-radius: 999px/, "pill buttons like the site");
+  assert.doesNotMatch(popupCss, /#8fb4ff|#faf9f7|#2c241e/, "no leftovers of the old palette");
   assert.match(lens, /data-keplar/);
-  assert.match(lens, /#faf9f7/);
+  assert.match(lens, /prefers-color-scheme: dark/, "the overlay follows the browser's light or dark mode");
   assert.match(readFileSync("src/components/legal/content/privacy.ts", "utf8"), /picture stays on your device/);
 });
 
@@ -160,7 +167,7 @@ test("describeAnswer and errorText handle the v1 shapes", () => {
   assert.match(errorText(429, { error: { message: "Slow." } }), /Slow\. Try again/);
 });
 
-test("store listing and README exist, are honest about beta, and nothing was submitted", () => {
+test("store listing and README exist, say Keplar One, and nothing was submitted", () => {
   const listing = readFileSync("extension/STORE_LISTING.md", "utf8");
   assert.match(listing, /ready to submit/i);
   assert.match(listing, /NOT submitted/i);
@@ -171,8 +178,9 @@ test("store listing and README exist, are honest about beta, and nothing was sub
   assert.deepEqual(png("extension/store/promo-marquee.png"), [1400, 560]);
   assert.deepEqual(png("extension/icons/icon128.png"), [128, 128]);
   assert.match(listing, /Remote code:\*\* No/);
-  assert.match(listing, /beta/i);
+  assert.match(listing, /Keplar One/);
+  assert.ok(!/\(beta\)|0\.1\.0-beta/i.test(listing), "the old beta name is gone");
   for (const p of manifest.permissions) assert.ok(listing.includes(`\`${p}\``), `justification for ${p}`);
   assert.ok(!/\b(best|most accurate|always right|guaranteed)\b/i.test(listing), "no inflated claims");
-  assert.match(readFileSync("extension/README.md", "utf8"), /BETA/);
+  assert.match(readFileSync("extension/README.md", "utf8"), /Keplar One/);
 });

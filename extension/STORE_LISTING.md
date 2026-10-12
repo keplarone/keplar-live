@@ -5,27 +5,27 @@ Everything below is ready for the owner to paste into the Chrome Web Store devel
 developer account fee is paid. Re-read every claim against the extension on the day you submit.
 
 ## 1. Package
-- Upload: `extension/dist/keplar-extension-0.1.0-beta.zip` (build it fresh with `npm run build:extension`; the build
+- Upload: `extension/dist/keplar-extension-0.1.0.zip` (build it fresh with `npm run build:extension`; the build
   validates permissions, CSP and the no-remote-code rules before it writes the zip).
-- Manifest V3, version 0.1.0 (shown as 0.1.0-beta), Chrome 116 and later.
+- Manifest V3, version 0.1.0, Chrome 116 and later.
 
 ## 2. Store listing tab
-**Name** (from the manifest): Keplar (beta)
+**Name** (from the manifest): Keplar One
 
-**Summary** (from the manifest, 132 characters max): Beta. Ask Keplar about selected text, a page, or an area you drag on this tab. Needs a Keplar API key (paid plans).
+**Summary** (from the manifest, 132 characters max): Ask Keplar One about selected text, a page, or an area you drag. Several AI models, one answer. Needs a Keplar API key.
 
 **Category:** Productivity. **Language:** English.
 
 **Description:**
 
-Keplar (beta) adds Keplar to your browser toolbar and right-click menu.
+Keplar One adds Keplar to your browser toolbar and right-click menu.
 
 Select some text, or open a page, and ask a question about it. Keplar asks several AI models, writes one answer, and shows how many agreed and where they split, so you know which parts to double-check.
 
 How it works
 • Click the toolbar button, type a question, and optionally press "Add selected text" or "Add page text".
-• Or right-click selected text (or the page) and choose "Ask Keplar…".
-• Or right-click the page and choose "Search this tab with Keplar (beta)". Drag a rectangle. Suggestions and Ask run only when you click them.
+• Or right-click selected text (or the page) and choose "Ask Keplar One…".
+• Or right-click the page and choose "Search this tab with Keplar One". Drag a rectangle. Suggestions and Ask run only when you click them.
 • Nothing is read from a page until you press one of those buttons or choose a menu item. The overlay is drawn only after that click.
 
 What you need
@@ -38,7 +38,7 @@ Privacy
 • No analytics, no advertising, no tracking, no remote code.
 
 Honest limits
-• This is a beta. It can be wrong: models can agree and still be mistaken.
+• It can be wrong: models can agree and still be mistaken.
 • Browser pages (settings, the web store) can't be read by any extension.
 • "Search this tab" covers the browser tab you right-clicked. It cannot see other windows or the rest of the screen.
 • If a dragged area has no words, Keplar says so. It does not read the picture.
@@ -66,7 +66,7 @@ Let the user ask the Keplar service a question about text they select, the page 
 **Permission justifications:**
 - `activeTab`: reads the selected text, visible text, or words inside a drag on the current tab only after the user clicks the toolbar button or a context-menu item. The same gesture can capture a picture of that tab for a local preview. No access to other tabs, and no background access.
 - `scripting`: runs a script packaged inside the extension on the active tab, to read the selection or page text, or to draw the search overlay (that same user action). No remote code is loaded or evaluated.
-- `contextMenus`: adds "Ask Keplar about selection", "Ask Keplar about this page", and "Search this tab with Keplar (beta)" to the right-click menu.
+- `contextMenus`: adds "Ask Keplar One about the selection", "Ask Keplar One about this page", and "Search this tab with Keplar One" to the right-click menu.
 - `storage`: saves the user's API key locally (`storage.local`) and holds a one-time hand-off from the context menu to the popup (`storage.session`, cleared when the browser closes).
 - Host permissions: none requested. The extension calls `https://keplar.one/api/v1/ask` with a bearer key; the API allows that cross-origin call.
 
@@ -83,7 +83,7 @@ Let the user ask the Keplar service a question about text they select, the page 
 used or transferred to determine creditworthiness or for lending. (The text is processed by the AI providers Keplar selects
 to write the answer, as the privacy policy says; that is the extension's purpose, not an unrelated transfer.)
 
-**Privacy policy URL:** https://keplar.one/privacy (section "Team workspaces, API keys and the browser extension (beta)").
+**Privacy policy URL:** https://keplar.one/privacy (the browser extension is covered at https://keplar.one/privacy#teams-api-extension).
 
 ## 4. Distribution tab
 - Payments: free (the extension itself is free; the API key comes with a paid Keplar plan, which the description says).
@@ -96,9 +96,9 @@ The extension does nothing without a Keplar API key, so give the reviewer one or
    `ask`, with an expiry of about 30 days and a low credit limit. Copy it (it is shown once).
 2. Paste into the Test instructions field:
    "Click the Keplar toolbar button, paste this key into API key and press Save key: <key>. Then open any article, select a
-   sentence, right-click and choose 'Ask Keplar about the selection', and press Ask. Or right-click the page and choose
-   'Search this tab with Keplar (beta)' and drag over some text. The key is for review only and expires on <date>."
+   sentence, right-click and choose 'Ask Keplar One about the selection', and press Ask. Or right-click the page and choose
+   'Search this tab with Keplar One' and drag over some text. The key is for review only and expires on <date>."
 3. Revoke the key once the review is done (Account → Developer API → Revoke).
 
-## Version notes (0.1.0-beta)
-First beta. Ask about selected text, the page, or words inside a drag on the current tab. The picture of a drag stays on the device. Answers include where the models disagreed, with formatting (bold, lists, code). Chrome and Edge only.
+## Version notes (0.1.0)
+First release. Ask about selected text, the page, or words inside a drag on the current tab. The picture of a drag stays on the device. Answers include where the models disagreed, with formatting (bold, lists, code). Chrome and Edge only.

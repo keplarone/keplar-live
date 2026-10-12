@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 /**
- * Chrome Web Store images for the Keplar extension, made from the real extension (not mock-ups):
- *   extension/store/screenshot-1-answer.png     1280x800  an answer on a page, with the agreement line
- *   extension/store/screenshot-2-page-text.png  1280x800  page text added from the right-click menu, ready to ask
- *   extension/store/screenshot-3-setup.png      1280x800  first run: paste a key
+ * Chrome Web Store images for the Keplar One extension, made from the real extension (not mock-ups):
+ *   extension/store/screenshot-1-answer.png     1280x800  headline + the answer popup over a page
+ *   extension/store/screenshot-2-page-text.png  1280x800  headline + page text added from the right-click menu
+ *   extension/store/screenshot-3-setup.png      1280x800  headline + first run, paste a key
  *   extension/store/promo-small.png              440x280  small promo tile
  *   extension/store/promo-marquee.png           1400x560  marquee promo tile
  *
- * How: loads extension/ unpacked in Playwright's Chromium, opens the popup page, and frames it over a sample article like
- * the toolbar popup. The answer is extension/store/sample-answer.json: a real keplar.one answer in the /api/v1/ask shape,
- * served to the popup's own fetch (no real API key is used). The page-text state uses the extension's real context-menu
- * hand-off (storage.session "pending").
- * Run: node scripts/extension-store-assets.mjs   (needs: npx playwright install chromium)
+ * How: loads extension/ unpacked (Playwright; Chromium, or KEPLAR_SHOTS_CHANNEL=msedge), opens the real popup page at 2x for
+ * sharp text, and places it in a designed frame: headline, the Keplar One mark, and a sample article in a browser window
+ * behind it. The answer is extension/store/sample-answer.json: a real keplar.one answer in the /api/v1/ask shape, served to
+ * the popup's own fetch (no real API key is used). The page-text state uses the extension's real context-menu hand-off.
+ * Run: node scripts/extension-store-assets.mjs
  */
 import { chromium } from "playwright";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
@@ -22,6 +22,9 @@ const EXT = resolve("extension");
 const OUT = join(EXT, "store");
 const sample = JSON.parse(readFileSync(join(OUT, "sample-answer.json"), "utf8")).answer;
 const icon = `data:image/png;base64,${readFileSync(join(EXT, "icons", "icon128.png")).toString("base64")}`;
+
+// The Keplar mark (src/components/brand/geometry.ts), for the logo lockup on each image.
+const MARK = (fill) => `<svg viewBox="0 0 398 398" width="100%" height="100%" aria-hidden="true"><g fill="${fill}"><rect x="0" y="0" width="229" height="229" rx="70"/><path d="M204.95 11.95A7 7 0 0 1 209.9 0L362 0A16 16 0 0 1 378 16L378 168.1A7 7 0 0 1 366.05 173.05Z"/><circle cx="281" cy="281" r="117"/></g></svg>`;
 
 const QUESTION = "Is a four-day work week better for small teams? Answer in 3 short sentences, then say where people disagree.";
 const ARTICLE = {
@@ -34,43 +37,69 @@ const ARTICLE = {
   ],
 };
 
-/** An original sample article page (no third-party content), as the tab behind the popup. */
-const articleHtml = (shot) => `<!doctype html><html><head><meta charset="utf-8"><style>
-  *{box-sizing:border-box} body{margin:0;width:1280px;height:800px;overflow:hidden;font:16px/1.65 Georgia,serif;color:#1d1f24;background:#f6f4ef}
-  .chrome{height:76px;background:#dee1e6;border-bottom:1px solid #c8ccd2;display:flex;flex-direction:column;justify-content:flex-end}
-  .tabs{display:flex;padding:0 10px;gap:6px}.tab{background:#f6f4ef;border-radius:10px 10px 0 0;padding:8px 18px;font:13px system-ui,sans-serif;color:#333;width:240px}
-  .bar{height:38px;background:#f6f4ef;display:flex;align-items:center;gap:10px;padding:0 12px;border-top:1px solid #e9e6df}
-  .url{flex:1;height:28px;border-radius:14px;background:#fff;border:1px solid #d9d6cf;font:13px system-ui,sans-serif;color:#555;display:flex;align-items:center;padding:0 14px}
-  .ext{width:26px;height:26px;border-radius:7px;background:url(${icon}) center/26px no-repeat;box-shadow:0 0 0 2px #8fb4ff}
-  main{width:720px;margin:56px 0 0 120px} .kicker{font:600 12px system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#7a6f5d}
-  h1{font-size:44px;line-height:1.1;margin:10px 0 18px;letter-spacing:-.01em} p{margin:0 0 16px;font-size:19px;color:#30333a}
-  .by{font:14px system-ui,sans-serif;color:#6b6f78;margin-bottom:26px}
-  .pop{position:absolute;top:80px;right:24px;border-radius:12px;box-shadow:0 18px 60px rgba(0,0,0,.35),0 0 0 1px rgba(0,0,0,.25);overflow:hidden;background:#111}
-  .pop img{display:block;width:400px}
+const FONT = `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=block">`;
+const BASE = `*{box-sizing:border-box}body{margin:0;overflow:hidden;font-family:"Google Sans",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}`;
+
+/** A small browser window with the sample article (original text made for these images), the tab behind the popup. */
+const browser = (w, h) => `
+<div class="win" style="width:${w}px;height:${h}px">
+  <div class="top"><span class="dots"><i></i><i></i><i></i></span><div class="url">fieldnotes.example/four-day-week</div><img class="tb" src="${icon}" alt=""></div>
+  <div class="page"><div class="kicker">${ARTICLE.site} · Work</div><h2>${ARTICLE.title}</h2>${ARTICLE.body.map((p) => `<p>${p}</p>`).join("")}</div>
+</div>`;
+const BROWSER_CSS = `
+.win{position:absolute;border-radius:18px;background:#fbfaf7;box-shadow:0 40px 90px -30px rgba(20,22,30,.35),0 0 0 1px rgba(20,22,30,.08);overflow:hidden}
+.top{height:48px;display:flex;align-items:center;gap:14px;padding:0 16px;background:#eceae4;border-bottom:1px solid #e0ddd5}
+.dots{display:flex;gap:7px}.dots i{width:11px;height:11px;border-radius:50%;background:#d3cfc6;display:block}
+.url{flex:1;height:28px;border-radius:14px;background:#fff;border:1px solid #dedad2;font-size:13px;color:#6b6f78;display:flex;align-items:center;padding:0 14px}
+.tb{width:26px;height:26px;border-radius:7px;box-shadow:0 0 0 2px #3a6df0}
+.page{padding:38px 46px;font-family:Georgia,"Times New Roman",serif;color:#24262c}
+.page .kicker{font:600 11px "Google Sans",system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#8a7f6c}
+.page h2{font-size:30px;line-height:1.12;margin:10px 0 16px;letter-spacing:-.01em}.page p{font-size:15.5px;line-height:1.65;margin:0 0 12px;color:#3a3d45}`;
+
+/** Logo lockup: the mark and "Keplar One". */
+const lockup = (size, color) => `<div class="lockup" style="gap:${size * 0.42}px"><span style="width:${size}px;height:${size}px;display:block">${MARK(color)}</span><span style="font-size:${size * 0.82}px;font-weight:500;letter-spacing:-.02em;color:${color}">Keplar One</span></div>`;
+
+/** A 1280x800 screenshot: headline on the left, the browser window and the real popup on the right. */
+const screenshotHtml = ({ title, line, chips, popup, popupH }) => `<!doctype html><html><head><meta charset="utf-8">${FONT}<style>${BASE}${BROWSER_CSS}
+body{width:1280px;height:800px;background:radial-gradient(90% 120% at 100% 0%,#e8eefc 0%,#f5f4f0 46%,#f3f1ec 100%);color:#121318;position:relative}
+.lockup{position:absolute;left:72px;top:64px;display:flex;align-items:center}
+.copy{position:absolute;left:72px;top:212px;width:430px}
+h1{margin:0;font-size:50px;line-height:1.06;font-weight:700;letter-spacing:-.035em}
+.line{margin:22px 0 0;font-size:20px;line-height:1.5;color:#4a4e58}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}.chips span{padding:9px 15px;border-radius:999px;background:#fff;box-shadow:0 0 0 1px rgba(18,19,24,.08);font-size:14.5px;color:#30333b}
+.pop{position:absolute;right:64px;top:${Math.min(170, 760 - popupH)}px;width:400px;border-radius:16px;overflow:hidden;box-shadow:0 50px 100px -30px rgba(15,18,30,.5),0 0 0 1px rgba(15,18,30,.12);background:#fff}
+.pop img{display:block;width:400px}
 </style></head><body>
-  <div class="chrome"><div class="tabs"><div class="tab">${ARTICLE.title}</div></div><div class="bar"><div class="url">fieldnotes.example/four-day-week</div><div class="ext" title="Keplar"></div></div></div>
-  <main><div class="kicker">${ARTICLE.site} · Work</div><h1>${ARTICLE.title}</h1><div class="by">A sample article for this screenshot</div>${ARTICLE.body.map((p) => `<p>${p}</p>`).join("")}</main>
-  ${shot ? `<div class="pop"><img src="${shot}" alt=""></div>` : ""}
+${lockup(30, "#121318")}
+<div class="copy"><h1>${title}</h1><p class="line">${line}</p><div class="chips">${chips.map((c) => `<span>${c}</span>`).join("")}</div></div>
+<div style="position:absolute;left:560px;top:120px">${browser(640, 560).replace('class="win"', 'class="win" style="position:relative"')}</div>
+<div class="pop"><img src="${popup}" alt=""></div>
 </body></html>`;
 
-/** Promo tiles: the mark, the name and one line; the marquee also shows the real answer popup (screenshot 1). */
-const promoHtml = (w, h, shot = "") => `<!doctype html><html><head><meta charset="utf-8"><style>
-  body{margin:0;width:${w}px;height:${h}px;overflow:hidden;background:radial-gradient(120% 140% at 85% 10%,#2a3550 0%,#14161b 55%);color:#eef1f7;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;align-items:center}
-  .wrap{display:flex;align-items:center;gap:${w > 800 ? 40 : 18}px;padding:0 ${w > 800 ? 90 : 28}px}
-  .mark{width:${w > 800 ? 120 : 84}px;height:${w > 800 ? 120 : 84}px} h1{margin:0;font-size:${w > 800 ? 58 : 30}px;letter-spacing:-.02em;font-weight:650}
-  p{margin:${w > 800 ? 14 : 8}px 0 0;font-size:${w > 800 ? 26 : 15}px;line-height:1.35;color:#b9c3d8;max-width:${w > 800 ? 520 : 250}px}
-  .shot{position:absolute;right:80px;top:40px;height:480px;width:auto;border-radius:12px;box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.08)}
-</style></head><body><div class="wrap"><img class="mark" src="${icon}" alt=""><div><h1>Keplar</h1><p>Ask about any page. Several AI models, one answer, and where they disagree.</p></div></div>${shot ? `<img class="shot" src="${shot}" alt="">` : ""}</body></html>`;
+const promoSmallHtml = () => `<!doctype html><html><head><meta charset="utf-8">${FONT}<style>${BASE}
+body{width:440px;height:280px;background:radial-gradient(120% 140% at 100% 0%,#2b3a66 0%,#111319 58%);color:#fff;position:relative}
+.lockup{position:absolute;left:36px;top:40px;display:flex;align-items:center}
+h1{position:absolute;left:36px;top:108px;margin:0;width:370px;font-size:30px;line-height:1.12;font-weight:700;letter-spacing:-.03em}
+p{position:absolute;left:36px;bottom:34px;margin:0;font-size:14.5px;color:#b8c2da}
+</style></head><body>${lockup(28, "#ffffff")}<h1>Ask about any page.<br>Several AI models, one answer.</h1><p>See where the models agree and where they split.</p></body></html>`;
 
-const sse = (answer) => [
-  `event: progress\ndata: ${JSON.stringify({ stage: "answering" })}\n\n`,
-  `event: answer\ndata: ${JSON.stringify(answer)}\n\n`,
-].join("");
+const marqueeHtml = (popup) => `<!doctype html><html><head><meta charset="utf-8">${FONT}<style>${BASE}
+body{width:1400px;height:560px;background:radial-gradient(80% 140% at 85% 0%,#2b3a66 0%,#111319 60%);color:#fff;position:relative}
+.lockup{position:absolute;left:96px;top:84px;display:flex;align-items:center}
+.copy{position:absolute;left:96px;top:168px;width:660px}
+h1{margin:0;font-size:52px;line-height:1.06;font-weight:700;letter-spacing:-.035em}
+p{margin:24px 0 0;width:580px;font-size:21px;line-height:1.5;color:#b8c2da}
+.pop{position:absolute;right:110px;top:56px;width:400px;height:520px;border-radius:16px;overflow:hidden;box-shadow:0 50px 110px -20px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.1)}
+.pop img{display:block;width:400px}
+</style></head><body>${lockup(34, "#ffffff")}<div class="copy"><h1>Ask about any page. Several AI models, one answer.</h1><p>Select text or drag over part of a tab, ask, and see how many models agreed and where they split.</p></div><div class="pop"><img src="${popup}" alt=""></div></body></html>`;
+
+const sse = (answer) => [`event: progress\ndata: ${JSON.stringify({ stage: "answering" })}\n\n`, `event: answer\ndata: ${JSON.stringify(answer)}\n\n`].join("");
 
 const dir = mkdtempSync(join(tmpdir(), "keplar-ext-shots-"));
 const ctx = await chromium.launchPersistentContext(dir, {
   channel: process.env.KEPLAR_SHOTS_CHANNEL || "chromium",
   headless: true,
+  deviceScaleFactor: 2,
   args: [`--disable-extensions-except=${EXT}`, `--load-extension=${EXT}`],
 });
 try {
@@ -85,23 +114,29 @@ try {
     await p.goto(`chrome-extension://${id}/popup.html${query}`);
     return p;
   };
-  const frame = async (shotBuf, file) => {
+  /** The real popup at 2x, as tall as its content (max 600 px), as a data URL plus its height in CSS pixels. */
+  const capture = async (p) => {
+    // Content height: the footer (always last) plus the body's bottom padding, not the 600 px viewport, so a short popup isn't
+    // padded with empty space. A scrolled popup is clipped at the viewport, as in Chrome.
+    const h = await p.evaluate(() => Math.min(600, Math.ceil(document.querySelector("footer").getBoundingClientRect().bottom + parseFloat(getComputedStyle(document.body).paddingBottom || "0"))));
+    const buf = await p.screenshot({ clip: { x: 0, y: 0, width: 400, height: h }, scale: "device" });
+    return { src: `data:image/png;base64,${buf.toString("base64")}`, h };
+  };
+  const render = async (html, w, h, file) => {
     const page = await ctx.newPage();
-    await page.setViewportSize({ width: 1280, height: 800 });
-    await page.setContent(articleHtml(shotBuf ? `data:image/png;base64,${shotBuf.toString("base64")}` : ""));
-    await page.screenshot({ path: join(OUT, file) });
+    await page.setViewportSize({ width: w, height: h });
+    await page.setContent(html, { waitUntil: "networkidle" });
+    await page.evaluate(() => document.fonts.ready);
+    // Exact store size: CSS pixels, not the 2x device pixels used for the popup capture.
+    await page.screenshot({ path: join(OUT, file), scale: "css" });
     await page.close();
     console.log("wrote", file);
-  };
-  /** The popup as Chrome shows it: as tall as its content, at most 600 px, scrolled where the person would be looking. */
-  const crop = async (p) => {
-    const h = await p.evaluate(() => Math.min(600, document.documentElement.scrollHeight));
-    return p.screenshot({ clip: { x: 0, y: 0, width: 400, height: h } });
   };
 
   // 3: first run, no key yet.
   let p = await popup();
-  await frame(await crop(p), "screenshot-3-setup.png");
+  await p.waitForSelector("#setup:not([hidden])");
+  const setup = await capture(p);
   // A placeholder key (not a real credential): the popup only checks its format; the API call is served from sample-answer.json.
   await p.evaluate(() => chrome.storage.local.set({ apiKey: "kpl_screenshot_placeholder_000000000" }));
   await p.close();
@@ -111,25 +146,20 @@ try {
   p = await popup("?menu=1");
   await p.waitForSelector("#ctx:not([hidden])");
   await p.fill("#q", QUESTION);
-  await frame(await crop(p), "screenshot-2-page-text.png");
+  const added = await capture(p);
 
-  // 1: the answer.
+  // 1: the answer, scrolled the way the person reads it after pressing Ask.
   await p.click("#go");
   await p.waitForSelector("#result:not([hidden])");
-  // After Ask the person reads the answer: scroll the popup so the result starts near the top, the way it looks in Chrome.
   await p.evaluate(() => document.getElementById("result").scrollIntoView({ block: "start" }));
-  const answerShot = await crop(p);
-  await frame(answerShot, "screenshot-1-answer.png");
+  const answer = await capture(p);
   await p.close();
 
-  for (const [w, h, file] of [[440, 280, "promo-small.png"], [1400, 560, "promo-marquee.png"]]) {
-    const page = await ctx.newPage();
-    await page.setViewportSize({ width: w, height: h });
-    await page.setContent(promoHtml(w, h, w > 800 ? `data:image/png;base64,${answerShot.toString("base64")}` : ""));
-    await page.screenshot({ path: join(OUT, file) });
-    await page.close();
-    console.log("wrote", file);
-  }
+  await render(screenshotHtml({ title: "One answer from several AI models", line: "Ask about the page you're on. Keplar One shows how many models agreed, and where they split.", chips: ["Agreement at a glance", "Formatted answers", "Your words only"], popup: answer.src, popupH: answer.h }), 1280, 800, "screenshot-1-answer.png");
+  await render(screenshotHtml({ title: "Ask about any page in one click", line: "Right-click a page or a selection, or drag over part of the tab, and ask.", chips: ["Selected text", "Whole page", "Drag an area"], popup: added.src, popupH: added.h }), 1280, 800, "screenshot-2-page-text.png");
+  await render(screenshotHtml({ title: "Your key stays on your device", line: "Paste a Keplar API key once. Text is sent to Keplar only when you press Ask.", chips: ["No tracking", "No remote code", "Nothing saved but your key"], popup: setup.src, popupH: setup.h }), 1280, 800, "screenshot-3-setup.png");
+  await render(promoSmallHtml(), 440, 280, "promo-small.png");
+  await render(marqueeHtml(answer.src), 1400, 560, "promo-marquee.png");
 } finally {
   await ctx.close();
   rmSync(dir, { recursive: true, force: true });
