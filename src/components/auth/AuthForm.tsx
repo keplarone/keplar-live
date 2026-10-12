@@ -161,16 +161,19 @@ export function AuthForm({ mode, providers, caps, next, devTools, nextQs }: Prop
 
   const mailOff = !caps.email;
   const linkLabel = busy === "link" ? t.sending : signup ? t.linkInstead : t.link;
+  // Only working providers show (ProviderButtons); with none, there is no "or use your email" and no provider consent line.
+  const anyProvider = providers.google || providers.microsoft;
+  const passkey = !signup && caps.passwords;
   return (
     <div className={s.formStack}>
       <ProviderButtons providers={providers} next={callback} errorPath={signup ? "/signup" : "/signin"} remember={remember} />
-      {!signup && caps.passwords ? <PasskeyButton next={next} remember={remember} /> : null}
-      {signup ? (
+      {passkey ? <PasskeyButton next={next} remember={remember} /> : null}
+      {signup && anyProvider ? (
         <p className={s.fieldNote}>
           {rich(t.oauthConsent, { terms: (x) => <Link className={s.link} href="/terms">{x}</Link>, privacy: (x) => <Link className={s.link} href="/privacy">{x}</Link> })}
         </p>
       ) : null}
-      <div className={s.divider}>{t.or}</div>
+      {anyProvider || passkey ? <div className={s.divider}>{t.or}</div> : null}
 
       {!caps.passwords ? (
         <Alert tone="info">Password accounts aren&rsquo;t available on this server yet (no account database is configured). Use an email link{providers.google || providers.microsoft ? " or a provider above" : ""}.</Alert>

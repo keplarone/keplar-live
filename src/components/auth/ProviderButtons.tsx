@@ -37,9 +37,10 @@ function MicrosoftLogo() {
 }
 
 /**
- * "Continue with Google / Microsoft". A provider whose keys aren't set on the server stays visible but disabled and
- * says "Coming soon", so nobody is sent to a broken flow and nothing pretends to work. (The wording is deliberately
- * public-facing: no mention of servers or keys to visitors.)
+ * "Continue with Google / Microsoft": only the providers that are set up. A provider whose keys aren't set is not
+ * shown at all, so nobody is sent to a broken flow and the form never opens with a choice nobody can make (they used to sit
+ * at the top as disabled "Coming soon" buttons, above the email sign-in that does work). Renders nothing when none work.
+ * (The wording is deliberately public-facing: no mention of servers or keys to visitors.)
  */
 export function ProviderButtons({ providers, next, errorPath, remember = true }: { providers: OAuthFlags; next: string; errorPath: string; remember?: boolean }) {
   const t = useClientText().authForm;
@@ -59,31 +60,27 @@ export function ProviderButtons({ providers, next, errorPath, remember = true }:
   }
 
   const rows: { id: "google" | "microsoft"; name: string; logo: React.ReactNode }[] = [
-    { id: "google", name: "Google", logo: <GoogleG /> },
-    { id: "microsoft", name: "Microsoft", logo: <MicrosoftLogo /> },
-  ];
+    { id: "google" as const, name: "Google", logo: <GoogleG /> },
+    { id: "microsoft" as const, name: "Microsoft", logo: <MicrosoftLogo /> },
+  ].filter((p) => providers[p.id]);
+  if (!rows.length) return null;
   return (
     <div className={s.providers}>
-      {rows.map((p) => {
-        const on = providers[p.id];
-        return (
+      {rows.map((p) => (
           <button
             key={p.id}
             type="button"
             className={`${s.btn} ${s.btnSecondary} ${s.providerBtn}`}
             onClick={() => void go(p.id)}
-            disabled={!on || busy !== null}
+            disabled={busy !== null}
             aria-busy={busy === p.id || undefined}
             data-provider={p.id}
-            data-configured={String(on)}
-            title={on ? undefined : `${p.name} sign-in is coming soon. Use Google, or an email and password, for now.`}
+            data-configured="true"
           >
             {p.logo}
             <span>{busy === p.id ? t.opening.replace("{name}", p.name) : t.continueWith.replace("{name}", p.name)}</span>
-            {on ? null : <span className={s.badge}>{t.soon}</span>}
           </button>
-        );
-      })}
+      ))}
       {error ? (
         <p className={`${s.fieldNote} ${s.err}`} role="alert">
           {error}
