@@ -1,7 +1,7 @@
 import "./setup";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync as readRaw } from "node:fs";
 import { engineDeps, orchestrate } from "@/lib/orchestration/orchestrator";
 import { briefNumbers, clampLiveBrief, clampLiveResearch, LIVE_BRIEF_CHARS, LIVE_BRIEF_MAX, LIVE_RESEARCH_RULES, liveModes, liveResearchBlock, liveResearchFrom, liveResearchOff, liveResearchSummary, liveRouting, safeSourceUrl } from "@/lib/research/live-request";
 import { researchBridge, researchCapabilities, type ResearchBridge, type ResearchCapabilities, type ResearchProgress, type ResearchRun, type ResearchRunSource, type ResearchValidation } from "@/lib/desktop/research-bridge";
@@ -13,6 +13,9 @@ import type { KeplarAnswer, KeplarEvent, KeplarRequest, ResearchEvent, Retriever
 import { signIn } from "./helpers/session";
 import { DEEP_RESEARCH_UNITS } from "@/lib/orchestration/plans";
 import { POST as keplarPOST } from "@/app/api/keplar/route";
+
+/** Source text with LF line endings: a Windows checkout (core.autocrlf) has CRLF, and the multi-line patterns below expect LF. */
+const readFileSync = (path: string, encoding: "utf8") => readRaw(path, encoding).replace(/\r\n/g, "\n");
 
 /* ─────────────── fixtures: a brief and a run shaped like keplar-desktop's (src/main/research/brief.ts, engine.ts) ─────────────── */
 
