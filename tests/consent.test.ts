@@ -43,7 +43,7 @@ test("consent gating: analytics scripts and events only run with consent; banner
   assert.match(read("src/lib/analytics.ts"), /if \(!consentAllows\("analytics"\)\) return;/);
   assert.match(read("src/app/layout.tsx"), /<CookieBanner \/>/);
   assert.match(read("src/components/chrome/Footer.tsx"), /CookieSettingsButton/);
-  assert.match(read("src/app/(marketing)/account/page.tsx"), /CookieSettingsButton/);
+  assert.match(read("src/components/account/AccountSettings.tsx"), /CookieSettingsButton/);
   const banner = read("src/components/consent/CookieBanner.tsx");
   // The labels live in the consent catalog (English source + 101 translations, tests/consent-i18n.test.ts); the banner renders them.
   const en = read("src/lib/i18n/messages/consent/en.ts");

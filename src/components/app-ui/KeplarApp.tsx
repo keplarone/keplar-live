@@ -2,6 +2,9 @@
 
 import { Fragment, useCallback, useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore, type ComponentType } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { usePrefs } from "@/lib/use-prefs";
+import { playDoneSound } from "@/lib/prefs";
 import { KeplarSymbol } from "@/components/brand";
 import { SkyBackdrop } from "@/components/sky/SkyBackdrop";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
@@ -193,6 +196,8 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   const search = usePresence(searchOpen);
   const drawerScrim = usePresence(drawerOpen);
   const [atBottom, setAtBottom] = useState(true);
+  const router = useRouter();
+  const prefs = usePrefs();
   const [mac] = useState(() => typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.userAgent));
   const composerRef = useRef<ComposerHandle>(null);
   // The welcome-back screen's own Composer (the same component, so it can attach, talk, switch modes and pick models).
@@ -357,6 +362,25 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   const chatSpecialistId = thread ? thread.specialistId ?? null : state.specialistNext ?? null;
   const running = thread?.messages.some((m) => m.role === "keplar" && m.status === "running") ?? false;
   const lastKeplar = [...(thread?.messages ?? [])].reverse().find((m): m is KeplarMessage => m.role === "keplar");
+
+  // Settings → Chat (follow the answer while it streams) and → Notifications (tell me when an answer finishes in the background).
+  const followRef = useRef(prefs.followStream);
+  const runningRef = useRef(running);
+  const wasRunning = useRef(false);
+  useEffect(() => {
+    followRef.current = prefs.followStream;
+    runningRef.current = running;
+    const finished = wasRunning.current && !running;
+    wasRunning.current = running;
+    if (!finished || lastKeplar?.status !== "done") return;
+    if (prefs.soundDone) playDoneSound();
+    if (prefs.notifyDone && document.hidden && typeof Notification !== "undefined" && Notification.permission === "granted") {
+      try {
+        const n = new Notification(thread?.title || "Keplar", { body: "Your answer is ready.", tag: "keplar-answer", icon: "/icon.png" });
+        n.onclick = () => { window.focus(); n.close(); };
+      } catch { /* some browsers only allow notifications from a service worker */ }
+    }
+  }, [running, prefs.followStream, prefs.soundDone, prefs.notifyDone, lastKeplar?.status, thread?.title]);
 
   // Tell the page-wide particle layer how the answer is going: real run state only (stages finished, models responded).
   const fieldP = running && lastKeplar ? askProgress(lastKeplar.stages.filter((x) => x.status === "done").length, lastKeplar.stages.length, lastKeplar.models.length, lastKeplar.modelCount ?? 0) : null;
@@ -922,6 +946,9 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
       } else if (mod && e.shiftKey && k === "o") {
         e.preventDefault();
         newThread();
+      } else if (mod && e.key === ",") {
+        e.preventDefault();
+        router.push("/account"); // opens the Settings dialog over the app (src/app/app/@modal)
       } else if (e.key === "Escape") {
         if (searchOpen) return;
         if (drawerOpen) { setDrawerOpen(false); return; }
@@ -935,7 +962,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [searchOpen, drawerOpen, running, stop, newThread, goView]);
+  }, [searchOpen, drawerOpen, running, stop, newThread, goView, router]);
 
   /* drawer: focus the first control, trap Tab */
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -969,9 +996,9 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   useEffect(() => {
     const el = scrollRef.current;
     // Empty thread: keep the welcome (and the first-visit question) in view.
-    if (!el || !atBottom || !lastSignature) return;
+    if (!el || !atBottom || !lastSignature || (running && !followRef.current)) return;
     el.scrollTo({ top: el.scrollHeight });
-  }, [lastSignature, atBottom, state.activeThreadId]);
+  }, [lastSignature, atBottom, state.activeThreadId, running]);
 
   const onScroll = () => {
     const el = scrollRef.current;
@@ -1002,7 +1029,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     const el = scrollRef.current;
     if (!thread || !el || typeof ResizeObserver === "undefined") return;
     const ro = new ResizeObserver(() => {
-      if (atBottomRef.current) el.scrollTo({ top: el.scrollHeight });
+      if (atBottomRef.current && (followRef.current || !runningRef.current)) el.scrollTo({ top: el.scrollHeight });
     });
     ro.observe(thread);
     return () => ro.disconnect();

@@ -18,7 +18,7 @@ const EXEMPT = new Set([
   "field/glsl.ts", // `colourFor` is a GLSL function name
   "lib/images/safety.ts", // a place-name word list ("centre" is a real name token)
   "lib/site-builder/coverage.ts", // matches the words a visitor-written brief uses ("enquiry form"); it never shows them
-  "app/(marketing)/account/page.tsx", // search keywords deliberately include both spellings
+  "components/account/AccountSettings.tsx", // search keywords deliberately include both spellings
 ]);
 const BRITISH = [
   /\bneighbour\w*/gi,

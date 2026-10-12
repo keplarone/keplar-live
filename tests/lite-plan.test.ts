@@ -170,7 +170,7 @@ test("lite: shown as $20 everywhere, with the billing disclosure; nothing says 1
   const files = ["src/lib/tiers.ts", "src/components/account/AccountActions.tsx", "src/lib/faq.ts", "src/lib/content/landing.ts", "src/lib/billing/plans.ts"];
   for (const f of files) assert.doesNotMatch(readFileSync(f, "utf8"), /19\.99/, f);
   assert.match(readFileSync("src/components/billing/CheckoutStart.tsx", "utf8"), /Billed monthly through Whop; the exact amount is shown at checkout/);
-  assert.match(readFileSync("src/app/(marketing)/account/page.tsx", "utf8"), /billed through Whop/);
+  assert.match(readFileSync("src/components/account/AccountSettings.tsx", "utf8"), /billed through Whop/);
   const offers = (softwareApp() as unknown as { offers: { name: string; price: string }[] }).offers;
   assert.equal(offers.find((o) => /Lite/.test(o.name))?.price, "20");
 });

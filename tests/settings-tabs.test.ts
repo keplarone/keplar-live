@@ -15,14 +15,14 @@ test("Settings: categories are real tabs with an active state, search covers pan
   assert.match(src, /textContent/);
 });
 
-test("Settings CSS: secondary buttons are declared after the primary glass override, and the tab row is one swipeable line on phones", () => {
+test("Settings CSS: secondary buttons are declared after the primary glass override, and the category rail is one swipeable line on phones", () => {
   const css = read("src/components/account/account.module.css");
   assert.ok(css.lastIndexOf(".btn.btnGhost {") > css.indexOf("glass buttons"), ".btnGhost must win over the glass .btn background");
-  assert.match(css, /@media \(max-width: 720px\)[\s\S]*\.settingsNav \{ flex-wrap: nowrap; overflow-x: auto/);
+  assert.match(css, /@media \(max-width: 720px\)[\s\S]*\.settingsNav \{ flex-direction: row; overflow-x: auto/);
 });
 
 test("Plan & billing: admin accounts get plain wording, no billing period, and admin links", () => {
-  const page = read("src/app/(marketing)/account/page.tsx");
+  const page = read("src/components/account/AccountSettings.tsx");
   assert.doesNotMatch(page, /Not applicable/);
   assert.match(page, /No subscription needed/);
   assert.doesNotMatch(page, /Daily safety cap/);
@@ -33,29 +33,46 @@ test("Plan & billing: admin accounts get plain wording, no billing period, and a
   assert.match(actions, /Manage billing &amp; invoices|Manage billing & invoices/);
 });
 
-test("Settings tabs: pills (Oct 2026 canvas design), constant label weight, and selecting never scrolls the window by accident", () => {
-  const css = read("src/components/account/account.module.css");
-  assert.match(css, /\.settingsChip\.settingsChip \{ border-radius: 999px; \}/, "category tabs are pills in the redesign");
-  assert.match(css, /\.settingsChip\.settingsChip\[data-on\] \{[^}]*background: var\(--c-ink\)/);
-  const chip = css.match(/\.settingsChip \{[^}]*\}/)?.[0] ?? "";
-  assert.doesNotMatch(chip, /var\(--r-pill\)/);
-  assert.match(chip, /font-weight: var\(--w-medium\)/, "same weight active or not, so chips do not change width on selection");
-  assert.doesNotMatch(css, /\.settingsChip\[data-on\][^}]*font-weight/);
-  const src = read("src/components/account/SettingsSections.tsx");
-  assert.doesNotMatch(src, /tabRefs\.current\[active\]\?\.scrollIntoView/, "Element.scrollIntoView scrolls the window and un-sticks the tab bar");
-  assert.match(src, /focus\(\{ preventScroll: true \}\)/);
-  assert.match(src, /strip\.scrollTo\(/);
+test("Settings window: a dialog over the app via an intercepted route, the same window alone at /account", () => {
+  const layout = read("src/app/app/layout.tsx");
+  assert.match(layout, /modal: React\.ReactNode/);
+  assert.match(layout, /\{modal\}/);
+  assert.match(read("src/app/app/@modal/(..)account/page.tsx"), /<AccountSettings mode="modal"/);
+  assert.match(read("src/app/app/@modal/default.tsx"), /return null/);
+  assert.match(read("src/app/app/@modal/[...rest]/page.tsx"), /return null/, "navigating elsewhere in the app closes the dialog");
+  assert.match(read("src/app/(marketing)/account/page.tsx"), /<AccountSettings mode="page"/);
+  const dlg = read("src/components/account/SettingsDialog.tsx");
+  assert.match(dlg, /role=\{modal \? "dialog" : undefined\}/);
+  assert.match(dlg, /aria-modal/);
+  assert.match(dlg, /e\.key === "Escape" && !e\.defaultPrevented/, "Esc closes unless an inner control used it (search clear)");
+  assert.match(dlg, /router\.back\(\)/);
 });
 
-test("Settings tabs: never paint a solid/blurred page-coloured band behind the pills — transparent even while sticky", () => {
+test("Settings rail: rows with constant label weight, and selecting never scrolls the page behind", () => {
   const css = read("src/components/account/account.module.css");
-  const wrap = css.match(/\.settingsTabsWrap \{[^}]*\}/)?.[0] ?? "";
-  assert.match(wrap, /background: transparent/);
-  assert.doesNotMatch(wrap, /backdrop-filter|rgb\(var\(--rgb-canvas\)/);
-  assert.doesNotMatch(css, /\.settingsTabsWrap\[data-stuck\]/, "no stuck-state fill — the black rectangle must stay gone");
-  assert.doesNotMatch(css, /\.settingsTabsWrap[^{\n]*\{[^}]*backdrop-filter/);
-  assert.doesNotMatch(css, /\.settingsChip:hover \{[^}]*background: rgb/, "hover must not paint a fill on inactive tabs");
-  assert.match(css, /\.settingsChip\.settingsChip\[data-on\] \{[^}]*background: var\(--c-ink\)/, "selected pill keeps its fill");
+  assert.match(css, /\.navItem\.navItem \{ border-radius: 9px; \}/, "rounded rows, not pills");
+  const chip = css.match(/\.navItem \{[^}]*\}/)?.[0] ?? "";
+  assert.match(chip, /font-weight: var\(--w-medium\)/, "same weight active or not, so rows do not change width on selection");
+  assert.doesNotMatch(css, /\.navItem[^{]*\[data-on\][^}]*font-weight/);
   const src = read("src/components/account/SettingsSections.tsx");
-  assert.doesNotMatch(src, /data-stuck|setStuck/);
+  assert.doesNotMatch(src, /tabRefs\.current\[active\]\?\.scrollIntoView/, "Element.scrollIntoView would scroll the page too");
+  assert.match(src, /focus\(\{ preventScroll: true \}\)/);
+  assert.match(src, /strip\.scrollTo\(/);
+  assert.match(src, /replaceState\(window\.history\.state/, "keeps Next's history state so closing the dialog goes back correctly");
+});
+
+test("Device prefs: applied before paint, saved only when not default, and wired where they act", () => {
+  const prefs = read("src/lib/prefs.ts");
+  assert.match(read("src/app/layout.tsx"), /__html: PREFS_SCRIPT/);
+  assert.match(read("src/styles/globals.css"), /@import "\.\/prefs\.css";/);
+  assert.match(prefs, /filter\(\(\[k, v\]\) => v !== PREF_DEFAULTS/);
+  assert.match(read("src/components/app-ui/Composer.tsx"), /prefs\.sendKey === "mod-enter"/);
+  assert.match(read("src/components/app-ui/Composer.tsx"), /spellCheck=\{prefs\.spellcheck\}/);
+  const app = read("src/components/app-ui/KeplarApp.tsx");
+  assert.match(app, /followRef\.current/);
+  assert.match(app, /prefs\.notifyDone && document\.hidden/);
+  assert.match(app, /e\.key === ","[\s\S]{0,80}router\.push\("\/account"\)/, "Ctrl/⌘+, opens Settings");
+  const css = read("src/styles/prefs.css");
+  for (const a of ["text-size", "font", "code-wrap", "reduce-motion", "contrast", "underline-links", "focus-rings"]) assert.match(css, new RegExp(`data-pref-${a}`));
+  assert.match(read("src/components/app-ui/App.module.css"), /data-pref-chat-width="wide"/);
 });

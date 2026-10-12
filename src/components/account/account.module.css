@@ -105,28 +105,7 @@ button.link { background: none; border: 0; padding: 0; font: inherit; cursor: po
 .searchClear:focus-visible { outline: none; }
 .settingsSearch .note:empty { display: none; }
 
-/* Tabs: wrap on wide screens; one swipeable row (with edge fade) on phones so they never stack three lines deep.
- * Always transparent — even while sticky under the nav. A canvas/page-coloured band (solid or blurred) reads as a black
- * rectangle behind the pills; selected pills keep their own fill for contrast. */
-.settingsTabsWrap { position: sticky; top: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-2)); z-index: 2; padding: var(--s-2) 0; background: transparent; }
-.settingsNav { display: flex; gap: var(--s-2); flex-wrap: wrap; }
-.settingsChip { display: inline-flex; align-items: center; justify-content: center; flex: none; min-height: 40px; padding: 0 var(--s-4); border: 1px solid var(--c-border); border-radius: var(--r-md); background: transparent; color: var(--c-ink-2); font: inherit; font-size: var(--t-small); font-weight: var(--w-medium); white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease; }
-/* Tabs are rounded rectangles, not pills: doubled class beats the sitewide pill rule in glass.css (specificity 0,1,1). */
-.settingsChip.settingsChip { border-radius: var(--r-md); }
-/* Inactive tabs never get a fill (no dark/grey box on hover, tap or focus): hover only lifts the label and hairline, on real pointers. */
-@media (hover: hover) { .settingsChip:not([data-on]):hover { color: var(--c-ink); border-color: rgb(var(--rgb-ink) / 0.3); background: transparent; } }
-/* Same weight as the other tabs on purpose: a heavier active label changed the chip width and shifted its neighbours on every click. */
-.settingsChip.settingsChip[data-on] { background: var(--c-ink); color: var(--c-canvas); border-color: var(--c-ink); }
-.settingsSection { display: flex; flex-direction: column; gap: var(--s-4); scroll-margin-top: calc(var(--l-nav-h) + var(--l-nav-offset) + 96px); }
-.sectionHeading { margin: 0; font-size: var(--t-small); font-weight: var(--w-medium); letter-spacing: 0; text-transform: none; color: var(--c-ink-2); }
-.pageFooter { display: flex; flex-wrap: wrap; gap: var(--s-3); padding-top: var(--s-2); }
-
-@media (max-width: 720px) {
-  .settingsTabsWrap { margin-inline: calc(var(--s-4) * -1); padding-inline: var(--s-4); }
-  .settingsNav { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scrollbar-width: none; padding-block: 2px; padding-right: var(--s-8); }
-  .settingsNav::-webkit-scrollbar { display: none; }
-  .settingsChip { scroll-snap-align: center; }
-}
+.settingsSection { display: flex; flex-direction: column; gap: var(--s-4); scroll-margin-top: var(--s-4); }
 
 /* Rows: value right-aligned on desktop, stacked under its label on phones so long values (email, dates) never squeeze. */
 .v { text-align: right; min-width: 0; overflow-wrap: anywhere; }
@@ -176,16 +155,91 @@ button.link { background: none; border: 0; padding: 0; font: inherit; cursor: po
   border-color: transparent;
   box-shadow: 0 12px 28px -14px rgb(0 0 0 / 0.6);
 }
-.searchInput.searchInput { height: 44px; border-radius: 999px; padding-inline: 18px; }
-:global(:root[data-theme="light"]) .searchInput.searchInput { background: rgb(255 255 255 / 0.8); }
-.settingsChip.settingsChip { border-radius: 999px; }
 
-@media (min-width: 900px) {
-  .settings { display: grid; grid-template-columns: 220px minmax(0, 1fr); column-gap: 28px; row-gap: 16px; align-items: start; }
-  .settingsSearch { grid-column: 2; grid-row: 1; }
-  .settingsSection { grid-column: 2; }
-  .settingsTabsWrap { grid-column: 1; grid-row: 1 / span 20; align-self: start; padding: 0; }
-  .settingsNav { flex-direction: column; flex-wrap: nowrap; gap: 2px; }
-  .settingsChip.settingsChip { justify-content: flex-start; min-height: 42px; padding: 0 14px; border: 0; font-size: 15px; }
-  .settingsChip.settingsChip:not([data-on]):hover { background: rgb(var(--rgb-ink) / 0.06); color: var(--c-ink); }
+/* ── Settings window (Oct 2026, Claude-style): a dialog over the app, or the same window alone at /account ──
+ * Header (title + ✕) on top; below it the category rail on the left and the chosen category on the right, each scrolling on
+ * its own. Under 720px the window fills the screen and the rail becomes one swipeable row of chips above the content. */
+.dlgLayer { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 24px; }
+.dlgBackdrop { position: absolute; inset: 0; background: rgb(0 0 0 / 0.45); animation: dlgFade 0.18s ease both; }
+.dlgPage { display: flex; justify-content: center; padding: calc(var(--l-nav-h, 64px) + var(--l-nav-offset, 0px) + var(--s-8)) var(--s-6) var(--s-16); min-height: 70vh; }
+.dlg {
+  position: relative; display: flex; flex-direction: column; width: min(1040px, 100%); height: min(780px, calc(100dvh - 48px));
+  border-radius: 20px; overflow: hidden; color: var(--c-ink);
+  background: var(--c-surface-1); border: 1px solid var(--c-border);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 30px 80px -20px rgb(0 0 0 / 0.45);
+}
+.dlg[data-mode="modal"] { animation: dlgIn 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.1) both; }
+.dlg[data-mode="page"] { height: min(820px, calc(100dvh - var(--l-nav-h, 64px) - 96px)); min-height: 560px; }
+:global(:root[data-theme="dark"]) .dlg { background: #161619; border-color: rgb(255 255 255 / 0.08); }
+@keyframes dlgIn { from { opacity: 0; transform: translateY(8px) scale(0.985); } }
+@keyframes dlgFade { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .dlg[data-mode="modal"], .dlgBackdrop { animation: none; } }
+
+.dlgHead { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); padding: 18px 20px 14px 24px; border-bottom: 1px solid var(--c-border); flex: none; }
+.dlgTitle { margin: 0; font-size: 20px; font-weight: var(--w-medium); letter-spacing: -0.01em; }
+.dlgClose { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; border: 0; background: transparent; box-shadow: none; color: var(--c-ink-2); cursor: pointer; }
+.dlgClose:hover { background: rgb(var(--rgb-ink) / 0.07); color: var(--c-ink); }
+.dlgClose:focus-visible { outline: 2px solid var(--c-ink); outline-offset: 1px; }
+
+.settings { display: grid; grid-template-columns: 236px minmax(0, 1fr); gap: 0; flex: 1; min-height: 0; }
+.rail { display: flex; flex-direction: column; gap: 10px; padding: 14px 10px 14px 14px; border-right: 1px solid var(--c-border); overflow-y: auto; overscroll-behavior: contain; min-height: 0; }
+.pane { overflow-y: auto; overscroll-behavior: contain; min-height: 0; padding: 22px 28px 40px; display: flex; flex-direction: column; gap: var(--s-4); }
+.settingsSection > .paneTitle { margin-top: var(--s-4); }
+.paneTitle { margin: 0 0 2px; font-size: 18px; font-weight: var(--w-medium); letter-spacing: -0.01em; }
+
+.searchIcon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--c-ink-3, var(--c-ink-2)); pointer-events: none; }
+.searchInput.searchInput { height: 38px; border-radius: 10px; padding-left: 34px; padding-right: 34px; font-size: var(--t-small); background: rgb(var(--rgb-ink) / 0.04); border-color: var(--c-border); }
+.searchClear.searchClear { right: 4px; height: 30px; width: 30px; padding: 0; border-radius: 8px; background: transparent; color: var(--c-ink-2); }
+.searchClear.searchClear:hover { background: rgb(var(--rgb-ink) / 0.08); }
+
+.settingsNav { display: flex; flex-direction: column; gap: 1px; }
+.navItem { display: flex; align-items: center; gap: 10px; flex: none; min-height: 36px; padding: 0 10px; border: 0; background: transparent; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; transform: none; color: var(--c-ink-2); font: inherit; font-size: 14px; font-weight: var(--w-medium); text-align: left; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background-color 0.12s ease, color 0.12s ease; }
+/* Rounded rows, not pills: doubled class beats the sitewide pill rule in glass.css. Same weight active or not (no width jumps). */
+.navItem.navItem { border-radius: 9px; }
+@media (hover: hover) { .navItem.navItem:not([data-on]):hover { background: rgb(var(--rgb-ink) / 0.05); color: var(--c-ink); } }
+.navItem.navItem[data-on] { background: rgb(var(--rgb-ink) / 0.09); color: var(--c-ink); }
+.navItem:focus-visible { outline: 2px solid var(--c-ink); outline-offset: -2px; }
+.navIcon { flex: none; opacity: 0.85; }
+
+/* Inside the window, panels are quieter: hairline cards, no glow. */
+.dlg .panel { border-radius: 14px; padding: 18px 20px; box-shadow: none; background: rgb(var(--rgb-ink) / 0.025); border: 1px solid var(--c-border); }
+:global(:root[data-theme="light"]) .dlg .panel { background: #fff; border-color: var(--c-border); box-shadow: none; }
+:global(:root[data-theme="dark"]) .dlg .panel { background: rgb(255 255 255 / 0.03); border-color: rgb(255 255 255 / 0.07); box-shadow: none; }
+.dlg .sub + .sub { margin-top: var(--s-6); }
+
+/* Setting row: label + hint on the left, control on the right. */
+.prefRow { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); padding: 10px 0; }
+.prefRow + .prefRow { border-top: 1px solid var(--c-border); }
+.prefText { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.prefLabel { font-weight: var(--w-medium); font-size: 15px; }
+.prefHint { font-size: var(--t-small); color: var(--c-ink-2); line-height: var(--lh-small); }
+.seg { display: inline-flex; flex: none; padding: 3px; gap: 2px; border-radius: 10px; background: rgb(var(--rgb-ink) / 0.06); }
+.segOpt { min-height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: transparent; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; color: var(--c-ink-2); font: inherit; font-size: 13px; font-weight: var(--w-medium); white-space: nowrap; cursor: pointer; }
+.segOpt.segOpt { border-radius: 8px; }
+.segOpt:hover { color: var(--c-ink); }
+.segOpt[aria-checked="true"] { background: var(--c-surface-1); color: var(--c-ink); box-shadow: 0 1px 2px rgb(0 0 0 / 0.12), 0 0 0 1px var(--c-border); }
+:global(:root[data-theme="dark"]) .segOpt[aria-checked="true"] { background: rgb(255 255 255 / 0.12); }
+.segOpt:focus-visible { outline: 2px solid var(--c-ink); outline-offset: 1px; }
+
+/* Keyboard shortcut list */
+.keys { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.keyRow { display: flex; justify-content: space-between; align-items: center; gap: var(--s-4); padding: 9px 0; font-size: 14px; }
+.keyRow + .keyRow { border-top: 1px solid var(--c-border); }
+.keyCombo { display: inline-flex; gap: 4px; flex: none; }
+.kbd { font-family: var(--f-sans); font-size: 12px; min-width: 24px; padding: 3px 7px; text-align: center; border-radius: 6px; border: 1px solid var(--c-border-strong); border-bottom-width: 2px; background: rgb(var(--rgb-ink) / 0.03); color: var(--c-ink); }
+
+@media (max-width: 720px) {
+  .dlgLayer { padding: 0; }
+  .dlg, .dlg[data-mode="page"] { height: 100dvh; min-height: 0; border-radius: 0; border: 0; }
+  .dlg[data-mode="page"] { height: calc(100dvh - var(--l-nav-h, 64px) - var(--s-8)); border-radius: 16px; border: 1px solid var(--c-border); }
+  .dlgPage { padding: calc(var(--l-nav-h, 64px) + var(--s-4)) var(--s-4) var(--s-4); }
+  .dlgHead { padding: max(14px, env(safe-area-inset-top)) 12px 10px 18px; }
+  .settings { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  .rail { border-right: 0; border-bottom: 1px solid var(--c-border); padding: 10px 0 8px; overflow: visible; gap: 8px; }
+  .settingsSearch { padding-inline: 14px; }
+  .settingsNav { flex-direction: row; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scrollbar-width: none; padding: 0 14px; gap: 4px; }
+  .settingsNav::-webkit-scrollbar { display: none; }
+  .navItem { scroll-snap-align: center; min-height: 36px; }
+  .pane { padding: 16px 16px max(32px, env(safe-area-inset-bottom)); }
+  .prefRow { flex-wrap: wrap; }
 }

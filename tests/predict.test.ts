@@ -61,5 +61,5 @@ test("wiring: the app only preloads code for Keplar One studios (never Business)
   const app = readFileSync("src/components/app-ui/KeplarApp.tsx", "utf8");
   assert.match(app, /const warmers: Partial<Record<View, \(\) => Promise<unknown>>> = \{ create: create\.warm, slides: slides\.warm, study: study\.warm \};/);
   assert.match(app, /predictNext\(to, 2, undefined, to === "thread"\)/, "strict on the Ask page");
-  assert.match(readFileSync("src/app/(marketing)/account/page.tsx", "utf8"), /<PredictionSettings \/>/);
+  assert.match(readFileSync("src/components/account/AccountSettings.tsx", "utf8"), /<PredictionSettings \/>/);
 });
