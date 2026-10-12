@@ -225,6 +225,18 @@ function freeOnlyRun(deps: { registry?: { freeOnly?: boolean } | null }, req: Ke
   return req.plan === "free" || Boolean(deps.registry?.freeOnly);
 }
 
+/**
+ * The answer to a question that is nothing but an exact calculation, or null. Only bare questions qualify: with files, images,
+ * Reason, Deep Research or Debate switched on, or any wording beyond the calculation (exactCheck matches whole questions only),
+ * the models still answer, with the exact result handed to them as a verified fact.
+ */
+export function instantExact(req: Pick<KeplarRequest, "prompt" | "attachments" | "media" | "modes">): string | null {
+  if (req.attachments?.length || req.media) return null;
+  if (req.modes && Object.values(req.modes).some(Boolean)) return null;
+  const c = exactCheck(req.prompt);
+  return c ? `${c.statement} Worked out by code, not by an AI model.` : null;
+}
+
 export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: AbortSignal): AsyncGenerator<KeplarEvent> {
   const started = Date.now();
   // "Are you human?" / "are you conscious?": fixed, code-enforced replies before anything else (identity-guards.ts). No model, no charge.
@@ -236,6 +248,13 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
   // "Who created Keplar?": a fixed answer, no model, no charge. Every plan.
   if (isCreatorQuestion(req)) {
     yield* runCreator();
+    return;
+  }
+  // "What is 12 times 9?", "is 97 prime?", "how many r's in strawberry?": the whole question is a calculation the exact checker
+  // (exact.ts) does by code, so it is answered from that, instantly. No model, no charge. Every plan.
+  const instant = instantExact(req);
+  if (instant) {
+    yield* runCreator(undefined, instant);
     return;
   }
   // Casual chat ("hi", "thanks"): one free model, no panel, no review, no charge. Every plan.
