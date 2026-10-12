@@ -215,6 +215,11 @@ const m: MarketingCatalog = {
         "line": "Modelkan, beri tekstur dengan set PBR Poly Haven, atur cahaya, dan ekspor di Blender 4.2 atau lebih baru.",
         "note": "Aplikasi desktop 0.1.8 atau lebih baru."
       },
+      "blender-cloud": {
+        "name": "Rendering Blender Cloud",
+        "line": "Render adegan di server Keplar saat komputer Anda mati, lalu unduh frame-nya dan sebuah MP4.",
+        "note": "Aplikasi desktop 0.1.10 atau lebih baru."
+      },
       "extension": {
         "name": "Ekstensi browser Keplar One",
         "line": "Tanyakan tentang teks yang dipilih atau sebuah halaman dari Chrome atau Edge, dengan kunci API Anda.",

@@ -215,6 +215,11 @@ const m: MarketingCatalog = {
         "line": "نمذجة وإكساء بمجموعات PBR من Poly Haven وإضاءة وتصدير في Blender 4.2 أو أحدث.",
         "note": "تطبيق سطح المكتب 0.1.8 أو أحدث."
       },
+      "blender-cloud": {
+        "name": "العرض السحابي Blender Cloud",
+        "line": "اعرض مشهدًا على خوادم Keplar وحاسوبك مطفأ، ثم نزّل الإطارات وفيديو MP4.",
+        "note": "تطبيق سطح المكتب 0.1.10 أو أحدث."
+      },
       "extension": {
         "name": "إضافة المتصفح Keplar One",
         "line": "اسأل عن نص محدد أو صفحة من Chrome أو Edge باستخدام مفتاح API الخاص بك.",

@@ -215,6 +215,11 @@ const m: MarketingCatalog = {
         "line": "在 Blender 4.2 或更高版本中建模、用 Poly Haven 的 PBR 材质贴图、布光并导出。",
         "note": "桌面应用 0.1.8 或更高版本。"
       },
+      "blender-cloud": {
+        "name": "Blender Cloud 云渲染",
+        "line": "关掉电脑也能在 Keplar 的服务器上渲染场景，之后下载各帧和一个 MP4 视频。",
+        "note": "桌面应用 0.1.10 或更高版本。"
+      },
       "extension": {
         "name": "Keplar One 浏览器扩展",
         "line": "在 Chrome 或 Edge 中，用你的 API 密钥询问选中的文字或整个页面。",

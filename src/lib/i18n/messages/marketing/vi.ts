@@ -215,6 +215,11 @@ const m: MarketingCatalog = {
         "line": "Dựng mô hình, phủ texture bằng bộ PBR của Poly Haven, chiếu sáng và xuất trong Blender 4.2 trở lên.",
         "note": "Ứng dụng máy tính 0.1.8 trở lên."
       },
+      "blender-cloud": {
+        "name": "Render bằng Blender Cloud",
+        "line": "Render cảnh trên máy chủ của Keplar khi máy tính đã tắt, rồi tải các khung hình và một video MP4.",
+        "note": "Ứng dụng máy tính 0.1.10 trở lên."
+      },
       "extension": {
         "name": "Tiện ích trình duyệt Keplar One",
         "line": "Hỏi về đoạn chữ đã chọn hoặc cả trang từ Chrome hay Edge, bằng khóa API của bạn.",

@@ -5,7 +5,7 @@ order: 4
 updated: 2026-10-12
 keywords: Blender AI, Blender co-builder, AI 3D modeling, Poly Haven textures, export FBX for Roblox
 howto: true
-related: /blender-ai, /docs/studio/roblox-studio-mode, /docs/desktop/install-desktop-app
+related: /blender-ai, /docs/studio/blender-cloud-rendering, /docs/studio/roblox-studio-mode, /docs/desktop/install-desktop-app
 ---
 
 Blender mode brings the same co-builder to Blender. It is part of Keplar Lite, Plus and Pro, in the desktop app version 0.1.8 or newer, with Blender 4.2 or newer on the same computer.
@@ -28,6 +28,10 @@ Finished assets export as FBX (which imports into Roblox Studio), GLB or OBJ int
 ## Safe by default
 
 The add-on only listens on your computer, behind a secret key. Keplar's Python may not touch files, the network or other apps, and may not save or close Blender. Deleting always asks, and every change waits for approval unless you turn on auto-approve.
+
+## Render while you're away
+
+In desktop app 0.1.10 and newer, Blender mode can also render the open scene on Keplar's servers, so the frames keep coming after you close Blender. See [Blender Cloud rendering](/docs/studio/blender-cloud-rendering).
 
 ## Cost and continuity
 

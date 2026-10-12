@@ -215,6 +215,11 @@ const m: MarketingCatalog = {
         "line": "Modela, texturiza con sets PBR de Poly Haven, ilumina y exporta en Blender 4.2 o posterior.",
         "note": "App de escritorio 0.1.8 o posterior."
       },
+      "blender-cloud": {
+        "name": "Renderizado en Blender Cloud",
+        "line": "Renderiza una escena en los servidores de Keplar con tu ordenador apagado y luego descarga los fotogramas y un MP4.",
+        "note": "App de escritorio 0.1.10 o posterior."
+      },
       "extension": {
         "name": "Extensión de navegador Keplar One",
         "line": "Pregunta sobre una selección o una página desde Chrome o Edge, con tu clave de API.",

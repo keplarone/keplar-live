@@ -215,6 +215,11 @@ const m: MarketingCatalog = {
         "line": "מידול, טקסטורות עם ערכות PBR של Poly Haven, תאורה וייצוא ב-Blender 4.2 ומעלה.",
         "note": "אפליקציית שולחן העבודה 0.1.8 ומעלה."
       },
+      "blender-cloud": {
+        "name": "רינדור ב-Blender Cloud",
+        "line": "רנדרו סצנה בשרתים של Keplar כשהמחשב כבוי, ואז הורידו את הפריימים וסרטון MP4.",
+        "note": "אפליקציית שולחן העבודה 0.1.10 ומעלה."
+      },
       "extension": {
         "name": "תוסף הדפדפן Keplar One",
         "line": "שאלו על טקסט מסומן או על דף מתוך Chrome או Edge, עם מפתח ה-API שלכם.",

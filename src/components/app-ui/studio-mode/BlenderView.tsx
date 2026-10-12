@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { TwoTone } from "@/components/page/TwoTone";
 import { blenderBridge, STUDIO_PLANS, studioBridge, type BlenderStatus, type OverlayState } from "@/lib/desktop/studio-bridge";
+import { BlenderCloud } from "./BlenderCloud";
 import { StudioDock } from "./StudioDock";
 import { blenderPlace, overlayTarget, setOverlayTarget, useStudioAgent } from "./useStudioAgent";
 import s from "./studio-mode.module.css";
@@ -183,9 +184,12 @@ export function BlenderView({ plan, signedIn }: { plan: string; signedIn: boolea
           <button type="button" className={s.primary} onClick={() => void overlay?.close()}>Bring it back here</button>
         </section>
       ) : (
-        <div className={s.workspace}>
-          <StudioDock a={a} draft={draft} onDraftUsed={() => setDraft("")} canPlayTest={false} />
-        </div>
+        <>
+          <div className={s.workspace}>
+            <StudioDock a={a} draft={draft} onDraftUsed={() => setDraft("")} canPlayTest={false} />
+          </div>
+          <BlenderCloud busy={a.running} />
+        </>
       )}
     </div>
   );

@@ -77,4 +77,5 @@ const RELATED_LABELS: Record<string, string> = {
   "/docs/studio/roblox-cloud": "Docs: Roblox Cloud overnight jobs",
   "/docs/studio/effects-and-textures": "Docs: effects, flipbooks and textures",
   "/docs/studio/blender-mode": "Docs: Blender mode",
+  "/docs/studio/blender-cloud-rendering": "Docs: Blender Cloud rendering",
 };

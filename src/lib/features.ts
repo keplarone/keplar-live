@@ -48,6 +48,7 @@ export const CHAPTERS: Chapter[] = [
       { id: "roblox-studio", name: "Roblox Studio mode", line: "A co-builder inside Roblox Studio: maps, UI, flipbook effects and Luau scripts, on Claude Opus 5.5.", href: "/roblox-studio-ai", status: "beta", note: "Desktop app, Lite and up." },
       { id: "roblox-cloud", name: "Roblox Cloud", line: "Overnight jobs on your game's scripts, each edit checked by Luau's analyzer, applied in Studio when you say so.", href: "/roblox-studio-ai", status: "beta", note: "Scripts only; it can't play-test." },
       { id: "blender", name: "Blender mode", line: "Model, texture with Poly Haven PBR sets, light and export in Blender 4.2 or newer.", href: "/blender-ai", status: "beta", note: "Desktop app 0.1.8 or newer." },
+      { id: "blender-cloud", name: "Blender Cloud rendering", line: "Render a scene on Keplar's servers with your computer off, then download the frames and an MP4.", href: "/blender-ai", status: "beta", note: "Desktop app 0.1.10 or newer." },
     ],
   },
   {

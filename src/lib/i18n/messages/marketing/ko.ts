@@ -215,6 +215,11 @@ const m: MarketingCatalog = {
         "line": "Blender 4.2 이상에서 모델링, Poly Haven PBR 세트로 텍스처, 조명, 내보내기.",
         "note": "데스크톱 앱 0.1.8 이상."
       },
+      "blender-cloud": {
+        "name": "Blender Cloud 렌더링",
+        "line": "컴퓨터를 끈 채 Keplar 서버에서 장면을 렌더링하고, 프레임과 MP4를 내려받으세요.",
+        "note": "데스크톱 앱 0.1.10 이상."
+      },
       "extension": {
         "name": "Keplar One 브라우저 확장 프로그램",
         "line": "Chrome이나 Edge에서 선택한 글이나 페이지에 대해 API 키로 질문하세요.",

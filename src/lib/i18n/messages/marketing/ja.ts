@@ -215,6 +215,11 @@ const m: MarketingCatalog = {
         "line": "Blender 4.2 以降で、モデリング、Poly Haven の PBR セットでのテクスチャ、ライティング、書き出し。",
         "note": "デスクトップアプリ 0.1.8 以降。"
       },
+      "blender-cloud": {
+        "name": "Blender Cloud レンダリング",
+        "line": "パソコンの電源を切ったまま Keplar のサーバーでシーンをレンダリングし、フレームと MP4 をダウンロード。",
+        "note": "デスクトップアプリ 0.1.10 以降。"
+      },
       "extension": {
         "name": "Keplar One ブラウザー拡張機能",
         "line": "Chrome や Edge から、選択したテキストやページについて質問。API キーを使います。",

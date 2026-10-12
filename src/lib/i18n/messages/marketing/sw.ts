@@ -215,6 +215,11 @@ const m: MarketingCatalog = {
         "line": "Unda modeli, weka maumbile kwa seti za PBR za Poly Haven, mwanga na kuhamisha katika Blender 4.2 au mpya zaidi.",
         "note": "Programu ya kompyuta 0.1.8 au mpya zaidi."
       },
+      "blender-cloud": {
+        "name": "Uchakataji wa Blender Cloud",
+        "line": "Chakata picha za tukio kwenye seva za Keplar kompyuta yako ikiwa imezimwa, kisha pakua fremu na video ya MP4.",
+        "note": "Programu ya kompyuta 0.1.10 au mpya zaidi."
+      },
       "extension": {
         "name": "Kiendelezi cha kivinjari Keplar One",
         "line": "Uliza kuhusu maandishi uliyochagua au ukurasa kutoka Chrome au Edge, kwa ufunguo wako wa API.",

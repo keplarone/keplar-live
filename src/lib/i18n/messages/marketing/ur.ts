@@ -215,6 +215,11 @@ const m: MarketingCatalog = {
         "line": "Blender 4.2 یا نئے میں ماڈل، Poly Haven کے PBR سیٹس سے ٹیکسچر، روشنی اور ایکسپورٹ۔",
         "note": "ڈیسک ٹاپ ایپ 0.1.8 یا نئی۔"
       },
+      "blender-cloud": {
+        "name": "Blender Cloud رینڈرنگ",
+        "line": "کمپیوٹر بند ہونے پر بھی Keplar کے سرورز پر منظر رینڈر کریں، پھر فریم اور ایک MP4 ڈاؤن لوڈ کریں۔",
+        "note": "ڈیسک ٹاپ ایپ 0.1.10 یا نئی۔"
+      },
       "extension": {
         "name": "Keplar One براؤزر ایکسٹینشن",
         "line": "Chrome یا Edge سے منتخب متن یا کسی صفحے کے بارے میں اپنی API کلید سے پوچھیں۔",

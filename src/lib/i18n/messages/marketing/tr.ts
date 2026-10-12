@@ -215,6 +215,11 @@ const m: MarketingCatalog = {
         "line": "Blender 4.2 veya üzerinde modelleme, Poly Haven PBR setleriyle doku, ışık ve dışa aktarma.",
         "note": "Masaüstü uygulaması 0.1.8 veya üzeri."
       },
+      "blender-cloud": {
+        "name": "Blender Cloud işleme",
+        "line": "Bilgisayarınız kapalıyken bir sahneyi Keplar sunucularında işleyin, sonra kareleri ve bir MP4'ü indirin.",
+        "note": "Masaüstü uygulaması 0.1.10 veya üzeri."
+      },
       "extension": {
         "name": "Keplar One tarayıcı uzantısı",
         "line": "Chrome veya Edge’de seçili metin ya da bir sayfa hakkında API anahtarınızla soru sorun.",

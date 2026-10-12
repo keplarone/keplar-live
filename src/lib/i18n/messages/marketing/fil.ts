@@ -215,6 +215,11 @@ const m: MarketingCatalog = {
         "line": "Mag-model, mag-texture gamit ang Poly Haven PBR sets, mag-ilaw at mag-export sa Blender 4.2 o mas bago.",
         "note": "Desktop app 0.1.8 o mas bago."
       },
+      "blender-cloud": {
+        "name": "Blender Cloud rendering",
+        "line": "Mag-render ng scene sa mga server ng Keplar kahit nakapatay ang computer mo, saka i-download ang mga frame at isang MP4.",
+        "note": "Desktop app 0.1.10 o mas bago."
+      },
       "extension": {
         "name": "Keplar One browser extension",
         "line": "Magtanong tungkol sa napiling text o isang page mula sa Chrome o Edge, gamit ang API key mo.",

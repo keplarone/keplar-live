@@ -215,6 +215,11 @@ const m: MarketingCatalog = {
         "line": "Modellieren, mit PBR-Sets von Poly Haven texturieren, beleuchten und exportieren in Blender 4.2 oder neuer.",
         "note": "Desktop-App 0.1.8 oder neuer."
       },
+      "blender-cloud": {
+        "name": "Blender-Cloud-Rendering",
+        "line": "Rendere eine Szene auf Keplars Servern, während dein Computer aus ist, und lade dann die Frames und ein MP4 herunter.",
+        "note": "Desktop-App 0.1.10 oder neuer."
+      },
       "extension": {
         "name": "Browsererweiterung Keplar One",
         "line": "Frag in Chrome oder Edge nach einer Markierung oder einer Seite, mit deinem API-Schlüssel.",
