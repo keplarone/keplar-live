@@ -15,7 +15,7 @@ const SHARE_ALT = `${site.name}: ${site.tagline}`;
  * so these pages must not set one (tests/seo-meta.test.ts keeps this list equal to the files on disk).
  */
 export const OWN_SHARE_IMAGE = new Set([
-  "/about", "/ai-answer-engine", "/ai-app-builder", "/ai-fact-check", "/ai-slideshow-maker", "/ai-study-tool", "/ai-vs-agi-vs-superintelligence", "/chatgpt-alternative",
+  "/about", "/ai-answer-engine", "/blender-ai", "/roblox-studio-ai", "/ai-app-builder", "/ai-fact-check", "/ai-slideshow-maker", "/ai-study-tool", "/ai-vs-agi-vs-superintelligence", "/chatgpt-alternative",
   "/compare-ai-models", "/for-founders", "/for-researchers", "/for-small-business", "/for-students", "/for-writers", "/keplar-one", "/models", "/multi-model-ai",
   "/pricing", "/si-vs-ai", "/superintelligence",
 ]);

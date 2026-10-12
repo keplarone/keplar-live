@@ -4,7 +4,7 @@ import { PromptCard } from "@/components/kb/PromptCard";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { promptCategories, promptCategoryBySlug } from "@/lib/kb/prompts";
 import { abs, pageMeta } from "@/lib/seo";
-import { breadcrumbs } from "@/lib/seo-graph";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import s from "@/components/kb/kb.module.css";
 
 export const dynamicParams = false;
@@ -26,7 +26,7 @@ export default async function PromptCategoryPage({ params }: Props) {
   return (
     <div className={s.shell}>
       <div style={{ maxWidth: "var(--l-max)", margin: "0 auto" }}>
-        <p className={s.crumbs}><Link href="/prompts">Prompt library</Link><span aria-hidden>/</span>{c.name}</p>
+        <Breadcrumbs trail={[{ name: "Prompt library", path: "/prompts" }, { name: c.name, path }]} />
         <h1 className={s.h1}>{c.name} prompts</h1>
         <p className={s.lede}>{c.blurb}</p>
         <div className={s.prose}>
@@ -45,7 +45,6 @@ export default async function PromptCategoryPage({ params }: Props) {
         </div>
       </div>
       <JsonLd data={{ "@context": "https://schema.org", "@type": "CollectionPage", name: `${c.name} prompts`, url: abs(path), description: c.blurb, hasPart: c.prompts.map((p) => ({ "@type": "CreativeWork", name: p.title, text: p.text, url: abs(`${path}#${p.id}`) })) }} />
-      <JsonLd data={breadcrumbs([{ name: "Prompt library", path: "/prompts" }, { name: c.name, path }])} />
     </div>
   );
 }

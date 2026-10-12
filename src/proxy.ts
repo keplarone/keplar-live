@@ -108,6 +108,13 @@ export function businessHost(req: NextRequest): NextResponse | null {
     url.pathname = asset;
     return NextResponse.rewrite(url);
   }
+  // The Business host's own crawl files (src/app/(business)/biz): before, these fell through to keplar.one's, so the Business
+  // sitemap listed keplar.one's URLs and none of its own.
+  if (pathname === "/robots.txt" || pathname === "/sitemap.xml" || pathname === "/llms.txt" || pathname === "/opengraph-image" || pathname === "/twitter-image") {
+    const url = req.nextUrl.clone();
+    url.pathname = `${BUSINESS_PREFIX}${pathname === "/twitter-image" ? "/opengraph-image" : pathname}`;
+    return NextResponse.rewrite(url);
+  }
   const last = pathname.slice(pathname.lastIndexOf("/") + 1);
   if (pathname.startsWith("/_next/") || pathname.startsWith("/og/") || pathname.startsWith("/icons/") || pathname.startsWith("/fonts/") || pathname.startsWith("/models/") || last.includes(".")) {
     return NextResponse.next();

@@ -38,6 +38,8 @@ export const staticLastmod: Record<string, string> = {
   "/ai-study-tool": "2026-10-01",
   "/ai-slideshow-maker": "2026-10-01",
   "/ai-fact-check": "2026-10-01",
+  "/roblox-studio-ai": "2026-10-11",
+  "/blender-ai": "2026-10-11",
   "/for-students": "2026-10-01",
   "/for-writers": "2026-10-04",
   "/for-founders": "2026-10-01",

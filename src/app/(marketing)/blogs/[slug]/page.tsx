@@ -9,7 +9,7 @@ import { allPosts, postBySlug } from "@/lib/kb/blog";
 import { allDocs } from "@/lib/kb/docs";
 import { blogPosting, faqLd, faqPairs, tocOf } from "@/lib/kb/jsonld";
 import { pageMeta } from "@/lib/seo";
-import { breadcrumbs } from "@/lib/seo-graph";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import s from "@/components/kb/kb.module.css";
 
 export const dynamicParams = false;
@@ -36,7 +36,7 @@ export default async function BlogPost({ params }: Props) {
     <div className={s.shell}>
       <div className={`${s.grid} ${s.grid2} ${s.gridPost}`}>
         <div>
-          <p className={s.crumbs}><Link href="/blogs">Blog</Link><span aria-hidden>/</span>{p.category}</p>
+          <Breadcrumbs trail={[{ name: "Blog", path: "/blogs" }, { name: p.title, path: p.path }]} />
           <h1 className={s.h1}>{p.title}</h1>
           <p className={s.lede}>{p.description}</p>
           <p className={s.meta}>
@@ -66,7 +66,6 @@ export default async function BlogPost({ params }: Props) {
         <Toc items={toc} />
       </div>
       <JsonLd data={blogPosting({ path: p.path, title: p.title, description: p.description, published: p.published, updated: p.updated, category: p.category, keywords: p.keywords, words: p.words })} />
-      <JsonLd data={breadcrumbs([{ name: "Blog", path: "/blogs" }, { name: p.title, path: p.path }])} />
       {faq.length ? <JsonLd data={faqLd(faq)} /> : null}
     </div>
   );

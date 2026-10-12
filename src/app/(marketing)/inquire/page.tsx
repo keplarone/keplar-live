@@ -1,3 +1,5 @@
+import { JsonLd } from "@/components/seo/JsonLd";
+import { breadcrumbs } from "@/lib/seo-graph";
 import type { Metadata } from "next";
 import { pageMeta } from "@/lib/seo";
 import { InquireExperience } from "@/components/inquire/InquireExperience";
@@ -9,5 +11,10 @@ export const metadata: Metadata = pageMeta(
 );
 
 export default function InquirePage() {
-  return <InquireExperience />;
+  return (
+    <>
+      <JsonLd data={breadcrumbs([{ name: "Talk to Keplar", path: "/inquire" }])} />
+      <InquireExperience />
+    </>
+  );
 }

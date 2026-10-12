@@ -26,10 +26,10 @@ const statusOf = (f: Fact): FeatureStatus => (f.feature ? ALL_FEATURES.find((x) 
 export const factStatus = statusOf;
 
 /** One paragraph: the short answer. */
-export const WHAT_IS_KEPLAR = `${brand.companyName} (keplar.one) is an AI workspace for everyday questions, studying, research and making things. Its engine, ${brand.engineName}, sends a question to the AI models it needs, compares their answers claim by claim, investigates where they disagree and writes one answer with the agreement and disagreements shown. Around that engine, ${brand.name} is a full set of tools: Reason, Deep Research and Debate modes; Study mode with flashcards, quizzes and study plans; a slideshow maker; image and video generation; Create, which builds and publishes real websites and apps; a Roblox Studio co-builder in the desktop app; projects, memory, specialists and connected apps; and a public API and embeddable widget. Keplar Business (business.keplar.one) is a separate desktop app for companies, with scheduled agents, approvals, team workspaces and a business dashboard.`;
+export const WHAT_IS_KEPLAR = `${brand.companyName} (keplar.one) is an AI workspace for everyday questions, studying, research and making things. Its engine, ${brand.engineName}, sends a question to the AI models it needs, compares their answers claim by claim, investigates where they disagree and writes one answer with the agreement and disagreements shown. Around that engine, ${brand.name} is a full set of tools: Reason, Deep Research and Debate modes; Study mode with flashcards, quizzes and study plans; a slideshow maker; image and video generation; Create, which builds and publishes real websites and apps; Roblox Studio and Blender co-builders in the desktop app; projects, memory, specialists and connected apps; and a public API and embeddable widget. Keplar Business (business.keplar.one) is a separate desktop app for companies, with scheduled agents, approvals, team workspaces and a business dashboard.`;
 
 /** A few sentences that correct the narrow reading ("it just asks several models"). */
-export const NOT_JUST_MULTI_MODEL = `Asking several models at once is how ${brand.name} answers, not all it does. The same account also studies with you, researches, writes and presents slides, makes images and video, builds and hosts websites and apps, and builds Roblox games inside Roblox Studio, all from one account. Companies that want agents running on a schedule, with approvals before anything goes out, use Keplar Business.`;
+export const NOT_JUST_MULTI_MODEL = `Asking several models at once is how ${brand.name} answers, not all it does. The same account also studies with you, researches, writes and presents slides, makes images and video, builds and hosts websites and apps, builds Roblox games inside Roblox Studio, and models and textures 3D assets in Blender, all from one account. Companies that want agents running on a schedule, with approvals before anything goes out, use Keplar Business.`;
 
 export const FACT_SECTIONS: FactSection[] = [
   {
@@ -78,6 +78,7 @@ export const FACT_SECTIONS: FactSection[] = [
       { name: "Voice Live Create", what: "Speak and watch the editor, terminal and preview build at the same time; say \"actually\" to change course. Needs a browser with speech recognition.", feature: "voice-create" },
       { name: "Surprise me", what: "One press picks a specific brief, style and depth and builds it.", feature: "surprise" },
       { name: "Version history and rollback", what: "Every build is a version. Restore any one, branch it into a new draft, or roll back a change that went wrong.", feature: "versions" },
+      { name: "Watch the code being written", what: "While Create builds an app, the files appear as they are written, with a Tasks checklist of the plan and Ctrl+P to jump to any file.", status: "live" },
       { name: "Templates and community gallery", what: "Start from a real site and describe what to change. Sites people chose to share can be liked, remixed and reported.", feature: "community", href: "/templates" },
       { name: "Showcase", what: "Demo sites and apps by the Keplar team that set the bar Create is held to.", feature: "showcase", href: "/showcase" },
       { name: "Image generation", what: "Make pictures from a message or in the Images studio; attach an image to use as a reference.", plans: "Plus and Pro" },
@@ -90,11 +91,24 @@ export const FACT_SECTIONS: FactSection[] = [
     id: "roblox", title: "Roblox Studio co-builder",
     intro: `In the ${brand.companyName} desktop app, Keplar connects to Roblox Studio through Studio's own tools and builds games with you.`,
     facts: [
-      { name: "Builds inside Studio", what: "Looks at your place first (a screenshot and the Explorer tree), writes a numbered plan, then builds it step by step: maps, buildings, lighting, UI, effects and working Luau scripts, organized in named folders.", plans: "Desktop app, signed in", status: "beta" },
-      { name: "Checks its own work", what: "Takes screenshots after each visible change, reads the output log for errors, play-tests gameplay and fixes what it finds before finishing.", plans: "Desktop app", status: "beta" },
+      { name: "Builds inside Studio", what: "Looks at your place first (a screenshot and the Explorer tree), writes a numbered plan, then builds it step by step: maps, buildings, lighting, UI, effects and working Luau scripts, organized in named folders.", plans: "Desktop app, signed in", status: "beta", href: "/roblox-studio-ai" },
+      { name: "You play-test it", what: "Keplar reads the output log for script errors and fixes them, then ends with a short \"How to test it\" list. A Play test button starts and stops play mode in Studio directly, so testing costs no AI usage; you say what to change.", plans: "Desktop app", status: "beta" },
+      { name: "A saved chat per game", what: "Each game's conversation, plan and progress are saved on the device and synced to your Keplar account, so you can close Studio and Keplar and pick up where you left off, even on another computer.", plans: "Desktop app, signed in", status: "beta", href: "/roblox-studio-ai" },
       { name: "Matches references", what: "Attach screenshots or a clip of a UI, effect or game to match. For effects and UI it reuses Zonito's free particle pack, or makes its own textures in Studio.", plans: "Desktop app", status: "beta" },
       { name: "You stay in control", what: "Reads run on their own; changes wait for approval unless you turn on auto-approve for safe changes; deleting, publishing, data stores and uploading images to your Roblox account always ask first.", plans: "Desktop app", status: "beta" },
-      { name: "Floating overlay", what: "A movable on-screen panel keeps the build chat next to Studio.", plans: "Desktop app", status: "beta" },
+      { name: "Floating overlay", what: "A movable, always-on-top panel keeps the build chat next to Studio or Blender, with a switch between the two.", plans: "Desktop app", status: "beta" },
+    ],
+  },
+  {
+    id: "blender", title: "Blender co-builder",
+    intro: `In the ${brand.companyName} desktop app (0.1.8 or newer), Keplar connects to Blender 4.2 or newer through a small Keplar add-on and models and textures with you.`,
+    facts: [
+      { name: "Models from a description", what: "Reads the scene as compact text, plans, then builds with clean topology and modifiers at real-world scale, every object named and grouped in a collection.", plans: "Desktop app, Lite and up", status: "beta", href: "/blender-ai" },
+      { name: "Real PBR textures", what: "Searches Poly Haven (free, CC0) and applies a full material set: colour, roughness, normal, ambient occlusion and displacement, unwrapping meshes that have no UVs.", plans: "Desktop app, Lite and up", status: "beta" },
+      { name: "Procedural materials, lighting and props", what: "Node-based materials for stylised looks, HDRI lighting and Poly Haven model import.", plans: "Desktop app, Lite and up", status: "beta" },
+      { name: "Export for games", what: "Exports to FBX (imports into Roblox Studio), GLB or OBJ in Documents/Keplar exports.", plans: "Desktop app, Lite and up", status: "beta" },
+      { name: "Safe by default", what: "The add-on only listens on this computer behind a secret key. Keplar's Python may not touch files, the network or other apps, or save or close Blender; deleting always asks, and every change waits for approval unless you turn on auto-approve.", plans: "Desktop app", status: "beta" },
+      { name: "Cheap to run", what: "A short cached prompt, text scene summaries instead of screenshots, and small thinking budgets keep each step's AI usage low. Each .blend file's chat is saved and synced to your account.", plans: "Desktop app", status: "beta" },
     ],
   },
   {
@@ -145,7 +159,7 @@ export const FACT_SECTIONS: FactSection[] = [
 const BUSINESS_CORE = BUSINESS_TIERS.starter.includes.slice(0, 11);
 export const BUSINESS_FACTS = {
   title: "Keplar Business (business.keplar.one)",
-  intro: `A separate desktop app for companies, on the same ${brand.name} accounts. business.keplar.one shows the plans, takes inquiries and business-account sign-up, and offers the download once a subscription is active. Agents live here: daily briefs, page monitors and lead follow-ups run on a schedule with run history, and anything an agent wants to send outside Keplar, such as an email, waits in Approvals until someone approves it. Team workspaces have owner, admin, editor and viewer roles.`,
+  intro: `A separate desktop app for companies, on the same ${brand.name} accounts. business.keplar.one shows the plans, takes inquiries and business-account sign-up, and offers the download once a subscription is active. Agents live here: daily briefs, page monitors and lead follow-ups run on a schedule with run history, and anything an agent wants to send outside Keplar, such as an email, waits in Approvals until someone approves it. Team workspaces have owner, admin, editor and viewer roles. The workspace also has Create (sites, apps, images, video), Operations (orders, CRM, inbox, audit log) and Integrations (connectors and connected apps).`,
   includes: BUSINESS_CORE,
   plans: Object.values(BUSINESS_TIERS).map((t) => ({ name: t.name, price: t.monthly === null ? "Custom pricing" : `$${t.monthly.toLocaleString("en-US", { minimumFractionDigits: 2 })} a month`, audience: t.audience, highlights: t.includes.filter((x) => !x.startsWith("Everything in") && !BUSINESS_CORE.includes(x)).slice(0, 6) })),
 };
@@ -174,4 +188,47 @@ export function factsText(url: (p: string) => string): string {
     "- More: https://business.keplar.one",
     "",
   ].join("\n");
+}
+
+/* ── capability matrix: which product and platform has what (one source for the page, llms.txt and /capabilities.json) ── */
+
+export type Cell = "yes" | "beta" | "no" | "n/a";
+export const MATRIX_COLUMNS = ["Keplar One web", "Keplar One desktop", "Keplar Business web", "Keplar Business desktop"] as const;
+export type MatrixRow = { feature: string; cells: [Cell, Cell, Cell, Cell]; note?: string };
+
+/** Honest per-surface availability. Business is a separate product (business.keplar.one and its own desktop app). */
+export const CAPABILITY_MATRIX: MatrixRow[] = [
+  { feature: "Multi-model answers (Ask)", cells: ["yes", "yes", "yes", "yes"] },
+  { feature: "Reason and Deep Research", cells: ["yes", "yes", "yes", "yes"], note: "Deep Research on Keplar One starts at Plus." },
+  { feature: "Study mode", cells: ["yes", "yes", "no", "no"] },
+  { feature: "Slideshow maker", cells: ["yes", "yes", "no", "no"], note: "Plus and Pro." },
+  { feature: "Image generation", cells: ["yes", "yes", "yes", "yes"], note: "Keplar One: Plus and Pro." },
+  { feature: "Video generation", cells: ["beta", "beta", "beta", "beta"], note: "Keplar One: Pro." },
+  { feature: "Create websites and apps", cells: ["yes", "yes", "yes", "yes"] },
+  { feature: "Roblox Studio co-builder", cells: ["no", "beta", "no", "no"], note: "Needs Roblox Studio on the same computer." },
+  { feature: "Blender co-builder", cells: ["no", "beta", "no", "no"], note: "Desktop app 0.1.8+, Blender 4.2+." },
+  { feature: "Floating overlay over Studio or Blender", cells: ["no", "beta", "no", "no"] },
+  { feature: "Scheduled agents and Approvals", cells: ["no", "no", "beta", "beta"] },
+  { feature: "Operations: orders, CRM, inbox, audit log", cells: ["no", "no", "beta", "beta"] },
+  { feature: "Connected apps (MCP)", cells: ["beta", "beta", "beta", "beta"] },
+  { feature: "Projects", cells: ["yes", "yes", "yes", "yes"] },
+  { feature: "Chat history and optional memory", cells: ["yes", "yes", "no", "no"], note: "Business keeps projects and report history instead." },
+  { feature: "Public API and embeddable widget", cells: ["beta", "n/a", "no", "n/a"], note: "Keys come with a Keplar One account." },
+];
+
+/** The registry as data, for /capabilities.json (machine-readable; the pages and llms.txt are built from the same values). */
+export function capabilitiesManifest(origin: string) {
+  return {
+    name: brand.companyName,
+    url: `${origin}/`,
+    summary: WHAT_IS_KEPLAR,
+    products: [
+      { id: "keplar-one", name: brand.companyName, url: `${origin}/`, platforms: ["Web", "Windows", "macOS", "Linux"] },
+      { id: "keplar-business", name: "Keplar Business", url: "https://business.keplar.one/", platforms: ["Windows", "macOS", "Linux"], note: "Separate product on the same Keplar account." },
+    ],
+    statuses: { live: "available to everyone it applies to", beta: "works, still changing or limited to some plans", soon: "being built, not usable yet" },
+    sections: FACT_SECTIONS.map((sec) => ({ id: sec.id, title: sec.title, intro: sec.intro, features: sec.facts.map((f) => ({ name: f.name, description: f.what, status: statusOf(f), ...(f.plans ? { plans: f.plans } : {}), ...(f.href ? { url: f.href.startsWith("http") ? f.href : `${origin}${f.href}` } : {}) })) })),
+    business: { title: BUSINESS_FACTS.title, intro: BUSINESS_FACTS.intro, includes: BUSINESS_FACTS.includes, plans: BUSINESS_FACTS.plans },
+    matrix: { columns: MATRIX_COLUMNS, rows: CAPABILITY_MATRIX },
+  };
 }

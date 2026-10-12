@@ -7,8 +7,8 @@ import { allBlogAndDocsByPath } from "@/lib/kb/lookup";
 import { webArticle } from "@/lib/kb/jsonld";
 import { allUseCases, getUseCase } from "@/lib/kb/usecases";
 import { pageMeta } from "@/lib/seo";
-import { breadcrumbs } from "@/lib/seo-graph";
 import s from "@/components/kb/kb.module.css";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { TwoTone } from "@/components/page/TwoTone";
 
 export const dynamicParams = false;
@@ -31,7 +31,7 @@ export default async function UseCasePage({ params }: Props) {
   return (
     <div className={s.shell}>
       <div style={{ maxWidth: "var(--l-max)", margin: "0 auto" }}>
-        <p className={s.crumbs}><Link href="/use-cases">Use cases</Link></p>
+        <Breadcrumbs trail={[{ name: "Use cases", path: "/use-cases" }, { name: u.title, path: u.path }]} />
         <h1 className={s.h1}><TwoTone text={u.title} /></h1>
         <p className={s.lede}>{u.description}</p>
         <p className={s.meta}><span>Updated <time dateTime={u.updated}>{date(u.updated)}</time></span></p>
@@ -48,7 +48,6 @@ export default async function UseCasePage({ params }: Props) {
         </div>
       </div>
       <JsonLd data={webArticle({ path: u.path, title: u.title, description: u.description, updated: u.updated, keywords: u.keywords, words: u.words })} />
-      <JsonLd data={breadcrumbs([{ name: "Use cases", path: "/use-cases" }, { name: u.title, path: u.path }])} />
     </div>
   );
 }
