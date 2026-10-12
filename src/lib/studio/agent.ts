@@ -18,8 +18,28 @@ import { catalogById } from "@/lib/orchestration/catalog";
 import { liveEnv, openRouterSlug } from "@/lib/orchestration/config";
 import { METER_MARGIN } from "@/lib/orchestration/limits";
 import { callCostUsd } from "@/lib/orchestration/pricing";
+import { MODEL_LOCK_HEADER } from "@/lib/cost/meter";
 
 export const STUDIO_MODEL = "claude-opus-5-5";
+
+/**
+ * Roblox Studio mode runs on Claude Opus 5.5 through OpenRouter and nothing else: no fallback to another model, no user model
+ * switch, no cheaper model behind the scenes (deterministic tools are fine; they are not models). The OpenRouter id lives in
+ * KEPLAR_ROBLOX_MODEL_ID (server only) so a rename can be followed without a deploy, but only an Opus 5.5 id is accepted: any
+ * other value pauses Studio mode instead of running on it. Verified against OpenRouter's model list on 2026-10-11:
+ * anthropic/claude-opus-5.5, $4 per million input tokens and $20 per million output tokens.
+ */
+export const ROBLOX_MODEL_DEFAULT = "anthropic/claude-opus-5.5";
+const OPUS_55_ID = /^anthropic\/claude-opus-5\.5$/;
+export function robloxModelId(env: Record<string, string | undefined> = process.env): string {
+  const v = env.KEPLAR_ROBLOX_MODEL_ID?.trim();
+  if (!v) return ROBLOX_MODEL_DEFAULT;
+  if (!OPUS_55_ID.test(v)) throw new HttpError(503, "Studio mode is paused: its model setting is not Claude Opus 5.5, and it never runs on another model.", "model_config");
+  return v;
+}
+
+/** OpenRouter's answer is from the locked model (it may add a dated suffix, never a different model). */
+export const answeredByLockedModel = (requested: string, answered: unknown) => typeof answered === "string" && (answered === requested || answered.startsWith(`${requested}-`) || answered.startsWith(`${requested}:`));
 export const STUDIO_LIMITS = {
   maxMessages: 240,
   maxBodyBytes: 12 * 1024 * 1024,
@@ -234,11 +254,16 @@ export type StudioTurn = {
   blocked: { id: string; name: string }[];
   done: boolean;
   units: number;
+  /** What this turn really used, from OpenRouter's response (nothing estimated except usd when OpenRouter sends no cost). */
+  usage: StudioUsage;
 };
+export type StudioUsage = { provider: string | null; model: string; promptTokens: number; cachedTokens: number; completionTokens: number; reasoningTokens: number; usd: number; latencyMs: number };
 
 type ChatCompletion = {
   choices?: { message?: { content?: string | null; tool_calls?: ToolCall[]; reasoning_details?: unknown[] }; finish_reason?: string }[];
-  usage?: { prompt_tokens?: number; completion_tokens?: number; cost?: number };
+  model?: string;
+  provider?: string;
+  usage?: { prompt_tokens?: number; completion_tokens?: number; cost?: number; prompt_tokens_details?: { cached_tokens?: number }; completion_tokens_details?: { reasoning_tokens?: number } };
   error?: { message?: string };
 };
 
@@ -270,8 +295,10 @@ export type TurnProfile = {
   title: string;
   maxOutputTokens: number;
   reasoningTokens: number;
+  /** Roblox Studio: always Claude Opus 5.5 (robloxModelId), never substituted, even by the cost meter's guardrails. */
+  lockedModel?: boolean;
 };
-export const STUDIO_PROFILE: TurnProfile = { system: STUDIO_SYSTEM, riskOf, meter: "studio.agent", title: "Keplar Studio mode", maxOutputTokens: STUDIO_LIMITS.maxOutputTokens, reasoningTokens: STUDIO_LIMITS.reasoningTokens };
+export const STUDIO_PROFILE: TurnProfile = { system: STUDIO_SYSTEM, riskOf, meter: "studio.agent", title: "Keplar Studio mode", maxOutputTokens: STUDIO_LIMITS.maxOutputTokens, reasoningTokens: STUDIO_LIMITS.reasoningTokens, lockedModel: true };
 
 /** One model turn: check credits, ask Opus 5.5 (thinking first), charge the real cost, return the reply and the labelled actions. */
 export async function runStudioTurn(
@@ -281,7 +308,7 @@ export async function runStudioTurn(
   profile: TurnProfile = STUDIO_PROFILE,
 ): Promise<StudioTurn> {
   const spec = catalogById.get(STUDIO_MODEL);
-  const slug = spec ? openRouterSlug(spec) : null;
+  const slug = profile.lockedModel ? robloxModelId() : spec ? openRouterSlug(spec) : null;
   const key = liveEnv().openRouterKey;
   if (!spec || !slug || !key) throw new HttpError(503, "Studio mode is not available right now.", "unavailable");
   await assertCanSpend(ws, STUDIO_LIMITS.reserveUnits, { kind: "agent", dailySafetyCap: false });
@@ -289,7 +316,7 @@ export async function runStudioTurn(
   const doFetch = deps.fetch ?? fetch;
   const ask = (messages: unknown[]) => doFetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
-    headers: { authorization: `Bearer ${key}`, "content-type": "application/json", "x-title": profile.title, "http-referer": "https://keplar.one" },
+    headers: { authorization: `Bearer ${key}`, "content-type": "application/json", "x-title": profile.title, "http-referer": "https://keplar.one", ...(profile.lockedModel ? { [MODEL_LOCK_HEADER]: "1" } : {}) },
     body: JSON.stringify({
       model: slug,
       messages: [{ role: "system", content: [{ type: "text", text: profile.system, cache_control: { type: "ephemeral" } }] }, ...messages],
@@ -304,16 +331,40 @@ export async function runStudioTurn(
   });
   // Cache the conversation too. If the provider ever rejects the marker's shape (a 400, which is not billed), ask again exactly as
   // before, with only the system prompt cached, so caching can only lower the cost and never break a turn.
+  const t0 = Date.now();
   let res = await ask(withCacheBreakpoint(input.messages));
   if (res.status === 400) res = await ask(input.messages);
   const data = (await res.json().catch(() => ({}))) as ChatCompletion;
+  const latencyMs = Date.now() - t0;
+  if (profile.lockedModel && !res.ok) {
+    // Never substitute: say why Opus 5.5 could not answer and stop the turn safely (the page pauses the build).
+    console.error(`[studio] ${slug} failed: status ${res.status}${data.error?.message ? ` (${data.error.message.slice(0, 120)})` : ""} after ${latencyMs} ms`);
+    if (res.status === 402 || res.headers.get("x-keplar-guard") === "model_locked") throw new HttpError(503, "Studio mode is paused: Claude Opus 5.5 can't be used right now, and Studio never switches to another model. Try again later.", "model_unavailable");
+    if (res.status === 429 || res.status >= 500) throw new HttpError(503, "Claude Opus 5.5 is busy right now. Your build is paused; try again in a moment.", "model_busy");
+  }
   if (!res.ok || !data.choices?.length) throw new HttpError(502, "The model did not answer. Try again in a moment.", "upstream");
+  if (profile.lockedModel && !answeredByLockedModel(slug, data.model)) {
+    // Not charged and not used: an answer from any other model is discarded.
+    console.error(`[studio] discarded an answer from ${String(data.model).slice(0, 80)}; requested ${slug}`);
+    throw new HttpError(503, "Studio mode is paused: the answer did not come from Claude Opus 5.5, so it was not used and not charged.", "model_mismatch");
+  }
 
   const prompt = data.usage?.prompt_tokens ?? 0;
   const completion = data.usage?.completion_tokens ?? 0;
   const usd = typeof data.usage?.cost === "number" && data.usage.cost > 0 ? data.usage.cost : callCostUsd(spec, prompt, completion, (deps.now ?? (() => new Date().toISOString()))()) ?? 0;
   const metered = usd * METER_MARGIN;
   const units = usd > 0 ? await chargeUnits(ws, profile.meter, toUnits(metered), metered, undefined, { dailySafetyCap: false }) : 0;
+  const usage: StudioUsage = {
+    provider: typeof data.provider === "string" ? data.provider.slice(0, 40) : null,
+    model: typeof data.model === "string" ? data.model.slice(0, 80) : slug,
+    promptTokens: prompt,
+    cachedTokens: data.usage?.prompt_tokens_details?.cached_tokens ?? 0,
+    completionTokens: completion,
+    reasoningTokens: data.usage?.completion_tokens_details?.reasoning_tokens ?? 0,
+    usd: Math.round(usd * 1e6) / 1e6,
+    latencyMs,
+  };
+  console.info(`[${profile.meter}] ${usage.model} via ${usage.provider ?? "?"}: ${prompt} in (${usage.cachedTokens} cached), ${completion} out, ${usage.usd} in ${latencyMs} ms`);
 
   const choice = data.choices[0]!;
   const actions: StudioTurn["actions"] = [];
@@ -332,5 +383,5 @@ export async function runStudioTurn(
   const reasoning = choice.message?.reasoning_details;
   const keepReasoning = Array.isArray(reasoning) && reasoning.length > 0 && JSON.stringify(reasoning).length <= STUDIO_LIMITS.maxReasoningChars;
   const message: StudioTurn["message"] = { role: "assistant", content: choice.message?.content ?? null, ...(calls.length ? { tool_calls: calls } : {}), ...(keepReasoning ? { reasoning_details: reasoning } : {}) };
-  return { message, text: (choice.message?.content ?? "").trim(), actions, blocked, done: calls.length === 0, units };
+  return { message, text: (choice.message?.content ?? "").trim(), actions, blocked, done: calls.length === 0, units, usage };
 }

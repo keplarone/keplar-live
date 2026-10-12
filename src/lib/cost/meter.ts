@@ -220,6 +220,21 @@ function refusal(d: Extract<Decision, { action: "block" }>): Response {
   return Response.json({ error: { code: d.status, message: d.message, metadata: { keplar: d.code } } }, { status: d.status, headers: { "x-keplar-guard": d.code, "cache-control": "no-store" } });
 }
 
+/**
+ * A caller that must run on exactly the model it asked for (Roblox Studio mode: Opus 5.5 only) sends this header. The meter
+ * strips it before the request leaves, and for a locked call it never swaps the model: a guardrail that would rewrite it to a
+ * cheaper or :free model refuses instead, and an out-of-credit 402 is returned as is rather than retried on a free model.
+ */
+export const MODEL_LOCK_HEADER = "x-keplar-model-lock";
+
+function takeModelLock(init: RequestInit | undefined): { locked: boolean; init: RequestInit | undefined } {
+  if (!init?.headers) return { locked: false, init };
+  const h = new Headers(init.headers);
+  if (!h.has(MODEL_LOCK_HEADER)) return { locked: false, init };
+  h.delete(MODEL_LOCK_HEADER);
+  return { locked: true, init: { ...init, headers: h } };
+}
+
 /** Builds a metered fetch over `deps.orig`. Pure enough to test with a fake `orig`. */
 export function createMeteredFetch(deps: MeterDeps): Fetch {
   const now = deps.now ?? Date.now;
@@ -231,7 +246,8 @@ export function createMeteredFetch(deps: MeterDeps): Fetch {
   const onExhausted = deps.onExhausted ?? ((r: string) => markBalanceExhausted(r));
   const extra = envHosts();
 
-  const metered = async function meteredFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const metered = async function meteredFetch(input: RequestInfo | URL, rawInit?: RequestInit): Promise<Response> {
+    const { locked, init } = takeModelLock(rawInit);
     const url = urlOf(input);
     const provider = url ? providerOf(url, extra) : null;
     if (!url || !provider) return deps.orig(input, init);
@@ -266,6 +282,10 @@ export function createMeteredFetch(deps: MeterDeps): Fetch {
     let sendInit = init;
     let model = requestedModel;
     let degraded: CostEvent["degraded"];
+    if (decision.action === "rewrite" && locked) {
+      enqueue({ ...base, id: rid(), at: new Date(t0).toISOString(), day: utcDay(t0), model: requestedModel, tokensIn: 0, tokensOut: 0, usd: 0, costSource: "none", latencyMs: 0, status: 503, ok: false, blocked: "model_locked" }, sink, flushMs);
+      return Response.json({ error: { code: 503, message: "The required model can't be used right now, and this request may not switch to another one.", metadata: { keplar: "model_locked" } } }, { status: 503, headers: { "x-keplar-guard": "model_locked", "cache-control": "no-store" } });
+    }
     if (decision.action === "rewrite" && req.json) {
       model = decision.model;
       degraded = decision.reason;
@@ -286,7 +306,7 @@ export function createMeteredFetch(deps: MeterDeps): Fetch {
       enqueue({ ...base, id: rid(), at: new Date(t0).toISOString(), day: utcDay(t0), model, tokensIn: 0, tokensOut: 0, usd: 0, costSource: "none", latencyMs: now() - t0, status: 402, ok: false }, sink, flushMs);
       const cfg = await getConfig().catch(() => null);
       const fb = cfg?.degrade.freeFallbackModels[0];
-      if (cfg?.flags.degradeOnLowBalance && endpoint === "chat" && fb && req.json) {
+      if (!locked && cfg?.flags.degradeOnLowBalance && endpoint === "chat" && fb && req.json) {
         model = fb;
         degraded = "low_balance";
         res = await deps.orig(input, { ...init, body: JSON.stringify({ ...req.json, model: fb, models: undefined }) });
