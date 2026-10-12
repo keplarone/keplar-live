@@ -19,6 +19,7 @@ import type { ChatCreate, KeplarMessage, Ledger, UserMessage } from "../state/ty
 import { matchApp } from "../workspace/workspace-data";
 import { DomainsPanel } from "./DomainsPanel";
 import { colorPatch, currentColors, FONT_CHOICES, STYLE_COLORS } from "./look-edit";
+import { ScaledViewport } from "@/components/create/ScaledViewport";
 import s from "./create.module.css";
 
 type Props = {
@@ -406,7 +407,11 @@ export function CreateTurn({ message: m, user, ledger, onPatch, onOpen, onSettle
             ) : previewUrl && !running ? (
               <div className={s.browser}>
                 <div className={s.chrome}><span className={s.dots} aria-hidden="true"><i /><i /><i /></span><span className={s.addr}>{(liveUrl ?? "Preview").replace(/^https?:\/\//, "")}</span></div>
-                <iframe key={frameKey} className={s.frame} src={previewUrl} title={`${name} preview`} sandbox="allow-scripts allow-forms allow-popups allow-modals allow-downloads" />
+                {(() => {
+                  const frame = <iframe key={frameKey} className={s.frame} src={previewUrl} title={`${name} preview`} sandbox="allow-scripts allow-forms allow-popups allow-modals allow-downloads" />;
+                  // Desktop is a real 1920x1080 viewport scaled to the card width (as on a 1080p monitor); phone keeps its 390px width.
+                  return device === "desktop" ? <ScaledViewport fit="width">{frame}</ScaledViewport> : frame;
+                })()}
               </div>
             ) : (
               <div className={s.placeholder} aria-hidden={running ? undefined : true}>

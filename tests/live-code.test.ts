@@ -79,3 +79,44 @@ test("Create in Business is an IDE: Explorer, editor, Pipeline and a status bar 
   assert.match(readFileSync("src/components/business-app/workspace.module.css", "utf8"), /\.module:has\(\[data-ide\]\) \{ height: 100%; \}/);
   assert.match(readFileSync("src/components/create/apps/studio.module.css", "utf8"), /\.ide \{ height: 100%; min-height: 0; display: grid;/);
 });
+
+test("spec.json: the build request shows the brief, the look and this plan's model and limits; nothing invented without a config", async () => {
+  const { buildRequestJson } = await import("../src/components/create/apps/code-nav");
+  const cfg = { plan: "business", planLabel: "Keplar Business Growth", verified: true, maxProjects: 100, projects: 2, model: "Claude Opus 5.5", estimateUnits: 2475, maxUnits: 5500, limits: { files: 40, pages: 24, collections: 24, backend: true, ai: true, images: 6, fixAttempts: 3, visual: true }, styles: [], fonts: [] };
+  const auto = JSON.parse(buildRequestJson({ brief: "  A salon booking app  ", auto: true, design: null, cfg }));
+  assert.equal(auto.brief, "A salon booking app", "trimmed");
+  assert.match(auto.look, /^auto/);
+  assert.equal(auto.model, "Claude Opus 5.5");
+  assert.deepEqual(auto.estimate, { credits: 2475, max: 5500 });
+  assert.equal(auto.limits.screens, 24);
+  assert.equal(auto.limits.designReview, true);
+  const design = { style: "editorial", mode: "dark", palette: null, fonts: "serif", shape: "soft", density: "airy", motion: "calm" } as never;
+  const chosen = JSON.parse(buildRequestJson({ brief: "", auto: false, design, cfg: null }));
+  assert.equal(chosen.brief, null, "an empty brief is null, not a made-up example");
+  assert.equal(chosen.look.style, "editorial");
+  assert.equal(chosen.look.palette, "from the style");
+  assert.equal(chosen.model, null);
+  assert.equal(chosen.limits, null);
+});
+
+test("IDE editor tabs: brief.md, spec.json and build.log are real tabs; the composer stays mounted on the others", () => {
+  const frame = readFileSync("src/components/create/apps/IdeFrame.tsx", "utf8");
+  assert.match(frame, /role="tablist" aria-label="Editor"/);
+  assert.match(frame, /role="tab"[\s\S]*?aria-selected=\{tab === t\.id\}/);
+  assert.match(frame, /id="ide-panel-brief" aria-labelledby="ide-tab-brief" hidden=\{tab !== "brief"\}>\{children\}/, "hidden, not unmounted");
+  assert.match(frame, /e\.key !== "ArrowRight" && e\.key !== "ArrowLeft"/, "arrow keys move between tabs");
+  assert.match(frame, /No build has run in this session yet/);
+  assert.match(readFileSync("src/components/create/apps/AppBuilder.tsx", "utf8"), /getBrief=\{\(\) => store\.text\(\)\} auto=\{auto\} design=\{design\} log=\{live\.log\}/);
+});
+
+test("desktop preview is a real 1920x1080 viewport scaled to fit (never upscaled), in the app builder and the chat builder", async () => {
+  const { viewportScale, DESKTOP_VIEWPORT } = await import("../src/components/create/ScaledViewport");
+  assert.deepEqual(DESKTOP_VIEWPORT, { w: 1920, h: 1080 });
+  assert.equal(viewportScale({ w: 960, h: 1000 }), 0.5, "width-bound pane");
+  assert.equal(viewportScale({ w: 1920, h: 540 }), 0.5, "height-bound pane");
+  assert.equal(viewportScale({ w: 3840, h: 2160 }), 1, "never larger than 1:1");
+  assert.equal(viewportScale({ w: 1200, h: null }), 0.625, "fit to width only (inline card)");
+  assert.equal(viewportScale({ w: 0, h: 0 }), 1, "unmeasured: no scaling");
+  assert.match(readFileSync("src/components/create/apps/AppBuilder.tsx", "utf8"), /return device === "desktop" \? <ScaledViewport>\{frame\}<\/ScaledViewport> : frame;/);
+  assert.match(readFileSync("src/components/app-ui/create/CreateTurn.tsx", "utf8"), /return device === "desktop" \? <ScaledViewport fit="width">\{frame\}<\/ScaledViewport> : frame;/);
+});

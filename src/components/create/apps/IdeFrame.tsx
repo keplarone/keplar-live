@@ -4,11 +4,25 @@
  * briefs as files, your apps), the existing composer in the middle under an editor tab, the build pipeline on the right (what
  * each step does and the limits of this plan) and a status bar at the bottom. Everything in the middle is Create's own
  * controls, unchanged; outside Business this renders its children as they are.
+ *
+ * The editor tabs: brief.md is the composer (kept mounted while another tab shows, so nothing typed is lost), spec.json is
+ * the build request as it stands (the brief, the look, the model and this plan's limits; read fresh when the tab opens) and
+ * build.log is the latest build's log from this session.
  */
-import { useEffect, useState, type ReactNode } from "react";
-import type { AppSummary, Config } from "./types";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import type { AppSummary, Config, Design } from "./types";
 import type { Starter } from "./starters";
+import { tokenize } from "./highlight";
+import { buildRequestJson } from "./code-nav";
 import s from "./studio.module.css";
+
+type EditorTab = "brief" | "spec" | "log";
+const EDITOR_TABS: { id: EditorTab; file: string }[] = [
+  { id: "brief", file: "brief.md" },
+  { id: "spec", file: "spec.json" },
+  { id: "log", file: "build.log" },
+];
+
 
 /** True while the Keplar Business workspace is open (it marks <html data-business-app>). */
 export function useBusinessApp(): boolean {
@@ -34,8 +48,14 @@ const PIPELINE: { id: string; title: string; does: string }[] = [
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
-export function IdeFrame({ enabled, cfg, apps, starters, running, onStarter, onOpenApp, children }: {
+export function IdeFrame({ enabled, cfg, apps, starters, running, onStarter, onOpenApp, getBrief, auto, design, log, children }: {
   enabled: boolean;
+  /** The composer's current text (read when spec.json opens; the composer is not reactive). */
+  getBrief: () => string;
+  auto: boolean;
+  design: Design | null;
+  /** The latest build's log lines in this session. */
+  log: string[];
   cfg: Config | null;
   apps: AppSummary[];
   starters: Starter[];
@@ -44,8 +64,14 @@ export function IdeFrame({ enabled, cfg, apps, starters, running, onStarter, onO
   onOpenApp: (id: string) => void;
   children: ReactNode;
 }) {
+  const [tab, setTab] = useState<EditorTab>("brief");
+  // Bumped each time spec.json opens, so it shows the brief as it is now.
+  const [specAt, setSpecAt] = useState(0);
+  const spec = useMemo(() => (tab === "spec" ? buildRequestJson({ brief: getBrief(), auto, design, cfg }) : ""), [tab, specAt, auto, design, cfg, getBrief]);
+  const specToks = useMemo(() => tokenize(spec, "js"), [spec]);
   if (!enabled) return <>{children}</>;
   const limits = cfg?.limits;
+  const open = (t: EditorTab) => { setTab(t); if (t === "spec") setSpecAt((n) => n + 1); };
   return (
     <div className={s.ide} data-ide="">
       <aside className={s.ideSide} aria-label="Explorer">
@@ -71,12 +97,48 @@ export function IdeFrame({ enabled, cfg, apps, starters, running, onStarter, onO
       </aside>
 
       <section className={s.ideMain} aria-label="Brief">
-        <div className={s.ideTabs} aria-hidden="true">
-          <span className={s.ideTab} data-on="">brief.md</span>
-          <span className={s.ideTab}>spec.json</span>
-          <span className={s.ideTab}>build.log</span>
+        <div className={s.ideTabs} role="tablist" aria-label="Editor">
+          {EDITOR_TABS.map((t, i) => (
+            <button
+              key={t.id}
+              type="button"
+              role="tab"
+              id={`ide-tab-${t.id}`}
+              aria-selected={tab === t.id}
+              aria-controls={`ide-panel-${t.id}`}
+              tabIndex={tab === t.id ? 0 : -1}
+              className={s.ideTab}
+              data-on={tab === t.id ? "" : undefined}
+              onClick={() => open(t.id)}
+              onKeyDown={(e) => {
+                if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+                e.preventDefault();
+                const next = EDITOR_TABS[(i + (e.key === "ArrowRight" ? 1 : EDITOR_TABS.length - 1)) % EDITOR_TABS.length]!;
+                open(next.id);
+                document.getElementById(`ide-tab-${next.id}`)?.focus();
+              }}
+            >
+              {t.file}{t.id === "log" && log.length ? <span className={s.ideTabCount}>{log.length}</span> : null}
+            </button>
+          ))}
         </div>
-        <div className={s.ideEditor}>{children}</div>
+        {/* The composer stays mounted on the other tabs, so a half-written brief and its options are never lost. */}
+        <div className={s.ideEditor} role="tabpanel" id="ide-panel-brief" aria-labelledby="ide-tab-brief" hidden={tab !== "brief"}>{children}</div>
+        {tab === "spec" ? (
+          <div className={s.ideEditor} role="tabpanel" id="ide-panel-spec" aria-labelledby="ide-tab-spec">
+            <p className={s.ideNote}>The build request as it stands. It updates from brief.md, Options and your plan; nothing here is sent until you build.</p>
+            <pre className={`${s.pre} ${s.idePre}`} tabIndex={0}><code>{specToks.map((t, i) => (t.k ? <span key={i} className={s[`tk_${t.k}`]}>{t.v}</span> : t.v))}</code></pre>
+          </div>
+        ) : null}
+        {tab === "log" ? (
+          <div className={s.ideEditor} role="tabpanel" id="ide-panel-log" aria-labelledby="ide-tab-log">
+            {log.length ? (
+              <pre className={`${s.pre} ${s.idePre}`} tabIndex={0}>{log.map((l, i) => <span key={i}><span className={s.ideLineNo} aria-hidden="true">{String(i + 1).padStart(3, " ")}  </span>{l}{"\n"}</span>)}</pre>
+            ) : (
+              <p className={s.ideNote}>No build has run in this session yet. When you build, every step is logged here and in the live panel, with the code as it is written.</p>
+            )}
+          </div>
+        ) : null}
       </section>
 
       <aside className={s.ideSide} aria-label="Build pipeline">

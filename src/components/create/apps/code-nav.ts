@@ -1,4 +1,6 @@
-/** Pure helpers for the code views (FileFinder.tsx, LiveCode.tsx): file matching and the build checklist. No imports, testable. */
+/** Pure helpers for the code views (FileFinder.tsx, LiveCode.tsx, IdeFrame.tsx): file matching, the build checklist and the
+ * build request preview. Type-only imports, testable. */
+import type { Config, Design } from "./types";
 
 /** Lower is better; null when the query is not a subsequence of the path ("pgfd" matches pages/feed.js). */
 export function matchScore(path: string, query: string): number | null {
@@ -46,4 +48,21 @@ export function screenWritten(route: string, paths: string[]): boolean {
   const seg = route.replace(/^\/+/, "").split("/")[0]?.replace(/[:[\]]/g, "").toLowerCase() || "";
   const names = seg ? [seg] : ["home", "index"];
   return paths.some((p) => names.some((n) => p.toLowerCase().startsWith(`pages/${n}`)));
+}
+
+/** What the next build will be asked for, as JSON. Pure, so it can be tested. */
+export function buildRequestJson(input: { brief: string; auto: boolean; design: Design | null; cfg: Config | null }): string {
+  const { brief, auto, design, cfg } = input;
+  const look = auto || !design
+    ? "auto: Keplar picks the style for the brief"
+    : { style: design.style, mode: design.mode, fonts: design.fonts, shape: design.shape, density: design.density, motion: design.motion, palette: design.palette ? "custom" : "from the style" };
+  const out = {
+    brief: brief.trim() || null,
+    look,
+    model: cfg?.model ?? null,
+    plan: cfg?.planLabel ?? null,
+    estimate: cfg ? { credits: cfg.estimateUnits, max: cfg.maxUnits } : null,
+    limits: cfg ? { screens: cfg.limits.pages, files: cfg.limits.files, collections: cfg.limits.collections, backend: cfg.limits.backend, aiFeatures: cfg.limits.ai, images: cfg.limits.images, fixAttempts: cfg.limits.fixAttempts, designReview: cfg.limits.visual } : null,
+  };
+  return JSON.stringify(out, null, 2);
 }

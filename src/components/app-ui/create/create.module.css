@@ -140,3 +140,5 @@
 .records th { text-align: left; color: var(--c-ink-3); font-weight: var(--w-medium, 500); padding: 4px 8px 4px 0; }
 .records td { padding: 4px 8px 4px 0; border-top: 1px solid var(--c-border); vertical-align: top; overflow-wrap: anywhere; }
 .records code { font-family: inherit; color: var(--c-ink); }
+/* Desktop preview: the frame fills the scaled 1920x1080 viewport (ScaledViewport), not a clamped height. */
+.stage[data-device="desktop"] [data-viewport] .frame { width: 100%; height: 100%; }
