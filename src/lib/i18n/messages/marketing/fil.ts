@@ -80,7 +80,7 @@ const m: MarketingCatalog = {
       "platform": {
         "label": "Platform",
         "title": "Gamitin ang Keplar kahit saan.",
-        "lede": "Ang parehong makina, sa likod ng API, sa loob ng widget sa site mo, at shared sa buong team."
+        "lede": "Ang parehong makina, sa likod ng API, sa browser mo, sa loob ng widget sa site mo, at shared sa buong team."
       },
       "trust": {
         "label": "Tiwala",
@@ -199,6 +199,31 @@ const m: MarketingCatalog = {
       "referrals": {
         "name": "Referral program",
         "line": "Mag-imbita ng kaibigan; pareho kayong makakakuha ng dagdag na paggamit, hindi kailanman pera."
+      },
+      "roblox-studio": {
+        "name": "Roblox Studio mode",
+        "line": "Kasamang tagabuo sa loob ng Roblox Studio: mapa, UI, flipbook effects at Luau scripts, gamit ang Claude Opus 5.5.",
+        "note": "Desktop app, Lite pataas."
+      },
+      "roblox-cloud": {
+        "name": "Roblox Cloud",
+        "line": "Magdamagang trabaho sa scripts ng laro mo, bawat edit sinusuri ng analyzer ng Luau, ina-apply sa Studio kapag sinabi mo.",
+        "note": "Scripts lang; hindi ito makakapag-play-test."
+      },
+      "blender": {
+        "name": "Blender mode",
+        "line": "Mag-model, mag-texture gamit ang Poly Haven PBR sets, mag-ilaw at mag-export sa Blender 4.2 o mas bago.",
+        "note": "Desktop app 0.1.8 o mas bago."
+      },
+      "extension": {
+        "name": "Keplar One browser extension",
+        "line": "Magtanong tungkol sa napiling text o isang page mula sa Chrome o Edge, gamit ang API key mo.",
+        "note": "Naisumite na sa Chrome Web Store."
+      },
+      "lens": {
+        "name": "Search with Keplar One",
+        "line": "I-drag sa anumang text o larawan sa page; bubukas ang sagot sa side panel.",
+        "note": "Bahagi ng browser extension."
       },
       "security": {
         "name": "Seguridad",

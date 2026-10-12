@@ -80,7 +80,7 @@ const m: MarketingCatalog = {
       "platform": {
         "label": "Plateforme",
         "title": "Utilisez Keplar où que vous soyez.",
-        "lede": "Le même moteur, derrière une API, dans un widget sur votre site et partagé au sein d’une équipe."
+        "lede": "Le même moteur, derrière une API, dans votre navigateur, dans un widget sur votre site et partagé au sein d’une équipe."
       },
       "trust": {
         "label": "Confiance",
@@ -199,6 +199,31 @@ const m: MarketingCatalog = {
       "referrals": {
         "name": "Programme de parrainage",
         "line": "Invitez un ami : vous recevez tous les deux de l’usage en plus, jamais d’argent."
+      },
+      "roblox-studio": {
+        "name": "Mode Roblox Studio",
+        "line": "Un co-constructeur dans Roblox Studio : cartes, interface, effets flipbook et scripts Luau, avec Claude Opus 5.5.",
+        "note": "Application de bureau, à partir de Lite."
+      },
+      "roblox-cloud": {
+        "name": "Roblox Cloud",
+        "line": "Des tâches de nuit sur les scripts de votre jeu, chaque modification vérifiée par l’analyseur Luau, appliquée dans Studio quand vous le décidez.",
+        "note": "Scripts uniquement ; il ne peut pas tester en jeu."
+      },
+      "blender": {
+        "name": "Mode Blender",
+        "line": "Modéliser, texturer avec des jeux PBR de Poly Haven, éclairer et exporter dans Blender 4.2 ou plus récent.",
+        "note": "Application de bureau 0.1.8 ou plus récente."
+      },
+      "extension": {
+        "name": "Extension de navigateur Keplar One",
+        "line": "Posez une question sur une sélection ou une page depuis Chrome ou Edge, avec votre clé d’API.",
+        "note": "Soumise au Chrome Web Store."
+      },
+      "lens": {
+        "name": "Search with Keplar One",
+        "line": "Faites glisser sur n’importe quel texte ou image d’une page ; la réponse s’ouvre dans un panneau latéral.",
+        "note": "Fait partie de l’extension de navigateur."
       },
       "security": {
         "name": "Sécurité",

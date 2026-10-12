@@ -80,7 +80,7 @@ const m: MarketingCatalog = {
       "platform": {
         "label": "Plattform",
         "title": "Nutze Keplar überall.",
-        "lede": "Dieselbe Engine – hinter einer API, in einem Widget auf deiner Website und geteilt im Team."
+        "lede": "Dieselbe Engine – hinter einer API, in deinem Browser, in einem Widget auf deiner Website und geteilt im Team."
       },
       "trust": {
         "label": "Vertrauen",
@@ -199,6 +199,31 @@ const m: MarketingCatalog = {
       "referrals": {
         "name": "Empfehlungsprogramm",
         "line": "Lade jemanden ein; ihr bekommt beide zusätzliche Nutzung, nie Geld."
+      },
+      "roblox-studio": {
+        "name": "Roblox-Studio-Modus",
+        "line": "Ein Co-Builder in Roblox Studio: Maps, UI, Flipbook-Effekte und Luau-Skripte, mit Claude Opus 5.5.",
+        "note": "Desktop-App, ab Lite."
+      },
+      "roblox-cloud": {
+        "name": "Roblox Cloud",
+        "line": "Nächtliche Jobs an den Skripten deines Spiels, jede Änderung vom Luau-Analyzer geprüft, in Studio übernommen, wenn du willst.",
+        "note": "Nur Skripte; kann nicht testspielen."
+      },
+      "blender": {
+        "name": "Blender-Modus",
+        "line": "Modellieren, mit PBR-Sets von Poly Haven texturieren, beleuchten und exportieren in Blender 4.2 oder neuer.",
+        "note": "Desktop-App 0.1.8 oder neuer."
+      },
+      "extension": {
+        "name": "Browsererweiterung Keplar One",
+        "line": "Frag in Chrome oder Edge nach einer Markierung oder einer Seite, mit deinem API-Schlüssel.",
+        "note": "Beim Chrome Web Store eingereicht."
+      },
+      "lens": {
+        "name": "Search with Keplar One",
+        "line": "Zieh über beliebigen Text oder ein Bild auf einer Seite; die Antwort öffnet sich in einer Seitenleiste.",
+        "note": "Teil der Browsererweiterung."
       },
       "security": {
         "name": "Sicherheit",

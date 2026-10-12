@@ -441,7 +441,7 @@ export const landingPages: LandingPage[] = [
     slug: "roblox-studio-ai",
     path: "/roblox-studio-ai",
     metaTitle: "Roblox Studio AI: build games with Claude inside Studio",
-    metaDescription: `The ${K} desktop app connects to Roblox Studio and builds with you: maps, UI, effects and Luau scripts, with a saved chat per game. Lite, Plus and Pro.`,
+    metaDescription: `The ${K} desktop app connects to Roblox Studio and builds with you on Claude Opus 5.5: maps, UI, flipbook effects and Luau scripts, plus overnight Roblox Cloud jobs.`,
     ogTitle: "An AI co-builder for Roblox Studio",
     label: "Roblox Studio AI",
     h1: "Build Roblox games with an AI inside Studio.",
@@ -455,6 +455,18 @@ export const landingPages: LandingPage[] = [
           "UI and effects, matched to screenshots or a clip you attach.",
           "Working Luau scripts. It reads the output log for script errors and fixes them.",
         ],
+      },
+      {
+        h2: "Effects that look right",
+        p: ["Flipbook particles come from valid 1024 by 1024 sheets in the grid their creator states, played once for bursts or looped at a steady rate. Glows are self-lit with bright cores, smoke is lit by the scene and sits behind them, and layered effects are kept light on performance. Textures come from vetted packs first, then a filtered Creator Store search; uploading anything to your account asks first."],
+      },
+      {
+        h2: "Roblox Cloud: work while you sleep",
+        p: ["Give it a goal, a credit budget and a time limit of up to 12 hours, then close your computer. It works on your game's scripts on Keplar's servers, checks every edit with Luau's own analyzer, and leaves a list of changes you review and apply in Studio, each as one Undo step. It only touches scripts and can't play-test, so test what it made before you publish."],
+      },
+      {
+        h2: "Always Claude Opus 5.5",
+        p: ["Studio mode and Roblox Cloud run on Claude Opus 5.5 only. If it can't be reached, the build pauses and tells you, instead of quietly switching to another model."],
       },
       {
         h2: "You play-test it",
@@ -477,8 +489,10 @@ export const landingPages: LandingPage[] = [
       { q: "Which plans include it?", a: "Keplar Lite, Plus and Pro, in the desktop app for Windows, macOS and Linux." },
       { q: "Does it work in the browser?", a: "No. It needs the desktop app running on the same computer as Roblox Studio." },
       { q: "Can it upload images to my Roblox account?", a: "Yes, and it always asks first." },
+      { q: "Can it keep working when Studio is closed?", a: "Yes, with Roblox Cloud: it edits your game's scripts on Keplar's servers within the budget and time limit you set, and you apply the changes in Studio later. It can't play-test while you're away." },
+      { q: "Which model does it use?", a: "Claude Opus 5.5, every time. If that model is unavailable the build pauses rather than switching." },
     ],
-    related: ["/blender-ai", "/download", "/what-is-keplar", "/pricing"],
+    related: ["/blender-ai", "/download", "/docs/studio/roblox-studio-mode", "/docs/studio/roblox-cloud", "/docs/studio/effects-and-textures", "/pricing"],
   },
   {
     slug: "blender-ai",
@@ -518,7 +532,7 @@ export const landingPages: LandingPage[] = [
       { q: "Do I install anything in Blender?", a: "The desktop app installs and enables the small Keplar add-on for you." },
       { q: "Are the textures free to use?", a: "They come from Poly Haven, whose assets are CC0, free for any use." },
     ],
-    related: ["/roblox-studio-ai", "/download", "/what-is-keplar", "/pricing"],
+    related: ["/roblox-studio-ai", "/download", "/docs/studio/blender-mode", "/pricing"],
   },
 ];
 

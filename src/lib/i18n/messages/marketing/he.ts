@@ -80,7 +80,7 @@ const m: MarketingCatalog = {
       "platform": {
         "label": "פלטפורמה",
         "title": "השתמשו ב-Keplar מכל מקום.",
-        "lede": "אותו מנוע, מאחורי API, בתוך וידג'ט באתר שלכם, ומשותף לצוות."
+        "lede": "אותו מנוע, מאחורי API, בדפדפן שלכם, בתוך וידג'ט באתר שלכם, ומשותף לצוות."
       },
       "trust": {
         "label": "אמון",
@@ -199,6 +199,31 @@ const m: MarketingCatalog = {
       "referrals": {
         "name": "תוכנית הפניות",
         "line": "הזמינו חבר; שניכם מקבלים שימוש נוסף, אף פעם לא כסף."
+      },
+      "roblox-studio": {
+        "name": "מצב Roblox Studio",
+        "line": "שותף בנייה בתוך Roblox Studio: מפות, ממשק, אפקטי flipbook וסקריפטים ב-Luau, עם Claude Opus 5.5.",
+        "note": "אפליקציית שולחן העבודה, מ-Lite ומעלה."
+      },
+      "roblox-cloud": {
+        "name": "Roblox Cloud",
+        "line": "עבודות לילה על הסקריפטים של המשחק שלכם, כל שינוי נבדק במנתח של Luau ומוחל ב-Studio כשתחליטו.",
+        "note": "סקריפטים בלבד; הוא לא יכול לבדוק במשחק."
+      },
+      "blender": {
+        "name": "מצב Blender",
+        "line": "מידול, טקסטורות עם ערכות PBR של Poly Haven, תאורה וייצוא ב-Blender 4.2 ומעלה.",
+        "note": "אפליקציית שולחן העבודה 0.1.8 ומעלה."
+      },
+      "extension": {
+        "name": "תוסף הדפדפן Keplar One",
+        "line": "שאלו על טקסט מסומן או על דף מתוך Chrome או Edge, עם מפתח ה-API שלכם.",
+        "note": "הוגש ל-Chrome Web Store."
+      },
+      "lens": {
+        "name": "Search with Keplar One",
+        "line": "גררו מעל כל טקסט או תמונה בדף; התשובה נפתחת בחלונית צד.",
+        "note": "חלק מתוסף הדפדפן."
       },
       "security": {
         "name": "אבטחה",

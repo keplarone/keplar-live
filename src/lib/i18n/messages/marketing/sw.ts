@@ -80,7 +80,7 @@ const m: MarketingCatalog = {
       "platform": {
         "label": "Jukwaa",
         "title": "Tumia Keplar kutoka popote.",
-        "lede": "Injini ileile, nyuma ya API, ndani ya wijeti kwenye tovuti yako, na inayoshirikiwa na timu nzima."
+        "lede": "Injini ileile, nyuma ya API, kwenye kivinjari chako, ndani ya wijeti kwenye tovuti yako, na inayoshirikiwa na timu nzima."
       },
       "trust": {
         "label": "Uaminifu",
@@ -199,6 +199,31 @@ const m: MarketingCatalog = {
       "referrals": {
         "name": "Mpango wa rufaa",
         "line": "Alika rafiki; nyote wawili mnapata matumizi ya ziada, kamwe si pesa taslimu."
+      },
+      "roblox-studio": {
+        "name": "Hali ya Roblox Studio",
+        "line": "Mjenzi mwenzi ndani ya Roblox Studio: ramani, UI, madoido ya flipbook na skripti za Luau, kwa Claude Opus 5.5.",
+        "note": "Programu ya kompyuta, Lite na zaidi."
+      },
+      "roblox-cloud": {
+        "name": "Roblox Cloud",
+        "line": "Kazi za usiku kwenye skripti za mchezo wako, kila badiliko hukaguliwa na kichanganuzi cha Luau, na huwekwa kwenye Studio ukisema.",
+        "note": "Skripti tu; haiwezi kujaribu mchezo."
+      },
+      "blender": {
+        "name": "Hali ya Blender",
+        "line": "Unda modeli, weka maumbile kwa seti za PBR za Poly Haven, mwanga na kuhamisha katika Blender 4.2 au mpya zaidi.",
+        "note": "Programu ya kompyuta 0.1.8 au mpya zaidi."
+      },
+      "extension": {
+        "name": "Kiendelezi cha kivinjari Keplar One",
+        "line": "Uliza kuhusu maandishi uliyochagua au ukurasa kutoka Chrome au Edge, kwa ufunguo wako wa API.",
+        "note": "Kimewasilishwa kwa Chrome Web Store."
+      },
+      "lens": {
+        "name": "Search with Keplar One",
+        "line": "Buruta juu ya maandishi au picha yoyote kwenye ukurasa; jibu hufunguka kwenye paneli ya pembeni.",
+        "note": "Sehemu ya kiendelezi cha kivinjari."
       },
       "security": {
         "name": "Usalama",

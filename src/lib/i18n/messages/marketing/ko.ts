@@ -80,7 +80,7 @@ const m: MarketingCatalog = {
       "platform": {
         "label": "플랫폼",
         "title": "어디서든 Keplar를.",
-        "lede": "같은 엔진을 API 뒤에서, 내 사이트의 위젯 안에서, 팀과 함께."
+        "lede": "같은 엔진을 API 뒤에서, 브라우저에서, 내 사이트의 위젯 안에서, 팀과 함께."
       },
       "trust": {
         "label": "신뢰",
@@ -199,6 +199,31 @@ const m: MarketingCatalog = {
       "referrals": {
         "name": "추천 프로그램",
         "line": "친구를 초대하면 둘 다 추가 사용량을 받습니다. 현금은 아닙니다."
+      },
+      "roblox-studio": {
+        "name": "Roblox Studio 모드",
+        "line": "Roblox Studio 안의 공동 빌더: 맵, UI, 플립북 이펙트, Luau 스크립트를 Claude Opus 5.5로.",
+        "note": "데스크톱 앱, Lite 이상."
+      },
+      "roblox-cloud": {
+        "name": "Roblox Cloud",
+        "line": "게임 스크립트를 밤새 작업하고, 모든 수정은 Luau 분석기로 확인하며, 원할 때 Studio에 적용합니다.",
+        "note": "스크립트만 다루며 플레이 테스트는 할 수 없습니다."
+      },
+      "blender": {
+        "name": "Blender 모드",
+        "line": "Blender 4.2 이상에서 모델링, Poly Haven PBR 세트로 텍스처, 조명, 내보내기.",
+        "note": "데스크톱 앱 0.1.8 이상."
+      },
+      "extension": {
+        "name": "Keplar One 브라우저 확장 프로그램",
+        "line": "Chrome이나 Edge에서 선택한 글이나 페이지에 대해 API 키로 질문하세요.",
+        "note": "Chrome 웹 스토어에 제출됨."
+      },
+      "lens": {
+        "name": "Search with Keplar One",
+        "line": "페이지의 글이나 그림을 드래그하면 답이 사이드 패널에 열립니다.",
+        "note": "브라우저 확장 프로그램의 일부."
       },
       "security": {
         "name": "보안",

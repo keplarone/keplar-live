@@ -80,7 +80,7 @@ const m: MarketingCatalog = {
       "platform": {
         "label": "Platform",
         "title": "Gunakan Keplar dari mana saja.",
-        "lede": "Mesin yang sama, di balik API, di dalam widget di situs Anda, dan dibagikan ke seluruh tim."
+        "lede": "Mesin yang sama, di balik API, di browser Anda, di dalam widget di situs Anda, dan dibagikan ke seluruh tim."
       },
       "trust": {
         "label": "Kepercayaan",
@@ -199,6 +199,31 @@ const m: MarketingCatalog = {
       "referrals": {
         "name": "Program referensi",
         "line": "Undang teman; Anda berdua mendapat pemakaian ekstra, bukan uang tunai."
+      },
+      "roblox-studio": {
+        "name": "Mode Roblox Studio",
+        "line": "Rekan pembangun di dalam Roblox Studio: peta, UI, efek flipbook, dan skrip Luau, dengan Claude Opus 5.5.",
+        "note": "Aplikasi desktop, Lite ke atas."
+      },
+      "roblox-cloud": {
+        "name": "Roblox Cloud",
+        "line": "Pekerjaan semalaman pada skrip game Anda, setiap perubahan diperiksa penganalisis Luau, diterapkan di Studio saat Anda mau.",
+        "note": "Hanya skrip; tidak bisa menguji permainan."
+      },
+      "blender": {
+        "name": "Mode Blender",
+        "line": "Modelkan, beri tekstur dengan set PBR Poly Haven, atur cahaya, dan ekspor di Blender 4.2 atau lebih baru.",
+        "note": "Aplikasi desktop 0.1.8 atau lebih baru."
+      },
+      "extension": {
+        "name": "Ekstensi browser Keplar One",
+        "line": "Tanyakan tentang teks yang dipilih atau sebuah halaman dari Chrome atau Edge, dengan kunci API Anda.",
+        "note": "Sudah diajukan ke Chrome Web Store."
+      },
+      "lens": {
+        "name": "Search with Keplar One",
+        "line": "Seret di atas teks atau gambar apa pun di halaman; jawabannya terbuka di panel samping.",
+        "note": "Bagian dari ekstensi browser."
       },
       "security": {
         "name": "Keamanan",
