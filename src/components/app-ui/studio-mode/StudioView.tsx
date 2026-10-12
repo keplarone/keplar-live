@@ -6,6 +6,7 @@ import { TwoTone } from "@/components/page/TwoTone";
 import { resultText, STUDIO_PLANS, studioBridge, type OverlayState, type StudioStatus } from "@/lib/desktop/studio-bridge";
 import { StudioDock } from "./StudioDock";
 import { StudioPanel } from "./StudioPanel";
+import { RobloxCloud } from "./RobloxCloud";
 import { overlayTarget, parsePlaces, setOverlayTarget, useStudioAgent, type Place } from "./useStudioAgent";
 import s from "./studio-mode.module.css";
 
@@ -243,10 +244,13 @@ export function StudioView({ plan, signedIn }: { plan: string; signedIn: boolean
           <button type="button" className={s.primary} onClick={() => void bridge.overlay?.close()}>Bring it back here</button>
         </section>
       ) : (
-        <div className={s.workspace}>
-          <StudioDock a={a} draft={draft} onDraftUsed={() => setDraft("")} />
-          <StudioPanel a={a} now={now} />
-        </div>
+        <>
+          <div className={s.workspace}>
+            <StudioDock a={a} draft={draft} onDraftUsed={() => setDraft("")} />
+            <StudioPanel a={a} now={now} />
+          </div>
+          <RobloxCloud bridge={bridge} place={a.place} busy={a.running} />
+        </>
       )}
     </div>
   );
