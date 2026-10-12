@@ -24,6 +24,7 @@ import { ChatImageTurn } from "./chat-image/ChatImageTurn";
 import { detectImageIntent } from "@/lib/images/chat-intent";
 import { expandPromptIfSlash } from "@/lib/images/slash-commands";
 import { OPEN_APP_SEARCH_EVENT } from "@/lib/nav/commands";
+import { inDesktopApp } from "@/lib/desktop";
 import { followUpPrompt, newKey } from "@/lib/images/chat-flow";
 import { UserMedia } from "./UserMedia";
 import { RESUME_KEY } from "./SiteProjects";
@@ -243,8 +244,11 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   // Greeting: the signed-in person's first name when the account has one (never guessed from the email address).
   const firstName = state.ledger.signedIn ? (state.account?.name?.trim().split(/\s+/)[0] ?? "").slice(0, 40) : "";
   const [welcome] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("welcome") === "1");
+  // The desktop app is its own app, not a mirror of the website: no welcome-back screen (the site home's nav pills, Learn and
+  // Company links, model carousel) and no moving home-page backdrop. It opens straight into the app. (KeplarApp is client-only.)
+  const [desktop] = useState(inDesktopApp);
   // Coming back signed in (a new visit, landing on the ask page): the welcome-back screen (WelcomeBack, Keplar Canvas Page 1).
-  const [welcomeBackOk] = useState(() => typeof window !== "undefined" && !welcome && /^\/app(\/ask)?\/?$/.test(window.location.pathname) && shouldWelcomeBack());
+  const [welcomeBackOk] = useState(() => typeof window !== "undefined" && !desktop && !welcome && /^\/app(\/ask)?\/?$/.test(window.location.pathname) && shouldWelcomeBack());
   const [welcomeBackDone, setWelcomeBackDone] = useState(false);
   // Keplar Business has its own desktop app (keplarone/keplar-business) and site (business.keplar.one): Keplar One never sends
   // a Business account over. Keplar One's desktop window only shows keplar.one, so a redirect to the Business host would leave it.
@@ -899,7 +903,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
 
   return (
     <div ref={rootRef} className={s.app} data-own-search="" data-drawer={drawerOpen || undefined} data-app-ready={state.scope === "pending" ? undefined : ""}>
-      <SkyBackdrop />
+      {desktop ? null : <SkyBackdrop />}
       <ExtensionReturn onChanged={() => void syncMeter()} />
       <ReferralClaim signedIn={state.ledger.signedIn} onChanged={() => void syncMeter()} />
       <div ref={drawerRef} className={s.sideWrap} data-open={drawerOpen || undefined} onPointerEnter={() => warmViews(true)} onFocus={() => warmViews(true)}>
