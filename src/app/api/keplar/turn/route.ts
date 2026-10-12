@@ -25,9 +25,9 @@ async function owner(req: Request) {
 
 export async function GET(req: Request) {
   try {
+    const who = await owner(req); // identity first: a caller with nothing recoverable is refused before anything else
     const key = new URL(req.url).searchParams.get("key");
     if (!validTurnKey(key)) throw new HttpError(400, "Which turn?");
-    const who = await owner(req);
     return json(publicTurn(await readTurn(who, key)), { headers: { "cache-control": "no-store" } });
   } catch (e) {
     return errorResponse(e);
@@ -36,9 +36,9 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const who = await owner(req);
     const b = (await req.json().catch(() => ({}))) as { key?: unknown; action?: unknown };
     if (!validTurnKey(b.key) || b.action !== "cancel") throw new HttpError(400, "Send { key, action: \"cancel\" }.");
-    const who = await owner(req);
     return json({ ok: true, cancelled: await requestCancel(who, b.key) });
   } catch (e) {
     return errorResponse(e);
