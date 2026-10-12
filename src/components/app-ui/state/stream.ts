@@ -8,7 +8,8 @@ export class StreamNetworkError extends Error {
   }
 }
 export class StreamHttpError extends Error {
-  constructor(public status: number, message: string) {
+  /** The server's error code when it sent one (for example "turn_running": an earlier send of this turn is still being answered). */
+  constructor(public status: number, message: string, public code?: string) {
     super(message);
   }
 }
@@ -43,7 +44,7 @@ export async function* streamKeplar(req: KeplarRequest, signal: AbortSignal): As
       yield { type: "limit", required: 0, remaining: 0, budget: "day", ...(body.resetsAt ? { resetsAt: body.resetsAt } : {}) };
       return;
     }
-    throw new StreamHttpError(res.status, body?.error ?? "Keplar couldn't process that request.");
+    throw new StreamHttpError(res.status, body?.error ?? "Keplar couldn't process that request.", body?.code);
   }
 
   const reader = res.body.getReader();

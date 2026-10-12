@@ -194,6 +194,9 @@ export function applyEvent(m: KeplarMessage, e: KeplarEvent): KeplarMessage {
     }
     case "daily":
       return m;
+    case "recovery":
+      // A real state from the server or the reconnect loop (KeplarApp): shown as one quiet line on the card.
+      return { ...m, recovery: e.state === "lost" ? undefined : { state: e.state, headless: Boolean(e.headless) } };
     case "memory":
       return { ...m, memory: { saved: e.saved, ...(e.summarized ? { summarized: true } : {}), ...(e.used ? { used: e.used } : {}) } };
     case "limit":

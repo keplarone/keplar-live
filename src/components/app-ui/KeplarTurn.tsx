@@ -188,6 +188,10 @@ export function KeplarTurn({ message: m, onRetry, onRefreshResearch, onSignal, o
       {finished && m.answer && !typingAnswer && !(m.smalltalk || m.answer.smalltalk) ? <Answer answer={m.answer} onRetry={onRetry} onRefreshResearch={onRefreshResearch} onSignal={onSignal} isLast={isLast} continued={live} /> : null}
       {finished && m.answer?.core && !typingAnswer && !(m.smalltalk || m.answer.smalltalk) ? <CoreSummaryView core={m.answer.core} onAsk={onAsk} enabled={isLast} /> : null}
       {finished && m.answer?.debate && !typingAnswer ? <DebateTranscript debate={m.answer.debate} /> : null}
+      {/* Answer recovery: real states only (state/recovery.ts polls the server's turn). */}
+      {m.recovery?.state === "recovering" && running ? <p className={s.memoryHint} role="status">Connection dropped. Keplar is still working on this answer; getting it for you…</p> : null}
+      {finished && m.recovery?.state === "recovered" ? <p className={s.memoryHint} role="status">Recovered after a dropped connection{m.recovery.headless ? " (it finished while you were away)" : ""}. It was not run twice.</p> : null}
+      {finished && m.recovery?.state === "replayed" ? <p className={s.memoryHint} role="status">This answer had already finished{m.recovery.headless ? " while you were away" : ""}, so it is shown again: not run or charged a second time.</p> : null}
       {finished && m.memory && m.memory.used && m.memory.used > 0 ? <UsingMemory used={m.memory.used} /> : null}
       {finished && m.memory && m.memory.saved > 0 ? (
         <p className={s.memoryHint} role="status">

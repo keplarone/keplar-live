@@ -23,6 +23,7 @@ import { initialState, loadScope, persist, reducer, remaining, settle, uid } fro
 import { activeScopeHeaders, declineImport, importCandidates, importDeclined, importProjects, removeImported, scopeOf, setActiveScope, userIdOf, clearAccountCaches, type Scope } from "./state/scope";
 import type { ImportOffer } from "./AccountMenu";
 import { StreamHttpError, StreamNetworkError, streamKeplar } from "./state/stream";
+import { newTurnKey, pollTurn, stopTurn } from "./state/recovery";
 import type { AccountInfo, ChatImage, KeplarMessage, Message, MessageMedia, Project, Thread, UserMessage, View } from "./state/types";
 import { ChatImageTurn } from "./chat-image/ChatImageTurn";
 import { detectImageIntent } from "@/lib/images/chat-intent";
@@ -197,6 +198,8 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const controllers = useRef(new Map<string, AbortController>());
+  // Answer recovery (state/recovery.ts): the turn key each answer attempt was sent with, by Keplar message id.
+  const turnKeys = useRef(new Map<string, string>());
   /** Turns started by Refresh research: their Live Research run skips the desktop's cache. */
   const freshResearch = useRef(new Set<string>());
   // In the Keplar One desktop app (Live Research): only there can Refresh research read the pages again. False on the server render.
@@ -487,6 +490,11 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
         }
       }
     }
+    // Answer recovery: this attempt's key. A retry after a dropped connection set it to the failed attempt's key (retry below), so the
+    // server replays an answer that finished meanwhile instead of running and charging again.
+    const turnKey = turnKeys.current.get(keplar.id) ?? newTurnKey();
+    turnKeys.current.set(keplar.id, turnKey);
+    req.turnKey = turnKey;
     // Free: the question count drops the moment the question is sent (the server confirms it, or gives it back if no answer comes).
     const L0 = stateRef.current.ledger;
     const took = L0.plan === "free" && Boolean(L0.daily);
@@ -512,6 +520,28 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
       }
     } catch (e) {
       if (ctl.signal.aborted) return;
+      // Answer recovery: the question reached Keplar (the stream dropped mid-answer), or an earlier send of this turn is still being
+      // answered. Either way the run carries on there: fetch its answer instead of failing (every state shown is the server's).
+      const raced = e instanceof StreamHttpError && e.status === 409 && e.code === "turn_running";
+      if ((e instanceof StreamNetworkError && e.reached) || raced) {
+        dispatch({ type: "event", threadId, keplarId: keplar.id, event: { type: "recovery", state: "recovering" } });
+        const got = await pollTurn(turnKey, ctl.signal).catch(() => null);
+        if (ctl.signal.aborted) return;
+        if (got?.status === "done" && got.answer) {
+          dispatch({ type: "event", threadId, keplarId: keplar.id, event: { type: "recovery", state: "recovered", headless: got.headless } });
+          dispatch({ type: "event", threadId, keplarId: keplar.id, event: { type: "answer", answer: got.answer } });
+          return;
+        }
+        dispatch({ type: "event", threadId, keplarId: keplar.id, event: { type: "recovery", state: "lost" } });
+        if (got?.status === "failed" && got.error) {
+          dispatch({ type: "fail", threadId, keplarId: keplar.id, error: { kind: "server", message: got.error.message, retryable: true } });
+          return;
+        }
+        if (raced) {
+          dispatch({ type: "fail", threadId, keplarId: keplar.id, error: { kind: "network", message: "This answer is taking longer than usual. Try again in a moment; it won't run twice.", retryable: true } });
+          return;
+        }
+      }
       if (e instanceof StreamNetworkError) {
         unreached = !e.reached;
         dispatch({ type: "fail", threadId, keplarId: keplar.id, error: { kind: "network", message: e.message, retryable: true } });
@@ -704,6 +734,10 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
       signalFor(t, k, "regenerate");
       // Refresh research (Live Research): the desktop reads the pages again instead of using its cache.
       if (opts?.freshResearch) freshResearch.current.add(next.id);
+      // Answer recovery: a retry after a dropped connection is the same turn (an answer that finished meanwhile is replayed, not charged
+      // twice). Regenerating an answer that arrived, or retrying any other failure, is a new turn with a new key.
+      const prevKey = turnKeys.current.get(k.id);
+      if (prevKey && k.error?.kind === "network") turnKeys.current.set(next.id, prevKey);
       dispatch({ type: "retry", threadId: t.id, keplarId: k.id, next });
       void run(t.id, next, user, historyFor(t, user.id));
     },
@@ -715,6 +749,9 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     const t = st.threads.find((x) => x.id === st.activeThreadId);
     const k = t?.messages.find((m): m is KeplarMessage => m.role === "keplar" && m.status === "running");
     if (!t || !k) return;
+    // Answer recovery: a run keeps going when only its connection drops; Stop says it was the person (before the abort, so the server sees it first).
+    const key = turnKeys.current.get(k.id);
+    if (key) stopTurn(key);
     controllers.current.get(k.id)?.abort();
     dispatch({ type: "stop", threadId: t.id, keplarId: k.id });
   }, []);

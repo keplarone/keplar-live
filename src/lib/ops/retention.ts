@@ -64,6 +64,7 @@ export async function pruneOperational(at = Date.now(), batch = 5000): Promise<R
     ["system_safety_events", "at", n("KEPLAR_RETAIN_SAFETY_DAYS", 180)],
     ["system_fanout_day", "day", 3],
     ["system_flight", "at", n("KEPLAR_RETAIN_FLIGHT_DAYS", 7)], // execution timelines (flight.ts): incident review only
+    ["answer_turns", "expiresAt", 1], // answer recovery checkpoints (turn-recovery.ts): unreadable after 30 min, deleted within a day
   ];
   for (const [name, field, days] of jobs) {
     try {

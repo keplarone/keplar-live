@@ -40,7 +40,8 @@ import { lighterRouting } from "@/lib/orchestration/breaker-routing";
 import { limitRequest } from "@/lib/create/platform/ratelimit";
 import { errorResponse } from "@/lib/create/platform/http";
 import { enterUsage, inflight, reserveUnits, UsageLimitError } from "@/lib/create/platform/usage";
-import { claimDaily, claimExtra, DailyLimitError, dailySubjects, resetOf, type Claim } from "@/lib/usage/daily";
+import { claimDaily, claimExtra, DailyLimitError, dailySubjects, readDeviceId, resetOf, type Claim } from "@/lib/usage/daily";
+import { cancelRequested, claimTurn, finishTurn, readTurn, turnOwner, validTurnKey, type TurnRow } from "@/lib/orchestration/turn-recovery";
 import { FREE_UPGRADE_HINT } from "@/lib/upgrade-copy";
 import { clientIpOf } from "@/lib/create/platform/ratelimit";
 import { busyMessage, CONSENSUS_CALLS, sharedPool } from "@/lib/orchestration/pool-governor";
@@ -128,6 +129,8 @@ function parse(body: unknown): KeplarRequest | string {
     ...(b.private === true ? { private: true } : {}),
     // The person's saved specialist for this chat: only an id, looked up in their own workspace server-side.
     ...(validSpecialistId(b.specialistId) ? { specialistId: b.specialistId } : {}),
+    // Answer recovery: the send's random key (turn-recovery.ts). A retry after a dropped connection reuses it.
+    ...(validTurnKey(b.turnKey) ? { turnKey: b.turnKey } : {}),
     // The person's modes as sent. With Live Research the route switches them to liveModes() once it keeps the brief, so a brief it drops
     // (kill switch, plan clamp) leaves the question exactly as asked.
     modes: { web: modes.web === true, deepResearch: modes.deepResearch === true, create: modes.create === true, agent: modes.agent === true, ...(modes.debate === true ? { debate: true } : {}), ...(modes.reason === true ? { reason: true } : {}) },
@@ -166,6 +169,21 @@ export async function POST(request: Request) {
     await limitRequest(request, "keplar", { perIp: 30, perAccount: ws.entitlements.rpm, accountId: ws.anonymous ? null : ws.id });
   } catch (e) {
     return errorResponse(e);
+  }
+  // Answer recovery (src/lib/orchestration/turn-recovery.ts), read-only here, before any daily question is taken or anything is charged:
+  // a turn that already finished is replayed (no second run, no second charge); one still running gets 409 and the browser polls for it.
+  // Never for private chats, API keys or embeds; signed out only with the signed device cookie.
+  const turnOwnerKey = req.turnKey && !req.private && ws.via !== "api" && ws.via !== "embed" ? turnOwner(ws, ws.anonymous ? readDeviceId(request.headers.get("cookie")) : null) : null;
+  let turn: { owner: string; key: string } | null = turnOwnerKey && req.turnKey ? { owner: turnOwnerKey, key: req.turnKey } : null;
+  if (turn) {
+    try {
+      const seen = await readTurn(turn.owner, turn.key);
+      if (seen?.status === "done" && seen.answer) return replayTurn(seen);
+      if (seen?.status === "running" && Date.now() - Date.parse(seen.updatedAt) < 6 * 60_000) return turnRunning();
+    } catch (e) {
+      console.error("[turns] check failed:", e instanceof Error ? e.name : "error");
+      turn = null; // recovery is off for this request; the question still runs normally
+    }
   }
   // Memory commands ("forget that", "erase my memory", "remember that ...") and recall questions ("what did we talk about last
   // time?", "what did I just ask?") are answered here, before the engine: no model, no charge. Signed-out users get a plain
@@ -466,9 +484,44 @@ export async function POST(request: Request) {
     return errorResponse(e);
   }
 
+  // Answer recovery: the atomic claim, after every early exit above (so a refused request never leaves a "running" turn behind).
+  // A reconnect that raced the first send gets the replay or the 409 here, and gives back what it took.
+  if (turn) {
+    try {
+      const c = await claimTurn(turn.owner, turn.key);
+      if (c.kind !== "fresh") {
+        gate?.release();
+        await dailyClaim?.release();
+        return c.kind === "replay" ? replayTurn(c.row) : turnRunning();
+      }
+    } catch (e) {
+      console.error("[turns] claim failed:", e instanceof Error ? e.name : "error");
+      turn = null;
+    }
+  }
+  const recoverable = turn !== null;
+
   const encoder = new TextEncoder();
   const abort = new AbortController();
-  request.signal.addEventListener("abort", () => abort.abort(), { once: true });
+  // The browser went away. A recoverable turn keeps running so its answer is saved (the person can come back to it); only a Stop
+  // (the browser posts a cancel first, /api/keplar/turn) ends it, checked now and every 1.5 s. Anything else stops as before.
+  let clientGone = false;
+  let cancelWatch: ReturnType<typeof setInterval> | null = null;
+  const onClientGone = () => {
+    if (clientGone) return;
+    clientGone = true;
+    if (!recoverable || !turn) { abort.abort(); return; }
+    flightPush(costScope.flight, { k: "note", code: "client_gone_recoverable" });
+    const t = turn;
+    const check = () => { void cancelRequested(t.owner, t.key).then((yes) => { if (yes) { flightPush(costScope.flight, { k: "cancel", code: "stop_requested" }); abort.abort(); } }).catch(() => undefined); };
+    check();
+    cancelWatch = setInterval(check, 1500);
+  };
+  request.signal.addEventListener("abort", onClientGone, { once: true });
+  let finishRun: () => void = () => undefined;
+  const runDone = new Promise<void>((r) => { finishRun = r; });
+  let turnAnswer: unknown;
+  let turnError: { code: string; message: string } | undefined;
 
   // The engine reports whether paid calls were sent, so a stopped or failed run is still billed.
   // A run where no model responded is never billed (run.noResponse).
@@ -497,10 +550,17 @@ export async function POST(request: Request) {
       const send = (e: KeplarEvent) => {
         flightFromStreamEvent(costScope.flight, e as { type: string } & Record<string, unknown>);
         if (!flightFirst && (e.type === "delta" || e.type === "answer")) { flightFirst = true; flightPush(costScope.flight, { k: "note", code: "first_output" }); }
-        if (e.type === "error") flightError = e.code;
+        if (e.type === "error") { flightError = e.code; turnError = { code: e.code, message: e.message }; }
         if (e.type === "limit") flightLimited = true;
-        controller.enqueue(encoder.encode(JSON.stringify(e) + "\n"));
+        if (e.type === "answer") turnAnswer = e.answer; // what recovery replays: the answer exactly as it was sent
+        if (clientGone) return; // the browser left: the run carries on (recoverable) and its answer is saved below
+        try {
+          controller.enqueue(encoder.encode(JSON.stringify(e) + "\n"));
+        } catch {
+          onClientGone(); // the stream closed under us: same as a disconnect
+        }
       };
+      const closeStream = () => { try { controller.close(); } catch { /* the browser already closed it */ } };
       // Free: a question only keeps its count if an answer reached the screen. Failures, "no reliable answer", no model
       // responding and stops all give it back, and the meter is re-sent so the UI shows the true number.
       let answered = false;
@@ -584,39 +644,62 @@ export async function POST(request: Request) {
         // Stopped by the user after paid calls went out: still billed at the planned (margin-included) cost.
         if (abort.signal.aborted && run.started && !run.settled && !smallTalk) await settle(run.plannedUnits).catch(() => undefined);
         await finishDaily(!abort.signal.aborted);
-        controller.close();
+        closeStream();
       } catch (err) {
         // Stopped or crashed after the panel was called: charge the planned (margin-included) cost.
         if (run.started && !run.settled && !smallTalk) await settle(run.plannedUnits).catch(() => undefined);
         if (abort.signal.aborted) {
           await finishDaily(false);
-          try { controller.close(); } catch { /* already closed */ }
+          closeStream();
           return;
         }
         console.error("[keplar] run failed:", err instanceof Error ? err.name : "error");
         if (run.noResponse) send(noResponseEvent(ws.plan));
         else send({ type: "error", code: "internal", message: "Something went wrong. Please try again.", retryable: true });
         await finishDaily(true);
-        controller.close();
+        closeStream();
       } finally {
         await finishDaily(false);
         releaseReserved?.();
         gate?.release();
         endRun();
+        if (cancelWatch) clearInterval(cancelWatch);
+        // Answer recovery: save how the turn ended (the answer exactly as sent, or why it didn't come) for a retry or a reconnect.
+        if (turn) {
+          const ended = answeredOk && turnAnswer !== undefined ? "done" : abort.signal.aborted ? "cancelled" : "failed";
+          if (clientGone && ended === "done") flightPush(costScope.flight, { k: "note", code: "finished_headless" });
+          await finishTurn(turn.owner, turn.key, { status: ended, answer: turnAnswer, error: ended === "failed" ? (turnError ?? { code: "internal", message: "Something went wrong. Please try again." }) : undefined, headless: clientGone }).catch(() => undefined);
+        }
+        finishRun();
         if (!creator) recordFlight(flightRow(costScope.flight!, { reqId: reqIdForCost, plan: ws.plan, feature: costScope.tag?.feature, kind: smallTalk ? "instant" : "answer", answered: answeredOk, aborted: abort.signal.aborted, errorCode: flightError, limited: flightLimited, usd: costScope.usd }));
         if (!creator) recordRequestCost(costScope, { reqId: reqIdForCost, plan: ws.plan, accountId: ws.anonymous ? null : ws.id, kind: smallTalk ? "instant" : "answer", units: billedUnits, durationMs: Date.now() - startedAt, answered: answeredOk, degraded: degradedBy, maxModels: fanoutCap });
       }
     },
     cancel() {
       flightPush(costScope.flight, { k: "cancel", code: "client_closed" });
-      abort.abort();
+      onClientGone(); // recoverable: keeps running unless Stop was pressed; otherwise aborts as before
     },
   });
+  // A recoverable turn may outlive the response (the browser left): keep the function alive until it has saved its answer.
+  if (recoverable) {
+    try { after(runDone); } catch { /* outside a request scope (tests): the run still completes */ }
+  }
 
   const headers = new Headers({ "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store, no-transform" });
   if (gate?.setCookie) headers.append("Set-Cookie", gate.setCookie);
   if (dailyClaim?.setCookie) headers.append("Set-Cookie", dailyClaim.setCookie);
   return new Response(stream, { headers });
+}
+
+/** Answer recovery: the saved answer of an earlier run of this turn, as a normal answer stream (no run, no charge, no daily question). */
+function replayTurn(row: TurnRow): Response {
+  const events: KeplarEvent[] = [{ type: "recovery", state: "replayed", ...(row.headless ? { headless: true } : {}) }, { type: "answer", answer: row.answer as Extract<KeplarEvent, { type: "answer" }>["answer"] }];
+  return new Response(events.map((e) => JSON.stringify(e)).join("\n") + "\n", { headers: { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store, no-transform", "x-keplar-turn": "replayed" } });
+}
+
+/** Answer recovery: the same turn is still being worked on (a reconnect raced it). The browser polls /api/keplar/turn. */
+function turnRunning(): Response {
+  return Response.json({ error: "This answer is still being worked on. It will appear here when it's ready.", code: "turn_running", retryAfterSec: 2 }, { status: 409, headers: { "retry-after": "2", "cache-control": "no-store" } });
 }
 
 const LEARN_WAIT_MS = 6_000;
