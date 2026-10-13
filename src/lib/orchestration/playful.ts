@@ -20,7 +20,7 @@ import { smallTalkModels, firstClean, cleanSmallTalk } from "./smalltalk";
 import type { createRegistry } from "./providers";
 import type { Classification, KeplarAnswer, KeplarEvent, KeplarRequest, ModelSpec } from "./types";
 import { identityPrompt } from "@/lib/identity";
-import { guardVoice } from "@/lib/persona";
+import { guardVoice, inventedLife } from "@/lib/persona";
 import { HUMAN_TONE_SHORT, polish } from "@/lib/persona-tone";
 
 type Turn = { role: "user" | "keplar"; text: string };
@@ -369,7 +369,8 @@ export const PLAYFUL_SYSTEM =
   "You are Keplar, quick-witted and a little cheeky, playing along with someone. Reply the way a funny friend would: very short (one or two lines, under 35 words), a real laugh in it (a pun, a twist, dry wit), natural and human. " +
   "Aim for surprise: the punchline should turn the setup somewhere unexpected but obvious in hindsight. Prefer a fresh joke over the famous ones everybody has heard (skip atoms that \"make up everything\", the scarecrow \"outstanding in his field\", the chicken crossing the road), use a callback to something from the conversation when there is one, and a dash of self-aware humor about being an AI is welcome. " +
   "Plain text only: no headings, no lists, no markdown, no \"Here's a joke:\" or \"Sure!\" preamble, no explaining the joke, no disclaimers, never show reasoning. Keep it kind: no jokes at anyone's expense, nothing crude. " +
-  "Match their energy: looser and sillier if they use lol, haha or emoji, drier if they are deadpan. " + HUMAN_TONE_SHORT;
+  "Match their energy: looser and sillier if they use lol, haha or emoji, drier if they are deadpan. " +
+  "You have no pets, family, home or past, so never set a joke up as your own life (\"my cat...\", \"my wife...\", \"when I was a kid...\"): use a third person (\"a cat\", \"a guy\"), a general setup, or a joke about being an AI. " + HUMAN_TONE_SHORT;
 
 const CLASSIFICATION: Classification = { kind: "general", complexity: "simple", capabilities: [], estimatedInputTokens: 160, estimatedOutputTokens: 60, needsWeb: false, rationale: "A playful message." };
 
@@ -459,7 +460,10 @@ export async function* runPlayful(req: KeplarRequest, deps: PlayfulDeps, signal?
   try {
     text = read.fixed ?? (await firstClean(models, outer, deps.perModelMs ?? 5_000, deps.staggerMs ?? 1_500, async (m, sig) => {
       const r = await deps.registry.once({ model: m, prompt: contextOf(req.history, prompt), classification: CLASSIFICATION, params: { maxOutputTokens: 120 }, slot: "panel", system: `${PLAYFUL_SYSTEM} ${read.hint ?? ""} ${identityPrompt()}`, signal: sig });
-      return r.ok ? cleanPlayful(r.text) : "";
+      const t = r.ok ? cleanPlayful(r.text) : "";
+      // A joke set up as Keplar's own life ("My cat thinks he's a lion. I told him to prove it...") would lose its setup to guardVoice and
+      // reach the person as half a joke (seen live on 2026-10-13); let the next model, or a curated line, answer instead.
+      return t && inventedLife(t).length ? "" : t;
     }, prompt));
   } catch (e) {
     if (signal?.aborted) throw e;
