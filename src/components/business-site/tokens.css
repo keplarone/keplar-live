@@ -152,3 +152,7 @@ html:has(main[data-kb])::-webkit-scrollbar-corner, [data-kb] *::-webkit-scrollba
 @media (max-width: 640px), (pointer: coarse) {
   [data-kb] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), [data-kb] textarea, [data-kb] select { font-size: max(16px, 1em); }
 }
+
+/* The workspace is a fixed full-window surface: neither it nor the page behind it ever scrolls as a whole (an iframe focusing a
+   field could otherwise scroll a clipped box and slide the sidebar and top bar off screen). Its own panes still scroll. */
+html:has(main[data-business-app]), html:has(main[data-business-app]) body { overflow: clip; overscroll-behavior: none; }

@@ -275,3 +275,4 @@
   .quickBtn { height: 40px; }
   .below { grid-template-columns: minmax(0, 1fr); margin-top: 16px; }
 }
+.shell { overflow: clip; }

@@ -694,3 +694,7 @@
 .ideLineNo { color: var(--c-ink-3); opacity: 0.6; user-select: none; }
 /* Desktop preview: the frame fills the scaled 1920x1080 viewport (ScaledViewport); its border and radius scale with it. */
 [data-viewport] > div > div > .frame[data-device="desktop"] { width: 100%; height: 100%; }
+
+/* The preview pane clips with overflow: clip (never hidden): a hidden box can be scrolled by the browser when the app inside the
+   iframe focuses a field, which slid the pane, and in the desktop app the whole workspace, out of place. */
+.canvas, .frameLayer { overflow: clip; }
