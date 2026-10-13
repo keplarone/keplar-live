@@ -293,3 +293,27 @@
 .checks li::before { content: ""; flex: none; width: 12px; height: 7px; margin-top: -3px; border-left: 1.5px solid var(--kb-ink-2); border-bottom: 1.5px solid var(--kb-ink-2); transform: rotate(-45deg); }
 @media (max-width: 900px) { .navEnd .btnDarkSm { display: none; } }
 @media (max-width: 640px) { .starts { grid-template-columns: minmax(0, 1fr); } }
+
+/* ── first paint (every load): the hero rises in step by step, then the product tiles, the way x.ai's opens ── */
+@keyframes kbRise { from { opacity: 0; transform: translateY(14px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes kbDim { from { color: var(--kb-ink-3); opacity: 0; } 40% { opacity: 1; } to { color: var(--kb-ink-2); } }
+.hero > * { animation: kbRise 820ms var(--kb-ease) both; }
+.hero > *:nth-child(1) { animation-delay: 60ms; }
+.hero > *:nth-child(2) { animation-delay: 160ms; }
+.hero > .lede { animation: kbRise 820ms var(--kb-ease) 300ms both, kbDim 1400ms var(--kb-ease) 300ms both; }
+.hero > *:nth-child(n + 4) { animation-delay: 440ms; }
+.tiles { animation: kbRise 1000ms var(--kb-ease) 620ms both; }
+
+/* the cycling word: an underline of moving light under it, like x.ai's "build." */
+.morph { position: relative; display: inline-block; white-space: nowrap; font-variant-ligatures: none; }
+.morph::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -0.06em; height: 2px; border-radius: 2px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.5), #7aa2ff, #b18cff, #ff9a5a, rgba(255, 255, 255, 0.5)) 0 0 / 300% 100%;
+  animation: kbSweep 3.2s linear infinite, kbRise 700ms var(--kb-ease) 900ms both;
+}
+@keyframes kbSweep { to { background-position: 300% 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero > *, .hero > .lede, .tiles { animation: none; }
+  .morph::after { animation: none; }
+}
