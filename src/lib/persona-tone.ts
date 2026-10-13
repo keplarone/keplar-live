@@ -71,6 +71,53 @@ export function moodNote(mood: Mood): string {
   return mood === "neutral" ? "" : `Tone guidance for this reply (not part of the question; do not mention it): ${NOTES[mood]}`;
 }
 
+/* ───────────────────────── when humor fits (code, not only the prompt) ───────────────────────── */
+
+/**
+ * Serious subjects, from the person's own words: HUMOR_PROMPT asks the model to judge this, and this makes the call explicit
+ * when the words say so even if the tone is calm ("how do I contest an eviction notice"). Phrases, not bare words, so a
+ * basketball court, a brush stroke or phone charges don't switch the wit off.
+ */
+const SERIOUS: RegExp[] = [
+  // health
+  /\b(diagnos(?:ed|is)|cancer|tumou?rs?|chemo(?:therapy)?|biopsy|chest pains?|heart attack|had a stroke|stroke symptoms|seizures?|overdos(?:e|ed)|miscarriage|surgery|side effects|dosage|symptoms? of|emergency room|in (?:the )?hospital|hospitali[sz]ed|mental health|suicid\w*|self[- ]harm|eating disorder|terminal(?:ly ill)?|hospice|dementia|alzheimer'?s)\b/i,
+  // legal
+  /\b(lawsuit|being sued|sue (?:me|him|her|them|my)|my (?:lawyer|attorney)|court (?:date|case|order|hearing)|in court|custody|divorc(?:e|ing)|arrested|criminal (?:record|charges?)|charged with|evict(?:ed|ion)|deport(?:ed|ation)|subpoena|restraining order|probation|parole)\b/i,
+  // money trouble
+  /\b(in debt|my debts?|debt collectors?|collections agency|bankrupt(?:cy)?|foreclos(?:ed|ure)|can'?t (?:pay|afford) (?:my|the|rent)|behind on (?:rent|my mortgage|payments)|laid off|got fired|lost my job|unemployed|scam(?:med)?|fraud|identity theft)\b/i,
+  // safety and harm
+  /\b(abus(?:e|ed|ive)|assault(?:ed)?|harass(?:ed|es|ing|ment)|stalk(?:ed|ing|er)|threaten(?:ed|ing) (?:me|to)|death threats?|domestic violence|violent|kidnap\w*|missing person|not safe at home|unsafe at home)\b/i,
+  // death and grief
+  /\b(died|death of|dying|funeral|passed away|grie(?:f|ving)|condolences?|obituary|eulogy|put (?:him|her|my \w+) down|euthan\w*)\b/i,
+  // atrocity and discrimination
+  /\b(genocide|war crimes?|terroris[mt]\w*|refugees?|racism|racist|discriminat\w*|hate crimes?)\b/i,
+];
+/** The person's own playfulness: laughter, "jk", a winking or laughing emoji, a smiley. */
+const PLAYFUL = /\b(?:lol+|lmf?ao+|rofl|ha(?:ha)+h?|he(?:he)+|jk)\b|[\u{1F602}\u{1F923}\u{1F606}\u{1F61C}\u{1F61D}\u{1F604}\u{1F601}\u{1F643}\u{1F60F}\u{1F609}]|(?:^|\s)[:;]-?[)DP](?=\s|$)|(?:^|\s)xD(?=\s|$)/iu;
+
+export type HumorCall = "off" | "match" | "default";
+
+/** Whether this reply may joke: "off" for a serious subject, "match" when the person is being playful, else the prompt decides. */
+export function humorCall(text: string, mood: Mood): HumorCall {
+  const t = (text ?? "").slice(0, 2000);
+  if (mood !== "neutral" && mood !== "excited") return "off"; // upset moods: moodNote already says no jokes
+  if (SERIOUS.some((rx) => rx.test(t))) return "off";
+  if (PLAYFUL.test(t)) return "match";
+  return "default";
+}
+
+/** Guidance for the writer about humor in this reply ("" when the general HUMOR_PROMPT rule is enough). Never shown to the person. */
+export function humorNote(text: string, mood: Mood): string {
+  const call = humorCall(text, mood);
+  if (call === "off" && (mood === "neutral" || mood === "excited")) {
+    return "Humor guidance for this reply (do not mention it): the subject is serious. No jokes, wit, wordplay or wry asides anywhere in this reply; be warm, clear and steady instead.";
+  }
+  if (call === "match") {
+    return "Humor guidance for this reply (do not mention it): the person is being playful. Match it with one quick, fresh line of wit in your own words (not a stock joke), then give the real answer in full; never let the joke replace or blur it.";
+  }
+  return "";
+}
+
 /* ───────────────────────── the outgoing polish ───────────────────────── */
 
 const OPENERS: RegExp[] = [

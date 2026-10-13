@@ -23,7 +23,7 @@ import { assumptionLine, pricingReply, understand, understandingBlock, type Unde
 import { followupPrompt, followupRead, resolveFollowup } from "@/lib/orchestration/followup";
 import { commonSenseNote } from "@/lib/orchestration/common-sense";
 import { scrubCreatorAges } from "@/lib/identity";
-import { detectMood, moodNote } from "@/lib/persona-tone";
+import { detectMood, humorNote, moodNote } from "@/lib/persona-tone";
 import { pickCreatorAnswer } from "@/lib/orchestration/creator";
 import { isSmallTalk } from "@/lib/orchestration/smalltalk";
 import type { KeplarAnswer, KeplarEvent, KeplarRequest, RoutingStrategy, ToolUse } from "@/lib/orchestration/types";
@@ -449,8 +449,9 @@ export async function POST(request: Request) {
     } catch {
       /* the question still runs without the extra context */
     }
-    // How to read a fragmentary message, and how to meet the person's mood: guidance ahead of the question (never shown).
-    const guidance = [understood ? understandingBlock(understood, askedPrompt) : "", commonSenseNote(understood?.followup?.question ?? askedPrompt), moodNote(understood ? understood.mood : detectMood(askedPrompt)), answerLanguageNote(request.headers.get("cookie"))].filter(Boolean).join("\n");
+    // How to read a fragmentary message, how to meet the person's mood, and whether humor fits: guidance ahead of the question (never shown).
+    const mood = understood ? understood.mood : detectMood(askedPrompt);
+    const guidance = [understood ? understandingBlock(understood, askedPrompt) : "", commonSenseNote(understood?.followup?.question ?? askedPrompt), moodNote(mood), humorNote(askedPrompt, mood), answerLanguageNote(request.headers.get("cookie"))].filter(Boolean).join("\n");
     if (guidance) req.memory = `${guidance}\n\n${req.memory ?? "The question:\n"}`;
     // Answer preferences, the chosen specialist and Reason framing (src/lib/personalize/turn.ts). Fenced data; Free keeps "About you" and knowledge home.
     const personal = await personalContext({ workspaceId: ws.id, personalAllowed, withhold: mayTrain && ws.plan === "free", specialistId: req.specialistId, reason: req.modes?.reason === true }).catch(() => null);
