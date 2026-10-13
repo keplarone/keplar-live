@@ -152,3 +152,6 @@
   .pulse, .caret { animation: none; }
   .view, .line, .term > div, .stepNote, .treeRead { animation: none; }
 }
+/* phones: the tab strip scrolls sideways; a soft fade at the right edge says there is more */
+@media (max-width: 640px) { .tabs { -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); } }
+@media (pointer: coarse), (max-width: 640px) { .play { width: 40px; height: 40px; } }

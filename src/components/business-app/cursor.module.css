@@ -255,3 +255,23 @@
 .quickBtn { height: 36px; padding: 0 16px; background: #141414; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07); color: var(--kb-ink); font-size: var(--kb-t-sm); }
 .quickBtn:hover { background: #1d1d1d; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12); }
 .topLink { border-radius: var(--kb-r-pill); padding: 0 12px; }
+
+/* ── phones and touch: 44px rows in the drawer, a composer bar that fits, 16px fields (no iOS zoom) ── */
+@media (pointer: coarse), (max-width: 640px) {
+  .item { min-height: 44px; font-size: var(--kb-t-md); }
+  .iconBtn { min-width: 40px; min-height: 40px; }
+  .account { min-height: 48px; }
+}
+@media (max-width: 640px) {
+  .home { padding: 32px 16px 40px; gap: 16px; }
+  .composer { padding: 14px 10px 10px 16px; border-radius: 24px; }
+  /* the two pickers get their own row on top; attach, dictate and send sit below */
+  .composeBar { flex-wrap: wrap; gap: 8px 4px; }
+  .picker { order: -1; flex: 1 1 45%; min-width: 0; }
+  .picker select { width: 100%; max-width: none; padding: 0 24px 0 12px; background-position: right 10px center; }
+  .roundBtn, .micBtn { width: 36px; height: 36px; flex: none; }
+  .sendBtn { width: 38px; height: 38px; flex: none; }
+  .quick { gap: 6px; }
+  .quickBtn { height: 40px; }
+  .below { grid-template-columns: minmax(0, 1fr); margin-top: 16px; }
+}

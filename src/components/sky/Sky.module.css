@@ -12,14 +12,30 @@
 /* ---- backdrop ---- */
 .backdrop { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
 .backdrop i { position: absolute; border-radius: 999px; filter: blur(100px); }
-.auraSky { background: #a9d8f5; width: 46%; height: 900px; left: -10%; top: -260px; opacity: 0.75; }
-.auraLilac { background: #d6cdf5; width: 38%; height: 820px; right: -10%; top: -160px; opacity: 0.7; }
-.auraIce { background: #bfe9f0; width: 36%; height: 700px; right: 14%; top: 900px; opacity: 0.6; }
-.auraPeach { background: #f9d6c4; width: 34%; height: 760px; left: -6%; top: 1800px; opacity: 0.5; }
-.auraMint { background: #cdeedd; width: 32%; height: 700px; right: -6%; top: 2800px; opacity: 0.5; }
+/* Light-blue auras only: two big ones behind the hero, then a chain that zig-zags down the whole page. Each 1400px tile holds one
+   glow on the left at its middle and half-glows on the right at its top and bottom edge, so neighbouring tiles join into one
+   continuous ribbon of blue, however long the page is. Plain radial gradients, so no blur filter on the tall layer. */
+.auraSky { background: #a9d8f5; width: 50%; height: 900px; left: -12%; top: -260px; opacity: 0.8; }
+.auraIce { background: #c4e2fb; width: 44%; height: 860px; right: -12%; top: -140px; opacity: 0.75; }
+.auraChain {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 420px;
+  bottom: 0;
+  background-image:
+    radial-gradient(ellipse 46% 700px at 14% 700px, rgb(169 216 245 / 0.62), rgb(169 216 245 / 0.22) 55%, transparent 100%),
+    radial-gradient(ellipse 42% 700px at 88% 0, rgb(186 222 252 / 0.6), rgb(186 222 252 / 0.2) 55%, transparent 100%),
+    radial-gradient(ellipse 42% 700px at 88% 1400px, rgb(186 222 252 / 0.6), rgb(186 222 252 / 0.2) 55%, transparent 100%),
+    radial-gradient(ellipse 60% 520px at 50% 350px, rgb(205 230 255 / 0.4), transparent 100%),
+    radial-gradient(ellipse 60% 520px at 50% 1050px, rgb(205 230 255 / 0.4), transparent 100%);
+  background-size: 100% 1400px;
+  background-repeat: repeat-y;
+}
 .dust { position: absolute; left: 0; top: 0; width: 100%; height: 100vh; min-height: 720px; }
 /* Dark: the same glows, deeper and dimmer, so the page reads as night sky rather than a flat graphite slab */
 :global(:root[data-theme="dark"]) .backdrop i { opacity: 0.16 !important; filter: blur(120px); }
+:global(:root[data-theme="dark"]) .auraChain { opacity: 0.14; }
 :global(:root[data-theme="dark"]) .dust { opacity: 0.7; }
 
 /* ---- hero ---- */
@@ -289,3 +305,88 @@
 }
 /* Dark: much more see-through, a faint tint over the night ground rather than solid colour blobs */
 :global(:root[data-theme="dark"]) .liquid { opacity: 0.35; filter: blur(6px); }
+
+/* ---- "How Keplar works" particle scene (ParticleStory.tsx): a stage that sticks for about three screens while the cloud morphs ---- */
+.story { position: relative; height: 320vh; height: 320svh; }
+.storyStage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.storyCanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* No GPU (or before three.js arrives): a soft blue glow where the cloud will be */
+.storyGlow {
+  position: absolute;
+  right: 12%;
+  top: 50%;
+  width: min(46vw, 520px);
+  aspect-ratio: 1;
+  translate: 0 -50%;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgb(120 180 245 / 0.55), rgb(169 216 245 / 0.25) 45%, transparent 70%);
+  transition: opacity 0.8s var(--e-standard);
+}
+.storyGlow[data-hidden] { opacity: 0; }
+:global(:root[data-theme="dark"]) .storyGlow { background: radial-gradient(circle, rgb(60 145 225 / 0.5), rgb(40 130 170 / 0.2) 45%, transparent 70%); }
+.storyText {
+  position: relative;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  pointer-events: none;
+}
+.storyTitle { text-align: left; max-width: 18ch; }
+.storyTitle span { display: block; }
+.storySteps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; max-width: 420px; }
+.storySteps li {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 18px 20px;
+  border-radius: 22px;
+  border: 1px solid transparent;
+  opacity: 0.4;
+  transition: opacity 0.5s var(--e-standard), background-color 0.5s var(--e-standard), border-color 0.5s var(--e-standard), transform 0.5s var(--e-standard);
+}
+.storySteps li[data-active] {
+  opacity: 1;
+  background: rgb(255 255 255 / 0.72);
+  border-color: var(--c-border);
+  box-shadow: 0 1px 2px rgb(14 15 18 / 0.05), 0 18px 40px -22px rgb(50 115 155 / 0.35);
+  transform: translateX(6px);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+:global(:root[data-theme="dark"]) .storySteps li[data-active] { background: color-mix(in srgb, var(--c-surface-1) 78%, transparent); }
+.storySteps .stepN { flex: none; }
+.storySteps h3 { margin: 0 0 6px; font-size: 20px; font-weight: 500; letter-spacing: -0.02em; }
+.storySteps p { margin: 0; font-size: 15px; line-height: 1.6; color: var(--c-ink-3); }
+
+/* Narrow screens: the cloud fills the upper part of the stage and the steps sit at the bottom, title above the cloud */
+@media (max-width: 900px) {
+  .storyStage { align-items: stretch; }
+  .storyText { justify-content: space-between; padding-block: 96px 28px; gap: 20px; }
+  .storyTitle { text-align: center; max-width: none; margin: 0 auto; font-size: clamp(30px, 8vw, 40px); }
+  .storySteps { max-width: none; gap: 8px; }
+  .storySteps li { padding: 12px 14px; }
+  .storySteps li:not([data-active]) p { display: none; }
+  .storySteps li[data-active] { transform: none; }
+  .storyGlow { right: 50%; top: 42%; translate: 50% -50%; width: 80vw; }
+}
+
+/* Reduced motion: no pinning, the steps read as a plain list beside one still frame of the sphere */
+@media (prefers-reduced-motion: reduce) {
+  .story { height: auto; }
+  .storyStage { position: relative; height: auto; min-height: 640px; padding-block: 48px; }
+  .storySteps li { opacity: 1; transition: none; }
+  .storySteps li p { display: block !important; }
+}

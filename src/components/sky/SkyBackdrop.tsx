@@ -6,9 +6,9 @@ import { frameGap, liteFx } from "@/lib/fx/lite";
 import s from "./Sky.module.css";
 
 /**
- * The light backdrop from the canvas designs: soft colour auras (CSS), the scroll-driven liquid layer (LiquidLayer) and two drifting
+ * The light backdrop from the canvas designs: connected light-blue auras (CSS, chained down the whole page), the scroll-driven liquid layer (LiquidLayer) and two drifting
  * ribbons of fine dots (a 2D canvas).
- * The dots follow slow sine waves, blue low on the left and coral high on the right, like the reference. Pauses when the tab is
+ * The dots follow slow sine waves, deep blue low on the left and sky blue high on the right, like the reference. Pauses when the tab is
  * hidden or scrolled out of view; prefers-reduced-motion draws one still frame. Phones and modest devices (liteFx) draw a
  * third of the dots at 1x pixel density and about 30 fps. Dark theme dims the auras and uses deeper liquid colours (Sky.module.css).
  */
@@ -30,8 +30,8 @@ export function SkyBackdrop() {
 
     type P = { u: number; off: number; speed: number; size: number };
     const ribbons = [
-      { color: "91 116 201", y: 0.78, amp: 0.1, tilt: -0.22, span: [0, 0.62] as const, alpha: 0.5 },
-      { color: "224 122 90", y: 0.3, amp: 0.08, tilt: -0.12, span: [0.45, 1.05] as const, alpha: 0.42 },
+      { color: "58 112 214", y: 0.78, amp: 0.1, tilt: -0.22, span: [0, 0.62] as const, alpha: 0.5 },
+      { color: "92 168 232", y: 0.3, amp: 0.08, tilt: -0.12, span: [0.45, 1.05] as const, alpha: 0.42 },
     ].map((r) => ({
       ...r,
       pts: Array.from({ length: lite ? 560 : 1700 }, (): P => ({ u: Math.random(), off: (Math.random() + Math.random() + Math.random() - 1.5) * 0.11, speed: 0.00004 + Math.random() * 0.00006, size: Math.random() < 0.85 ? 0.7 : 1.15 })),

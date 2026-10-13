@@ -383,3 +383,36 @@
 }
 /* price block: the crossed-out list price on its own line above, so every card lines up */
 .price { flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 2px; min-height: 104px; }
+
+/* ── phones: tighter vertical rhythm, thumb-sized targets (44px), a footer that stacks, no iOS input zoom ── */
+@media (max-width: 640px) {
+  .section { padding-top: 72px; }
+  .footer { margin-top: 72px; }
+  .productHead { margin-bottom: var(--kb-s-6); }
+  .feature, .feature[data-flip] { gap: var(--kb-s-5); padding: 40px 0; }
+  .more { padding-top: 40px; }
+  .head { margin-bottom: var(--kb-s-6); }
+  .headRow { margin-bottom: var(--kb-s-5); }
+  .guard { margin-top: var(--kb-s-7); }
+  .starts { margin-top: var(--kb-s-5); }
+  .hero { padding-top: 40px; padding-bottom: var(--kb-s-7); }
+  .hero .h1 { font-size: clamp(34px, 9.4vw, 40px); }
+  .lede { font-size: var(--kb-t-body); }
+  .featureTitle { font-size: 26px; }
+  .demo { min-height: 340px; }
+  /* targets */
+  .brand { min-height: 44px; min-width: 44px; }
+  .inlineLinks { gap: var(--kb-s-2) var(--kb-s-5); }
+  .inlineLinks a, .guard > .textLink { min-height: 44px; }
+  .footInner { flex-direction: column; gap: var(--kb-s-6); padding-top: var(--kb-s-6); }
+  .footCols { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--kb-s-5) var(--kb-s-4); width: 100%; }
+  .footCols div { gap: 0; }
+  .footCols a { display: flex; align-items: center; min-height: 44px; width: 100%; }
+  .sheet a { min-height: 48px; display: flex; align-items: center; padding: 0; }
+  /* iOS zooms into any field under 16px */
+  .field input, .field select, .field textarea { font-size: 16px; }
+  .compare summary { min-height: 44px; }
+  .navEnd .btnPrimarySm { min-height: 40px; padding: 0 16px; }
+  .menuBtn { width: 44px; height: 44px; }
+  .chip { min-height: 40px; }
+}
