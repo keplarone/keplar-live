@@ -77,7 +77,7 @@ test("removing a teammate ends their Business access on the next request", async
   const { owner, teamId, people } = await businessTeam();
   const detail = await j(await teamGet(call(owner.cookie, `/api/team/${teamId}`), P(teamId)));
   const m = detail.members.find((x: any) => x.email === people.member.email);
-  assert.equal((await memberDelete(call(owner.cookie, `/api/team/${teamId}/members/${m.id}`, "DELETE"), PM(teamId, m.id))).status, 200);
+  assert.equal((await memberDelete(call(owner.cookie, `/api/team/${teamId}/members/${m.id}`, { method: "DELETE" }), PM(teamId, m.id))).status, 200);
   const after = await j(await accountGet(call(people.member.cookie, "/api/business/account")));
   assert.equal(after.active, false);
   assert.equal(after.member, null);
