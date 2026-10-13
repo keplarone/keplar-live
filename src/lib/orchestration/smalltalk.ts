@@ -49,13 +49,33 @@ const CLASSIFICATION: Classification = { kind: "general", complexity: "simple", 
  * "Thinking:" style preamble. Then tidy whitespace and quotes and cut a reply that
  * was truncated mid-sentence back to its last full sentence.
  */
+/**
+ * Quotes a model wrapped its whole reply in come off; a quote that belongs to the text stays. Stripping a leading and a trailing quote
+ * separately cut the closing quote off a punchline (live, 2026-10-13: `...it said, "I'm already grounded.` with no closing quote).
+ */
+function unquote(t: string): string {
+  const dq = (x: string) => (x.match(/["\u201c\u201d]/g) ?? []).length;
+  let s = t;
+  for (let i = 0; i < 3; i++) {
+    const wrapped = /^["\u201c]/.test(s) && /["\u201d]$/.test(s) && dq(s.slice(1, -1)) === 0;
+    const single = /^['\u2018]/.test(s) && /['\u2019]$/.test(s) && !/['\u2018\u2019]/.test(s.slice(1, -1));
+    if (wrapped || single) { s = s.slice(1, -1).trim(); continue; }
+    if (dq(s) % 2 === 1) {
+      if (/^["\u201c]/.test(s)) { s = s.slice(1).trim(); continue; } // a stray opener with nothing to close it
+      if (/["\u201d]$/.test(s) && dq(s.slice(0, -1)) === 0) { s = s.slice(0, -1).trim(); continue; } // a stray closer
+    }
+    break;
+  }
+  return s;
+}
+
 export function cleanSmallTalk(raw: string): string {
   let t = raw ?? "";
   t = t.replace(/<(think|thinking|thought|reasoning)>[\s\S]*?<\/\1>/gi, " ");
   t = t.replace(/^[\s\S]*?<\/(think|thinking|thought|reasoning)>/i, " ");
   t = t.replace(/<(think|thinking|thought|reasoning)>[\s\S]*$/i, " ");
   t = t.replace(/<\/?[a-z]+>/gi, " ");
-  t = t.replace(/\s+/g, " ").trim().replace(/^["'\u201c\u2018]+|["'\u201d\u2019]+$/g, "").trim();
+  t = unquote(t.replace(/\s+/g, " ").trim());
   if (t.length > 400) t = t.slice(0, 400);
   // Truncated mid-sentence: keep up to the last sentence end when there is one.
   if (t && !/[.!?)\u{1F300}-\u{1FAFF}\u2600-\u27BF]$/u.test(t)) {
