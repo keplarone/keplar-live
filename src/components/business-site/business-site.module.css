@@ -306,21 +306,27 @@
 
 /* the cycling word: an underline of moving light under it, like x.ai's "build." */
 .morph { position: relative; display: inline-block; white-space: nowrap; font-variant-ligatures: none; }
-.morph::after {
-  content: ""; position: absolute; left: 0; right: 0; bottom: -0.06em; height: 2px; border-radius: 2px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.5), #7aa2ff, #b18cff, #ff9a5a, rgba(255, 255, 255, 0.5)) 0 0 / 300% 100%;
-  animation: kbSweep 3.2s linear infinite, kbRise 700ms var(--kb-ease) 900ms both;
+/* the line: grey at rest; as each word arrives a pink-to-orange streak swoops across it, left to right, fast (x.ai's "build.") */
+.morphLine { position: absolute; left: 0; right: 0; bottom: -0.06em; height: 2px; border-radius: 2px; overflow: hidden; background: rgba(255, 255, 255, 0.28); }
+.morphLine::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 70%;
+  background: linear-gradient(90deg, transparent, #e8457f 30%, #f2793f 62%, #f6b447 80%, transparent);
+  transform: translateX(-110%); animation: kbSwoop 900ms cubic-bezier(0.55, 0, 0.25, 1) 120ms both;
 }
-@keyframes kbSweep { to { background-position: 300% 0; } }
+.morphLine[data-first] { animation: kbFade 500ms var(--kb-ease) 600ms both; }
+.morphLine[data-first]::after { animation-delay: 950ms; }
+@keyframes kbFade { from { opacity: 0; } }
+@keyframes kbSwoop { to { transform: translateX(160%); } }
 
 @media (prefers-reduced-motion: reduce) {
   .hero > *, .hero > .lede, .tiles { animation: none; }
-  .morph::after { animation: none; }
+  .morphLine, .morphLine[data-first] { animation: none; }
+  .morphLine::after { animation: none; display: none; }
 }
 
 /* ── type and nav after the x.ai recording: Google Sans (self-hosted, the closest open match to x.ai's face), regular-weight
    headings, bright nav links, icon-only brand ── */
-.root { font-family: var(--kb-brand); font-feature-settings: normal; }
+.root { font-feature-settings: normal; }
 .h1, .h2, .h3, .h4 { font-weight: 400; }
 .h2 { letter-spacing: -0.025em; }
 .hero .h1 { font-weight: 400; letter-spacing: -0.025em; }

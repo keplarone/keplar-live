@@ -66,14 +66,14 @@
 .plan li { counter-increment: p; display: flex; gap: 12px; color: var(--kb-ink-2); line-height: 1.5; }
 .plan li::before { content: counter(p); flex: none; width: 18px; font-family: var(--kb-mono); font-size: var(--kb-t-xs); color: var(--kb-ink-3); line-height: 1.75; }
 
-.tree { list-style: none; margin: 0; padding: 0; font-family: var(--kb-mono); font-size: 12.5px; }
+.tree { list-style: none; margin: 0; padding: 0; font-family: var(--kb-code); font-size: 12.5px; }
 .tree li { display: flex; align-items: center; gap: 8px; height: 30px; border-radius: var(--kb-r-sm); color: var(--kb-ink-3); transition: background-color var(--kb-d-2) var(--kb-ease), color var(--kb-d-2) var(--kb-ease); }
 .tree li[data-dir] { color: var(--kb-ink-2); }
 .tree li[data-read] { background: var(--kb-surface-2); color: var(--kb-ink); }
 .treeIcon { width: 10px; color: var(--kb-ink-3); }
 .treeRead { margin-left: auto; padding-right: 12px; font-size: 11px; color: var(--kb-ink-3); animation: rise var(--kb-d-3) var(--kb-ease) both; }
 
-.code { position: relative; margin: -20px; padding: 16px 0; font-family: var(--kb-mono); font-size: 12.5px; line-height: 22px; overflow-x: auto; }
+.code { position: relative; margin: -20px; padding: 16px 0; font-family: var(--kb-code); font-size: 12.5px; line-height: 22px; overflow-x: auto; }
 .line { display: grid; grid-template-columns: 44px 20px max-content; padding-right: 20px; color: var(--kb-ink-2); animation: rise var(--kb-d-2) var(--kb-ease) both; }
 .line[data-kind="add"] { background: var(--kb-add-bg); }
 .line[data-kind="del"] { background: var(--kb-del-bg); }
@@ -90,7 +90,7 @@
 .term .caret { margin-left: 0; }
 @keyframes blink { 50% { opacity: 0; } }
 
-.term { font-family: var(--kb-mono); font-size: 12.5px; line-height: 22px; color: var(--kb-ink-2); }
+.term { font-family: var(--kb-code); font-size: 12.5px; line-height: 22px; color: var(--kb-ink-2); }
 .term [data-tone="cmd"] { color: var(--kb-ink); }
 .term [data-tone="ok"] { color: var(--kb-add); }
 .term [data-tone="dim"] { color: var(--kb-ink-3); }

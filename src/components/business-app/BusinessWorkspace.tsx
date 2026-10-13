@@ -271,7 +271,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
         {drawerOpen ? <button type="button" className={c.backdrop} onClick={closeNavigation} aria-label="Close navigation" tabIndex={-1} /> : null}
         <aside id="business-navigation" ref={sideRef} className={c.side} aria-label="Business workspace" role={drawerOpen ? "dialog" : undefined} aria-modal={drawerOpen || undefined} tabIndex={-1}>
           <div className={c.sideTop}>
-            <span className={c.sideBrand}><BusinessMark size={22} /><span className={c.wordmark}>Keplar <span>Business</span></span></span>
+            <span className={c.sideBrand} role="img" aria-label="Keplar Business"><BusinessMark size={24} /></span>
             <button type="button" className={c.iconBtn} onClick={toggleSide} aria-label={mobile ? "Close navigation" : "Hide sidebar"} title={mobile ? undefined : "Hide sidebar (Ctrl+B)"} aria-expanded={mobile ? drawerOpen : !collapsed} aria-controls="business-navigation">
               <Icon d={<><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16" /></>} />
             </button>

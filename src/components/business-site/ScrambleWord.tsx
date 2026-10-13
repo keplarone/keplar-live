@@ -6,10 +6,12 @@ const GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789#%
 
 /**
  * The hero's last word: it holds, then decodes into the next one, letters resolving left to right through random glyphs.
+ * Under it, a grey line that a pink-to-orange streak swoops across, left to right, as each word arrives (and on first load).
  * Decorative: the heading around it carries the stable sentence for screen readers. Reduced motion keeps the first word still.
  */
-export function ScrambleWord({ words, className, hold = 2600 }: { words: string[]; className?: string; hold?: number }) {
+export function ScrambleWord({ words, className, lineClassName, hold = 2600 }: { words: string[]; className?: string; lineClassName?: string; hold?: number }) {
   const [text, setText] = useState(words[0]);
+  const [sweep, setSweep] = useState(0);
   const index = useRef(0);
 
   useEffect(() => {
@@ -37,6 +39,7 @@ export function ScrambleWord({ words, className, hold = 2600 }: { words: string[
     const next = () => {
       const from = words[index.current];
       index.current = (index.current + 1) % words.length;
+      setSweep((n) => n + 1);
       decode(from, words[index.current]);
     };
     timer = window.setTimeout(next, hold + 900);
@@ -44,6 +47,9 @@ export function ScrambleWord({ words, className, hold = 2600 }: { words: string[
   }, [words, hold]);
 
   return (
-    <span className={className} aria-hidden="true">{text}</span>
+    <span className={className} aria-hidden="true">
+      {text}
+      {lineClassName ? <span key={sweep} className={lineClassName} data-first={sweep === 0 || undefined} /> : null}
+    </span>
   );
 }

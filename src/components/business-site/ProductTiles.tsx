@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Orb } from "./Orb";
+import { Converge } from "./Converge";
 import s from "./product-tiles.module.css";
 
 /**
  * The storefront's product grid, right under the hero: one tile per part of the workspace (Chat, Build, Agents, Research,
- * Design), each with a small moving example of that module and a link to explore it, plus the "Several models" sphere (Orb.tsx).
+ * Design), each with a small moving example of that module and a link to explore it, plus "Several models" (Converge.tsx: five streams of light merging into one answer).
  * Every example tile is marked "Example": the content shows how the module works, not a customer's data. Motion runs only while the grid is on screen and stops for
  * people who prefer reduced motion (every tile then shows its finished state).
  */
@@ -168,7 +168,7 @@ export function ProductTiles() {
       <Tile title="Agents" href="#control"><AgentsTile on={on} /></Tile>
       <Tile title="Deep Research" href="#product"><ResearchTile on={on} /></Tile>
       <Tile title="Design Canvas" href="#product"><DesignTile on={on} /></Tile>
-      <Tile title="Several models" href="#product" example={false}><Orb className={s.orb} /></Tile>
+      <Tile title="Several models" href="#product" example={false}><Converge className={s.converge} /></Tile>
     </div>
   );
 }

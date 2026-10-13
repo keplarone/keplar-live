@@ -291,7 +291,7 @@ export function Storefront() {
       <section className={s.hero} aria-labelledby="hero-h">
         <a href="#download-app" className={s.chip}><span className={s.chipTag}>Desktop app</span>Windows, macOS and Linux<span aria-hidden="true">→</span></a>
         <h1 id="hero-h" className={s.h1} aria-label="Build anything. Let intelligence handle the complexity.">
-          <span aria-hidden="true">Build <ScrambleWord words={HERO_WORDS} className={s.morph} />.</span>{" "}
+          <span aria-hidden="true">Build <ScrambleWord words={HERO_WORDS} className={s.morph} lineClassName={s.morphLine} />.</span>{" "}
           <span className={s.h1Line} aria-hidden="true">Let intelligence handle the complexity.</span>
         </h1>
         <p className={s.lede}>Coding agents that plan, write, test and preview real software across several AI models, with research, design and automation in the same workspace. You review the result before anything ships.</p>
@@ -513,7 +513,7 @@ export function Storefront() {
       <footer className={s.footer}>
         <div className={s.footInner}>
           <div className={s.footBrand}>
-            <span className={s.brand}><BusinessMark size={22} /><span className={s.wordmark}>Keplar <span>Business</span></span></span>
+            <span className={s.brand} role="img" aria-label="Keplar Business"><BusinessMark size={24} /></span>
             <p>© Keplar</p>
           </div>
           <nav className={s.footCols} aria-label="Footer">

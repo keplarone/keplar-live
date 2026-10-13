@@ -23,9 +23,9 @@
   --n-paper: #0f0f0f; --n-graphite: var(--w-panel-2); --c-night: #0f0f0f; --nav-solid: #0f0f0f; --nav-sheet: rgb(10 10 10 / 0.97); --nav-menu-fill: rgb(17 17 17 / 0.97);
   --sh-hairline: 0 0 0 1px var(--w-line); --sh-float: 0 1px 1px rgb(0 0 0 / 0.4), 0 10px 30px -12px rgb(0 0 0 / 0.75);
   --btn-p-bg: var(--w-ink); --btn-p-ink: #0a0a0a; --btn-p-solid: var(--w-ink); --btn-p-shadow: none;
-  --font-sans: var(--biz-sans), "Geist", system-ui, sans-serif; --font-mono: var(--biz-mono), "Geist Mono", ui-monospace, monospace;
+  --font-sans: var(--kb-sans); --font-mono: var(--biz-mono), "Geist Mono", ui-monospace, monospace;
   /* The global element rules (headings, inputs, buttons, labels) read --f-sans / --f-mono, not --font-*. */
-  --f-sans: var(--biz-sans), "Geist", system-ui, sans-serif; --f-mono: var(--biz-mono), "Geist Mono", ui-monospace, monospace;
+  --f-sans: var(--kb-sans); --f-mono: var(--biz-mono), "Geist Mono", ui-monospace, monospace;
   --c-dissent: #d4d4d4;
   --c-reasoning: #e5e5e5; --rgb-reasoning: 229 229 229; --c-research: #d4d4d4; --rgb-research: 212 212 212; --c-creation: #d4d4d4; --rgb-creation: 212 212 212;
   --c-verified: #e5e5e5; --rgb-verified: 229 229 229; --c-attention: #fafafa; --rgb-attention: 250 250 250;
