@@ -220,3 +220,15 @@ test("small talk: every model hanging gives the static line within the total bud
     globalThis.fetch = real;
   }
 });
+
+test("cleanSmallTalk removes quotes that wrap the whole reply, never a quote that belongs to it", () => {
+  // live, 2026-10-13: the closing quote of a punchline was cut off
+  assert.equal(cleanSmallTalk(`I asked my coffee if it wanted to go out—it said, "I'm already grounded."`), `I asked my coffee if it wanted to go out—it said, "I'm already grounded."`);
+  assert.equal(cleanSmallTalk(`"An impasta."`), "An impasta.");
+  assert.equal(cleanSmallTalk(`“Hi there!”`), "Hi there!");
+  assert.equal(cleanSmallTalk(`'Hey, good to see you.'`), "Hey, good to see you.");
+  assert.equal(cleanSmallTalk(`"Hi there!`), "Hi there!", "a stray opening quote");
+  assert.equal(cleanSmallTalk(`Hi there!"`), "Hi there!", "a stray closing quote");
+  assert.equal(cleanSmallTalk(`"Hey," she said, "wow."`), `"Hey," she said, "wow."`);
+  assert.equal(cleanSmallTalk(`'Tis the season, isn't it?`), `'Tis the season, isn't it?`);
+});
