@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { BUSINESS_TIERS, listPriceFor, priceFor, usd, type BusinessTier } from "@/lib/business/tiers";
 import { companySizes, estimatedUsers } from "@/lib/inquire/schema";
 import { BuildDemo } from "./BuildDemo";
-import { ProductTiles } from "./ProductTiles";
+import { ProductDemo, ProductTiles, type DemoKind } from "./ProductTiles";
 import { ScrambleWord } from "./ScrambleWord";
 import { SignOutButton } from "./SignOutButton";
 import { BusinessMark } from "./BusinessMark";
@@ -30,15 +30,52 @@ const short = (tier: BusinessTier) => BUSINESS_TIERS[tier].name.replace("Keplar 
 const HERO_WORDS = ["anything", "websites", "apps", "agents", "reports", "dashboards", "stores"];
 
 /** What the workspace does. Each line describes a module that exists in it today. */
-const CAPABILITIES = [
-  { title: "Coding agents", body: "Agents read the project, write the change, run it and open a live preview. Every edit arrives as a diff you can review." },
-  { title: "Several models on every task", body: "Work is routed to the models suited to it, and research and reasoning are cross-checked across more than one." },
-  { title: "Websites and apps", body: "Describe what you need and get a working project you can edit, version and deploy to your own domain." },
-  { title: "Design canvas", body: "Design, code and AI modes on the same project, with previews and changes you approve." },
-  { title: "Deep Research and Reason", body: "Research with every claim cited, and decisions worked through with the assumptions and math shown." },
-  { title: "Agents that keep working", body: "Workflows that run on schedules within a budget, and ask before anything spends money or reaches a customer." },
-  { title: "Images and video", body: "Generate and edit brand assets, then use them in the sites and campaigns you build." },
+const FEATURES: { kind: DemoKind; icon: IconName; title: string; body: string; points: string[] }[] = [
+  { kind: "build", icon: "code", title: "Coding agents", body: "Agents read the project, write the change, run it and open a live preview. Every edit arrives as a diff you can review.",
+    points: ["Plans the work before it touches a file", "Runs your tests and shows the output", "Hands over a diff, never a black box"] },
+  { kind: "design", icon: "canvas", title: "Websites, apps and a design canvas", body: "Describe what you need and get a working project you can edit, version and deploy to your own domain.",
+    points: ["Design, code and AI modes on one project", "Previews and changes you approve", "Deploy to your own domain"] },
+  { kind: "research", icon: "search", title: "Deep Research and Reason", body: "Research with every claim cited, and decisions worked through with the assumptions and math shown.",
+    points: ["Every claim linked to its source", "Cross-checked across more than one model", "Assumptions and math written out"] },
+  { kind: "agents", icon: "bolt", title: "Agents that keep working", body: "Workflows that run on schedules within a budget, and ask before anything spends money or reaches a customer.",
+    points: ["Schedules, triggers and a budget per agent", "Approval before payments, messages and deploys", "One switch pauses everything"] },
+  { kind: "chat", icon: "chat", title: "Chat with your business", body: "Ask about your numbers, your documents and your projects, and get answers that say where they came from.",
+    points: ["Answers cite where they came from", "Drafts land in your projects, ready to edit", "Works in the browser and the desktop app"] },
 ];
+
+/** The rest of the workspace, in the Product section's "And much more" grid. */
+const MORE: { icon: IconName; title: string; body: string }[] = [
+  { icon: "layers", title: "Several models on every task", body: "Work is routed to the models suited to it." },
+  { icon: "image", title: "Images and video", body: "Generate and edit brand assets for your sites and campaigns." },
+  { icon: "check", title: "Approvals", body: "Payments, customer messages and deploys wait for a person." },
+  { icon: "wallet", title: "Budgets per agent", body: "Each agent stops at its own spending limit." },
+  { icon: "list", title: "A complete audit log", body: "Who or what did each thing, when, and what it cost." },
+  { icon: "desktop", title: "Desktop app", body: "Windows, macOS and Linux, signed in with the same account." },
+  { icon: "users", title: "Your team", body: "Invite teammates up to your plan's seats, each with a role." },
+  { icon: "pause", title: "One switch to pause", body: "Stop every agent in the workspace at once." },
+  { icon: "lock", title: "Payments handled by Whop", body: "Checkout runs in Whop's own form. Keplar never sees your card." },
+];
+
+type IconName = "code" | "canvas" | "search" | "bolt" | "chat" | "layers" | "image" | "check" | "wallet" | "list" | "desktop" | "users" | "pause" | "lock";
+const ICON_PATHS: Record<IconName, string> = {
+  code: "M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16",
+  canvas: "M4 5h16v14H4zM4 9h16M9 9v10",
+  search: "M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4",
+  bolt: "M13 3L5 14h6l-1 7 8-11h-6z",
+  chat: "M5 5h14v10H9l-4 4z",
+  layers: "M12 4l8 4-8 4-8-4zM4 12l8 4 8-4M4 16l8 4 8-4",
+  image: "M4 5h16v14H4zM4 16l5-5 4 4 3-3 4 4M15 9h.01",
+  check: "M5 12l4 4 10-10",
+  wallet: "M4 7h15v12H4zM4 7l11-3v3M15 13h2",
+  list: "M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01",
+  desktop: "M3 5h18v11H3zM8 20h8M12 16v4",
+  users: "M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 19c0-3 3-5 6-5s6 2 6 5M16 5a3 3 0 0 1 0 6M18 14c2 .5 3 2.5 3 5",
+  pause: "M8 5v14M16 5v14",
+  lock: "M6 11h12v9H6zM9 11V8a3 3 0 0 1 6 0v3",
+};
+function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={ICON_PATHS[name]} /></svg>;
+}
 
 /** The guarantees behind agent work: each is enforced in the workspace, not a promise in copy. */
 const CONTROLS = [
@@ -130,8 +167,8 @@ function useSmoothAnchors(root: React.RefObject<HTMLElement | null>) {
       const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const offset = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
       const from = window.scrollY;
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      const to = Math.max(0, Math.min(max, target.getBoundingClientRect().top + from - offset));
+      const dest = () => Math.max(0, Math.min(document.documentElement.scrollHeight - window.innerHeight, target.getBoundingClientRect().top + window.scrollY - offset));
+      const to = dest();
       history.pushState(null, "", `#${id}`);
       const done = () => target.focus({ preventScroll: true });
       if (jump || Math.abs(to - from) < 2) { window.scrollTo({ top: to, behavior: "instant" }); done(); return; }
@@ -140,7 +177,8 @@ function useSmoothAnchors(root: React.RefObject<HTMLElement | null>) {
       const step = (now: number) => {
         const p = Math.min(1, (now - t0) / duration);
         const eased = 1 - Math.pow(1 - p, 4);
-        window.scrollTo({ top: from + (to - from) * eased, behavior: "instant" });
+        // aim at where the section is now, so late layout (fonts, images) never ends the glide with a hop
+        window.scrollTo({ top: from + (dest() - from) * eased, behavior: "instant" });
         if (p < 1) frame = requestAnimationFrame(step); else { frame = 0; done(); }
       };
       frame = requestAnimationFrame(step);
@@ -217,8 +255,7 @@ export function Storefront() {
       <header className={s.nav} data-scrolled={scrolled || undefined}>
         <div className={s.navInner}>
           <Link href="/" className={s.brand} aria-label="Keplar Business home">
-            <BusinessMark size={24} />
-            <span className={s.wordmark}>Keplar <span>Business</span></span>
+            <BusinessMark size={26} />
           </Link>
           <nav className={s.navLinks} aria-label="Sections">
             {links.map((l) => <a key={l.href} href={l.href}>{l.label}</a>)}
@@ -302,20 +339,31 @@ export function Storefront() {
       ) : null}
 
       <section id="product" className={s.section} aria-labelledby="product-h">
-        <div className={s.split}>
-          <div className={s.splitHead} data-reveal="">
+        <div className={s.container}>
+          <div className={s.productHead} data-reveal="">
             <p className={s.overline}>Product</p>
-            <h2 id="product-h" className={s.h2}>One workspace, from idea to shipped.</h2>
-            <p className={s.body}>Describe the outcome. Agents do the work in the open, and every step leaves something you can read, run or reject.</p>
+            <h2 id="product-h" className={s.h2}>One workspace,<br />from idea to shipped.</h2>
+            <p className={s.lede}>Describe the outcome. Agents do the work in the open, and every step leaves something you can read, run or reject.</p>
           </div>
-          <ol className={s.capabilities}>
-            {CAPABILITIES.map((c, i) => (
-              <li key={c.title} data-reveal="">
-                <span className={s.index}>{String(i + 1).padStart(2, "0")}</span>
-                <div><h3 className={s.h5}>{c.title}</h3><p>{c.body}</p></div>
-              </li>
+          <div className={s.features}>
+            {FEATURES.map((f, i) => (
+              <article key={f.title} className={s.feature} data-flip={i % 2 === 1 || undefined} aria-labelledby={`feature-${f.kind}`}>
+                <div className={s.featureCopy} data-reveal="">
+                  <h3 id={`feature-${f.kind}`} className={s.featureTitle}><span className={s.featureIcon}><Icon name={f.icon} size={20} /></span>{f.title}</h3>
+                  <p className={s.body}>{f.body}</p>
+                  <ul className={s.ticks}>{f.points.map((x) => <li key={x}>{x}</li>)}</ul>
+                </div>
+                <div data-reveal=""><ProductDemo kind={f.kind} /></div>
+              </article>
             ))}
-          </ol>
+          </div>
+          <div className={s.more} data-reveal="">
+            <h3 className={s.h3}>And much more</h3>
+            <p className={s.body}>Everything a small team needs to run on agents, in the same workspace.</p>
+            <ul className={s.moreGrid}>
+              {MORE.map((m) => <li key={m.title}><span className={s.moreIcon}><Icon name={m.icon} /></span><div><h4 className={s.h6}>{m.title}</h4><p>{m.body}</p></div></li>)}
+            </ul>
+          </div>
         </div>
       </section>
 
@@ -362,7 +410,7 @@ export function Storefront() {
               return (
                 <article key={id} className={s.plan} data-featured={id === "growth" || undefined} aria-labelledby={`plan-${id}`}>
                   <div className={s.planTop}>
-                    <h3 id={`plan-${id}`} className={s.planName}>{short(id)}</h3>
+                    <h3 id={`plan-${id}`} className={s.planName}>{short(id)}{id === "growth" ? <span className={s.popular}>Most popular</span> : null}</h3>
                     <p className={s.planFor}>{t.audience}</p>
                   </div>
                   <p className={s.price}>
@@ -377,7 +425,8 @@ export function Storefront() {
                     <div><dt>Active agents</dt><dd>{t.activeAgents === null ? "Custom" : fmt(t.activeAgents)}</dd></div>
                     <div><dt>AI credits a month</dt><dd>{t.credits === null ? "Custom" : fmt(t.credits)}</dd></div>
                   </dl>
-                  <ul className={s.planList}>{t.includes.filter((x) => !/^\d|seat|active agents|projects$/i.test(x)).slice(0, 6).map((x) => <li key={x}>{x}</li>)}</ul>
+                  {ORDER.indexOf(id) > 0 ? <p className={s.planEvery}>Everything in {short(ORDER[ORDER.indexOf(id) - 1])}, and:</p> : <p className={s.planEvery}>Includes:</p>}
+                  <ul className={s.planList}>{t.includes.filter((x) => !/^\d|^everything in|seat|active agents|projects$/i.test(x)).slice(0, 6).map((x) => <li key={x}>{x}</li>)}</ul>
                 </article>
               );
             })}

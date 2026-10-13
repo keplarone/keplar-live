@@ -94,6 +94,14 @@
 .orb[data-fallback] { inset: 24px; margin: auto; aspect-ratio: 1; max-height: calc(100% - 24px); border-radius: 50%; background: radial-gradient(circle at 38% 32%, rgba(160, 130, 220, 0.28), rgba(40, 30, 80, 0.5) 45%, #05040b 72%); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12); }
 .tile:has(.orb) .stage::after { display: none; }
 
+/* Product section feature rows (ProductDemo): the same examples, larger, on a quiet panel */
+.demo { position: relative; min-height: 380px; border-radius: 16px; overflow: hidden; background: #111; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08); }
+.demoStage { position: absolute; inset: 0; padding: 40px 32px 0; display: flex; flex-direction: column; }
+.demoStage > * { flex: 1; min-height: 0; }
+.demo[data-kind="chat"] .demoStage { padding: 48px clamp(20px, 6%, 56px) 24px; }
+.demo[data-kind="research"] .demoStage, .demo[data-kind="agents"] .demoStage { padding: 48px clamp(20px, 6%, 56px) 24px; }
+.demo .bubble { font-size: 14px; }
+
 @media (max-width: 1000px) {
   .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .tile[data-wide] { grid-column: span 2; }

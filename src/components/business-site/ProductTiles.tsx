@@ -172,3 +172,17 @@ export function ProductTiles() {
     </div>
   );
 }
+
+export type DemoKind = "chat" | "build" | "agents" | "research" | "design";
+
+/** One of the tile examples at full size, for the Product section's feature rows. It animates only while on screen. */
+export function ProductDemo({ kind }: { kind: DemoKind }) {
+  const [ref, on] = useLive<HTMLDivElement>();
+  const Demo = { chat: ChatTile, build: BuildTile, agents: AgentsTile, research: ResearchTile, design: DesignTile }[kind];
+  return (
+    <div ref={ref} className={s.demo} data-kind={kind}>
+      <span className={s.example}>Example</span>
+      <div className={s.demoStage}><Demo on={on} /></div>
+    </div>
+  );
+}
