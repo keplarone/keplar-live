@@ -723,3 +723,27 @@
 /* Settings → Incoming webhooks: the URL and its Copy button on one row. */
 .hookRow { display: flex; gap: 8px; align-items: center; }
 .hookRow > input { flex: 1; min-width: 0; font-family: var(--f-mono, ui-monospace, monospace); font-size: 12px; }
+
+/* ── Compact Create start page: fits a laptop/desktop-app window without scrolling ── */
+.calm { gap: 14px; padding-top: clamp(16px, 4vh, 40px); padding-bottom: var(--s-4); }
+.calmIntro { gap: 6px; }
+.calmTitle { font-size: clamp(22px, 2.4vw, 30px); line-height: 1.12; }
+.calmLede { font-size: 14px; line-height: 1.5; }
+.calmCard { gap: 6px; padding: 12px 14px 10px 16px; border-radius: 20px; }
+.calmCard .prompt { font-size: 15px; min-height: 2.8em; }
+.calmChips { gap: 6px; }
+.calmChip { height: 30px; padding: 0 12px; }
+.calmShowcase { padding: var(--s-2) clamp(16px, 3vw, 24px) var(--s-4); }
+.step { padding-top: var(--s-3); }
+.step[hidden] { display: none; }
+.calmOptions { gap: var(--s-3); }
+.calmCanvas { min-height: 240px; max-height: 300px; }
+.optTabs { display: flex; gap: 4px; padding: 3px; border-radius: 999px; background: var(--c-surface-1); box-shadow: inset 0 0 0 1px var(--c-border); align-self: center; }
+.optTab { height: 28px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; color: var(--c-ink-2); font: inherit; font-size: 12.5px; cursor: pointer; }
+.optTab[aria-selected="true"] { background: var(--c-ink); color: var(--c-canvas); }
+/* the shelf of your apps: one compact row that scrolls sideways instead of a tall grid (the explorer lists them too) */
+.shelf { padding: var(--s-2) clamp(16px, 2.4vw, 36px) var(--s-4); }
+.shelfHead { padding-top: var(--s-2); margin-bottom: var(--s-2); }
+.shelfTitle { font-size: 14px; }
+.shelfGrid { display: flex; overflow-x: auto; gap: 10px; padding-bottom: 6px; scroll-snap-type: x proximity; }
+.shelfGrid > li { flex: 0 0 200px; scroll-snap-align: start; }
