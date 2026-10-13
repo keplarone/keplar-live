@@ -10,9 +10,10 @@ const req = (url: string) => new NextRequest(url);
 
 test("business host: its own pages rewrite into the Business app; any other page goes to keplar.one (temporary)", () => {
   const rewritten = (p: string) => businessHost(req(`https://business.keplar.one${p}`))?.headers.get("x-middleware-rewrite");
-  for (const [p, to] of [["/", "/biz"], ["/work", "/biz/work"], ["/account", "/biz/account"], ["/signin", "/biz/signin"]]) assert.equal(new URL(rewritten(p)!).pathname, to, p);
-  // Links inside Create and the Business OS modules (/pricing, /terms, /showcase, /app/create) used to land on a Business 404.
-  for (const p of ["/pricing", "/terms", "/privacy", "/showcase", "/app/create?tab=images"]) {
+  for (const [p, to] of [["/", "/biz"], ["/work", "/biz/work"], ["/account", "/biz/account"], ["/signin", "/biz/signin"], ["/status", "/biz/status"], ["/terms", "/biz/terms"], ["/privacy", "/biz/privacy"], ["/security", "/biz/security"]]) assert.equal(new URL(rewritten(p)!).pathname, to, p);
+  // Status, Terms, Privacy and Security are Business's own copies now (above). Other links inside Create and the Business OS
+  // modules (/pricing, /showcase, /app/create) used to land on a Business 404: they go to keplar.one.
+  for (const p of ["/pricing", "/showcase", "/app/create?tab=images", "/help"]) {
     const r = businessHost(req(`https://business.keplar.one${p}`))!;
     assert.equal(r.status, 307, p);
     assert.equal(r.headers.get("location"), `https://keplar.one${p}`, p);

@@ -95,8 +95,11 @@ export function docsHost(req: NextRequest) {
  * under /biz ("/" → /biz, "/work" → /biz/work), so a Business page can never resolve to a Keplar One page. Static files pass
  * through; /api is handled by the shared API guard below (rate limit, same-origin), like on keplar.one. Returns null for /api.
  */
-/** The Business app's own pages (first path segment), each under /biz: storefront, account setup, sign-in handoff, workspace. */
-const BUSINESS_PAGES = new Set(["", "account", "signin", "work"]);
+/**
+ * The Business app's own pages (first path segment), each under /biz: storefront, account setup, sign-in handoff, workspace, and
+ * its own copies of keplar.one's Status, Terms, Privacy and Security pages.
+ */
+const BUSINESS_PAGES = new Set(["", "account", "signin", "work", "status", "terms", "privacy", "security"]);
 
 export function businessHost(req: NextRequest): NextResponse | null {
   const { pathname, search } = req.nextUrl;

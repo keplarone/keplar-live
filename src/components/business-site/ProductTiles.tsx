@@ -91,7 +91,7 @@ function BuildTile({ on }: { on: boolean }) {
           <div key={i} className={s.tl} data-k={l.k} data-in={i < n || undefined}>
             {l.k === "cmd" ? <><span className={s.prompt}>❯</span>{l.a}</>
               : l.k === "think" ? <span className={s.dim}>{l.a}</span>
-              : l.k === "agent" ? <><span className={s.dim}>│</span>{l.a}<span className={s.dim}>{l.b}</span><span className={s.status} data-done={n >= BUILD.length || undefined}>[{n >= BUILD.length ? "done" : l.c}]</span></>
+              : l.k === "agent" ? <><span className={s.dim}>│</span><span>{l.a}</span><span className={s.dim}>{l.b}</span><span className={s.status} data-done={n >= BUILD.length || undefined}>[{n >= BUILD.length ? "done" : l.c}]</span></>
               : <><span className={s.caret}>{l.k === "done" ? "◆" : "▸"}</span><span className={s.tool}>{l.a}</span><span className={s.path}>{l.b}</span><span className={s.dim}>{l.c}</span></>}
           </div>
         ))}

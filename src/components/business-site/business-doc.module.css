@@ -1,0 +1,94 @@
+/*
+ * Keplar Business copies of keplar.one's Status, Terms, Privacy and Security pages (BusinessDoc.tsx). They render the very same
+ * components as keplar.one, so the words never drift apart; this file only re-points Keplar One's design tokens at the Business
+ * ones (tokens.css: near-black, hairlines, Google Sans, no glass or glow). Keplar One's light-theme rules read the same tokens
+ * (--lt-*), so they land on Business values too and the pages stay dark like the rest of business.keplar.one.
+ */
+.doc {
+  color-scheme: dark;
+  /* surfaces and ink */
+  --c-canvas: var(--kb-bg);
+  --c-surface-1: var(--kb-surface);
+  --c-surface-2: var(--kb-surface-2);
+  --c-ink: var(--kb-ink);
+  --c-ink-2: var(--kb-ink-2);
+  --c-ink-3: var(--kb-ink-3);
+  --rgb-ink: 250 250 250;
+  --rgb-canvas: 10 10 10;
+  --c-border: var(--kb-border);
+  --c-border-strong: var(--kb-border-strong);
+  --c-focus: var(--kb-focus);
+  --c-accent: var(--kb-ink);
+  --c-agree: var(--kb-add);
+  --c-dissent-text: var(--kb-del);
+  --c-warm: var(--kb-ink-2);
+  /* no glass, glow or lift: flat surfaces with hairlines */
+  --c-glass: var(--kb-surface);
+  --c-glass-strong: var(--kb-surface);
+  --c-glass-border: var(--kb-border);
+  --blur-glass: 0px;
+  --glass-saturate: 1;
+  --sh-hairline: inset 0 0 0 1px var(--kb-border);
+  --lt-card-bg: var(--kb-surface);
+  --lt-card-border: var(--kb-border);
+  --lt-card-lift: none;
+  --lt-card-shadow: none;
+  --lt-chip-bg: var(--kb-surface-2);
+  /* type */
+  --f-sans: var(--kb-sans);
+  --f-mono: var(--kb-code);
+  /* the Business header is in the page flow, not a floating nav to clear */
+  --l-nav-h: 0px;
+  --l-nav-offset: 0px;
+  --l-max: var(--kb-max);
+  --l-gutter: var(--kb-gutter);
+
+  background: var(--kb-bg);
+  color: var(--kb-ink);
+  font-family: var(--kb-sans);
+  padding-top: var(--kb-s-6);
+}
+.doc a {
+  color: var(--kb-ink);
+}
+.doc ::selection {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kb-s-5);
+  height: 64px;
+  max-width: var(--kb-max);
+  margin: 0 auto;
+  padding: 0 var(--kb-gutter);
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--kb-border);
+}
+.home {
+  display: inline-flex;
+  align-items: center;
+  color: var(--kb-ink);
+  text-decoration: none;
+  min-height: 44px;
+}
+.home:focus-visible,
+.back:focus-visible {
+  outline: 2px solid var(--kb-focus);
+  outline-offset: 3px;
+  border-radius: var(--kb-r-sm);
+}
+.back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--kb-ink-2);
+  font-size: var(--kb-t-sm);
+  text-decoration: none;
+  transition: color var(--kb-d-1) var(--kb-ease);
+}
+.back:hover {
+  color: var(--kb-ink);
+}

@@ -9,10 +9,10 @@ import { ProductDemo, ProductTiles, type DemoKind } from "./ProductTiles";
 import { ScrambleWord } from "./ScrambleWord";
 import { SignOutButton } from "./SignOutButton";
 import { BusinessMark } from "./BusinessMark";
+import { BusinessFooter } from "./BusinessFooter";
 import s from "./business-site.module.css";
 
 /** Keplar One (legal pages live there). Everything else is this app: the account API, /signin (the handoff from keplar.one), /account and /work. */
-const APP = "https://keplar.one";
 const ACCOUNT_API = "/api/business/account";
 
 type DownloadFile = { os: string; arch: string; type: string; url: string; size: number };
@@ -459,7 +459,7 @@ export function Storefront() {
             <p className={s.overline}>Security</p>
             <h2 id="security-h" className={s.h2}>Trusted with real work.</h2>
             <p className={s.body}>How Keplar handles your data is written down in full.</p>
-            <p className={s.inlineLinks}><a href={`${APP}/security`} className={s.textLink}>Security</a><a href={`${APP}/privacy`} className={s.textLink}>Privacy policy</a><a href={`${APP}/status`} className={s.textLink}>Status</a></p>
+            <p className={s.inlineLinks}><Link href="/security" className={s.textLink}>Security</Link><Link href="/privacy" className={s.textLink}>Privacy policy</Link><Link href="/status" className={s.textLink}>Status</Link></p>
           </div>
           <ul className={s.trust} data-reveal="">
             {TRUST.map((x) => <li key={x.title}><h3 className={s.h5}>{x.title}</h3><p>{x.body}</p></li>)}
@@ -510,19 +510,7 @@ export function Storefront() {
         </div>
       </section>
 
-      <footer className={s.footer}>
-        <div className={s.footInner}>
-          <div className={s.footBrand}>
-            <span className={s.brand} role="img" aria-label="Keplar Business"><BusinessMark size={24} /></span>
-            <p>© Keplar</p>
-          </div>
-          <nav className={s.footCols} aria-label="Footer">
-            <div><h2>Product</h2><Link href="/work">Workspace</Link><a href="#pricing">Pricing</a><a href="#download-app">Desktop app</a><a href="#revenue-guard">Revenue Guard</a></div>
-            <div><h2>Company</h2><a href={APP}>Keplar One</a><a href="#contact">Contact sales</a><a href={`${APP}/status`}>Status</a></div>
-            <div><h2>Legal</h2><a href={`${APP}/terms`}>Terms</a><a href={`${APP}/privacy`}>Privacy</a><a href={`${APP}/security`}>Security</a></div>
-          </nav>
-        </div>
-      </footer>
+      <BusinessFooter />
     </div>
   );
 }

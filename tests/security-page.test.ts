@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { footerNav } from "../src/lib/site";
 
-const page = readFileSync("src/app/(marketing)/security/page.tsx", "utf8");
+// The words live in SecurityContent (shared by keplar.one/security and business.keplar.one/security).
+const page = readFileSync("src/components/security/SecurityContent.tsx", "utf8");
 const txt = readFileSync("public/.well-known/security.txt", "utf8");
 
 test("security.txt points at the /security policy page and /security is linked from the footer", () => {
