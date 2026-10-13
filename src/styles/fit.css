@@ -24,6 +24,8 @@ html[data-signed="1"] [data-cta="try"] { display: none; }
 
 /* ── smooth caret (SmoothCaret.tsx): only while the overlay is showing is the native caret hidden ── */
 [data-sc] { caret-color: transparent; }
+/* The 2px caret sits where an empty field's placeholder starts and was drawn through its first letter ("Search settings"); while it shows, the placeholder alone moves over. */
+[data-sc]::placeholder { text-indent: 4px; }
 .smooth-caret { position: fixed; left: 0; top: 0; z-index: 2147483000; width: 2px; border-radius: 1px; background: currentColor; pointer-events: none; visibility: hidden; will-change: transform; contain: layout style; transition: width 0.14s ease; }
 .smooth-caret[data-block="1"] { opacity: 0.5 !important; border-radius: 2px; }
 .smooth-caret:not([data-moving]) { animation: sc-blink 1.1s steps(1, end) infinite; }
