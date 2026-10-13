@@ -305,7 +305,7 @@ export function playfulRead(prompt: string, history: readonly Turn[] = [], opts:
       kind: ask.riddle ? "riddle" : "joke",
       hint: ask.riddle
         ? "They want a riddle. Ask one short riddle (do not give the answer yet). One or two lines."
-        : `They asked for a joke${ask.topic ? ` about ${ask.topic}` : ""}${again ? " (another one)" : ""}. Tell one short, genuinely funny joke (a pun, a one-liner or a dad joke), one or two lines, with the punchline last. Do not repeat a joke that is already in the conversation.`,
+        : `They asked for a joke${ask.topic ? ` about ${ask.topic}` : ""}${again ? " (another one)" : ""}. Tell one short, genuinely funny joke (a pun, a one-liner or a dad joke), one or two lines, with the punchline last. Make it one they are unlikely to have heard before, not a famous one, and do not repeat a joke that is already in the conversation.`,
     };
   }
 
@@ -395,6 +395,12 @@ const STALE_JOKES: RegExp[] = [
   /(?:bear with no teeth|gummy bear)/i,
   /skeletons?[\s\S]{0,60}(?:guts|no body)/i,
   /anti-?gravity[\s\S]{0,60}put (?:it )?down/i,
+  // seen live on 2026-10-13 ("tell me a joke about cats") and their kin
+  /cheetahs?/i,
+  /nacho cheese/i,
+  /seven ate nine|7 ?8 ?9/i,
+  /orange you glad/i,
+  /purr-?fect|claws? for concern|meow-?(?:velous|sic)|paw-?some/i,
 ];
 export const isStaleJoke = (text: string) => STALE_JOKES.some((rx) => rx.test(text));
 

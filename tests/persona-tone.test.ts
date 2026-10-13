@@ -101,8 +101,13 @@ test("humor is decided in code too: off for serious subjects even in a calm tone
     assert.equal(humorCall(q, "neutral"), "off", q);
     assert.match(humorNote(q, "neutral"), /subject is serious\. No jokes, wit, wordplay or wry asides/, q);
   }
-  // Everyday words that only look serious leave the default alone.
-  for (const q of ["Best shoes for a basketball court?", "How do I paint a smooth brush stroke?", "Why are my phone charges so high this month?", "What's a good name for a cat?", "How long should I boil an egg?"]) {
+  // Everyday words that only look serious are light subjects: one fresh touch of wit, in the opening or closing line.
+  for (const q of ["Best shoes for a basketball court?", "How do I paint a smooth brush stroke?", "Why are my phone charges so high this month?", "What's a good name for a cat?", "How long should I boil an egg?", "what's the best way to keep basil alive on a kitchen windowsill?"]) {
+    assert.equal(humorCall(q, "neutral"), "light", q);
+    assert.match(humorNote(q, "neutral"), /subject is light\. Include exactly one short, fresh touch of wit[\s\S]*opening or the closing line, not inside a step/, q);
+  }
+  // Code, math, exact formats, error reports and bare fragments are left to the general rule (no humor there).
+  for (const q of ["write a python function that reverses a string", "what is 17 * 23", "convert this list to JSON please", "I get a TypeError when I run npm start", "solve the equation x^2 = 9", "capital of France?"]) {
     assert.equal(humorCall(q, "neutral"), "default", q);
     assert.equal(humorNote(q, "neutral"), "", q);
   }
@@ -118,7 +123,7 @@ test("humor is decided in code too: off for serious subjects even in a calm tone
     assert.equal(humorNote("haha whatever", m), "", `${m}: the mood note already says no jokes`);
   }
   assert.equal(humorCall("I got the job!!! haha", "excited"), "match");
-  assert.equal(humorCall("are you kidding me, it crashed again", "neutral"), "default", "not laughter");
+  assert.equal(humorCall("are you kidding me, it crashed again", "neutral"), "default", "not laughter, and an error report");
 });
 
 test("the answer route places the humor note with the mood note, ahead of the question", () => {

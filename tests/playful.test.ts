@@ -243,4 +243,7 @@ test("worn-out jokes are turned down so the next model (or a fresh curated line)
   }
   assert.equal(cleanPlayful("My code works and I have no idea why. Like a cat that comes when called."), "My code works and I have no idea why. Like a cat that comes when called.");
   for (const j of JOKE_FALLBACK) assert.equal(isStaleJoke(j), false, `the fallback pool has no classics: ${j}`);
+  // seen live on 2026-10-13 for "tell me a joke about cats"
+  assert.equal(cleanPlayful("Why don't cats play poker in the jungle? Too many cheetahs."), "");
+  assert.equal(cleanPlayful("My cat reviews every box I bring home. Five stars, would sit in again."), "My cat reviews every box I bring home. Five stars, would sit in again.");
 });

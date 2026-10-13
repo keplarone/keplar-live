@@ -95,15 +95,26 @@ const SERIOUS: RegExp[] = [
 /** The person's own playfulness: laughter, "jk", a winking or laughing emoji, a smiley. */
 const PLAYFUL = /\b(?:lol+|lmf?ao+|rofl|ha(?:ha)+h?|he(?:he)+|jk)\b|[\u{1F602}\u{1F923}\u{1F606}\u{1F61C}\u{1F61D}\u{1F604}\u{1F601}\u{1F643}\u{1F60F}\u{1F609}]|(?:^|\s)[:;]-?[)DP](?=\s|$)|(?:^|\s)xD(?=\s|$)/iu;
 
-export type HumorCall = "off" | "match" | "default";
+/**
+ * Code, math, data, exact formats and error reports: the answer is exact and the general rule keeps humor out. A bare fragment (under four
+ * words) is left to the general rule too. Measured live on 2026-10-13: with only "at most one touch" to go on, the free writers added none
+ * to light questions (a basil how-to, "how's your day going"), so a light subject now gets an explicit ask.
+ */
+const EXACT = /\b(?:code|coding|function|script|python|javascript|typescript|java|c\+\+|c#|rust|golang|kotlin|swift|php|ruby|sql|regex|api|json|yaml|xml|csv|html|css|bash|shell|terminal|command line|npm|npx|pip|git|docker|compile|debug|bug|\w*error|\w*exception|stack ?trace|crash\w*|calculate|calculation|equation|solve|integral|derivative|formula|spreadsheet|excel|convert|translate|format|word count|exactly|verbatim)\b|\d\s*[-+*/^=×÷]\s*\d/i;
 
-/** Whether this reply may joke: "off" for a serious subject, "match" when the person is being playful, else the prompt decides. */
+export type HumorCall = "off" | "match" | "light" | "default";
+
+/**
+ * Whether this reply may joke: "off" for a serious subject, "match" when the person is being playful, "light" for an everyday subject that
+ * should get one touch of wit, "default" (the general rule decides) for code, math, exact formats and bare fragments.
+ */
 export function humorCall(text: string, mood: Mood): HumorCall {
   const t = (text ?? "").slice(0, 2000);
   if (mood !== "neutral" && mood !== "excited") return "off"; // upset moods: moodNote already says no jokes
   if (SERIOUS.some((rx) => rx.test(t))) return "off";
   if (PLAYFUL.test(t)) return "match";
-  return "default";
+  if (EXACT.test(t) || t.trim().split(/\s+/).length < 4) return "default";
+  return "light";
 }
 
 /** Guidance for the writer about humor in this reply ("" when the general HUMOR_PROMPT rule is enough). Never shown to the person. */
@@ -114,6 +125,9 @@ export function humorNote(text: string, mood: Mood): string {
   }
   if (call === "match") {
     return "Humor guidance for this reply (do not mention it): the person is being playful. Match it with one quick, fresh line of wit in your own words (not a stock joke), then give the real answer in full; never let the joke replace or blur it.";
+  }
+  if (call === "light") {
+    return "Humor guidance for this reply (do not mention it): the subject is light. Include exactly one short, fresh touch of wit in your own words (a wry aside, an unexpected comparison, or a little self-aware humor about being an AI), in the opening or the closing line, not inside a step, warning, number or command. Everything else stays plain, exact and complete.";
   }
   return "";
 }
