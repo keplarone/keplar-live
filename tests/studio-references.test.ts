@@ -8,6 +8,7 @@ test("Studio screenshots are scaled without fetch(data:), which the app CSP bloc
   const src = readFileSync("src/components/app-ui/studio-mode/references.ts", "utf8");
   const body = src.slice(src.indexOf("export async function scaleDataUrl"));
   assert.ok(body.length > 0, "scaleDataUrl exists");
-  assert.doesNotMatch(src, /\bfetch\s*\(/, "no fetch() in references.ts");
+  const code = src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+  assert.doesNotMatch(code, /\bfetch\s*\(/, "no fetch() call in references.ts");
   assert.match(body, /createImageBitmap\(dataUrlBlob\(dataUrl\)\)/, "decodes the data URL in the page");
 });
