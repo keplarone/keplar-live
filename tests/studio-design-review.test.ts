@@ -34,7 +34,8 @@ test("no Studio class name triggers redesign.css's forced button shadow", () => 
 test("Studio focus styles never rely on outline (globals.css strips outlines)", () => {
   for (const f of files) {
     for (const rule of strip(fs.readFileSync(f, "utf8")).matchAll(/([^{}]*:focus(?:-visible|-within)?[^{}]*)\{([^}]*)\}/g)) {
-      assert.doesNotMatch(rule[2], /outline:\s*(?!none)\d/, `${path.relative(ROOT, f)}: ${rule[1].trim()}`);
+      // outline: 0 removes an outline; the rule is against drawing one.
+      assert.doesNotMatch(rule[2], /outline:\s*(?!none|0\b)\d/, `${path.relative(ROOT, f)}: ${rule[1].trim()}`);
     }
   }
 });
