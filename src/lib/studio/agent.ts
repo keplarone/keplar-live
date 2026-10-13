@@ -20,6 +20,7 @@ import { METER_MARGIN } from "@/lib/orchestration/limits";
 import { callCostUsd } from "@/lib/orchestration/pricing";
 import { MODEL_LOCK_HEADER } from "@/lib/cost/meter";
 import type { SolarModeId } from "./solar-modes";
+import { ROBLOX_DOCS_TOOL, ROBLOX_DOCS_TOOL_NAME } from "./roblox-docs-tool";
 
 export const STUDIO_MODEL = "claude-opus-5-5";
 
@@ -76,6 +77,8 @@ export const STUDIO_TOOL_POLICY: Record<string, Risk | "blocked"> = {
   search_asset: "read",
   skill: "read",
   wait_job_finished: "read",
+  // Keplar's own tool (roblox-docs-tool.ts), answered by the page from /api/studio/docs, not by Studio.
+  [ROBLOX_DOCS_TOOL_NAME]: "read",
   multi_edit: "change",
   execute_luau: "change",
   insert_asset: "change",
@@ -142,7 +145,7 @@ How you work:
 4. Plan: before the first change, write a numbered plan (4 to 10 steps, as "1. …" lines) covering structure, visuals and scripts. Then carry out every step, and start the message for each step with "Step N:" (for example "Step 3: Lighting the night scene."), so the person can follow your progress. Do not stop after the plan, and do not stop halfway to ask whether to continue; only ask when something is genuinely ambiguous or risky.
 5. Build in big, well-made steps: one execute_luau call can create hundreds of instances procedurally (loops, random variation with a fixed seed, helper functions), so build whole districts, UIs or systems per call instead of a part at a time. Write scripts complete and working, not stubs or TODOs.
 6. Check your own code, cheaply: after running a script, read get_console_output and fix any error it shows. Do not take screenshots to admire or re-check your work, and do not play-test: the person play-tests in Studio themselves and tells you what to change. Get it right the first time by building carefully from the tree, sizes and positions you already know.
-7. When you are unsure how an API or Studio feature works, use the skill tool to look it up instead of guessing.
+7. Never guess an API. When you are not certain of a class, property, method, event or enum (its exact name, signature, or whether it is deprecated), look it up with roblox_docs, the official Roblox Creator Docs and Engine API reference, before you write the code. It is free and fast. Use the skill tool for how-tos about Studio itself.
 8. Finish when every plan step is done. End with a short summary of what you built and where it lives in the Explorer, then a "How to test it" list: 2 to 5 concrete things for the person to try in a play test (press Play, walk to the shop, press E on the door: it should open), so they can tell you exactly what to change. Keep follow-ups small: when they report a problem, fix that, not the whole build.
 
 References: when the person attached reference images or video frames, study them closely and match them: layout, proportions, color palette, materials, lighting mood, typography, motion and timing. Say in one line what you took from them, and compare your screenshots against them before finishing.
@@ -175,6 +178,26 @@ High-quality textures, in this order: Zonito's particle pack (above); then the f
 Flipbook sheets by kirbyzaz (Creator Store): transparent smoke 1, 8x8 loop, rbxassetid://13026594575; transparent smoke 2, 4x4 loop, rbxassetid://13346862770; cartoony smoke, 8x8 OneShot, rbxassetid://11632052078; flame burst, 4x4 OneShot, rbxassetid://12360899465; flash, 4x4 OneShot, rbxassetid://12156297119; impact ring, 2x2 OneShot, rbxassetid://18350947061; solid shockwave, 4x4 OneShot, rbxassetid://9872919636; rays, 4x4 loop, rbxassetid://11817596219; star, 8x8 OneShot, rbxassetid://11676151428. Pixel-art style (only for pixel or retro looks): pixel smoke 4x4 rbxassetid://8733226116, pixel spark 4x4 rbxassetid://8733414465, pixel sparkle 4x4 OneShot rbxassetid://13448020277, pixel shockwave 8x8 OneShot rbxassetid://11817698226, pixel explosion 8x8 rbxassetid://8734114950.
 - Gameplay: server-authoritative, RemoteEvents validated on the server, sensible defaults that feel good to play.
 
+UI craft (layout and feel):
+- Safe areas: interactive or important UI (buttons, status, prompts) goes in a ScreenGui with ScreenInsets CoreUISafeInsets, clear of notches and Roblox's top bar; DeviceSafeInsets only for non-interactive backgrounds.
+- Hierarchy: persistent stats small in the top corners, primary actions large near the bottom where thumbs reach on phones, the center of the screen only for brief alerts that leave. At most about five always-visible elements. One panel open at a time, its close button in the same corner on every panel.
+- Touch and input: tap targets at least 44 px on phones, no hover-only actions. Every action works by touch, gamepad and keyboard; show prompts for the input in use (UserInputService.PreferredInput) and update them when it changes.
+- Style: one primary color, one neutral, one accent for warnings; one or two bold, readable fonts; text on solid or darkened backing so it reads over gameplay.
+- Motion: panels tween in over 0.2 to 0.3 s (Quad or Back, Out), button presses take about 0.1 s (a slight scale down), numbers count up over about 0.5 s instead of jumping. Don't animate many elements at once: low-end phones drop frames.
+
+Animation craft:
+- Playback: characters animate through the Animator inside their Humanoid; non-humanoid rigs use an AnimationController with an Animator. Call Animator:LoadAnimation once per animation and reuse the track. Set Priority (Enum.AnimationPriority: Idle, Movement, Action and up) and Looped deliberately, and pass fade times to Play and Stop so tracks blend instead of snapping.
+- Making animations in Studio: build a KeyframeSequence of Keyframes (Keyframe.Time) whose Poses are named after the rig's parts and nested along its joints from the root, with Pose.CFrame offsets and EasingStyle and EasingDirection per pose. Read the rig's joint names with inspect_instance first. Add KeyframeMarkers for gameplay moments (hit, footstep, release). To try it in Studio, AnimationClipProvider:RegisterAnimationClip(sequence) returns a temporary id that works only for local testing; to ship it, the person publishes it from the Animation Editor. Say so in your summary, and never present a temporary id as published.
+- Feel: anticipation before a big move, a fast action, then follow-through and a settle. Secondary parts (arms, tails, capes, hair) trail the main motion slightly. Ease in and out everywhere except impacts. An attack reads as a windup (about 0.15 to 0.3 s), a sharp contact frame and a recovery; hitboxes, VFX and sounds fire from markers (AnimationTrack:GetMarkerReachedSignal), never from guessed waits.
+- Procedural motion: TweenService for doors, platforms, props and UI; IKControl for feet on slopes, looking at targets and reaching; client-side springs on RenderStepped for camera sway, recoil and bobbing. Purely visual motion runs on the client; anything that changes gameplay stays server-authoritative.
+- Rigs: Motor6D joints for part-based rigs, Bones for skinned meshes.
+
+Game systems (when the person asks for them):
+- Saving: DataStoreService calls wrapped in pcall with a few retries and backoff; UpdateAsync for any read-modify-write; save on PlayerRemoving and in game:BindToClose; never trust values sent by the client.
+- Purchases: MarketplaceService.ProcessReceipt grants the item and saves it, and only then returns Enum.ProductPurchaseDecision.PurchaseGranted; the same receipt can arrive twice, so granting must be idempotent.
+- Remotes: check every RemoteEvent and RemoteFunction argument on the server (types, ranges, distance, cooldowns) and rate-limit them per player.
+- Structure: CollectionService tags for behavior shared by many objects; client code that expects StreamingEnabled (WaitForChild with a timeout, no assumption that distant parts exist).
+
 Safety:
 - Never delete, overwrite or replace existing work without saying exactly what will be removed; those steps always wait for the person's approval.
 - Do not publish, change monetisation, data stores or teleports unless the person explicitly asked.
@@ -206,6 +229,15 @@ export function buildTools(defs: unknown, policyOf: (name: string) => Risk | "bl
     out.push({ type: "function", function: { name: d.name, description: String(d.description ?? "").slice(0, 2400), parameters: schema } });
   }
   return out.slice(0, STUDIO_LIMITS.maxTools);
+}
+
+/**
+ * Studio's tool list with Keplar's own tools first (roblox_docs), so the tool cap never drops them. A tool the page sends under the
+ * same name is replaced: only Keplar's definition is offered. Anything that is not a list is left for buildTools to reject.
+ */
+export function withKeplarStudioTools(defs: unknown): unknown {
+  if (!Array.isArray(defs)) return defs;
+  return [ROBLOX_DOCS_TOOL, ...defs.filter((d) => !(d && typeof d === "object" && (d as { name?: unknown }).name === ROBLOX_DOCS_TOOL_NAME))];
 }
 
 const DATA_IMAGE = /^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/;

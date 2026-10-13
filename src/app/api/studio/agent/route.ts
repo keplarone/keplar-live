@@ -4,7 +4,7 @@ import { rateLimit } from "@/lib/create/platform/ratelimit";
 import { currentWorkspace } from "@/lib/create/platform/workspace";
 import { CreditLimitError } from "@/lib/create/platform/compute";
 import { STUDIO_PLANS } from "@/lib/desktop/studio-bridge";
-import { buildTools, runStudioTurn, STUDIO_LIMITS, validateMessages } from "@/lib/studio/agent";
+import { buildTools, runStudioTurn, STUDIO_LIMITS, validateMessages, withKeplarStudioTools } from "@/lib/studio/agent";
 import { parseSolarMode, SOLAR_MODE_IDS } from "@/lib/studio/solar-modes";
 import { profileForMode } from "@/lib/studio/solar-modes-server";
 
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     // Solar mode: optional, strict. Missing means Medium (today's budgets); anything but one of the five ids is a 400.
     const mode = parseSolarMode(b.mode);
     if (!mode) throw new HttpError(400, `Unknown mode. Use one of: ${SOLAR_MODE_IDS.join(", ")}.`, "bad_mode");
-    const turn = await runStudioTurn(ws, { messages: validateMessages(b.messages), tools: buildTools(b.tools) }, {}, await profileForMode("studio", mode));
+    const turn = await runStudioTurn(ws, { messages: validateMessages(b.messages), tools: buildTools(withKeplarStudioTools(b.tools)) }, {}, await profileForMode("studio", mode));
     return json(turn, { headers: { "cache-control": "no-store" } });
   } catch (e) {
     if (e instanceof CreditLimitError) return json({ error: e.message, code: "studio_credits" }, { status: 402 });

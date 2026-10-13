@@ -26,6 +26,19 @@ import { clearSaved, deleteRemote, fetchRemote, placeKey, pushRemote, readSaved,
 import { scaleDataUrl } from "./references";
 import { appendEvent, clip, eventStamper, MAX_EVENT_TEXT, type ActionOrigin, type ReadPurpose, type StudioEvent, type StudioEventBody, type TurnUsage } from "./code/events";
 import { applyEdits, buildRevert, deriveDocuments, editOutcome, isRevertLineage, multiEditSchema, parseMultiEdit, parseScriptRead, retryAvailabilityFor, type ScriptSource } from "./code/documents";
+import { ROBLOX_DOCS_TOOL_NAME } from "@/lib/studio/roblox-docs-tool";
+
+/** Keplar's roblox_docs tool, answered by Keplar (/api/studio/docs) in the same shape as a Studio tool call through the bridge. */
+async function lookUpRobloxDocs(args: Record<string, unknown>): Promise<{ ok: true; result: { content: StudioContent[]; isError?: boolean } } | { ok: false; error: string }> {
+  try {
+    const res = await fetch("/api/studio/docs", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ query: args.query, limit: args.limit }) });
+    const data = (await res.json().catch(() => ({}))) as { text?: string; error?: string };
+    if (!res.ok || typeof data.text !== "string") return { ok: false, error: data.error ?? "The Roblox docs lookup failed." };
+    return { ok: true, result: { content: [{ type: "text", text: data.text } as StudioContent] } };
+  } catch {
+    return { ok: false, error: "The Roblox docs lookup failed." };
+  }
+}
 
 export type Risk = "read" | "change" | "destructive";
 type ToolCall = { id: string; type: "function"; function: { name: string; arguments: string } };
@@ -79,6 +92,7 @@ export function describeAction(name: string, args: Record<string, unknown>): str
     case "screen_capture": return "Take a screenshot";
     case "search_asset": return `Search the Creator Store for “${s(args.query)}”`;
     case "skill": return `Look up ${s(args.skill_name) || "a reference"}`;
+    case ROBLOX_DOCS_TOOL_NAME: return `Check the Roblox docs for “${s(args.query).slice(0, 60)}”`;
     case "wait_job_finished": return "Wait for a generation to finish";
     case "multi_edit": return `Edit ${s(args.file_path) || "a script"}`;
     case "execute_luau": return "Run Luau in Studio";
@@ -429,7 +443,7 @@ ${text || "(could not read the scene)"}` });
     const before = edit ? await readScript(edit.path, "before", k, studioId) : null;
     emit({ kind: "action.running", action: k, name: a.name });
     const t0 = Date.now();
-    const r = await bridge.call(a.name, a.args);
+    const r = !blender && a.name === ROBLOX_DOCS_TOOL_NAME ? await lookUpRobloxDocs(a.args) : await bridge.call(a.name, a.args);
     if (!r.ok || r.result.isError) {
       const msg = r.ok ? toolResult(r.result.content).text : r.error;
       patch(k, { status: "failed", summary: msg.slice(0, 300) });

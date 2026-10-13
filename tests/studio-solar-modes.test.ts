@@ -171,14 +171,18 @@ test("modes endpoint: the priced table for both surfaces plus the provider discl
   assert.equal(med.reasoningTokens, 3000);
   assert.ok(med.outputCreditsMax >= 154, "at least the unmultiplied ceiling");
   assert.ok(j.modes.blender.every((m) => m.reserveCredits >= m.outputCreditsMax));
-  assert.equal(j.technical.foundationModel, "Claude Opus 5.5");
+  assert.match(j.technical.foundationModel, /not trained by Keplar/);
 });
 
-test("disclosure: one Anthropic model through OpenRouter, modes are configurations, the id matches the lock", () => {
+test("disclosure: Keplar's product on one licensed model through OpenRouter, never a model Keplar trained, modes are configurations", () => {
   const t = SOLAR_TECHNICAL_DETAILS;
-  assert.equal(t.developer, "Anthropic");
+  assert.equal(t.product, "Solar 5.8");
+  assert.equal(t.productDeveloper, "Keplar One");
+  assert.match(t.foundationModel, /licensed third-party frontier model, not trained by Keplar/);
   assert.equal(t.servedThrough, "OpenRouter");
-  assert.equal(t.openRouterModelId, ROBLOX_MODEL_DEFAULT);
+  assert.match(t.summary, /Keplar did not train that model/);
+  // The product name is never presented as the model it runs on, nor given a model id of its own.
+  assert.doesNotMatch(JSON.stringify(t), /runs on Solar|keplar-solar|foundationModel":"Solar/i);
   assert.match(t.summary, /execution configurations of that one model/);
   assert.match(t.summary, /not separately trained models/);
   const all = JSON.stringify(t).toLowerCase();

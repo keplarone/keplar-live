@@ -26,6 +26,8 @@ const nextConfig: NextConfig = {
     "/api/roblox-cloud/worker": ["./vendor/luau/**"],
     "/api/roblox-cloud/jobs/[id]/start": ["./vendor/luau/**"],
     "/api/health": ["./vendor/luau/**"],
+    // Studio mode's roblox_docs tool searches the Roblox Creator Docs index, read from vendor/roblox-docs at run time.
+    "/api/studio/docs": ["./vendor/roblox-docs/**"],
     // Blender Cloud copies its machine scripts (agent, render setup, video step) onto each new render machine.
     "/api/blender-cloud/jobs": ["./vendor/blender-cloud/**"],
   },

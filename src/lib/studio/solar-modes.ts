@@ -9,7 +9,7 @@
  * - `maxOutputTokens`: the step's `max_tokens` cap. Thinking counts toward it, so the room left for the visible reply and the
  *   tool call (a whole build script) is `maxOutputTokens - reasoningTokens`.
  *
- * How the numbers were chosen (Solar 5.8 5.5: 1M context, 128K output cap, $4 / $20 per million input / output tokens):
+ * How the numbers were chosen (Claude Opus 5.5: 1M context, 128K output cap, $4 / $20 per million input / output tokens):
  *
  * 1. Medium is today's behaviour exactly (Studio: 3,000 / 20,000; Blender: 1,500 / 8,000), so nobody sees a change by default.
  * 2. Thinking must stay below `max_tokens` (OpenRouter and Anthropic reject or truncate otherwise), and every mode keeps at least as
@@ -18,9 +18,9 @@
  * 3. Every request is non-streaming and bounded by the route's `maxDuration` (300 s) through `STUDIO_LIMITS.timeoutMs`
  *    (270 s, the same for every mode). The timeout is not raised: 300 s is the ceiling every long route in this app is deployed
  *    with. The caps are ceilings, not targets: a step is one reply plus at most one tool call and usually stops well short of
- *    them. The largest step (Ultimate+, 38,000 tokens) stays far below Solar 5.8 128K output cap; a step that would still be
+ *    them. The largest step (Ultimate+, 38,000 tokens) stays far below the model's 128K output cap; a step that would still be
  *    generating at 270 s is aborted, fails with an error and is not charged (the same as in Medium today).
- * 4. Solar 5.8 itself controls thinking with an effort setting, not a token budget (Anthropic's API rejects a fixed
+ * 4. Claude Opus 5.5 itself controls thinking with an effort setting, not a token budget (Anthropic's API rejects a fixed
  *    thinking budget for this model). Keplar sends the budget as OpenRouter's `reasoning.max_tokens`, as it always has for
  *    Medium, and OpenRouter decides how that request is applied to the model. So `reasoningTokens` is a requested budget, not a
  *    guaranteed amount of thinking; `maxOutputTokens` is a hard cap. Check `usage.reasoningTokens` per mode in production.
@@ -160,18 +160,17 @@ export type SolarModeCredits = {
 /** Accurate provider disclosure for the UI's technical-details section. */
 export const SOLAR_TECHNICAL_DETAILS = {
   product: "Solar 5.8",
-  foundationModel: "Solar 5.8",
-  developer: "Keplar One",
-  servedThrough: "Keplar",
-  openRouterModelId: "keplarone/keplar-solar 5.8",
+  productDeveloper: "Keplar One",
+  foundationModel: "A licensed third-party frontier model, not trained by Keplar",
+  servedThrough: "OpenRouter",
   summary:
-    "Solar 5.8 runs on Solar 5.8, a model developed by Anthropic, served through OpenRouter. Light, Medium, High, Max and Ultimate+ are execution configurations of that one model: each sets the thinking budget Keplar requests and the cap on what the model may write in each step. They are not separately trained models.",
+    "Solar 5.8 is Keplar's agent for Roblox Studio and Blender: Keplar's instructions, tools, Roblox knowledge and safeguards around a licensed third-party frontier model, served through OpenRouter. Keplar did not train that model. Light, Medium, High, Max and Ultimate+ are execution configurations of that one model: each sets the thinking budget Keplar requests and the cap on what the model may write in each step. They are not separately trained models.",
   modes:
-    "A mode sets two numbers per step: the requested thinking budget (OpenRouter reasoning.max_tokens) and the output cap (max_tokens, which includes thinking). Solar 5.8 controls its thinking with an effort setting rather than a token budget, so how the requested budget is applied is decided by OpenRouter; the output cap is always enforced. The model often uses less than either. Deeper modes can use more credits per step.",
+    "A mode sets two numbers per step: the requested thinking budget (OpenRouter reasoning.max_tokens) and the output cap (max_tokens, which includes thinking). The model controls its thinking with an effort setting rather than a token budget, so how the requested budget is applied is decided by OpenRouter; the output cap is always enforced. The model often uses less than either. Deeper modes can use more credits per step.",
   studioModelLock:
-    "Roblox Studio mode only runs on Solar 5.8: an answer reported by any other model is discarded and not charged, and Studio pauses instead of switching models.",
+    "Roblox Studio mode only runs on that one model: an answer reported by any other model is discarded and not charged, and Studio pauses instead of switching models.",
   blenderModel:
-    "Blender mode requests Solar 5.8 through OpenRouter for every step but is not model-locked: when Keplar's cost safeguards are active, a step can be answered by another model. The model that answered is reported with each step's usage.",
+    "Blender mode requests the same model through OpenRouter for every step but is not model-locked: when Keplar's cost safeguards are active, a step can be answered by another model. The model that answered is reported with each step's usage.",
   billing:
     "Each step is charged from the provider's reported cost for the tokens actually used, with Keplar's normal margin. The output cap is a ceiling, not an estimate.",
 } as const;
