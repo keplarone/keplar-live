@@ -29,7 +29,7 @@ export default function Changelog() {
               <p className={s.meta}><time dateTime={r.date}>{releaseDate(r.date)}</time></p>
               <p>{r.summary}</p>
               <ul>{r.items.map((i) => <li key={i}>{i}</li>)}</ul>
-              {r.links?.length ? <p>{r.links.map((l, i) => <span key={l.href}>{i ? " · " : "Related: "}<Link href={l.href}>{l.label}</Link></span>)}</p> : null}
+              {r.links?.length ? <p className={s.relatedLine}>{r.links.map((l, i) => <span key={l.href}>{i ? " · " : "Related: "}<Link href={l.href}>{l.label}</Link></span>)}</p> : null}
             </section>
           ))}
           <h2>Desktop app releases</h2>

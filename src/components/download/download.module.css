@@ -193,3 +193,17 @@
 :global(:root[data-theme="light"]) :is(.panel, .card) { background: var(--lt-card-bg); box-shadow: var(--lt-card-shadow); }
 :global(:root[data-theme="light"]) .panel[data-lit], :global(:root[data-theme="light"]) .panel:first-child { border-color: rgb(28 24 18 / 0.18); box-shadow: var(--lt-card-lift); }
 :global(:root[data-theme="light"]) .scroller { background: var(--lt-card-bg); }
+
+/* Touch screens: a link that stands alone in the fine print ("Use in browser instead") is a 44px target. */
+@media (pointer: coarse) {
+  .fine > a:only-child { display: inline-flex; align-items: center; min-height: 44px; }
+}
+
+/* Narrow phones: the page column sized itself to the widest unbreakable line (the one-line "64-bit (x64) · Installer (.exe) ·
+   108 MB" button), so every panel ran 40px past a 320px screen and was cut off. The column now takes the screen width, and the
+   download buttons wrap onto two centered lines when they need to (still at least the large button's height). */
+.stack { grid-template-columns: minmax(0, 1fr); }
+.stack > * { min-width: 0; }
+@media (max-width: 599px) {
+  .row > a { max-width: 100%; height: auto; min-height: 52px; padding-top: var(--s-2); padding-bottom: var(--s-2); white-space: normal; text-align: center; text-wrap: balance; }
+}

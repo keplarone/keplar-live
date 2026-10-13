@@ -55,7 +55,7 @@ export default async function GuidePage({ params }: Props) {
             </div>
           ))}
           <h2>Related</h2>
-          <ul style={{ listStyle: "disc", paddingLeft: "1.25em" }}>
+          <ul className={prose.linkList} style={{ listStyle: "disc", paddingLeft: "1.25em" }}>
             {g.related.map((p) => <li key={p}><Link href={p}>{titleOf(p)}</Link></li>)}
           </ul>
           <div className={hero.ctaRow}>

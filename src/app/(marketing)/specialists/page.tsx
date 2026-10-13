@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = pageMeta("/specialists", "Specialist directory", "Specialists shared by Keplar users and reviewed before listing. Add one to your account and Keplar's panel of models answers with it.");
 
-const chip: React.CSSProperties = { display: "inline-flex", alignItems: "center", minHeight: 36, padding: "0 var(--s-4)", borderRadius: "var(--r-pill)", boxShadow: "inset 0 0 0 var(--b-hairline) var(--c-border-strong)", color: "var(--c-ink)", textDecoration: "none", fontSize: "var(--t-small)" };
+const chip: React.CSSProperties = { display: "inline-flex", alignItems: "center", minHeight: 44, padding: "0 var(--s-4)", borderRadius: "var(--r-pill)", boxShadow: "inset 0 0 0 var(--b-hairline) var(--c-border-strong)", color: "var(--c-ink)", textDecoration: "none", fontSize: "var(--t-small)" };
 
 /** Public directory of reviewed specialists. Each card opens the specialist's page, which shows everything it does before anyone adds it. */
 export default async function SpecialistDirectory({ searchParams }: { searchParams: Promise<{ c?: string; q?: string }> }) {
@@ -29,7 +29,7 @@ export default async function SpecialistDirectory({ searchParams }: { searchPara
       </p>
       <form method="get" className={s.cta} style={{ marginTop: "var(--s-6)" }} role="search">
         <label htmlFor="sp-q" className="visually-hidden">Search specialists</label>
-        <input id="sp-q" name="q" defaultValue={typeof q === "string" ? q.slice(0, 80) : ""} placeholder="Search by name or description" maxLength={80} style={{ ...chip, minWidth: "16rem", background: "transparent", fontFamily: "inherit", lineHeight: "inherit", fontSize: "max(16px, 1em)" /* 16px+ so iOS does not zoom on focus; no font shorthand, which would reset it */ }} />
+        <input id="sp-q" name="q" defaultValue={typeof q === "string" ? q.slice(0, 80) : ""} placeholder="Search by name or description" maxLength={80} style={{ ...chip, flex: "1 1 16rem", minWidth: 0, maxWidth: "32rem", background: "transparent", fontFamily: "inherit", lineHeight: "inherit", fontSize: "max(16px, 1em)" /* 16px+ so iOS does not zoom on focus; no font shorthand, which would reset it */ }} />
         {cat ? <input type="hidden" name="c" value={cat} /> : null}
         <button type="submit" style={{ ...chip, background: "transparent", cursor: "pointer", font: "inherit" }}>Search</button>
       </form>

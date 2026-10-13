@@ -57,7 +57,7 @@
   composes: pill;
   justify-self: center;
   position: relative;
-  width: 124px;
+  width: max(124px, var(--menu-w, 0px)); /* --menu-w: the label's width (Nav.tsx), so "Seitenmenü" does not run into the icon */
   height: 52px;
   overflow: hidden;
   border-radius: 26px;
@@ -95,7 +95,7 @@
 }
 .morph[data-open] .toggle { border-bottom: 1px solid var(--c-border); border-radius: 0; }
 .toggle:focus-visible { outline: var(--b-focus, 2px) solid var(--nav-focus); outline-offset: -4px; }
-.toggleIcon { position: relative; width: 16px; height: 12px; }
+.toggleIcon { position: relative; flex: none; width: 16px; height: 12px; }
 .toggleIcon i {
   position: absolute;
   left: 0;
@@ -109,7 +109,7 @@
 .toggleIcon i:last-child { top: 8px; }
 .morph[data-open] .toggleIcon i:first-child { top: 5.2px; transform: rotate(45deg); }
 .morph[data-open] .toggleIcon i:last-child { top: 5.2px; transform: rotate(-45deg); }
-.toggleLabel { display: inline-block; }
+.toggleLabel { display: inline-block; white-space: nowrap; }
 
 .panel {
   position: absolute;
@@ -222,7 +222,7 @@
 
 @media (max-width: 720px) {
   .wrap { grid-template-columns: auto 1fr auto; padding-left: 14px; padding-right: 14px; gap: 8px; }
-  .morph { justify-self: center; width: 108px; }
+  .morph { justify-self: center; width: max(108px, var(--menu-w, 0px)); }
   .morph[data-open] { position: fixed; left: 14px; right: 14px; top: calc(env(safe-area-inset-top, 0px) + 20px); width: auto; justify-self: stretch; }
   .signIn { display: none; }
   .cols { grid-template-columns: 1fr; }
@@ -291,3 +291,31 @@
   .actions .theme { display: none; }
   .panelTheme { display: inline-grid; }
 }
+
+/* Phones: once the page scrolls, headings and body copy ran straight under the three pills ("Study for ar m"). A scroll edge
+   effect (HIG layout › Visual hierarchy) fades the content out beneath them instead of a solid bar. It sits behind the pills
+   (z-index -1 inside the nav's stacking context), never takes taps, and is absent at the top so the hero keeps its full sky.
+   Phones held sideways (wider than 720px, under 500px tall) get it too: the Menu pill sat over the hero copy there. */
+@media (max-width: 720px), (max-height: 500px) and (pointer: coarse) {
+  .wrap::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: calc(env(safe-area-inset-top, 0px) + 96px);
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgb(var(--rgb-canvas) / 0.92) 0%, rgb(var(--rgb-canvas) / 0.78) 58%, rgb(var(--rgb-canvas) / 0) 100%);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    -webkit-mask-image: linear-gradient(to bottom, currentColor 62%, transparent); /* a mask reads alpha only */
+    mask-image: linear-gradient(to bottom, currentColor 62%, transparent); /* a mask reads alpha only */
+    opacity: 0;
+    transition: opacity 0.25s var(--e-standard);
+  }
+  .wrap[data-scrolled]::before { opacity: 1; }
+  .wrap[data-open]::before { opacity: 0; }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .wrap::before { -webkit-backdrop-filter: none; backdrop-filter: none; background: linear-gradient(to bottom, rgb(var(--rgb-canvas)) 70%, rgb(var(--rgb-canvas) / 0)); }
+}
+@media (prefers-reduced-motion: reduce) { .wrap::before { transition: none; } }

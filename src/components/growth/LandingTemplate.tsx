@@ -39,7 +39,7 @@ export function LandingTemplate({ page }: { page: LandingPage }) {
             </div>
           ))}
           <h2>Keep reading</h2>
-          <ul style={{ listStyle: "disc", paddingLeft: "1.25em" }}>
+          <ul className={prose.linkList} style={{ listStyle: "disc", paddingLeft: "1.25em" }}>
             {related.map((r) => (
               <li key={r.path}><Link href={r.path}>{r.title}</Link></li>
             ))}

@@ -56,7 +56,7 @@ export default function WhatIsKeplarPage() {
         <div className={`${s.inner} ${s.prose}`}>
           <p>{WHAT_IS_KEPLAR}</p>
           <p>{NOT_JUST_MULTI_MODEL}</p>
-          <p>
+          <p className={kb.relatedLine}>
             On this page: {FACT_SECTIONS.map((sec, i) => (
               <span key={sec.id}>{i ? " · " : ""}<a href={`#${sec.id}`}>{sec.title}</a></span>
             ))} · <a href="#business">Keplar Business</a> · <a href="#where">Where each feature runs</a>

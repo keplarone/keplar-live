@@ -19,9 +19,9 @@
 .toc p { margin: 0 0 var(--s-2); font-family: var(--f-sans); font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-2); }
 .toc a { color: var(--c-ink-2); text-decoration: none; padding: 6px 0 6px 12px; border-left: 1px solid var(--c-border); }
 .toc a:hover, .toc a:focus-visible { color: var(--c-ink); border-left-color: var(--c-ink); outline: none; }
-.main { display: grid; gap: var(--s-16); min-width: 0; }
+.main { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-16); min-width: 0; } /* explicit minmax(0, …): the implicit track took the 720px table width */
 
-.section { display: grid; gap: var(--s-5); scroll-margin-top: calc(var(--l-nav-h) + var(--s-8)); }
+.section { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-5); scroll-margin-top: calc(var(--l-nav-h) + var(--s-8)); }
 .sectionHead { display: grid; gap: var(--s-2); }
 .num { font-family: var(--f-mono); font-size: var(--t-label); color: var(--c-ink-2); letter-spacing: 0.06em; }
 .h2 { margin: 0; font-size: clamp(24px, 2.2vw, 36px); letter-spacing: -0.03em; font-weight: var(--w-medium); line-height: 1.1; }
@@ -118,11 +118,11 @@
 .credit { margin-top: var(--s-16); padding-top: var(--s-6); border-top: 1px solid var(--c-border); font-size: var(--t-small); color: var(--c-ink-2); }
 
 @media (max-width: 900px) {
-  .layout { grid-template-columns: 1fr; gap: var(--s-8); }
+  .layout { grid-template-columns: minmax(0, 1fr); gap: var(--s-8); } /* not 1fr: the scrolling contents row (max-content chips) widened the column to 740px on phones */
   .toc { position: static; grid-auto-flow: column; grid-auto-columns: max-content; overflow-x: auto; gap: var(--s-2); }
   .toc p { display: none; }
   .toc a { border-left: 0; padding: 6px 12px; border-radius: var(--r-pill); box-shadow: inset 0 0 0 1px var(--c-border); }
-  .config { grid-template-columns: 1fr; }
+  .config { grid-template-columns: minmax(0, 1fr); }
 }
 .srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 

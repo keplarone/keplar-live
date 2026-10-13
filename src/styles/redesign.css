@@ -58,7 +58,7 @@
 /* Display-size titles capped at the design's 76px (several modules went to 110–170px) */
 #main :is([class*="RoutePlaceholder-module__"], [class*="Feedback-module__"], [class*="Legal-module__"], [class*="compare-module__"], [class*="how-module__"], [class*="Developers-module__"], [class*="Showcase-module__"], [class*="kb-module__"])[class$="__title"],
 #main :is([class*="compare-module__"], [class*="how-module__"], [class*="kb-module__"])[class$="__h1"] {
-  font-size: clamp(44px, 5.2vw, 76px);
+  font-size: clamp(min(44px, 11.5vw), 5.2vw, 76px); /* 11.5vw under ~380px wide: at a fixed 44px "superintelligence?" was 321px in a 280px column and split mid-word */
   line-height: 1.04;
   letter-spacing: -0.045em;
   font-weight: var(--w-regular);

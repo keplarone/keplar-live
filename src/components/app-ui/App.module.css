@@ -1927,3 +1927,8 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 @media (max-width: 640px) {
   .topbar .phoneHide { display: none !important; }
 }
+
+/* Touch screens: the starter chips and "More" on the empty Ask screen are 44px targets (they were 40px and 32px). */
+@media (pointer: coarse) {
+  .homeChip, .homeMoreSummary { min-height: 44px; }
+}

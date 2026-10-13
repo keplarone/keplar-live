@@ -47,7 +47,7 @@ export default function AiAppBuilderPage() {
             </div>
           ))}
           <h2>Keep reading</h2>
-          <ul style={{ listStyle: "disc", paddingLeft: "1.25em" }}>
+          <ul className={prose.linkList} style={{ listStyle: "disc", paddingLeft: "1.25em" }}>
             {page.related.map((p) => (
               <li key={p}><Link href={p}>{RELATED[p] ?? p}</Link></li>
             ))}

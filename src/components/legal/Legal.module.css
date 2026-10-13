@@ -639,3 +639,8 @@
 :global(:root[data-theme="light"]) .eyebrow::before { box-shadow: none; }
 :global(:root[data-theme="light"]) .intro { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-lift); }
 :global(:root[data-theme="light"]) .section { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-shadow); }
+
+/* Touch screens: the link to the other policy at the end of each document is a 44px target (it was 22px). */
+@media (pointer: coarse) {
+  .sibling { display: inline-flex; align-items: center; min-height: 44px; }
+}
