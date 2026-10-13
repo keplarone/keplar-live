@@ -85,6 +85,13 @@ export function AppBuilder() {
   /** Errors the running preview reported (public/fx/kapp-report.1.js), for the "Fix these" bar. Cleared on every reload. */
   const [appErrorLog, setAppErrors] = useState<{ key: number; items: { message: string; file: string; line: number; route: string }[] }>({ key: 0, items: [] });
   const frameRef = useRef<HTMLIFrameElement | null>(null);
+  /** Click-to-edit: pick mode inside the preview, and the element the owner picked. */
+  const [picking, setPicking] = useState(false);
+  const [picked, setPicked] = useState<Picked | null>(null);
+  const pickingRef = useRef(false);
+  const tellFrame = useCallback((msg: Record<string, unknown>) => {
+    try { frameRef.current?.contentWindow?.postMessage({ source: "keplar-studio", ...msg }, "*"); } catch { /* frame gone */ }
+  }, []);
   /** Where the running build can be viewed (the files written so far), from the build's first event. */
   const [buildPreview, setBuildPreview] = useState<string | null>(null);
   const [err, setErr] = useState<Err | null>(null);
@@ -98,8 +105,17 @@ export function AppBuilder() {
   useEffect(() => { frameKeyRef.current = frameKey; }, [frameKey]);
   useEffect(() => {
     const on = (e: MessageEvent) => {
-      const d = e.data as { source?: string; type?: string; message?: string; file?: string; line?: number; route?: string } | null;
-      if (!d || d.source !== "keplar-app" || d.type !== "error" || e.source !== frameRef.current?.contentWindow) return;
+      const d = e.data as { source?: string; type?: string; message?: string; file?: string; line?: number; route?: string; label?: string; path?: string; text?: string; html?: string; tag?: string } | null;
+      if (!d || d.source !== "keplar-app" || e.source !== frameRef.current?.contentWindow) return;
+      if (d.type === "pick") {
+        setPicked({ label: String(d.label ?? d.tag ?? "element").slice(0, 80), path: String(d.path ?? "").slice(0, 300), text: String(d.text ?? "").slice(0, 200), html: String(d.html ?? "").slice(0, 800), route: String(d.route ?? "/").slice(0, 80) });
+        setPicking(false);
+        return;
+      }
+      if (d.type === "pick-cancel") { setPicking(false); return; }
+      // A freshly loaded preview does not know pick mode is on yet.
+      if (d.type === "ready") { if (pickingRef.current) tellFrame({ type: "pick", on: true }); return; }
+      if (d.type !== "error") return;
       const item = { message: String(d.message ?? "").slice(0, 300), file: String(d.file ?? "").slice(0, 120), line: Number(d.line) || 0, route: String(d.route ?? "/").slice(0, 80) };
       const key = frameKeyRef.current;
       setAppErrors((l) => {
@@ -109,7 +125,8 @@ export function AppBuilder() {
     };
     window.addEventListener("message", on);
     return () => window.removeEventListener("message", on);
-  }, []);
+  }, [tellFrame]);
+  useEffect(() => { pickingRef.current = picking; tellFrame({ type: "pick", on: picking }); }, [picking, tellFrame]);
   // The load event waits for every subresource of the user's app (a slow web font can hold it for many seconds); the page
   // is painted long before that, so the preview develops in after a short grace period even if load has not fired yet.
   useEffect(() => {
@@ -264,6 +281,8 @@ export function AppBuilder() {
     }
     const r: Run = { appId, buildId: null, prompt, edit, startedAt };
     setBuildPreview(null);
+    setPicking(false);
+    setPicked(null);
     saveResume({ appId, buildId: null, prompt, edit, at: startedAt });
     if (!edit) {
       try { sessionStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
@@ -584,6 +603,12 @@ export function AppBuilder() {
           {moreTabs.length ? <MoreTabs tabs={moreTabs} active={moreTabs.includes(tab) ? tab : null} onPick={setTab} /> : null}
         </nav>
         <span className={s.grow} />
+        {tab === "preview" && showFrame && !running ? (
+          <button type="button" className={s.pickBtn} aria-pressed={picking} aria-label={picking ? "Stop selecting" : "Select an element to change"} onClick={() => { setPicked(null); setPicking((x) => !x); }} title="Click anything in the preview to change it (Esc to stop)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 4l7 17 2.5-7.5L21 11z" /></svg>
+            <span className={s.pickLabel}>{picking ? "Click an element" : "Select"}</span>
+          </button>
+        ) : null}
         {tab === "preview" && showFrame ? (
           <div className={`${s.toggle} ${s.devices}`} role="group" aria-label="Device">
             {(["desktop", "tablet", "phone"] as const).map((d) => <button key={d} type="button" aria-pressed={device === d} onClick={() => setDevice(d)} aria-label={d} title={d[0].toUpperCase() + d.slice(1)}>{DEVICE_ICON[d]}</button>)}
@@ -658,6 +683,13 @@ export function AppBuilder() {
         </aside>
 
         <section className={s.stage} aria-label={tab === "preview" ? "Preview" : TAB_LABEL[tab]}>
+          {tab === "preview" && !running && picked ? (
+            <PickEditor picked={picked} onCancel={() => setPicked(null)} onApply={(what) => {
+              const p = picked;
+              setPicked(null);
+              void build(`On the screen ${p.route}, change only this element: ${p.label} (CSS path: ${p.path})${p.text ? `, which currently reads "${p.text}"` : ""}.\nIts current HTML: ${p.html}\nThe change: ${what}\nKeep everything else as it is.`, true);
+            }} />
+          ) : null}
           {tab === "preview" && !running && current ? (
             <IssueBar
               open={current.report?.version === current.headVersion ? current.report?.open ?? [] : []}
@@ -709,6 +741,26 @@ export function AppBuilder() {
       ) : null}
       <Toast text={toast} />
     </div>
+  );
+}
+
+type Picked = { label: string; path: string; text: string; html: string; route: string };
+
+/** Click-to-edit: what was picked in the preview, and one line saying what to change (sent as a fast edit aimed at that element). */
+function PickEditor({ picked, onApply, onCancel }: { picked: Picked; onApply: (what: string) => void; onCancel: () => void }) {
+  const [what, setWhat] = useState("");
+  return (
+    <form className={s.pickEditor} onSubmit={(e) => { e.preventDefault(); if (what.trim()) onApply(what.trim()); }}>
+      <div className={s.pickHead}>
+        <span className={s.pickTag}>{picked.label}</span>
+        <span className={s.pickText}>{picked.text ? `“${picked.text.slice(0, 90)}${picked.text.length > 90 ? "…" : ""}”` : `on ${picked.route}`}</span>
+      </div>
+      <div className={s.pickRow}>
+        <input className={s.pickInput} autoFocus value={what} onChange={(e) => setWhat(e.target.value)} onKeyDown={(e) => { if (e.key === "Escape") onCancel(); }} placeholder="What should change? e.g. “make it bigger and blue”, “say Start free instead”" aria-label="What should change" />
+        <button type="submit" className={s.cta} disabled={!what.trim()}>Change it</button>
+        <button type="button" className={s.ghostBtn} onClick={onCancel}>Cancel</button>
+      </div>
+    </form>
   );
 }
 
