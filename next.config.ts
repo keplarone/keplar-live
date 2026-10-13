@@ -23,7 +23,8 @@ const nextConfig: NextConfig = {
     // The app builder tests generated apps in a real browser, serving the runtime scripts from public/fx in-process.
     "/api/apps/[id]/build": ["./node_modules/@sparticuz/chromium/bin/**", "./node_modules/playwright-core/**", "./public/fx/**"],
     // Roblox Cloud checks scripts with the official Luau analyzer (WebAssembly), loaded from vendor/luau at run time.
-    "/api/roblox-cloud/worker": ["./vendor/luau/**"],
+    // Its roblox_docs tool searches the Roblox Creator Docs index in vendor/roblox-docs (the worker runs the model turns).
+    "/api/roblox-cloud/worker": ["./vendor/luau/**", "./vendor/roblox-docs/**"],
     "/api/roblox-cloud/jobs/[id]/start": ["./vendor/luau/**"],
     "/api/health": ["./vendor/luau/**"],
     // Studio mode's roblox_docs tool searches the Roblox Creator Docs index, read from vendor/roblox-docs at run time.

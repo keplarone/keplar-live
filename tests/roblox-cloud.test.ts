@@ -149,7 +149,7 @@ test("an overnight job end to end: baseline, plan, edits checked by Luau, a repo
   const sent = model.seen[0] as { model: string; messages: { role: string; content: unknown }[]; tools: { function: { name: string } }[] };
   assert.equal(sent.model, "anthropic/claude-opus-5.5", "Opus 5.5 only");
   assert.match(JSON.stringify(sent.messages[0]), /working overnight on the person's game/);
-  assert.deepEqual(sent.tools.map((t) => t.function.name).sort(), ["check_scripts", "create_script", "delete_script", "edit_script", "finish", "list_scripts", "read_script", "read_tree", "search_scripts", "update_plan"]);
+  assert.deepEqual(sent.tools.map((t) => t.function.name).sort(), ["check_scripts", "create_script", "delete_script", "edit_script", "finish", "list_scripts", "read_script", "read_tree", "roblox_docs", "search_scripts", "update_plan"]);
 
   const done = (await jobs().get(ws.id, job.id))!;
   assert.equal(done.status, "done");

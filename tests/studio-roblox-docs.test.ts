@@ -5,6 +5,8 @@ import { buildIndex, docsIndex, formatDocsHits, ROBLOX_DOCS_MAX_CHARS, searchDoc
 import { ROBLOX_DOCS_TOOL, ROBLOX_DOCS_TOOL_NAME } from "../src/lib/studio/roblox-docs-tool";
 import { buildTools, riskOf, STUDIO_SYSTEM, withKeplarStudioTools } from "../src/lib/studio/agent";
 import { BLENDER_TOOL_POLICY } from "../src/lib/blender/agent";
+import { CLOUD_TOOL_DEFS, CLOUD_TOOL_POLICY, runCloudTool } from "../src/lib/roblox-cloud/tools";
+import { ROBLOX_CLOUD_PROFILE, ROBLOX_CLOUD_SYSTEM } from "../src/lib/roblox-cloud/prompt";
 
 const titles = (q: string, k = 5) => searchDocs(docsIndex(), q, k).map((h) => h.title);
 
@@ -51,6 +53,18 @@ test("roblox docs tool: offered first in Studio mode, read-only, and only Keplar
   assert.equal(riskOf(ROBLOX_DOCS_TOOL_NAME, { query: "TweenService" }), "read");
   assert.throws(() => buildTools(withKeplarStudioTools("nope")), /tools must be a list/);
   assert.ok(!(ROBLOX_DOCS_TOOL_NAME in BLENDER_TOOL_POLICY), "Blender mode does not get it");
+});
+
+test("roblox cloud: offers roblox_docs as a read and answers it on the server from the same index", async () => {
+  const tools = buildTools(CLOUD_TOOL_DEFS as unknown as unknown[], (n) => CLOUD_TOOL_POLICY[n]);
+  assert.ok(tools.some((t) => t.function.name === ROBLOX_DOCS_TOOL_NAME));
+  assert.equal(ROBLOX_CLOUD_PROFILE.riskOf(ROBLOX_DOCS_TOOL_NAME, {}), "read");
+  const st = { files: new Map(), tree: "", jobId: "j", workspaceId: "w", dirty: new Set<string>() };
+  const r = await runCloudTool(st, ROBLOX_DOCS_TOOL_NAME, { query: "TweenService:Create" });
+  assert.match(r.text, /## TweenService:Create\nhttps:\/\/create\.roblox\.com\/docs\/reference\/engine\/classes\/TweenService#Create/);
+  assert.deepEqual(r.effects, {});
+  assert.match((await runCloudTool(st, ROBLOX_DOCS_TOOL_NAME, { query: "  " })).text, /Say what to look up/);
+  assert.match(ROBLOX_CLOUD_SYSTEM, /look it up with roblox_docs/);
 });
 
 test("studio prompt: looks APIs up, and carries the UI, animation and game-systems craft", () => {
