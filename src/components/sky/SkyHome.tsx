@@ -7,6 +7,7 @@ import { ScrollZoom } from "./ScrollZoom";
 import { ModelStack } from "./ModelStack";
 import { DemoWindow } from "./DemoWindow";
 import { FeatureList } from "./FeatureList";
+import { ParticleStory } from "./ParticleStory";
 import { HeroCta } from "@/components/growth/HeroCta";
 import s from "./Sky.module.css";
 
@@ -26,7 +27,7 @@ const STEPS = [
   { title: "You get one answer", body: "Their views are compared claim by claim and combined into one answer, with any disagreement shown." },
 ];
 
-/** The light, Space-inspired home: hero, animated product window that zooms in on scroll, feature list, steps, use cases and the live demo. */
+/** The light, Space-inspired home: hero, animated product window that zooms in on scroll, feature list, the particle scroll scene for the steps, use cases and the live demo. */
 export function SkyHome({ pricing }: { pricing?: React.ReactNode }) {
   const cases = allUseCases();
   const useCases = USE_CASES.map((u) => ({ ...u, data: cases.find((c) => c.slug === u.slug) })).filter((u) => u.data);
@@ -65,18 +66,7 @@ export function SkyHome({ pricing }: { pricing?: React.ReactNode }) {
         <FeatureList rows={chapters.map(({ id, label, title }, i) => ({ id, n: String(i + 1).padStart(2, "0"), label, title }))} />
       </section>
 
-      <section className={s.section} aria-labelledby="how-title">
-        <h2 id="how-title" className={s.h2}><span>How {brand.name} works.</span> <span className={s.muted}>Three steps, a few seconds.</span></h2>
-        <ol className={s.cards3} data-reveal-stagger>
-          {STEPS.map((st, i) => (
-            <li key={st.title} className={s.card} data-reveal>
-              <span className={s.stepN}>{i + 1}</span>
-              <h3>{st.title}</h3>
-              <p>{st.body}</p>
-            </li>
-          ))}
-        </ol>
-      </section>
+      <ParticleStory title={`How ${brand.name} works.`} muted="Three steps, a few seconds." steps={STEPS} />
 
       <section className={s.section} aria-labelledby="cases-title">
         <h2 id="cases-title" className={s.h2}><span>Built for questions that matter.</span> <span className={s.muted}>And everyday ones too.</span></h2>
