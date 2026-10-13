@@ -27,10 +27,10 @@ function useLive<T extends Element>() {
 
 /** A counter that steps while `on`, looping with a pause at `max`. Off (or reduced motion) it rests at `max`, the finished state. */
 function useStep(on: boolean, max: number, every: number) {
-  const [i, setI] = useState(0);
+  const [i, setI] = useState(1); // never starts (or loops back to) an empty frame
   useEffect(() => {
     if (!on) return;
-    const id = window.setInterval(() => setI((x) => (x + 1) % (max + 6)), every);
+    const id = window.setInterval(() => setI((x) => (x + 1) % (max + 6) || 1), every);
     return () => window.clearInterval(id);
   }, [on, max, every]);
   return on ? Math.min(i, max) : max;
