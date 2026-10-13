@@ -180,10 +180,12 @@ export type AppBuild = {
   /** Problems found by the last verification, waiting for the fix step. */
   problems?: { file?: string; message: string; source: "static" | "browser" | "rubric" | "review" | "visual"; severity?: "high" | "medium" | "low" }[];
   /** Edit of an existing app: the version it started from and the files the plan said to change. */
-  base?: { version: number; changes: { path: string; what: string }[] } | null;
+  base?: { version: number; changes: { path: string; what: string }[]; written?: string[] } | null;
   /** Fast edit (patch.ts): "try" before the first attempt, "on" when small SEARCH/REPLACE edits applied (light verify, no replan),
    *  "off" when the change needed the full plan -> generate path. */
   quick?: "try" | "on" | "off";
+  /** Blocking problems still open when the build saved (carried into the report so the studio can offer to fix them). */
+  open?: string[];
   /** USD already charged to the workspace (charged incrementally, so an abandoned build still pays for what it used). */
   charged?: number;
   /** Units charged so far. */
@@ -207,5 +209,7 @@ export type AppMeta = {
   /** What the published version runs with (snapshot taken at publish, so draft edits and theme changes never leak to live). */
   live?: { spec: AppSpec; design: DesignChoice; images?: Record<string, string> } | null;
   /** Latest build report (requested vs built, checks, visual review). */
-  report?: { checks: CheckResult[]; verdicts: FeatureVerdict[]; visual: AppBuild["visual"]; shots: AppBuild["shots"]; attempts: number; version: number; at: string; model: string | null; usd: number };
+  report?: { checks: CheckResult[]; verdicts: FeatureVerdict[]; visual: AppBuild["visual"]; shots: AppBuild["shots"]; attempts: number; version: number; at: string; model: string | null; usd: number;
+    /** Problems the last build still had when it saved (fix rounds or budget ran out), shown with a "Fix these" action. */
+    open?: string[] };
 };

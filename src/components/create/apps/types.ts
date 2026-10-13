@@ -43,7 +43,7 @@ export type PublicSpec = {
 export type Check = { id: string; label: string; ok: boolean; detail: string; route?: string };
 export type Verdict = { id: string; title: string; status: "built" | "partial" | "missing"; evidence: string };
 export type Visual = { score: number; summary: string; issues: string[] };
-export type Report = { checks: Check[]; verdicts: Verdict[]; visual: Visual | null; shots: { route: string; viewport: string; url: string }[]; attempts: number; version: number; at: string; model: string | null; usd: number };
+export type Report = { checks: Check[]; verdicts: Verdict[]; visual: Visual | null; shots: { route: string; viewport: string; url: string }[]; attempts: number; version: number; at: string; model: string | null; usd: number; open?: string[] };
 export type AppDetail = {
   id: string; name: string; slug: string; kind: string; spec: PublicSpec | null; design: Design | null; settings: { signups: boolean; ai: boolean; uploads: boolean } | null; admins: string[];
   report: Report | null; previewUrl: string | null; liveUrl: string | null; publishedVersion: number | null; headVersion: number;
