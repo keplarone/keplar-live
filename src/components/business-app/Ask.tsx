@@ -6,13 +6,22 @@ import type { KeplarEvent } from "@/lib/orchestration/types";
 import type { MediaInput } from "@/lib/orchestration/media";
 import { AttachButton, mediaHandlers, MediaTray, useMediaAttach } from "./attach";
 import { runEngine } from "./engine";
+import { loadChat, saveChat, type SavedTurn } from "./chats";
+import type { KeplarAnswer } from "@/lib/orchestration/types";
 import s from "./cursor.module.css";
 
-type Turn = { id: string; q: string; a: string; done: boolean; note?: string; models?: string; thumbs?: string[] };
+type Turn = { id: string; q: string; a: string; done: boolean; note?: string; models?: string; thumbs?: string[]; at: number; answer?: KeplarAnswer | null };
 
-/** A Business chat: questions answered by Keplar's multi-model engine, with project context when one was chosen. */
-export function Ask({ first, firstMedia, projectId }: { first: string; firstMedia?: MediaInput; projectId: string | null }) {
+/**
+ * A Business chat: questions answered by Keplar's multi-model engine, with project context when one was chosen. Saved to the
+ * account after every answer (chats.ts), so it is in the sidebar's Chats and reopens with ?v=chat&c=<id>.
+ */
+export function Ask({ chatId, first, firstMedia, projectId: projectIn, resume, onSaved }: { chatId: string; first?: string; firstMedia?: MediaInput; projectId: string | null; resume?: boolean; onSaved?: () => void }) {
   const [turns, setTurns] = useState<Turn[]>([]);
+  const [projectId, setProjectId] = useState(projectIn);
+  const [loading, setLoading] = useState(Boolean(resume));
+  const createdAt = useRef(0);
+  const saved = useRef<SavedTurn[]>([]);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const abort = useRef<AbortController | null>(null);
@@ -26,19 +35,26 @@ export function Ask({ first, firstMedia, projectId }: { first: string; firstMedi
     const thumbs = m?.images.filter((i) => !i.frame || i.frame.index === 0).map((i) => i.dataUrl);
     const id = Math.random().toString(36).slice(2);
     const history = turns.flatMap((t) => [{ role: "user" as const, text: t.q }, { role: "keplar" as const, text: t.a }]);
-    setTurns((t) => [...t, { id, q, a: "", done: false, ...(thumbs?.length ? { thumbs } : {}) }]);
+    const at = Date.now();
+    setTurns((t) => [...t, { id, q, a: "", done: false, at, ...(thumbs?.length ? { thumbs } : {}) }]);
     setBusy(true);
     const ctl = new AbortController();
     abort.current = ctl;
     const patch = (p: Partial<Turn>) => setTurns((xs) => xs.map((x) => (x.id === id ? { ...x, ...p } : x)));
     try {
       let acc = "";
-      const ans = await runEngine({ prompt: q, mode: "ask", projectId, history, media: m }, (e: KeplarEvent) => {
+      const ans = await runEngine({ prompt: q, mode: "ask", projectId, history, chatId, media: m }, (e: KeplarEvent) => {
         if (e.type === "delta") { acc += e.text; patch({ a: acc }); }
         if (e.type === "error") patch({ note: e.message });
         if (e.type === "limit") patch({ note: e.window?.message ?? "You've reached your usage limit for now." });
       }, ctl.signal);
-      patch({ a: ans?.markdown ?? acc, done: true, models: ans ? `${ans.consensus.responded} of ${ans.consensus.consulted} models · ${ans.consensus.summary}` : undefined });
+      const a = ans?.markdown ?? acc;
+      patch({ a, done: true, answer: ans, models: ans ? `${ans.consensus.responded} of ${ans.consensus.consulted} models · ${ans.consensus.summary}` : undefined });
+      if (a) {
+        saved.current = [...saved.current, { id, q, a, at, answer: ans }];
+        if (!createdAt.current) createdAt.current = at;
+        void saveChat(chatId, projectId, createdAt.current, saved.current).then(() => onSaved?.());
+      }
     } catch (e) {
       if ((e as Error).name !== "AbortError") patch({ note: e instanceof Error ? e.message : "Something went wrong.", done: true });
       else patch({ done: true });
@@ -50,7 +66,17 @@ export function Ask({ first, firstMedia, projectId }: { first: string; firstMedi
   useEffect(() => {
     if (started.current) return;
     started.current = true;
-    queueMicrotask(() => void ask(first, firstMedia));
+    if (resume) {
+      void loadChat(chatId).then((c) => {
+        if (c) {
+          createdAt.current = c.createdAt;
+          saved.current = c.turns;
+          setProjectId(c.projectId);
+          setTurns(c.turns.map((t) => ({ ...t, done: true })));
+        } else setTurns([{ id: "missing", q: "", a: "", done: true, at: Date.now(), note: "This chat couldn't be opened. It may have been deleted." }]);
+        setLoading(false);
+      });
+    } else if (first) queueMicrotask(() => void ask(first, firstMedia));
     return () => abort.current?.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- the first question runs once, on arrival
   }, []);
@@ -59,11 +85,12 @@ export function Ask({ first, firstMedia, projectId }: { first: string; firstMedi
   return (
     <div className={s.thread}>
       <div className={s.turns} aria-live="polite">
+        {loading ? <span className={s.thinking}>Opening chat…</span> : null}
         {turns.map((t) => (
           <div key={t.id} className={s.turn}>
             {/* eslint-disable-next-line @next/next/no-img-element -- local data: previews of what was sent */}
             {t.thumbs?.length ? <div className={s.qMedia}>{t.thumbs.map((src, i) => <img key={i} src={src} alt={`Attachment ${i + 1}`} />)}</div> : null}
-            <p className={s.q}>{t.q}</p>
+            {t.q ? <p className={s.q}>{t.q}</p> : null}
             <div className={s.a}>
               {t.a ? <Markdown source={t.a} streaming={!t.done} caret={!t.done} /> : !t.done ? <span className={s.thinking}>Thinking…</span> : null}
               {t.note ? <p className={s.note} role="alert">{t.note}</p> : null}
