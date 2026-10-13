@@ -1,16 +1,16 @@
-/* Settings popover (Settings.tsx): floats over the workspace from the bottom-left account button. Tokens from tokens.css. */
+/* Settings popover (Settings.tsx): floats in the middle of the workspace, opened from the account button. Tokens from tokens.css. */
 .scrim { position: fixed; inset: 0; z-index: 60; background: rgba(0, 0, 0, 0.32); animation: fade var(--kb-d-2) var(--kb-ease) both; }
 .popover {
-  position: fixed; z-index: 61; left: 12px; bottom: 64px;
+  position: fixed; z-index: 61; inset: 0; margin: auto;
   display: grid; grid-template-columns: 188px minmax(0, 1fr);
   width: min(760px, calc(100vw - 24px)); height: min(560px, calc(100vh - 96px));
   border-radius: var(--kb-r-lg); background: var(--kb-surface); color: var(--kb-ink);
   box-shadow: 0 0 0 1px var(--kb-border-strong), 0 24px 64px -16px rgba(0, 0, 0, 0.8);
-  overflow: hidden; transform-origin: 24px calc(100% + 32px);
+  overflow: hidden; transform-origin: 50% 50%;
   animation: pop var(--kb-d-3) var(--kb-ease) both;
   font-family: var(--kb-sans); font-size: var(--kb-t-md);
 }
-@keyframes pop { from { opacity: 0; transform: translateY(6px) scale(0.985); } }
+@keyframes pop { from { opacity: 0; transform: scale(0.97); } }
 @keyframes fade { from { opacity: 0; } }
 
 .nav { display: flex; flex-direction: column; gap: 1px; padding: 12px 8px; border-right: 1px solid var(--kb-border); background: var(--kb-bg); overflow-y: auto; }
@@ -83,7 +83,7 @@
 @keyframes shimmer { to { opacity: 0.5; } }
 
 @media (max-width: 720px) {
-  .popover { inset: auto 8px 8px 8px; width: auto; height: min(640px, calc(100vh - 16px)); grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); transform-origin: 50% 100%; }
+  .popover { inset: auto 8px 8px 8px; margin: 0; width: auto; height: min(640px, calc(100vh - 16px)); grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); transform-origin: 50% 100%; }
   .nav { flex-direction: row; gap: 4px; padding: 8px; border-right: 0; border-bottom: 1px solid var(--kb-border); overflow-x: auto; scrollbar-width: none; }
   .navHead { display: none; }
   .navItem { flex: none; }
