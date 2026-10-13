@@ -6,14 +6,14 @@ import s from "./Sky.module.css";
 
 type Blob = { x: number; y: number; r: number; depth: number; phase: number; color: [number, number, number] };
 
-const LIGHT: [number, number, number][] = [[140, 200, 240], [195, 181, 242], [159, 221, 232], [245, 191, 166], [178, 230, 204], [170, 190, 245]];
-const DARK: [number, number, number][] = [[38, 92, 140], [74, 58, 140], [30, 104, 114], [128, 70, 52], [34, 104, 80], [56, 70, 150]];
+const LIGHT: [number, number, number][] = [[140, 200, 240], [168, 208, 246], [159, 221, 236], [186, 220, 250], [150, 196, 244], [176, 214, 250]];
+const DARK: [number, number, number][] = [[38, 92, 150], [44, 78, 160], [30, 104, 130], [52, 96, 170], [34, 84, 140], [56, 90, 176]];
 
 /**
  * Liquid background (replaces the three.js scenes): six soft blobs that merge and split like liquid metaballs. The field is
  * computed per pixel on a small canvas (about 1/8 of the screen) and scaled up, so edges stay smooth and the cost stays tiny.
  * Scroll animation: each blob drifts at its own depth as the page scrolls (parallax), and scroll speed stretches the blobs
- * vertically and swells them a little, settling back when scrolling stops. Colours follow the theme. Paused while the tab is
+ * vertically and swells them a little, settling back when scrolling stops. Colours are all light blues (dark theme: deeper blues), so the blobs read as one connected aura when they merge. Paused while the tab is
  * hidden; prefers-reduced-motion draws one still frame and ignores scrolling. Phones and modest devices (liteFx) compute a
  * quarter as many pixels at about 30 fps.
  */
