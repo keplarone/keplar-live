@@ -30,6 +30,11 @@ export const publicSpec = (s: AppSpec): PublicSpec => ({
 export const buildEstimateUnits = (plan: PlanId) => (plan === "free" ? 0 : toUnits(meteredUsd(APP_BUILD_LIMITS[plan].maxBuildUsd * 0.45)));
 export const buildMaxUnits = (plan: PlanId) => (plan === "free" ? 0 : toUnits(meteredUsd(APP_BUILD_LIMITS[plan].maxBuildUsd)));
 
+/** The app as an unfinished build has written it so far (served by the draft route while the build tests and fixes it). */
+export function previewUrlForBuild(site: Pick<Site, "id">, buildId: string) {
+  return `/apps/draft/${site.id}/b.${buildId}/${previewToken(site.id)}/`;
+}
+
 export function previewUrlFor(site: Pick<Site, "id">, version: number) {
   return `/apps/draft/${site.id}/${version}/${previewToken(site.id)}/`;
 }

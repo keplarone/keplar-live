@@ -38,14 +38,14 @@ import { rubricFindings } from "./rubric";
 import { autofixImports, staticCheck } from "./verify/static";
 import { reviewBuild } from "./verify/review";
 import type { AppBuild, AppMeta, AppSpec, CheckResult, DesignChoice, FeatureVerdict } from "./types";
-import { publicSpec, buildEstimateUnits, buildMaxUnits, previewUrlFor, type PublicSpec } from "./public";
+import { publicSpec, buildEstimateUnits, buildMaxUnits, previewUrlFor, previewUrlForBuild, type PublicSpec } from "./public";
 export { publicSpec, buildEstimateUnits, buildMaxUnits, previewUrlFor, type PublicSpec };
 
 export type BuildRow = AppBuild & { workspaceId: string; siteId: string };
 export const builds = () => collection<BuildRow>("app_builds");
 
 export type BuildEvent =
-  | { type: "build"; id: string; stage: AppBuild["stage"] }
+  | { type: "build"; id: string; stage: AppBuild["stage"]; preview?: string }
   | { type: "stage"; stage: AppBuild["stage"]; text: string }
   | { type: "plan"; spec: PublicSpec }
   | { type: "file"; path: string; bytes: number; text?: string }
@@ -131,7 +131,7 @@ export async function* runBuild(ws: Workspace, site: Site, buildId: string, opts
   let b = await getBuild(ws, buildId);
   if (b.siteId !== site.id) throw new HttpError(404, "Build not found.", "not_found");
   b = await failStaleBuild(b);
-  yield { type: "build", id: b.id, stage: b.stage };
+  yield { type: "build", id: b.id, stage: b.stage, preview: previewUrlForBuild(site, b.id) };
   if (b.stage === "done" || b.stage === "failed") {
     if (b.stage === "failed") yield { type: "error", error: b.error ?? "The build failed.", code: "failed" };
     return;

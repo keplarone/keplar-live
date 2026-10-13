@@ -82,6 +82,8 @@ export function AppBuilder() {
   const [run, setRun] = useState<Run | null>(null);
   const [running, setRunning] = useState(false);
   const [live, setLive] = useState<Live>(emptyLive());
+  /** Where the running build can be viewed (the files written so far), from the build's first event. */
+  const [buildPreview, setBuildPreview] = useState<string | null>(null);
   const [err, setErr] = useState<Err | null>(null);
   const [loadErr, setLoadErr] = useState("");
   const [tab, setTab] = useState<Tab>("preview");
@@ -148,11 +150,14 @@ export function AppBuilder() {
           if (!alive.current) return;
           setLive((l) => applyEvent(l, ev));
           if (ev.type === "build") {
+            if (typeof ev.preview === "string") setBuildPreview(ev.preview);
             r = { ...r, buildId: String(ev.id) };
             setRun(r);
             saveResume({ appId: r.appId, buildId: r.buildId, prompt: r.prompt, edit: r.edit, at: r.startedAt });
           }
           if (ev.type === "design" && ev.design && typeof ev.design === "object") setDesign(ev.design as Design);
+          // Each (re-)test runs the latest code: reload the live preview so it shows what is being tested.
+          if (ev.type === "stage" && ev.stage === "verify") { setFrameReady(false); setFrameKey((k) => k + 1); }
         });
         clearResume();
         if (!alive.current) return;
@@ -238,6 +243,7 @@ export function AppBuilder() {
       return;
     }
     const r: Run = { appId, buildId: null, prompt, edit, startedAt };
+    setBuildPreview(null);
     saveResume({ appId, buildId: null, prompt, edit, at: startedAt });
     if (!edit) {
       try { sessionStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
@@ -527,7 +533,11 @@ export function AppBuilder() {
   const filesPlanned = live.spec?.files?.length ?? 0;
   const progress = running ? buildProgress(live.stage, live.files.length, filesPlanned) : 1;
   const bp = live.spec ? blueprintFromSpec(live.spec, live, { building: running }) : current?.spec ? blueprintFromSpec(current.spec) : inferBlueprint(run?.prompt ?? store.text());
-  const showFrame = Boolean(current?.previewUrl) && !running;
+  // While a build tests and fixes its code, the preview shows the app as written so far (refreshed after every fix round);
+  // otherwise the saved version.
+  const livePreview = running && buildPreview && LIVE_STAGES.includes(live.stage) ? buildPreview : null;
+  const frameSrc = livePreview ?? (!running ? current?.previewUrl ?? null : null);
+  const showFrame = Boolean(frameSrc);
   const tabs: Tab[] = current?.previewUrl ? ["preview", "code", "changes", "live", "critic", "deploy", "look", "data", "settings"] : ["preview"];
   // Minimal pass: three tabs stay visible; the rest open from one "More" menu (only once a build exists).
   const shownTabs = tabs.filter((t) => MAIN_TABS.includes(t));
@@ -636,7 +646,7 @@ export function AppBuilder() {
               {showFrame ? (
                 <div className={s.frameLayer} data-ready={frameReady ? "true" : undefined}>
                   {(() => {
-                    const frame = <iframe key={frameKey} className={s.frame} data-device={device} src={current!.previewUrl!} title="App preview" onLoad={() => setFrameReady(true)} sandbox="allow-scripts allow-forms allow-popups allow-modals allow-downloads" />;
+                    const frame = <iframe key={frameKey} className={s.frame} data-device={device} src={frameSrc!} title="App preview" onLoad={() => setFrameReady(true)} sandbox="allow-scripts allow-forms allow-popups allow-modals allow-downloads" />;
                     // Desktop is a real desktop-width viewport (1280-1920px) scaled to fill the whole pane: laid out as on a monitor, no empty bands.
                     return device === "desktop" ? <ScaledViewport fit="fill">{frame}</ScaledViewport> : frame;
                   })()}
@@ -674,6 +684,9 @@ export function AppBuilder() {
     </div>
   );
 }
+
+/** Stages in which the build's code is complete enough to run (testing, review, fixing, saving). */
+const LIVE_STAGES = ["verify", "visual", "fix", "save"];
 
 const KEY_MOD = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent) ? "⌘" : "Ctrl ";
 
