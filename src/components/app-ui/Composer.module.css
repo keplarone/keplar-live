@@ -1023,3 +1023,11 @@ html[data-lens] .composer { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 /* Live Research depth (desktop app only): the routing panel's segmented control, compact enough for the status row. */
 .liveDepth { display: inline-grid; grid-auto-flow: column; grid-auto-columns: auto; padding: 2px; }
 .liveDepth .segment span { height: 26px; padding: 0 10px; font-size: 12px; }
+
+/* Smallest phones (a 320px screen leaves the composer ~296px): four 44px tools plus their gaps were 188px in a 166px strip, so the
+   last one (Modes) was cut in half behind the strip's hidden overflow. Below 340px of composer the idle tools are 40px circles with no
+   gap (HIG minimum is 28px; 40px keeps them comfortably above it) so all four show whole. Active tools keep their label. */
+@container composer (max-width: 340px) {
+  .wrap .tools { gap: 0; }
+  .wrap .tools .tool:not([aria-pressed="true"]):not([data-mode]) { width: 40px; min-width: 40px; height: 40px; min-height: 40px; padding: 0; justify-content: center; }
+}

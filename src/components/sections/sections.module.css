@@ -164,3 +164,8 @@
 
 /* Oct 2026 redesign: let the aura backdrop show through */
 .section { background: transparent; }
+
+/* A list of standalone links ("Keep reading" on the landing pages). On touch screens each link is a 44px row (HIG accessibility). */
+@media (pointer: coarse) {
+  .linkList a { display: inline-flex; align-items: center; min-height: 44px; }
+}

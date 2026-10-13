@@ -7,3 +7,10 @@
 .crumbs a:hover { color: var(--c-ink); text-decoration: underline; text-underline-offset: 3px; }
 .crumbs a:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
 .crumbs [aria-current="page"] { color: var(--c-ink-2); max-width: 48ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Touch screens: each crumb is a 44px target; the row gap shrinks so the trail takes about the same height. */
+@media (pointer: coarse) {
+  .crumbs ol { row-gap: 0; }
+  .crumbs a { display: inline-flex; align-items: center; min-height: 44px; }
+  .crumbs [aria-current="page"] { line-height: 44px; }
+}

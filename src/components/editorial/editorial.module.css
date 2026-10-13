@@ -1,6 +1,6 @@
 /* Editorial pages: answer-first reading layout. Uses the shared tokens; no new colours (one blue accent only). */
 .wrap { position: relative; z-index: var(--z-content); background: var(--c-canvas); padding: var(--s-12) var(--l-gutter) var(--s-24); }
-.inner { max-width: var(--l-max); margin: 0 auto; display: grid; gap: var(--s-10); }
+.inner { max-width: var(--l-max); margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-10); } /* minmax(0, …): the implicit track took a wide table's width (a 694px column on a 320px phone) */
 .col { counter-reset: sec; }
 .col { max-width: 72ch; display: flex; flex-direction: column; gap: var(--s-5); color: var(--c-ink-2); font-size: var(--t-body); line-height: 1.65; }
 .col h2 { margin-top: var(--s-12); font-size: var(--t-title); line-height: var(--lh-title); letter-spacing: var(--tr-title); font-weight: var(--w-medium); color: var(--c-ink); scroll-margin-top: calc(var(--l-nav-h) + var(--s-8)); }
@@ -69,3 +69,17 @@
 :global(:root[data-theme="light"]) .tableScroll { background: var(--lt-card-bg); box-shadow: var(--lt-card-shadow); }
 :global(:root[data-theme="light"]) .keplar { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-shadow); }
 .wrap { background: transparent; }
+
+/* Touch screens: "Keep reading" links are 44px rows (they were 18px), and the [n] citation markers are 28px targets with 11px
+   numerals at least (they rendered at 9-10px under body text). Negative margins keep the line spacing unchanged. */
+@media (pointer: coarse) {
+  .related a { display: inline-flex; align-items: center; min-height: 44px; }
+  .related ul { gap: 0; }
+  .cite { font-size: max(0.72em, 11px); }
+  .cite a { min-width: 28px; height: 28px; line-height: 28px; margin: -8px 0; }
+  .cite a:where(td *) { margin: 0; }
+}
+
+/* Grid items default to min-width: auto, so one wide child (the try box's chip row, a table) still held its section wider than a
+   phone even with a minmax(0, 1fr) track. Every section of the page shrinks to the column. */
+.inner > * { min-width: 0; }

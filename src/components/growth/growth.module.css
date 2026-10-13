@@ -2,6 +2,8 @@
   position: relative;
   z-index: var(--z-content);
   max-width: clamp(760px, 46vw, 1400px);
+  width: 100%;
+  min-width: 0; /* centered by auto margins inside a grid it sized to its content (up to 760px on a 320px phone) and was cut off; it now takes the column, up to max-width */
   margin: 0 auto;
   padding: var(--s-8) var(--l-gutter);
 }

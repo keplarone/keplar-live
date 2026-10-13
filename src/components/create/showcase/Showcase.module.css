@@ -104,3 +104,10 @@
 @media (max-width: 860px) { .strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .strip .item { grid-column: auto; }
 .strip .item h3 { font-size: var(--t-body); }
+
+/* Touch screens: the kicker links, "All demos" and the previous / next pager are 44px targets. */
+@media (pointer: coarse) {
+  .kicker a, .link { display: inline-flex; align-items: center; min-height: 44px; }
+  .kicker { margin-bottom: var(--s-2); }
+  .pager a { display: inline-flex; flex-direction: column; justify-content: center; min-height: 44px; }
+}
