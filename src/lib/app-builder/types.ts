@@ -181,6 +181,9 @@ export type AppBuild = {
   problems?: { file?: string; message: string; source: "static" | "browser" | "rubric" | "review" | "visual"; severity?: "high" | "medium" | "low" }[];
   /** Edit of an existing app: the version it started from and the files the plan said to change. */
   base?: { version: number; changes: { path: string; what: string }[] } | null;
+  /** Fast edit (patch.ts): "try" before the first attempt, "on" when small SEARCH/REPLACE edits applied (light verify, no replan),
+   *  "off" when the change needed the full plan -> generate path. */
+  quick?: "try" | "on" | "off";
   /** USD already charged to the workspace (charged incrementally, so an abandoned build still pays for what it used). */
   charged?: number;
   /** Units charged so far. */
