@@ -19,6 +19,7 @@ import { liveEnv, openRouterSlug } from "@/lib/orchestration/config";
 import { METER_MARGIN } from "@/lib/orchestration/limits";
 import { callCostUsd } from "@/lib/orchestration/pricing";
 import { MODEL_LOCK_HEADER } from "@/lib/cost/meter";
+import type { SolarModeId } from "./solar-modes";
 
 export const STUDIO_MODEL = "claude-opus-5-5";
 
@@ -48,7 +49,7 @@ export const STUDIO_LIMITS = {
   maxTools: 40,
   maxSchemaBytes: 24_000,
   maxToolResultChars: 12_000,
-  /** Room for a whole build script in one call (thinking counts toward this too). */
+  /** Room for a whole build script in one call (thinking counts toward this too). Medium's budget; each Solar mode sets its own (solar-modes.ts). */
   maxOutputTokens: 20_000,
   /** Thinking before each step (billed as output, the expensive side): enough to plan a step, not to re-plan the whole build each turn. */
   reasoningTokens: 3_000,
@@ -256,6 +257,8 @@ export type StudioTurn = {
   units: number;
   /** What this turn really used, from OpenRouter's response (nothing estimated except usd when OpenRouter sends no cost). */
   usage: StudioUsage;
+  /** The Solar mode this turn ran with (src/lib/studio/solar-modes.ts), or null for a profile not built from a mode (Roblox Cloud). */
+  mode: SolarModeId | null;
 };
 export type StudioUsage = { provider: string | null; model: string; promptTokens: number; cachedTokens: number; completionTokens: number; reasoningTokens: number; usd: number; latencyMs: number };
 
@@ -299,6 +302,10 @@ export type TurnProfile = {
   lockedModel?: boolean;
   /** Share of the metered cost charged as credits (default 1). The ledger still records the full provider cost. */
   creditRate?: number;
+  /** The Solar mode whose budgets this profile carries (set by profileForMode in solar-modes-server.ts). */
+  mode?: SolarModeId;
+  /** Credits that must be available before the turn starts (default STUDIO_LIMITS.reserveUnits). */
+  reserveUnits?: number;
 };
 /**
  * Roblox building (Studio mode and Roblox Cloud) is charged 30% fewer credits than the usual rate: Opus 5.5 turns are long and a
@@ -319,7 +326,9 @@ export async function runStudioTurn(
   const slug = profile.lockedModel ? robloxModelId() : spec ? openRouterSlug(spec) : null;
   const key = liveEnv().openRouterKey;
   if (!spec || !slug || !key) throw new HttpError(503, "Studio mode is not available right now.", "unavailable");
-  await assertCanSpend(ws, STUDIO_LIMITS.reserveUnits, { kind: "agent", dailySafetyCap: false });
+  // Thinking counts toward max_tokens, so it must stay below it (a misconfigured profile never reaches the provider).
+  if (!(profile.reasoningTokens > 0 && profile.reasoningTokens < profile.maxOutputTokens)) throw new HttpError(500, "Studio mode is misconfigured.", "config");
+  await assertCanSpend(ws, Math.max(STUDIO_LIMITS.reserveUnits, profile.reserveUnits ?? 0), { kind: "agent", dailySafetyCap: false });
 
   const doFetch = deps.fetch ?? fetch;
   const ask = (messages: unknown[]) => doFetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -373,7 +382,7 @@ export async function runStudioTurn(
     latencyMs,
   };
   const cachedIn = usage.cachedTokens;
-  console.info(`[${profile.meter}] ${usage.model} via ${usage.provider ?? "?"}: ${prompt} in (${cachedIn} cached), ${completion} out, $${usage.usd} in ${latencyMs} ms`);
+  console.info(`[${profile.meter}] ${usage.model} via ${usage.provider ?? "?"} mode ${profile.mode ?? "default"}: ${prompt} in (${cachedIn} cached), ${completion} out, $${usage.usd} in ${latencyMs} ms`);
 
   const choice = data.choices[0]!;
   const actions: StudioTurn["actions"] = [];
@@ -392,5 +401,5 @@ export async function runStudioTurn(
   const reasoning = choice.message?.reasoning_details;
   const keepReasoning = Array.isArray(reasoning) && reasoning.length > 0 && JSON.stringify(reasoning).length <= STUDIO_LIMITS.maxReasoningChars;
   const message: StudioTurn["message"] = { role: "assistant", content: choice.message?.content ?? null, ...(calls.length ? { tool_calls: calls } : {}), ...(keepReasoning ? { reasoning_details: reasoning } : {}) };
-  return { message, text: (choice.message?.content ?? "").trim(), actions, blocked, done: calls.length === 0, units, usage };
+  return { message, text: (choice.message?.content ?? "").trim(), actions, blocked, done: calls.length === 0, units, usage, mode: profile.mode ?? null };
 }

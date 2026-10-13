@@ -26,6 +26,8 @@ const nextConfig: NextConfig = {
     "/api/roblox-cloud/worker": ["./vendor/luau/**"],
     "/api/roblox-cloud/jobs/[id]/start": ["./vendor/luau/**"],
     "/api/health": ["./vendor/luau/**"],
+    // Blender Cloud copies its machine scripts (agent, render setup, video step) onto each new render machine.
+    "/api/blender-cloud/jobs": ["./vendor/blender-cloud/**"],
   },
   async redirects() {
     return [
@@ -96,7 +98,6 @@ const nextConfig: NextConfig = {
         headers: [
           { key: "Content-Security-Policy", value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-ancestors *; base-uri 'self'; form-action 'self'; object-src 'none'" },
           { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
-          { key: "X-Robots-Tag", value: "noindex" },
         ],
       },
       // The widget loader is included by other sites' <script> tags: cross-origin readable, short cache so fixes reach every embed quickly.
@@ -112,13 +113,6 @@ const nextConfig: NextConfig = {
       // The signed-in app pages (/app/*) only: Google Fonts for typography previews, and Stripe.js for bank linking.
       { source: "/app/:path*", has: [{ type: "host", value: OWN_HOSTS }], headers: APP_PAGE_HEADERS },
       { source: "/((?!api/|_next/).*)", has: [{ type: "host", value: BUSINESS_HOSTS }], headers: APP_PAGE_HEADERS },
-      {
-        // Private or transactional routes: noindex by header as well as by meta tag. They stay crawlable (see src/app/robots.ts)
-        // so crawlers can read this; real protection is the sign-in / ownership checks on each route, not noindex.
-        source: "/:path(app|signin|signup|welcome|account|checkout|forgot-password|reset-password|verify-email|admin|compare)/:rest*",
-        has: [{ type: "host", value: OWN_HOSTS }],
-        headers: [{ key: "X-Robots-Tag", value: "noindex" }],
-      },
       {
         // Previews and local hosts are noindex. (Customers' own domains are not matched here: a published site decides
         // for itself through its robots meta tag and robots.txt; see src/proxy.ts and docs/custom-domains.md.)

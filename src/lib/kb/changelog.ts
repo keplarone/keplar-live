@@ -7,6 +7,20 @@ export type Release = { id: string; date: string; title: string; summary: string
 
 export const releases: Release[] = [
   {
+    id: "2026-10-12-blender-cloud",
+    date: "2026-10-12",
+    title: "Blender Cloud rendering (beta): render while your computer is off",
+    summary: "Blender mode can now render the open scene on Keplar's servers, so the frames keep coming after you close Blender, and they wait for you to download them.",
+    items: [
+      "Prepare a cloud render: the Keplar add-on saves a copy of the scene, unsaved changes included, and packs its textures and linked files into it. Your own file isn't changed. Missing textures and anything that can't travel, such as caches on disk, are listed first.",
+      "Pick the engine (Cycles, EEVEE or Workbench), the frames, resolution, samples and format, a time limit and a credit budget. Animations can also be joined into an MP4.",
+      "Each render gets its own machine with Blender 5.2 and no internet access. The scene uploads straight to it from the desktop app, and the frames come back to Documents/Keplar renders.",
+      "Charged by machine time, not per frame. Pause stops the machine; resume renders only the missing frames. Long renders continue on fresh machine sessions. Renders are kept three days.",
+      "Needs desktop app 0.1.10 or newer and the updated Keplar add-on (press Set up Blender once).",
+    ],
+    links: [{ href: "/docs/studio/blender-cloud-rendering", label: "Blender Cloud rendering" }, { href: "/blender-ai", label: "Blender AI" }],
+  },
+  {
     id: "2026-10-12",
     date: "2026-10-12",
     title: "Roblox Cloud overnight jobs, better Studio effects, and the Keplar One browser extension (beta)",

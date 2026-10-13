@@ -1,0 +1,209 @@
+/* SegmentedControl, Tabs, Panel, ResizableSplit. (Class names avoid "__tab…" / "Pill": see controls.module.css.) */
+
+/* ── SegmentedControl ── */
+.seg {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  padding: 2px;
+  border-radius: var(--ks-radius-pill);
+  background: var(--ks-fill-active);
+  isolation: isolate;
+}
+.seg[data-full] { display: flex; width: 100%; }
+.segThumb {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 0;
+  z-index: -1;
+  border-radius: var(--ks-radius-pill);
+  background: var(--ks-surface-1);
+  box-shadow: 0 0 0 1px var(--ks-border), 0 1px 2px rgb(0 0 0 / 0.08);
+  pointer-events: none;
+}
+.segThumb[data-ready] {
+  transition:
+    transform var(--ks-dur-base) var(--ks-ease-spring),
+    width var(--ks-dur-base) var(--ks-ease-spring);
+}
+.segOption {
+  display: inline-flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ks-space-1-5);
+  height: calc(var(--ks-control-md) - 4px);
+  padding: 0 var(--ks-space-3);
+  border: 0;
+  border-radius: var(--ks-radius-pill);
+  background: transparent;
+  color: var(--ks-text-2);
+  font-size: var(--ks-text-base);
+  font-weight: var(--ks-weight-medium);
+  white-space: nowrap;
+  cursor: pointer;
+  scale: none;
+  transition: color var(--ks-dur-fast) var(--ks-ease-standard);
+}
+.seg[data-size="sm"] .segOption { height: calc(var(--ks-control-sm) - 4px); padding: 0 var(--ks-space-2-5); font-size: var(--ks-text-sm); }
+.segOption:hover:not([aria-disabled="true"]) { color: var(--ks-text-1); }
+.segOption[aria-checked="true"] { color: var(--ks-text-1); }
+.segOption[aria-disabled="true"] { color: var(--ks-text-disabled); cursor: default; }
+.segOption:focus-visible { box-shadow: var(--ks-focus-ring); }
+
+/* ── Tabs ── */
+.strip {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: var(--ks-space-1);
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--ks-divider);
+}
+.strip::-webkit-scrollbar { display: none; }
+.stripItem {
+  position: relative;
+  flex: none; /* a narrow strip scrolls; labels never get cut mid-word */
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ks-space-1-5);
+  height: 32px;
+  padding: 0 var(--ks-space-2);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ks-text-2);
+  font-size: var(--ks-text-base);
+  font-weight: var(--ks-weight-medium);
+  white-space: nowrap;
+  cursor: pointer;
+  scale: none;
+  transition: color var(--ks-dur-fast) var(--ks-ease-standard);
+}
+.stripItem:hover:not([aria-disabled="true"]) { color: var(--ks-text-1); }
+.stripItem[aria-selected="true"] { color: var(--ks-text-1); }
+.stripItem[aria-disabled="true"] { color: var(--ks-text-disabled); cursor: default; }
+.stripItem:focus-visible { box-shadow: inset 0 0 0 2px var(--ks-focus); border-radius: var(--ks-radius-xs); }
+.stripCount {
+  min-width: 16px;
+  padding: 0 4px;
+  border-radius: var(--ks-radius-pill);
+  background: var(--ks-fill-active);
+  color: var(--ks-text-2);
+  font-size: var(--ks-text-xs);
+  line-height: 16px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.stripLine {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  height: 1.5px;
+  background: var(--ks-text-1);
+  pointer-events: none;
+}
+.stripLine[data-ready] {
+  transition:
+    transform var(--ks-dur-base) var(--ks-ease-spring),
+    width var(--ks-dur-base) var(--ks-ease-spring);
+}
+.viewPane:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--ks-focus); }
+
+/* ── Panel ── */
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid var(--ks-border);
+  border-radius: var(--ks-radius-sm);
+  background: var(--ks-surface-1);
+  overflow: hidden;
+}
+.panel[data-flush] { border: 0; border-radius: 0; }
+.panel[data-tone="inset"] { background: var(--ks-surface-inset); }
+.panelHead {
+  display: flex;
+  align-items: center;
+  gap: var(--ks-space-2);
+  min-height: 36px;
+  padding: 0 var(--ks-space-2) 0 var(--ks-space-3);
+  border-bottom: 1px solid var(--ks-divider);
+  flex: none;
+}
+.panelTitles { display: flex; align-items: baseline; gap: var(--ks-space-2); flex: 1; min-width: 0; }
+.panelTitle {
+  margin: 0;
+  font-size: var(--ks-text-base);
+  line-height: var(--ks-leading-base);
+  font-weight: var(--ks-weight-semibold);
+  color: var(--ks-text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.panelSub { font-size: var(--ks-text-sm); color: var(--ks-text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.panelActions { display: flex; align-items: center; gap: 2px; flex: none; }
+.panelBody { flex: 1; min-height: 0; overflow: auto; }
+.panelBody[data-pad] { padding: var(--ks-space-3); }
+
+/* ── ResizableSplit ── */
+.split {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+.split[data-orientation="vertical"] { flex-direction: column; }
+.pane {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.paneStart { flex: 0 1 var(--split-size); }
+.paneEnd { flex: 1 1 0; }
+.split:not([data-dragging]) .paneStart {
+  transition: flex-basis var(--ks-dur-slow) var(--ks-ease-spring);
+}
+.handle {
+  position: relative;
+  flex: 0 0 1px;
+  background: var(--ks-divider);
+  touch-action: none;
+  z-index: 1;
+}
+.handle::before {
+  /* generous hit area without taking layout space */
+  content: "";
+  position: absolute;
+  inset: 0 -4px;
+}
+.split[data-orientation="horizontal"] .handle { cursor: col-resize; }
+.split[data-orientation="vertical"] .handle { cursor: row-resize; }
+.split[data-orientation="vertical"] .handle::before { inset: -4px 0; }
+.handle::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--ks-accent);
+  opacity: 0;
+  transition: opacity var(--ks-dur-fast) var(--ks-ease-standard);
+}
+.split[data-orientation="horizontal"] .handle::after { inset: 0 -1px; }
+.split[data-orientation="vertical"] .handle::after { inset: -1px 0; }
+.handle:hover::after,
+.split[data-dragging] .handle::after { opacity: 0.7; transition-delay: 120ms; }
+.split[data-dragging] .handle::after { transition-delay: 0ms; }
+.handle:focus-visible { outline: none; }
+.handle:focus-visible::after { opacity: 1; transition-delay: 0ms; }
+.split[data-dragging] { user-select: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .segThumb[data-ready], .stripLine[data-ready], .split:not([data-dragging]) .paneStart { transition: none; }
+}

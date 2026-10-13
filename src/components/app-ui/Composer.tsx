@@ -1,7 +1,10 @@
 "use client";
 
 import { SEND_EVENT } from "@/lib/spatial/events";
-import { forwardRef, useCallback, useDeferredValue, useEffect, useId, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useCallback, useDeferredValue, useEffect, useId, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { hasResearchBridge, noSubscribe, researchCapabilities } from "@/lib/desktop/research-bridge";
+import { wantsLiveResearch } from "./state/live-run";
+import { readDraft, writeDraft } from "./drafts";
 import { HeuristicClassifier } from "@/lib/orchestration/classifier";
 import { computeLevel, computeLevelLabel } from "@/lib/orchestration/compute";
 import { CostAwareRouter } from "@/lib/orchestration/router";
@@ -32,6 +35,7 @@ import { useVoice } from "./useVoice";
 import { VoiceTalk } from "./VoiceTalk";
 import { armReadback, disarmReadback, stopSpeaking } from "./speech";
 import { voiceStatusText } from "@/lib/voice";
+import { usePrefs } from "@/lib/use-prefs";
 import s from "./Composer.module.css";
 import { usePopupOrigin, usePresence } from "@/components/motion/usePresence";
 import { SlashCommandMenu } from "./SlashCommandMenu";
@@ -63,6 +67,8 @@ type Props = {
   signedIn?: boolean;
   /** The modes as they change (the sidebar highlights Study / Slides while their chip is on). */
   onModesChange?: (m: ComposerModes) => void;
+  /** Session continuity (drafts.ts): this chat's unsent draft is restored and kept as it is typed. null = keep nothing (private chats). */
+  draftKey?: string | null;
 };
 
 const MB = 1024 * 1024;
@@ -84,6 +90,15 @@ export function toMediaInput(items: { kind: MediaKind; name: string; images?: Me
   const videos = items.filter((m) => m.kind === "video" && m.images?.length).map((m) => ({ name: m.name, durationSec: m.durationSec ?? 0, frames: m.images!.length }));
   return { images, videos };
 }
+
+/** Live Research (Keplar One desktop app 0.2.0+): in the desktop app, Web and Deep Research search and read pages on this computer first. */
+const LIVE_WEB_HINT = "Live Research: the Keplar desktop app searches the web and reads the pages on this computer, then Keplar answers with citations";
+const LIVE_DEPTHS = [
+  { id: "auto", label: "Auto", hint: "The desktop app picks the depth from the question (Deep Research: deep)" },
+  { id: "fast", label: "Fast", hint: "A few fresh sources and one model: quick, current facts" },
+  { id: "standard", label: "Standard", hint: "Several sources, compared" },
+  { id: "deep", label: "Deep", hint: "Many sources, followed references and a full panel. Takes longer" },
+] as const;
 
 const tools: { key: ModeKey; label: string; Icon: typeof IconWeb; hint: string }[] = [
   { key: "web", label: "Web", Icon: IconWeb, hint: "Web retrieval isn't live yet in this preview" },
@@ -134,11 +149,12 @@ const router = new CostAwareRouter();
 
 
 export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
-  { running, onSend, onStop, routing, onRouting, placeholder, computeRemaining, resetsAt, plan, signedIn, onModesChange },
+  { running, onSend, onStop, routing, onRouting, placeholder, computeRemaining, resetsAt, plan, signedIn, onModesChange, draftKey = null },
   ref,
 ) {
   const uid = useId();
   const taRef = useRef<HTMLTextAreaElement>(null);
+  const prefs = usePrefs();
   const [text, setTextState] = useState("");
   // The latest text, updated synchronously (typing and dictation both write here), so dictation never mistakes its own write for an edit.
   const textRef = useRef("");
@@ -151,6 +167,20 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
     setTextState(v);
   }, []);
   const voice = useVoice({ getText: () => textRef.current, setText });
+  // Drafts (drafts.ts): opening a chat shows its unsent draft; typing keeps it (debounced); sending clears it (the text goes blank).
+  const draftFor = useRef<string | null>(null);
+  useEffect(() => {
+    // Switching chats: keep what was just typed in the previous one (a pending debounced save is cancelled below), then load this one's.
+    if (draftFor.current && draftFor.current !== draftKey) writeDraft(draftFor.current, textRef.current);
+    draftFor.current = draftKey;
+    if (draftKey === null) return;
+    setText(readDraft(draftKey) ?? "");
+  }, [draftKey, setText]);
+  useEffect(() => {
+    if (draftKey === null) return;
+    const t = setTimeout(() => writeDraft(draftKey, text), 400);
+    return () => clearTimeout(t);
+  }, [draftKey, text]);
   /** Voice mode (BETA): a note about voice that isn't an error, and the "ask by voice" hand-off. */
   const [voiceNote, setVoiceNote] = useState<string | null>(null);
   const [voiceAsk, setVoiceAsk] = useState(0);
@@ -182,6 +212,19 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
   }, [media]);
   const trayRef = useRef<HTMLUListElement>(null);
   const [modes, setModes] = useState<ComposerModes>({ web: false, deepResearch: false, create: false, agent: false });
+  // The desktop app's Live Research bridge (SSR and the first render see false, so the web page never changes).
+  const liveDesktop = useSyncExternalStore(noSubscribe, hasResearchBridge, () => false);
+  // Live Research is turned on in the desktop app (it can be off there while the bridge exists): asked once.
+  const [liveEnabled, setLiveEnabled] = useState(false);
+  useEffect(() => {
+    if (!liveDesktop) return;
+    let alive = true;
+    void researchCapabilities().then((c) => { if (alive) setLiveEnabled(Boolean(c)); });
+    return () => { alive = false; };
+  }, [liveDesktop]);
+  // These modes run Live Research (KeplarApp.run uses the same rule): only then does the composer offer its depth and drop the server
+  // Deep Research budget gate. Small talk sent with them never goes as Deep Research (KeplarApp.run), so the text doesn't matter here.
+  const liveOn = liveDesktop && liveEnabled && wantsLiveResearch(modes);
   const [slashOpen, setSlashOpen] = useState(false);
   const [slashQuery, setSlashQuery] = useState("/");
   const [slashActive, setSlashActive] = useState(0);
@@ -459,7 +502,8 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
   // Deep Research budget hint: remaining units ÷ typical-run estimate (plans.ts).
   const drRuns = deepResearchRunsLeft(computeRemaining);
   const formatReset = () => formatResetAt(resetsAt);
-  const drBlocked = modes.deepResearch && drRuns < 1;
+  // In the desktop app Deep Research runs as Live Research: the pages are read on this computer, so the server Deep Research budget doesn't apply.
+  const drBlocked = modes.deepResearch && drRuns < 1 && !liveOn;
   const processing = media.some((m) => m.status === "processing") || docs.some((d) => d.status === "processing") || links.some((l) => l.status === "processing") || Object.values(tracks).some((t) => t.status === "processing");
   const tooLarge = mediaChars(media) > MEDIA_LIMITS.maxTotalDataUrlChars;
   const hasReady = media.some((m) => m.status === "ready") || docs.some((d) => d.status === "ready") || links.some((l) => l.status === "ready" && l.attachment);
@@ -843,7 +887,9 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
         return;
       }
     }
-    if (e.key === "Enter" && !e.nativeEvent.isComposing && e.keyCode !== 229 && (e.metaKey || e.ctrlKey || !e.shiftKey)) {
+    // Settings → Chat → Send with: Enter (Shift+Enter for a new line) or Ctrl/⌘+Enter (Enter adds a new line).
+    const sendCombo = prefs.sendKey === "mod-enter" ? e.metaKey || e.ctrlKey : e.metaKey || e.ctrlKey || !e.shiftKey;
+    if (e.key === "Enter" && !e.nativeEvent.isComposing && e.keyCode !== 229 && sendCombo) {
       e.preventDefault();
       submit();
     }
@@ -1030,6 +1076,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
           onKeyDown={onKeyDown}
           onPaste={onPaste}
           aria-describedby={`${uid}-hint`}
+          spellCheck={prefs.spellcheck}
           aria-autocomplete={slashOpen ? "list" : undefined}
           aria-controls={slashOpen ? slashListId : undefined}
           aria-expanded={slashOpen || undefined}
@@ -1044,7 +1091,27 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
           </p>
         ) : null}
 
-        {modes.deepResearch ? (
+        {liveOn ? (
+          <div className={s.budget} role="group" aria-label="Live Research" data-live-research="">
+            <span><strong>Live Research</strong> · searched and read on this computer</span>
+            <span className={`${s.segmented} ${s.liveDepth}`} role="radiogroup" aria-label="Research depth">
+              {LIVE_DEPTHS.map((d) => (
+                <label key={d.id} className={s.segment} title={d.hint}>
+                  <input
+                    type="radio"
+                    name={`${uid}-live-depth`}
+                    value={d.id}
+                    checked={(modes.liveDepth ?? "auto") === d.id}
+                    onChange={() => setModes((m) => { const next = { ...m }; if (d.id === "auto") delete next.liveDepth; else next.liveDepth = d.id; return next; })}
+                  />
+                  <span>{d.label}</span>
+                </label>
+              ))}
+            </span>
+          </div>
+        ) : null}
+
+        {modes.deepResearch && !liveOn ? (
           <div id={`${uid}-budget`} className={s.budget} data-blocked={drBlocked || undefined} role="status">
             {drBlocked ? (
               <>
@@ -1205,7 +1272,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
                 data-mode={key}
                 aria-pressed={Boolean(modes[key])}
                 aria-label={label}
-                title={hint}
+                title={key === "web" && liveDesktop && liveEnabled ? LIVE_WEB_HINT : hint}
                 // Kinds of run are exclusive (composer/modes.ts): Debate vs Deep Research, and Study / Slides vs every other kind.
                 onClick={() => setModes((m) => toggleMode(m, key))}
               >
@@ -1280,7 +1347,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
                     aria-checked={Boolean(modes[k])}
                     className={s.moreItem}
                     data-more-mode={k}
-                    title={t.hint}
+                    title={k === "web" && liveDesktop && liveEnabled ? LIVE_WEB_HINT : t.hint}
                     onClick={() => { setModes((m) => toggleMode(m, k)); setMoreOpen(false); taRef.current?.focus(); }}
                   >
                     <span className={s.moreIcon}><t.Icon size={16} /></span>
@@ -1321,7 +1388,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
             )}
           </div>
         </div>
-        <p id={`${uid}-hint`} className="visually-hidden">Press Enter or Command Enter to send, Shift Enter for a new line. {modes.image ? "Type / for image slash commands. " : "Type / for chat commands such as /slides, /quiz and /approvals. Turn on Create image to use / image commands. "}Paste a link to have Keplar read it. Paste or drop images, video, audio, documents, code or data files to attach them.</p>
+        <p id={`${uid}-hint`} className="visually-hidden">{prefs.sendKey === "mod-enter" ? "Press Control or Command Enter to send; Enter adds a new line. " : "Press Enter or Command Enter to send, Shift Enter for a new line. "}{modes.image ? "Type / for image slash commands. " : "Type / for chat commands such as /slides, /quiz and /approvals. Turn on Create image to use / image commands. "}Paste a link to have Keplar read it. Paste or drop images, video, audio, documents, code or data files to attach them.</p>
         <p id={`${uid}-attach-hint`} className="visually-hidden">{LIMITS_TEXT}. {plan === "free" ? FREE_MEDIA_NOTE : PAID_MEDIA_NOTE}.</p>
       </form>
     </div>

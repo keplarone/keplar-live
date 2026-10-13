@@ -6,6 +6,7 @@ import { citeRenderer } from "@/components/app-ui/research/Research";
 import type { KeplarAnswer, KeplarEvent, ResearchSource } from "@/lib/orchestration/types";
 import { REASON_FRAMEWORKS, reasonPrompt, RESEARCH_TEMPLATES, researchPrompt, titleFrom, type ReasonFrameworkId, type ResearchTemplateId } from "@/lib/business/prompts";
 import { reportFile } from "@/lib/business/report-file";
+import type { MediaInput } from "@/lib/orchestration/media";
 import { readDocs, runEngine, type EngineDoc } from "./engine";
 import s from "./workspace.module.css";
 
@@ -31,7 +32,7 @@ async function call<T>(url: string, init?: RequestInit): Promise<T> {
  * (assumptions, calculations, evidence, uncertainty, recommendation, next actions). Finished reports are kept in history and
  * can be downloaded or filed into a project.
  */
-export function Analyst({ kind, seed, openId, projectSeed, onSaved }: { kind: Kind; seed?: string; openId?: string; projectSeed?: string; onSaved?: () => void }) {
+export function Analyst({ kind, seed, seedMedia, openId, projectSeed, onSaved }: { kind: Kind; seed?: string; seedMedia?: MediaInput; openId?: string; projectSeed?: string; onSaved?: () => void }) {
   const research = kind === "research";
   const [template, setTemplate] = useState<string>(research ? (seed ? "custom" : "competitors") : "decision");
   const [topic, setTopic] = useState(seed ?? "");
@@ -47,6 +48,8 @@ export function Analyst({ kind, seed, openId, projectSeed, onSaved }: { kind: Ki
   const [note, setNote] = useState("");
   const abort = useRef<AbortController | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  // Images or video attached on the home composer go with the first run only.
+  const firstMedia = useRef<MediaInput | undefined>(seedMedia);
 
   const loadHistory = useCallback(() => {
     call<{ reports: Saved[] }>(`/api/business/reports?kind=${kind}`).then((d) => setHistory(d.reports)).catch(() => undefined);
@@ -67,7 +70,7 @@ export function Analyst({ kind, seed, openId, projectSeed, onSaved }: { kind: Ki
           if (e.research.phase === "plan") return { ...l, queries: e.research.queries };
           if (e.research.phase === "source") return { ...l, sources: [...l.sources, e.research.source] };
           if (e.research.phase === "step") { const st = e.research; return { ...l, steps: [...l.steps.filter((x) => x.id !== st.step), { id: st.step, status: st.status, detail: st.detail }] }; }
-          return { ...l, stage: e.research.reason };
+          return e.research.phase === "off" ? { ...l, stage: e.research.reason } : l; // "live" is client-only Live Research progress, never sent here
         case "stage": return e.status === "active" ? { ...l, stage: e.detail ?? e.stage } : l;
         case "model": return { ...l, models: [...l.models.filter((m) => m.name !== e.name), { name: e.name, status: e.status }] };
         case "delta": return { ...l, text: l.text + e.text };
@@ -91,7 +94,8 @@ export function Analyst({ kind, seed, openId, projectSeed, onSaved }: { kind: Ki
     setLive(EMPTY_LIVE);
     const prompt = research ? researchPrompt(template as ResearchTemplateId, topic, extra) : reasonPrompt(template as ReasonFrameworkId, topic, docs.map((d) => d.name));
     try {
-      const ans: KeplarAnswer | null = await runEngine({ prompt, mode: kind, projectId: projectId || null, docs: research ? undefined : docs }, onEvent, ctl.signal);
+      const ans: KeplarAnswer | null = await runEngine({ prompt, mode: kind, projectId: projectId || null, docs: research ? undefined : docs, media: firstMedia.current }, onEvent, ctl.signal);
+      firstMedia.current = undefined;
       if (!ans?.markdown?.trim()) { setErr((e) => e || "Keplar didn't return a report. Try again."); return; }
       const sources = ans.research?.sources ?? [];
       const full: Full = { id: "", kind, title: titleFrom(topic), markdown: ans.markdown, sources, queries: ans.research?.queries ?? [], consensus: ans.consensus?.summary ?? "", createdAt: new Date().toISOString(), prompt: topic };

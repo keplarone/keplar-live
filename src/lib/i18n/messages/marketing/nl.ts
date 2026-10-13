@@ -109,6 +109,11 @@ const m: MarketingCatalog = {
         "name": "Spraakmodus",
         "line": "Stel je vraag hardop en hoor het antwoord voorgelezen. Keplar neemt je audio nooit op en slaat die niet op."
       },
+      "live-research": {
+        "name": "Live-onderzoek",
+        "line": "In de desktopapp zoekt Keplar op het web en leest pagina’s op je computer, citeert daarna elke pagina en controleert de citaten.",
+        "note": "Desktopapp 0.2.0 of nieuwer."
+      },
       "images": {
         "name": "Afbeeldingen en screenshots",
         "line": "Grafieken, bonnetjes, whiteboards, interfaces. Alleen verstuurd naar modellen die kunnen zien."
@@ -214,6 +219,11 @@ const m: MarketingCatalog = {
         "name": "Blender-modus",
         "line": "Modelleer, textureer met PBR-sets van Poly Haven, belicht en exporteer in Blender 4.2 of nieuwer.",
         "note": "Desktopapp 0.1.8 of nieuwer."
+      },
+      "blender-cloud": {
+        "name": "Blender Cloud-rendering",
+        "line": "Render een scène op de servers van Keplar terwijl je computer uit staat, en download daarna de frames en een MP4.",
+        "note": "Desktopapp 0.1.10 of nieuwer."
       },
       "extension": {
         "name": "Browserextensie Keplar One",

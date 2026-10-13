@@ -46,14 +46,13 @@ test("app sidebar: at most five primary items, Recents shown directly, usage onl
   assert.doesNotMatch(side, /brand\.usage\}<\/span>\s*<span className=\{s\.meterValue\}[\s\S]{0,400}<\/nav>/, "no always-on usage card under the nav");
 });
 
-test("Settings: five plain groups, advanced options behind Advanced, old deep links still land", () => {
-  const page = readFileSync("src/app/(marketing)/account/page.tsx", "utf8");
-  const groups = [...page.matchAll(/\{ id: "([a-z-]+)", label: "([^"]+)"/g)].map((m) => m[2]);
-  assert.deepEqual(groups, ["Plan & usage", "General", "Personalization", "Privacy & security", "Advanced"]);
+test("Settings: one-word categories in the rail, old deep links still land", () => {
+  const page = readFileSync("src/components/account/AccountSettings.tsx", "utf8");
+  const groups = [...page.matchAll(/\{ id: "([a-z-]+)", label: "([^"]+)"/g)].map((m) => m[1]);
+  assert.deepEqual(groups, ["account", "general", "appearance", "accessibility", "chat", "notifications", "keyboard", "personalization", "memory", "plan", "usage", "security", "privacy", "team", "developer"]);
   assert.doesNotMatch(page, /label: "[^"]*\(beta\)"/, "no '(beta)' in the tab names");
-  const advanced = page.slice(page.indexOf('id: "advanced"'));
-  for (const id of ["team", "api", "embed", "typing"]) assert.match(advanced, new RegExp(`sub\\("${id}"`), `${id} is under Advanced`);
-  for (const id of ["invite", "appearance", "language"]) assert.match(page, new RegExp(`sub\\("${id}"`), `#${id} still has a target`);
+  // Old anchors: section ids (#plan, #usage, #team, #memory, #personalization) or a sub id inside a section.
+  for (const id of ["invite", "language", "api", "embed", "typing"]) assert.match(page, new RegExp(`sub\\("${id}"`), `#${id} still has a target`);
   assert.match(readFileSync("src/components/account/SettingsSections.tsx", "utf8"), /closest<HTMLElement>\("\[data-sec\]"\)/, "a deep link opens the group that holds it");
 });
 

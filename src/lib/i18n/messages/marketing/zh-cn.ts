@@ -109,6 +109,11 @@ const m: MarketingCatalog = {
         "name": "语音模式",
         "line": "开口提问，听答案朗读。Keplar 从不录制或保存你的音频。"
       },
+      "live-research": {
+        "name": "实时研究",
+        "line": "在桌面应用中，Keplar 会搜索网络并在你的电脑上读取网页，然后为每个网页标注引用并核对引用。",
+        "note": "桌面应用 0.2.0 或更高版本。"
+      },
       "images": {
         "name": "图片和截图",
         "line": "图表、收据、白板、界面。只发给能看图的模型。"
@@ -214,6 +219,11 @@ const m: MarketingCatalog = {
         "name": "Blender 模式",
         "line": "在 Blender 4.2 或更高版本中建模、用 Poly Haven 的 PBR 材质贴图、布光并导出。",
         "note": "桌面应用 0.1.8 或更高版本。"
+      },
+      "blender-cloud": {
+        "name": "Blender Cloud 云渲染",
+        "line": "关掉电脑也能在 Keplar 的服务器上渲染场景，之后下载各帧和一个 MP4 视频。",
+        "note": "桌面应用 0.1.10 或更高版本。"
       },
       "extension": {
         "name": "Keplar One 浏览器扩展",

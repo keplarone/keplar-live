@@ -46,6 +46,11 @@ export const staticLastmod: Record<string, string> = {
   "/for-researchers": "2026-10-01",
   "/for-small-business": "2026-10-01",
   "/for-developers": "2026-10-03", // src/lib/growth/developers-page.ts (added 2026-10-03)
+  // Comparison pages (src/lib/compare.ts): published 2026-10-12 with Keplar's prices updated from the plan data.
+  "/compare": "2026-10-12",
+  "/compare/perplexity-model-council": "2026-10-12",
+  "/compare/poe": "2026-10-12",
+  "/compare/chathub": "2026-10-12",
 };
 
 export function lastmodFor(path: string): string | undefined {

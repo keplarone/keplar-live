@@ -27,6 +27,14 @@
     {
       "path": "/api/cron/roblox-cloud",
       "schedule": "23 3 * * *"
+    },
+    {
+      "path": "/api/cron/blender-cloud",
+      "schedule": "41 3 * * *"
+    },
+    {
+      "path": "/api/cron/observatory",
+      "schedule": "53 6 * * *"
     }
   ]
 }

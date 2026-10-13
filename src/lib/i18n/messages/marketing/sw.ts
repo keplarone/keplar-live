@@ -109,6 +109,11 @@ const m: MarketingCatalog = {
         "name": "Hali ya sauti",
         "line": "Uliza kwa sauti, sikiliza jibu likisomwa. Keplar kamwe hairekodi wala kuhifadhi sauti yako."
       },
+      "live-research": {
+        "name": "Utafiti wa Moja kwa Moja",
+        "line": "Katika programu ya kompyuta, Keplar hutafuta kwenye wavuti na kusoma kurasa kwenye kompyuta yako, kisha hunukuu kila ukurasa na kukagua manukuu.",
+        "note": "Programu ya kompyuta 0.2.0 au mpya zaidi."
+      },
       "images": {
         "name": "Picha na picha za skrini",
         "line": "Chati, risiti, ubao mweupe, UI. Hutumwa tu kwa miundo inayoweza kuona."
@@ -214,6 +219,11 @@ const m: MarketingCatalog = {
         "name": "Hali ya Blender",
         "line": "Unda modeli, weka maumbile kwa seti za PBR za Poly Haven, mwanga na kuhamisha katika Blender 4.2 au mpya zaidi.",
         "note": "Programu ya kompyuta 0.1.8 au mpya zaidi."
+      },
+      "blender-cloud": {
+        "name": "Uchakataji wa Blender Cloud",
+        "line": "Chakata picha za tukio kwenye seva za Keplar kompyuta yako ikiwa imezimwa, kisha pakua fremu na video ya MP4.",
+        "note": "Programu ya kompyuta 0.1.10 au mpya zaidi."
       },
       "extension": {
         "name": "Kiendelezi cha kivinjari Keplar One",

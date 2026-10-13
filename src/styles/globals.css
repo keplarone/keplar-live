@@ -10,6 +10,7 @@
 @import "./motion.css";
 @import "./light.css";
 @import "./aura.css";
+@import "./prefs.css";
 
 /*
  * Metric-matched fallback for Google Sans. next/font cannot generate one (the font is not in its metrics table), so without this the
@@ -312,4 +313,9 @@ textarea[data-scrolls] { overscroll-behavior: contain; }
     --rgb-surface: 247 247 248;
     color-scheme: light;
   }
+}
+
+/* Phones: <small> shrinks to 83% of its context, which put table notes at 10.8px. Never under 12px on a phone. */
+@media (max-width: 760px) {
+  small { font-size: max(0.75rem, 0.8333em); }
 }

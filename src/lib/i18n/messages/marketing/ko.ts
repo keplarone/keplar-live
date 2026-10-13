@@ -109,6 +109,11 @@ const m: MarketingCatalog = {
         "name": "음성 모드",
         "line": "소리 내어 묻고 답을 들으세요. Keplar는 음성을 녹음하거나 저장하지 않습니다."
       },
+      "live-research": {
+        "name": "라이브 리서치",
+        "line": "데스크톱 앱에서 Keplar가 웹을 검색하고 내 컴퓨터에서 페이지를 읽은 뒤, 각 페이지를 인용하고 인용을 확인합니다.",
+        "note": "데스크톱 앱 0.2.0 이상."
+      },
       "images": {
         "name": "이미지와 스크린샷",
         "line": "차트, 영수증, 화이트보드, UI. 이미지를 볼 수 있는 모델에만 보냅니다."
@@ -214,6 +219,11 @@ const m: MarketingCatalog = {
         "name": "Blender 모드",
         "line": "Blender 4.2 이상에서 모델링, Poly Haven PBR 세트로 텍스처, 조명, 내보내기.",
         "note": "데스크톱 앱 0.1.8 이상."
+      },
+      "blender-cloud": {
+        "name": "Blender Cloud 렌더링",
+        "line": "컴퓨터를 끈 채 Keplar 서버에서 장면을 렌더링하고, 프레임과 MP4를 내려받으세요.",
+        "note": "데스크톱 앱 0.1.10 이상."
       },
       "extension": {
         "name": "Keplar One 브라우저 확장 프로그램",

@@ -44,6 +44,7 @@ export const RETAINED = [
   "cost_state", // throttles and provider-balance state (no personal data)
   "overage_settings", // overage opt-in and monthly cap: the billing authorization behind any overage charge
   "overage_usage", // overage amounts billed per month: a financial record
+  "answer_turns", // answer recovery checkpoints (orchestration/turn-recovery.ts): workspace "system", keyed by a hash of owner + turn key (no account id), the last answer as sent; unreadable after 30 minutes and deleted within a day, so they expire on their own
 ] as const;
 export const RETAINED_PATTERNS = [/^usage_window_/, /^system_/, /^admin_/, /^ops_/, /^_health$/, /^_cron_beats$/ /* cron heartbeat timestamps, no personal data */];
 
@@ -52,6 +53,7 @@ export const USER_COLLECTIONS = [
   "studio_topup_settings", "studio_topup_quotes", // deleting an account also removes automatic-payment authorization
   "studio_chats", // Roblox Studio mode: one saved conversation per game (src/lib/studio/chats.ts); exported and deleted with the account
   "roblox_cloud_jobs", "roblox_cloud_files", // Roblox Cloud overnight jobs: the goal, plan, log, report and the game's script snapshot with edits (src/lib/roblox-cloud); kept 30 days, exported and deleted with the account
+  "blender_cloud_jobs", // Blender Cloud renders: the scene's name and summary, the settings, progress, usage and log (src/lib/blender-cloud); the scene and frames live on the job's render machine, which the daily clean-up deletes once its job is gone; kept 3 days after the render, exported and deleted with the account
   "accounts_workspaces", "chat_threads", "chat_digests", "memory_items", "memory_settings", "projects", "project_notes", "project_files",
   "sb_sites", "sb_versions", "sb_leads", "sb_templates" /* site snapshots you chose to share as templates; removed with the site or the account */, "sb_template_likes" /* community templates you liked; exported and deleted with the account */, "sb_records" /* site features: visitor signups, bookings, table rows; exported and deleted with the account */, "sb_assets", "sb_shots", "app_builds" /* Keplar Apps build records: your prompt, plan and generated files; the apps' own end-user data lives in app_* tables and is deleted with each app */, "create_projects", "referral_profiles" /* your invite code and hashed network/browser markers */, "create_deploys", "create_domains", "create_media_jobs", "img_jobs", "hf_finalize",
   "collab_invites" /* live-session invite links you created (token hashes only) */, "collab_grants" /* who joined your creations by link */, "collab_branches" /* split-off records */, "critic_reports" /* AI critic reports on your creations */, "sb_deploys" /* deploy and rollback history with logs */,

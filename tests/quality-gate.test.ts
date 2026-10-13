@@ -31,6 +31,15 @@ test("gate: loops, empty output and character runs are rejected", () => {
   assert.equal(rejected("Hello " + "a".repeat(40)).ok, false);
   assert.equal(rejected(("the cat sat on the mat and ").repeat(12)).ok, false, "phrase loop");
   assert.equal(rejected("Result: Paris,is.thecapital and the.city,iscalled something else entirely here").ok, false, "glued words");
+  const para = "To reset the router, hold the reset button for ten seconds until the lights flash, then wait two minutes for it to restart fully. ";
+  assert.equal(rejected("Here is how. " + para.repeat(6)).ok, false, "a paragraph pasted six times");
+  assert.equal(rejected("I understand your question. " + "I am sorry but I cannot help with that request right now. ".repeat(8)).ok, false, "an apology loop");
+});
+
+test("gate: a long how-to guide that names the same parts often is good writing, not a loop", async () => {
+  // A real answer from production (2026-10-12) to "how do I tie a bowline knot": "the working end" 13 times, "the standing part" 10.
+  const { readFileSync } = await import("node:fs");
+  assert.ok(rejected(readFileSync("tests/fixtures/bowline-guide.md", "utf8")).ok);
 });
 
 test("gate: normal answers pass (prose, short, math, code, JSON, lists, tables, URLs, other languages)", () => {

@@ -52,11 +52,12 @@ export function Dashboard({ onOpenProject }: { onOpenProject: (id: string) => vo
   const [summary, setSummary] = useState<{ text: string; createdAt: string } | null>(null);
   const [summaryBusy, setSummaryBusy] = useState(false);
   const [summaryErr, setSummaryErr] = useState("");
+  const [loadedAt, setLoadedAt] = useState<string | null>(null);
 
   useEffect(() => {
     let live = true;
     const get = (u: string) => fetch(u, { cache: "no-store" }).then(async (r) => (r.ok ? r.json() : Promise.reject(new Error((await r.json().catch(() => ({}))).error ?? "Couldn't load this."))));
-    get("/api/business/dashboard").then((d) => { if (live) setDash(d); }).catch((e: Error) => { if (live) setErr(e.message); });
+    get("/api/business/dashboard").then((d) => { if (live) { setDash(d); setLoadedAt(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })); } }).catch((e: Error) => { if (live) setErr(e.message); });
     get("/api/business/approvals").then((d) => { if (live) setApprovals((d.approvals ?? []).filter((a: Approval) => a.status === "pending").slice(0, 6)); }).catch(() => undefined);
     get("/api/projects").then((d) => { if (live) setProjects((d.projects ?? []).slice().sort((a: Project, b: Project) => b.createdAt.localeCompare(a.createdAt)).slice(0, 5)); }).catch(() => undefined);
     get("/api/business/connectors").then((d) => { if (live) setConnectors(d.connectors ?? []); }).catch(() => undefined);
@@ -154,6 +155,7 @@ export function Dashboard({ onOpenProject }: { onOpenProject: (id: string) => vo
     <div className={s.page}>
       <header className={s.head}>
         <div>
+          {loadedAt ? <p className={s.overline}>Updated {loadedAt}</p> : null}
           <h1 className={s.h1}>Dashboard</h1>
           <p className={s.muted}>From your connected payments, site, agents and usage.</p>
         </div>
@@ -166,6 +168,7 @@ export function Dashboard({ onOpenProject }: { onOpenProject: (id: string) => vo
             key={w.id}
             className={s.widget}
             data-size={w.size}
+            data-id={w.id}
             data-dragging={dragId === w.id || undefined}
             draggable={editing}
             onDragStart={() => setDragId(w.id)}

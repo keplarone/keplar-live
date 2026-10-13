@@ -61,7 +61,7 @@ function ProjectList({ onOpen }: { onOpen: (id: string) => void }) {
       </header>
       <form className={s.inline} onSubmit={(e) => void create(e)}>
         <label className={s.srOnly} htmlFor="new-project">New project name</label>
-        <input id="new-project" className={s.input} value={name} onChange={(e) => setName(e.target.value)} placeholder="New project, e.g. Q4 launch" maxLength={80} />
+        <input spellCheck={false} id="new-project" className={s.input} value={name} onChange={(e) => setName(e.target.value)} placeholder="New project, e.g. Q4 launch" maxLength={80} />
         <button type="submit" className={s.btnPrimary} disabled={busy || !name.trim()}>{busy ? "Creating…" : "Create project"}</button>
       </form>
       {err ? <p className={s.error} role="alert">{err}</p> : null}

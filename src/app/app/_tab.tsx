@@ -15,12 +15,12 @@ const META: Record<View, { title: string; description: string }> = {
   slides: { title: "Slides", description: "Make a slideshow with Keplar." },
   study: { title: "Study", description: "Study with Keplar: flashcards, quizzes and notes." },
   history: { title: "History", description: "Your Keplar chat history." },
-  studio: { title: "Roblox Studio", description: "Build in Roblox Studio with Keplar from the desktop app." },
+  studio: { title: "Keplar Studio", description: "Build in Roblox Studio or Blender with Keplar from the desktop app." },
 };
 
 export function tabMeta(view: View): Metadata {
   const m = META[view];
-  return pageMeta(pathForView(view), m.title, m.description, { noindex: true, absoluteTitle: view === "thread" });
+  return pageMeta(pathForView(view), m.title, m.description, { absoluteTitle: view === "thread" });
 }
 
 export function TabPage({ view }: { view: View }) {

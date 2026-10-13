@@ -109,6 +109,11 @@ const m: MarketingCatalog = {
         "name": "Voice mode",
         "line": "Magtanong nang malakas, pakinggan ang sagot na binabasa. Hindi kailanman nire-record o sine-save ng Keplar ang audio mo."
       },
+      "live-research": {
+        "name": "Live Research",
+        "line": "Sa desktop app, naghahanap ang Keplar sa web at nagbabasa ng mga page sa computer mo, saka sinisipi ang bawat isa at sinusuri ang mga sipi.",
+        "note": "Desktop app 0.2.0 o mas bago."
+      },
       "images": {
         "name": "Mga larawan at screenshot",
         "line": "Mga chart, resibo, whiteboard, UI. Ipinapadala lang sa mga model na nakakakita."
@@ -214,6 +219,11 @@ const m: MarketingCatalog = {
         "name": "Blender mode",
         "line": "Mag-model, mag-texture gamit ang Poly Haven PBR sets, mag-ilaw at mag-export sa Blender 4.2 o mas bago.",
         "note": "Desktop app 0.1.8 o mas bago."
+      },
+      "blender-cloud": {
+        "name": "Blender Cloud rendering",
+        "line": "Mag-render ng scene sa mga server ng Keplar kahit nakapatay ang computer mo, saka i-download ang mga frame at isang MP4.",
+        "note": "Desktop app 0.1.10 o mas bago."
       },
       "extension": {
         "name": "Keplar One browser extension",

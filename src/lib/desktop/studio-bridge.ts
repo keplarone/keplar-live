@@ -18,6 +18,17 @@ export type StudioOverlayApi = {
   collapse(on: boolean): Promise<OverlayState>;
   seeThrough(on: boolean): Promise<OverlayState>;
   onState(listener: (state: OverlayState) => void): () => void;
+  /**
+   * Spring drag (desktop app 0.2.4+, keplar-desktop src/main/studio/overlay-drag.ts). Present means the three calls below
+   * exist; older apps leave it undefined and the overlay drags its title bar as a -webkit-app-region instead.
+   */
+  supports?: { springDrag?: boolean };
+  /** False where the app cannot place windows (Linux Wayland). */
+  dragAvailable?(): Promise<boolean>;
+  /** Overlay page only. `offset` is where the window was grabbed (event.clientX/clientY). */
+  dragStart?(offset?: { x: number; y: number }): Promise<{ dragging: boolean; reason?: "unavailable" | "no-window" }>;
+  /** Overlay page only; settles on the exact target. Idempotent. */
+  dragEnd?(): Promise<{ dragging: false }>;
 };
 
 export type StudioBridge = {
@@ -46,7 +57,30 @@ export type BlenderBridge = {
   tools(): Promise<{ name: string; description?: string; inputSchema?: unknown }[]>;
   call(name: string, args?: Record<string, unknown>): Promise<StudioCall>;
   onStatus(listener: (status: BlenderStatus) => void): () => void;
+  /** Blender Cloud transfers (desktop app 0.1.10+, bridge version 4; keplar-desktop src/main/blender/cloud.ts). */
+  cloud?: BlenderCloudApi;
 };
+
+type Result<T> = { ok: true; result: T } | { ok: false; error: string };
+export type CloudProgress = { kind: "upload" | "download"; done: number; total: number; file?: string };
+export type CloudPack = { packId: string; bytes: number; sha256: string; report: Record<string, unknown> };
+export type BlenderCloudApi = {
+  /** A packed, compressed copy of the open scene (textures inside) on this computer, and what the add-on found in it. */
+  pack(): Promise<Result<CloudPack>>;
+  /** Sends a packed scene to the job's render machine (resumes if interrupted). */
+  upload(packId: string, url: string, token: string): Promise<Result<{ ok: true }>>;
+  /** Downloads the renders to ~/Documents/Keplar renders/<label>. */
+  download(url: string, token: string, label: string): Promise<Result<{ folder: string; files: number; bytes: number }>>;
+  open(folder: string): Promise<Result<{ ok: true }>>;
+  cancel(): Promise<{ ok: true }>;
+  onProgress(listener: (p: CloudProgress) => void): () => void;
+};
+
+/** Blender Cloud transfers in the desktop app (0.1.10+), else null. */
+export function blenderCloud(): BlenderCloudApi | null {
+  const c = blenderBridge()?.cloud;
+  return c && typeof c.pack === "function" && typeof c.upload === "function" ? c : null;
+}
 
 /** The Blender bridge inside the Keplar desktop app (0.1.8+), else null. */
 export function blenderBridge(): BlenderBridge | null {

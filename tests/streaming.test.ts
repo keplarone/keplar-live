@@ -109,6 +109,8 @@ test("orchestrate: the leading model's words arrive first (real streaming); the 
   const calls: { kind: string; start: number }[] = [];
   const LEAD = "Everest is about 8,849 meters tall according to the joint 2020 China and Nepal survey, which is the official figure used today.";
   const enc = new TextEncoder();
+  let firstWordShown = () => {};
+  const leaderChosen = new Promise<void>((r) => { firstWordShown = r; });
   globalThis.fetch = (async (_u: string | URL, init?: RequestInit) => {
     const body = JSON.parse(String(init?.body ?? "{}")) as { model: string; stream?: boolean; messages: { role: string; content: string }[] };
     const sys = body.messages[0]?.content ?? "";
@@ -120,6 +122,11 @@ test("orchestrate: the leading model's words arrive first (real streaming); the 
       const parts = slow ? ["Slow ", "answer ", "here."] : LEAD.match(/\S+\s*/g)!;
       const stream = new ReadableStream({
         async start(ctl) {
+          // The slow seats start 400 ms after the first seat's words are on screen (it leads from then on), not 400 ms after they were asked:
+          // on a loaded machine the ~15 short timers before those words can outlast a fixed 400 ms, and a slow seat then finished first and
+          // led, or answered right after the first words. Both were flaky failures, not product bugs. The 5 s cap keeps a real regression (no
+          // early words at all) a failed assertion instead of a hang.
+          if (slow) await Promise.race([leaderChosen, new Promise((r) => setTimeout(r, 5000).unref())]);
           await new Promise((r) => setTimeout(r, slow ? 400 : 20));
           for (const p of parts) { ctl.enqueue(enc.encode(`data: ${JSON.stringify({ model: body.model, choices: [{ delta: { content: p } }] })}\n\n`)); await new Promise((r) => setTimeout(r, 15)); }
           ctl.enqueue(enc.encode(`data: ${JSON.stringify({ choices: [{ delta: {}, finish_reason: "stop" }], usage: { prompt_tokens: 10, completion_tokens: 8, cost: 0 } })}\n\ndata: [DONE]\n\n`));
@@ -146,7 +153,10 @@ test("orchestrate: the leading model's words arrive first (real streaming); the 
   try {
     const events: { e: KeplarEvent; at: number }[] = [];
     const deps = engineDeps({ keyTier: "free" })!;
-    for await (const e of orchestrate({ prompt: "Write a Python function that returns the n most common words in a text file.", plan: "free", computeRemaining: 1e6 }, deps)) events.push({ e, at: Date.now() - t0 });
+    for await (const e of orchestrate({ prompt: "Write a Python function that returns the n most common words in a text file.", plan: "free", computeRemaining: 1e6 }, deps)) {
+      events.push({ e, at: Date.now() - t0 });
+      if (e.type === "delta") firstWordShown();
+    }
     const deltas = events.filter((x) => x.e.type === "delta");
     const answer = events.find((x) => x.e.type === "answer")!;
     assert.ok(deltas.length > 1, "words streamed in several pieces");

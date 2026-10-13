@@ -109,6 +109,11 @@ const m: MarketingCatalog = {
         "name": "Tryb głosowy",
         "line": "Zapytaj na głos i posłuchaj odpowiedzi. Keplar nigdy nie nagrywa ani nie przechowuje Twojego dźwięku."
       },
+      "live-research": {
+        "name": "Badanie na żywo",
+        "line": "W aplikacji desktopowej Keplar przeszukuje sieć i czyta strony na Twoim komputerze, a potem cytuje każdą z nich i sprawdza cytowania.",
+        "note": "Aplikacja desktopowa 0.2.0 lub nowsza."
+      },
       "images": {
         "name": "Obrazy i zrzuty ekranu",
         "line": "Wykresy, paragony, tablice, interfejsy. Wysyłane tylko do modeli, które widzą."
@@ -214,6 +219,11 @@ const m: MarketingCatalog = {
         "name": "Tryb Blender",
         "line": "Modelowanie, teksturowanie zestawami PBR z Poly Haven, oświetlenie i eksport w Blenderze 4.2 lub nowszym.",
         "note": "Aplikacja desktopowa 0.1.8 lub nowsza."
+      },
+      "blender-cloud": {
+        "name": "Renderowanie w Blender Cloud",
+        "line": "Renderuj scenę na serwerach Keplar przy wyłączonym komputerze, a potem pobierz klatki i plik MP4.",
+        "note": "Aplikacja desktopowa 0.1.10 lub nowsza."
       },
       "extension": {
         "name": "Rozszerzenie przeglądarki Keplar One",

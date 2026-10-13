@@ -137,6 +137,8 @@ export type ComposerModes = {
   slides?: boolean;
   /** Reason chip: careful step-by-step work with visible checks (personalize/turn.ts); paid plans also get the thorough panel. */
   reason?: boolean;
+  /** Live Research depth the person picked in the Keplar One desktop app (unset: the desktop recommends one). Client only; the route drops it. */
+  liveDepth?: LiveDepth;
 };
 
 export type Attachment = { name: string; size: number; type: string };
@@ -192,6 +194,17 @@ export type KeplarRequest = {
   private?: boolean;
   /** The person's saved specialist for this chat (looked up server-side in their own workspace). */
   specialistId?: string;
+  /**
+   * Live Research from the Keplar One desktop app (src/lib/research/live-request.ts): pages the desktop searched for and read on the person's
+   * computer, as its numbered brief plus the source list. Client-supplied and untrusted: the route validates and caps it, fences it as data,
+   * and never presents it as checked by Keplar's servers. When present, server-side web research and source checks are skipped.
+   */
+  liveResearch?: LiveResearchInput;
+  /**
+   * Answer recovery (turn-recovery.ts): a random key per send, reused by a retry after a dropped connection so the saved answer is
+   * replayed instead of a second run. Validated in the route ([A-Za-z0-9_-]{16,64}); ignored for private chats, API keys and embeds.
+   */
+  turnKey?: string;
   routing?: RoutingPreferences;
   /** Remaining Keplar Usage in the caller's allowance. Set server-side from the ledger; never trusted from the client. */
   computeRemaining?: number;
@@ -491,15 +504,67 @@ export interface Retriever {
 
 export type ResearchStepId = "plan" | "search" | "read" | "check" | "write";
 /** A page a live web search returned for this question and a model read. `n` is the number used for [n] citations in the report. */
-export type ResearchSource = { n: number; title: string; url: string; host: string; snippet?: string; query: number };
+export type ResearchSource = {
+  n: number;
+  title: string;
+  url: string;
+  host: string;
+  snippet?: string;
+  query: number;
+  /** Live Research (desktop) only: the page's own provenance, as the desktop read it. Absent for server Deep Research. */
+  publisher?: string;
+  publishedAt?: string;
+  retrievedAt?: string;
+  kind?: string;
+  /** Pages that share a group are copies or the same publisher: not independent confirmation. */
+  group?: string;
+  /** Carried over from earlier research in this conversation, with its original retrieval time. */
+  fromEarlierTurn?: boolean;
+  /** Short verbatim excerpts the answer leans on (set after the desktop checked the answer). */
+  evidence?: string[];
+  /** Plain-language notes on the source ("Press release…", "No publication date found."), never a score. */
+  signals?: string[];
+};
 /** Live Deep Research events, in order: plan (the queries), step updates, one `source` per page read; `off` when no web research ran (and why). */
 export type ResearchEvent =
   | { phase: "plan"; queries: string[] }
   | { phase: "step"; step: ResearchStepId; status: "active" | "done" | "skipped"; detail?: string }
   | { phase: "source"; source: ResearchSource }
-  | { phase: "off"; reason: string };
+  | { phase: "off"; reason: string }
+  /** Live Research only, synthesized by the page from the desktop's progress (never sent by the server): its own words for what it is doing. */
+  | { phase: "live"; label: string; depth?: LiveDepth; webSearch?: boolean; read?: number; /** The finished run's pages in their final numbering (replaces the card's list). */ sources?: ResearchSource[] }
+  /** Client only: the card starts over (Keplar's own Deep Research taking over from a desktop run that couldn't finish). */
+  | { phase: "reset" };
 /** On the finished answer: what the research read and which pages the report cites ([n] markers that really map to a read page). */
-export type ResearchSummary = { queries: string[]; sources: ResearchSource[]; cited: number[]; off?: string };
+export type ResearchSummary = { queries: string[]; sources: ResearchSource[]; cited: number[]; off?: string; live?: LiveResearchMeta };
+
+/* ───────────────────────────── live research (desktop) ───────────────────────────── */
+
+export type LiveDepth = "fast" | "standard" | "deep";
+/** One source the desktop read, as sent with the request (validated in live-request.ts). */
+export type LiveSourceInput = { n: number; title: string; url: string; publisher?: string; publishedAt?: string; retrievedAt?: string; kind?: string; group?: string; fromEarlierTurn?: boolean };
+/** The `liveResearch` request field after validation. */
+export type LiveResearchInput = { runId: string; depth: LiveDepth; brief: string; queries: string[]; sources: LiveSourceInput[]; webSearch: boolean };
+export type LiveClaimStatus = "supported" | "partially-supported" | "conflicting" | "not-verified";
+/** How the desktop's citation check went for one statement (compact, persisted with the chat). The check compares words and numbers, not meaning. */
+export type LiveClaim = { text: string; citations: number[]; status: LiveClaimStatus; quote?: string; conflict?: { n: number; quote: string }; note?: string };
+/**
+ * Live Research details on a finished answer. The server fills runId, depth and webSearch; the page adds `checked` after the desktop's
+ * validate() ran (client-side, never signed, never shown as a server check) and `failed` from the run snapshot.
+ */
+export type LiveResearchMeta = {
+  runId: string;
+  depth: LiveDepth;
+  /** General web search was configured on the desktop (false: only Wikipedia, Crossref and GDELT were searched). */
+  webSearch: boolean;
+  independentGroups?: number;
+  failed?: { url: string; status: string; reason: string }[];
+  checked?: {
+    at: string;
+    summary: { claims: number; supported: number; partiallySupported: number; conflicting: number; notVerified: number; removedCitations: number; removedLinks: number; uncitedFacts: number };
+    claims: LiveClaim[];
+  };
+};
 
 /* ───────────────────────────── synthesis ───────────────────────────── */
 
@@ -675,6 +740,12 @@ export type KeplarEvent =
   | { type: "model"; modelId: string; name: string; status: "responded" | "failed" | "refused"; note?: string }
   | { type: "disagreement"; summary: string }
   | { type: "smalltalk" }
+  /**
+   * Answer recovery, always reporting a real state: "replayed" (this answer was saved by an earlier run of the same turn and is shown
+   * again: no second run, no second charge), "recovering" (the browser lost the stream and is fetching the saved answer), "recovered"
+   * (it got it), "lost" (nothing to recover: the run failed or never started). `headless`: the run finished after the browser left.
+   */
+  | { type: "recovery"; state: "replayed" | "recovering" | "recovered" | "lost"; headless?: boolean }
   | { type: "delta"; text: string }
   | { type: "answer"; answer: KeplarAnswer }
   /** A connected-app tool use started, finished, failed, or is waiting for the owner's approval. Upsert by `use.id`. */

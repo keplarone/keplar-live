@@ -191,6 +191,11 @@ export type KeplarMessage = {
   core?: LiveCore;
   /** Signed in: what memory did for this answer ("Memory updated" when `saved` > 0). */
   memory?: { saved: number; summarized?: boolean; used?: number };
+  /**
+   * Answer recovery (turn-recovery.ts): "recovering" while the browser fetches the answer after a dropped connection, "recovered" once it
+   * arrived that way, "replayed" when a retry got the answer an earlier run of the same turn had already saved (no second charge).
+   */
+  recovery?: { state: "replayed" | "recovering" | "recovered"; headless?: boolean };
   /** Free plan only: a soft, dismissible note about Plus (upsell.ts). */
   upsell?: "milestone" | "complex";
   /** A picture turn (Create image toggle or a clear "draw me..." request). Has no panel answer. */

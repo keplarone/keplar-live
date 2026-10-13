@@ -23,7 +23,7 @@ import { assumptionLine, pricingReply, understand, understandingBlock, type Unde
 import { followupPrompt, followupRead, resolveFollowup } from "@/lib/orchestration/followup";
 import { commonSenseNote } from "@/lib/orchestration/common-sense";
 import { scrubCreatorAges } from "@/lib/identity";
-import { detectMood, moodNote } from "@/lib/persona-tone";
+import { detectMood, humorNote, moodNote } from "@/lib/persona-tone";
 import { pickCreatorAnswer } from "@/lib/orchestration/creator";
 import { isSmallTalk } from "@/lib/orchestration/smalltalk";
 import type { KeplarAnswer, KeplarEvent, KeplarRequest, RoutingStrategy, ToolUse } from "@/lib/orchestration/types";
@@ -40,7 +40,8 @@ import { lighterRouting } from "@/lib/orchestration/breaker-routing";
 import { limitRequest } from "@/lib/create/platform/ratelimit";
 import { errorResponse } from "@/lib/create/platform/http";
 import { enterUsage, inflight, reserveUnits, UsageLimitError } from "@/lib/create/platform/usage";
-import { claimDaily, claimExtra, DailyLimitError, dailySubjects, resetOf, type Claim } from "@/lib/usage/daily";
+import { claimDaily, claimExtra, DailyLimitError, dailySubjects, readDeviceId, resetOf, type Claim } from "@/lib/usage/daily";
+import { cancelRequested, claimTurn, finishTurn, readTurn, turnOwner, validTurnKey, type TurnRow } from "@/lib/orchestration/turn-recovery";
 import { FREE_UPGRADE_HINT } from "@/lib/upgrade-copy";
 import { clientIpOf } from "@/lib/create/platform/ratelimit";
 import { busyMessage, CONSENSUS_CALLS, sharedPool } from "@/lib/orchestration/pool-governor";
@@ -50,6 +51,7 @@ import { freeEndpointsMayTrain } from "@/lib/orchestration/config";
 import { isSupportRequest } from "@/lib/orchestration/support";
 import { FREE_DOCS_NOT_SENT } from "@/lib/privacy/free-gate";
 import { clampHistory, limitsFor, sizeProblem, type LimitPlan } from "@/lib/orchestration/limits";
+import { PLAN_ALLOWANCES, type PlanId } from "@/lib/orchestration/plans";
 import { MEDIA_LIMITS, parseMedia } from "@/lib/orchestration/media";
 import { createSettler, type RunState } from "@/lib/orchestration/settle";
 import { isEmptyAnswer, noResponseEvent } from "@/lib/orchestration/no-response";
@@ -71,8 +73,11 @@ import { freeQuestionLimit } from "@/lib/cost/hooks";
 import { applyFanout, beginRun, fanoutPolicy, loadInflight } from "@/lib/orchestration/fanout";
 import { bumpFanout, fanoutUsedToday } from "@/lib/usage/fanout-day";
 import { enterCostScope, newScope, recordRequestCost } from "@/lib/ops/request-cost";
+import { flightFromStreamEvent, flightPush, flightRow, recordFlight, startFlight } from "@/lib/ops/flight";
+import { EVENT_PROTOCOL, PROTOCOL_HEADER, stamper } from "@/lib/orchestration/event-contract";
 import { requestIdOf } from "@/lib/ops/log";
 import { clampDocs, docsBlock, docsFrom, freeAllowsDoc } from "@/lib/documents/chat-docs";
+import { clampLiveResearch, LIVE_BRIEF_CHARS, liveModes, liveResearchBlock, liveResearchFrom, liveResearchOff, liveRouting } from "@/lib/research/live-request";
 import { withReadSources } from "@/lib/attachments/sources";
 import { validProjectId } from "@/lib/projects/repo";
 import { projectContextFor } from "@/lib/projects/load";
@@ -101,7 +106,11 @@ function parse(body: unknown): KeplarRequest | string {
   // Images / video frames: untrusted. Types, magic bytes, sizes and counts are re-checked here.
   const media = parseMedia(b.media);
   if (typeof media === "string") return media;
+  // Live Research from the Keplar One desktop app (live-request.ts): validated and capped; malformed data is dropped and the question runs as a web question.
+  // Not even parsed while the kill switch is on.
+  const live = liveResearchOff() ? undefined : liveResearchFrom(b.liveResearch);
   return {
+    ...(live ? { liveResearch: live } : {}),
     ...(media ? { media } : {}),
     ...(validChatId(b.chatId) ? { chatId: b.chatId } : {}),
     ...(validProjectId(b.projectId) ? { projectId: b.projectId } : {}),
@@ -121,6 +130,10 @@ function parse(body: unknown): KeplarRequest | string {
     ...(b.private === true ? { private: true } : {}),
     // The person's saved specialist for this chat: only an id, looked up in their own workspace server-side.
     ...(validSpecialistId(b.specialistId) ? { specialistId: b.specialistId } : {}),
+    // Answer recovery: the send's random key (turn-recovery.ts). A retry after a dropped connection reuses it.
+    ...(validTurnKey(b.turnKey) ? { turnKey: b.turnKey } : {}),
+    // The person's modes as sent. With Live Research the route switches them to liveModes() once it keeps the brief, so a brief it drops
+    // (kill switch, plan clamp) leaves the question exactly as asked.
     modes: { web: modes.web === true, deepResearch: modes.deepResearch === true, create: modes.create === true, agent: modes.agent === true, ...(modes.debate === true ? { debate: true } : {}), ...(modes.reason === true ? { reason: true } : {}) },
     routing: {
       strategy: STRATEGIES.includes(routing.strategy as RoutingStrategy) ? (routing.strategy as RoutingStrategy) : "auto",
@@ -157,6 +170,21 @@ export async function POST(request: Request) {
     await limitRequest(request, "keplar", { perIp: 30, perAccount: ws.entitlements.rpm, accountId: ws.anonymous ? null : ws.id });
   } catch (e) {
     return errorResponse(e);
+  }
+  // Answer recovery (src/lib/orchestration/turn-recovery.ts), read-only here, before any daily question is taken or anything is charged:
+  // a turn that already finished is replayed (no second run, no second charge); one still running gets 409 and the browser polls for it.
+  // Never for private chats, API keys or embeds; signed out only with the signed device cookie.
+  const turnOwnerKey = req.turnKey && !req.private && ws.via !== "api" && ws.via !== "embed" ? turnOwner(ws, ws.anonymous ? readDeviceId(request.headers.get("cookie")) : null) : null;
+  let turn: { owner: string; key: string } | null = turnOwnerKey && req.turnKey ? { owner: turnOwnerKey, key: req.turnKey } : null;
+  if (turn) {
+    try {
+      const seen = await readTurn(turn.owner, turn.key);
+      if (seen?.status === "done" && seen.answer) return replayTurn(seen);
+      if (seen?.status === "running" && Date.now() - Date.parse(seen.updatedAt) < 6 * 60_000) return turnRunning();
+    } catch (e) {
+      console.error("[turns] check failed:", e instanceof Error ? e.name : "error");
+      turn = null; // recovery is off for this request; the question still runs normally
+    }
   }
   // Memory commands ("forget that", "erase my memory", "remember that ...") and recall questions ("what did we talk about last
   // time?", "what did I just ask?") are answered here, before the engine: no model, no charge. Signed-out users get a plain
@@ -273,6 +301,21 @@ export async function POST(request: Request) {
   }
   const smallTalk = creator || isSmallTalk(req) || req.understanding?.intent === "playful";
   const limits = limitsFor(ws.plan as LimitPlan);
+  // Live Research only for a real question in the app: never for API keys or the embed widget (they never send it; this is defence in depth),
+  // never for fixed replies, never while KEPLAR_LIVE_RESEARCH_OFF=1. Then clamped to the plan's share at whole-source boundaries (the fence
+  // stays closed).
+  // The desktop sent pages (even ones dropped while the kill switch is on, which parse() doesn't read).
+  const sentLive = Boolean(req.liveResearch) || Boolean((json as { liveResearch?: unknown } | null)?.liveResearch);
+  if (req.liveResearch && (liveResearchOff() || creator || smallTalk || memoryReply !== null || ws.via === "api" || ws.via === "embed")) delete req.liveResearch;
+  if (req.liveResearch) {
+    const clamped = clampLiveResearch(req.liveResearch, LIVE_BRIEF_CHARS[ws.plan as LimitPlan] ?? LIVE_BRIEF_CHARS.free);
+    if (clamped) req.liveResearch = clamped;
+    else delete req.liveResearch;
+  }
+  // Kept: the pages are already read, so it is a web question (no server Deep Research, Debate, Create or Agent on top). Dropped: the
+  // question runs as asked, except Deep Research on a plan without it (the desktop offered it there), which becomes a web question.
+  if (req.liveResearch) req.modes = liveModes(req.modes);
+  else if (sentLive && req.modes?.deepResearch && !PLAN_ALLOWANCES[ws.plan as PlanId]?.deepResearch) req.modes = { ...req.modes, web: true, deepResearch: false };
   // Plan size caps: prompt, history, attachments, images (cheaper plans get smaller caps).
   const tooBig = creator ? null : sizeProblem(req, limits, ws.plan as LimitPlan);
   if (tooBig) return Response.json({ error: tooBig, code: "too_large" }, { status: 413 });
@@ -376,6 +419,9 @@ export async function POST(request: Request) {
     const level = await breakerLevel();
     const used = ws.plan === "free" || ws.admin ? 0 : await fanoutUsedToday(ws.id);
     const policy = fanoutPolicy({ plan: ws.plan as LimitPlan, usedToday: used, loadInflight: loadInflight(), admin: ws.admin });
+    // Live Research: the desktop's depth picks the panel (fast: one model; standard: balanced; deep: thorough) unless the person chose a strategy.
+    // Free answers with one model: its combined free writer never reads the brief (free-merged.ts), the single panel model does.
+    if (req.liveResearch) req.routing = ws.plan === "free" ? { ...(req.routing ?? {}), strategy: "fast", maxModels: 1 } : liveRouting(req.liveResearch.depth, req.routing);
     req.routing = applyFanout(lighterRouting(req.routing, level), policy);
     // Free pool running low: one model answers (strictest cap wins).
     if (singleBy) req.routing = { ...(req.routing ?? {}), strategy: "fast", maxModels: 1 };
@@ -403,8 +449,9 @@ export async function POST(request: Request) {
     } catch {
       /* the question still runs without the extra context */
     }
-    // How to read a fragmentary message, and how to meet the person's mood: guidance ahead of the question (never shown).
-    const guidance = [understood ? understandingBlock(understood, askedPrompt) : "", commonSenseNote(understood?.followup?.question ?? askedPrompt), moodNote(understood ? understood.mood : detectMood(askedPrompt)), answerLanguageNote(request.headers.get("cookie"))].filter(Boolean).join("\n");
+    // How to read a fragmentary message, how to meet the person's mood, and whether humor fits: guidance ahead of the question (never shown).
+    const mood = understood ? understood.mood : detectMood(askedPrompt);
+    const guidance = [understood ? understandingBlock(understood, askedPrompt) : "", commonSenseNote(understood?.followup?.question ?? askedPrompt), moodNote(mood), humorNote(askedPrompt, mood), answerLanguageNote(request.headers.get("cookie"))].filter(Boolean).join("\n");
     if (guidance) req.memory = `${guidance}\n\n${req.memory ?? "The question:\n"}`;
     // Answer preferences, the chosen specialist and Reason framing (src/lib/personalize/turn.ts). Fenced data; Free keeps "About you" and knowledge home.
     const personal = await personalContext({ workspaceId: ws.id, personalAllowed, withhold: mayTrain && ws.plan === "free", specialistId: req.specialistId, reason: req.modes?.reason === true }).catch(() => null);
@@ -414,6 +461,8 @@ export async function POST(request: Request) {
   // Read links (public pages) and the transcript of the person's own attached video/audio also go when other context is withheld (Free): the media itself already does.
   const sendDocs = withheld ? req.docs?.filter(freeAllowsDoc) : req.docs;
   if (sendDocs?.length) req.memory = `${docsBlock(clampDocs(sendDocs, ws.plan === "free"))}\n\n${req.memory ?? "The question:\n"}`;
+  // Live Research: the desktop's brief goes first, fenced as data. In memory before the engine classifies, so the estimate and every cost cap count it.
+  if (req.liveResearch) req.memory = `${liveResearchBlock(req.liveResearch)}\n\n${req.memory ?? "The question:\n"}`;
   if (!smallTalk && ws.plan !== "free") req.limits = { maxRequestUsd: limits.maxRequestUsd, maxDeepResearchUsd: limits.maxDeepResearchUsd };
   // Rolling 5-hour / weekly limit (Plus/Pro). When it binds tighter than the monthly credits, a stop says so, with the reset time.
   let windowBound: WindowBlock | null = null;
@@ -437,9 +486,51 @@ export async function POST(request: Request) {
     return errorResponse(e);
   }
 
+  // Answer recovery: the atomic claim, after every early exit above (so a refused request never leaves a "running" turn behind).
+  // A reconnect that raced the first send gets the replay or the 409 here, and gives back what it took.
+  if (turn) {
+    try {
+      const c = await claimTurn(turn.owner, turn.key);
+      if (c.kind !== "fresh") {
+        gate?.release();
+        await dailyClaim?.release();
+        return c.kind === "replay" ? replayTurn(c.row) : turnRunning();
+      }
+    } catch (e) {
+      console.error("[turns] claim failed:", e instanceof Error ? e.name : "error");
+      turn = null;
+    }
+  }
+  const recoverable = turn !== null;
+
   const encoder = new TextEncoder();
+  const stamp = stamper(); // the event contract: protocol version and a sequence per response
   const abort = new AbortController();
-  request.signal.addEventListener("abort", () => abort.abort(), { once: true });
+  // The browser went away. A recoverable turn keeps running so its answer is saved (the person can come back to it); only a Stop
+  // ends it. Anything else stops as before.
+  // Stop on a recoverable turn: the browser posts a cancel (/api/keplar/turn) and the run checks for it every 2 s from the start, not only
+  // after a disconnect: on Vercel the function is not told when the browser closes the stream (measured on production 2026-10-12: a
+  // stopped answer ran to the end), so waiting for a disconnect would never stop it.
+  let clientGone = false;
+  let cancelWatch: ReturnType<typeof setInterval> | null = null;
+  const checkCancel = () => {
+    const t = turn;
+    if (!t || abort.signal.aborted) return;
+    void cancelRequested(t.owner, t.key).then((yes) => { if (yes && !abort.signal.aborted) { flightPush(costScope.flight, { k: "cancel", code: "stop_requested" }); abort.abort(); } }).catch(() => undefined);
+  };
+  if (recoverable) cancelWatch = setInterval(checkCancel, 2000);
+  const onClientGone = () => {
+    if (clientGone) return;
+    clientGone = true;
+    if (!recoverable || !turn) { abort.abort(); return; }
+    flightPush(costScope.flight, { k: "note", code: "client_gone_recoverable" });
+    checkCancel(); // when the disconnect is seen (local runtimes), a Stop is honoured at once
+  };
+  request.signal.addEventListener("abort", onClientGone, { once: true });
+  let finishRun: () => void = () => undefined;
+  const runDone = new Promise<void>((r) => { finishRun = r; });
+  let turnAnswer: unknown;
+  let turnError: { code: string; message: string } | undefined;
 
   // The engine reports whether paid calls were sent, so a stopped or failed run is still billed.
   // A run where no model responded is never billed (run.noResponse).
@@ -450,6 +541,10 @@ export async function POST(request: Request) {
   if (deps && traced) deps.router = traced.router;
   const startedAt = Date.now();
   const costScope = newScope();
+  costScope.flight = startFlight(startedAt); // the request's execution timeline (ops/flight.ts): stages, provider requests, outcome; no text
+  let flightError: string | null = null;
+  let flightLimited = false;
+  let flightFirst = false;
   if (callBudget) costScope.callBudget = callBudget;
   costScope.tag = { feature: featureForAsk(req), userId: ws.anonymous ? null : ws.id, plan: ws.plan, admin: Boolean(ws.admin) }; // cost meter attribution (src/lib/cost)
   const endRun = creator || smallTalk ? () => undefined : beginRun();
@@ -461,7 +556,20 @@ export async function POST(request: Request) {
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       enterCostScope(costScope); // every provider call made below is attributed to this request (ops/request-cost.ts)
-      const send = (e: KeplarEvent) => controller.enqueue(encoder.encode(JSON.stringify(e) + "\n"));
+      const send = (e: KeplarEvent) => {
+        flightFromStreamEvent(costScope.flight, e as { type: string } & Record<string, unknown>);
+        if (!flightFirst && (e.type === "delta" || e.type === "answer")) { flightFirst = true; flightPush(costScope.flight, { k: "note", code: "first_output" }); }
+        if (e.type === "error") { flightError = e.code; turnError = { code: e.code, message: e.message }; }
+        if (e.type === "limit") flightLimited = true;
+        if (e.type === "answer") turnAnswer = e.answer; // what recovery replays: the answer exactly as it was sent
+        if (clientGone) return; // the browser left: the run carries on (recoverable) and its answer is saved below
+        try {
+          controller.enqueue(encoder.encode(JSON.stringify(stamp(e)) + "\n")); // v + seq (event-contract.ts)
+        } catch {
+          onClientGone(); // the stream closed under us: same as a disconnect
+        }
+      };
+      const closeStream = () => { try { controller.close(); } catch { /* the browser already closed it */ } };
       // Free: a question only keeps its count if an answer reached the screen. Failures, "no reliable answer", no model
       // responding and stops all give it back, and the meter is re-sent so the UI shows the true number.
       let answered = false;
@@ -545,37 +653,63 @@ export async function POST(request: Request) {
         // Stopped by the user after paid calls went out: still billed at the planned (margin-included) cost.
         if (abort.signal.aborted && run.started && !run.settled && !smallTalk) await settle(run.plannedUnits).catch(() => undefined);
         await finishDaily(!abort.signal.aborted);
-        controller.close();
+        closeStream();
       } catch (err) {
         // Stopped or crashed after the panel was called: charge the planned (margin-included) cost.
         if (run.started && !run.settled && !smallTalk) await settle(run.plannedUnits).catch(() => undefined);
         if (abort.signal.aborted) {
           await finishDaily(false);
-          try { controller.close(); } catch { /* already closed */ }
+          closeStream();
           return;
         }
         console.error("[keplar] run failed:", err instanceof Error ? err.name : "error");
         if (run.noResponse) send(noResponseEvent(ws.plan));
         else send({ type: "error", code: "internal", message: "Something went wrong. Please try again.", retryable: true });
         await finishDaily(true);
-        controller.close();
+        closeStream();
       } finally {
         await finishDaily(false);
         releaseReserved?.();
         gate?.release();
         endRun();
+        if (cancelWatch) clearInterval(cancelWatch);
+        // Answer recovery: save how the turn ended (the answer exactly as sent, or why it didn't come) for a retry or a reconnect.
+        if (turn) {
+          const ended = answeredOk && turnAnswer !== undefined ? "done" : abort.signal.aborted ? "cancelled" : "failed";
+          if (clientGone && ended === "done") flightPush(costScope.flight, { k: "note", code: "finished_headless" });
+          await finishTurn(turn.owner, turn.key, { status: ended, answer: turnAnswer, error: ended === "failed" ? (turnError ?? { code: "internal", message: "Something went wrong. Please try again." }) : undefined, headless: clientGone }).catch(() => undefined);
+        }
+        finishRun();
+        if (!creator) recordFlight(flightRow(costScope.flight!, { reqId: reqIdForCost, plan: ws.plan, feature: costScope.tag?.feature, kind: smallTalk ? "instant" : "answer", answered: answeredOk, aborted: abort.signal.aborted, errorCode: flightError, limited: flightLimited, usd: costScope.usd }));
         if (!creator) recordRequestCost(costScope, { reqId: reqIdForCost, plan: ws.plan, accountId: ws.anonymous ? null : ws.id, kind: smallTalk ? "instant" : "answer", units: billedUnits, durationMs: Date.now() - startedAt, answered: answeredOk, degraded: degradedBy, maxModels: fanoutCap });
       }
     },
     cancel() {
-      abort.abort();
+      flightPush(costScope.flight, { k: "cancel", code: "client_closed" });
+      onClientGone(); // recoverable: keeps running unless Stop was pressed; otherwise aborts as before
     },
   });
+  // A recoverable turn may outlive the response (the browser left): keep the function alive until it has saved its answer.
+  if (recoverable) {
+    try { after(runDone); } catch { /* outside a request scope (tests): the run still completes */ }
+  }
 
-  const headers = new Headers({ "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store, no-transform" });
+  const headers = new Headers({ "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store, no-transform", [PROTOCOL_HEADER]: String(EVENT_PROTOCOL) });
   if (gate?.setCookie) headers.append("Set-Cookie", gate.setCookie);
   if (dailyClaim?.setCookie) headers.append("Set-Cookie", dailyClaim.setCookie);
   return new Response(stream, { headers });
+}
+
+/** Answer recovery: the saved answer of an earlier run of this turn, as a normal answer stream (no run, no charge, no daily question). */
+function replayTurn(row: TurnRow): Response {
+  const events: KeplarEvent[] = [{ type: "recovery", state: "replayed", ...(row.headless ? { headless: true } : {}) }, { type: "answer", answer: row.answer as Extract<KeplarEvent, { type: "answer" }>["answer"] }];
+  const stamp = stamper();
+  return new Response(events.map((e) => JSON.stringify(stamp(e))).join("\n") + "\n", { headers: { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store, no-transform", "x-keplar-turn": "replayed", [PROTOCOL_HEADER]: String(EVENT_PROTOCOL) } });
+}
+
+/** Answer recovery: the same turn is still being worked on (a reconnect raced it). The browser polls /api/keplar/turn. */
+function turnRunning(): Response {
+  return Response.json({ error: "This answer is still being worked on. It will appear here when it's ready.", code: "turn_running", retryAfterSec: 2 }, { status: 409, headers: { "retry-after": "2", "cache-control": "no-store" } });
 }
 
 const LEARN_WAIT_MS = 6_000;

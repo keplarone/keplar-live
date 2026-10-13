@@ -2,9 +2,8 @@ import type { MetadataRoute } from "next";
 import { isIndexable, site } from "@/lib/site";
 
 /**
- * Crawling is open for every page that carries a noindex tag (/app, /signin, /signup, /welcome, /account, /checkout, ...):
- * a crawler can only obey noindex if it may fetch the page, and blocking would leave the bare URL eligible to be listed.
- * Those routes also send an X-Robots-Tag: noindex header (next.config.ts), and the private ones sit behind real auth.
+ * Crawling is open for every page. Keplar's own pages carry no noindex; only private share links (/r, /c, /sp, /i) and preview
+ * hosts do, and a crawler can only obey that if it may fetch the page. The private app pages sit behind real auth.
  * Only API routes and the dev outbox are disallowed: they are not pages.
  */
 /** Search and AI-answer crawlers published by their operators: allowed, with the same API/dev exclusions as everyone else. */

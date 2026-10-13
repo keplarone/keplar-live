@@ -93,8 +93,16 @@ export function SmoothCaret() {
       const bl = parseFloat(cs.borderLeftWidth) || 0, bt = parseFloat(cs.borderTopWidth) || 0;
       const lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.25;
       const x = fr.left + bl + (kr.left - mr.left) - f.scrollLeft;
-      const y = fr.top + bt + (kr.top - mr.top) - f.scrollTop;
-      return { x, y, h: kr.height || lh, w: kr.width, fr, bl, bt, cs };
+      let y = fr.top + bt + (kr.top - mr.top) - f.scrollTop;
+      const h = kr.height || lh;
+      // A one-line <input> taller than its text centres the text vertically (the mirror lays it out from the top), so a
+      // 52px command bar drew the caret above the text. Centre it in the content box the same way the browser does.
+      if (!multi) {
+        const pt = parseFloat(cs.paddingTop) || 0, pb = parseFloat(cs.paddingBottom) || 0, bb = parseFloat(cs.borderBottomWidth) || 0;
+        const content = fr.height - bt - bb - pt - pb;
+        y = fr.top + bt + pt + Math.max(0, (content - h) / 2);
+      }
+      return { x, y, h, w: kr.width, fr, bl, bt, cs };
     };
 
     const place = () => {

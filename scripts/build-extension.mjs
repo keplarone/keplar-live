@@ -71,7 +71,9 @@ export function buildExtension() {
   const name = `keplar-extension-${m.version_name ?? m.version}.zip`;
   const out = join(root, "dist", name);
   mkdirSync(dirname(out), { recursive: true });
-  const buf = zip(SHIPPED.map((f) => ({ name: f, data: readFileSync(join(root, f)) })));
+  // Text files always ship with LF line endings, so a Windows (CRLF) checkout builds the same bytes as anywhere else.
+  const data = (f) => (/\.(js|json|html|css)$/.test(f) ? Buffer.from(readFileSync(join(root, f), "utf8").replace(/\r\n/g, "\n")) : readFileSync(join(root, f)));
+  const buf = zip(SHIPPED.map((f) => ({ name: f, data: data(f) })));
   writeFileSync(out, buf);
   return { out, bytes: buf.length, files: SHIPPED.length };
 }

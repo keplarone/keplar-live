@@ -43,9 +43,12 @@ test("consent gating: analytics scripts and events only run with consent; banner
   assert.match(read("src/lib/analytics.ts"), /if \(!consentAllows\("analytics"\)\) return;/);
   assert.match(read("src/app/layout.tsx"), /<CookieBanner \/>/);
   assert.match(read("src/components/chrome/Footer.tsx"), /CookieSettingsButton/);
-  assert.match(read("src/app/(marketing)/account/page.tsx"), /CookieSettingsButton/);
+  assert.match(read("src/components/account/AccountSettings.tsx"), /CookieSettingsButton/);
   const banner = read("src/components/consent/CookieBanner.tsx");
-  for (const label of ["Accept all", "Reject non-essential", "Customize"]) assert.ok(banner.includes(label), label);
+  // The labels live in the consent catalog (English source + 101 translations, tests/consent-i18n.test.ts); the banner renders them.
+  const en = read("src/lib/i18n/messages/consent/en.ts");
+  for (const label of ["Accept all", "Reject non-essential", "Customize"]) assert.ok(en.includes(label), label);
+  for (const key of ["t.acceptAll", "t.reject", "t.customize"]) assert.ok(banner.includes(key), key);
   assert.match(banner, /role="region"/);
   assert.doesNotMatch(banner, /role="dialog"/);
   const priv = read("src/components/legal/content/privacy.ts");

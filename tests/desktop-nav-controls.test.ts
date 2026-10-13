@@ -26,3 +26,11 @@ test("desktop window: the floating Stats pill and its dock are gone", () => {
   assert.doesNotMatch(readFileSync("src/app/layout.tsx", "utf8"), /DesktopDock/);
   assert.equal(existsSync("src/components/desktop/DesktopDock.tsx"), false);
 });
+
+test("desktop window: the app, not a mirror of the website (no welcome-back screen, no home-page backdrop)", () => {
+  const app = readFileSync("src/components/app-ui/KeplarApp.tsx", "utf8");
+  assert.match(app, /const \[desktop\] = useState\(inDesktopApp\)/);
+  assert.match(app, /const \[welcomeBackOk\] = useState\(\(\) => typeof window !== "undefined" && !desktop &&/, "the site-styled welcome-back screen never shows in the desktop window");
+  assert.match(app, /\{desktop \? null : <SkyBackdrop \/>\}/, "the home page's moving backdrop stays on the website");
+  assert.match(readFileSync("src/lib/desktop.ts", "utf8"), /export const inDesktopApp = \(\) => typeof document !== "undefined" && document\.documentElement\.getAttribute\("data-desktop"\) === "1"/);
+});

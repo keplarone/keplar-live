@@ -83,7 +83,7 @@ export function EmbedPanel() {
             }}
           >
             <label className={s.fieldLabel} htmlFor="emb-name">Widget name</label>
-            <input id="emb-name" className={s.input} value={name} maxLength={40} required placeholder="Docs site" onChange={(e) => setName(e.target.value)} autoComplete="off" />
+            <input spellCheck={false} id="emb-name" className={s.input} value={name} maxLength={40} required placeholder="Docs site" onChange={(e) => setName(e.target.value)} autoComplete="off" />
             <label className={s.fieldLabel} htmlFor="emb-theme">Theme</label>
             <select id="emb-theme" className={s.input} value={theme} onChange={(e) => setTheme(e.target.value)}>
               {me.options.themes.map((t) => <option key={t} value={t}>{t === "dark" ? "Dark (default)" : "Light"}</option>)}

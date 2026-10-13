@@ -112,7 +112,7 @@ export function PasskeySettings() {
       {list && supported ? (
         <form className={s.form} onSubmit={(e) => { e.preventDefault(); void add(); }}>
           <label className={s.fieldLabel} htmlFor="pk-new-name">Name this passkey (optional)</label>
-          <input id="pk-new-name" className={s.input} value={name} onChange={(e) => setName(e.target.value)} maxLength={60} placeholder="For example, My laptop" autoComplete="off" />
+          <input spellCheck={false} id="pk-new-name" className={s.input} value={name} onChange={(e) => setName(e.target.value)} maxLength={60} placeholder="For example, My laptop" autoComplete="off" />
           <div className={s.actions}>
             <button type="submit" className={s.btn} disabled={busy}>{busy ? "Waiting for your device…" : "Add a passkey"}</button>
           </div>

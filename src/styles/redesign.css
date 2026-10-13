@@ -4,21 +4,21 @@
  * Hooks use the readable CSS-module names Next emits ("Name-module__hash__class"), the same way aura.css targets shared modules.
  * Both themes: colours come from the theme tokens. */
 
-#main h1 {
+#main:not([data-kb]) h1 {
   font-weight: var(--w-regular);
   letter-spacing: -0.045em;
   line-height: 1.04;
   text-wrap: balance;
 }
-#main h2 {
+#main:not([data-kb]) h2 {
   font-weight: var(--w-regular);
   letter-spacing: -0.035em;
   text-wrap: balance;
 }
-#main h3 { letter-spacing: -0.02em; }
+#main:not([data-kb]) h3 { letter-spacing: -0.02em; }
 
 /* Kickers / eyebrows / labels above titles: a frosted pill in sentence case */
-#main :is([class*="-module__"][class$="__eyebrow"], [class*="-module__"][class$="__kicker"], [class*="RoutePlaceholder-module__"][class$="__label"], [class*="compare-module__"][class$="__label"]) {
+#main:not([data-kb]) :is([class*="-module__"][class$="__eyebrow"], [class*="-module__"][class$="__kicker"], [class*="RoutePlaceholder-module__"][class$="__label"], [class*="compare-module__"][class$="__label"]) {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -83,11 +83,11 @@
   --button-shadow: 0 1px 2px rgb(0 0 0 / 0.45), 0 10px 24px -12px rgb(0 0 0 / 0.75);
   --button-shadow-hover: 0 1px 2px rgb(0 0 0 / 0.5), 0 14px 30px -12px rgb(0 0 0 / 0.85);
 }
-:is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="radio"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *):not([class*="KeplarTurn-module__"]:is([class$="__iconBtn"], [class$="__sectionBtn"], [class$="__howBtn"])) {
+:is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="radio"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *):not([data-kb] *):not([class*="KeplarTurn-module__"]:is([class$="__iconBtn"], [class$="__sectionBtn"], [class$="__howBtn"])) {
   border-color: transparent !important;
   box-shadow: var(--button-shadow) !important;
 }
-:is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="radio"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *):not([class*="KeplarTurn-module__"]:is([class$="__iconBtn"], [class$="__sectionBtn"], [class$="__howBtn"])):hover:not(:disabled) {
+:is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="radio"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *):not([data-kb] *):not([class*="KeplarTurn-module__"]:is([class$="__iconBtn"], [class$="__sectionBtn"], [class$="__howBtn"])):hover:not(:disabled) {
   box-shadow: var(--button-shadow-hover) !important;
 }
 
@@ -114,33 +114,35 @@
   }
 
   /* Buttons: lift on hover, press in on click (same selector family as the shadow rule above) */
-  :is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="radio"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *):not([class*="KeplarTurn-module__"]:is([class$="__iconBtn"], [class$="__sectionBtn"], [class$="__howBtn"])) {
+  :is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="radio"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *):not([data-kb] *):not([class*="KeplarTurn-module__"]:is([class$="__iconBtn"], [class$="__sectionBtn"], [class$="__howBtn"])) {
     transition: translate 220ms var(--m-ease-spring), scale 140ms var(--m-ease-out), box-shadow 200ms var(--m-ease-out), background-color 140ms ease, color 140ms ease;
   }
-  :is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="radio"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *):not([class*="KeplarTurn-module__"]:is([class$="__iconBtn"], [class$="__sectionBtn"], [class$="__howBtn"])):hover:not(:disabled) {
+  :is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="radio"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *):not([data-kb] *):not([class*="KeplarTurn-module__"]:is([class$="__iconBtn"], [class$="__sectionBtn"], [class$="__howBtn"])):hover:not(:disabled) {
     translate: 0 -1px;
   }
-  :is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="radio"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *):not([class*="KeplarTurn-module__"]:is([class$="__iconBtn"], [class$="__sectionBtn"], [class$="__howBtn"])):active:not(:disabled) {
+  :is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="radio"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *):not([data-kb] *):not([class*="KeplarTurn-module__"]:is([class$="__iconBtn"], [class$="__sectionBtn"], [class$="__howBtn"])):active:not(:disabled) {
     translate: 0 0;
     scale: var(--m-press);
     transition-duration: 90ms;
   }
 
   /* Linked cards (blog, docs, prompts, help, showcase, templates, featured post): rise a little on hover */
-  #main a:is([class*="__card"], [class*="__featured"], [class*="__tile"], [class*="__product"]) {
+  #main:not([data-kb]) a:is([class*="__card"], [class*="__featured"], [class*="__tile"], [class*="__product"]) {
     transition: translate 260ms var(--m-ease-spring), box-shadow 220ms var(--m-ease-out);
   }
-  #main a:is([class*="__card"], [class*="__featured"], [class*="__tile"], [class*="__product"]):hover { translate: 0 -2px; }
+  #main:not([data-kb]) a:is([class*="__card"], [class*="__featured"], [class*="__tile"], [class*="__product"]):hover { translate: 0 -2px; }
 
   /* Page entry: the page's first blocks ease up into place, close together (the backdrop and nav stay put). The hero is readable
      within one beat; anything after the third block simply arrives with it. Not the Keplar Business workspace: it is an app window,
      and sliding its shell in pushed the bottom 18px off-screen while it ran. */
   @keyframes kp-page-in { from { opacity: 0; translate: 0 10px; } }
-  #main > :not([class*="Sky-module__"][class$="__backdrop"]):not([class*="workspace-module__"]) > :is(header, section, div, article, nav, form):nth-child(-n + 6) {
+  #main:not([data-kb]) > :not([class*="Sky-module__"][class$="__backdrop"]):not([class*="workspace-module__"]) > :is(header, section, div, article, nav, form):nth-child(-n + 6) {
     animation: kp-page-in 360ms var(--m-ease-out) both;
   }
   #main > * > :nth-child(2) { animation-delay: 40ms; }
   #main > * > :nth-child(n + 3) { animation-delay: 80ms; }
+  /* Not Keplar Studio (the overlay window mounts it straight under #main): an app surface, not a page; it never slides in. */
+  #main > [data-ks-root] > * { animation: none !important; } /* outranks the page-entry selector above */
 
   /* App: each view's header and content ease in together when the view opens */
   [class*="App-module__"][class$="__view"] > * { animation: kp-page-in 280ms var(--m-ease-out) both; }
@@ -163,7 +165,7 @@
  * (its low-res upscale is already soft) and the auras use a smaller blur radius. Long pages skip rendering sections that are
  * off-screen until they come near (content-visibility), which cuts first paint and scroll work. */
 @media (pointer: coarse), (max-width: 767px) {
-  *, *::before, *::after { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  :is(*, *::before, *::after) { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
   [class*="Sky-module__"][class$="__liquid"] { filter: none; }
   [class*="Sky-module__"][class$="__backdrop"] > i { filter: blur(64px); }
   #main section:not(:first-of-type) { content-visibility: auto; contain-intrinsic-size: auto 720px; }
@@ -192,9 +194,10 @@
 }
 
 /* Phones: floating overlays keep their blur (they rely on it to stay readable over the page, and are on screen briefly);
-   only in-page cards drop it (see "Mobile performance" above). */
+   only in-page cards drop it (see "Mobile performance" above). Not Keplar Studio ([data-ks-root], including the narrow
+   desktop overlay window): its dialogs and menus are opaque token surfaces and never blur. */
 @media (pointer: coarse), (max-width: 767px) {
-  :is([role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], [role="tooltip"],
+  :not([data-ks-root], [data-ks-root] *):is([role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], [role="tooltip"],
       [class*="CookieBanner-module__"][class$="__banner"], [class*="Nav-module__"][class$="__panel"], [class*="Nav-module__"][class*="__morph"],
       [class*="App-module__"][class$="__sidebar"], [class*="CommandPalette-module__"]) {
     -webkit-backdrop-filter: blur(18px) saturate(1.3) !important;

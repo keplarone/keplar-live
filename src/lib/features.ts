@@ -7,7 +7,46 @@
 import { BUSINESS_HOST } from "./site";
 
 export type FeatureStatus = "live" | "beta" | "soon";
-export type Feature = { id: string; name: string; line: string; href: string; status: FeatureStatus; note?: string };
+/** A product that groups several features (today only Keplar Studio). */
+export type ProductId = "keplar-studio";
+export type Feature = {
+  id: string;
+  name: string;
+  line: string;
+  href: string;
+  status: FeatureStatus;
+  note?: string;
+  /** The product this feature belongs to; /features shows such features under the product's name. */
+  product?: ProductId;
+};
+
+/** An app a product works inside (names are proper nouns and are not translated). */
+export type ProductEnvironment = { id: "roblox" | "blender"; name: string; href: string };
+export type Product = {
+  id: ProductId;
+  /** Brand name, never translated. */
+  name: string;
+  /** Where the product is described: its anchor on /features (the row groups its features). */
+  href: string;
+  environments: ProductEnvironment[];
+};
+
+/**
+ * Keplar Studio: the desktop app's co-builder for Roblox Studio and Blender. In the app it is one Create tab with an
+ * environment switch (src/components/create/studio). Availability lives on each feature's note; plans are read from
+ * STUDIO_PLANS in src/lib/desktop/studio-bridge.ts (Lite and up), not set here.
+ */
+export const KEPLAR_STUDIO: Product = {
+  id: "keplar-studio",
+  name: "Keplar Studio",
+  href: "/features#keplar-studio",
+  environments: [
+    { id: "roblox", name: "Roblox Studio", href: "/roblox-studio-ai" },
+    { id: "blender", name: "Blender", href: "/blender-ai" },
+  ],
+};
+
+export const PRODUCTS: Record<ProductId, Product> = { "keplar-studio": KEPLAR_STUDIO };
 export type Chapter = { id: string; n: string; label: string; title: string; lede: string; features: Feature[] };
 
 export const STATUS_LABEL: Record<FeatureStatus, string> = { live: "Live", beta: "Beta", soon: "Coming soon" };
@@ -22,6 +61,7 @@ export const CHAPTERS: Chapter[] = [
       { id: "disagreement", name: "Disagreement map", line: "Where the models agree, where they split, and why the answer went the way it did.", href: "/how-it-works", status: "live" },
       { id: "debate", name: "Debate mode", line: "Watch the models argue in rounds before Keplar answers.", href: "/app/ask", status: "beta" },
       { id: "voice", name: "Voice mode", line: "Ask out loud, hear the answer read back. Keplar never records or stores your audio.", href: "/app/ask", status: "beta" },
+      { id: "live-research", name: "Live Research", line: "In the desktop app, Keplar searches the web and reads pages on your computer, then cites each one and checks the citations.", href: "/app/ask", status: "beta", note: "Desktop app 0.2.0 or newer." },
     ],
   },
   {
@@ -45,9 +85,11 @@ export const CHAPTERS: Chapter[] = [
       { id: "versions", name: "Version history", line: "Every build is a version. Restore any one, or branch it into a new draft.", href: "/app/create", status: "live" },
       { id: "community", name: "Community gallery", line: "Sites people chose to share. Like, remix, report.", href: "/templates", status: "beta" },
       { id: "anti-vibe", name: "Anti-generic design rules", line: "A written rubric and a lint pass that reject the usual AI look before you see it.", href: "/showcase", status: "live" },
-      { id: "roblox-studio", name: "Roblox Studio mode", line: "A co-builder inside Roblox Studio: maps, UI, flipbook effects and Luau scripts, on Claude Opus 5.5.", href: "/roblox-studio-ai", status: "beta", note: "Desktop app, Lite and up." },
-      { id: "roblox-cloud", name: "Roblox Cloud", line: "Overnight jobs on your game's scripts, each edit checked by Luau's analyzer, applied in Studio when you say so.", href: "/roblox-studio-ai", status: "beta", note: "Scripts only; it can't play-test." },
-      { id: "blender", name: "Blender mode", line: "Model, texture with Poly Haven PBR sets, light and export in Blender 4.2 or newer.", href: "/blender-ai", status: "beta", note: "Desktop app 0.1.8 or newer." },
+      // Keplar Studio: one product, two environments. Ids stay as they were (every locale catalog keys its copy by id).
+      { id: "roblox-studio", product: "keplar-studio", name: "Roblox Studio", line: "A co-builder inside Roblox Studio: maps, UI, flipbook effects and Luau scripts, on Claude Opus 5.5.", href: "/roblox-studio-ai", status: "beta", note: "Desktop app, Lite and up." },
+      { id: "roblox-cloud", product: "keplar-studio", name: "Roblox Cloud", line: "Overnight jobs on your game's scripts, each edit checked by Luau's analyzer, applied in Studio when you say so.", href: "/roblox-studio-ai", status: "beta", note: "Scripts only; it can't play-test." },
+      { id: "blender", product: "keplar-studio", name: "Blender", line: "Model, texture with Poly Haven PBR sets, light and export in Blender 4.2 or newer.", href: "/blender-ai", status: "beta", note: "Desktop app 0.1.8 or newer, Lite and up." },
+      { id: "blender-cloud", product: "keplar-studio", name: "Blender Cloud rendering", line: "Render a scene on Keplar's servers with your computer off, then download the frames and an MP4.", href: "/blender-ai", status: "beta", note: "Desktop app 0.1.10 or newer." },
     ],
   },
   {
@@ -98,3 +140,6 @@ export const featureCounts = () => ({
   beta: ALL_FEATURES.filter((f) => f.status === "beta").length,
   soon: ALL_FEATURES.filter((f) => f.status === "soon").length,
 });
+
+/** The features that belong to a product, in catalogue order. */
+export const productFeatures = (id: ProductId): Feature[] => ALL_FEATURES.filter((f) => f.product === id);

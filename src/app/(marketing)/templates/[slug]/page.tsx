@@ -18,7 +18,7 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const t = await openTemplate(slug).catch(() => null);
-  if (!t) return { robots: { index: false, follow: false } };
+  if (!t) return {};
   return pageMeta(`/templates/${slug}`, `${t.view.title} website template`, t.view.description, { image: `/templates/${slug}/og` });
 }
 

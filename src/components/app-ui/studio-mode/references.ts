@@ -53,10 +53,18 @@ export async function referencesFromFiles(files: File[]): Promise<string[]> {
   return out;
 }
 
+/** A base64 data URL as a Blob, decoded in the page (the app CSP's connect-src does not allow fetch(data:)). */
+function dataUrlBlob(dataUrl: string): Blob {
+  const m = /^data:([^;,]*)(;base64)?,(.*)$/s.exec(dataUrl);
+  if (!m) throw new Error("Not a data URL.");
+  const bytes = m[2] ? Uint8Array.from(atob(m[3]!), (c) => c.charCodeAt(0)) : new TextEncoder().encode(decodeURIComponent(m[3]!));
+  return new Blob([bytes], { type: m[1] || "application/octet-stream" });
+}
+
 /** A Studio screenshot (a data URL) scaled to at most `side` px and re-encoded as JPEG, so turns stay small. */
 export async function scaleDataUrl(dataUrl: string, side = MAX_SIDE): Promise<string> {
   try {
-    const bmp = await createImageBitmap(await (await fetch(dataUrl)).blob());
+    const bmp = await createImageBitmap(dataUrlBlob(dataUrl));
     try { return canvasJpeg(bmp, bmp.width, bmp.height, side); } finally { bmp.close(); }
   } catch {
     return dataUrl;

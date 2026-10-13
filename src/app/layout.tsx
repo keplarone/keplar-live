@@ -7,6 +7,7 @@ import { THEME_COLORS, THEME_SCRIPT } from "@/lib/theme";
 import { DESKTOP_SCRIPT } from "@/lib/desktop";
 import { SIGNED_SCRIPT } from "@/lib/signed-hint";
 import { HOME_FX_SCRIPT } from "@/lib/home-fx";
+import { PREFS_SCRIPT } from "@/lib/prefs";
 import { CookieBanner } from "@/components/consent/CookieBanner";
 import { WhopPixel } from "@/components/analytics/WhopPixel";
 import { PresenceBeacon } from "@/components/analytics/PresenceBeacon";
@@ -49,7 +50,8 @@ export const metadata: Metadata = {
   title: { default: site.seoTitle, template: `%s · ${brand.name}` },
   description: site.description,
   applicationName: site.name,
-  alternates: { canonical: "/" },
+  // No default canonical here: a page without its own would point Google at the home page ("alternate page" / "Google chose
+  // different canonical"). Each public page sets its own via pageMeta(); the home page sets "/" itself.
   openGraph: {
     type: "website",
     siteName: site.name,
@@ -91,6 +93,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <LocaleHtml className={`${sans.variable} ${mono.variable} light`} data-theme="light" data-theme-pref="light" style={{ colorScheme: "light" }}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: PREFS_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: DESKTOP_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: SIGNED_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: HOME_FX_SCRIPT }} />

@@ -9,7 +9,7 @@
 <body>
   <header>
     <h1><svg viewBox="0 0 398 398" aria-hidden="true" focusable="false"><rect x="0" y="0" width="229" height="229" rx="70"/><path d="M204.95 11.95A7 7 0 0 1 209.9 0L362 0A16 16 0 0 1 378 16L378 168.1A7 7 0 0 1 366.05 173.05Z"/><circle cx="281" cy="281" r="117"/></svg>Keplar One</h1>
-    <button id="forget" class="ghost small" type="button" hidden>Remove key</button>
+    <button id="forget" class="ghost small" type="button" hidden>Disconnect</button>
   </header>
   <div class="row">
     <button id="lens" class="ghost" type="button">Search with Keplar One</button>
@@ -17,18 +17,27 @@
   <p id="lens-msg" class="msg" role="status"></p>
 
   <main id="setup" hidden>
-    <p>Paste a Keplar API key to start. Keys are for paid plans (Lite and above). The key stays on this device, in this extension&rsquo;s own storage.</p>
-    <label for="key">API key</label>
-    <input id="key" type="password" autocomplete="off" spellcheck="false" placeholder="kpl_…">
+    <p>Connect your Keplar account to start. Questions and searches use your plan&rsquo;s credits, like asking in the app. There is no key to create or paste.</p>
     <div class="row">
-      <button id="save" type="button">Save key</button>
-      <a id="getkey" href="https://keplar.one/account#api" target="_blank" rel="noopener">Create a key</a>
+      <button id="connect" type="button">Connect Keplar</button>
+      <button id="connect-cancel" class="ghost" type="button" hidden>Cancel</button>
     </div>
-    <p class="note">No key? <a href="https://keplar.one/app" target="_blank" rel="noopener">Open Keplar</a> and ask there.</p>
+    <p id="connect-wait" class="note" role="status" aria-live="polite" hidden></p>
+    <p class="note">No account yet? <a href="https://keplar.one/signin" target="_blank" rel="noopener">Sign up free</a>, then press Connect.</p>
+    <details id="manual">
+      <summary>Use an API key instead</summary>
+      <label for="key">API key</label>
+      <input id="key" type="password" autocomplete="off" spellcheck="false" placeholder="kpl_…">
+      <div class="row">
+        <button id="save" class="ghost" type="button">Save key</button>
+        <a id="getkey" href="https://keplar.one/account#api" target="_blank" rel="noopener">Create a key</a>
+      </div>
+    </details>
     <p id="setup-msg" class="msg" role="alert"></p>
   </main>
 
   <main id="ask" hidden>
+    <p id="who" class="note"></p>
     <label for="q">Your question</label>
     <textarea id="q" rows="3" placeholder="Ask about what you added, or leave blank for a short explanation"></textarea>
     <div class="row">
@@ -54,7 +63,7 @@
   </main>
 
   <footer>
-    <p>Text is sent to Keplar only when you press Ask. Search with Keplar One sends the words and a picture of the area you drag, after you agree once. Nothing is saved except your key. <a href="https://keplar.one/developers" target="_blank" rel="noopener">API &amp; limits</a></p>
+    <p>Text is sent to Keplar only when you press Ask. Search with Keplar One sends the words and a picture of the area you drag, after you agree once. Each one uses your Keplar credits. Nothing is saved except your connection. <a href="https://keplar.one/developers" target="_blank" rel="noopener">API &amp; limits</a></p>
   </footer>
   <script type="module" src="popup.js"></script>
 </body>

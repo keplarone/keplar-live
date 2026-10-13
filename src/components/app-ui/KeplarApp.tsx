@@ -1,11 +1,18 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useMemo, useReducer, useRef, useState, type ComponentType } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore, type ComponentType } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { usePrefs } from "@/lib/use-prefs";
+import { playDoneSound } from "@/lib/prefs";
 import { KeplarSymbol } from "@/components/brand";
 import { SkyBackdrop } from "@/components/sky/SkyBackdrop";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
-import type { Attachment, ComposerModes, KeplarRequest } from "@/lib/orchestration/types";
+import type { Attachment, ComposerModes, KeplarRequest, ResearchEvent } from "@/lib/orchestration/types";
+import { hasResearchBridge, noSubscribe, researchBridge } from "@/lib/desktop/research-bridge";
+import { deepResearchRunsLeft, PLAN_ALLOWANCES } from "@/lib/orchestration/plans";
+import { checkLiveAnswer, modesWithoutLive, prepareLiveResearch, previousRunIds, researchQuestion, wantsLiveResearch, type LiveSession } from "./state/live-run";
+import { liveFallbackNote } from "./state/live-research";
 import { UsageNotice } from "./UsageNotice";
 import { Composer, toMediaInput, type ComposerHandle } from "./Composer";
 import { IconArrowDown, IconMemory, IconPlus } from "./icons";
@@ -19,11 +26,15 @@ import { initialState, loadScope, persist, reducer, remaining, settle, uid } fro
 import { activeScopeHeaders, declineImport, importCandidates, importDeclined, importProjects, removeImported, scopeOf, setActiveScope, userIdOf, clearAccountCaches, type Scope } from "./state/scope";
 import type { ImportOffer } from "./AccountMenu";
 import { StreamHttpError, StreamNetworkError, streamKeplar } from "./state/stream";
+import { newTurnKey, pollTurn, stopTurn } from "./state/recovery";
+import { notePreloaded, predictNext, recordTransition } from "./predict";
+import { draftKeyFor } from "./drafts";
 import type { AccountInfo, ChatImage, KeplarMessage, Message, MessageMedia, Project, Thread, UserMessage, View } from "./state/types";
 import { ChatImageTurn } from "./chat-image/ChatImageTurn";
 import { detectImageIntent } from "@/lib/images/chat-intent";
 import { expandPromptIfSlash } from "@/lib/images/slash-commands";
 import { OPEN_APP_SEARCH_EVENT } from "@/lib/nav/commands";
+import { inDesktopApp } from "@/lib/desktop";
 import { followUpPrompt, newKey } from "@/lib/images/chat-flow";
 import { UserMedia } from "./UserMedia";
 import { RESUME_KEY } from "./SiteProjects";
@@ -42,7 +53,7 @@ import { HomeStart } from "./HomeStart";
 import { pathForView, viewForPath } from "./app-paths";
 import { AppOnboarding } from "@/components/onboarding/AppOnboarding";
 import { DeploymentsView } from "./DeploymentsView";
-import { StudioView } from "./studio-mode/StudioView";
+import { KeplarStudio } from "./studio-mode/workspace/KeplarStudio";
 import { BUSINESS_URL, BUSINESS_VIEWS } from "@/lib/business-site";
 import { businessProminent, examplesFor, readUseFor, useForOptions, writeUseFor, type UseFor } from "./use-for";
 import type { Ledger } from "./state/types";
@@ -185,6 +196,8 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   const search = usePresence(searchOpen);
   const drawerScrim = usePresence(drawerOpen);
   const [atBottom, setAtBottom] = useState(true);
+  const router = useRouter();
+  const prefs = usePrefs();
   const [mac] = useState(() => typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.userAgent));
   const composerRef = useRef<ComposerHandle>(null);
   // The welcome-back screen's own Composer (the same component, so it can attach, talk, switch modes and pick models).
@@ -192,6 +205,12 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const controllers = useRef(new Map<string, AbortController>());
+  // Answer recovery (state/recovery.ts): the turn key each answer attempt was sent with, by Keplar message id.
+  const turnKeys = useRef(new Map<string, string>());
+  /** Turns started by Refresh research: their Live Research run skips the desktop's cache. */
+  const freshResearch = useRef(new Set<string>());
+  // In the Keplar One desktop app (Live Research): only there can Refresh research read the pages again. False on the server render.
+  const desktopResearch = useSyncExternalStore(noSubscribe, hasResearchBridge, () => false);
   const seedRef = useRef<{ text: string; modes: Partial<ComposerModes> } | null>(null);
   // Bumped on every seed: from the empty home thread "new-thread" changes neither view nor activeThreadId, so without it the
   // "Research a topic" / "Hand off a task" cards did nothing (Deep Research / Agent never switched on).
@@ -215,6 +234,26 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     if (!ric) { const t = setTimeout(() => warmViews(false), 3000); return () => clearTimeout(t); }
     const id = ric(() => warmViews(false), { timeout: 6000 });
     return () => (window as Window & { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback?.(id);
+  }, [state.view]);
+  // Predictive preloading (predict.ts): learn which studio usually comes next on this browser and download its code while idle.
+  // Code only (never an action or a model call); off with Save-Data or the switch in /account#personalization.
+  const prevView = useRef<View | null>(null);
+  useEffect(() => {
+    const from = prevView.current;
+    const to = state.view;
+    prevView.current = to;
+    if (from && from !== to) recordTransition(from, to);
+    const warmers: Partial<Record<View, () => Promise<unknown>>> = { create: create.warm, slides: slides.warm, study: study.warm };
+    const go = () => {
+      const next = (predictNext(to, 2, undefined, to === "thread") as View[]).filter((v) => v !== to && warmers[v]);
+      if (!next.length) return;
+      notePreloaded(next);
+      for (const v of next) void warmers[v]!().catch(() => {});
+    };
+    const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number; cancelIdleCallback?: (id: number) => void };
+    if (!w.requestIdleCallback) { const t = setTimeout(go, 2000); return () => clearTimeout(t); }
+    const id = w.requestIdleCallback(go, { timeout: 5000 });
+    return () => w.cancelIdleCallback?.(id);
   }, [state.view]);
   // Account-bound UI state resets whenever the account on screen changes (adjusting state while rendering, the React way).
   const [seenEpoch, setSeenEpoch] = useState(0);
@@ -243,8 +282,11 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   // Greeting: the signed-in person's first name when the account has one (never guessed from the email address).
   const firstName = state.ledger.signedIn ? (state.account?.name?.trim().split(/\s+/)[0] ?? "").slice(0, 40) : "";
   const [welcome] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("welcome") === "1");
+  // The desktop app is its own app, not a mirror of the website: no welcome-back screen (the site home's nav pills, Learn and
+  // Company links, model carousel) and no moving home-page backdrop. It opens straight into the app. (KeplarApp is client-only.)
+  const [desktop] = useState(inDesktopApp);
   // Coming back signed in (a new visit, landing on the ask page): the welcome-back screen (WelcomeBack, Keplar Canvas Page 1).
-  const [welcomeBackOk] = useState(() => typeof window !== "undefined" && !welcome && /^\/app(\/ask)?\/?$/.test(window.location.pathname) && shouldWelcomeBack());
+  const [welcomeBackOk] = useState(() => typeof window !== "undefined" && !desktop && !welcome && /^\/app(\/ask)?\/?$/.test(window.location.pathname) && shouldWelcomeBack());
   const [welcomeBackDone, setWelcomeBackDone] = useState(false);
   // Keplar Business has its own desktop app (keplarone/keplar-business) and site (business.keplar.one): Keplar One never sends
   // a Business account over. Keplar One's desktop window only shows keplar.one, so a redirect to the Business host would leave it.
@@ -320,6 +362,25 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   const chatSpecialistId = thread ? thread.specialistId ?? null : state.specialistNext ?? null;
   const running = thread?.messages.some((m) => m.role === "keplar" && m.status === "running") ?? false;
   const lastKeplar = [...(thread?.messages ?? [])].reverse().find((m): m is KeplarMessage => m.role === "keplar");
+
+  // Settings → Chat (follow the answer while it streams) and → Notifications (tell me when an answer finishes in the background).
+  const followRef = useRef(prefs.followStream);
+  const runningRef = useRef(running);
+  const wasRunning = useRef(false);
+  useEffect(() => {
+    followRef.current = prefs.followStream;
+    runningRef.current = running;
+    const finished = wasRunning.current && !running;
+    wasRunning.current = running;
+    if (!finished || lastKeplar?.status !== "done") return;
+    if (prefs.soundDone) playDoneSound();
+    if (prefs.notifyDone && document.hidden && typeof Notification !== "undefined" && Notification.permission === "granted") {
+      try {
+        const n = new Notification(thread?.title || "Keplar", { body: "Your answer is ready.", tag: "keplar-answer", icon: "/icon.png" });
+        n.onclick = () => { window.focus(); n.close(); };
+      } catch { /* some browsers only allow notifications from a service worker */ }
+    }
+  }, [running, prefs.followStream, prefs.soundDone, prefs.notifyDone, lastKeplar?.status, thread?.title]);
 
   // Tell the page-wide particle layer how the answer is going: real run state only (stages finished, models responded).
   const fieldP = running && lastKeplar ? askProgress(lastKeplar.stages.filter((x) => x.status === "done").length, lastKeplar.stages.length, lastKeplar.models.length, lastKeplar.modelCount ?? 0) : null;
@@ -441,14 +502,60 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
       routing: st.settings.routing,
       ...(toolsRef.current[threadId] ? { tools: true } : {}),
     };
+    // Live Research (Keplar One desktop app 0.2.0+, state/live-run.ts): a web question is researched on this computer first, and the pages
+    // it read go with the question. In a browser there is no bridge and nothing here runs. If research can't run, the question still goes.
+    const bridge = researchBridge();
+    const emitResearch = (research: ResearchEvent) => dispatch({ type: "event", threadId, keplarId: keplar.id, event: { type: "research", research } });
+    let live: LiveSession | null = null;
+    // Not when the answer can't come anyway (Free out of questions for today, or paused): the server's reply says so at once.
+    const L = stateRef.current.ledger;
+    // Keplar's own Deep Research takes over from the desktop only where it can run now (a plan with it and a run left).
+    const serverDeep = PLAN_ALLOWANCES[L.plan]?.deepResearch === true && deepResearchRunsLeft(remaining(stateRef.current)) >= 1;
+    if (bridge && wantsLiveResearch(user.modes) && !wantsLiveResearch(user.modes, user.text)) {
+      // Small talk ("thanks!") with Web or Deep Research still on: nothing to research, and never a Deep Research run.
+      req.modes = { ...user.modes, deepResearch: false };
+    } else if (bridge && wantsLiveResearch(user.modes) && (L.paused || L.daily?.left === 0)) {
+      req.modes = modesWithoutLive(user.modes, serverDeep);
+    } else if (bridge && wantsLiveResearch(user.modes)) {
+      const fresh = freshResearch.current.delete(keplar.id);
+      const prep = await prepareLiveResearch({ bridge, question: researchQuestion(user.text, history), depth: user.modes.liveDepth ?? (user.modes.deepResearch ? "deep" : undefined), previousRunIds: previousRunIds(existingThread?.messages, user.id), fresh, signal: ctl.signal, emit: emitResearch });
+      if (ctl.signal.aborted) { controllers.current.delete(keplar.id); return; }
+      if (prep.ok) {
+        live = prep.session;
+        // The modes go as the person set them: the server makes it a web question once it keeps the pages (never a second, server Deep
+        // Research), and runs the question as asked if it can't use them.
+        req.liveResearch = live.field;
+        emitResearch({ phase: "step", step: "write", status: "active" });
+      } else {
+        req.modes = modesWithoutLive(user.modes, serverDeep);
+        // Keplar's own Deep Research starts its own card; otherwise the card says why no pages were read.
+        if (user.modes.deepResearch && serverDeep) emitResearch({ phase: "reset" });
+        else {
+          emitResearch({ phase: "live", label: "Live Research didn\u2019t run" });
+          emitResearch({ phase: "off", reason: liveFallbackNote(prep.error) });
+        }
+      }
+    }
+    // Answer recovery: this attempt's key. A retry after a dropped connection set it to the failed attempt's key (retry below), so the
+    // server replays an answer that finished meanwhile instead of running and charging again.
+    const turnKey = turnKeys.current.get(keplar.id) ?? newTurnKey();
+    turnKeys.current.set(keplar.id, turnKey);
+    req.turnKey = turnKey;
     // Free: the question count drops the moment the question is sent (the server confirms it, or gives it back if no answer comes).
     const L0 = stateRef.current.ledger;
     const took = L0.plan === "free" && Boolean(L0.daily);
     if (took && L0.daily) dispatch({ type: "ledger", ledger: { ...L0, daily: takeOne(L0.daily) } });
     let unreached = false;
     try {
+      let handedOver = false;
       for await (const event of streamKeplar(req, ctl.signal)) {
-        dispatch({ type: "event", threadId, keplarId: keplar.id, event });
+        // The server sends research steps only when it runs its own Deep Research (it couldn't use the pages): its card replaces the desktop's.
+        if (live && event.type === "research" && !handedOver) { handedOver = true; emitResearch({ phase: "reset" }); }
+        // Live Research: the desktop checks the answer's citations against the pages it read before the answer is shown.
+        const shown = live && bridge && event.type === "answer" && event.answer.research?.live && !ctl.signal.aborted ? { ...event, answer: await checkLiveAnswer({ bridge, session: live, answer: event.answer, emit: emitResearch }) } : event;
+        // Stopped while the desktop was checking: the turn stays stopped.
+        if (ctl.signal.aborted) break;
+        dispatch({ type: "event", threadId, keplarId: keplar.id, event: shown });
         if (event.type === "memory") setMemory(event.enabled);
         // Soft upsell (Free only, real answers only: never small talk or the creator reply).
         if (event.type === "answer" && !event.answer.smalltalk && stateRef.current.ledger.synced && stateRef.current.ledger.plan === "free") {
@@ -459,6 +566,28 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
       }
     } catch (e) {
       if (ctl.signal.aborted) return;
+      // Answer recovery: the question reached Keplar (the stream dropped mid-answer), or an earlier send of this turn is still being
+      // answered. Either way the run carries on there: fetch its answer instead of failing (every state shown is the server's).
+      const raced = e instanceof StreamHttpError && e.status === 409 && e.code === "turn_running";
+      if ((e instanceof StreamNetworkError && e.reached) || raced) {
+        dispatch({ type: "event", threadId, keplarId: keplar.id, event: { type: "recovery", state: "recovering" } });
+        const got = await pollTurn(turnKey, ctl.signal).catch(() => null);
+        if (ctl.signal.aborted) return;
+        if (got?.status === "done" && got.answer) {
+          dispatch({ type: "event", threadId, keplarId: keplar.id, event: { type: "recovery", state: "recovered", headless: got.headless } });
+          dispatch({ type: "event", threadId, keplarId: keplar.id, event: { type: "answer", answer: got.answer } });
+          return;
+        }
+        dispatch({ type: "event", threadId, keplarId: keplar.id, event: { type: "recovery", state: "lost" } });
+        if (got?.status === "failed" && got.error) {
+          dispatch({ type: "fail", threadId, keplarId: keplar.id, error: { kind: "server", message: got.error.message, retryable: true } });
+          return;
+        }
+        if (raced) {
+          dispatch({ type: "fail", threadId, keplarId: keplar.id, error: { kind: "network", message: "This answer is taking longer than usual. Try again in a moment; it won't run twice.", retryable: true } });
+          return;
+        }
+      }
       if (e instanceof StreamNetworkError) {
         unreached = !e.reached;
         dispatch({ type: "fail", threadId, keplarId: keplar.id, error: { kind: "network", message: e.message, retryable: true } });
@@ -641,7 +770,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   }, [run]);
 
   const retry = useCallback(
-    (k: KeplarMessage) => {
+    (k: KeplarMessage, opts?: { freshResearch?: boolean }) => {
       const st = stateRef.current;
       const t = st.threads.find((x) => x.messages.some((m) => m.id === k.id));
       const user = t?.messages.find((m): m is UserMessage => m.id === k.replyTo && m.role === "user");
@@ -649,6 +778,12 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
       // A Study turn that never got its set tries again with the new answer; a made set stays where it is.
       const next: KeplarMessage = k.studio?.kind === "study" && k.studio.phase !== "ready" ? { ...newKeplar(user.id), studio: { kind: "study", phase: "waiting" } } : newKeplar(user.id);
       signalFor(t, k, "regenerate");
+      // Refresh research (Live Research): the desktop reads the pages again instead of using its cache.
+      if (opts?.freshResearch) freshResearch.current.add(next.id);
+      // Answer recovery: a retry after a dropped connection is the same turn (an answer that finished meanwhile is replayed, not charged
+      // twice). Regenerating an answer that arrived, or retrying any other failure, is a new turn with a new key.
+      const prevKey = turnKeys.current.get(k.id);
+      if (prevKey && k.error?.kind === "network") turnKeys.current.set(next.id, prevKey);
       dispatch({ type: "retry", threadId: t.id, keplarId: k.id, next });
       void run(t.id, next, user, historyFor(t, user.id));
     },
@@ -660,6 +795,9 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     const t = st.threads.find((x) => x.id === st.activeThreadId);
     const k = t?.messages.find((m): m is KeplarMessage => m.role === "keplar" && m.status === "running");
     if (!t || !k) return;
+    // Answer recovery: a run keeps going when only its connection drops; Stop says it was the person (before the abort, so the server sees it first).
+    const key = turnKeys.current.get(k.id);
+    if (key) stopTurn(key);
     controllers.current.get(k.id)?.abort();
     dispatch({ type: "stop", threadId: t.id, keplarId: k.id });
   }, []);
@@ -808,6 +946,9 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
       } else if (mod && e.shiftKey && k === "o") {
         e.preventDefault();
         newThread();
+      } else if (mod && e.key === ",") {
+        e.preventDefault();
+        router.push("/account"); // opens the Settings dialog over the app (src/app/app/@modal)
       } else if (e.key === "Escape") {
         if (searchOpen) return;
         if (drawerOpen) { setDrawerOpen(false); return; }
@@ -821,7 +962,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [searchOpen, drawerOpen, running, stop, newThread, goView]);
+  }, [searchOpen, drawerOpen, running, stop, newThread, goView, router]);
 
   /* drawer: focus the first control, trap Tab */
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -855,9 +996,9 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   useEffect(() => {
     const el = scrollRef.current;
     // Empty thread: keep the welcome (and the first-visit question) in view.
-    if (!el || !atBottom || !lastSignature) return;
+    if (!el || !atBottom || !lastSignature || (running && !followRef.current)) return;
     el.scrollTo({ top: el.scrollHeight });
-  }, [lastSignature, atBottom, state.activeThreadId]);
+  }, [lastSignature, atBottom, state.activeThreadId, running]);
 
   const onScroll = () => {
     const el = scrollRef.current;
@@ -888,7 +1029,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     const el = scrollRef.current;
     if (!thread || !el || typeof ResizeObserver === "undefined") return;
     const ro = new ResizeObserver(() => {
-      if (atBottomRef.current) el.scrollTo({ top: el.scrollHeight });
+      if (atBottomRef.current && (followRef.current || !runningRef.current)) el.scrollTo({ top: el.scrollHeight });
     });
     ro.observe(thread);
     return () => ro.disconnect();
@@ -899,7 +1040,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
 
   return (
     <div ref={rootRef} className={s.app} data-own-search="" data-drawer={drawerOpen || undefined} data-app-ready={state.scope === "pending" ? undefined : ""}>
-      <SkyBackdrop />
+      {desktop ? null : <SkyBackdrop />}
       <ExtensionReturn onChanged={() => void syncMeter()} />
       <ReferralClaim signedIn={state.ledger.signedIn} onChanged={() => void syncMeter()} />
       <div ref={drawerRef} className={s.sideWrap} data-open={drawerOpen || undefined} onPointerEnter={() => warmViews(true)} onFocus={() => warmViews(true)}>
@@ -939,6 +1080,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
               signedIn={state.ledger.synced ? state.ledger.signedIn : undefined}
               onModesChange={onComposerModes}
               placeholder="Ask Keplar anything"
+              draftKey={draftKeyFor(state.scope, null, Boolean(state.privateNext))}
             />
           }
           onStarter={(text, modes) => { welcomeComposerRef.current?.setModes(modes); welcomeComposerRef.current?.setText(text); welcomeComposerRef.current?.focus(); }}
@@ -1144,6 +1286,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                         message={m}
                         isLast={m.id === lastKeplar?.id}
                         onRetry={() => retry(m)}
+                        onRefreshResearch={m.answer?.research?.live && desktopResearch ? () => retry(m, { freshResearch: true }) : undefined}
                         onSignal={(kind) => signalFor(thread, m, kind)}
                         onAsk={(text) => send(text, [], { web: false, deepResearch: false, create: false, agent: false })}
                         ledger={state.ledger}
@@ -1226,6 +1369,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                 signedIn={state.ledger.synced ? state.ledger.signedIn : undefined}
                 onModesChange={onComposerModes}
                 placeholder={messages.length ? "Reply to Keplar…" : "How can Keplar help you today?"}
+                draftKey={draftKeyFor(state.scope, state.activeThreadId, Boolean(state.threads.find((x) => x.id === state.activeThreadId)?.private ?? state.privateNext))}
               />
               <p className={s.dockNote}>Keplar can be wrong, even when models agree. Verify important decisions.</p>
             </div>
@@ -1251,8 +1395,8 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
             <BusinessOS embedded initialTab="approvals" />
           </div>
         ) : state.view === "studio" ? (
-          <div className={s.scroll}>
-            <StudioView plan={state.ledger.plan} signedIn={state.ledger.synced ? state.ledger.signedIn : null} />
+          <div className={s.createHost}>
+            <KeplarStudio plan={state.ledger.plan} signedIn={state.ledger.synced ? state.ledger.signedIn : null} />
           </div>
         ) : state.view === "deployments" ? (
           <div className={s.scroll}>

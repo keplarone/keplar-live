@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { DesktopTitleBar } from "@/components/desktop/DesktopTitleBar";
 import { BUSINESS_ICONS, BUSINESS_MANIFEST_PATH } from "@/lib/business-site";
+import "@/components/business-site/tokens.css";
 
 export const metadata: Metadata = {
   title: { default: "Keplar Business", template: "%s · Keplar Business" },
   applicationName: "Keplar Business",
-  robots: { index: false, follow: false },
   icons: BUSINESS_ICONS,
   manifest: BUSINESS_MANIFEST_PATH,
 };
@@ -15,7 +15,7 @@ export default function BusinessAppLayout({ children }: { children: React.ReactN
   return (
     <>
       <DesktopTitleBar />
-      <main id="main" data-business-app="">{children}</main>
+      <main id="main" data-business-app="" data-kb="">{children}</main>
     </>
   );
 }

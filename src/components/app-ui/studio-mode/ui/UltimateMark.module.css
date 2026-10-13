@@ -1,0 +1,91 @@
+.mark {
+  display: inline-block;
+  flex: none;
+  vertical-align: middle;
+  overflow: visible;
+  color: inherit;
+}
+
+.core {
+  stroke: currentColor;
+  stroke-width: var(--ks-icon-stroke, 1.5);
+  stroke-linejoin: round;
+  fill: currentColor;
+  fill-opacity: 0;
+  transition:
+    d var(--ks-dur-morph) var(--ks-ease-standard),
+    fill-opacity var(--ks-dur-morph) var(--ks-ease-standard);
+}
+.mark[data-active] .core {
+  fill-opacity: 1;
+}
+
+.rays {
+  transform-box: view-box;
+  transform-origin: 12px 12px;
+  transition: transform var(--ks-dur-slow) var(--ks-ease-standard);
+}
+.mark[data-active] .rays {
+  transform: rotate(45deg);
+}
+.ray {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--ks-icon-stroke, 1.5);
+  stroke-linecap: round;
+  transition: d var(--ks-dur-slow) var(--ks-ease-standard);
+}
+.mark[data-active] .ray {
+  stroke-width: 1;
+}
+
+/* Rings: thin, monochrome, assembled by drawing their stroke (pathLength=1); persistent at low contrast once settled. */
+.rings {
+  transform-box: view-box;
+  transform-origin: 12px 12px;
+  opacity: 0;
+  transition: opacity var(--ks-dur-base) var(--ks-ease-exit);
+}
+.mark[data-active] .rings {
+  opacity: 1;
+}
+.ring {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 0.75;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 0;
+}
+.inner { opacity: 0.55; }
+.outer { opacity: 0.32; }
+
+/* The activation sequence (900ms): core/rays morph (transitions above, 0-300ms), inner ring draws clockwise from the top
+   (100-600ms), outer ring draws the other way (220-760ms), and the ring set expands into place and settles (spring, no
+   overshoot). Only runs when the mark is switched on (or animateKey changes while on), never on first paint. */
+.rings[data-play] {
+  animation: settle calc(var(--ks-dur-sequence) * 0.8) var(--ks-ease-spring) both;
+}
+.rings[data-play] .inner {
+  animation: draw calc(var(--ks-dur-sequence) * 0.55) var(--ks-ease-standard) calc(var(--ks-dur-sequence) * 0.11) both;
+}
+.rings[data-play] .outer {
+  animation: drawReverse calc(var(--ks-dur-sequence) * 0.6) var(--ks-ease-standard) calc(var(--ks-dur-sequence) * 0.24) both;
+}
+
+@keyframes settle {
+  from { transform: scale(0.84); }
+  to { transform: scale(1); }
+}
+@keyframes draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes drawReverse {
+  from { stroke-dashoffset: -1; }
+  to { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .core, .rays, .ray, .rings { transition: none; }
+  .rings[data-play], .rings[data-play] .inner, .rings[data-play] .outer { animation: none; }
+}

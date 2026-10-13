@@ -1,11 +1,13 @@
 /**
  * Comparison pages. Copy: /workspace/marketing/launch/comparison-pages.md (competitor facts
- * last checked Sep 27, 2026). Publishing rules applied: [WHEN RETRIEVAL IS LIVE] lines cut
+ * first checked Sep 27, 2026; every price and cited source re-checked Oct 12, 2026: prices unchanged, dead Poe links replaced). Publishing rules applied: [WHEN RETRIEVAL IS LIVE] lines cut
  * (retrieval is not live); internal editorial notes omitted. The marketer's source/date HTML
  * comments are kept below as code comments next to the facts they back.
- * Pages are noindex, out of the sitemap, and unlinked until approved.
+ * Approved and published 2026-10-12 (indexable, in the sitemap). Keplar's own prices are generated from the plan data below.
  */
 import { brand } from "./site";
+import { tiers } from "./tiers";
+import { BUSINESS_TIERS, SELF_SERVE_TIERS } from "./business/tiers";
 
 const K = brand.name;
 /** Company name for titles, H1s and first mentions (Marketer rule: "Keplar One" first, "Keplar" after). */
@@ -41,9 +43,15 @@ export type ComparePage = {
   verify?: string[];
 };
 
-const LAST_CHECKED = "September 27, 2026";
+const LAST_CHECKED = "October 12, 2026";
 const panel = `Consensus (percentage and agree/disagree count), Models consulted, Sources (the sources the models cite; ${K} hasn't checked them), Disagreements, Verification, and a Reasoning summary`;
-const plans = "Free $0; Plus $45/mo; Pro $99/mo; Business custom";
+const short = (name: string) => name.replace(/^Keplar\s+/, "");
+const consumer = tiers.filter((t) => t.price !== null).map((t) => `${short(t.name)} $${t.price}${t.price ? "/mo" : ""}`);
+const businessFrom = Math.min(...SELF_SERVE_TIERS.map((id) => BUSINESS_TIERS[id].monthly ?? Infinity));
+/** "Free $0; Lite $20/mo; Plus $45/mo; Pro $99/mo; Business from $199.99/mo", from tiers.ts and business/tiers.ts. */
+export const keplarPlans = [...consumer, `Business from $${businessFrom.toFixed(2)}/mo`].join("; ");
+const plans = keplarPlans;
+const plansFreeNote = keplarPlans.replace(/^Free \$0/, "Free $0 (free open models only)");
 
 export const perplexity: ComparePage = {
   slug: "perplexity-model-council",
@@ -66,7 +74,7 @@ export const perplexity: ComparePage = {
         { b: "Frontier models from three labs by default.", text: "On web, a council runs three models, one each from Anthropic, OpenAI, and Google by default, and you can change which ones." },
         { b: "Clear agreement view.", text: "A synthesizer model reviews the outputs and gives one answer that shows where the models agree and differ." },
         { b: "Bigger councils in Perplexity Computer.", text: "There you can use 2–8 models, and it can produce reports and decks." },
-        // Confirmed 2026-09-27: 3 models on web, default one each from Anthropic/OpenAI/Google, toggleable; synthesizer
+        // Confirmed 2026-09-27, re-confirmed 2026-10-12: 3 models on web, default one each from Anthropic/OpenAI/Google, toggleable; synthesizer
         // shows agree/differ; Computer 2–8 models with synthesis + each model's report as files, PDF/deck/spreadsheet on
         // request. Source: https://www.perplexity.ai/help-center/en/articles/13641704-what-is-model-council (help center,
         // last modified Sep 4, 2026; read via search index because direct fetch returned 403)
@@ -89,8 +97,8 @@ export const perplexity: ComparePage = {
       caption: `${K} and Perplexity Model Council compared`,
       head: ["", KO, "Perplexity Model Council"],
       rows: [
-        ["Price to use it", `Free $0 (free open models only); Plus $45/mo; Pro $99/mo; Business custom`, "Web/iOS: Perplexity Max, $200/mo or $2,000/yr, or Enterprise Max. Not on Free, Pro, Education Pro, or Enterprise Pro. Computer version on all paid plans, charged in credits. Monthly Model Council query cap on web/iOS."],
-        // Confirmed 2026-09-27: https://www.perplexity.ai/help-center/en/articles/11680686-perplexity-max ($200/mo or
+        ["Price to use it", plansFreeNote, "Web/iOS: Perplexity Max, $200/mo or $2,000/yr, or Enterprise Max. Not on Free, Pro, Education Pro, or Enterprise Pro. Computer version on all paid plans, charged in credits. Monthly Model Council query cap on web/iOS."],
+        // Confirmed 2026-09-27, re-confirmed 2026-10-12: https://www.perplexity.ai/help-center/en/articles/11680686-perplexity-max ($200/mo or
         // $2,000/yr; last modified Sep 14, 2026) and https://www.perplexity.ai/help-center/en/articles/13641704-what-is-model-council
         // (plan availability, monthly cap, Computer on all paid plans). Read via search index; direct fetch 403.
         ["Who picks the models", `${O}, per question (cost-aware)`, "You. Default is one model each from Anthropic, OpenAI, and Google."],
@@ -100,7 +108,7 @@ export const perplexity: ComparePage = {
         ["How disagreements are resolved", "Synthesizer weighs evidence and reasoning; not a majority vote", "Synthesizer model reviews outputs"],
         // "Source checking" row cut: [WHEN RETRIEVAL IS LIVE].
         ["Agreement display", "Yes: consensus percentage and agree/disagree count", "Not documented in Perplexity's help center or launch blog"],
-        // Checked 2026-09-27: neither https://www.perplexity.ai/help-center/en/articles/13641704-what-is-model-council nor
+        // Checked 2026-09-27, re-checked 2026-10-12: neither https://www.perplexity.ai/help-center/en/articles/13641704-what-is-model-council nor
         // https://www.perplexity.ai/hub/blog/introducing-model-council describes a confidence score; the blog says converging
         // models let you 'move faster with confidence'. Absence of documentation, not proof the feature doesn't exist.
         ["Sources shown", `Sources the models cite (not checked by ${K})`, "Search-grounded citations"],
@@ -127,7 +135,7 @@ export const perplexity: ComparePage = {
     { label: "Perplexity blog, “Introducing Model Council” (Feb 5, 2026)", url: "https://www.perplexity.ai/hub/blog/introducing-model-council" },
     { label: "Perplexity blog, “Model Council comes to Computer”", url: "https://www.perplexity.ai/en-GB/hub/blog/model-council-comes-to-computer" },
     { label: "Perplexity Help Center, “Perplexity Max” ($200/mo or $2,000/yr)", url: "https://www.perplexity.ai/help-center/en/articles/11680686-perplexity-max" },
-    { label: "Price and plan availability confirmed on the help center pages above on Sep 27, 2026 (read via search index; direct fetches return 403). The exact monthly Model Council cap isn't published there." },
+    { label: "Price and plan availability confirmed on the help center pages above on Oct 12, 2026. The exact monthly Model Council cap isn't published there." },
   ],
 };
 
@@ -151,9 +159,10 @@ export const poe: ComparePage = {
         { b: "Message several models at once", text: "and compare their responses side by side in one chat." },
         { b: "Group chats", text: "with up to 200 people and bots." },
         { b: "Low entry price.", text: "Paid plans start at $4.99/month." },
-        // Confirmed 2026-09-27: group chats up to 200 people and points at $30 per 1M,
+        // Confirmed 2026-09-27, re-confirmed 2026-10-12: group chats up to 200 people and points at $30 per 1M,
         // https://help.poe.com/hc/en-us/articles/19944206309524-Poe-FAQs (updated Jul 8, 2026); 'subscription plans starting
-        // at $4.99/month', https://poe.com/about and https://help.poe.com/hc/en-us/articles/19945140063636-Poe-Subscriptions-FAQs
+        // at $4.99/month', https://help.poe.com/hc/en-us/articles/19945140063636-Poe-Purchases-FAQs (renamed from "Subscriptions FAQs";
+        // poe.com/about redirects to sign-in since Oct 2026)
         { b: "API and bot creation", text: "for builders." },
       ],
     },
@@ -176,7 +185,7 @@ export const poe: ComparePage = {
         ["Main output", "One synthesized answer", "Replies from each bot you choose"],
         ["Multiple models on one question", `Yes, chosen by ${O} (cost-aware)`, "Yes: multi-bot chat, @-mentions, messaging several models at once"],
         ["Merges replies into one answer", "Yes", "We didn't find a synthesis feature"],
-        // Checked 2026-09-27: Poe FAQs (https://help.poe.com/hc/en-us/articles/19944206309524-Poe-FAQs), poe.com/about, the
+        // Checked 2026-09-27, re-checked 2026-10-12: Poe FAQs (https://help.poe.com/hc/en-us/articles/19944206309524-Poe-FAQs), poe.com/about, the
         // multi-bot chat blog and the multi-message demo describe comparing bots in one thread; none describes merging
         // replies into one answer. Absence, not proof.
         ["Disagreement flagged", "Yes, with a disagreement summary", "You compare replies yourself"],
@@ -186,11 +195,11 @@ export const poe: ComparePage = {
         ["Group chats with people", "No", "Yes, up to 200 people and bots"],
         ["Pricing", plans, "Free tier; paid from $4.99/mo; compute-points system with add-on points"],
         ["Deep Research", "Plus includes Deep Research for occasional use", "Available through research bots, e.g. Gemini Deep Research and Perplexity Deep Research"],
-        // Confirmed 2026-09-27: https://poe.com/Perplexity-Deep-Research (labelled OFFICIAL on Poe) and Poe's announcement of
+        // Confirmed 2026-09-27, re-confirmed 2026-10-12: https://poe.com/Perplexity-Deep-Research (labelled OFFICIAL on Poe) and Poe's announcement of
         // Gemini Deep Research (https://poe.com/Gemini-Deep-Research, per Poe's LinkedIn post, Dec 2025).
         ["Full reply from each model", "Not shown side by side; the answer panel shows consensus, models consulted, cited sources, disagreements, verification, and a reasoning summary", "Yes"],
         ["Platforms", "Web (responsive on mobile browsers)", "Web, desktop apps, iOS, and Android"],
-        // Confirmed 2026-09-27: Poe FAQs, group-chat section ('Open Poe on web, desktop apps, iOS, or Android'):
+        // Confirmed 2026-09-27, re-confirmed 2026-10-12: Poe FAQs, group-chat section ('Open Poe on web, desktop apps, iOS, or Android'):
         // https://help.poe.com/hc/en-us/articles/19944206309524-Poe-FAQs
       ],
     },
@@ -208,11 +217,10 @@ export const poe: ComparePage = {
     { q: `Why is ${K} Plus more expensive than Poe's entry plan?`, a: `Poe's paid plans start at $4.99/month for access to its models and bots. ${K} Plus ($45/month) pays for several models answering each question, plus the step that compares and combines them into one answer. There's also a Free plan.` },
   ],
   sources: [
-    { label: "Poe blog, “Multi-bot chat on Poe”", url: "https://poe.com/blog/multi-bot-chat-on-poe" },
-    { label: "Poe demo, “Send multiple messages at the same time” (Feb 16, 2025)", url: "https://poe.com/pages/demos/send-multiple-messages-at-the-same-time" },
-    { label: "Poe Help Center FAQs (group chats up to 200; points; platforms), fetched directly Sep 27, 2026", url: "https://help.poe.com/hc/en-us/articles/19944206309524-Poe-FAQs" },
-    { label: "Poe About (paid from $4.99/mo)", url: "https://poe.com/about" },
-    { label: "Poe Subscriptions FAQ (paid from $4.99/mo)", url: "https://help.poe.com/hc/en-us/articles/19945140063636-Poe-Subscriptions-FAQs" },
+    // Poe's own multi-bot blog post and demo page are no longer public (sign-in redirect / 404 on 2026-10-12); third-party report instead.
+    { label: "Analytics Vidhya, “Poe's Multi-Bot Chat” (Apr 19, 2024): replies from several bots in one thread, @-mention any bot", url: "https://www.analyticsvidhya.com/blog/2024/04/poes-multi-bot-chat-a-game-changer-in-ai-interactivity/" },
+    { label: "Poe Help Center FAQs (group chats up to 200; points; platforms), fetched Oct 12, 2026", url: "https://help.poe.com/hc/en-us/articles/19944206309524-Poe-FAQs" },
+    { label: "Poe Purchases FAQs (paid from $4.99/mo; add-on points from $30 per 1M), fetched Oct 12, 2026", url: "https://help.poe.com/hc/en-us/articles/19945140063636-Poe-Purchases-FAQs" },
     { label: `“No synthesis found”: ${K} Researcher's competitor study, Sep 27, 2026.` },
     // Editorial (not rendered): don't publish Poe's higher-tier prices ($19.99–$249.99); third-party source only.
   ],
@@ -237,7 +245,7 @@ export const chathub: ComparePage = {
         { b: "Available almost everywhere:", text: "web app, browser extension, iOS, Android, Windows, and Mac." },
         { b: "Extra tools:", text: "image generation, file upload, web search, and a prompt library." },
         { b: "Affordable:", text: "Pro at $19/month and a higher plan at $39/month, with annual discounts." },
-        // Confirmed 2026-09-27: Pro $19/mo or $14.99/mo yearly, 10,000 basic + 1,500 advanced queries; Unlimited $39/mo or
+        // Confirmed 2026-09-27, re-confirmed 2026-10-12: Pro $19/mo or $14.99/mo yearly, 10,000 basic + 1,500 advanced queries; Unlimited $39/mo or
         // $24.99/mo yearly: https://chathub.gg/pricing.md. Up to six chatbots at once: https://doc.chathub.gg/. Platforms
         // (web, Chrome extension, iOS, Android, Windows, macOS): https://chathub.gg/llms.txt. 'compare answers, identify
         // disagreement, and select the most useful result': https://chathub.gg/llms-full.txt
@@ -284,11 +292,11 @@ export const chathub: ComparePage = {
     { q: `Is ChatHub cheaper than ${K}?`, a: `Yes. ChatHub's paid plans are $19 and $39 a month, and ${K} Plus is $45. The products do different jobs: ChatHub shows the replies side by side, and ${K} compares and combines them into one answer. Both have free plans.` },
   ],
   sources: [
-    { label: "ChatHub homepage (fetched Sep 27, 2026)", url: "https://chathub.gg/" },
-    { label: "ChatHub pricing (fetched Sep 27, 2026)", url: "https://chathub.gg/pricing.md" },
-    { label: "Up to six chatbots at once (fetched Sep 27, 2026)", url: "https://doc.chathub.gg/" },
-    { label: "“Identify disagreement” wording (“ChatHub makes it easier to compare answers, identify disagreement, and select the most useful result”), fetched Sep 27, 2026", url: "https://chathub.gg/llms-full.txt" },
-    { label: "Platforms (fetched Sep 27, 2026)", url: "https://chathub.gg/llms.txt" },
+    { label: "ChatHub homepage (fetched Oct 12, 2026)", url: "https://chathub.gg/" },
+    { label: "ChatHub pricing (fetched Oct 12, 2026)", url: "https://chathub.gg/pricing.md" },
+    { label: "Up to six chatbots at once (fetched Oct 12, 2026)", url: "https://doc.chathub.gg/" },
+    { label: "“Identify disagreement” wording (“ChatHub makes it easier to compare answers, identify disagreement, and select the most useful result”), fetched Oct 12, 2026", url: "https://chathub.gg/llms-full.txt" },
+    { label: "Platforms (fetched Oct 12, 2026)", url: "https://chathub.gg/llms.txt" },
     // Editorial (not rendered): the free plan's 2-bot limit is third-party only (e.g. tooljunction.io), not confirmed on an
     // official ChatHub page, so it's not claimed. Don't publish user counts (self-reported or third-party).
   ],
@@ -322,7 +330,7 @@ export const hub: ComparePage = {
       caption: "Multi-model AI tools at a glance",
       head: ["Tool", "Type", "One synthesized answer?", "Starting paid price", "Best for"],
       rows: [
-        [KO, "Council", "Yes; disagreement summary, shows consensus level", "Free $0; Plus $45/mo", "One weighed answer, with models picked per question"],
+        [KO, "Council", "Yes; disagreement summary, shows consensus level", plans, "One weighed answer, with models picked per question"],
         ["Perplexity Model Council", "Council (inside Perplexity)", "Yes; shows agreement and differences", "Perplexity Max $200/mo (web/iOS)", "Perplexity Max subscribers who want search-grounded answers"],
         ["Microsoft 365 Copilot Researcher: Council", "Council (enterprise preview)", "Yes; full reports plus a summary of agreement and divergence", "Microsoft Copilot license + Frontier program", "Microsoft 365 enterprises"],
         ["MultipleChat", "Workspace with several modes", "Yes, in Ensemble mode; also Compare, Debate, and more", "Pro $20/mo", "People who want many modes and team plans"],
@@ -340,7 +348,7 @@ export const hub: ComparePage = {
       name: KO,
       text: `${KO}'s engine can route across multiple model families, and picks the models per question based on need and cost. It gives you one synthesized answer. The synthesizer weighs the evidence and reasoning behind each response rather than taking a majority vote. A disagreement summary shows which models split and what they concluded differently, and every answer shows its consensus percentage and agree/disagree count. The answer panel also lists the models consulted, the sources the models cite, verification, and a reasoning summary. Web only, responsive on mobile browsers.`,
       bullets: [
-        { b: "Plans:", text: "Free $0 (free open models only), Plus $45/mo (includes Deep Research for occasional use), Pro $99/mo, Business custom." },
+        { b: "Plans:", text: `${plansFreeNote}. Plus includes Deep Research for occasional use.` },
         { b: "Why pick it:", text: "a model council for $45, not $200, with a disagreement summary that shows where models split, and no need to pick models yourself." },
         { b: "Consider another tool if:", text: "you want to read every model's full reply side by side, want native apps, or want the cheapest consensus app." },
       ],
@@ -351,7 +359,7 @@ export const hub: ComparePage = {
       text: "Runs three models on web (by default one each from Anthropic, OpenAI, and Google; you can change them), and 2–8 in Perplexity Computer. A synthesizer shows where they agree and differ.",
       bullets: [
         { b: "Price:", text: "Perplexity Max $200/mo or $2,000/yr, or Enterprise Max. Not on Free, Pro, Education Pro, or Enterprise Pro. Computer version on all paid plans, charged in credits." },
-        // Confirmed 2026-09-27: https://www.perplexity.ai/help-center/en/articles/11680686-perplexity-max,
+        // Confirmed 2026-09-27, re-confirmed 2026-10-12: https://www.perplexity.ai/help-center/en/articles/11680686-perplexity-max,
         // https://www.perplexity.ai/help-center/en/articles/13641704-what-is-model-council
         { b: "Why pick it:", text: "search-grounded answers with citations from a leading answer engine." },
       ],
@@ -362,7 +370,7 @@ export const hub: ComparePage = {
       text: "Runs the same question through multiple deep-reasoning research agents (for example, GPT and Claude), keeps each model's full report, and adds a summary that highlights where the models agree, where they diverge, and what each contributes. Public preview from March 30, 2026; still limited to the Frontier program.",
       bullets: [
         { b: "Access:", text: "Microsoft 365 Copilot Frontier program plus a Microsoft Copilot license; an admin must allow Anthropic models." },
-        // Confirmed 2026-09-27: https://support.microsoft.com/en-us/microsoft-365-copilot/use-model-council-with-researcher-in-microsoft-365-copilot
+        // Confirmed 2026-09-27, re-confirmed 2026-10-12: https://support.microsoft.com/en-us/microsoft-365-copilot/use-model-council-with-researcher-in-microsoft-365-copilot
         // (Frontier required; Copilot license; admin must allow Anthropic; GPT + Claude; full reports + agree/diverge summary).
         // Preview date: M365 Message Center MC1265765 archive, https://mc.merill.net/message/MC1265765 (that notice also said a
         // Copilot Premium license).
@@ -374,9 +382,9 @@ export const hub: ComparePage = {
       name: "MultipleChat",
       text: "The most feature-rich option we found: Compare mode (side by side) plus Ensemble (parallel answers, then synthesis), Debate, Smart, and Research modes, and “Auto Verification”.",
       bullets: [
-        { b: "Price:", text: "Free; Pro $20/mo ($179.99/yr); Smart $90/mo; Teams $25 or $95 per seat; a separate desktop app, paid once, with your own API keys." },
-        // Confirmed 2026-09-27: https://multiple.chat/pricing (modes incl. Smart, Ensemble, Debate, Research; Compare Mode;
-        // Auto Verification; iOS/Android apps)
+        { b: "Price:", text: "Free; Pro $20/mo ($179.99/yr); Smart $90/mo; Teams $25 or $95 per seat; a separate desktop app, $250 once, with your own API keys." },
+        // Confirmed 2026-09-27, re-confirmed 2026-10-12: https://multiple.chat/pricing (modes incl. Smart, Ensemble, Debate, Research; Compare Mode;
+        // Auto Verification; iOS/Android apps). Desktop app $250 one-time with your own keys: https://multiple.chat/desktop-app
         { b: "Why pick it:", text: "many ways to combine models, and team plans." },
       ],
     },
@@ -388,7 +396,7 @@ export const hub: ComparePage = {
       // replace common identifiers'. Source: https://satcove.com/pricing
       bullets: [
         { b: "Price:", text: "Free (3 consensus runs/week); Starter €14.99; Pro €39.99; Pro Max €99.99; Enterprise." },
-        // Confirmed 2026-09-27: https://satcove.com/pricing
+        // Confirmed 2026-09-27, re-confirmed 2026-10-12: https://satcove.com/pricing
         { b: "Why pick it:", text: "it publishes exactly how many consensus runs each plan includes." },
       ],
     },
@@ -428,7 +436,7 @@ export const hub: ComparePage = {
       text: "A front end where you bring your own API keys. The premium tier includes multi-model parallel chats.",
       bullets: [
         { b: "Price:", text: "one-time license, plus your own API usage costs." },
-        // Confirmed 2026-09-27: https://www.typingmind.com/buy (one-time licenses Standard $39, Extended $79, Premium $99;
+        // Confirmed 2026-09-27, re-confirmed 2026-10-12: https://www.typingmind.com/buy (one-time licenses Standard $39, Extended $79, Premium $99;
         // multi-model parallel chats in Premium; web/PWA, no native mobile apps). Prices left out of copy on purpose.
         { b: "Why pick it:", text: "control and low cost for technical users." },
       ],
@@ -439,7 +447,7 @@ export const hub: ComparePage = {
       text: "A workspace for switching models mid-chat, with agents and many integrations. We didn't find a consensus feature.",
       bullets: [
         { b: "Price:", text: "Standard $20, Pro $40, Ultra $200 per month. Monthly usage credit roughly equals the price paid." },
-        // Confirmed 2026-09-27: https://help.magai.co/en/articles/10318014-how-much-usage-does-each-plan-include (model
+        // Confirmed 2026-09-27, re-confirmed 2026-10-12: https://help.magai.co/en/articles/10318014-how-much-usage-does-each-plan-include (model
         // switching mid-chat, agents, 150+ integrations)
         { b: "Why pick it:", text: "creators and teams who switch models within one workspace." },
       ],
@@ -466,16 +474,17 @@ export const hub: ComparePage = {
   sourcesNote: "On official pages.",
   sources: [
     { label: "Perplexity: help center and blogs (see the Perplexity comparison)" },
-    { label: "Microsoft: support article (fetched Sep 27, 2026)", url: "https://support.microsoft.com/en-us/microsoft-365-copilot/use-model-council-with-researcher-in-microsoft-365-copilot" },
+    { label: "Microsoft: support article (fetched Oct 12, 2026)", url: "https://support.microsoft.com/en-us/microsoft-365-copilot/use-model-council-with-researcher-in-microsoft-365-copilot" },
     { label: "Microsoft: M365 Message Center MC1265765 archive", url: "https://mc.merill.net/message/MC1265765" },
-    { label: "MultipleChat pricing (fetched Sep 27, 2026)", url: "https://multiple.chat/pricing" },
-    { label: "Satcove pricing (fetched Sep 27, 2026)", url: "https://satcove.com/pricing" },
-    { label: "AllChat (fetched Sep 27, 2026)", url: "https://askallchat.com/" },
-    { label: "AllChat pricing (fetched Sep 27, 2026)", url: "https://askallchat.com/pricing" },
+    { label: "MultipleChat pricing (fetched Oct 12, 2026)", url: "https://multiple.chat/pricing" },
+    { label: "MultipleChat desktop app ($250 one-time; fetched Oct 12, 2026)", url: "https://multiple.chat/desktop-app" },
+    { label: "Satcove pricing (fetched Oct 12, 2026)", url: "https://satcove.com/pricing" },
+    { label: "AllChat (fetched Oct 12, 2026)", url: "https://askallchat.com/" },
+    { label: "AllChat pricing (fetched Oct 12, 2026)", url: "https://askallchat.com/pricing" },
     { label: "Poe: see the Poe comparison" },
     { label: "ChatHub: see the ChatHub comparison" },
-    { label: "TypingMind (fetched Sep 27, 2026)", url: "https://www.typingmind.com/buy" },
-    { label: "Magai usage per plan (fetched Sep 27, 2026)", url: "https://help.magai.co/en/articles/10318014-how-much-usage-does-each-plan-include" },
+    { label: "TypingMind (fetched Oct 12, 2026)", url: "https://www.typingmind.com/buy" },
+    { label: "Magai usage per plan (fetched Oct 12, 2026)", url: "https://help.magai.co/en/articles/10318014-how-much-usage-does-each-plan-include" },
   ],
 };
 

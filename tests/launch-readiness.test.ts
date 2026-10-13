@@ -46,12 +46,12 @@ test("/status is linked in the footer, indexable and not in the sitemap", () => 
   assert.doesNotMatch(readFileSync("src/app/(marketing)/status/page.tsx", "utf8"), /noindex/);
 });
 
-test("public content pages carry no noindex; private, auth and missing pages keep theirs", () => {
-  for (const f of ["status", "simulation", "feedback", "vs/[slug]"]) {
+test("Keplar's pages carry no noindex (content, auth and missing pages alike); private share links keep theirs", () => {
+  for (const f of ["status", "simulation", "feedback", "vs/[slug]", "signin", "signup", "templates/[slug]", "account", "checkout"]) {
     assert.doesNotMatch(readFileSync(`src/app/(marketing)/${f}/page.tsx`, "utf8"), /noindex|index: false/, f);
   }
-  assert.doesNotMatch(readFileSync("src/lib/i18n/seo.ts", "utf8"), /status === "stable"/, "Beta locales are indexable");
-  for (const f of ["r/[token]/page.tsx", "c/[token]/page.tsx", "signin/page.tsx", "templates/[slug]/page.tsx"]) {
-    assert.match(readFileSync(`src/app/(marketing)/${f}`, "utf8"), /noindex|index: false/, f);
+  assert.doesNotMatch(readFileSync("src/lib/i18n/seo.ts", "utf8"), /status === "stable"|index: false/, "every locale and localized page is indexable");
+  for (const f of ["r/[token]/page.tsx", "c/[token]/page.tsx", "sp/[token]/page.tsx"]) {
+    assert.match(readFileSync(`src/app/(marketing)/${f}`, "utf8"), /index: false/, f);
   }
 });

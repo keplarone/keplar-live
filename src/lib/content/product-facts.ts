@@ -112,6 +112,7 @@ export const FACT_SECTIONS: FactSection[] = [
       { name: "Export for games", what: "Exports to FBX (imports into Roblox Studio), GLB or OBJ in Documents/Keplar exports.", plans: "Desktop app, Lite and up", status: "beta" },
       { name: "Safe by default", what: "The add-on only listens on this computer behind a secret key. Keplar's Python may not touch files, the network or other apps, or save or close Blender; deleting always asks, and every change waits for approval unless you turn on auto-approve.", plans: "Desktop app", status: "beta" },
       { name: "Cheap to run", what: "A short cached prompt, text scene summaries instead of screenshots, and small thinking budgets keep each step's AI usage low. Each .blend file's chat is saved and synced to your account.", plans: "Desktop app", status: "beta" },
+      { name: "Blender Cloud rendering", what: "Renders the open scene on Keplar's servers with Blender 5.2 (Cycles, EEVEE or Workbench, on CPUs), so you can close Blender or turn your computer off; the scene is packed with its textures, the machine has no internet access, and the frames and an optional MP4 download to Documents/Keplar renders. Charged by machine time, with a budget and a time limit; renders are kept three days.", plans: "Desktop app 0.1.10+, Lite and up", status: "beta", href: "/docs/studio/blender-cloud-rendering" },
     ],
   },
   {

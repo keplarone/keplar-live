@@ -109,6 +109,11 @@ const m: MarketingCatalog = {
         "name": "Mode suara",
         "line": "Bertanya dengan suara, dengarkan jawabannya dibacakan. Keplar tidak pernah merekam atau menyimpan audio Anda."
       },
+      "live-research": {
+        "name": "Riset Langsung",
+        "line": "Di aplikasi desktop, Keplar mencari di web dan membaca halaman di komputer Anda, lalu mengutip setiap halaman dan memeriksa kutipannya.",
+        "note": "Aplikasi desktop 0.2.0 atau lebih baru."
+      },
       "images": {
         "name": "Gambar dan tangkapan layar",
         "line": "Grafik, struk, papan tulis, UI. Hanya dikirim ke model yang bisa melihat."
@@ -214,6 +219,11 @@ const m: MarketingCatalog = {
         "name": "Mode Blender",
         "line": "Modelkan, beri tekstur dengan set PBR Poly Haven, atur cahaya, dan ekspor di Blender 4.2 atau lebih baru.",
         "note": "Aplikasi desktop 0.1.8 atau lebih baru."
+      },
+      "blender-cloud": {
+        "name": "Rendering Blender Cloud",
+        "line": "Render adegan di server Keplar saat komputer Anda mati, lalu unduh frame-nya dan sebuah MP4.",
+        "note": "Aplikasi desktop 0.1.10 atau lebih baru."
       },
       "extension": {
         "name": "Ekstensi browser Keplar One",

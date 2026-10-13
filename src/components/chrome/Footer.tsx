@@ -5,13 +5,14 @@ import { CookieSettingsButton } from "@/components/consent/CookieSettingsButton"
 import { ThemeControl } from "@/components/theme/ThemeControl";
 import { LanguagePicker } from "@/components/i18n/LanguagePicker";
 import { getMessages } from "@/lib/i18n/server";
+import { loadConsent } from "@/lib/i18n/consent";
 import { localizedPath } from "@/lib/i18n/routing";
 import s from "./Footer.module.css";
 
 /** Site footer. In a localized layout labels come from that locale's catalog and links to translated pages stay in the locale. */
 export async function Footer({ locale = "en" }: { locale?: string }) {
   const year = new Date().getFullYear();
-  const f = (await getMessages(locale, "common")).footer;
+  const [f, consent] = await Promise.all([getMessages(locale, "common").then((m) => m.footer), loadConsent(locale)]);
   return (
     <footer className={s.footer}>
       <div className={s.inner}>
@@ -44,7 +45,7 @@ export async function Footer({ locale = "en" }: { locale?: string }) {
         <p>
           © {year} {brand.companyName}.{site.legalEntity ? ` ${site.legalEntity}` : ""}
         </p>
-        <CookieSettingsButton className={s.cookieLink} />
+        <CookieSettingsButton className={s.cookieLink}>{consent.settings}</CookieSettingsButton>
         <LanguagePicker />
         <div className={s.theme}>
           <span className={s.themeLabel} aria-hidden="true">{f.theme}</span>

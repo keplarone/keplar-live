@@ -72,6 +72,7 @@ export const ORIGIN_EXEMPT_PREFIXES = [
   "/api/business/checkout", // "Buy" buttons on published sites (other origin); rate limited
   "/api/auth/", // Better Auth runs its own origin / CSRF checks
   "/api/v1/", // public API: bearer keys only (never cookies), so there is no ambient credential for a cross-site request to ride on
+  "/api/extension/", // the browser extension connecting (chrome-extension:// origin): never reads cookies; the PKCE verifier or the bearer key is the credential
 ];
 
 export const isOriginExempt = (pathname: string) => ORIGIN_EXEMPT_PREFIXES.some((p) => pathname.startsWith(p));

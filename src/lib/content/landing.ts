@@ -443,9 +443,9 @@ export const landingPages: LandingPage[] = [
     metaTitle: "Roblox Studio AI: build games with Claude inside Studio",
     metaDescription: `The ${K} desktop app connects to Roblox Studio and builds with you on Claude Opus 5.5: maps, UI, flipbook effects and Luau scripts, plus overnight Roblox Cloud jobs.`,
     ogTitle: "An AI co-builder for Roblox Studio",
-    label: "Roblox Studio AI",
+    label: "Keplar Studio · Roblox Studio",
     h1: "Build Roblox games with an AI inside Studio.",
-    lede: `In the ${K} desktop app, a co-builder connects to Roblox Studio through Studio's own tools. It looks at your place, writes a plan, and builds it step by step while you watch and approve.`,
+    lede: `Keplar Studio, the co-builder in the ${K} desktop app, connects to Roblox Studio through Studio's own tools. It looks at your place, writes a plan, and builds it step by step while you watch and approve.`,
     examples: ["A lobby with a spawn area, a shop stall and a leaderboard", "A round-based obby with checkpoints and a timer", "A health bar UI that matches this screenshot"],
     sections: [
       {
@@ -498,11 +498,11 @@ export const landingPages: LandingPage[] = [
     slug: "blender-ai",
     path: "/blender-ai",
     metaTitle: "Blender AI: models and PBR textures from a description",
-    metaDescription: `The ${K} desktop app connects to Blender 4.2+ through a small add-on and models, textures and lights with you, then exports FBX, GLB or OBJ. Lite, Plus and Pro.`,
+    metaDescription: `The ${K} desktop app connects to Blender 4.2+ and models, textures and lights with you, exports FBX, GLB or OBJ, and renders scenes in the cloud.`,
     ogTitle: "An AI co-builder for Blender",
-    label: "Blender AI",
+    label: "Keplar Studio · Blender",
     h1: "Model and texture in Blender by describing what you want.",
-    lede: `In the ${K} desktop app (0.1.8 or newer), a co-builder connects to Blender through a small Keplar add-on. It reads your scene, plans, and builds models with real textures while you approve each change.`,
+    lede: `Keplar Studio, the co-builder in the ${K} desktop app (0.1.8 or newer), connects to Blender through a small Keplar add-on. It reads your scene, plans, and builds models with real textures while you approve each change.`,
     examples: ["A low-poly wooden crate with worn edges", "A stone well with a rope and bucket, textured", "Light this scene with an outdoor HDRI"],
     sections: [
       {
@@ -519,6 +519,10 @@ export const landingPages: LandingPage[] = [
         p: ["The add-on only listens on your computer behind a secret key. Keplar's Python may not touch files, the network or other apps, or save or close Blender. Deleting always asks, and every change waits for approval unless you turn on auto-approve."],
       },
       {
+        h2: "Render in the cloud",
+        p: ["Blender Cloud renders the open scene on a render machine of Keplar's own, so you can close Blender or turn your computer off. Keplar packs the scene with its textures, renders the frames with Blender 5.2 (Cycles, EEVEE or Workbench, on CPUs), can join them into an MP4, and keeps them three days for you to download. It is charged by machine time and stops at your budget or time limit."],
+      },
+      {
         h2: "Cheap to run",
         p: ["A short cached prompt, text scene summaries instead of screenshots, and small thinking budgets keep each step's AI usage low. Each .blend file's chat is saved and synced to your account."],
       },
@@ -531,8 +535,9 @@ export const landingPages: LandingPage[] = [
       { q: "Which plans include it?", a: "Keplar Lite, Plus and Pro, in the desktop app for Windows, macOS and Linux." },
       { q: "Do I install anything in Blender?", a: "The desktop app installs and enables the small Keplar add-on for you." },
       { q: "Are the textures free to use?", a: "They come from Poly Haven, whose assets are CC0, free for any use." },
+      { q: "Can Keplar render my scene while my computer is off?", a: "Yes, with Blender Cloud rendering in desktop app 0.1.10 or newer. The scene uploads once, renders on Keplar's servers, and the frames wait there for three days until you download them." },
     ],
-    related: ["/roblox-studio-ai", "/download", "/docs/studio/blender-mode", "/pricing"],
+    related: ["/roblox-studio-ai", "/download", "/docs/studio/blender-mode", "/docs/studio/blender-cloud-rendering", "/pricing"],
   },
 ];
 

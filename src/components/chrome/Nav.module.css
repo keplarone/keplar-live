@@ -274,3 +274,20 @@
     display: none;
   }
 }
+
+/* Phones: the bar has room for four things. Before, the menu pill (108px, wider with a longer translation such as "Menu do site")
+   overlapped the logo, the theme button was squeezed to ~30px and "Try Keplar" broke onto two lines (even in English at 360px).
+   The menu is a 52px circle (its aria-label still names it; the label returns when it opens), nothing shrinks, nothing wraps, and
+   under 400px the theme button moves into the open menu. */
+.panelTheme { display: none; }
+@media (max-width: 480px) {
+  .morph:not([data-open]) { width: 52px; }
+  .morph:not([data-open]) .toggle { padding: 0; gap: 0; }
+  .morph:not([data-open]) .toggleLabel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .theme { flex: none; }
+  .cta { white-space: nowrap; padding: 0 16px; font-size: 14.5px; }
+}
+@media (max-width: 400px) {
+  .actions .theme { display: none; }
+  .panelTheme { display: inline-grid; }
+}

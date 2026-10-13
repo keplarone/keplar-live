@@ -234,7 +234,7 @@ export function Onboarding({ initial, next, accountName }: { initial: Payload; n
             <form onSubmit={(e) => submitWith(e, () => { (["name", "theme", "insertKey", "memory"] as Keys[]).forEach(touch); go(3, { personalize: true }); })}>
               <div className={s.field}>
                 <label htmlFor="ob-name" className={s.label}>What should Keplar call you?</label>
-                <input id="ob-name" className={s.input} value={name} maxLength={60} autoComplete="given-name" placeholder="Your first name" onChange={(e) => { setName(e.target.value); touch("name"); }} />
+                <input spellCheck={false} id="ob-name" className={s.input} value={name} maxLength={60} autoComplete="given-name" placeholder="Your first name" onChange={(e) => { setName(e.target.value); touch("name"); }} />
               </div>
               <fieldset className={s.fieldset}>
                 <legend className={s.label}>Theme</legend>

@@ -443,6 +443,9 @@
   max-width: clamp(800px, 52vw, 1400px);
   margin: 0 auto;
 }
+/* Settings → Appearance → Chat width (src/lib/prefs.ts). Doubled attribute outranks the per-theme 760px rules further down. */
+:global(:root[data-pref-chat-width="wide"][data-pref-chat-width]) .thread { max-width: min(1080px, 100%); }
+:global(:root[data-pref-chat-width="full"][data-pref-chat-width]) .thread { max-width: 100%; }
 
 /* Long threads skip painting turns that are far off screen, but never the last three: the end of the conversation must have its
    real height at all times (an estimated height under the newest answer made the true bottom unreachable). */

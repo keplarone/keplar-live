@@ -282,3 +282,26 @@
 :is(.hero[data-mode="static"], html:not([data-fx="webgl"]) .hero[data-mode="pending"]) .pin { display: flex; flex-direction: column; }
 :is(.hero[data-mode="static"], html:not([data-fx="webgl"]) .hero[data-mode="pending"]) .content { order: -1; }
 /* The stand-in mark sits in the open middle until the particles are on screen. */
+
+/* Phones: readable floors. Every size above scales with the window (vw), which is right on a desktop and left phone text at
+   7.5 to 9.5 px (the notes, fine print, step labels and the stage copy on the localized home pages). Nothing below 12 px on a
+   phone, body copy at 14 to 15 px, the message box at 16 px (smaller makes iPhones zoom in when it is tapped). */
+@media (max-width: 760px) {
+  .sub { font-size: 15px; line-height: 1.5; }
+  .note, .fine, .kicker, .nodes li { font-size: 12px; }
+  .nodes li { letter-spacing: 0.02em; }
+  .proof { font-size: 13px; }
+  .pill { font-size: 12.5px; }
+  .chipItem { font-size: 12.5px; }
+  .body { font-size: 14px; }
+  .steps li { font-size: 13px; padding: 9px 14px; }
+  .link { font-size: 14px; }
+  .input { font-size: 16px; }
+  .go { font-size: 15px; }
+}
+@media (max-width: 760px) and (max-height: 700px) {
+  .pill, .chipItem { font-size: 12px; }
+}
+@media (max-width: 340px) {
+  .chipItem { font-size: 12px; }
+}

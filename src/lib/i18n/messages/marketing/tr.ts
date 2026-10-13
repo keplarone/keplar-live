@@ -109,6 +109,11 @@ const m: MarketingCatalog = {
         "name": "Sesli mod",
         "line": "Sesli sorun, yanıtı dinleyin. Keplar sesinizi asla kaydetmez veya saklamaz."
       },
+      "live-research": {
+        "name": "Canlı Araştırma",
+        "line": "Masaüstü uygulamasında Keplar web’de arar ve sayfaları bilgisayarınızda okur, ardından her birini kaynak gösterir ve alıntıları denetler.",
+        "note": "Masaüstü uygulaması 0.2.0 veya üzeri."
+      },
       "images": {
         "name": "Görseller ve ekran görüntüleri",
         "line": "Grafikler, fişler, beyaz tahtalar, arayüzler. Yalnızca görebilen modellere gönderilir."
@@ -214,6 +219,11 @@ const m: MarketingCatalog = {
         "name": "Blender modu",
         "line": "Blender 4.2 veya üzerinde modelleme, Poly Haven PBR setleriyle doku, ışık ve dışa aktarma.",
         "note": "Masaüstü uygulaması 0.1.8 veya üzeri."
+      },
+      "blender-cloud": {
+        "name": "Blender Cloud işleme",
+        "line": "Bilgisayarınız kapalıyken bir sahneyi Keplar sunucularında işleyin, sonra kareleri ve bir MP4'ü indirin.",
+        "note": "Masaüstü uygulaması 0.1.10 veya üzeri."
       },
       "extension": {
         "name": "Keplar One tarayıcı uzantısı",

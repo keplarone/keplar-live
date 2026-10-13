@@ -5,6 +5,31 @@ export const ASK_URL = `${API_ORIGIN}/api/v1/ask`;
 export const DOCS_URL = `${API_ORIGIN}/developers`;
 export const KEYS_URL = `${API_ORIGIN}/account#api`;
 export const APP_URL = `${API_ORIGIN}/app`;
+export const USAGE_URL = `${API_ORIGIN}/api/v1/usage`;
+// Connecting to the person's account (src/lib/api/extension.ts on keplar.one): no key to create or paste; searches spend their credits.
+export const CONNECT_URL = `${API_ORIGIN}/api/extension/connect`;
+export const TOKEN_URL = `${API_ORIGIN}/api/extension/token`;
+export const DISCONNECT_URL = `${API_ORIGIN}/api/extension/disconnect`;
+/** How often the extension asks whether the person approved, and for how long (the request itself dies after 10 minutes). */
+export const CONNECT_POLL_MS = 2000;
+export const CONNECT_TTL_MS = 10 * 60 * 1000;
+
+const b64url = (bytes) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+/** PKCE (RFC 7636): a 32-byte verifier that never leaves the extension, and the SHA-256 challenge sent to start connecting. */
+export async function pkcePair(cryptoImpl = globalThis.crypto) {
+  const verifier = b64url(cryptoImpl.getRandomValues(new Uint8Array(32)));
+  const challenge = b64url(new Uint8Array(await cryptoImpl.subtle.digest("SHA-256", new TextEncoder().encode(verifier))));
+  return { verifier, challenge };
+}
+
+/** What the popup says about a finished connect attempt, from the server's status. */
+export function connectStatusText(status) {
+  if (status === "denied") return "The connection was stopped on keplar.one. Press Connect to try again.";
+  if (status === "expired") return "That took too long and the request expired. Press Connect to try again.";
+  if (status === "cancelled") return "The connection was canceled. Press Connect to try again.";
+  if (status === "used") return "That approval was already used. Press Connect to try again.";
+  return "Couldn't connect. Press Connect to try again.";
+}
 
 /** The API accepts questions up to 8,000 characters; leave room for the user's own words and the label. */
 export const MAX_QUESTION = 8000;
@@ -219,7 +244,7 @@ export function describeAnswer(a) {
 
 export function errorText(status, body) {
   const m = body?.error?.message;
-  if (status === 401) return "Keplar didn't accept this key. It may be revoked or expired. Create a new one in Account → Developer API.";
+  if (status === 401) return "Keplar isn't connected anymore (it was disconnected, or the connection expired). Open the Keplar toolbar button and press Connect.";
   if (status === 402) return m || "Your plan's credits are used up for now.";
   if (status === 403) return m || "This key can't do that.";
   if (status === 429) return `${m || "Too many requests."} Try again in a moment.`;

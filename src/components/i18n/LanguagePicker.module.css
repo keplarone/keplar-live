@@ -137,3 +137,8 @@
   }
   .wrap[data-variant="settings"] .panel { inset-block-start: auto; }
 }
+
+/* Touch: the footer language button was 36px tall; the list rows inside are already 40px. */
+@media (pointer: coarse) {
+  .trigger { min-height: 44px; }
+}

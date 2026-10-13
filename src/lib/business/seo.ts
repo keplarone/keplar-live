@@ -1,7 +1,7 @@
 /**
  * Search and AI-discovery data for business.keplar.one, built from the real plan table (src/lib/business/tiers.ts), so prices
- * and features can never drift from what checkout sells. The storefront is the Business host's one indexable page; the
- * workspace, account setup and sign-in are noindex (src/proxy.ts) and behind authentication.
+ * and features can never drift from what checkout sells. Every Business page is indexable; the workspace, account
+ * setup and sign-in sit behind authentication.
  */
 import { BUSINESS_TIERS, SELF_SERVE_TIERS } from "@/lib/business/tiers";
 import { BUSINESS_HOST, PRODUCTION_URL } from "@/lib/site";
@@ -59,7 +59,7 @@ export function businessGraph() {
 
 export function businessRobots(): string {
   return [
-    "# Keplar Business. The storefront is public; the workspace, account setup and sign-in are private (noindex, behind sign-in).",
+    "# Keplar Business. The storefront is public; the workspace, account setup and sign-in are behind sign-in.",
     "User-agent: *",
     "Allow: /",
     "Disallow: /api/",

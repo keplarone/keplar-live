@@ -128,9 +128,7 @@ export function businessHost(req: NextRequest): NextResponse | null {
   const url = req.nextUrl.clone();
   url.pathname = pathname === "/" ? BUSINESS_PREFIX : `${BUSINESS_PREFIX}${pathname}`;
   url.search = search;
-  const res = NextResponse.rewrite(url);
-  if (pathname !== "/") res.headers.set("x-robots-tag", "noindex");
-  return res;
+  return NextResponse.rewrite(url);
 }
 
 /** keplar.one URLs that belonged to Business before it became its own app: 308 to the same page there. Null for every other path. */
@@ -139,7 +137,7 @@ export function businessMoved(req: NextRequest): NextResponse | null {
   const moved =
     pathname === "/business-account" ? "/account"
     : pathname === "/app/work" || pathname.startsWith("/app/work/") ? "/work"
-    : pathname === "/business-landing" ? "/"
+    : pathname === "/business-landing" || pathname === "/business" ? "/" // keplar.one/business is the address people guess (it was a 404)
     : pathname === BUSINESS_PREFIX || pathname.startsWith(`${BUSINESS_PREFIX}/`) ? pathname.slice(BUSINESS_PREFIX.length) || "/"
     : null;
   return moved === null ? null : NextResponse.redirect(businessUrl(`${moved}${search}`), 308);

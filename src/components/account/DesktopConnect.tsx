@@ -3,10 +3,10 @@ import { useState } from "react";
 import { Alert } from "@/components/auth/fields";
 import s from "@/components/auth/auth.module.css";
 
-type State = "idle" | "busy" | "opened" | "denied" | "error";
+type State = "idle" | "busy" | "opened" | "connected" | "denied" | "error";
 
-/** The explicit "Connect" click for the desktop app's sign-in request (see src/lib/desktop-auth). */
-export function DesktopConnect({ rid, code, label, email, switchHref, appName = "Keplar One", scheme = "keplar:" }: { rid: string; code: string; label: string; email: string; switchHref: string; /** Keplar One or Keplar Business, and its link scheme (src/lib/desktop-auth/core.ts DESKTOP_APPS). */ appName?: string; scheme?: string }) {
+/** The explicit "Connect" click for the desktop app's or the browser extension's sign-in request (see src/lib/desktop-auth). */
+export function DesktopConnect({ rid, code, label, email, switchHref, appName = "Keplar One", scheme = "keplar:", extension = false }: { rid: string; code: string; label: string; email: string; switchHref: string; /** Keplar One or Keplar Business, and its link scheme (src/lib/desktop-auth/core.ts DESKTOP_APPS). */ appName?: string; scheme?: string; /** The browser extension: it collects its connection on its own (no link to open). */ extension?: boolean }) {
   const [state, setState] = useState<State>("idle");
   const [error, setError] = useState<string | null>(null);
   const [link, setLink] = useState<string | null>(null);
@@ -23,6 +23,7 @@ export function DesktopConnect({ rid, code, label, email, switchHref, appName = 
     setError(null);
     try {
       const { deepLink } = await post("approve");
+      if (extension) { setState("connected"); return; } // the extension is polling with its own verifier and picks this up by itself
       if (!deepLink || !deepLink.startsWith(`${scheme}//auth?`)) throw new Error("Couldn't connect. Start again from the app.");
       setLink(deepLink);
       setState("opened");
@@ -52,6 +53,15 @@ export function DesktopConnect({ rid, code, label, email, switchHref, appName = 
     );
   }
 
+  if (state === "connected") {
+    return (
+      <div className={s.form} data-testid="desktop-connect-connected">
+        <p className={s.lead}>Connected. The extension finishes on its own in a few seconds; you can close this tab.</p>
+        <p className={s.lead}>Searches in the extension use this account&apos;s credits, like a question in the app. Disconnect it anytime from the extension or in Account → Developer API.</p>
+      </div>
+    );
+  }
+
   if (state === "opened") {
     return (
       <div className={s.form} data-testid="desktop-connect-opened">
@@ -67,6 +77,7 @@ export function DesktopConnect({ rid, code, label, email, switchHref, appName = 
       <p className={s.lead}>
         Connect <strong>{label}</strong> to <strong>{email}</strong>.
       </p>
+      {extension ? <p className={s.lead}>Its searches will use this account&apos;s credits, like a question in the app. No key to create or paste.</p> : null}
       <p className={s.lead} aria-label="Code shown in the app">
         Code: <strong data-testid="desktop-connect-code" style={{ letterSpacing: "0.12em", fontVariantNumeric: "tabular-nums" }}>{code}</strong>
       </p>

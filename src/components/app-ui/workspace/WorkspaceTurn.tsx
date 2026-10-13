@@ -334,7 +334,7 @@ function CrmCard({ onOpenTab }: Props) {
       <ContactList contacts={data.contacts.slice(0, 8)} empty="No contacts yet. Form messages and checkouts on your published sites land here." />
       <form className={s.inlineForm} onSubmit={(e) => void add(e)}>
         <label className="visually-hidden" htmlFor="crm-name">Name</label>
-        <input id="crm-name" className={s.input} placeholder="Name" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} />
+        <input spellCheck={false} id="crm-name" className={s.input} placeholder="Name" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} />
         <label className="visually-hidden" htmlFor="crm-email">Email</label>
         <input id="crm-email" className={s.input} placeholder="Email" type="email" value={email} maxLength={200} onChange={(e) => setEmail(e.target.value)} required />
         <button type="submit" className={s.small} disabled={!email.trim()}>Add contact</button>
@@ -763,7 +763,7 @@ function ProjectsCard(props: Props) {
       )}
       <form className={s.inlineForm} onSubmit={add}>
         <label className="visually-hidden" htmlFor={`pj-${m.id}`}>New project name</label>
-        <input id={`pj-${m.id}`} className={s.input} placeholder="New project name" value={name} maxLength={60} onChange={(e) => { setName(e.target.value); setMsg(""); }} />
+        <input spellCheck={false} id={`pj-${m.id}`} className={s.input} placeholder="New project name" value={name} maxLength={60} onChange={(e) => { setName(e.target.value); setMsg(""); }} />
         <button type="submit" className={s.small} disabled={!name.trim()}>Create project</button>
       </form>
       {msg ? <p className={s.meta} role="status">{msg}</p> : null}

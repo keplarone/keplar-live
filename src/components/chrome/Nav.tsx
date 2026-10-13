@@ -151,6 +151,8 @@ export function Nav() {
                 </li>
               ))}
             </ul>
+            {/* Phones under 400px: the bar has no room for it, so the theme switch lives here (Nav.module.css .panelTheme). */}
+            <ThemeToggle className={`${s.theme} ${s.panelTheme}`} />
           </div>
         </nav>
       </div>

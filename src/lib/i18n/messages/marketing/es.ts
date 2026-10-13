@@ -109,6 +109,11 @@ const m: MarketingCatalog = {
         "name": "Modo voz",
         "line": "Pregunta en voz alta y escucha la respuesta. Keplar nunca graba ni guarda tu audio."
       },
+      "live-research": {
+        "name": "Investigación en vivo",
+        "line": "En la app de escritorio, Keplar busca en la web y lee páginas en tu computadora; luego cita cada una y comprueba las citas.",
+        "note": "App de escritorio 0.2.0 o posterior."
+      },
       "images": {
         "name": "Imágenes y capturas",
         "line": "Gráficos, recibos, pizarras, interfaces. Solo se envían a modelos que pueden ver."
@@ -214,6 +219,11 @@ const m: MarketingCatalog = {
         "name": "Modo Blender",
         "line": "Modela, texturiza con sets PBR de Poly Haven, ilumina y exporta en Blender 4.2 o posterior.",
         "note": "App de escritorio 0.1.8 o posterior."
+      },
+      "blender-cloud": {
+        "name": "Renderizado en Blender Cloud",
+        "line": "Renderiza una escena en los servidores de Keplar con tu ordenador apagado y luego descarga los fotogramas y un MP4.",
+        "note": "App de escritorio 0.1.10 o posterior."
       },
       "extension": {
         "name": "Extensión de navegador Keplar One",

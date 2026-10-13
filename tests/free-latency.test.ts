@@ -5,10 +5,16 @@ import { engineDeps, orchestrate } from "@/lib/orchestration/orchestrator";
 import { LatencyBudget } from "@/lib/orchestration/latency";
 import type { KeplarAnswer } from "@/lib/orchestration/types";
 
-type Call = { kind: string; start: number; end: number; system: string };
+/** `overlapped`: for a held call (see `hold`), whether the call it waited for started while it was still open. */
+type Call = { kind: string; start: number; end: number; system: string; overlapped?: boolean };
 
-/** Runs one question through the live pipeline with a stubbed network that delays every call by `delay` ms, and returns the calls. */
-async function run(plan: "free" | "plus", prompt: string, delay = 120, env: Record<string, string> = {}) {
+/**
+ * Runs one question through the live pipeline with a stubbed network that delays every call by `delay` ms, and returns the calls.
+ * `hold: [a, b]` keeps call `a` open until a call of kind `b` has started (at most 10 s), so "b runs alongside a" does not depend on how
+ * fast a busy machine gets to b. The held call records whether b started while it was open (`overlapped`); if b only starts once a has
+ * finished, a waits the full 10 s and `overlapped` is false.
+ */
+async function run(plan: "free" | "plus", prompt: string, delay = 120, env: Record<string, string> = {}, hold?: [string, string]) {
   const realFetch = globalThis.fetch;
   const calls: Call[] = [];
   const t0 = Date.now();
@@ -19,6 +25,10 @@ async function run(plan: "free" | "plus", prompt: string, delay = 120, env: Reco
     const c: Call = { kind, start: Date.now() - t0, end: 0, system: sys };
     calls.push(c);
     await new Promise((r) => setTimeout(r, delay));
+    if (hold && kind === hold[0]) {
+      for (const until = Date.now() + 10_000; !calls.some((x) => x.kind === hold[1]) && Date.now() < until; ) await new Promise((r) => setTimeout(r, 5));
+      c.overlapped = calls.some((x) => x.kind === hold[1]);
+    }
     let content: string;
     if (kind === "extract" || kind === "merged") {
       const n = (body.messages[1].content.match(/### R\d+/g) ?? []).length;
@@ -63,14 +73,14 @@ test("Free plan: one combined request classifies, reviews and writes after a 2-m
 });
 
 test("Free plan with KEPLAR_FREE_MERGED=0: the reviewer runs alongside the position extraction, and there is no separate draft call", async () => {
-  const { calls, answer } = await run("free", "How tall is Mount Everest?", 120, { KEPLAR_FREE_MERGED: "0" });
+  const { calls, answer } = await run("free", "How tall is Mount Everest?", 120, { KEPLAR_FREE_MERGED: "0" }, ["extract", "verify"]);
   const kinds = calls.map((c) => c.kind);
   assert.ok(kinds.includes("extract") && kinds.includes("verify") && kinds.includes("synth"), kinds.join(","));
   assert.equal(kinds.includes("draft"), false, "no draft call on Free");
   const extract = calls.find((c) => c.kind === "extract")!;
   const verify = calls.find((c) => c.kind === "verify")!;
   const synth = calls.find((c) => c.kind === "synth")!;
-  assert.ok(verify.start < extract.end, `reviewer started at ${verify.start}ms, before the extraction ended at ${extract.end}ms`);
+  assert.ok(extract.overlapped, `reviewer started at ${verify.start}ms, while the extraction was still running (it ended at ${extract.end}ms)`);
   assert.ok(synth.start >= Math.max(extract.end, verify.end) - 5, "the writer waits for both");
   assert.match(synth.system, /quick lookup: answer in at most 120 words/, "a factual lookup asks for a short answer");
   assert.match(answer.markdown, /8,849/);

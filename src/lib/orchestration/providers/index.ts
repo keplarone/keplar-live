@@ -158,7 +158,7 @@ export function createRegistry(providers: Provider[], opts: RegistryOptions = {}
           }
         }
         try {
-          if (p.live) noteCallSent(input.slot ?? "panel"); // counted when it leaves: a cancelled or timed-out request still spends the provider's quota
+          if (p.live) noteCallSent(input.slot ?? "panel", input.model.id); // counted when it leaves: a cancelled or timed-out request still spends the provider's quota
           // Words stream from the first provider only: a second provider's text would be appended to the first one's.
           let r = await p.generate(p === chain[0] ? input : { ...input, onToken: undefined });
           // Quality gate: a degenerate answer is a failure, never a result. It was paid for (the billed cost is still

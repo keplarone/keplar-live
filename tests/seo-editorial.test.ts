@@ -13,7 +13,7 @@ import { localizedSitemapEntries } from "../src/lib/i18n/sitemap";
 
 const pages = [...editorialPages, aboutPage, modelsPage];
 const text = (p: unknown) => JSON.stringify(p);
-const known = new Set(sitemapPaths.concat(["/app", "/signup", "/signin", "/compare"]));
+const known = new Set(sitemapPaths.concat(["/app", "/signup", "/signin"]));
 
 test("editorial pages have unique, well-sized titles, descriptions and paths", () => {
   for (const k of ["metaTitle", "metaDescription", "path", "h1"] as const) assert.equal(new Set(pages.map((p) => p[k])).size, pages.length, `duplicate ${k}`);
@@ -95,7 +95,7 @@ test("sitemap: unique, 200-only public paths with real lastmod dates", () => {
   }
   assert.ok(new Set(entries.map((e) => String(e.lastModified))).size > 1, "lastmod must not be one build timestamp");
   for (const p of ["/superintelligence", "/ai-vs-agi-vs-superintelligence", "/si-vs-ai", "/multi-model-ai", "/about", "/models"]) assert.ok(sitemapPaths.includes(p), p);
-  for (const p of ["/app", "/signin", "/signup", "/account", "/checkout", "/welcome", "/admin", "/admin/seo", "/compare", "/api/seo/event"]) assert.ok(!sitemapPaths.includes(p), p);
+  for (const p of ["/app", "/signin", "/signup", "/account", "/checkout", "/welcome", "/admin", "/admin/seo", "/api/seo/event"]) assert.ok(!sitemapPaths.includes(p), p);
   for (const e of entries) assert.ok(!("changeFrequency" in e) && !("priority" in e));
   assert.ok(landingPages.length && guides.length);
 });

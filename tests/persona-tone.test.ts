@@ -1,7 +1,9 @@
 import "./setup";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { detectMood, HUMAN_TONE_PROMPT, HUMAN_TONE_SHORT, moodNote, polish } from "@/lib/persona-tone";
+import { readFileSync } from "node:fs";
+import { detectMood, HUMAN_TONE_PROMPT, HUMAN_TONE_SHORT, HUMOR_PROMPT, humorCall, humorNote, moodNote, polish } from "@/lib/persona-tone";
+import { PLAYFUL_SYSTEM } from "@/lib/orchestration/playful";
 import { BASE_SYSTEM_PROMPT } from "@/lib/orchestration/providers/shared";
 import { SMALLTALK_SYSTEM_PROMPT } from "@/lib/orchestration/smalltalk";
 import { guardVoice, VOICE_PROMPT } from "@/lib/persona";
@@ -39,6 +41,17 @@ test("the tone prompt asks for warmth, matched empathy, first-person feelings as
   assert.ok(SMALLTALK_SYSTEM_PROMPT.includes(VOICE_PROMPT), "the voice layer is still there");
 });
 
+test("a real sense of humor, with judgment: everywhere Keplar writes, never when the person is upset or the subject is sensitive", () => {
+  assert.ok(HUMAN_TONE_PROMPT.includes(HUMOR_PROMPT), "writers get the full humor guidance");
+  for (const w of ["dry, quick and observational", "at most one", "never instead of it", "callback", "self-deprecation about being an AI", "frustrated, sad, stressed", "health, legal, safety", "code, math, data", "at their expense", "blur a fact"]) assert.match(HUMOR_PROMPT, new RegExp(w, "i"), w);
+  assert.match(HUMAN_TONE_SHORT, /sense of humor/);
+  assert.match(HUMAN_TONE_SHORT, /never when they are upset/);
+  assert.match(SMALLTALK_SYSTEM_PROMPT, /quick-witted/);
+  assert.match(PLAYFUL_SYSTEM, /fresh joke/);
+  for (const m of ["frustrated", "sad", "stressed"] as const) assert.match(moodNote(m), /jokes/, m);
+  assert.doesNotMatch(moodNote("crisis"), /playful/);
+});
+
 test("polish: stock openers and closers go; code, math and exact facts are untouched", () => {
   assert.equal(polish("Certainly! Canberra is the capital of Australia."), "Canberra is the capital of Australia.");
   assert.equal(polish("Great question! The answer is 391."), "The answer is 391.");
@@ -72,4 +85,43 @@ test("polish: chatbot tells are rewritten in prose, never in code", () => {
   assert.equal(polish("Run `delve debug` to start."), "Run `delve debug` to start.");
   const once = polish("It's worth noting that X holds. In summary, fine.");
   assert.equal(polish(once), once, "safe to call twice");
+});
+
+test("humor is decided in code too: off for serious subjects even in a calm tone, matched when the person is playful", () => {
+  // Serious subjects in a calm, neutral tone: the writer is told plainly, no jokes in this reply.
+  for (const q of [
+    "How do I contest an eviction notice?",
+    "What are the side effects of chemotherapy?",
+    "My grandmother's funeral is on Friday, what should I write in the eulogy?",
+    "How does bankruptcy affect my credit score?",
+    "Is it legal for my landlord to keep my deposit if I'm being sued?",
+    "My coworker keeps harassing me, what can I do?",
+    "Explain the causes of the Rwandan genocide",
+  ]) {
+    assert.equal(humorCall(q, "neutral"), "off", q);
+    assert.match(humorNote(q, "neutral"), /subject is serious\. No jokes, wit, wordplay or wry asides/, q);
+  }
+  // Everyday words that only look serious leave the default alone.
+  for (const q of ["Best shoes for a basketball court?", "How do I paint a smooth brush stroke?", "Why are my phone charges so high this month?", "What's a good name for a cat?", "How long should I boil an egg?"]) {
+    assert.equal(humorCall(q, "neutral"), "default", q);
+    assert.equal(humorNote(q, "neutral"), "", q);
+  }
+  // The person is being playful: match it with one fresh line, then the full answer.
+  for (const q of ["lol ok so how do I fold a fitted sheet", "my cat knocked my coffee over again 😂 how do I get it out of the rug", "haha fine, what's the capital of Australia", "jk, how do magnets work", "is pineapple on pizza a crime :)"]) {
+    assert.equal(humorCall(q, "neutral"), "match", q);
+    assert.match(humorNote(q, "neutral"), /being playful\. Match it with one quick, fresh line of wit[\s\S]*then give the real answer in full/, q);
+  }
+  // Serious wins over playful; an upset mood switches it off and leaves the wording to moodNote; excited still allows it.
+  assert.equal(humorCall("lol my lawyer says the court date moved", "neutral"), "off");
+  for (const m of ["frustrated", "sad", "stressed", "crisis"] as const) {
+    assert.equal(humorCall("haha whatever", m), "off", m);
+    assert.equal(humorNote("haha whatever", m), "", `${m}: the mood note already says no jokes`);
+  }
+  assert.equal(humorCall("I got the job!!! haha", "excited"), "match");
+  assert.equal(humorCall("are you kidding me, it crashed again", "neutral"), "default", "not laughter");
+});
+
+test("the answer route places the humor note with the mood note, ahead of the question", () => {
+  const route = readFileSync("src/app/api/keplar/route.ts", "utf8");
+  assert.match(route, /moodNote\(mood\), humorNote\(askedPrompt, mood\)/);
 });
