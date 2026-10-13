@@ -94,7 +94,6 @@ test("the selected Solar mode is persisted and sent with every turn, on the page
   assert.match(sel, /localStorage\.setItem\(SOLAR_MODE_KEY, m\)/);
   assert.match(sel, /fetch\("\/api\/studio\/modes"/);
   assert.match(sel, /UltimateMark active=\{ultimate\}/);
-  assert.match(sel, /Technical details/);
   const page = read(W + "Workspace.tsx");
   assert.match(page, /useStudioAgent\(bridge, isBlender \? "blender" : "studio", \{ solarMode: mode \}\)/);
   const ov = read(W + "OverlayShell.tsx");

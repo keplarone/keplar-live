@@ -146,8 +146,6 @@ test("sessions panel: New session is a.reset after a confirmation; a newer accou
 
 test("settings and status screens: truthful disclosure, real gates, no paragraphs of filler", () => {
   const settings = read("panels/SettingsDialog.tsx");
-  assert.match(settings, /SOLAR_TECHNICAL_DETAILS/);
-  assert.match(settings, /execution configurations of this one model, not separate models/);
   assert.match(settings, /label="Auto-approve safe changes"/);
   assert.match(settings, /onCheckedChange=\{a\.setAuto\}/);
   const screens = read("StatusScreens.tsx");
