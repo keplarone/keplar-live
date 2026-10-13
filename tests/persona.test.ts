@@ -1,7 +1,7 @@
 import "./setup";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { CANDID_LINE, VOICE_PROMPT, VOICE_PROMPT_SHORT, claimsConsciousness, consciousnessAnswers, guardVoice, isConsciousnessQuestion, pickConsciousnessAnswer, voiceTopic } from "@/lib/persona";
+import { CANDID_LINE, VOICE_PROMPT, VOICE_PROMPT_SHORT, claimsConsciousness, dropInventedLife, inventedLife, consciousnessAnswers, guardVoice, isConsciousnessQuestion, pickConsciousnessAnswer, voiceTopic } from "@/lib/persona";
 import { BASE_SYSTEM_PROMPT } from "@/lib/orchestration/providers/shared";
 import { DRAFT_SYSTEM_PROMPT, SYNTH_SYSTEM_PROMPT } from "@/lib/orchestration/live-synthesizer";
 import { SMALLTALK_SYSTEM_PROMPT, cleanSmallTalk } from "@/lib/orchestration/smalltalk";
@@ -113,4 +113,19 @@ test("the creator answer keeps its facts and may end with a short reflective lin
   const seen = new Set<string>();
   for (let i = 0; i < 12; i++) for await (const e of runCreator(i)) if (e.type === "delta") { seen.add(e.text); assert.match(e.text, /Hassen/); assert.deepEqual(claimsConsciousness(e.text), []); }
   assert.ok(seen.size > 6);
+});
+
+test("Keplar never invents a personal life: such sentences are dropped, quotes and code are left alone", () => {
+  // From a live answer (2026-10-12): an "Example" paragraph about Keplar's own cat.
+  const live = "Cats love keyboards because they're warm.\n\n- Warmth: laptops retain heat.\n\nExample: When I start typing, my cat hops onto the spacebar, purrs loudly, and bats at the keys.\n\nSteps:\n1. Give them a bed nearby.";
+  const out = guardVoice(live);
+  assert.doesNotMatch(out, /my cat/);
+  assert.doesNotMatch(out, /^Example:/m, "a label left with nothing is removed");
+  assert.match(out, /Steps:\n1\. Give them a bed nearby\./, "other labels and content stay");
+  for (const s of ["When I was a kid, I loved rainy days.", "I grew up near the ocean, so I get it.", "Last summer I tried this recipe and it worked.", "My wife swears by this trick."]) {
+    assert.equal(inventedLife(s).length, 1, s);
+  }
+  for (const s of ['Tell your boss: "My kids need me home by 6."', "If your cat does this, move the laptop.", "```\n# my cat\n```", "I'm an AI, so I don't have a cat, but plenty of owners say this works.", "I think the second option is better."]) {
+    assert.equal(dropInventedLife(s), s, s);
+  }
 });

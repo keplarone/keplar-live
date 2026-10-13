@@ -334,10 +334,10 @@ export function playfulRead(prompt: string, history: readonly Turn[] = [], opts:
 
 export const JOKE_FALLBACK: readonly string[] = [
   "I told my computer I needed a break. It said no problem, it'll go to sleep.",
-  "Why don't skeletons fight each other? They don't have the guts.",
-  "I used to hate facial hair, but then it grew on me.",
+  "I tried to organize a hide-and-seek tournament. Turns out good players are really hard to find.",
+  "I'm an AI, so my idea of a wild night is someone asking a follow-up question.",
   "What do you call a fish wearing a bowtie? Sofishticated.",
-  "I'm reading a book about anti-gravity. It's impossible to put down.",
+  "I renamed my Wi-Fi to something friendlier. Now it finally connects with people.",
   "Why did the coffee file a police report? It got mugged.",
   "I would tell you a construction joke, but I'm still working on it.",
   "Parallel lines have so much in common. It's a shame they'll never meet.",
@@ -373,11 +373,37 @@ export const PLAYFUL_SYSTEM =
 
 const CLASSIFICATION: Classification = { kind: "general", complexity: "simple", capabilities: [], estimatedInputTokens: 160, estimatedOutputTokens: 60, needsWeb: false, rationale: "A playful message." };
 
-/** Remove "Sure! Here's a joke:" style preambles and wrapping quotes; reject replies that are too long or have scaffolding. */
+/**
+ * Jokes everybody has heard. The prompt already asks for fresh material; models still reach for these, so a reply that is one of
+ * them is turned down here and the next model (or a curated line) answers instead. Asked-for classics ("why did the chicken cross
+ * the road") are answered from the riddle table before any model runs, so they never get here.
+ */
+const STALE_JOKES: RegExp[] = [
+  /dark mode[\s\S]{0,80}light attracts bugs/i,
+  /atoms?[\s\S]{0,60}make up everything/i,
+  /outstanding in (?:his|her|their) field/i,
+  /cross(?:ed)? the road/i,
+  /10 (?:types|kinds) of people[\s\S]{0,60}binary/i,
+  /(?:oct(?:ober)? 31|31 oct)[\s\S]{0,40}(?:dec(?:ember)? 25|25 dec)/i,
+  /(?:didn'?t|did not) get arrays/i,
+  /(?:don'?t|do not|can'?t) (?:see )?c ?(?:#|sharp)/i,
+  /(?:sql|query) (?:query )?walks into a bar/i,
+  /cache invalidation[\s\S]{0,60}naming things/i,
+  /math book[\s\S]{0,40}too many problems/i,
+  /seafood diet/i,
+  /two[- ]tired/i,
+  /(?:bear with no teeth|gummy bear)/i,
+  /skeletons?[\s\S]{0,60}(?:guts|no body)/i,
+  /anti-?gravity[\s\S]{0,60}put (?:it )?down/i,
+];
+export const isStaleJoke = (text: string) => STALE_JOKES.some((rx) => rx.test(text));
+
+/** Remove "Sure! Here's a joke:" style preambles and wrapping quotes; reject replies that are too long, have scaffolding, or are worn out. */
 export function cleanPlayful(raw: string): string {
   let t = cleanSmallTalk(raw);
   t = t.replace(/^(?:sure|okay|ok|certainly|absolutely|of course|alright)[,!.:]?\s+/i, "").replace(/^here(?:'s| is) (?:a|an|one|another|my)[^:.!?]{0,40}[:\-]\s*/i, "").trim();
   if (t.split(/\s+/).length > 60) return "";
+  if (isStaleJoke(t)) return "";
   return t;
 }
 

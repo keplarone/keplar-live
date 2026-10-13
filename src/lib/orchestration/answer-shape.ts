@@ -21,10 +21,17 @@ const HOWTO_HINT = "Answer shape: a numbered list of practical steps or ideas, m
 const GUIDE = /\b(?:how (?:do|can|should|would|could|will|might) (?:i|we|one|you|someone|people) (?!(?:\w+ )?(?:feel|think|know|like|mean|say|pronounce|spell|define|look|doing|work|compare|decide|choose|pick|tell if|do\b|are\b|stay\b)\b)(?:\w+ )?\w+|how (?:to|would i go about|do i go about|should i go about)\b|what(?:'s| is| are)? (?:the |a )?(?:best |good |right |proper |correct |easiest |fastest |safest |quickest )?(?:way|steps|process|procedure) (?:to|for)\b|steps? (?:to|for)\b|step[- ]by[- ]step|walk me through|teach me (?:how|to)\b|show me how\b|(?:guide|tutorial|instructions?|walkthrough) (?:to|for|on|how)\b|help me (?:set ?up|install|configure|fix|build|make|create|replace|repair|install|migrate|deploy|write|start|clean|cook|bake|plant|train)\b|i (?:want|need|would like) to (?:learn how to|know how to)\b)/i;
 const NOT_GUIDE = /^\s*(?:how (?:many|much|long|old|far|big|tall|often|come|likely|accurate|true)\b|how (?:does|do|did|is|are|was|were) (?!i\b|we\b|one\b|you\b)\w+(?: \w+){0,4} (?:work|happen|form|function|evolve)\b)/i;
 
+/**
+ * Care and habits, not a project: "the best way to keep basil alive", "how do I stay focused", "how can I sleep better". There is no
+ * one-time task to carry out, so a 1,000-word guide with "Before you start" and invented costs is the wrong shape; these get the short
+ * tips list (HOWTO_HINT) instead.
+ */
+const ADVICE = /\b(?:(?:best |good |easiest |simplest )?ways? to|how (?:do|can|should|would) (?:i|we|you|one)) (?:keep|stay|avoid|prevent|deal with|cope|handle|remember|motivate|focus|relax|sleep|be (?:more|less|better)|get better at|stop (?:procrastinating|overthinking|worrying|being)|make friends|save money)\b/i;
+
 export function isGuideRequest(prompt: string): boolean {
   const p = prompt.trim();
   if (p.length < 8 || p.length > 1500 || p.split(/\s+/).length < 3) return false;
-  return GUIDE.test(p) && !NOT_GUIDE.test(p);
+  return GUIDE.test(p) && !NOT_GUIDE.test(p) && (!ADVICE.test(p) || /step[- ]by[- ]step|walk me through|\b(?:guide|tutorial)\b/i.test(p));
 }
 
 /** What every panel model is told for a how-to (and, adapted, the writer of the final answer: GUIDE_SYNTH_RULES in live-synthesizer.ts). */
