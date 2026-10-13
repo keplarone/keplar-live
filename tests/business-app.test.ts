@@ -134,7 +134,7 @@ test("Agents, Approvals, Operations, Integrations and Create look like the works
   assert.match(readFileSync("src/components/desktop/DesktopTitleBar.module.css", "utf8"), /:global\(html\[data-business-app\]\) \.brand \{ visibility: hidden; \}|\.search, :global\(html\[data-business-app\]\) \.brand \{ visibility: hidden; \}/);
 });
 
-test("Business settings: a popover over the workspace (never a page), from the account button, the gear or Ctrl+,; every section on a real endpoint", async () => {
+test("Business settings: a popover over the workspace (never a page), from the account menu or Ctrl+,; every section on a real endpoint", async () => {
   const { SETTINGS_SECTIONS, isSettingsSection, settingsSectionFrom } = await import("@/components/business-app/settings-sections");
   assert.deepEqual(SETTINGS_SECTIONS.map((x) => x.id), ["general", "ai", "editor", "agents", "connections", "security", "computer", "billing", "team"]);
   assert.equal(isSettingsSection("billing"), true);
@@ -142,7 +142,7 @@ test("Business settings: a popover over the workspace (never a page), from the a
   assert.equal(settingsSectionFrom("plan"), "billing", "links saved before the popover still land on the right section");
   assert.equal(settingsSectionFrom("nope"), "general");
   const ws = readFileSync("src/components/business-app/BusinessWorkspace.tsx", "utf8");
-  assert.ok(ws.includes(`onClick={() => openSettings("general")} aria-label="Settings"`), "the gear opens Business settings, not Keplar One");
+  assert.ok(ws.includes(`onSettings={() => openSettings("general")}`), "the account menu opens Business settings, not Keplar One");
   assert.ok(ws.includes(`key === ",") { e.preventDefault(); setSettings(`), "Ctrl+, (⌘,) opens it");
   assert.ok(!ws.includes(`at: "settings"`), "settings is never a view: the work underneath stays mounted");
   assert.ok(ws.includes(`{settings ? <Settings section={settings}`));

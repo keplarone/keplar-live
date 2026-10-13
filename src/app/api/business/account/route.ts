@@ -6,6 +6,7 @@ import { getBusinessAccount, parseBusinessAccount, publicAccount, saveBusinessAc
 import { BUSINESS_TIERS, businessTierOf, hasBusinessAccess } from "@/lib/business/tiers";
 import { getDesktopRelease } from "@/lib/desktop/releases";
 import { businessTeamWorkspace } from "@/lib/business/team";
+import { userById } from "@/lib/accounts/persist";
 
 export const runtime = "nodejs";
 
@@ -37,9 +38,12 @@ export async function GET(req: Request) {
     }
     // The workspace's entitlements already carry the tier bought (its label is the tier's name; see tierEntitlements).
     const tier = !active ? null : ws.admin || (shared && shared.entitlements.label === "Admin") ? "enterprise" : (Object.values(BUSINESS_TIERS).find((t) => t.name === ws.entitlements.label)?.id ?? businessTierOf(null));
+    // The person's own name (for the workspace's account row); the company stays on `account`.
+    const name = (await userById(personal.userId).catch(() => null))?.name?.trim() || null;
     return noStore(json({
       signedIn: true,
       email: ws.email,
+      name,
       verified: ws.verified,
       account: publicAccount(account),
       active,
