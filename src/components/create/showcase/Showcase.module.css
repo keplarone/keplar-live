@@ -111,3 +111,7 @@
   .kicker { margin-bottom: var(--s-2); }
   .pager a { display: inline-flex; flex-direction: column; justify-content: center; min-height: 44px; }
 }
+@media (pointer: coarse) {
+  .frameBar { align-items: center; padding-top: 0; padding-bottom: 0; }
+  .frameBar a { display: inline-flex; align-items: center; min-height: 44px; } /* "Open full page" above each demo */
+}

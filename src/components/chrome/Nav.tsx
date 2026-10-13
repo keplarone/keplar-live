@@ -35,6 +35,10 @@ export function Nav() {
   const href = (h: string) => localizedPath(h, locale);
   const label = (c: { href: string; label: string }) => t.items[c.href] ?? links[c.href] ?? c.label;
   const en = locale === "en";
+  // The closed Menu pill is as wide as its label needs ("Seitenmenü", "Menu do site"): 15px text, CJK and Hangul at about 1em a
+  // character, other scripts about 0.62em, plus the icon, gap and padding (66px). The CSS keeps 124px (108px on phones) as the floor.
+  const menuLabel = en ? "Menu" : t.siteMenu;
+  const menuW = Math.ceil(66 + 15 * [...menuLabel].reduce((n, c) => n + (/[⺀-鿿가-힯豈-﫿＀-￯]/.test(c) ? 1 : 0.62), 0));
   const panel = usePresence(open); // the panel stays mounted while its exit plays (shared overlay pattern)
 
   // Close whenever the route changes (state adjusted during render).
@@ -95,7 +99,7 @@ export function Nav() {
         <span className={s.word} aria-hidden="true">{brand.name}</span>
       </Link>
 
-      <div ref={morphRef} className={s.morph} data-open={open || undefined}>
+      <div ref={morphRef} className={s.morph} data-open={open || undefined} style={{ "--menu-w": `${menuW}px` } as React.CSSProperties}>
         <button
           ref={toggleRef}
           type="button"
@@ -109,7 +113,7 @@ export function Nav() {
             <i />
             <i />
           </span>
-          <span className={s.toggleLabel}>{open ? (en ? "Close" : t.closeMenu) : en ? "Menu" : t.siteMenu}</span>
+          <span className={s.toggleLabel}>{open ? (en ? "Close" : t.closeMenu) : menuLabel}</span>
         </button>
 
         <nav id="site-menu" className={s.panel} aria-label={t.siteMenu} data-panel hidden={!panel.mounted} {...panel.motion("drop")}>

@@ -11,8 +11,8 @@
 .tileCount { font-size: var(--t-small); color: var(--c-ink-2); }
 .body { margin-top: var(--s-20); display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-12); }
 .rail { display: none; }
-.groups { display: grid; gap: var(--s-16); min-width: 0; max-width: 960px; }
-.group { display: grid; gap: var(--s-3); }
+.groups { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-16); min-width: 0; max-width: 960px; } /* explicit minmax(0, …): the implicit track took a 720px line on a 320px phone */
+.group { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-3); min-width: 0; }
 .groupHead { display: flex; align-items: baseline; gap: var(--s-4); margin-bottom: var(--s-3); }
 .groupNum { font-size: var(--t-label); letter-spacing: 0.16em; color: var(--c-ink-3); font-variant-numeric: tabular-nums; }
 .groupTitle { font-size: var(--t-title); line-height: var(--lh-title); letter-spacing: var(--tr-title); font-weight: var(--w-medium); }

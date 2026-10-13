@@ -103,3 +103,9 @@
 :global(:root[data-theme="light"]) .label { background: var(--lt-chip-bg); box-shadow: var(--sh-hairline); }
 :global(:root[data-theme="light"]) .label::before { box-shadow: none; }
 :global(:root[data-theme="light"]) .hero::after { background: rgb(28 24 18 / 0.1); box-shadow: none; }
+
+/* Touch screens: a link in the kicker pill above a title ("Guides") is a 44px target. */
+@media (pointer: coarse) {
+  .label:has(> a) { padding-top: 0; padding-bottom: 0; } /* the link fills the pill: 44px tall, not 44px plus padding */
+  .label a { display: inline-flex; align-items: center; min-height: 44px; }
+}

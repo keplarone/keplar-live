@@ -215,3 +215,4 @@
   .relatedLine a { display: inline-flex; align-items: center; min-height: 44px; }
 }
 .hubWrap > * { min-width: 0; } /* grid items: shrink to the column instead of to their widest line */
+.table small { font-size: max(0.85em, 11px); } /* notes under a row heading: the browser's "smaller" made them 10.8px */

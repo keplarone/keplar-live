@@ -305,3 +305,16 @@
 @media (max-width: 340px) {
   .chipItem { font-size: 12px; }
 }
+
+/* Readable floors at every width (the phone block above stops at 760px). On tablets, phones held sideways and laptops up to
+   ~1400px the vw-scaled copy still came out at 7.5 to 10 px: the sub line, the notes, fine print, step labels, model names and
+   stage copy on the localized home pages. Each floor matches the phone size above, and max() keeps the large-screen scaling. */
+.sub { font-size: max(15px, clamp(9.52px, 0.85vw, calc(18 * var(--u)))); }
+.go { font-size: max(15px, clamp(9.52px, 0.714vw, calc(16 * var(--u)))); }
+.input { font-size: max(16px, clamp(10.2px, 0.85vw, calc(18 * var(--u)))); }
+.proof { font-size: max(13px, clamp(8.16px, 0.646vw, calc(13.5 * var(--u)))); }
+.note { font-size: max(12px, clamp(7.48px, 0.544vw, calc(12 * var(--u)))); }
+.fine, .kicker, .nodes li { font-size: 12px; }
+.body { font-size: 14px; }
+.steps li { font-size: 13px; }
+.link { font-size: 14px; }
