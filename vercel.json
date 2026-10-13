@@ -35,6 +35,10 @@
     {
       "path": "/api/cron/observatory",
       "schedule": "53 6 * * *"
+    },
+    {
+      "path": "/api/cron/app-schedules",
+      "schedule": "41 7 * * *"
     }
   ]
 }

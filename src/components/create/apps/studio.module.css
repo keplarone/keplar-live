@@ -720,3 +720,6 @@
 .pickInput:focus { outline: none; box-shadow: inset 0 0 0 1.5px #3b82f6; }
 /* Narrower windows: the Select toggle is icon-only so Publish stays on the toolbar row. */
 @media (max-width: 1400px) { .pickLabel { display: none; } .pickBtn { width: 32px; padding: 0; justify-content: center; } }
+/* Settings → Incoming webhooks: the URL and its Copy button on one row. */
+.hookRow { display: flex; gap: 8px; align-items: center; }
+.hookRow > input { flex: 1; min-width: 0; font-family: var(--f-mono, ui-monospace, monospace); font-size: 12px; }

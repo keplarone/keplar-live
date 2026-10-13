@@ -174,6 +174,19 @@ export function AppBuilder() {
     setFrameKey((k) => k + 1);
     return r;
   }, []);
+  // Previews never expire under the owner: renew the signed link 30 minutes before it runs out (or as soon as the tab is
+  // visible again after it did), instead of leaving an app whose files and API calls start failing.
+  const previewExp = Number(/\/(\d{9,})\.[^/]+\/$/.exec(current?.previewUrl ?? "")?.[1] ?? 0) * 1000;
+  useEffect(() => {
+    if (!previewExp || !current?.id || running) return;
+    const id = current.id;
+    const renew = () => { if (document.visibilityState === "visible") void open(id, { keepTab: true }).catch(() => undefined); };
+    const due = previewExp - 30 * 60_000 - Date.now();
+    const t = setTimeout(renew, Math.max(1_000, Math.min(due, 2_000_000_000)));
+    const onVis = () => { if (Date.now() > previewExp - 30 * 60_000) renew(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => { clearTimeout(t); document.removeEventListener("visibilitychange", onVis); };
+  }, [previewExp, current?.id, running, open]);
 
   /** Follows a build to its end: streamed events while this page holds the request; polling while the slot is still held by the request from before a reload. */
   const follow = useCallback(async (r: Run, body: Record<string, unknown>) => {

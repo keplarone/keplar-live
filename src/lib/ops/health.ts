@@ -55,6 +55,7 @@ export const CRON_JOBS = [
   { name: "openrouter-balance", label: "Model credit balance check", maxAgeHours: 30 },
   { name: "cost-guard", label: "Cost guard (margin, anomalies, balance)", maxAgeHours: 30 },
   { name: "observatory", label: "Model drift and feature regressions (alert only)", maxAgeHours: 30 },
+  { name: "app-schedules", label: "Scheduled jobs of published Keplar apps", maxAgeHours: 30 },
 ] as const;
 export type CronName = (typeof CRON_JOBS)[number]["name"];
 

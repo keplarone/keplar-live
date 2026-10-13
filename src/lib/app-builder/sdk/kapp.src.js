@@ -142,10 +142,12 @@
   /* ── data ── */
   function collection(name) {
     var base = "/db/" + encodeURIComponent(name);
+    // expand: reference fields to fill in on the server ("author" or ["author", "team"]); results on item._expand[field].
+    function ex(v) { return Array.isArray(v) ? v.join(",") : v || ""; }
     var c = {
-      list: function (q) { q = q || {}; return request("GET", base + qs({ where: q.where, order: q.order, limit: q.limit, cursor: q.cursor, mine: q.mine ? "1" : "" })); },
+      list: function (q) { q = q || {}; return request("GET", base + qs({ where: q.where, order: q.order, limit: q.limit, cursor: q.cursor, mine: q.mine ? "1" : "", expand: ex(q.expand) })); },
       all: function (q) { return c.list(q).then(function (r) { return r.items; }); },
-      get: function (id) { return request("GET", base + "/" + encodeURIComponent(id)).then(function (r) { return r.item; }, function (e) { if (e.status === 404) return null; throw e; }); },
+      get: function (id, opts) { return request("GET", base + "/" + encodeURIComponent(id) + qs({ expand: ex(opts && opts.expand) })).then(function (r) { return r.item; }, function (e) { if (e.status === 404) return null; throw e; }); },
       create: function (data) { return request("POST", base, { data: data }).then(function (r) { notify(name); return r.item; }); },
       update: function (id, data) { return request("PATCH", base + "/" + encodeURIComponent(id), { data: data }).then(function (r) { notify(name); return r.item; }); },
       remove: function (id) { return request("DELETE", base + "/" + encodeURIComponent(id)).then(function () { notify(name); return true; }); },

@@ -50,12 +50,15 @@ function cleanInput(ctx: AppCtx, a: AiActionSpec, raw: AiInput) {
   return { fields, history };
 }
 
+/** The "ip" scheduled jobs (schedules.ts) call runAi with: no visitor, so actions that need a signed-in user still run. */
+export const SCHEDULE_CALLER = "keplar-schedule";
+
 export async function runAi(ctx: AppCtx, user: AppUser | null, actionName: string, raw: AiInput, ip: string, onDelta?: (d: string) => void): Promise<{ text: string; json: unknown | null }> {
   const a = ctx.spec.ai.find((x) => x.name === actionName);
   if (!a) throw new DataError(`This app has no AI action called "${String(actionName).slice(0, 40)}".`, 404, "no_action");
   if (!ctx.limits.ai) throw new DataError("AI features are not available on this app's plan.", 403, "plan");
   if (!ctx.meta.settings.ai) throw new DataError("The app's owner turned AI features off.", 403, "ai_off");
-  if (a.auth && !user) throw new DataError("Sign in to use this feature.", 401, "sign_in");
+  if (a.auth && !user && ip !== SCHEDULE_CALLER) throw new DataError("Sign in to use this feature.", 401, "sign_in");
   const { fields, history } = cleanInput(ctx, a, raw);
   // Attached text files of this app (the user's notes) are appended as data.
   const ids = (Array.isArray(raw.fileIds) ? raw.fileIds : []).slice(0, 3).map(String);

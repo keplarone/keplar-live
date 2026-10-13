@@ -124,7 +124,7 @@ test("runtime: seeded preview content, realtime change versions, and served page
   assert.match(csp, /sandbox allow-scripts/);
   assert.doesNotMatch(csp, /allow-same-origin/);
   assert.match(html, /<meta name="k-app"/);
-  assert.match(html, /\/fx\/kapp\.1\.js/);
+  assert.match(html, /\/fx\/kapp\.\d+\.js/);
   assert.match(html, /kapp\.css/);
   assert.match(html, /data:image\/svg\+xml/, "missing image slot gets a placeholder");
   assert.match(html, /<base href="\/s\/c\/">/, "relative files resolve inside the app even without the trailing slash (Next.js strips it)");

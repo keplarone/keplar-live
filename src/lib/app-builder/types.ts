@@ -58,6 +58,17 @@ export type PageSpec = {
   admin?: boolean;
 };
 
+/** A job the published app runs on its own (src/lib/app-runtime/schedules.ts): an AI action with fixed input, once a day or
+ *  week, whose text is saved as a new record (e.g. a daily digest, a weekly summary, a "word of the day"). */
+export type ScheduleSpec = {
+  name: string;
+  label: string;
+  every: "day" | "week";
+  ai: string;
+  input: Record<string, string>;
+  save: { collection: string; field: string };
+};
+
 export type AiActionSpec = {
   /** Called from the app as keplar.ai.run(name, input). */
   name: string;
@@ -91,6 +102,8 @@ export type AppSpec = {
   collections: CollectionSpec[];
   auth: { enabled: boolean; methods: ("password" | "magic")[]; roles: string[]; profileFields: string[] };
   ai: AiActionSpec[];
+  /** Jobs the published app runs by itself (absent on apps planned before schedules existed). */
+  schedules?: ScheduleSpec[];
   features: FeatureSpec[];
   /** Vendored libraries the app loads: "ui" = Preact + hooks + htm (window.kui), "three" = three.js (window.THREE). */
   uses: ("ui" | "three")[];
