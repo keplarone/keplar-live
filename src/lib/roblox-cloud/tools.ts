@@ -4,6 +4,8 @@
  * Results are kept short (line ranges, capped matches) so a long job doesn't pay to re-read what it already knows.
  */
 import type { Risk } from "@/lib/studio/agent";
+import { docsIndex, formatDocsHits, searchDocs } from "@/lib/studio/roblox-docs";
+import { ROBLOX_DOCS_TOOL, ROBLOX_DOCS_TOOL_NAME } from "@/lib/studio/roblox-docs-tool";
 import { checkLuau, type LuauResult } from "./luau-check";
 import { CLOUD_LIMITS, currentSource, PATH, SCRIPT_CLASSES, type CloudFile, type CloudReport, type PlanStep } from "./model";
 
@@ -18,10 +20,11 @@ export const CLOUD_TOOL_DEFS = [
   { name: "check_scripts", description: "Check scripts with Luau's analyzer (syntax, unknown globals, type errors). No paths: every script you changed or created.", inputSchema: { type: "object", properties: { paths: { type: "array", items: { type: "string" } } } } },
   { name: "update_plan", description: "Set the plan: the full list of steps with their status (todo, doing, done, skipped). Call it when you start, and whenever a step changes.", inputSchema: { type: "object", properties: { steps: { type: "array", items: { type: "object", properties: { title: { type: "string" }, status: { type: "string", enum: ["todo", "doing", "done", "skipped"] } }, required: ["title", "status"] } } }, required: ["steps"] } },
   { name: "finish", description: "End the job with the report the person reads in the morning.", inputSchema: { type: "object", properties: { summary: { type: "string" }, done: { type: "array", items: { type: "string" } }, unresolved: { type: "array", items: { type: "string" } }, testing: { type: "array", items: { type: "string" } } }, required: ["summary", "done", "unresolved", "testing"] } },
+  ROBLOX_DOCS_TOOL,
 ] as const;
 
 export const CLOUD_TOOL_POLICY: Record<string, Risk> = {
-  list_scripts: "read", read_tree: "read", read_script: "read", search_scripts: "read", check_scripts: "read",
+  list_scripts: "read", read_tree: "read", read_script: "read", search_scripts: "read", check_scripts: "read", [ROBLOX_DOCS_TOOL_NAME]: "read",
   edit_script: "change", create_script: "change", delete_script: "change", update_plan: "change", finish: "change",
 };
 
@@ -153,6 +156,16 @@ export async function runCloudTool(st: ToolState, name: string, args: Record<str
       const steps = Array.isArray(args.steps) ? (args.steps as { title?: unknown; status?: unknown }[]).slice(0, 14).map((s) => ({ title: str(s?.title, 160), status: (["todo", "doing", "done", "skipped"].includes(s?.status as string) ? s.status : "todo") as PlanStep["status"] })).filter((s) => s.title) : [];
       if (!steps.length) return { text: "Give the plan as a list of steps.", effects: {} };
       return { text: `Plan saved (${steps.filter((s) => s.status === "done").length} of ${steps.length} done).`, effects: { plan: steps } };
+    }
+    case ROBLOX_DOCS_TOOL_NAME: {
+      const q = str(args.query, 300).trim();
+      if (!q) return { text: "Say what to look up.", effects: {} };
+      try {
+        const index = docsIndex();
+        return { text: formatDocsHits(q, searchDocs(index, q, typeof args.limit === "number" ? args.limit : 5), index.commit), effects: {} };
+      } catch {
+        return { text: "The Roblox docs could not be searched right now. Write defensive code and note the uncertainty in the report.", effects: {} };
+      }
     }
     case "finish":
       return { text: "Report saved. The job is finished.", effects: { finished: { summary: str(args.summary, 3000), done: list(args.done), unresolved: list(args.unresolved), testing: list(args.testing, 10) } } };
