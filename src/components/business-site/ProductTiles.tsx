@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Orb } from "./Orb";
 import s from "./product-tiles.module.css";
 
 /**
  * The storefront's product grid, right under the hero: one tile per part of the workspace (Chat, Build, Agents, Research,
- * Design), each with a small moving example of that module and a link to explore it. Every tile is marked "Example": the
- * content shows how the module works, not a customer's data. Motion runs only while the grid is on screen and stops for
+ * Design), each with a small moving example of that module and a link to explore it, plus the "Several models" sphere (Orb.tsx).
+ * Every example tile is marked "Example": the content shows how the module works, not a customer's data. Motion runs only while the grid is on screen and stops for
  * people who prefer reduced motion (every tile then shows its finished state).
  */
 
@@ -35,10 +36,10 @@ function useStep(on: boolean, max: number, every: number) {
   return on ? Math.min(i, max) : max;
 }
 
-function Tile({ title, href, wide, children }: { title: string; href: string; wide?: boolean; children: React.ReactNode }) {
+function Tile({ title, href, wide, example = true, children }: { title: string; href: string; wide?: boolean; example?: boolean; children: React.ReactNode }) {
   return (
     <article className={s.tile} data-wide={wide || undefined}>
-      <span className={s.example}>Example</span>
+      {example ? <span className={s.example}>Example</span> : null}
       <div className={s.stage}>{children}</div>
       <a href={href} className={s.foot}>
         <span className={s.title}>{title}</span>
@@ -166,7 +167,8 @@ export function ProductTiles() {
       <Tile title="Build" href="#product"><BuildTile on={on} /></Tile>
       <Tile title="Agents" href="#control"><AgentsTile on={on} /></Tile>
       <Tile title="Deep Research" href="#product"><ResearchTile on={on} /></Tile>
-      <Tile title="Design Canvas" href="#product" wide><DesignTile on={on} /></Tile>
+      <Tile title="Design Canvas" href="#product"><DesignTile on={on} /></Tile>
+      <Tile title="Several models" href="#product" example={false}><Orb className={s.orb} /></Tile>
     </div>
   );
 }

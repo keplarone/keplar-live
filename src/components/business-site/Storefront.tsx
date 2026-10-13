@@ -6,6 +6,7 @@ import { BUSINESS_TIERS, listPriceFor, priceFor, usd, type BusinessTier } from "
 import { companySizes, estimatedUsers } from "@/lib/inquire/schema";
 import { BuildDemo } from "./BuildDemo";
 import { ProductTiles } from "./ProductTiles";
+import { ScrambleWord } from "./ScrambleWord";
 import { SignOutButton } from "./SignOutButton";
 import { BusinessMark } from "./BusinessMark";
 import s from "./business-site.module.css";
@@ -24,6 +25,9 @@ const ORDER: BusinessTier[] = ["starter", "growth", "scale", "enterprise"];
 const fmt = (n: number) => n.toLocaleString("en-US");
 const accountUrl = (tier?: string) => `/account${tier ? `?tier=${tier}` : ""}`;
 const short = (tier: BusinessTier) => BUSINESS_TIERS[tier].name.replace("Keplar Business ", "").replace("Keplar ", "");
+
+/** The hero's last word cycles through what people build here ("Build anything." first and for screen readers). */
+const HERO_WORDS = ["anything", "websites", "apps", "agents", "reports", "dashboards", "stores"];
 
 /** What the workspace does. Each line describes a module that exists in it today. */
 const CAPABILITIES = [
@@ -103,9 +107,9 @@ function useReveal(root: React.RefObject<HTMLElement | null>) {
 }
 
 /**
- * In-page links (the nav, hero buttons, footer) glide to their section instead of snapping: a short ease-in-out (swift, never
- * sluggish) that scales with distance, stops the moment the visitor scrolls themselves, and is skipped for reduced motion.
- * Without JavaScript the browser's normal anchor jump still works.
+ * In-page links (the nav, hero buttons, footer) glide to their section instead of snapping: a fast start that settles softly,
+ * scaled to the distance (at most 0.65s), stopped the moment the visitor scrolls themselves. With reduced motion the glide is
+ * a short 0.2s; Keplar's own "Reduce motion" setting jumps. Without JavaScript the browser's normal anchor jump still works.
  */
 function useSmoothAnchors(root: React.RefObject<HTMLElement | null>) {
   useEffect(() => {
@@ -122,6 +126,7 @@ function useSmoothAnchors(root: React.RefObject<HTMLElement | null>) {
       if (!target) return;
       e.preventDefault();
       stop();
+      const jump = document.documentElement.hasAttribute("data-pref-reduce-motion");
       const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const offset = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
       const from = window.scrollY;
@@ -129,12 +134,12 @@ function useSmoothAnchors(root: React.RefObject<HTMLElement | null>) {
       const to = Math.max(0, Math.min(max, target.getBoundingClientRect().top + from - offset));
       history.pushState(null, "", `#${id}`);
       const done = () => target.focus({ preventScroll: true });
-      if (reduce || Math.abs(to - from) < 2) { window.scrollTo({ top: to, behavior: "instant" }); done(); return; }
-      const duration = Math.min(900, 420 + Math.abs(to - from) * 0.12);
+      if (jump || Math.abs(to - from) < 2) { window.scrollTo({ top: to, behavior: "instant" }); done(); return; }
+      const duration = reduce ? 200 : Math.min(650, 300 + Math.abs(to - from) * 0.06);
       const t0 = performance.now();
       const step = (now: number) => {
         const p = Math.min(1, (now - t0) / duration);
-        const eased = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+        const eased = 1 - Math.pow(1 - p, 4);
         window.scrollTo({ top: from + (to - from) * eased, behavior: "instant" });
         if (p < 1) frame = requestAnimationFrame(step); else { frame = 0; done(); }
       };
@@ -248,7 +253,10 @@ export function Storefront() {
 
       <section className={s.hero} aria-labelledby="hero-h">
         <a href="#download-app" className={s.chip}><span className={s.chipTag}>Desktop app</span>Windows, macOS and Linux<span aria-hidden="true">→</span></a>
-        <h1 id="hero-h" className={s.h1}>Build anything.{" "}<span className={s.h1Line}>Let intelligence handle the complexity.</span></h1>
+        <h1 id="hero-h" className={s.h1} aria-label="Build anything. Let intelligence handle the complexity.">
+          <span aria-hidden="true">Build <ScrambleWord words={HERO_WORDS} className={s.morph} />.</span>{" "}
+          <span className={s.h1Line} aria-hidden="true">Let intelligence handle the complexity.</span>
+        </h1>
         <p className={s.lede}>Coding agents that plan, write, test and preview real software across several AI models, with research, design and automation in the same workspace. You review the result before anything ships.</p>
         {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- /signin is a route handler (the sign-in handoff from keplar.one): it needs a full page load */}
         {signinFailed && status.state === "out" ? <p className={s.notice} role="status">That sign-in didn&apos;t finish (the link expired or was opened in a different browser). <a href="/signin?next=%2Fwork" className={s.textLink}>Sign in again</a></p> : null}
