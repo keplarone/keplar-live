@@ -1,5 +1,5 @@
 /*
- * Keplar Studio panels (auto top-up, Roblox Cloud, Blender Cloud, sessions, settings, Blender add-on) and the status
+ * Keplar Studio panels (auto top-up, Roblox Cloud, Blender Cloud, game ideas, sessions, settings, Blender add-on) and the status
  * screens. Design-system tokens only (ui/tokens.module.css): flat, monochrome, hairline borders; the accent only for live
  * state and focus. No class name contains btn/button/cta/primary/secondary/ghost/pill/tab/Chip (redesign.css forces a
  * shadow onto such buttons); variants are data attributes.
@@ -174,6 +174,22 @@ select.control { padding-right: var(--ks-space-6); cursor: pointer; }
   letter-spacing: var(--ks-tracking-mono);
   color: var(--ks-text-1);
 }
+
+/* ── Game ideas ──────────────────────────────────────────────────────────── */
+.idea { display: flex; flex-direction: column; gap: var(--ks-space-2); padding: var(--ks-space-3); min-width: 0; }
+.ideaTitle {
+  margin: 0;
+  color: var(--ks-text-1);
+  font-size: var(--ks-text-md);
+  line-height: var(--ks-leading-md);
+  font-weight: var(--ks-weight-semibold);
+  letter-spacing: var(--ks-tracking-tight);
+}
+/* The evidence: Keplar's sourced market data, one line per signal (kind badge + label + figure). */
+.signals { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--ks-space-1); }
+.signal { display: flex; align-items: baseline; gap: var(--ks-space-2); min-width: 0; font-size: var(--ks-text-sm); line-height: var(--ks-leading-sm); }
+.signal > :first-child { flex: none; }
+.signalText { min-width: 0; color: var(--ks-text-2); overflow-wrap: anywhere; }
 
 /* ── Sessions (left nav) ─────────────────────────────────────────────────── */
 .current { display: flex; flex-direction: column; gap: var(--ks-space-1-5); padding: var(--ks-space-1) 0 var(--ks-space-2); }

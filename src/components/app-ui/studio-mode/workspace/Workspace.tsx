@@ -1,8 +1,8 @@
 "use client";
 /**
  * Keplar Studio, full page (Create > Keplar Studio, /app/studio). Four regions:
- * - left: the nav (collapsible): sessions for this place, environment (Roblox Studio | Blender), Roblox Cloud or Blender
- *   Cloud, auto top-up, Blender add-on, settings;
+ * - left: the nav (collapsible): sessions for this place, environment (Roblox Studio | Blender), game ideas and Roblox Cloud
+ *   or Blender Cloud, auto top-up, Blender add-on, settings;
  * - center: the Solar conversation;
  * - right: the development inspector (Code | Viewport | Changes | Plan | Activity), resizable and collapsible;
  * - bottom: the control center strip and the command composer.
@@ -23,6 +23,7 @@ import { overlayTarget, setOverlayTarget, useStudioAgent } from "../useStudioAge
 import { Composer } from "./Composer";
 import { ControlCenter } from "./ControlCenter";
 import { Conversation } from "./Conversation";
+import { offerDraft } from "./draft";
 import { Inspector } from "./Inspector";
 import { SolarSelector, useSolarMode } from "./SolarSelector";
 import { useBlenderConnection, useOverlayWindow, useRobloxConnection } from "./layout/hooks";
@@ -33,6 +34,7 @@ import {
 import { connectionDot, connectionLabel, ENV_LABEL, type Connection, type Env } from "./layout/run-status";
 import { BlenderCloudPanel } from "./panels/BlenderCloudPanel";
 import { BlenderSetup } from "./panels/BlenderSetup";
+import { IdeasPanel } from "./panels/IdeasPanel";
 import { RobloxCloudPanel } from "./panels/RobloxCloudPanel";
 import { SessionsPanel } from "./panels/SessionsPanel";
 import { SettingsDialog } from "./panels/SettingsDialog";
@@ -61,7 +63,7 @@ export function Workspace(props: WorkspaceProps) {
   );
 }
 
-type NavDialog = "cloud" | "topup" | "blender" | "settings" | null;
+type NavDialog = "ideas" | "cloud" | "topup" | "blender" | "settings" | null;
 
 function WorkspaceBody({ env, plan = "free", signedIn = null, onEnvChange }: WorkspaceProps) {
   // The desktop bridges are fixed for the page's life; the server render (and the first client render) see none.
@@ -249,7 +251,10 @@ function WorkspaceBody({ env, plan = "free", signedIn = null, onEnvChange }: Wor
               <NavEntry collapsed={navCollapsed} icon={<Icon name="blender" />} label="Blender add-on" onClick={() => setDialog("blender")} />
             </>
           ) : (
-            <NavEntry collapsed={navCollapsed} icon={<Icon name="cube" />} label="Roblox Cloud" onClick={() => setDialog("cloud")} />
+            <>
+              <NavEntry collapsed={navCollapsed} icon={<Icon name="plan" />} label="Game ideas" onClick={() => setDialog("ideas")} />
+              <NavEntry collapsed={navCollapsed} icon={<Icon name="cube" />} label="Roblox Cloud" onClick={() => setDialog("cloud")} />
+            </>
           )}
           {bridge && allowed ? <NavEntry collapsed={navCollapsed} icon={<Icon name="credit" />} label="Auto top-up" onClick={() => setDialog("topup")} /> : null}
           <NavEntry collapsed={navCollapsed} icon={<MorphIcon icon="settings" state={dialog === "settings" ? "open" : "closed"} />} label="Settings" onClick={() => setDialog("settings")} />
@@ -270,6 +275,11 @@ function WorkspaceBody({ env, plan = "free", signedIn = null, onEnvChange }: Wor
       <Dialog open={dialog === "cloud"} onOpenChange={close} size="lg" title={isBlender ? "Blender Cloud" : "Roblox Cloud"} description={isBlender ? "Render on Keplar's servers while you're away." : "Script jobs that run while you're away."}>
         {isBlender ? <BlenderCloudPanel busy={a.running} /> : <RobloxCloudPanel bridge={studio} place={a.place} busy={a.running} />}
       </Dialog>
+      {!isBlender ? (
+        <Dialog open={dialog === "ideas"} onOpenChange={close} size="lg" title="Game ideas" description="Original ideas aimed at gaps and trends on Roblox right now, each ready to hand to Solar.">
+          <IdeasPanel busy={a.running} onBuild={(prompt) => { offerDraft("roblox", prompt); setDialog(null); }} />
+        </Dialog>
+      ) : null}
       <Dialog open={dialog === "topup"} onOpenChange={close} size="md" title="Auto top-up">
         <TopUpPanel />
       </Dialog>
