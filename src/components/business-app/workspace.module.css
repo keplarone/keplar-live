@@ -210,3 +210,5 @@
 .card { border-radius: 16px; padding: 16px 18px; background: #111; }
 .card strong { font-weight: 500; }
 .btnPrimary, .btnGhost { min-height: 36px; padding: 0 16px; font-weight: 500; }
+/* never scrolled as a whole (see tokens.css): clip, not hidden, so a focusing iframe can't slide it */
+.root { overflow: clip; }

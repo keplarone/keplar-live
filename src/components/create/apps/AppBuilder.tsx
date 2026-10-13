@@ -637,8 +637,8 @@ export function AppBuilder() {
                 <div className={s.frameLayer} data-ready={frameReady ? "true" : undefined}>
                   {(() => {
                     const frame = <iframe key={frameKey} className={s.frame} data-device={device} src={current!.previewUrl!} title="App preview" onLoad={() => setFrameReady(true)} sandbox="allow-scripts allow-forms allow-popups allow-modals allow-downloads" />;
-                    // Desktop is a real 1920x1080 viewport scaled to fit, so the app lays out as on a 1080p monitor, not at the pane's width.
-                    return device === "desktop" ? <ScaledViewport>{frame}</ScaledViewport> : frame;
+                    // Desktop is a real desktop-width viewport (1280-1920px) scaled to fill the whole pane: laid out as on a monitor, no empty bands.
+                    return device === "desktop" ? <ScaledViewport fit="fill">{frame}</ScaledViewport> : frame;
                   })()}
                 </div>
               ) : null}

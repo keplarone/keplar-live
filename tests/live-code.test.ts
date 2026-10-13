@@ -117,6 +117,12 @@ test("desktop preview is a real 1920x1080 viewport scaled to fit (never upscaled
   assert.equal(viewportScale({ w: 3840, h: 2160 }), 1, "never larger than 1:1");
   assert.equal(viewportScale({ w: 1200, h: null }), 0.625, "fit to width only (inline card)");
   assert.equal(viewportScale({ w: 0, h: 0 }), 1, "unmeasured: no scaling");
-  assert.match(readFileSync("src/components/create/apps/AppBuilder.tsx", "utf8"), /return device === "desktop" \? <ScaledViewport>\{frame\}<\/ScaledViewport> : frame;/);
+  // The studio pane is filled edge to edge at a desktop width (1280-1920px), never letterboxed.
+  const { fillViewport } = await import("../src/components/create/ScaledViewport");
+  assert.deepEqual(fillViewport({ w: 800, h: 600 }), { w: 1280, h: 960, k: 0.625 }, "narrow pane: a 1280px desktop, scaled down, as tall as the pane");
+  assert.deepEqual(fillViewport({ w: 1600, h: 900 }), { w: 1600, h: 900, k: 1 }, "wide pane: laid out at the pane's own size");
+  assert.deepEqual(fillViewport({ w: 2400, h: 1200 }), { w: 1920, h: 1200, k: 1 }, "never wider than 1920px");
+  assert.match(readFileSync("src/components/create/apps/AppBuilder.tsx", "utf8"), /return device === "desktop" \? <ScaledViewport fit="fill">\{frame\}<\/ScaledViewport> : frame;/);
+  assert.doesNotMatch(readFileSync("src/components/create/ScaledViewport.tsx", "utf8"), /overflow: "hidden"/, "clip, never hidden: focus inside the iframe can't scroll the wrappers");
   assert.match(readFileSync("src/components/app-ui/create/CreateTurn.tsx", "utf8"), /return device === "desktop" \? <ScaledViewport fit="width">\{frame\}<\/ScaledViewport> : frame;/);
 });
