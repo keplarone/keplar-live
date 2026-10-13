@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import s from "./App.module.css";
+import { KLoader } from "@/components/loader/KLoader";
 import type { View } from "./state/types";
 
 /**
@@ -13,9 +14,13 @@ import type { View } from "./state/types";
 const KeplarApp = dynamic(() => import("./KeplarApp"), {
   ssr: false,
   loading: () => (
+    // Same shell as app/app/loading.tsx. On a slow phone the app's scripts take seconds; the loader fades in after 150ms so
+    // a fast load never flashes it and a slow one never shows an empty frame.
     <div className={s.app} aria-busy="true" aria-label="Loading Keplar">
       <div className={s.sideWrap} />
-      <div className={s.main} />
+      <div className={s.main} style={{ display: "grid", placeItems: "center" }}>
+        <span className="m-delayed"><KLoader size={24} label="Loading Keplar" /></span>
+      </div>
     </div>
   ),
 });

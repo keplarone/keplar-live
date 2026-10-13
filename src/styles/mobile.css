@@ -56,5 +56,5 @@ body {
 
 /* "On this page" / Topics rails on touch tablets and touch laptops (kept as a side column from ~1000px): every link is a 44px target. */
 @media (pointer: coarse) {
-  nav[aria-label="On this page"] ol a { display: flex; align-items: center; min-height: 44px; }
+  nav[aria-label="On this page"] a { display: flex; align-items: center; min-height: 44px; }
 }

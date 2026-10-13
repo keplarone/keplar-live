@@ -273,3 +273,6 @@ select.control { padding-right: var(--ks-space-6); cursor: pointer; }
 .inlineLink { color: var(--ks-accent-text); text-decoration: underline; text-underline-offset: 2px; }
 .inlineLink:focus-visible { outline: none; box-shadow: var(--ks-focus-ring); border-radius: var(--ks-radius-xs); }
 .session > .confirm { grid-column: 1 / -1; margin-top: var(--ks-space-1-5); }
+
+/* Touch screens: link actions (Download, Open ...) are 44px tap targets. */
+@media (pointer: coarse) { .linkAct { height: auto; min-height: 44px; } }

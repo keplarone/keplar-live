@@ -215,6 +215,12 @@
   .workspace .navEntry { justify-content: center; padding: 0; }
 }
 
+/* Phones: Studio runs only inside the desktop app, so a phone sees one status screen; the rail would only squeeze it. */
+@container ks-workspace (max-width: 560px) {
+  .workspace { grid-template-columns: minmax(0, 1fr); }
+  .workspace .nav { display: none; }
+}
+
 /* ════════════════════════════ Inspector ════════════════════════════ */
 
 .inspector {

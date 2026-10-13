@@ -29,7 +29,7 @@ export default async function SpecialistDirectory({ searchParams }: { searchPara
       </p>
       <form method="get" className={s.cta} style={{ marginTop: "var(--s-6)" }} role="search">
         <label htmlFor="sp-q" className="visually-hidden">Search specialists</label>
-        <input id="sp-q" name="q" defaultValue={typeof q === "string" ? q.slice(0, 80) : ""} placeholder="Search by name or description" maxLength={80} style={{ ...chip, minWidth: "16rem", background: "transparent", font: "inherit" }} />
+        <input id="sp-q" name="q" defaultValue={typeof q === "string" ? q.slice(0, 80) : ""} placeholder="Search by name or description" maxLength={80} style={{ ...chip, minWidth: "16rem", background: "transparent", fontFamily: "inherit", lineHeight: "inherit", fontSize: "max(16px, 1em)" /* 16px+ so iOS does not zoom on focus; no font shorthand, which would reset it */ }} />
         {cat ? <input type="hidden" name="c" value={cat} /> : null}
         <button type="submit" style={{ ...chip, background: "transparent", cursor: "pointer", font: "inherit" }}>Search</button>
       </form>

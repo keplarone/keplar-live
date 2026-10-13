@@ -43,3 +43,7 @@
 .jump a { min-height: 38px; align-items: center; padding: 0 15px; border-radius: 999px; border: 1px solid rgb(var(--rgb-ink) / 0.1); background: color-mix(in srgb, var(--c-surface-1) 70%, transparent); }
 .jump { gap: var(--s-2); }
 .num { display: inline-flex; color: var(--c-ink-2); } /* 4.5:1 on the tinted section backgrounds (ink-3 was 4.3:1) */
+
+/* Touch screens: the section chips are 44px tap targets. */
+@media (pointer: coarse) { .jump a { min-height: 44px; } }
+@media (pointer: coarse) { .table th a { display: inline-flex; align-items: center; min-height: 44px; } }
