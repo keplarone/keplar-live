@@ -44,6 +44,7 @@ export const RETAINED = [
   "cost_state", // throttles and provider-balance state (no personal data)
   "overage_settings", // overage opt-in and monthly cap: the billing authorization behind any overage charge
   "overage_usage", // overage amounts billed per month: a financial record
+  "space_billing_events", // Space Studio billing idempotency log (event id, type, plan, timestamps, target workspace id; workspace "system", no content): a financial record, kept so a replayed event can never re-grant a plan
   "answer_turns", // answer recovery checkpoints (orchestration/turn-recovery.ts): workspace "system", keyed by a hash of owner + turn key (no account id), the last answer as sent; unreadable after 30 minutes and deleted within a day, so they expire on their own
 ] as const;
 export const RETAINED_PATTERNS = [/^usage_window_/, /^system_/, /^admin_/, /^ops_/, /^_health$/, /^_cron_beats$/ /* cron heartbeat timestamps, no personal data */];
@@ -64,6 +65,7 @@ export const USER_COLLECTIONS = [
   "guard_targets", "guard_runs", "guard_reports", // Revenue Guard: sites the owner verified for testing, test runs and their reports (src/lib/business/guard/core.ts); the verification token is redacted in the export.
   "mcp_servers", "mcp_tools", "mcp_grants", "mcp_receipts", "mcp_oauth", "mobile_creds",
   "team_teams", "team_members", "team_invites", "team_audit" /* team workspaces (BETA): scoped by the team id, so exported and deleted with the team, never with a member's account */, "team_memberships" /* your own index of the teams you belong to */, "api_keys" /* hashed API keys (BETA): never exported with a secret, deleted with the account */, "embed_widgets" /* public embed widget configs (BETA): no secrets, deleted with the account */, "answer_shares", "chat_shares" /* shared chat links: the redacted turns you chose; revoked and deleted with the account */, "answer_prefs" /* your answer style and "about you" */, "specialists" /* your saved specialists: instructions, knowledge, starters */, "specialist_shares" /* specialist links you made: a snapshot of that specialist; revoked and deleted with the account */, "family_settings" /* Family mode on/off and homework guidance; the PIN hash is never exported */, "specialist_listings" /* your Specialist directory submissions and their review status */, "feedback", "support_tickets", "learn_settings", "learn_cases", "faq_settings", "core_prefs" /* Keplar Core: tracking opt-out and the learned shorter/longer preference */, "core_jobs" /* Keplar Core background work: the question, working notes and result; expire after 7 days */,
+  "space_subscriptions" /* Space Studio plan record (plan, status, period end, applied event ids); deleted with the account */, "space_identities" /* Roblox account linked to Space Studio (Roblox user id + username); deleted with the account */, "space_identity_index" /* system-scoped claim "roblox:<id>" -> workspace, freed explicitly on deletion (freeIdentityClaims) so the Roblox account can be linked again */, "space_usage" /* Space Studio cloud minutes per month (numbers only); deleted with the account */, "space_locks" /* seconds-long write locks; deleted with the account */,
   "browser_tasks" /* Keplar Browser tasks: the task, step notes and addresses, the newest screenshot and the result; the newest 20 are kept, exported and deleted with the account */,
 ] as const;
 
@@ -152,6 +154,13 @@ export async function deleteWorkspaceData(wsId: string): Promise<DeleteResult> {
     for (const s of await sites().list(wsId)) if (s.kind === "app") await deleteAppData(s.id);
   } catch {
     /* best effort: no app tables yet */
+  }
+  // Space Studio: identity claims live in system rows keyed by provider id, not by workspace; free them before the workspace rows go.
+  try {
+    const { freeIdentityClaims } = await import("@/lib/space-studio/store");
+    deleted += await freeIdentityClaims(wsId);
+  } catch {
+    /* best effort: nothing linked */
   }
   const kept: string[] = [];
   for (const name of await collectionNames(wsId)) {

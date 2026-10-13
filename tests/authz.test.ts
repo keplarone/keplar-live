@@ -40,6 +40,12 @@ PUBLIC_OK.add("GET studio/modes"); // Solar mode table: budgets, prices and the 
 // PKCE challenge, 20 per 10 minutes per IP); the poll answers {status} and hands a key only to the verifier holder after the person approved.
 PUBLIC_OK.add("POST extension/connect");
 PUBLIC_OK.add("POST extension/token");
+// Space Studio (src/lib/space-studio): the account summary answers signed-out callers with { signedIn: false }, Free defaults and the
+// public model list (no account data); the billing webhook's HMAC signature is its credential (503 until its secret is set, 401 for a bad
+// signature); the Roblox link callback always redirects back to the app and changes nothing without the signed-in account's sealed state.
+PUBLIC_OK.add("GET space-studio/me");
+PUBLIC_OK.add("POST space-studio/billing/webhook");
+PUBLIC_OK.add("GET space-studio/identities/roblox/callback");
 
 test("anonymous Business status and handoff expose no account data or sign-in ticket", async () => {
   const { GET: account } = await import("@/app/api/business/account/route");
