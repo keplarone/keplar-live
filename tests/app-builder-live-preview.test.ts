@@ -43,3 +43,21 @@ test("studio: the preview follows the running build once its code runs, and relo
   assert.match(src, /if \(ev\.type === "stage" && ev\.stage === "verify"\) \{ setFrameReady\(false\); setFrameKey/);
   assert.match(readFileSync("src/lib/app-builder/pipeline.ts", "utf8"), /preview: previewUrlForBuild\(site, b\.id\)/);
 });
+
+test("draft previews (only) load the error reporter; the studio turns reports and open items into one Fix action", async () => {
+  const { renderAppPage } = await import("@/lib/app-builder/files");
+  const { normalizeDesign } = await import("@/lib/app-builder/design/tokens");
+  const spec = { name: "Tasks", tagline: "", kind: "tool", summary: "", scope: "", uses: [], notBuilt: [], features: [], pages: [], collections: [], ai: [], auth: { enabled: false, methods: [] }, images: [], files: [] } as unknown as AppSpec;
+  const meta = { spec, design: normalizeDesign(undefined), admins: [], settings: { signups: true, ai: true, uploads: true } };
+  const page = (env: "draft" | "live" | "qa") => renderAppPage("<!doctype html><html><head></head><body></body></html>", { meta, siteId: "s", env, api: "/_api", plan: "business", reportHref: null, images: {}, title: "Tasks" } as never);
+  assert.match(page("draft"), /\/fx\/kapp-report\.1\.js/);
+  assert.doesNotMatch(page("live"), /kapp-report/, "published apps never report to anyone");
+  assert.doesNotMatch(page("qa"), /kapp-report/);
+  const reporter = readFileSync("public/fx/kapp-report.1.js", "utf8");
+  assert.match(reporter, /source: "keplar-app", type: "error"/);
+  assert.match(reporter, /sent >= 8/, "bounded");
+  const studio = readFileSync("src/components/create/apps/AppBuilder.tsx", "utf8");
+  assert.match(studio, /e\.source !== frameRef\.current\?\.contentWindow/, "only messages from our own preview frame count");
+  assert.match(studio, /Fix these problems in the app \(keep everything else as it is\)/);
+  assert.match(readFileSync("src/lib/app-builder/pipeline.ts", "utf8"), /b\.open = blocking/);
+});

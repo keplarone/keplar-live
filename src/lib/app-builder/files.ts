@@ -5,7 +5,7 @@
  * network access is the app's own API (connect-src 'self'). Keplar injects its runtime, the design-system stylesheet and fonts.
  */
 import { createHash } from "node:crypto";
-import { KAPP_SDK_PATH, KAPP_THREE_PATH, KAPP_UI_PATH } from "./runtime-paths";
+import { KAPP_REPORT_PATH, KAPP_SDK_PATH, KAPP_THREE_PATH, KAPP_UI_PATH } from "./runtime-paths";
 import { designCss, tokensFor } from "./design/tokens";
 import { watermarkRequired, WATERMARK_TEXT, WATERMARK_URL } from "@/lib/site-builder/watermark";
 import type { PlanId } from "@/lib/create/platform/plans";
@@ -108,6 +108,7 @@ export function renderAppPage(html: string, ctx: AppRenderCtx): string {
     `<script src="${KAPP_SDK_PATH}"></script>`,
     spec.uses.includes("ui") ? `<script src="${KAPP_UI_PATH}"></script>` : "",
     spec.uses.includes("three") ? `<script src="${KAPP_THREE_PATH}"></script>` : "",
+    ctx.env === "draft" ? `<script src="${KAPP_REPORT_PATH}"></script>` : "",
   ].filter(Boolean).join("\n");
   let doc = /<!doctype html>/i.test(html) ? html : `<!doctype html>\n${html}`;
   if (!/<head[\s>]/i.test(doc)) doc = doc.replace(/<html[^>]*>/i, (m) => `${m}<head></head>`);

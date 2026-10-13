@@ -698,3 +698,11 @@
 /* The preview pane clips with overflow: clip (never hidden): a hidden box can be scrolled by the browser when the app inside the
    iframe focuses a field, which slid the pane, and in the desktop app the whole workspace, out of place. */
 .canvas, .frameLayer { overflow: clip; }
+
+/* What still needs fixing (IssueBar in AppBuilder.tsx): build problems left open and errors the running preview reported. */
+.issueBar { display: flex; flex-direction: column; gap: 8px; padding: 10px 14px; border-bottom: var(--b-hairline) solid var(--c-border); background: var(--c-surface-1); }
+.issueRow { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.issueDot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; box-shadow: 0 0 0 3px rgb(245 158 11 / 0.18); }
+.issueTitle { flex: 1; min-width: 0; padding: 4px 0; border: 0; background: none; color: var(--c-ink); font: inherit; font-size: 13px; text-align: left; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.issueTitle:hover { text-decoration: underline; text-underline-offset: 3px; }
+.issueList { margin: 0; padding: 0 0 2px 18px; display: flex; flex-direction: column; gap: 4px; max-height: 160px; overflow: auto; font-size: 12.5px; line-height: 1.45; color: var(--c-ink-2); }

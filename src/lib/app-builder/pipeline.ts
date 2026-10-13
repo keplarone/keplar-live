@@ -270,7 +270,7 @@ export async function* runBuild(ws: Workspace, site: Site, buildId: string, opts
         }
         if (left() < NEED_S.generate) break;
         if (overBudget()) throw new LlmError("This build reached your plan's cost cap before the code was written.", "budget");
-        const todo = waves[w].filter((g) => g.files.some((f) => b.files[f.path] === undefined) || b.base);
+        const todo = waves[w].filter((g) => (b.base ? g.files.some((f) => !(b.base!.written ?? []).includes(f.path)) : g.files.some((f) => b.files[f.path] === undefined)));
         yield { type: "stage", stage: "generate", text: b.base ? `Writing the change (${todo.flatMap((g) => g.files).length} files)` : w === 0 ? "Writing the foundation: design language and shared components" : "Writing the screens and wiring the app" };
         const allCss = waves.flat().map((g) => g.css).filter((c): c is string => Boolean(c));
         const imageJob = !b.base && w === 0 && spec.images.length && L.images > 0 && !Object.keys(b.images).length
@@ -293,9 +293,8 @@ export async function* runBuild(ws: Workspace, site: Site, buildId: string, opts
           await save();
           // Busy or out-of-capacity providers usually clear within seconds; don't burn the remaining attempts back to back.
           await new Promise((res) => setTimeout(res, Math.min(15_000, 4_000 * retried)));
-          if (b.base) {
-            b.wave = w + 1;
-          }
+          // Edits retry the files that failed (they used to be skipped, shipping half a change); the others are kept.
+          if (b.base) b.base.written = [...new Set([...(b.base.written ?? []), ...Object.keys(r.files)])];
           continue;
         }
         b.wave = w + 1;
@@ -365,6 +364,13 @@ export async function* runBuild(ws: Workspace, site: Site, buildId: string, opts
           // Keep screenshots of the final state for the report.
           b.shots = await storeShots(ws, smoke.shots, opts.origin);
           b.problems = [];
+          // Never ship quietly: what is still broken goes into the report, where the studio offers to fix it.
+          b.open = blocking
+            ? [
+                ...problems.filter((p) => p.severity === "high").map((p) => `${p.file ? `${p.file}: ` : ""}${p.message}`),
+                ...verdicts.filter((v) => v.status !== "built" && spec.features.find((f) => f.id === v.id)?.must).map((v) => `Requested feature "${v.title}" is ${v.status === "partial" ? "only partly built" : "missing"}: ${v.evidence}`),
+              ].map((m) => m.slice(0, 300)).slice(0, 10)
+            : [];
           b.stage = "save";
           log(blocking ? `Shipping with ${blocking} open item${blocking === 1 ? "" : "s"} after ${b.attempts} fix round${b.attempts === 1 ? "" : "s"}.` : "All checks passed.");
         } else {
@@ -401,6 +407,7 @@ export async function* runBuild(ws: Workspace, site: Site, buildId: string, opts
         b.usd += r.usd;
         b.files = finishFiles(spec, r.files);
         log(r.changed.length ? `Fix round ${b.attempts}: rewrote ${r.changed.join(", ")}.` : `Fix round ${b.attempts}: no file changed.`);
+        if (r.failed || r.skipped) log(`Fix round ${b.attempts}: ${r.failed ? `${r.failed} fix${r.failed === 1 ? "" : "es"} failed at the model` : ""}${r.failed && r.skipped ? "; " : ""}${r.skipped ? `${r.skipped} group${r.skipped === 1 ? "" : "s"} of problems left for the next round` : ""}.`);
         b.stage = "verify";
         await save();
         continue;
@@ -409,7 +416,7 @@ export async function* runBuild(ws: Workspace, site: Site, buildId: string, opts
         if (left() < NEED_S.save) break;
         yield { type: "stage", stage: "save", text: "Saving the version and preparing the preview" };
         const { files } = normalizeAppFiles(b.files, { maxFiles: L.maxFiles + 14, maxBytes: L.maxBytes });
-        const report: NonNullable<AppMeta["report"]> = { checks: b.checks, verdicts: b.verdicts, visual: b.visual, shots: b.shots, attempts: b.attempts, version: 0, at: now(), model: b.model, usd: b.usd };
+        const report: NonNullable<AppMeta["report"]> = { checks: b.checks, verdicts: b.verdicts, visual: b.visual, shots: b.shots, attempts: b.attempts, version: 0, at: now(), model: b.model, usd: b.usd, ...(b.open?.length ? { open: b.open } : {}) };
         const meta: AppMeta = { ...metaFor(ws, site, spec, b.design, b.images), report };
         const fresh = (await sites().get(ws.id, site.id)) ?? site;
         const units = await settle(ws, b, site.id);

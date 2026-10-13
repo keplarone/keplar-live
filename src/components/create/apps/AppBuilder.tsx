@@ -82,6 +82,9 @@ export function AppBuilder() {
   const [run, setRun] = useState<Run | null>(null);
   const [running, setRunning] = useState(false);
   const [live, setLive] = useState<Live>(emptyLive());
+  /** Errors the running preview reported (public/fx/kapp-report.1.js), for the "Fix these" bar. Cleared on every reload. */
+  const [appErrorLog, setAppErrors] = useState<{ key: number; items: { message: string; file: string; line: number; route: string }[] }>({ key: 0, items: [] });
+  const frameRef = useRef<HTMLIFrameElement | null>(null);
   /** Where the running build can be viewed (the files written so far), from the build's first event. */
   const [buildPreview, setBuildPreview] = useState<string | null>(null);
   const [err, setErr] = useState<Err | null>(null);
@@ -90,6 +93,23 @@ export function AppBuilder() {
   const [device, setDevice] = useState<Device>("desktop");
   const [frameKey, setFrameKey] = useState(0);
   const [frameReady, setFrameReady] = useState(false);
+  const appErrors = appErrorLog.key === frameKey ? appErrorLog.items : [];
+  const frameKeyRef = useRef(frameKey);
+  useEffect(() => { frameKeyRef.current = frameKey; }, [frameKey]);
+  useEffect(() => {
+    const on = (e: MessageEvent) => {
+      const d = e.data as { source?: string; type?: string; message?: string; file?: string; line?: number; route?: string } | null;
+      if (!d || d.source !== "keplar-app" || d.type !== "error" || e.source !== frameRef.current?.contentWindow) return;
+      const item = { message: String(d.message ?? "").slice(0, 300), file: String(d.file ?? "").slice(0, 120), line: Number(d.line) || 0, route: String(d.route ?? "/").slice(0, 80) };
+      const key = frameKeyRef.current;
+      setAppErrors((l) => {
+        const items = l.key === key ? l.items : [];
+        return items.length >= 8 || items.some((x) => x.message === item.message) ? { key, items } : { key, items: [...items, item] };
+      });
+    };
+    window.addEventListener("message", on);
+    return () => window.removeEventListener("message", on);
+  }, []);
   // The load event waits for every subresource of the user's app (a slow web font can hold it for many seconds); the page
   // is painted long before that, so the preview develops in after a short grace period even if load has not fired yet.
   useEffect(() => {
@@ -638,6 +658,13 @@ export function AppBuilder() {
         </aside>
 
         <section className={s.stage} aria-label={tab === "preview" ? "Preview" : TAB_LABEL[tab]}>
+          {tab === "preview" && !running && current ? (
+            <IssueBar
+              open={current.report?.version === current.headVersion ? current.report?.open ?? [] : []}
+              errors={appErrors}
+              onFix={(items) => void build(`Fix these problems in the app (keep everything else as it is):\n${items.map((x) => `- ${x}`).join("\n")}`, true)}
+            />
+          ) : null}
           {tab === "preview" ? (
             <div className={s.canvas} data-device={device}>
               <div className={s.layer} data-hidden={showFrame && frameReady ? "true" : undefined}>
@@ -646,7 +673,7 @@ export function AppBuilder() {
               {showFrame ? (
                 <div className={s.frameLayer} data-ready={frameReady ? "true" : undefined}>
                   {(() => {
-                    const frame = <iframe key={frameKey} className={s.frame} data-device={device} src={frameSrc!} title="App preview" onLoad={() => setFrameReady(true)} sandbox="allow-scripts allow-forms allow-popups allow-modals allow-downloads" />;
+                    const frame = <iframe key={frameKey} className={s.frame} data-device={device} ref={frameRef} src={frameSrc!} title="App preview" onLoad={() => setFrameReady(true)} sandbox="allow-scripts allow-forms allow-popups allow-modals allow-downloads" />;
                     // Desktop is a real desktop-width viewport (1280-1920px) scaled to fill the whole pane: laid out as on a monitor, no empty bands.
                     return device === "desktop" ? <ScaledViewport fit="fill">{frame}</ScaledViewport> : frame;
                   })()}
@@ -681,6 +708,29 @@ export function AppBuilder() {
         </Suspense>
       ) : null}
       <Toast text={toast} />
+    </div>
+  );
+}
+
+/** What still needs fixing: problems the last build saved with, and errors the running preview reported. One click sends them as a (fast) edit. */
+function IssueBar({ open, errors, onFix }: { open: string[]; errors: { message: string; file: string; line: number; route: string }[]; onFix: (items: string[]) => void }) {
+  const [expanded, setExpanded] = useState(false);
+  const items = [
+    ...errors.map((e) => `While running on screen ${e.route}: ${e.message}${e.file ? ` (${e.file}${e.line ? `:${e.line}` : ""})` : ""}`),
+    ...open.map((o) => `Found in testing: ${o}`),
+  ];
+  if (!items.length) return null;
+  const title = errors.length && open.length ? `${errors.length} error${errors.length === 1 ? "" : "s"} while running · ${open.length} open from testing`
+    : errors.length ? `The app hit ${errors.length === 1 ? "an error" : `${errors.length} errors`} while running`
+    : `${open.length} issue${open.length === 1 ? "" : "s"} still open after testing`;
+  return (
+    <div className={s.issueBar} role="status">
+      <div className={s.issueRow}>
+        <span className={s.issueDot} aria-hidden="true" />
+        <button type="button" className={s.issueTitle} onClick={() => setExpanded((x) => !x)} aria-expanded={expanded}>{title}</button>
+        <button type="button" className={s.cta} onClick={() => onFix(items)}>Fix {items.length === 1 ? "it" : "these"}</button>
+      </div>
+      {expanded ? <ul className={s.issueList}>{items.map((x) => <li key={x}>{x}</li>)}</ul> : null}
     </div>
   );
 }

@@ -30,7 +30,7 @@ export async function fixProblems(o: {
   L: AppBuildLimits;
   deadline: number;
   onFile?: (path: string) => void;
-}): Promise<{ files: Record<string, string>; changed: string[]; usd: number }> {
+}): Promise<{ files: Record<string, string>; changed: string[]; usd: number; failed: number; skipped: number }> {
   const byFile = new Map<string, Problem[]>();
   const loose: Problem[] = [];
   for (const p of o.problems) {
@@ -50,6 +50,8 @@ export async function fixProblems(o: {
   const out: Record<string, string> = {};
   const changed: string[] = [];
   const queue = groups.slice(0, 8);
+  const skipped = Math.max(0, groups.length - queue.length);
+  let failed = 0;
   const worker = async () => {
     for (let g = queue.shift(); g; g = queue.shift()) {
       const editable = g.any ? Object.keys(o.files).filter((p) => !claimed.has(p) && p !== "index.html") : g.files;
@@ -77,9 +79,10 @@ export async function fixProblems(o: {
         }
       } catch (e) {
         usd += (e as { usd?: number }).usd ?? 0;
+        failed += 1;
       }
     }
   };
   await Promise.all(Array.from({ length: Math.max(1, Math.min(o.L.parallel, queue.length)) }, worker));
-  return { files: { ...o.files, ...out }, changed, usd };
+  return { files: { ...o.files, ...out }, changed, usd, failed, skipped };
 }
