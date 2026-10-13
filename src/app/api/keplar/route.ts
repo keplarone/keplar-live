@@ -20,6 +20,7 @@ import { activeOutputRule } from "@/lib/orchestration/output-rules";
 import { pickConsciousnessAnswer, voiceTopic } from "@/lib/persona";
 import { guardReply } from "@/lib/orchestration/identity-guards";
 import { assumptionLine, pricingReply, understand, understandingBlock, type Understood } from "@/lib/orchestration/understand";
+import { selfKnowledgeNote } from "@/lib/orchestration/self-knowledge";
 import { followupPrompt, followupRead, resolveFollowup } from "@/lib/orchestration/followup";
 import { commonSenseNote } from "@/lib/orchestration/common-sense";
 import { scrubCreatorAges } from "@/lib/identity";
@@ -451,7 +452,8 @@ export async function POST(request: Request) {
     }
     // How to read a fragmentary message, how to meet the person's mood, and whether humor fits: guidance ahead of the question (never shown).
     const mood = understood ? understood.mood : detectMood(askedPrompt);
-    const guidance = [understood ? understandingBlock(understood, askedPrompt) : "", commonSenseNote(understood?.followup?.question ?? askedPrompt), moodNote(mood), humorNote(askedPrompt, mood), answerLanguageNote(request.headers.get("cookie"))].filter(Boolean).join("\n");
+    // Questions about Keplar itself ("can you build a website?", "do you have an API?") get the product's own fact sheet.
+    const guidance = [understood ? understandingBlock(understood, askedPrompt) : "", selfKnowledgeNote(understood?.followup?.question ?? askedPrompt), commonSenseNote(understood?.followup?.question ?? askedPrompt), moodNote(mood), humorNote(askedPrompt, mood), answerLanguageNote(request.headers.get("cookie"))].filter(Boolean).join("\n");
     if (guidance) req.memory = `${guidance}\n\n${req.memory ?? "The question:\n"}`;
     // Answer preferences, the chosen specialist and Reason framing (src/lib/personalize/turn.ts). Fenced data; Free keeps "About you" and knowledge home.
     const personal = await personalContext({ workspaceId: ws.id, personalAllowed, withhold: mayTrain && ws.plan === "free", specialistId: req.specialistId, reason: req.modes?.reason === true }).catch(() => null);
