@@ -29,6 +29,9 @@ export const PRODUCTION_URL = `https://${PRODUCTION_HOST}`;
 /** Docs subdomain: same project, serves /docs (see src/proxy.ts rewrite). */
 export const DOCS_HOST = `docs.${PRODUCTION_HOST}`;
 export const DOCS_URL = `https://${DOCS_HOST}`;
+/** Space Studio subdomain: same project; serves the Space Studio pages at the root (src/proxy.ts spaceHost). */
+export const SPACE_HOST = `space.${PRODUCTION_HOST}`;
+export const SPACE_URL = `https://${SPACE_HOST}`;
 /** Business subdomain: same project; until Keplar Business is built it serves one landing page (src/proxy.ts businessHost). */
 export const BUSINESS_HOST = `business.${PRODUCTION_HOST}`;
 
