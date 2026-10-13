@@ -13,6 +13,7 @@ import { copyFileSync, existsSync, linkSync, mkdirSync, mkdtempSync, readdirSync
 import { tmpdir } from "node:os";
 import { delimiter, join, resolve } from "node:path";
 import { run } from "./spawn.mjs";
+import { makeStamp } from "./deploy-stamp.mjs";
 
 const win = process.platform === "win32";
 
@@ -40,6 +41,9 @@ const fail = (m) => { console.error(`\ndeploy: ${m}`); process.exit(1); };
 
 if (!existsSync(nm)) fail(`node_modules not found at ${nm} (set KEPLAR_NODE_MODULES)`);
 if (!dry && !process.env.VERCEL_TOKEN) fail("VERCEL_TOKEN is not set");
+// The production build refuses an upload without this stamp (scripts/build-guard.mjs): <ref> must contain origin/main.
+let stamp = null;
+if (!dry) { try { stamp = makeStamp(repo, sha, { checkClean: false }); } catch (e) { fail(e.message); } }
 if (existsSync(dir)) { spawnSync("git", ["worktree", "remove", "--force", dir], { cwd: repo }); rmSync(dir, { recursive: true, force: true }); }
 execFileSync("git", ["worktree", "add", "-q", "--detach", dir, sha], { cwd: repo, stdio: "ignore" });
 // Turbopack rejects a node_modules symlink that points outside the project, so hard-link a copy (same filesystem: instant, no extra disk).
@@ -62,7 +66,7 @@ const env = { ...process.env, HOME: home, VERCEL_ORG_ID: "team_nS1LQFUJNE9aln2WT
 // Windows: the env key is "Path" (adding "PATH" would make a second, conflicting entry) and the home dir comes from USERPROFILE.
 if (win) env.USERPROFILE = home;
 else env.PATH = `/home/box/.local/bin${delimiter}${process.env.PATH}`;
-const dep = run("vercel", ["--prod", "--yes", "--token", process.env.VERCEL_TOKEN], { cwd: dir, env, encoding: "utf8" });
+const dep = run("vercel", ["--prod", "--yes", ...stamp.args, "--token", process.env.VERCEL_TOKEN], { cwd: dir, env, encoding: "utf8" });
 const out = `${dep.stdout}\n${dep.stderr}`.replaceAll(process.env.VERCEL_TOKEN, "***");
 console.log(out.split("\n").slice(-12).join("\n"));
 rmSync(home, { recursive: true, force: true });

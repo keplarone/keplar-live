@@ -12,7 +12,10 @@ What it does, in order:
 3. `vercel --prod --yes` with a fresh `HOME`, `.vercel/project.json` for the Keplar project, and `VERCEL_TOKEN` from the environment (never printed).
 4. Post-deploy smoke (`scripts/smoke-prod.mjs`, read-only GETs): key pages load, `/api/health` is `ok`, `/admin` is hidden when signed out, security headers present. If it fails, roll back ([runbooks/rollback.md](runbooks/rollback.md)).
 
+Deploy guard: every production build runs `scripts/build-guard.mjs` first. A CLI upload must carry `KEPLAR_DEPLOY_STAMP` (added by `npm run deploy` and `npm run deploy:prod` after checking the tree contains origin/main) and must not be older than the live site's `/deploy-stamp.json`; otherwise the build fails and production keeps the current deployment.
+
 Useful variants
+- `npm run deploy:prod`: no gate; checks origin/main, uncommitted and unpushed changes, then deploys with the stamp.
 - `--dry-run`: steps 1–2 only (a full gate run, no deploy).
 - `--quick`: gate without build and browser smoke. Only for docs-only changes.
 - `npm run verify` / `npm run verify:quick`: run the gate in the current tree. Logs go to `/tmp/keplar-verify/`.
