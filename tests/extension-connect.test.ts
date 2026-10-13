@@ -147,6 +147,22 @@ test("disconnect: the extension revokes its own connection; a key made by hand c
   assert.equal((await usage(again)).status, 401);
 });
 
+test("the extension's chrome-extension:// origin gets through the cross-site guard, and these routes never read cookies", async () => {
+  const { isOriginExempt } = await import("@/lib/security/origin");
+  const { readFileSync } = await import("node:fs");
+  for (const r of ["connect", "token", "disconnect"]) {
+    assert.equal(isOriginExempt(`/api/extension/${r}`), true, `${r}: the proxy lets the extension's POST through`);
+    const src = readFileSync(`src/app/api/extension/${r}/route.ts`, "utf8");
+    assert.doesNotMatch(src, /getSession|cookies\(|headers\.get\("cookie"\)|currentWorkspace|requireAccount/, `${r} never rides on a browser session`);
+  }
+  // Signed in or not, a cookie changes nothing: collecting still needs the verifier.
+  const u = await signIn(email("cookie"), "plus");
+  const b = await begin();
+  assert.equal((await approve(b.rid, u.cookie)).status, 200);
+  const viaCookie = (await (await tokenPost(ext("token", { rid: b.rid }, { cookie: u.cookie }))).json()) as Record<string, any>;
+  assert.equal(viaCookie.status, "invalid");
+});
+
 test(`at most ${MAX_EXTENSION_CONNECTIONS} browsers per account: connecting one more retires the oldest`, async () => {
   const u = await signIn(email("cap"), "plus");
   const keys: string[] = [];
