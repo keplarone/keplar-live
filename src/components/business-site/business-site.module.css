@@ -375,3 +375,5 @@
   .plan + .plan, .plan:nth-child(3), .plan:nth-child(4) { box-shadow: inset 0 0 0 1px var(--kb-border); }
   .moreGrid { grid-template-columns: minmax(0, 1fr); }
 }
+/* price block: the crossed-out list price on its own line above, so every card lines up */
+.price { flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 2px; min-height: 104px; }

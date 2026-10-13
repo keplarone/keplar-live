@@ -167,8 +167,8 @@ function useSmoothAnchors(root: React.RefObject<HTMLElement | null>) {
       const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const offset = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
       const from = window.scrollY;
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      const to = Math.max(0, Math.min(max, target.getBoundingClientRect().top + from - offset));
+      const dest = () => Math.max(0, Math.min(document.documentElement.scrollHeight - window.innerHeight, target.getBoundingClientRect().top + window.scrollY - offset));
+      const to = dest();
       history.pushState(null, "", `#${id}`);
       const done = () => target.focus({ preventScroll: true });
       if (jump || Math.abs(to - from) < 2) { window.scrollTo({ top: to, behavior: "instant" }); done(); return; }
@@ -177,7 +177,8 @@ function useSmoothAnchors(root: React.RefObject<HTMLElement | null>) {
       const step = (now: number) => {
         const p = Math.min(1, (now - t0) / duration);
         const eased = 1 - Math.pow(1 - p, 4);
-        window.scrollTo({ top: from + (to - from) * eased, behavior: "instant" });
+        // aim at where the section is now, so late layout (fonts, images) never ends the glide with a hop
+        window.scrollTo({ top: from + (dest() - from) * eased, behavior: "instant" });
         if (p < 1) frame = requestAnimationFrame(step); else { frame = 0; done(); }
       };
       frame = requestAnimationFrame(step);
