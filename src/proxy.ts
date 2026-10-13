@@ -97,6 +97,11 @@ export function docsHost(req: NextRequest) {
  */
 export function spaceHost(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
+  if (pathname === "/favicon.ico") {
+    const url = req.nextUrl.clone();
+    url.pathname = "/icons/space-studio-favicon.ico";
+    return NextResponse.rewrite(url);
+  }
   const last = pathname.slice(pathname.lastIndexOf("/") + 1);
   if (pathname.startsWith("/_next/") || pathname.startsWith("/api/") || pathname.startsWith("/og/") || pathname.startsWith("/icons/") || pathname.startsWith("/fonts/") || last.includes(".")) {
     return NextResponse.next();

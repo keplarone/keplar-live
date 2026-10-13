@@ -17,8 +17,12 @@ test("space.keplar.one is an app host and serves Space Studio at the root", asyn
 });
 
 test("space.keplar.one passes Space Studio pages, API and assets through, and sends anything else to keplar.one", async () => {
-  for (const p of ["/space-studio", "/space-studio/app", "/api/space-studio/me", "/_next/static/x.js", "/favicon.ico"]) assert.equal(rewriteOf(await space(p)), null, p);
+  for (const p of ["/space-studio", "/space-studio/app", "/api/space-studio/me", "/_next/static/x.js", "/robots.txt"]) assert.equal(rewriteOf(await space(p)), null, p);
   const r = await space("/pricing?x=1");
   assert.equal(r.status, 308);
   assert.equal(r.headers.get("location"), "https://keplar.one/pricing?x=1");
+});
+
+test("space.keplar.one serves the Space Studio favicon", async () => {
+  assert.equal(rewriteOf(await space("/favicon.ico")), `https://${SPACE_HOST}/icons/space-studio-favicon.ico`);
 });

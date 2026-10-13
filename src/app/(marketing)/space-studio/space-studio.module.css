@@ -1,5 +1,6 @@
 .page { background: #05060f; color: #e8eaf6; min-height: 100vh; padding: 0 16px 96px; }
 .hero { max-width: 880px; margin: 0 auto; padding: 112px 0 48px; }
+.logo { display: block; width: 96px; height: 96px; margin: 0 0 24px; }
 .kicker { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #b9a4ff; margin: 0 0 16px; }
 .title { font-size: clamp(32px, 5.4vw, 56px); line-height: 1.08; font-weight: 700; letter-spacing: -.02em; margin: 0 0 20px; color: #fff; }
 .lede { font-size: 18px; line-height: 1.6; color: #c3c7de; max-width: 680px; margin: 0 0 32px; }

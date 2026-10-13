@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Montserrat } from "next/font/google";
 import { MODELS, PLANS, PRICING_NOTE, publicView } from "@/lib/space-studio/core";
 import { pageMeta } from "@/lib/seo";
@@ -6,11 +7,14 @@ import s from "./space-studio.module.css";
 // Montserrat is SIL OFL; next/font downloads it at build time and serves it from keplar.one.
 const montserrat = Montserrat({ subsets: ["latin"], weight: ["400", "500", "600", "700"], display: "swap" });
 
-export const metadata = pageMeta(
-  "/space-studio",
-  "Space Studio by Keplar: AI for Roblox Studio and Blender",
-  "Space Studio is Keplar's desktop app for Roblox Studio and Blender development, with four Claude-based models: Orbit 3.8, Nebula 4.2, Solar 5.4 and Nova 5.5.",
-);
+export const metadata = {
+  ...pageMeta(
+    "/space-studio",
+    "Space Studio by Keplar: AI for Roblox Studio and Blender",
+    "Space Studio is Keplar's desktop app for Roblox Studio and Blender development, with four Claude-based models: Orbit 3.8, Nebula 4.2, Solar 5.4 and Nova 5.5.",
+  ),
+  icons: { icon: "/icons/space-studio.png", apple: "/icons/space-studio.png" },
+};
 
 const RELEASES = "https://github.com/keplarone/space-studio/releases/latest";
 
@@ -19,6 +23,7 @@ export default function SpaceStudioPage() {
   return (
     <div className={`${s.page} ${montserrat.className}`}>
       <section className={s.hero}>
+        <Image className={s.logo} src="/icons/space-studio.png" alt="Space Studio" width={96} height={96} priority />
         <p className={s.kicker}>Keplar · Space Studio</p>
         <h1 className={s.title}>Build Roblox games and Blender assets with AI that knows both.</h1>
         <p className={s.lede}>
