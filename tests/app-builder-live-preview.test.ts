@@ -61,3 +61,14 @@ test("draft previews (only) load the error reporter; the studio turns reports an
   assert.match(studio, /Fix these problems in the app \(keep everything else as it is\)/);
   assert.match(readFileSync("src/lib/app-builder/pipeline.ts", "utf8"), /b\.open = blocking/);
 });
+
+test("click-to-edit: the preview helper picks elements only on the studio's word, and the studio aims a fast edit at the pick", () => {
+  const helper = readFileSync("public/fx/kapp-report.1.js", "utf8");
+  assert.match(helper, /e\.source !== window\.parent \|\| !d \|\| d\.source !== "keplar-studio"/, "only the hosting studio can turn pick mode on");
+  assert.match(helper, /type: "pick", tag:/);
+  assert.match(helper, /e\.preventDefault\(\); e\.stopPropagation\(\);/, "a pick never runs the app's own click handler");
+  assert.match(helper, /e\.key === "Escape"/);
+  const studio = readFileSync("src/components/create/apps/AppBuilder.tsx", "utf8");
+  assert.match(studio, /change only this element: \$\{p\.label\} \(CSS path: \$\{p\.path\}\)/);
+  assert.match(studio, /if \(d\.type === "ready"\) \{ if \(pickingRef\.current\) tellFrame/, "a reloaded preview re-enters pick mode");
+});

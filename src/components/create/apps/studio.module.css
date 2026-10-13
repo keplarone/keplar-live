@@ -706,3 +706,17 @@
 .issueTitle { flex: 1; min-width: 0; padding: 4px 0; border: 0; background: none; color: var(--c-ink); font: inherit; font-size: 13px; text-align: left; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .issueTitle:hover { text-decoration: underline; text-underline-offset: 3px; }
 .issueList { margin: 0; padding: 0 0 2px 18px; display: flex; flex-direction: column; gap: 4px; max-height: 160px; overflow: auto; font-size: 12.5px; line-height: 1.45; color: var(--c-ink-2); }
+
+/* Click-to-edit: the Select toggle in the preview toolbar and the edit box for the picked element (PickEditor). */
+.pickBtn { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; box-shadow: inset 0 0 0 1px var(--c-border-strong); color: var(--c-ink); font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.pickBtn:hover { background: var(--c-surface-2); }
+.pickBtn[aria-pressed="true"] { background: #3b82f6; box-shadow: none; color: #fff; }
+.pickEditor { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-bottom: var(--b-hairline) solid var(--c-border); background: var(--c-surface-1); }
+.pickHead { display: flex; align-items: baseline; gap: 10px; min-width: 0; font-size: 12.5px; }
+.pickTag { flex: none; padding: 2px 8px; border-radius: 6px; background: #3b82f6; color: #fff; font-family: var(--f-mono, ui-monospace, monospace); font-size: 11.5px; }
+.pickText { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--c-ink-2); }
+.pickRow { display: flex; gap: 8px; align-items: center; }
+.pickInput { flex: 1; min-width: 0; height: 36px; padding: 0 12px; border: 0; border-radius: 10px; background: var(--c-canvas); box-shadow: inset 0 0 0 1px var(--c-border-strong); color: var(--c-ink); font: inherit; font-size: 14px; }
+.pickInput:focus { outline: none; box-shadow: inset 0 0 0 1.5px #3b82f6; }
+/* Narrower windows: the Select toggle is icon-only so Publish stays on the toolbar row. */
+@media (max-width: 1400px) { .pickLabel { display: none; } .pickBtn { width: 32px; padding: 0; justify-content: center; } }
