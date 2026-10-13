@@ -2,7 +2,7 @@ import * as THREE from "three";
 
 /**
  * The home's "How Keplar works" particle scene (ParticleStory.tsx). One cloud of glowing points morphs through three shapes as the
- * section scrolls: a bright core (ask once), five linked clusters with streams back to the centre (several models answer), and one
+ * section scrolls: a bright core (ask once), five linked clusters with streams back to the center (several models answer), and one
  * sphere (you get one answer). Each point carries all three positions; the vertex shader blends them by scroll progress (0..2), with
  * a small per-point delay so the cloud flows rather than snaps. Light theme draws blue points with normal blending; dark theme adds
  * them up so they glow. A soft aura plane sits behind the cloud. The caller owns the frame loop and calls frame() per frame.
@@ -67,7 +67,7 @@ const frag = /* glsl */ `
     float core = smoothstep(0.4, 0.0, d);
     float halo = exp(-d * d * 5.0) * (1.0 - d);
     float a = (core * 0.85 + halo * 0.4) * vAlpha;
-    vec3 c = mix(vColor, mix(vColor * 0.8, vec3(1.0), 0.65 * uDark), core);
+    vec3 c = mix(vColor, mix(vColor * 0.85, vec3(1.0), 0.65 * uDark), core);
     gl_FragColor = vec4(c, a);
   }
 `;
@@ -115,7 +115,7 @@ export function createParticleScene(canvas: HTMLCanvasElement, opts: { lite: boo
   const C = new Float32Array(n * 3);
   const seed = new Float32Array(n);
   const size = new Float32Array(n);
-  const centres = Array.from({ length: MODELS }, (_, m) => {
+  const centers = Array.from({ length: MODELS }, (_, m) => {
     const a = (m / MODELS) * Math.PI * 2 + Math.PI / 2;
     return new THREE.Vector3(Math.cos(a) * 1.75, Math.sin(a) * 1.15, Math.sin(a * 2) * 0.4);
   });
@@ -127,8 +127,8 @@ export function createParticleScene(canvas: HTMLCanvasElement, opts: { lite: boo
     const r = Math.random() < 0.82 ? 0.04 + 0.32 * Math.pow(Math.random(), 1.6) : 0.4 + 2.1 * Math.pow(Math.random(), 2);
     v.copy(unit()).multiplyScalar(r).toArray(A, i * 3);
 
-    // B: five model clusters, each a small orb with a tilted ring, linked to the centre by streams
-    const c = centres[i % MODELS];
+    // B: five model clusters, each a small orb with a tilted ring, linked to the center by streams
+    const c = centers[i % MODELS];
     const roll = Math.random();
     if (roll < 0.16) {
       const t = Math.random();
@@ -169,7 +169,7 @@ export function createParticleScene(canvas: HTMLCanvasElement, opts: { lite: boo
   const uniforms = {
     uP: { value: 0 },
     uT: { value: 0 },
-    uSize: { value: lite ? 30 : 36 },
+    uSize: { value: lite ? 44 : 54 },
     uPr: { value: pr },
     uDark: { value: opts.dark ? 1 : 0 },
   };
@@ -198,7 +198,7 @@ export function createParticleScene(canvas: HTMLCanvasElement, opts: { lite: boo
   };
   setDark(opts.dark);
 
-  // Wide screens put the captions on the left, so the cloud sits right of centre; narrow ones stack it above the captions.
+  // Wide screens put the captions on the left, so the cloud sits right of center; narrow ones center it between the title and the steps.
   const resize = () => {
     const w = Math.max(1, canvas.clientWidth);
     const h = Math.max(1, canvas.clientHeight);
@@ -208,9 +208,9 @@ export function createParticleScene(canvas: HTMLCanvasElement, opts: { lite: boo
     camera.updateProjectionMatrix();
     const halfH = Math.tan((camera.fov * Math.PI) / 360) * camera.position.z;
     const wide = aspect > 1.15;
-    const fit = wide ? 1 : Math.min(1, (aspect * halfH) / 2.15);
+    const fit = wide ? 1 : Math.min(1, (aspect * halfH) / 2.0);
     group.scale.setScalar(fit);
-    group.position.set(wide ? halfH * aspect * 0.32 : 0, wide ? 0 : halfH * 0.32, 0);
+    group.position.set(wide ? halfH * aspect * 0.32 : 0, 0, 0);
     aura.position.x = group.position.x;
     aura.position.y = group.position.y;
   };

@@ -331,7 +331,7 @@
   transition: opacity 0.8s var(--e-standard);
 }
 .storyGlow[data-hidden] { opacity: 0; }
-:global(:root[data-theme="dark"]) .storyGlow { background: radial-gradient(circle, rgb(70 130 240 / 0.5), rgb(40 90 200 / 0.2) 45%, transparent 70%); }
+:global(:root[data-theme="dark"]) .storyGlow { background: radial-gradient(circle, rgb(60 145 225 / 0.5), rgb(40 120 170 / 0.2) 45%, transparent 70%); }
 .storyText {
   position: relative;
   width: 100%;
@@ -344,7 +344,7 @@
   gap: 40px;
   pointer-events: none;
 }
-.storyTitle { text-align: left; max-width: 12ch; }
+.storyTitle { text-align: left; max-width: 18ch; }
 .storyTitle span { display: block; }
 .storySteps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; max-width: 420px; }
 .storySteps li {
@@ -361,7 +361,7 @@
   opacity: 1;
   background: rgb(255 255 255 / 0.72);
   border-color: var(--c-border);
-  box-shadow: 0 1px 2px rgb(14 15 18 / 0.05), 0 18px 40px -22px rgb(30 80 160 / 0.35);
+  box-shadow: 0 1px 2px rgb(14 15 18 / 0.05), 0 18px 40px -22px rgb(50 115 155 / 0.35);
   transform: translateX(6px);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);

@@ -47,8 +47,10 @@ export function ParticleStory({ title, muted, steps }: { title: string; muted: s
     const loop = (now: number) => {
       raf = requestAnimationFrame(loop);
       if (now - lastFrame < gap || !scene) return;
+      const dt = lastFrame ? Math.min(0.1, (now - lastFrame) / 1000) : 0.016;
       lastFrame = now;
-      p += (target() - p) * 0.08;
+      // ease toward the scroll position (time-based, so 30 fps and 120 fps settle alike)
+      p +=(target() - p) * Math.min(1, dt * 5);
       const step = p < 0.55 ? 0 : p < 1.45 ? 1 : 2;
       if (step !== shown) { shown = step; setActive(step); }
       scene.frame(now, p);
