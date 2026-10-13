@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { APP_HEADERS, APP_PAGE_HEADERS, BASE_HEADERS, FX_HEADERS } from "./src/lib/security/headers";
+import { APP_HEADERS, APP_PAGE_HEADERS, BASE_HEADERS, BUSINESS_PAGE_HEADERS, FX_HEADERS } from "./src/lib/security/headers";
 
 const PRODUCTION_HOST = "keplar.one"; // keep in sync with src/lib/site.ts
 // Keplar's own hosts. Anything else that reaches the app is a customer's custom domain (src/proxy.ts), which must NOT get the
@@ -115,7 +115,7 @@ const nextConfig: NextConfig = {
       },
       // The signed-in app pages (/app/*) only: Google Fonts for typography previews, and Stripe.js for bank linking.
       { source: "/app/:path*", has: [{ type: "host", value: OWN_HOSTS }], headers: APP_PAGE_HEADERS },
-      { source: "/((?!api/|_next/).*)", has: [{ type: "host", value: BUSINESS_HOSTS }], headers: APP_PAGE_HEADERS },
+      { source: "/((?!api/|_next/).*)", has: [{ type: "host", value: BUSINESS_HOSTS }], headers: BUSINESS_PAGE_HEADERS },
       {
         // Previews and local hosts are noindex. (Customers' own domains are not matched here: a published site decides
         // for itself through its robots meta tag and robots.txt; see src/proxy.ts and docs/custom-domains.md.)
