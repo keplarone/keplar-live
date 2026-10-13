@@ -36,4 +36,4 @@
 :root[data-pref-underline-links] a:not([role="menuitem"]):not([role="tab"]):not([class*="btn"]):not([class*="Btn"]) { text-decoration: underline; text-underline-offset: 3px; }
 
 /* Always-visible focus rings (the glass UI otherwise shows focus subtly) */
-:root[data-pref-focus-rings] :focus-visible { outline: 2px solid var(--c-ink) !important; outline-offset: 2px !important; }
+:root[data-pref-focus-rings] :focus-visible:not(textarea, input:not([type="checkbox"], [type="radio"], [type="range"], [type="button"], [type="submit"], [type="file"])) { outline: 2px solid var(--c-ink) !important; outline-offset: 2px !important; }
