@@ -169,3 +169,12 @@ test("health reports auth-secret and rate-limit backend without leaking secrets"
   assert.ok(["memory", "postgres", "upstash"].includes(h.body.security?.rateLimit ?? ""));
   assert.doesNotMatch(JSON.stringify(h.body), /keplar-dev-only|BETTER_AUTH_SECRET=\w/);
 });
+
+test("Keplar Business pages can show images stored on keplar.one (the tester's screenshots); nothing else widens", async () => {
+  const { BUSINESS_PAGE_HEADERS, APP_PAGE_HEADERS } = await import("../src/lib/security/headers");
+  const csp = (hs: { key: string; value: string }[]) => hs.find((h) => h.key === "Content-Security-Policy")!.value;
+  const biz = csp(BUSINESS_PAGE_HEADERS), app = csp(APP_PAGE_HEADERS);
+  assert.match(biz, /img-src 'self' data: blob: https:\/\/cdn\.whop\.com https:\/\/keplar\.one;/);
+  assert.equal(biz.replace(" https://keplar.one", ""), app, "only img-src differs from the /app CSP");
+  assert.ok(readFileSync("next.config.ts", "utf8").includes("BUSINESS_HOSTS }], headers: BUSINESS_PAGE_HEADERS"));
+});

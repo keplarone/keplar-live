@@ -110,3 +110,13 @@ export const APP_PAGE_HEADERS = [
   { key: "Content-Security-Policy", value: APP_PAGE_CSP },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
 ];
+
+/**
+ * Keplar Business pages (business.keplar.one, next.config.ts): the /app CSP above, plus images from keplar.one. Create stores
+ * the tester's screenshots and other workspace images at https://keplar.one/i/<id> (src/app/i, CORP cross-origin), and
+ * 'self' on the Business host doesn't cover them, so they rendered as broken images there. Images only; nothing else widens.
+ */
+export const KEPLAR_IMAGES = "https://keplar.one";
+export const BUSINESS_PAGE_HEADERS = APP_PAGE_HEADERS.map((h) =>
+  h.key === "Content-Security-Policy" ? { ...h, value: h.value.replace(`img-src 'self' data: blob: ${WHOP}`, `img-src 'self' data: blob: ${WHOP} ${KEPLAR_IMAGES}`) } : h,
+);
