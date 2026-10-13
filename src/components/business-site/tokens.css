@@ -100,6 +100,41 @@ html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] {
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 24px 64px -16px rgba(0, 0, 0, 0.8);
 }
 
+/* The banner in x.ai's style on Business: a solid near-black card with a hairline and 16px corners, Google Sans, a white title
+   over grey text, a solid white pill (Accept all), a dark grey pill (Reject) and a plain grey text button (Customize).
+   No glass blur and no springy scale. Keplar One keeps its own banner. */
+html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] {
+  font-family: var(--font-sans), "Google Sans", system-ui, sans-serif;
+  background: #111; border: 0; border-radius: 16px; padding: 18px 18px 16px; gap: 6px;
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__title"] { font-size: 15px; font-weight: 500; letter-spacing: -0.01em; color: #fafafa; }
+html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__text"] { font-size: 13px; line-height: 1.5; color: #a1a1a1; }
+html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__link"] { color: #fafafa; text-decoration-color: rgba(255, 255, 255, 0.35); }
+html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__actions"] { gap: 8px; margin-top: 8px; }
+html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] :is([class*="__primary"], [class*="__secondary"], [class*="__tertiary"]) {
+  min-height: 38px; padding: 0 16px; border: 0; border-radius: 999px; font-family: inherit; font-size: 13px; font-weight: 500;
+  box-shadow: none; transform: none; -webkit-backdrop-filter: none; backdrop-filter: none;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__primary"] { background: #fafafa; color: #0a0a0a; }
+html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__primary"]:hover:not(:disabled) { background: #e2e2e2; transform: none; }
+html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__secondary"] { background: #262626; color: #fafafa; }
+html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__secondary"]:hover { background: #303030; }
+html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__tertiary"] { background: transparent; color: #a1a1a1; text-decoration: none; padding: 0 10px; }
+html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__tertiary"]:hover { color: #fafafa; }
+html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__cat"] { font-size: 13px; color: #a1a1a1; }
+html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__cat"] b { color: #fafafa; font-weight: 500; }
+@media (pointer: coarse), (max-width: 640px) {
+  html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] :is([class*="__primary"], [class*="__secondary"], [class*="__tertiary"]) { min-height: 44px; }
+}
+@media (max-width: 640px) {
+  /* all three on one row at 390px */
+  html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] :is([class*="__primary"], [class*="__secondary"]) { padding: 0 13px; }
+  html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__tertiary"] { padding: 0 6px; }
+  html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__actions"] { gap: 6px; }
+}
+
 /* Scrollbars on Business pages (site and workspace): dark and slim, a rounded grey thumb on the black page, no arrow buttons.
    The page behind is Keplar One's html, whose theme may be light, so Business pins the canvas and scrollbar to dark. */
 /* !important: the root layout and the theme script set color-scheme inline on <html> (Keplar One's light/dark). */
