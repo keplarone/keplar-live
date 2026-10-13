@@ -10,7 +10,7 @@
 
 /* ── shell ── */
 .shell {
-  position: relative; height: 100%; display: grid; grid-template-columns: 248px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr);
+  position: relative; height: 100%; display: grid; grid-template-columns: 272px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr);
   transition: grid-template-columns var(--kb-d-3) var(--kb-ease-in-out);
 }
 .shell[data-collapsed] { grid-template-columns: 0 minmax(0, 1fr); }
@@ -20,7 +20,7 @@
   transition: opacity var(--kb-d-2) var(--kb-ease), border-color var(--kb-d-2) var(--kb-ease);
 }
 .shell[data-collapsed] .side { opacity: 0; border-right-color: transparent; pointer-events: none; }
-.side > * { min-width: 236px; }
+.side > * { min-width: 260px; }
 .sideTop { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 52px; padding: 0 10px 0 14px; }
 .sideBrand { display: inline-flex; align-items: center; gap: 9px; min-width: 0; color: var(--kb-ink); }
 .wordmark { font-family: var(--kb-brand); font-size: 14px; font-weight: 600; letter-spacing: -0.015em; white-space: nowrap; }
@@ -276,3 +276,18 @@
   .below { grid-template-columns: minmax(0, 1fr); margin-top: 16px; }
 }
 .shell { overflow: clip; }
+
+/* ── Account row (bottom left): round avatar, name · plan, chevron; its menu opens above ── */
+.acctWrap { position: relative; flex: 1; min-width: 0; display: flex; }
+.acctWrap .account { gap: 10px; padding: 8px 10px; }
+.acctWrap .avatar { width: 28px; height: 28px; border-radius: 50%; box-shadow: none; background: radial-gradient(circle at 32% 28%, #6b6b78, #2a2a33 70%); color: #fff; font-weight: 600; }
+.acctLine { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--kb-t-md); }
+.acctName { color: var(--kb-ink); font-weight: 500; }
+.acctPlan { color: var(--kb-ink-3); }
+.acctChevron { flex: none; color: var(--kb-ink-3); transition: transform var(--kb-d-2) var(--kb-ease); }
+.account[aria-expanded="true"] .acctChevron { transform: rotate(180deg); }
+.acctMenu { position: absolute; left: 0; right: 0; bottom: calc(100% + 6px); z-index: 30; display: flex; flex-direction: column; gap: 2px; padding: 6px; border-radius: 14px; background: #161616; box-shadow: inset 0 0 0 1px var(--kb-border-strong), 0 18px 40px -16px rgba(0, 0, 0, 0.8); }
+.acctEmail { margin: 2px 8px 6px; font-size: var(--kb-t-sm); color: var(--kb-ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acctItem { display: flex; align-items: center; justify-content: space-between; min-height: 36px; padding: 0 10px; border: 0; border-radius: 10px; background: transparent; color: var(--kb-ink); font: inherit; font-size: var(--kb-t-md); text-align: left; cursor: pointer; }
+.acctItem:hover { background: var(--kb-surface-2); }
+.acctItem:disabled { opacity: 0.6; cursor: default; }
