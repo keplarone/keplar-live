@@ -99,3 +99,16 @@ html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] {
   color-scheme: dark;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 24px 64px -16px rgba(0, 0, 0, 0.8);
 }
+
+/* Scrollbars on Business pages (site and workspace): dark and slim, a rounded grey thumb on the black page, no arrow buttons.
+   The page behind is Keplar One's html, whose theme may be light, so Business pins the canvas and scrollbar to dark. */
+/* !important: the root layout and the theme script set color-scheme inline on <html> (Keplar One's light/dark). */
+html:has(main[data-kb]) { color-scheme: dark !important; background: #0a0a0a; scrollbar-width: thin; scrollbar-color: #2f2f2f #0a0a0a; }
+[data-kb] * { scrollbar-width: thin; scrollbar-color: #2f2f2f transparent; }
+/* Safari and older Chromium read these instead */
+html:has(main[data-kb])::-webkit-scrollbar, [data-kb] *::-webkit-scrollbar { width: 10px; height: 10px; background: transparent; }
+html:has(main[data-kb])::-webkit-scrollbar { background: #0a0a0a; }
+html:has(main[data-kb])::-webkit-scrollbar-thumb, [data-kb] *::-webkit-scrollbar-thumb { background: #2f2f2f; border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
+html:has(main[data-kb])::-webkit-scrollbar-thumb:hover, [data-kb] *::-webkit-scrollbar-thumb:hover { background: #4a4a4a; background-clip: content-box; }
+html:has(main[data-kb])::-webkit-scrollbar-button, [data-kb] *::-webkit-scrollbar-button { display: none; }
+html:has(main[data-kb])::-webkit-scrollbar-corner, [data-kb] *::-webkit-scrollbar-corner { background: transparent; }
