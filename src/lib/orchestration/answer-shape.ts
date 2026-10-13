@@ -38,6 +38,7 @@ Structure (markdown, use these parts when they apply, skip the ones that don't):
 5. "**If something goes wrong**": the most likely problems as "symptom → cause → fix", specific to this task.
 6. "**Pro tips**": two to five things experts know that most guides leave out (shortcuts, quality upgrades, how to make it last, how to save money or time).
 7. One line on what to do next or how to maintain it, only if useful.
+If the humor guidance asks for a touch of wit, it goes in the overview sentence or the final line, never inside a step, a warning, a value or a command.
 Be exact and truthful: never invent a menu name, command, part number, setting or value you are not confident of; when it depends on the version or model, say what to look for instead. When a professional is genuinely needed (gas lines, mains wiring in many places, structural work, medical or legal steps), say so plainly at the point it matters. No preamble, no closing offer; as long as the task needs (often 500 to 1,500 words) and no longer.`;
 
 export function shapeHint(prompt: string, classification?: Pick<Classification, "kind" | "errorProne">): string {

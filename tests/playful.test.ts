@@ -1,12 +1,12 @@
 import "./setup";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { KNOCKS, KNOCK_REACTIONS, JOKE_FALLBACK, cleanPlayful, playfulFallback, playfulRead, runPlayful, setKnockSeedForTests, type PlayRead } from "@/lib/orchestration/playful";
+import { KNOCKS, KNOCK_REACTIONS, JOKE_FALLBACK, cleanPlayful, isStockJoke, playfulFallback, playfulRead, runPlayful, setKnockSeedForTests, type PlayRead } from "@/lib/orchestration/playful";
 import { understand } from "@/lib/orchestration/understand";
 import { createRegistry } from "@/lib/orchestration/providers";
 import { HeuristicClassifier } from "@/lib/orchestration/classifier";
 import { EVAL_SET } from "./fixtures/eval-set";
-import type { KeplarRequest } from "@/lib/orchestration/types";
+import type { KeplarRequest, ModelSpec } from "@/lib/orchestration/types";
 
 type Turn = { role: "user" | "keplar"; text: string };
 const K = (text: string): Turn => ({ role: "keplar", text });
@@ -234,4 +234,22 @@ test("the classifier and router are not involved: playful prompts take the small
   assert.match(src, /const smallTalk = creator \|\| isSmallTalk\(req\) \|\| req\.understanding\?\.intent === "playful"/);
   assert.match(src, /understood\.intent === "playful" && understood\.play\?\.fixed/);
   void new HeuristicClassifier();
+});
+
+test("jokes everybody has heard are passed over while another model tries; kept only when none does better", async () => {
+  assert.ok(isStockJoke("Why don't cats play poker in the jungle? Too many cheetahs."));
+  assert.ok(isStockJoke("Why did the scarecrow win an award? He was outstanding in his field."));
+  assert.ok(!isStockJoke("My cat reviews every box I bring home. Five stars, would sit in again."));
+  const req = (prompt: string): KeplarRequest => ({ prompt, understanding: { intent: "playful", crossCheck: false, mood: "neutral", interpretation: null, play: playfulRead(prompt, [], { mood: "neutral" }) ?? undefined } });
+  const models = [{ id: "a" }, { id: "b" }] as unknown as ModelSpec[];
+  const replies: Record<string, string> = { a: "Why don't cats play poker in the jungle? Too many cheetahs.", b: "My cat reviews every box I bring home. Five stars, would sit in again." };
+  const registry = { once: async (o: { model: { id: string } }) => ({ ok: true, text: replies[o.model.id] }) } as unknown as ReturnType<typeof createRegistry>;
+  const answerOf = async (reg: typeof registry) => {
+    const out = [];
+    for await (const e of runPlayful(req("tell me a joke about cats"), { registry: reg, models, perModelMs: 500, staggerMs: 50 })) out.push(e);
+    return (out.find((e) => e.type === "answer") as { answer: { markdown: string } }).answer.markdown;
+  };
+  assert.match(await answerOf(registry), /reviews every box/);
+  const onlyStock = { once: async () => ({ ok: true, text: replies.a }) } as unknown as ReturnType<typeof createRegistry>;
+  assert.match(await answerOf(onlyStock), /cheetahs/, "a stock joke beats no joke");
 });

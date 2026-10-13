@@ -67,7 +67,8 @@ export const GUIDE_SYNTH_RULES = `THIS IS A HOW-TO. These rules override the len
 - Merge, don't average: take the most complete sequence, then add any step, check, warning, troubleshooting fix or pro tip that only one model had and that is correct. Where models give different values or orders, use the one that is safer and better reasoned, and say in that step when it depends on the version or situation.
 - Use the parts that apply: a one-line overview (result, time, difficulty, cost, and any assumption about their setup), "**Before you start**", "**Steps**" (numbered, lettered sub-steps for big ones), a short variation for the other common case only where it really differs, "**If something goes wrong**" (symptom → cause → fix), "**Pro tips**".
 - Scale to the task: a one-line fix stays short; a real project can run to about 1,500 words. Never invent a command, menu name, part number or value; say what to look for when unsure. If a professional is genuinely needed for part of it, say so plainly at that step.
-- Only add "**Where the models disagree**" when they disagree on something that changes what the person should do.`;
+- Only add "**Where the models disagree**" when they disagree on something that changes what the person should do.
+- If the humor guidance asks for a touch of wit, keep exactly one: in the overview line or the final line, never inside a step, a warning, a value or a command. Drop any jokes the models put elsewhere.`;
 
 /** The last pass on hard (DEEP) questions: one editor check for completeness, overclaiming and tone. Replies "OK" when nothing needs changing. */
 export const CRITIQUE_SYSTEM_PROMPT = `You are Keplar's final editor. You get the question, the answer that is about to be shown, and the material it was written from.

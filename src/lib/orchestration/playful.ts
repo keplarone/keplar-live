@@ -305,7 +305,7 @@ export function playfulRead(prompt: string, history: readonly Turn[] = [], opts:
       kind: ask.riddle ? "riddle" : "joke",
       hint: ask.riddle
         ? "They want a riddle. Ask one short riddle (do not give the answer yet). One or two lines."
-        : `They asked for a joke${ask.topic ? ` about ${ask.topic}` : ""}${again ? " (another one)" : ""}. Tell one short, genuinely funny joke (a pun, a one-liner or a dad joke), one or two lines, with the punchline last. Do not repeat a joke that is already in the conversation.`,
+        : `They asked for a joke${ask.topic ? ` about ${ask.topic}` : ""}${again ? " (another one)" : ""}. Tell one short, genuinely funny joke (a pun, a one-liner or a dad joke), one or two lines, with the punchline last. Make it one they are unlikely to have heard before, not a famous one, and do not repeat a joke that is already in the conversation.`,
     };
   }
 
@@ -381,6 +381,13 @@ export function cleanPlayful(raw: string): string {
   return t;
 }
 
+/**
+ * Jokes everybody has heard. Measured live on 2026-10-13: "tell me a joke about cats" got the cheetahs-at-poker joke even though the voice
+ * asks for fresh material, so a model reply that is one of these is passed over while another model tries (kept only if none does better).
+ */
+const STOCK_JOKES = /\b(?:cheetahs?|purr-?fect|outstanding in (?:his|her|their|its) field|make up everything|impasta|(?:have|had|has)(?:n'?t| no) (?:the )?guts|cross(?:ed)? the road|nacho cheese|seven ate nine|7 ?8 ?9|cat-?astroph\w*|orange you glad|interrupting cow|anti-?gravity|parallel lines|got mugged|grew on me|sofishticated|claws? for concern|meow-?(?:velous|sic)|hiss-?tory|paw-?some)\b/i;
+export const isStockJoke = (text: string) => STOCK_JOKES.test(text);
+
 /** Last few turns as context for the model (the route skips the memory/context step for small talk). */
 function contextOf(history: readonly Turn[] | undefined, prompt: string): string {
   const lines = (history ?? []).slice(-6).map((h) => `${h.role === "user" ? "Them" : "You"}: ${h.text.replace(/\s+/g, " ").slice(0, 200)}`);
@@ -424,17 +431,20 @@ export async function* runPlayful(req: KeplarRequest, deps: PlayfulDeps, signal?
   const timer = setTimeout(() => total.abort(), deps.timeoutMs ?? 10_000);
   const outer = signal ? AbortSignal.any([signal, total.signal]) : total.signal;
   let text = "";
+  let stock = ""; // a stock joke a model gave, used only when no model gives a fresher one
   try {
     text = read.fixed ?? (await firstClean(models, outer, deps.perModelMs ?? 5_000, deps.staggerMs ?? 1_500, async (m, sig) => {
       const r = await deps.registry.once({ model: m, prompt: contextOf(req.history, prompt), classification: CLASSIFICATION, params: { maxOutputTokens: 120 }, slot: "panel", system: `${PLAYFUL_SYSTEM} ${read.hint ?? ""} ${identityPrompt()}`, signal: sig });
-      return r.ok ? cleanPlayful(r.text) : "";
+      const t = r.ok ? cleanPlayful(r.text) : "";
+      if (t && read.kind === "joke" && isStockJoke(t)) { stock ||= t; return ""; }
+      return t;
     }, prompt));
   } catch (e) {
     if (signal?.aborted) throw e;
   } finally {
     clearTimeout(timer);
   }
-  const markdown = polish(guardVoice(text || playfulFallback(req.prompt, read)));
+  const markdown = polish(guardVoice(text || stock || playfulFallback(req.prompt, read)));
   const words = markdown.split(/(?<=\s)/);
   for (let i = 0; i < words.length; i += 6) yield { type: "delta", text: words.slice(i, i + 6).join("") };
   yield { type: "answer", answer: playAnswer(markdown, Date.now() - started) };
