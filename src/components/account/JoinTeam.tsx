@@ -6,6 +6,7 @@
  */
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { businessUrl } from "@/lib/business-site";
 import s from "./account.module.css";
 
 const KEY = "keplar:team-join";
@@ -14,6 +15,7 @@ type Preview = { teamName: string; role: string };
 export function JoinTeam() {
   const [token, setToken] = useState<string | null>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
+  const [business, setBusiness] = useState(false);
   const [state, setState] = useState<"loading" | "ready" | "signin" | "invalid" | "joined" | "error">("loading");
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
@@ -45,9 +47,10 @@ export function JoinTeam() {
     setMsg("");
     try {
       const r = await fetch("/api/team/join", { method: "POST", headers: { "content-type": "application/json" }, credentials: "same-origin", body: JSON.stringify({ token, action: "accept" }) });
-      const j = (await r.json().catch(() => ({}))) as { error?: string };
+      const j = (await r.json().catch(() => ({}))) as { error?: string; business?: boolean };
       if (!r.ok) { setMsg(j.error ?? "Couldn't join the team."); setState("error"); return; }
       sessionStorage.removeItem(KEY);
+      setBusiness(Boolean(j.business));
       setState("joined");
     } finally { setBusy(false); }
   };
@@ -57,7 +60,11 @@ export function JoinTeam() {
   if (state === "joined") return (
     <div role="status">
       <p className={`${s.note} ${s.ok}`}>You joined {preview?.teamName}. You&apos;re now working in the team&apos;s shared workspace; switch back to your personal one any time from the account menu.</p>
-      <div className={s.actions}><Link className={`${s.btn} ${s.btnSm}`} href="/app">Open Keplar</Link></div>
+      {business ? <p className={s.note}>It&apos;s a Keplar Business team: open the Business workspace to work with them on agents, approvals, research and builds.</p> : null}
+      <div className={s.actions}>
+        {business ? <a className={`${s.btn} ${s.btnSm}`} href={businessUrl("/signin?next=%2Fwork")}>Open Keplar Business</a> : null}
+        <Link className={`${s.btn} ${business ? s.btnGhost : ""} ${s.btnSm}`} href="/app">Open Keplar</Link>
+      </div>
     </div>
   );
   return (

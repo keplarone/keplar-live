@@ -22,6 +22,7 @@ import { workspaceIdForUser } from "@/lib/accounts/workspaces";
 import { auditRows, inviteRows, isTeamId, memberRows, membershipIndex, teams, type AuditRow, type InviteRow, type MemberRow, type TeamRow } from "./rows";
 import { INVITE_TTL_DAYS, isAssignable, mayAssign, mayManage, ROLE_LABEL, TEAM_NAME_MAX, TEAM_POLICY, teamAvailable, type TeamRole } from "./policy";
 import { effectivePlanOf } from "./plan";
+import { businessSeats } from "@/lib/business/seats";
 
 import { hashToken, memberIdFor, newTeamId } from "./ids";
 export { hashToken, memberIdFor, newTeamId };
@@ -96,7 +97,9 @@ export async function renameTeam(team: TeamRow, actor: Actor, nameWanted: unknow
 // ---- capacity
 export async function capacity(team: TeamRow) {
   const plan = await effectivePlanOf(team);
-  const p = TEAM_POLICY[plan];
+  // On Keplar Business the seats are the tier the owner bought (Starter 1, Growth 5, Scale 15), not the flat team policy.
+  const seats = plan === "business" ? await businessSeats(team.ownerWorkspaceId, team.ownerEmail) : null;
+  const p = seats ? { ...TEAM_POLICY[plan], maxMembers: seats } : TEAM_POLICY[plan];
   const members = await listMembers(team.id);
   const open = (await inviteRows().list(team.id)).filter(isOpen);
   return { plan, policy: p, members: members.length, openInvites: open.length, seatsLeft: Math.max(0, p.maxMembers - members.length) };
