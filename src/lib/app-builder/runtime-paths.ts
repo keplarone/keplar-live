@@ -1,5 +1,6 @@
 /** Public paths of the Keplar Apps browser runtime (built by scripts/build-kapp.mjs into public/fx; /fx/*.js is also served on custom domains). */
-export const KAPP_VERSION = "1";
+// 2: list/get take `expand` (2026-10). The /fx/*.1.js files stay for anything cached against them.
+export const KAPP_VERSION = "2";
 export const KAPP_SDK_PATH = `/fx/kapp.${KAPP_VERSION}.js`;
 export const KAPP_UI_PATH = `/fx/kapp-ui.${KAPP_VERSION}.js`;
 export const KAPP_THREE_PATH = `/fx/kapp-three.${KAPP_VERSION}.js`;

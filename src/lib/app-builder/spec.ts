@@ -3,7 +3,7 @@
  * types and access levels come from fixed lists, sizes are bounded, and the plan's limits are applied (Free = front-end only).
  * The runtime trusts only a spec that went through normalizeSpec.
  */
-import { ACCESS, APP_KINDS, FIELD_TYPES, type Access, type AiActionSpec, type AppKind, type AppSpec, type CollectionSpec, type FieldSpec, type FilePlan, type ImageSlot, type PageSpec } from "./types";
+import { ACCESS, APP_KINDS, FIELD_TYPES, type Access, type AiActionSpec, type AppKind, type AppSpec, type CollectionSpec, type FieldSpec, type FilePlan, type ImageSlot, type PageSpec, type ScheduleSpec } from "./types";
 import type { AppBuildLimits } from "./models";
 
 const IDENT = /^[a-z][a-zA-Z0-9_]{0,31}$/;
@@ -125,6 +125,17 @@ export function normalizeSpec(raw: unknown, L: AppBuildLimits, prompt: string): 
     ai = [];
   }
   const authEnabled = L.backend && authRaw.enabled === true;
+  // Scheduled jobs: only when both the AI action and a text field to save into exist (otherwise the job could never run).
+  const schedules: ScheduleSpec[] = !L.backend || !ai.length ? [] : arr(o.schedules).map((v) => {
+    const x = (v ?? {}) as Record<string, unknown>;
+    const save = (x.save ?? {}) as Record<string, unknown>;
+    const input = (x.input && typeof x.input === "object" && !Array.isArray(x.input) ? x.input : {}) as Record<string, unknown>;
+    return { name: ident(x.name), label: s(x.label, 80), every: x.every === "week" ? ("week" as const) : ("day" as const), ai: ident(x.ai), input: Object.fromEntries(Object.entries(input).slice(0, 8).map(([k, val]) => [ident(k), s(val, 2000)]).filter(([k]) => k)), save: { collection: ident(save.collection), field: ident(save.field) } };
+  }).filter((j) => {
+    const col = collections.find((c) => c.name === j.save.collection);
+    const f = col?.fields.find((ff) => ff.name === j.save.field);
+    return j.name && ai.some((a) => a.name === j.ai) && f && (f.type === "text" || f.type === "longtext");
+  }).slice(0, 4);
   let files = arr(o.files).map(filePlan).filter((f): f is FilePlan => Boolean(f));
   const seenF = new Set<string>();
   files = files.filter((f) => (seenF.has(f.path) ? false : (seenF.add(f.path), true))).slice(0, L.maxFiles);
@@ -153,6 +164,7 @@ export function normalizeSpec(raw: unknown, L: AppBuildLimits, prompt: string): 
       profileFields: authEnabled ? arr(authRaw.profileFields).map((f) => ident(f)).filter((f) => f && !["email", "role", "id"].includes(f)).slice(0, 10) : [],
     },
     ai,
+    ...(schedules.length ? { schedules } : {}),
     features: arr(o.features).map((f, i) => {
       const x = (f ?? {}) as Record<string, unknown>;
       return { id: ident(x.id) || `f${i + 1}`, title: s(x.title, 100), detail: s(x.detail, 300), must: x.must !== false };

@@ -72,3 +72,11 @@ test("click-to-edit: the preview helper picks elements only on the studio's word
   assert.match(studio, /change only this element: \$\{p\.label\} \(CSS path: \$\{p\.path\}\)/);
   assert.match(studio, /if \(d\.type === "ready"\) \{ if \(pickingRef\.current\) tellFrame/, "a reloaded preview re-enters pick mode");
 });
+
+test("studio previews are signed for a day and renewed by the studio before they run out", async () => {
+  const { previewUrlFor, STUDIO_PREVIEW_TTL_MS } = await import("@/lib/app-builder/public");
+  const exp = Number(/\/(\d{9,})\.[^/]+\/$/.exec(previewUrlFor({ id: "sit_ttl" }, 3))![1]) * 1000;
+  assert.ok(Math.abs(exp - (Date.now() + STUDIO_PREVIEW_TTL_MS)) < 5_000);
+  assert.equal(STUDIO_PREVIEW_TTL_MS, 24 * 3_600_000);
+  assert.match(readFileSync("src/components/create/apps/AppBuilder.tsx", "utf8"), /previewExp - 30 \* 60_000/);
+});

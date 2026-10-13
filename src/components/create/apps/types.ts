@@ -39,6 +39,7 @@ export type PublicSpec = {
   collections: { name: string; label: string; fields: string[]; realtime?: boolean }[];
   ai: { name: string; label: string }[];
   auth: boolean; files: string[]; images: string[];
+  schedules?: { name: string; label: string; every: "day" | "week" }[];
 };
 export type Check = { id: string; label: string; ok: boolean; detail: string; route?: string };
 export type Verdict = { id: string; title: string; status: "built" | "partial" | "missing"; evidence: string };
@@ -47,6 +48,8 @@ export type Report = { checks: Check[]; verdicts: Verdict[]; visual: Visual | nu
 export type AppDetail = {
   id: string; name: string; slug: string; kind: string; spec: PublicSpec | null; design: Design | null; settings: { signups: boolean; ai: boolean; uploads: boolean } | null; admins: string[];
   report: Report | null; previewUrl: string | null; liveUrl: string | null; publishedVersion: number | null; headVersion: number;
+  /** Incoming webhook URLs of the published app, one per collection. */
+  hooks?: { collection: string; label: string; url: string }[];
 };
 /** GET /api/apps/:id: the app, its newest unfinished build (null when the newest is done) and its versions, newest first. */
 export type AppDetailResponse = { app: AppDetail; build: { id: string; stage: string; error?: string | null; startedAt?: string; updatedAt?: string; spec?: PublicSpec | null; checks?: Check[]; verdicts?: Verdict[]; log?: { at: string; text: string }[] } | null; versions?: VersionMeta[] };

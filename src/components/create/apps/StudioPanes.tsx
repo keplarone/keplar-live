@@ -61,6 +61,28 @@ export function SettingsPane({ app, onSaved }: { app: AppDetail; onSaved: () => 
       <label className={s.switch}><input type="checkbox" checked={settings.ai} onChange={(e) => setSettings({ ...settings, ai: e.target.checked })} />AI features (each call uses your credits)</label>
       <label className={s.field}><span>Admins (sign in to the app with these emails to get admin screens)</span><input className={s.input} value={admins} onChange={(e) => setAdmins(e.target.value)} /></label>
       <div className={s.paneHead}><button type="button" className={s.ghostBtn} onClick={save}>Save</button><span className={s.paneMeta}>{msg}</span></div>
+      {app.spec?.schedules?.length ? (
+        <>
+          <h2 className={s.paneTitle}>Runs by itself</h2>
+          <p className={s.paneMeta}>Once published, the app runs these on its own and saves the result as a new record. Each run uses AI credits like a visitor&apos;s request, and stops when AI features are off.</p>
+          <ul className={s.paneMeta}>{app.spec.schedules.map((j) => <li key={j.name}>{j.label} · every {j.every}</li>)}</ul>
+        </>
+      ) : null}
+      <h2 className={s.paneTitle}>Incoming webhooks</h2>
+      {app.hooks?.length ? (
+        <>
+          <p className={s.paneMeta}>Other services (forms, Stripe, Zapier, your own scripts) can add records to the published app with a POST of JSON to these addresses. Each one opens a single collection; keep them secret.</p>
+          {app.hooks.map((h) => (
+            <label key={h.collection} className={s.field}>
+              <span>{h.label}</span>
+              <span className={s.hookRow}>
+                <input className={s.input} readOnly value={h.url} onFocus={(e) => e.currentTarget.select()} />
+                <button type="button" className={s.ghostBtn} onClick={() => { void navigator.clipboard?.writeText(h.url); setMsg(`Copied the ${h.label} webhook.`); }}>Copy</button>
+              </span>
+            </label>
+          ))}
+        </>
+      ) : <p className={s.paneMeta}>Publish the app to get a webhook address for each of its collections.</p>}
     </div>
   );
 }

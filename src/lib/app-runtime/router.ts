@@ -12,6 +12,8 @@ import { changeVersion, countItems, createItem, DataError, deleteItem, getItem, 
 import { getFile, putFile } from "./files";
 import { resolveImageRefs } from "@/lib/app-builder/files";
 import { recordUsage, runAi } from "./ai";
+import { expandFields, expandItems } from "./expand";
+import { checkHookKey, hookRecord } from "./hooks";
 
 export const CORS: Record<string, string> = {
   "access-control-allow-origin": "*",
@@ -59,6 +61,15 @@ export async function handleAppApi(req: Request, ctx: AppCtx, parts: string[], a
     await limit(`appapi:${ctx.appId}:${ctx.env}:${ip}`, ctx.limits.reqPerMin, 60);
     if (a === "ping") return json(200, { ok: true, env: ctx.env, backend: ctx.limits.backend, ai: ctx.limits.ai && ctx.meta.settings.ai });
     if (!ctx.limits.backend) return json(403, { error: "This app's plan doesn't include a backend (accounts, saved data, files, AI). The owner can upgrade to turn it on.", code: "no_backend" });
+    /* ── incoming webhooks (other services adding records; see hooks.ts) ── */
+    if (a === "hooks" && b) {
+      if (req.method !== "POST") return json(405, { error: "Send a POST with a JSON body.", code: "method" }, { allow: "POST" });
+      if (!checkHookKey(ctx.appId, ctx.env, b, url.searchParams.get("key") ?? req.headers.get("x-keplar-key"))) return json(403, { error: "Unknown or wrong webhook key.", code: "bad_key" });
+      await limit(`apphook:${ctx.appId}:${ctx.env}:${b}`, 60, 60);
+      const item = await createItem(ctx, null, b, hookRecord(await readJson(req)), { ownerId: "hook", ownerName: "Webhook" });
+      void recordUsage(ctx, "write").catch(() => undefined);
+      return json(201, { ok: true, id: item.id });
+    }
     const user = await userFor(ctx, req.headers.get("authorization"));
     const write = async () => {
       if (req.method === "GET") return;
@@ -122,7 +133,11 @@ export async function handleAppApi(req: Request, ctx: AppCtx, parts: string[], a
     const dbJson = dbJsonFor(ctx.meta);
     if (a === "db" && b) {
       if (!c) {
-        if (req.method === "GET") return dbJson(200, await listItems(ctx, user, b, { where: qJson(url.searchParams.get("where")), order: url.searchParams.get("order") ?? undefined, limit: url.searchParams.get("limit") ?? undefined, cursor: url.searchParams.get("cursor") ?? undefined, mine: url.searchParams.get("mine") ?? undefined }));
+        if (req.method === "GET") {
+          const expand = expandFields(ctx, b, url.searchParams.get("expand"));
+          const r = await listItems(ctx, user, b, { where: qJson(url.searchParams.get("where")), order: url.searchParams.get("order") ?? undefined, limit: url.searchParams.get("limit") ?? undefined, cursor: url.searchParams.get("cursor") ?? undefined, mine: url.searchParams.get("mine") ?? undefined });
+          return dbJson(200, expand.length ? { ...r, items: await expandItems(ctx, user, b, r.items, expand) } : r);
+        }
         if (req.method === "POST") {
           await write();
           const item = await createItem(ctx, user, b, (await readJson(req)).data ?? undefined);
@@ -142,8 +157,10 @@ export async function handleAppApi(req: Request, ctx: AppCtx, parts: string[], a
       }
       if (c && !c.startsWith("_")) {
         if (req.method === "GET") {
+          const expand = expandFields(ctx, b, url.searchParams.get("expand"));
           const item = await getItem(ctx, user, b, c);
-          return item ? dbJson(200, { item }) : dbJson(404, { error: "Not found.", code: "not_found" });
+          if (!item) return dbJson(404, { error: "Not found.", code: "not_found" });
+          return dbJson(200, { item: expand.length ? (await expandItems(ctx, user, b, [item], expand))[0] : item });
         }
         if (req.method === "PATCH") {
           await write();

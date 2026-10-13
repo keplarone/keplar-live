@@ -45,7 +45,10 @@ DATA (only the collections in the spec; names exactly as in the spec):
   where: equality { status: "open", _owner: userId }, or operators { price: { lte: 50 } }, { tags: { has: "film" } }, { title: { contains: "rain" } }, { id: { in: [a, b] } }, { status: { ne: "done" } }; up to 8 keys.
   order: "-createdAt" (default, newest first), "createdAt", "-likes", "title". limit: default 30, max 100.
   mine: true -> only the signed-in user's records.
-  Fields of type ref store the other record's id (or a user id for ref "users"). Join on the client: fetch the ids with { id: { in: ids } }, or keplar.auth.listUsers({ ids }).
+  Fields of type ref store the other record's id (or a user id for ref "users"). To show the linked record, ask the server to fill it in:
+    await posts.list({ expand: ["author", "team"] })  or  await posts.get(id, { expand: ["author"] })  (up to 3 ref fields)
+    -> each item gets item._expand.author = the linked record (a public user for ref "users"), or null if it is gone or not visible to this user. item.author keeps the id.
+  Prefer expand over fetching ids yourself.
   Access rules from the spec are enforced by the server; calls the user may not make throw a KeplarError with status 401/403. Catch errors and show them (err.message is human-readable).
   Records whose _owner starts with "seed" are example content created at build time; their authors have read-only public profiles (keplar.auth.getUser works), so link author names to profiles as usual.
 

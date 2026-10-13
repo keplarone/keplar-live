@@ -6,6 +6,7 @@ import { now } from "@/lib/create/platform/ids";
 import { getSite, sites, toSummary, versionList } from "@/lib/site-builder/store";
 import { builds, failStaleBuild } from "@/lib/app-builder/pipeline";
 import { previewUrlFor, publicSpec } from "@/lib/app-builder/public";
+import { hookKey } from "@/lib/app-runtime/hooks";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,6 +32,10 @@ export async function GET(req: Request, { params }: Ctx) {
         images: app?.images ?? {},
         previewUrl: site.headVersion && app ? previewUrlFor(site, site.headVersion) : null,
         liveUrl: site.publishedVersion ? `${origin}/s/${site.slug}/` : null,
+        // Incoming webhook URLs of the published app, one per collection (src/lib/app-runtime/hooks.ts). Owner-only: this route is.
+        hooks: site.publishedVersion && (app?.live?.spec ?? app?.spec)?.collections.length
+          ? (app!.live?.spec ?? app!.spec).collections.map((c) => ({ collection: c.name, label: c.label, url: `${origin}/s/${site.slug}/_api/hooks/${c.name}?key=${hookKey(site.id, "live", c.name)}` }))
+          : [],
         messages: site.messages.slice(-30),
       },
       build: recent && recent.stage !== "done" ? { id: recent.id, stage: recent.stage, error: recent.error, startedAt: recent.startedAt, updatedAt: recent.updatedAt, spec: recent.spec ? publicSpec(recent.spec) : null, checks: recent.checks, verdicts: recent.verdicts, log: recent.log.slice(-12) } : null,
