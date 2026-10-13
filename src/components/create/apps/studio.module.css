@@ -747,3 +747,12 @@
 .shelfTitle { font-size: 14px; }
 .shelfGrid { display: flex; overflow-x: auto; gap: 10px; padding-bottom: 6px; scroll-snap-type: x proximity; }
 .shelfGrid > li { flex: 0 0 200px; scroll-snap-align: start; }
+
+/* Options open: the panel takes the room the starter chips, the lede and the showcase line used, so the page still fits. */
+.calm:has(> .calmOptions:not([hidden])) :is(.calmChips, .calmLede) { display: none; }
+.ideEditor:has(.calmOptions:not([hidden])) .calmShowcase { display: none; }
+.calmOptions .stepLabel { display: none; }
+.calmOptions .step { padding-top: 0; border-top: 0; }
+.calmOptions .tiles { grid-auto-columns: 92px; }
+.calmOptions .calmCanvas { min-height: 0; height: clamp(120px, 22vh, 240px); max-height: none; }
+.calmOptions .voiceLive { max-height: clamp(130px, 25vh, 260px); overflow: auto; }

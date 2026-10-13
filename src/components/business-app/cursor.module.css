@@ -291,3 +291,13 @@
 .acctItem { display: flex; align-items: center; justify-content: space-between; min-height: 36px; padding: 0 10px; border: 0; border-radius: 10px; background: transparent; color: var(--kb-ink); font: inherit; font-size: var(--kb-t-md); text-align: left; cursor: pointer; }
 .acctItem:hover { background: var(--kb-surface-2); }
 .acctItem:disabled { opacity: 0.6; cursor: default; }
+
+/* Collapsible Chats: a chevron on the heading, and "Show all" past the first eight. */
+.groupTitle[aria-expanded] { display: inline-flex; align-items: center; gap: 6px; }
+.groupChevron { flex: none; color: var(--kb-ink-3); transition: transform 160ms ease; }
+.groupTitle[aria-expanded="false"] .groupChevron { transform: rotate(-90deg); }
+.moreBtn { display: flex; align-items: center; gap: 6px; width: 100%; min-height: 28px; padding: 0 10px; border: 0; border-radius: var(--kb-r-sm); background: transparent; color: var(--kb-ink-3); font: inherit; font-size: var(--kb-t-xs); text-align: left; cursor: pointer; }
+.moreBtn:hover { color: var(--kb-ink-2); background: rgb(255 255 255 / 0.04); }
+.moreBtn[aria-expanded="true"] .groupChevron { transform: rotate(180deg); }
+.moreBtn:focus-visible { outline: 2px solid var(--kb-focus); outline-offset: 1px; }
+@media (prefers-reduced-motion: reduce) { .groupChevron { transition: none; } }

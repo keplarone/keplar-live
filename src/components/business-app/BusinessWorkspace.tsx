@@ -138,6 +138,8 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [recent, setRecent] = useState<Recent[]>([]);
   const [chatList, setChatList] = useState<ChatMeta[]>([]);
+  const [chatsOpen, setChatsOpen] = useState(true);
+  const [chatsAll, setChatsAll] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [searching, setSearching] = useState(false);
   const [filter, setFilter] = useState("");
@@ -246,7 +248,8 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
   const f = filter.trim().toLowerCase();
   const shownProjects = projects.filter((p) => !f || p.name.toLowerCase().includes(f)).slice(0, f ? 20 : 6);
   const shownRecent = recent.filter((r) => !f || r.title.toLowerCase().includes(f)).slice(0, f ? 30 : 8);
-  const shownChats = chatList.filter((c) => !f || c.title.toLowerCase().includes(f)).slice(0, f ? 30 : 8);
+  const matchingChats = chatList.filter((c) => !f || c.title.toLowerCase().includes(f));
+  const shownChats = matchingChats.slice(0, f ? 30 : chatsAll ? 100 : 8);
   const openChat = (id: string) => go({ at: "ask", chatId: id, resume: true, projectId: null, key: k() });
   const is = (at: View["at"]) => view.at === at;
   const osAt = (...tabs: OsTab[]) => view.at === "os" && tabs.includes(view.tab);
@@ -347,13 +350,25 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
             </section>
 
             <section className={c.group} aria-labelledby="side-chats">
-              <div className={c.groupHead}><span id="side-chats" className={c.groupTitle} data-static="">Chats</span></div>
-              {shownChats.length ? shownChats.map((ch) => (
-                <button key={ch.id} type="button" className={c.recent} aria-current={view.at === "ask" && view.chatId === ch.id ? "page" : undefined} onClick={() => openChat(ch.id)}>
-                  <span className={c.ellipsis}>{ch.title}</span>
-                  <span className={c.when}>{ago(new Date(ch.updatedAt).toISOString())}</span>
+              <div className={c.groupHead}>
+                <button type="button" id="side-chats" className={c.groupTitle} aria-expanded={chatsOpen || Boolean(f)} aria-controls="side-chat-list" onClick={() => setChatsOpen((x) => !x)}>
+                  Chats<svg className={c.groupChevron} width="10" height="10" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </button>
-              )) : <p className={c.empty}>{f ? "No matching chats." : "Your chats are saved here."}</p>}
+              </div>
+              <div id="side-chat-list" hidden={!chatsOpen && !f}>
+                {shownChats.length ? shownChats.map((ch) => (
+                  <button key={ch.id} type="button" className={c.recent} aria-current={view.at === "ask" && view.chatId === ch.id ? "page" : undefined} onClick={() => openChat(ch.id)}>
+                    <span className={c.ellipsis}>{ch.title}</span>
+                    <span className={c.when}>{ago(new Date(ch.updatedAt).toISOString())}</span>
+                  </button>
+                )) : <p className={c.empty}>{f ? "No matching chats." : "Your chats are saved here."}</p>}
+                {!f && matchingChats.length > 8 ? (
+                  <button type="button" className={c.moreBtn} aria-expanded={chatsAll} onClick={() => setChatsAll((x) => !x)}>
+                    {chatsAll ? "Show less" : `Show all ${Math.min(matchingChats.length, 100)}`}
+                    <svg className={c.groupChevron} width="10" height="10" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  </button>
+                ) : null}
+              </div>
             </section>
 
             <section className={c.group} aria-labelledby="side-recent">
