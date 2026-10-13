@@ -12,6 +12,7 @@ import { Dashboard } from "./Dashboard";
 import { Home, type HomeMode, type HomePlace } from "./Home";
 import { Projects } from "./Projects";
 import { usePulse } from "./pulse";
+import { listChats, newChatId, type ChatMeta } from "./chats";
 import { useBusinessNavigation } from "./useBusinessNavigation";
 import { SIGN_OUT_FAILED, signOutOfBusiness } from "@/components/business-site/sign-out";
 import { SETTINGS_SECTIONS, SIDE_KEY, settingsSectionFrom, type SettingsSection } from "./settings-sections";
@@ -32,7 +33,7 @@ type Project = { id: string; name: string; createdAt: string };
 type Recent = { id: string; kind: "research" | "reason"; title: string; createdAt: string };
 type View =
   | { at: "home" }
-  | { at: "ask"; q: string; projectId: string | null; key: string }
+  | { at: "ask"; q?: string; projectId: string | null; key: string; chatId: string; resume?: boolean }
   | { at: "dashboard" }
   | { at: "projects"; projectId: string | null }
   | { at: "create" }
@@ -50,6 +51,7 @@ function readView(): View {
   const q = new URLSearchParams(window.location.search);
   const v = q.get("v");
   if (v === "projects") return { at: "projects", projectId: q.get("p") };
+  if (v === "chat") { const c = q.get("c"); if (c && /^[A-Za-z0-9_-]{4,64}$/.test(c)) return { at: "ask", chatId: c, resume: true, projectId: null, key: k() }; }
   if (v === "dashboard") return { at: "dashboard" };
   if (v === "create") return { at: "create" };
   if (v === "canvas") return { at: "canvas" };
@@ -68,6 +70,7 @@ function readSettings(): SettingsSection | null {
 function writeView(v: View) {
   const q = new URLSearchParams();
   if (v.at === "projects") { q.set("v", "projects"); if (v.projectId) q.set("p", v.projectId); }
+  else if (v.at === "ask") { q.set("v", "chat"); q.set("c", v.chatId); }
   else if (v.at === "dashboard") q.set("v", "dashboard");
   else if (v.at === "create") q.set("v", "create");
   else if (v.at === "canvas") q.set("v", "canvas");
@@ -100,6 +103,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
   const [settings, setSettings] = useState<SettingsSection | null>(readSettings);
   const [projects, setProjects] = useState<Project[]>([]);
   const [recent, setRecent] = useState<Recent[]>([]);
+  const [chatList, setChatList] = useState<ChatMeta[]>([]);
   const [collapsed, setCollapsed] = useState(false);
   const [searching, setSearching] = useState(false);
   const [filter, setFilter] = useState("");
@@ -142,6 +146,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
   const loadSide = useCallback(() => {
     fetch("/api/projects", { cache: "no-store" }).then((r) => (r.ok ? r.json() : { projects: [] })).then((d: { projects: Project[] }) => setProjects(d.projects.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt)))).catch(() => undefined);
     fetch("/api/business/reports", { cache: "no-store" }).then((r) => (r.ok ? r.json() : { reports: [] })).then((d: { reports: Recent[] }) => setRecent(d.reports)).catch(() => undefined);
+    void listChats().then((c) => setChatList(c.slice().sort((a, b) => b.updatedAt - a.updatedAt)));
   }, []);
   const active = Boolean(acct?.signedIn && acct.active);
   useEffect(() => { if (active) queueMicrotask(loadSide); }, [active, loadSide]);
@@ -175,7 +180,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
   const onSend = (mode: HomeMode, text: string, projectId: string | null, media?: MediaInput) => {
     const key = k();
     setSentMedia(media ? { key, media } : null);
-    if (mode === "ask") go({ at: "ask", q: text, projectId, key });
+    if (mode === "ask") go({ at: "ask", q: text, projectId, key, chatId: newChatId() });
     else go({ at: mode, seed: text, projectId: projectId ?? undefined, key });
   };
 
@@ -207,6 +212,8 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
   const f = filter.trim().toLowerCase();
   const shownProjects = projects.filter((p) => !f || p.name.toLowerCase().includes(f)).slice(0, f ? 20 : 6);
   const shownRecent = recent.filter((r) => !f || r.title.toLowerCase().includes(f)).slice(0, f ? 30 : 8);
+  const shownChats = chatList.filter((c) => !f || c.title.toLowerCase().includes(f)).slice(0, f ? 30 : 8);
+  const openChat = (id: string) => go({ at: "ask", chatId: id, resume: true, projectId: null, key: k() });
   const is = (at: View["at"]) => view.at === at;
   const osAt = (...tabs: OsTab[]) => view.at === "os" && tabs.includes(view.tab);
   const pending = pulse?.approvals.pending ?? 0;
@@ -244,6 +251,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
     { id: "toggle-side", label: collapsed ? "Show sidebar" : "Hide sidebar", section: "Actions", hint: "Ctrl B", icon: <Icon d={<><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16" /></>} />, run: toggleSide },
     { id: "keplar-one", label: "Open Keplar One", section: "Actions", icon: <Icon d={<path d="M7 17L17 7M9 7h8v8" />} />, run: () => window.location.assign(ONE) },
     ...projects.map((p) => ({ id: `project-${p.id}`, label: p.name, section: "Projects", keywords: "project", icon: <Icon d={<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />} />, run: () => go({ at: "projects", projectId: p.id }) })),
+    ...chatList.slice(0, 30).map((c) => ({ id: `chat-${c.id}`, label: c.title, section: "Chats", hint: ago(new Date(c.updatedAt).toISOString()), keywords: "chat conversation", icon: <Icon d={<path d="M4 5h16v11H8l-4 4z" />} />, run: () => openChat(c.id) })),
     ...recent.map((r) => ({ id: `report-${r.id}`, label: r.title, section: "Recent reports", hint: ago(r.createdAt), keywords: r.kind === "research" ? "deep research report" : "reason decision", icon: <Icon d={r.kind === "research" ? I.research : I.reason} />, run: () => go({ at: r.kind, openId: r.id, key: k() }) })),
     ...SETTINGS_SECTIONS.map((x) => ({ id: `settings-${x.id}`, label: `Settings: ${x.label}`, section: "Settings", keywords: "settings preferences", run: () => openSettings(x.id) })),
     { id: "sign-out", label: "Sign out", section: "Account", keywords: "log out leave", run: () => void signOut() },
@@ -289,10 +297,10 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
               <div className={c.groupHead}>
                 <button type="button" id="side-projects" className={c.groupTitle} onClick={() => go({ at: "projects", projectId: null })}>Projects</button>
                 <button type="button" className={c.iconBtn} data-small="" onClick={() => go({ at: "projects", projectId: null })} aria-label="New project"><Icon d={<path d="M12 5v14M5 12h14" />} size={13} /></button>
-                <button type="button" className={c.iconBtn} data-small="" aria-pressed={searching} onClick={() => { setSearching((x) => !x); setFilter(""); }} aria-label="Filter projects and reports"><Icon d={<path d="M4 6h16M7 12h10M10 18h4" />} size={13} /></button>
+                <button type="button" className={c.iconBtn} data-small="" aria-pressed={searching} onClick={() => { setSearching((x) => !x); setFilter(""); }} aria-label="Filter projects, chats and reports"><Icon d={<path d="M4 6h16M7 12h10M10 18h4" />} size={13} /></button>
               </div>
               {searching ? (
-                <input className={c.search} autoFocus value={filter} onChange={(e) => setFilter(e.target.value)} onKeyDown={(e) => { if (e.key === "Escape") { setSearching(false); setFilter(""); } }} placeholder="Filter projects and reports" aria-label="Filter projects and reports" />
+                <input className={c.search} autoFocus value={filter} onChange={(e) => setFilter(e.target.value)} onKeyDown={(e) => { if (e.key === "Escape") { setSearching(false); setFilter(""); } }} placeholder="Filter projects, chats and reports" aria-label="Filter projects, chats and reports" />
               ) : null}
               {shownProjects.length ? shownProjects.map((p) => (
                 <button key={p.id} type="button" className={c.item} aria-current={view.at === "projects" && view.projectId === p.id ? "page" : undefined} onClick={() => go({ at: "projects", projectId: p.id })}>
@@ -300,6 +308,16 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
                   <span className={c.ellipsis}>{p.name}</span>
                 </button>
               )) : <p className={c.empty}>{f ? "No matching projects." : "No projects yet."}</p>}
+            </section>
+
+            <section className={c.group} aria-labelledby="side-chats">
+              <div className={c.groupHead}><span id="side-chats" className={c.groupTitle} data-static="">Chats</span></div>
+              {shownChats.length ? shownChats.map((ch) => (
+                <button key={ch.id} type="button" className={c.recent} aria-current={view.at === "ask" && view.chatId === ch.id ? "page" : undefined} onClick={() => openChat(ch.id)}>
+                  <span className={c.ellipsis}>{ch.title}</span>
+                  <span className={c.when}>{ago(new Date(ch.updatedAt).toISOString())}</span>
+                </button>
+              )) : <p className={c.empty}>{f ? "No matching chats." : "Your chats are saved here."}</p>}
             </section>
 
             <section className={c.group} aria-labelledby="side-recent">
@@ -337,7 +355,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
           </header>
           <div className={c.mainBody}>
             {view.at === "home" ? <Home projects={projects} onSend={onSend} onNewProject={() => go({ at: "projects", projectId: null })} onOpenProject={(id) => go({ at: "projects", projectId: id })} onBuild={() => go({ at: "create" })} company={acct.account?.company ?? null} pulse={pulse} onOpen={openPlace} />
-              : view.at === "ask" ? <Ask key={view.key} first={view.q} firstMedia={sentMedia?.key === view.key ? sentMedia.media : undefined} projectId={view.projectId} />
+              : view.at === "ask" ? <Ask key={view.key} chatId={view.chatId} resume={view.resume} first={view.q} firstMedia={sentMedia?.key === view.key ? sentMedia.media : undefined} projectId={view.projectId} onSaved={loadSide} />
               : view.at === "dashboard" ? <Dashboard onOpenProject={(id) => go({ at: "projects", projectId: id })} />
               : view.at === "projects" ? <Projects projectId={view.projectId} onOpen={(id) => { go({ at: "projects", projectId: id }); loadSide(); }} />
               : view.at === "create" ? <div className={s.module}><CreateStudio signedIn plan="business" /></div>

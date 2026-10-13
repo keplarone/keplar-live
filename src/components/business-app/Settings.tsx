@@ -7,7 +7,8 @@
  * /api/business/dashboard, "Pause all agents" is /api/business/agents/halt, "Manage subscription" opens Whop's own page
  * (/api/billing/portal), the export downloads the account's data (/api/account/export), and sign-out revokes this device's
  * Business sessions. Two-factor, passkeys, sessions and account deletion belong to the one Keplar account, so those link to it.
- * Device preferences are saved in this browser. What the workspace cannot do yet is labelled as such, never simulated.
+ * Team invites run on Keplar's team API (TeamPanel.tsx). Device preferences are saved in this browser. What the workspace
+ * cannot do yet is labelled as such, never simulated.
  */
 import { useEffect, useRef, useState } from "react";
 import { COMPANY_SIZES, INDUSTRIES } from "@/lib/business/account-fields";
@@ -15,11 +16,13 @@ import { BUSINESS_TIERS, type BusinessTier } from "@/lib/business/tiers";
 import { siteUrl } from "@/lib/site";
 import { SIGN_OUT_FAILED, signOutOfBusiness } from "@/components/business-site/sign-out";
 import { MODE_KEY, SETTINGS_SECTIONS, SIDE_KEY, type SettingsSection } from "./settings-sections";
+import { TeamPanel } from "./TeamPanel";
 import s from "./settings.module.css";
 
 type Profile = { company: string; website: string; size: string; industry: string; role: string };
 type Account = {
   signedIn: boolean; email?: string | null; account?: Profile | null; active?: boolean; plan?: { tier: string | null; name: string } | null;
+  member?: { role: string; teamName: string; owner: string } | null;
   download?: { version: string; files: { os: string; arch: string; type: string; url: string; size: number }[]; notesUrl: string } | null;
 };
 type Dash = { entitlements?: { label: string }; compute?: { used: number; total: number | null; resetsAt?: string }; agents?: { active: number; total: number; halted: boolean } };
@@ -165,7 +168,16 @@ export function Settings({ section, onSection, onClose, onOpenPlace }: {
           <div className={s.scroll} key={section}>
             {!acct ? <div className={s.loading} aria-label="Loading"><span /><span /><span /></div> : null}
 
-            {acct && section === "general" ? (
+            {acct && section === "general" && acct.member ? (
+              <>
+                <Row label="Email" hint="Your Keplar account. One account signs in to Keplar One and Keplar Business."><span className={s.value}>{acct.email ?? "—"}</span></Row>
+                <Row label="Workspace" hint={`You work in ${acct.member.teamName}'s Business workspace, owned by ${acct.member.owner}.`}><span className={s.value}>{acct.account?.company ?? acct.member.teamName}</span></Row>
+                <Row label="Your role" hint="The owner or an admin can change it on the Team tab."><span className={s.value}>{acct.member.role === "member" ? "Editor" : acct.member.role[0]!.toUpperCase() + acct.member.role.slice(1)}</span></Row>
+                <p className={s.note}>Only the owner can change the business profile.</p>
+              </>
+            ) : null}
+
+            {acct && section === "general" && !acct.member ? (
               <>
                 <Row label="Email" hint="Your Keplar account. One account signs in to Keplar One and Keplar Business."><span className={s.value}>{acct.email ?? "—"}</span></Row>
                 <h3 className={s.group}>Business profile</h3>
@@ -275,15 +287,7 @@ export function Settings({ section, onSection, onClose, onOpenPlace }: {
               </>
             ) : null}
 
-            {acct && section === "team" ? (
-              <>
-                <Row label="Seats on your plan"><span className={s.value}>{tier ? (tier.seats === null ? "Negotiated" : tier.seats) : "—"}</span></Row>
-                <Row label="Signed in as"><span className={s.value}>{acct.email ?? "—"}</span></Row>
-                <Row label="Invite teammates" hint="Inviting people from inside the workspace isn't available yet. Tell us who to add and we'll set them up on your plan.">
-                  <a className={s.ghost} href="/#contact" target="_blank" rel="noopener">Contact us</a>
-                </Row>
-              </>
-            ) : null}
+            {acct && section === "team" ? <TeamPanel company={acct.account?.company ?? null} seats={tier ? (tier.seats ?? null) : null} say={say} /> : null}
           </div>
           {msg ? <p className={s.toast} role="status">{msg}</p> : null}
         </div>

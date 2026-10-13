@@ -1,7 +1,7 @@
 import "./setup";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { shapeHint } from "@/lib/orchestration/answer-shape";
+import { GUIDE_HINT, isGuideRequest, shapeHint } from "@/lib/orchestration/answer-shape";
 
 test("comparisons, how-tos, explanations and writing get a shape; quick facts, code and short messages do not", () => {
   assert.match(shapeHint("Compare PostgreSQL and MySQL for a small startup and when to choose each."), /verdict or recommendation/);
@@ -56,4 +56,14 @@ test("an appended OK verdict from the editing pass is removed; a bare OK stays f
   assert.equal(stripVerdict("Take the job.  \n\nOK."), "Take the job.");
   assert.equal(stripVerdict("OK"), "OK");
   assert.equal(stripVerdict("It is OK to wait.\nIt really is OK to wait"), "It is OK to wait.\nIt really is OK to wait");
+});
+
+test("care and habit questions get the short tips list, not the deep project guide", () => {
+  for (const q of ["What's the best way to keep basil alive on a windowsill?", "How do I keep my sourdough starter alive?", "How can I stay focused while working from home?", "Best way to avoid jet lag on a long flight?", "How do I stop procrastinating on homework?"]) {
+    assert.equal(isGuideRequest(q), false, q);
+    assert.notEqual(shapeHint(q, { kind: "general" }), GUIDE_HINT, q);
+  }
+  for (const q of ["How do I fix a leaking kitchen tap?", "How do I set up ESLint in a Next.js app?", "What's the best way to replace a bike chain?", "How do I keep a website online during a migration, step by step?"]) {
+    assert.equal(isGuideRequest(q), true, q);
+  }
 });

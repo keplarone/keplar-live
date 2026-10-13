@@ -8,6 +8,7 @@ import { limitRequest } from "@/lib/create/platform/ratelimit";
 import { accountOf } from "@/lib/team/api";
 import { teamCookie } from "@/lib/team/resolve";
 import { acceptInvite, previewInvite } from "@/lib/team/store";
+import { effectivePlanOf } from "@/lib/team/plan";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,7 +21,9 @@ export async function POST(req: Request) {
     if (b.action === "accept") {
       const acc = await accountOf(req);
       const out = await acceptInvite(token, { userId: acc.userId, email: acc.email, name: acc.name, verified: acc.verified });
-      const res = json({ ok: true, team: { id: out.team.id, name: out.team.name }, role: out.role });
+      // A Business owner's team: the page offers Keplar Business, where the teammate now works in the owner's workspace.
+      const business = (await effectivePlanOf(out.team).catch(() => "free")) === "business";
+      const res = json({ ok: true, team: { id: out.team.id, name: out.team.name }, role: out.role, business });
       res.headers.append("set-cookie", teamCookie(out.team.id, new URL(req.url).protocol === "https:"));
       return res;
     }

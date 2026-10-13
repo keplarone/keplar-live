@@ -74,3 +74,25 @@
 @media (prefers-reduced-motion: reduce) {
   [data-kb] { --kb-d-1: 0ms; --kb-d-2: 0ms; --kb-d-3: 0ms; --kb-d-4: 0ms; }
 }
+
+/* Keplar One's cookie banner (rendered by the root layout, outside the Business page) takes the Business palette on
+   business.keplar.one and in the workspace, instead of Keplar One's light theme. */
+html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] {
+  --c-canvas: #0a0a0a;
+  --rgb-canvas: 18 18 18;
+  --c-surface-1: #171717;
+  --c-ink: #fafafa;
+  --c-ink-2: #a1a1a1;
+  --c-ink-3: #8b8b8b;
+  --c-ink-hover: #e2e2e2;
+  --c-border: rgba(255, 255, 255, 0.14);
+  --c-border-strong: rgba(255, 255, 255, 0.2);
+  --c-focus: #fafafa;
+  --rgb-ink: 250 250 250;
+  --btn-p-bg: #fafafa;
+  --btn-p-ink: #0a0a0a;
+  --btn-p-shadow: none;
+  color: #fafafa;
+  color-scheme: dark;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 24px 64px -16px rgba(0, 0, 0, 0.8);
+}

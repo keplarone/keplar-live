@@ -50,6 +50,7 @@
 .projIcon { display: inline-grid; place-items: center; color: var(--kb-ink-3); }
 .recent { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 30px; padding: 0 10px; border: 0; border-radius: var(--kb-r-sm); background: transparent; color: var(--kb-ink-2); font: inherit; font-size: var(--kb-t-sm); text-align: left; cursor: pointer; transition: background-color var(--kb-d-1) var(--kb-ease), color var(--kb-d-1) var(--kb-ease); }
 .recent:hover { background: var(--kb-surface-2); color: var(--kb-ink); }
+.recent[aria-current="page"] { background: var(--kb-surface-3); color: var(--kb-ink); }
 .when { margin-left: auto; flex: none; font-family: var(--kb-mono); font-size: 10.5px; color: var(--kb-ink-3); }
 .empty { margin: 0; padding: 4px 10px; font-size: var(--kb-t-xs); line-height: 1.5; color: var(--kb-ink-3); }
 .search { margin: 4px 2px 6px; min-height: 30px; padding: 0 10px; border: 0; border-radius: var(--kb-r-sm); background: var(--kb-bg); box-shadow: inset 0 0 0 1px var(--kb-border-strong); color: var(--kb-ink); font: inherit; font-size: var(--kb-t-sm); }

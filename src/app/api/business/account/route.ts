@@ -5,6 +5,7 @@ import { assertSameOrigin } from "@/lib/security/origin";
 import { getBusinessAccount, parseBusinessAccount, publicAccount, saveBusinessAccount } from "@/lib/business/account";
 import { BUSINESS_TIERS, businessTierOf, hasBusinessAccess } from "@/lib/business/tiers";
 import { getDesktopRelease } from "@/lib/desktop/releases";
+import { businessTeamWorkspace } from "@/lib/business/team";
 
 export const runtime = "nodejs";
 
@@ -21,10 +22,13 @@ function noStore(res: Response): Response {
 export async function GET(req: Request) {
   try {
     await limitRequest(req, "business_account", { perIp: 60 });
-    const ws = await currentWorkspace(req, { allowAnonymous: true });
-    if (ws.anonymous || !ws.userId) return noStore(json({ signedIn: false }));
+    const personal = await currentWorkspace(req, { allowAnonymous: true });
+    if (personal.anonymous || !personal.userId) return noStore(json({ signedIn: false }));
+    // A teammate the owner invited works in the owner's Business workspace (its company, plan and download).
+    const shared = hasBusinessAccess(personal.plan, personal.admin) ? null : await businessTeamWorkspace(req, personal).catch(() => null);
+    const ws = shared ?? personal;
     const account = await getBusinessAccount(ws.id);
-    const active = hasBusinessAccess(ws.plan, ws.admin);
+    const active = Boolean(shared) || hasBusinessAccess(ws.plan, ws.admin);
     let download: { version: string; files: { os: string; arch: string; type: string; url: string; size: number }[]; notesUrl: string } | null = null;
     if (active) {
       // The Keplar Business desktop app, from its own repo (keplarone/keplar-business).
@@ -32,7 +36,7 @@ export async function GET(req: Request) {
       if (r.status === "ok") download = { version: r.release.version, notesUrl: r.release.notesUrl, files: r.release.files.filter((f) => ["exe", "dmg", "AppImage", "deb"].includes(f.type)).map((f) => ({ os: f.os, arch: f.arch, type: f.type, url: f.url, size: f.size })) };
     }
     // The workspace's entitlements already carry the tier bought (its label is the tier's name; see tierEntitlements).
-    const tier = !active ? null : ws.admin ? "enterprise" : (Object.values(BUSINESS_TIERS).find((t) => t.name === ws.entitlements.label)?.id ?? businessTierOf(null));
+    const tier = !active ? null : ws.admin || (shared && shared.entitlements.label === "Admin") ? "enterprise" : (Object.values(BUSINESS_TIERS).find((t) => t.name === ws.entitlements.label)?.id ?? businessTierOf(null));
     return noStore(json({
       signedIn: true,
       email: ws.email,
@@ -40,6 +44,7 @@ export async function GET(req: Request) {
       account: publicAccount(account),
       active,
       plan: active ? { tier, name: ws.entitlements.label || (tier ? BUSINESS_TIERS[tier].name : "") } : null,
+      member: shared ? { role: shared.member.role, teamName: shared.member.teamName, owner: shared.member.ownerEmail } : null,
       download,
     }));
   } catch (e) {

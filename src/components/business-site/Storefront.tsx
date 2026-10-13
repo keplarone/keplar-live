@@ -102,6 +102,52 @@ function useReveal(root: React.RefObject<HTMLElement | null>) {
   }, [root]);
 }
 
+/**
+ * In-page links (the nav, hero buttons, footer) glide to their section instead of snapping: a short ease-in-out (swift, never
+ * sluggish) that scales with distance, stops the moment the visitor scrolls themselves, and is skipped for reduced motion.
+ * Without JavaScript the browser's normal anchor jump still works.
+ */
+function useSmoothAnchors(root: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const el = root.current;
+    if (!el) return;
+    let frame = 0;
+    const stop = () => { if (frame) { cancelAnimationFrame(frame); frame = 0; } };
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = (e.target as Element).closest<HTMLAnchorElement>('a[href^="#"]');
+      const id = a?.getAttribute("href")?.slice(1);
+      if (!a || !id) return;
+      const target = document.getElementById(id);
+      if (!target) return;
+      e.preventDefault();
+      stop();
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const offset = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+      const from = window.scrollY;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const to = Math.max(0, Math.min(max, target.getBoundingClientRect().top + from - offset));
+      history.pushState(null, "", `#${id}`);
+      const done = () => target.focus({ preventScroll: true });
+      if (reduce || Math.abs(to - from) < 2) { window.scrollTo({ top: to, behavior: "instant" }); done(); return; }
+      const duration = Math.min(900, 420 + Math.abs(to - from) * 0.12);
+      const t0 = performance.now();
+      const step = (now: number) => {
+        const p = Math.min(1, (now - t0) / duration);
+        const eased = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+        window.scrollTo({ top: from + (to - from) * eased, behavior: "instant" });
+        if (p < 1) frame = requestAnimationFrame(step); else { frame = 0; done(); }
+      };
+      frame = requestAnimationFrame(step);
+    };
+    el.addEventListener("click", onClick);
+    window.addEventListener("wheel", stop, { passive: true });
+    window.addEventListener("touchstart", stop, { passive: true });
+    window.addEventListener("keydown", stop);
+    return () => { stop(); el.removeEventListener("click", onClick); window.removeEventListener("wheel", stop); window.removeEventListener("touchstart", stop); window.removeEventListener("keydown", stop); };
+  }, [root]);
+}
+
 export function Storefront() {
   const [status, setStatus] = useState<Status>({ state: "loading" });
   const [purchased] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("purchased") === "1");
@@ -111,6 +157,7 @@ export function Storefront() {
   const [menu, setMenu] = useState(false);
   const root = useRef<HTMLDivElement | null>(null);
   useReveal(root);
+  useSmoothAnchors(root);
 
   useEffect(() => {
     let live = true;

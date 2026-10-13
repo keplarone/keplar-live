@@ -60,8 +60,56 @@ export function claimsConsciousness(text: string): string[] {
   return out;
 }
 
-/** Replaces every asserting sentence with the candid line (once per paragraph). Code fences and everything else are untouched. */
-export function guardVoice(text: string): string {
+/* A life Keplar doesn't have: pets, family, a home, a childhood, last summer. Models slip these into examples ("When I start typing,
+   my cat hops onto the spacebar"). A first-person sentence that claims one is dropped; quoted text (a script the person can say,
+   their own words) and code are left alone. */
+const LIFE: RegExp[] = [
+  /\bmy (?:own )?(?:cats?|dogs?|pets?|kids?|children|son|daughter|wife|husband|partner|girlfriend|boyfriend|mom|mum|mother|dad|father|parents|grandma|grandmother|grandpa|grandfather|brother|sister|family|roommate|neighbou?r|boss|co-?workers?|apartment|house|garden|backyard|car|childhood|hometown)\b/i,
+  /\bwhen i was (?:a kid|a child|young|younger|little|growing up|in (?:school|college|high school))\b/i,
+  /\bi (?:grew up|was born|used to live|once lived|remember when)\b/i,
+  /\b(?:last|this past) (?:week|weekend|month|year|summer|winter|spring|fall|night|christmas)[, ]+i\b/i,
+];
+const QUOTED = /["“”]/;
+
+/** First-person sentences (outside code fences and quotes) that claim a personal life Keplar doesn't have. */
+export function inventedLife(text: string): string[] {
+  const out: string[] = [];
+  let fenced = false;
+  for (const line of text.split("\n")) {
+    if (/^\s*(```|~~~)/.test(line)) { fenced = !fenced; continue; }
+    if (fenced) continue;
+    for (const sentence of splitSentences(line)) {
+      const s = sentence.trim();
+      if (s && !QUOTED.test(s) && !/`/.test(s) && LIFE.some((rx) => rx.test(s))) out.push(s);
+    }
+  }
+  return out;
+}
+
+/** Drops those sentences; a line left with only a label ("Example:") goes too. Code fences and everything else are untouched. */
+export function dropInventedLife(text: string): string {
+  if (!inventedLife(text).length) return text;
+  let fenced = false;
+  const lines: string[] = [];
+  for (const line of text.split("\n")) {
+    if (/^\s*(```|~~~)/.test(line)) { fenced = !fenced; lines.push(line); continue; }
+    if (fenced) { lines.push(line); continue; }
+    const parts = splitSentences(line);
+    const keep = parts.filter((sentence) => {
+      const s = sentence.trim();
+      return !(s && !QUOTED.test(s) && !/`/.test(s) && LIFE.some((rx) => rx.test(s)));
+    });
+    if (keep.length === parts.length) { lines.push(line); continue; }
+    const kept = keep.join("").replace(/\s+$/, "");
+    if (!kept.trim() || /^\s*(?:[-*]\s*)?(?:\*\*)?[\w ]{1,24}:(?:\*\*)?\s*$/.test(kept)) continue; // emptied, or only a label left
+    lines.push(kept);
+  }
+  return lines.join("\n").replace(/\n{3,}/g, "\n\n");
+}
+
+/** Replaces every asserting sentence with the candid line (once per paragraph), and drops invented personal-life sentences. Code fences are untouched. */
+export function guardVoice(input: string): string {
+  const text = dropInventedLife(input);
   if (!claimsConsciousness(text).length) return text;
   let fenced = false;
   return text
