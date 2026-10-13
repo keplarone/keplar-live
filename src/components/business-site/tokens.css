@@ -28,8 +28,11 @@
   --kb-focus: #fafafa;
 
   /* type */
-  --kb-sans: var(--biz-sans), "Geist", ui-sans-serif, system-ui, sans-serif;
-  --kb-mono: var(--biz-mono), "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* Google Sans for words, after x.ai's look (self-hosted by next/font); Geist only as a fallback */
+  --kb-sans: var(--biz-brand), "Google Sans", var(--biz-sans), "Geist", ui-sans-serif, system-ui, sans-serif;
+  /* Labels, figures and shortcuts use the same face as words (x.ai's look); only real code is monospace (--kb-code). */
+  --kb-mono: var(--kb-sans);
+  --kb-code: var(--biz-mono), "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --kb-brand: var(--biz-brand), "Google Sans", var(--biz-sans), system-ui, sans-serif;
   --kb-t-xs: 12px;
   --kb-t-sm: 13px;

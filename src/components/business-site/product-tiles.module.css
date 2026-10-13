@@ -29,7 +29,7 @@
 .cite { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: #333; font-size: 10.5px; color: var(--kb-ink-2); vertical-align: 1px; }
 
 /* Build */
-.term { display: flex; flex-direction: column; height: 100%; margin: -4px; border-radius: 10px; background: #0d0d0d; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06); font-family: var(--kb-mono); font-size: 11.5px; }
+.term { display: flex; flex-direction: column; height: 100%; margin: -4px; border-radius: 10px; background: #0d0d0d; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06); font-family: var(--kb-code); font-size: 11.5px; }
 .termBar { display: flex; justify-content: space-between; gap: 8px; padding: 9px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); color: var(--kb-ink-3); font-size: 10.5px; white-space: nowrap; overflow: hidden; }
 .termRight { overflow: hidden; text-overflow: ellipsis; }
 .termBody { display: flex; flex-direction: column; gap: 5px; padding: 12px; }
@@ -85,14 +85,14 @@
 .h[data-c="tl"] { top: -3px; left: -3px; } .h[data-c="tr"] { top: -3px; right: -3px; } .h[data-c="bl"] { bottom: -3px; left: -3px; } .h[data-c="br"] { bottom: -3px; right: -3px; }
 .wGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .wGrid i { height: 54px; }
-.code { position: absolute; right: 12px; bottom: 12px; margin: 0; padding: 10px 12px; border-radius: 8px; background: #0d0d0d; color: var(--kb-ink-2); font-family: var(--kb-mono); font-size: 10.5px; line-height: 1.5; box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.5); animation: pop 360ms var(--kb-ease) both; }
+.code { position: absolute; right: 12px; bottom: 12px; margin: 0; padding: 10px 12px; border-radius: 8px; background: #0d0d0d; color: var(--kb-ink-2); font-family: var(--kb-code); font-size: 10.5px; line-height: 1.5; box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.5); animation: pop 360ms var(--kb-ease) both; }
 .ai { position: absolute; right: 12px; bottom: 12px; margin: 0; max-width: 220px; padding: 9px 12px; border-radius: 12px; background: #0d0d0d; color: var(--kb-ink); font-size: 11.5px; box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.5); animation: pop 360ms var(--kb-ease) both; }
 @keyframes pop { from { opacity: 0; transform: translateY(6px) scale(0.98); } }
 
-/* Several models: the glass sphere (Orb.tsx) fills the stage; without WebGL a CSS sphere stands in */
-.orb { position: absolute; inset: 0 0 -8px; }
-.orb[data-fallback] { inset: 24px; margin: auto; aspect-ratio: 1; max-height: calc(100% - 24px); border-radius: 50%; background: radial-gradient(circle at 38% 32%, rgba(160, 130, 220, 0.28), rgba(40, 30, 80, 0.5) 45%, #05040b 72%); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12); }
-.tile:has(.orb) .stage::after { display: none; }
+/* Several models (Converge.tsx) fills the stage; without WebGL a soft core of light stands in */
+.converge { position: absolute; inset: 0 0 -8px; }
+.converge[data-fallback] { background: radial-gradient(ellipse 46% 26% at 50% 52%, rgba(220, 225, 255, 0.35), rgba(120, 120, 170, 0.12) 45%, transparent 70%); }
+.tile:has(.converge) .stage::after { display: none; }
 
 /* Product section feature rows (ProductDemo): the same examples, larger, on a quiet panel */
 .demo { position: relative; min-height: 380px; border-radius: 16px; overflow: hidden; background: #111; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08); }

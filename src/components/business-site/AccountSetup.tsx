@@ -83,9 +83,8 @@ export function AccountSetup() {
   return (
     <div className={s.page}>
       <header className={s.nav}>
-        <Link href="/" className={s.brand}>
+        <Link href="/" className={s.brand} aria-label="Keplar Business home">
           <BusinessMark size={26} />
-          <span className={s.wordmark}>Keplar <span>Business</span></span>
         </Link>
         <ol className={s.stepper} aria-label="Setup steps">
           <li aria-current={phase.at === "profile" ? "step" : undefined} data-done={phase.at === "plan" || undefined}>Business account</li>

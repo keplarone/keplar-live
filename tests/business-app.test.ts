@@ -99,11 +99,11 @@ test("business host: the favicon and touch icons are the Keplar Business mark, k
   assert.equal(ico.readUInt16LE(4), 3, "16, 32 and 48 px frames");
 });
 
-test("every workspace tab uses the Business theme: the embedded Keplar One screens read re-pointed tokens and Geist", () => {
+test("every workspace tab uses the Business theme: the embedded Keplar One screens read re-pointed tokens and the Business sans (Google Sans)", () => {
   const ws = readFileSync("src/components/business-app/workspace.module.css", "utf8");
   const root = ws.slice(ws.indexOf(".root {"), ws.indexOf("}", ws.indexOf(".root {")));
   // Create, Agents, Approvals, Operations and Integrations are Keplar One components: their palette, accent, buttons and fonts.
-  for (const token of ["--c-canvas: var(--w-bg)", "--c-surface-1: var(--w-panel)", "--c-ink: var(--w-ink)", "--c-border: var(--w-line)", "--c-accent: var(--w-accent)", "--btn-p-bg: var(--w-ink)", "--font-sans: var(--biz-sans)", "--f-sans: var(--biz-sans)"]) {
+  for (const token of ["--c-canvas: var(--w-bg)", "--c-surface-1: var(--w-panel)", "--c-ink: var(--w-ink)", "--c-border: var(--w-line)", "--c-accent: var(--w-accent)", "--btn-p-bg: var(--w-ink)", "--font-sans: var(--kb-sans)", "--f-sans: var(--kb-sans)"]) {
     assert.ok(root.includes(token), `workspace root re-points ${token}`);
   }
   // Create redefines its own palette on its root, so it needs its own Business override (only while the workspace is open).
