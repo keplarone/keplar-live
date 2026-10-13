@@ -1,20 +1,20 @@
 /* Product grid (ProductTiles.tsx): x.ai-style tiles, each a small moving example of one module. Tokens from tokens.css. */
 .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: 100%; max-width: var(--kb-max); margin: 0 auto; padding: 0 var(--kb-gutter); box-sizing: border-box; }
 .tile {
-  position: relative; display: flex; flex-direction: column; min-width: 0; height: 340px; border-radius: 12px; overflow: hidden;
-  background: #151515; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  position: relative; display: flex; flex-direction: column; min-width: 0; height: 340px; border-radius: 0; overflow: hidden;
+  background: #0a0a0a; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
   transition: box-shadow var(--kb-d-2) var(--kb-ease), background-color var(--kb-d-2) var(--kb-ease);
 }
-.tile:hover { background: #181818; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14); }
+.tile:hover { background: #111; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14); }
 .tile[data-wide] { grid-column: span 2; }
 .example { position: absolute; top: 12px; right: 14px; z-index: 2; font-family: var(--kb-mono); font-size: 10.5px; color: var(--kb-ink-3); }
 .stage { position: relative; flex: 1; min-height: 0; overflow: hidden; padding: 20px 20px 0; }
-.stage::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 48px; background: linear-gradient(transparent, #151515); pointer-events: none; transition: background var(--kb-d-2) var(--kb-ease); }
-.tile:hover .stage::after { background: linear-gradient(transparent, #181818); }
+.stage::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 48px; background: linear-gradient(transparent, #0a0a0a); pointer-events: none; transition: background var(--kb-d-2) var(--kb-ease); }
+.tile:hover .stage::after { background: linear-gradient(transparent, #111); }
 .foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 52px; padding: 0 18px; color: var(--kb-ink); text-decoration: none; }
-.foot:focus-visible { outline: 2px solid var(--kb-focus); outline-offset: -4px; border-radius: 10px; }
-.title { font-size: var(--kb-t-body); font-weight: 500; letter-spacing: -0.01em; }
-.explore { display: inline-flex; gap: 6px; font-size: var(--kb-t-sm); color: var(--kb-ink-2); transition: color var(--kb-d-1) var(--kb-ease), transform var(--kb-d-2) var(--kb-ease); }
+.foot:focus-visible { outline: 2px solid var(--kb-focus); outline-offset: -4px; }
+.title { font-family: var(--kb-mono); font-size: 12.5px; font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; }
+.explore { display: inline-flex; gap: 6px; font-family: var(--kb-mono); font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--kb-ink-2); transition: color var(--kb-d-1) var(--kb-ease), transform var(--kb-d-2) var(--kb-ease); }
 .tile:hover .explore { color: var(--kb-ink); }
 .dim { color: var(--kb-ink-3); }
 
