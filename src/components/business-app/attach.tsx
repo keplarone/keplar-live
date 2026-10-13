@@ -4,7 +4,7 @@
  * request budget, a video sampled into timestamped frames), the same limits (4 images, 1 video per message), sent to the
  * engine as `media`. Files stay in the browser until Send and are never stored by Keplar.
  */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { ACCEPT, fmtSize, kindOf, prepareImage, prepareVideo, VideoTooLongError, UNSUPPORTED, type ComposerMedia } from "@/components/app-ui/media-client";
 import { MEDIA_LIMITS, type MediaInput } from "@/lib/orchestration/media";
 import { useScreenShare } from "@/components/app-ui/screen-share";
@@ -157,7 +157,13 @@ export function useShare(media: MediaAttach) {
   return { ...share, note, clearNote: () => setNote("") };
 }
 
+/** Browser capabilities never change while the page is open: nothing to subscribe to. */
+const noSubscribe = () => () => {};
+
 export function ShareButton({ share, disabled }: { share: ReturnType<typeof useShare>; disabled?: boolean }) {
+  // Phones' browsers can't share a screen (no getDisplayMedia): no button there, and more room in the composer bar.
+  const canShare = useSyncExternalStore(noSubscribe, () => typeof navigator.mediaDevices?.getDisplayMedia === "function", () => true);
+  if (!canShare && !share.active) return null;
   return (
     <button type="button" className={s.roundBtn} data-on={share.active || undefined} onClick={() => void share.start()} disabled={disabled} aria-label={share.active ? "Capture the shared screen" : "Share your screen"} title={share.active ? "Capture the shared screen" : "Share your screen"}>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2" /><path d="M8 20h8M12 16v4" /></svg>
