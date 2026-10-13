@@ -199,3 +199,14 @@
 /* Keplar One's marketing layer sets every #main h1 and h2 to regular weight (src/styles/redesign.css); the workspace's
    headings are semibold, so they say so with the same id in the selector. */
 :global(#main) .widgetHead h2 { font-weight: 500; letter-spacing: 0.1em; }
+
+/* ── x.ai look: soft 16px panels on near-black with plain labels (no ruled header bar, no spaced capitals), regular-weight
+   titles and figures. ── */
+.h1 { font-size: 28px; font-weight: 400; letter-spacing: -0.025em; }
+.widget { border-radius: 16px; background: #111; gap: 10px; padding: 0 20px 20px; }
+.widgetHead { margin: 0 -20px; padding: 14px 14px 0 20px; min-height: 0; border-bottom: 0; background: transparent; }
+:global(#main) .widgetHead h2 { font-size: 13px; font-weight: 400; letter-spacing: 0; color: var(--w-ink-2); }
+.big { font-size: 32px; font-weight: 400; letter-spacing: -0.03em; }
+.card { border-radius: 16px; padding: 16px 18px; background: #111; }
+.card strong { font-weight: 500; }
+.btnPrimary, .btnGhost { min-height: 36px; padding: 0 16px; font-weight: 500; }
