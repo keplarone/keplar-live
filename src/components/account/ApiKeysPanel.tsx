@@ -9,7 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 import s from "./account.module.css";
 
 type Policy = { available: boolean; maxKeys: number; keyPerMinute: number; keyPerDay: number };
-type Key = { id: string; name: string; prefix: string; scopes: string[]; createdAt: string; expiresAt: string | null; lastUsedAt: string | null; revokedAt: string | null; requests: number; credits: number };
+type Key = { id: string; name: string; prefix: string; scopes: string[]; createdAt: string; expiresAt: string | null; lastUsedAt: string | null; revokedAt: string | null; requests: number; credits: number; /** "extension": a browser connected from the Keplar One extension, outside the key allowance. */ kind?: "key" | "extension" };
 type Me = { plan: string; available: boolean; policy: Policy; statement: string; scopes: { id: string; blurb: string }[]; keys: Key[] };
 
 const day = (iso: string) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -45,6 +45,7 @@ export function ApiKeysPanel() {
   if (!me) return err ? <p className={`${s.note} ${s.err}`} role="alert">{err}</p> : <p className={s.note}>Loading…</p>;
   const live = me.keys.filter((k) => !k.revokedAt);
   const stale = me.keys.filter((k) => k.revokedAt);
+  const byHand = live.filter((k) => k.kind !== "extension");
 
   return (
     <div data-api-panel="">
@@ -74,7 +75,7 @@ export function ApiKeysPanel() {
               <option value="30">in 30 days</option><option value="90">in 90 days</option><option value="365">in 1 year</option><option value="none">never</option>
             </select>
             <label className={s.sub}><input type="checkbox" checked={usage} onChange={(e) => setUsage(e.target.checked)} /> Also allow reading usage (the key can always ask)</label>
-            <div className={s.actions}><button type="submit" className={`${s.btn} ${s.btnSm}`} disabled={busy || live.length >= me.policy.maxKeys}>Create key</button></div>
+            <div className={s.actions}><button type="submit" className={`${s.btn} ${s.btnSm}`} disabled={busy || byHand.length >= me.policy.maxKeys}>Create key</button></div>
           </form>
         </>
       )}
@@ -84,10 +85,10 @@ export function ApiKeysPanel() {
           {live.map((k) => (
             <li key={k.id} className={s.session} data-key={k.name}>
               <div className={s.sessionInfo}>
-                <strong>{k.name}</strong> <code>{k.prefix}…</code>
+                <strong>{k.name}</strong> {k.kind === "extension" ? <span className={s.badge}>Browser extension</span> : <code>{k.prefix}…</code>}
                 <span className={s.sub}>{k.scopes.join(", ")} · created {day(k.createdAt)} · {k.expiresAt ? `expires ${day(k.expiresAt)}` : "no expiry"} · {k.lastUsedAt ? `last used ${day(k.lastUsedAt)}` : "never used"} · {k.requests.toLocaleString("en-US")} requests, {k.credits.toLocaleString("en-US")} credits</span>
               </div>
-              <button type="button" className={`${s.btn} ${s.btnGhost} ${s.btnSm}`} disabled={busy} onClick={() => { if (window.confirm(`Revoke "${k.name}"? Anything using it stops working right away.`)) void act(async () => { await api(`/api/keys/${k.id}`, "DELETE"); await load(); }); }}>Revoke</button>
+              <button type="button" className={`${s.btn} ${s.btnGhost} ${s.btnSm}`} disabled={busy} onClick={() => { if (window.confirm(k.kind === "extension" ? `Disconnect "${k.name}"? The extension stops working until you connect it again.` : `Revoke "${k.name}"? Anything using it stops working right away.`)) void act(async () => { await api(`/api/keys/${k.id}`, "DELETE"); await load(); }); }}>{k.kind === "extension" ? "Disconnect" : "Revoke"}</button>
             </li>
           ))}
         </ul>

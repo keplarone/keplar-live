@@ -27,12 +27,16 @@ export type ApiKeyRow = {
   /** Counters for this key (the plan's credits are spent from the workspace as usual). */
   requests: number;
   credits: number;
+  /** "extension": made by connecting the browser extension (src/lib/api/extension.ts), not by hand; outside the plan's key allowance. */
+  kind?: "extension";
 };
 
 export const apiKeys = () => collection<ApiKeyRow>("api_keys");
 export const hashKey = (key: string) => createHash("sha256").update(key).digest("hex");
 export const looksLikeKey = (v: string) => /^kpl_[A-Za-z0-9_-]{32}$/.test(v);
-export const publicKey = (k: ApiKeyRow) => ({ id: k.id, name: k.name, prefix: k.prefix, scopes: k.scopes, createdAt: k.createdAt, expiresAt: k.expiresAt, lastUsedAt: k.lastUsedAt, revokedAt: k.revokedAt, requests: k.requests, credits: k.credits });
+export const publicKey = (k: ApiKeyRow) => ({ id: k.id, name: k.name, prefix: k.prefix, scopes: k.scopes, createdAt: k.createdAt, expiresAt: k.expiresAt, lastUsedAt: k.lastUsedAt, revokedAt: k.revokedAt, requests: k.requests, credits: k.credits, kind: k.kind === "extension" ? "extension" : "key" });
+/** Keys made by hand: the ones the plan's key allowance counts (browser extension connections are not). */
+const byHand = (k: ApiKeyRow) => k.kind !== "extension";
 
 export class ApiError extends Error {
   constructor(public status: number, public code: string, message: string, public retryAfterSec?: number) {
@@ -56,7 +60,7 @@ export async function createKey(ws: Pick<Workspace, "id" | "plan" | "verified" |
   if (!scopes.every(isScope)) throw new HttpError(400, "Unknown scope. Use ask and/or usage.", "bad_scope");
   const days = input.expiresInDays === null || input.expiresInDays === undefined || input.expiresInDays === "" ? null : Number(input.expiresInDays);
   if (days !== null && !(Number.isInteger(days) && days >= 1 && days <= 365)) throw new HttpError(400, "Expiry must be between 1 and 365 days, or none.", "bad_expiry");
-  const live = (await listKeys(ws.id)).filter(active);
+  const live = (await listKeys(ws.id)).filter(active).filter(byHand);
   const max = API_POLICY[ws.plan].maxKeys;
   if (live.length >= max) throw new HttpError(409, `Your plan allows ${max} active keys. Revoke one to create another.`, "limit");
   if (live.some((k) => k.name.toLowerCase() === name.toLowerCase())) throw new HttpError(409, "A key with that name exists. Pick another name.", "duplicate");
@@ -106,8 +110,9 @@ export async function authenticateKey(req: Request, need: ApiScope): Promise<{ k
   if (!apiAvailable(ws.plan) && !ws.admin) throw new ApiError(403, "plan_required", "This account's plan no longer includes API access. The key works again when a supported plan is active.");
   const pol = API_POLICY[ws.admin ? "business" : ws.plan];
   // A plan that dropped to fewer keys (e.g. Plus lapsing to Free): only the oldest active keys within the new allowance keep working.
-  if (!ws.admin) {
-    const live = (await listKeys(ws.id)).filter(active).sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id));
+  // Browser extension connections are outside the allowance, so they neither count nor get cut.
+  if (!ws.admin && byHand(key)) {
+    const live = (await listKeys(ws.id)).filter(active).filter(byHand).sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id));
     const rank = live.findIndex((k) => k.id === key.id);
     if (rank < 0 || rank >= pol.maxKeys) throw new ApiError(403, "plan_required", `Your plan allows ${pol.maxKeys} active key${pol.maxKeys === 1 ? "" : "s"}; this one is over the limit. Revoke older keys or upgrade.`);
   }

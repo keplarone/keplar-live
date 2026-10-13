@@ -4,10 +4,9 @@
  * and the real worst-case output credits per step from GET /api/studio/modes (computed from the prices a step is charged
  * with; nothing is hard-coded here). The choice is persisted (localStorage, try/catch) and the shell sends it with every
  * turn (useStudioAgent options.solarMode → body.mode). Ultimate+ uses UltimateMark's signature sequence.
- * The footer's "Technical details" states what Solar runs on (SOLAR_TECHNICAL_DETAILS).
  */
-import { useEffect, useId, useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react";
-import { DEFAULT_SOLAR_MODE, isSolarModeId, SOLAR_MODES, SOLAR_TECHNICAL_DETAILS, type SolarModeCredits, type SolarModeId } from "@/lib/studio/solar-modes";
+import { useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react";
+import { DEFAULT_SOLAR_MODE, isSolarModeId, SOLAR_MODES, type SolarModeCredits, type SolarModeId } from "@/lib/studio/solar-modes";
 import { MorphIcon, Popover, UltimateMark } from "../ui";
 import s from "./shell.module.css";
 
@@ -99,11 +98,9 @@ export type SolarSelectorProps = {
 
 export function SolarSelector({ value, onChange, compact, disabled, env = "roblox" }: SolarSelectorProps) {
   const [open, setOpen] = useState(false);
-  const [details, setDetails] = useState(false);
   const [selections, setSelections] = useState(0);
   const anchor = useRef<HTMLButtonElement>(null);
   const list = useRef<HTMLDivElement>(null);
-  const detailsId = useId();
   const { table, failed } = useModeCredits(env === "blender" ? "blender" : "studio");
   const index = Math.max(0, SOLAR_MODES.findIndex((m) => m.id === value));
   const ultimate = value === "ultracode";
@@ -188,18 +185,6 @@ export function SolarSelector({ value, onChange, compact, disabled, env = "roblo
         </div>
         <div className={s.solarFoot}>
           <p className={s.solarNote}>{table ? "Output ceiling per step. Input is extra and grows with the conversation." : failed ? "Credit figures are unavailable right now." : "Loading credit figures…"}</p>
-          <button type="button" className={s.solarDetailsToggle} aria-expanded={details} aria-controls={detailsId} onClick={() => setDetails((v) => !v)}>
-            <MorphIcon icon="chevron" state={details ? "expanded" : "collapsed"} size={12} />
-            Technical details
-          </button>
-          {details ? (
-            <div id={detailsId} className={s.solarDetails}>
-              <p>Runs on {SOLAR_TECHNICAL_DETAILS.foundationModel} ({SOLAR_TECHNICAL_DETAILS.developer}) via {SOLAR_TECHNICAL_DETAILS.servedThrough}. The five modes are execution configurations of that one model, not separate models.</p>
-              <p>{SOLAR_TECHNICAL_DETAILS.modes}</p>
-              <p>{env === "blender" ? SOLAR_TECHNICAL_DETAILS.blenderModel : SOLAR_TECHNICAL_DETAILS.studioModelLock}</p>
-              <p>{SOLAR_TECHNICAL_DETAILS.billing}</p>
-            </div>
-          ) : null}
         </div>
       </Popover>
     </>

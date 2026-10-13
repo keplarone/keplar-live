@@ -28,13 +28,16 @@ export const DEEP_LINK_SCHEME = "keplar:";
  * Which desktop app started a sign-in. Keplar One (keplar.one, keplar:// links) and Keplar Business (business.keplar.one,
  * keplar-business:// links, its own repo) share this protocol; each finishes on its own host, so each gets its own session.
  */
-export type DesktopApp = "one" | "business";
+export type DesktopApp = "one" | "business" | "extension";
 export const DESKTOP_APPS: Record<DesktopApp, { name: string; scheme: string; home: string }> = {
   one: { name: "Keplar One", scheme: DEEP_LINK_SCHEME, home: "/app" },
   business: { name: "Keplar Business", scheme: "keplar-business:", home: "/work" },
+  // The browser extension (extension/): it has no link scheme of its own and never gets a browser session. It polls with its verifier
+  // and receives an API key for the person's own workspace (src/lib/api/extension.ts); /desktop/finish refuses its tickets.
+  extension: { name: "Keplar One extension", scheme: "keplar-extension:", home: "/app" },
 };
-/** Anything but "business" is Keplar One (older apps send nothing). */
-export const appOf = (raw: unknown): DesktopApp => (raw === "business" ? "business" : "one");
+/** "business" and "extension" by name; anything else is Keplar One (older apps send nothing). */
+export const appOf = (raw: unknown): DesktopApp => (raw === "business" ? "business" : raw === "extension" ? "extension" : "one");
 
 export type Status = "pending" | "approved" | "used" | "finished" | "cancelled" | "denied";
 
@@ -92,7 +95,7 @@ export function parseAuthDeepLink(raw: string, app: DesktopApp = "one"): { code:
 
 /** A device label for the confirm page ("Keplar One on Windows"): short, printable, nothing the sender can use to impersonate. */
 export function cleanLabel(raw: unknown, app: DesktopApp = "one"): string {
-  const fallback = `${DESKTOP_APPS[app].name} desktop`;
+  const fallback = app === "extension" ? DESKTOP_APPS.extension.name : `${DESKTOP_APPS[app].name} desktop`;
   if (typeof raw !== "string") return fallback;
   const s = raw.replace(/[^\p{L}\p{N} ._()-]/gu, "").replace(/\s+/g, " ").trim().slice(0, 40);
   return s || fallback;

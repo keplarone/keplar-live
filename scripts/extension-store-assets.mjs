@@ -3,7 +3,7 @@
  * Chrome Web Store images for the Keplar One extension, made from the real extension (not mock-ups):
  *   extension/store/screenshot-1-answer.png     1280x800  headline + the answer popup over a page
  *   extension/store/screenshot-2-page-text.png  1280x800  headline + page text added from the right-click menu
- *   extension/store/screenshot-3-setup.png      1280x800  headline + first run, paste a key
+ *   extension/store/screenshot-3-setup.png      1280x800  headline + first run, Connect Keplar
  *   extension/store/promo-small.png              440x280  small promo tile
  *   extension/store/promo-marquee.png           1400x560  marquee promo tile
  *
@@ -123,6 +123,8 @@ try {
   const sw = ctx.serviceWorkers()[0] ?? (await ctx.waitForEvent("serviceworker"));
   const id = new URL(sw.url()).host;
   await ctx.route("https://keplar.one/api/v1/ask", (route) => route.fulfill({ status: 200, headers: { "content-type": "text/event-stream" }, body: sse(sample) }));
+  // The popup's account line: no credit count is invented for the pictures (left: null shows the line without one).
+  await ctx.route("https://keplar.one/api/v1/usage", (route) => route.fulfill({ status: 200, headers: { "content-type": "application/json" }, body: JSON.stringify({ object: "usage", plan: "plus", credits: { used: 0, total: null, left: null } }) }));
 
   const popup = async (query = "") => {
     const p = await ctx.newPage();
@@ -150,12 +152,12 @@ try {
     console.log("wrote", file);
   };
 
-  // 3: first run, no key yet.
+  // 3: first run, not connected yet.
   let p = await popup();
   await p.waitForSelector("#setup:not([hidden])");
   const setup = await capture(p);
-  // A placeholder key (not a real credential): the popup only checks its format; the API call is served from sample-answer.json.
-  await p.evaluate(() => chrome.storage.local.set({ apiKey: "kpl_screenshot_placeholder_000000000" }));
+  // A placeholder connection (not a real credential): the popup only checks its format; the API calls are served above.
+  await p.evaluate(() => chrome.storage.local.set({ apiKey: "kpl_screenshot_placeholder_000000000", account: { email: "you@example.com", connectedAt: Date.now() } }));
   await p.close();
 
   // 2: page text added from the right-click menu (the real storage.session hand-off), question typed.
@@ -181,7 +183,7 @@ try {
   }
   await render(screenshotHtml({ title: "One answer from several AI models", line: "Ask about the page you're on. Keplar One shows how many models agreed, and where they split.", chips: ["Agreement at a glance", "Formatted answers", "Your words only"], popup: answer.src, popupH: answer.h }), 1280, 800, "screenshot-3-answer.png");
   await render(screenshotHtml({ title: "Ask about any page in one click", line: "Right-click a page or a selection, or drag over part of the tab, and ask.", chips: ["Selected text", "Whole page", "Drag an area"], popup: added.src, popupH: added.h }), 1280, 800, "screenshot-4-page-text.png");
-  await render(screenshotHtml({ title: "Your key stays on your device", line: "Paste a Keplar API key once. Text is sent to Keplar only when you press Ask.", chips: ["No tracking", "No remote code", "Nothing saved but your key"], popup: setup.src, popupH: setup.h }), 1280, 800, "screenshot-5-setup.png");
+  await render(screenshotHtml({ title: "Connect once, use your credits", line: "Press Connect Keplar and approve on keplar.one. No key to create or paste; text is sent only when you press Ask.", chips: ["Your Keplar credits", "No tracking", "No remote code"], popup: setup.src, popupH: setup.h }), 1280, 800, "screenshot-5-setup.png");
   await render(promoSmallHtml(), 440, 280, "promo-small.png");
   await render(marqueeHtml(answer.src), 1400, 560, "promo-marquee.png");
 } finally {

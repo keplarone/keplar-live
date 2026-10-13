@@ -107,7 +107,8 @@ export const desktopAuth = (opts: Opts) => {
         // A ticket opened on the other host is used up without signing anyone in (only misuse gets there).
         const onBusiness = isBusinessHost((ctx.headers?.get("host") ?? "").toLowerCase().replace(/:\d+$/, "").replace(/\.$/, ""));
         const who = await redeemTicket(d(), (ctx.query as Record<string, unknown> | undefined)?.ticket);
-        if (!who || (who.app === "business") !== onBusiness) throw ctx.redirect(onBusiness ? "/?signin=expired" : "/signin?error=desktop_link_used&next=%2Fapp");
+        // The browser extension is given an API key (src/lib/api/extension.ts), never a session cookie: its ticket is used up here for nothing.
+        if (!who || who.app === "extension" || (who.app === "business") !== onBusiness) throw ctx.redirect(onBusiness ? "/?signin=expired" : "/signin?error=desktop_link_used&next=%2Fapp");
         const { userId } = await startSession(ctx, { email: who.email, name: who.name, provider: who.app === "business" ? "desktop-business" : "desktop", remember: true });
         if (who.app === "business") throw ctx.redirect(DESKTOP_APPS.business.home);
         throw ctx.redirect(await afterSignInPath(userId, "/app"));

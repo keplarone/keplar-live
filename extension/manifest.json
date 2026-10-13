@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "Keplar One",
   "short_name": "Keplar One",
-  "version": "0.1.1",
-  "description": "Ask Keplar One about selected text, a page, or an area you drag. Several AI models, one answer. Needs a Keplar API key.",
+  "version": "0.1.2",
+  "description": "Ask Keplar One about selected text, a page, or anything you click or drag. Several AI models, one answer, on your Keplar credits.",
   "minimum_chrome_version": "116",
   "action": {
     "default_title": "Ask Keplar One",

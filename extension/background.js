@@ -1,9 +1,73 @@
 // Service worker. "Ask Keplar…" stores text and opens the popup; nothing is sent until Ask.
 // "Search with Keplar One" (Keplar Lens) injects the overlay. After the person agreed once, a search sends the words inside
-// the dragged area and one picture of it (cropped here from the visible tab) to Keplar with their key. Nothing is stored.
-import { ASK_URL, STAGE_TEXT, composeQuestion, cropRect, describeAnswer, errorText, lensRequest, looksLikeKey, parseSse } from "./lib.js";
+// the dragged area and one picture of it (cropped here from the visible tab) to Keplar with their connection. Nothing is stored.
+// Connect: the person approves on keplar.one while signed in, and this worker collects the connection (a key for their own
+// account, so searches spend their credits) with a PKCE verifier that never leaves the extension. No key to create or paste.
+import {
+  API_ORIGIN, ASK_URL, CONNECT_POLL_MS, CONNECT_TTL_MS, CONNECT_URL, DISCONNECT_URL, STAGE_TEXT, TOKEN_URL,
+  composeQuestion, connectStatusText, cropRect, describeAnswer, errorText, lensRequest, looksLikeKey, parseSse, pkcePair,
+} from "./lib.js";
 
 const api = globalThis.chrome;
+
+/* ── connecting to the person's Keplar account ───────────────────────────── */
+let polling = false;
+const post = (url, body, headers = {}) => fetch(url, { method: "POST", headers: { "content-type": "application/json", ...headers }, body: JSON.stringify(body ?? {}), credentials: "omit", cache: "no-store" });
+
+async function startConnect() {
+  const { verifier, challenge } = await pkcePair();
+  const browser = /\bEdg\//.test(navigator.userAgent) ? "Edge" : "Chrome";
+  const res = await post(CONNECT_URL, { challenge, label: `Keplar One extension (${browser})` });
+  const body = await res.json().catch(() => null);
+  if (!res.ok || typeof body?.rid !== "string" || typeof body?.url !== "string") return { ok: false, text: errorText(res.status, body) };
+  const url = new URL(body.url);
+  if (url.origin !== API_ORIGIN) return { ok: false, text: "Couldn't connect. Press Connect to try again." }; // only ever opens keplar.one
+  await api.storage.session.set({ connect: { rid: body.rid, verifier, code: String(body.code ?? ""), at: Date.now() }, connectError: "" });
+  await api.tabs.create({ url: url.toString() });
+  void pollConnect();
+  return { ok: true, code: String(body.code ?? "") };
+}
+
+/** Ask every 2 seconds whether the person approved. Each round reads extension storage, which also keeps this worker awake. */
+async function pollConnect() {
+  if (polling) return;
+  polling = true;
+  try {
+    for (;;) {
+      const { connect } = await api.storage.session.get("connect");
+      if (!connect?.rid) return;
+      if (Date.now() - connect.at > CONNECT_TTL_MS) { await finishConnect({ status: "expired" }); return; }
+      let r = null;
+      try {
+        const res = await post(TOKEN_URL, { rid: connect.rid, verifier: connect.verifier });
+        r = res.ok ? await res.json() : null; // busy or offline: ask again next round
+      } catch { r = null; }
+      if (r && r.status !== "pending") { await finishConnect(r); return; }
+      await new Promise((done) => setTimeout(done, CONNECT_POLL_MS));
+    }
+  } finally {
+    polling = false;
+  }
+}
+
+async function finishConnect(r) {
+  await api.storage.session.remove("connect");
+  if (r.status === "connected" && looksLikeKey(r.key)) {
+    await api.storage.local.set({ apiKey: r.key, account: { email: String(r.email ?? ""), connectedAt: Date.now() } });
+    await api.storage.session.set({ connectError: "" });
+  } else {
+    await api.storage.session.set({ connectError: connectStatusText(r.status) });
+  }
+}
+
+/** Forget the connection here, and revoke it on keplar.one too. A key pasted by hand is only forgotten (revoke it in Account). */
+async function disconnect() {
+  const { apiKey, account } = await api.storage.local.get(["apiKey", "account"]);
+  await api.storage.local.remove(["apiKey", "account"]);
+  if (account && looksLikeKey(apiKey)) {
+    try { await post(DISCONNECT_URL, {}, { authorization: `Bearer ${apiKey}` }); } catch { /* forgotten here either way */ }
+  }
+}
 
 api.runtime.onInstalled.addListener(() => {
   api.contextMenus.removeAll(() => {
@@ -95,6 +159,25 @@ async function cropShot(sender, msg) {
 }
 
 api.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  // Connecting and disconnecting come only from the extension's own pages (the popup), never from a script on a web page.
+  const ownPage = String(sender?.url ?? "").startsWith(api.runtime.getURL(""));
+  if (ownPage && msg?.type === "keplar-connect") {
+    startConnect().then(sendResponse).catch(() => sendResponse({ ok: false, text: "Couldn't reach Keplar. Check your connection and try again." }));
+    return true;
+  }
+  if (ownPage && msg?.type === "keplar-connect-resume") {
+    void pollConnect();
+    sendResponse({ ok: true });
+    return false;
+  }
+  if (ownPage && msg?.type === "keplar-connect-cancel") {
+    api.storage.session.remove("connect").then(() => sendResponse({ ok: true }), () => sendResponse({ ok: false }));
+    return true;
+  }
+  if (ownPage && msg?.type === "keplar-disconnect") {
+    disconnect().then(() => sendResponse({ ok: true }), () => sendResponse({ ok: false }));
+    return true;
+  }
   if (msg?.type === "keplar-lens-open" && Number.isInteger(msg.tabId)) {
     openLens(msg.tabId).then(() => sendResponse({ ok: true })).catch(() => sendResponse({ ok: false }));
     return true;
@@ -122,7 +205,7 @@ async function answer(port, msg, swap) {
   try {
     const { apiKey } = await api.storage.local.get("apiKey");
     if (!looksLikeKey(apiKey)) {
-      post({ type: "error", text: "Open the Keplar toolbar button and paste a kpl_ key. Keys are on paid plans (Lite and above)." });
+      post({ type: "error", text: "Open the Keplar toolbar button and press Connect. Searches use your Keplar credits; there is no key to paste." });
       return;
     }
   let body;
@@ -148,6 +231,7 @@ async function answer(port, msg, swap) {
       cache: "no-store",
     });
     if (!res.ok || !res.body) {
+      if (res.status === 401) await api.storage.local.remove(["apiKey", "account"]); // disconnected or expired: the popup offers Connect again
       post({ type: "error", text: errorText(res.status, await res.json().catch(() => null)) });
       return;
     }
@@ -173,6 +257,6 @@ async function answer(port, msg, swap) {
       if (e?.name !== "AbortError") post({ type: "error", text: "Couldn't reach Keplar. Check your connection and try again." });
     }
   } catch {
-    post({ type: "error", text: "Keplar hit a problem reading your key. Open the toolbar and try again." });
+    post({ type: "error", text: "Keplar hit a problem reading your connection. Open the toolbar and try again." });
   }
 }

@@ -5,7 +5,7 @@
  * Times are epoch milliseconds, passed in by the caller so tests control the clock.
  */
 import { neonConfigured, neonQuery } from "@/lib/create/platform/neon";
-import type { DesktopApp, Status } from "./core";
+import { appOf, type DesktopApp, type Status } from "./core";
 
 export type Row = {
   id: string;
@@ -124,7 +124,7 @@ const toRow = (r: Record<string, unknown>): Row => ({
   id: String(r.id),
   challenge: String(r.challenge),
   label: String(r.label ?? ""),
-  app: r.app === "business" ? "business" : "one",
+  app: appOf(r.app),
   createdAt: Number(r.created_at),
   expiresAt: Number(r.expires_at),
   status: String(r.status) as Status,
@@ -178,7 +178,7 @@ export const sqlStore: DesktopAuthStore = {
       [finishHash, String(now)],
     );
     const r = rows[0];
-    return r && r.user_id && r.email ? { userId: String(r.user_id), email: String(r.email), name: str(r.name), app: r.app === "business" ? "business" : "one" } : null;
+    return r && r.user_id && r.email ? { userId: String(r.user_id), email: String(r.email), name: str(r.name), app: appOf(r.app) } : null;
   },
 };
 

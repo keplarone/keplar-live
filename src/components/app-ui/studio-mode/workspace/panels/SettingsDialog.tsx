@@ -5,12 +5,9 @@
  * - Layout: save, restore the saved one, reset.
  * - Approvals: Auto-approve safe changes (a.setAuto, the same flag the Composer's switch drives). Destructive steps always ask.
  * - Appearance: the theme follows the site's setting (<html data-theme>, src/lib/theme.ts); shown, not duplicated.
- * - Technical details: the accurate disclosure from solar-modes.ts. Solar 5.8 runs on Claude Opus 5.5 by Anthropic via
- *   OpenRouter; the five modes are execution configurations of that one model.
  */
-import { useState, useSyncExternalStore } from "react";
-import { SOLAR_MODES, SOLAR_TECHNICAL_DETAILS } from "@/lib/studio/solar-modes";
-import { Button, Dialog, Icon, MorphIcon, SegmentedControl, Switch } from "../../ui";
+import { useSyncExternalStore } from "react";
+import { Button, Dialog, Icon, SegmentedControl, Switch } from "../../ui";
 import type { StudioAgent } from "../../useStudioAgent";
 import s from "./panels.module.css";
 
@@ -47,8 +44,6 @@ export function SettingsDialog(p: SettingsDialogProps) {
 
 function SettingsBody({ a, env, view, onViewChange, onResetLayout, onSaveLayout, onRestoreLayout, hasSavedLayout }: SettingsDialogProps) {
   const theme = useSyncExternalStore(subscribeTheme, themeNow, () => "Light");
-  const [details, setDetails] = useState(false);
-  const t = SOLAR_TECHNICAL_DETAILS;
 
   return (
     <div className={s.stack}>
@@ -86,26 +81,6 @@ function SettingsBody({ a, env, view, onViewChange, onResetLayout, onSaveLayout,
       <section className={s.section} aria-labelledby="ks-set-theme">
         <h3 id="ks-set-theme" className={s.sectionTitle}>Appearance</h3>
         <p className={s.line}>Theme follows Keplar&apos;s appearance setting · now {theme}</p>
-      </section>
-
-      <section className={s.section} aria-label="Technical details">
-        <details className={s.disclosure} open={details} onToggle={(e) => setDetails((e.currentTarget as HTMLDetailsElement).open)}>
-          <summary>
-            <MorphIcon icon="chevron" state={details ? "expanded" : "collapsed"} size={14} />
-            Technical details
-          </summary>
-          <div className={s.disclosureBody}>
-            <dl className={s.facts}>
-              <dt>Product</dt><dd>{t.product}</dd>
-              <dt>Model</dt><dd>{t.foundationModel} by {t.developer}</dd>
-              <dt>Served through</dt><dd>{t.servedThrough} · <code>{t.openRouterModelId}</code></dd>
-              <dt>Modes</dt><dd>{SOLAR_MODES.map((m) => m.label).join(", ")}: execution configurations of this one model, not separate models.</dd>
-            </dl>
-            <p className={s.meta}>{t.modes}</p>
-            <p className={s.meta}>{env === "blender" ? t.blenderModel : t.studioModelLock}</p>
-            <p className={s.meta}>{t.billing}</p>
-          </div>
-        </details>
       </section>
     </div>
   );
