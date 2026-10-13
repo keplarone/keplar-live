@@ -33,6 +33,7 @@ import { LlmError } from "./llm";
 import { APP_BUILD_LIMITS, chainFor } from "./models";
 import { normalizeAppFiles, AppFilesError } from "./files";
 import { planApp } from "./plan";
+import { quickEdit } from "./patch";
 import { rubricFindings } from "./rubric";
 import { autofixImports, staticCheck } from "./verify/static";
 import { reviewBuild } from "./verify/review";
@@ -96,6 +97,7 @@ export async function startBuild(ws: Workspace, site: Site, input: { prompt?: st
     id: newId("abl"), workspaceId: ws.id, siteId: site.id, prompt, design, stage: "plan", spec: null, files: {}, images: editing ? { ...(site.app!.images ?? {}) } : {}, attempts: 0,
     checks: [], verdicts: [], visual: null, shots: [], usd: 0, model: null, log: [], startedAt: t, updatedAt: t, error: null, version: null, wave: 0, charged: 0, units: 0, runs: 0,
     base: editing ? { version: site.headVersion, changes: [] } : null,
+    ...(editing ? { quick: "try" as const } : {}),
     ...(auto && !(input.design as { style?: string })?.style ? { designAuto: true } : {}),
   };
   await builds().insert(row);
@@ -183,6 +185,37 @@ export async function* runBuild(ws: Workspace, site: Site, buildId: string, opts
         // Several continue rounds that never left "plan" (surprise + LLM burns the budget without a spec) → fail loudly with Retry.
         if ((b.runs ?? 0) > 3 && !b.spec) throw new LlmError("Planning took too long and was stopped. Try again in a minute, or simplify the request.", "plan_timeout");
         if (left() < NEED_S.plan) break;
+        if (b.base && b.quick === "try" && site.app?.spec) {
+          // Fast edit first: small SEARCH/REPLACE edits to the current version, no replan and no whole-file rewrites.
+          yield { type: "stage", stage: "generate", text: "Patching only what changes" };
+          await save();
+          const baseSpec = site.app.spec;
+          const cur = await getVersion(site, b.base.version);
+          const baseFiles = cur?.files ?? {};
+          const q = Object.keys(baseFiles).length
+            ? yield* during(quickEdit({ spec: baseSpec, designBrief: brief, files: baseFiles, request: b.prompt, chain: chainFor(ws.plan, "code", breaker), L, deadline: Math.min(deadline - 60_000, Date.now() + 120_000) }))
+            : { ok: false, files: baseFiles, changed: [] as string[], usd: 0, reason: "No saved files to edit.", summary: "" };
+          b.usd += q.usd;
+          if (q.ok) {
+            b.spec = JSON.parse(JSON.stringify(baseSpec)) as AppSpec;
+            b.files = finishFiles(b.spec, q.files);
+            b.quick = "on";
+            b.base.changes = q.changed.map((p) => ({ path: p, what: q.summary || "Quick edit." }));
+            // The last full review still describes the app; this edit is re-tested in the browser below.
+            b.verdicts = site.app.report?.verdicts ?? [];
+            b.visual = site.app.report?.visual ?? null;
+            log(`Quick edit${q.summary ? ` (${q.summary})` : ""}: changed ${q.changed.join(", ")}.`);
+            yield { type: "plan", spec: publicSpec(b.spec) };
+            for (const p of q.changed) yield { type: "file", path: p, bytes: b.files[p]?.length ?? 0, text: b.files[p] };
+            b.stage = "verify";
+            await save();
+            continue;
+          }
+          log(`This change needs the full builder: ${q.reason}`);
+          b.quick = "off";
+          await save();
+          if (left() < NEED_S.plan) break;
+        }
         yield { type: "stage", stage: "plan", text: b.base ? "Planning the change" : "Understanding the idea and planning the product" };
         await save(); // heartbeat so a kill mid-plan is detectable as stale (and resume does not spin forever)
         if (b.designAuto) {
@@ -294,15 +327,16 @@ export async function* runBuild(ws: Workspace, site: Site, buildId: string, opts
         addCheck({ id: "rubric", label: "Anti-generic rubric", ok: rubricErrors.length === 0, detail: rubric.length ? rubric.slice(0, 3).map((f) => f.message).join(" ") : "No template tells, stock images or invented proof" });
         yield* flush();
         const meta = metaFor(ws, site, spec, b.design, b.images);
-        const finalPass = b.attempts >= L.fixAttempts;
+        const quick = b.quick === "on";
+        const finalPass = b.attempts >= (quick ? Math.min(1, L.fixAttempts) : L.fixAttempts);
         const { smokeTest } = await import("./verify/smoke");
-        const smoke = yield* during(smokeTest({ site, meta, files: b.files, plan: ws.plan, deadline: Math.min(deadline - 40_000, Date.now() + 100_000), onCheck: addCheck, aiCalls: b.attempts === 0 || finalPass, shots: true, workspace: ws }));
+        const smoke = yield* during(smokeTest({ site, meta, files: b.files, plan: ws.plan, deadline: Math.min(deadline - 40_000, Date.now() + 100_000), onCheck: addCheck, aiCalls: !quick && (b.attempts === 0 || finalPass), shots: true, workspace: ws }));
         if (smoke.skipped) addCheck({ id: "browser", label: "Browser test", ok: false, detail: smoke.skipped });
         yield* flush();
         let verdicts: FeatureVerdict[] = b.verdicts;
         let visual = b.visual;
         let fixes: Problem[] = [];
-        if (left() > 45) {
+        if (!quick && left() > 45) {
           yield { type: "stage", stage: "visual", text: "Comparing what you asked for with what was built, and reviewing the design" };
           const rv = yield* during(reviewBuild({ spec, prompt: b.prompt, designBrief: brief, files: b.files, checks, issues: smoke.issues, texts: smoke.texts, shots: smoke.shots, vision: L.visualPass, chain: chainFor(ws.plan, L.visualPass ? "vision" : "plan", breaker), deadline: Math.min(deadline - 10_000, Date.now() + 90_000) }));
           b.usd += rv.usd;
@@ -318,7 +352,7 @@ export async function* runBuild(ws: Workspace, site: Site, buildId: string, opts
           ...st.issues.map((i) => ({ file: i.file, message: `${i.line ? `line ${i.line}: ` : ""}${i.message}`, source: "static" as const, severity: "high" as const })),
           ...smoke.issues.map((i) => ({ file: i.file, message: `[screen ${i.route}] ${i.message}${i.line ? ` (line ${i.line})` : ""}`, source: "browser" as const, severity: "high" as const })),
           ...checks.filter((c) => !c.ok && c.id.startsWith("flow:")).map((c) => ({ message: `${c.label} failed in the browser test: ${c.detail}`, source: "browser" as const, severity: "high" as const })),
-          ...rubric.filter((f) => f.severity === "error" || b.attempts === 0).map((f) => ({ file: f.file, message: f.message, source: "rubric" as const, severity: f.severity === "error" ? ("high" as const) : ("low" as const) })),
+          ...rubric.filter((f) => f.severity === "error" || (b.attempts === 0 && !quick)).map((f) => ({ file: f.file, message: f.message, source: "rubric" as const, severity: f.severity === "error" ? ("high" as const) : ("low" as const) })),
           ...fixes.filter((f) => f.severity !== "low" || (visual?.score ?? 10) < 7),
           // Design-review findings the reviewer did not turn into a file fix still get one pass (broken layouts, cramped columns).
           ...(fixes.length ? [] : (visual?.issues ?? []).slice(0, 4).map((m) => ({ message: `Design review (screenshots): ${m}`, source: "review" as const, severity: "medium" as const }))),
@@ -326,7 +360,7 @@ export async function* runBuild(ws: Workspace, site: Site, buildId: string, opts
         b.checks = checks;
         b.verdicts = verdicts;
         b.visual = visual;
-        const blocking = problems.filter((p) => p.severity === "high" || (p.severity === "medium" && b.attempts === 0)).length + verdicts.filter((v) => v.status !== "built" && spec.features.find((f) => f.id === v.id)?.must).length + ((visual?.score ?? 10) < 7 ? 1 : 0);
+        const blocking = problems.filter((p) => p.severity === "high" || (p.severity === "medium" && b.attempts === 0 && !quick)).length + verdicts.filter((v) => v.status !== "built" && spec.features.find((f) => f.id === v.id)?.must).length + ((visual?.score ?? 10) < 7 ? 1 : 0);
         if (finalPass || !blocking || overBudget() || !problems.length) {
           // Keep screenshots of the final state for the report.
           b.shots = await storeShots(ws, smoke.shots, opts.origin);
@@ -350,6 +384,19 @@ export async function* runBuild(ws: Workspace, site: Site, buildId: string, opts
         }
         b.attempts += 1;
         yield { type: "stage", stage: "fix", text: `Fixing ${b.problems?.length ?? 0} problem${b.problems?.length === 1 ? "" : "s"} (round ${b.attempts} of ${L.fixAttempts})` };
+        if (b.quick === "on") {
+          // A quick edit is repaired the same way it was made: small edits aimed at what the test found.
+          const q = yield* during(quickEdit({ spec, designBrief: brief, files: b.files, request: b.prompt, problems: (b.problems ?? []).slice(0, 12).map((p) => `${p.file ? `${p.file}: ` : ""}${p.message}`), chain: chainFor(ws.plan, "fix", breaker), L, deadline: deadline - 5_000 }));
+          b.usd += q.usd;
+          if (q.ok) {
+            b.files = finishFiles(spec, q.files);
+            for (const p of q.changed) emit({ type: "file", path: p, bytes: b.files[p]?.length ?? 0 });
+            log(`Fix round ${b.attempts}: edited ${q.changed.join(", ")}.`);
+            b.stage = "verify";
+            await save();
+            continue;
+          }
+        }
         const r = yield* during(fixProblems({ spec, designBrief: brief, files: b.files, problems: b.problems ?? [], chain: chainFor(ws.plan, "fix", breaker), L, deadline: deadline - 5_000, onFile: (p) => emit({ type: "file", path: p, bytes: 0 }) }));
         b.usd += r.usd;
         b.files = finishFiles(spec, r.files);
