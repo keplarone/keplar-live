@@ -317,3 +317,61 @@
   .hero > *, .hero > .lede, .tiles { animation: none; }
   .morph::after { animation: none; }
 }
+
+/* ── type and nav after the x.ai recording: Google Sans (self-hosted, the closest open match to x.ai's face), regular-weight
+   headings, bright nav links, icon-only brand ── */
+.root { font-family: var(--kb-brand); font-feature-settings: normal; }
+.h1, .h2, .h3, .h4 { font-weight: 400; }
+.h2 { letter-spacing: -0.025em; }
+.hero .h1 { font-weight: 400; letter-spacing: -0.025em; }
+.navLinks { gap: 6px; }
+.navLinks a, .navLink { color: #fff; font-size: 14.5px; font-weight: 500; }
+.navLinks a:hover, .navLink:hover { color: #fff; opacity: 0.7; }
+.navLinks a { transition: opacity var(--kb-d-1) var(--kb-ease); }
+.btnPrimary, .btnGhost, .btnPrimarySm, .btnGhostSm, .btnDarkSm { font-weight: 500; }
+
+/* ── Product: a heading, then one row per capability (copy beside a live example), then "And much more" ── */
+.productHead { display: flex; flex-direction: column; align-items: center; gap: var(--kb-s-4); max-width: 760px; margin: 0 auto var(--kb-s-9); text-align: center; }
+.productHead .overline { margin: 0; }
+.productHead .lede { max-width: 54ch; }
+.features { display: flex; flex-direction: column; }
+.feature { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: center; gap: clamp(32px, 6vw, 96px); padding: clamp(48px, 7vw, 88px) 0; border-top: 1px solid var(--kb-border); }
+.feature[data-flip] { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+.feature[data-flip] > :first-child { order: 2; }
+.featureCopy { display: flex; flex-direction: column; gap: var(--kb-s-4); }
+.featureTitle { display: flex; align-items: center; gap: 12px; margin: 0; font-size: clamp(26px, 2.6vw, 34px); font-weight: 400; letter-spacing: -0.02em; line-height: 1.15; }
+.featureIcon { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 10px; background: var(--kb-surface-2); box-shadow: inset 0 0 0 1px var(--kb-border); color: var(--kb-ink); }
+.ticks { list-style: none; display: flex; flex-direction: column; gap: 10px; margin: var(--kb-s-2) 0 0; padding: 0; font-size: var(--kb-t-md); color: var(--kb-ink-2); }
+.ticks li { display: flex; align-items: center; gap: 12px; }
+.ticks li::before { content: ""; flex: none; width: 10px; height: 5px; margin-top: -3px; border-left: 1.5px solid var(--kb-ink-3); border-bottom: 1.5px solid var(--kb-ink-3); transform: rotate(-45deg); }
+.more { display: flex; flex-direction: column; gap: var(--kb-s-3); padding-top: clamp(48px, 7vw, 88px); border-top: 1px solid var(--kb-border); }
+.moreGrid { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--kb-s-6) var(--kb-s-6); margin: var(--kb-s-6) 0 0; padding: 0; }
+.moreGrid li { display: flex; gap: 14px; align-items: flex-start; }
+.moreGrid p { margin: 4px 0 0; font-size: var(--kb-t-sm); line-height: 1.55; color: var(--kb-ink-3); }
+.moreIcon { display: grid; place-items: center; flex: none; width: 32px; height: 32px; color: var(--kb-ink-2); }
+
+/* ── Pricing as separate cards (x.ai's pricing page): soft panels, big price, full-width pill, "Everything in …, and:" ── */
+.plans { gap: 12px; border-radius: 0; box-shadow: none; overflow: visible; }
+.plan, .plan + .plan { border-radius: 16px; background: #111; box-shadow: inset 0 0 0 1px var(--kb-border); padding: var(--kb-s-6) var(--kb-s-5); }
+.plan[data-featured] { background: #161616; box-shadow: inset 0 0 0 1px var(--kb-border-strong); }
+.planName { justify-content: space-between; font-size: var(--kb-t-body); font-weight: 500; letter-spacing: 0; }
+.popular { font-size: var(--kb-t-xs); font-weight: 500; color: #7aa2ff; }
+.priceBig { font-size: 40px; font-weight: 400; letter-spacing: -0.03em; }
+.priceNote { flex-basis: auto; font-size: var(--kb-t-sm); }
+.planEvery { margin: 0; font-size: var(--kb-t-sm); color: var(--kb-ink-3); }
+.planList { gap: 10px; color: var(--kb-ink); }
+.planList li { align-items: center; gap: 12px; }
+.planList li::before { width: 10px; height: 5px; margin-top: -3px; background: none; border-left: 1.5px solid var(--kb-ink-2); border-bottom: 1.5px solid var(--kb-ink-2); transform: rotate(-45deg); }
+
+@media (max-width: 1080px) {
+  .plan:nth-child(3), .plan:nth-child(4) { box-shadow: inset 0 0 0 1px var(--kb-border); }
+}
+@media (max-width: 900px) {
+  .feature, .feature[data-flip] { grid-template-columns: minmax(0, 1fr); }
+  .feature[data-flip] > :first-child { order: 0; }
+  .moreGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .plan + .plan, .plan:nth-child(3), .plan:nth-child(4) { box-shadow: inset 0 0 0 1px var(--kb-border); }
+  .moreGrid { grid-template-columns: minmax(0, 1fr); }
+}
