@@ -26,6 +26,7 @@ const Loading = () => <div className={s.center}><span className={s.spinner} aria
 const BusinessOS = dynamic(() => import("@/components/business/BusinessOS").then((m) => m.BusinessOS), { ssr: false, loading: Loading });
 const DesignCanvas = dynamic(() => import("./DesignCanvas").then((m) => m.DesignCanvas), { ssr: false, loading: Loading });
 const Settings = dynamic(() => import("./Settings").then((m) => m.Settings), { ssr: false });
+const Computer = dynamic(() => import("./Computer").then((m) => m.Computer), { ssr: false, loading: Loading });
 const CreateStudio = dynamic(() => import("@/components/create/CreateStudio").then((m) => m.CreateStudio), { ssr: false, loading: Loading });
 
 type Account = { signedIn: boolean; email?: string | null; account?: { company: string } | null; active?: boolean; plan?: { name: string } | null };
@@ -38,6 +39,7 @@ type View =
   | { at: "projects"; projectId: string | null }
   | { at: "create" }
   | { at: "canvas" }
+  | { at: "computer" }
   | { at: "os"; tab: OsTab }
   | { at: "research" | "reason"; seed?: string; openId?: string; projectId?: string; key: string };
 
@@ -55,6 +57,7 @@ function readView(): View {
   if (v === "dashboard") return { at: "dashboard" };
   if (v === "create") return { at: "create" };
   if (v === "canvas") return { at: "canvas" };
+  if (v === "computer") return { at: "computer" };
   if (v === "os") { const tab = q.get("t") as OsTab | null; return { at: "os", tab: tab && OS_TABS.includes(tab) ? tab : "overview" }; }
   if (v === "research" || v === "reason") return { at: v, openId: q.get("r") ?? undefined, key: k() };
   return { at: "home" };
@@ -74,6 +77,7 @@ function writeView(v: View) {
   else if (v.at === "dashboard") q.set("v", "dashboard");
   else if (v.at === "create") q.set("v", "create");
   else if (v.at === "canvas") q.set("v", "canvas");
+  else if (v.at === "computer") q.set("v", "computer");
   else if (v.at === "os") { q.set("v", "os"); if (v.tab !== "overview") q.set("t", v.tab); }
   else if (v.at === "research" || v.at === "reason") { q.set("v", v.at); if (v.openId) q.set("r", v.openId); }
   const qs = q.toString();
@@ -224,6 +228,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
     canvas: <><rect x="3" y="4" width="18" height="14" rx="2" /><path d="M8 21h8M12 18v3" /><path d="M14.5 8.5l2.5 2.5-3 3h-2.5v-2.5z" /></>,
     agents: <><rect x="5" y="8" width="14" height="11" rx="3" /><path d="M12 8V4M9.5 13h.01M14.5 13h.01" /><path d="M2.5 13.5v2M21.5 13.5v2" /></>,
     approvals: <><path d="M9 11l2 2 4-4" /><path d="M5 4h14v13l-7 4-7-4z" /></>,
+    computer: <><rect x="3" y="4" width="18" height="12" rx="2" /><path d="M8 20h8M12 16v4" /><path d="M10 8l4 2-4 2z" /></>,
     operations: <><path d="M3 9l1.5-5h15L21 9" /><path d="M4 9v11h16V9" /><path d="M3 9h18M9 20v-6h6v6" /></>,
     integrations: <><path d="M9 7V3M15 7V3" /><path d="M7 7h10v4a5 5 0 0 1-10 0z" /><path d="M12 16v5" /></>,
     research: <><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></>,
@@ -234,6 +239,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
     { id: "create", group: "Build", label: "Create", icon: I.create, view: () => ({ at: "create" }), current: is("create") },
     { id: "canvas", group: "Build", label: "Design Canvas", icon: I.canvas, view: () => ({ at: "canvas" }), current: is("canvas") },
     { id: "agents", group: "Agents", label: "Agents", icon: I.agents, view: () => ({ at: "os", tab: "agents" }), current: osAt("agents") },
+    { id: "computer", group: "Agents", label: "Computer use", icon: I.computer, view: () => ({ at: "computer" }), current: is("computer") },
     { id: "approvals", group: "Agents", label: "Approvals", icon: I.approvals, view: () => ({ at: "os", tab: "approvals" }), current: osAt("approvals"), badge: pending },
     { id: "research", group: "Research", label: "Deep Research", icon: I.research, view: () => ({ at: "research", key: k() }), current: is("research") },
     { id: "reason", group: "Research", label: "Reason", icon: I.reason, view: () => ({ at: "reason", key: k() }), current: is("reason") },
@@ -360,13 +366,14 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
               : view.at === "projects" ? <Projects projectId={view.projectId} onOpen={(id) => { go({ at: "projects", projectId: id }); loadSide(); }} />
               : view.at === "create" ? <div className={s.module}><CreateStudio signedIn plan="business" /></div>
               : view.at === "canvas" ? <div className={s.module}><DesignCanvas /></div>
+              : view.at === "computer" ? <Computer onOpenSettings={() => openSettings("computer")} />
               : view.at === "os" ? <div className={s.module}><BusinessOS key={view.tab} initialTab={view.tab} embedded /></div>
               : <Analyst key={view.key} kind={view.at} seed={view.seed} seedMedia={sentMedia?.key === view.key ? sentMedia.media : undefined} openId={view.openId} projectSeed={view.projectId} onSaved={loadSide} />}
           </div>
         </section>
       </div>
       <CommandPalette open={paletteOpen} commands={COMMANDS} onClose={() => setPaletteOpen(false)} />
-      {settings ? <Settings section={settings} onSection={setSettings} onClose={closeSettings} onOpenPlace={(p) => { setSettings(null); go(p === "integrations" ? { at: "os", tab: "connectors" } : { at: "os", tab: p }); }} /> : null}
+      {settings ? <Settings section={settings} onSection={setSettings} onClose={closeSettings} onOpenPlace={(p) => { setSettings(null); go(p === "computer" ? { at: "computer" } : p === "integrations" ? { at: "os", tab: "connectors" } : { at: "os", tab: p }); }} /> : null}
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Markdown } from "@/components/app-ui/Markdown";
 import type { KeplarEvent } from "@/lib/orchestration/types";
 import type { MediaInput } from "@/lib/orchestration/media";
-import { AttachButton, mediaHandlers, MediaTray, useMediaAttach } from "./attach";
+import { AttachButton, mediaHandlers, MediaTray, ShareBar, ShareButton, useMediaAttach, useShare } from "./attach";
 import { runEngine } from "./engine";
 import { loadChat, saveChat, type SavedTurn } from "./chats";
 import type { KeplarAnswer } from "@/lib/orchestration/types";
@@ -28,6 +28,7 @@ export function Ask({ chatId, first, firstMedia, projectId: projectIn, resume, o
   const end = useRef<HTMLDivElement>(null);
   const started = useRef(false);
   const media = useMediaAttach();
+  const share = useShare(media);
 
   const ask = async (q: string, m?: MediaInput) => {
     if (!q.trim() || busy) return;
@@ -101,11 +102,13 @@ export function Ask({ chatId, first, firstMedia, projectId: projectIn, resume, o
         <div ref={end} />
       </div>
       <form className={`${s.composer} ${s.threadComposer}`} onSubmit={(e) => { e.preventDefault(); if (media.busy) return; const q = text; setText(""); void ask(q, media.take()); }} {...mediaHandlers(media)}>
+        <ShareBar share={share} />
         <MediaTray media={media} />
         <label htmlFor="biz-follow" className={s.srOnly}>Follow-up</label>
         <textarea id="biz-follow" rows={1} value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (media.busy || busy || !text.trim()) return; const q = text; setText(""); void ask(q, media.take()); } }} placeholder={busy ? "Keplar is answering…" : "Follow up"} />
         <div className={s.composeBar}>
           <AttachButton media={media} disabled={busy} />
+          <ShareButton share={share} />
           <span className={s.model}><span className={s.modelDot} aria-hidden="true" />Keplar One · Auto</span>
           <span className={s.grow} />
           {busy ? <button type="button" className={s.quickBtn} onClick={() => abort.current?.abort()}>Stop</button> : null}

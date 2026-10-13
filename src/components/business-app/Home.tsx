@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { MediaInput } from "@/lib/orchestration/media";
-import { AttachButton, mediaHandlers, MediaTray, useMediaAttach } from "./attach";
+import { AttachButton, mediaHandlers, MediaTray, ShareBar, ShareButton, useMediaAttach, useShare } from "./attach";
 import { count, type Pulse } from "./pulse";
 import { MODE_KEY } from "./settings-sections";
 import s from "./cursor.module.css";
@@ -65,6 +65,7 @@ export function Home({ projects, onSend, onNewProject, onOpenProject, onBuild, c
   const rec = useRef<{ stop(): void } | null>(null);
   const m = MODES.find((x) => x.id === mode)!;
   const media = useMediaAttach();
+  const share = useShare(media);
 
   useEffect(() => { ref.current?.focus({ preventScroll: true }); }, []);
   // The composer grows with what is typed, up to a limit, then scrolls.
@@ -103,6 +104,7 @@ export function Home({ projects, onSend, onNewProject, onOpenProject, onBuild, c
       </header>
 
       <form className={s.composer} onSubmit={(e) => { e.preventDefault(); send(); }} {...mediaHandlers(media)}>
+        <ShareBar share={share} />
         <MediaTray media={media} />
         <label htmlFor="biz-compose" className={s.srOnly}>Message</label>
         <textarea
@@ -119,6 +121,7 @@ export function Home({ projects, onSend, onNewProject, onOpenProject, onBuild, c
         />
         <div className={s.composeBar}>
           <AttachButton media={media} />
+          <ShareButton share={share} />
           <label className={s.picker}>
             <span className={s.srOnly}>Mode</span>
             <select value={mode} onChange={(e) => setMode(e.target.value as HomeMode)} title="Mode (Alt+M)">

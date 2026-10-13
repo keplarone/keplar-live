@@ -152,7 +152,9 @@ test("Business settings: a popover over the workspace (never a page), from the a
   for (const endpoint of ['"/api/business/account", { method: "POST"', '"/api/billing/portal"', 'href="/api/account/export"', '"/api/business/dashboard"', '"/api/business/agents/halt"']) assert.ok(page.includes(endpoint), endpoint);
   assert.ok(page.includes("signOutOfBusiness()"));
   // What the workspace can't do yet is labelled, never simulated.
-  assert.ok(page.includes("Not available yet"));
+  // Computer use is the desktop app's (window.keplarComputer); the browser says so instead of simulating it.
+  assert.ok(page.includes("Desktop app only"));
+  assert.ok(readFileSync("src/components/business-app/Computer.tsx", "utf8").includes("Runs in the Keplar Business desktop app"));
   // Claims stay within the privacy policy: paid requests go only to endpoints that say they do not train on prompts.
   assert.match(page, /send requests only to model endpoints that say they do not train on prompts/);
   assert.doesNotMatch(page, /never used to train|not used to train/i);

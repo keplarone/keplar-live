@@ -62,7 +62,7 @@ export function Settings({ section, onSection, onClose, onOpenPlace }: {
   onSection: (s: SettingsSection) => void;
   onClose: () => void;
   /** Opens a workspace module (Agents, Approvals, Integrations) and closes the popover. */
-  onOpenPlace: (place: "agents" | "approvals" | "integrations") => void;
+  onOpenPlace: (place: "agents" | "approvals" | "integrations" | "computer") => void;
 }) {
   const [acct, setAcct] = useState<Account | null>(null);
   const [dash, setDash] = useState<Dash | null>(null);
@@ -74,6 +74,8 @@ export function Settings({ section, onSection, onClose, onOpenPlace }: {
   const [liveCode, setLiveCode] = useState(() => read(LIVE_CODE_KEY) !== "hidden");
   const [mode, setMode] = useState(() => read(MODE_KEY) ?? "ask");
   const panel = useRef<HTMLDivElement>(null);
+  // The desktop app (0.1.8+) exposes computer use on this page.
+  const [desktop] = useState(() => typeof window !== "undefined" && "keplarComputer" in window);
 
   useEffect(() => {
     let live = true;
@@ -263,8 +265,10 @@ export function Settings({ section, onSection, onClose, onOpenPlace }: {
                   </>
                 ) : <p className={s.note}>Downloads appear here once your Business plan is active.</p>}
                 <h3 className={s.group}>Control</h3>
-                <Row label="Computer use" hint="Letting an agent operate apps on this computer. Not available in Keplar Business yet."><Status>Not available yet</Status></Row>
-                <Row label="Screen sharing" hint="Sharing your screen with an agent while you work. Not available in Keplar Business yet."><Status>Not available yet</Status></Row>
+                <Row label="Computer use" hint={desktop ? "Keplar operates apps on this computer one approved step at a time. Spending, sending, deleting and signing in always ask first." : "Keplar operating apps on your computer runs in the desktop app (0.1.8 or later); a browser can't control a computer."}>
+                  {desktop ? <button type="button" className={s.ghost} onClick={() => onOpenPlace("computer")}>Open Computer use</button> : <Status>Desktop app only</Status>}
+                </Row>
+                <Row label="Screen sharing" hint="Share a screen, window or tab from the screen button in the composer. Each Capture attaches a frame; nothing is captured in the background."><Status>On, from the composer</Status></Row>
               </>
             ) : null}
 

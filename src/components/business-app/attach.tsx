@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ACCEPT, fmtSize, kindOf, prepareImage, prepareVideo, VideoTooLongError, UNSUPPORTED, type ComposerMedia } from "@/components/app-ui/media-client";
 import { MEDIA_LIMITS, type MediaInput } from "@/lib/orchestration/media";
+import { useScreenShare } from "@/components/app-ui/screen-share";
 import s from "./cursor.module.css";
 
 const MB = 1024 * 1024;
@@ -143,4 +144,40 @@ export function mediaHandlers(media: MediaAttach) {
     onDragOver: (e: React.DragEvent) => { if (Array.from(e.dataTransfer?.types ?? []).includes("Files")) e.preventDefault(); },
     onDrop: (e: React.DragEvent) => { const f = pick(e.dataTransfer?.files); if (f.length) { e.preventDefault(); media.add(f); } },
   };
+}
+
+/**
+ * Share screen (Keplar Vision, src/components/app-ui/screen-share.ts): the person picks a screen, window or tab in the browser's
+ * (or the desktop app's) own picker; each Capture attaches a frame as an ordinary image, and an unchanged screen isn't sent twice.
+ * Sharing ends on Stop, from the system's own sharing bar, or after 15 minutes. Nothing is captured in the background.
+ */
+export function useShare(media: MediaAttach) {
+  const [note, setNote] = useState("");
+  const share = useScreenShare(useCallback((f: File) => media.add([f]), [media]), setNote);
+  return { ...share, note, clearNote: () => setNote("") };
+}
+
+export function ShareButton({ share, disabled }: { share: ReturnType<typeof useShare>; disabled?: boolean }) {
+  return (
+    <button type="button" className={s.roundBtn} data-on={share.active || undefined} onClick={() => void share.start()} disabled={disabled} aria-label={share.active ? "Capture the shared screen" : "Share your screen"} title={share.active ? "Capture the shared screen" : "Share your screen"}>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2" /><path d="M8 20h8M12 16v4" /></svg>
+    </button>
+  );
+}
+
+/** Shown above the prompt while sharing: what is shared, Capture and Stop. Notes (nothing changed, cancelled) appear here too. */
+export function ShareBar({ share }: { share: ReturnType<typeof useShare> }) {
+  if (!share.active && !share.note) return null;
+  return (
+    <div className={s.shareBar} role="status">
+      {share.active ? <span className={s.shareLive} aria-hidden="true" /> : null}
+      <span className={s.shareText}>{share.active ? `Sharing ${share.label} with Keplar${share.note ? ` · ${share.note}` : ""}` : share.note}</span>
+      {share.active ? (
+        <>
+          <button type="button" className={s.shareBtn} onClick={() => void share.capture()}>Capture</button>
+          <button type="button" className={s.shareBtn} onClick={share.stop}>Stop sharing</button>
+        </>
+      ) : <button type="button" className={s.shareBtn} onClick={share.clearNote} aria-label="Dismiss">OK</button>}
+    </div>
+  );
 }
