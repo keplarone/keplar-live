@@ -118,8 +118,8 @@ test.describe.serial("delete chat", () => {
     await expect(page.locator("[data-delete-confirm]")).toHaveCount(0);
     await page.locator("header").getByRole("button", { name: /^Delete chat/ }).click();
     await page.locator("header [data-delete-yes]").click();
-    await expect(page.getByRole("heading", { name: /^Welcome/ })).toBeVisible(); // a new chat
-    await expect(page.locator("header p", { hasText: "New chat" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: /^(Welcome|Good (morning|afternoon|evening))/ })).toBeVisible(); // a new chat (the empty-chat greeting)
+    await expect(page.locator("header p", { hasText: "New chat" })).toHaveCount(1); // the empty chat keeps its title out of sight (App.module.css)
     await expect(page.getByRole("button", { name: T.c, exact: true })).toHaveCount(0);
     await expect.poll(() => status(ctx, ID.c), { timeout: 15_000 }).toBe(404);
   });

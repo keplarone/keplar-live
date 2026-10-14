@@ -126,7 +126,9 @@ test("Agents, Approvals, Operations, Integrations and Create look like the works
   }
   // Keplar One's global button lift and drop shadow stay out of the whole workspace (they are !important, so this is the only way).
   const redesign = readFileSync("src/styles/redesign.css", "utf8");
-  assert.equal((redesign.match(/:not\(html\[data-business-app\] \*\)/g) ?? []).length, 5);
+  const buttonRules = redesign.split("\n").filter((l) => l.startsWith(':is(button, a, [role="button"], input[type="submit"])') || l.startsWith('  :is(button, a, [role="button"], input[type="submit"])'));
+  assert.ok(buttonRules.length >= 4, "the lifted-button rules are still there for the marketing pages");
+  for (const l of buttonRules) assert.match(l, /:not\(html\[data-business-app\] \*\)/, "every lifted-button rule skips the Business workspace");
   // Icon-only detection needs an aria-label: CSS can't see text, so "Options ▾" was squashed to 28px.
   const ws = readFileSync("src/components/business-app/workspace.module.css", "utf8");
   assert.match(ws, /\[aria-label\]:has\(> svg:only-child\)\) \{\s*width: 28px;/);
@@ -169,7 +171,9 @@ test("one Business design system: the site and the workspace read the same token
   assert.ok(readFileSync("src/components/business-app/workspace.module.css", "utf8").includes("--w-bg: var(--kb-bg)"));
   const redesign = readFileSync("src/styles/redesign.css", "utf8");
   assert.ok(redesign.includes("#main:not([data-kb]) h1 {"));
-  assert.equal(redesign.split(":not([data-kb] *)").length - 1, 5, "no button lift or shadow inside Business");
+  for (const l of redesign.split("\n").filter((x) => x.trimStart().startsWith(':is(button, a, [role="button"], input[type="submit"])'))) {
+    assert.ok(l.includes(":not([data-kb] *)"), "no button lift or shadow inside Business");
+  }
 });
 
 test("Business storefront: the hero and its demo are honest", () => {

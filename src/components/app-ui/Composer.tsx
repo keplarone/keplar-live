@@ -1122,7 +1122,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
                   <button type="button" className={s.budgetBtn} onClick={() => setModes((m) => ({ ...m, deepResearch: false }))}>
                     Ask without Deep Research
                   </button>
-                  <Link href="/pricing" className={s.budgetLink}>View plans</Link>
+                  <Link href="/pricing" className={s.budgetLink}>See plans</Link>
                 </span>
               </>
             ) : (
@@ -1175,7 +1175,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
             {signedIn === false || !canUseSlides(plan ?? "free") ? (
               <span>
                 <strong>Slides</strong> is part of Plus and Pro: {brand.engineName} writes a deck from your message, then you edit it, present it and export it.{" "}
-                <Link href={signedIn === false ? "/signin?next=/app" : "/pricing"} className={s.budgetLink}>{signedIn === false ? "Sign in" : "View plans"}</Link>
+                <Link href={signedIn === false ? "/signin?next=/app" : "/pricing"} className={s.budgetLink}>{signedIn === false ? "Sign in" : "See plans"}</Link>
               </span>
             ) : (
               <span>

@@ -21,10 +21,11 @@
 .lead strong { color: var(--c-ink); font-weight: var(--w-medium); overflow-wrap: anywhere; }
 
 /* Sign up | Log in */
-.toggle { display: inline-grid; grid-template-columns: 1fr 1fr; align-self: flex-start; padding: 4px; gap: 4px; border-radius: var(--r-pill); background: var(--btn-s-bg); box-shadow: var(--btn-s-shadow); width: 100%; max-width: 260px; }
-.toggleItem { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 0 var(--s-4); border-radius: var(--r-pill); color: var(--c-ink-2); font-size: var(--t-small); font-weight: var(--w-medium); text-decoration: none; transition: var(--btn-spring); }
+/* Sign up / Sign in: a segmented control (quiet track, the current page raised), so the form's submit stays the one ink button. */
+.toggle { display: inline-grid; grid-template-columns: 1fr 1fr; align-self: flex-start; padding: 3px; gap: 2px; border-radius: var(--r-pill); background: var(--hover-wash); width: 100%; max-width: 260px; }
+.toggleItem { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 0 var(--s-4); border-radius: var(--r-pill); color: var(--c-ink-2); font-size: var(--t-small); font-weight: var(--w-medium); text-decoration: none; transition: background-color var(--m-dur-1) var(--m-ease-out), color var(--m-dur-1) var(--m-ease-out); }
 .toggleItem:hover { color: var(--c-ink); }
-.toggleItem[aria-current="page"] { background: var(--btn-p-bg); color: var(--btn-p-ink); box-shadow: var(--btn-p-shadow); }
+.toggleItem[aria-current="page"] { background: var(--surface-raised); color: var(--c-ink); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1); }
 .toggleItem:focus-visible { outline: none; text-decoration: underline; text-underline-offset: 3px; }
 
 /* Layout of the form */
@@ -74,13 +75,13 @@
 @media (pointer: coarse) { .check { min-height: 40px; align-items: center; } }
 
 /* Pill buttons in the glass system */
-.btn { min-height: 48px; flex-wrap: wrap; row-gap: 2px; padding: 6px var(--s-5); border-radius: var(--r-pill); border: 0; font: inherit; font-size: 15px; font-weight: var(--w-medium); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2); text-decoration: none; transition: var(--btn-spring); -webkit-backdrop-filter: blur(6px) saturate(1.4); backdrop-filter: blur(6px) saturate(1.4); width: 100%; }
+.btn { min-height: 48px; flex-wrap: wrap; row-gap: 2px; padding: 6px var(--s-5); border-radius: var(--r-pill); border: 0; font: inherit; font-size: 15px; font-weight: var(--w-medium); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2); text-decoration: none; transition: background-color var(--m-dur-1) var(--m-ease-out), box-shadow var(--m-dur-2) var(--m-ease-out), color var(--m-dur-1) var(--m-ease-out); width: 100%; }
 .btnPrimary { background: var(--btn-p-bg); color: var(--btn-p-ink); box-shadow: var(--btn-p-shadow); }
 .btnSecondary { background: var(--btn-s-bg); color: var(--btn-s-ink); box-shadow: var(--btn-s-shadow); }
 .btnGhost { background: transparent; color: var(--c-ink-2); }
 .btnGhost:hover:not(:disabled) { color: var(--c-ink); background: rgb(var(--rgb-ink) / 0.06); }
-.btn:hover:not(:disabled):not(.btnGhost) { transform: scale(1.015, 1.01); }
-.btn:active:not(:disabled) { transform: scale(0.98, 0.95); }
+.btnPrimary:hover:not(:disabled) { background: var(--c-ink-hover); }
+.btn:active:not(:disabled) { scale: var(--m-press); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn[aria-busy="true"] { cursor: progress; }
 .btn:focus-visible { outline: none; text-decoration: underline; text-underline-offset: 3px; }

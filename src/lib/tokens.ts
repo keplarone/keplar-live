@@ -54,7 +54,7 @@ export const space = {
   16: 64, 20: 80, 24: 96, 32: 128, 40: 160, 48: 192,
 } as const;
 
-export const radius = { xs: 8, sm: 12, md: 16, card: 24, cardLg: 32, input: 22, pill: 999 } as const;
+export const radius = { xs: 10, sm: 14, md: 18, card: 24, cardLg: 28, input: 22, pill: 999, shapeControl: 14, shapeCard: 22 } as const;
 
 export const border = { hairline: 1, focus: 2 } as const;
 

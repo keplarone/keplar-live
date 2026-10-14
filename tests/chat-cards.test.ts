@@ -106,7 +106,7 @@ const read = (p: string) => readFileSync(p, "utf8");
 
 test("cards: every workspace card links to the same object in its tab, and loads from the tab's own API", () => {
   const src = read("src/components/app-ui/workspace/WorkspaceTurn.tsx");
-  for (const label of ["Open in Create", "Open in Approvals", "Open in Business", "Open in Agents", "Open in Projects", "Open in Deployments", "Open in History"]) assert.ok(src.includes(label), label);
+  for (const label of ["Open in Create", "Open in Approvals", "Open in Business", "Open in Agents", "Open in Projects", "Open in Deployments", "Open in All chats"]) assert.ok(src.includes(label), label);
   for (const api of ["/api/apps", "/api/business/approvals", "/api/business/crm", "/api/business/dashboard", "/api/business/agents", "/api/sites"]) assert.ok(src.includes(`"${api}"`), api);
   assert.ok(src.includes("/api/business/approvals/${a.id}"), "approve / reject through the same approvals route as the tab");
   assert.match(src, /Approve and send/);

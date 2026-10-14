@@ -1,9 +1,9 @@
 /* Reading progress hairline + left tick index. Grey/white light only; difference blending keeps it legible on both themes. */
 .progress { position: fixed; z-index: 60; left: 0; right: 0; top: 0; height: 2px; pointer-events: none; }
 .bar { height: 100%; width: 100%; transform-origin: 0 50%; transform: scaleX(0); background: var(--c-ink); box-shadow: none; opacity: 0.85; will-change: transform; }
-.index { position: fixed; z-index: 30; left: clamp(10px, 1.4vw, 28px); top: 50%; transform: translateY(-50%); margin: 0; padding: 0; list-style: none; display: none; flex-direction: column; gap: 6px; }
+.index { position: fixed; z-index: 30; left: clamp(10px, 1.4vw, 28px); top: 50%; transform: translateY(-50%); margin: 0; padding: 0; list-style: none; display: none; flex-direction: column; gap: 0; }
 .index li { display: block; }
-.index button { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 5px 6px; border-radius: 999px; color: var(--c-ink); opacity: 0.32; transition: opacity 300ms var(--e-standard), background-color 300ms var(--e-standard); }
+.index button { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; gap: 10px; min-height: 24px; padding: 0 6px; border-radius: 999px; /* a 24px target (WCAG 2.5.8); the tick itself stays a 1px line */ color: var(--c-ink); opacity: 0.32; transition: opacity 300ms var(--e-standard), background-color 300ms var(--e-standard); }
 .index i { display: block; width: 12px; height: 1px; background: currentColor; transition: width 400ms var(--e-standard), box-shadow 400ms var(--e-standard); }
 .index span { position: absolute; left: 100%; margin-left: 6px; white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; font-size: 11px; letter-spacing: 0; text-transform: none; padding: 5px 11px; border-radius: 999px; background: var(--c-canvas); border: 1px solid var(--c-border-strong); color: var(--c-ink); opacity: 0; transform: translateX(-4px); pointer-events: none; transition: opacity 200ms var(--e-standard), transform 200ms var(--e-standard); }
 .index li { position: relative; }

@@ -36,33 +36,5 @@
   }
 }
 
-/* Ask and Create share the app main column. The glow is painted once on that column, which does not scroll,
-   so a long thread does not repaint it. The center of the column stays the warm canvas.
-   A second, lighter wash sits on the sidebar so the viewport's left corners stay in the same palette. */
-:root[data-theme="light"] [class*="App-module__"][class$="__main"] { isolation: isolate; }
-:root[data-theme="light"] [class*="App-module__"][class$="__main"]::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: var(--aura-hero);
-}
-/* The app sidebar is a slide-in drawer in the light theme (App.module.css), so it no longer gets its own aura layer here. */
-:root[data-theme="light"] [class*="App-module__"][class$="__sidebar"] { position: relative; z-index: 1; }
-/* The top bar and the working Create panels are translucent in light so the corner glow stays visible while you use the app. */
-:root[data-theme="light"] [class*="App-module__"][class$="__topbar"] {
-  background: linear-gradient(to bottom, rgb(250 249 247 / 0.35), transparent);
-}
-:root[data-theme="light"] [class*="studio-module__"][class$="__top"],
-:root[data-theme="light"] [class*="studio-module__"][class$="__ledger"] { background-color: rgb(250 249 247 / 0.55); }
-:root[data-theme="light"] [class*="studio-module__"][class$="__stage"] { background-color: rgb(255 255 255 / 0.78); }
-/* The composer dock stays readable; a short fade lets the bottom gold and cyan corners show above it. */
-:root[data-theme="light"] [class*="App-module__"][class$="__dock"] {
-  background: linear-gradient(to bottom, transparent, var(--c-canvas) 36%);
-}
-:root[data-theme="light"] [class*="App-module__"][class$="__dockNote"] { color: var(--c-ink-2); }
-
-/* Create's start screen is opaque by default and would hide the column glow. */
-:root[data-theme="light"] [class*="studio-module__"][class$="__start"] { background-color: transparent; }
-:root[data-theme="light"] [class*="studio-module__"][class$="__calm"] { position: relative; }
+/* The /app workspace paints no aura: the product canvas stays calm and flat in both themes (App.module.css), so the work, not
+   the backdrop, carries the screen. The aura stays a marketing-page treatment (home close, Monolith hero). */

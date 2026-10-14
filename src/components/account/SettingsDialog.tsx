@@ -57,7 +57,7 @@ export function SettingsDialog({ mode, children }: { mode: "modal" | "page"; chi
   }, [modal, close]);
 
   const frame = (
-    <div ref={box} className={s.dlg} role={modal ? "dialog" : undefined} aria-modal={modal || undefined} aria-labelledby="settings-title" data-mode={mode}>
+    <div ref={box} className={s.dlg} data-product="" role={modal ? "dialog" : undefined} aria-modal={modal || undefined} aria-labelledby="settings-title" data-mode={mode}>
       <header className={s.dlgHead}>
         <h1 id="settings-title" className={s.dlgTitle}>Settings</h1>
         <button type="button" className={s.dlgClose} onClick={close} aria-label="Close settings" title="Close (Esc)">

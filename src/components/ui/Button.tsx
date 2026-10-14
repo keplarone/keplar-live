@@ -44,7 +44,7 @@ export function ButtonLink({
   variant = "primary",
   size = "md",
   arrow,
-  magnetic = true,
+  magnetic = false,
   children,
   className,
   ...rest

@@ -28,7 +28,7 @@ export default async function VerifySignInPage({ searchParams }: Props) {
       ) : (
         <LinkProblem
           message={`${check.reason === "expired" ? "This sign-in link has expired." : "This sign-in link isn't valid."} Request a new one.`}
-          actions={<Link className={`${s.btn} ${s.btnPrimary}`} href="/signin">Back to log in</Link>}
+          actions={<Link className={`${s.btn} ${s.btnPrimary}`} href="/signin">Back to sign in</Link>}
         />
       )}
     </AuthShell>

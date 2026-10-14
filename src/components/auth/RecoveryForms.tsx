@@ -58,7 +58,7 @@ export function ForgotForm({ caps, next, nextQs, devTools }: { caps: { passwords
           <button type="button" className={`${s.btn} ${s.btnSecondary}`} disabled={busy || cooldown > 0} onClick={(e) => void submit(e)}>
             {cooldown > 0 ? `Send again in ${cooldown}s` : "Send again"}
           </button>
-          <Link className={`${s.btn} ${s.btnGhost}`} href={`/signin${nextQs}`}>Back to log in</Link>
+          <Link className={`${s.btn} ${s.btnGhost}`} href={`/signin${nextQs}`}>Back to sign in</Link>
         </div>
         {error ? <Alert>{error}</Alert> : null}
       </div>
@@ -73,7 +73,7 @@ export function ForgotForm({ caps, next, nextQs, devTools }: { caps: { passwords
         {busy ? "Sending…" : "Email me a reset link"}
       </button>
       <p className={s.fieldNote}>
-        Remembered it? <Link className={s.link} href={`/signin${nextQs}`}>Log in</Link>
+        Remembered it? <Link className={s.link} href={`/signin${nextQs}`}>Sign in</Link>
       </p>
     </form>
   );
@@ -122,7 +122,7 @@ export function ResetForm({ token, email, next }: { token: string; email: string
         </Alert>
       ) : null}
       <button className={`${s.btn} ${s.btnPrimary}`} type="submit" disabled={busy} aria-busy={busy || undefined}>
-        {busy ? "Saving…" : "Set password and log in"}
+        {busy ? "Saving…" : "Set password and sign in"}
       </button>
     </form>
   );
@@ -148,7 +148,7 @@ export function VerifyEmailConfirm({ token, email }: { token: string; email: str
       </button>
       {error ? (
         <Alert>
-          {error} <Link className={s.link} href="/signup">Sign up again</Link> or <Link className={s.link} href="/signin">log in</Link>.
+          {error} <Link className={s.link} href="/signup">Sign up again</Link> or <Link className={s.link} href="/signin">sign in</Link>.
         </Alert>
       ) : null}
     </div>

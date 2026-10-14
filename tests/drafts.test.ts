@@ -37,9 +37,8 @@ test("bounded: text capped, oldest drafts dropped past the cap, expired after 7 
   assert.equal(readDraft("old", s, 10_000 + DRAFT_TTL_MS + 1), null, "expired");
 });
 
-test("wiring: both composers get a key; the main one is per chat and private-aware", () => {
+test("wiring: the composer's draft key is per chat (a new chat included) and private-aware", () => {
   const app = readFileSync("src/components/app-ui/KeplarApp.tsx", "utf8");
-  assert.match(app, /draftKey=\{draftKeyFor\(state\.scope, null, Boolean\(state\.privateNext\)\)\}/);
   assert.match(app, /draftKey=\{draftKeyFor\(state\.scope, state\.activeThreadId, /);
   const composer = readFileSync("src/components/app-ui/Composer.tsx", "utf8");
   assert.match(composer, /writeDraft\(draftFor\.current, textRef\.current\)/, "switching chats keeps the last keystrokes");

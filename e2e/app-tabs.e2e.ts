@@ -20,7 +20,7 @@ test("sidebar tabs update the path and highlight; back restores the previous tab
   await page.locator('nav[aria-label="Keplar"] [data-nav="create"]').click();
   await expect(page).toHaveURL(/\/app\/create$/);
   await expect(page.locator('nav[aria-label="Keplar"] [data-nav="create"]')).toHaveAttribute("aria-current", "page");
-  await expect(page.locator('nav[aria-label="Keplar"] [data-nav="thread"]')).not.toHaveAttribute("aria-current", "page");
+  await expect(page.locator('nav[aria-label="Keplar"] [aria-current="page"]')).toHaveCount(1); // only Create is highlighted
   await page.locator('nav[aria-label="Keplar"] [data-nav="projects"]').click();
   await expect(page).toHaveURL(/\/app\/projects$/);
   await page.goBack();

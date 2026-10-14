@@ -1,7 +1,7 @@
 /* Help centre: hero, topic tiles, then a sticky topic rail beside panelled questions. */
 .wrap { position: relative; z-index: var(--z-content); max-width: var(--l-max); margin: 0 auto; padding: var(--s-12) var(--l-gutter) var(--s-24); }
 .tiles { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: var(--s-3); }
-.tile { display: grid; gap: var(--s-3); align-content: space-between; min-height: 150px; padding: var(--s-6); border-radius: var(--r-card); text-decoration: none; color: var(--c-ink); border: var(--b-hairline) solid var(--c-border); background: rgb(var(--rgb-ink) / 0.06); box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.1); transition: border-color var(--d-base) var(--e-standard), box-shadow var(--d-slow) var(--e-standard); }
+.tile { display: grid; gap: var(--s-3); align-content: space-between; min-height: 150px; padding: var(--s-6); border-radius: var(--r-card); text-decoration: none; color: var(--c-ink); border: var(--b-hairline) solid var(--c-border); background: rgb(var(--rgb-ink) / 0.06); box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.1); transition: border-color var(--d-base) var(--e-standard), box-shadow var(--d-base) var(--e-standard); }
 .tile:hover { border-color: rgb(var(--rgb-ink) / 0.28); box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.18); }
 .tile:focus-visible { outline: var(--b-focus) solid var(--c-focus); outline-offset: 3px; }
 .tileNum { font-size: var(--t-label); letter-spacing: 0.16em; color: var(--c-ink-3); font-variant-numeric: tabular-nums; }

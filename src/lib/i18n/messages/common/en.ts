@@ -21,7 +21,7 @@ const en = {
     resources: "Resources",
     items: navItems,
     hints: navHints,
-    signIn: "Sign In",
+    signIn: "Sign in",
     account: "Account",
     try: "Try Keplar",
     open: "Open Keplar",
