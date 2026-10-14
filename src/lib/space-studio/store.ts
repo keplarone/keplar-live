@@ -22,7 +22,9 @@ export const SPACE_INDEX_WS = "space_identity";
 export const SPACE_SYSTEM_WS = "system";
 
 type SubRow = Row & { sub: Subscription };
-type IdsRow = Row & { identities: Identity[] };
+/** robloxProfile: the linked Roblox account's public username, display name and avatar headshot, cached for /me (24 h). */
+export type RobloxProfileCache = { subject: string; username: string | null; displayName: string | null; avatarUrl: string | null; fetchedAt: number; ok: boolean };
+type IdsRow = Row & { identities: Identity[]; robloxProfile?: RobloxProfileCache };
 type IndexRow = Row & { owner: string; provider: Provider; linkedAt: string };
 type UsageRow = Row & { minutes: number };
 type LockRow = Row & { until: number };
@@ -47,6 +49,15 @@ export async function loadSubscription(wsId: string): Promise<Subscription | nul
 
 export async function loadIdentities(wsId: string): Promise<Identity[]> {
   return (await identityRows().get(wsId, "ids"))?.identities ?? [];
+}
+
+export async function loadRobloxProfileCache(wsId: string): Promise<RobloxProfileCache | null> {
+  return (await identityRows().get(wsId, "ids"))?.robloxProfile ?? null;
+}
+
+/** Only onto an existing identities row (the cache belongs to a linked identity). */
+export async function saveRobloxProfileCache(wsId: string, robloxProfile: RobloxProfileCache) {
+  await identityRows().update(wsId, "ids", { robloxProfile });
 }
 
 async function saveIdentities(wsId: string, identities: Identity[]) {

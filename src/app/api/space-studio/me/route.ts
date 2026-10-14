@@ -1,6 +1,7 @@
 import { errorResponse, json } from "@/lib/create/platform/http";
 import { currentWorkspace } from "@/lib/create/platform/workspace";
-import { allIdentities, identityViews, planView, providersView, spaceSession } from "@/lib/space-studio/account";
+import { allIdentities, identityViews, meProfile, planView, providersView, spaceSession } from "@/lib/space-studio/account";
+import { loadProfile, onboardingView } from "@/lib/space-studio/profile";
 import { spaceCloudStatus } from "@/lib/space-studio/cloud";
 import { ALLOWANCES, CREDIT_PACKS, creditBalance, effectivePlan, FAIR_RULES, MODELS, modelAllowed, PLANS, PRICES, PRICING_NOTE, publicView, TYPICAL_CREDITS } from "@/lib/space-studio/core";
 import { loadCreditUsage, loadSubscription } from "@/lib/space-studio/store";
@@ -10,7 +11,8 @@ export const dynamic = "force-dynamic";
 
 /**
  * Space Studio account summary (contract: space-studio docs/api.md). Public: signed-out callers get { signedIn: false } with the
- * Free defaults and the model list (no account data). Everything plan-related comes from the stored Space Studio subscription.
+ * Free defaults and the model list (no account data; onboarding and profile null). Everything plan-related comes from the stored
+ * Space Studio subscription. Signed in: onboarding { completed, ageBand, parentConsent } and profile { displayName, username, avatarUrl }.
  */
 export async function GET(req: Request) {
   try {
@@ -23,11 +25,12 @@ export async function GET(req: Request) {
       return json({
         signedIn: false, email: null, plan: planView(null), features: { cloud: false, cloudReason: "Sign in to use Space Studio.", maxCloudJobsConcurrent: 0, cloudMinutesMonthly: 0, storageMb: f.storageMb },
         models: MODELS.map((m) => publicView(m, false)), identities: identityViews([]), providers, robloxRequired: providers.roblox, robloxLinked: false, pricing, credits: null,
+        onboarding: null, profile: null,
       });
     }
     const ws = await currentWorkspace(req);
     const now = Date.now();
-    const [sub, ids, cloud, used] = await Promise.all([loadSubscription(ws.id), allIdentities(ws.id, s), spaceCloudStatus(ws.id, { now }), loadCreditUsage(ws.id, now)]);
+    const [sub, ids, cloud, used, onboarding, profile] = await Promise.all([loadSubscription(ws.id), allIdentities(ws.id, s), spaceCloudStatus(ws.id, { now }), loadCreditUsage(ws.id, now), loadProfile(ws.id), meProfile(ws.id, s, now)]);
     const plan = effectivePlan(sub, now);
     const f = PLANS[plan];
     return json({
@@ -36,6 +39,8 @@ export async function GET(req: Request) {
       models: MODELS.map((m) => publicView(m, modelAllowed(sub, now, m.id))),
       identities: identityViews(ids), providers, robloxRequired: providers.roblox, robloxLinked: ids.some((i) => i.provider === "roblox"), pricing,
       credits: creditBalance(plan, used, now),
+      onboarding: onboardingView(onboarding, now),
+      profile,
     });
   } catch (e) {
     return errorResponse(e);

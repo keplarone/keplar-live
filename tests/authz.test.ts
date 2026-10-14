@@ -46,6 +46,9 @@ PUBLIC_OK.add("POST extension/token");
 PUBLIC_OK.add("GET space-studio/me");
 PUBLIC_OK.add("POST space-studio/billing/webhook");
 PUBLIC_OK.add("GET space-studio/identities/roblox/callback");
+// Sign-in starts for the Space Studio desktop app: signed-out by design, they only redirect (to Google / Roblox OAuth or /signin).
+PUBLIC_OK.add("GET space-studio/auth/google/start");
+PUBLIC_OK.add("GET space-studio/auth/roblox/start");
 
 test("anonymous Business status and handoff expose no account data or sign-in ticket", async () => {
   const { GET: account } = await import("@/app/api/business/account/route");

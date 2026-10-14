@@ -39,6 +39,10 @@
     {
       "path": "/api/cron/app-schedules",
       "schedule": "41 7 * * *"
+    },
+    {
+      "path": "/api/cron/space-stats",
+      "schedule": "11 * * * *"
     }
   ]
 }

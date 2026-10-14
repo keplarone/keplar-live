@@ -7,6 +7,9 @@
  *           with the verifier, userinfo read (sub + preferred_username/name), id_token nonce checked when present, then core planLink
  *           and the race-safe index claim. Roblox tokens are used once to read userinfo and never stored or logged.
  * The redirect URI comes from the configured base (BETTER_AUTH_URL or the site URL), never the Host header.
+ *
+ * The same helpers run "Sign in with Roblox" (SIGNIN_FLOW, ./roblox-signin.ts): there is no signed-in account yet, so the sealed
+ * cookie is bound to a fixed label instead, scoped to the sign-in callback path, and also carries the safe `next` path.
  */
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { openSecret, sealSecret } from "@/lib/mcp/crypto";
@@ -24,35 +27,51 @@ export const baseUrl = () => (process.env.BETTER_AUTH_URL || siteUrl).replace(/\
 export const redirectUri = () => `${baseUrl()}/api/space-studio/identities/roblox/callback`;
 export const appUrl = (q: string) => `${baseUrl()}/space-studio/app?view=account&${q}`;
 
-type LinkState = { state: string; verifier: string; nonce: string; accountId: string; exp: number };
+export type OAuthFlow = { cookie: string; path: string; row: string; redirectUri: () => string };
+export const LINK_FLOW: OAuthFlow = { cookie: LINK_COOKIE, path: LINK_COOKIE_PATH, row: ROW, redirectUri };
+export const SIGNIN_COOKIE = "space_roblox_signin";
+export const SIGNIN_PATH = "/api/auth/space-studio/roblox";
+export const SIGNIN_BINDING = "space-roblox-signin";
+export const SIGNIN_FLOW: OAuthFlow = { cookie: SIGNIN_COOKIE, path: SIGNIN_PATH, row: "space-roblox-signin", redirectUri: () => `${baseUrl()}${SIGNIN_PATH}/callback` };
+
+type LinkState = { state: string; verifier: string; nonce: string; accountId: string; exp: number; redirectUri?: string; next?: string };
 
 const b64u = (b: Buffer) => b.toString("base64url");
 
 export function beginLink(accountId: string, clientId: string, now = Date.now()): { url: string; cookie: string } {
-  const st: LinkState = { state: b64u(randomBytes(32)), verifier: b64u(randomBytes(32)), nonce: b64u(randomBytes(16)), accountId, exp: now + TTL_MS };
+  return beginFlow(LINK_FLOW, accountId, clientId, {}, now);
+}
+
+export function beginFlow(flow: OAuthFlow, accountId: string, clientId: string, extra: { next?: string }, now = Date.now()): { url: string; cookie: string } {
+  const st: LinkState = { state: b64u(randomBytes(32)), verifier: b64u(randomBytes(32)), nonce: b64u(randomBytes(16)), accountId, exp: now + TTL_MS, redirectUri: flow.redirectUri(), ...(extra.next ? { next: extra.next } : {}) };
   const u = new URL(ROBLOX_AUTHORIZE);
   u.searchParams.set("response_type", "code");
   u.searchParams.set("client_id", clientId);
-  u.searchParams.set("redirect_uri", redirectUri());
+  u.searchParams.set("redirect_uri", st.redirectUri!);
   u.searchParams.set("scope", "openid profile");
   u.searchParams.set("state", st.state);
   u.searchParams.set("nonce", st.nonce);
   u.searchParams.set("code_challenge", b64u(createHash("sha256").update(st.verifier).digest()));
   u.searchParams.set("code_challenge_method", "S256");
-  return { url: u.toString(), cookie: linkCookie(sealSecret(JSON.stringify(st), accountId, ROW), TTL_MS / 1000) };
+  return { url: u.toString(), cookie: flowCookie(flow, sealSecret(JSON.stringify(st), accountId, flow.row), TTL_MS / 1000) };
 }
 
-export function linkCookie(value: string, maxAgeSec: number) {
+export function flowCookie(flow: OAuthFlow, value: string, maxAgeSec: number) {
   const secure = baseUrl().startsWith("https://") ? "; Secure" : "";
-  return `${LINK_COOKIE}=${value}; Path=${LINK_COOKIE_PATH}; Max-Age=${maxAgeSec}; HttpOnly; SameSite=Lax${secure}`;
+  return `${flow.cookie}=${value}; Path=${flow.path}; Max-Age=${maxAgeSec}; HttpOnly; SameSite=Lax${secure}`;
 }
+export const linkCookie = (value: string, maxAgeSec: number) => flowCookie(LINK_FLOW, value, maxAgeSec);
 export const clearLinkCookie = () => linkCookie("", 0);
 
-const cookieValue = (req: Request) => (req.headers.get("cookie") ?? "").split(/;\s*/).find((c) => c.startsWith(`${LINK_COOKIE}=`))?.slice(LINK_COOKIE.length + 1) ?? "";
+const cookieValue = (cookieHeader: string | null | undefined, name: string) => (cookieHeader ?? "").split(/;\s*/).find((c) => c.startsWith(`${name}=`))?.slice(name.length + 1) ?? "";
 
 /** Opens the cookie for THIS account and checks state (constant time) and expiry. Null on any mismatch. */
 export function readLinkState(req: Request, accountId: string, state: string | null, now = Date.now()): LinkState | null {
-  const plain = openSecret(cookieValue(req), accountId, ROW);
+  return readFlowState(LINK_FLOW, req.headers.get("cookie"), accountId, state, now);
+}
+
+export function readFlowState(flow: OAuthFlow, cookieHeader: string | null | undefined, accountId: string, state: string | null, now = Date.now()): LinkState | null {
+  const plain = openSecret(cookieValue(cookieHeader, flow.cookie), accountId, flow.row);
   if (!plain || !state) return null;
   let st: LinkState;
   try {
@@ -76,7 +95,7 @@ function idTokenNonce(idToken: unknown): string | null | undefined {
   }
 }
 
-export type RobloxUser = { subject: string; label: string | null };
+export type RobloxUser = { subject: string; label: string | null; username: string | null; displayName: string | null };
 
 /**
  * Code -> tokens -> userinfo. The id_token comes straight from Roblox's token endpoint over TLS with our client credentials, so
@@ -86,7 +105,7 @@ export async function finishLink(code: string, st: LinkState, creds: { clientId:
   const tok = await doFetch(ROBLOX_TOKEN, {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded", accept: "application/json" },
-    body: new URLSearchParams({ grant_type: "authorization_code", code, redirect_uri: redirectUri(), code_verifier: st.verifier, client_id: creds.clientId, client_secret: creds.clientSecret }).toString(),
+    body: new URLSearchParams({ grant_type: "authorization_code", code, redirect_uri: st.redirectUri ?? redirectUri(), code_verifier: st.verifier, client_id: creds.clientId, client_secret: creds.clientSecret }).toString(),
     signal: AbortSignal.timeout(15_000),
   }).catch(() => null);
   const t = (tok?.ok ? await tok.json().catch(() => null) : null) as { access_token?: unknown; id_token?: unknown } | null;
@@ -101,6 +120,7 @@ export async function finishLink(code: string, st: LinkState, creds: { clientId:
   const u = (info?.ok ? await info.json().catch(() => null) : null) as { sub?: unknown; preferred_username?: unknown; name?: unknown } | null;
   const sub = u && (typeof u.sub === "string" || typeof u.sub === "number") ? String(u.sub) : "";
   if (!sub || sub.length > 200) throw new Error("userinfo_failed");
-  const label = typeof u!.preferred_username === "string" ? u!.preferred_username : typeof u!.name === "string" ? u!.name : null;
-  return { subject: sub, label: label ? label.slice(0, 80) : null };
+  const username = typeof u!.preferred_username === "string" && u!.preferred_username ? u!.preferred_username.slice(0, 80) : null;
+  const displayName = typeof u!.name === "string" && u!.name ? u!.name.slice(0, 80) : null;
+  return { subject: sub, label: username ?? displayName, username, displayName };
 }

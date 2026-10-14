@@ -6,8 +6,9 @@
  * - google: shown as linked only when THIS session was started with Google (known from the session record when the account
  *   database is connected). Google sign-in resolves to the same Keplar account by verified email, so it is managed by the
  *   account, not unlinked here.
- * - roblox: a connection proven by Roblox OAuth (./roblox-oauth.ts), stored in space_identities. It is not a sign-in method yet
- *   (there is no "Sign in with Roblox"), so canSignIn is false.
+ * - roblox: a connection proven by Roblox OAuth (./roblox-oauth.ts), stored in space_identities. Once linked, it can also be used
+ *   to sign in to this account ("Sign in with Roblox", ./roblox-signin.ts); the stored canSignIn flag stays false because the
+ *   Keplar account (email) remains the account's own sign-in method and unlinking Roblox never strands anyone.
  *
  * robloxRequired: the core (Roblox) workspace needs a linked Roblox account only once Roblox OAuth is configured on the server
  * (ROBLOX_OAUTH_CLIENT_ID + ROBLOX_OAUTH_CLIENT_SECRET). Without it, linking is impossible, so it is not required.
@@ -33,7 +34,7 @@ export async function spaceOwner(req: Request, write: boolean, limit = 60): Prom
   return ws;
 }
 
-export type SpaceSession = { userId: string; email: string; sessionId: string; authAt: number | null };
+export type SpaceSession = { userId: string; email: string; sessionId: string; authAt: number | null; name?: string | null; image?: string | null };
 
 export const robloxOAuthConfigured = (env: Record<string, string | undefined> = process.env) => Boolean(env.ROBLOX_OAUTH_CLIENT_ID?.trim() && env.ROBLOX_OAUTH_CLIENT_SECRET?.trim());
 
@@ -49,7 +50,8 @@ export async function spaceSession(req: Request): Promise<SpaceSession | null> {
   const s = await getSession(req.headers);
   if (!s) return null;
   const at = Date.parse(String(s.session.createdAt ?? ""));
-  return { userId: s.user.id, email: s.user.email, sessionId: s.session.id, authAt: Number.isFinite(at) ? at : null };
+  const u = s.user as { name?: unknown; image?: unknown };
+  return { userId: s.user.id, email: s.user.email, sessionId: s.session.id, authAt: Number.isFinite(at) ? at : null, name: typeof u.name === "string" ? u.name : null, image: typeof u.image === "string" ? u.image : null };
 }
 
 async function sessionProvider(s: SpaceSession): Promise<string | null> {
@@ -92,4 +94,29 @@ export function planView(sub: Subscription | null, now = Date.now()) {
     : plan !== "free" ? "active"
     : sub.status === "canceled" ? "canceled" : "expired";
   return { id: plan, name: PLANS[plan].name, status, renewsAt: plan !== "free" && sub?.status !== "canceled" ? sub?.periodEnd ?? null : null };
+}
+
+export type MeProfile = { displayName: string; username: string | null; avatarUrl: string | null };
+const PROFILE_TTL_MS = 24 * 3_600_000;
+const PROFILE_FAIL_TTL_MS = 10 * 60_000;
+const httpsOrNull = (v: string | null | undefined) => (v && /^https:\/\//.test(v) && v.length <= 2000 ? v : null);
+
+/**
+ * The person's display profile for /me. With a linked Roblox account: its display name, username and avatar headshot (Roblox's
+ * public users and thumbnails APIs, 3 s timeouts, cached on the identities row for 24 h; null fields when Roblox didn't answer).
+ * Otherwise: the Keplar account's name (or the email's local part) and its picture when the account has one (e.g. from Google).
+ */
+export async function meProfile(wsId: string, s: SpaceSession, now = Date.now()): Promise<MeProfile> {
+  const local = s.email.split("@")[0] || s.email;
+  const rb = (await loadIdentities(wsId)).find((i) => i.provider === "roblox");
+  if (!rb) return { displayName: s.name?.trim() || local, username: null, avatarUrl: httpsOrNull(s.image) };
+  const { loadRobloxProfileCache, saveRobloxProfileCache } = await import("./store");
+  let c = await loadRobloxProfileCache(wsId);
+  if (!c || c.subject !== rb.subject || now - c.fetchedAt >= (c.ok ? PROFILE_TTL_MS : PROFILE_FAIL_TTL_MS)) {
+    const { robloxHeadshot, robloxUser } = await import("./roblox-api");
+    const [user, avatarUrl] = await Promise.all([robloxUser(rb.subject), robloxHeadshot(rb.subject)]);
+    c = { subject: rb.subject, username: user?.username ?? null, displayName: user?.displayName ?? null, avatarUrl, fetchedAt: now, ok: Boolean(user && avatarUrl) };
+    await saveRobloxProfileCache(wsId, c).catch(() => undefined);
+  }
+  return { displayName: c.displayName ?? rb.label ?? s.name?.trim() ?? local, username: c.username ?? rb.label ?? null, avatarUrl: httpsOrNull(c.avatarUrl) };
 }
