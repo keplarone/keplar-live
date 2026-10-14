@@ -1,88 +1,222 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { AdditiveBlending, BufferAttribute, BufferGeometry, Color, Group, LineSegments, PerspectiveCamera, Points, Scene, ShaderMaterial, WebGLRenderer } from "three";
+import {
+  AdditiveBlending,
+  BufferAttribute,
+  BufferGeometry,
+  CanvasTexture,
+  Color,
+  Group,
+  Mesh,
+  OrthographicCamera,
+  PerspectiveCamera,
+  PlaneGeometry,
+  Points,
+  Scene,
+  ShaderMaterial,
+  SphereGeometry,
+  SRGBColorSpace,
+  Sprite,
+  SpriteMaterial,
+  Vector3,
+  WebGLRenderer,
+} from "three";
 
 /**
- * Space Studio's background: one THREE.Points (a BufferGeometry, not a mesh per star) in a deep box in front of the camera.
- * Stars sit in three depth bands, so drift, mouse parallax and scroll parallax all move near stars more than far ones.
- * Twinkle and drift run in the vertex shader from one time uniform; a rare shooting star is a two-vertex line.
+ * The Space Studio universe. Scrolling the page is a journey: the camera starts in open space, flies forward through a star
+ * field, past nebula auras and along the Milky Way, and arrives at a lit planet at the end of the page.
  *
- * Budget: device pixel ratio capped at 2, at most 40 fps, ~12,000 stars on a desktop window and ~3,000 on a phone.
- * The loop stops when the tab is hidden or the canvas is off screen. With reduced motion it draws one still frame:
- * no twinkle, no drift, no parallax. The canvas is fixed, behind everything (z-index -1) and ignores the pointer.
+ * - Stars: one THREE.Points spread along the flight path. Colours follow stellar temperature (blue-white O/B stars are rare,
+ *   orange and red K/M stars are common) and brightness follows a power law (many faint stars, a few bright ones with halos and
+ *   diffraction spikes). Twinkle is a small scintillation in the shader.
+ * - Milky Way: a second, finer Points layer packed around a tilted plane, plus soft dust glows, far behind everything.
+ * - Auras: soft procedural nebula sprites (fbm noise drawn once on a canvas) placed along the path in several colours.
+ * - Planet: a sphere with day/night shading, banding and an atmosphere rim, revealed at the end of the scroll.
+ * - Shooting stars: streak quads in a screen-space overlay with a bright head and a long fading tail.
+ *
+ * Budget: DPR capped at 2, ≤ 40 fps, pauses when the tab is hidden or the canvas is off screen. Reduced motion draws one still
+ * frame (no twinkle, drift, flight or parallax). The canvas is fixed behind the page with pointer-events: none.
  */
 
 const FPS = 40;
-const BOX = { w: 240, h: 160, near: 8, far: 200 };
-const BANDS = [
-  { share: 0.62, near: 120, far: BOX.far, size: [1.6, 3.2] },
-  { share: 0.3, near: 45, far: 120, size: [2, 3.8] },
-  { share: 0.08, near: BOX.near, far: 45, size: [2.2, 4.4] },
-] as const;
+const PATH = 1100; // how far the camera travels from the top of the page to the bottom
+const FIELD = { w: 420, h: 280, near: 10, far: PATH + 420 };
 
-// Weighted star colours: mostly white and blue-white, with clear blue, gold, orange, red and violet stars.
-const PALETTE: [string, number][] = [
-  ["#ffffff", 24], ["#e2e9ff", 12], ["#a9c8ff", 12], ["#6b95ff", 7], ["#86e6ff", 4],
-  ["#fff2cf", 9], ["#ffd77a", 8], ["#ffaa55", 6], ["#ff7255", 4], ["#ff5c86", 3],
-  ["#c79aff", 6], ["#9576ff", 5],
+// Stellar classes: colour (approximate blackbody), share of stars, brightness multiplier.
+const CLASSES: { c: string; share: number; lum: number }[] = [
+  { c: "#9bb0ff", share: 0.03, lum: 2.2 }, // O/B blue
+  { c: "#aabfff", share: 0.07, lum: 1.7 }, // A blue-white
+  { c: "#cad7ff", share: 0.12, lum: 1.35 }, // F white
+  { c: "#f8f7ff", share: 0.2, lum: 1.15 }, // white
+  { c: "#fff4ea", share: 0.18, lum: 1.0 }, // G yellow-white
+  { c: "#ffe2b8", share: 0.16, lum: 0.9 }, // K orange
+  { c: "#ffc58a", share: 0.14, lum: 0.8 }, // K/M orange
+  { c: "#ff9f7a", share: 0.1, lum: 0.75 }, // M red
 ];
-const TOTAL = PALETTE.reduce((s, [, w]) => s + w, 0);
-function pick(): Color {
-  let r = Math.random() * TOTAL;
-  for (const [hex, w] of PALETTE) if ((r -= w) <= 0) return new Color(hex);
-  return new Color("#ffffff");
+function stellar(): { color: Color; lum: number } {
+  let r = Math.random();
+  for (const k of CLASSES) if ((r -= k.share) <= 0) return { color: new Color(k.c), lum: k.lum };
+  return { color: new Color("#ffffff"), lum: 1 };
 }
 
 const STAR_VERTEX = /* glsl */ `
   attribute vec3 aColor;
   attribute float aSize;
-  attribute float aSpeed;
   attribute float aPhase;
   uniform float uTime;
   uniform float uMotion;
-  uniform float uHeight;
   uniform float uPixelRatio;
+  uniform float uScale;
   varying vec3 vColor;
   varying float vTwinkle;
+  varying float vBright;
   void main() {
-    vec3 p = position;
-    p.y = mod(p.y + uTime * aSpeed * uMotion + uHeight * 0.5, uHeight) - uHeight * 0.5;
-    vec4 mv = modelViewMatrix * vec4(p, 1.0);
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
     gl_Position = projectionMatrix * mv;
-    gl_PointSize = clamp(aSize * uPixelRatio * (260.0 / -mv.z), 1.2, 16.0 * uPixelRatio);
-    vColor = aColor;
-    vTwinkle = mix(1.0, 0.72 + 0.28 * sin(uTime * (0.5 + aPhase) + aPhase * 6.2831), uMotion);
+    float dist = -mv.z;
+    // Fade in from the far end and out right before the camera passes, so stars never pop.
+    float fade = smoothstep(${FIELD.far.toFixed(1)}, ${(FIELD.far * 0.7).toFixed(1)}, dist) * smoothstep(1.0, 12.0, dist);
+    gl_PointSize = clamp(aSize * uPixelRatio * (uScale / dist), 1.0, 26.0 * uPixelRatio);
+    vColor = aColor * fade;
+    vBright = aSize;
+    vTwinkle = mix(1.0, 0.82 + 0.18 * sin(uTime * (1.3 + aPhase * 2.0) + aPhase * 40.0), uMotion);
   }
 `;
-
 const STAR_FRAGMENT = /* glsl */ `
   varying vec3 vColor;
   varying float vTwinkle;
+  varying float vBright;
   void main() {
     vec2 c = gl_PointCoord - 0.5;
-    float core = pow(smoothstep(0.5, 0.0, length(c)), 1.8);
-    float spikes = max(0.0, 1.0 - abs(c.x) * 26.0) * smoothstep(0.5, 0.0, abs(c.y))
-                 + max(0.0, 1.0 - abs(c.y) * 26.0) * smoothstep(0.5, 0.0, abs(c.x));
-    float a = (core + spikes * 0.16) * vTwinkle;
-    if (a < 0.01) discard;
+    float d = length(c);
+    float core = exp(-d * d * 60.0);              // tight bright core
+    float halo = exp(-d * 9.0) * 0.35;            // soft halo
+    float big = smoothstep(4.0, 9.0, vBright);    // spikes only on the brightest stars
+    float spikes = (exp(-abs(c.x) * 70.0) * exp(-abs(c.y) * 5.0) + exp(-abs(c.y) * 70.0) * exp(-abs(c.x) * 5.0)) * big * 0.9;
+    float a = (core + halo + spikes) * vTwinkle;
+    if (a < 0.004) discard;
     gl_FragColor = vec4(vColor * a, a);
   }
 `;
 
-const METEOR_VERTEX = /* glsl */ `
-  attribute float aT;
-  varying float vT;
-  void main() { vT = aT; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+const PLANET_VERTEX = /* glsl */ `
+  varying vec3 vNormal;
+  varying vec3 vPos;
+  varying vec2 vUv;
+  void main() {
+    vNormal = normalize(normalMatrix * normal);
+    vPos = (modelMatrix * vec4(position, 1.0)).xyz;
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
 `;
-const METEOR_FRAGMENT = /* glsl */ `
-  uniform float uLife;
-  uniform vec3 uColor;
-  varying float vT;
-  void main() { float a = (1.0 - vT) * uLife; gl_FragColor = vec4(uColor * a, a); }
+const PLANET_FRAGMENT = /* glsl */ `
+  uniform vec3 uSun;
+  uniform float uTime;
+  varying vec3 vNormal;
+  varying vec3 vPos;
+  varying vec2 vUv;
+  float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  float noise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+    return mix(mix(hash(i), hash(i + vec2(1, 0)), f.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), f.x), f.y); }
+  float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise(p); p *= 2.03; a *= 0.5; } return v; }
+  void main() {
+    vec3 n = normalize(vNormal);
+    float light = max(dot(n, normalize(uSun)), 0.0);
+    // Banded clouds over a deep ocean-blue surface.
+    float bands = fbm(vec2(vUv.x * 6.0 + uTime * 0.004, vUv.y * 22.0));
+    vec3 surface = mix(vec3(0.05, 0.12, 0.28), vec3(0.32, 0.48, 0.72), bands);
+    surface = mix(surface, vec3(0.86, 0.9, 0.98), smoothstep(0.62, 0.8, fbm(vUv * vec2(10.0, 30.0) + 3.0)));
+    vec3 col = surface * (0.03 + 1.15 * pow(light, 0.85));
+    // Atmosphere: a fresnel rim, brightest on the lit side.
+    vec3 view = normalize(cameraPosition - vPos);
+    float rim = pow(1.0 - max(dot(n, view), 0.0), 3.0);
+    col += vec3(0.35, 0.62, 1.0) * rim * (0.25 + 1.6 * light);
+    gl_FragColor = vec4(col, 1.0);
+  }
+`;
+const GLOW_FRAGMENT = /* glsl */ `
+  uniform vec3 uSun;
+  varying vec3 vNormal;
+  varying vec3 vPos;
+  void main() {
+    vec3 n = normalize(vNormal);
+    vec3 view = normalize(cameraPosition - vPos);
+    float rim = pow(1.0 - abs(dot(n, view)), 2.4);
+    float lit = 0.35 + 0.65 * max(dot(n, normalize(uSun)), 0.0);
+    gl_FragColor = vec4(vec3(0.3, 0.58, 1.0) * rim * lit, rim * lit);
+  }
 `;
 
-type Meteor = { line: LineSegments; mat: ShaderMaterial; vx: number; vy: number; x: number; y: number; z: number; len: number; age: number; max: number };
+const STREAK_VERTEX = /* glsl */ `
+  varying vec2 vUv;
+  void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+`;
+const STREAK_FRAGMENT = /* glsl */ `
+  uniform float uLife;
+  uniform vec3 uColor;
+  varying vec2 vUv;
+  void main() {
+    // uv.x: 0 = tail, 1 = head. uv.y: across the streak.
+    float across = exp(-pow((vUv.y - 0.5) * 6.0, 2.0));
+    float along = pow(vUv.x, 2.6);
+    float head = exp(-pow((1.0 - vUv.x) * 40.0, 2.0)) * 2.2;
+    float a = (along + head) * across * uLife;
+    gl_FragColor = vec4(mix(uColor, vec3(1.0), head * 0.5) * a, a);
+  }
+`;
+
+/** A soft nebula texture: layered value noise masked by a radial falloff, drawn once on a small canvas. */
+function nebulaTexture(seed: number, tint: [number, number, number], tint2: [number, number, number]): CanvasTexture {
+  const size = 256;
+  const cv = document.createElement("canvas");
+  cv.width = cv.height = size;
+  const ctx = cv.getContext("2d")!;
+  const img = ctx.createImageData(size, size);
+  const rnd = (x: number, y: number) => {
+    const s = Math.sin(x * 127.1 + y * 311.7 + seed * 74.7) * 43758.5453;
+    return s - Math.floor(s);
+  };
+  const noise = (x: number, y: number) => {
+    const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+    const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+    const a = rnd(xi, yi), b = rnd(xi + 1, yi), c = rnd(xi, yi + 1), d = rnd(xi + 1, yi + 1);
+    return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+  };
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const nx = x / size, ny = y / size;
+      let f = 0, amp = 0.55, freq = 3;
+      for (let o = 0; o < 6; o++) { f += amp * noise(nx * freq + seed, ny * freq - seed); freq *= 2.1; amp *= 0.5; }
+      const dx = nx - 0.5, dy = ny - 0.5;
+      const fall = Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy) * 2);
+      const v = Math.pow(Math.max(0, f - 0.32), 1.6) * fall * fall * 2.4;
+      const mix = Math.min(1, Math.max(0, (f - 0.4) * 2.5));
+      const i = (y * size + x) * 4;
+      img.data[i] = (tint[0] * (1 - mix) + tint2[0] * mix);
+      img.data[i + 1] = (tint[1] * (1 - mix) + tint2[1] * mix);
+      img.data[i + 2] = (tint[2] * (1 - mix) + tint2[2] * mix);
+      img.data[i + 3] = Math.min(255, v * 255);
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  const tex = new CanvasTexture(cv);
+  tex.colorSpace = SRGBColorSpace;
+  return tex;
+}
+
+// Auras along the path: [x, y, z, size, colour A, colour B, opacity]. Colours are emission-like: hydrogen red/pink, oxygen teal, dust blue.
+const AURAS: [number, number, number, number, [number, number, number], [number, number, number], number][] = [
+  [-95, 40, -120, 200, [120, 150, 255], [190, 120, 255], 0.95],
+  [110, -50, -260, 230, [255, 110, 150], [255, 170, 110], 0.9],
+  [-80, -35, -430, 260, [70, 210, 220], [110, 140, 255], 0.9],
+  [100, 55, -600, 280, [200, 110, 255], [255, 120, 170], 0.85],
+  [-110, 15, -780, 320, [255, 150, 90], [255, 90, 120], 0.8],
+  [-40, 70, -960, 340, [90, 160, 255], [80, 220, 210], 0.75],
+];
+
+type Streak = { mesh: Mesh; mat: ShaderMaterial; x: number; y: number; vx: number; vy: number; len: number; age: number; max: number };
 
 export default function Starfield() {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -91,142 +225,230 @@ export default function Starfield() {
     const host = hostRef.current;
     if (!host) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const mobile = window.matchMedia("(max-width: 700px)").matches;
 
     let renderer: WebGLRenderer;
     try {
-      renderer = new WebGLRenderer({ antialias: false, alpha: false, powerPreference: "low-power" });
+      renderer = new WebGLRenderer({ antialias: false, alpha: false, powerPreference: "high-performance" });
     } catch {
       return; // No WebGL: the black page background stays.
     }
     const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
     renderer.setPixelRatio(pixelRatio);
     renderer.setClearColor(0x000000, 1);
+    renderer.autoClear = false;
     const canvas = renderer.domElement;
     canvas.setAttribute("aria-hidden", "true");
     host.appendChild(canvas);
 
     const scene = new Scene();
-    const camera = new PerspectiveCamera(60, 1, 0.1, 400);
-    const field = new Group();
-    scene.add(field);
+    const camera = new PerspectiveCamera(62, 1, 0.5, 2600);
+    const world = new Group();
+    scene.add(world);
+    const disposers: (() => void)[] = [];
 
-    const mobile = window.matchMedia("(max-width: 700px)").matches;
-    const count = mobile ? 3_000 : Math.min(15_000, Math.max(8_000, Math.round((window.innerWidth * window.innerHeight) / 105)));
-    const pos = new Float32Array(count * 3);
-    const col = new Float32Array(count * 3);
-    const size = new Float32Array(count);
-    const speed = new Float32Array(count);
-    const phase = new Float32Array(count);
-    let i = 0;
-    for (const band of BANDS) {
-      const n = band === BANDS[BANDS.length - 1] ? count - i : Math.round(count * band.share);
-      for (let k = 0; k < n; k++, i++) {
-        pos[i * 3] = (Math.random() - 0.5) * BOX.w;
-        pos[i * 3 + 1] = (Math.random() - 0.5) * BOX.h;
-        pos[i * 3 + 2] = -(band.near + Math.random() * (band.far - band.near));
-        const c = pick();
-        col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
-        const bright = Math.random();
-        size[i] = bright > 0.994 ? 9 + Math.random() * 5 : bright > 0.96 ? 4.5 + Math.random() * 2.5 : band.size[0] + Math.random() * (band.size[1] - band.size[0]);
-        speed[i] = 0.8 + Math.random() * 1.2;
-        phase[i] = Math.random();
-      }
+    // ---- stars along the flight path ----
+    const count = mobile ? 5_000 : Math.min(15_000, Math.max(10_000, Math.round((window.innerWidth * window.innerHeight) / 95)));
+    const sPos = new Float32Array(count * 3), sCol = new Float32Array(count * 3), sSize = new Float32Array(count), sPhase = new Float32Array(count);
+    for (let i = 0; i < count; i++) {
+      sPos[i * 3] = (Math.random() - 0.5) * FIELD.w;
+      sPos[i * 3 + 1] = (Math.random() - 0.5) * FIELD.h;
+      sPos[i * 3 + 2] = -(FIELD.near + Math.random() * (FIELD.far - FIELD.near));
+      const { color, lum } = stellar();
+      // Power-law magnitudes: most stars faint, about 1 in 150 very bright.
+      const m = Math.pow(Math.random(), 7.5);
+      const size = (1.6 + m * 15) * lum;
+      const bright = 0.55 + Math.min(1, m * 6) * 0.9;
+      sCol[i * 3] = color.r * bright; sCol[i * 3 + 1] = color.g * bright; sCol[i * 3 + 2] = color.b * bright;
+      sSize[i] = size;
+      sPhase[i] = Math.random();
     }
-    const geo = new BufferGeometry();
-    geo.setAttribute("position", new BufferAttribute(pos, 3));
-    geo.setAttribute("aColor", new BufferAttribute(col, 3));
-    geo.setAttribute("aSize", new BufferAttribute(size, 1));
-    geo.setAttribute("aSpeed", new BufferAttribute(speed, 1));
-    geo.setAttribute("aPhase", new BufferAttribute(phase, 1));
-    const mat = new ShaderMaterial({
-      vertexShader: STAR_VERTEX,
-      fragmentShader: STAR_FRAGMENT,
-      uniforms: { uTime: { value: Math.random() * 500 }, uMotion: { value: reduced ? 0 : 1 }, uHeight: { value: BOX.h }, uPixelRatio: { value: pixelRatio } },
-      transparent: true,
-      depthWrite: false,
-      blending: AdditiveBlending,
+    const starGeo = new BufferGeometry();
+    starGeo.setAttribute("position", new BufferAttribute(sPos, 3));
+    starGeo.setAttribute("aColor", new BufferAttribute(sCol, 3));
+    starGeo.setAttribute("aSize", new BufferAttribute(sSize, 1));
+    starGeo.setAttribute("aPhase", new BufferAttribute(sPhase, 1));
+    const starMat = new ShaderMaterial({
+      vertexShader: STAR_VERTEX, fragmentShader: STAR_FRAGMENT,
+      uniforms: { uTime: { value: 0 }, uMotion: { value: reduced ? 0 : 1 }, uPixelRatio: { value: pixelRatio }, uScale: { value: 300 } },
+      transparent: true, depthWrite: false, blending: AdditiveBlending,
     });
-    const stars = new Points(geo, mat);
+    const stars = new Points(starGeo, starMat);
     stars.frustumCulled = false;
-    field.add(stars);
+    world.add(stars);
+    disposers.push(() => { starGeo.dispose(); starMat.dispose(); });
 
-    const meteors: Meteor[] = [];
-    const spawnMeteor = () => {
-      const z = -(35 + Math.random() * 60);
-      const half = Math.tan((camera.fov * Math.PI) / 360) * -z;
-      const angle = (205 + Math.random() * 25) * (Math.PI / 180);
-      const v = 60 + Math.random() * 40;
-      const g = new BufferGeometry();
-      g.setAttribute("position", new BufferAttribute(new Float32Array(6), 3));
-      g.setAttribute("aT", new BufferAttribute(new Float32Array([0, 1]), 1));
-      const m = new ShaderMaterial({ vertexShader: METEOR_VERTEX, fragmentShader: METEOR_FRAGMENT, uniforms: { uLife: { value: 0 }, uColor: { value: pick().lerp(new Color("#ffffff"), 0.6) } }, transparent: true, depthWrite: false, blending: AdditiveBlending });
-      const line = new LineSegments(g, m);
-      line.frustumCulled = false;
-      scene.add(line);
-      meteors.push({ line, mat: m, vx: Math.cos(angle) * v, vy: Math.sin(angle) * v, x: (Math.random() - 0.1) * half * camera.aspect * 1.4, y: half * (0.2 + Math.random() * 0.8), z, len: 0.15 + Math.random() * 0.1, age: 0, max: 0.9 + Math.random() * 0.5 });
+    // ---- Milky Way: a dense band of fine stars far behind, rotated across the sky ----
+    const band = new Group();
+    band.position.z = -PATH - 900;
+    band.rotation.z = -0.42;
+    const bandCount = mobile ? 6_000 : 14_000;
+    const bPos = new Float32Array(bandCount * 3), bCol = new Float32Array(bandCount * 3), bSize = new Float32Array(bandCount), bPhase = new Float32Array(bandCount);
+    for (let i = 0; i < bandCount; i++) {
+      // Gaussian-ish thickness around the band's centre line.
+      const g = (Math.random() + Math.random() + Math.random() - 1.5) * 0.9;
+      bPos[i * 3] = (Math.random() - 0.5) * 3200;
+      bPos[i * 3 + 1] = g * 260;
+      bPos[i * 3 + 2] = (Math.random() - 0.5) * 300;
+      const { color } = stellar();
+      const k = 0.35 + Math.random() * 0.5;
+      bCol[i * 3] = color.r * k; bCol[i * 3 + 1] = color.g * k; bCol[i * 3 + 2] = color.b * k;
+      bSize[i] = 1.4 + Math.random() * 2.2;
+      bPhase[i] = Math.random();
+    }
+    const bandGeo = new BufferGeometry();
+    bandGeo.setAttribute("position", new BufferAttribute(bPos, 3));
+    bandGeo.setAttribute("aColor", new BufferAttribute(bCol, 3));
+    bandGeo.setAttribute("aSize", new BufferAttribute(bSize, 1));
+    bandGeo.setAttribute("aPhase", new BufferAttribute(bPhase, 1));
+    const bandMat = starMat.clone();
+    bandMat.uniforms.uScale = { value: 2600 };
+    const bandPoints = new Points(bandGeo, bandMat);
+    bandPoints.frustumCulled = false;
+    band.add(bandPoints);
+    disposers.push(() => { bandGeo.dispose(); bandMat.dispose(); });
+    // Dust glow along the band.
+    const dustTex = nebulaTexture(11, [255, 214, 170], [150, 170, 255]);
+    for (let i = 0; i < 7; i++) {
+      const mat = new SpriteMaterial({ map: dustTex, color: 0xffffff, transparent: true, opacity: 0.35, blending: AdditiveBlending, depthWrite: false });
+      const sp = new Sprite(mat);
+      sp.position.set((i - 3) * 420 + (Math.random() - 0.5) * 120, (Math.random() - 0.5) * 60, 0);
+      sp.scale.set(900, 520, 1);
+      band.add(sp);
+      disposers.push(() => mat.dispose());
+    }
+    disposers.push(() => dustTex.dispose());
+    world.add(band);
+
+    // ---- nebula auras along the path ----
+    const auras: Sprite[] = [];
+    AURAS.forEach(([x, y, z, size, a, b, opacity], i) => {
+      const tex = nebulaTexture(i * 3.7 + 1.3, a, b);
+      const mat = new SpriteMaterial({ map: tex, transparent: true, opacity, blending: AdditiveBlending, depthWrite: false });
+      const sp = new Sprite(mat);
+      sp.position.set(x, y, z);
+      sp.scale.set(size, size * 0.72, 1);
+      sp.material.rotation = Math.random() * Math.PI;
+      world.add(sp);
+      auras.push(sp);
+      disposers.push(() => { tex.dispose(); mat.dispose(); });
+    });
+
+    // ---- the planet at the end of the journey ----
+    const sun = new Vector3(-1, 0.35, 0.6);
+    const planetGeo = new SphereGeometry(70, 96, 64);
+    const planetMat = new ShaderMaterial({ vertexShader: PLANET_VERTEX, fragmentShader: PLANET_FRAGMENT, uniforms: { uSun: { value: sun }, uTime: { value: 0 } } });
+    const planet = new Mesh(planetGeo, planetMat);
+    planet.position.set(105, -62, -PATH - 150);
+    planet.rotation.z = 0.35;
+    world.add(planet);
+    const glowGeo = new SphereGeometry(78, 64, 48);
+    const glowMat = new ShaderMaterial({ vertexShader: PLANET_VERTEX, fragmentShader: GLOW_FRAGMENT, uniforms: { uSun: { value: sun } }, transparent: true, depthWrite: false, blending: AdditiveBlending });
+    const glow = new Mesh(glowGeo, glowMat);
+    glow.position.copy(planet.position);
+    world.add(glow);
+    disposers.push(() => { planetGeo.dispose(); planetMat.dispose(); glowGeo.dispose(); glowMat.dispose(); });
+
+    // ---- shooting stars in a screen-space overlay ----
+    const overlay = new Scene();
+    const ortho = new OrthographicCamera(0, 1, 1, 0, -1, 1);
+    const streakGeo = new PlaneGeometry(1, 1);
+    streakGeo.translate(0.5, 0, 0); // pivot at the tail
+    const streaks: Streak[] = [];
+    const spawnStreak = () => {
+      const w = window.innerWidth, h = window.innerHeight;
+      const angle = (-155 - Math.random() * 30) * (Math.PI / 180); // falling to the left
+      const speed = (0.9 + Math.random() * 0.8) * Math.max(w, h);
+      const mat = new ShaderMaterial({
+        vertexShader: STREAK_VERTEX, fragmentShader: STREAK_FRAGMENT,
+        uniforms: { uLife: { value: 0 }, uColor: { value: new Color(Math.random() < 0.7 ? "#cfe0ff" : "#ffe6c4") } },
+        transparent: true, depthWrite: false, blending: AdditiveBlending,
+      });
+      const mesh = new Mesh(streakGeo, mat);
+      overlay.add(mesh);
+      streaks.push({ mesh, mat, x: w * (0.3 + Math.random() * 0.75), y: h * (0.55 + Math.random() * 0.45), vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, len: 120 + Math.random() * 180, age: 0, max: 0.55 + Math.random() * 0.5 });
     };
-    const dropMeteor = (k: number) => {
-      const m = meteors[k]!;
-      scene.remove(m.line);
-      m.line.geometry.dispose();
-      m.mat.dispose();
-      meteors.splice(k, 1);
+    const dropStreak = (k: number) => {
+      const s = streaks[k]!;
+      overlay.remove(s.mesh);
+      s.mat.dispose();
+      streaks.splice(k, 1);
     };
+    disposers.push(() => { while (streaks.length) dropStreak(streaks.length - 1); streakGeo.dispose(); });
 
     const resize = () => {
-      renderer.setSize(window.innerWidth, window.innerHeight, false);
-      camera.aspect = window.innerWidth / window.innerHeight;
+      const w = window.innerWidth, h = window.innerHeight;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
       camera.updateProjectionMatrix();
+      ortho.left = 0; ortho.right = w; ortho.top = h; ortho.bottom = 0;
+      ortho.updateProjectionMatrix();
     };
     resize();
 
-    // Parallax targets: the pointer (desktop) and the scroll position, eased toward each frame.
+    // ---- journey: scroll progress drives the flight; the pointer adds parallax ----
+    const progress = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      return max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+    };
     const target = { x: 0, y: 0 };
-    const eased = { x: 0, y: 0, scroll: 0 };
+    const eased = { x: 0, y: 0, p: reduced ? 0 : progress() };
     const onPointer = (e: PointerEvent) => {
       if (e.pointerType !== "mouse") return;
       target.x = (e.clientX / window.innerWidth - 0.5) * 2;
       target.y = (e.clientY / window.innerHeight - 0.5) * 2;
     };
 
-    let raf = 0;
-    let last = 0;
-    let running = false;
-    let visible = true;
-    let nextMeteor = 6 + Math.random() * 8;
+    const place = (t: number) => {
+      // Ease the flight so the last stretch (approaching the planet) slows down.
+      const p = 1 - Math.pow(1 - eased.p, 1.6);
+      camera.position.set(eased.x * 6, -eased.y * 4, -p * PATH + Math.sin(t * 0.05) * 2);
+      camera.lookAt(eased.x * 2, -eased.y * 1.5 - p * 18, camera.position.z - 100);
+      camera.rotation.z += Math.sin(t * 0.02) * 0.01;
+      for (let i = 0; i < auras.length; i++) auras[i]!.material.rotation += 0.0006 * (i % 2 ? 1 : -1);
+      planet.rotation.y = t * 0.02;
+      planetMat.uniforms.uTime!.value = t;
+    };
 
-    const draw = () => renderer.render(scene, camera);
+    let raf = 0, last = 0, running = false, visible = true;
+    let nextStreak = 2 + Math.random() * 3;
+    const draw = () => {
+      renderer.clear();
+      renderer.render(scene, camera);
+      renderer.clearDepth();
+      renderer.render(overlay, ortho);
+    };
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame);
       if (now - last < 1000 / FPS) return;
       const dt = last ? Math.min((now - last) / 1000, 0.1) : 0;
       last = now;
-      mat.uniforms.uTime!.value += dt;
+      const t = (starMat.uniforms.uTime!.value += dt);
+      bandMat.uniforms.uTime!.value = t;
+      eased.x += (target.x - eased.x) * 0.05;
+      eased.y += (target.y - eased.y) * 0.05;
+      eased.p += (progress() - eased.p) * 0.07;
+      place(t);
 
-      eased.x += (target.x - eased.x) * 0.04;
-      eased.y += (target.y - eased.y) * 0.04;
-      eased.scroll += (window.scrollY - eased.scroll) * 0.08;
-      camera.position.x = eased.x * 3;
-      camera.position.y = -eased.y * 2 - eased.scroll * 0.012;
-      field.rotation.z = Math.sin(mat.uniforms.uTime!.value * 0.01) * 0.02;
-
-      nextMeteor -= dt;
-      if (nextMeteor <= 0 && meteors.length < 1) {
-        spawnMeteor();
-        nextMeteor = 9 + Math.random() * 14;
+      nextStreak -= dt;
+      if (nextStreak <= 0 && streaks.length < 2) {
+        spawnStreak();
+        nextStreak = 2.5 + Math.random() * 5.5;
       }
-      for (let k = meteors.length - 1; k >= 0; k--) {
-        const m = meteors[k]!;
-        m.age += dt;
-        const p = m.age / m.max;
-        if (p >= 1) { dropMeteor(k); continue; }
-        m.x += m.vx * dt;
-        m.y += m.vy * dt;
-        const a = m.line.geometry.getAttribute("position") as BufferAttribute;
-        a.setXYZ(0, m.x, m.y, m.z);
-        a.setXYZ(1, m.x - m.vx * m.len, m.y - m.vy * m.len, m.z);
-        a.needsUpdate = true;
-        m.mat.uniforms.uLife!.value = Math.sin(Math.PI * p) * 0.85;
+      for (let k = streaks.length - 1; k >= 0; k--) {
+        const s = streaks[k]!;
+        s.age += dt;
+        const p = s.age / s.max;
+        if (p >= 1) { dropStreak(k); continue; }
+        s.x += s.vx * dt;
+        s.y += s.vy * dt;
+        const len = s.len * (0.4 + 0.6 * Math.sin(Math.PI * Math.min(1, p * 1.4)));
+        // The quad's pivot is its tail; place the tail behind the head along the direction of travel.
+        const ang = Math.atan2(s.vy, s.vx);
+        s.mesh.position.set(s.x - Math.cos(ang) * len, s.y - Math.sin(ang) * len, 0);
+        s.mesh.rotation.z = ang;
+        s.mesh.scale.set(len, 2.2 * pixelRatio, 1);
+        s.mat.uniforms.uLife!.value = Math.sin(Math.PI * p);
       }
       draw();
     };
@@ -236,20 +458,17 @@ export default function Starfield() {
       last = 0;
       raf = requestAnimationFrame(frame);
     };
-    const stop = () => {
-      running = false;
-      cancelAnimationFrame(raf);
-    };
+    const stop = () => { running = false; cancelAnimationFrame(raf); };
 
-    const onResize = () => { resize(); if (!running) draw(); };
+    const onResize = () => { resize(); if (!running) { place(starMat.uniforms.uTime!.value); draw(); } };
     const onVisibility = () => (document.hidden ? stop() : start());
     const io = new IntersectionObserver(([e]) => { visible = !!e?.isIntersecting; if (visible) start(); else stop(); });
     io.observe(canvas);
-
     window.addEventListener("resize", onResize);
     document.addEventListener("visibilitychange", onVisibility);
     if (!reduced) window.addEventListener("pointermove", onPointer, { passive: true });
 
+    place(0);
     if (reduced) draw();
     else start();
 
@@ -259,9 +478,7 @@ export default function Starfield() {
       window.removeEventListener("resize", onResize);
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("pointermove", onPointer);
-      while (meteors.length) dropMeteor(meteors.length - 1);
-      geo.dispose();
-      mat.dispose();
+      for (const d of disposers) d();
       renderer.dispose();
       canvas.remove();
     };

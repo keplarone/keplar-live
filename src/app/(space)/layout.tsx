@@ -1,13 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Montserrat } from "next/font/google";
 import { Telemetry } from "@/components/growth/Telemetry";
-import { SpaceBackground, SpaceReveal } from "@/components/space/SpaceChrome";
+import { JourneyCaption, SpaceBackground, SpaceReveal } from "@/components/space/SpaceChrome";
 import { RELEASES_URL } from "@/components/space/links";
 import s from "@/components/space/space.module.css";
-
-// Montserrat is SIL OFL; next/font downloads it at build time and serves it from keplar.one.
-const montserrat = Montserrat({ subsets: ["latin"], weight: ["300", "400", "500", "600"], display: "swap", variable: "--space-font" });
 
 const FORCE_DARK = `(function(){var r=document.documentElement;r.setAttribute("data-theme","dark");r.classList.remove("light");r.classList.add("dark");r.style.colorScheme="dark"})();`;
 
@@ -17,7 +13,7 @@ const FORCE_DARK = `(function(){var r=document.documentElement;r.setAttribute("d
  */
 export default function SpaceLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`${s.root} ${montserrat.variable}`} data-space-root>
+    <div className={s.root} data-space-root>
       {/* Space pages are always dark: switch the site theme before first paint so shared parts (cookie card, toasts) match. */}
       <script dangerouslySetInnerHTML={{ __html: FORCE_DARK }} />
       <SpaceBackground />
@@ -50,6 +46,7 @@ export default function SpaceLayout({ children }: { children: React.ReactNode })
           </nav>
         </div>
       </footer>
+      <JourneyCaption className={s.journey} lineClassName={s.journeyLine} fillClassName={s.journeyFill} />
       <SpaceReveal />
       <Telemetry />
     </div>

@@ -1,5 +1,6 @@
 import { MODELS, PLANS, PRICING_NOTE, publicView } from "@/lib/space-studio/core";
 import { RELEASES_URL } from "@/components/space/links";
+import { RotatingWord } from "@/components/space/SpaceChrome";
 import { pageMeta } from "@/lib/seo";
 import s from "@/components/space/space.module.css";
 
@@ -18,9 +19,11 @@ export default function SpaceStudioPage() {
   const models = MODELS.map((m) => publicView(m, true));
   return (
     <>
-      <section className={s.hero} aria-labelledby="space-title">
-        <span className={`${s.label} ${s.heroLabel} ${s.rise}`}>Keplar · Space Studio</span>
-        <h1 id="space-title" className={`${s.title} ${s.rise}`}>Build Roblox games and Blender assets with AI that knows both.</h1>
+      <section id="top" className={s.hero} aria-labelledby="space-title">
+        <span className={`${s.badge} ${s.rise}`}><span className={s.badgeNew}>New</span>Space Studio 0.1 for Windows, macOS and Linux</span>
+        <h1 id="space-title" className={`${s.title} ${s.rise}`} aria-label="Powerful AI made specifically for what you want.">
+          <RotatingWord className={s.swap} wordClassName={s.swapWord} /> AI made specifically for what <em className={s.you}>YOU</em> want.
+        </h1>
         <p className={`${s.lede} ${s.rise}`}>
           A desktop app for Roblox Studio and Blender development. You pick the model, review every proposed change before it lands, and can hand long jobs to Roblox Cloud and Blender Cloud.
         </p>
@@ -106,7 +109,7 @@ export default function SpaceStudioPage() {
         </div>
       </section>
 
-      <section className={s.closing} aria-label="Download">
+      <section id="arrive" className={s.closing} aria-label="Download">
         <div className={s.wrap} data-reveal>
           <h2 className={s.closingTitle}>Space Studio</h2>
           <div className={s.actions}>

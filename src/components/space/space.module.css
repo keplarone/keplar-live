@@ -5,11 +5,11 @@
   /* colour */
   --sp-bg: #000;
   --sp-ink: #f5f5f7;
-  --sp-ink-2: #a8a8b3;
+  --sp-ink-2: #b9b9c4;
   --sp-ink-3: #74747f;
   --sp-line: rgba(255, 255, 255, 0.1);
   --sp-line-strong: rgba(255, 255, 255, 0.18);
-  --sp-surface: rgba(10, 10, 12, 0.72);
+  --sp-surface: rgba(8, 8, 12, 0.62);
   --sp-surface-hover: rgba(22, 22, 26, 0.82);
   --sp-pill: rgba(20, 20, 23, 0.86);
   --sp-pill-brand: #34343b;
@@ -21,7 +21,7 @@
   /* radii */
   --sp-r-sm: 10px; --sp-r-md: 16px; --sp-r-pill: 999px;
   /* type */
-  --sp-font: var(--space-font), system-ui, sans-serif;
+  --sp-font: var(--f-sans, system-ui), system-ui, sans-serif; /* the main site's font */
   --sp-t-xs: 12px; --sp-t-sm: 14px; --sp-t-md: 16px; --sp-t-lg: 20px; --sp-t-xl: clamp(28px, 3.4vw, 44px); --sp-t-hero: clamp(40px, 7.2vw, 104px);
   /* motion */
   --sp-ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -43,7 +43,7 @@
 
 .root a { color: inherit; }
 /* The site's global heading and body fonts must not leak in: every Space element uses Montserrat. */
-.root :where(h1, h2, h3, h4, p, a, li, span, button) { font-family: var(--sp-font); }
+.root :where(h1, h2, h3, h4, p, a, li, span, button, em) { font-family: var(--sp-font); }
 .root :focus-visible { outline: 2px solid var(--sp-focus); outline-offset: 3px; border-radius: 6px; }
 
 .skip { position: absolute; left: var(--sp-4); top: -60px; z-index: 50; padding: var(--sp-2) var(--sp-4); background: var(--sp-cta); color: var(--sp-cta-ink) !important; border-radius: var(--sp-r-pill); }
@@ -92,7 +92,7 @@
 /* ---- shared layout ---- */
 .wrap { width: min(var(--sp-width), 100% - 2 * var(--sp-5)); margin-inline: auto; }
 .label { display: block; font-size: var(--sp-t-xs); font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sp-ink-3); }
-.h2 { margin: var(--sp-3) 0 0; font-size: var(--sp-t-xl); line-height: 1.1; font-weight: 400; letter-spacing: -0.03em; color: var(--sp-ink); }
+.h2 { margin: var(--sp-3) 0 0; font-size: var(--sp-t-xl); line-height: 1.1; font-weight: 500; letter-spacing: -0.03em; color: var(--sp-ink); }
 .sub { margin: var(--sp-4) 0 0; max-width: 62ch; font-size: var(--sp-t-md); line-height: 1.65; color: var(--sp-ink-2); }
 
 .btn, .btnGhost {
@@ -117,7 +117,30 @@
   background: radial-gradient(ellipse 52% 46% at 50% 50%, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0) 70%);
 }
 .heroLabel { margin-bottom: var(--sp-5); }
-.title { margin: 0; max-width: 15ch; font-size: var(--sp-t-hero); line-height: 0.98; font-weight: 300; letter-spacing: -0.045em; }
+.title { margin: 0; max-width: 16ch; font-size: var(--sp-t-hero); line-height: 1.02; font-weight: 500; letter-spacing: -0.045em; text-wrap: balance; }
+/* The cycling first word: every synonym is stacked in one slot; the slot's width eases to the current word. */
+.swap { display: inline-grid; vertical-align: bottom; overflow: hidden; padding-bottom: 0.08em; margin-bottom: -0.08em; transition: width 0.7s var(--sp-ease); text-align: left; }
+.swapWord {
+  grid-area: 1 / 1; white-space: nowrap; justify-self: start;
+  background: linear-gradient(180deg, #ffffff 0%, #cfd8ff 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  transition: transform 0.75s var(--sp-ease), opacity 0.6s var(--sp-ease), filter 0.6s var(--sp-ease);
+}
+.swapWord[data-state="idle"] { opacity: 0; transform: translateY(70%); filter: blur(8px); }
+.swapWord[data-state="in"] { opacity: 1; transform: none; filter: none; }
+.swapWord[data-state="out"] { opacity: 0; transform: translateY(-70%); filter: blur(8px); }
+.you { font-style: normal; font-weight: 700; color: #fff; }
+/* "New" announcement pill above the headline. */
+.badge {
+  display: inline-flex; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-6); padding: 6px 16px 6px 6px;
+  border-radius: var(--sp-r-pill); border: 1px solid var(--sp-line-strong); background: rgba(12, 12, 16, 0.7);
+  font-size: var(--sp-t-sm); font-weight: 500; color: var(--sp-ink);
+}
+.badgeNew { padding: 4px 10px; border-radius: var(--sp-r-pill); background: var(--sp-cta); color: var(--sp-cta-ink); font-size: var(--sp-t-xs); font-weight: 700; letter-spacing: 0.02em; }
+/* Journey caption: names the stretch of the flight, bottom-left. */
+.journey { position: fixed; left: var(--sp-5); bottom: var(--sp-5); z-index: 30; display: flex; flex-direction: column; gap: var(--sp-2); pointer-events: none; font-size: var(--sp-t-xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--sp-ink-2); }
+.journey > span:first-child { animation: rise 0.7s var(--sp-ease) both; }
+.journeyLine { display: block; width: 140px; height: 1px; background: var(--sp-line-strong); overflow: hidden; }
+.journeyFill { display: block; height: 100%; background: var(--sp-ink); transform-origin: left; transition: transform 0.2s linear; }
 .lede { margin: var(--sp-6) auto 0; max-width: 56ch; font-size: clamp(16px, 1.3vw, 19px); line-height: 1.65; color: var(--sp-ink-2); }
 .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-3); margin-top: var(--sp-7); }
 .note { margin: var(--sp-5) auto 0; max-width: 64ch; font-size: var(--sp-t-xs); line-height: 1.7; color: var(--sp-ink-3); }
@@ -174,7 +197,7 @@
 
 /* closing call to action */
 .closing { padding: var(--sp-10) 0; text-align: center; }
-.closingTitle { margin: 0 auto; max-width: 18ch; font-size: clamp(34px, 5vw, 72px); line-height: 1; font-weight: 300; letter-spacing: -0.045em; }
+.closingTitle { margin: 0 auto; max-width: 18ch; font-size: clamp(34px, 5vw, 72px); line-height: 1; font-weight: 500; letter-spacing: -0.045em; }
 
 /* ---- footer ---- */
 .footer { border-top: 1px solid var(--sp-line); background: rgba(0, 0, 0, 0.82); }
@@ -214,11 +237,14 @@
   .row { grid-template-columns: 1fr; gap: var(--sp-2); padding: var(--sp-5) var(--sp-4); }
   .rowLabel { display: block; font-size: var(--sp-t-xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--sp-ink-3); margin-top: var(--sp-2); }
   .closing { padding: var(--sp-9) 0; }
+  .journey { display: none; }
+  .badge { font-size: var(--sp-t-xs); }
 }
 @media (pointer: coarse) {
   .links a, .footLinks a { min-height: 44px; display: inline-flex; align-items: center; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .rise, .scrollCue::after { animation: none; }
+  .rise, .scrollCue::after, .journey > span:first-child { animation: none; }
+  .swap, .swapWord { transition: none; }
   .brand, .word, .mark, .cell, .cell::before, .row, .btn, .btnGhost, .navCta { transition: none; }
 }
