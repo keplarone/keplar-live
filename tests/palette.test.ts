@@ -6,9 +6,10 @@ import { join } from "node:path";
 /**
  * Palette: graphite base + rich semantic accents (teal/cyan, warm earth, dusty rose).
  * Still banned: generic AI-SaaS electric blues and purple spam. Primary buttons stay ink/white.
- * Customer site-builder palettes are out of scope.
+ * Customer site-builder palettes are out of scope, and so are the Space Studio star colours (simulated stellar colours drawn
+ * by the star field shader, not UI accents; the Space site's chrome itself is black, white and greys).
  */
-const SKIP = [/src\/lib\/site-builder/, /src\/lib\/legal/, /src\/components\/legal\/content/];
+const SKIP = [/src\/lib\/site-builder/, /src\/lib\/legal/, /src\/components\/legal\/content/, /src\/components\/space\/Starfield\.tsx$/];
 const walk = (d: string): string[] => readdirSync(d).flatMap((n) => { const p = join(d, n).replace(/\\/g, "/"); return statSync(p).isDirectory() ? walk(p) : [p]; });
 const files = walk("src").filter((f) => /\.(css|ts|tsx)$/.test(f) && !SKIP.some((r) => r.test(f)));
 
