@@ -154,12 +154,13 @@ All results below are from production builds (`next build`) on Oct 13–14, 2026
 - ESLint is clean on every changed file.
 - `next build` succeeds. Its one warning, a Google Sans font-override, was already there.
 
-**Unit tests (`npm test`): 2,796 of 2,801 pass**
+**Unit tests (`npm test`): 2,817 of 2,822 pass** (after merging `main` at d1339d7)
 
-- The 5 failures fail identically on untouched `main`:
+- The 3 failures fail identically on `main` itself:
   - Keplar Browser acceptance x2 (needs outbound network);
-  - the two "electric blue" palette checks;
-  - privacy collection classification.
+  - "Sign out is offered in the Business workspace…", from the Business sidebar change on `main`.
+- Before the merge, the two "electric blue" palette checks and the privacy classification also failed on `main`; `main` has
+  since fixed them.
 - New: `tests/interface-overhaul.test.ts`, 11 contracts:
   - product tokens defined in both themes;
   - one layout block for both themes;
