@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
 import { addAccount, fetchAccounts, removeSavedAccount, signInAgainTarget, signOutAll, signOutCurrent, switchToAccount, type SavedAccount } from "@/components/account/switch-account";
 import { Button, Popover } from "@/components/kit";
 import s from "./AccountMenu.module.css";
@@ -23,6 +23,8 @@ const ITEMS = '[role="menuitem"]:not([aria-disabled="true"]):not(:disabled), [ro
  */
 export function AccountMenu({ account, plan, paid = false, usage }: { account: AccountInfo; /** Plan name shown under the name (e.g. "Free", "Keplar Plus"). */ plan?: string; paid?: boolean; /** The usage readout (meter, notes, limits); shown at the top of the menu. */ usage?: React.ReactNode }) {
   const [open, setOpen] = useState(false);
+  /** The chip's width when the menu opens: the menu is no wider than the sidebar row it opens from (a 320px phone included). */
+  const [rowW, setRowW] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState<SavedAccount[]>([]);
   const [problem, setProblem] = useState<string | null>(null);
@@ -73,6 +75,7 @@ export function AccountMenu({ account, plan, paid = false, usage }: { account: A
   };
   const openMenu = (from: "first" | "last" | null) => {
     setProblem(null);
+    setRowW(chipRef.current?.getBoundingClientRect().width ?? null);
     setOpen(true);
     if (from) requestAnimationFrame(() => {
       const items = document.getElementById(menuId)?.querySelectorAll<HTMLElement>(ITEMS);
@@ -81,7 +84,7 @@ export function AccountMenu({ account, plan, paid = false, usage }: { account: A
   };
 
   return (
-    <div className={s.wrap} data-account-menu="">
+    <div className={s.wrap} data-account-menu="" style={rowW ? ({ "--account-row-w": `${Math.round(rowW)}px` } as CSSProperties) : undefined}>
       <button
         ref={chipRef}
         type="button"

@@ -22,7 +22,7 @@
 
 /* the kit Popover, sized for the sidebar: as wide as the sidebar row, as tall as the window allows */
 .menu.menu {
-  width: min(300px, calc(100vw - 16px)); max-width: none;
+  width: min(300px, var(--account-row-w, 300px), calc(100vw - 16px)); max-width: none;
   max-height: min(640px, calc(100dvh - 96px)); overflow-y: auto; overscroll-behavior: contain;
   display: flex; flex-direction: column; gap: var(--s-1); padding: var(--s-2);
   border-radius: var(--r-md);
