@@ -497,58 +497,58 @@
 .shipped p { margin: 0; color: var(--c-ink-2); font-size: var(--t-small); }
 .codeEdit { flex: 1; min-height: 320px; width: 100%; margin: 0; padding: 12px; border: 0; resize: vertical; background: var(--c-surface-1); color: var(--c-ink); font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; line-height: 1.55; }
 
-/* ── Create, Oct 2026 canvas design ──
- * The page sits on the app's aura backdrop (no solid band or canvas fill); the kind tabs are pills like the rest of the app;
- * the start screen is a two-tone light headline, a grey lede, one frosted composer card, frosted pill starters; the shelf is
- * frosted cards with soft posters and sentence-case labels. Colours come from the theme tokens, so Dark follows. */
-.kindBar.kindBar { background: transparent; border-bottom: 0; padding: 4px 28px 8px; }
-.kindTabs.kindTabs { gap: 6px; }
+/* ── Create (both themes, from the product surface tokens in tokens.css) ──
+ * The page sits on the app's plain canvas. The kind switch (App, Images, Video, Mobile) is one segmented control: a quiet track,
+ * the selected kind raised on it. The start screen is a two-tone light headline, a grey lede, one raised composer card and outlined
+ * starter chips; the shelf is raised cards with flat posters (no pastel gradients) that brighten their edge on hover instead of
+ * jumping. Keplar Business keeps its own underline look (the block after this one). */
+.kindBar.kindBar { background: transparent; border-bottom: 0; padding: 0 28px 12px; }
+.kindTabs.kindTabs { gap: 2px; padding: 3px; border-radius: 999px; background: var(--hover-wash); flex-wrap: nowrap; }
 .kindTabs :global(.m-tab-indicator) { display: none; }
 .kindTabs .kindTab::after { display: none; }
-.kindTabs .kindTab { height: 38px; padding: 0 16px; border-radius: 999px; background: color-mix(in srgb, var(--c-surface-1) 70%, transparent); color: var(--c-ink-2); font-size: 14px; }
+.kindTabs .kindTab { height: 34px; padding: 0 14px; border-radius: 999px; background: transparent; color: var(--c-ink-2); font-size: 14px; box-shadow: none; white-space: nowrap; transition: background-color var(--m-dur-1) var(--m-ease-out), color var(--m-dur-1) var(--m-ease-out), box-shadow var(--m-dur-1) var(--m-ease-out); }
 .kindTabs .kindTab:hover { color: var(--c-ink); }
-.kindTabs .kindTab[aria-selected="true"] { background: var(--c-ink); color: var(--c-canvas); }
+.kindTabs .kindTab[aria-selected="true"] { background: var(--surface-raised); color: var(--c-ink); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1); }
+.kindTabs .kindTab > span[aria-hidden] { color: var(--c-ink-3); font-size: 12px; }
 
 .start { background: transparent; }
-.calm { gap: 20px; padding-top: clamp(32px, 9vh, 96px); }
+.calm { gap: 20px; padding-top: max(36px, clamp(32px, 9vh, 96px)); }
 .calmIntro { gap: 12px; }
 .calmTitle { font-size: clamp(32px, 3.4vw, 44px); line-height: 1.08; letter-spacing: -0.035em; font-weight: var(--w-regular); color: var(--c-ink); text-wrap: balance; }
 .calmLede { font-size: 17px; line-height: 1.55; color: var(--c-ink-3); max-width: 46ch; }
-.calmCard { gap: 10px; padding: 18px 18px 12px 22px; border: 0; border-radius: 26px; background: color-mix(in srgb, var(--c-surface-1) 85%, transparent); box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 30px 80px -40px rgb(14 15 18 / 0.35); }
+.calmCard { gap: 10px; padding: 18px 18px 12px 22px; border: 0; border-radius: 26px; background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-2); }
+.calmCard:focus-within { box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-2); }
 .calmCard .prompt { font-size: 17px; }
-.calmBar .textBtn { height: 34px; padding: 0 14px; border-radius: 999px; background: rgb(var(--rgb-ink) / 0.05); color: var(--c-ink); font-size: 13px; text-decoration: none; }
-.calmBar .textBtn:hover { background: rgb(var(--rgb-ink) / 0.09); }
+.calmBar .textBtn { height: 34px; padding: 0 14px; border-radius: 999px; background: var(--hover-wash); color: var(--c-ink); font-size: 13px; text-decoration: none; }
+.calmBar .textBtn:hover { background: var(--press-wash); }
 .calmChips { gap: 8px; }
-.calmChip { height: 38px; padding: 0 16px; border: 0; background: color-mix(in srgb, var(--c-surface-1) 75%, transparent); color: var(--c-ink); font-size: 14px; }
-.calmChip:hover { background: var(--c-surface-1); }
+.calmChip { height: 38px; padding: 0 16px; border: 1px solid var(--hairline-strong); background: transparent; color: var(--c-ink-2); font-size: 14px; box-shadow: none; }
+.calmChip:hover { background: var(--surface-raised); color: var(--c-ink); }
 
-.shelf { max-width: 1240px; }
+.shelf { max-width: 1240px; width: 100%; box-sizing: border-box; }
 .shelfHead { border-top: 0; padding-top: var(--s-6); align-items: center; }
 .shelfTitle { font-size: 24px; font-weight: var(--w-regular); letter-spacing: -0.03em; }
-.shelfCount { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; background: rgb(var(--rgb-ink) / 0.06); font-size: 12px; color: var(--c-ink-2); }
+.shelfCount { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; background: var(--hover-wash); font-size: 12px; color: var(--c-ink-2); }
 .shelfGrid { gap: 16px; }
-.card { border: 0; border-radius: 24px; background: color-mix(in srgb, var(--c-surface-1) 82%, transparent); box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 12px 28px -14px rgb(14 15 18 / 0.25); transition: translate 300ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 240ms ease; }
-.card:hover { translate: 0 -4px; box-shadow: 0 1px 2px rgb(14 15 18 / 0.08), 0 18px 36px -14px rgb(14 15 18 / 0.32); }
+.card { border: 0; border-radius: 24px; background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1); transition: box-shadow var(--m-dur-2) var(--m-ease-out); }
+.card:hover { box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-2); }
 .thumb { margin: 8px 8px 0; border-radius: 18px; }
-.poster { background: linear-gradient(160deg, color-mix(in srgb, #a9d8f5 45%, var(--c-surface-2)), color-mix(in srgb, #d6cdf5 45%, var(--c-surface-2)) 60%, color-mix(in srgb, #f9d6c4 40%, var(--c-surface-2))); }
-:global(:root[data-theme="dark"]) .poster { background: linear-gradient(160deg, #1d2a3a, #241f38 60%, #33241f); }
+.poster { background: var(--c-surface-2); }
 .posterName { font-weight: var(--w-regular); letter-spacing: -0.03em; }
-.posterKind { top: 12px; left: 14px; padding: 2px 9px; border-radius: 999px; background: rgb(var(--rgb-ink) / 0.08); font-size: 11px; letter-spacing: 0; text-transform: capitalize; opacity: 1; }
-.cardActions .textBtn { height: 30px; padding: 0 10px; border-radius: 999px; text-decoration: none; color: var(--c-ink-2); }
-.cardActions .textBtn:hover { background: rgb(var(--rgb-ink) / 0.06); color: var(--c-ink); }
-@media (prefers-reduced-motion: reduce) { .card, .card:hover { transition: none; translate: none; } }
+.posterKind { top: 12px; left: 14px; padding: 2px 9px; border-radius: 999px; background: var(--hover-wash); font-size: 11px; letter-spacing: 0; text-transform: capitalize; opacity: 1; }
 .cardActions { gap: 2px; margin-left: -10px; }
-.shelf { width: 100%; box-sizing: border-box; }
+.cardActions .textBtn { height: 30px; padding: 0 10px; border-radius: 999px; text-decoration: none; color: var(--c-ink-2); }
+.cardActions .textBtn:hover { background: var(--hover-wash); color: var(--c-ink); }
 
 /* Scrolling Create: content fades out under the tab row instead of being cut by a hard edge right beneath the tabs. */
 .start { -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 36px); mask-image: linear-gradient(to bottom, transparent 0, #000 36px); }
-.calm { padding-top: max(36px, clamp(32px, 9vh, 96px)); }
 
-/* Kind tabs: inactive pills read as solid white chips with a soft shadow (they looked washed out on the aura) */
-.kindTabs .kindTab { background: var(--c-surface-1); color: var(--c-ink-2); box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 6px 16px -10px rgb(14 15 18 / 0.3); transition: background-color 220ms ease, color 220ms ease, translate 260ms cubic-bezier(0.34, 1.56, 0.64, 1); }
-.kindTabs .kindTab:hover { translate: 0 -1px; color: var(--c-ink); }
-:global(:root[data-theme="dark"]) .kindTabs .kindTab:not([aria-selected="true"]) { background: rgb(255 255 255 / 0.08); }
-.kindBar.kindBar { padding-top: 0; padding-bottom: 12px; }
+/* Phones: the four kinds fit a 360px screen (tighter padding, the Beta note smaller) and the bar still scrolls if a font is larger. */
+@media (max-width: 480px) {
+  .kindBar.kindBar { padding: 0 12px 10px; }
+  .kindTabs .kindTab { height: 36px; padding: 0 10px; font-size: 13px; }
+  .kindTabs .kindTab > span[aria-hidden] { font-size: 11px; }
+}
 
 /* ── Inside the Keplar Business workspace (html[data-business-app]): Create looks like the workspace's own New chat ──
    Underline tabs for App / Images / Video / Mobile (as in Operations and Integrations), a plain one-tone title, the New chat
@@ -723,3 +723,4 @@
 /* Settings → Incoming webhooks: the URL and its Copy button on one row. */
 .hookRow { display: flex; gap: 8px; align-items: center; }
 .hookRow > input { flex: 1; min-width: 0; font-family: var(--f-mono, ui-monospace, monospace); font-size: 12px; }
+@media (pointer: coarse) { .kindTabs .kindTab { height: 40px; } }

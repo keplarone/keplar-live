@@ -13,7 +13,7 @@
 .input { width: 100%; padding: var(--s-3) var(--s-4); border-radius: var(--r-sm); border: 0; background: var(--c-canvas); color: var(--c-ink); font: inherit; box-shadow: inset 0 0 0 1px var(--c-border-strong); resize: vertical; }
 .input:focus-visible { outline: none; }
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); }
-.range { width: 100%; accent-color: var(--c-ink); }
+.range { width: 100%; min-height: 24px; accent-color: var(--c-ink); } /* a 24px tall hit area for the slider (WCAG 2.5.8) */
 .hint { color: var(--c-ink-3); font-size: var(--t-label); }
 .fileRow { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
 .fileInput { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
@@ -109,8 +109,8 @@
 
 /* glass buttons (liquid glass: see src/styles/glass.css) */
 .primary { background: var(--btn-p-bg); color: var(--btn-p-ink); border-color: transparent; box-shadow: var(--btn-p-shadow); -webkit-backdrop-filter: blur(6px) saturate(1.4); backdrop-filter: blur(6px) saturate(1.4); transition: var(--btn-spring); }
-.primary:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--btn-p-bg); transform: scale(1.03, 1.015); }
-.primary:active:not(:disabled) { transform: scale(0.97, 0.92); }
+.primary:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--c-ink-hover); }
+.primary:active:not(:disabled) { scale: var(--m-press); }
 @media (prefers-reduced-motion: reduce) { .primary { transition: background-color 0.1s linear; transform: none !important; } }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .primary { backdrop-filter: none; -webkit-backdrop-filter: none; } .primary { background: var(--btn-p-solid, #17171a); } }
 

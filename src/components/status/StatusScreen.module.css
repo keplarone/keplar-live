@@ -1,0 +1,12 @@
+/* One look for every full-view status (an error, a lost connection, a page that needs sign-in): the Keplar mark, a short title,
+   one plain sentence, one primary action and at most one secondary one, then a small help line. Tokens only, both themes. */
+.screen { display: grid; place-items: center; min-height: 60vh; padding: 96px 24px; text-align: center; background: var(--c-canvas); color: var(--c-ink); }
+.screen[data-fill] { position: fixed; inset: 0; min-height: 0; z-index: var(--z-overlay); }
+.box { display: flex; flex-direction: column; align-items: center; gap: 12px; max-width: 440px; }
+.mark { width: 32px; height: 32px; margin-bottom: 8px; color: var(--c-ink); }
+.title { font-size: clamp(24px, 2.4vw, 30px); line-height: 1.15; font-weight: var(--w-regular); letter-spacing: -0.03em; text-wrap: balance; }
+.body { font-size: 16px; line-height: 1.55; color: var(--c-ink-2); text-wrap: pretty; }
+.actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 12px; }
+.help { margin-top: 20px; font-size: 13px; line-height: 1.5; color: var(--c-ink-3); }
+.help a { color: var(--c-ink-2); text-decoration: underline; text-underline-offset: 3px; }
+.help code { font-size: 12px; }

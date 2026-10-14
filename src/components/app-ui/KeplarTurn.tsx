@@ -144,7 +144,7 @@ export function KeplarTurn({ message: m, onRetry, onRefreshResearch, onSignal, o
                     </span>
                   ) : null}
                   {st.id === "compare" && count > 1 ? (
-                    <span className={s.bars} aria-label={`${m.models.length} of ${count} models responded`}>
+                    <span className={s.bars} role="img" aria-label={`${m.models.length} of ${count} models responded`}>
                       {Array.from({ length: count }, (_, k) => {
                         const tick = m.models[k];
                         return <span key={k} className={s.bar} data-state={tick?.status ?? "pending"} />;
@@ -370,7 +370,7 @@ function DailyLimit({ daily, ledger }: { daily: NonNullable<NonNullable<KeplarMe
             Upgrade to {nextPaid.name.replace("Keplar ", "")} · ${nextPaid.price}/mo <span aria-hidden="true">→</span>
           </Link>
         ) : null}
-        <Link href="/pricing?from=daily-limit" className={nextPaid ? s.textBtn : s.primaryBtn}>Compare plans</Link>
+        <Link href="/pricing?from=daily-limit" className={nextPaid ? s.textBtn : s.primaryBtn}>See plans</Link>
       </div>
     </section>
   );
@@ -390,7 +390,7 @@ function DayBudget({ resetsAt }: { resetsAt?: string }) {
         <Link href="/checkout?plan=plus" className={s.primaryBtn}>
           Upgrade to Plus <span aria-hidden="true">→</span>
         </Link>
-        <Link href="/pricing?from=day-budget" className={s.textBtn}>Compare plans</Link>
+        <Link href="/pricing?from=day-budget" className={s.textBtn}>See plans</Link>
       </div>
     </section>
   );
@@ -441,7 +441,7 @@ function UsageLimit({ limit, ledger }: { limit: NonNullable<KeplarMessage["limit
           </Link>
         ) : null}
         <Link href="/pricing?from=credits" className={nextPaid ? s.textBtn : s.primaryBtn}>
-          {nextPaid ? "Compare plans" : <>Compare plans <span aria-hidden="true">→</span></>}
+          {nextPaid ? "See plans" : <>See plans <span aria-hidden="true">→</span></>}
         </Link>
       </div>
     </section>
