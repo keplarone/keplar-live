@@ -710,17 +710,50 @@
 /* Click-to-edit: the Select toggle in the preview toolbar and the edit box for the picked element (PickEditor). */
 .pickBtn { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; box-shadow: inset 0 0 0 1px var(--c-border-strong); color: var(--c-ink); font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap; }
 .pickBtn:hover { background: var(--c-surface-2); }
-.pickBtn[aria-pressed="true"] { background: #3b82f6; box-shadow: none; color: #fff; }
+.pickBtn[aria-pressed="true"] { background: var(--c-ink); box-shadow: none; color: var(--c-canvas); }
 .pickEditor { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-bottom: var(--b-hairline) solid var(--c-border); background: var(--c-surface-1); }
 .pickHead { display: flex; align-items: baseline; gap: 10px; min-width: 0; font-size: 12.5px; }
-.pickTag { flex: none; padding: 2px 8px; border-radius: 6px; background: #3b82f6; color: #fff; font-family: var(--f-mono, ui-monospace, monospace); font-size: 11.5px; }
+.pickTag { flex: none; padding: 2px 8px; border-radius: 6px; background: var(--c-ink); color: var(--c-canvas); font-family: var(--f-mono, ui-monospace, monospace); font-size: 11.5px; }
 .pickText { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--c-ink-2); }
 .pickRow { display: flex; gap: 8px; align-items: center; }
 .pickInput { flex: 1; min-width: 0; height: 36px; padding: 0 12px; border: 0; border-radius: 10px; background: var(--c-canvas); box-shadow: inset 0 0 0 1px var(--c-border-strong); color: var(--c-ink); font: inherit; font-size: 14px; }
-.pickInput:focus { outline: none; box-shadow: inset 0 0 0 1.5px #3b82f6; }
+.pickInput:focus { outline: none; box-shadow: inset 0 0 0 1.5px var(--c-ink); }
 /* Narrower windows: the Select toggle is icon-only so Publish stays on the toolbar row. */
 @media (max-width: 1400px) { .pickLabel { display: none; } .pickBtn { width: 32px; padding: 0; justify-content: center; } }
 /* Settings → Incoming webhooks: the URL and its Copy button on one row. */
 .hookRow { display: flex; gap: 8px; align-items: center; }
 .hookRow > input { flex: 1; min-width: 0; font-family: var(--f-mono, ui-monospace, monospace); font-size: 12px; }
 @media (pointer: coarse) { .kindTabs .kindTab { height: 40px; } }
+
+/* ── Compact Create start page: fits a laptop/desktop-app window without scrolling ── */
+.calm { gap: 14px; padding-top: clamp(16px, 4vh, 40px); padding-bottom: var(--s-4); }
+.calmIntro { gap: 6px; }
+.calmTitle { font-size: clamp(22px, 2.4vw, 30px); line-height: 1.12; }
+.calmLede { font-size: 14px; line-height: 1.5; }
+.calmCard { gap: 6px; padding: 12px 14px 10px 16px; border-radius: 20px; }
+.calmCard .prompt { font-size: 15px; min-height: 2.8em; }
+.calmChips { gap: 6px; }
+.calmChip { height: 30px; padding: 0 12px; }
+.calmShowcase { padding: var(--s-2) clamp(16px, 3vw, 24px) var(--s-4); }
+.step { padding-top: var(--s-3); }
+.step[hidden] { display: none; }
+.calmOptions { gap: var(--s-3); }
+.calmCanvas { min-height: 240px; max-height: 300px; }
+.optTabs { display: flex; gap: 4px; padding: 3px; border-radius: 999px; background: var(--c-surface-1); box-shadow: inset 0 0 0 1px var(--c-border); align-self: center; }
+.optTab { height: 28px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; color: var(--c-ink-2); font: inherit; font-size: 12.5px; cursor: pointer; }
+.optTab[aria-selected="true"] { background: var(--c-ink); color: var(--c-canvas); }
+/* the shelf of your apps: one compact row that scrolls sideways instead of a tall grid (the explorer lists them too) */
+.shelf { padding: var(--s-2) clamp(16px, 2.4vw, 36px) var(--s-4); }
+.shelfHead { padding-top: var(--s-2); margin-bottom: var(--s-2); }
+.shelfTitle { font-size: 14px; }
+.shelfGrid { display: flex; overflow-x: auto; gap: 10px; padding-bottom: 6px; scroll-snap-type: x proximity; }
+.shelfGrid > li { flex: 0 0 200px; scroll-snap-align: start; }
+
+/* Options open: the panel takes the room the starter chips, the lede and the showcase line used, so the page still fits. */
+.calm:has(> .calmOptions:not([hidden])) :is(.calmChips, .calmLede) { display: none; }
+.ideEditor:has(.calmOptions:not([hidden])) .calmShowcase { display: none; }
+.calmOptions .stepLabel { display: none; }
+.calmOptions .step { padding-top: 0; border-top: 0; }
+.calmOptions .tiles { grid-auto-columns: 92px; }
+.calmOptions .calmCanvas { min-height: 0; height: clamp(120px, 22vh, 240px); max-height: none; }
+.calmOptions .voiceLive { max-height: clamp(130px, 25vh, 260px); overflow: auto; }

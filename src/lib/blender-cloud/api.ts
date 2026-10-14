@@ -14,6 +14,7 @@ import { rateLimit } from "@/lib/create/platform/ratelimit";
 import { currentWorkspace, type Workspace } from "@/lib/create/platform/workspace";
 import { STUDIO_PLANS } from "@/lib/desktop/studio-bridge";
 import { isSameOrigin } from "@/lib/security/origin";
+import { hasSpaceCloudPlan } from "@/lib/space-studio/cloud";
 import { agentScript, IMAGE_RECIPE, JOB_DIR, machineScripts, parsePoll, pollScript, sandboxMachines, type Machine, type Machines } from "./machine";
 import { emptyUsage, ENGINES, FORMATS, isActive, jobs, jobView, logEntry, machineSpec, RENDER_LIMITS, SYSTEM_WS, system, type RenderJob, type RenderSettings, type SceneReport } from "./model";
 import { framesFrom, monthKey, triggerNext, unitsPerMinute } from "./worker";
@@ -27,7 +28,7 @@ export async function renderOwner(req: Request, write: boolean): Promise<Workspa
   if (write && !isSameOrigin(req)) throw new HttpError(403, "Cross-site request blocked.", "bad_origin");
   const ws = await currentWorkspace(req); // 401 when signed out
   assertSameAccount(req, ws.userId);
-  if (!STUDIO_PLANS.has(ws.plan)) throw new EntitlementError("Blender Cloud rendering comes with Keplar Lite, Plus and Pro.", "lite");
+  if (!STUDIO_PLANS.has(ws.plan) && !(await hasSpaceCloudPlan(ws.id))) throw new EntitlementError("Blender Cloud rendering comes with Keplar Lite, Plus and Pro.", "lite");
   if (write) await rateLimit(`blender-cloud:${ws.id}`, 60, 60, { shared: true });
   return ws;
 }
@@ -126,7 +127,7 @@ async function prune(ws: Workspace, deps: ApiDeps) {
 }
 
 /** Creates the job and its machine. The machine waits for the scene: the desktop app uploads it straight there with the token. */
-export async function createJob(ws: Workspace, b: Record<string, unknown>, deps: ApiDeps = {}) {
+export async function createJob(ws: Workspace, b: Record<string, unknown>, deps: ApiDeps = {}, opts: { product?: RenderJob["product"] } = {}) {
   const machines = deps.machines ?? sandboxMachines;
   const now = (deps.now ?? Date.now)();
   const report = validateReport(b.report);
@@ -147,6 +148,7 @@ export async function createJob(ws: Workspace, b: Record<string, unknown>, deps:
   const job: RenderJob = {
     id, workspaceId: ws.id, createdAt: iso(now), updatedAt: iso(now), expiresAt: iso(now + RENDER_LIMITS.keepDays * 864e5), file: report.file, report, settings, maxUnits, maxMinutes,
     status: "uploading", done: [], frameSeconds: [], restarts: 0, slices: 0, usage: emptyUsage(), outputs: [], sceneBytes, log: [logEntry("info", "Starting a render machine.")],
+    ...(opts.product ? { product: opts.product } : {}),
   };
   await jobs().insert(job);
   let m: Machine;

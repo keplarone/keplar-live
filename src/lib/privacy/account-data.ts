@@ -44,6 +44,7 @@ export const RETAINED = [
   "cost_state", // throttles and provider-balance state (no personal data)
   "overage_settings", // overage opt-in and monthly cap: the billing authorization behind any overage charge
   "overage_usage", // overage amounts billed per month: a financial record
+  "space_billing_events", // Space Studio billing idempotency log (event id, type, plan, timestamps, target workspace id; workspace "system", no content): a financial record, kept so a replayed event can never re-grant a plan
   "answer_turns", // answer recovery checkpoints (orchestration/turn-recovery.ts): workspace "system", keyed by a hash of owner + turn key (no account id), the last answer as sent; unreadable after 30 minutes and deleted within a day, so they expire on their own
 ] as const;
 export const RETAINED_PATTERNS = [/^usage_window_/, /^system_/, /^admin_/, /^ops_/, /^_health$/, /^_cron_beats$/ /* cron heartbeat timestamps, no personal data */];
@@ -55,7 +56,7 @@ export const USER_COLLECTIONS = [
   "roblox_cloud_jobs", "roblox_cloud_files", // Roblox Cloud overnight jobs: the goal, plan, log, report and the game's script snapshot with edits (src/lib/roblox-cloud); kept 30 days, exported and deleted with the account
   "blender_cloud_jobs", // Blender Cloud renders: the scene's name and summary, the settings, progress, usage and log (src/lib/blender-cloud); the scene and frames live on the job's render machine, which the daily clean-up deletes once its job is gone; kept 3 days after the render, exported and deleted with the account
   "accounts_workspaces", "chat_threads", "chat_digests", "memory_items", "memory_settings", "projects", "project_notes", "project_files",
-  "sb_sites", "sb_versions", "sb_leads", "sb_templates" /* site snapshots you chose to share as templates; removed with the site or the account */, "sb_template_likes" /* community templates you liked; exported and deleted with the account */, "sb_records" /* site features: visitor signups, bookings, table rows; exported and deleted with the account */, "sb_assets", "sb_shots", "app_builds" /* Keplar Apps build records: your prompt, plan and generated files; the apps' own end-user data lives in app_* tables and is deleted with each app */, "create_projects", "referral_profiles" /* your invite code and hashed network/browser markers */, "create_deploys", "create_domains", "create_media_jobs", "img_jobs", "hf_finalize",
+  "sb_sites", "sb_versions", "sb_leads", "sb_templates" /* site snapshots you chose to share as templates; removed with the site or the account */, "sb_template_likes" /* community templates you liked; exported and deleted with the account */, "sb_records" /* site features: visitor signups, bookings, table rows; exported and deleted with the account */, "sb_assets", "sb_shots", "app_builds" /* Keplar Apps build records: your prompt, plan and generated files; the apps' own end-user data lives in app_* tables and is deleted with each app */, "app_schedule_runs" /* last run time and result of each scheduled job in your apps; deleted with the account */, "create_projects", "referral_profiles" /* your invite code and hashed network/browser markers */, "create_deploys", "create_domains", "create_media_jobs", "img_jobs", "hf_finalize",
   "collab_invites" /* live-session invite links you created (token hashes only) */, "collab_grants" /* who joined your creations by link */, "collab_branches" /* split-off records */, "critic_reports" /* AI critic reports on your creations */, "sb_deploys" /* deploy and rollback history with logs */,
   "slide_decks", "study_sets", "study_guides", "study_progress", "dev_outbox",
   "biz_settings", "biz_connect_accounts", "biz_connect_events", "biz_orders", "biz_contacts", "biz_deals", "biz_activities", "biz_inbox",
@@ -64,6 +65,7 @@ export const USER_COLLECTIONS = [
   "guard_targets", "guard_runs", "guard_reports", // Revenue Guard: sites the owner verified for testing, test runs and their reports (src/lib/business/guard/core.ts); the verification token is redacted in the export.
   "mcp_servers", "mcp_tools", "mcp_grants", "mcp_receipts", "mcp_oauth", "mobile_creds",
   "team_teams", "team_members", "team_invites", "team_audit" /* team workspaces (BETA): scoped by the team id, so exported and deleted with the team, never with a member's account */, "team_memberships" /* your own index of the teams you belong to */, "api_keys" /* hashed API keys (BETA): never exported with a secret, deleted with the account */, "embed_widgets" /* public embed widget configs (BETA): no secrets, deleted with the account */, "answer_shares", "chat_shares" /* shared chat links: the redacted turns you chose; revoked and deleted with the account */, "answer_prefs" /* your answer style and "about you" */, "specialists" /* your saved specialists: instructions, knowledge, starters */, "specialist_shares" /* specialist links you made: a snapshot of that specialist; revoked and deleted with the account */, "family_settings" /* Family mode on/off and homework guidance; the PIN hash is never exported */, "specialist_listings" /* your Specialist directory submissions and their review status */, "feedback", "support_tickets", "learn_settings", "learn_cases", "faq_settings", "core_prefs" /* Keplar Core: tracking opt-out and the learned shorter/longer preference */, "core_jobs" /* Keplar Core background work: the question, working notes and result; expire after 7 days */,
+  "space_subscriptions" /* Space Studio plan record (plan, status, period end, applied event ids); deleted with the account */, "space_identities" /* Roblox account linked to Space Studio (Roblox user id + username); deleted with the account */, "space_identity_index" /* system-scoped claim "roblox:<id>" -> workspace, freed explicitly on deletion (freeIdentityClaims) so the Roblox account can be linked again */, "space_usage" /* Space Studio cloud minutes per month (numbers only); deleted with the account */, "space_locks" /* seconds-long write locks; deleted with the account */,
   "browser_tasks" /* Keplar Browser tasks: the task, step notes and addresses, the newest screenshot and the result; the newest 20 are kept, exported and deleted with the account */,
 ] as const;
 
@@ -152,6 +154,13 @@ export async function deleteWorkspaceData(wsId: string): Promise<DeleteResult> {
     for (const s of await sites().list(wsId)) if (s.kind === "app") await deleteAppData(s.id);
   } catch {
     /* best effort: no app tables yet */
+  }
+  // Space Studio: identity claims live in system rows keyed by provider id, not by workspace; free them before the workspace rows go.
+  try {
+    const { freeIdentityClaims } = await import("@/lib/space-studio/store");
+    deleted += await freeIdentityClaims(wsId);
+  } catch {
+    /* best effort: nothing linked */
   }
   const kept: string[] = [];
   for (const name of await collectionNames(wsId)) {

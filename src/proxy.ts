@@ -10,7 +10,7 @@ import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server
 import { clientIpOf, rateLimit, RateLimitError } from "@/lib/create/platform/ratelimit";
 import { newRequestId, requestIdOf } from "@/lib/ops/log";
 import { hostOf, isAppHost, resolveCustomHost } from "@/lib/domains/routing";
-import { DOCS_HOST, PRODUCTION_URL } from "@/lib/site";
+import { DOCS_HOST, PRODUCTION_URL, SPACE_HOST } from "@/lib/site";
 import { BUSINESS_ICON_PATHS, BUSINESS_MANIFEST_PATH, BUSINESS_PREFIX, businessUrl, isBusinessHost } from "@/lib/business-site";
 import { DOC_SECTION_IDS } from "@/lib/kb/doc-sections";
 import { isOriginExempt, isSameOrigin, SAFE_METHODS } from "@/lib/security/origin";
@@ -91,6 +91,32 @@ export function docsHost(req: NextRequest) {
 
 
 /**
+ * space.keplar.one is Space Studio's site: / → /space-studio and /app → /space-studio/app (rewrite, the URL stays clean);
+ * /space-studio/... is served as-is. Static files, /_next, /api and /og pass through (the desktop app itself talks to keplar.one).
+ * Any other path is the main site's: 308 to keplar.one.
+ */
+export function spaceHost(req: NextRequest) {
+  const { pathname, search } = req.nextUrl;
+  if (pathname === "/favicon.ico") {
+    const url = req.nextUrl.clone();
+    url.pathname = "/icons/space-studio-favicon.ico";
+    return NextResponse.rewrite(url);
+  }
+  const last = pathname.slice(pathname.lastIndexOf("/") + 1);
+  if (pathname.startsWith("/_next/") || pathname.startsWith("/api/") || pathname.startsWith("/og/") || pathname.startsWith("/icons/") || pathname.startsWith("/fonts/") || last.includes(".")) {
+    return NextResponse.next();
+  }
+  if (pathname === "/space-studio" || pathname.startsWith("/space-studio/")) return NextResponse.next();
+  if (pathname === "/" || pathname === "/app") {
+    const url = req.nextUrl.clone();
+    url.pathname = pathname === "/" ? "/space-studio" : "/space-studio/app";
+    url.search = search;
+    return NextResponse.rewrite(url);
+  }
+  return NextResponse.redirect(`${PRODUCTION_URL}${pathname}${search}`, 308);
+}
+
+/**
  * business.keplar.one is the Keplar Business app (src/lib/business-site.ts): every page path maps onto its internal route
  * under /biz ("/" → /biz, "/work" → /biz/work), so a Business page can never resolve to a Keplar One page. Static files pass
  * through; /api is handled by the shared API guard below (rate limit, same-origin), like on keplar.one. Returns null for /api.
@@ -150,6 +176,7 @@ export async function proxy(req: NextRequest, event?: NextFetchEvent) {
   const host = hostOf(req);
   if (!isAppHost(host)) return customHost(req, host);
   if (host === DOCS_HOST) return docsHost(req);
+  if (host === SPACE_HOST) return spaceHost(req);
   const business = isBusinessHost(host);
   if (business) {
     const page = businessHost(req);

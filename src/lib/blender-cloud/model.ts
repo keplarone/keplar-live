@@ -105,6 +105,8 @@ export type RenderJob = {
   maxMinutes: number;
   status: RenderStatus;
   stopReason?: string;
+  /** Set when the job was created from Space Studio: its Space Studio plan (src/lib/space-studio/cloud.ts) gates it instead of the Keplar plan. */
+  product?: "space-studio";
   control?: "pause" | "stop";
   /** The job's render machine. `token` is the secret the desktop app uploads and downloads with; never in jobView. */
   machine?: { name: string; url: string; token: string; vcpus: number };

@@ -76,6 +76,8 @@ export function AppBuilder() {
   const [modeTouched, setModeTouched] = useState(false);
   const [tuneOpen, setTuneOpen] = useState(false);
   const [optionsOpen, setOptionsOpen] = useState(false);
+  /** Options show one section at a time (tabs), so opening them never turns the prompt page into a long scroll. */
+  const [optTab, setOptTab] = useState<"look" | "refs" | "voice" | "screens">("look");
   const [briefOpen, setBriefOpen] = useState(false);
   const [shipped, setShipped] = useState<{ url: string; version: number } | null>(null);
   const [studio, setStudio] = useState(false);
@@ -520,10 +522,15 @@ export function AppBuilder() {
             {loadErr ? <p className={s.inlineErr} role="alert">{loadErr} <button type="button" className={s.textBtn} onClick={() => { setLoadErr(""); load().catch((e) => setLoadErr((e as Error).message)); }}>Try again</button></p> : null}
 
             <div id="kc-options" className={s.calmOptions} hidden={!optionsOpen}>
-              <section className={s.step} aria-labelledby="kc-voice">
+              <div className={s.optTabs} role="tablist" aria-label="Options">
+                {([["look", "Look"], ["refs", "References"], ["voice", "Speak it"], ["screens", "Screens"]] as const).map(([id, label]) => (
+                  <button key={id} type="button" role="tab" aria-selected={optTab === id} className={s.optTab} onClick={() => setOptTab(id)}>{label}</button>
+                ))}
+              </div>
+              <section className={s.step} aria-labelledby="kc-voice" hidden={optTab !== "voice"}>
                 <h3 id="kc-voice" className={s.stepLabel}>Speak it</h3>
                 <div className={s.voiceLive}>
-                  {optionsOpen ? (
+                  {optionsOpen && optTab === "voice" ? (
                     <Suspense fallback={<p className={s.paneMsg}>Loading voice…</p>}>
                       <VoiceLiveTheater
                         getText={() => store.text()}
@@ -536,19 +543,21 @@ export function AppBuilder() {
                 </div>
               </section>
 
-              <ReferenceTray className={s.step} labelClass={s.stepLabel} onChange={onRefs} disabled={running} plan={cfg?.plan} />
+              <div hidden={optTab !== "refs"}>
+                <ReferenceTray className={s.step} labelClass={s.stepLabel} onChange={onRefs} disabled={running} plan={cfg?.plan} />
+              </div>
 
-              <section className={s.step} aria-labelledby="kc-shape">
+              <section className={s.step} aria-labelledby="kc-shape" hidden={optTab !== "look"}>
                 <h3 id="kc-shape" className={s.stepLabel}>Look</h3>
                 {cfg ? (
                   <LookTiles cfg={cfg} design={design} auto={auto} tuned={!auto && design.paletteSource !== "style"} onAuto={() => setAuto(true)} onStyle={(id) => { const st = cfg.styles.find((x) => x.id === id)!; setAuto(false); setDesign((d) => ({ ...d, style: id, fonts: st.fonts, shape: st.shape, density: st.density, motion: st.motion, palette: null, paletteSource: "style", direction: undefined })); }} onMode={(m) => { setModeTouched(true); setDesign((d) => ({ ...d, mode: m, ...(d.paletteSource === "style" ? { palette: null } : {}) })); }} onFineTune={() => setTuneOpen(true)} />
                 ) : <div className={s.tilesGhost} aria-hidden="true">{Array.from({ length: 6 }, (_, i) => <span key={i} />)}</div>}
               </section>
 
-              <section className={s.step} aria-labelledby="kc-preview">
+              <section className={s.step} aria-labelledby="kc-preview" hidden={optTab !== "screens"}>
                 <h3 id="kc-preview" className={s.stepLabel}>Screens preview</h3>
                 <div className={`${s.canvas} ${s.calmCanvas}`} aria-label="Preview of your app">
-                  {optionsOpen ? <LiveBlueprint store={store} look={look} auto={auto} /> : null}
+                  {optionsOpen && optTab === "screens" ? <LiveBlueprint store={store} look={look} auto={auto} /> : null}
                 </div>
               </section>
             </div>

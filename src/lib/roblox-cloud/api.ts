@@ -12,6 +12,7 @@ import { rateLimit } from "@/lib/create/platform/ratelimit";
 import { currentWorkspace, type Workspace } from "@/lib/create/platform/workspace";
 import { STUDIO_PLANS } from "@/lib/desktop/studio-bridge";
 import { isSameOrigin } from "@/lib/security/origin";
+import { hasSpaceCloudPlan } from "@/lib/space-studio/cloud";
 import { CLOUD_LIMITS, currentSource, emptyUsage, fileId, files, jobs, jobView, logEntry, PATH, SCRIPT_CLASSES, sha, type CloudFile, type CloudJob, type StopMode } from "./model";
 
 const bad = (m: string, code = "bad_request") => new HttpError(400, m, code);
@@ -21,7 +22,7 @@ export async function cloudOwner(req: Request, write: boolean): Promise<Workspac
   if (write && !isSameOrigin(req)) throw new HttpError(403, "Cross-site request blocked.", "bad_origin");
   const ws = await currentWorkspace(req); // 401 when signed out
   assertSameAccount(req, ws.userId);
-  if (!STUDIO_PLANS.has(ws.plan)) throw new EntitlementError("Roblox Cloud comes with Keplar Lite, Plus and Pro.", "lite");
+  if (!STUDIO_PLANS.has(ws.plan) && !(await hasSpaceCloudPlan(ws.id))) throw new EntitlementError("Roblox Cloud comes with Keplar Lite, Plus and Pro.", "lite");
   if (write) await rateLimit(`roblox-cloud:${ws.id}`, 60, 60, { shared: true });
   return ws;
 }
@@ -46,7 +47,7 @@ export async function removeJob(workspaceId: string, jobId: string) {
   await jobs().remove(workspaceId, jobId);
 }
 
-export async function createDraft(ws: Workspace, b: Record<string, unknown>): Promise<CloudJob> {
+export async function createDraft(ws: Workspace, b: Record<string, unknown>, opts: { product?: CloudJob["product"] } = {}): Promise<CloudJob> {
   const goal = typeof b.goal === "string" ? b.goal.trim() : "";
   if (goal.length < 8) throw bad("Describe what Keplar should work on (a sentence or two).");
   if (goal.length > CLOUD_LIMITS.maxGoalChars) throw bad(`Keep the goal under ${CLOUD_LIMITS.maxGoalChars} characters.`);
@@ -67,6 +68,7 @@ export async function createDraft(ws: Workspace, b: Record<string, unknown>): Pr
     id: newId("rc"), workspaceId: ws.id, createdAt: now.toISOString(), updatedAt: now.toISOString(), expiresAt: new Date(now.getTime() + CLOUD_LIMITS.keepDays * 864e5).toISOString(),
     place: { id: typeof place.id === "string" ? place.id.slice(0, 80) : "", name: placeName }, goal, mode, maxUnits, maxMinutes, status: "draft", tree, scriptCount: 0,
     slices: 0, plan: [], log: [logEntry("info", "Snapshot upload started.")], usage: emptyUsage(), messages: [], stall: 0, failures: 0,
+    ...(opts.product ? { product: opts.product } : {}),
   };
   return jobs().insert(job);
 }

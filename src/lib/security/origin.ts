@@ -67,6 +67,7 @@ export function assertSameOrigin(req: Request) {
 export const ORIGIN_EXEMPT_PREFIXES = [
   "/api/webhooks/", // signed by the sender (Whop)
   "/api/business/stripe/webhook", // signed by Stripe
+  "/api/space-studio/billing/webhook", // HMAC-signed by the Space Studio billing provider (src/lib/space-studio/billing.ts)
   "/api/inngest", // signed by Inngest
   "/api/business/forms/", // public forms on published sites (other origin); honeypot + rate limited
   "/api/business/checkout", // "Buy" buttons on published sites (other origin); rate limited

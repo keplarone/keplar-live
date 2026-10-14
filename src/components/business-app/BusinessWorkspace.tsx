@@ -3,7 +3,7 @@
 import { siteUrl } from "@/lib/site";
 import { BusinessMark } from "@/components/business-site/BusinessMark";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { MediaInput } from "@/lib/orchestration/media";
 import { Analyst } from "./Analyst";
 import { Ask } from "./Ask";
@@ -29,7 +29,7 @@ const Settings = dynamic(() => import("./Settings").then((m) => m.Settings), { s
 const Computer = dynamic(() => import("./Computer").then((m) => m.Computer), { ssr: false, loading: Loading });
 const CreateStudio = dynamic(() => import("@/components/create/CreateStudio").then((m) => m.CreateStudio), { ssr: false, loading: Loading });
 
-type Account = { signedIn: boolean; email?: string | null; account?: { company: string } | null; active?: boolean; plan?: { name: string } | null };
+type Account = { signedIn: boolean; email?: string | null; name?: string | null; account?: { company: string } | null; active?: boolean; plan?: { name: string } | null };
 type Project = { id: string; name: string; createdAt: string };
 type Recent = { id: string; kind: "research" | "reason"; title: string; createdAt: string };
 type View =
@@ -100,6 +100,36 @@ const Icon = ({ d, size = 15 }: { d: React.ReactNode; size?: number }) => (
  * one quiet top bar, and a centered composer. Settings is a popover from the account button, so it never replaces the work
  * underneath. Ctrl+K jumps anywhere, Ctrl+, opens settings, Ctrl+B toggles the sidebar. Only built modules are shown.
  */
+/** Bottom-left account row: round avatar, your name · plan, and a menu (Settings, Sign out). */
+function AccountRow({ name, plan, email, settingsOpen, signingOut, onSettings, onSignOut }: { name: string; plan: string; email: string | null; settingsOpen: boolean; signingOut: boolean; onSettings: () => void; onSignOut: () => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!open) return;
+    const off = (e: MouseEvent) => { if (!ref.current?.contains(e.target as Node)) setOpen(false); };
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("mousedown", off);
+    document.addEventListener("keydown", esc);
+    return () => { document.removeEventListener("mousedown", off); document.removeEventListener("keydown", esc); };
+  }, [open]);
+  return (
+    <div ref={ref} className={c.acctWrap}>
+      {open ? (
+        <div className={c.acctMenu} role="menu">
+          {email ? <p className={c.acctEmail}>{email}</p> : null}
+          <button type="button" role="menuitem" className={c.acctItem} onClick={() => { setOpen(false); onSettings(); }}>Settings<kbd className={c.kbd}>Ctrl ,</kbd></button>
+          <button type="button" role="menuitem" className={c.acctItem} onClick={() => { setOpen(false); onSignOut(); }} disabled={signingOut}>{signingOut ? "Signing out…" : "Sign out"}</button>
+        </div>
+      ) : null}
+      <button type="button" className={c.account} onClick={() => setOpen((x) => !x)} aria-haspopup="menu" aria-expanded={open || settingsOpen} title={email ?? undefined}>
+        <span className={c.avatar} aria-hidden="true">{name.slice(0, 1).toUpperCase()}</span>
+        <span className={c.acctLine}><span className={c.acctName}>{name}</span><span className={c.acctPlan}> · {plan}</span></span>
+        <svg className={c.acctChevron} width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      </button>
+    </div>
+  );
+}
+
 export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
   const { mobile, open: drawerOpen, sideRef, menuRef, close: closeNavigation, toggle: toggleNavigation } = useBusinessNavigation();
   const [acct, setAcct] = useState<Account | null>(null);
@@ -108,6 +138,8 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [recent, setRecent] = useState<Recent[]>([]);
   const [chatList, setChatList] = useState<ChatMeta[]>([]);
+  const [chatsOpen, setChatsOpen] = useState(true);
+  const [chatsAll, setChatsAll] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [searching, setSearching] = useState(false);
   const [filter, setFilter] = useState("");
@@ -216,7 +248,8 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
   const f = filter.trim().toLowerCase();
   const shownProjects = projects.filter((p) => !f || p.name.toLowerCase().includes(f)).slice(0, f ? 20 : 6);
   const shownRecent = recent.filter((r) => !f || r.title.toLowerCase().includes(f)).slice(0, f ? 30 : 8);
-  const shownChats = chatList.filter((c) => !f || c.title.toLowerCase().includes(f)).slice(0, f ? 30 : 8);
+  const matchingChats = chatList.filter((c) => !f || c.title.toLowerCase().includes(f));
+  const shownChats = matchingChats.slice(0, f ? 30 : chatsAll ? 100 : 8);
   const openChat = (id: string) => go({ at: "ask", chatId: id, resume: true, projectId: null, key: k() });
   const is = (at: View["at"]) => view.at === at;
   const osAt = (...tabs: OsTab[]) => view.at === "os" && tabs.includes(view.tab);
@@ -317,13 +350,25 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
             </section>
 
             <section className={c.group} aria-labelledby="side-chats">
-              <div className={c.groupHead}><span id="side-chats" className={c.groupTitle} data-static="">Chats</span></div>
-              {shownChats.length ? shownChats.map((ch) => (
-                <button key={ch.id} type="button" className={c.recent} aria-current={view.at === "ask" && view.chatId === ch.id ? "page" : undefined} onClick={() => openChat(ch.id)}>
-                  <span className={c.ellipsis}>{ch.title}</span>
-                  <span className={c.when}>{ago(new Date(ch.updatedAt).toISOString())}</span>
+              <div className={c.groupHead}>
+                <button type="button" id="side-chats" className={c.groupTitle} aria-expanded={chatsOpen || Boolean(f)} aria-controls="side-chat-list" onClick={() => setChatsOpen((x) => !x)}>
+                  Chats<svg className={c.groupChevron} width="10" height="10" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </button>
-              )) : <p className={c.empty}>{f ? "No matching chats." : "Your chats are saved here."}</p>}
+              </div>
+              <div id="side-chat-list" hidden={!chatsOpen && !f}>
+                {shownChats.length ? shownChats.map((ch) => (
+                  <button key={ch.id} type="button" className={c.recent} aria-current={view.at === "ask" && view.chatId === ch.id ? "page" : undefined} onClick={() => openChat(ch.id)}>
+                    <span className={c.ellipsis}>{ch.title}</span>
+                    <span className={c.when}>{ago(new Date(ch.updatedAt).toISOString())}</span>
+                  </button>
+                )) : <p className={c.empty}>{f ? "No matching chats." : "Your chats are saved here."}</p>}
+                {!f && matchingChats.length > 8 ? (
+                  <button type="button" className={c.moreBtn} aria-expanded={chatsAll} onClick={() => setChatsAll((x) => !x)}>
+                    {chatsAll ? "Show less" : `Show all ${Math.min(matchingChats.length, 100)}`}
+                    <svg className={c.groupChevron} width="10" height="10" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  </button>
+                ) : null}
+              </div>
             </section>
 
             <section className={c.group} aria-labelledby="side-recent">
@@ -338,15 +383,15 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
           </div>
 
           <div className={c.sideFoot}>
-            <button type="button" className={c.account} onClick={() => openSettings("general")} aria-haspopup="dialog" aria-expanded={Boolean(settings)} title={acct.email ?? undefined}>
-              <span className={c.avatar} aria-hidden="true">{who.slice(0, 1).toUpperCase()}</span>
-              <span className={c.footText}>
-                <span className={c.ellipsis}>{who}</span>
-                <span className={c.footPlan}>{acct.plan?.name ?? "Keplar Business"}</span>
-              </span>
-            </button>
-            <button type="button" className={c.iconBtn} onClick={() => openSettings("general")} aria-label="Settings" title="Settings (Ctrl+,)" aria-haspopup="dialog"><Icon d={<><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></>} /></button>
-            <button type="button" className={c.iconBtn} onClick={() => void signOut()} disabled={signingOut} aria-label={signingOut ? "Signing out" : `Sign out${acct.email ? ` of ${acct.email}` : ""}`} title="Sign out"><Icon d={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="M16 17l5-5-5-5" /><path d="M21 12H9" /></>} /></button>
+            <AccountRow
+              name={acct.name || (acct.email ? acct.email.split("@")[0] : who)}
+              plan={(acct.plan?.name ?? "Business").replace(/^Keplar (Business )?/, "") || "Business"}
+              email={acct.email ?? null}
+              settingsOpen={Boolean(settings)}
+              signingOut={signingOut}
+              onSettings={() => openSettings("general")}
+              onSignOut={() => void signOut()}
+            />
           </div>
           {signOutError ? <p className={c.empty} role="alert">{signOutError}</p> : null}
         </aside>
