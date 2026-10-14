@@ -16,7 +16,8 @@ const sheets = (dir: string): string[] => fs.readdirSync(dir, { withFileTypes: t
   const p = path.join(dir, e.name);
   return e.isDirectory() ? sheets(p) : e.name.endsWith(".module.css") ? [p] : [];
 });
-const files = sheets(ROOT);
+// The Studio kit moved to src/components/kit (shared site-wide); its stylesheets are still Studio's.
+const files = [...sheets(ROOT), ...sheets(path.join(process.cwd(), "src/components/kit"))];
 const strip = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, "");
 
 test("studio stylesheets exist", () => assert.ok(files.length >= 8, String(files.length)));

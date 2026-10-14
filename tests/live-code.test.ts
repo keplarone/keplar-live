@@ -67,7 +67,7 @@ test("Business workspace scrolls: the shell's one grid row is pinned to the wind
   assert.match(css, /\.main \{ min-width: 0; min-height: 0;/);
   assert.match(css, /\.mainBody \{ flex: 1; min-height: 0; overflow-y: auto; \}/);
   // Keplar One's page-entry slide never moves the workspace window.
-  assert.match(readFileSync("src/styles/redesign.css", "utf8"), /#main:not\(\[data-kb\]\) > :not\(\[class\*="Sky-module__"\]\[class\$="__backdrop"\]\):not\(\[class\*="workspace-module__"\]\) >/);
+  assert.match(readFileSync("src/styles/redesign.css", "utf8"), /#main:not\(\[data-kb\]\) > :not\(\[class\*="workspace-module__"\]\) >/);
 });
 
 test("Create in Business is an IDE: Explorer, editor, Pipeline and a status bar that fit the window; Keplar One keeps its layout", () => {

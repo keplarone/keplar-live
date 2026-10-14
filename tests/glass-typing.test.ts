@@ -59,10 +59,12 @@ test("glass buttons: primary is graphite (light) / white (dark), AA+ text, never
   // secondary glass: ink text on the clear fill over white and over a pale page wash
   assert.ok(ratio("#09090b", mix("#ffffff", 0.42, "#e8f4f8")) >= 12);
   // every module that adopts the glass buttons also carries reduced-transparency / reduced-motion fallbacks
-  for (const f of ["src/components/ui/Button.module.css", "src/components/app-ui/App.module.css", "src/components/business/business.module.css"]) {
+  for (const f of ["src/components/app-ui/App.module.css", "src/components/business/business.module.css"]) {
     const c = read(f);
     assert.match(c, /prefers-reduced-transparency: reduce/);
   }
+  // UI v2: the shared page Button is solid (no glass at all), so it needs no transparency fallback.
+  assert.doesNotMatch(read("src/components/ui/Button.module.css").replace(/\/\*[\s\S]*?\*\//g, ""), /backdrop-filter/);
 });
 
 test("field particles: denser tiers, ambient motes, and a frame-budget density governor", () => {
