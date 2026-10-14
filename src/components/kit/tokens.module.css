@@ -101,6 +101,9 @@
   --ks-control-sm: 24px;
   --ks-control-md: 28px;
   --ks-control-lg: 34px;
+  --ks-tab-h: 32px;
+  --ks-switch-w: 28px;
+  --ks-switch-h: 16px;
 
   /* type: the site UI font (Google Sans via next/font, --f-sans) and IBM Plex Mono for code (--f-mono) */
   --ks-font-sans: var(--f-sans, "Google Sans", "Keplar Sans Fallback", ui-sans-serif, system-ui, sans-serif);
@@ -141,6 +144,7 @@
 
   /* focus: a 2px accent ring offset by the surface colour (keyboard focus only, :focus-visible) */
   --ks-focus-ring: 0 0 0 1px var(--ks-surface-1), 0 0 0 3px var(--ks-focus);
+  --ks-focus-ring-inset: inset 0 0 0 2px var(--ks-focus);
 
   /* icon stroke: one style everywhere (24 grid) */
   --ks-icon-stroke: 1.5;

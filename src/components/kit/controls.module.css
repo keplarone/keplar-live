@@ -112,8 +112,8 @@
 .switch {
   position: relative;
   flex: none;
-  width: 28px;
-  height: 16px;
+  width: var(--ks-switch-w);
+  height: var(--ks-switch-h);
   padding: 0;
   border: 0;
   border-radius: var(--ks-radius-pill);
@@ -128,14 +128,14 @@
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 12px;
-  height: 12px;
+  width: calc(var(--ks-switch-h) - 4px);
+  height: calc(var(--ks-switch-h) - 4px);
   border-radius: var(--ks-radius-pill);
   background: var(--ks-surface-1);
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.18);
   transition: transform var(--ks-dur-base) var(--ks-ease-spring);
 }
-.switch[aria-checked="true"] .thumb { transform: translateX(12px); background: var(--ks-primary-text); }
+.switch[aria-checked="true"] .thumb { transform: translateX(calc(var(--ks-switch-w) - var(--ks-switch-h))); background: var(--ks-primary-text); }
 
 /* ── Checkbox ─────────────────────────────────────────────────────────────── */
 .checkRow {

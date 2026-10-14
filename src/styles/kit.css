@@ -78,6 +78,10 @@
   --ks-control-sm: 32px;
   --ks-control-md: 40px;
   --ks-control-lg: 48px;
+  --ks-tab-h: 40px;
+  /* a 40x24 switch: a comfortable target at Keplar One's size (Studio keeps 28x16) */
+  --ks-switch-w: 40px;
+  --ks-switch-h: 24px;
   /* type */
   --ks-font-sans: var(--f-sans);
   --ks-font-mono: var(--f-mono);
@@ -115,6 +119,7 @@
   /* Focus is never a box on keplar.one (globals.css, e2e/no-focus-box): the kit draws no ring here; the site-wide keyboard cue
      (a brightness shift plus an underline or bar) applies instead. Keplar Studio keeps its ring inside <StudioRoot>. */
   --ks-focus-ring: 0 0 0 0 transparent;
+  --ks-focus-ring-inset: 0 0 0 0 transparent;
   --ks-icon-stroke: 1.6;
   --ks-z-sticky: 10;
   --ks-z-overlay: 400;
