@@ -292,7 +292,7 @@ test("chat: the served profile's prompt and budgets are sent; another model's an
   assert.match(String((sent[0]!.messages as { content: string }[])[0]!.content), /^You are Solar 5\.4/);
   assert.equal(out.text, "Answer.");
   assert.deepEqual(out.escalation, { suggested: true, to: "nova", reason: "needs a full audit" });
-  assert.equal(out.served.underlyingModel, "Claude Opus 5.5");
+  assert.deepEqual(Object.keys(out.served).sort(), ["id", "name"]); // the client never learns which foundation model answered
   assert.ok(charged > 0);
 
   const orbit = validateChatBody({ model: "orbit", messages: [{ role: "user", content: "hi" }], workspace: "general" });
@@ -319,4 +319,11 @@ test("GET /me signed out: 200, signedIn false, Free defaults and the model list 
   assert.equal(me.email, "space-me@example.com");
   assert.equal(me.features.cloud, false);
   assert.deepEqual(me.models.map((m: { id: string; available: boolean }) => [m.id, m.available]), [["orbit", true], ["nebula", true], ["solar", false], ["nova", false]]);
+});
+
+test("nothing sent to clients names the provider or the underlying model", async () => {
+  const { MODELS, publicView } = await import("@/lib/space-studio/core");
+  const views = JSON.stringify(MODELS.map((m) => publicView(m, true)));
+  assert.doesNotMatch(views, /anthropic|claude|haiku|sonnet|opus/i);
+  assert.doesNotMatch(JSON.stringify(MODELS), /anthropic|claude|haiku|sonnet|opus/i);
 });

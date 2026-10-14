@@ -9,7 +9,8 @@ import { HttpError } from "@/lib/create/platform/http";
 import type { Workspace } from "@/lib/create/platform/workspace";
 import { liveEnv } from "@/lib/orchestration/config";
 import { METER_MARGIN } from "@/lib/orchestration/limits";
-import { costUsd, extractEscalation, modelAllowed, modelById, resolvedSlug, route, type ModelId, type ModelProfile, type Subscription, type Workload } from "./core";
+import { extractEscalation, modelAllowed, modelById, route, type ModelId, type ModelProfile, type Subscription, type Workload } from "./core";
+import { costUsd, resolvedSlug } from "./providers";
 
 export const CHAT_LIMITS = { maxMessages: 40, maxMessageChars: 20_000 } as const;
 const WORKSPACES: Workload[] = ["roblox", "blender", "general"];
@@ -117,7 +118,7 @@ export async function runSpaceChat(ws: Workspace, body: ChatBody, gate: ChatGate
   const suggestTo: ModelId | null = r.suggestion?.to ?? (flagged.reason && served.escalateTo ? served.escalateTo : null);
   return {
     text: flagged.text,
-    served: { id: served.id, name: served.name, underlyingModel: served.underlying.name },
+    served: { id: served.id, name: served.name },
     requested: r.requested.id,
     escalated: r.escalated,
     escalation: { suggested: Boolean(suggestTo), to: suggestTo, reason: r.suggestion?.reason ?? (suggestTo ? flagged.reason : null) },

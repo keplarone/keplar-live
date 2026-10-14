@@ -7,7 +7,7 @@ export const metadata = {
   ...pageMeta(
     "/space-studio",
     "Space Studio by Keplar: AI for Roblox Studio and Blender",
-    "Space Studio is Keplar's desktop app for Roblox Studio and Blender development, with four Claude-based models: Orbit 3.8, Nebula 4.2, Solar 5.4 and Nova 5.5.",
+    "Space Studio is Keplar's desktop app for Roblox Studio and Blender development, with four AI models: Orbit 3.8, Nebula 4.2, Solar 5.4 and Nova 5.5.",
   ),
   icons: { icon: "/icons/space-studio.png", apple: "/icons/space-studio.png" },
 };
@@ -42,7 +42,7 @@ export default function SpaceStudioPage() {
               <h2 id="models-title" className={s.h2}>Four models, one job each</h2>
             </div>
             <p className={s.sub}>
-              Orbit, Nebula, Solar and Nova are Space Studio configurations built on Anthropic Claude: each has its own instructions, tools and budgets. They are not fine-tuned, and their version numbers are Space Studio&apos;s own, not Anthropic&apos;s.
+              Orbit, Nebula, Solar and Nova are Space Studio model configurations: each has its own instructions, tools and budgets, on top of an existing foundation model. They are not fine-tuned, and their version numbers are Space Studio&apos;s own.
             </p>
           </div>
           <div className={s.grid} data-reveal-stagger data-reveal>
