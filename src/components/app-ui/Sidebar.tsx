@@ -7,7 +7,7 @@ import { formatResetAt, PLAN_ALLOWANCES, WINDOW_WARN_AT, windowResetText } from 
 import { brand } from "@/lib/site";
 import { dailyLeftText, formatDailyReset } from "@/lib/usage/format";
 import { extensionNote, usageMeter } from "@/lib/usage/meter";
-import { IconClose, IconCreate, IconDeploy, IconHistory, IconMore, IconPlus, IconProjects, IconSearch, IconSettings, IconSlides, IconStudy } from "./icons";
+import { IconClose, IconCreate, IconWants, IconDeploy, IconHistory, IconMore, IconPlus, IconProjects, IconSearch, IconSettings, IconSlides, IconStudy } from "./icons";
 import { pathForView } from "./app-paths";
 import type { AccountInfo, AppState, View } from "./state/types";
 import { AccountMenu, ImportPrompt, type ImportOffer } from "./AccountMenu";
@@ -41,6 +41,7 @@ type Icon = typeof IconProjects;
 type NavRow = { view: View; label: string; Icon: Icon };
 /** Primary rows under New chat and Search. Order is fixed. */
 const primary: NavRow[] = [
+  { view: "wants", label: "Keplar Wants", Icon: IconWants },
   { view: "create", label: "Create", Icon: IconCreate },
   { view: "projects", label: "Projects", Icon: IconProjects },
 ];

@@ -20,6 +20,7 @@ export const VIEW_PATH: Record<View, string> = {
   study: "/app/study",
   history: "/app/history",
   studio: "/app/studio",
+  wants: "/app/wants",
 };
 
 const BY_PATH = new Map<string, View>(Object.entries(VIEW_PATH).map(([v, p]) => [p, v as View]));

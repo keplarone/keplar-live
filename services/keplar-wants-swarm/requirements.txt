@@ -1,0 +1,5 @@
+# Runtime. sqlite3 and asyncio are in the Python standard library (3.11+); SQLite must include FTS5 (it does in CPython builds).
+fastapi==0.115.6
+uvicorn==0.34.0
+pydantic==2.10.4
+httpx==0.28.1
