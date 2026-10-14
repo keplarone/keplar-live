@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useSyncExternalStore } from "react";
 import { KeplarSymbol } from "@/components/brand";
 import { prefersReducedMotion } from "@/lib/ui/presence";
 import { modelMark } from "./model-marks";
@@ -26,16 +26,10 @@ const serverReducedMotion = () => true;
  * The consensus answer being written: every model that was asked sits on a ring around Keplar, each with its own mark.
  * Models that answered stream into the center (their answers are what is being combined); ones that failed or refused stay
  * dim with a broken line and no stream; seats still waiting are faint. The line under it names the models and says what the
- * writing step is doing right now, in plain words. Reduced motion: the same picture, still.
+ * writing step is doing, in plain words, from real state only. Reduced motion: the same picture, still.
  */
 export function SynthesisView({ models, count, disagreement }: { models: ModelTick[]; count: number; disagreement?: string }) {
   const reduced = useSyncExternalStore(subscribeMotionPreference, prefersReducedMotion, serverReducedMotion);
-  const [beat, setBeat] = useState(0);
-  useEffect(() => {
-    if (reduced) return;
-    const t = window.setInterval(() => setBeat((b) => b + 1), 2400);
-    return () => window.clearInterval(t);
-  }, [reduced]);
 
   const seats = Math.max(count, models.length, 2);
   const answered = models.filter((m) => m.status === "responded");
@@ -51,13 +45,9 @@ export function SynthesisView({ models, count, disagreement }: { models: ModelTi
 
   const names = answered.map((m) => modelMark(m.id, m.name).family).filter((f, i, all) => all.indexOf(f) === i);
   const list = names.length <= 1 ? names.join("") : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
-  const lines = [
-    n > 1 ? `Weighing ${n} answers against each other` : "Reading the answer back",
-    disagreement ? "Working out which side holds up better" : "Checking they really agree",
-    "Keeping only the points that hold up",
-    "Writing it up in plain words",
-  ];
-  const line = lines[reduced ? 0 : beat % lines.length];
+  // One honest line about what is happening now (the answers that arrived are being combined). It used to rotate through four
+  // claimed sub-steps on a 2.4 s timer, whatever the server was doing: a progress display that did not reflect real work.
+  const line = n > 1 ? (disagreement ? `Combining ${n} answers, including where they disagree` : `Combining ${n} answers into one`) : "Writing the answer";
 
   return (
     <figure className={s.wrap} data-reduced={reduced || undefined} aria-label={`Combining ${n} model answers into one`}>

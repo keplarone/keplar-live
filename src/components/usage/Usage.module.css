@@ -14,7 +14,7 @@
 .cta { justify-self: start; display: inline-flex; align-items: center; min-height: 40px; padding: 0 var(--s-5); border-radius: var(--r-pill); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline-strong); color: var(--c-ink); font-size: var(--t-small); font-weight: var(--w-medium); text-decoration: none; transition: background-color var(--m-dur-1) var(--m-ease-out); }
 .cta:hover { background: var(--hover-wash); }
 .field { display: flex; gap: var(--s-2); align-items: center; flex-wrap: wrap; font-size: var(--t-small); color: var(--c-ink-2); }
-.field input[type="number"] { width: 120px; min-height: 44px; padding: 0 var(--s-3); border-radius: var(--r-sm); border: 1px solid var(--hairline-strong); background: var(--c-canvas); color: var(--c-ink); font: inherit; font-size: var(--t-body); }
+.field input[type="number"] { width: 120px; min-height: 44px; padding: 0 var(--s-3); border-radius: var(--r-sm); border: 1px solid var(--field-border); background: var(--c-canvas); color: var(--c-ink); font: inherit; font-size: var(--t-body); }
 .field input[type="number"]:focus-visible { outline: none; border-color: var(--c-ink); }
 .btn { min-height: 40px; padding: 0 var(--s-5); border: 0; border-radius: var(--r-pill); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline-strong); color: var(--c-ink); font: inherit; font-size: var(--t-small); font-weight: var(--w-medium); cursor: pointer; transition: background-color var(--m-dur-1) var(--m-ease-out); }
 .btn:hover:not(:disabled) { background: var(--hover-wash); }

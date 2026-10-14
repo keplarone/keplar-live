@@ -82,7 +82,7 @@
   height: 44px;
   padding: 0 var(--s-4);
   border-radius: var(--r-sm);
-  border: 1px solid var(--hairline-strong);
+  border: 1px solid var(--field-border);
   background: var(--c-canvas);
   color: var(--c-ink);
   font: inherit;

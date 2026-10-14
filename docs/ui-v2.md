@@ -31,7 +31,7 @@ file does not cover, add it to the system, not to the screen. Keplar Business (b
 |---|---|
 | Ink | `--c-ink`, `--c-ink-2`, `--c-ink-3`, `--c-ink-hover` |
 | Canvas and surfaces | `--c-canvas`, `--surface-panel`, `--surface-raised`, `--surface-overlay`, `--c-surface-1/2` |
-| Lines and fills | `--hairline`, `--hairline-strong`, `--hover-wash`, `--press-wash` |
+| Lines and fills | `--hairline`, `--hairline-strong` (decorative), `--field-border` (text field edges, 3:1), `--hover-wash`, `--press-wash` |
 | Depth | `--elev-1` (resting), `--elev-2` (raised), `--elev-3` (floating) |
 | Semantic | `--c-verified`, `--c-attention`, `--c-destructive`, `--c-reasoning`, `--c-research`, `--c-creation`, `--c-memory`; fills `--v-*` |
 | Radius | `--r-xs 10`, `--r-sm 14`, `--r-md 18`, `--r-card 24`, `--r-card-lg 28`, `--r-pill`; shapes `--shape-control 14`, `--shape-card 22` |

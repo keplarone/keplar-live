@@ -254,6 +254,9 @@
   --hairline-strong: rgb(14 15 18 / 0.14);
   --hover-wash: rgb(14 15 18 / 0.05);
   --press-wash: rgb(14 15 18 / 0.09);
+  /* The edge of a text field: it is what tells a field from the page, so it holds 3:1 (WCAG 1.4.11) on the canvas and raised
+     surfaces (light ~3.4:1, dark ~3.7:1), unlike the decorative --hairline. */
+  --field-border: rgb(14 15 18 / 0.5);
   --elev-1: 0 1px 2px rgb(14 15 18 / 0.06);
   --elev-2: 0 1px 2px rgb(14 15 18 / 0.05), 0 8px 24px -14px rgb(14 15 18 / 0.18);
   --elev-3: 0 2px 6px rgb(14 15 18 / 0.06), 0 20px 48px -18px rgb(14 15 18 / 0.3);
@@ -266,6 +269,7 @@
   --hairline-strong: rgb(255 255 255 / 0.13);
   --hover-wash: rgb(255 255 255 / 0.06);
   --press-wash: rgb(255 255 255 / 0.1);
+  --field-border: rgb(255 255 255 / 0.4);
   --elev-1: 0 1px 2px rgb(0 0 0 / 0.4);
   --elev-2: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -14px rgb(0 0 0 / 0.7);
   --elev-3: 0 2px 6px rgb(0 0 0 / 0.45), 0 20px 48px -18px rgb(0 0 0 / 0.8);

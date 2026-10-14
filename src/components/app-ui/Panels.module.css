@@ -14,7 +14,7 @@
 .itemText { flex: 1 1 14rem; min-width: 0; overflow-wrap: anywhere; font-size: var(--t-small); color: var(--c-ink); }
 .itemMeta { display: block; color: var(--c-ink-3); font-size: var(--t-label); }
 .row { display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; }
-.field { width: 100%; padding: var(--s-3) var(--s-4); border: 0; border-radius: var(--r-sm); background: var(--c-canvas); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong); font: inherit; font-size: var(--t-small); color: var(--c-ink); min-height: 40px; }
+.field { width: 100%; padding: var(--s-3) var(--s-4); border: 0; border-radius: var(--r-sm); background: var(--c-canvas); box-shadow: inset 0 0 0 var(--b-hairline) var(--field-border); font: inherit; font-size: var(--t-small); color: var(--c-ink); min-height: 40px; }
 textarea.field { min-height: 6.5rem; resize: vertical; line-height: 1.5; }
 /* the site's keyboard cue for fields: a bar under the text, never a box */
 .field:focus-visible { box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), inset 0 -2px 0 var(--c-focus); }

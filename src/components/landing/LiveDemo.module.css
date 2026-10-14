@@ -3,7 +3,7 @@
 @media (max-width: 900px) { .demo { grid-template-columns: minmax(0, 1fr); } }
 .ask { display: grid; gap: var(--s-4); }
 .label { font-size: var(--t-small); color: var(--c-ink-2); }
-.input { box-sizing: border-box; width: 100%; resize: vertical; min-height: 112px; padding: var(--s-4); font: inherit; font-size: var(--t-lead); line-height: 1.45; color: var(--c-ink); background: var(--surface-raised); border: 1px solid var(--hairline-strong); border-radius: var(--r-md); box-shadow: var(--elev-1); transition: border-color var(--m-dur-1) var(--m-ease-out); }
+.input { box-sizing: border-box; width: 100%; resize: vertical; min-height: 112px; padding: var(--s-4); font: inherit; font-size: var(--t-lead); line-height: 1.45; color: var(--c-ink); background: var(--surface-raised); border: 1px solid var(--field-border); border-radius: var(--r-md); box-shadow: var(--elev-1); transition: border-color var(--m-dur-1) var(--m-ease-out); }
 .input:hover { border-color: rgb(var(--rgb-ink) / 0.28); }
 .input:focus, .input:focus-visible { outline: none; border-color: var(--c-ink-3); }
 .input::placeholder { color: var(--c-ink-3); }
