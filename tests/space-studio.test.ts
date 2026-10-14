@@ -279,8 +279,8 @@ test("chat: the served profile's prompt and budgets are sent; another model's an
   let charged = 0;
   const deps = (model: string) => ({
     key: "k", env: {},
-    assertCanSpend: (async () => undefined) as never,
-    chargeUnits: (async (_w: unknown, _a: string, units: number) => { charged += units; return units; }) as never,
+    loadCreditUsage: async () => ({ fiveHour: 0, week: 0, month: 0, previousMonth: 0 }),
+    addCredits: async (_w: string, credits: number) => { charged += credits; },
     fetch: (async (_u: unknown, init: RequestInit) => { sent.push(JSON.parse(String(init.body))); return Response.json({ model, choices: [{ message: { content: "Answer.\nESCALATE: needs a full audit" } }], usage: { prompt_tokens: 100, completion_tokens: 50, cost: 0.01 } }); }) as typeof fetch,
   });
   const gate = { sub: sub("plus"), robloxRequired: false, robloxLinked: false };
@@ -293,7 +293,9 @@ test("chat: the served profile's prompt and budgets are sent; another model's an
   assert.equal(out.text, "Answer.");
   assert.deepEqual(out.escalation, { suggested: true, to: "nova", reason: "needs a full audit" });
   assert.deepEqual(Object.keys(out.served).sort(), ["id", "name"]); // the client never learns which foundation model answered
-  assert.ok(charged > 0);
+  assert.equal(charged, 1); // $0.01 is one credit
+  assert.equal(out.usage.credits, 1);
+  assert.equal(out.credits.remaining, 1_000 - 1); // Plus: 500 a month plus a full month carried over
 
   const orbit = validateChatBody({ model: "orbit", messages: [{ role: "user", content: "hi" }], workspace: "general" });
   const before = charged;
@@ -312,12 +314,18 @@ test("GET /me signed out: 200, signedIn false, Free defaults and the model list 
   assert.equal(b.plan.id, "free");
   assert.equal(b.models.length, 4);
   assert.ok(b.models.every((m: Record<string, unknown>) => !("system" in m) && m.customization === "specialized configuration (no fine-tuning)"));
-  assert.equal(b.pricing.published, false);
+  assert.equal(b.pricing.published, true);
+  assert.equal(b.pricing.checkoutOpen, false);
+  assert.equal(b.pricing.prices.pro.monthlyUsd, 32);
+  assert.equal(b.credits, null);
   const a = await signIn("space-me@example.com");
   const me = await (await GET(call(a.cookie, "/api/space-studio/me"))).json();
   assert.equal(me.signedIn, true);
   assert.equal(me.email, "space-me@example.com");
   assert.equal(me.features.cloud, false);
+  assert.equal(me.credits.plan, "free");
+  assert.equal(me.credits.remaining, 30);
+  assert.deepEqual(me.credits.windows.map((w: { label: string }) => w.label), ["5-hour limit", "Weekly limit"]);
   assert.deepEqual(me.models.map((m: { id: string; available: boolean }) => [m.id, m.available]), [["orbit", true], ["nebula", true], ["solar", false], ["nova", false]]);
 });
 
@@ -326,4 +334,31 @@ test("nothing sent to clients names the provider or the underlying model", async
   const views = JSON.stringify(MODELS.map((m) => publicView(m, true)));
   assert.doesNotMatch(views, /anthropic|claude|haiku|sonnet|opus/i);
   assert.doesNotMatch(JSON.stringify(MODELS), /anthropic|claude|haiku|sonnet|opus/i);
+});
+
+test("chat credits: Free limits stop a call before it starts, and the answer is capped to what's left", async () => {
+  const { capForCredits } = await import("@/lib/space-studio/chat");
+  const { creditBalance } = await import("@/lib/space-studio/core");
+  const NOW = Date.parse("2026-10-14T12:30:00Z");
+  const nebula = MODELS.find((m) => m.id === "nebula")!;
+  const used = (fiveHour: number, week = fiveHour) => creditBalance("free", { fiveHour, week, month: 0, previousMonth: 0 }, NOW);
+  const err = (f: () => unknown) => { try { f(); return null; } catch (e) { return `${(e as { status: number }).status} ${(e as { code: string }).code}`; } };
+  assert.equal(err(() => capForCredits(nebula, 100, used(30), NOW)), "402 credits_exhausted");
+  assert.equal(err(() => capForCredits(nebula, 100, used(10, 120), NOW)), "402 credits_exhausted"); // weekly limit binds
+  // 30 credits left = $0.30: Nebula's full 12k-token answer ($0.12) fits.
+  assert.equal(capForCredits(nebula, 100, used(0), NOW).maxTokens, nebula.budgets.maxOutputTokens);
+  // 2 credits left = $0.02: the answer is capped so the call can't cost more than that.
+  const tight = capForCredits(nebula, 100, used(28), NOW);
+  assert.ok(tight.maxTokens < nebula.budgets.maxOutputTokens && tight.maxTokens >= 600);
+  assert.ok(tight.maxTokens * 10 / 1e6 <= 0.02);
+  // A long conversation with 1 credit left can't even pay for its prompt.
+  assert.equal(err(() => capForCredits(nebula, 60_000, used(29), NOW)), "402 credits_low");
+
+  let charged = 0;
+  const body = validateChatBody({ model: "orbit", messages: [{ role: "user", content: "hi" }], workspace: "general" });
+  await assert.rejects(runSpaceChat(ws("ws_free"), body, { sub: null, robloxRequired: false, robloxLinked: false, now: NOW }, {
+    key: "k", env: {}, loadCreditUsage: async () => ({ fiveHour: 30, week: 30, month: 0, previousMonth: 0 }), addCredits: async () => { charged++; },
+    fetch: (async () => { throw new Error("must not be called"); }) as never,
+  }), (e: { status: number; code: string; message: string }) => e.status === 402 && e.code === "credits_exhausted" && /5-hour limit/.test(e.message));
+  assert.equal(charged, 0);
 });

@@ -4,7 +4,7 @@
  *
  * Every decision here is made on the server from the stored subscription record (written only by verified billing events).
  * Nothing a client sends — a plan label, a cached flag, a request field — is ever an input to these functions.
- * Prices are not published: they will be set after measuring real inference, compute, storage and support costs (docs/pricing.md).
+ * Prices, included credits and the fair-use rules are in ./credits.ts.
  */
 import type { ModelId, PlanId } from "./models";
 import { MODELS } from "./models";
@@ -44,7 +44,7 @@ export const PLANS: Record<PlanId, PlanFeatures> = {
   enterprise: { name: "Space Studio Enterprise", cloud: true, maxConcurrentCloudJobs: 8, cloudMinutesMonthly: 10_000, gpuRenderMinutesMonthly: 0, storageMb: 500_000, models: modelsFor("enterprise"), team: true },
 };
 
-export const PRICING_NOTE = "Space Studio prices are not published yet. They will be set after measuring real model, compute and storage costs; until then paid plans can't be bought.";
+export const PRICING_NOTE = "Prices are in US dollars. Paid plans and credit packs go on sale when checkout opens on space.keplar.one.";
 
 export const isPlanId = (p: unknown): p is PlanId => typeof p === "string" && p in RANK;
 

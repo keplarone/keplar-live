@@ -10,11 +10,13 @@
  * - space_identity_index  system rows keyed `${provider}:${subject}` -> owning workspace id. insertIfAbsent makes the claim
  *                         race-safe: two accounts can never own one Roblox account.
  * - space_usage           cloud minutes per workspace per month (id = "YYYY-MM"), via atomic increment.
+ * - space_credits         credits used per workspace, one row per window: "5h:<n>" (Free 5-hour limit), "wk:<n>" (Free weekly limit)
+ *                         and "m:YYYY-MM" (paid monthly allowance), via atomic increment. Windows are the ones in core credits.ts.
  * - space_locks           short per-workspace locks around read-modify-write of the subscription row.
  * - space_billing_events  system idempotency log of applied billing events (retained: a financial record, ids and plans only).
  */
 import { collection, type Row } from "@/lib/create/platform/store";
-import { applyBillingEvent, type BillingEvent, type Identity, type IdentityIndex, type PlanId, type Provider, type Subscription } from "./core";
+import { applyBillingEvent, fiveHourWindow, monthWindow, previousMonth, weekWindow, type BillingEvent, type CreditUsage, type Identity, type IdentityIndex, type PlanId, type Provider, type Subscription } from "./core";
 
 export const SPACE_INDEX_WS = "space_identity";
 export const SPACE_SYSTEM_WS = "system";
@@ -24,6 +26,7 @@ type IdsRow = Row & { identities: Identity[] };
 type IndexRow = Row & { owner: string; provider: Provider; linkedAt: string };
 type UsageRow = Row & { minutes: number };
 type LockRow = Row & { until: number };
+type CreditRow = Row & { credits: number };
 type EventRow = Row & { target: string; type: BillingEvent["type"]; plan: PlanId; occurredAt: number; receivedAt: string; source: "webhook" | "admin" };
 
 export const subscriptions = () => collection<SubRow>("space_subscriptions");
@@ -31,6 +34,7 @@ export const identityRows = () => collection<IdsRow>("space_identities");
 export const identityIndex = () => collection<IndexRow>("space_identity_index");
 export const usage = () => collection<UsageRow>("space_usage");
 export const locks = () => collection<LockRow>("space_locks");
+export const creditRows = () => collection<CreditRow>("space_credits");
 export const billingEvents = () => collection<EventRow>("space_billing_events");
 
 export const indexKey = (provider: Provider, subject: string) => `${provider}:${subject}`;
@@ -87,6 +91,22 @@ export async function addCloudMinutes(wsId: string, minutes: number, now = Date.
   if (!(minutes > 0) || !Number.isFinite(minutes)) return;
   const id = monthId(now);
   await usage().increment(wsId, id, { minutes }, { id, workspaceId: wsId, minutes: 0 });
+}
+
+const creditIds = (now: number) => ({ fiveHour: `5h:${fiveHourWindow(now)}`, week: `wk:${weekWindow(now)}`, month: `m:${monthWindow(now)}`, previousMonth: `m:${previousMonth(now)}` });
+
+/** Credits used in each window that applies right now (core creditBalance turns this into what's left). */
+export async function loadCreditUsage(wsId: string, now = Date.now()): Promise<CreditUsage> {
+  const ids = creditIds(now);
+  const [fiveHour, week, month, prev] = await Promise.all([ids.fiveHour, ids.week, ids.month, ids.previousMonth].map((id) => creditRows().get(wsId, id)));
+  return { fiveHour: fiveHour?.credits ?? 0, week: week?.credits ?? 0, month: month?.credits ?? 0, previousMonth: prev?.credits ?? 0 };
+}
+
+/** Record credits spent, in every window at once (atomic per row). */
+export async function addCredits(wsId: string, credits: number, now = Date.now()) {
+  if (!(credits > 0) || !Number.isFinite(credits)) return;
+  const ids = creditIds(now);
+  await Promise.all([ids.fiveHour, ids.week, ids.month].map((id) => creditRows().increment(wsId, id, { credits }, { id, workspaceId: wsId, credits: 0 })));
 }
 
 /** A short per-workspace lock (insertIfAbsent) so concurrent billing events can't lose each other's update. */

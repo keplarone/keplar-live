@@ -1,16 +1,17 @@
 /**
  * Space Studio chat (POST /api/space-studio/chat): one model call for one of the four Space Studio configurations.
  * Order: validate -> plan check (stored subscription) -> Roblox link gate -> routing (explicit choice honored; escalation only when
- * the person allowed it and their plan covers it) -> credit check -> OpenRouter call with the SERVED profile's own system prompt and
- * budgets -> the answer is used only if the provider says it came from the requested model -> the real cost is charged.
+ * the person allowed it and their plan covers it) -> Space Studio credit check (core credits.ts: Free 5-hour and weekly limits, paid
+ * monthly allowance) and an output cap so the call can't cost more than is left -> OpenRouter call with the SERVED profile's own
+ * system prompt and budgets -> the answer is used only if the provider says it came from the requested model -> the real cost is
+ * charged in credits. Failed or discarded answers cost nothing.
  */
-import { assertCanSpend, chargeUnits, toUnits } from "@/lib/create/platform/compute";
 import { HttpError } from "@/lib/create/platform/http";
 import type { Workspace } from "@/lib/create/platform/workspace";
 import { liveEnv } from "@/lib/orchestration/config";
-import { METER_MARGIN } from "@/lib/orchestration/limits";
-import { extractEscalation, modelAllowed, modelById, route, type ModelId, type ModelProfile, type Subscription, type Workload } from "./core";
-import { costUsd, resolvedSlug } from "./providers";
+import { creditBalance, creditsFor, effectivePlan, extractEscalation, modelAllowed, modelById, outOfCreditsReason, route, USD_PER_CREDIT, type CreditBalance, type CreditUsage, type ModelId, type ModelProfile, type Subscription, type Workload } from "./core";
+import { costUsd, PROVIDERS, resolvedSlug } from "./providers";
+import { addCredits, loadCreditUsage } from "./store";
 
 export const CHAT_LIMITS = { maxMessages: 40, maxMessageChars: 20_000 } as const;
 const WORKSPACES: Workload[] = ["roblox", "blender", "general"];
@@ -56,7 +57,32 @@ type Completion = {
 };
 
 export type ChatGate = { sub: Subscription | null; robloxRequired: boolean; robloxLinked: boolean; now?: number };
-export type ChatDeps = { fetch?: typeof fetch; env?: Record<string, string | undefined>; key?: string | null; assertCanSpend?: typeof assertCanSpend; chargeUnits?: typeof chargeUnits };
+export type ChatDeps = {
+  fetch?: typeof fetch; env?: Record<string, string | undefined>; key?: string | null;
+  loadCreditUsage?: (wsId: string, now: number) => Promise<CreditUsage>; addCredits?: (wsId: string, credits: number, now: number) => Promise<void>;
+};
+
+/** The smallest answer worth starting; below this the person is told to wait for a reset or pick a lighter model. */
+const MIN_OUTPUT_TOKENS = 600;
+
+/**
+ * Output and reasoning caps so the call can't cost more than the credits left (or the profile's own per-task budget).
+ * Throws 402 when what's left can't pay for the prompt plus a minimal answer.
+ */
+export function capForCredits(served: ModelProfile, promptChars: number, balance: CreditBalance, now: number) {
+  const out = outOfCreditsReason(balance, now);
+  if (out) throw new HttpError(402, out, "credits_exhausted", { resetsAt: balance.resetsAt, limitedBy: balance.limitedBy });
+  const budgetUsd = Math.min(served.budgets.maxUsdPerTask, balance.remaining * USD_PER_CREDIT);
+  const promptUsd = costUsd(served, Math.ceil(promptChars / 3), 0);
+  const affordable = Math.floor(((budgetUsd - promptUsd) * 1e6) / PROVIDERS[served.id].usdPerMOutput);
+  const maxTokens = Math.min(served.budgets.maxOutputTokens, affordable);
+  if (maxTokens < MIN_OUTPUT_TOKENS) {
+    throw new HttpError(402, `You have ${balance.remaining} credit${balance.remaining === 1 ? "" : "s"} left, not enough for ${served.name} on this conversation. Try Orbit, start a new chat, or wait for your limit to reset.`, "credits_low", { resetsAt: balance.resetsAt, limitedBy: balance.limitedBy });
+  }
+  // Reasoning shares the output budget; keep at least half of it for the answer.
+  const reasoning = served.budgets.reasoningTokens > 0 ? Math.min(served.budgets.reasoningTokens, Math.floor(maxTokens / 2)) : 0;
+  return { maxTokens, reasoning };
+}
 
 /** Everything before the provider call; exported so the gates can be tested without a network. */
 export function planChat(body: ChatBody, gate: ChatGate) {
@@ -75,10 +101,12 @@ export async function runSpaceChat(ws: Workspace, body: ChatBody, gate: ChatGate
   const key = deps.key !== undefined ? deps.key : liveEnv().openRouterKey;
   if (!key) throw new HttpError(503, `${served.name} isn't available right now.`, "model_unavailable");
 
-  // Reserve what this call can cost at most (prompt estimate + the full output budget), capped by the profile's per-task budget.
+  // Credits: what's left in every window that applies, and caps so this call can't cost more than that.
+  const now = gate.now ?? Date.now();
+  const plan = effectivePlan(gate.sub, now);
   const promptChars = body.messages.reduce((n, m) => n + m.content.length, 0) + served.system.length;
-  const worst = Math.min(served.budgets.maxUsdPerTask, costUsd(served, Math.ceil(promptChars / 3), served.budgets.maxOutputTokens)) * METER_MARGIN;
-  await (deps.assertCanSpend ?? assertCanSpend)(ws, toUnits(worst), { kind: "text" });
+  const before = creditBalance(plan, await (deps.loadCreditUsage ?? loadCreditUsage)(ws.id, now), now);
+  const cap = capForCredits(served, promptChars, before, now);
 
   const t0 = Date.now();
   const res = await (deps.fetch ?? fetch)("https://openrouter.ai/api/v1/chat/completions", {
@@ -87,8 +115,8 @@ export async function runSpaceChat(ws: Workspace, body: ChatBody, gate: ChatGate
     body: JSON.stringify({
       model: slug,
       messages: [{ role: "system", content: `${served.system}\n\n${HINT[body.workspace]}` }, ...body.messages],
-      max_tokens: served.budgets.maxOutputTokens,
-      ...(served.budgets.reasoningTokens > 0 ? { reasoning: { max_tokens: served.budgets.reasoningTokens } } : {}),
+      max_tokens: cap.maxTokens,
+      ...(cap.reasoning > 0 ? { reasoning: { max_tokens: cap.reasoning } } : {}),
       usage: { include: true },
     }),
     signal: AbortSignal.timeout(served.budgets.timeoutMs),
@@ -110,8 +138,9 @@ export async function runSpaceChat(ws: Workspace, body: ChatBody, gate: ChatGate
   const promptTokens = data.usage?.prompt_tokens ?? 0;
   const completionTokens = data.usage?.completion_tokens ?? 0;
   const usd = typeof data.usage?.cost === "number" && data.usage.cost > 0 ? data.usage.cost : costUsd(served, promptTokens, completionTokens);
-  const metered = usd * METER_MARGIN;
-  const units = usd > 0 ? await (deps.chargeUnits ?? chargeUnits)(ws, "space.chat", toUnits(metered), metered) : 0;
+  const credits = creditsFor(usd);
+  if (credits > 0) await (deps.addCredits ?? addCredits)(ws.id, credits, now);
+  const remaining = Math.max(0, before.remaining - credits);
 
   const raw = (data.choices[0]!.message?.content ?? "").trim();
   const flagged = extractEscalation(raw);
@@ -122,6 +151,7 @@ export async function runSpaceChat(ws: Workspace, body: ChatBody, gate: ChatGate
     requested: r.requested.id,
     escalated: r.escalated,
     escalation: { suggested: Boolean(suggestTo), to: suggestTo, reason: r.suggestion?.reason ?? (suggestTo ? flagged.reason : null) },
-    usage: { promptTokens, completionTokens, usd: Math.round(usd * 1e6) / 1e6, units, latencyMs },
+    usage: { promptTokens, completionTokens, credits, latencyMs },
+    credits: { remaining, resetsAt: before.resetsAt, limitedBy: before.limitedBy },
   };
 }
