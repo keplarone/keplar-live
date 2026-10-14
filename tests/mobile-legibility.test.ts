@@ -21,24 +21,27 @@ test("phones: label text is 12px (the fluid scale gave 11px), in rem so the pers
   assert.match(b, /--t-label: 0\.75rem;/);
 });
 
-test("phones: the localized home's copy has readable floors (it was 7.5 to 9.5px) and the message box is 16px (no iPhone zoom)", () => {
-  const b = block(css("src/components/home/MonolithHome.module.css"), "max-width: 760px", ".sub { font-size: 15px");
-  assert.ok(b, "mobile floor block exists");
-  for (const n of px(b)) assert.ok(n >= 12, `no phone text under 12px (found ${n})`);
+test("phones: the homes' copy has readable floors (the old story went to 7.5 to 9.5px) and the message box is 16px (no iPhone zoom)", () => {
+  const home = css("src/components/sky/Sky.module.css");
+  // every size on the home comes from the type tokens (whose phone floor is 12px, above); a literal px size must still be >= 12
+  for (const n of px(home)) assert.ok(n >= 12, `no phone text under 12px (found ${n})`);
+  for (const sel of [".kicker", ".lede", ".fine", ".lead", ".note", ".featureLede", ".links"]) {
+    assert.match(home, new RegExp(`\\${sel} \\{[^}]*font-size: var\\(--t-`), `${sel} uses a type token`);
+  }
+  const b = block(home, "max-width: 640px", ".input");
+  assert.ok(b, "phone block exists");
   assert.match(b, /\.input \{ font-size: 16px; \}/);
-  for (const sel of [".sub", ".note", ".fine", ".kicker", ".nodes li", ".proof", ".body", ".steps li", ".link", ".go"]) assert.ok(b.includes(sel), sel);
 });
 
-test("phones: the header fits on one line in every language (menu becomes a circle, nothing shrinks or wraps, theme moves into the menu)", () => {
+test("phones: the header fits on one line in every language (search and Sign in move into the menu sheet, theme too under 400px)", () => {
   const nav = css("src/components/chrome/Nav.module.css");
-  const narrow = block(nav, "max-width: 480px", ".morph:not([data-open])");
-  assert.match(narrow, /\.morph:not\(\[data-open\]\) \{ width: 52px; \}/);
-  assert.match(narrow, /\.toggleLabel \{ position: absolute;[^}]*clip-path: inset\(50%\)/, "label hidden visually, still read out");
-  assert.match(narrow, /\.theme \{ flex: none; \}/);
-  assert.match(narrow, /\.cta \{ white-space: nowrap;/);
+  const phone = block(nav, "max-width: 640px", ".searchBtn");
+  assert.match(phone, /\.searchBtn, \.signIn \{ display: none; \}/);
+  assert.match(phone, /\.sheetSignIn \{ display: inline-flex; \}/);
+  assert.match(nav, /\.cta \{[^}]*white-space: nowrap;/);
   assert.match(block(nav, "max-width: 400px", ".panelTheme"), /\.actions \.theme \{ display: none; \}[\s\S]*\.panelTheme \{ display: inline-grid; \}/);
   const tsx = readFileSync("src/components/chrome/Nav.tsx", "utf8");
-  assert.match(tsx, /<ThemeToggle className=\{`\$\{s\.theme\} \$\{s\.panelTheme\}`\} \/>/, "the theme switch is still reachable on small phones");
+  assert.match(tsx, /<ThemeToggle className=\{`\$\{s\.icon\} \$\{s\.theme\} \$\{s\.panelTheme\}`\} \/>/, "the theme switch is still reachable on small phones");
   assert.match(tsx, /aria-label=\{open \? t\.closeMenu : t\.openMenu\}/, "the icon-only menu button keeps its name");
 });
 

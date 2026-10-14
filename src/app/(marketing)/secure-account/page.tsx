@@ -23,8 +23,8 @@ export default async function SecureAccountPage({ searchParams }: Props) {
         <SecureAccountConfirm token={token} email={check.payload.e} />
       ) : (
         <LinkProblem
-          message={check.reason === "expired" ? "This link has expired. Log in and use “Sign out of all devices” on your Account page." : "This link isn't valid."}
-          actions={<Link className={`${s.btn} ${s.btnPrimary}`} href="/signin">Log in</Link>}
+          message={check.reason === "expired" ? "This link has expired. Sign in and use “Sign out of all devices” on your Account page." : "This link isn't valid."}
+          actions={<Link className={`${s.btn} ${s.btnPrimary}`} href="/signin">Sign in</Link>}
         />
       )}
     </AuthShell>

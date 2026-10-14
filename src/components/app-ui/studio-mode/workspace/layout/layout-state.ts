@@ -8,8 +8,8 @@
  * - saved: "Save layout" stores a snapshot under LAYOUT_SAVED_KEY; "Restore saved layout" brings it back; "Reset layout"
  *   returns to DEFAULT_LAYOUT.
  */
-import { parsePersistedSplit, SPLIT_STORAGE_PREFIX, serializeSplit, type SplitValue } from "../../ui/split-storage";
-import type { InspectorTab } from "../../ui/Layout";
+import { parsePersistedSplit, SPLIT_STORAGE_PREFIX, serializeSplit, type SplitValue } from "@/components/kit/split-storage";
+import type { InspectorTab } from "@/components/kit/Layout";
 
 export type ViewMode = "simple" | "advanced";
 export type FocusPreset = "conversation" | "code" | "viewport";

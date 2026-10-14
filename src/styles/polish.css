@@ -1,6 +1,6 @@
 /*
  * Page polish shared by every marketing, docs, legal and blog route (the Monolith home's language, quieter): headings carry a faint glow in
- * dark, anchors land below the floating nav, cards lift on hover (no ring or box), selection is a soft light. Tag-level on purpose: it never
+ * dark, anchors land below the nav, selection is a soft light. Tag-level on purpose: it never
  * changes a page's own layout, spacing or colours, only adds light.
  */
 html { scroll-padding-top: 96px; }
@@ -9,7 +9,4 @@ main :is(h1, h2, h3, [id]) { scroll-margin-top: 104px; }
 :root[data-theme="dark"] main :is(h1, h2) { text-shadow: none; }
 :root[data-theme="dark"] main :is(h1, h2):is([data-still] *, nav *, aside *) { text-shadow: none; }
 
-@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  main :is([class*="__card"], [class*="__tile"], [class*="__plan"]):not(section[aria-label] *) { transition: translate 0.5s var(--e-standard, ease); }
-  main :is([class*="__card"], [class*="__tile"], [class*="__plan"]):not(section[aria-label] *):hover { translate: 0 -3px; }
-}
+/* Cards do not lift on hover (docs/ui-v2.md): each card strengthens its own edge instead. */

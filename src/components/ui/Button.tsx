@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
-import { Magnetic } from "./Magnetic";
 import { KLoader } from "@/components/loader/KLoader";
 import { CtaLabel } from "./CtaLabel";
 import { isTryCta, plainText } from "@/lib/signed-hint";
@@ -13,6 +12,7 @@ type Common = {
   variant?: Variant;
   size?: Size;
   arrow?: boolean;
+  /** @deprecated No effect: buttons no longer lean toward the pointer (docs/ui-v2.md). Kept so existing callers compile. */
   magnetic?: boolean;
   /** real work in flight: a band of light travels across the pill and a small Keplar loader leads the label (never disables focus) */
   loading?: boolean;
@@ -44,24 +44,26 @@ export function ButtonLink({
   variant = "primary",
   size = "md",
   arrow,
-  magnetic = false,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- deprecated prop, kept out of the DOM
+  magnetic: _magnetic,
   children,
   className,
   ...rest
 }: Common & Omit<ComponentProps<typeof Link>, "className" | "children">) {
   const el = (
-    <Link href={href} className={classes(variant, size, className)} data-lit={variant === "quiet" ? undefined : variant === "primary" ? "on-ink" : ""} {...rest}>
+    <Link href={href} className={classes(variant, size, className)} {...rest}>
       <Inner arrow={arrow}>{children}</Inner>
     </Link>
   );
-  return magnetic ? <Magnetic>{el}</Magnetic> : el;
+  return el;
 }
 
 export function Button({
   variant = "primary",
   size = "md",
   arrow,
-  magnetic = false,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- deprecated prop, kept out of the DOM
+  magnetic: _magnetic,
   loading,
   state,
   children,
@@ -69,10 +71,10 @@ export function Button({
   ...rest
 }: Common & Omit<ComponentProps<"button">, "className" | "children">) {
   const el = (
-    <button type="button" className={classes(variant, size, className)} data-lit={variant === "quiet" ? undefined : variant === "primary" ? "on-ink" : ""} aria-busy={loading || undefined} data-state={state} {...rest}>
+    <button type="button" className={classes(variant, size, className)} aria-busy={loading || undefined} data-state={state} {...rest}>
       {loading ? <KLoader size={size === "sm" ? 14 : 16} label="Working" tone="current" /> : null}
       <Inner arrow={arrow}>{children}</Inner>
     </button>
   );
-  return magnetic ? <Magnetic>{el}</Magnetic> : el;
+  return el;
 }

@@ -9,7 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { StudioBridge } from "@/lib/desktop/studio-bridge";
 import { applyChanges, startCloudJob, takeSnapshot, type ApplyResult, type Change } from "@/lib/roblox-cloud/client";
 import { DiffView } from "../../code";
-import { ActivityIndicator, Badge, Button, Checkbox, Icon, MorphIcon, Progress } from "../../ui";
+import { ActivityIndicator, Badge, Button, Checkbox, Icon, MorphIcon, Progress } from "@/components/kit";
 import type { Place } from "../../useStudioAgent";
 import {
   api, clock, defaultPicked, GOAL_MIN, hoursLabel, jobTone, ROBLOX_BUDGET, ROBLOX_HOURS, ROBLOX_MODES, ROBLOX_STATUS, robloxActive, robloxChecks, when,

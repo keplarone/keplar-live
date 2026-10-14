@@ -2,7 +2,6 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Faq } from "@/components/sections/Faq";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { HeroField } from "@/components/motion/HeroField";
 import { StickyCta } from "@/components/growth/StickyCta";
 import { TrackedLink } from "@/components/growth/TrackedLink";
 import { TryBox } from "@/components/growth/TryBox";
@@ -100,7 +99,6 @@ export function EditorialTemplate({ page }: { page: EditorialPage }) {
   const withCitations = { ...jsonld, citation: cited.map((c) => ({ "@type": "CreativeWork", name: c.title, url: c.url })), about: page.term ? { "@id": abs(`${page.path}#term`) } : undefined };
   return (
     <>
-      <HeroField variant="how" />
       <header className={hero.hero}>
         <div className={hero.header}>
           <p className={hero.label}>{page.label}</p>

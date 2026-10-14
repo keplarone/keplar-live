@@ -3,7 +3,7 @@
 .form { display: flex; gap: var(--s-2); flex-wrap: wrap; align-items: center; }
 .form > input { flex: 1 1 240px; min-width: 0; }
 .usage { color: var(--c-ink-3); font-size: var(--t-label); }
-.domain { border: var(--b-hairline) solid var(--c-border); border-radius: var(--r-md); padding: var(--s-3) var(--s-4); display: flex; flex-direction: column; gap: var(--s-3); min-width: 0; background: var(--c-surface-1); }
+.domain { border-radius: var(--r-md); padding: var(--s-3) var(--s-4); display: flex; flex-direction: column; gap: var(--s-3); min-width: 0; background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1); }
 .head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); flex-wrap: wrap; }
 .name { font-family: var(--font-mono, ui-monospace, monospace); font-size: var(--t-small); overflow-wrap: anywhere; color: var(--c-ink); }
 .pill { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 var(--s-2); border-radius: var(--r-pill); font-size: var(--t-label); border: var(--b-hairline) solid var(--c-border); color: var(--c-ink-2); background: var(--c-canvas); }
@@ -27,7 +27,7 @@
 .done { color: var(--c-verified); white-space: nowrap; }
 .copy { min-height: 32px; padding: 0 var(--s-2); border: var(--b-hairline) solid var(--c-border); border-radius: var(--r-pill); background: transparent; color: var(--c-ink-2); font: inherit; font-size: var(--t-label); cursor: pointer; }
 .copy:hover { color: var(--c-ink); border-color: var(--c-border-strong); }
-.copy:focus-visible { outline: var(--b-focus) solid var(--c-focus); outline-offset: 2px; }
+.copy:focus-visible { outline: none; text-decoration: underline; text-underline-offset: 3px; color: var(--c-ink); }
 .note { margin: 0; color: var(--c-ink-3); font-size: var(--t-label); }
 @media (max-width: 640px) { .table th:nth-child(4), .table td:nth-child(4) { display: none; } }
 .found { display: block; margin-top: 4px; color: var(--c-ink-3); font-size: var(--t-label); overflow-wrap: anywhere; }
@@ -36,3 +36,8 @@
 .problem[data-severity="info"] { border-left-color: var(--c-border-strong); }
 .problem strong { color: var(--c-ink); font-weight: var(--w-medium, 600); }
 .fix { display: block; margin-top: 4px; color: var(--c-ink); }
+
+/* "Open site": a link drawn like the kit's secondary pill. */
+.linkBtn { display: inline-flex; align-items: center; height: 32px; padding: 0 14px; border-radius: var(--r-pill); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline-strong); color: var(--c-ink); font-size: var(--t-small); font-weight: var(--w-medium); text-decoration: none; white-space: nowrap; }
+.linkBtn:hover { background: var(--hover-wash); }
+.linkBtn:focus-visible { outline: none; text-decoration: underline; text-underline-offset: 4px; }

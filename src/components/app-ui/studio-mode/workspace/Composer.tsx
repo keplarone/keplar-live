@@ -10,7 +10,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "
 import { solarMode, type SolarModeId } from "@/lib/studio/solar-modes";
 import { referencesFromFiles } from "../references";
 import type { useStudioAgent } from "../useStudioAgent";
-import { ActivityIndicator, Button, IconButton, Icon, MorphIcon, Switch, srOnly } from "../ui";
+import { ActivityIndicator, Button, IconButton, Icon, MorphIcon, Switch, srOnly } from "@/components/kit";
 import { MAX_REFS, appName, canBuild, controls, mergeRefs, placeholder, runState, sendIcon, submitsOnKey, type Env } from "./conversation-model";
 import { peekDraft, subscribeDrafts, takeDraft } from "./draft";
 import s from "./conversation.module.css";

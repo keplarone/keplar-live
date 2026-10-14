@@ -37,7 +37,7 @@ import { armReadback, disarmReadback, stopSpeaking } from "./speech";
 import { voiceStatusText } from "@/lib/voice";
 import { usePrefs } from "@/lib/use-prefs";
 import s from "./Composer.module.css";
-import { usePopupOrigin, usePresence } from "@/components/motion/usePresence";
+import { Button, Icon as KitIcon, IconButton, Popover } from "@/components/kit";
 import { SlashCommandMenu } from "./SlashCommandMenu";
 import { useScreenShare } from "./screen-share";
 import {
@@ -199,7 +199,6 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
   const [attachOpen, setAttachOpen] = useState(false);
   const [linkDraft, setLinkDraft] = useState<string | null>(null);
   const attachBtnRef = useRef<HTMLButtonElement>(null);
-  const attachMenuRef = useRef<HTMLDivElement>(null);
   const photoRef = useRef<HTMLInputElement>(null);
   const attachLimits = limitsForPlan(signedIn === false ? "free" : plan);
   const [viewer, setViewer] = useState<{ src: string; name: string; dims?: string } | null>(null);
@@ -243,7 +242,6 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
   /* "More": mode chips that don't fit the row (measured on the live row, so it follows the container-query label steps) */
   const toolsRef = useRef<HTMLDivElement>(null);
   const moreBtnRef = useRef<HTMLButtonElement>(null);
-  const moreMenuRef = useRef<HTMLDivElement>(null);
   const [overflow, setOverflow] = useState<ModeKey[]>([]);
   const [moreOpen, setMoreOpen] = useState(false);
   const pressedKeys = tools.filter((t) => modes[t.key]).map((t) => t.key).join(",");
@@ -303,68 +301,17 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
   useEffect(() => {
     if (!overflow.length) setMoreOpen(false);
   }, [overflow.length]);
-  // Close the More menu on outside click / Escape; arrow keys move between its items.
-  useEffect(() => {
-    if (!moreOpen) return;
-    requestAnimationFrame(() => moreMenuRef.current?.querySelector<HTMLElement>("[role=menuitemcheckbox]")?.focus());
-    const onDown = (e: PointerEvent) => {
-      if (!moreMenuRef.current?.contains(e.target as Node) && !moreBtnRef.current?.contains(e.target as Node)) setMoreOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.stopPropagation();
-        setMoreOpen(false);
-        moreBtnRef.current?.focus();
-        return;
-      }
-      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-      const items = [...(moreMenuRef.current?.querySelectorAll<HTMLElement>("[role=menuitemcheckbox]") ?? [])];
-      if (!items.length) return;
-      e.preventDefault();
-      const i = items.indexOf(document.activeElement as HTMLElement);
-      items[(i + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length]?.focus();
-    };
-    window.addEventListener("pointerdown", onDown);
-    window.addEventListener("keydown", onKey, true);
-    return () => {
-      window.removeEventListener("pointerdown", onDown);
-      window.removeEventListener("keydown", onKey, true);
-    };
-  }, [moreOpen]);
-  // Attach menu: closes on outside click and Escape.
-  useEffect(() => {
-    if (!attachOpen) return;
-    const onDown = (e: PointerEvent) => {
-      if (!attachMenuRef.current?.contains(e.target as Node) && !attachBtnRef.current?.contains(e.target as Node)) setAttachOpen(false);
-    };
-    requestAnimationFrame(() => attachMenuRef.current?.querySelector<HTMLElement>("[role=menuitem]")?.focus());
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { e.stopPropagation(); setAttachOpen(false); attachBtnRef.current?.focus(); return; }
-      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-      const items = [...(attachMenuRef.current?.querySelectorAll<HTMLElement>("[role=menuitem], input") ?? [])];
-      const i = items.indexOf(document.activeElement as HTMLElement);
-      if (i < 0 || !items.length) return;
-      e.preventDefault();
-      items[(i + (e.key === "ArrowDown" ? 1 : items.length - 1)) % items.length]?.focus();
-    };
-    window.addEventListener("pointerdown", onDown);
-    window.addEventListener("keydown", onKey, true);
-    return () => { window.removeEventListener("pointerdown", onDown); window.removeEventListener("keydown", onKey, true); };
-  }, [attachOpen]);
   const fileRef = useRef<HTMLInputElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
   const routingBtnRef = useRef<HTMLButtonElement>(null);
-  // Menus pop out of their buttons and stay mounted while they close. Keyed on the open flags only: typing never re-runs them.
-  const attachMenu = usePresence(attachOpen);
-  const moreMenu = usePresence(moreOpen && overflow.length > 0);
-  const routingPanel = usePresence(routingOpen);
-  usePopupOrigin(attachOpen, attachBtnRef, attachMenuRef);
-  usePopupOrigin(moreOpen, moreBtnRef, moreMenuRef);
-  usePopupOrigin(routingOpen, routingBtnRef, panelRef);
-  // Pop-ups open toward the side with more room (below the centred composer on the empty home, above it in a chat), and get
-  // that much height; the Modes menu sits under its own button.
+  /*
+   * Attach, Modes and Advanced routing are kit Popovers (opaque, top layer; a press outside or Tab closes them). They are anchored
+   * to an invisible box over the whole composer, not to their buttons, so they open clear of the text being typed: below the
+   * centred composer on the empty home, above it in a chat (whichever side has more room), and get that much height.
+   * Escape closes and returns focus to the button that opened it; Up/Down (wrapping), Home/End move between the items.
+   */
   const wrapRef = useRef<HTMLDivElement>(null);
-  const [pop, setPop] = useState<{ side: "above" | "below"; room: number; moreX: number }>({ side: "above", room: 560, moreX: 0 });
+  const popAnchorRef = useRef<HTMLSpanElement>(null);
+  const [pop, setPop] = useState<{ side: "above" | "below"; room: number }>({ side: "above", room: 560 });
   useLayoutEffect(() => {
     if (!(attachOpen || moreOpen || routingOpen)) return;
     const w = wrapRef.current;
@@ -374,14 +321,35 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
       const above = r.top - 16;
       const below = window.innerHeight - r.bottom - 16;
       const side = below >= 300 || below > above ? "below" : "above";
-      const btn = moreBtnRef.current?.getBoundingClientRect();
-      const moreX = btn ? Math.max(0, Math.min(btn.left - r.left, r.width - 380)) : 0;
-      setPop({ side, room: Math.max(140, Math.floor(side === "below" ? below : above)), moreX });
+      setPop({ side, room: Math.max(140, Math.floor(side === "below" ? below : above)) });
     };
     place();
     window.addEventListener("resize", place);
     return () => window.removeEventListener("resize", place);
   }, [attachOpen, moreOpen, routingOpen]);
+  const popSide = pop.side === "below" ? "bottom" : "top";
+  // A press outside closes a pop-up (the Popover); when that press was on the button that opened it, its click must not reopen it.
+  const popClosedAt = useRef(0);
+  const closeOnOutside = (set: (v: boolean) => void) => (open: boolean) => { if (!open) { popClosedAt.current = performance.now(); set(false); } };
+  const toggleFrom = (set: (f: (v: boolean) => boolean) => void) => () => { if (performance.now() - popClosedAt.current > 300) set((v) => !v); };
+  /** Keys inside a composer pop-up: Escape back to its button; arrows between `items` (the link field counts as an item). */
+  const popKeys = (close: () => void, button: React.RefObject<HTMLButtonElement | null>, items: string) => (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      e.stopPropagation();
+      close();
+      button.current?.focus({ preventScroll: true });
+      return;
+    }
+    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key) || !items) return;
+    const list = [...e.currentTarget.querySelectorAll<HTMLElement>(items)];
+    if (!list.length) return;
+    const i = list.indexOf(document.activeElement as HTMLElement);
+    if (e.target instanceof HTMLInputElement && (e.key === "Home" || e.key === "End")) return; // the link field keeps its caret keys
+    e.preventDefault();
+    const n = e.key === "Home" ? 0 : e.key === "End" ? list.length - 1 : e.key === "ArrowDown" ? i + 1 : i < 0 ? list.length - 1 : i - 1;
+    list[(n + list.length) % list.length]?.focus();
+  };
 
   useImperativeHandle(ref, () => ({
     focus: () => taRef.current?.focus(),
@@ -406,27 +374,6 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
     ta.style.height = "auto";
     ta.style.height = `${Math.min(ta.scrollHeight, 240)}px`;
   }, [text]);
-
-  // Close the routing panel on outside click / Escape.
-  useEffect(() => {
-    if (!routingOpen) return;
-    const onDown = (e: PointerEvent) => {
-      if (!panelRef.current?.contains(e.target as Node) && !routingBtnRef.current?.contains(e.target as Node)) setRoutingOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.stopPropagation();
-        setRoutingOpen(false);
-        routingBtnRef.current?.focus();
-      }
-    };
-    window.addEventListener("pointerdown", onDown);
-    window.addEventListener("keydown", onKey, true);
-    return () => {
-      window.removeEventListener("pointerdown", onDown);
-      window.removeEventListener("keydown", onKey, true);
-    };
-  }, [routingOpen]);
 
   // Let the spatial layer reflect dictation (restrained): a window event plus a data attribute on the form.
   useEffect(() => {
@@ -900,9 +847,9 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
   const customised = depth !== "auto" || (routing.strategy ?? "auto") !== "auto" || routing.tier === "sensitive" || (routing.excludeProviders?.length ?? 0) > 0 || routing.preferOpenWeights || (routing.maxModels ?? 6) < 6;
 
   return (
-    <div ref={wrapRef} className={s.wrap} data-pop={pop.side} style={{ ["--pop-room" as string]: `${pop.room}px`, ["--more-x" as string]: `${pop.moreX}px` }}>
-      {routingPanel.mounted ? (
-        <div ref={panelRef} id={`${uid}-routing`} className={s.panel} role="dialog" aria-label="Advanced routing" {...routingPanel.motion("pop")} style={{ ["--m-origin" as string]: "100% 100%" }}>
+    <div ref={wrapRef} className={s.wrap} data-pop={pop.side} style={{ ["--pop-room" as string]: `${pop.room}px` }}>
+      <span ref={popAnchorRef} className={s.popAnchor} aria-hidden="true" />
+      <Popover open={routingOpen} onOpenChange={closeOnOutside(setRoutingOpen)} anchorRef={popAnchorRef} side={popSide} align="end" label="Advanced routing" id={`${uid}-routing`} className={s.panel} onKeyDown={popKeys(() => setRoutingOpen(false), routingBtnRef, "")}>
           <div className={s.panelHead}>
             <p className={s.panelTitle}>Advanced routing</p>
             <p className={s.panelLede}>{brand.engineName} chooses models for you. These settings constrain it; they don&rsquo;t pick models directly.</p>
@@ -988,8 +935,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
               {" · "}{brand.usage} {computeLevelLabel[preview.level!].toLowerCase()}
             </p>
           ) : null}
-        </div>
-      ) : null}
+      </Popover>
 
       <form
         className={s.composer}
@@ -1119,9 +1065,9 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
                   Not enough {brand.usage} left for a Deep Research run this period. It resets {formatReset()}.
                 </span>
                 <span className={s.budgetActions}>
-                  <button type="button" className={s.budgetBtn} onClick={() => setModes((m) => ({ ...m, deepResearch: false }))}>
+                  <Button size="sm" variant="ghost" className={s.budgetAct} onClick={() => setModes((m) => ({ ...m, deepResearch: false }))}>
                     Ask without Deep Research
-                  </button>
+                  </Button>
                   <Link href="/pricing" className={s.budgetLink}>See plans</Link>
                 </span>
               </>
@@ -1146,9 +1092,9 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
               {media.length ? " Not with images yet: with an attachment it answers normally." : ""}
             </span>
             <span className={s.budgetActions}>
-              <button type="button" className={s.budgetBtn} onClick={() => setModes((m) => ({ ...m, debate: false }))}>
+              <Button size="sm" variant="ghost" className={s.budgetAct} onClick={() => setModes((m) => ({ ...m, debate: false }))}>
                 Turn off Debate
-              </button>
+              </Button>
             </span>
           </div>
         ) : null}
@@ -1163,9 +1109,9 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
               {signedIn === false ? " Sign in to build and save study sets." : plan === "free" ? " Free builds on free models." : " Charged by actual cost."}
             </span>
             <span className={s.budgetActions}>
-              <button type="button" className={s.budgetBtn} onClick={() => setModes((m) => ({ ...m, study: false }))}>
+              <Button size="sm" variant="ghost" className={s.budgetAct} onClick={() => setModes((m) => ({ ...m, study: false }))}>
                 Turn off Study
-              </button>
+              </Button>
             </span>
           </div>
         ) : null}
@@ -1190,9 +1136,9 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
               </span>
             )}
             <span className={s.budgetActions}>
-              <button type="button" className={s.budgetBtn} onClick={() => setModes((m) => ({ ...m, slides: false }))}>
+              <Button size="sm" variant="ghost" className={s.budgetAct} onClick={() => setModes((m) => ({ ...m, slides: false }))}>
                 Turn off Slides
-              </button>
+              </Button>
             </span>
           </div>
         ) : null}
@@ -1202,8 +1148,8 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
             <span className={s.shareDot} aria-hidden="true" />
             <span className={s.shareLabel}>Sharing {share.label}</span>
             <span className={s.shareNote}>Keplar sees it only when you capture.</span>
-            <button type="button" className={s.shareBtn} onClick={() => void share.capture()}>Capture</button>
-            <button type="button" className={s.shareBtn} onClick={share.stop}>Stop</button>
+            <Button size="sm" variant="secondary" onClick={() => void share.capture()}>Capture</Button>
+            <Button size="sm" variant="secondary" onClick={share.stop}>Stop</Button>
           </div>
         ) : null}
         <div className={s.row}>
@@ -1236,7 +1182,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
               ref={attachBtnRef}
               type="button"
               className={s.tool}
-              onClick={() => { setAttachOpen((v) => !v); setLinkDraft(null); }}
+              onClick={() => { toggleFrom(setAttachOpen)(); setLinkDraft(null); }}
               aria-haspopup="menu"
               aria-expanded={attachOpen}
               aria-controls={`${uid}-attach`}
@@ -1291,7 +1237,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
               aria-label={`More modes: ${overflow.map((k) => tools.find((t) => t.key === k)?.label).join(", ")}${overflow.filter((k) => modes[k]).map((k) => ` (${tools.find((t) => t.key === k)?.label} is on)`).join("")}`}
               title="Modes: Web, Deep Research, Debate, Study, Slides, Create and more"
               data-show={overflow.length ? "" : undefined}
-              onClick={() => setMoreOpen((v) => !v)}
+              onClick={toggleFrom(setMoreOpen)}
             >
               {(() => {
                 // A pressed mode that lives in More shows its own icon here, so the row still says what the next message does.
@@ -1301,8 +1247,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
               <span className={s.toolLabel}>Modes</span>
             </button>
           </div>
-          {attachMenu.mounted ? (
-            <div ref={attachMenuRef} id={`${uid}-attach`} className={s.attachMenu} role="menu" aria-label="Attach" {...attachMenu.motion("pop")} style={{ ["--m-origin" as string]: "0% 100%" }}>
+          <Popover open={attachOpen} onOpenChange={closeOnOutside(setAttachOpen)} anchorRef={popAnchorRef} side={popSide} align="start" label="Attach" role="menu" id={`${uid}-attach`} className={s.attachMenu} onKeyDown={popKeys(() => setAttachOpen(false), attachBtnRef, '[role="menuitem"], input')}>
               <button type="button" role="menuitem" className={s.attachItem} data-attach-item="files" onClick={() => { setAttachOpen(false); fileRef.current?.click(); }}>
                 <GlyphUpload size={16} />
                 <span className={s.attachText}><span>Upload files</span><span className={s.attachSub}>Docs, slides, sheets, data, code, .zip, audio</span></span>
@@ -1324,7 +1269,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
                 <div className={s.linkForm} role="group" aria-label="Read a link">
                   <GlyphLink size={16} />
                   <input autoFocus className={s.linkInput} type="url" inputMode="url" enterKeyHint="go" placeholder="https://" value={linkDraft} onChange={(e) => setLinkDraft(e.target.value)} aria-label="Link to read" onKeyDown={(e) => { if (e.key === "Escape") { e.stopPropagation(); setLinkDraft(null); } if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); submitLinkDraft(); } }} />
-                  <button type="button" className={s.linkGo} disabled={!linkDraft.trim()} onClick={submitLinkDraft}>Read</button>
+                  <Button size="sm" variant="primary" disabled={!linkDraft.trim()} onClick={submitLinkDraft}>Read</Button>
                 </div>
               )}
               <div className={s.attachReads}>
@@ -1333,10 +1278,8 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
                   {READS.map((r) => { const G = GLYPH[r.kind] ?? GLYPH.text; return <li key={r.kind} title={r.detail}><G size={13} /><span>{r.label}</span></li>; })}
                 </ul>
               </div>
-            </div>
-          ) : null}
-          {moreMenu.mounted && overflow.length ? (
-            <div ref={moreMenuRef} id={`${uid}-more`} className={s.moreMenu} role="menu" aria-label="More modes" {...moreMenu.motion("pop")} style={{ ["--m-origin" as string]: "0% 100%" }}>
+          </Popover>
+          <Popover open={moreOpen && overflow.length > 0} onOpenChange={closeOnOutside(setMoreOpen)} anchorRef={popAnchorRef} side={popSide} align="start" label="More modes" role="menu" id={`${uid}-more`} className={s.moreMenu} onKeyDown={popKeys(() => setMoreOpen(false), moreBtnRef, '[role="menuitemcheckbox"]')}>
               {overflow.map((k) => {
                 const t = tools.find((x) => x.key === k)!;
                 return (
@@ -1358,8 +1301,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
                   </button>
                 );
               })}
-            </div>
-          ) : null}
+          </Popover>
 
           <div className={s.actions}>
             <button
@@ -1368,7 +1310,8 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
               className={s.routingBtn}
               aria-expanded={routingOpen}
               aria-controls={`${uid}-routing`}
-              onClick={() => setRoutingOpen((v) => !v)}
+              aria-haspopup="dialog"
+              onClick={toggleFrom(setRoutingOpen)}
               data-custom={customised || undefined}
             >
               <IconRouting size={15} />
@@ -1376,15 +1319,12 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
               <span className="visually-hidden">. Advanced routing</span>
             </button>
             {running ? (
-              <button type="button" className={s.stop} onClick={onStop} aria-label="Stop generating (Esc)">
-                <IconStop size={14} />
-                <span>Stop</span>
-              </button>
+              <Button variant="secondary" className={s.stop} onClick={onStop} aria-label="Stop generating (Esc)" leadingIcon={<IconStop size={14} />}>
+                Stop
+              </Button>
             ) : (
-              <button type="submit" className={s.send} data-lit="on-ink" disabled={!canSend} aria-describedby={drBlocked ? `${uid}-budget` : undefined}>
-                <span>Ask Keplar</span>
-                <span aria-hidden="true" className={s.arrow}>→</span>
-              </button>
+              // The send: the area's one ink action, a round arrow. Its name ("Ask Keplar") is the label and the tooltip.
+              <IconButton type="submit" variant="primary" shape="circle" className={s.send} label="Ask Keplar" disabled={!canSend} aria-describedby={drBlocked ? `${uid}-budget` : undefined} icon={<KitIcon name="arrow-up" size={18} />} />
             )}
           </div>
         </div>

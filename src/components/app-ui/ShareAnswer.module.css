@@ -1,27 +1,24 @@
-.scrim { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: var(--s-4); background: rgb(0 0 0 / 0.6); }
-.dialog { width: min(560px, 100%); max-height: calc(100dvh - 2 * var(--s-4)); overflow: auto; padding: var(--s-6); border-radius: var(--r-card); background: var(--c-surface-1, #101114); color: var(--c-ink); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong), 0 20px 80px rgb(0 0 0 / 0.5); display: grid; gap: var(--s-4); }
-/* A native <dialog> must stay display:none until showModal(); the display:grid above would otherwise show it, inline and always open. */
-dialog.dialog:not([open]) { display: none; }
-dialog.dialog { position: fixed; margin: auto; border: 0; }
-dialog.dialog::backdrop { background: rgb(0 0 0 / 0.6); }
-.x { position: absolute; z-index: 1; top: var(--s-3); right: var(--s-3); width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: var(--r-pill); background: transparent; color: var(--c-ink-2); font-size: 22px; line-height: 1; cursor: pointer; }
-.x:focus-visible { outline: var(--b-focus) solid var(--c-focus); outline-offset: 2px; }
-.h { padding-right: 44px; font-size: var(--t-title); font-weight: var(--w-medium); }
-.p { color: var(--c-ink-2); font-size: var(--t-small); line-height: 1.55; }
+/* Content of the share / report / share-as-template dialogs. The frame (surface, scrim, title, Close, focus trap) is the kit
+   Dialog; the actions are kit Buttons. Tokens only. */
+.body { display: grid; gap: var(--s-4); }
+.p { margin: 0; color: var(--c-ink-2); font-size: var(--t-small); line-height: 1.55; }
 .list { margin: 0; padding-left: 1.2em; color: var(--c-ink-2); font-size: var(--t-small); line-height: 1.55; }
-.area { width: 100%; min-height: 72px; resize: vertical; font: inherit; font-size: var(--t-small); color: var(--c-ink); background: transparent; border: 0; border-radius: var(--r-sm); padding: var(--s-3); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong); }
-.area:focus-visible, .url:focus-visible { outline: var(--b-focus) solid var(--c-focus); outline-offset: 2px; }
-.check { display: flex; gap: var(--s-3); align-items: flex-start; font-size: var(--t-small); }
-.check input { margin-top: 3px; width: 18px; height: 18px; }
-.row { display: flex; gap: var(--s-3); flex-wrap: wrap; align-items: center; }
-.primary, .ghost { height: 44px; padding: 0 var(--s-6); border-radius: var(--r-pill); font: inherit; font-weight: var(--w-medium); cursor: pointer; border: 0; }
-.primary { background: var(--c-ink); color: var(--c-canvas); }
-.ghost { background: transparent; color: var(--c-ink); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong); }
-.primary[disabled] { opacity: 0.55; cursor: progress; }
-.primary:focus-visible, .ghost:focus-visible { outline: var(--b-focus) solid var(--c-focus); outline-offset: 3px; }
-.url { width: 100%; font: inherit; font-size: var(--t-small); color: var(--c-ink); background: transparent; border: 0; padding: var(--s-3); border-radius: var(--r-sm); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong); }
-.err { color: #ff8a8a; font-size: var(--t-small); }
-.links { display: grid; gap: var(--s-2); padding: 0; margin: 0; list-style: none; }
-.links li { display: flex; justify-content: space-between; gap: var(--s-3); align-items: center; font-size: var(--t-small); color: var(--c-ink-2); }
-.revoke { color: var(--c-ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; font: inherit; }
-.pub { display: grid; gap: var(--s-3); margin-top: var(--s-4); padding-top: var(--s-4); border-top: 1px solid var(--c-border-strong); }
+.field { display: grid; gap: var(--s-2); }
+.area, .url {
+  width: 100%; font: inherit; font-size: var(--t-small); color: var(--c-ink); background: var(--surface-raised);
+  border: 0; border-radius: var(--r-sm); padding: var(--s-3); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong);
+}
+.area { min-height: 72px; resize: vertical; }
+/* the site's keyboard cue for fields: a bar under the text, never a box */
+.area:focus-visible, .url:focus-visible { box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), inset 0 -2px 0 var(--c-focus); }
+.check { display: flex; gap: var(--s-3); align-items: flex-start; font-size: var(--t-small); color: var(--c-ink); }
+.check input { margin-top: 3px; width: 18px; height: 18px; flex: none; accent-color: var(--c-ink); }
+.choices { border: 0; padding: 0; margin: 0; display: grid; gap: var(--s-2); }
+.row { display: flex; gap: var(--s-2); flex-wrap: wrap; align-items: center; }
+.err { margin: 0; color: var(--c-destructive); font-size: var(--t-small); }
+.links { display: grid; gap: var(--s-1); padding: 0; margin: 0; list-style: none; }
+.links li { display: flex; justify-content: space-between; gap: var(--s-2); align-items: center; font-size: var(--t-small); color: var(--c-ink-2); }
+.links li > span:first-child { flex: 1; min-width: 0; }
+.pub { display: grid; gap: var(--s-3); margin-top: var(--s-2); padding-top: var(--s-4); border-top: 1px solid var(--hairline-strong); }
+/* The template state line next to the site's actions (not a control) */
+.state { display: inline-flex; align-items: center; min-height: 32px; font-size: var(--t-small); color: var(--c-ink-2); }

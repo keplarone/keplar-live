@@ -1,11 +1,13 @@
-/* Create showcase: an index of posters (no iframes on the index, so it stays light) and a detail page with a live frame. */
+/* Create showcase: an index of posters (no iframes on the index, so it stays light) and a detail page with a live frame.
+   UI v2 (docs/ui-v2.md): plain canvas, sentence-case kicker, regular-weight title, hairline edges; hover strengthens an edge, no lift.
+   The poster palettes (--p-*) are each demo's own colours, set inline from its data. */
 .page { position: relative; z-index: var(--z-content); max-width: 1180px; margin: 0 auto; padding: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-16)) var(--l-gutter) var(--s-24); }
-.head { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--s-8); align-items: end; padding-bottom: var(--s-8); border-bottom: var(--b-hairline) solid var(--c-border-strong); }
+.head { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--s-8); align-items: end; padding-bottom: var(--s-8); border-bottom: var(--b-hairline) solid var(--hairline-strong); }
 @media (max-width: 860px) { .head { grid-template-columns: minmax(0, 1fr); } }
-.kicker { font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-2); margin-bottom: var(--s-4); }
+.kicker { font-size: var(--t-small); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); margin-bottom: var(--s-4); }
 .kicker a { color: inherit; text-underline-offset: 3px; }
-.title { font-size: var(--t-headline); line-height: var(--lh-headline); letter-spacing: var(--tr-headline); font-weight: var(--w-medium); text-wrap: balance; }
-.lead { color: var(--c-ink-2); max-width: 52ch; }
+.title { font-size: var(--t-headline); line-height: var(--lh-headline); letter-spacing: -0.04em; font-weight: var(--w-regular); text-wrap: balance; }
+.lead { font-size: var(--t-lead); line-height: var(--lh-lead); color: var(--c-ink-2); max-width: 52ch; }
 .disclosure { margin-top: var(--s-4); font-size: var(--t-small); color: var(--c-ink-2); padding-left: var(--s-4); border-left: 2px solid var(--v-creation, var(--c-creation)); max-width: 60ch; }
 
 .filters { display: flex; gap: var(--s-6); flex-wrap: wrap; margin-top: var(--s-6); font-size: var(--t-small); color: var(--c-ink-2); }
@@ -19,17 +21,18 @@
 @media (max-width: 960px) { .item, .item:nth-child(1), .item:nth-child(6) { grid-column: span 6; } }
 @media (max-width: 620px) { .item, .item:nth-child(1), .item:nth-child(6) { grid-column: span 12; } }
 .item h2, .item h3 { font-size: var(--t-lead); font-weight: var(--w-medium); display: flex; justify-content: space-between; gap: var(--s-3); align-items: baseline; }
-.item h2 a, .item h3 a { color: inherit; text-decoration: none; }
+.item h2 a, .item h3 a { color: inherit; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color var(--m-dur-2) var(--m-ease-out); }
+.item:hover h2 a, .item:hover h3 a, .item a:focus-visible { text-decoration-color: currentColor; }
 .item h2 a::after, .item h3 a::after { content: ""; position: absolute; inset: 0; }
 .item a:focus-visible { outline: none; }
-.num { font-family: var(--f-mono, ui-monospace, monospace); font-size: var(--t-label); color: var(--c-ink-3); font-weight: 400; }
+.num { font-size: var(--t-small); font-variant-numeric: tabular-nums; color: var(--c-ink-3); font-weight: var(--w-regular); }
 .line { color: var(--c-ink-2); font-size: var(--t-small); }
-.facts { display: flex; gap: var(--s-4); flex-wrap: wrap; font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); }
+.facts { display: flex; gap: var(--s-4); flex-wrap: wrap; font-size: var(--t-small); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); }
 
 /* Poster: a drawn miniature of the page composition in the demo's own palette. */
-.poster { position: relative; aspect-ratio: 16 / 10; overflow: hidden; border-radius: var(--shape-card, 12px); background: var(--p-bg); color: var(--p-ink); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong); transition: transform 240ms var(--ease-out, ease); }
-.item:hover .poster, .item:focus-within .poster { transform: translateY(-3px); }
-@media (prefers-reduced-motion: reduce) { .poster { transition: none; } .item:hover .poster, .item:focus-within .poster { transform: none; } }
+.poster { position: relative; aspect-ratio: 16 / 10; overflow: hidden; border-radius: var(--r-card); background: var(--p-bg); color: var(--p-ink); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1); transition: box-shadow var(--m-dur-2) var(--m-ease-out); }
+.item:hover .poster, .item:focus-within .poster { box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), var(--elev-1); }
+@media (prefers-reduced-motion: reduce) { .poster, .item h2 a, .item h3 a { transition: none; } }
 .pBar { position: absolute; left: 6%; right: 6%; top: 7%; display: flex; justify-content: space-between; align-items: center; font: 600 clamp(10px, 1.1vw, 13px)/1 var(--p-fd); letter-spacing: -0.01em; padding-bottom: 4%; border-bottom: 1px solid var(--p-line); }
 .pBar i { display: inline-flex; gap: 6px; }
 .pBar i span { width: 18px; height: 2px; background: var(--p-muted); opacity: 0.6; }
@@ -76,28 +79,30 @@
 /* Detail */
 .detail { margin-top: var(--s-10); display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); gap: var(--s-10); align-items: start; }
 @media (max-width: 960px) { .detail { grid-template-columns: minmax(0, 1fr); } }
-.frameWrap { border-radius: var(--shape-card, 12px); overflow: hidden; box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong); background: var(--c-surface-1); }
-.frameBar { display: flex; justify-content: space-between; gap: var(--s-3); padding: var(--s-2) var(--s-4); font-size: var(--t-label); color: var(--c-ink-3); border-bottom: var(--b-hairline) solid var(--c-border-strong); }
+.frameWrap { border-radius: var(--r-card); overflow: hidden; box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1); background: var(--surface-raised); }
+.frameBar { display: flex; justify-content: space-between; gap: var(--s-3); padding: var(--s-2) var(--s-4); font-size: var(--t-small); color: var(--c-ink-3); border-bottom: var(--b-hairline) solid var(--hairline); }
 .frameBar a { color: var(--c-ink-2); text-underline-offset: 3px; }
-.frame { display: block; width: 100%; height: min(78vh, 760px); min-height: 420px; border: 0; background: #fff; }
+.frame { display: block; width: 100%; height: min(78vh, 760px); min-height: 420px; border: 0; color-scheme: light; background: Canvas; } /* the demo page paints itself; until it loads, the browser's light page colour */
 .aside { display: grid; gap: var(--s-8); position: sticky; top: calc(var(--l-nav-h) + var(--s-8)); }
-.aside h2 { font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-2); font-weight: var(--w-medium); margin-bottom: var(--s-3); }
-.prompt { font-size: var(--t-body); line-height: 1.55; padding: var(--s-4) var(--s-5); background: var(--c-surface-1); border-radius: var(--shape-control, 10px); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border); margin: 0; }
+.aside h2 { font-size: var(--t-small); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); font-weight: var(--w-regular); margin-bottom: var(--s-3); }
+.prompt { font-size: var(--t-body); line-height: 1.55; padding: var(--s-4) var(--s-5); background: var(--surface-raised); border-radius: var(--r-md); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1); margin: 0; }
 .craft { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--s-3); counter-reset: c; }
 .craft li { counter-increment: c; display: grid; grid-template-columns: 2.2em 1fr; color: var(--c-ink-2); font-size: var(--t-small); }
-.craft li::before { content: counter(c, decimal-leading-zero); font-family: var(--f-sans); color: var(--v-creation, var(--c-creation)); }
+.craft li::before { content: counter(c, decimal-leading-zero); font-variant-numeric: tabular-nums; color: var(--c-ink-3); }
 .swatches { display: flex; gap: 6px; }
-.swatches span { width: 28px; height: 28px; border-radius: 6px; box-shadow: inset 0 0 0 1px var(--c-border-strong); }
+.swatches span { width: 28px; height: 28px; border-radius: var(--r-xs); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong); }
 .actions { display: flex; gap: var(--s-3); flex-wrap: wrap; align-items: center; }
-.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 var(--s-6); border-radius: var(--shape-control, 10px); background: var(--c-ink); color: var(--c-canvas); font: inherit; font-weight: var(--w-medium); border: 0; text-decoration: none; cursor: pointer; transition: background-color 160ms ease, transform 120ms ease; }
-.btn:hover { background: var(--c-ink-hover, var(--c-ink)); }
-.btn:active { transform: translateY(1px); }
-.btn:focus-visible { outline: none; }
+/* The one ink action on the detail page ("Build something like this"): the site's primary pill. */
+.btn.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 var(--s-5); border-radius: var(--r-pill); background: var(--c-ink); color: var(--c-canvas); box-shadow: var(--elev-1); font: inherit; font-size: var(--t-small); font-weight: var(--w-medium); border: 0; text-decoration: none; cursor: pointer; transition: background-color var(--m-dur-1) var(--m-ease-out), scale var(--m-dur-1) var(--m-ease-out); }
+.btn.btn:hover { background: var(--c-ink-hover); }
+.btn.btn:active { scale: var(--m-press); }
+.btn.btn:focus-visible { outline: none; text-decoration: underline; text-underline-offset: 3px; }
 .link { color: var(--c-ink); text-underline-offset: 3px; font-size: var(--t-small); }
 .link:focus-visible { outline: none; text-decoration-thickness: 2px; }
-.pager { margin-top: var(--s-16); padding-top: var(--s-6); border-top: var(--b-hairline) solid var(--c-border-strong); display: flex; justify-content: space-between; gap: var(--s-4); font-size: var(--t-small); }
+.pager { margin-top: var(--s-16); padding-top: var(--s-6); border-top: var(--b-hairline) solid var(--hairline-strong); display: flex; justify-content: space-between; gap: var(--s-4); font-size: var(--t-small); }
 .pager a { color: var(--c-ink); text-decoration: none; }
-.pager a span { display: block; color: var(--c-ink-3); font-size: var(--t-label); text-transform: none; letter-spacing: 0; }
+.pager a:hover, .pager a:focus-visible { outline: none; text-decoration: underline; text-underline-offset: 3px; }
+.pager a span { display: block; color: var(--c-ink-3); font-size: var(--t-small); text-transform: none; letter-spacing: 0; }
 
 /* Strip used on the landing Create section and the Create start page. */
 .strip { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-5); }

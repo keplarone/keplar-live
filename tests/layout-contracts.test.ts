@@ -23,10 +23,16 @@ test("import prompt: roomy padding, labels never wrap, equal pills that stack wh
   assert.match(imp, /padding: var\(--s-4\)/);
   const row = css.match(/\.row \{[^}]*\}/)![0];
   assert.match(row, /flex-wrap: wrap/);
-  const btn = css.match(/\n\.btn \{[^}]*\}/)![0];
-  assert.match(btn, /white-space: nowrap/);
-  assert.match(btn, /min-width: max-content/);
-  assert.match(btn, /min-height: 40px/);
+  // UI v2: the two actions are kit Buttons (40px, label never wraps: kit .act has white-space: nowrap) sized by .importAct.
+  const act = css.match(/\n\.importAct \{[^}]*\}/)![0];
+  assert.match(act, /flex: 1 1 max-content/);
+  assert.match(act, /min-width: max-content/);
+  const tsx = read("src/components/app-ui/AccountMenu.tsx");
+  assert.match(tsx, /<Button variant="primary" className=\{s\.importAct\}/);
+  assert.match(tsx, /<Button variant="secondary" className=\{s\.importAct\}/);
+  const kit = read("src/components/kit/controls.module.css");
+  assert.match(kit.match(/\.act \{[^}]*\}/)![0], /white-space: nowrap/);
+  assert.match(read("src/styles/kit.css"), /--ks-control-md: 40px/);
 });
 
 test("first-question card: equal-height starters, nowrap pills, wrapping action row", () => {

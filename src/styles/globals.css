@@ -1,4 +1,5 @@
 @import "./tokens.css";
+@import "./kit.css";
 @import "./lit.css";
 @import "./fit.css";
 @import "./glass.css";
@@ -145,6 +146,9 @@ strong {
   font-weight: var(--w-medium);
 }
 
+/* A monochrome brand mark drawn in near-black (OpenAI's): light in the dark theme so it does not vanish. */
+:root[data-theme="dark"] img[src$="/models/chatgpt.svg"] { filter: invert(1); }
+
 /* One refined, translucent blue selection (text keeps its own color, nothing hard-edged). */
 ::selection {
   background: rgb(var(--rgb-reasoning) / 0.2);
@@ -172,7 +176,9 @@ button, [role="button"], summary, canvas, nav, [data-lit] { -webkit-user-select:
 canvas { outline: none; }
 @media not (forced-colors: active) {
   :focus, :focus-visible { outline: none !important; }
-  :is(a[href], button, summary, select, input, textarea, [role="button"], [role="tab"], [role="link"], [role="menuitem"], [role="switch"], [role="radio"], [role="checkbox"], [tabindex="0"]):focus-visible {
+  /* Text fields are not darkened: their caret and their stronger edge (--field-border -> ink on focus) already show focus, and the
+     filter turned a whole field grey. Checkboxes, radios and sliders keep the cue. */
+  :is(a[href], button, summary, select, input:is([type="checkbox"], [type="radio"], [type="range"], [type="button"], [type="submit"]), [role="button"], [role="tab"], [role="link"], [role="menuitem"], [role="switch"], [role="radio"], [role="checkbox"], [tabindex="0"]):focus-visible {
     filter: var(--focus-filter);
   }
   :is(a[href], button, summary, [role="button"], [role="tab"], [role="link"], [role="menuitem"]):focus-visible {

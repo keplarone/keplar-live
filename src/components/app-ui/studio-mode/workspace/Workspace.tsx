@@ -18,7 +18,7 @@ import { blenderBridge, STUDIO_PLANS, studioBridge } from "@/lib/desktop/studio-
 import { studioHref } from "@/components/create/studio/keplar-studio-nav";
 import {
   Button, Dialog, Icon, IconButton, Menu, MenuItem, MenuSeparator, MorphIcon, ResizableSplit, SegmentedControl, StatusDot, StudioRoot, ToastProvider, Tooltip, useToast, type InspectorTab,
-} from "../ui";
+} from "@/components/kit";
 import { overlayTarget, setOverlayTarget, useStudioAgent } from "../useStudioAgent";
 import { Composer } from "./Composer";
 import { ControlCenter } from "./ControlCenter";

@@ -79,10 +79,10 @@ test.describe("even scrolling", () => {
     const locked = () => page.evaluate(() => getComputedStyle(document.documentElement).overflow === "hidden" || getComputedStyle(document.body).overflow === "hidden");
     const toggle = page.getByRole("button", { name: "Open menu" });
     await toggle.click();
-    await expect(page.locator("#mobile-menu")).toBeVisible();
+    await expect(page.locator("#site-menu")).toBeVisible();
     expect(await locked()).toBe(true);
     await page.keyboard.press("Escape");
-    await expect(page.locator("#mobile-menu")).toBeHidden();
+    await expect(page.locator("#site-menu")).toBeHidden();
     expect(await locked(), "menu left the page scroll-locked").toBe(false);
     await page.keyboard.press("Control+k");
     await expect(page.getByRole("dialog", { name: /Go to a page/ })).toBeVisible();

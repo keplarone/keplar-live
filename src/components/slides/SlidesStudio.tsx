@@ -9,6 +9,7 @@ import { SlideView } from "./SlideView";
 import { Present } from "./Present";
 import { SLIDES_OPEN_KEY, takeHandoff } from "@/components/app-ui/studio/handoff";
 import s from "./slides.module.css";
+import { Button, SegmentedControl, confirmAction } from "@/components/kit";
 
 type DeckRow = { id: string; title: string; topic: string; theme: DeckTheme; slides: number; updatedAt: string };
 type ApiError = { error?: string; code?: string };
@@ -108,7 +109,7 @@ function Unlocked({ plan }: { plan: "plus" | "pro" | "business" }) {
   };
 
   const del = async (id: string) => {
-    if (!window.confirm("Delete this deck? This can't be undone.")) return;
+    if (!(await confirmAction({ title: "Delete this deck?", body: "The deck and its slides are removed. This can't be undone.", confirmLabel: "Delete deck", danger: true }))) return;
     try { await api(`/api/slides/decks/${id}`, { method: "DELETE" }); if (deck?.id === id) setDeck(null); void refresh(); } catch (e) { setError((e as Error).message); }
   };
 
@@ -178,7 +179,7 @@ function Unlocked({ plan }: { plan: "plus" | "pro" | "business" }) {
           <h1 className={s.title}>Slides</h1>
           <p className={s.lede}>Describe the talk. Keplar writes the deck, you edit it, present it and export it.</p>
         </div>
-        {deck ? <button type="button" className={s.ghost} onClick={() => { setDeck(null); setCredits(null); }}>New deck</button> : null}
+        {deck ? <Button variant="secondary" size="sm" onClick={() => { setDeck(null); setCredits(null); }}>New deck</Button> : null}
       </header>
 
       {error ? <p className={s.error} role="alert">{error}</p> : null}
@@ -216,14 +217,10 @@ function Unlocked({ plan }: { plan: "plus" | "pro" | "business" }) {
             </div>
             <div className={s.field}>
               <span className={s.label}>Theme</span>
-              <div className={s.seg} role="radiogroup" aria-label="Deck theme">
-                {THEMES.map((t) => (
-                  <button key={t.id} type="button" role="radio" aria-checked={theme === t.id} className={s.segBtn} onClick={() => setTheme(t.id)}>{t.label}</button>
-                ))}
-              </div>
+              <SegmentedControl label="Deck theme" size="sm" value={theme} onValueChange={setTheme} options={THEMES.map((t) => ({ value: t.id, label: t.label }))} />
             </div>
             <div className={s.submitRow}>
-              <button type="submit" className={s.primary} disabled={busy !== null || topic.trim().length < 3}>{busy === "gen" ? "Writing your deck…" : "Create deck"}</button>
+              <Button type="submit" variant="primary" loading={busy === "gen"} disabled={busy !== null || topic.trim().length < 3}>{busy === "gen" ? "Writing your deck…" : "Create deck"}</Button>
               <span className={s.estimate}>Estimate: about {est.toLocaleString("en-US")} credits. You&rsquo;re charged the actual cost.</span>
             </div>
           </form>
@@ -249,10 +246,8 @@ function Unlocked({ plan }: { plan: "plus" | "pro" | "business" }) {
         <div className={s.editor}>
           <div className={s.toolbar}>
             <input className={`${s.input} ${s.titleInput}`} value={deck.title} onChange={(e) => edit({ ...deck, title: e.target.value.slice(0, 120) })} aria-label="Deck title" />
-            <div className={s.seg} role="radiogroup" aria-label="Deck theme">
-              {THEMES.map((t) => <button key={t.id} type="button" role="radio" aria-checked={deck.theme === t.id} className={s.segBtn} onClick={() => edit({ ...deck, theme: t.id })}>{t.label}</button>)}
-            </div>
-            <button type="button" className={s.primary} onClick={() => setPresent(sel)}>Present</button>
+            <SegmentedControl label="Deck theme" size="sm" value={deck.theme} onValueChange={(v) => edit({ ...deck, theme: v })} options={THEMES.map((t) => ({ value: t.id, label: t.label }))} />
+            <Button variant="primary" size="sm" onClick={() => setPresent(sel)}>Present</Button>
             <a className={s.ghost} href={`/api/slides/decks/${deck.id}/export?format=pptx`} download>PPTX</a>
             <a className={s.ghost} href={`/api/slides/decks/${deck.id}/export?format=pdf`} download>PDF</a>
             <button type="button" className={s.linkBtn} onClick={() => void del(deck.id)}>Delete</button>
@@ -273,7 +268,7 @@ function Unlocked({ plan }: { plan: "plus" | "pro" | "business" }) {
                   </div>
                 </li>
               ))}
-              <li><button type="button" className={s.ghost} onClick={addSlide} disabled={deck.slides.length >= L.maxSlides}>Add slide</button></li>
+              <li><Button variant="secondary" size="sm" onClick={addSlide} disabled={deck.slides.length >= L.maxSlides}>Add slide</Button></li>
             </ol>
 
             {slide ? (
@@ -287,7 +282,7 @@ function Unlocked({ plan }: { plan: "plus" | "pro" | "business" }) {
                   <label className={s.field}><span className={s.label}>Image idea</span><input className={s.input} value={slide.imagePrompt} maxLength={300} onChange={(e) => patchSlide(sel, { imagePrompt: e.target.value })} placeholder="Shown as a placeholder. Images aren't generated yet." /></label>
                   <div className={s.regen}>
                     <input className={s.input} value={instruction} onChange={(e) => setInstruction(e.target.value)} maxLength={500} placeholder="Optional: how should this slide change?" aria-label="Rewrite instruction" />
-                    <button type="button" className={s.ghost} onClick={() => void regen()} disabled={busy !== null}>{busy === "regen" ? "Rewriting…" : "Regenerate slide"}</button>
+                    <Button variant="secondary" size="sm" onClick={() => void regen()} disabled={busy !== null}>{busy === "regen" ? "Rewriting…" : "Regenerate slide"}</Button>
                     <span className={s.estimate}>About {estimateSlideCredits(plan, JSON.stringify(deck.slides).length)} credits</span>
                   </div>
                   <button type="button" className={s.linkBtn} onClick={() => removeSlide(sel)} disabled={deck.slides.length <= 1}>Delete this slide</button>

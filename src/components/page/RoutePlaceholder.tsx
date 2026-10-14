@@ -12,8 +12,8 @@ type Props = {
 };
 
 /**
- * Phase 1 route shell: real navigation, real headline copy, quiet layout.
- * Each route is replaced by its full design in phase 2.
+ * A simple page: the shared hero (plain kicker, headline, lead, one primary CTA) and the page's own content below it, on the plain
+ * canvas (UI v2, docs/ui-v2.md).
  */
 export function RoutePlaceholder({ label, title, lede, children, cta }: Props) {
   return (

@@ -40,7 +40,7 @@ export function DeleteAllChats({ userId }: { userId: string }) {
   return (
     <div className={s.panel} id="delete-chats" aria-labelledby={`${id}-h`}>
       <div className={s.row}>
-        <h2 id={`${id}-h`} className={s.k} style={{ margin: 0 }}>Chats</h2>
+        <h2 id={`${id}-h`} className={s.cardTitle}>Chats</h2>
       </div>
       <p className={s.note}>Delete every chat saved to your account, with the summaries and answer feedback tied to them. Your saved memory notes and anonymous usage totals stay; manage memory in the Memory section. To remove a single chat, use the trash icon next to it in Keplar.</p>
       {done !== null ? <p className={s.note} role="status" data-delete-all-done="">{done === 0 ? "You had no saved chats." : `Deleted ${done} ${done === 1 ? "chat" : "chats"}.`}</p> : null}

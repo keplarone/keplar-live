@@ -1,16 +1,17 @@
-/* Connected-app tools in Ask. Token-based; wraps on narrow screens; no horizontal overflow. */
+/* Connected-app tools in Ask. Product tokens; kit Buttons; wraps on narrow screens; no horizontal overflow. */
 .bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); padding: var(--s-3) var(--s-1) var(--s-3); font-size: var(--t-small); color: var(--c-ink-2); min-width: 0; }
-.switch { display: inline-flex; align-items: center; gap: var(--s-2); min-height: 32px; padding: 0 var(--s-3); border-radius: 6px; color: var(--c-ink-2); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong); background: var(--c-canvas); }
-.switch[aria-pressed="true"] { color: var(--c-ink); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-ink); }
-.switch:focus-visible, .link:focus-visible, .btn:focus-visible { outline: var(--b-focus) solid var(--c-focus); outline-offset: 1px; }
+/* the invisible placeholder that holds the bar's row until the first answer (same height as the toggle) */
+.switch { display: inline-flex; align-items: center; min-height: 32px; padding: 0 var(--s-3); }
+/* the Tools toggle: a kit ghost Button with a state pip and a hairline */
+.toggle { color: var(--c-ink-2); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong); }
+.toggle[aria-pressed="true"] { color: var(--c-ink); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-ink); }
 .pip { width: 8px; height: 8px; border-radius: 50%; background: var(--c-ink-3); flex: none; }
-.switch[aria-pressed="true"] .pip { background: var(--c-ink); }
+.toggle[aria-pressed="true"] .pip { background: var(--c-ink); }
 .apps { min-width: 0; overflow-wrap: anywhere; }
-.link { color: var(--c-ink); text-decoration: underline; text-underline-offset: 2px; min-height: 32px; display: inline-flex; align-items: center; }
-@media (pointer: coarse) { .switch, .link { min-height: 44px; } }
+@media (pointer: coarse) { .switch, .toggle { min-height: 44px; } }
 
 .list { list-style: none; margin: 0 0 var(--s-3); padding: 0; display: flex; flex-direction: column; gap: var(--s-2); min-width: 0; }
-.use { display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-3) var(--s-4); border-radius: var(--r-md); background: var(--c-surface-1); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border); font-size: var(--t-small); min-width: 0; }
+.use { display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-3) var(--s-4); border-radius: var(--r-md); background: var(--surface-raised); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline); font-size: var(--t-small); min-width: 0; }
 .use[data-status="awaiting_approval"] { box-shadow: inset 0 0 0 var(--b-hairline) var(--c-ink); background: var(--c-canvas); }
 .use[data-status="error"], .use[data-status="blocked"] { box-shadow: inset 0 0 0 var(--b-hairline) var(--c-dissent); }
 .head { display: flex; align-items: center; gap: var(--s-2); color: var(--c-ink); font-weight: var(--w-medium); overflow-wrap: anywhere; min-width: 0; }
@@ -24,7 +25,3 @@
 .meta { margin: 0; color: var(--c-ink-3); font-size: 12px; overflow-wrap: anywhere; }
 .args { margin: 0; padding: var(--s-2) var(--s-3); border-radius: var(--r-md); background: var(--c-surface-2); font-family: var(--f-sans); font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 160px; overflow: auto; }
 .row { display: flex; flex-wrap: wrap; gap: var(--s-2); }
-.btn { min-height: 36px; padding: 0 var(--s-4); border-radius: 7px; font-size: var(--t-small); font-weight: var(--w-medium); background: var(--c-canvas); color: var(--c-ink); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong); }
-.btn[data-primary] { background: var(--c-ink); color: var(--c-canvas); box-shadow: none; }
-.btn:disabled { opacity: 0.5; }
-@media (pointer: coarse) { .btn { min-height: 44px; } }

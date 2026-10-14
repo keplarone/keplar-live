@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { buildCron, formFromCron, type CronMode as Mode } from "@/lib/business/cron-form";
 import { activeScopeHeaders } from "./state/scope";
+import { Button, confirmAction } from "@/components/kit";
 import s from "./Panels.module.css";
 
 type Trigger = { type: "event"; event: string } | { type: "schedule"; cron: string; label: string; tz?: string } | { type: "manual"; label: string };
@@ -58,7 +59,7 @@ function ScheduleForm({ initial, busy, onSave, onCancel }: { initial: { cron: st
   const zones = ZONES;
   const cron = buildCron(mode, time, dow, every, custom);
   return (
-    <form className={s.card} onSubmit={(e) => { e.preventDefault(); onSave({ cron, tz }); }} aria-label="Edit schedule">
+    <form className={s.card} onSubmit={(e) => { e.preventDefault(); if (!busy && cron) onSave({ cron, tz }); }} aria-label="Edit schedule">
       <div className={s.row}>
         <label htmlFor={`${id}-m`}>Repeat</label>
         <select id={`${id}-m`} className={s.field} style={{ width: "auto" }} value={mode} onChange={(e) => setMode(e.target.value as Mode)}>
@@ -76,8 +77,8 @@ function ScheduleForm({ initial, busy, onSave, onCancel }: { initial: { cron: st
       </div>
       <p className={s.muted}>Cron: <span className={s.mono}>{cron}</span>. The time follows the wall clock of that zone, including daylight saving.</p>
       <div className={s.row}>
-        <button type="submit" className={`${s.btn} ${s.btnPrimary}`} disabled={busy || !cron}>Save schedule</button>
-        <button type="button" className={s.btn} onClick={onCancel}>Cancel</button>
+        <Button type="submit" variant="primary" disabled={busy || !cron}>Save schedule</Button>
+        <Button variant="secondary" onClick={onCancel}>Cancel</Button>
       </div>
     </form>
   );
@@ -118,7 +119,6 @@ export function AgentsPanel({ signedIn, onOpenApprovals }: { signedIn: boolean; 
   const [tick, setTick] = useState(0);
   const [openHist, setOpenHist] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
-  const [confirmKill, setConfirmKill] = useState<string | null>(null);
   const [tpl, setTpl] = useState<string>("daily-brief");
   const [url, setUrl] = useState("");
   const [question, setQuestion] = useState("");
@@ -164,8 +164,8 @@ export function AgentsPanel({ signedIn, onOpenApprovals }: { signedIn: boolean; 
         </dl>
         <p className={s.help}><strong>You approve anything that leaves Keplar.</strong> Email drafts wait in Approvals, even if an agent has auto-send on; scheduled runs never send on their own. Briefs and monitor alerts stay in your Keplar inbox.</p>
         <div className={s.row}>
-          <button type="button" className={s.btn} onClick={onOpenApprovals}>Open Approvals</button>
-          <button type="button" className={`${s.btn} ${d.settings.agentsHalted ? "" : s.btnDanger}`} disabled={busy} onClick={() => act(() => api("/api/business/agents/halt", "POST", { halted: !d.settings.agentsHalted }), d.settings.agentsHalted ? "Agents resumed." : "All agents stopped. Nothing runs until you resume.")}>{d.settings.agentsHalted ? "Resume all agents" : "Stop all agents"}</button>
+          <Button variant="secondary" onClick={onOpenApprovals}>Open Approvals</Button>
+          <Button variant="secondary" className={d.settings.agentsHalted ? undefined : s.danger} disabled={busy} onClick={() => act(() => api("/api/business/agents/halt", "POST", { halted: !d.settings.agentsHalted }), d.settings.agentsHalted ? "Agents resumed." : "All agents stopped. Nothing runs until you resume.")}>{d.settings.agentsHalted ? "Resume all agents" : "Stop all agents"}</Button>
         </div>
       </section>
 
@@ -192,25 +192,19 @@ export function AgentsPanel({ signedIn, onOpenApprovals }: { signedIn: boolean; 
               </p>
               <p className={s.muted}>Caps: {a.caps.runsPerDay} runs a day, {a.caps.monthlyUnits.toLocaleString()} usage units and ${a.caps.spendUsdPerMonth} a month. Used this month: {a.unitsThisMonth.toLocaleString()} units.</p>
               <div className={s.row}>
-                <button type="button" className={s.btn} disabled={busy || d.settings.agentsHalted} onClick={() => act(async () => { await api(`/api/business/agents/${a.id}`, "PATCH", { status: a.status === "active" ? "paused" : "active" }); }, a.status === "active" ? "Paused." : "Resumed.")}>{a.status === "active" ? "Pause" : "Resume"}</button>
-                <button type="button" className={s.btn} disabled={busy || a.status !== "active" || d.settings.agentsHalted} onClick={() => act(async () => { await api(`/api/business/agents/${a.id}`, "POST"); setOpenHist(a.id); }, "Ran once. See the history below.")}>Run now</button>
-                {sched ? <button type="button" className={s.btn} onClick={() => setEditing(editing === a.id ? null : a.id)}>Edit schedule</button> : null}
-                {a.event?.source === "webhook" ? <button type="button" className={s.btn} disabled={busy} onClick={() => act(async () => { const r = await api<{ agent: { id: string; hookToken?: string } }>(`/api/business/agents/${a.id}`, "PATCH", { rotateHook: true }); showHook(r.agent); }, "New webhook URL made. The old one no longer works.")}>New webhook URL</button> : null}
-                <button type="button" className={s.btn} aria-expanded={openHist === a.id} onClick={() => setOpenHist(openHist === a.id ? null : a.id)}>History</button>
-                {confirmKill === a.id ? (
-                  <span className={s.confirm} role="alertdialog" aria-label={`Stop ${a.name} for good`}>
-                    <p>Stop this agent for good? It can&apos;t be restarted, and its waiting drafts are cancelled.</p>
-                    <button type="button" className={`${s.btn} ${s.btnDanger}`} disabled={busy} onClick={() => act(async () => { await api(`/api/business/agents/${a.id}`, "PATCH", { status: "killed" }); setConfirmKill(null); }, "Agent stopped.")}>Stop it</button>
-                    <button type="button" className={s.btn} onClick={() => setConfirmKill(null)}>Keep</button>
-                  </span>
-                ) : <button type="button" className={`${s.btn} ${s.btnQuiet} ${s.btnDanger}`} onClick={() => setConfirmKill(a.id)}>Stop for good</button>}
+                <Button variant="secondary" disabled={busy || d.settings.agentsHalted} onClick={() => act(async () => { await api(`/api/business/agents/${a.id}`, "PATCH", { status: a.status === "active" ? "paused" : "active" }); }, a.status === "active" ? "Paused." : "Resumed.")}>{a.status === "active" ? "Pause" : "Resume"}</Button>
+                <Button variant="secondary" disabled={busy || a.status !== "active" || d.settings.agentsHalted} onClick={() => act(async () => { await api(`/api/business/agents/${a.id}`, "POST"); setOpenHist(a.id); }, "Ran once. See the history below.")}>Run now</Button>
+                {sched ? <Button variant="secondary" onClick={() => setEditing(editing === a.id ? null : a.id)}>Edit schedule</Button> : null}
+                {a.event?.source === "webhook" ? <Button variant="secondary" disabled={busy} onClick={() => act(async () => { const r = await api<{ agent: { id: string; hookToken?: string } }>(`/api/business/agents/${a.id}`, "PATCH", { rotateHook: true }); showHook(r.agent); }, "New webhook URL made. The old one no longer works.")}>New webhook URL</Button> : null}
+                <Button variant="secondary" aria-expanded={openHist === a.id} onClick={() => setOpenHist(openHist === a.id ? null : a.id)}>History</Button>
+                <Button variant="ghost" className={s.danger} disabled={busy} onClick={() => void confirmAction({ title: `Stop ${a.name} for good?`, body: "It can't be restarted, and its waiting drafts are cancelled.", confirmLabel: "Stop it", cancelLabel: "Keep", danger: true }).then((ok) => { if (ok) void act(async () => { await api(`/api/business/agents/${a.id}`, "PATCH", { status: "killed" }); }, "Agent stopped."); })}>Stop for good</Button>
               </div>
               {editing === a.id && sched ? <ScheduleForm initial={{ cron: sched.cron, tz: sched.tz ?? "UTC" }} busy={busy} onCancel={() => setEditing(null)} onSave={(v) => act(async () => { await api(`/api/business/agents/${a.id}`, "PATCH", { schedule: v }); setEditing(null); }, "Schedule saved.")} /> : null}
               {hookUrl?.agentId === a.id ? (
                 <div className={s.card} role="status">
                   <p className={s.help}><strong>Webhook URL (shown once).</strong> Anyone with it can start this agent, so keep it secret. POST JSON or text, up to 32 KB.</p>
                   <input className={`${s.field} ${s.mono}`} readOnly value={hookUrl.url} aria-label="Webhook URL" onFocus={(e) => e.currentTarget.select()} />
-                  <div className={s.row}><button type="button" className={s.btn} onClick={() => { void navigator.clipboard?.writeText(hookUrl.url); }}>Copy</button><button type="button" className={s.btn} onClick={() => setHookUrl(null)}>Done</button></div>
+                  <div className={s.row}><Button variant="secondary" onClick={() => { void navigator.clipboard?.writeText(hookUrl.url); }}>Copy</Button><Button variant="secondary" onClick={() => setHookUrl(null)}>Done</Button></div>
                 </div>
               ) : null}
               {openHist === a.id ? <History key={`${a.id}-${tick}`} agentId={a.id} /> : null}
@@ -265,7 +259,7 @@ export function AgentsPanel({ signedIn, onOpenApprovals }: { signedIn: boolean; 
           ) : null}
           <p className={s.muted}>Time zone for the default schedule is America/New_York; change it after adding with Edit schedule (your browser says {browserTz}). Emailing or Slack-posting a brief is <span className={s.badge}>Coming soon</span> and would arrive as a draft for your approval.</p>
           <div className={s.row}>
-            <button type="button" className={`${s.btn} ${s.btnPrimary}`} disabled={busy || (tpl === "monitor" && !url.trim()) || (tpl === "scheduled-question" && question.trim().length < 8)} onClick={() => act(async () => { const r = await api<{ agent: { id: string; hookToken?: string } }>("/api/business/agents", "POST", { template: tpl, ...(tpl === "monitor" ? { monitor: { url, keyword } } : {}), ...(tpl === "scheduled-question" ? { question } : {}), ...(tpl === "event-reply" ? { event: ev } : {}) }); showHook(r.agent); setUrl(""); setKeyword(""); setQuestion(""); setEv({ source: "webhook", allowFrom: "", slackChannel: "", instructions: "" }); }, "Agent added.")}>Add agent</button>
+            <Button variant="primary" disabled={busy || (tpl === "monitor" && !url.trim()) || (tpl === "scheduled-question" && question.trim().length < 8)} onClick={() => act(async () => { const r = await api<{ agent: { id: string; hookToken?: string } }>("/api/business/agents", "POST", { template: tpl, ...(tpl === "monitor" ? { monitor: { url, keyword } } : {}), ...(tpl === "scheduled-question" ? { question } : {}), ...(tpl === "event-reply" ? { event: ev } : {}) }); showHook(r.agent); setUrl(""); setKeyword(""); setQuestion(""); setEv({ source: "webhook", allowFrom: "", slackChannel: "", instructions: "" }); }, "Agent added.")}>Add agent</Button>
           </div>
         </section>
       ) : d.limit > 0 ? <p className={s.muted}>Your plan includes {d.limit} agents. Stop one to add another.</p> : null}

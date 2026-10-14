@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { INSERT_PREF_EVENT, INSERT_PREF_KEY, insertEnabled } from "@/lib/typing/insert-mode";
+import { Switch } from "@/components/kit";
 import s from "./account.module.css";
 
 /** Settings -> Typing. Device-local (localStorage), default off. */
@@ -21,14 +22,11 @@ export function TypingSettings() {
   };
   return (
     <div className={s.panel}>
-      <div className={s.row}>
-        <span className={s.k} id="insert-setting">Insert key (overtype)</span>
-        <button type="button" role="switch" aria-checked={on === true} aria-labelledby="insert-setting" disabled={on === null} className={s.tk} onClick={toggle}>
-          <span className={s.tkKnob} aria-hidden="true" />
-          <span className={s.tkText}>{on ? "On" : "Off"}</span>
-        </button>
+      <div className={s.prefRow}>
+        <div className={s.prefText}><span className={s.prefLabel} id="insert-setting" aria-hidden="true">Insert key (overtype)</span></div>
+        <Switch className={s.kSwitch} checked={on === true} onCheckedChange={toggle} label="Insert key (overtype)" hideLabel describedBy="insert-setting-d" disabled={on === null} />
       </div>
-      <p className={s.note}>
+      <p className={s.note} id="insert-setting-d">
         The Insert key switches the Ask box and other text fields between INS and OVR. In OVR a typed character replaces the next one, a block caret and a small OVR badge show, and Enter, paste, undo and IME work as usual. On by default; typing stays normal insert until you press Insert. Turn this off and the Insert key does nothing special. Saved on this device. Nothing shows in normal insert mode; while OVR is on, click its badge to switch back.
       </p>
     </div>

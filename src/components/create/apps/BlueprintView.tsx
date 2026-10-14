@@ -7,6 +7,7 @@
 import { memo } from "react";
 import type { Blueprint as BP, BlueprintScreen, Layout } from "./blueprint";
 import s from "./studio.module.css";
+import { ActivityIndicator, Progress } from "@/components/kit";
 
 export type BlueprintLook = { accent: string; surface: string; bg: string; ink: string; radius: number; display: string } | null;
 
@@ -83,7 +84,11 @@ const Frame = memo(function Frame({ screen, i, look, big }: { screen: BlueprintS
   );
 });
 
-export const Blueprint = memo(function Blueprint({ bp, look, building, progress, caption }: { bp: BP; look: BlueprintLook; building?: boolean; progress?: number; caption?: string }) {
+/**
+ * `files` is a real count (files written of files the plan lists): the build's only honest progress measure, shown with the kit's
+ * Progress. Before the plan names its files the build shows the kit's activity indicator instead of a guessed percentage.
+ */
+export const Blueprint = memo(function Blueprint({ bp, look, building, files, caption }: { bp: BP; look: BlueprintLook; building?: boolean; files?: { done: number; total: number }; caption?: string }) {
   const screens = bp.screens.slice(0, building ? 8 : 6);
   return (
     <div className={s.bp} data-building={building ? "true" : undefined} data-confident={bp.confident ? "true" : undefined}>
@@ -96,9 +101,9 @@ export const Blueprint = memo(function Blueprint({ bp, look, building, progress,
       <div className={s.bpGrid}>
         {screens.map((sc, i) => <Frame key={`${sc.route}-${i}`} screen={sc} i={i} look={look} big={i === 0} />)}
       </div>
-      {building && typeof progress === "number" ? (
-        <div className={s.bpProgress} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} aria-label="Build progress">
-          <span style={{ transform: `scaleX(${Math.max(0.02, progress)})` }} />
+      {building ? (
+        <div className={s.bpProgress}>
+          {files && files.total > 0 ? <Progress value={files.done} max={files.total} label="Files written" /> : <ActivityIndicator label="Building" showLabel />}
         </div>
       ) : null}
       {caption ? <p className={s.bpCaption}>{caption}</p> : null}

@@ -19,6 +19,7 @@ import {
 import { TwoTone } from "@/components/page/TwoTone";
 import s from "./create.module.css";
 import b from "./images.module.css";
+import { ActivityIndicator, Button, SegmentedControl, confirmAction } from "@/components/kit";
 
 type Status = "understanding" | "generating" | "ready" | "failed";
 type Job = {
@@ -83,8 +84,8 @@ function JobState({ job, onRetry, onEdit }: { job: Job; onRetry: () => void; onE
         <strong>That didn&apos;t work</strong>
         <p className={b.error}>{job.error ?? "Something went wrong. Nothing was charged."}</p>
         <div className={b.btnRow}>
-          {job.errorCode === "refused" ? null : <button type="button" className={s.btn} onClick={onRetry}>Try again</button>}
-          <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={onEdit}>Edit the prompt</button>
+          {job.errorCode === "refused" ? null : <Button variant="primary" size="sm" onClick={onRetry}>Try again</Button>}
+          <Button variant="secondary" size="sm" onClick={onEdit}>Edit the prompt</Button>
         </div>
       </div>
     );
@@ -336,7 +337,7 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
       if (selected === j.id) setSelected(null);
       await refresh();
     } catch (e) {
-      if (e instanceof ApiError && e.data.code === "in_use" && window.confirm(`${e.message} Delete anyway?`)) return remove(j, true);
+      if (e instanceof ApiError && e.data.code === "in_use" && (await confirmAction({ title: "Delete this image anyway?", body: e.message, confirmLabel: "Delete anyway", danger: true }))) return remove(j, true);
       setError(e instanceof Error ? e.message : "Couldn't delete.");
     }
   }
@@ -379,7 +380,7 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
     }
   }
 
-  if (loading) return <div className={b.root}><p className={s.muted}>Loading…</p></div>;
+  if (loading) return <div className={b.root}><p className={s.muted}><ActivityIndicator label="Loading your images" showLabel /></p></div>;
   if (!listing || !config) return <div className={b.root}><p className={b.error} role="alert">{error ?? "Couldn't load images."}</p></div>;
 
   if (!config.available) {
@@ -453,19 +454,11 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
           </label>
           <div className={b.field}>
             <span id="img-size">Shape</span>
-            <div className={b.seg} role="group" aria-labelledby="img-size">
-              {config.sizes?.map((x) => (
-                <button key={x.id} type="button" className={b.segBtn} aria-pressed={size === x.id} onClick={() => { setSize(x.id); remember({ size: x.id }); keyRef.current = null; setConfirm(null); }}>{x.label}</button>
-              ))}
-            </div>
+            <SegmentedControl label="Shape" size="sm" className={b.seg} value={size} onValueChange={(v) => { setSize(v); remember({ size: v }); keyRef.current = null; setConfirm(null); }} options={(config.sizes ?? []).map((x) => ({ value: x.id, label: x.label }))} />
           </div>
           <div className={b.field}>
             <span id="img-quality">Quality</span>
-            <div className={b.seg} role="group" aria-labelledby="img-quality">
-              {config.qualities?.map((x) => (
-                <button key={x.id} type="button" className={b.segBtn} aria-pressed={quality === x.id} onClick={() => { setQuality(x.id); remember({ quality: x.id }); keyRef.current = null; setConfirm(null); }}>{x.label}</button>
-              ))}
-            </div>
+            <SegmentedControl label="Quality" size="sm" className={b.seg} value={quality} onValueChange={(v) => { setQuality(v); remember({ quality: v }); keyRef.current = null; setConfirm(null); }} options={(config.qualities ?? []).map((x) => ({ value: x.id, label: x.label }))} />
             <span className={b.hint}>{config.qualities?.find((x) => x.id === quality)?.note}</span>
           </div>
           {config.models && config.models.length > 1 ? (
@@ -516,14 +509,14 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
             <div className={b.confirm} role="alertdialog" aria-label="Confirm cost">
               <span>This will use up to <strong>{(confirm.units * count).toLocaleString()} credits</strong>{count > 1 ? ` for ${count} images` : ""}. Create {count > 1 ? "them" : "the image"}?</span>
               <div className={b.btnRow}>
-                <button type="button" className={s.btn} onClick={() => void submit()} disabled={submitting}>{submitting ? "Starting…" : "Yes, create it"}</button>
-                <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={() => setConfirm(null)} disabled={submitting}>Cancel</button>
+                <Button variant="primary" size="sm" onClick={() => void submit()} disabled={submitting}>{submitting ? "Starting…" : "Yes, create it"}</Button>
+                <Button variant="secondary" size="sm" onClick={() => setConfirm(null)} disabled={submitting}>Cancel</Button>
               </div>
             </div>
           ) : (
             <div className={b.btnRow}>
-              <button type="submit" className={s.btn} disabled={disabled || busyNow || prompt.trim().length < 4}>{busyNow ? "An image is being created…" : submitLabel}</button>
-              {regenOf ? <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={() => { setRegenOf(null); keyRef.current = null; }}>Cancel regenerate</button> : null}
+              <Button type="submit" variant="primary" loading={busyNow} disabled={disabled || prompt.trim().length < 4}>{busyNow ? "An image is being created…" : submitLabel}</Button>
+              {regenOf ? <Button variant="secondary" size="sm" onClick={() => { setRegenOf(null); keyRef.current = null; }}>Cancel regenerate</Button> : null}
             </div>
           )}
           {error ? <p className={b.error} role="alert">{error}</p> : null}
@@ -546,9 +539,9 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
                   <span className={b.hint}>Version {job.version} · {job.units ?? 0} credits · {fmtBytes(job.bytes)} · original file, not re-compressed</span>
                   <div className={b.btnRow}>
                     <a className={s.btn} href={`${job.url}?download=1`} download>Download original</a>
-                    <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={() => loadIntoForm(job, true)}>Regenerate</button>
-                    <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={() => (useOpen ? setUseOpen(false) : void openUse())}>Use in my site</button>
-                    <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={() => void remove(job)}>Delete</button>
+                    <Button variant="secondary" size="sm" onClick={() => loadIntoForm(job, true)}>Regenerate</Button>
+                    <Button variant="secondary" size="sm" onClick={() => (useOpen ? setUseOpen(false) : void openUse())}>Use in my site</Button>
+                    <Button variant="secondary" size="sm" onClick={() => void remove(job)}>Delete</Button>
                   </div>
                   {useOpen ? (
                     <div className={b.use}>
@@ -560,7 +553,7 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
                           <label className={b.field}><span>Page</span><select className={s.select} value={usePage} onChange={(e) => setUsePage(e.target.value)}>{pages.map((p) => <option key={p} value={p}>{p}</option>)}</select></label>
                           <label className={b.field}><span>Where</span><select className={s.select} value={placement} onChange={(e) => setPlacement(e.target.value)}><option value="top">Under the main heading</option><option value="bottom">At the end of the page</option></select></label>
                           <div className={b.btnRow}>
-                            <button type="button" className={s.btn} disabled={useBusy || !useSite} onClick={() => void doUse(job)}>{useBusy ? "Adding…" : "Add to page"}</button>
+                            <Button variant="primary" size="sm" disabled={useBusy || !useSite} onClick={() => void doUse(job)}>{useBusy ? "Adding…" : "Add to page"}</Button>
                           </div>
                           {useMsg ? <p className={useMsg.startsWith("Added") ? b.ok : b.error} role="status">{useMsg}</p> : null}
                           <span className={b.hint}>The image becomes viewable by anyone with a link to your published site. No credits are used.</span>
@@ -584,7 +577,7 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
               ) : (
                 <>
                   <JobState job={job} onRetry={() => { loadIntoForm(job, false); keyRef.current = newKey(); setConfirm({ units: config.estimates?.[job.quality]?.[job.size] ?? job.estimateUnits }); }} onEdit={() => loadIntoForm(job, false)} />
-                  {job.status === "failed" ? <button type="button" className={`${s.btn} ${s.btnGhost}`} style={{ alignSelf: "flex-start" }} onClick={() => void remove(job)}>Remove</button> : null}
+                  {job.status === "failed" ? <Button variant="secondary" size="sm" style={{ alignSelf: "flex-start" }} onClick={() => void remove(job)}>Remove</Button> : null}
                 </>
               )}
             </section>

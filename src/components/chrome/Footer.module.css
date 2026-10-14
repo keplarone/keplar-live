@@ -2,7 +2,7 @@
   position: relative;
   z-index: var(--z-content);
   background: var(--c-canvas);
-  border-top: var(--b-hairline) solid var(--c-border);
+  border-top: var(--b-hairline) solid var(--hairline);
   padding: var(--s-20) var(--l-gutter) var(--s-8);
 }
 
@@ -51,9 +51,10 @@
   text-decoration-color: currentColor;
 }
 
+/* Four short columns (src/lib/site.ts footerNav) */
 .cols {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--s-8);
 }
 
@@ -89,11 +90,11 @@
 
 .heading {
   font-family: var(--f-sans);
-  font-size: var(--t-label);
-  font-weight: var(--w-regular);
+  font-size: var(--t-small);
+  font-weight: var(--w-medium);
   letter-spacing: 0;
   text-transform: none;
-  color: var(--c-ink-3);
+  color: var(--c-ink);
   margin-bottom: var(--s-4);
 }
 
@@ -111,7 +112,7 @@
   max-width: var(--l-max);
   margin: var(--s-20) auto 0;
   padding-top: var(--s-6);
-  border-top: var(--b-hairline) solid var(--c-border);
+  border-top: var(--b-hairline) solid var(--hairline);
   font-size: var(--t-small);
   color: var(--c-ink-3);
   display: flex;
@@ -147,7 +148,7 @@
 .cookieLink {
   font: inherit;
   font-size: var(--t-label);
-  letter-spacing: var(--tr-label);
+  letter-spacing: 0;
   color: var(--c-ink-3);
   background: none;
   border: 0;
@@ -158,7 +159,11 @@
   text-underline-offset: 3px;
 }
 .cookieLink:hover { color: var(--c-ink); }
-.cookieLink:focus-visible { outline: var(--b-focus) solid var(--c-focus); outline-offset: 2px; }
+
+/* Fine pointers: each footer link is at least a 24px target (WCAG 2.5.8) without changing the list rhythm. */
+@media (pointer: fine) {
+  .link, .email { display: inline-block; padding-block: 2px; min-height: 24px; }
+}
 
 @media (pointer: coarse) {
   .link, .cookieLink, .email { display: inline-flex; align-items: center; min-height: 44px; }

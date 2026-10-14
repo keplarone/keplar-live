@@ -27,7 +27,7 @@
 }
 
 .processSummary:hover {
-  background: rgb(var(--rgb-ink) / 0.04);
+  background: var(--hover-wash);
   color: var(--c-ink);
 }
 
@@ -280,7 +280,7 @@
   flex-direction: column;
   gap: 2px;
   padding-left: var(--s-3);
-  border-left: var(--b-hairline) solid var(--c-border);
+  border-left: var(--b-hairline) solid var(--hairline);
   font-size: var(--t-label);
   color: var(--c-ink-2);
 }
@@ -310,8 +310,8 @@
 /* "How Keplar answered": one quiet row that holds the detail sections (consensus, models, sources, disagreements, verification,
    reasoning). Same grid as a section row, so its summary truncates inside its column at any width. */
 .how {
-  border-top: var(--b-hairline) solid var(--c-border);
-  border-bottom: var(--b-hairline) solid var(--c-border);
+  border-top: var(--b-hairline) solid var(--hairline);
+  border-bottom: var(--b-hairline) solid var(--hairline);
 }
 .howBtn {
   display: grid;
@@ -330,7 +330,7 @@
 .howBtn:hover { background: rgb(var(--rgb-ink) / 0.025); color: var(--c-ink); }
 .howBtn .chev { justify-self: end; }
 .how[data-open] > .howBtn { color: var(--c-ink); }
-.how > .sections { margin: 0 0 var(--s-2) var(--s-3); border-left: var(--b-hairline) solid var(--c-border); padding-left: var(--s-3); }
+.how > .sections { margin: 0 0 var(--s-2) var(--s-3); border-left: var(--b-hairline) solid var(--hairline); padding-left: var(--s-3); }
 .how > .sections[hidden] { display: none; }
 @media (prefers-reduced-motion: no-preference) {
   .how > .sections:not([hidden]) { animation: m-rise-in var(--m-dur-2) var(--m-ease-out) both; --m-rise: var(--m-dist-1); }
@@ -343,7 +343,7 @@
 .how > .sections > .section:last-child { border-bottom: 0; }
 
 .section {
-  border-bottom: var(--b-hairline) solid var(--c-border);
+  border-bottom: var(--b-hairline) solid var(--hairline);
 }
 
 .sectionH {
@@ -450,7 +450,7 @@
   row-gap: 2px;
   align-items: baseline;
   padding: var(--s-2) 0;
-  border-top: var(--b-hairline) solid var(--c-border);
+  border-top: var(--b-hairline) solid var(--hairline);
 }
 
 .modelRow:first-child {
@@ -555,19 +555,14 @@
   margin-left: auto;
 }
 
-.iconBtn {
-  display: inline-grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
+/* The answer's actions are kit IconButtons (sm, ghost): round and in the meta colour until hovered. */
+.footAct.footAct {
   border-radius: var(--r-pill);
   color: var(--c-ink-3);
-  transition: color var(--d-fast) var(--e-standard), background-color var(--d-fast) var(--e-standard);
 }
 
-.iconBtn:hover {
+.footAct.footAct:hover {
   color: var(--c-ink);
-  background: rgb(var(--rgb-ink) / 0.05);
 }
 
 /* Long threads: every answer's actions stay one hover (or Tab) away, but only the latest answer shows its row all the time, so the
@@ -580,9 +575,8 @@
 
 /* Touch screens: answer-card actions (copy, listen, share, report, ask again) are 44px targets. */
 @media (pointer: coarse) {
-  .iconBtn {
-    width: 44px;
-    height: 44px;
+  .footAct.footAct {
+    --size: 44px;
   }
 }
 
@@ -610,7 +604,7 @@
 
 .notice[data-kind="error"] {
   background: var(--c-canvas);
-  box-shadow: inset 0 0 0 var(--b-hairline) rgba(201, 102, 74, 0.35);
+  box-shadow: inset 0 0 0 var(--b-hairline) rgb(var(--rgb-destructive) / 0.35);
 }
 
 .noticeTitle {
@@ -629,38 +623,7 @@
   flex-wrap: wrap;
 }
 
-.retry,
-.textBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-2);
-  height: 36px;
-  padding: 0 var(--s-4);
-  border-radius: var(--r-pill);
-  font-size: var(--t-small);
-  white-space: nowrap;
-  flex: none;
-}
-
-.retry {
-  background: var(--c-ink);
-  color: var(--c-canvas);
-  font-weight: var(--w-medium);
-}
-
-.retry:hover {
-  background: var(--c-ink-hover);
-}
-
-.textBtn {
-  color: var(--c-ink-2);
-  transition: color var(--d-fast) var(--e-standard), background-color var(--d-fast) var(--e-standard);
-}
-
-.textBtn:hover {
-  color: var(--c-ink);
-  background: rgb(var(--rgb-ink) / 0.04);
-}
+/* (Retry, Ask again, See plans: kit Buttons, and link-action.module.css for the links among them.) */
 
 .upsell {
   display: flex;
@@ -682,22 +645,9 @@
   white-space: nowrap;
 }
 
+/* Dismiss: a kit IconButton (sm), pulled into the corner */
 .upsellClose {
-  flex: none;
-  display: inline-grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
   margin: calc(var(--s-2) * -1) calc(var(--s-2) * -1) 0 0;
-  border-radius: var(--r-pill);
-  color: var(--c-ink-2);
-  font-size: 18px;
-  line-height: 1;
-}
-
-.upsellClose:hover {
-  color: var(--c-ink);
-  background: rgb(var(--rgb-ink) / 0.05);
 }
 
 .limit {
@@ -723,7 +673,7 @@
   height: 4px;
   border-radius: var(--r-pill);
   background: var(--c-surface-2);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline);
   overflow: hidden;
 }
 
@@ -770,7 +720,7 @@
   padding: var(--s-3) var(--s-4);
   border-radius: var(--r-md);
   background: rgb(var(--rgb-canvas) / 0.7);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline);
   font-size: var(--t-small);
   font-weight: var(--w-medium);
 }
@@ -797,23 +747,6 @@
   flex-wrap: wrap;
 }
 
-.primaryBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-2);
-  height: 40px;
-  padding: 0 var(--s-5);
-  border-radius: var(--r-pill);
-  background: var(--c-ink);
-  color: var(--c-canvas);
-  font-size: var(--t-small);
-  font-weight: var(--w-medium);
-}
-
-.primaryBtn:hover {
-  background: var(--c-ink-hover);
-}
-
 @keyframes stepIn {
   from { opacity: 0; transform: translateY(4px); }
 }
@@ -822,9 +755,9 @@
   to { opacity: 0.45; }
 }
 
+/* the active step's dot: a flat opacity pulse (no glow ring) */
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(23, 23, 26, 0.35); }
-  100% { box-shadow: 0 0 0 7px rgba(23, 23, 26, 0); }
+  50% { opacity: 0.45; }
 }
 
 @keyframes answerIn {
@@ -892,7 +825,7 @@
   font-family: var(--f-sans);
   font-size: 11px;
   color: var(--c-ink-2);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong);
 }
 
 /* Verification checks */
@@ -910,7 +843,7 @@
   padding: var(--s-3) var(--s-4);
   border-radius: var(--r-md);
   background: rgb(var(--rgb-canvas) / 0.6);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline);
 }
 
 .checkHead {
@@ -934,19 +867,19 @@
   border-radius: var(--r-pill);
   font-size: var(--t-label);
   color: var(--c-ink-2);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong);
 }
 
 .checkOutcome[data-outcome="held"],
 .checkOutcome[data-outcome="supported"] {
   color: var(--c-agree);
-  box-shadow: inset 0 0 0 var(--b-hairline) rgba(23, 23, 26, 0.35);
+  box-shadow: inset 0 0 0 var(--b-hairline) rgb(var(--rgb-ink) / 0.35);
 }
 
 .checkOutcome[data-outcome="removed"],
 .checkOutcome[data-outcome="contradicted"] {
   color: var(--c-dissent-text);
-  box-shadow: inset 0 0 0 var(--b-hairline) rgba(201, 102, 74, 0.35);
+  box-shadow: inset 0 0 0 var(--b-hairline) rgb(var(--rgb-destructive) / 0.35);
 }
 
 .checkFinding {
@@ -981,7 +914,7 @@
 .checkSources a {
   color: var(--c-ink);
   text-decoration: underline;
-  text-decoration-color: var(--c-border-strong);
+  text-decoration-color: var(--hairline-strong);
   text-underline-offset: 3px;
 }
 
@@ -1025,20 +958,13 @@
   text-underline-offset: 2px;
 }
 
-/* glass buttons (liquid glass: see src/styles/glass.css) */
-.primaryBtn { background: var(--btn-p-bg); color: var(--btn-p-ink); border-color: transparent; box-shadow: var(--btn-p-shadow); -webkit-backdrop-filter: blur(6px) saturate(1.4); backdrop-filter: blur(6px) saturate(1.4); transition: var(--btn-spring); }
-.primaryBtn:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--c-ink-hover); }
-.primaryBtn:active:not(:disabled) { scale: var(--m-press); }
-@media (prefers-reduced-motion: reduce) { .primaryBtn { transition: background-color 0.1s linear; transform: none !important; } }
-@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .primaryBtn { backdrop-filter: none; -webkit-backdrop-filter: none; } .primaryBtn { background: var(--btn-p-solid, #17171a); } }
-
-/* ── liquid glass cards (CP-6c): translucent fill + specular ring, no backdrop (answers repeat; no stacked blur) ── */
+/* ── cards (UI v2): raised surface, hairline edge, resting depth; no glass ── */
 .answer, .limit {
-  background: var(--lg-card);
-  box-shadow: var(--lg-ring), 0 1px 2px rgb(0 0 0 / 0.05), 0 18px 44px -26px rgb(0 0 0 / 0.28);
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1);
 }
-.notice, .upsell { border-radius: 20px; background: var(--lg-card); box-shadow: var(--lg-ring); }
-.notice[data-kind="error"] { box-shadow: var(--lg-ring), inset 0 0 0 1px rgb(224 113 90 / 0.4); }
+.notice, .upsell { border-radius: 20px; background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline); }
+.notice[data-kind="error"] { box-shadow: inset 0 0 0 1px rgb(var(--rgb-destructive) / 0.4); }
 
 
 /* ── what the split means (plain words, no score) ───────────────────── */
@@ -1059,9 +985,8 @@
 }
 
 .splitLink:focus-visible {
-  outline: var(--b-focus) solid var(--c-focus);
-  outline-offset: 2px;
-  border-radius: var(--r-sm);
+  text-decoration-color: var(--c-focus);
+  text-decoration-thickness: 2px;
 }
 
 /* Which models answered and which did not (always shown when one is missing or a stand-in answered). */
@@ -1084,21 +1009,12 @@
 
 /* Where the models disagree: a standout block under the answer, not a link to a collapsed row. */
 
-/* Oct 2026 redesign (canvas "Chat"), light theme: the answer sits on the page (no card), like the design; notices keep their card. */
-:global(:root[data-theme="light"]) .answer { background: transparent; box-shadow: none; padding-inline: 0; }
-:global(:root[data-theme="light"]) .notice, :global(:root[data-theme="light"]) .limit, :global(:root[data-theme="light"]) .upsell {
+/* Oct 2026 redesign (canvas "Chat"), both themes from one block: the answer sits on the page (no card), like the design;
+   notices, limits and upsells keep a raised card (opaque surface, hairline edge, raised depth). */
+:global(:root[data-theme]) .answer { background: transparent; box-shadow: none; padding-inline: 0; }
+:global(:root[data-theme]) .notice, :global(:root[data-theme]) .limit, :global(:root[data-theme]) .upsell {
   padding: 16px 20px;
-  background: rgb(255 255 255 / 0.9);
+  background: var(--surface-raised);
   border-radius: 22px;
-  box-shadow: 0 0 0 1px rgb(14 15 18 / 0.06), 0 12px 28px -14px rgb(14 15 18 / 0.25);
-}
-
-/* Dark mode of the answer redesign (generated from the light rules above). */
-/* Oct 2026 redesign (canvas "Chat"), light theme: the answer sits on the page (no card), like the design; notices keep their card. */
-:global(:root[data-theme="dark"]) .answer { background: transparent; box-shadow: none; padding-inline: 0; }
-:global(:root[data-theme="dark"]) .notice, :global(:root[data-theme="dark"]) .limit, :global(:root[data-theme="dark"]) .upsell {
-  padding: 16px 20px;
-  background: rgb(28 28 32 / 0.9);
-  border-radius: 22px;
-  box-shadow: 0 12px 28px -14px rgb(0 0 0 / 0.25);
+  box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-2);
 }

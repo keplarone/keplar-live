@@ -79,7 +79,7 @@ for (const [vp, w, h] of VIEWPORTS) for (const theme of THEMES) {
       await settle(page, name === "home" ? 3500 : 1800);
       await capture(page, `${name}-${tag}`);
       if (name === "home" && vp === "phone") {
-        const t = page.locator("header button[aria-controls=mobile-menu]");
+        const t = page.locator("header button[aria-controls=site-menu]");
         if (await t.count()) { await t.click(); await settle(page, 700); await capture(page, `nav-sheet-${tag}`, { noInspect: true }); await page.keyboard.press("Escape"); }
       }
     }

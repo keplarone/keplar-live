@@ -6,6 +6,7 @@
  */
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { confirmAction } from "@/components/kit";
 import s from "./account.module.css";
 
 type Policy = { available: boolean; maxKeys: number; keyPerMinute: number; keyPerDay: number };
@@ -74,7 +75,7 @@ export function ApiKeysPanel() {
             <select id="key-exp" className={s.input} value={days} onChange={(e) => setDays(e.target.value)}>
               <option value="30">in 30 days</option><option value="90">in 90 days</option><option value="365">in 1 year</option><option value="none">never</option>
             </select>
-            <label className={s.sub}><input type="checkbox" checked={usage} onChange={(e) => setUsage(e.target.checked)} /> Also allow reading usage (the key can always ask)</label>
+            <label className={s.check}><input type="checkbox" checked={usage} onChange={(e) => setUsage(e.target.checked)} /> Also allow reading usage (the key can always ask)</label>
             <div className={s.actions}><button type="submit" className={`${s.btn} ${s.btnSm}`} disabled={busy || byHand.length >= me.policy.maxKeys}>Create key</button></div>
           </form>
         </>
@@ -88,7 +89,7 @@ export function ApiKeysPanel() {
                 <strong>{k.name}</strong> {k.kind === "extension" ? <span className={s.badge}>Browser extension</span> : <code>{k.prefix}…</code>}
                 <span className={s.sub}>{k.scopes.join(", ")} · created {day(k.createdAt)} · {k.expiresAt ? `expires ${day(k.expiresAt)}` : "no expiry"} · {k.lastUsedAt ? `last used ${day(k.lastUsedAt)}` : "never used"} · {k.requests.toLocaleString("en-US")} requests, {k.credits.toLocaleString("en-US")} credits</span>
               </div>
-              <button type="button" className={`${s.btn} ${s.btnGhost} ${s.btnSm}`} disabled={busy} onClick={() => { if (window.confirm(k.kind === "extension" ? `Disconnect "${k.name}"? The extension stops working until you connect it again.` : `Revoke "${k.name}"? Anything using it stops working right away.`)) void act(async () => { await api(`/api/keys/${k.id}`, "DELETE"); await load(); }); }}>{k.kind === "extension" ? "Disconnect" : "Revoke"}</button>
+              <button type="button" className={`${s.btn} ${s.btnGhost} ${s.btnSm}`} disabled={busy} onClick={async () => { if (await confirmAction(k.kind === "extension" ? { title: `Disconnect "${k.name}"?`, body: "The extension stops working until you connect it again.", confirmLabel: "Disconnect", danger: true } : { title: `Revoke "${k.name}"?`, body: "Anything using it stops working right away.", confirmLabel: "Revoke key", danger: true })) void act(async () => { await api(`/api/keys/${k.id}`, "DELETE"); await load(); }); }}>{k.kind === "extension" ? "Disconnect" : "Revoke"}</button>
             </li>
           ))}
         </ul>

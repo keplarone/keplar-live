@@ -29,9 +29,12 @@ test("the app layout and the composer are one block for both themes (no hex-copi
 });
 
 test("menus, popovers and the sidebar drawer are opaque inside the app", () => {
+  // UI v2: the composer's Attach, Modes and routing pop-ups are kit Popovers on the opaque overlay surface; no glass anywhere in it.
   const composer = strip(read("src/components/app-ui/Composer.module.css"));
-  assert.match(composer, /\.panel, \.moreMenu, \.attachMenu \{[^}]*background: var\(--surface-overlay\)/);
-  assert.match(composer, /\.panel, \.moreMenu, \.attachMenu \{[^}]*backdrop-filter: none/);
+  assert.match(composer, /\.panel\.panel, \.moreMenu\.moreMenu, \.attachMenu\.attachMenu \{[^}]*background: var\(--surface-overlay\)/);
+  assert.doesNotMatch(composer, /backdrop-filter|--lg-|--c-glass/, "no glass in the composer");
+  const tsx = read("src/components/app-ui/Composer.tsx");
+  assert.equal((tsx.match(/<Popover /g) ?? []).length, 3, "Attach, Modes and routing are kit Popovers");
   const app = strip(read("src/components/app-ui/App.module.css"));
   assert.match(app, /\.app \{[^}]*--lg-fill: var\(--surface-overlay\)[^}]*--lg-bf: none/, "glass tokens resolve to opaque surfaces in the app");
   assert.match(app, /\.sidebar \{[^}]*background: var\(--surface-panel\)/);
@@ -47,11 +50,9 @@ test("no backdrop art, corner glow or animated gradient text in the app", () => 
   assert.equal(existsSync("src/components/app-ui/WelcomeBack.tsx"), false, "one home: the welcome-back overlay is gone");
 });
 
-test("the marketing lifted-button rule never reaches the product (data-product)", () => {
-  const r = read("src/styles/redesign.css");
-  const rules = r.split("\n").filter((l) => l.includes(':is(button, a, [role="button"], input[type="submit"])'));
-  assert.ok(rules.length >= 4);
-  for (const l of rules) assert.match(l, /:not\(\[data-product\] \*\)/);
+test("no class-name button rule anywhere: every component draws its own buttons from the tokens (UI v2)", () => {
+  const r = strip(read("src/styles/redesign.css"));
+  assert.doesNotMatch(r, /\[class\*="btn" i\]|--button-shadow|\[class\*="__card"\][^{]*:hover/);
   assert.match(read("src/components/app-ui/KeplarApp.tsx"), /className=\{s\.app\} data-product=""/);
   assert.match(read("src/components/account/SettingsDialog.tsx"), /className=\{s\.dlg\} data-product=""/);
 });
@@ -62,7 +63,8 @@ test("one button motion model: no swell, squash or default pointer pull", () => 
     const css = strip(read(f));
     assert.doesNotMatch(css, /scale\(1\.03, 1\.015\)|scale\(1\.035, 1\.02\)|scale\(0\.97, 0\.92\)|scale\(0\.98, 0\.95\)/, `${f}: no swell or squash`);
   }
-  assert.match(read("src/components/ui/Button.tsx"), /magnetic = false,/, "ButtonLink no longer pulls toward the pointer by default");
+  const button = read("src/components/ui/Button.tsx");
+  assert.doesNotMatch(button, /import \{ Magnetic \}|data-lit=/, "Button has no pointer pull and no proximity light");
 });
 
 test("radius tokens are declared once (tokens.css), not re-declared down the cascade", () => {
@@ -110,4 +112,15 @@ test("resume list: relative dates", () => {
   assert.equal(ago(now - 3 * day, now), "3 days ago");
   assert.equal(ago(now - 10 * day, now), "Last week");
   assert.equal(ago(now - 30 * day, now), "4 weeks ago");
+});
+
+test("the kit hosts (toasts, confirmAction) stay usable inside the app, which makes the rest of the page inert", () => {
+  assert.match(read("src/components/kit/Hosts.tsx"), /<div data-kit-host="">/);
+  assert.match(read("src/components/app-ui/KeplarApp.tsx"), /!el\.hasAttribute\("data-kit-host"\)/);
+});
+
+test("a toast replaced in place by id restarts its timer (a sticky toast turned timed is not dismissed at once)", () => {
+  const src = read("src/components/kit/Toast.tsx");
+  assert.match(src, /rev: \+\+seq/);
+  assert.match(src, /if \(rev\.current !== toast\.rev\) \{\s*rev\.current = toast\.rev;\s*remaining\.current = toast\.duration;/);
 });

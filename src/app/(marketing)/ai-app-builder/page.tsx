@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { HeroField } from "@/components/motion/HeroField";
 import { Faq } from "@/components/sections/Faq";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { BuildBox } from "@/components/growth/BuildBox";
@@ -24,7 +23,6 @@ const RELATED: Record<string, string> = {
 export default function AiAppBuilderPage() {
   return (
     <>
-      <HeroField variant="how" />
       <header className={hero.hero}>
         <div className={hero.header}>
           <p className={hero.label}>{page.label}</p>

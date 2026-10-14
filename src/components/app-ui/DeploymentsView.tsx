@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Button } from "@/components/kit";
 import s from "./App.module.css";
 
 type Site = { id: string; name: string; slug: string; headVersion: number; publishedVersion: number | null; publishedUrl: string | null; needsReview: boolean; takenDown: boolean; leadCount: number; updatedAt: string };
@@ -33,9 +34,9 @@ export function DeploymentsView({ onOpenCreate }: { onOpenCreate: () => void }) 
           <h1 className={s.viewTitle}>Deployments</h1>
           <p className={s.viewLede}>Sites you built in Create and where they are live.</p>
         </div>
-        <button type="button" className={s.primaryBtn} data-lit="on-ink" onClick={onOpenCreate}>
-          Open Create <span aria-hidden="true">→</span>
-        </button>
+        <Button variant="primary" onClick={onOpenCreate} trailingIcon={<span aria-hidden="true">→</span>}>
+          Open Create
+        </Button>
       </header>
       {st.kind === "loading" ? <p className={s.viewEmpty} role="status">Loading…</p> : null}
       {st.kind === "error" ? <p className={s.viewEmpty} role="alert">{st.message}</p> : null}

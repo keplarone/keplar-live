@@ -5,9 +5,11 @@ import { addVersion, applyText, draftFromAnswer, loadDrafts, revisePrompt, saveD
 import { Markdown } from "../Markdown";
 import { onDraft } from "./draft-bus";
 import { CodeRunner, runnableLang } from "./CodeRunner";
+import { Button, Icon, IconButton, Tabs, confirmAction, tabId, tabPanelId } from "@/components/kit";
 import s from "./parity.module.css";
 
 type Tab = "edit" | "preview" | "versions" | "all";
+const TABS_ID = "draft-views";
 
 /**
  * The side draft: an editable document or code file beside the chat, opened from any answer. Edit directly, preview, keep versions,
@@ -50,7 +52,8 @@ export function DraftPane({ scope, plan, onAsk }: { scope: string; plan: string;
   useEffect(() => { if (d) headRef.current?.focus(); }, [openId]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!openId) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape" && !(e.target as HTMLElement)?.closest?.("textarea, input")) setOpenId(null); };
+    // Escape closes the pane, except in its fields and while a dialog (e.g. the delete confirm) owns Escape.
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape" && !(e.target as HTMLElement)?.closest?.("textarea, input, dialog")) setOpenId(null); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [openId]);
@@ -76,21 +79,33 @@ export function DraftPane({ scope, plan, onAsk }: { scope: string; plan: string;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
+  const removeDraft = async (x: Draft) => {
+    const ok = await confirmAction({ title: `Delete the draft “${x.title}”?`, body: "This can't be undone.", confirmLabel: "Delete draft", danger: true });
+    if (!ok) return;
+    commit(draftsRef.current.filter((y) => y.id !== x.id));
+    if (x.id === d.id) setOpenId(null);
+  };
   const runLang = d.kind === "code" ? runnableLang(d.lang ?? "") : null;
   return (
     <aside className={s.pane} aria-label="Draft" data-draft-pane="">
       <div className={s.paneHead}>
         <input ref={headRef} className={s.paneTitle} value={d.title} aria-label="Draft title" maxLength={120} onChange={(e) => edit({ title: e.target.value })} />
-        <button type="button" className={s.btn} onClick={() => setOpenId(null)}>Close</button>
+        <IconButton label="Close draft" tooltipSide="left" onClick={() => setOpenId(null)} icon={<Icon name="close" size={16} />} />
       </div>
-      <div className={s.tabs} role="tablist" aria-label="Draft views">
-        {(["edit", "preview", "versions", "all"] as Tab[]).map((t) => (
-          <button key={t} type="button" role="tab" className={s.tab} aria-selected={tab === t} onClick={() => setTab(t)}>
-            {t === "edit" ? "Edit" : t === "preview" ? "Preview" : t === "versions" ? `Versions (${d.versions.length})` : `All drafts (${drafts.length})`}
-          </button>
-        ))}
-      </div>
-      <div className={s.paneBody} role="tabpanel">
+      <Tabs
+        id={TABS_ID}
+        label="Draft views"
+        className={s.tabs}
+        value={tab}
+        onValueChange={setTab}
+        items={[
+          { value: "edit", label: "Edit" },
+          { value: "preview", label: "Preview" },
+          { value: "versions", label: "Versions", count: d.versions.length },
+          { value: "all", label: "All drafts", count: drafts.length },
+        ]}
+      />
+      <div className={s.paneBody} role="tabpanel" id={tabPanelId(TABS_ID, tab)} aria-labelledby={tabId(TABS_ID, tab)}>
         {tab === "edit" ? (
           <textarea ref={areaRef} className={s.area} data-kind={d.kind} value={d.text} spellCheck={d.kind === "doc"} aria-label="Draft text" onChange={(e) => edit({ text: e.target.value })} onBlur={() => upsert(addVersion(d, d.text, "Edited"))} />
         ) : tab === "preview" ? (
@@ -100,7 +115,7 @@ export function DraftPane({ scope, plan, onAsk }: { scope: string; plan: string;
             {[...d.versions].reverse().map((v, i) => (
               <li key={`${v.at}-${i}`}>
                 <span>{v.label} · {new Date(v.at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })} · {v.text.length.toLocaleString()} chars</span>
-                <button type="button" className={s.btn} onClick={() => { upsert(addVersion(d, v.text, "Restored")); setTab("edit"); setStatus("Restored that version."); }}>Restore</button>
+                <Button size="sm" variant="secondary" onClick={() => { upsert(addVersion(d, v.text, "Restored")); setTab("edit"); setStatus("Restored that version."); }}>Restore</Button>
               </li>
             ))}
           </ul>
@@ -110,8 +125,8 @@ export function DraftPane({ scope, plan, onAsk }: { scope: string; plan: string;
               <li key={x.id}>
                 <span>{x.title} · {x.kind === "code" ? x.lang || "code" : "document"}</span>
                 <span className={s.row}>
-                  <button type="button" className={s.btn} onClick={() => { setOpenId(x.id); setTab("edit"); }}>Open</button>
-                  <button type="button" className={s.btn} onClick={() => { if (window.confirm(`Delete the draft "${x.title}"? This can't be undone.`)) { commit(drafts.filter((y) => y.id !== x.id)); if (x.id === d.id) setOpenId(null); } }}>Delete</button>
+                  <Button size="sm" variant="secondary" onClick={() => { setOpenId(x.id); setTab("edit"); }}>Open</Button>
+                  <Button size="sm" variant="ghost" onClick={() => void removeDraft(x)}>Delete</Button>
                 </span>
               </li>
             ))}
@@ -122,12 +137,12 @@ export function DraftPane({ scope, plan, onAsk }: { scope: string; plan: string;
       <div className={s.paneFoot}>
         <div className={s.row}>
           <input className={s.input} value={instruction} onChange={(e) => setInstruction(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); revise(); } }} placeholder="Tell Keplar what to change (select text to change only that part)" aria-label="Revision instruction" maxLength={600} />
-          <button type="button" className={s.btn} data-primary="" onClick={revise}>Revise with Keplar</button>
+          <Button size="sm" variant="primary" onClick={revise}>Revise with Keplar</Button>
         </div>
         <div className={s.row}>
-          <button type="button" className={s.btn} onClick={() => { void navigator.clipboard?.writeText(d.text).then(() => setStatus("Copied.")).catch(() => setStatus("Couldn't copy.")); }}>Copy</button>
-          <button type="button" className={s.btn} onClick={download}>Download</button>
-          <button type="button" className={s.btn} onClick={() => { upsert(addVersion(d, d.text, "Saved")); setStatus("Saved a version."); }}>Save version</button>
+          <Button size="sm" variant="secondary" onClick={() => { void navigator.clipboard?.writeText(d.text).then(() => setStatus("Copied.")).catch(() => setStatus("Couldn't copy.")); }}>Copy</Button>
+          <Button size="sm" variant="secondary" onClick={download}>Download</Button>
+          <Button size="sm" variant="secondary" onClick={() => { upsert(addVersion(d, d.text, "Saved")); setStatus("Saved a version."); }}>Save version</Button>
         </div>
         <p className={s.status} role="status">{status}</p>
       </div>

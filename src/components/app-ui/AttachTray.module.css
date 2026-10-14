@@ -114,8 +114,8 @@
   bottom: 2px;
   padding: 0 3px;
   border-radius: 3px;
-  background: rgba(9, 9, 11, 0.78);
-  color: #f2f2f3;
+  background: var(--c-ink);
+  color: var(--c-canvas);
   font-family: var(--f-sans);
   font-size: 9.5px;
   line-height: 14px;
@@ -160,32 +160,21 @@ a.name:focus-visible { text-decoration: underline; }
 }
 .sub > span { overflow: hidden; text-overflow: ellipsis; }
 .item[data-processing] .sub { color: var(--c-ink-2); }
-.item[data-status="warn"] .sub { color: var(--c-caution-text, #d4a35a); }
+.item[data-status="warn"] .sub { color: var(--c-attention); }
 .item[data-status="error"] .sub { color: var(--c-dissent-text); }
 .warnIcon { flex: none; }
 
 .swatches { display: inline-flex; gap: 3px; margin-top: 1px; }
-.swatches > span { width: 10px; height: 10px; border-radius: 2px; box-shadow: inset 0 0 0 1px rgb(var(--rgb-ink) / 0.14); }
+.swatches > span { width: 10px; height: 10px; border-radius: 2px; box-shadow: inset 0 0 0 1px var(--hairline-strong); }
 .item:has(.swatches) { height: 60px; }
 
-.remove {
-  appearance: none;
-  display: inline-grid;
-  place-items: center;
-  flex: none;
-  align-self: flex-start;
-  width: 22px;
-  height: 22px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
+/* Remove: a kit IconButton at the item's top right, 24px (the WCAG 2.5.8 minimum; 44px on touch) */
+.remove.remove {
+  --size: 24px;
+  border-radius: var(--r-xs);
   color: var(--c-ink-3);
-  cursor: pointer;
-  transition: background 120ms ease, color 120ms ease;
 }
-.remove:hover { background: rgb(var(--rgb-ink) / 0.08); color: var(--c-ink-1); }
-.remove:focus { outline: none; }
-.remove:focus-visible { background: rgb(var(--rgb-ink) / 0.12); color: var(--c-ink-1); }
+@media (pointer: coarse) { .remove.remove { --size: 44px; } }
 
 .bar {
   position: absolute;

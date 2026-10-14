@@ -47,7 +47,7 @@ test("gallery and detail are public: starters, honest labels, sandboxed preview,
   expect((await visitor.request.get("/sites/template/starter-business/styles.css")).headers()["content-type"]).toContain("text/css");
 
   await v.getByRole("button", { name: "Report this page" }).click();
-  await expect(v.getByTestId("report-dialog")).toBeVisible();
+  await expect(v.getByRole("dialog")).toBeVisible();
   await v.keyboard.press("Escape");
 
   expect((await visitor.request.get("/templates/starter-nope")).status()).toBe(404);

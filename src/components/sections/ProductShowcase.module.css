@@ -1,9 +1,8 @@
+/* The product demo on its own: sits on the plain canvas with the page's section rhythm. */
 .section {
   position: relative;
   z-index: var(--z-content);
   padding: var(--s-8) var(--l-gutter) var(--s-16);
-  background:
-    var(--c-canvas);
 }
 
 .stage {

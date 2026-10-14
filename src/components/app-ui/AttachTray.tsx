@@ -10,6 +10,7 @@ import { forwardRef, useEffect, useRef, useState } from "react";
 import { IconClose } from "./icons";
 import { GLYPH, GlyphWarn } from "./attach-glyphs";
 import { KIND_BADGE, type AttachKind } from "@/lib/attachments/kinds";
+import { IconButton } from "@/components/kit";
 import css from "./AttachTray.module.css";
 
 export type TrayItem = {
@@ -126,9 +127,7 @@ export const AttachTray = forwardRef<HTMLUListElement, { items: TrayItem[]; onRe
               ) : null}
               {m.note ? <span className="visually-hidden">{m.note}</span> : null}
             </span>
-            <button type="button" className={css.remove} data-remove aria-label={`Remove ${m.name}`} onClick={() => remove(m.id)}>
-              <IconClose size={12} />
-            </button>
+            <IconButton size="sm" className={css.remove} tooltip={false} data-remove="" label={`Remove ${m.name}`} onClick={() => remove(m.id)} icon={<IconClose size={12} />} />
             {m.status === "processing" ? (
               <span className={css.bar} role="progressbar" aria-label={`Reading ${m.name}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={m.progress === undefined ? undefined : Math.round(m.progress * 100)}>
                 <span className={m.progress === undefined ? css.sweep : css.fill} style={m.progress === undefined ? undefined : { transform: `scaleX(${Math.max(0.04, Math.min(1, m.progress))})` }} />

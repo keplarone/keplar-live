@@ -11,6 +11,7 @@ import type { CoreJobRef, CoreStep, CoreSummary } from "@/lib/core/types";
 import type { LiveCore } from "../state/core";
 import { IconCheck, IconChevron } from "../icons";
 import { Markdown } from "../Markdown";
+import { Button } from "@/components/kit";
 import s from "./core.module.css";
 
 const DEPTH_LABEL = { quick: "Quick", thorough: "Thorough", exhaustive: "Exhaustive" } as const;
@@ -85,10 +86,9 @@ export function CoreSummaryView({ core, onAsk, enabled }: { core: CoreSummary; o
       <div className={s.row}>
         <span className={s.conf} data-level={core.confidence.level}>{core.confidence.words}</span>
         {deep ? (
-          <button type="button" className={s.toggle} aria-expanded={open} aria-controls={`${uid}-core`} onClick={() => setOpen((v) => !v)}>
+          <Button size="sm" variant="ghost" className={s.toggle} aria-expanded={open} aria-controls={`${uid}-core`} onClick={() => setOpen((v) => !v)} trailingIcon={<span className={s.chev} data-open={open || undefined} aria-hidden="true"><IconChevron size={12} /></span>}>
             {summary || "Details"}
-            <span className={s.chev} data-open={open || undefined} aria-hidden="true"><IconChevron size={12} /></span>
-          </button>
+          </Button>
         ) : null}
       </div>
       {deep ? (
@@ -121,7 +121,7 @@ export function CoreSummaryView({ core, onAsk, enabled }: { core: CoreSummary; o
           <ul aria-labelledby={`${uid}-next`}>
             {core.nextSteps.map((n) => (
               <li key={n}>
-                {onAsk && enabled ? <button type="button" className={s.nextBtn} onClick={() => onAsk(n)}>{n}</button> : <span>{n}</span>}
+                {onAsk && enabled ? <Button variant="ghost" fullWidth className={s.nextAct} onClick={() => onAsk(n)}>{n}</Button> : <span>{n}</span>}
               </li>
             ))}
           </ul>
@@ -200,7 +200,7 @@ export function KeepWorking({ job }: { job: CoreJobRef }) {
       ) : (
         <>
           <p className={s.jobHead}>This answer reached the time limit for one request before every check passed.</p>
-          <button type="button" className={s.jobBtn} onClick={start} disabled={busy}>{busy ? "Starting…" : "Keep working"}</button>
+          <Button size="sm" variant="primary" className={s.jobAct} onClick={start} loading={busy}>{busy ? "Starting…" : "Keep working"}</Button>
         </>
       )}
       {err ? <p className={s.jobErr} role="alert">{err}</p> : null}

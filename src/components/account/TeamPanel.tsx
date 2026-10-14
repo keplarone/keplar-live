@@ -8,6 +8,7 @@
 import Link from "next/link";
 import { businessUrl } from "@/lib/business-site";
 import { useCallback, useEffect, useState } from "react";
+import { confirmAction } from "@/components/kit";
 import s from "./account.module.css";
 
 type Role = "owner" | "admin" | "member" | "viewer";
@@ -121,10 +122,10 @@ export function TeamPanel() {
                     <select id={`role-${m.id}`} className={s.input} value={m.role} disabled={busy} onChange={(e) => void act(async () => { await api(`/api/team/${d.team.id}/members/${m.id}`, "PATCH", { role: e.target.value }); await loadDetail(d.team.id); })}>
                       {(isOwner ? assignable : assignable).map((r) => <option key={r} value={r}>{LABEL[r]}</option>)}
                     </select>
-                    <button type="button" className={`${s.btn} ${s.btnGhost} ${s.btnSm}`} disabled={busy} onClick={() => { if (window.confirm(`Remove ${m.email}? They lose access to the team right away.`)) void act(async () => { await api(`/api/team/${d.team.id}/members/${m.id}`, "DELETE"); await loadDetail(d.team.id); }); }}>Remove</button>
+                    <button type="button" className={`${s.btn} ${s.btnGhost} ${s.btnSm}`} disabled={busy} onClick={async () => { if (await confirmAction({ title: `Remove ${m.email}?`, body: "They lose access to the team right away.", confirmLabel: "Remove member", danger: true })) void act(async () => { await api(`/api/team/${d.team.id}/members/${m.id}`, "DELETE"); await loadDetail(d.team.id); }); }}>Remove</button>
                   </div>
                 ) : null}
-                {m.you && m.role !== "owner" ? <button type="button" className={`${s.btn} ${s.btnGhost} ${s.btnSm}`} disabled={busy} onClick={() => { if (window.confirm("Leave this team? You lose access to its shared items.")) void act(async () => { await api(`/api/team/${d.team.id}/members/${m.id}`, "DELETE"); setOpen(null); setD(null); await loadMe(); }); }}>Leave team</button> : null}
+                {m.you && m.role !== "owner" ? <button type="button" className={`${s.btn} ${s.btnGhost} ${s.btnSm}`} disabled={busy} onClick={async () => { if (await confirmAction({ title: "Leave this team?", body: "You lose access to its shared items.", confirmLabel: "Leave team", danger: true })) void act(async () => { await api(`/api/team/${d.team.id}/members/${m.id}`, "DELETE"); setOpen(null); setD(null); await loadMe(); }); }}>Leave team</button> : null}
               </li>
             ))}
           </ul>

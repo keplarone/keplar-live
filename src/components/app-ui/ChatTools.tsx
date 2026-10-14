@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { Button, Tooltip } from "@/components/kit";
 import s from "./ChatTools.module.css";
 
 const HINT = "keplar:tools-row";
@@ -46,14 +47,15 @@ export function ChatToolsBar({ show, synced = true, on, onChange, onOpenApps }: 
   const names = st.apps.map((a) => a.name).join(", ");
   return (
     <div className={s.bar}>
-      <button type="button" className={s.switch} aria-pressed={on} onClick={() => onChange(!on)} title="Let Ask use your connected apps in this conversation">
-        <span className={s.pip} aria-hidden="true" />
-        <span>Tools {on ? "on" : "off"}</span>
-      </button>
+      <Tooltip content="Let Ask use your connected apps in this conversation">
+        <Button size="sm" variant="ghost" className={s.toggle} aria-pressed={on} onClick={() => onChange(!on)} leadingIcon={<span className={s.pip} aria-hidden="true" />}>
+          Tools {on ? "on" : "off"}
+        </Button>
+      </Tooltip>
       <span className={s.apps} role="status">
         {on ? `Using: ${names}. ${st.autoRun ? "Reads you allowed run on their own; everything else asks first." : "Every call asks you first."}` : `Off. Available: ${names}.`}
       </span>
-      <button type="button" className={s.link} onClick={onOpenApps}>Manage</button>
+      <Button size="sm" variant="ghost" onClick={onOpenApps}>Manage</Button>
     </div>
   );
 }

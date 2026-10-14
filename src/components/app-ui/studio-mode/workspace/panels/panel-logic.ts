@@ -4,7 +4,7 @@
  * (the top-up consent and monthly maximum) is kept word for word. Unit tested in tests/studio-panels.test.ts.
  */
 import { SAVE_PREFIX, SAVE_VERSION } from "../../saved-session";
-import type { BadgeProps } from "../../ui";
+import type { BadgeProps } from "@/components/kit";
 
 type Tone = NonNullable<BadgeProps["tone"]>;
 

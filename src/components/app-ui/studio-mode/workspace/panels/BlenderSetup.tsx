@@ -8,7 +8,7 @@
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
 import { blenderCloud, type BlenderStatus } from "@/lib/desktop/studio-bridge";
-import { Button, Icon, StatusDot } from "../../ui";
+import { Button, Icon, StatusDot } from "@/components/kit";
 import { connectionDot, connectionLabel } from "../layout/run-status";
 import s from "./panels.module.css";
 

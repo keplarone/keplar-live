@@ -1,4 +1,6 @@
-/* Consensus synthesis (SynthesisView.tsx): model marks on a ring, streaming into Keplar at the center. */
+/* Consensus synthesis (SynthesisView.tsx): model marks on a ring, streaming into Keplar at the center. UI v2: no glow, no
+   gradient ring and no swell; the only motion is the real streams from the models that answered (their answers are what is
+   being combined). */
 .wrap {
   margin: 0;
   display: flex;
@@ -22,12 +24,6 @@
   width: 100%;
   height: 100%;
   overflow: visible;
-}
-
-.glow {
-  transform-origin: center;
-  transform-box: fill-box;
-  animation: glow 2.4s var(--e-glide) infinite alternate;
 }
 
 .line {
@@ -67,11 +63,11 @@
   display: grid;
   place-items: center;
   border-radius: var(--r-pill);
-  background: #fff;
-  box-shadow: 0 1px 3px rgb(14 15 18 / 0.14), 0 0 0 1px rgb(var(--rgb-ink) / 0.06);
+  background: white; /* the model marks are drawn for white, in both themes */
+  box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-1);
   transform: translate(-50%, -50%);
-  animation: seatIn var(--d-slow) var(--e-emphasized) both, lean 3.2s var(--e-glide) infinite;
-  animation-delay: calc(var(--i) * 60ms), calc(var(--i) * 260ms);
+  animation: seatIn var(--d-slow) var(--e-emphasized) both;
+  animation-delay: calc(var(--i) * 60ms);
   transition: opacity var(--d-slow) var(--e-standard), filter var(--d-slow) var(--e-standard);
 }
 .disc img { display: block; }
@@ -82,7 +78,7 @@
   color: var(--n-graphite);
 }
 .seat[data-state="responded"] .disc {
-  box-shadow: 0 1px 3px rgb(14 15 18 / 0.14), 0 0 0 2px rgb(var(--rgb-reasoning) / 0.28), 0 0 14px rgb(var(--rgb-reasoning) / 0.22);
+  box-shadow: inset 0 0 0 1px var(--hairline-strong), 0 0 0 2px rgb(var(--rgb-reasoning) / 0.4), var(--elev-1);
 }
 .seat[data-state="failed"] .disc,
 .seat[data-state="refused"] .disc {
@@ -93,7 +89,7 @@
 .seat[data-state="pending"] .disc {
   opacity: 0.4;
   background: var(--c-surface-2);
-  box-shadow: inset 0 0 0 1px var(--c-border-strong);
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
   animation: seatIn var(--d-slow) var(--e-emphasized) both, wait 1.4s var(--e-glide) infinite alternate;
 }
 
@@ -111,10 +107,7 @@
   position: absolute;
   inset: 0;
   border-radius: var(--r-pill);
-  background: conic-gradient(from 0deg, transparent 0deg, var(--v-reasoning) 110deg, transparent 200deg, var(--v-research) 300deg, transparent 360deg);
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
-  mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
-  animation: spin 2.6s linear infinite;
+  box-shadow: inset 0 0 0 1.5px var(--hairline-strong);
 }
 .coreDisc {
   width: 48px;
@@ -124,8 +117,7 @@
   border-radius: var(--r-pill);
   background: var(--c-ink);
   color: var(--c-canvas);
-  box-shadow: 0 6px 20px rgb(var(--rgb-reasoning) / 0.3);
-  animation: beat 1.6s var(--e-glide) infinite alternate;
+  box-shadow: var(--elev-2);
 }
 
 .caption {
@@ -151,18 +143,11 @@
 
 @keyframes synthIn { from { opacity: 0; transform: translateY(4px) scale(0.98); } to { opacity: 1; transform: none; } }
 @keyframes seatIn { from { opacity: 0; transform: translate(calc(-50% + var(--dx) * 0.5), calc(-50% + var(--dy) * 0.5)) scale(0.6); } }
-@keyframes lean {
-  0%, 100% { transform: translate(-50%, -50%); }
-  50% { transform: translate(calc(-50% + var(--dx) * 0.1), calc(-50% + var(--dy) * 0.1)) scale(0.96); }
-}
 @keyframes wait { from { opacity: 0.25; } to { opacity: 0.5; } }
 @keyframes flow { to { stroke-dashoffset: -8; } }
-@keyframes spin { to { transform: rotate(360deg); } }
-@keyframes beat { from { transform: scale(1); } to { transform: scale(1.05); } }
-@keyframes glow { from { opacity: 0.6; transform: scale(0.94); } to { opacity: 1; transform: scale(1.04); } }
 @keyframes lineIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .wrap, .glow, .line[data-state="responded"], .disc, .ring, .coreDisc, .headline,
+  .wrap, .line[data-state="responded"], .disc, .headline,
   .seat[data-state="pending"] .disc, .seat[data-state="failed"] .disc, .seat[data-state="refused"] .disc { animation: none; }
 }

@@ -35,7 +35,7 @@ export default async function ResetPasswordPage({ searchParams }: Props) {
           actions={
             <>
               <Link className={`${s.btn} ${s.btnPrimary}`} href="/forgot-password">Request a new link</Link>
-              <Link className={`${s.btn} ${s.btnGhost}`} href="/signin">Back to log in</Link>
+              <Link className={`${s.btn} ${s.btnGhost}`} href="/signin">Back to sign in</Link>
             </>
           }
         />

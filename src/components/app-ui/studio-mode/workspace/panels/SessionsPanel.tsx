@@ -7,7 +7,7 @@
  * account, which open with their place; they can be deleted here.
  */
 import { useCallback, useEffect, useState } from "react";
-import { Button, Icon, IconButton } from "../../ui";
+import { Button, Icon, IconButton } from "@/components/kit";
 import { clearSaved, deleteRemote, fetchRemote, placeKey, writeSaved } from "../../saved-session";
 import type { StudioAgent } from "../../useStudioAgent";
 import { accountIsNewer, deviceSessions, mergeSessions, savedWhen, whereSaved, type SessionEntry } from "./panel-logic";

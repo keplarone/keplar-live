@@ -13,6 +13,8 @@ import { modelStatusSentence, summarizeModels } from "@/lib/orchestration/model-
 import type { KeplarAnswer, VerificationCheck } from "@/lib/orchestration/types";
 import { IconCheck, IconChevron, IconCopy, IconRetry, IconSave, IconThumb, IconWeb } from "./icons";
 import { ListenButton } from "./ListenButton";
+import { Button, Icon, IconButton, Tooltip } from "@/components/kit";
+import la from "./link-action.module.css";
 import { Markdown } from "./Markdown";
 import { ToolUses } from "./ToolUses";
 import { ClarifyChips, DetailsBody, quietIds, reasoningMeta, UsingMemory } from "./AnswerExtras";
@@ -208,9 +210,9 @@ export function KeplarTurn({ message: m, onRetry, onRefreshResearch, onSignal, o
         <NoticeCard>
           <div className={s.notice}>
             <p>Stopped. {m.debate?.turns.length ? (ledger.plan === "free" ? "The debate was stopped and this question wasn't counted." : "The debate was stopped; only the rounds that had started count toward usage.") : m.draft ? "The partial answer was discarded." : "Nothing was charged."}</p>
-            <button type="button" className={s.textBtn} onClick={onRetry}>
-              <IconRetry size={14} /> Ask again
-            </button>
+            <Button size="sm" variant="ghost" onClick={onRetry} leadingIcon={<IconRetry size={14} />}>
+              Ask again
+            </Button>
           </div>
         </NoticeCard>
       ) : null}
@@ -225,12 +227,12 @@ export function KeplarTurn({ message: m, onRetry, onRefreshResearch, onSignal, o
             <p className={s.noticeBody}>{m.error.message} {m.error.kind === "network" ? "Your question is saved." : ""}</p>
           </div>
           {m.error.upgrade ? (
-            <Link href="/pricing?from=feature" className={s.retry}>See plans</Link>
+            <Link href="/pricing?from=feature" className={la.act} data-variant="secondary" data-size="sm">See plans</Link>
           ) : null}
           {m.error.retryable ? (
-            <button type="button" className={s.retry} onClick={onRetry}>
-              <IconRetry size={14} /> Retry
-            </button>
+            <Button size="sm" variant="secondary" onClick={onRetry} leadingIcon={<IconRetry size={14} />}>
+              Retry
+            </Button>
           ) : null}
         </div>
         </NoticeCard>
@@ -256,13 +258,13 @@ function NoResponse({ error, onRetry }: { error: { message: string; upgrade?: bo
       <div className={s.noticeActions}>
         {error.upgrade ? (
           <>
-            <Link href="/checkout?plan=lite" className={s.retry}>Upgrade to Lite</Link>
-            <Link href="/pricing?from=upsell" className={s.textBtn}>See plans</Link>
+            <Link href="/checkout?plan=lite" className={la.act} data-variant="primary" data-size="sm">Upgrade to Lite</Link>
+            <Link href="/pricing?from=upsell" className={la.act} data-variant="ghost" data-size="sm">See plans</Link>
           </>
         ) : null}
-        <button type="button" className={error.upgrade ? s.textBtn : s.retry} onClick={onRetry}>
-          <IconRetry size={14} /> Try again
-        </button>
+        <Button size="sm" variant={error.upgrade ? "ghost" : "secondary"} onClick={onRetry} leadingIcon={<IconRetry size={14} />}>
+          Try again
+        </Button>
       </div>
     </div>
     </NoticeCard>
@@ -297,9 +299,7 @@ function TypingBar({ text }: { text: string }) {
   };
   return (
     <div className={s.typingBar}>
-      <button type="button" className={s.iconBtn} onClick={copy} aria-label={copied ? "Copied answer" : "Copy full answer"}>
-        {copied ? <IconCheck size={15} /> : <IconCopy size={15} />}
-      </button>
+      <IconButton size="sm" className={s.footAct} onClick={copy} label={copied ? "Copied answer" : "Copy full answer"} icon={copied ? <IconCheck size={15} /> : <IconCopy size={15} />} />
     </div>
   );
 }
@@ -331,11 +331,11 @@ function WindowLimit({ window: w, ledger }: { window: NonNullable<NonNullable<Ke
       <ExtensionOffer plan={ledger.plan} />
       <div className={s.limitActions}>
         {ledger.plan === "plus" ? (
-          <Link href="/checkout?plan=pro" className={s.primaryBtn}>
+          <Link href="/checkout?plan=pro" className={la.act} data-variant="primary">
             Upgrade to Pro for higher limits <span aria-hidden="true">→</span>
           </Link>
         ) : null}
-        <Link href="/account" className={ledger.plan === "plus" ? s.textBtn : s.primaryBtn}>See your usage</Link>
+        <Link href="/account" className={la.act} data-variant={ledger.plan === "plus" ? "ghost" : "primary"}>See your usage</Link>
       </div>
     </section>
   );
@@ -366,11 +366,11 @@ function DailyLimit({ daily, ledger }: { daily: NonNullable<NonNullable<KeplarMe
       ) : null}
       <div className={s.limitActions}>
         {nextPaid ? (
-          <Link href={`/checkout?plan=${nextPaid.id}`} className={s.primaryBtn}>
+          <Link href={`/checkout?plan=${nextPaid.id}`} className={la.act} data-variant="primary">
             Upgrade to {nextPaid.name.replace("Keplar ", "")} · ${nextPaid.price}/mo <span aria-hidden="true">→</span>
           </Link>
         ) : null}
-        <Link href="/pricing?from=daily-limit" className={nextPaid ? s.textBtn : s.primaryBtn}>See plans</Link>
+        <Link href="/pricing?from=daily-limit" className={la.act} data-variant={nextPaid ? "ghost" : "primary"}>See plans</Link>
       </div>
     </section>
   );
@@ -387,10 +387,10 @@ function DayBudget({ resetsAt }: { resetsAt?: string }) {
         Paid plans keep working, so upgrading is how you keep going now.
       </p>
       <div className={s.limitActions}>
-        <Link href="/checkout?plan=plus" className={s.primaryBtn}>
+        <Link href="/checkout?plan=plus" className={la.act} data-variant="primary">
           Upgrade to Plus <span aria-hidden="true">→</span>
         </Link>
-        <Link href="/pricing?from=day-budget" className={s.textBtn}>See plans</Link>
+        <Link href="/pricing?from=day-budget" className={la.act} data-variant="ghost">See plans</Link>
       </div>
     </section>
   );
@@ -436,11 +436,11 @@ function UsageLimit({ limit, ledger }: { limit: NonNullable<KeplarMessage["limit
       ) : null}
       <div className={s.limitActions}>
         {nextPaid ? (
-          <Link href={`/checkout?plan=${nextPaid.id}`} className={s.primaryBtn}>
+          <Link href={`/checkout?plan=${nextPaid.id}`} className={la.act} data-variant="primary">
             Upgrade to {nextPaid.name.replace("Keplar ", "")} · ${nextPaid.price}/mo <span aria-hidden="true">→</span>
           </Link>
         ) : null}
-        <Link href="/pricing?from=credits" className={nextPaid ? s.textBtn : s.primaryBtn}>
+        <Link href="/pricing?from=credits" className={la.act} data-variant={nextPaid ? "ghost" : "primary"}>
           {nextPaid ? "See plans" : <>See plans <span aria-hidden="true">→</span></>}
         </Link>
       </div>
@@ -459,9 +459,7 @@ function UpsellNote({ reason, onDismiss }: { reason: "milestone" | "complex"; on
         <Link href="/pricing?from=upsell" className={s.upsellLink}>See plans</Link>
       </p>
       {onDismiss ? (
-        <button type="button" className={s.upsellClose} onClick={onDismiss} aria-label="Dismiss">
-          <span aria-hidden="true">×</span>
-        </button>
+        <IconButton size="sm" className={s.upsellClose} onClick={onDismiss} label="Dismiss" tooltip={false} icon={<Icon name="close" size={14} />} />
       ) : null}
     </aside>
   );
@@ -653,36 +651,33 @@ function AnswerFooter({ answer: a, meta, onRetry, onRefreshResearch, onSignal, i
     <footer className={s.answerFoot}>
       <div className={s.footMeta}>{meta}</div>
       <div className={s.footActions}>
-        <button type="button" className={s.iconBtn} onClick={copy} aria-label={copied ? "Copied answer" : "Copy answer"}>
-          {copied ? <IconCheck size={15} /> : <IconCopy size={15} />}
-        </button>
+        {/* Quiet kit IconButtons; the name is the tooltip, and a longer note (what a vote does) is the tooltip of its own. */}
+        <IconButton size="sm" className={s.footAct} onClick={copy} label={copied ? "Copied answer" : "Copy answer"} icon={copied ? <IconCheck size={15} /> : <IconCopy size={15} />} />
         {onSignal ? (
           <>
-            <button type="button" className={s.iconBtn} aria-pressed={vote === "up"} onClick={() => { setVote("up"); onSignal("up"); }} aria-label="Good answer" title="Good answer. This helps Keplar choose better next time (the models themselves are not retrained).">
-              <IconThumb size={15} up />
-            </button>
-            <button type="button" className={s.iconBtn} aria-pressed={vote === "down"} onClick={() => { setVote("down"); onSignal("down"); }} aria-label="Not a good answer" title="Not a good answer. This helps Keplar choose better next time (the models themselves are not retrained).">
-              <IconThumb size={15} />
-            </button>
+            <Tooltip content="Good answer. This helps Keplar choose better next time (the models themselves are not retrained).">
+              <IconButton size="sm" className={s.footAct} tooltip={false} pressed={vote === "up"} onClick={() => { setVote("up"); onSignal("up"); }} label="Good answer" icon={<IconThumb size={15} up />} />
+            </Tooltip>
+            <Tooltip content="Not a good answer. This helps Keplar choose better next time (the models themselves are not retrained).">
+              <IconButton size="sm" className={s.footAct} tooltip={false} pressed={vote === "down"} onClick={() => { setVote("down"); onSignal("down"); }} label="Not a good answer" icon={<IconThumb size={15} />} />
+            </Tooltip>
           </>
         ) : null}
-        <ListenButton id={a.id} markdown={a.markdown} isLast={isLast} className={s.iconBtn} />
+        <ListenButton id={a.id} markdown={a.markdown} isLast={isLast} className={s.footAct} />
         {live ? (
-          <button type="button" className={s.iconBtn} onClick={() => void save()} aria-label={saved ? "Saved research" : "Save research with its sources"} title="Save the answer with its sources">
-            {saved ? <IconCheck size={15} /> : <IconSave size={15} />}
-          </button>
+          <Tooltip content="Save the answer with its sources">
+            <IconButton size="sm" className={s.footAct} tooltip={false} onClick={() => void save()} label={saved ? "Saved research" : "Save research with its sources"} icon={saved ? <IconCheck size={15} /> : <IconSave size={15} />} />
+          </Tooltip>
         ) : null}
         {live && isLast && onRefreshResearch ? (
-          <button type="button" className={s.iconBtn} onClick={() => { growthTrack("answer_action", { action: "retry" }); onRefreshResearch(); }} aria-label="Refresh research" title="Research again, reading every page afresh">
-            <IconWeb size={15} />
-          </button>
+          <Tooltip content="Research again, reading every page afresh">
+            <IconButton size="sm" className={s.footAct} tooltip={false} onClick={() => { growthTrack("answer_action", { action: "retry" }); onRefreshResearch(); }} label="Refresh research" icon={<IconWeb size={15} />} />
+          </Tooltip>
         ) : null}
-        <ShareAnswer answer={a} triggerClass={s.iconBtn} />
-        <ReportAnswer answerId={a.id} excerpt={a.markdown} triggerClass={s.iconBtn} />
+        <ShareAnswer answer={a} triggerClass={s.footAct} />
+        <ReportAnswer answerId={a.id} excerpt={a.markdown} triggerClass={s.footAct} />
         {isLast ? (
-          <button type="button" className={s.iconBtn} onClick={() => { growthTrack("answer_action", { action: "retry" }); onRetry(); }} aria-label="Ask again">
-            <IconRetry size={15} />
-          </button>
+          <IconButton size="sm" className={s.footAct} onClick={() => { growthTrack("answer_action", { action: "retry" }); onRetry(); }} label="Ask again" icon={<IconRetry size={15} />} />
         ) : null}
       </div>
     </footer>

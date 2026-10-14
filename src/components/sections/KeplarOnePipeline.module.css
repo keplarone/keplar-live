@@ -51,8 +51,8 @@
 }
 
 .halo {
-  fill: var(--c-canvas);
-  stroke: var(--c-border-strong);
+  fill: var(--surface-raised);
+  stroke: var(--hairline-strong);
   stroke-width: 1;
   transition: stroke var(--d-base) var(--e-standard), r var(--d-base) var(--e-standard);
 }
@@ -97,41 +97,51 @@
 .tabs {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  border-top: var(--b-hairline) solid var(--c-border);
+  gap: var(--s-2);
 }
 
-.tab {
+/* Stage tabs: quiet text that fills on hover; the selected stage is a UI v2 card (raised surface, strong hairline, --elev-1).
+   The doubled class keeps the card radius against the global control-shape rule. */
+.tab.tab {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--s-1);
   width: 100%;
-  padding: var(--s-4) var(--s-2) var(--s-4) 0;
+  min-height: 44px;
+  padding: var(--s-3) var(--s-4);
   text-align: left;
-  border-top: var(--b-focus) solid transparent;
-  margin-top: calc(var(--b-hairline) * -1);
-  transition: border-color var(--d-base) var(--e-standard), color var(--d-base) var(--e-standard);
+  border: 0;
+  border-radius: var(--shape-card);
+  background: transparent;
   color: var(--c-ink-3);
+  transition: background-color var(--m-dur-1) var(--m-ease-out), box-shadow var(--m-dur-2) var(--m-ease-out), color var(--m-dur-1) var(--m-ease-out);
 }
 
-.tab[aria-selected="true"] {
-  border-top-color: var(--c-ink);
+.tab.tab:hover {
+  background: var(--hover-wash);
   color: var(--c-ink);
 }
 
-.tab:hover {
+.tab.tab[aria-selected="true"] {
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), var(--elev-1);
   color: var(--c-ink);
 }
 
-.tab:focus-visible {
+.tab.tab:focus-visible {
   outline: none;
+  color: var(--c-ink);
+}
+
+.tab.tab:focus-visible .tabName {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
 .tabIndex {
-  font-family: var(--f-sans);
-  font-size: var(--t-label);
+  font-size: var(--t-small);
+  font-variant-numeric: tabular-nums;
 }
 
 .tabName {
@@ -152,9 +162,9 @@
   flex-wrap: wrap;
   gap: var(--s-3);
   font-size: var(--t-title);
-  line-height: var(--lh-title);
-  letter-spacing: var(--tr-title);
-  font-weight: var(--w-medium);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  font-weight: var(--w-regular);
 }
 
 .panelTitle svg {
@@ -177,27 +187,24 @@
   align-items: center;
   gap: var(--s-2);
   margin-top: var(--s-5);
-  font-family: var(--f-sans);
-  font-size: var(--t-label);
+  font-size: var(--t-small);
   color: var(--c-ink-3);
 }
 
 .formula span {
   padding: var(--s-1) var(--s-2);
   border-radius: var(--r-xs);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong);
   color: var(--c-ink);
-  letter-spacing: 0.02em;
 }
 
 .panelExample {
   padding-left: var(--s-6);
-  border-left: var(--b-hairline) solid var(--c-border);
+  border-left: var(--b-hairline) solid var(--hairline);
 }
 
 .exampleLabel {
-  font-family: var(--f-sans);
-  font-size: var(--t-label);
+  font-size: var(--t-small);
   letter-spacing: 0;
   text-transform: none;
   color: var(--c-ink-3);
@@ -222,7 +229,6 @@
   }
   .tabs {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    row-gap: var(--s-2);
   }
   .panel {
     grid-template-columns: 1fr;
@@ -232,16 +238,20 @@
     padding-left: 0;
     padding-top: var(--s-5);
     border-left: 0;
-    border-top: var(--b-hairline) solid var(--c-border);
+    border-top: var(--b-hairline) solid var(--hairline);
   }
 }
 
-/* Pipeline steps: rounded glass chips instead of top-rule tabs (CP-6c). */
-.tab.tab { border-radius: 22px; border-top: 0; margin-top: 0; padding: var(--s-3) var(--s-4); }
-.tab.tab[aria-selected="true"] { background: var(--lg-card-hover); box-shadow: var(--lg-ring), 0 10px 24px -16px rgb(0 0 0 / 0.4); }
-.tab.tab:hover { background: var(--lg-card); }
-
 @media (max-width: 440px) {
   .tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .tab { overflow-wrap: anywhere; }
+  .tab.tab { overflow-wrap: anywhere; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab.tab,
+  .lane,
+  .halo,
+  .core {
+    transition: none;
+  }
 }

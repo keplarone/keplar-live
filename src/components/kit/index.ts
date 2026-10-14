@@ -1,5 +1,5 @@
 /**
- * Keplar Studio design system. Import from "@/components/app-ui/studio-mode/ui".
+ * Keplar Studio design system. Import from "@/components/kit".
  * Docs: ./README.md. Every Studio screen renders inside <StudioRoot>.
  */
 export { StudioRoot, studioRootClass, srOnly, type StudioRootProps, type StudioTheme } from "./StudioRoot";
@@ -38,6 +38,7 @@ export { ResizableSplit, type ResizableSplitProps } from "./ResizableSplit";
 export { SPLIT_STORAGE_PREFIX, type SplitValue, type SplitBounds, type SplitCollapsible } from "./split-storage";
 export { ToastProvider, useToast, type ToastApi, type ToastOptions, type ToastTone, type ToastProviderProps } from "./Toast";
 export { Dialog, type DialogProps } from "./Dialog";
+export { KitHosts, confirmAction, notify, type ConfirmOptions } from "./Hosts";
 export { progressRatio, defaultToastDuration } from "./feedback-logic";
 export { Progress, ActivityIndicator, EmptyState, type ProgressProps, type ActivityIndicatorProps, type EmptyStateProps } from "./Feedback";
 export { computePlacement, type Side, type Align, type Placement } from "./position";

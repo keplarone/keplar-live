@@ -1,4 +1,5 @@
-/* Deep Research: live plan + sources feed, report header, inline citations. Shape tokens: cards --shape-card, rows --shape-control, chips --shape-pill. No blue. */
+/* Deep Research: live plan + sources feed, report header, inline citations. UI v2 (docs/ui-v2.md): a raised panel with a hairline,
+   product tokens only. Shape tokens: cards --shape-card, rows --shape-control, chips --shape-pill. No blue. */
 .live {
   display: flex;
   flex-direction: column;
@@ -6,8 +7,8 @@
   margin: var(--s-2) 0 var(--s-3);
   padding: var(--s-4);
   border-radius: var(--shape-card);
-  background: rgb(var(--rgb-ink) / 0.03);
-  box-shadow: inset 0 0 0 var(--b-hairline, 1px) var(--c-border);
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1);
 }
 .head { display: flex; align-items: center; gap: var(--s-2); font-size: var(--t-small); color: var(--c-ink); }
 .headLabel { font-weight: 600; }
@@ -130,8 +131,8 @@
   max-width: min(320px, 80vw);
   padding: var(--s-3);
   border-radius: var(--shape-control);
-  background: var(--c-canvas);
-  box-shadow: inset 0 0 0 1px var(--c-border-strong), var(--sh-float, 0 12px 32px rgb(0 0 0 / 0.35));
+  background: var(--surface-overlay);
+  box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-3);
   transform: translateX(-50%);
   font-size: var(--t-label);
   line-height: 1.45;
@@ -145,13 +146,13 @@
 .popText { color: var(--c-ink-2); }
 /* Live Research: an interactive preview (button chip, opens on click/tap/Enter), so it takes pointer events and holds a link. */
 button.citeChip { border: 0; font: inherit; font-size: 11px; font-weight: 600; cursor: pointer; }
-button.citeChip:focus-visible { outline: 2px solid var(--c-ink); outline-offset: 2px; }
+button.citeChip:focus-visible { outline: none; filter: var(--focus-filter); text-decoration: underline; text-underline-offset: 3px; }
 .cite[data-open] .citeChip { background: var(--c-ink); color: var(--c-canvas); }
 .popLive { display: flex; pointer-events: auto; gap: 6px; max-width: min(340px, 86vw); }
 .popQuote { color: var(--c-ink); border-left: 2px solid var(--c-border-strong); padding-left: var(--s-2); }
 .popSignals { color: var(--c-ink-3); }
 .popOpen { align-self: flex-start; color: var(--c-ink); font-weight: 500; text-decoration: underline; text-underline-offset: 2px; }
-.popOpen:focus-visible { outline: 2px solid var(--c-ink); outline-offset: 2px; border-radius: 3px; }
+.popOpen:focus-visible { outline: none; filter: var(--focus-filter); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 2px; }
 
 .list { margin-top: var(--s-3); font-size: var(--t-small); }
 .listSummary { cursor: pointer; color: var(--c-ink); font-weight: 500; list-style: none; }

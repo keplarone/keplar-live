@@ -1,7 +1,6 @@
 import { breadcrumbs } from "@/lib/seo-graph";
 import { JsonLd } from "@/components/seo/JsonLd";
 import Link from "next/link";
-import { HeroField } from "@/components/motion/HeroField";
 import { PageHero } from "@/components/page/PageHero";
 import { Everyday } from "@/components/sections/Everyday";
 import { Creation } from "@/components/sections/Creation";
@@ -22,7 +21,6 @@ export default function ForYouPage() {
   return (
     <>
       <JsonLd data={breadcrumbs([{ name: "For you", path: "/for-you" }])} />
-      <HeroField variant="foryou" />
       <PageHero
         label="For you"
         title="One answer you can inspect, for everyday questions."

@@ -4,7 +4,7 @@ import { color } from "@/lib/tokens";
 const S = color.streams;
 // Theme-aware: the <svg> sets color to var(--c-ink); fills use currentColor / CSS vars.
 const ink = "currentColor";
-const paper = { fill: "var(--c-canvas)" } as const;
+const paper = { fill: "var(--surface-raised)" } as const; // the card the diagram sits on
 
 function Mark({ x, y, size }: { x: number; y: number; size: number }) {
   return (

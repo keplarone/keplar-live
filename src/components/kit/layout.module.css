@@ -70,7 +70,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--ks-space-1-5);
-  height: 32px;
+  height: var(--ks-tab-h);
   padding: 0 var(--ks-space-2);
   border: 0;
   border-radius: 0;
@@ -86,7 +86,7 @@
 .stripItem:hover:not([aria-disabled="true"]) { color: var(--ks-text-1); }
 .stripItem[aria-selected="true"] { color: var(--ks-text-1); }
 .stripItem[aria-disabled="true"] { color: var(--ks-text-disabled); cursor: default; }
-.stripItem:focus-visible { box-shadow: inset 0 0 0 2px var(--ks-focus); border-radius: var(--ks-radius-xs); }
+.stripItem:focus-visible { box-shadow: var(--ks-focus-ring-inset); border-radius: var(--ks-radius-xs); }
 .stripCount {
   min-width: 16px;
   padding: 0 4px;

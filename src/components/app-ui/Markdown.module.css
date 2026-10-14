@@ -114,26 +114,10 @@
   color: var(--c-ink-3);
 }
 
-.copy {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-1);
-  height: 26px;
-  padding: 0 var(--s-2);
-  border-radius: var(--r-pill);
+/* Copy / Run on a code block: compact kit ghost Buttons in the bar */
+.copy.copy {
+  --act-h: 28px;
   font-size: var(--t-label);
-  color: var(--c-ink-2);
-  transition: color var(--d-fast) var(--e-standard), background-color var(--d-fast) var(--e-standard);
-}
-
-.copy:hover:not(:disabled) {
-  color: var(--c-ink);
-  background: rgb(var(--rgb-ink) / 0.05);
-}
-
-.copy:disabled {
-  opacity: 0.4;
-  cursor: default;
 }
 
 .pre {
@@ -255,7 +239,7 @@
   -webkit-overflow-scrolling: touch;
 }
 .mathDisplay :global(.katex-display) { margin: 0; }
-.mathDisplay:focus-visible { outline: 2px solid var(--c-accent, #17171a); outline-offset: 2px; border-radius: 8px; }
+.mathDisplay:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; border-radius: 8px; }
 .mathInline { display: inline; }
 .mathPending { color: transparent; user-select: none; white-space: nowrap; }
 .mathRaw {
@@ -272,8 +256,7 @@
 
 /* Touch screens: the Copy button on code blocks gets a finger-sized target. */
 @media (pointer: coarse) {
-  .copy {
-    min-height: 36px;
-    padding: 0 var(--s-3);
+  .copy.copy {
+    --act-h: 44px;
   }
 }

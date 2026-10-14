@@ -1,6 +1,7 @@
 "use client";
 /** Plus/Pro: opt in to pay-as-you-go above plan limits with a monthly cap (renders nothing while the owner-pending flag is off). */
 import { useEffect, useState } from "react";
+import { Switch } from "@/components/kit";
 import s from "./Usage.module.css";
 
 type Status = { enabled: boolean; eligible?: boolean; optedIn?: boolean; capUsd?: number; usedUsd?: number; pct?: number; multiplier?: number; creditPack?: { credits: number; usd: number }; priceList?: { unit: string; usd: number }[]; features?: string[]; alertPcts?: number[]; maxCapUsd?: number; billingLinked?: boolean };
@@ -38,11 +39,11 @@ export function OverageSettings() {
     <section className={s.card} aria-labelledby="overage-h">
       <h2 id="overage-h">Pay as you go above your plan</h2>
       <p className={s.sub}>When your monthly credits run out, heavy features ({(st.features ?? []).join(", ")}) can keep going at ${(st.creditPack?.usd ?? 7.5).toFixed(2)} per {(st.creditPack?.credits ?? 1000).toLocaleString("en-US")} credits (the Plus rate), billed monthly, never past your cap. We email you at {(st.alertPcts ?? []).join("%, ")}% of the cap.</p>
-      <label className={s.field}><input type="checkbox" checked={Boolean(st.optedIn)} disabled={busy} onChange={(e) => save({ optedIn: e.target.checked })} /> Keep going past my plan&apos;s limits</label>
+      <Switch className={s.optIn} checked={Boolean(st.optedIn)} disabled={busy} onCheckedChange={(v) => void save({ optedIn: v })} label={<>Keep going past my plan&apos;s limits</>} />
       <div className={s.field}>
         <label htmlFor="ovg-cap">Monthly cap ($)</label>
         <input id="ovg-cap" type="number" min={1} max={st.maxCapUsd} step={1} value={cap} onChange={(e) => setCap(e.target.value)} />
-        <button className={s.btn} disabled={busy} onClick={() => save({ capUsd: Number(cap) })}>Save cap</button>
+        <button type="button" className={s.btn} disabled={busy} onClick={() => save({ capUsd: Number(cap) })}>Save cap</button>
       </div>
       <div className={s.row}>
         <span>This month</span>

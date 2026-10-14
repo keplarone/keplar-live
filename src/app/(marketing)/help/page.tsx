@@ -27,10 +27,9 @@ export default function HelpPage() {
       </header>
       <div className={s.wrap}>
         <ul className={s.tiles} aria-label="Help topics">
-          {HELP.map((g, n) => (
+          {HELP.map((g) => (
             <li key={g.id}>
               <a className={s.tile} href={`#${g.id}`}>
-                <span className={s.tileNum}>{String(n + 1).padStart(2, "0")}</span>
                 <span className={s.tileTitle}>{g.title}</span>
                 <span className={s.tileCount}>{g.items.length} {g.items.length === 1 ? "question" : "questions"}</span>
               </a>
@@ -43,10 +42,9 @@ export default function HelpPage() {
             <ol>{HELP.map((g) => <li key={g.id}><a href={`#${g.id}`}>{g.title}</a></li>)}</ol>
           </nav>
           <div className={s.groups}>
-            {HELP.map((g, n) => (
+            {HELP.map((g) => (
               <section key={g.id} id={g.id} aria-labelledby={`${g.id}-h`} className={s.group}>
                 <div className={s.groupHead}>
-                  <span className={s.groupNum} aria-hidden="true">{String(n + 1).padStart(2, "0")}</span>
                   <h2 id={`${g.id}-h`} className={s.groupTitle}>{g.title}</h2>
                 </div>
                 {g.items.map((i) => (

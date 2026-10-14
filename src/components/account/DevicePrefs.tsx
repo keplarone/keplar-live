@@ -6,42 +6,43 @@
 import { useEffect, useId, useState, type ReactNode } from "react";
 import { PREF_DEFAULTS, playDoneSound, resetPrefs, setPrefs, type Prefs } from "@/lib/prefs";
 import { usePrefs } from "@/lib/use-prefs";
+import { SegmentedControl, Switch as KitSwitch } from "@/components/kit";
 import s from "./account.module.css";
 
 type BoolKey = { [K in keyof Prefs]: Prefs[K] extends boolean ? K : never }[keyof Prefs];
 
+/** A setting row: label and hint on the left, the kit switch on the right (its name is the label; the hint describes it). */
 function Switch({ k, label, hint }: { k: BoolKey; label: string; hint?: ReactNode }) {
   const p = usePrefs();
-  const id = useId();
+  const hintId = useId();
   const on = p[k];
   return (
     <div className={s.prefRow}>
       <div className={s.prefText}>
-        <span className={s.prefLabel} id={id}>{label}</span>
-        {hint ? <span className={s.prefHint}>{hint}</span> : null}
+        <span className={s.prefLabel} aria-hidden="true">{label}</span>
+        {hint ? <span className={s.prefHint} id={hintId}>{hint}</span> : null}
       </div>
-      <button type="button" role="switch" aria-checked={on} aria-labelledby={id} className={s.tk} onClick={() => setPrefs({ [k]: !on } as Partial<Prefs>)}>
-        <span className={s.tkKnob} aria-hidden="true" />
-        <span className={s.tkText}>{on ? "On" : "Off"}</span>
-      </button>
+      <KitSwitch className={s.kSwitch} checked={on} onCheckedChange={(v) => setPrefs({ [k]: v } as Partial<Prefs>)} label={label} hideLabel describedBy={hint ? hintId : undefined} />
     </div>
   );
 }
 
 function Choice<K extends keyof Prefs>({ k, label, hint, options }: { k: K; label: string; hint?: ReactNode; options: { value: Prefs[K]; label: string }[] }) {
   const p = usePrefs();
-  const id = useId();
   return (
     <div className={s.prefRow}>
       <div className={s.prefText}>
-        <span className={s.prefLabel} id={id}>{label}</span>
+        <span className={s.prefLabel} aria-hidden="true">{label}</span>
         {hint ? <span className={s.prefHint}>{hint}</span> : null}
       </div>
-      <div role="radiogroup" aria-labelledby={id} className={s.seg}>
-        {options.map((o) => (
-          <button key={String(o.value)} type="button" role="radio" aria-checked={p[k] === o.value} className={s.segOpt} onClick={() => setPrefs({ [k]: o.value } as Partial<Prefs>)}>{o.label}</button>
-        ))}
-      </div>
+      <SegmentedControl
+        className={s.kSeg}
+        size="sm"
+        label={label}
+        value={String(p[k])}
+        onValueChange={(v) => setPrefs({ [k]: v } as Partial<Prefs>)}
+        options={options.map((o) => ({ value: String(o.value), label: o.label }))}
+      />
     </div>
   );
 }
@@ -106,16 +107,13 @@ export function NotificationPrefs() {
     <div className={s.panel}>
       <div className={s.prefRow}>
         <div className={s.prefText}>
-          <span className={s.prefLabel} id={id}>Notify me when an answer is ready</span>
-          <span className={s.prefHint}>
+          <span className={s.prefLabel} aria-hidden="true">Notify me when an answer is ready</span>
+          <span className={s.prefHint} id={`${id}-hint`}>
             A desktop notification when a long answer finishes while Keplar is in another tab or window.
             {perm === "denied" ? " Notifications are blocked for this site; allow them in your browser’s site settings first." : perm === "unsupported" ? " This browser doesn’t support notifications." : ""}
           </span>
         </div>
-        <button type="button" role="switch" aria-checked={p.notifyDone} aria-labelledby={id} className={s.tk} disabled={perm === null || perm === "unsupported" || (perm === "denied" && !p.notifyDone)} onClick={() => void toggleNotify()}>
-          <span className={s.tkKnob} aria-hidden="true" />
-          <span className={s.tkText}>{p.notifyDone ? "On" : "Off"}</span>
-        </button>
+        <KitSwitch className={s.kSwitch} checked={p.notifyDone} onCheckedChange={() => void toggleNotify()} label="Notify me when an answer is ready" hideLabel describedBy={`${id}-hint`} disabled={perm === null || perm === "unsupported" || (perm === "denied" && !p.notifyDone)} />
       </div>
       <Switch k="soundDone" label="Play a sound when an answer is ready" hint={<>A short two-note chime. <button type="button" className={s.link} onClick={playDoneSound}>Preview</button></>} />
       <p className={s.note}>Security emails (new sign-ins, password and two-factor changes) are always sent and can’t be turned off.</p>

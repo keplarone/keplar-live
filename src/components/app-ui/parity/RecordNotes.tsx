@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { addSegment, recordingDraft, RECORD_LIMITS, stamp, type Segment } from "@/lib/voice/record";
 import { classifyVoiceError, splitResults, VOICE_ERRORS, voiceLang } from "@/lib/voice";
 import { openDraft } from "./draft-bus";
+import { Button, Tooltip } from "@/components/kit";
 import s from "./parity.module.css";
 
 type Rec = {
@@ -78,10 +79,11 @@ export function RecordNotes() {
 
   return (
     <>
-      <button type="button" className={s.toggle} aria-pressed={on} onClick={() => (on ? finish() : begin())} data-record-notes="" title="Transcribe a meeting or lecture, then turn it into notes. Your browser's speech service does the transcription; Keplar keeps only the text.">
-        <span className={s.pip} aria-hidden="true" />
-        <span>{on ? `Stop recording ${stamp(elapsed)}` : "Record notes"}</span>
-      </button>
+      <Tooltip content="Transcribe a meeting or lecture, then turn it into notes. Your browser's speech service does the transcription; Keplar keeps only the text.">
+        <Button size="sm" variant="ghost" className={s.toggle} aria-pressed={on} onClick={() => (on ? finish() : begin())} data-record-notes="" leadingIcon={<span className={s.pip} aria-hidden="true" />}>
+          {on ? `Stop recording ${stamp(elapsed)}` : "Record notes"}
+        </Button>
+      </Tooltip>
       {on ? <span className={s.note} role="status" aria-live="polite">{segs.length ? `${segs.length} line${segs.length === 1 ? "" : "s"} so far` : "Listening..."}{interim ? `: ${interim.slice(-80)}` : ""}</span> : null}
       {err ? <span className={s.note} role="alert">{err}</span> : null}
     </>

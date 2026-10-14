@@ -116,24 +116,32 @@ test("overlays use the shared exit pattern at the source", () => {
   const uses: [string, RegExp][] = [
     ["src/components/nav/CommandPalette.tsx", /usePresence\(open\)[\s\S]*presence\.motion\("fade"\)[\s\S]*presence\.motion\("pop", false\)/],
     ["src/components/chrome/Nav.tsx", /usePresence\(open\)[\s\S]*panel\.motion\("drop"\)/],
-    ["src/components/app-ui/AccountMenu.tsx", /menu\.motion\("pop"\)/],
-    ["src/components/app-ui/SearchDialog.tsx", /useExit\(onClose, \{ parent: presence \}\)/],
-    // The app shell: Cmd+K search closes from outside too, the undo toast sinks out, the drawer scrim fades out.
-    ["src/components/app-ui/KeplarApp.tsx", /usePresence\(searchOpen\)[\s\S]*usePresence\(drawerOpen\)[\s\S]*drawerScrim\.motion\("fade"\)[\s\S]*<Presence value=\{del\.toast\}>[\s\S]*motion=\{p\.motion\("toast"\)\}[\s\S]*presence=\{search\}/],
-    // Composer: attach, Modes and routing pop out of their buttons (usePopupOrigin) and close with an exit.
-    ["src/components/app-ui/Composer.tsx", /usePresence\(attachOpen\)[\s\S]*usePresence\(moreOpen && overflow\.length > 0\)[\s\S]*usePresence\(routingOpen\)[\s\S]*usePopupOrigin\(attachOpen, attachBtnRef, attachMenuRef\)[\s\S]*usePopupOrigin\(moreOpen, moreBtnRef, moreMenuRef\)/],
-    ["src/components/create/advanced/InviteDialog.tsx", /useExit\(onClose\)[\s\S]*exit\.motion\("fade"\)[\s\S]*exit\.motion\("pop", false\)/],
-    ["src/components/create/advanced/PublishGate.tsx", /useExit\(onClose\)[\s\S]*exit\.motion\("fade"\)[\s\S]*exit\.motion\("pop", false\)/],
-    ["src/components/create/advanced/LiveStudio.tsx", /usePresence\(Boolean\(text\)\)[\s\S]*toastBox\.motion\("toast"\)/],
+    // UI v2: the app's overlays are the kit's (kit/Dialog, Popover, Toast), which enter with the kit's own short, no-overshoot
+    // motion (data-motion="ks", kit/overlay.module.css, reduced-motion aware; pinned below).
+    ["src/components/app-ui/AccountMenu.tsx", /<Popover open=\{open\}[^>]*role="menu"/],
+    ["src/components/app-ui/SearchDialog.tsx", /<Dialog open onOpenChange=/],
+    // The app shell: Cmd+K search is the kit Dialog while searchOpen; the drawer scrim fades out; deleting a chat shows the kit toast.
+    ["src/components/app-ui/KeplarApp.tsx", /usePresence\(drawerOpen\)[\s\S]*drawerScrim\.motion\("fade"\)[\s\S]*\{searchOpen \? \(\s*<SearchDialog /],
+    ["src/components/app-ui/delete/useChatDelete.ts", /notify\(\{ id: UNDO_TOAST_ID,[\s\S]*?duration: UNDO_MS, action: \{ label: "Undo"/],
+    // Composer: Attach, Modes and routing are kit Popovers, placed on the side of the composer with more room.
+    ["src/components/app-ui/Composer.tsx", /<Popover open=\{routingOpen\}[\s\S]*<Popover open=\{attachOpen\}[\s\S]*<Popover open=\{moreOpen && overflow\.length > 0\}/],
+    // UI v2: Create's invite and publish-gate dialogs are the kit Dialog (native <dialog>, motion in overlay.module.css), and
+    // the live studio's feedback is a kit toast (notify), which enters and leaves in the kit's own motion.
+    ["src/components/create/advanced/InviteDialog.tsx", /<Dialog open onOpenChange=/],
+    ["src/components/create/advanced/PublishGate.tsx", /<Dialog\s+open\s+onOpenChange=[\s\S]*dismissible=\{!publishing && !fixing\}/],
+    ["src/components/create/advanced/LiveStudio.tsx", /notify\(\{ title: x \}\)/],
     ["src/components/app-ui/Lightbox.tsx", /useExit\(onClose\)/],
-    ["src/components/app-ui/ShareAnswer.tsx", /usePresence\(view !== "closed"\)/],
-    ["src/components/app-ui/ThreadBar.tsx", /usePresence\(help\)/],
-    ["src/components/app-ui/parity/ShareChatDialog.tsx", /useExit\(onClose\)/],
+    ["src/components/app-ui/ShareAnswer.tsx", /<Dialog open=\{view !== "closed"\}/],
+    ["src/components/app-ui/ThreadBar.tsx", /<Dialog open=\{open\}[\s\S]*?title="Keyboard shortcuts"/],
+    ["src/components/app-ui/parity/ShareChatDialog.tsx", /<Dialog\s+open\s/],
     ["src/components/consent/CookieBanner.tsx", /usePresence\(open\)/],
-    ["src/components/create/delete/DeleteSiteDialog.tsx", /<Presence value=\{toast\}>/],
+    ["src/components/create/delete/DeleteSiteDialog.tsx", /notify\(\{ id: "site-undo", title: `Deleted “\$\{toast\.title\}”`, duration: UNDO_MS, action: \{ label: "Undo"/],
     ["src/components/app-ui/delete/DeleteChat.tsx", /"data-motion": "toast"/],
   ];
   for (const [f, re] of uses) assert.match(read(f), re, f);
+  // The kit's overlays animate in (dialog, popover, toast in and out) and drop the motion under reduced motion.
+  const kit = read("src/components/kit/overlay.module.css");
+  for (const re of [/\.dialog\[open\] \{[^}]*animation: dialogIn/, /\.float \{[^}]*animation: rise/, /\.toast\[data-leaving\] \{ animation: toastOut/, /prefers-reduced-motion: reduce\)[\s\S]*\.dialog\[open\][^{]*\{ animation: none; \}/]) assert.match(kit, re);
   // Native <dialog> animates both ways in CSS; overlays that have not opted in still get an enter.
   assert.match(css, /@starting-style/);
   assert.match(css, /display var\(--m-dur-1\) allow-discrete/);
@@ -171,10 +179,16 @@ test("composer and create: menus have no keystroke-driven motion; no gradient sh
     assert.doesNotMatch(read(f), /@keyframes[^{]*\{[^}]*background-position/, f);
   }
   assert.doesNotMatch(read("src/components/app-ui/Composer.module.css"), /panelIn/, "composer menus use the shared pop");
-  for (const f of ["src/components/create/CreateStudio.tsx", "src/components/create/advanced/LiveStudio.tsx", "src/components/developers/CodeTabs.tsx"]) {
+  for (const f of ["src/components/developers/CodeTabs.tsx"]) {
     const src = read(f);
     assert.match(src, /useTabIndicator\(/, f);
     assert.match(src, /className="m-tab-indicator" aria-hidden="true"/, f);
   }
+  // UI v2: Create's kind switch and the Live studio's panes are the kit's Tabs, whose underline slides (useSlidingIndicator).
+  for (const f of ["src/components/create/CreateStudio.tsx", "src/components/create/advanced/LiveStudio.tsx"]) {
+    assert.match(read(f), /<Tabs id=/, f);
+    assert.match(read(f), /from "@\/components\/kit"/, f);
+  }
+  assert.match(read("src/components/kit/Layout.tsx"), /useSlidingIndicator\(listRef, lineRef, '\[aria-selected="true"\]', value\)/);
   assert.match(css, /--ti-inset/);
 });

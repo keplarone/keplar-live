@@ -3,7 +3,6 @@ import { Faq } from "@/components/sections/Faq";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { landingBySlug, type LandingPage } from "@/lib/content/landing";
 import { breadcrumbs, webPage } from "@/lib/seo-graph";
-import { HeroField } from "@/components/motion/HeroField";
 import { StickyCta } from "./StickyCta";
 import { TrackedLink } from "./TrackedLink";
 import { TryBox } from "./TryBox";
@@ -16,7 +15,6 @@ export function LandingTemplate({ page }: { page: LandingPage }) {
   const related = page.related.map((p) => ({ path: p, title: landingBySlug(p.slice(1))?.label ?? RELATED_LABELS[p] ?? p }));
   return (
     <>
-      <HeroField variant="how" />
       <header className={hero.hero}>
         <div className={hero.header}>
           <p className={hero.label}>{page.label}</p>

@@ -1,48 +1,39 @@
-/* Keplar Create, App studio ("the drafting table"). Keplar's own language: graphite (#0b0b0d) and glowy white in dark, paper
-   and ink in light, Google Sans, semantic accents only (green = passed, amber = attention, red = removed). No blue or purple.
-   No focus or selection boxes: keyboard focus glows or underlines; a chosen tile lifts and gets a check, a chosen tab an underline.
-   Pills only for chips, toggles, badges and the main CTA. Generated apps are not styled here: they use their own design. */
+/* Keplar Create, App studio ("the drafting table"), on UI v2 (docs/ui-v2.md): the plain canvas, raised panels with hairlines,
+   one ink action per area (kit Button), kit Tabs / SegmentedControl / Menu / Dialog, toasts through notify(). Colours come from the
+   product tokens only; semantic accents only (green = passed, amber = attention, red = removed). No glass, glow or swell.
+   Generated apps are not styled here: they use their own design. */
 
-.root { display: flex; flex-direction: column; flex: 1; min-height: 0; color: var(--c-ink); position: relative;
-  --glow: color-mix(in srgb, var(--c-ink) 22%, transparent); --glow-strong: color-mix(in srgb, var(--c-ink) 42%, transparent); --hair: var(--c-border); }
+.root { display: flex; flex-direction: column; flex: 1; min-height: 0; color: var(--c-ink); position: relative; --hair: var(--c-border); }
 .root :focus { outline: none; }
 .root :focus-visible { outline: none; }
 .root ::selection { background: color-mix(in srgb, var(--c-ink) 16%, transparent); }
 .grow { flex: 1; }
 .dim { color: var(--c-ink-3); }
 
-/* ── Create's kind tabs (App / Site / Images / Video / Mobile): an underline, not a pill bar ── */
-.kindBar.kindBar { background: var(--c-canvas); padding-top: 4px; padding-bottom: 0; border-bottom: var(--b-hairline) solid var(--c-border); overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -webkit-overflow-scrolling: touch; max-width: 100%; }
-.kindTabs.kindTabs { position: relative; background: transparent; padding: 0; gap: var(--s-1); --ti-inset: 10; --ti-bottom: -1px; --ti-color: var(--c-ink); }
-/* With the sliding indicator placed (useTabIndicator), the per-tab underline steps aside. */
-.kindTabs[data-tab-indicator] .kindTab::after { display: none; }
-.kindTabs .kindTab { position: relative; height: 40px; border-radius: 0; background: transparent; color: var(--c-ink-3); box-shadow: none; transition: color var(--d-fast) ease; }
-.kindTabs .kindTab:hover { color: var(--c-ink); }
-.kindTabs .kindTab[aria-selected="true"] { background: transparent; color: var(--c-ink); box-shadow: none; }
-.kindTabs .kindTab::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 2px; border-radius: 1px; background: var(--c-ink); opacity: 0; transform: scaleX(.4); transition: opacity var(--d-base) ease, transform var(--d-base) var(--e-emphasized); }
-.kindTabs .kindTab[aria-selected="true"]::after { opacity: 1; transform: none; }
-.kindTabs .kindTab:focus-visible { outline: none; text-decoration: underline; text-underline-offset: 6px; }
+/* ── Create's kind switch (App, Images, Video, Mobile, Keplar Studio): the kit's Tabs, an underline that slides ── */
+.kindBar { display: flex; align-items: flex-end; min-width: 0; max-width: 100%; padding: 0 var(--s-6); background: var(--c-canvas); }
+.kindTabs { flex: 1; min-width: 0; }
+.kindTabs [role="tab"] { height: 40px; padding: 0 var(--s-3); font-size: var(--t-small); }
+.beta { color: var(--c-ink-3); font-size: 0.85em; font-weight: var(--w-regular); }
+/* Each kind's view stays mounted once opened; only the open one shows. */
+.kindPanel[hidden] { display: none; }
+.kindPanel[data-scroll] { flex: 1; min-height: 0; overflow-y: auto; }
+@media (max-width: 480px) {
+  .kindBar { padding: 0 var(--s-3); }
+  .kindTabs [role="tab"] { padding: 0 var(--s-2); font-size: 13px; }
+}
+@media (pointer: coarse) { .kindTabs [role="tab"] { height: 44px; } }
 
 /* ── start: the desk ── */
 .start { flex: 1; overflow-y: auto; overflow-x: hidden; background: var(--c-canvas); }
-.desk { display: grid; grid-template-columns: minmax(340px, 460px) minmax(0, 1fr); gap: clamp(20px, 2.5vw, 40px); max-width: 1400px; margin: 0 auto; padding: clamp(16px, 2vw, 28px) clamp(16px, 2vw, 28px) var(--s-8); align-items: start; }
-.brief { display: flex; flex-direction: column; gap: var(--s-5); min-width: 0; }
-.intro { display: flex; flex-direction: column; gap: 6px; }
-.kicker { font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-creation); }
-.h1 { margin: 0; font-size: clamp(22px, 2.2vw, 28px); line-height: 1.15; letter-spacing: -0.025em; font-weight: var(--w-medium); }
-.lede { margin: 0; color: var(--c-ink-2); font-size: var(--t-small); line-height: 1.5; max-width: 42ch; }
 
 .step { display: flex; flex-direction: column; gap: var(--s-2); padding-top: var(--s-4); border-top: var(--b-hairline) solid var(--c-border); }
 .stepLabel { margin: 0; font-size: var(--t-label); font-weight: var(--w-medium); color: var(--c-ink-2); letter-spacing: 0; text-transform: none; }
-.stepNum { display: none; }
 
 .prompt { display: block; width: 100%; field-sizing: content; min-height: 4.8em; max-height: 36vh; resize: none; border: 0; border-bottom: var(--b-hairline) solid var(--c-border); background: transparent; color: var(--c-ink); caret-color: var(--c-ink);
   font: inherit; font-size: clamp(16px, 1.2vw, 18px); line-height: 1.5; letter-spacing: -0.01em; padding: 2px 0 12px; transition: border-color var(--d-base) ease; }
 .prompt::placeholder { color: var(--c-ink-3); opacity: .85; }
 .prompt:focus, .prompt:focus-visible { border-bottom-color: color-mix(in srgb, var(--c-ink) 55%, transparent); box-shadow: none; }
-.starters { list-style: none; margin: 2px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 2px 14px; }
-.starter { border: 0; padding: 0; background: transparent; color: var(--c-ink-3); font: inherit; font-size: var(--t-label); cursor: pointer; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: color var(--d-fast) ease, text-decoration-color var(--d-fast) ease; }
-.starter:hover, .starter:focus-visible { color: var(--c-ink); text-decoration-color: currentColor; }
 .chip { height: 28px; padding: 0 10px; border-radius: var(--r-pill); border: var(--b-hairline) solid var(--c-border); background: transparent; color: var(--c-ink-2); font: inherit; font-size: var(--t-label); cursor: pointer; transition: color var(--d-fast) ease, border-color var(--d-fast) ease; }
 .chip:hover { color: var(--c-ink); border-color: var(--c-border-strong); }
 .chip:focus-visible { color: var(--c-ink); text-decoration: underline; text-underline-offset: 3px; }
@@ -68,35 +59,24 @@
 .tilesGhost span { height: 96px; border-radius: 10px; background: var(--c-surface-1); }
 .lookFoot { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
 
-/* toggles (segmented): pill */
-.toggle { display: inline-flex; padding: 3px; gap: 2px; border-radius: var(--r-pill); background: var(--c-surface-2); }
-.toggle button { height: 28px; padding: 0 12px; border: 0; border-radius: var(--r-pill); background: transparent; color: var(--c-ink-2); font: inherit; font-size: var(--t-label); cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; transition: color var(--d-fast) ease, background var(--d-fast) ease; }
-.toggle button:hover { color: var(--c-ink); }
-.toggle button[aria-pressed="true"] { background: var(--c-canvas); color: var(--c-ink); box-shadow: none; }
-.toggle button:focus-visible { text-decoration: underline; text-underline-offset: 3px; color: var(--c-ink); }
-
 .textBtn { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 2px; border: 0; background: transparent; color: var(--c-ink-2); font: inherit; font-size: var(--t-label); cursor: pointer; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 4px; transition: color var(--d-fast) ease, text-decoration-color var(--d-fast) ease; white-space: nowrap; }
 .textBtn:hover, .textBtn:focus-visible { color: var(--c-ink); text-decoration-color: currentColor; }
 .textBtn:disabled { opacity: .5; cursor: default; }
 
-/* ship: sticky Build actions */
-.shipStep { position: sticky; bottom: 0; z-index: 3; margin: 0 -8px; padding: var(--s-3) 8px calc(var(--s-3) + env(safe-area-inset-bottom)); border-top: var(--b-hairline) solid var(--c-border); border-radius: 0;
-  background: var(--c-canvas); backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: none; }
 /* ship */
 .ship { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
 .shipMeta { font-size: var(--t-label); color: var(--c-ink-2); line-height: 1.5; max-width: 34ch; }
 .kbd { font-size: 11px; color: var(--c-ink-3); padding: 2px 6px; border-radius: 4px; background: var(--c-surface-2); font-variant-numeric: tabular-nums; }
-.cta { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 18px; border-radius: var(--r-pill); border: 0; background: var(--c-ink); color: var(--c-canvas); font: inherit; font-size: var(--t-small); font-weight: var(--w-medium); cursor: pointer; white-space: nowrap;
-  box-shadow: none; transition: opacity var(--d-base) ease, filter var(--d-fast) ease; }
-.cta:hover { filter: brightness(1.08); }
-.cta:active { opacity: .9; }
-.cta:disabled { opacity: .38; cursor: not-allowed; filter: none; }
-.cta:focus-visible { text-decoration: underline; text-underline-offset: 4px; }
-.top .cta { height: 34px; padding: 0 16px; font-size: var(--t-label); }
-.ghostBtn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; height: 32px; padding: 0 12px; border-radius: 10px; border: var(--b-hairline) solid var(--c-border-strong); background: transparent; color: var(--c-ink); font: inherit; font-size: var(--t-label); text-decoration: none; cursor: pointer; white-space: nowrap; transition: box-shadow var(--d-base) ease, border-color var(--d-fast) ease; }
-.ghostBtn:hover { border-color: var(--c-ink-3); }
-.ghostBtn:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
-.ghostBtn:disabled { opacity: .45; cursor: default; }
+/* .cta marks the area's one primary action (a kit Button, variant primary): only layout hooks live here. */
+.cta { flex-shrink: 0; }
+/* Links that act as buttons (Open ↗, Live ↗, Open live app): drawn like the kit's secondary and primary pills. */
+.linkBtn, .linkPrimary { display: inline-flex; align-items: center; justify-content: center; gap: 4px; height: 32px; padding: 0 14px; border-radius: var(--r-pill); font-size: var(--t-small); font-weight: var(--w-medium); text-decoration: none; white-space: nowrap; transition: background-color var(--m-dur-1) var(--m-ease-out), box-shadow var(--m-dur-1) var(--m-ease-out); }
+.linkBtn { color: var(--c-ink); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline-strong); }
+.linkBtn:hover { background: var(--hover-wash); }
+.linkPrimary { color: var(--c-canvas); background: var(--c-ink); }
+.linkPrimary:hover { background: var(--c-ink-hover); }
+.linkBtn:active, .linkPrimary:active { scale: var(--m-press); }
+.linkBtn:focus-visible, .linkPrimary:focus-visible { text-decoration: underline; text-underline-offset: 4px; }
 .upsell { margin: 0; font-size: var(--t-label); color: var(--c-ink-3); line-height: 1.55; }
 .upsell a { color: var(--c-ink); }
 .inlineErr { margin: 0; font-size: var(--t-small); color: var(--c-attention); }
@@ -104,7 +84,6 @@
 /* ── the canvas ── */
 .canvas { position: relative; min-width: 0; border-radius: 12px; border: var(--b-hairline) solid var(--c-border); overflow: hidden; isolation: isolate;
   background: var(--c-surface-1); }
-.desk > .canvas { position: sticky; top: 14px; min-height: min(560px, calc(100dvh - 140px)); display: flex; }
 .canvas::before { content: none; }
 
 .bp { position: relative; z-index: 1; display: flex; flex-direction: column; gap: var(--s-3); padding: clamp(14px, 1.6vw, 22px); width: 100%; min-height: 100%; color: var(--c-ink); }
@@ -124,9 +103,9 @@
 .bpTitle { color: var(--c-ink-2); font-weight: var(--w-medium); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bpBig .bpTitle { font-size: 14px; }
 .bpRoute { margin-left: auto; opacity: .7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40%; }
-.bpMark { flex: none; width: 16px; height: 16px; border-radius: 50%; display: grid; place-items: center; font-size: 10px; font-weight: 700; color: var(--c-canvas); background: var(--c-verified); box-shadow: 0 0 12px color-mix(in srgb, var(--c-verified) 55%, transparent); }
-.bpMark[data-ok="false"] { background: var(--c-attention); box-shadow: 0 0 12px color-mix(in srgb, var(--c-attention) 55%, transparent); }
-.bpWriting { flex: none; width: 16px; height: 2px; border-radius: 2px; background: var(--c-ink); box-shadow: 0 0 10px var(--glow-strong); animation: kcPulse 1.1s ease-in-out infinite; }
+.bpMark { flex: none; width: 16px; height: 16px; border-radius: 50%; display: grid; place-items: center; font-size: 10px; font-weight: 700; color: var(--c-canvas); background: var(--c-verified); }
+.bpMark[data-ok="false"] { background: var(--c-attention); }
+.bpWriting { flex: none; width: 16px; height: 2px; border-radius: 2px; background: var(--c-ink); animation: kcPulse 1.1s ease-in-out infinite; }
 .bpSvg { display: block; width: 100%; height: auto; overflow: visible; }
 .bpOutline { fill: color-mix(in srgb, currentColor 2%, transparent); stroke: color-mix(in srgb, currentColor 28%, transparent); stroke-width: 1; vector-effect: non-scaling-stroke; stroke-dasharray: none; transition: fill .5s ease, stroke .4s ease; }
 .bpLine { fill: currentColor; opacity: .5; }
@@ -138,14 +117,12 @@
 .bpPath { fill: none; stroke: currentColor; stroke-opacity: .6; stroke-width: 1.4; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
 /* While building: the screen being written traces itself; a written screen develops into the app's own colors. */
 .bpFrame[data-state="writing"] .bpOutline { stroke: color-mix(in srgb, currentColor 70%, transparent); stroke-dasharray: 7 5; animation: kcTrace 1.2s linear infinite; }
-.bpFrame[data-state="writing"] .bpSvg { filter: drop-shadow(0 0 10px var(--glow)); }
 .bpFrame[data-state="written"] .bpSvg, .bpFrame[data-state="tested"] .bpSvg, .bpFrame[data-state="failed"] .bpSvg { color: var(--bp-ink, var(--c-ink)); }
 .bpFrame[data-state="written"] .bpOutline, .bpFrame[data-state="tested"] .bpOutline, .bpFrame[data-state="failed"] .bpOutline { fill: var(--bp-bg, color-mix(in srgb, var(--c-ink) 6%, transparent)); stroke: color-mix(in srgb, var(--bp-ink, var(--c-ink)) 30%, transparent); stroke-dasharray: none; }
-.bpFrame[data-state="tested"] .bpSvg { filter: drop-shadow(0 10px 22px rgb(0 0 0 / .25)); }
+.bpFrame[data-state="tested"] .bpSvg { filter: drop-shadow(0 8px 18px rgb(var(--rgb-ink) / .14)); }
 .bpFrame[data-state="failed"] .bpOutline { stroke: var(--c-attention); }
 .bp:not([data-building]):not([data-confident]) .bpGrid { opacity: .72; }
-.bpProgress { height: 2px; border-radius: 2px; background: color-mix(in srgb, var(--c-ink) 10%, transparent); overflow: hidden; margin-top: var(--s-1); }
-.bpProgress span { display: block; height: 100%; background: var(--c-ink); transform-origin: 0 50%; box-shadow: 0 0 14px var(--glow-strong); transition: transform .8s var(--e-emphasized); }
+.bpProgress { margin-top: var(--s-1); color: var(--c-ink-2); font-size: var(--t-label); }
 .bpCaption { margin: auto 0 0; padding-top: var(--s-2); font-size: var(--t-label); color: var(--c-ink-3); }
 
 /* ── your apps ── */
@@ -160,7 +137,6 @@
 .cardHit:focus-visible .thumb { filter: brightness(1.1); }
 .thumb { display: block; aspect-ratio: 16 / 10; overflow: hidden; background: var(--c-surface-2); }
 .thumb img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; transition: transform .7s var(--e-emphasized); }
-.card:hover .thumb img { transform: scale(1.03); }
 .poster { position: relative; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; padding: 14px 16px; background: var(--c-surface-2); color: var(--c-ink); text-align: left; }
 .posterName { font-size: clamp(20px, 1.7vw, 26px); line-height: 1.02; letter-spacing: -0.02em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .posterBar { display: block; width: 36px; height: 6px; border-radius: 3px; margin-top: 10px; background: var(--c-ink); }
@@ -174,42 +150,32 @@
 .badge[data-tone="ok"] { color: var(--c-verified); background: color-mix(in srgb, var(--c-verified) 12%, transparent); }
 .badge[data-tone="warn"] { color: var(--c-attention); background: color-mix(in srgb, var(--c-attention) 13%, transparent); }
 .badge[data-tone="live"] { color: var(--c-ink); }
-.badge[data-tone="live"]::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--c-attention); animation: kcPulse 1.4s ease-in-out infinite; }
-
-/* ── fine-tune sheet ── */
-.sheetWrap { position: fixed; inset: 0; z-index: 80; display: flex; justify-content: flex-end; background: rgb(0 0 0 / .45); backdrop-filter: blur(6px); animation: kcFade var(--d-base) ease both; }
-.sheet { width: min(760px, 100%); height: 100%; overflow-y: auto; background: var(--c-canvas); border-left: var(--b-hairline) solid var(--c-border); padding: var(--s-5); display: flex; flex-direction: column; gap: var(--s-4); animation: kcSlide var(--d-slow) var(--e-emphasized) both; }
-.sheetHead { display: flex; align-items: center; gap: var(--s-3); position: sticky; top: calc(-1 * var(--s-5)); background: var(--c-canvas); padding: var(--s-2) 0; z-index: 2; }
 
 /* ── studio ── */
 .top { display: flex; align-items: center; gap: var(--s-3); padding: 8px var(--s-4); border-bottom: var(--b-hairline) solid var(--c-border); background: var(--c-canvas); flex-wrap: wrap; min-height: 52px; }
-.back { display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 8px 0 4px; border: 0; background: transparent; color: var(--c-ink-2); font: inherit; font-size: var(--t-small); cursor: pointer; }
-.back:hover, .back:focus-visible { color: var(--c-ink); text-decoration: underline; text-underline-offset: 4px; }
-.back:disabled { opacity: .4; cursor: default; text-decoration: none; }
 .title { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .appName { font-size: 17px; font-weight: var(--w-medium); letter-spacing: -0.015em; max-width: 26ch; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--c-creation); }
 .ver { font-size: var(--t-label); color: var(--c-ink-3); font-variant-numeric: tabular-nums; }
 .tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; margin-left: var(--s-2); }
-.tab { position: relative; height: 36px; padding: 0 10px; border: 0; border-radius: 0; background: transparent; color: var(--c-ink-3); font: inherit; font-size: var(--t-small); cursor: pointer; white-space: nowrap; transition: color var(--d-fast) ease; }
-.tab:hover { color: var(--c-ink); }
-.tab[aria-selected="true"] { color: var(--c-ink); }
-.tab::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: 0; height: 2px; border-radius: 1px; background: var(--c-ink); opacity: 0; transform: scaleX(.4); transition: opacity var(--d-base) ease, transform var(--d-base) var(--e-emphasized); }
-.tab[aria-selected="true"]::after { opacity: 1; transform: none; }
-.tab:focus-visible { text-decoration: underline; text-underline-offset: 6px; }
+/* The view tabs are the kit's Tabs (the top bar draws the edge); More opens the kit Menu. */
+.tabRow { border-bottom: 0; }
+.moreTrigger { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 var(--s-2); border: 0; border-radius: var(--r-xs); background: transparent; color: var(--c-ink-2); font: inherit; font-size: var(--t-small); font-weight: var(--w-medium); white-space: nowrap; cursor: pointer; transition: color var(--m-dur-1) var(--m-ease-out), background-color var(--m-dur-1) var(--m-ease-out); }
+.moreTrigger:hover, .moreTrigger[aria-expanded="true"] { color: var(--c-ink); background: var(--hover-wash); }
+.moreTrigger:focus-visible { text-decoration: underline; text-underline-offset: 6px; }
+@media (pointer: coarse) { .tabRow [role="tab"], .moreTrigger { height: 44px; } }
 .panelSwitch { display: none; }
+.panelSwitch > * { max-width: 420px; }
 .work { display: grid; grid-template-columns: minmax(320px, 380px) minmax(0, 1fr); flex: 1; min-height: 0; }
 .ledger { display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-4); overflow-y: auto; border-right: var(--b-hairline) solid var(--c-border); background: var(--c-canvas); min-height: 0; }
 .asked { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--c-ink-2); padding-left: 12px; border-left: 2px solid color-mix(in srgb, var(--c-ink) 22%, transparent); overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
 .asked > span { display: block; font-size: 10.5px; letter-spacing: 0; text-transform: none; color: var(--c-ink-3); margin-bottom: 2px; }
 .elapsed { display: flex; align-items: center; gap: 10px; font-size: var(--t-small); }
-.pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--c-attention); box-shadow: 0 0 12px color-mix(in srgb, var(--c-attention) 60%, transparent); animation: kcPulse 1.4s ease-in-out infinite; flex: none; }
 .elapsedText { flex: 1; min-width: 0; color: var(--c-ink); }
 .clock { font-variant-numeric: tabular-nums; color: var(--c-ink-3); font-size: var(--t-label); }
 .errCard { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 14px; background: color-mix(in srgb, var(--c-attention) 8%, var(--c-surface-1)); border-left: 2px solid var(--c-attention); }
 .errCard strong { font-weight: var(--w-medium); }
 .errCard p { margin: 0; font-size: var(--t-small); color: var(--c-ink-2); overflow-wrap: anywhere; }
 .errActions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; align-items: center; }
-.errActions .cta { height: 34px; padding: 0 16px; font-size: var(--t-label); }
 .changedNote { align-self: flex-start; border: 0; background: transparent; padding: 0; color: var(--c-ink-2); font: inherit; font-size: var(--t-small); cursor: pointer; }
 .changedNote:hover { color: var(--c-ink); }
 .timelineWrap { flex: 1; min-height: 0; }
@@ -219,7 +185,6 @@
 .refineBox::placeholder { color: var(--c-ink-3); }
 .refineBox:focus { border-bottom-color: color-mix(in srgb, var(--c-ink) 70%, transparent); box-shadow: none; }
 .refineRow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.refineRow .cta { height: 34px; padding: 0 16px; font-size: var(--t-label); }
 .select { height: 32px; padding: 0 10px; border-radius: 10px; border: var(--b-hairline) solid var(--c-border); background: var(--c-surface-1); color: var(--c-ink); font: inherit; font-size: var(--t-label); max-width: 190px; }
 .stage { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--c-surface-1); }
 .stage > .canvas { flex: 1; border: 0; border-radius: 0; min-height: 0; }
@@ -227,7 +192,7 @@
 .layer[data-hidden] { opacity: 0; filter: blur(8px); pointer-events: none; }
 .frameLayer { position: absolute; inset: 0; z-index: 2; display: flex; justify-content: center; padding: var(--s-4); opacity: 0; transform: scale(.985); transition: opacity .7s ease, transform .7s var(--e-emphasized); pointer-events: none; }
 .frameLayer[data-ready] { opacity: 1; transform: none; pointer-events: auto; }
-.frame { width: 100%; height: 100%; border: var(--b-hairline) solid var(--c-border-strong); border-radius: 14px; background: #fff; box-shadow: 0 40px 90px -50px rgb(0 0 0 / .7), 0 0 0 1px color-mix(in srgb, var(--c-ink) 5%, transparent); transition: width var(--d-slow) var(--e-emphasized); }
+.frame { width: 100%; height: 100%; border: var(--b-hairline) solid var(--hairline-strong); border-radius: 14px; background: white; /* the user's app: a page assumes white until it paints */ box-shadow: var(--elev-3); transition: width var(--d-slow) var(--e-emphasized); }
 .frame[data-device="tablet"] { width: 820px; max-width: 100%; }
 .frame[data-device="phone"] { width: 390px; max-width: 100%; border-radius: 26px; }
 
@@ -252,8 +217,8 @@
 .files { overflow-y: auto; border-right: var(--b-hairline) solid var(--c-border); padding: var(--s-2) 0; background: var(--c-canvas); }
 .file { display: block; width: 100%; text-align: left; padding: 6px 14px; border: 0; border-radius: 0; background: transparent; color: var(--c-ink-2); font-family: var(--f-mono); font-size: 12px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; }
 .file:hover { color: var(--c-ink); }
-.file[aria-current] { color: var(--c-ink); text-shadow: 0 0 14px var(--glow-strong); }
-.file[aria-current]::before { content: ""; position: absolute; left: 0; top: 6px; bottom: 6px; width: 2px; background: var(--c-ink); box-shadow: 0 0 10px var(--glow-strong); }
+.file[aria-current] { color: var(--c-ink); background: var(--hover-wash); }
+.file[aria-current]::before { content: ""; position: absolute; left: 0; top: 6px; bottom: 6px; width: 2px; background: var(--c-ink); }
 .file:focus-visible { text-decoration: underline; }
 .fileDir { color: var(--c-ink-3); }
 .codeMain { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
@@ -269,12 +234,14 @@
 .tk_p { color: var(--c-ink); }
 
 /* changes */
+.changeActions { display: flex; gap: 8px; flex-wrap: wrap; }
 .changes { flex: 1; display: grid; grid-template-columns: 290px minmax(0, 1fr); min-height: 0; }
 .versions { list-style: none; margin: 0; padding: var(--s-2); overflow-y: auto; border-right: var(--b-hairline) solid var(--c-border); background: var(--c-canvas); display: flex; flex-direction: column; gap: 2px; }
 .version { position: relative; display: grid; grid-template-columns: auto 1fr; column-gap: 10px; row-gap: 2px; width: 100%; text-align: left; padding: 10px 10px 10px 14px; border: 0; border-radius: 12px; background: transparent; color: var(--c-ink-2); font: inherit; cursor: pointer; }
 .version:hover { color: var(--c-ink); }
 .version[aria-current] { color: var(--c-ink); }
-.version[aria-current]::before { content: ""; position: absolute; left: 2px; top: 12px; bottom: 12px; width: 2px; border-radius: 2px; background: var(--c-ink); box-shadow: 0 0 10px var(--glow-strong); }
+.version[aria-current] { background: var(--hover-wash); }
+.version[aria-current]::before { content: ""; position: absolute; left: 2px; top: 12px; bottom: 12px; width: 2px; border-radius: 2px; background: var(--c-ink); }
 .version:focus-visible .vText { text-decoration: underline; }
 .vN { font-variant-numeric: tabular-nums; font-weight: var(--w-medium); font-size: var(--t-small); }
 .vText { font-size: 12.5px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -309,29 +276,18 @@
 .dl[data-t="-"] .dm { color: var(--c-destructive); }
 .dt { white-space: pre-wrap; overflow-wrap: anywhere; padding-right: 12px; color: var(--c-ink); }
 
-.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); z-index: 90; transform: translate(-50%, 12px); max-width: min(92vw, 520px); padding: 10px 16px; border-radius: 14px; background: var(--c-ink); color: var(--c-canvas); font-size: var(--t-small); box-shadow: 0 18px 40px -16px rgb(0 0 0 / .5), 0 0 30px -8px var(--glow-strong); opacity: 0; pointer-events: none; transition: opacity var(--d-base) ease, transform var(--d-base) var(--e-emphasized); }
-.toast[data-on] { opacity: 1; transform: translate(-50%, 0); }
-
 /* ── motion ── */
 @keyframes kcRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @keyframes kcTrace { to { stroke-dashoffset: -24; } }
 @keyframes kcPulse { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
-@keyframes kcBreath { 0%, 100% { transform: scale(.92); opacity: .8; } 50% { transform: scale(1.06); opacity: 1; } }
-@keyframes kcFade { from { opacity: 0; } }
-@keyframes kcSlide { from { transform: translateX(40px); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
   .root *, .root *::before, .root *::after { animation: none !important; transition-duration: 1ms !important; }
-  .sheetWrap, .sheet { animation: none !important; }
 }
 
 /* ── layout: tablet and phone ── */
-@media (max-width: 1100px) {
-  .desk { grid-template-columns: minmax(0, 1fr); }
-  .desk > .canvas { position: relative; top: 0; min-height: 0; }
-}
 @media (max-width: 900px) {
   .work { grid-template-columns: minmax(0, 1fr); }
-  .panelSwitch { display: flex; justify-content: center; padding: 8px var(--s-4); border-bottom: var(--b-hairline) solid var(--c-border); background: var(--c-canvas); }
+  .panelSwitch { display: flex; justify-content: center; padding: 8px var(--s-4); border-bottom: var(--b-hairline) solid var(--hairline); background: var(--c-canvas); }
   .work[data-panel="canvas"] .ledger { display: none; }
   .work[data-panel="log"] .stage { display: none; }
   .ledger { border-right: 0; }
@@ -344,31 +300,23 @@
   .version { min-width: 210px; }
 }
 @media (max-width: 600px) {
-  .desk { padding: 14px 16px var(--s-6); gap: var(--s-5); }
-  .brief { gap: var(--s-5); }
-  .h1 { font-size: 28px; }
   .prompt { min-height: 6em; font-size: 18px; }
   .tiles, .tilesGhost { grid-auto-columns: 100px; }
   .tileAa { font-size: 26px; }
   .bpGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .bpBig { grid-row: span 1; }
   .bp:not([data-building]) .bpFrame:nth-child(n + 4) { display: none; }
-  .shipStep { margin: 0 -16px; padding-left: 16px; padding-right: 16px; border-radius: 0; }
-  .shipStep .stepLabel, .shipStep .upsell { display: none; }
   .ship .kbd { display: none; }
   .ship .cta { flex: 1; }
   .top { padding: 6px 12px; gap: 8px; }
-  .top .ghostBtn { display: none; }
+  .top .linkBtn { display: none; }
   .top .devices { display: none; } /* a phone already previews at phone size */
   .appName { max-width: 16ch; font-size: 15px; }
   .shelfGrid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
   .cardActions { gap: 10px; }
-  .sheetWrap { align-items: flex-end; }
-  .sheet { height: 90dvh; border-left: 0; border-radius: 22px 22px 0 0; }
   .frameLayer { padding: 8px; }
 }
 @media (pointer: coarse) {
-  .toggle button { height: 36px; }
   .textBtn { height: 36px; }
   .chip { height: 34px; }
 }
@@ -376,31 +324,20 @@
 /* Create mobile: tabs, composer, touch, overflow, iOS 16px, no broken sticky overlays */
 @media (max-width: 900px) {
   .root { min-width: 0; max-width: 100%; overflow-x: hidden; }
-  .kindTabs.kindTabs { flex-wrap: nowrap; max-width: 100%; }
-  .kindTabs .kindTab { flex: none; height: 44px; padding: 0 12px; white-space: nowrap; }
-  .desk { padding-left: max(12px, env(safe-area-inset-left)); padding-right: max(12px, env(safe-area-inset-right)); }
-  .desk > .canvas { position: relative !important; top: auto; min-height: 0; }
-  .panelSwitch button { min-height: 44px; min-width: 44px; }
   .tabs { -webkit-overflow-scrolling: touch; }
-  .tab { height: 44px; }
   .ledger { min-width: 0; }
   .stage { min-width: 0; }
   .frameLayer { padding: 8px; overflow: auto; -webkit-overflow-scrolling: touch; }
-  .sheetWrap { overscroll-behavior: contain; }
   .input, .select, .prompt { font-size: 16px; }
 }
 @media (max-width: 600px) {
-  .cta { min-height: 44px; }
   .ship .cta { width: 100%; }
   .top { position: sticky; top: 0; z-index: 4; background: var(--c-canvas); }
   .work { min-height: 0; }
   .refineBox { font-size: 16px; }
 }
 @media (pointer: coarse) {
-  .kindTabs .kindTab { height: 44px; }
-  .cta { min-height: 44px; }
-  .ghostBtn { min-height: 44px; }
-  .back { min-height: 44px; }
+  .linkBtn, .linkPrimary { min-height: 44px; }
   .chip { min-height: 36px; }
   .input, .select { min-height: 44px; font-size: 16px; }
 }
@@ -414,23 +351,11 @@
   .desk:has(.voiceLive [data-voice-live] [data-voice-stage]) .voiceLive { grid-column: 1 / -1; }
 }
 
-/* Surprise me: zero-input build */
-.surpriseRow { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; margin: var(--s-2) 0 2px; }
-.surpriseBtn { height: 34px; padding: 0 14px; border-radius: var(--r-pill); border: var(--b-hairline) solid color-mix(in srgb, var(--v-creation) 55%, var(--c-border)); background: transparent; color: var(--c-ink); font: inherit; font-size: var(--t-small); font-weight: var(--w-medium); cursor: pointer; transition: border-color var(--d-fast) ease, background var(--d-fast) ease; }
-.surpriseBtn:hover { background: color-mix(in srgb, var(--v-creation) 10%, transparent); }
-.surpriseBtn:disabled { opacity: .45; cursor: not-allowed; }
-.surpriseBtn:focus-visible { outline: none; text-decoration: underline; text-underline-offset: 3px; }
-.surpriseNote { font-size: var(--t-label); color: var(--c-ink-3); }
-.showcase { margin-top: var(--s-10); padding-top: var(--s-6); border-top: var(--b-hairline) solid var(--c-border); display: grid; gap: var(--s-5); }
-.showcaseHead { display: grid; gap: var(--s-2); }
-.showcaseHead a { color: var(--c-ink); text-underline-offset: 3px; }
-
 /* Live, Critic and Deploy take the whole studio width: the ledger hides and the stage always shows (also on phones). */
 .work[data-wide] { grid-template-columns: minmax(0, 1fr); }
 .work[data-wide] .ledger { display: none; }
 .work[data-wide] .stage { display: flex; background: var(--c-canvas); }
 /* Nine views: tabs keep their full names and the row scrolls sideways on narrow screens. */
-.tabs .tab { flex: none; }
 
 /* Minimal pass: the empty state is one prompt, like Ask; secondary studio views sit in one More menu. */
 .calm { width: 100%; max-width: 720px; margin: 0 auto; padding: clamp(28px, 8vh, 88px) clamp(16px, 3vw, 24px) var(--s-6); display: flex; flex-direction: column; gap: var(--s-4); }
@@ -454,63 +379,43 @@
 .calmCanvas { min-height: 360px; display: flex; }
 .calmShowcase { margin: 0 auto; padding: var(--s-4) clamp(16px, 3vw, 24px) var(--s-8); max-width: 720px; text-align: center; font-size: var(--t-label); color: var(--c-ink-3); }
 .calmShowcase a { color: var(--c-ink-2); }
-.tabRow { display: flex; gap: 2px; }
-.moreTabs { position: relative; }
-.moreTabs > .tab { display: inline-flex; align-items: center; gap: 6px; }
-.moreTabs > .tab[data-active="true"] { color: var(--c-ink); }
-.moreTabs > .tab[data-active="true"]::after { opacity: 1; transform: none; }
-.moreMenu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 40; min-width: 240px; padding: 6px; border-radius: 12px; border: var(--b-hairline) solid var(--c-border-strong); background: var(--c-surface-1); box-shadow: 0 12px 32px rgb(0 0 0 / .35); display: flex; flex-direction: column; --m-origin: 0 0; }
-.moreItem { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 8px 10px; border: 0; border-radius: 8px; background: transparent; color: var(--c-ink); font: inherit; font-size: var(--t-small); text-align: left; cursor: pointer; }
-.moreItem:hover, .moreItem:focus-visible { background: var(--c-surface-2); }
-.moreItem[aria-current="true"] { background: var(--c-surface-2); }
-.moreHint { font-size: var(--t-label); color: var(--c-ink-3); }
 .tabs { overflow: visible; align-items: center; }
-.calmBar .cta { flex-shrink: 0; }
 @media (max-width: 560px) {
   .calmBar .ship { width: 100%; }
   .calmBar .shipMeta { order: 3; flex-basis: 100%; text-align: left; max-width: none; }
   .calmBar .kbd { display: none; }
 }
 
-.briefPanel { display: flex; flex-direction: column; gap: var(--s-4); padding: 16px; border-radius: 18px; border: var(--b-hairline) solid var(--c-border-strong); background: color-mix(in srgb, var(--c-canvas) 88%, transparent); }
+.briefPanel { display: flex; flex-direction: column; gap: var(--s-4); padding: 16px; border-radius: var(--r-card); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1); }
 .briefHead { display: flex; justify-content: space-between; gap: var(--s-3); align-items: flex-start; }
-.briefTitle { margin: 0; font-size: 18px; letter-spacing: -0.02em; color: #5c2f6e; }
-.briefLede { margin: 4px 0 0; color: #8a5a12; font-size: var(--t-small); line-height: 1.5; max-width: 62ch; }
+.briefTitle { margin: 0; font-size: 18px; letter-spacing: -0.02em; color: var(--c-ink); font-weight: var(--w-regular); }
+.briefLede { margin: 4px 0 0; color: var(--c-ink-2); font-size: var(--t-small); line-height: 1.5; max-width: 62ch; }
 .briefQuestions { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-4); }
 .briefQ { margin: 0 0 8px; font-size: var(--t-small); color: var(--c-ink); }
 .briefChips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
 .briefInput { width: 100%; border: 0; border-bottom: var(--b-hairline) solid var(--c-border-strong); background: transparent; color: var(--c-ink); font: inherit; font-size: var(--t-small); padding: 6px 0; }
-.briefInput:focus { outline: none; border-bottom-color: #0c5c66; }
+.briefInput:focus { outline: none; border-bottom-color: var(--c-ink); }
 .briefDirs { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin-top: 8px; }
 .briefDir { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px; border-radius: 12px; border: var(--b-hairline) solid var(--c-border); background: var(--c-surface-1); color: var(--c-ink); font: inherit; text-align: left; cursor: pointer; }
-.briefDir[aria-selected="true"] { border-color: #7a3e24; box-shadow: inset 0 0 0 1px #7a3e24; }
+.briefDir:hover { border-color: var(--hairline-strong); }
+.briefDir[aria-selected="true"] { border-color: var(--c-ink); box-shadow: inset 0 0 0 1px var(--c-ink); }
 .briefSwatch { display: flex; width: 100%; height: 10px; border-radius: 6px; overflow: hidden; }
 .briefSwatch i { flex: 1; display: block; }
 .briefDirName { font-size: 13px; font-weight: var(--w-medium); }
 .briefDirLine { font-size: 12px; color: var(--c-ink-2); line-height: 1.35; }
 .briefActions { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
 .briefNote { margin: 0; font-size: var(--t-label); color: var(--c-ink-3); max-width: 62ch; }
-.versionNote { margin: 0 0 8px; font-size: var(--t-label); color: #0c5c66; }
-.versionBanner { margin: 0 0 10px; padding: 8px 10px; border-radius: 10px; background: color-mix(in srgb, #8a5a12 12%, var(--c-canvas)); color: var(--c-ink); font-size: var(--t-small); }
-.shipped { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 12px; border: var(--b-hairline) solid var(--c-border); background: var(--c-surface-1); }
-.shipped strong { color: #7a3e24; }
+.versionNote { margin: 0 0 8px; font-size: var(--t-label); color: var(--c-ink-3); }
+.versionBanner { margin: 0 0 10px; padding: 8px 10px; border-radius: 10px; background: rgb(var(--rgb-attention) / 0.1); color: var(--c-ink); font-size: var(--t-small); }
+.shipped { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: var(--r-sm); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline); }
+.shipped strong { color: var(--c-verified); font-weight: var(--w-medium); }
 .shipped p { margin: 0; color: var(--c-ink-2); font-size: var(--t-small); }
-.codeEdit { flex: 1; min-height: 320px; width: 100%; margin: 0; padding: 12px; border: 0; resize: vertical; background: var(--c-surface-1); color: var(--c-ink); font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; line-height: 1.55; }
+.codeEdit { flex: 1; min-height: 320px; width: 100%; margin: 0; padding: 12px; border: 0; resize: vertical; background: var(--c-surface-1); color: var(--c-ink); font-family: var(--f-mono); font-size: 12.5px; line-height: 1.55; }
 
 /* ── Create (both themes, from the product surface tokens in tokens.css) ──
- * The page sits on the app's plain canvas. The kind switch (App, Images, Video, Mobile) is one segmented control: a quiet track,
- * the selected kind raised on it. The start screen is a two-tone light headline, a grey lede, one raised composer card and outlined
- * starter chips; the shelf is raised cards with flat posters (no pastel gradients) that brighten their edge on hover instead of
- * jumping. Keplar Business keeps its own underline look (the block after this one). */
-.kindBar.kindBar { background: transparent; border-bottom: 0; padding: 0 28px 12px; }
-.kindTabs.kindTabs { gap: 2px; padding: 3px; border-radius: 999px; background: var(--hover-wash); flex-wrap: nowrap; }
-.kindTabs :global(.m-tab-indicator) { display: none; }
-.kindTabs .kindTab::after { display: none; }
-.kindTabs .kindTab { height: 34px; padding: 0 14px; border-radius: 999px; background: transparent; color: var(--c-ink-2); font-size: 14px; box-shadow: none; white-space: nowrap; transition: background-color var(--m-dur-1) var(--m-ease-out), color var(--m-dur-1) var(--m-ease-out), box-shadow var(--m-dur-1) var(--m-ease-out); }
-.kindTabs .kindTab:hover { color: var(--c-ink); }
-.kindTabs .kindTab[aria-selected="true"] { background: var(--surface-raised); color: var(--c-ink); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1); }
-.kindTabs .kindTab > span[aria-hidden] { color: var(--c-ink-3); font-size: 12px; }
-
+ * The page sits on the app's plain canvas. The start screen is a light headline, a grey lede, one raised composer card and
+ * outlined starter chips; the shelf is raised cards with flat posters (no gradients) that strengthen their edge on hover instead
+ * of jumping. Keplar Business keeps its own look (the block after this one). */
 .start { background: transparent; }
 .calm { gap: 20px; padding-top: max(36px, clamp(32px, 9vh, 96px)); }
 .calmIntro { gap: 12px; }
@@ -540,33 +445,19 @@
 .cardActions .textBtn { height: 30px; padding: 0 10px; border-radius: 999px; text-decoration: none; color: var(--c-ink-2); }
 .cardActions .textBtn:hover { background: var(--hover-wash); color: var(--c-ink); }
 
-/* Scrolling Create: content fades out under the tab row instead of being cut by a hard edge right beneath the tabs. */
-.start { -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 36px); mask-image: linear-gradient(to bottom, transparent 0, #000 36px); }
-
-/* Phones: the four kinds fit a 360px screen (tighter padding, the Beta note smaller) and the bar still scrolls if a font is larger. */
-@media (max-width: 480px) {
-  .kindBar.kindBar { padding: 0 12px 10px; }
-  .kindTabs .kindTab { height: 36px; padding: 0 10px; font-size: 13px; }
-  .kindTabs .kindTab > span[aria-hidden] { font-size: 11px; }
-}
-
 /* ── Inside the Keplar Business workspace (html[data-business-app]): Create looks like the workspace's own New chat ──
    Underline tabs for App / Images / Video / Mobile (as in Operations and Integrations), a plain one-tone title, the New chat
    composer (14px corners, hairline, no frost), quiet 28px chips and an 8px solid primary. Keplar One's Create is unchanged.
    Selectors carry html[data-business-app] plus the parent classes so they outrank every Create pass above, including the
    dark-theme tab fill. */
-:global(html[data-business-app]) .kindBar.kindBar { padding: 0 32px; background: transparent; border-bottom: 1px solid var(--c-border); }
-:global(html[data-business-app]) .kindBar .kindTabs.kindTabs { gap: 20px; }
-:global(html[data-business-app]) .kindBar .kindTabs .kindTab.kindTab {
+:global(html[data-business-app]) .kindBar { padding: 0 32px; background: transparent; border-bottom: 1px solid var(--c-border); }
+:global(html[data-business-app]) .kindBar .kindTabs { gap: 20px; border-bottom: 0; }
+:global(html[data-business-app]) .kindBar .kindTabs [role="tab"] {
   height: 40px; padding: 0; border-radius: 0; background: transparent; box-shadow: none; translate: none;
   color: var(--c-ink-3); font-size: 13px; font-weight: 500;
 }
-:global(html[data-business-app]) .kindBar .kindTabs .kindTab.kindTab:hover { color: var(--c-ink-2); }
-:global(html[data-business-app]) .kindBar .kindTabs .kindTab.kindTab[aria-selected="true"] { color: var(--c-ink); }
-:global(html[data-business-app]) .kindBar .kindTabs .kindTab.kindTab::after { display: none; }
-:global(html[data-business-app]) .kindBar .kindTabs .kindTab.kindTab[aria-selected="true"]::after {
-  display: block; content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; border-radius: 2px; background: var(--c-ink); opacity: 1; transform: none;
-}
+:global(html[data-business-app]) .kindBar .kindTabs [role="tab"]:hover { color: var(--c-ink-2); }
+:global(html[data-business-app]) .kindBar .kindTabs [role="tab"][aria-selected="true"] { color: var(--c-ink); }
 
 :global(html[data-business-app]) .calm .calmIntro { gap: 6px; }
 :global(html[data-business-app]) .calm .calmTitle { font-size: 22px; line-height: 1.2; font-weight: 600; letter-spacing: -0.02em; color: var(--c-ink); }
@@ -594,9 +485,6 @@
 .liveHead { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 12px; border-bottom: 1px solid var(--c-border); font-size: 13px; }
 .liveHead strong { font-weight: 600; color: var(--c-ink); }
 .liveDot { width: 7px; height: 7px; border-radius: 50%; background: var(--c-ink-3); flex: none; }
-.liveDot[data-on] { background: var(--c-verified); box-shadow: 0 0 0 3px rgb(var(--rgb-verified) / 0.18); }
-@media (prefers-reduced-motion: no-preference) { .liveDot[data-on] { animation: live-dot 1.4s ease-in-out infinite; } }
-@keyframes live-dot { 50% { opacity: 0.4; } }
 .liveGrid { grid-template-columns: 220px minmax(0, 1fr); height: clamp(280px, 46vh, 520px); flex: none; }
 .liveGrid .files { background: transparent; }
 .fileWriting { color: var(--c-ink-3); font-style: italic; cursor: default; }
@@ -605,7 +493,7 @@
 
 /* Go to file (FileFinder.tsx): a command-palette style overlay at the top of a code view. */
 .code { position: relative; }
-.finder { position: absolute; z-index: 5; top: 10px; left: 50%; translate: -50% 0; width: min(520px, calc(100% - 24px)); border-radius: 10px; background: var(--c-surface-2); box-shadow: inset 0 0 0 1px var(--c-border-strong), 0 18px 40px -16px rgb(0 0 0 / 0.6); overflow: hidden; }
+.finder { position: absolute; z-index: 5; top: 10px; left: 50%; translate: -50% 0; width: min(520px, calc(100% - 24px)); border-radius: var(--r-sm); background: var(--surface-overlay); box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-3); overflow: hidden; }
 .finderInput { width: 100%; box-sizing: border-box; height: 38px; padding: 0 12px; border: 0; border-bottom: 1px solid var(--c-border); outline: 0; background: transparent; color: var(--c-ink); font: inherit; font-size: 13px; }
 .finderList { list-style: none; margin: 0; padding: 4px; max-height: 300px; overflow-y: auto; }
 .finderItem { display: flex; align-items: baseline; gap: 10px; padding: 6px 8px; border-radius: 6px; font-family: var(--f-mono); font-size: 12px; color: var(--c-ink); cursor: pointer; }
@@ -616,9 +504,7 @@
 /* Live code: Tasks / Files column, the build's plan as a checklist. */
 .liveSide { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--c-border); }
 .liveSide .files { flex: 1; border-right: 0; }
-.liveSwitch { display: flex; gap: 2px; padding: 6px; border-bottom: 1px solid var(--c-border); }
-.liveSwitch button { flex: 1; height: 26px; border: 0; border-radius: 6px; background: transparent; color: var(--c-ink-3); font: inherit; font-size: 12px; font-weight: 500; cursor: pointer; }
-.liveSwitch button[aria-selected="true"] { background: rgb(var(--rgb-ink) / 0.08); color: var(--c-ink); }
+.liveSwitch { display: flex; padding: 6px; border-bottom: 1px solid var(--c-border); }
 .tasks { flex: 1; overflow-y: auto; list-style: none; margin: 0; padding: 8px 10px; display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; }
 .task { display: flex; gap: 8px; align-items: flex-start; color: var(--c-ink-3); }
 .task[data-state="done"], .task[data-state="active"] { color: var(--c-ink); }
@@ -700,30 +586,26 @@
 .canvas, .frameLayer { overflow: clip; }
 
 /* What still needs fixing (IssueBar in AppBuilder.tsx): build problems left open and errors the running preview reported. */
-.issueBar { display: flex; flex-direction: column; gap: 8px; padding: 10px 14px; border-bottom: var(--b-hairline) solid var(--c-border); background: var(--c-surface-1); }
+.issueBar { display: flex; flex-direction: column; gap: 8px; padding: 10px 14px; border-bottom: var(--b-hairline) solid var(--hairline); background: var(--surface-raised); }
 .issueRow { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.issueDot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; box-shadow: 0 0 0 3px rgb(245 158 11 / 0.18); }
+.issueDot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--c-attention); box-shadow: 0 0 0 3px rgb(var(--rgb-attention) / 0.18); }
 .issueTitle { flex: 1; min-width: 0; padding: 4px 0; border: 0; background: none; color: var(--c-ink); font: inherit; font-size: 13px; text-align: left; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .issueTitle:hover { text-decoration: underline; text-underline-offset: 3px; }
 .issueList { margin: 0; padding: 0 0 2px 18px; display: flex; flex-direction: column; gap: 4px; max-height: 160px; overflow: auto; font-size: 12.5px; line-height: 1.45; color: var(--c-ink-2); }
 
 /* Click-to-edit: the Select toggle in the preview toolbar and the edit box for the picked element (PickEditor). */
-.pickBtn { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; box-shadow: inset 0 0 0 1px var(--c-border-strong); color: var(--c-ink); font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap; }
-.pickBtn:hover { background: var(--c-surface-2); }
-.pickBtn[aria-pressed="true"] { background: var(--c-ink); box-shadow: none; color: var(--c-canvas); }
-.pickEditor { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-bottom: var(--b-hairline) solid var(--c-border); background: var(--c-surface-1); }
+.pickEditor { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-bottom: var(--b-hairline) solid var(--hairline); background: var(--surface-raised); }
 .pickHead { display: flex; align-items: baseline; gap: 10px; min-width: 0; font-size: 12.5px; }
-.pickTag { flex: none; padding: 2px 8px; border-radius: 6px; background: var(--c-ink); color: var(--c-canvas); font-family: var(--f-mono, ui-monospace, monospace); font-size: 11.5px; }
+.pickTag { flex: none; padding: 2px 8px; border-radius: 6px; background: var(--c-ink); color: var(--c-canvas); font-family: var(--f-mono); font-size: 11.5px; }
 .pickText { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--c-ink-2); }
 .pickRow { display: flex; gap: 8px; align-items: center; }
 .pickInput { flex: 1; min-width: 0; height: 36px; padding: 0 12px; border: 0; border-radius: 10px; background: var(--c-canvas); box-shadow: inset 0 0 0 1px var(--c-border-strong); color: var(--c-ink); font: inherit; font-size: 14px; }
 .pickInput:focus { outline: none; box-shadow: inset 0 0 0 1.5px var(--c-ink); }
 /* Narrower windows: the Select toggle is icon-only so Publish stays on the toolbar row. */
-@media (max-width: 1400px) { .pickLabel { display: none; } .pickBtn { width: 32px; padding: 0; justify-content: center; } }
+@media (max-width: 1400px) { .pickLabel { display: none; } .top .pickBtn.pickBtn { width: 32px; padding: 0; justify-content: center; } }
 /* Settings → Incoming webhooks: the URL and its Copy button on one row. */
 .hookRow { display: flex; gap: 8px; align-items: center; }
-.hookRow > input { flex: 1; min-width: 0; font-family: var(--f-mono, ui-monospace, monospace); font-size: 12px; }
-@media (pointer: coarse) { .kindTabs .kindTab { height: 40px; } }
+.hookRow > input { flex: 1; min-width: 0; font-family: var(--f-mono); font-size: 12px; }
 
 /* ── Compact Create start page: fits a laptop/desktop-app window without scrolling ── */
 .calm { gap: 14px; padding-top: clamp(16px, 4vh, 40px); padding-bottom: var(--s-4); }
@@ -739,9 +621,7 @@
 .step[hidden] { display: none; }
 .calmOptions { gap: var(--s-3); }
 .calmCanvas { min-height: 240px; max-height: 300px; }
-.optTabs { display: flex; gap: 4px; padding: 3px; border-radius: 999px; background: var(--c-surface-1); box-shadow: inset 0 0 0 1px var(--c-border); align-self: center; }
-.optTab { height: 28px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; color: var(--c-ink-2); font: inherit; font-size: 12.5px; cursor: pointer; }
-.optTab[aria-selected="true"] { background: var(--c-ink); color: var(--c-canvas); }
+.optTabs { align-self: stretch; justify-content: center; }
 /* the shelf of your apps: one compact row that scrolls sideways instead of a tall grid (the explorer lists them too) */
 .shelf { padding: var(--s-2) clamp(16px, 2.4vw, 36px) var(--s-4); }
 .shelfHead { padding-top: var(--s-2); margin-bottom: var(--s-2); }
@@ -757,3 +637,6 @@
 .calmOptions .tiles { grid-auto-columns: 92px; }
 .calmOptions .calmCanvas { min-height: 0; height: clamp(120px, 22vh, 240px); max-height: none; }
 .calmOptions .voiceLive { max-height: clamp(130px, 25vh, 260px); overflow: auto; }
+
+/* Fine-tune the look: the kit Dialog, wide enough for the design picker. */
+.tuneDialog { --dialog-w: 760px; }

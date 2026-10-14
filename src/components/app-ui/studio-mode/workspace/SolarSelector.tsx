@@ -7,7 +7,7 @@
  */
 import { useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react";
 import { DEFAULT_SOLAR_MODE, isSolarModeId, SOLAR_MODES, type SolarModeCredits, type SolarModeId } from "@/lib/studio/solar-modes";
-import { MorphIcon, Popover, UltimateMark } from "../ui";
+import { MorphIcon, Popover, UltimateMark } from "@/components/kit";
 import s from "./shell.module.css";
 
 /* ── Persisted choice ──────────────────────────────────────────────────────────────────────────────────────────── */

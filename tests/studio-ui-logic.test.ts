@@ -8,10 +8,10 @@ import {
   sizeFromPointer,
   splitKeyStep,
   SPLIT_STORAGE_PREFIX,
-} from "@/components/app-ui/studio-mode/ui/split-storage";
-import { computePlacement } from "@/components/app-ui/studio-mode/ui/position";
-import { detectPlatform, formatKey, spokenKey } from "@/components/app-ui/studio-mode/ui/keys";
-import { defaultToastDuration, progressRatio } from "@/components/app-ui/studio-mode/ui/feedback-logic";
+} from "@/components/kit/split-storage";
+import { computePlacement } from "@/components/kit/position";
+import { detectPlatform, formatKey, spokenKey } from "@/components/kit/keys";
+import { defaultToastDuration, progressRatio } from "@/components/kit/feedback-logic";
 
 const B = { min: 20, max: 80 };
 

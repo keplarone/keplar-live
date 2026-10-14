@@ -15,7 +15,7 @@
  */
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { blenderBridge, STUDIO_PLANS, studioBridge, type BlenderStatus, type OverlayState, type StudioStatus } from "@/lib/desktop/studio-bridge";
-import { Badge, Dialog, Icon, IconButton, MorphIcon, SegmentedControl, StatusDot, StudioRoot, ToastProvider } from "../ui";
+import { Badge, Dialog, Icon, IconButton, MorphIcon, SegmentedControl, StatusDot, StudioRoot, ToastProvider } from "@/components/kit";
 import { OVERLAY_TARGET_KEY, overlayTarget, setOverlayTarget, useStudioAgent } from "../useStudioAgent";
 import { Composer } from "./Composer";
 import { ControlCenter } from "./ControlCenter";

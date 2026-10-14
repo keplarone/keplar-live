@@ -94,8 +94,9 @@ test("owner drafts an invite (nothing mailed), a second account joins by the one
 
   // Owner removes the guest. Their very next request to the team is refused.
   await openTeamTab(owner);
-  owner.once("dialog", (d) => void d.accept()); // "Remove … They lose access right away."
   await owner.locator(`[data-member="${guestMail}"]`).getByRole("button", { name: "Remove" }).click();
+  // The kit confirm dialog (confirmAction), not the browser's window.confirm: "Remove …? They lose access to the team right away."
+  await owner.getByRole("dialog", { name: /^Remove / }).locator("[data-confirm-yes]").click();
   await expect(owner.locator(`[data-member="${guestMail}"]`)).toHaveCount(0);
   const after = await guest.context().request.get("/api/projects");
   expect(after.status()).toBe(403);

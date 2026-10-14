@@ -16,7 +16,7 @@ const MESSAGES = {
   invalid: "This verification link isn't valid.",
   expired: "This verification link has expired. Sign up again to get a new one.",
   used: "This verification link is out of date or was already used. Sign up again to get a new one.",
-  verified: "This email is already verified. You can log in.",
+  verified: "This email is already verified. You can sign in.",
   unavailable: "Verification isn't available on this server right now.",
 } as const;
 
@@ -34,7 +34,7 @@ export default async function VerifyEmailPage({ searchParams }: Props) {
           message={MESSAGES[check.state]}
           actions={
             <>
-              <Link className={`${s.btn} ${s.btnPrimary}`} href="/signin">Log in</Link>
+              <Link className={`${s.btn} ${s.btnPrimary}`} href="/signin">Sign in</Link>
               <Link className={`${s.btn} ${s.btnGhost}`} href="/signup">Sign up</Link>
             </>
           }

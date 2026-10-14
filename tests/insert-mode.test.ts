@@ -59,7 +59,9 @@ test("insert mode is on by default (only an explicit \"0\" disables it): wired i
   assert.match(comp, /execCommand\("insertText"/); // keeps native undo
   assert.match(read("src/styles/glass.css"), /data-typing-mode="ovr"\][^{]*\{[^}]*caret-shape: block/);
   assert.match(read("src/components/account/AccountSettings.tsx"), /<TypingSettings \/>/);
-  assert.match(read("src/components/account/TypingSettings.tsx"), /role="switch"/);
+  // The Settings toggle is the kit's Switch (role="switch" lives in src/components/kit/Toggles.tsx).
+  assert.match(read("src/components/account/TypingSettings.tsx"), /<Switch [^>]*checked=\{on === true\}/);
+  assert.match(read("src/components/kit/Toggles.tsx"), /role="switch"/);
   assert.equal(INSERT_PREF_KEY, "kp-insert-key");
 });
 

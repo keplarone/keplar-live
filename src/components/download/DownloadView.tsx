@@ -67,8 +67,8 @@ export function DownloadView({ state, pageUrl }: Props) {
                   : "We couldn't load the release list from GitHub just now. Try again in a few minutes, or see the releases page directly."}
             </p>
             <div className={s.row}>
-              <Link href="/app" className={`${btn.button} ${btn.primary} ${btn.lg}`} data-lit="on-ink"><span>Use Keplar in your browser</span></Link>
-              {state.status === "unavailable" ? <a href={RELEASES_PAGE} className={`${btn.button} ${btn.secondary} ${btn.lg}`} data-lit="" rel="noopener noreferrer"><span>GitHub releases</span></a> : null}
+              <Link href="/app" className={`${btn.button} ${btn.primary} ${btn.lg}`}><span>Use Keplar in your browser</span></Link>
+              {state.status === "unavailable" ? <a href={RELEASES_PAGE} className={`${btn.button} ${btn.secondary} ${btn.lg}`} rel="noopener noreferrer"><span>GitHub releases</span></a> : null}
             </div>
           </>
         ) : platform?.mobile ? (
@@ -76,9 +76,9 @@ export function DownloadView({ state, pageUrl }: Props) {
             <h2 id="dl-main" className={s.h2}>Get the desktop app on a computer</h2>
             <p className={s.text}>Keplar&apos;s desktop app is for Windows, macOS and Linux, so there is no download for this device. You can use Keplar in your browser here right now, or send yourself this page to open on a computer.</p>
             <div className={s.row}>
-              <Link href="/app" className={`${btn.button} ${btn.primary} ${btn.lg}`} data-lit="on-ink"><span>Use Keplar in your browser</span></Link>
-              <button type="button" className={`${btn.button} ${btn.secondary} ${btn.lg}`} data-lit="" onClick={copy}><span>{copied ? "Link copied" : "Copy link"}</span></button>
-              <a href={mail} className={`${btn.button} ${btn.secondary} ${btn.lg}`} data-lit=""><span>Email me the link</span></a>
+              <Link href="/app" className={`${btn.button} ${btn.primary} ${btn.lg}`}><span>Use Keplar in your browser</span></Link>
+              <button type="button" className={`${btn.button} ${btn.secondary} ${btn.lg}`} onClick={copy}><span>{copied ? "Link copied" : "Copy link"}</span></button>
+              <a href={mail} className={`${btn.button} ${btn.secondary} ${btn.lg}`}><span>Email me the link</span></a>
             </div>
             <p className={s.fine}>&ldquo;Email me the link&rdquo; opens a message in your own email app; we don&apos;t send anything. {pageUrl}</p>
           </>
@@ -87,7 +87,7 @@ export function DownloadView({ state, pageUrl }: Props) {
             <h2 id="dl-main" className={s.h2}>Download {brand.companyName} for {OS_LABEL[picks[0].file.os]}</h2>
             <div className={s.row}>
               {picks.map(({ file }, i) => (
-                <a key={file.name} href={file.url} className={`${btn.button} ${i === 0 ? btn.primary : btn.secondary} ${btn.lg}`} data-lit={i === 0 ? "on-ink" : ""} rel="noopener noreferrer" onClick={() => onDownload(file, "primary")}>
+                <a key={file.name} href={file.url} className={`${btn.button} ${i === 0 ? btn.primary : btn.secondary} ${btn.lg}`} rel="noopener noreferrer" onClick={() => onDownload(file, "primary")}>
                   <span>
                     {ARCH_LABEL[file.os][file.arch]} · {TYPE_LABEL[file.type] ?? file.type}
                     {formatSize(file.size) ? ` · ${formatSize(file.size)}` : ""}
@@ -112,7 +112,7 @@ export function DownloadView({ state, pageUrl }: Props) {
                 : "Choose your system from the table below, or use Keplar in your browser."}
             </p>
             <div className={s.row}>
-              <Link href="/app" className={`${btn.button} ${btn.secondary} ${btn.lg}`} data-lit=""><span>Use in browser instead</span></Link>
+              <Link href="/app" className={`${btn.button} ${btn.secondary} ${btn.lg}`}><span>Use in browser instead</span></Link>
             </div>
           </>
         )}

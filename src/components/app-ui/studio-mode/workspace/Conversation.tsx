@@ -12,7 +12,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { describeAction, type Item, type PlanStep, type useStudioAgent } from "../useStudioAgent";
-import { ActivityIndicator, Badge, Button, Icon, StatusDot, Switch, srOnly, useReducedMotion } from "../ui";
+import { ActivityIndicator, Badge, Button, Icon, StatusDot, Switch, srOnly, useReducedMotion } from "@/components/kit";
 import {
   IDEAS,
   RISK_LABEL,

@@ -16,7 +16,7 @@
   overflow: hidden;
   border-radius: var(--r-sm);
   background: var(--c-surface-2);
-  box-shadow: var(--sh-hairline);
+  box-shadow: inset 0 0 0 1px var(--hairline);
 }
 
 /* One image: show it at its own proportions, as large as the column allows. */
@@ -33,7 +33,7 @@
   object-fit: contain;
 }
 
-.btn {
+.view {
   display: block;
   width: 100%;
   height: 100%;
@@ -42,8 +42,7 @@
   background: none;
   cursor: default;
 }
-.btn[data-viewable] { cursor: zoom-in; }
-.btn:focus-visible { outline: 2px solid var(--c-accent, #17171a); outline-offset: -2px; }
+.view[data-viewable] { cursor: zoom-in; }
 
 .item img {
   display: block;
@@ -70,8 +69,8 @@
   bottom: 4px;
   padding: 0 5px;
   border-radius: 4px;
-  background: rgba(9, 9, 11, 0.72);
-  color: #fff;
+  background: var(--c-ink);
+  color: var(--c-canvas);
   font-family: var(--f-sans);
   font-size: 10px;
   line-height: 16px;

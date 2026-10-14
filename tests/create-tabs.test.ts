@@ -15,9 +15,10 @@ test("create tabs: labels never wrap and fit 320-440px phones", () => {
 
 test("create tabs: Site is not a Create sub-tab; Site URLs redirect to App", () => {
   const studio = readFileSync("src/components/create/CreateStudio.tsx", "utf8");
-  assert.doesNotMatch(studio, /tab\("site"/);
-  // SiteBuilder may still mount for resume/remix handoff, but never as a tab.
-  assert.match(studio, /tab\("app", "App"\)/);
+  assert.doesNotMatch(studio, /value: "site"/);
+  // SiteBuilder may still mount for resume/remix handoff, but never as a tab. UI v2: the kinds are the kit's Tabs.
+  assert.match(studio, /<Tabs id=\{KIND_TABS\} label="Create"/);
+  assert.match(studio, /\{ value: "app", label: "App" \}/);
   const cfg = readFileSync("next.config.ts", "utf8");
   assert.match(cfg, /source:\s*"\/create\/site"/);
   assert.match(cfg, /source:\s*"\/app\/create\/site"/);
