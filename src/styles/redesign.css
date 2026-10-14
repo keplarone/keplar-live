@@ -1,19 +1,19 @@
 /* ── Page layer for every marketing page (UI v2, docs/ui-v2.md) ──
- * Light-weight headlines with tight tracking, plain sentence-case kickers (not pills, not mono all-caps), no ink glows.
+ * Medium-weight headlines with tight tracking (the same Google Sans setting as space.keplar.one), plain sentence-case kickers (not pills, not mono all-caps), no ink glows.
  * Scoped to the marketing <main id="main"> so /app and /admin are untouched. Buttons, cards and surfaces are NOT restyled here:
  * each component draws its own from the tokens (the old class-name button rule is gone).
  * Hooks use the readable CSS-module names Next emits ("Name-module__hash__class"), the same way aura.css targets shared modules.
  * Both themes: colours come from the theme tokens. */
 
 #main:not([data-kb]) h1 {
-  font-weight: var(--w-regular);
+  font-weight: var(--w-medium);
   letter-spacing: -0.045em;
   line-height: 1.04;
   text-wrap: balance;
 }
 #main:not([data-kb]) h2 {
-  font-weight: var(--w-regular);
-  letter-spacing: -0.035em;
+  font-weight: var(--w-medium);
+  letter-spacing: -0.03em;
   text-wrap: balance;
 }
 #main:not([data-kb]) h3 { letter-spacing: -0.02em; }
@@ -55,7 +55,7 @@
   font-size: clamp(min(44px, 11.5vw), 5.2vw, 76px); /* 11.5vw under ~380px wide: at a fixed 44px "superintelligence?" was 321px in a 280px column and split mid-word */
   line-height: 1.04;
   letter-spacing: -0.045em;
-  font-weight: var(--w-regular);
+  font-weight: var(--w-medium);
 }
 
 /* Two-tone headlines (components/page/TwoTone.tsx) */
