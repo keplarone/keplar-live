@@ -1,50 +1,63 @@
+/* The one page hero (UI v2, docs/ui-v2.md "Page hero"): a plain kicker, a regular-weight headline with tight tracking, a lead in
+   --c-ink-2, then at most one primary and one secondary CTA. It sits on the plain canvas: no pill, no glowing dot, no seam of light.
+   Used by PageHero, RoutePlaceholder, the editorial and landing templates and the Help page. */
 .page {
   position: relative;
   z-index: var(--z-content);
   max-width: var(--l-max);
   margin: 0 auto;
-  padding: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-32)) var(--l-gutter) var(--s-32);
+  padding: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-24)) var(--l-gutter) var(--s-24);
   min-height: 78vh;
 }
 
-.header {
-  max-width: clamp(980px, 62vw, 2000px);
+.hero {
+  position: relative;
+  z-index: var(--z-content);
+  max-width: var(--l-max);
+  margin: 0 auto;
+  padding: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-24)) var(--l-gutter) var(--s-16);
 }
 
+.header {
+  max-width: clamp(720px, 62vw, 2000px);
+}
+
+/* Kicker: plain small text in the quiet ink, sentence case. */
 .label {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-3);
+  display: block;
+  margin: 0 0 var(--s-5);
+  padding: 0;
   font-family: var(--f-sans);
-  font-size: var(--t-label);
+  font-size: var(--t-small);
+  font-weight: var(--w-medium);
+  line-height: var(--lh-small);
   letter-spacing: 0;
   text-transform: none;
-  color: var(--c-ink-2);
-  margin-bottom: var(--s-8);
-  padding: 7px 14px 7px 12px;
-  border-radius: var(--r-pill);
-  border: var(--b-hairline) solid var(--c-border-strong);
-  background: rgb(var(--rgb-ink) / 0.06);
-  box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.1);
+  color: var(--c-ink-3);
 }
 
-.label::before {
-  content: "";
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--c-ink);
-  box-shadow: 0 0 10px 1px rgb(var(--rgb-ink) / 0.7);
+.label a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--hairline-strong);
+  text-underline-offset: 3px;
+}
+
+.label a:hover {
+  color: var(--c-ink);
+  text-decoration-color: currentColor;
 }
 
 .title {
-  /* The floor is 42px, or 11vw on phones under ~380px: at 320 a fixed 42px split "superintelligenc / e?" (QA 2026-10-05). */
-  font-size: clamp(min(42px, 11vw), 6.6vw, 170px);
-  line-height: 0.97;
-  letter-spacing: -0.05em;
-  font-weight: var(--w-medium);
+  /* --t-headline (44-76px); under ~400px wide the floor follows the screen (11vw) so "superintelligence?" fits a 320px phone
+     in one piece (at a fixed 42-44px it split "superintelligenc / e?", QA 2026-10-05). */
+  font-size: min(var(--t-headline), 11vw);
+  line-height: 1.04;
+  letter-spacing: -0.04em;
+  font-weight: var(--w-regular);
+  color: var(--c-ink);
   text-wrap: balance;
-  max-width: 17ch;
+  max-width: 18ch;
 }
 
 .lede {
@@ -53,59 +66,56 @@
   line-height: var(--lh-lead);
   letter-spacing: var(--tr-lead);
   color: var(--c-ink-2);
-  max-width: 52ch;
+  max-width: 56ch;
 }
 
-.cta {
+.lede a {
+  color: var(--c-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--hairline-strong);
+  text-underline-offset: 3px;
+}
+
+.lede a:hover {
+  text-decoration-color: currentColor;
+}
+
+.cta,
+.ctaRow {
   margin-top: var(--s-10);
-}
-
-.content {
-  margin-top: var(--s-24);
-}
-
-.hero {
-  position: relative;
-  z-index: var(--z-content);
-  max-width: var(--l-max);
-  margin: 0 auto;
-  padding: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-32)) var(--l-gutter) var(--s-16);
-}
-
-/* a slit of light under the hero: the Monolith's seam, quietly */
-.hero::after {
-  content: "";
-  position: absolute;
-  left: var(--l-gutter);
-  right: var(--l-gutter);
-  bottom: 0;
-  height: 1px;
-  background: rgb(var(--rgb-ink) / 0.06);
-  box-shadow: 0 0 24px 2px rgb(var(--rgb-ink) / 0.18);
-  pointer-events: none;
 }
 
 .ctaRow {
   display: flex;
   flex-wrap: wrap;
   gap: var(--s-3);
-  margin-top: var(--s-10);
+}
+
+.content {
+  margin-top: var(--s-24);
 }
 
 @media (max-width: 899px) {
+  .page,
   .hero {
     padding-top: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-16));
   }
+  .page {
+    padding-bottom: var(--s-16);
+  }
+  .hero {
+    padding-bottom: var(--s-12);
+  }
+  .content {
+    margin-top: var(--s-16);
+  }
 }
 
-/* Light theme: white cards on the warm page with a warm hairline and soft drop (Dark's 6% light veil + bright top edge read as a grey
-   slab with a dark line on a light page); ink glows become clean marks. Dark above is unchanged. */
-:global(:root[data-theme="light"]) .label { background: var(--lt-chip-bg); box-shadow: var(--sh-hairline); }
-:global(:root[data-theme="light"]) .label::before { box-shadow: none; }
-:global(:root[data-theme="light"]) .hero::after { background: rgb(28 24 18 / 0.1); box-shadow: none; }
-
-/* Touch screens: a link in the kicker pill above a title ("Guides") is a 44px target. */
+/* Touch screens: a link in the kicker above a title ("Guides") is a 44px target. */
 @media (pointer: coarse) {
-  .label:has(> a) { padding-top: 0; padding-bottom: 0; } /* the link fills the pill: 44px tall, not 44px plus padding */
-  .label a { display: inline-flex; align-items: center; min-height: 44px; }
+  .label a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
 }
