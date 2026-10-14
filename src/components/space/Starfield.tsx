@@ -15,24 +15,22 @@ import {
   Points,
   Scene,
   ShaderMaterial,
-  SphereGeometry,
   SRGBColorSpace,
   Sprite,
   SpriteMaterial,
-  Vector3,
   WebGLRenderer,
 } from "three";
 
 /**
  * The Space Studio universe. Scrolling the page is a journey: the camera starts in open space, flies forward through a star
- * field, past nebula auras and along the Milky Way, and arrives at a lit planet at the end of the page.
+ * field, past nebula auras and along the Milky Way, and arrives inside a dense star cluster at the end of the page.
  *
  * - Stars: one THREE.Points spread along the flight path. Colours follow stellar temperature (blue-white O/B stars are rare,
  *   orange and red K/M stars are common) and brightness follows a power law (many faint stars, a few bright ones with halos and
  *   diffraction spikes). Twinkle is a small scintillation in the shader.
  * - Milky Way: a second, finer Points layer packed around a tilted plane, plus soft dust glows, far behind everything.
  * - Auras: soft procedural nebula sprites (fbm noise drawn once on a canvas) placed along the path in several colours.
- * - Planet: a sphere with day/night shading, banding and an atmosphere rim, revealed at the end of the scroll.
+ * - Cluster: a dense globular cluster of stars the camera flies into at the end of the scroll (no planets).
  * - Shooting stars: streak quads in a screen-space overlay with a bright head and a long fading tail.
  *
  * Budget: DPR capped at 2, ≤ 40 fps, pauses when the tab is hidden or the canvas is off screen. Reduced motion draws one still
@@ -97,55 +95,6 @@ const STAR_FRAGMENT = /* glsl */ `
     float a = (core + halo + spikes) * vTwinkle;
     if (a < 0.004) discard;
     gl_FragColor = vec4(vColor * a, a);
-  }
-`;
-
-const PLANET_VERTEX = /* glsl */ `
-  varying vec3 vNormal;
-  varying vec3 vPos;
-  varying vec2 vUv;
-  void main() {
-    vNormal = normalize(normalMatrix * normal);
-    vPos = (modelMatrix * vec4(position, 1.0)).xyz;
-    vUv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  }
-`;
-const PLANET_FRAGMENT = /* glsl */ `
-  uniform vec3 uSun;
-  uniform float uTime;
-  varying vec3 vNormal;
-  varying vec3 vPos;
-  varying vec2 vUv;
-  float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-  float noise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
-    return mix(mix(hash(i), hash(i + vec2(1, 0)), f.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), f.x), f.y); }
-  float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise(p); p *= 2.03; a *= 0.5; } return v; }
-  void main() {
-    vec3 n = normalize(vNormal);
-    float light = max(dot(n, normalize(uSun)), 0.0);
-    // Banded clouds over a deep ocean-blue surface.
-    float bands = fbm(vec2(vUv.x * 6.0 + uTime * 0.004, vUv.y * 22.0));
-    vec3 surface = mix(vec3(0.05, 0.12, 0.28), vec3(0.32, 0.48, 0.72), bands);
-    surface = mix(surface, vec3(0.86, 0.9, 0.98), smoothstep(0.62, 0.8, fbm(vUv * vec2(10.0, 30.0) + 3.0)));
-    vec3 col = surface * (0.03 + 1.15 * pow(light, 0.85));
-    // Atmosphere: a fresnel rim, brightest on the lit side.
-    vec3 view = normalize(cameraPosition - vPos);
-    float rim = pow(1.0 - max(dot(n, view), 0.0), 3.0);
-    col += vec3(0.35, 0.62, 1.0) * rim * (0.25 + 1.6 * light);
-    gl_FragColor = vec4(col, 1.0);
-  }
-`;
-const GLOW_FRAGMENT = /* glsl */ `
-  uniform vec3 uSun;
-  varying vec3 vNormal;
-  varying vec3 vPos;
-  void main() {
-    vec3 n = normalize(vNormal);
-    vec3 view = normalize(cameraPosition - vPos);
-    float rim = pow(1.0 - abs(dot(n, view)), 2.4);
-    float lit = 0.35 + 0.65 * max(dot(n, normalize(uSun)), 0.0);
-    gl_FragColor = vec4(vec3(0.3, 0.58, 1.0) * rim * lit, rim * lit);
   }
 `;
 
@@ -334,20 +283,32 @@ export default function Starfield() {
       disposers.push(() => { tex.dispose(); mat.dispose(); });
     });
 
-    // ---- the planet at the end of the journey ----
-    const sun = new Vector3(-1, 0.35, 0.6);
-    const planetGeo = new SphereGeometry(70, 96, 64);
-    const planetMat = new ShaderMaterial({ vertexShader: PLANET_VERTEX, fragmentShader: PLANET_FRAGMENT, uniforms: { uSun: { value: sun }, uTime: { value: 0 } } });
-    const planet = new Mesh(planetGeo, planetMat);
-    planet.position.set(105, -62, -PATH - 150);
-    planet.rotation.z = 0.35;
-    world.add(planet);
-    const glowGeo = new SphereGeometry(78, 64, 48);
-    const glowMat = new ShaderMaterial({ vertexShader: PLANET_VERTEX, fragmentShader: GLOW_FRAGMENT, uniforms: { uSun: { value: sun } }, transparent: true, depthWrite: false, blending: AdditiveBlending });
-    const glow = new Mesh(glowGeo, glowMat);
-    glow.position.copy(planet.position);
-    world.add(glow);
-    disposers.push(() => { planetGeo.dispose(); planetMat.dispose(); glowGeo.dispose(); glowMat.dispose(); });
+    // ---- the cluster at the end of the journey: a dense ball of stars the camera flies into ----
+    const clusterCount = mobile ? 2_500 : 6_000;
+    const cPos = new Float32Array(clusterCount * 3), cCol = new Float32Array(clusterCount * 3), cSize = new Float32Array(clusterCount), cPhase = new Float32Array(clusterCount);
+    for (let i = 0; i < clusterCount; i++) {
+      // Denser toward the centre (a globular cluster's light falls off with radius).
+      const r = Math.pow(Math.random(), 2.2) * 120;
+      const th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+      cPos[i * 3] = 30 + r * Math.sin(ph) * Math.cos(th);
+      cPos[i * 3 + 1] = -20 + r * Math.sin(ph) * Math.sin(th) * 0.8;
+      cPos[i * 3 + 2] = -PATH - 140 + r * Math.cos(ph);
+      const { color, lum } = stellar();
+      const m = Math.pow(Math.random(), 5);
+      const k = 0.6 + m * 1.2;
+      cCol[i * 3] = color.r * k; cCol[i * 3 + 1] = color.g * k; cCol[i * 3 + 2] = color.b * k;
+      cSize[i] = (1.8 + m * 10) * lum;
+      cPhase[i] = Math.random();
+    }
+    const clusterGeo = new BufferGeometry();
+    clusterGeo.setAttribute("position", new BufferAttribute(cPos, 3));
+    clusterGeo.setAttribute("aColor", new BufferAttribute(cCol, 3));
+    clusterGeo.setAttribute("aSize", new BufferAttribute(cSize, 1));
+    clusterGeo.setAttribute("aPhase", new BufferAttribute(cPhase, 1));
+    const cluster = new Points(clusterGeo, starMat);
+    cluster.frustumCulled = false;
+    world.add(cluster);
+    disposers.push(() => clusterGeo.dispose());
 
     // ---- shooting stars in a screen-space overlay ----
     const overlay = new Scene();
@@ -400,14 +361,13 @@ export default function Starfield() {
     };
 
     const place = (t: number) => {
-      // Ease the flight so the last stretch (approaching the planet) slows down.
+      // Ease the flight so the last stretch (entering the cluster) slows down.
       const p = 1 - Math.pow(1 - eased.p, 1.6);
       camera.position.set(eased.x * 6, -eased.y * 4, -p * PATH + Math.sin(t * 0.05) * 2);
       camera.lookAt(eased.x * 2, -eased.y * 1.5 - p * 18, camera.position.z - 100);
       camera.rotation.z += Math.sin(t * 0.02) * 0.01;
       for (let i = 0; i < auras.length; i++) auras[i]!.material.rotation += 0.0006 * (i % 2 ? 1 : -1);
-      planet.rotation.y = t * 0.02;
-      planetMat.uniforms.uTime!.value = t;
+      cluster.rotation.z = t * 0.004;
     };
 
     let raf = 0, last = 0, running = false, visible = true;

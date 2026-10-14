@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Telemetry } from "@/components/growth/Telemetry";
-import { JourneyCaption, SpaceBackground, SpaceReveal } from "@/components/space/SpaceChrome";
+import { JourneyCaption, SpaceAura, SpaceBackground, SpaceReveal } from "@/components/space/SpaceChrome";
 import { RELEASES_URL } from "@/components/space/links";
 import s from "@/components/space/space.module.css";
 
@@ -17,6 +17,7 @@ export default function SpaceLayout({ children }: { children: React.ReactNode })
       {/* Space pages are always dark: switch the site theme before first paint so shared parts (cookie card, toasts) match. */}
       <script dangerouslySetInnerHTML={{ __html: FORCE_DARK }} />
       <SpaceBackground />
+      <SpaceAura className={s.aura} />
       <a className={s.skip} href="#main">Skip to content</a>
       <header className={s.nav}>
         <Link href="/space-studio" className={s.brand} aria-label="Space Studio home">
