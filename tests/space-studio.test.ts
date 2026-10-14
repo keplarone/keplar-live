@@ -652,13 +652,13 @@ test("beacon script: embeds the token and endpoint, hooks both purchase events, 
   assert.throws(() => beaconScript('x" .. os.exit() .. "'));
 });
 
-test("cron space-stats: 401 without the cron secret; listed in vercel.json hourly", async () => {
+test("cron space-stats: 401 without the cron secret; listed in vercel.json daily (Hobby plan)", async () => {
   const { GET } = await import("@/app/api/cron/space-stats/route");
   delete process.env.CRON_SECRET;
   assert.equal((await GET(new Request("https://keplar.one/api/cron/space-stats"))).status, 401);
   const { readFileSync } = await import("node:fs");
   const crons = (JSON.parse(readFileSync("vercel.json", "utf8")) as { crons: { path: string; schedule: string }[] }).crons;
-  assert.ok(crons.some((c) => c.path === "/api/cron/space-stats" && c.schedule === "11 * * * *"));
+  assert.ok(crons.some((c) => c.path === "/api/cron/space-stats" && c.schedule === "11 4 * * *"));
 });
 
 /* ── onboarding profile and parental consent ──────────────────────────── */
