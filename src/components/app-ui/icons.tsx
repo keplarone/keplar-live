@@ -75,8 +75,6 @@ export const IconUsage = (p: P) => <Svg {...p}><path d="M3 13V8.5M7 13V4M11 13V6
 export const IconSettings = (p: P) => <Svg {...p}><g transform="scale(0.6667)" strokeWidth={2.1}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></g></Svg>;
 /** Roblox Studio mode: a tilted block with a window cut in it. */
 export const IconRobloxStudio = (p: P) => <Svg {...p}><path d="M4.2 2.6 13.4 4.2 11.8 13.4 2.6 11.8Z" /><path d="M7 7.1 9.1 7.5 8.7 9.6 6.6 9.2Z" /></Svg>;
-/** Keplar Wants: a spark (the "I want" moment) with an arrow out of it. */
-export const IconWants = (p: P) => <Svg {...p}><path d="M6.5 2.5v3M6.5 9.5v3M2.5 7.5h3M9.5 7.5h0.5" /><path d="m3.7 4.7 1.4 1.4M9.3 4.7 7.9 6.1M3.7 10.3l1.4-1.4" /><path d="M9 9l4.5 4.5M13.5 10.5v3h-3" /></Svg>;
 export const IconDeploy = (p: P) => <Svg {...p}><path d="M8 13.5V6M5 8.5 8 5.5l3 3" /><path d="M3 3h10" /></Svg>;
 
 export const IconThumb = ({ up, ...p }: P & { up?: boolean }) => (
