@@ -1,8 +1,8 @@
+/* Questions as native <details> rows divided by hairlines (UI v2, docs/ui-v2.md). */
 .section {
   position: relative;
   z-index: var(--z-content);
-  background: var(--c-canvas);
-  padding: var(--s-24) var(--l-gutter) var(--s-40);
+  padding: var(--s-24) var(--l-gutter);
 }
 
 .inner {
@@ -15,17 +15,18 @@
 
 .title {
   font-size: var(--t-title);
-  line-height: var(--lh-title);
-  letter-spacing: var(--tr-title);
-  font-weight: var(--w-medium);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  font-weight: var(--w-regular);
+  text-wrap: balance;
 }
 
 .list {
-  border-top: var(--b-hairline) solid var(--c-ink);
+  border-top: var(--b-hairline) solid var(--hairline-strong);
 }
 
 .item {
-  border-bottom: var(--b-hairline) solid var(--c-border);
+  border-bottom: var(--b-hairline) solid var(--hairline);
 }
 
 .q {
@@ -33,15 +34,22 @@
   justify-content: space-between;
   align-items: center;
   gap: var(--s-6);
+  min-height: 44px;
   padding: var(--s-5) 0;
   cursor: pointer;
   list-style: none;
   font-size: var(--t-body);
   font-weight: var(--w-medium);
+  color: var(--c-ink);
+  transition: color var(--m-dur-1) var(--m-ease-out);
 }
 
 .q::-webkit-details-marker {
   display: none;
+}
+
+.q:hover {
+  color: var(--c-ink-2);
 }
 
 .q:focus-visible {
@@ -66,7 +74,7 @@
   top: 5.5px;
   height: 1px;
   background: var(--c-ink-2);
-  transition: transform var(--d-base) var(--e-standard);
+  transition: transform var(--m-dur-2) var(--m-ease-out);
 }
 
 .q i::after {
@@ -80,12 +88,16 @@
 .a {
   padding: 0 var(--s-12) var(--s-6) 0;
   color: var(--c-ink-2);
+  line-height: var(--lh-body);
   max-width: 68ch;
 }
 
 @media (max-width: 899px) {
+  .section {
+    padding: var(--s-16) var(--l-gutter);
+  }
   .inner {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--s-8);
   }
   .a {
@@ -93,5 +105,10 @@
   }
 }
 
-/* Oct 2026 redesign: let the aura backdrop show through */
-.section { background: transparent; }
+@media (prefers-reduced-motion: reduce) {
+  .q,
+  .q i::before,
+  .q i::after {
+    transition: none;
+  }
+}

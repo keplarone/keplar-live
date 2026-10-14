@@ -14,14 +14,14 @@ export function PlanCta({ plan, label, href, primary }: Props) {
   const me = usePlan();
   if (me.ready && me.signedIn && me.plan === plan && !me.admin) { // signed-out visitors keep "Try Keplar" on the Free card
     return plan === "free" ? (
-      <ButtonLink href="/app" variant="secondary" magnetic={false}>Open Keplar</ButtonLink>
+      <ButtonLink href="/app" variant="secondary">Open Keplar</ButtonLink>
     ) : (
-      <ButtonLink href="/account" variant="secondary" magnetic={false}>Your plan · Manage</ButtonLink>
+      <ButtonLink href="/account" variant="secondary">Your plan · Manage</ButtonLink>
     );
   }
   if (plan !== "free" && me.ready && (!me.checkout || (plan === "lite" && !me.liteCheckout))) {
     return (
-      <span role="status" style={{ display: "inline-flex", alignItems: "center", height: 44, padding: "0 var(--s-5)", borderRadius: "var(--r-pill)", boxShadow: "inset 0 0 0 var(--b-hairline) var(--c-border-strong)", color: "var(--c-ink-2)", fontSize: "var(--t-small)" }}>
+      <span role="status" style={{ display: "inline-flex", alignItems: "center", height: 44, padding: "0 var(--s-5)", borderRadius: "var(--r-pill)", boxShadow: "inset 0 0 0 var(--b-hairline) var(--hairline-strong)", color: "var(--c-ink-2)", fontSize: "var(--t-small)" }}>
         Checkout opens soon
       </span>
     );
@@ -31,7 +31,7 @@ export function PlanCta({ plan, label, href, primary }: Props) {
     return <Link href="/account" style={{ color: "var(--c-ink-2)", fontSize: "var(--t-small)", textDecoration: "underline", textUnderlineOffset: 3 }}>Included in your {me.plan === "pro" ? "Pro" : me.plan === "plus" ? "Plus" : "Business"} plan</Link>;
   }
   return (
-    <ButtonLink href={href} variant={primary ? "primary" : "secondary"} arrow={primary} magnetic={false} onClick={() => track("plan_click", { plan })}>
+    <ButtonLink href={href} variant={primary ? "primary" : "secondary"} arrow={primary} onClick={() => track("plan_click", { plan })}>
       {label}
     </ButtonLink>
   );

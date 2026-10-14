@@ -1,6 +1,5 @@
 import { breadcrumbs } from "@/lib/seo-graph";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { HeroField } from "@/components/motion/HeroField";
 import { PageHero } from "@/components/page/PageHero";
 import { Enterprise } from "@/components/sections/Enterprise";
 import { Agents } from "@/components/sections/Agents";
@@ -21,7 +20,6 @@ export default function EnterprisePage() {
   return (
     <>
       <JsonLd data={breadcrumbs([{ name: "For business", path: "/enterprise" }])} />
-      <HeroField variant="foryou" />
       <PageHero
         label={businessHeroCopy.label}
         title={businessHeroCopy.title}

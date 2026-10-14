@@ -1,12 +1,14 @@
-.section { position: relative; z-index: var(--z-content); background: var(--c-canvas); padding: var(--s-16) var(--l-gutter); }
+/* "Go deeper": link cards (UI v2 card: raised surface, hairline, --r-card, --elev-1; hover strengthens the edge, no lift). */
+.section { position: relative; z-index: var(--z-content); padding: var(--s-24) var(--l-gutter); }
 .inner { max-width: var(--l-max); margin: 0 auto; }
-.h { font-size: var(--t-title); line-height: var(--lh-title); letter-spacing: var(--tr-title); font-weight: var(--w-medium); color: var(--c-ink); }
-.list { margin-top: var(--s-6); display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: var(--s-4); list-style: none; }
-.card { display: grid; gap: var(--s-2); height: 100%; padding: var(--s-5); border-radius: var(--r-card); background: var(--c-glass); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border); color: var(--c-ink-2); text-decoration: none; transition: box-shadow var(--d-fast) var(--e-standard); }
-.card:hover { box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong); }
-.card:focus-visible { outline: none; text-decoration: underline; text-underline-offset: 3px; }
+.h { font-size: var(--t-title); line-height: 1.08; letter-spacing: -0.04em; font-weight: var(--w-regular); color: var(--c-ink); }
+.list { margin-top: var(--s-8); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: var(--s-4); list-style: none; padding: 0; }
+.card { display: grid; gap: var(--s-2); height: 100%; padding: var(--s-6); border-radius: var(--r-card); background: var(--surface-raised); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1); color: var(--c-ink-2); text-decoration: none; transition: box-shadow var(--m-dur-2) var(--m-ease-out); }
+.card:hover { box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), var(--elev-1); }
+.card:focus-visible { outline: none; box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), var(--elev-1); }
+.card:focus-visible .title { text-decoration: underline; text-underline-offset: 3px; }
 .title { color: var(--c-ink); font-weight: var(--w-medium); }
-.text { font-size: var(--t-small); line-height: 1.5; }
+.text { font-size: var(--t-small); line-height: var(--lh-small); }
 
-/* Oct 2026 redesign: let the aura backdrop show through */
-.section { background: transparent; }
+@media (max-width: 899px) { .section { padding: var(--s-16) var(--l-gutter); } }
+@media (prefers-reduced-motion: reduce) { .card { transition: none; } }

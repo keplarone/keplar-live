@@ -8,6 +8,8 @@ import { CURL_ASK, CURL_STREAM, ERRORS, JS_SAMPLE, PY_SAMPLE, RESPONSE_SAMPLE, S
 import { EMBED_POLICY } from "@/lib/embed/config";
 import { ROLE_BLURB, TEAM_POLICY } from "@/lib/team/policy";
 import { referralConfig } from "@/lib/referrals/config";
+import { ButtonLink } from "@/components/ui/Button";
+import btn from "@/components/ui/Button.module.css";
 import { CodeTabs } from "@/components/developers/CodeTabs";
 import { EmbedConfigurator } from "@/components/developers/EmbedConfigurator";
 import s from "@/components/developers/Developers.module.css";
@@ -63,9 +65,10 @@ export default function DevelopersPage() {
         </p>
         <div className={s.endpoint} aria-label="Primary endpoint"><span className={s.method}>POST</span>{site.url.replace(/^https?:\/\//, "")}/api/v1/ask</div>
         <div className={s.heroActions}>
-          <Link className={s.btn} href="/account#api">Get an API key</Link>
-          <Link className={`${s.btn} ${s.btnGhost}`} href="/account#embed">Create a widget</Link>
-          <a className={`${s.btn} ${s.btnGhost}`} href="/api/v1/openapi.json">OpenAPI spec</a>
+          <ButtonLink href="/account#api" arrow>Get an API key</ButtonLink>
+          <ButtonLink href="/account#embed" variant="secondary">Create a widget</ButtonLink>
+          {/* A JSON file, not a page: a plain link (full navigation), drawn as the quiet button. */}
+          <a className={`${btn.button} ${btn.quiet}`} href="/api/v1/openapi.json"><span>OpenAPI spec</span></a>
         </div>
       </header>
 
@@ -106,7 +109,7 @@ export default function DevelopersPage() {
                     <div className={s.tierRow}><dt>Embed widgets</dt><dd>{val(t.embed.maxWidgets)}</dd></div>
                   </dl>
                   <p className={s.tierNote}>{t.note}</p>
-                  <Link className={`${s.btn} ${"featured" in t ? "" : s.btnGhost}`} href={t.cta.href}>{t.cta.label}</Link>
+                  <div><ButtonLink href={t.cta.href} variant={"featured" in t ? "primary" : "secondary"}>{t.cta.label}</ButtonLink></div>
                 </div>
               ))}
             </div>

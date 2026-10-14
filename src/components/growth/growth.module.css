@@ -1,3 +1,5 @@
+/* Try box, build box and the small-screen sticky bar (UI v2, docs/ui-v2.md). The box is a composer: --surface-raised with a hairline
+   and --elev-1; its send button is the one ink pill; example chips are hairline pills. No glass, no blur. */
 .try {
   position: relative;
   z-index: var(--z-content);
@@ -10,9 +12,9 @@
 
 .tryTitle {
   font-size: var(--t-title);
-  line-height: var(--lh-title);
-  letter-spacing: var(--tr-title);
-  font-weight: var(--w-medium);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  font-weight: var(--w-regular);
 }
 
 .tryForm {
@@ -22,8 +24,14 @@
   margin-top: var(--s-5);
   padding: var(--s-3);
   border-radius: var(--r-card);
-  background: var(--c-glass-strong);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong);
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), var(--elev-1);
+  transition: box-shadow var(--m-dur-2) var(--m-ease-out);
+}
+
+/* Focus: the edge darkens to ink (a brightness shift), never an outline box. */
+.tryForm:focus-within {
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-ink), var(--elev-1);
 }
 
 .tryInput {
@@ -38,10 +46,12 @@
   padding: var(--s-2) var(--s-3);
 }
 
+.tryInput::placeholder {
+  color: var(--c-ink-3);
+}
+
 .tryInput:focus-visible {
-  outline: var(--b-focus) solid var(--c-focus);
-  outline-offset: 2px;
-  border-radius: var(--r-sm);
+  outline: none;
 }
 
 .tryGo {
@@ -53,11 +63,12 @@
   border-radius: var(--r-pill);
   background: var(--c-ink);
   color: var(--c-canvas);
+  box-shadow: var(--elev-1);
   font: inherit;
   font-size: var(--t-small);
   font-weight: var(--w-medium);
   cursor: pointer;
-  transition: background-color var(--d-base) var(--e-standard), transform var(--d-fast) var(--e-standard);
+  transition: background-color var(--m-dur-1) var(--m-ease-out), scale var(--m-dur-1) var(--m-ease-out);
 }
 
 .tryGo:hover:not(:disabled) {
@@ -65,7 +76,13 @@
 }
 
 .tryGo:active:not(:disabled) {
-  transform: scale(0.98);
+  scale: var(--m-press);
+}
+
+.tryGo:focus-visible {
+  outline: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .tryGo:disabled {
@@ -80,25 +97,35 @@
   margin-top: var(--s-4);
 }
 
-.chip {
+/* A pill for one line, a soft rectangle when a long question wraps (never a squashed stadium). The doubled class keeps the
+   radius against the global control-shape rule. */
+.chip.chip {
   border: 0;
-  border-radius: 20px; /* a pill for one line, a soft rectangle when a long question wraps (never a squashed stadium) */
+  border-radius: 18px;
   max-width: 100%;
+  min-height: 32px;
   text-wrap: balance;
   padding: var(--s-2) var(--s-4);
-  background: var(--c-glass);
+  background: var(--surface-raised);
   color: var(--c-ink-2);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong);
   font: inherit;
   font-size: var(--t-small);
   text-align: left;
   cursor: pointer;
-  transition: color var(--d-fast) var(--e-standard), box-shadow var(--d-fast) var(--e-standard);
+  transition: color var(--m-dur-1) var(--m-ease-out), box-shadow var(--m-dur-1) var(--m-ease-out);
 }
 
-.chip:hover {
+.chip.chip:hover {
   color: var(--c-ink);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong);
+  box-shadow: inset 0 0 0 var(--b-hairline) color-mix(in srgb, var(--c-ink) 28%, transparent);
+}
+
+.chip.chip:focus-visible {
+  outline: none;
+  color: var(--c-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .tryNote {
@@ -107,6 +134,7 @@
   color: var(--c-ink-3);
 }
 
+/* Small-screen bar: opaque overlay surface with a hairline top edge. */
 .sticky {
   position: fixed;
   left: 0;
@@ -116,12 +144,11 @@
   display: flex;
   justify-content: center;
   padding: var(--s-3) var(--l-gutter) calc(var(--s-3) + env(safe-area-inset-bottom, 0px));
-  background: var(--c-glass-strong);
-  -webkit-backdrop-filter: blur(var(--blur-glass));
-  backdrop-filter: blur(var(--blur-glass));
-  border-top: var(--b-hairline) solid var(--c-border);
+  background: var(--surface-overlay);
+  border-top: var(--b-hairline) solid var(--hairline);
+  box-shadow: var(--elev-3);
   transform: translateY(110%);
-  transition: transform var(--d-base) var(--e-standard);
+  transition: transform var(--m-dur-3) var(--m-ease-out);
   visibility: hidden;
 }
 
@@ -145,23 +172,15 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .sticky,
-  .tryGo {
-    transition: none;
-  }
+@media (pointer: coarse) {
+  .chip.chip { min-height: 44px; }
 }
 
-/* glass buttons (liquid glass: see src/styles/glass.css) */
-.tryGo { background: var(--btn-p-bg); color: var(--btn-p-ink); border-color: transparent; box-shadow: var(--btn-p-shadow); -webkit-backdrop-filter: blur(6px) saturate(1.4); backdrop-filter: blur(6px) saturate(1.4); transition: var(--btn-spring); }
-.tryGo:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--c-ink-hover); }
-.tryGo:active:not(:disabled) { scale: var(--m-press); }
-@media (prefers-reduced-motion: reduce) { .tryGo { transition: background-color 0.1s linear; transform: none !important; } }
-@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .tryGo { backdrop-filter: none; -webkit-backdrop-filter: none; } .tryGo { background: var(--btn-p-solid, #17171a); } }
-
-/* A chip whose question may wrap is a soft rectangle (the base rule is overridden by the global pill-button rule). */
-.chip.chip { border-radius: 18px; }
-
-@media (pointer: coarse) {
-  .chip { min-height: 44px; }
+@media (prefers-reduced-motion: reduce) {
+  .sticky,
+  .tryForm,
+  .tryGo,
+  .chip.chip {
+    transition: none;
+  }
 }

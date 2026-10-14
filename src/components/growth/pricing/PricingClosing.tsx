@@ -11,8 +11,8 @@ export async function PricingClosing({ locale = "en" }: { locale?: string }) {
         <h2 id="closing-title" className={s.title}>{p.closingTitle}</h2>
         <p className={s.lede}>{p.closingLede}</p>
         <div className={s.closingRow}>
-          <TrackedLink where="pricing:closing" href="/app" size="lg" arrow magnetic={false}>{p.closingAsk}</TrackedLink>
-          <TrackedLink where="pricing:closing-compare" href="/vs" size="lg" variant="secondary" magnetic={false}>{p.closingCompare}</TrackedLink>
+          <TrackedLink where="pricing:closing" href="/app" size="lg" arrow>{p.closingAsk}</TrackedLink>
+          <TrackedLink where="pricing:closing-compare" href="/vs" size="lg" variant="secondary">{p.closingCompare}</TrackedLink>
         </div>
       </div>
     </section>

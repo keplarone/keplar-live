@@ -27,10 +27,10 @@ export function Paths() {
               </ul>
               {c.note ? <p className={s.note}>{c.note}</p> : null}
               <div className={s.ctas}>
-                <ButtonLink href={c.primary.href} arrow variant={c.key === "personal" ? "primary" : "secondary"} magnetic={false}>
+                <ButtonLink href={c.primary.href} arrow variant={c.key === "personal" ? "primary" : "secondary"}>
                   {c.primary.label}
                 </ButtonLink>
-                <ButtonLink href={c.secondary.href} variant="quiet" magnetic={false}>
+                <ButtonLink href={c.secondary.href} variant="quiet">
                   {c.secondary.label}
                 </ButtonLink>
               </div>

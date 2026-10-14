@@ -1,3 +1,5 @@
+/* Comparison pages (UI v2, docs/ui-v2.md): plain canvas, sentence-case kicker, a regular-weight title, the short answer and the
+   tables as cards (--surface-raised, 1px hairline, --r-card, --elev-1), lists divided by hairlines. */
 .page {
   position: relative;
   z-index: var(--z-content);
@@ -8,14 +10,13 @@
 
 .header {
   padding-bottom: var(--s-12);
-  border-bottom: var(--b-hairline) solid var(--c-ink);
+  border-bottom: var(--b-hairline) solid var(--hairline-strong);
 }
 
 .label,
 .checked,
 .shortLabel {
-  font-family: var(--f-sans);
-  font-size: var(--t-label);
+  font-size: var(--t-small);
   letter-spacing: 0;
   text-transform: none;
   color: var(--c-ink-3);
@@ -25,9 +26,9 @@
   margin-top: var(--s-4);
   font-size: var(--t-headline);
   line-height: var(--lh-headline);
-  letter-spacing: var(--tr-headline);
-  font-weight: var(--w-medium);
-  max-width: 18ch;
+  letter-spacing: -0.04em;
+  font-weight: var(--w-regular);
+  max-width: 20ch;
   text-wrap: balance;
 }
 
@@ -46,6 +47,7 @@
   max-width: 68ch;
   color: var(--c-ink-2);
   font-size: var(--t-body);
+  line-height: var(--lh-body);
 }
 
 .body > .p:first-child {
@@ -55,18 +57,20 @@
 }
 
 .disclosure {
-  max-width: 72ch;
+  max-width: 68ch;
   padding: var(--s-4) var(--s-5);
-  border-left: var(--b-focus) solid var(--c-border-strong);
+  border-radius: var(--r-md);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), inset var(--b-focus) 0 0 var(--hairline-strong);
   font-size: var(--t-small);
   font-style: italic;
   color: var(--c-ink-2);
 }
 
 .short {
-  padding: var(--s-6) 0;
-  border-top: var(--b-hairline) solid var(--c-border);
-  border-bottom: var(--b-hairline) solid var(--c-border);
+  padding: var(--s-8);
+  border-radius: var(--r-card);
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1);
 }
 
 .shortText {
@@ -80,9 +84,10 @@
 .h2 {
   margin-top: var(--s-10);
   font-size: var(--t-title);
-  line-height: var(--lh-title);
-  letter-spacing: var(--tr-title);
-  font-weight: var(--w-medium);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  font-weight: var(--w-regular);
+  text-wrap: balance;
 }
 
 .block .h2 {
@@ -99,16 +104,17 @@
 .ol {
   display: flex;
   flex-direction: column;
-  border-top: var(--b-hairline) solid var(--c-border);
+  border-top: var(--b-hairline) solid var(--hairline-strong);
   max-width: 76ch;
 }
 
 .ul li,
 .ol li {
   padding: var(--s-3) 0;
-  border-bottom: var(--b-hairline) solid var(--c-border);
+  border-bottom: var(--b-hairline) solid var(--hairline);
   color: var(--c-ink-2);
   font-size: var(--t-small);
+  line-height: var(--lh-small);
 }
 
 .ol {
@@ -121,7 +127,7 @@
 
 .ol li::before {
   content: counter(n) ". ";
-  font-family: var(--f-sans);
+  font-variant-numeric: tabular-nums;
   color: var(--c-ink-3);
 }
 
@@ -134,17 +140,22 @@
 .tableWrap {
   margin-top: var(--s-6);
   overflow-x: auto;
-  border-top: var(--b-hairline) solid var(--c-ink);
+  border-radius: var(--r-card);
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1);
 }
 
+/* Keyboard focus: the site cue (a bar), never an outline box. */
 .tableWrap:focus-visible {
-  outline-offset: 4px;
+  outline: none;
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), inset 0 calc(var(--b-focus) * -1) 0 var(--c-focus), var(--elev-1);
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--t-small);
+  line-height: var(--lh-small);
   min-width: 640px;
 }
 
@@ -152,17 +163,22 @@
 .table td {
   text-align: left;
   vertical-align: top;
-  padding: var(--s-3) var(--s-4) var(--s-3) 0;
-  border-bottom: var(--b-hairline) solid var(--c-border);
+  padding: var(--s-3) var(--s-4);
+  border-bottom: var(--b-hairline) solid var(--hairline);
+}
+
+.table tbody tr:last-child > * {
+  border-bottom: 0;
 }
 
 .table thead th {
-  font-family: var(--f-sans);
-  font-size: var(--t-label);
+  font-size: var(--t-small);
   letter-spacing: 0;
   text-transform: none;
-  font-weight: var(--w-regular);
-  color: var(--c-ink-3);
+  font-weight: var(--w-medium);
+  color: var(--c-ink-2);
+  padding-top: var(--s-4);
+  border-bottom-color: var(--hairline-strong);
 }
 
 .table tbody th {
@@ -181,7 +197,7 @@
 .picks {
   margin-top: var(--s-10);
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--s-10);
 }
 
@@ -193,7 +209,10 @@
   display: flex;
   flex-direction: column;
   gap: var(--s-3);
-  padding: var(--s-6) 0 var(--s-2);
+  padding: var(--s-6);
+  border-radius: var(--r-card);
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1);
 }
 
 .faq {
@@ -205,7 +224,7 @@
 }
 
 .faq :global(section > div) {
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-6);
 }
 
@@ -219,15 +238,14 @@
 .sources {
   margin-top: var(--s-16);
   padding-top: var(--s-6);
-  border-top: var(--b-hairline) solid var(--c-border);
+  border-top: var(--b-hairline) solid var(--hairline);
   font-size: var(--t-small);
   color: var(--c-ink-2);
 }
 
 .sourcesDate {
   margin-left: var(--s-2);
-  font-family: var(--f-sans);
-  font-size: var(--t-label);
+  font-size: var(--t-small);
   letter-spacing: 0;
   text-transform: none;
   color: var(--c-ink-3);
@@ -248,12 +266,13 @@
 .sources a {
   text-decoration: underline;
   text-underline-offset: 3px;
-  text-decoration-color: var(--c-border-strong);
+  text-decoration-color: var(--hairline-strong);
   word-break: break-word;
 }
 
 .sources a:hover {
   color: var(--c-ink);
+  text-decoration-color: currentColor;
 }
 
 .related {
@@ -262,6 +281,21 @@
   flex-wrap: wrap;
   gap: var(--s-6);
   font-size: var(--t-small);
+}
+
+.related a {
+  color: var(--c-ink-2);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+  transition: color var(--m-dur-1) var(--m-ease-out), text-decoration-color var(--m-dur-1) var(--m-ease-out);
+}
+
+.related a:hover,
+.related a:focus-visible {
+  outline: none;
+  color: var(--c-ink);
+  text-decoration-color: currentColor;
 }
 
 /* Touch: each "Keplar One vs X" link is a 44px row. */
@@ -276,30 +310,22 @@
 @media (max-width: 899px) {
   .page {
     padding-top: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-12));
+    padding-bottom: var(--s-16);
   }
   .picks {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
-/* ── Monolith redesign: big title with seam, lit short answer, lit tables and tool cards ── */
-.page { max-width: clamp(1100px, 70vw, 2300px); }
-.header { position: relative; border-bottom: 0; padding-bottom: var(--s-12); }
-.header::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: rgb(var(--rgb-ink) / 0.06); box-shadow: 0 0 24px 2px rgb(var(--rgb-ink) / 0.18); }
-.label { display: inline-flex; align-items: center; gap: var(--s-3); padding: 7px 14px 7px 12px; border-radius: var(--r-pill); border: var(--b-hairline) solid var(--c-border-strong); background: rgb(var(--rgb-ink) / 0.06); letter-spacing: 0.14em; color: var(--c-ink-2); }
-.label::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--c-ink); box-shadow: 0 0 10px 1px rgb(var(--rgb-ink) / 0.7); }
-.h1 { font-size: clamp(40px, 5.8vw, 140px); line-height: 0.97; letter-spacing: -0.05em; max-width: 20ch; margin-top: var(--s-8); }
-.short { padding: var(--s-8); border: var(--b-hairline) solid rgb(var(--rgb-ink) / 0.22); border-radius: var(--r-card-lg); background: rgb(var(--rgb-ink) / 0.06); box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.16), 0 40px 90px -56px rgb(var(--rgb-ink) / 0.4); }
-.tableWrap { border: var(--b-hairline) solid var(--c-border-strong); border-radius: var(--r-card); background: rgb(var(--rgb-ink) / 0.06); box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.08); }
-.table th, .table td { padding-left: var(--s-4); }
-.table thead th { background: rgb(var(--rgb-ink) / 0.06); letter-spacing: 0.1em; }
-.tool { padding: var(--s-6); border-radius: var(--r-card); border: var(--b-hairline) solid var(--c-border); background: rgb(var(--rgb-ink) / 0.06); box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.08); }
-.disclosure { border-radius: var(--r-md); border: var(--b-hairline) solid var(--c-border); border-left-width: var(--b-focus); }
-@media (max-width: 599px) { .short { padding: var(--s-5); } .tool { padding: var(--s-5); } }
+@media (max-width: 599px) {
+  .short,
+  .tool {
+    padding: var(--s-5);
+  }
+}
 
-/* Light theme: white cards on the warm page with a warm hairline and soft drop (Dark's 6% light veil + bright top edge read as a grey
-   slab with a dark line on a light page); ink glows become clean marks. Dark above is unchanged. */
-:global(:root[data-theme="light"]) .label::before { box-shadow: none; }
-:global(:root[data-theme="light"]) .short { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-lift); }
-:global(:root[data-theme="light"]) .tableWrap { background: var(--lt-card-bg); box-shadow: var(--lt-card-shadow); }
-:global(:root[data-theme="light"]) .tool { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-shadow); }
+@media (prefers-reduced-motion: reduce) {
+  .related a {
+    transition: none;
+  }
+}
