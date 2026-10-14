@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Telemetry } from "@/components/growth/Telemetry";
 import { JourneyCaption, SpaceAura, SpaceBackground, SpaceReveal } from "@/components/space/SpaceChrome";
+import { DownloadButton } from "@/components/space/DownloadButton";
 import { RELEASES_URL } from "@/components/space/links";
 import s from "@/components/space/space.module.css";
 
@@ -29,7 +30,7 @@ export default function SpaceLayout({ children }: { children: React.ReactNode })
           <Link href="/space-studio#plans">Plans</Link>
           <Link href="/space-studio#today">Status</Link>
         </nav>
-        <a className={s.navCta} href={RELEASES_URL}>Download</a>
+        <DownloadButton className={s.navCta} />
       </header>
       <main id="main" className={s.main}>{children}</main>
       <footer className={s.footer}>

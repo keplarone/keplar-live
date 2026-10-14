@@ -1,5 +1,5 @@
 import { MODELS, PLANS, PRICING_NOTE, publicView } from "@/lib/space-studio/core";
-import { RELEASES_URL } from "@/components/space/links";
+import { DownloadButton } from "@/components/space/DownloadButton";
 import { RotatingWord } from "@/components/space/SpaceChrome";
 import { pageMeta } from "@/lib/seo";
 import s from "@/components/space/space.module.css";
@@ -20,7 +20,7 @@ export default function SpaceStudioPage() {
   return (
     <>
       <section id="top" className={s.hero} aria-labelledby="space-title">
-        <span className={`${s.badge} ${s.rise}`}><span className={s.badgeNew}>New</span>Space Studio 0.1 for Windows, macOS and Linux</span>
+        <span className={`${s.badge} ${s.rise}`}><span className={s.badgeNew}>New</span>Space Studio 0.2 for Windows, macOS and Linux</span>
         <h1 id="space-title" className={`${s.title} ${s.rise}`} aria-label="Powerful AI made specifically for what you want.">
           <RotatingWord className={s.swap} wordClassName={s.swapWord} /> AI made specifically for what <em className={s.you}>YOU</em> want.
         </h1>
@@ -28,11 +28,11 @@ export default function SpaceStudioPage() {
           A desktop app for Roblox Studio and Blender development. You pick the model, review every proposed change before it lands, and can hand long jobs to Roblox Cloud and Blender Cloud.
         </p>
         <div className={`${s.actions} ${s.rise}`}>
-          <a className={s.btn} href={RELEASES_URL}>Download</a>
+          <DownloadButton className={s.btn} />
           <a className={s.btnGhost} href="#models">See the models</a>
         </div>
         <p className={`${s.note} ${s.rise}`}>
-          Version 0.1 is an early release. Installers are not code-signed yet, so Windows SmartScreen and macOS Gatekeeper will warn (on macOS: right-click the app, then Open). Each release lists SHA-256 checksums.
+          Version 0.2 is an early release. Installers are not code-signed yet, so Windows SmartScreen and macOS Gatekeeper will warn (on macOS: right-click the app, then Open). Each release lists SHA-256 checksums.
         </p>
         <span className={s.scrollCue} aria-hidden="true" />
       </section>
@@ -113,7 +113,7 @@ export default function SpaceStudioPage() {
         <div className={s.wrap} data-reveal>
           <h2 className={s.closingTitle}>Space Studio</h2>
           <div className={s.actions}>
-            <a className={s.btn} href={RELEASES_URL}>Download</a>
+            <DownloadButton className={s.btn} />
           </div>
         </div>
       </section>

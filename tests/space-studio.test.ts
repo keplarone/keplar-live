@@ -974,3 +974,40 @@ test("account deletion removes every new Space Studio collection, including the 
   assert.deepEqual(Object.values(await count()), names.map(() => 0));
   assert.equal(await beaconOwner(`Bearer ${token}`), null);
 });
+
+test("download: each platform gets its installer from the latest release, and the route redirects straight to the file", async () => {
+  const { assetUrl, platformFromRequest, RELEASES_URL } = await import("@/lib/space-studio/download");
+  const base = "https://github.com/keplarone/space-studio/releases/download/v0.2.0/";
+  const names = ["SHA256SUMS", "Space-Studio-0.2.0-linux-amd64.deb", "Space-Studio-0.2.0-linux-x86_64.AppImage", "Space-Studio-0.2.0-mac-arm64.dmg", "Space-Studio-0.2.0-mac-x64.dmg", "Space-Studio-0.2.0-win-x64.exe"];
+  const release = { tag_name: "v0.2.0", assets: names.map((name) => ({ name, browser_download_url: base + name })) };
+  assert.equal(assetUrl(release, "windows"), base + "Space-Studio-0.2.0-win-x64.exe");
+  assert.equal(assetUrl(release, "mac-arm"), base + "Space-Studio-0.2.0-mac-arm64.dmg");
+  assert.equal(assetUrl(release, "mac-intel"), base + "Space-Studio-0.2.0-mac-x64.dmg");
+  assert.equal(assetUrl(release, "linux"), base + "Space-Studio-0.2.0-linux-x86_64.AppImage");
+  assert.equal(assetUrl(release, "deb"), base + "Space-Studio-0.2.0-linux-amd64.deb");
+  // Only this repository's release files are ever redirected to.
+  assert.equal(assetUrl({ assets: [{ name: "x-win-x64.exe", browser_download_url: "https://evil.example/x-win-x64.exe" }] }, "windows"), null);
+  assert.equal(assetUrl({}, "windows"), null);
+
+  assert.equal(platformFromRequest("Mozilla/5.0 (Windows NT 10.0; Win64; x64)", null), "windows");
+  assert.equal(platformFromRequest("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)", null), "mac-arm");
+  assert.equal(platformFromRequest("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)", '"x86"'), "mac-intel");
+  assert.equal(platformFromRequest("Mozilla/5.0 (X11; Ubuntu; Linux x86_64)", null), "deb");
+  assert.equal(platformFromRequest("Mozilla/5.0 (X11; Linux x86_64)", null), "linux");
+
+  const { GET } = await import("@/app/api/space-studio/download/route");
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = (async () => Response.json(release)) as typeof fetch;
+  try {
+    const r = await GET(new Request("https://keplar.one/api/space-studio/download?os=mac-intel"));
+    assert.equal(r.status, 302);
+    assert.equal(r.headers.get("location"), base + "Space-Studio-0.2.0-mac-x64.dmg");
+    const auto = await GET(new Request("https://keplar.one/api/space-studio/download", { headers: { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" } }));
+    assert.equal(auto.headers.get("location"), base + "Space-Studio-0.2.0-win-x64.exe");
+    globalThis.fetch = (async () => new Response("down", { status: 503 })) as typeof fetch;
+    const down = await GET(new Request("https://keplar.one/api/space-studio/download?os=windows"));
+    assert.equal(down.headers.get("location"), RELEASES_URL);
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
