@@ -15,7 +15,7 @@ test("global: no outline on focus, no tap-highlight box, forced-colors keeps the
 });
 
 test("no container shows a ring just because a button inside it was pressed", () => {
-  const files = ["src/styles/glass.css", "src/components/app-ui/Composer.module.css", "src/components/app-ui/App.module.css", "src/components/home/MonolithHome.module.css", "src/components/templates/Templates.module.css"];
+  const files = ["src/styles/glass.css", "src/components/app-ui/Composer.module.css", "src/components/app-ui/App.module.css", "src/components/sky/Sky.module.css", "src/components/landing/LiveDemo.module.css", "src/components/templates/Templates.module.css"];
   for (const f of files) assert.ok(!/(^|\n)[^\n{}]*:focus-within\s*\{[^}]*(box-shadow|outline)/.test(css(f)), `${f}: :focus-within draws a ring`);
 });
 

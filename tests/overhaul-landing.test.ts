@@ -49,7 +49,7 @@ test("landing: chapters carry data-chapter for the space scene; single bold CTA 
   assert.match(ch, /data-chapter=\{ask\.id\}/);
   assert.match(ch, /data-chapter=\{c\.id\}/);
   assert.match(ch, /tryText=\{ch\.closeCta\}/); assert.match(readFileSync("src/lib/i18n/messages/marketing/en.ts", "utf8"), /closeCta: "Ask Keplar anything"/);
-  assert.match(readFileSync("src/components/home/MonolithHome.tsx", "utf8"), /\{t\.ask\}/); assert.match(readFileSync("src/lib/narrative.ts", "utf8"), /primary: "Ask Keplar anything"/);
+  assert.match(readFileSync("src/components/home/LocaleHome.tsx", "utf8"), /\{t\.ask\}/); assert.match(readFileSync("src/lib/narrative.ts", "utf8"), /primary: "Ask Keplar anything"/);
   // The Oct 2026 home (src/components/sky) lists the chapters as a hover list instead of the space-scene story.
   assert.match(readFileSync("src/components/sky/SkyHome.tsx", "utf8"), /<FeatureList rows=\{chapters/);
 });

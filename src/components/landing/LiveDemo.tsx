@@ -134,7 +134,7 @@ export function LiveDemo() {
             {msg ? <p className={s.msg}>{msg}</p> : null}
             {answer || msg ? (
               <div className={s.next}>
-                <a className={s.go} href={`/app/ask#q=${encodeURIComponent(asked)}`}>{t.fullCard}</a>
+                <a className={s.more} href={`/app/ask#q=${encodeURIComponent(asked)}`}>{t.fullCard}</a>
                 <Link className={s.link} href={localizedPath("/signup?utm_source=home_demo", locale)}>{t.signup}</Link>
               </div>
             ) : null}
