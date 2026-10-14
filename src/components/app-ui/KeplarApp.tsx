@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { usePrefs } from "@/lib/use-prefs";
 import { playDoneSound } from "@/lib/prefs";
 import { KeplarSymbol } from "@/components/brand";
-import { SkyBackdrop } from "@/components/sky/SkyBackdrop";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import type { Attachment, ComposerModes, KeplarRequest, ResearchEvent } from "@/lib/orchestration/types";
 import { hasResearchBridge, noSubscribe, researchBridge } from "@/lib/desktop/research-bridge";
@@ -34,7 +33,6 @@ import { ChatImageTurn } from "./chat-image/ChatImageTurn";
 import { detectImageIntent } from "@/lib/images/chat-intent";
 import { expandPromptIfSlash } from "@/lib/images/slash-commands";
 import { OPEN_APP_SEARCH_EVENT } from "@/lib/nav/commands";
-import { inDesktopApp } from "@/lib/desktop";
 import { followUpPrompt, newKey } from "@/lib/images/chat-flow";
 import { UserMedia } from "./UserMedia";
 import { RESUME_KEY } from "./SiteProjects";
@@ -47,7 +45,8 @@ import { Presence, usePresence } from "@/components/motion/usePresence";
 import { withViewTransition } from "@/lib/ui/view-transition";
 import { UNDO_MS, useChatDelete } from "./delete/useChatDelete";
 import { UseForPrompt } from "./UseForPrompt";
-import { shouldWelcomeBack, WelcomeBack } from "./WelcomeBack";
+import { ResumeChats } from "./ResumeChats";
+import { OfflineNotice } from "./OfflineNotice";
 import { useDockHeight } from "./dock-height";
 import { HomeStart } from "./HomeStart";
 import { pathForView, viewForPath } from "./app-paths";
@@ -200,8 +199,6 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   const prefs = usePrefs();
   const [mac] = useState(() => typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.userAgent));
   const composerRef = useRef<ComposerHandle>(null);
-  // The welcome-back screen's own Composer (the same component, so it can attach, talk, switch modes and pick models).
-  const welcomeComposerRef = useRef<ComposerHandle>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const controllers = useRef(new Map<string, AbortController>());
@@ -282,12 +279,6 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   // Greeting: the signed-in person's first name when the account has one (never guessed from the email address).
   const firstName = state.ledger.signedIn ? (state.account?.name?.trim().split(/\s+/)[0] ?? "").slice(0, 40) : "";
   const [welcome] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("welcome") === "1");
-  // The desktop app is its own app, not a mirror of the website: no welcome-back screen (the site home's nav pills, Learn and
-  // Company links, model carousel) and no moving home-page backdrop. It opens straight into the app. (KeplarApp is client-only.)
-  const [desktop] = useState(inDesktopApp);
-  // Coming back signed in (a new visit, landing on the ask page): the welcome-back screen (WelcomeBack, Keplar Canvas Page 1).
-  const [welcomeBackOk] = useState(() => typeof window !== "undefined" && !desktop && !welcome && /^\/app(\/ask)?\/?$/.test(window.location.pathname) && shouldWelcomeBack());
-  const [welcomeBackDone, setWelcomeBackDone] = useState(false);
   // Keplar Business has its own desktop app (keplarone/keplar-business) and site (business.keplar.one): Keplar One never sends
   // a Business account over. Keplar One's desktop window only shows keplar.one, so a redirect to the Business host would leave it.
   const chooseUseFor = useCallback((v: UseFor) => {
@@ -1039,8 +1030,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   const projectName = state.projects.find((p) => p.id === (thread?.projectId ?? state.projectFilter))?.name;
 
   return (
-    <div ref={rootRef} className={s.app} data-own-search="" data-drawer={drawerOpen || undefined} data-app-ready={state.scope === "pending" ? undefined : ""}>
-      {desktop ? null : <SkyBackdrop />}
+    <div ref={rootRef} className={s.app} data-product="" data-own-search="" data-drawer={drawerOpen || undefined} data-app-ready={state.scope === "pending" ? undefined : ""}>
       <ExtensionReturn onChanged={() => void syncMeter()} />
       <ReferralClaim signedIn={state.ledger.signedIn} onChanged={() => void syncMeter()} />
       <div ref={drawerRef} className={s.sideWrap} data-open={drawerOpen || undefined} onPointerEnter={() => warmViews(true)} onFocus={() => warmViews(true)}>
@@ -1061,37 +1051,6 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
         />
       </div>
       <SendFieldLazy />
-      {welcomeBackOk && !welcomeBackDone && state.ledger.synced && state.ledger.signedIn && state.view === "thread" && messages.length === 0 && state.threads.some((t) => !t.private) ? (
-        <WelcomeBack
-          firstName={firstName}
-          plan={state.ledger.plan}
-          threads={state.threads}
-          composer={
-            <Composer
-              ref={welcomeComposerRef}
-              running={running}
-              onSend={(text, attachments, modes, media) => { setWelcomeBackDone(true); send(text, attachments, modes, media); }}
-              onStop={stop}
-              routing={state.settings.routing}
-              onRouting={(routing) => dispatch({ type: "settings", settings: { routing } })}
-              computeRemaining={remaining(state)}
-              resetsAt={state.ledger.resetsAt}
-              plan={state.ledger.plan}
-              signedIn={state.ledger.synced ? state.ledger.signedIn : undefined}
-              onModesChange={onComposerModes}
-              placeholder="Ask Keplar anything"
-              draftKey={draftKeyFor(state.scope, null, Boolean(state.privateNext))}
-            />
-          }
-          onStarter={(text, modes) => { welcomeComposerRef.current?.setModes(modes); welcomeComposerRef.current?.setText(text); welcomeComposerRef.current?.focus(); }}
-          onOpenThread={(id) => { setWelcomeBackDone(true); openThread(id); }}
-          onOpenChats={() => { setWelcomeBackDone(true); goView("history"); }}
-          onView={(v) => { setWelcomeBackDone(true); goView(v); }}
-          onNewChat={() => { setWelcomeBackDone(true); requestAnimationFrame(() => composerRef.current?.focus()); }}
-          onSearch={() => { setWelcomeBackDone(true); setSearchOpen(true); }}
-          onClose={() => setWelcomeBackDone(true)}
-        />
-      ) : null}
       {drawerScrim.mounted ? <div className={s.drawerScrim} onClick={() => setDrawerOpen(false)} aria-hidden="true" {...drawerScrim.motion("fade")} /> : null}
 
       <div key={state.epoch} className={s.main} inert={drawerOpen || undefined} data-view={state.view} data-empty={(state.view === "thread" && messages.length === 0) || undefined}>
@@ -1146,9 +1105,9 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                       <span>
                         {firstName ? (
                           <>
-                            <span className={s.welcomeGreet}>{welcome ? "Welcome," : `${dayGreeting(new Date().getHours())},`}</span> <span className={s.welcomeName}>{firstName}</span>
+                            <span>{welcome ? "Welcome," : `${dayGreeting(new Date().getHours())},`}</span> <span className={s.welcomeName}>{firstName}</span>
                           </>
-                        ) : <span className={s.welcomeGreet}>{state.ledger.synced ? `${dayGreeting(new Date().getHours())}.` : "Welcome to Keplar."}</span>}
+                        ) : <span>{state.ledger.synced ? `${dayGreeting(new Date().getHours())}.` : "Welcome to Keplar."}</span>}
                       </span>
                     </h1>
                     <p className={s.welcomeLede}>Ask anything. Keplar checks with several models and gives you one clear answer.</p>
@@ -1188,6 +1147,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                   </ul>
                     </>}
                   />
+                  {state.ledger.signedIn ? <ResumeChats threads={state.threads} onOpen={openThread} onAll={() => goView("history")} /> : null}
                   {/* The one-time "What will you use Keplar for?" question sits under the suggestions, not above the greeting's chips. */}
                   {askUseFor ? (
                     <UseForPrompt value={useFor} onChoose={chooseUseFor} onSkip={() => chooseUseFor(useFor ?? "personal")} />
@@ -1339,6 +1299,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                 scrollRef.current?.scrollBy({ top: e.deltaY, left: 0 });
               }}
             >
+              <OfflineNotice />
               <ChatOptionsBar
                 isNew={messages.length === 0}
                 privateOn={Boolean(state.privateNext)}

@@ -1,5 +1,20 @@
 /* ── shell ─────────────────────────────────────────── */
 
+/* Inside the workspace the "liquid glass" tokens resolve to opaque product surfaces (tokens.css). The app has no backdrop art,
+   so translucency only let a menu's or card's background bleed through its text (the Modes menu over the starters, the phone
+   drawer over the greeting). Everything that reads --lg-* inside .app (menus, search, cards, the account menu) inherits this. */
+.app {
+  --lg-fill: var(--surface-overlay);
+  --lg-fill-strong: var(--surface-overlay);
+  --lg-card: var(--surface-raised);
+  --lg-card-hover: var(--hover-wash);
+  --lg-bf: none;
+  --lg-ring: inset 0 0 0 1px var(--hairline);
+  --lg-wash: var(--c-canvas);
+  --c-glass: var(--surface-raised);
+  --c-glass-strong: var(--surface-raised);
+}
+
 .app {
   position: fixed;
   inset: 0;
@@ -45,6 +60,8 @@
 
 .sideBrand {
   display: inline-flex;
+  align-items: center;
+  min-height: 32px; /* a 32px target (WCAG 2.5.8 asks for 24); 44px on touch screens below */
   color: var(--c-ink);
   border-radius: var(--r-xs);
 }
@@ -1331,14 +1348,14 @@ a.sideItem {
 
 /* glass buttons (liquid glass: see src/styles/glass.css) */
 .upgradeBtn { background: var(--btn-p-bg); color: var(--btn-p-ink); border-color: transparent; box-shadow: var(--btn-p-shadow); -webkit-backdrop-filter: blur(6px) saturate(1.4); backdrop-filter: blur(6px) saturate(1.4); transition: var(--btn-spring); }
-.upgradeBtn:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--btn-p-bg); transform: scale(1.03, 1.015); }
-.upgradeBtn:active:not(:disabled) { transform: scale(0.97, 0.92); }
+.upgradeBtn:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--c-ink-hover); }
+.upgradeBtn:active:not(:disabled) { scale: var(--m-press); }
 .primaryBtn { background: var(--btn-p-bg); color: var(--btn-p-ink); border-color: transparent; box-shadow: var(--btn-p-shadow); -webkit-backdrop-filter: blur(6px) saturate(1.4); backdrop-filter: blur(6px) saturate(1.4); transition: var(--btn-spring); }
-.primaryBtn:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--btn-p-bg); transform: scale(1.03, 1.015); }
-.primaryBtn:active:not(:disabled) { transform: scale(0.97, 0.92); }
+.primaryBtn:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--c-ink-hover); }
+.primaryBtn:active:not(:disabled) { scale: var(--m-press); }
 .secondaryBtn { background: var(--btn-s-bg); color: var(--btn-s-ink); border-color: transparent; box-shadow: var(--btn-s-shadow); -webkit-backdrop-filter: blur(5px) saturate(1.4); backdrop-filter: blur(5px) saturate(1.4); transition: var(--btn-spring); }
-.secondaryBtn:hover:not(:disabled) { background: var(--lg-fill-strong); transform: scale(1.03, 1.015); }
-.secondaryBtn:active:not(:disabled) { transform: scale(0.97, 0.92); }
+.secondaryBtn:hover:not(:disabled) { background: var(--lg-fill-strong); }
+.secondaryBtn:active:not(:disabled) { scale: var(--m-press); }
 @media (prefers-reduced-motion: reduce) { .upgradeBtn, .primaryBtn, .secondaryBtn { transition: background-color 0.1s linear; transform: none !important; } }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .upgradeBtn, .primaryBtn, .secondaryBtn { backdrop-filter: none; -webkit-backdrop-filter: none; } .upgradeBtn, .primaryBtn { background: var(--btn-p-solid, #17171a); } .secondaryBtn { background: var(--lg-solid); } }
 
@@ -1392,8 +1409,8 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
   transition: var(--btn-spring), background-color var(--d-fast) var(--e-standard);
 }
 .homeTile, .useForOption { border-radius: 22px; }
-.homeTile:hover, .useForOption:hover { background: var(--lg-card-hover); border-color: transparent; }
-.useForOption[aria-pressed="true"] { background: var(--lg-card-hover); box-shadow: 0 0 0 2px rgb(var(--rgb-ink) / 0.8); } /* selected: a plain ink outline, no glow */
+.homeTile:hover, .useForOption:hover { background: var(--surface-raised); border-color: transparent; box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-2); }
+.useForOption[aria-pressed="true"] { background: var(--surface-raised); box-shadow: 0 0 0 2px rgb(var(--rgb-ink) / 0.8); } /* selected: a plain ink outline, no glow */
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   .homeTile:hover, .useForOption:hover { transform: translateY(-2px) scale(1.012); }
 }
@@ -1408,7 +1425,7 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 /* Card-like buttons (a tile holding a title and a sentence) keep a soft card radius; every other button is a pill (glass.css). */
 .homeTile.homeTile, .useForOption.useForOption { border-radius: 22px; }
 .example.example { border-radius: 22px; padding: var(--s-3) var(--s-4); background: var(--lg-card); box-shadow: var(--lg-ring); }
-.example.example:hover { padding-left: var(--s-4); background: var(--lg-card-hover); }
+.example.example:hover { padding-left: var(--s-4); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-2); }
 
 /* ── page-wide particle layer (CP-6d) ──
  * The app is a fixed overlay; when the layer is drawing, let it show through the shell. While a question is running the
@@ -1568,320 +1585,176 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 .memoryChip.memoryChip:hover { color: var(--c-ink); background: rgb(var(--rgb-ink) / 0.06); }
 .memoryChip.memoryChip:not([data-on])::after { content: ""; position: absolute; left: 9px; right: 9px; top: 50%; height: 1.5px; border-radius: 1px; background: currentColor; transform: rotate(-45deg); }
 
-/* ── Oct 2026 redesign (canvas pages "App home" and "App chat"), light theme only ──────────────────
- * Claude-style layout in the site's light style: a frosted sidebar card on the left (a slide-in drawer under 900px), the chat
- * title as a pill with round actions on the right, the greeting with the mark beside it, a large white composer and pill starters,
- * all over the aura ground with drifting dots (SkyBackdrop, rendered inside .app). Dark keeps the layout above. */
-:global(:root[data-theme="light"]) .app { isolation: isolate; background: #f7f8fa; }
-:global(:root[data-theme="light"]) .sideWrap { padding: 12px 0 12px 12px; background: transparent; opacity: 1; }
-:global(:root[data-theme="light"]) .sidebar {
-  border-radius: 26px;
-  background: rgb(255 255 255 / 0.72);
-  -webkit-backdrop-filter: blur(16px) saturate(1.2);
-  backdrop-filter: blur(16px) saturate(1.2);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.8), 0 1px 2px rgb(14 15 18 / 0.06), 0 12px 32px -16px rgb(14 15 18 / 0.18);
+/* ── App workspace layout (both themes) ──────────────────────────────────────────────────────────────────────────────────
+ * One block for Light and Dark, drawn from the product surface tokens (tokens.css): the colours change with the theme, the layout
+ * never does. A calm canvas (no backdrop art behind the work), the sidebar as an opaque card on the left (a slide-in drawer under
+ * 900px), a quiet top bar (the chat title as plain text, icon actions that only fill on hover), the greeting with the mark beside
+ * it, a raised composer and outlined starter chips. Replaces a light block plus a hex-copied dark twin of it. */
+:global(:root[data-theme]) .app { isolation: isolate; background: var(--c-canvas); }
+:global(:root[data-theme]) .sideWrap { padding: 12px 0 12px 12px; background: transparent; opacity: 1; }
+:global(:root[data-theme]) .sidebar {
+  border-radius: 24px;
+  background: var(--surface-panel);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1);
 }
-:global(:root[data-theme="light"]) .sideItem { border-radius: 999px; }
-:global(:root[data-theme="light"]) .sideItem:hover { background: rgb(14 15 18 / 0.04); }
-:global(:root[data-theme="light"]) .sideItem[aria-current="page"] { background: #ffffff; box-shadow: 0 1px 2px rgb(14 15 18 / 0.06); }
-/* "New chat": the black plus disc from the design */
-:global(:root[data-theme="light"]) .sideItem[data-nav="new"] { color: #0e0f12; font-weight: 500; }
-:global(:root[data-theme="light"]) .sideItem[data-nav="new"] > svg:first-child { box-sizing: content-box; padding: 4px; border-radius: 999px; background: #0e0f12; color: #ffffff; }
+:global(:root[data-theme]) .sideItem { border-radius: 999px; }
+:global(:root[data-theme]) .sideItem:hover { background: var(--hover-wash); }
+:global(:root[data-theme]) .sideItem[aria-current="page"] { background: var(--hover-wash); box-shadow: none; color: var(--c-ink); }
+/* "New chat": the one filled disc in the sidebar, so the primary action reads first */
+:global(:root[data-theme]) .sideItem[data-nav="new"] { color: var(--c-ink); font-weight: var(--w-medium); }
+:global(:root[data-theme]) .sideItem[data-nav="new"] > svg:first-child { box-sizing: content-box; padding: 4px; border-radius: 999px; background: var(--c-ink); color: var(--c-canvas); }
 
-/* top bar: chat title pill on the left, round white actions and the black Upgrade pill on the right */
-:global(:root[data-theme="light"]) .topbar { height: 84px; padding: 20px 28px 0; align-items: flex-start; gap: 8px; background: transparent; opacity: 1; }
-:global(:root[data-theme="light"]) .topTitle {
+/* Top bar: the chat title as plain text on the left; quiet round icon actions and (when free usage is low) one Upgrade pill on the right */
+:global(:root[data-theme]) .topbar { height: 72px; padding: 16px 24px 0; align-items: flex-start; gap: 4px; background: transparent; opacity: 1; }
+:global(:root[data-theme]) .topTitle {
   flex: 0 1 auto;
-  max-width: min(460px, 50%);
+  max-width: min(520px, 55%);
   margin-right: auto;
-  height: 44px;
-  line-height: 44px;
-  padding: 0 18px;
-  border-radius: 999px;
-  background: #ffffff;
-  box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 8px 24px -12px rgb(14 15 18 / 0.16);
+  height: 40px;
+  line-height: 40px;
+  padding: 0 4px;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   font-size: 15px;
+  font-weight: var(--w-medium);
+  color: var(--c-ink);
 }
-:global(:root[data-theme="light"]) .topTitle:empty { visibility: hidden; }
-:global(:root[data-theme="light"]) .topbar .iconBtn,
-:global(:root[data-theme="light"]) .memoryChip {
-  height: 44px;
-  background: #ffffff;
-  color: #0e0f12;
-  box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 8px 24px -12px rgb(14 15 18 / 0.16);
+:global(:root[data-theme]) .topTitle:empty { visibility: hidden; }
+:global(:root[data-theme]) .memoryChip,
+:global(:root[data-theme]) .topbar > :global([class*="delete-chat-module"][class*="__trigger"]) { display: inline-grid; }
+/* (.iconBtn keeps its own display: the phone-only menu and New chat buttons stay hidden on wide screens) */
+:global(:root[data-theme]) .topbar .iconBtn,
+:global(:root[data-theme]) .memoryChip,
+:global(:root[data-theme]) .topbar > :global([class*="delete-chat-module"][class*="__trigger"]) {
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--c-ink-2);
+  opacity: 1;
+  box-shadow: none;
+  transition: background-color var(--m-dur-1) var(--m-ease-out), color var(--m-dur-1) var(--m-ease-out);
 }
-:global(:root[data-theme="light"]) .topbar .iconBtn { width: 44px; }
-:global(:root[data-theme="light"]) .memoryChip { padding: 0 16px; }
-:global(:root[data-theme="light"]) .upgradeTop {
+:global(:root[data-theme]) .topbar .iconBtn:hover,
+:global(:root[data-theme]) .memoryChip:hover,
+:global(:root[data-theme]) .topbar > :global([class*="delete-chat-module"][class*="__trigger"]):hover { background: var(--hover-wash); color: var(--c-ink); }
+:global(:root[data-theme]) .topbar .iconBtn:active,
+:global(:root[data-theme]) .topbar > :global([class*="delete-chat-module"][class*="__trigger"]):active { background: var(--press-wash); }
+:global(:root[data-theme]) .upgradeTop {
   display: inline-flex;
   align-items: center;
-  height: 44px;
-  padding: 0 20px;
+  height: 36px;
+  margin: 2px 0 0 6px;
+  padding: 0 16px;
   border-radius: 999px;
-  background: #0e0f12;
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 500;
+  background: var(--c-ink);
+  color: var(--c-canvas);
+  font-size: 14px;
+  font-weight: var(--w-medium);
   text-decoration: none;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2), 0 10px 22px -10px rgb(14 15 18 / 0.5);
-}
-:global(:root[data-theme="light"]) .topbar > :global([class*="delete-chat-module"][class*="__trigger"]) {
-  display: inline-grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 999px;
-  background: #ffffff;
-  color: #0e0f12;
-  opacity: 1;
-  box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 8px 24px -12px rgb(14 15 18 / 0.16);
+  box-shadow: var(--elev-1);
 }
 
 /* conversation column */
-:global(:root[data-theme="light"]) .scroll { padding-top: 104px; }
-:global(:root[data-theme="light"]) .thread { max-width: 760px; gap: 32px; }
-:global(:root[data-theme="light"]) .userMsg {
-  padding: 14px 18px;
+:global(:root[data-theme]) .scroll { padding-top: 88px; }
+:global(:root[data-theme]) .thread { max-width: 760px; gap: 32px; }
+:global(:root[data-theme]) .userMsg {
+  padding: 12px 18px;
   border-radius: 22px 22px 6px 22px;
-  background: #ffffff;
-  border: 1px solid rgb(14 15 18 / 0.07);
-  box-shadow: 0 1px 2px rgb(14 15 18 / 0.04);
+  background: var(--surface-raised);
+  border: 1px solid var(--hairline);
+  box-shadow: none;
   font-size: 16px;
   line-height: 1.55;
 }
-:global(:root[data-theme="light"]) .dock { background: linear-gradient(to top, #f7f8fa 55%, rgb(247 248 250 / 0)); }
-:global(:root[data-theme="light"]) .dock > * { max-width: 760px; }
+:global(:root[data-theme]) .dock { background: linear-gradient(to top, var(--c-canvas) 55%, rgb(var(--rgb-canvas) / 0)); }
+:global(:root[data-theme]) .dock > * { max-width: 760px; }
 
-/* welcome: the mark beside a two-tone, light-weight greeting; starters as pills */
-:global(:root[data-theme="light"]) .empty.empty { max-width: 760px; }
-:global(:root[data-theme="light"]) .welcome { align-items: center; text-align: center; }
-:global(:root[data-theme="light"]) .welcomeTitle {
+/* welcome: the mark beside a plain greeting in ink, the name in a quieter ink; starters as outlined chips */
+:global(:root[data-theme]) .empty.empty { max-width: 760px; }
+:global(:root[data-theme]) .welcome { align-items: center; text-align: center; }
+:global(:root[data-theme]) .welcomeTitle {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  font-size: clamp(36px, 3.6vw, 48px);
+  gap: 14px;
+  font-size: clamp(32px, 3.2vw, 44px);
   line-height: 1.1;
-  font-weight: 400;
+  font-weight: var(--w-regular);
   letter-spacing: -0.035em;
+  color: var(--c-ink);
 }
-:global(:root[data-theme="light"]) .welcomeMark { width: 38px; height: 38px; margin: 0; flex-shrink: 0; color: #000000; }
-:global(:root[data-theme="light"]) .welcomeName { color: #686d78; }
-:global(:root[data-theme="light"]) .welcomeLede { display: none; }
-:global(:root[data-theme="light"]) .homeChips { justify-content: center; }
-:global(:root[data-theme="light"]) .homeChip {
+:global(:root[data-theme]) .welcomeMark { width: 34px; height: 34px; margin: 0; flex-shrink: 0; color: var(--c-ink); }
+:global(:root[data-theme]) .welcomeName { color: var(--c-ink-3); }
+:global(:root[data-theme]) .welcomeLede { display: none; }
+:global(:root[data-theme]) .homeChips { justify-content: center; }
+:global(:root[data-theme]) .homeChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   min-height: 40px;
   padding: 0 16px;
   border-radius: 999px;
-  background: rgb(255 255 255 / 0.7);
-  border: 1px solid rgb(14 15 18 / 0.1);
+  background: transparent;
+  border: 1px solid var(--hairline-strong);
   box-shadow: none;
+  color: var(--c-ink-2);
   font-size: 14px;
+  transition: background-color var(--m-dur-1) var(--m-ease-out), color var(--m-dur-1) var(--m-ease-out), border-color var(--m-dur-1) var(--m-ease-out);
 }
-:global(:root[data-theme="light"]) .homeChip:hover { background: #ffffff; border-color: rgb(14 15 18 / 0.18); }
-:global(:root[data-theme="light"]) .homeTile, :global(:root[data-theme="light"]) .useForOption { background: rgb(255 255 255 / 0.85); box-shadow: 0 0 0 1px rgb(14 15 18 / 0.06), 0 12px 28px -14px rgb(14 15 18 / 0.25); }
-:global(:root[data-theme="light"]) .example.example { background: rgb(255 255 255 / 0.8); box-shadow: 0 0 0 1px rgb(14 15 18 / 0.06), 0 12px 28px -14px rgb(14 15 18 / 0.25); }
+:global(:root[data-theme]) .homeChip:hover { background: var(--surface-raised); border-color: var(--hairline-strong); color: var(--c-ink); }
+:global(:root[data-theme]) .homeTile,
+:global(:root[data-theme]) .useForOption,
+:global(:root[data-theme]) .example.example { background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1); }
 
-/* under 900px the sidebar is the existing slide-in drawer; give it the same card look */
+/* under 900px the sidebar is the slide-in drawer: the same opaque card, so the page behind never reads through it */
 @media (max-width: 899px) {
-  :global(:root[data-theme="light"]) .sideWrap { padding: 12px; }
-  :global(:root[data-theme="light"]) .topbar { padding: 14px 14px 0; height: 72px; }
-  :global(:root[data-theme="light"]) .topTitle { max-width: none; margin-right: 0; flex: 1 1 auto; text-align: center; }
-  :global(:root[data-theme="light"]) .menuBtn { background: #ffffff; }
-  :global(:root[data-theme="light"]) .scroll { padding-top: 88px; }
-  :global(:root[data-theme="light"]) .welcomeTitle { gap: 10px; }
-  :global(:root[data-theme="light"]) .welcomeMark { width: 28px; height: 28px; }
+  :global(:root[data-theme]) .sideWrap { padding: 12px; }
+  :global(:root[data-theme]) .sidebar { box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-3); }
+  :global(:root[data-theme]) .topbar { padding: 12px 12px 0; height: 64px; }
+  :global(:root[data-theme]) .topTitle { max-width: none; margin-right: 0; flex: 1 1 auto; text-align: center; }
+  :global(:root[data-theme]) .menuBtn { background: transparent; box-shadow: none; }
+  :global(:root[data-theme]) .scroll { padding-top: 76px; }
+  :global(:root[data-theme]) .welcomeTitle { gap: 10px; }
+  :global(:root[data-theme]) .welcomeMark { width: 26px; height: 26px; }
 }
 
-/* ── 1:1 with the canvas "App home" (empty chat), light theme ──
- * The greeting, the composer and the starters stack in the middle of the screen: the dock (normally pinned to the bottom) moves up
- * under the greeting while the chat is empty, and the starters sit below it (padding sized from the published --dock-h).
- * "More ideas" and the empty title pill are hidden, as in the design. As soon as the first message is sent the dock returns to the bottom. */
-:global(:root[data-theme="light"]) .sidebar { background: rgb(255 255 255 / 0.86); }
-:global(:root[data-theme="light"]) .main[data-empty] .topTitle { visibility: hidden; }
-:global(:root[data-theme="light"]) .main[data-empty] .scroll { padding-top: max(96px, calc(50vh - 190px)); }
-:global(:root[data-theme="light"]) .main[data-empty] .empty.empty { padding-top: 0; }
-:global(:root[data-theme="light"]) .main[data-empty] .dock {
+/* Empty chat: the greeting, the composer and the starters stack in the middle of the screen. The dock (normally pinned to the
+ * bottom) moves up under the greeting while the chat is empty, and the starters sit below it (padding sized from the published
+ * --dock-h). "More ideas" and the empty title are hidden. As soon as the first message is sent the dock returns to the bottom. */
+:global(:root[data-theme]) .main[data-empty] .topTitle { visibility: hidden; }
+:global(:root[data-theme]) .main[data-empty] .scroll { padding-top: max(96px, calc(50vh - 190px)); }
+:global(:root[data-theme]) .main[data-empty] .empty.empty { padding-top: 0; }
+:global(:root[data-theme]) .main[data-empty] .dock {
   top: calc(max(96px, calc(50vh - 190px)) + 78px);
   bottom: auto;
   padding-top: 0;
   background: transparent;
 }
-:global(:root[data-theme="light"]) .main[data-empty] .emptyBody { padding-top: calc(var(--dock-h, 197px) + 8px); }
-:global(:root[data-theme="light"]) .main[data-empty] :global([data-home-more]) { display: none; }
-:global(:root[data-theme="light"]) .homeChip { display: inline-flex; align-items: center; gap: 8px; }
-:global(:root[data-theme="light"]) .homeChipIcon { flex-shrink: 0; }
-.homeChipIcon { display: none; }
-:global(:root[data-theme="light"]) .homeChipIcon { display: block; }
+:global(:root[data-theme]) .main[data-empty] .emptyBody { padding-top: calc(var(--dock-h, 197px) + 8px); }
+:global(:root[data-theme]) .main[data-empty] :global([data-home-more]) { display: none; }
+.homeChipIcon { flex-shrink: 0; display: block; }
 
-/* Dark mode of the Oct 2026 app layout: generated from the light block above (same layout, graphite surfaces, inverted pills). */
-/* ── Oct 2026 redesign (canvas pages "App home" and "App chat"), light theme only ──────────────────
- * Claude-style layout in the site's light style: a frosted sidebar card on the left (a slide-in drawer under 900px), the chat
- * title as a pill with round actions on the right, the greeting with the mark beside it, a large white composer and pill starters,
- * all over the aura ground with drifting dots (SkyBackdrop, rendered inside .app). Dark keeps the layout above. */
-:global(:root[data-theme="dark"]) .app { isolation: isolate; background: #0b0b0d; }
-:global(:root[data-theme="dark"]) .sideWrap { padding: 12px 0 12px 12px; background: transparent; opacity: 1; }
-:global(:root[data-theme="dark"]) .sidebar {
-  border-radius: 26px;
-  background: rgb(28 28 32 / 0.72);
-  -webkit-backdrop-filter: blur(16px) saturate(1.2);
-  backdrop-filter: blur(16px) saturate(1.2);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 12px 32px -16px rgb(0 0 0 / 0.18);
-}
-:global(:root[data-theme="dark"]) .sideItem { border-radius: 999px; }
-:global(:root[data-theme="dark"]) .sideItem:hover { background: rgb(0 0 0 / 0.04); }
-:global(:root[data-theme="dark"]) .sideItem[aria-current="page"] { background: #1c1c20; box-shadow: 0 1px 2px rgb(0 0 0 / 0.06); }
-/* "New chat": the black plus disc from the design */
-:global(:root[data-theme="dark"]) .sideItem[data-nav="new"] { color: #ededf0; font-weight: 500; }
-:global(:root[data-theme="dark"]) .sideItem[data-nav="new"] > svg:first-child { box-sizing: content-box; padding: 4px; border-radius: 999px; background: #ffffff; color: #0e0f12; }
-
-/* top bar: chat title pill on the left, round white actions and the black Upgrade pill on the right */
-:global(:root[data-theme="dark"]) .topbar { height: 84px; padding: 20px 28px 0; align-items: flex-start; gap: 8px; background: transparent; opacity: 1; }
-:global(:root[data-theme="dark"]) .topTitle {
-  flex: 0 1 auto;
-  max-width: min(460px, 50%);
-  margin-right: auto;
-  height: 44px;
-  line-height: 44px;
-  padding: 0 18px;
-  border-radius: 999px;
-  background: #1c1c20;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px -12px rgb(0 0 0 / 0.16);
-  font-size: 15px;
-}
-:global(:root[data-theme="dark"]) .topTitle:empty { visibility: hidden; }
-:global(:root[data-theme="dark"]) .topbar .iconBtn,
-:global(:root[data-theme="dark"]) .memoryChip {
-  height: 44px;
-  background: #1c1c20;
-  color: #ededf0;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px -12px rgb(0 0 0 / 0.16);
-}
-:global(:root[data-theme="dark"]) .topbar .iconBtn { width: 44px; }
-:global(:root[data-theme="dark"]) .memoryChip { padding: 0 16px; }
-:global(:root[data-theme="dark"]) .upgradeTop {
-  display: inline-flex;
-  align-items: center;
-  height: 44px;
-  padding: 0 20px;
-  border-radius: 999px;
-  background: #ffffff;
-  color: #0e0f12;
-  font-size: 15px;
-  font-weight: 500;
-  text-decoration: none;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2), 0 10px 22px -10px rgb(0 0 0 / 0.5);
-}
-:global(:root[data-theme="dark"]) .topbar > :global([class*="delete-chat-module"][class*="__trigger"]) {
-  display: inline-grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 999px;
-  background: #1c1c20;
-  color: #ededf0;
-  opacity: 1;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px -12px rgb(0 0 0 / 0.16);
-}
-
-/* conversation column */
-:global(:root[data-theme="dark"]) .scroll { padding-top: 104px; }
-:global(:root[data-theme="dark"]) .thread { max-width: 760px; gap: 32px; }
-:global(:root[data-theme="dark"]) .userMsg {
-  padding: 14px 18px;
-  border-radius: 22px 22px 6px 22px;
-  background: #1c1c20;
-  border: 1px solid transparent;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
-  font-size: 16px;
-  line-height: 1.55;
-}
-:global(:root[data-theme="dark"]) .dock { background: linear-gradient(to top, #0b0b0d 55%, rgb(11 11 13 / 0)); }
-:global(:root[data-theme="dark"]) .dock > * { max-width: 760px; }
-
-/* welcome: the mark beside a two-tone, light-weight greeting; starters as pills */
-:global(:root[data-theme="dark"]) .empty.empty { max-width: 760px; }
-:global(:root[data-theme="dark"]) .welcome { align-items: center; text-align: center; }
-:global(:root[data-theme="dark"]) .welcomeTitle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  font-size: clamp(36px, 3.6vw, 48px);
-  line-height: 1.1;
-  font-weight: 400;
-  letter-spacing: -0.035em;
-}
-:global(:root[data-theme="dark"]) .welcomeMark { width: 38px; height: 38px; margin: 0; flex-shrink: 0; color: #ffffff; }
-:global(:root[data-theme="dark"]) .welcomeName { color: #9a9ca3; }
-:global(:root[data-theme="dark"]) .welcomeLede { display: none; }
-:global(:root[data-theme="dark"]) .homeChips { justify-content: center; }
-:global(:root[data-theme="dark"]) .homeChip {
-  min-height: 40px;
-  padding: 0 16px;
-  border-radius: 999px;
-  background: rgb(28 28 32 / 0.7);
-  border: 1px solid transparent;
-  box-shadow: none;
-  font-size: 14px;
-}
-:global(:root[data-theme="dark"]) .homeChip:hover { background: #1c1c20; border-color: transparent; }
-:global(:root[data-theme="dark"]) .homeTile, :global(:root[data-theme="dark"]) .useForOption { background: rgb(28 28 32 / 0.85); box-shadow: 0 12px 28px -14px rgb(0 0 0 / 0.25); }
-:global(:root[data-theme="dark"]) .example.example { background: rgb(28 28 32 / 0.8); box-shadow: 0 12px 28px -14px rgb(0 0 0 / 0.25); }
-
-/* under 900px the sidebar is the existing slide-in drawer; give it the same card look */
-@media (max-width: 899px) {
-  :global(:root[data-theme="dark"]) .sideWrap { padding: 12px; }
-  :global(:root[data-theme="dark"]) .topbar { padding: 14px 14px 0; height: 72px; }
-  :global(:root[data-theme="dark"]) .topTitle { max-width: none; margin-right: 0; flex: 1 1 auto; text-align: center; }
-  :global(:root[data-theme="dark"]) .menuBtn { background: #1c1c20; }
-  :global(:root[data-theme="dark"]) .scroll { padding-top: 88px; }
-  :global(:root[data-theme="dark"]) .welcomeTitle { gap: 10px; }
-  :global(:root[data-theme="dark"]) .welcomeMark { width: 28px; height: 28px; }
-}
-
-/* ── 1:1 with the canvas "App home" (empty chat), light theme ──
- * The greeting, the composer and the starters stack in the middle of the screen: the dock (normally pinned to the bottom) moves up
- * under the greeting while the chat is empty, and the starters sit below it (padding sized from the published --dock-h).
- * "More ideas" and the empty title pill are hidden, as in the design. As soon as the first message is sent the dock returns to the bottom. */
-:global(:root[data-theme="dark"]) .sidebar { background: rgb(28 28 32 / 0.86); }
-:global(:root[data-theme="dark"]) .main[data-empty] .topTitle { visibility: hidden; }
-:global(:root[data-theme="dark"]) .main[data-empty] .scroll { padding-top: max(96px, calc(50vh - 190px)); }
-:global(:root[data-theme="dark"]) .main[data-empty] .empty.empty { padding-top: 0; }
-:global(:root[data-theme="dark"]) .main[data-empty] .dock {
-  top: calc(max(96px, calc(50vh - 190px)) + 78px);
-  bottom: auto;
-  padding-top: 0;
-  background: transparent;
-}
-:global(:root[data-theme="dark"]) .main[data-empty] .emptyBody { padding-top: calc(var(--dock-h, 197px) + 8px); }
-:global(:root[data-theme="dark"]) .main[data-empty] :global([data-home-more]) { display: none; }
-:global(:root[data-theme="dark"]) .homeChip { display: inline-flex; align-items: center; gap: 8px; }
-:global(:root[data-theme="dark"]) .homeChipIcon { flex-shrink: 0; }
-.homeChipIcon { display: none; }
-:global(:root[data-theme="dark"]) .homeChipIcon { display: block; }
-
-/* The greeting ("Good morning," / "Welcome to Keplar.") as a slow moving gradient in the aura colors; the name after it stays grey.
-   Deeper hues on the light canvas (AA-ish at display size), soft pastel ones on dark. Reduced motion keeps a still gradient. */
-.welcomeGreet {
-  background: linear-gradient(100deg, #0a7a8a, #4a63b8, #8a4f9e, #c4573a, #0a7a8a);
-  background-size: 300% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-  animation: welcome-flow 9s linear infinite;
-}
-:global(:root[data-theme="dark"]) .welcomeGreet {
-  background-image: linear-gradient(100deg, #9fd8f0, #b9a8f5, #f2b8a0, #9fe3c4, #9fd8f0);
-}
-@keyframes welcome-flow {
-  from { background-position: 0% 50%; }
-  to { background-position: 300% 50%; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .welcomeGreet { animation: none; }
-}
+/* "Pick up where you left off" (ResumeChats): the last three chats under the starters, as plain rows with a hairline between them.
+   Only where the sidebar is a drawer (under 900px): on wider screens the sidebar's Recents already show the same chats. */
+@media (min-width: 900px) { .resume { display: none; } }
+.resume { width: 100%; max-width: 560px; margin: 28px auto 0; text-align: left; }
+.resumeHead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 0 12px 6px; }
+.resumeTitle { font-size: 13px; font-weight: var(--w-medium); letter-spacing: 0; color: var(--c-ink-3); }
+.resumeAll { min-height: 32px; padding: 0 8px; border-radius: 999px; font-size: 13px; color: var(--c-ink-2); transition: background-color var(--m-dur-1) var(--m-ease-out), color var(--m-dur-1) var(--m-ease-out); }
+.resumeAll:hover { background: var(--hover-wash); color: var(--c-ink); }
+.resumeList { display: flex; flex-direction: column; }
+.resumeList > li + li { border-top: 1px solid var(--hairline); }
+.resumeItem { display: flex; align-items: center; gap: 16px; width: 100%; min-height: 48px; padding: 0 12px; border-radius: 12px; text-align: left; transition: background-color var(--m-dur-1) var(--m-ease-out); }
+.resumeItem:hover { background: var(--hover-wash); }
+.resumeItem:active { background: var(--press-wash); }
+.resumeName { flex: 1 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 15px; color: var(--c-ink); }
+.resumeWhen { flex-shrink: 0; font-size: 13px; color: var(--c-ink-3); font-variant-numeric: tabular-nums; }
 
 /* App views (Projects, Agents, All chats, Approvals…) from the Oct 2026 canvas designs: light 44px titles, frosted inputs
    and list rows on the aura backdrop. */
@@ -1913,8 +1786,7 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 
 /* An open chat: the top bar gets a soft band (the page colour, fading out downward), the twin of the dock's fade at the bottom.
    The title pill and round actions used to float straight over the thread, so the answer's first lines ran underneath them. */
-.main { --kp-band: 247 248 250; }
-:global(:root[data-theme="dark"]) .main { --kp-band: 11 11 13; }
+.main { --kp-band: var(--rgb-canvas); }
 .main[data-view="thread"]:not([data-empty]) .topbar::before {
   content: "";
   position: absolute;
@@ -1932,3 +1804,7 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 @media (pointer: coarse) {
   .homeChip, .homeMoreSummary { min-height: 44px; }
 }
+
+/* Offline (OfflineNotice): one quiet line above the composer while the browser reports no connection. */
+.offline { display: flex; align-items: center; gap: 8px; width: fit-content; max-width: 100%; margin: 0 auto 8px; padding: 6px 14px; border-radius: 999px; background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline); font-size: 13px; line-height: 1.4; color: var(--c-ink-2); }
+.offlineDot { flex: none; width: 8px; height: 8px; border-radius: 999px; background: var(--v-attention); }

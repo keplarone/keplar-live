@@ -582,8 +582,8 @@
 
 /* glass buttons (liquid glass: see src/styles/glass.css) */
 .send { background: var(--btn-p-bg); color: var(--btn-p-ink); border-color: transparent; box-shadow: var(--btn-p-shadow); -webkit-backdrop-filter: blur(6px) saturate(1.4); backdrop-filter: blur(6px) saturate(1.4); transition: var(--btn-spring); }
-.send:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--btn-p-bg); transform: scale(1.03, 1.015); }
-.send:active:not(:disabled) { transform: scale(0.97, 0.92); }
+.send:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--c-ink-hover); }
+.send:active:not(:disabled) { scale: var(--m-press); }
 @media (prefers-reduced-motion: reduce) { .send { transition: background-color 0.1s linear; transform: none !important; } }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .send { backdrop-filter: none; -webkit-backdrop-filter: none; } .send { background: var(--btn-p-solid, #17171a); } }
 
@@ -883,74 +883,48 @@ html[data-lens] .composer { backdrop-filter: url(#lg-refract) var(--lg-bf); }
   .composer { gap: var(--s-1); padding-top: var(--s-2); padding-bottom: var(--s-2); }
 }
 
-/* Oct 2026 redesign (canvas "Chat"), light theme: a large white card with soft depth, round grey tool pills and a round black send. */
-:global(:root[data-theme="light"]) .composer {
+/* Composer (both themes, from the product surface tokens): a raised card with a hairline edge, round tool pills on a quiet wash
+   and a round send button in ink. The edge strengthens while the field has focus. */
+:global(:root[data-theme]) .composer {
   padding: 16px 16px 12px 18px;
   border-radius: 26px;
-  background: rgb(255 255 255 / 0.95);
+  background: var(--surface-raised);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
-  box-shadow: 0 0 0 1px rgb(14 15 18 / 0.07), 0 1px 0 #ffffff inset, 0 30px 80px -40px rgb(14 15 18 / 0.3), 0 2px 6px rgb(14 15 18 / 0.04);
+  box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-2);
+  transition: box-shadow var(--m-dur-2) var(--m-ease-out);
 }
-:global(:root[data-theme="light"]) .composer:has(:is(textarea, input):focus) {
-  box-shadow: 0 0 0 1px rgb(14 15 18 / 0.14), 0 30px 80px -40px rgb(14 15 18 / 0.35), 0 2px 6px rgb(14 15 18 / 0.05);
+:global(:root[data-theme]) .composer:has(:is(textarea, input):focus) {
+  box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-2);
 }
-:global(:root[data-theme="light"]) .input { font-size: 17px; }
-:global(:root[data-theme="light"]) .tool { border-radius: 999px; background: #f1f3f6; box-shadow: none; }
-:global(:root[data-theme="light"]) .send { border-radius: 999px; background: #0e0f12; color: #ffffff; box-shadow: 0 1px 2px rgb(0 0 0 / 0.2), 0 8px 18px -8px rgb(14 15 18 / 0.5); -webkit-backdrop-filter: none; backdrop-filter: none; }
-:global(:root[data-theme="light"]) .send:disabled { background: #c9ccd2; box-shadow: none; }
+:global(:root[data-theme]) .input { font-size: 17px; }
+:global(:root[data-theme]) .tool { border-radius: 999px; background: var(--hover-wash); box-shadow: none; }
+:global(:root[data-theme]) .tool:hover { background: var(--press-wash); }
+:global(:root[data-theme]) .send { border-radius: 999px; background: var(--c-ink); color: var(--c-canvas); box-shadow: var(--elev-1); -webkit-backdrop-filter: none; backdrop-filter: none; }
+:global(:root[data-theme]) .send:disabled { background: var(--press-wash); color: var(--c-ink-3); box-shadow: none; }
 
-/* canvas "App home"/"App chat": the send button is a round black arrow; the label stays for screen readers */
-:global(:root[data-theme="light"]) .send { width: 44px; height: 44px; min-width: 44px; padding: 0; justify-content: center; }
-:global(:root[data-theme="light"]) .send > span:first-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-:global(:root[data-theme="light"]) .send .arrow { display: inline-block; margin: 0; font-size: 18px; transform: rotate(-90deg); }
-:global(:root[data-theme="light"]) .send:hover:not(:disabled) .arrow { transform: rotate(-90deg) translateX(1px); }
-
-/* Dark mode of the composer redesign (generated from the light rules above). */
-/* Oct 2026 redesign (canvas "Chat"), light theme: a large white card with soft depth, round grey tool pills and a round black send. */
-:global(:root[data-theme="dark"]) .composer {
-  padding: 16px 16px 12px 18px;
-  border-radius: 26px;
-  background: rgb(28 28 32 / 0.95);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  box-shadow: 0 30px 80px -40px rgb(0 0 0 / 0.6), 0 2px 6px rgb(0 0 0 / 0.2); /* no white edge or top highlight in dark */
-}
-:global(:root[data-theme="dark"]) .composer:has(:is(textarea, input):focus) {
-  box-shadow: 0 30px 80px -40px rgb(0 0 0 / 0.7), 0 2px 6px rgb(0 0 0 / 0.25);
-}
-:global(:root[data-theme="dark"]) .input { font-size: 17px; }
-:global(:root[data-theme="dark"]) .tool { border-radius: 999px; background: #26262b; box-shadow: none; }
-:global(:root[data-theme="dark"]) .send { border-radius: 999px; background: #ffffff; color: #0e0f12; box-shadow: 0 1px 2px rgb(0 0 0 / 0.2), 0 8px 18px -8px rgb(0 0 0 / 0.5); -webkit-backdrop-filter: none; backdrop-filter: none; }
-:global(:root[data-theme="dark"]) .send:disabled { background: #3a3b40; box-shadow: none; }
-
-/* canvas "App home"/"App chat": the send button is a round black arrow; the label stays for screen readers */
-:global(:root[data-theme="dark"]) .send { width: 44px; height: 44px; min-width: 44px; padding: 0; justify-content: center; }
-:global(:root[data-theme="dark"]) .send > span:first-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-:global(:root[data-theme="dark"]) .send .arrow { display: inline-block; margin: 0; font-size: 18px; transform: rotate(-90deg); }
-:global(:root[data-theme="dark"]) .send:hover:not(:disabled) .arrow { transform: rotate(-90deg) translateX(1px); }
+/* The send button is a round arrow; the label stays for screen readers */
+:global(:root[data-theme]) .send { width: 44px; height: 44px; min-width: 44px; padding: 0; justify-content: center; }
+:global(:root[data-theme]) .send > span:first-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+:global(:root[data-theme]) .send .arrow { display: inline-block; margin: 0; font-size: 18px; transform: rotate(-90deg); }
+:global(:root[data-theme]) .send:hover:not(:disabled) .arrow { transform: rotate(-90deg) translateX(1px); }
 
 /* ── Pop-ups, rebuilt (Oct 2026) ──
  * Placement: Composer.tsx measures the room above and below the composer when one opens and sets data-pop="above|below" plus
  * --pop-room (that space) and --more-x (the Modes button's offset). On the empty home the composer sits mid-screen, so they open
  * downward instead of running off the top over the greeting; in a chat they open upward as before. Height is capped to the room
- * so nothing is clipped. Look: one frosted surface (the sidebar's), sentence-case section labels, roomy rows. */
+ * so nothing is clipped. Look: one opaque overlay surface (nothing behind a menu reads through its text), sentence-case section
+ * labels, roomy rows. */
 .panel, .moreMenu, .attachMenu {
   border-radius: 24px;
-  background: color-mix(in srgb, var(--c-surface-1) 88%, transparent);
-  box-shadow: 0 1px 2px rgb(14 15 18 / 0.08), 0 24px 60px -24px rgb(14 15 18 / 0.35);
-  -webkit-backdrop-filter: blur(24px) saturate(1.3);
-  backdrop-filter: blur(24px) saturate(1.3);
+  background: var(--surface-overlay);
+  box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-3);
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
   max-height: var(--pop-room, 560px);
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
-}
-:global(:root[data-theme="dark"]) .panel,
-:global(:root[data-theme="dark"]) .moreMenu,
-:global(:root[data-theme="dark"]) .attachMenu {
-  background: rgb(30 30 34 / 0.86);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 24px 60px -20px rgb(0 0 0 / 0.7);
 }
 .wrap[data-pop="below"] .panel,
 .wrap[data-pop="below"] .moreMenu,
@@ -963,8 +937,7 @@ html[data-lens] .composer { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 .legend { margin-bottom: 8px; font-size: 13px; font-weight: var(--w-medium); letter-spacing: 0; text-transform: none; color: var(--c-ink-2); }
 .segmented { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; flex-wrap: nowrap; gap: 2px; padding: 3px; border-radius: 999px; background: rgb(var(--rgb-ink) / 0.06); }
 .segment span { height: 32px; padding: 0 8px; border-radius: 999px; font-size: 13px; transition: background-color 220ms ease, color 220ms ease, box-shadow 220ms ease; }
-.segment input:checked + span { background: var(--c-surface-1); color: var(--c-ink); box-shadow: 0 1px 2px rgb(14 15 18 / 0.1), 0 4px 10px -4px rgb(14 15 18 / 0.2); }
-:global(:root[data-theme="dark"]) .segment input:checked + span { background: rgb(255 255 255 / 0.14); box-shadow: 0 1px 2px rgb(0 0 0 / 0.4); }
+.segment input:checked + span { background: var(--surface-raised); color: var(--c-ink); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1); }
 
 /* Strategy: a list of options, each with its one-line hint */
 .choices { display: flex; flex-direction: column; gap: 4px; }
@@ -995,8 +968,7 @@ html[data-lens] .composer { backdrop-filter: url(#lg-refract) var(--lg-bf); }
   padding: 8px;
 }
 .moreItem { align-items: center; gap: 10px; min-height: 56px; padding: 8px 10px; border-radius: 16px; white-space: normal; transition: background-color 180ms ease; }
-.moreIcon { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 999px; background: rgb(var(--rgb-ink) / 0.06); color: var(--c-ink); transition: background-color 180ms ease, color 180ms ease, scale 260ms cubic-bezier(0.34, 1.56, 0.64, 1); }
-.moreItem:hover .moreIcon { scale: 1.08; }
+.moreIcon { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 999px; background: var(--hover-wash); color: var(--c-ink); transition: background-color 180ms ease, color 180ms ease; }
 .moreItem[aria-checked="true"] .moreIcon { background: var(--c-ink); color: var(--c-canvas); }
 .moreText { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .moreLabel { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: var(--w-medium); color: var(--c-ink); }

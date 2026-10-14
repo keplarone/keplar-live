@@ -69,9 +69,18 @@ test("every rule that paints an aura is scoped to light, sitewide", () => {
       assert.match(r.body, /pointer-events:\s*none|animation:/, `${f}: aura layer must not take pointer events`);
     }
   }
-  // Ask (composer + welcome) and the app shell at least; the marketing pages and Create's start screen now sit on SkyBackdrop
-  // (src/components/sky), so Create no longer paints its own aura panel (Oct 2026 redesign)
-  assert.ok(painters >= 3, `expected aura placements, found ${painters}`);
+  // Marketing only (the home close and the Monolith hero): the /app workspace keeps a calm, flat canvas in both themes.
+  assert.ok(painters >= 2, `expected aura placements, found ${painters}`);
+});
+
+test("the /app workspace paints no aura and no backdrop art", () => {
+  for (const { f, css } of all) {
+    for (const r of rules(css)) {
+      if (!/var\(--aura-/.test(r.body)) continue;
+      assert.doesNotMatch(r.selector, /App-module__|studio-module__|Composer-module__/, `${f}: "${r.selector}" paints an aura inside the app`);
+      assert.doesNotMatch(f, /app-ui/, `${f}: the app's own styles never use the aura`);
+    }
+  }
 });
 
 test("dark theme defines and paints no aura", () => {
@@ -101,7 +110,7 @@ test("the aura stays static: no drift, no viewport blur, no background-attachmen
     assert.doesNotMatch(plain, /filter:\s*blur\(\s*var\(--aura-blur\)\s*\)/, `${f}: aura must not blur a layer`);
     assert.doesNotMatch(plain, /background-attachment/, `${f}: aura must not use background-attachment`);
   }
-  assert.match(aura, /__main"\]::before/, "Ask and Create share the main-column glow");
+  assert.doesNotMatch(aura, /App-module__/, "no aura layer behind the app's main column");
 });
 
 test("light palette: cool off-white canvas and AA inks", () => {

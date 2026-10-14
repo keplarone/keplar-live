@@ -9,6 +9,6 @@ export const DESKTOP_SCRIPT = `(function(){try{var n=navigator,w=n.windowControl
 
 /**
  * In the Keplar desktop app (the marker DESKTOP_SCRIPT sets before first paint)? False on the server. The desktop window is the
- * app, not a mirror of keplar.one: the site's home-page pieces (the welcome-back screen, the moving backdrop) stay out of it.
+ * app, not a mirror of keplar.one (the website's home-page pieces never appear in /app, on the web or here).
  */
 export const inDesktopApp = () => typeof document !== "undefined" && document.documentElement.getAttribute("data-desktop") === "1";
