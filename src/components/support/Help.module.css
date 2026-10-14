@@ -1,57 +1,43 @@
-/* Help centre: hero, topic tiles, then a sticky topic rail beside panelled questions. */
-.wrap { position: relative; z-index: var(--z-content); max-width: var(--l-max); margin: 0 auto; padding: var(--s-12) var(--l-gutter) var(--s-24); }
+/* Help centre (UI v2): the shared hero, calm topic tiles (plain cards), then a sticky topic list beside the questions. Questions are
+   hairline-divided rows that open in place, not panels. No numbers, no glow, no lift; colours are tokens only. */
+.wrap { position: relative; z-index: var(--z-content); max-width: var(--l-max); margin: 0 auto; padding: var(--s-4) var(--l-gutter) var(--s-24); }
 .tiles { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: var(--s-3); }
-.tile { display: grid; gap: var(--s-3); align-content: space-between; min-height: 150px; padding: var(--s-6); border-radius: var(--r-card); text-decoration: none; color: var(--c-ink); border: var(--b-hairline) solid var(--c-border); background: rgb(var(--rgb-ink) / 0.06); box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.1); transition: border-color var(--d-base) var(--e-standard), box-shadow var(--d-base) var(--e-standard); }
-.tile:hover { border-color: rgb(var(--rgb-ink) / 0.28); box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.18); }
-.tile:focus-visible { outline: var(--b-focus) solid var(--c-focus); outline-offset: 3px; }
-.tileNum { font-size: var(--t-label); letter-spacing: 0.16em; color: var(--c-ink-3); font-variant-numeric: tabular-nums; }
+.tile { display: grid; gap: var(--s-3); align-content: space-between; min-height: 128px; padding: var(--s-6); border-radius: var(--r-card); text-decoration: none; color: var(--c-ink); background: var(--surface-raised); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1); transition: box-shadow var(--m-dur-1) var(--m-ease-out); }
+.tile:hover { box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), var(--elev-1); }
+.tile:active { scale: var(--m-press); }
 /* Card-sized, not the page title size: five tiles share a row, and at --t-title "Connected apps and the desktop app" broke mid-word ("Connecte / d") and stretched one tile to twice the others. */
 .tiles > li { display: grid; }
-.tileTitle { font-size: clamp(1.375rem, 1.9vw, 3rem); line-height: 1.08; letter-spacing: -0.03em; font-weight: var(--w-medium); text-wrap: balance; overflow-wrap: break-word; }
-.tileCount { font-size: var(--t-small); color: var(--c-ink-2); }
+.tileTitle { font-size: clamp(1.25rem, 1.6vw, 2.25rem); line-height: 1.12; letter-spacing: -0.025em; font-weight: var(--w-regular); text-wrap: balance; overflow-wrap: break-word; }
+.tileCount { font-size: var(--t-small); color: var(--c-ink-3); }
 .body { margin-top: var(--s-20); display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-12); }
 .rail { display: none; }
-.groups { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-16); min-width: 0; max-width: 960px; } /* explicit minmax(0, …): the implicit track took a 720px line on a 320px phone */
-.group { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-3); min-width: 0; }
-.groupHead { display: flex; align-items: baseline; gap: var(--s-4); margin-bottom: var(--s-3); }
-.groupNum { font-size: var(--t-label); letter-spacing: 0.16em; color: var(--c-ink-3); font-variant-numeric: tabular-nums; }
-.groupTitle { font-size: var(--t-title); line-height: var(--lh-title); letter-spacing: var(--tr-title); font-weight: var(--w-medium); }
-.q { border-radius: var(--r-card); border: var(--b-hairline) solid var(--c-border); background: rgb(var(--rgb-ink) / 0.06); box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.07); transition: border-color var(--d-base) var(--e-standard), background var(--d-base) var(--e-standard); }
-.q[open] { border-color: rgb(var(--rgb-ink) / 0.22); background: rgb(var(--rgb-ink) / 0.06); }
-.q summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: var(--s-6); padding: var(--s-5) var(--s-6); font-weight: var(--w-medium); font-size: var(--t-body); line-height: 1.35; border-radius: var(--r-card); }
+.groups { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-16); min-width: 0; max-width: 68rem; } /* explicit minmax(0, …): the implicit track took a 720px line on a 320px phone */
+.group { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; min-width: 0; scroll-margin-top: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-6)); }
+.groupHead { display: flex; align-items: baseline; gap: var(--s-4); margin-bottom: var(--s-5); }
+.groupTitle { font-size: var(--t-title); line-height: var(--lh-title); letter-spacing: -0.035em; font-weight: var(--w-regular); color: var(--c-ink); text-wrap: balance; }
+
+/* A question: a hairline row; the answer opens below it */
+.q { border-top: var(--b-hairline) solid var(--hairline); scroll-margin-top: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-6)); }
+.q:last-child { border-bottom: var(--b-hairline) solid var(--hairline); }
+.q summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: var(--s-6); min-height: 44px; padding: var(--s-5) 0; color: var(--c-ink); font-weight: var(--w-medium); font-size: var(--t-body); line-height: 1.4; transition: color var(--m-dur-1) var(--m-ease-out); }
 .q summary::-webkit-details-marker { display: none; }
-.q summary::after { content: ""; flex: none; width: 28px; height: 28px; border-radius: 50%; border: var(--b-hairline) solid var(--c-border-strong); background: var(--c-surface-1); transition: rotate var(--d-base) var(--e-standard); }
-.q[open] summary::after { rotate: 45deg; }
-.q summary:focus-visible { outline: var(--b-focus) solid var(--c-focus); outline-offset: 2px; }
-.a { display: grid; gap: var(--s-3); padding: 0 var(--s-6) var(--s-6); max-width: 72ch; color: var(--c-ink-2); line-height: 1.65; font-size: var(--t-body); }
+/* A chevron that turns when the answer opens */
+.q summary::after { content: ""; flex: none; width: 8px; height: 8px; margin-right: var(--s-2); border-right: 1.5px solid var(--c-ink-3); border-bottom: 1.5px solid var(--c-ink-3); rotate: 45deg; translate: 0 -2px; transition: rotate var(--m-dur-2) var(--m-ease-out); }
+.q[open] summary::after { rotate: 225deg; translate: 0 2px; }
+.q summary:hover { color: var(--c-ink-2); }
+.q summary:hover::after { border-color: var(--c-ink); }
+.a { display: grid; gap: var(--s-3); padding: 0 0 var(--s-6); max-width: 68ch; color: var(--c-ink-2); line-height: 1.65; font-size: var(--t-body); }
 .a p { margin: 0; }
-.a a { color: var(--c-ink); text-decoration: underline; text-decoration-color: var(--c-border-strong); text-underline-offset: 3px; }
+.a a { color: var(--c-ink); text-decoration: underline; text-decoration-color: var(--hairline-strong); text-underline-offset: 3px; }
+.a a:hover { text-decoration-color: currentColor; }
 .note { margin-top: var(--s-16); color: var(--c-ink-3); font-size: var(--t-small); max-width: 62ch; }
 @media (min-width: 1100px) {
   .body { grid-template-columns: minmax(200px, 260px) minmax(0, 1fr); column-gap: clamp(48px, 6vw, 140px); }
   .rail { display: block; align-self: start; position: sticky; top: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-8)); }
-  .rail h2 { font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); font-weight: var(--w-regular, 400); margin-bottom: var(--s-3); }
-  .rail ol { list-style: none; margin: 0; padding: 0; border-left: var(--b-hairline) solid var(--c-border-strong); counter-reset: rail; }
-  .rail li { counter-increment: rail; }
-  .rail a { display: block; padding: var(--s-2) var(--s-4); margin-left: -1px; border-left: 1px solid transparent; color: var(--c-ink-2); text-decoration: none; font-size: var(--t-small); line-height: 1.35; }
-  .rail a::before { content: counter(rail, decimal-leading-zero) "  "; white-space: pre; color: var(--c-ink-3); font-size: var(--t-label); letter-spacing: 0.1em; }
+  .rail h2 { font-size: var(--t-small); font-weight: var(--w-medium); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); margin-bottom: var(--s-3); }
+  .rail ol { list-style: none; margin: 0; padding: 0; border-left: var(--b-hairline) solid var(--hairline-strong); }
+  .rail a { display: block; min-height: 24px; padding: var(--s-1) var(--s-4); margin-left: -1px; border-left: var(--b-hairline) solid transparent; color: var(--c-ink-2); text-decoration: none; font-size: var(--t-small); line-height: 1.4; transition: color var(--m-dur-1) var(--m-ease-out), border-color var(--m-dur-1) var(--m-ease-out); }
   .rail a:hover { color: var(--c-ink); border-left-color: var(--c-ink); }
 }
-@media (max-width: 599px) { .q summary { padding: var(--s-4) var(--s-4); } .a { padding: 0 var(--s-4) var(--s-5); } .tile { min-height: 0; padding: var(--s-5); } }
-
-/* Light theme: white cards on the warm page with a warm hairline and soft drop (Dark's 6% light veil + bright top edge read as a grey
-   slab with a dark line on a light page); ink glows become clean marks. Dark above is unchanged. */
-:global(:root[data-theme="light"]) .tile { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-shadow); }
-:global(:root[data-theme="light"]) .tile:hover { border-color: rgb(28 24 18 / 0.18); box-shadow: var(--lt-card-lift); }
-:global(:root[data-theme="light"]) .q { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-shadow); }
-
-/* The toggle disc carries a plus that turns into a close (×) as the answer opens (the disc already rotates 45°). */
-.q summary::after {
-  border: 0;
-  background:
-    linear-gradient(var(--c-ink), var(--c-ink)) center / 11px 1.6px no-repeat,
-    linear-gradient(var(--c-ink), var(--c-ink)) center / 1.6px 11px no-repeat,
-    rgb(var(--rgb-ink) / 0.06);
-  transition: rotate 320ms cubic-bezier(0.34, 1.56, 0.64, 1), background-color 200ms ease;
-}
-.q summary:hover::after { background-color: rgb(var(--rgb-ink) / 0.1); }
+@media (max-width: 599px) { .tile { min-height: 0; padding: var(--s-5); } .q summary { padding: var(--s-4) 0; } .a { padding-bottom: var(--s-5); } }
+@media (prefers-reduced-motion: reduce) { .tile, .q summary, .q summary::after, .rail a { transition: none; } .tile:active { scale: none; } }

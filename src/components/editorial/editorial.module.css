@@ -1,84 +1,87 @@
-/* Editorial pages: answer-first reading layout. Uses the shared tokens; no new colours (one blue accent only). */
-.wrap { position: relative; z-index: var(--z-content); background: var(--c-canvas); padding: var(--s-12) var(--l-gutter) var(--s-24); }
+/* Editorial pages (UI v2): an answer-first reading layout on the plain canvas. The reading measure stays at or under 68ch; the short
+   answer and the "Keplar" note are plain cards (--surface-raised, 1px --hairline, --r-card, --elev-1); tables and the contents use
+   hairlines; nothing glows, lifts or is numbered in a rail. Colours are tokens only. */
+.wrap { position: relative; z-index: var(--z-content); padding: var(--s-4) var(--l-gutter) var(--s-24); }
 .inner { max-width: var(--l-max); margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-10); } /* minmax(0, …): the implicit track took a wide table's width (a 694px column on a 320px phone) */
-.col { counter-reset: sec; }
-.col { max-width: 72ch; display: flex; flex-direction: column; gap: var(--s-5); color: var(--c-ink-2); font-size: var(--t-body); line-height: 1.65; }
-.col h2 { margin-top: var(--s-12); font-size: var(--t-title); line-height: var(--lh-title); letter-spacing: var(--tr-title); font-weight: var(--w-medium); color: var(--c-ink); scroll-margin-top: calc(var(--l-nav-h) + var(--s-8)); }
+
+/* Reading column */
+.col { max-width: 68ch; display: flex; flex-direction: column; gap: var(--s-5); color: var(--c-ink-2); font-size: var(--t-body); line-height: 1.7; letter-spacing: var(--tr-body); }
+.col h2 { margin-top: var(--s-12); font-size: var(--t-title); line-height: var(--lh-title); letter-spacing: -0.035em; font-weight: var(--w-regular); color: var(--c-ink); text-wrap: balance; scroll-margin-top: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-8)); }
 .col h2:first-child { margin-top: 0; }
-.col h2::before { counter-increment: sec; content: counter(sec, decimal-leading-zero); display: block; margin-bottom: var(--s-3); font-size: var(--t-label); letter-spacing: 0.16em; color: var(--c-ink-3); font-weight: var(--w-regular, 400); font-variant-numeric: tabular-nums; }
 .col strong { color: var(--c-ink); font-weight: var(--w-medium); }
-.col a, .answer a, .meta a { color: var(--c-ink); text-decoration: underline; text-decoration-color: var(--c-border-strong); text-underline-offset: 3px; }
-.col a:hover, .answer a:hover { text-decoration-color: var(--c-ink); }
-.col a:focus-visible, .answer a:focus-visible, .toc a:focus-visible, .cite a:focus-visible { outline: var(--b-focus) solid var(--c-focus); outline-offset: 2px; border-radius: var(--r-sm); }
+.col a, .answer a, .meta a, .keplar a { color: var(--c-ink); text-decoration: underline; text-decoration-color: var(--hairline-strong); text-underline-offset: 3px; }
+.col a:hover, .answer a:hover, .meta a:hover, .keplar a:hover { text-decoration-color: currentColor; }
 .col ul { list-style: disc; padding-left: 1.25em; display: flex; flex-direction: column; gap: var(--s-3); }
-.answer { position: relative; max-width: 72ch; padding: var(--s-8); border-radius: var(--r-card-lg); border: var(--b-hairline) solid rgb(var(--rgb-ink) / 0.22); background: rgb(var(--rgb-ink) / 0.06); box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.18), 0 40px 90px -52px rgb(var(--rgb-ink) / 0.4); color: var(--c-ink); font-size: calc(var(--t-lead) * 1.08); line-height: 1.5; letter-spacing: var(--tr-lead); }
-.answerLabel::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--c-ink); box-shadow: 0 0 10px 1px rgb(var(--rgb-ink) / 0.7); }
-.answerLabel { display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-4); font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); }
-.meta { max-width: 68ch; color: var(--c-ink-3); font-size: var(--t-small); display: grid; gap: var(--s-2); }
-.toc { max-width: 72ch; }
-.toc h2 { font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); font-weight: var(--w-regular, 400); margin-bottom: var(--s-3); }
-.toc ol { list-style: none; display: flex; flex-wrap: wrap; gap: var(--s-2); counter-reset: toc; }
-.toc li { counter-increment: toc; }
-.toc a { display: inline-block; padding: var(--s-2) var(--s-4); border-radius: var(--r-pill); background: var(--c-glass); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border); color: var(--c-ink-2); font-size: var(--t-small); text-decoration: none; }
-.toc a:hover { color: var(--c-ink); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong); }
+.col li::marker { color: var(--c-ink-3); }
+
+/* Short answer: a plain card */
+.answer { max-width: 68ch; padding: var(--s-8); border-radius: var(--r-card); background: var(--surface-raised); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1); color: var(--c-ink); font-size: var(--t-lead); line-height: var(--lh-lead); letter-spacing: var(--tr-lead); }
+.answerLabel { display: block; margin-bottom: var(--s-3); font-size: var(--t-small); font-weight: var(--w-medium); line-height: var(--lh-small); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); }
+
+.meta { max-width: 68ch; color: var(--c-ink-3); font-size: var(--t-small); line-height: var(--lh-small); display: grid; gap: var(--s-2); }
+
+/* On this page: a calm list of links with a hairline at its side (no numbers, no pills) */
+.toc { max-width: 68ch; }
+.toc h2 { margin-bottom: var(--s-3); font-size: var(--t-small); font-weight: var(--w-medium); line-height: var(--lh-small); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); }
+.toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border-left: var(--b-hairline) solid var(--hairline-strong); }
+.toc a { display: block; margin-left: -1px; padding: var(--s-1) var(--s-4); min-height: 24px; border-left: var(--b-hairline) solid transparent; color: var(--c-ink-2); font-size: var(--t-small); line-height: 1.4; text-decoration: none; transition: color var(--m-dur-1) var(--m-ease-out), border-color var(--m-dur-1) var(--m-ease-out); }
+.toc a:hover { color: var(--c-ink); border-left-color: var(--c-ink); }
+
+/* Tables: a hairline frame, hairline rows, a quiet header */
 .tableBlock { display: grid; gap: var(--s-3); max-width: 100%; }
-.tableScroll { overflow-x: auto; border-radius: var(--r-card); border: var(--b-hairline) solid var(--c-border-strong); background: rgb(var(--rgb-ink) / 0.06); box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.08); }
-.tableScroll:focus-visible { outline: var(--b-focus) solid var(--c-focus); outline-offset: 2px; }
+.tableScroll { overflow-x: auto; border-radius: var(--r-card); background: var(--surface-raised); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline); }
 .table { width: 100%; min-width: 34rem; border-collapse: collapse; font-size: var(--t-small); line-height: 1.5; color: var(--c-ink-2); }
-.table caption { text-align: left; padding: 0 0 var(--s-3); color: var(--c-ink-3); font-size: var(--t-small); caption-side: top; }
-.table th, .table td { text-align: left; vertical-align: top; padding: var(--s-3) var(--s-4); border-bottom: var(--b-hairline) solid var(--c-border); }
-.table thead th { color: var(--c-ink); font-weight: var(--w-medium); background: rgb(var(--rgb-ink) / 0.06); font-size: var(--t-label); letter-spacing: 0; text-transform: none; }
+.table caption { text-align: left; padding: var(--s-4) var(--s-4) var(--s-2); color: var(--c-ink-3); font-size: var(--t-small); caption-side: top; }
+.table th, .table td { text-align: left; vertical-align: top; padding: var(--s-3) var(--s-4); border-bottom: var(--b-hairline) solid var(--hairline); }
+.table thead th { color: var(--c-ink); font-weight: var(--w-medium); font-size: var(--t-small); letter-spacing: 0; text-transform: none; border-bottom-color: var(--hairline-strong); }
 .table tbody th { color: var(--c-ink); font-weight: var(--w-medium); }
 .table tr:last-child td, .table tr:last-child th { border-bottom: 0; }
-.cite { font-size: 0.72em; vertical-align: super; line-height: 0; margin-left: 1px; white-space: nowrap; }
-.cite a { display: inline-block; box-sizing: border-box; min-width: 24px; height: 24px; line-height: 24px; text-align: center; margin: -6px 0; text-decoration: none; color: var(--c-accent, var(--c-ink)); } /* 24 px touch target without moving the text */
+
+/* [n] citation markers: a 24px target without moving the text */
+.cite { font-size: max(0.72em, 11px); vertical-align: super; line-height: 0; margin-left: 1px; white-space: nowrap; }
+.cite a { display: inline-block; box-sizing: border-box; min-width: 24px; height: 24px; line-height: 24px; text-align: center; margin: -6px 0; text-decoration: none; color: var(--c-accent, var(--c-ink)); }
+.cite a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .cite a:where(td *) { margin: 0; } /* inside tables there is room, and a tight row would overlap the next one */
-.keplar { max-width: 72ch; padding: var(--s-8); border-radius: var(--r-card-lg); border: var(--b-hairline) solid var(--c-border-strong); background: rgb(var(--rgb-ink) / 0.06); box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.1); display: grid; gap: var(--s-4); color: var(--c-ink-2); line-height: 1.6; }
-.keplar h2 { font-size: var(--t-title); line-height: var(--lh-title); font-weight: var(--w-medium); color: var(--c-ink); }
-.sources { max-width: 86ch; color: var(--c-ink-2); font-size: var(--t-small); line-height: 1.55; }
-.sources h2 { font-size: var(--t-title); line-height: var(--lh-title); font-weight: var(--w-medium); color: var(--c-ink); margin-bottom: var(--s-4); }
+
+/* "How Keplar handles this": a plain card */
+.keplar { max-width: 68ch; padding: var(--s-8); border-radius: var(--r-card); background: var(--surface-raised); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1); display: grid; gap: var(--s-4); color: var(--c-ink-2); line-height: 1.65; }
+.keplar h2 { font-size: var(--t-title); line-height: var(--lh-title); letter-spacing: -0.035em; font-weight: var(--w-regular); color: var(--c-ink); text-wrap: balance; }
+
+/* Sources and related reading */
+.sources { max-width: 68ch; color: var(--c-ink-2); font-size: var(--t-small); line-height: 1.55; }
+.sources h2, .related h2 { margin-bottom: var(--s-4); font-size: var(--t-title); line-height: var(--lh-title); letter-spacing: -0.035em; font-weight: var(--w-regular); color: var(--c-ink); }
 .sources ol { display: grid; gap: var(--s-3); padding-left: 1.6em; }
 .sources li { scroll-margin-top: calc(var(--l-nav-h) + var(--s-8)); overflow-wrap: anywhere; }
+.sources li::marker { color: var(--c-ink-3); }
 .sources li:target { color: var(--c-ink); }
-.sources a { color: var(--c-ink); text-decoration: underline; text-decoration-color: var(--c-border-strong); text-underline-offset: 3px; }
+.sources a, .related a { color: var(--c-ink); text-decoration: underline; text-decoration-color: var(--hairline-strong); text-underline-offset: 3px; }
+.sources a:hover, .related a:hover { text-decoration-color: currentColor; }
 .sources small { display: block; font-size: 0.92em; color: var(--c-ink-3); }
 .related ul { list-style: disc; padding-left: 1.25em; display: grid; gap: var(--s-2); color: var(--c-ink-2); }
-.related h2 { font-size: var(--t-title); font-weight: var(--w-medium); color: var(--c-ink); margin-bottom: var(--s-3); }
-.related a { color: var(--c-ink); text-decoration: underline; text-decoration-color: var(--c-border-strong); text-underline-offset: 3px; }
+.related li::marker { color: var(--c-ink-3); }
 
-/* Wide screens: the contents become a sticky numbered rail beside the reading column */
+/* Wide screens: the contents sit in a sticky column beside the reading column */
 @media (min-width: 1100px) {
-  .inner { grid-template-columns: minmax(200px, 270px) minmax(0, 1fr); grid-template-rows: repeat(8, auto); column-gap: clamp(48px, 6vw, 140px); row-gap: 0; }
+  .inner { grid-template-columns: minmax(200px, 260px) minmax(0, 1fr); grid-template-rows: repeat(8, auto); column-gap: clamp(48px, 6vw, 140px); row-gap: 0; }
   .inner > * { grid-column: 2; margin-bottom: var(--s-10); }
   .inner > .toc { grid-column: 1; grid-row: 1 / -1; align-self: start; position: sticky; top: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-8)); margin-bottom: 0; max-width: none; padding-top: var(--s-2); }
-  .toc ol { display: flex; flex-direction: column; flex-wrap: nowrap; gap: 0; border-left: var(--b-hairline) solid var(--c-border-strong); }
-  .toc a { display: block; padding: var(--s-2) var(--s-4); border-radius: 0; background: none; box-shadow: none; position: relative; margin-left: -1px; border-left: 1px solid transparent; line-height: 1.35; }
-  .toc a::before { content: counter(toc, decimal-leading-zero) "  "; color: var(--c-ink-3); font-size: var(--t-label); letter-spacing: 0.1em; font-variant-numeric: tabular-nums; white-space: pre; }
-  .toc a:hover { box-shadow: none; border-left-color: var(--c-ink); }
 }
 @media (max-width: 599px) { .answer { padding: var(--s-6) var(--s-5); font-size: var(--t-body); } .keplar { padding: var(--s-6) var(--s-5); } }
 
 @media (pointer: coarse) and (max-width: 1099px) {
-  .toc a { display: inline-flex; align-items: center; min-height: 44px; }
+  .toc a { display: flex; align-items: center; min-height: 44px; }
 }
 
-/* Light theme: white cards on the warm page with a warm hairline and soft drop (Dark's 6% light veil + bright top edge read as a grey
-   slab with a dark line on a light page); ink glows become clean marks. Dark above is unchanged. */
-:global(:root[data-theme="light"]) .answer { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-lift); }
-:global(:root[data-theme="light"]) .answerLabel::before { box-shadow: none; }
-:global(:root[data-theme="light"]) .tableScroll { background: var(--lt-card-bg); box-shadow: var(--lt-card-shadow); }
-:global(:root[data-theme="light"]) .keplar { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-shadow); }
-.wrap { background: transparent; }
-
-/* Touch screens: "Keep reading" links are 44px rows (they were 18px), and the [n] citation markers are 28px targets with 11px
-   numerals at least (they rendered at 9-10px under body text). Negative margins keep the line spacing unchanged. */
+/* Touch screens: "Keep reading" links are 44px rows, and the [n] citation markers are 28px targets with 11px numerals at least.
+   Negative margins keep the line spacing unchanged. */
 @media (pointer: coarse) {
   .related a { display: inline-flex; align-items: center; min-height: 44px; }
   .related ul { gap: 0; }
-  .cite { font-size: max(0.72em, 11px); }
   .cite a { min-width: 28px; height: 28px; line-height: 28px; margin: -8px 0; }
   .cite a:where(td *) { margin: 0; }
 }
+
+@media (prefers-reduced-motion: reduce) { .toc a { transition: none; } }
 
 /* Grid items default to min-width: auto, so one wide child (the try box's chip row, a table) still held its section wider than a
    phone even with a minmax(0, 1fr) track. Every section of the page shrinks to the column. */

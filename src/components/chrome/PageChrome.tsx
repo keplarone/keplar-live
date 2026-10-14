@@ -7,7 +7,7 @@ import s from "./PageChrome.module.css";
 type Item = { el: HTMLElement; label: string };
 
 /**
- * Shared page layer for the marketing routes: a glowing reading-progress hairline along the top and a left tick index built from the
+ * Shared page layer for the marketing routes: a quiet reading-progress hairline along the top and a left tick index built from the
  * page's own <h2> headings (the same language as the home story's section index). Purely orientation: it adds no content, takes no tab
  * stops, hides on small screens, and never touches scrolling (the page scrolls natively; clicking a tick uses scrollIntoView).
  */

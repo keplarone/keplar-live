@@ -1,11 +1,10 @@
-/* Breadcrumb trail (Breadcrumbs.tsx): quiet small text above a page's title, wrapping on phones. */
-.crumbs { margin: 0 0 var(--s-5); font-size: var(--t-small); color: var(--c-ink-3); }
+/* Breadcrumb trail (Breadcrumbs.tsx, UI v2): the page kicker, quiet small text above the title, wrapping on phones. Focus uses the site cue. */
+.crumbs { margin: 0 0 var(--s-5); font-size: var(--t-small); font-weight: var(--w-medium); color: var(--c-ink-3); }
 .crumbs ol { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-1) var(--s-2); margin: 0; padding: 0; list-style: none; }
 .crumbs li { display: inline-flex; align-items: center; gap: var(--s-2); min-width: 0; }
-.crumbs li + li::before { content: "/"; opacity: 0.6; }
-.crumbs a { color: var(--c-ink-3); text-decoration: none; border-radius: 4px; }
+.crumbs li + li::before { content: "/"; color: var(--hairline-strong); }
+.crumbs a { color: var(--c-ink-3); text-decoration: none; }
 .crumbs a:hover { color: var(--c-ink); text-decoration: underline; text-underline-offset: 3px; }
-.crumbs a:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
 .crumbs [aria-current="page"] { color: var(--c-ink-2); max-width: 48ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Touch screens: each crumb is a 44px target; the row gap shrinks so the trail takes about the same height. */
