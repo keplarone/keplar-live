@@ -118,3 +118,9 @@ test("the kit hosts (toasts, confirmAction) stay usable inside the app, which ma
   assert.match(read("src/components/kit/Hosts.tsx"), /<div data-kit-host="">/);
   assert.match(read("src/components/app-ui/KeplarApp.tsx"), /!el\.hasAttribute\("data-kit-host"\)/);
 });
+
+test("a toast replaced in place by id restarts its timer (a sticky toast turned timed is not dismissed at once)", () => {
+  const src = read("src/components/kit/Toast.tsx");
+  assert.match(src, /rev: \+\+seq/);
+  assert.match(src, /if \(rev\.current !== toast\.rev\) \{\s*rev\.current = toast\.rev;\s*remaining\.current = toast\.duration;/);
+});

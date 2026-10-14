@@ -30,6 +30,8 @@ interface ToastRecord extends Required<Pick<ToastOptions, "title" | "tone" | "du
   description?: string;
   action?: ToastOptions["action"];
   leaving: boolean;
+  /** Bumped on every show(), so a toast replaced in place by id restarts its timer with the new duration. */
+  rev: number;
 }
 
 export interface ToastApi {
@@ -78,6 +80,7 @@ export function ToastProvider({ children, placement = "bottom-right" }: ToastPro
       action: opts.action,
       duration: opts.duration ?? defaultToastDuration(tone),
       leaving: false,
+      rev: ++seq,
     };
     setToasts((all) => {
       const rest = all.filter((t) => t.id !== id);
@@ -110,8 +113,13 @@ function ToastItem({ toast, onDismiss, onGone }: { toast: ToastRecord; onDismiss
   const [paused, setPaused] = useState(false);
   const remaining = useRef(toast.duration);
   const startedAt = useRef(0);
+  const rev = useRef(toast.rev);
 
   useEffect(() => {
+    if (rev.current !== toast.rev) {
+      rev.current = toast.rev;
+      remaining.current = toast.duration;
+    }
     if (toast.duration <= 0 || paused || toast.leaving) return;
     startedAt.current = Date.now();
     const t = window.setTimeout(() => onDismiss(toast.id), Math.max(0, remaining.current));
@@ -119,7 +127,7 @@ function ToastItem({ toast, onDismiss, onGone }: { toast: ToastRecord; onDismiss
       window.clearTimeout(t);
       remaining.current -= Date.now() - startedAt.current;
     };
-  }, [toast.duration, toast.id, toast.leaving, paused, onDismiss]);
+  }, [toast.duration, toast.id, toast.rev, toast.leaving, paused, onDismiss]);
 
   return (
     <li
