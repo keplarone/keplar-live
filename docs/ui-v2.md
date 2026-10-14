@@ -83,3 +83,41 @@ No hex or rgb literals in component CSS. A colour that is not a token is a new t
   and the frosted-pill kicker rewrite.
 - **Native confirm:** `window.confirm`.
 - **One-off overlays:** hand-rolled toasts and dialogs.
+
+## Rollout and verification (October 2026)
+
+UI v2 replaced the earlier look on every keplar.one screen in one change. The work was split into a foundation and six areas: the
+home page; marketing and pricing; docs and help; sign-in and account; the app shell and chat; and Create, Studio and the remaining
+app panels. Each area was then moved onto the kit and tokens above.
+
+Before and after (left: the previous build, right: UI v2), in `docs/assets/ui-v2/`:
+
+| Screen | Comparison |
+|---|---|
+| Home (desktop, light) | ![](assets/ui-v2/home-desktop-light.jpg) |
+| Home (phone, dark) | ![](assets/ui-v2/home-phone-dark.jpg) |
+| Pricing | ![](assets/ui-v2/pricing-desktop-light.jpg) |
+| Help | ![](assets/ui-v2/help-desktop-light.jpg) |
+| Sign in | ![](assets/ui-v2/signin-desktop-light.jpg) |
+| App home | ![](assets/ui-v2/app-home-desktop-light.jpg) |
+| App answer | ![](assets/ui-v2/app-answer-desktop-light.jpg) |
+| Create | ![](assets/ui-v2/app-create-desktop-light.jpg) |
+| Settings | ![](assets/ui-v2/settings-desktop-light.jpg) |
+| 404 (dark) | ![](assets/ui-v2/404-desktop-dark.jpg) |
+
+Checks run on the integrated build:
+
+- `next build`: passes.
+- `npm test`: the only failures are three that also fail on `main` (two Keplar Browser acceptance tests and the Business
+  sign-out test).
+- `scripts/interface-audit.mjs` (axe, target size, overflow): no violations on the app screens. Two findings are intentional:
+  the sign-in checkbox (its label is the target) and the Settings tab row on phones (it scrolls sideways).
+- Playwright e2e: the failures that remain also fail on `main`. They are tests that have not caught up with the product:
+  - `/enterprise` now redirects to business.keplar.one.
+  - The starter cards are gone from Ask home.
+  - Settings has no "Advanced" tab; Team and Developer are separate tabs.
+  - `/developers` has no "Keplar API" h1.
+  - The template gallery has no "Community templates · Beta" heading, and its report button is "Report this template".
+- Bugs found and fixed during integration:
+  - The /app shell made the kit's toasts and confirm dialog inert. The host is now marked `data-kit-host` and left out.
+  - A toast replaced in place by id kept its old timer. A sticky toast that became a timed one closed at once.
