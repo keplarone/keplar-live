@@ -88,6 +88,13 @@
 .navCta:active { transform: scale(0.97); }
 
 .main { position: relative; }
+/* Purple aura over the stars: the element's colour eases between hues (SpaceAura); the mask shapes it into two soft glows. */
+.aura {
+  position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0.22;
+  transition: background-color 2.2s cubic-bezier(0.22, 1, 0.36, 1);
+  -webkit-mask-image: radial-gradient(60% 55% at 12% 100%, #000 0%, transparent 70%), radial-gradient(55% 50% at 92% 0%, #000 0%, transparent 70%);
+  mask-image: radial-gradient(60% 55% at 12% 100%, #000 0%, transparent 70%), radial-gradient(55% 50% at 92% 0%, #000 0%, transparent 70%);
+}
 
 /* ---- shared layout ---- */
 .wrap { width: min(var(--sp-width), 100% - 2 * var(--sp-5)); margin-inline: auto; }
@@ -128,7 +135,20 @@
 .swapWord[data-state="idle"] { opacity: 0; transform: translateY(70%); filter: blur(8px); }
 .swapWord[data-state="in"] { opacity: 1; transform: none; filter: none; }
 .swapWord[data-state="out"] { opacity: 0; transform: translateY(-70%); filter: blur(8px); }
-.you { font-style: normal; font-weight: 700; color: #fff; }
+.you {
+  font-style: normal; font-weight: 700;
+  background: linear-gradient(100deg, #c58cff 0%, #f08bd8 18%, #a98cff 36%, #d76cff 54%, #b36bff 72%, #f0a0ff 90%, #c58cff 100%);
+  background-size: 400% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: youShift 14s ease-in-out infinite;
+}
+/* Holds each colour for a few seconds, then glides to the next. */
+@keyframes youShift {
+  0%, 14% { background-position: 0% 50%; }
+  25%, 39% { background-position: 33% 50%; }
+  50%, 64% { background-position: 66% 50%; }
+  75%, 89% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
 /* "New" announcement pill above the headline. */
 .badge {
   display: inline-flex; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-6); padding: 6px 16px 6px 6px;
@@ -244,7 +264,7 @@
   .links a, .footLinks a { min-height: 44px; display: inline-flex; align-items: center; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .rise, .scrollCue::after, .journey > span:first-child { animation: none; }
-  .swap, .swapWord { transition: none; }
+  .rise, .scrollCue::after, .journey > span:first-child, .you { animation: none; }
+  .swap, .swapWord, .aura { transition: none; }
   .brand, .word, .mark, .cell, .cell::before, .row, .btn, .btnGhost, .navCta { transition: none; }
 }

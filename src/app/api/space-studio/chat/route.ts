@@ -3,6 +3,7 @@ import { body, errorResponse, HttpError, json } from "@/lib/create/platform/http
 import { loadIdentities, loadSubscription } from "@/lib/space-studio/store";
 import { robloxOAuthConfigured, spaceOwner } from "@/lib/space-studio/account";
 import { runSpaceChat, validateChatBody } from "@/lib/space-studio/chat";
+import { loadProfile, needsParentConsent } from "@/lib/space-studio/profile";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,8 +11,10 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 /**
- * POST { model, messages, workspace, allowEscalation? } -> { text, served, requested, escalation, usage }
- * 401 signed out; 402 plan_required / out of credits; 403 roblox_link_required; 503 model unavailable (never a silent substitute).
+ * POST { model, messages, workspace, allowEscalation?, effort?: "low"|"medium"|"high"|"extra"|"ultracode" }
+ *   -> { text, served, requested, escalation, effort, passes, note, usage, credits }
+ * 401 signed out; 402 plan_required / out of credits; 403 parent_consent_required (under 13, not yet approved) / roblox_link_required;
+ * 503 model unavailable (never a silent substitute).
  */
 export async function POST(req: Request) {
   try {
@@ -20,8 +23,8 @@ export async function POST(req: Request) {
     const ws = await spaceOwner(req, true, 30);
     const b = validateChatBody(await body<unknown>(req));
     const robloxRequired = robloxOAuthConfigured();
-    const [sub, ids] = await Promise.all([loadSubscription(ws.id), robloxRequired ? loadIdentities(ws.id) : Promise.resolve([])]);
-    const out = await runSpaceChat(ws, b, { sub, robloxRequired, robloxLinked: ids.some((i) => i.provider === "roblox") });
+    const [sub, ids, profile] = await Promise.all([loadSubscription(ws.id), robloxRequired ? loadIdentities(ws.id) : Promise.resolve([]), loadProfile(ws.id)]);
+    const out = await runSpaceChat(ws, b, { sub, robloxRequired, robloxLinked: ids.some((i) => i.provider === "roblox"), parentConsentRequired: needsParentConsent(profile) });
     return json(out);
   } catch (e) {
     return errorResponse(e);

@@ -28,7 +28,7 @@ export default function SpaceStudioPage() {
           A desktop app for Roblox Studio and Blender development. You pick the model, review every proposed change before it lands, and can hand long jobs to Roblox Cloud and Blender Cloud.
         </p>
         <div className={`${s.actions} ${s.rise}`}>
-          <a className={s.btn} href={RELEASES_URL}>Download for Windows, macOS or Linux</a>
+          <a className={s.btn} href={RELEASES_URL}>Download</a>
           <a className={s.btnGhost} href="#models">See the models</a>
         </div>
         <p className={`${s.note} ${s.rise}`}>
@@ -45,7 +45,7 @@ export default function SpaceStudioPage() {
               <h2 id="models-title" className={s.h2}>Four models, one job each</h2>
             </div>
             <p className={s.sub}>
-              Orbit, Nebula, Solar and Nova are Space Studio model configurations: each has its own instructions, tools and budgets, on top of an existing foundation model. They are not fine-tuned, and their version numbers are Space Studio&apos;s own.
+              Orbit, Nebula, Solar and Nova each have their own instructions, tools and budgets, set up for a different kind of Roblox and Blender work.
             </p>
           </div>
           <div className={s.grid} data-reveal-stagger data-reveal>
@@ -113,7 +113,7 @@ export default function SpaceStudioPage() {
         <div className={s.wrap} data-reveal>
           <h2 className={s.closingTitle}>Space Studio</h2>
           <div className={s.actions}>
-            <a className={s.btn} href={RELEASES_URL}>Download for Windows, macOS or Linux</a>
+            <a className={s.btn} href={RELEASES_URL}>Download</a>
           </div>
         </div>
       </section>

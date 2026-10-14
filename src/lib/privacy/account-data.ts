@@ -65,7 +65,11 @@ export const USER_COLLECTIONS = [
   "guard_targets", "guard_runs", "guard_reports", // Revenue Guard: sites the owner verified for testing, test runs and their reports (src/lib/business/guard/core.ts); the verification token is redacted in the export.
   "mcp_servers", "mcp_tools", "mcp_grants", "mcp_receipts", "mcp_oauth", "mobile_creds",
   "team_teams", "team_members", "team_invites", "team_audit" /* team workspaces (BETA): scoped by the team id, so exported and deleted with the team, never with a member's account */, "team_memberships" /* your own index of the teams you belong to */, "api_keys" /* hashed API keys (BETA): never exported with a secret, deleted with the account */, "embed_widgets" /* public embed widget configs (BETA): no secrets, deleted with the account */, "answer_shares", "chat_shares" /* shared chat links: the redacted turns you chose; revoked and deleted with the account */, "answer_prefs" /* your answer style and "about you" */, "specialists" /* your saved specialists: instructions, knowledge, starters */, "specialist_shares" /* specialist links you made: a snapshot of that specialist; revoked and deleted with the account */, "family_settings" /* Family mode on/off and homework guidance; the PIN hash is never exported */, "specialist_listings" /* your Specialist directory submissions and their review status */, "feedback", "support_tickets", "learn_settings", "learn_cases", "faq_settings", "core_prefs" /* Keplar Core: tracking opt-out and the learned shorter/longer preference */, "core_jobs" /* Keplar Core background work: the question, working notes and result; expire after 7 days */,
-  "space_subscriptions" /* Space Studio plan record (plan, status, period end, applied event ids); deleted with the account */, "space_identities" /* Roblox account linked to Space Studio (Roblox user id + username); deleted with the account */, "space_identity_index" /* system-scoped claim "roblox:<id>" -> workspace, freed explicitly on deletion (freeIdentityClaims) so the Roblox account can be linked again */, "space_usage" /* Space Studio cloud minutes per month (numbers only); deleted with the account */, "space_locks" /* seconds-long write locks; deleted with the account */,
+  "space_subscriptions" /* Space Studio plan record (plan, status, period end, applied event ids); deleted with the account */, "space_identities" /* Roblox account linked to Space Studio (Roblox user id + username); deleted with the account */, "space_identity_index" /* system-scoped claim "roblox:<id>" -> workspace, freed explicitly on deletion (freeIdentityClaims) so the Roblox account can be linked again */, "space_usage" /* Space Studio cloud minutes per month (numbers only); deleted with the account */, "space_credits" /* Space Studio credits used per 5-hour, weekly and monthly window (numbers only); deleted with the account */, "space_locks" /* seconds-long write locks; deleted with the account */,
+  "space_experiences" /* Roblox experiences tracked in Space Studio (universe/place id, name, icon, beacon token HASH, newest public counters); deleted with the account */, "space_beacons" /* system-scoped beacon token hash -> workspace + universe, freed explicitly on deletion (freeBeaconClaims) */,
+  "space_ccu_min", "space_ccu_hour" /* player-count samples of the tracked experiences from Roblox's public API (numbers only); deleted with the account, otherwise kept 4 days / 120 days */,
+  "space_rev_min", "space_rev_hour", "space_sales" /* the tracked experiences' own sales from their beacon (item id, kind, price, time; no player data) and their per-minute/hour totals; deleted with the account */,
+  "space_profiles" /* Space Studio onboarding: birth date, age band, answers, consents, parental consent state and the parent's email; deleted with the account */, "space_parent_consents" /* system-scoped parental consent token hashes (7-day expiry), freed explicitly on deletion (freeConsentTokens) */,
   "browser_tasks" /* Keplar Browser tasks: the task, step notes and addresses, the newest screenshot and the result; the newest 20 are kept, exported and deleted with the account */,
 ] as const;
 
@@ -161,6 +165,12 @@ export async function deleteWorkspaceData(wsId: string): Promise<DeleteResult> {
     deleted += await freeIdentityClaims(wsId);
   } catch {
     /* best effort: nothing linked */
+  }
+  try {
+    const [{ freeBeaconClaims }, { freeConsentTokens }] = await Promise.all([import("@/lib/space-studio/experiences"), import("@/lib/space-studio/profile")]);
+    deleted += (await freeBeaconClaims(wsId)) + (await freeConsentTokens(wsId));
+  } catch {
+    /* best effort: no beacons or consent requests */
   }
   const kept: string[] = [];
   for (const name of await collectionNames(wsId)) {

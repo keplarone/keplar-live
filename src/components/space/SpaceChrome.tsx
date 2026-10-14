@@ -76,7 +76,10 @@ export function RotatingWord({ className, wordClassName }: { className?: string;
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const id = window.setInterval(() => setI((n) => (n + 1) % WORDS.length), 2600);
+    const id = window.setInterval(() => {
+      setI((n) => (n + 1) % WORDS.length);
+      window.dispatchEvent(new CustomEvent("space:aura")); // the aura shifts with each new word
+    }, 2600);
     return () => window.clearInterval(id);
   }, []);
   useEffect(() => {
@@ -140,4 +143,23 @@ export function JourneyCaption({ className, lineClassName, fillClassName }: { cl
       <span className={lineClassName}><span className={fillClassName} style={{ transform: `scaleX(${p})` }} /></span>
     </div>
   );
+}
+
+// Aura colours: violet first, then neighbours on the wheel (indigo, orchid, plum, periwinkle). Kept soft and low in opacity.
+const AURAS = ["rgb(176, 104, 255)", "rgb(150, 140, 255)", "rgb(196, 96, 236)", "rgb(214, 110, 220)", "rgb(170, 118, 250)"] as const;
+
+/**
+ * A slight purple aura over the star field: two soft glows (bottom-left and top-right) whose colour eases to the next hue
+ * whenever something fires "space:aura" (on the site, each new headline word). background-color transitions smoothly while
+ * the radial mask keeps the glow shape. Decorative, behind content, ignores the pointer; still with reduced motion.
+ */
+export function SpaceAura({ className }: { className?: string }) {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const next = () => setI((n) => (n + 1) % AURAS.length);
+    window.addEventListener("space:aura", next);
+    return () => window.removeEventListener("space:aura", next);
+  }, []);
+  return <div className={className} aria-hidden="true" style={{ backgroundColor: AURAS[i] }} />;
 }
