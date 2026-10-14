@@ -1,4 +1,5 @@
-/* Debate mode (BETA). Rounded rects for bubbles and panels (shape-system.md); pills only for the small tags. */
+/* Debate mode (BETA), on UI v2 (docs/ui-v2.md): a raised panel with a hairline, product tokens only (both themes from one block).
+   Rounded rects for bubbles and panels (shape-system.md); pills only for the small tags. */
 
 .debate,
 .record {
@@ -6,9 +7,10 @@
   flex-direction: column;
   gap: var(--s-3);
   padding: var(--s-3) var(--s-4);
-  border: 1px solid var(--c-border);
+  border: 0;
   border-radius: var(--shape-card);
-  background: rgb(var(--rgb-surface) / 0.5);
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1);
 }
 
 .head,
@@ -31,7 +33,7 @@
   color: var(--c-ink);
 }
 
-.recordToggle:hover { background: rgb(var(--rgb-ink) / 0.04); }
+.recordToggle:hover { background: var(--hover-wash); }
 
 .recordToggle:focus-visible,
 .debate :focus-visible {
@@ -51,7 +53,7 @@
   height: 20px;
   padding: 0 8px;
   border-radius: var(--shape-pill);
-  border: 1px solid var(--c-border-strong);
+  border: 1px solid var(--hairline-strong);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -80,22 +82,19 @@
   gap: 6px;
   min-width: 0;
   padding: var(--s-3);
-  border: 1px solid var(--c-border);
+  border: 1px solid var(--hairline);
   border-left: 3px solid var(--seat);
   border-radius: var(--shape-control);
   background: var(--c-canvas);
   animation: turnIn 220ms var(--e-standard, ease-out) both;
 }
 
-/* Seats are greys, not hues (brand: no blue/purple; the product videos use grey models). Each seat carries its own avatar ink for contrast. */
-.turn[data-seat="0"], .castItem[data-seat="0"], .summaryTag[data-seat="0"] { --seat: #17171a; --seat-ink: #ffffff; }
-.turn[data-seat="1"], .castItem[data-seat="1"], .summaryTag[data-seat="1"] { --seat: #52545a; --seat-ink: #ffffff; }
-.turn[data-seat="2"], .castItem[data-seat="2"], .summaryTag[data-seat="2"] { --seat: #8b8d94; --seat-ink: #0b0b0d; }
-.turn[data-seat="3"], .castItem[data-seat="3"], .summaryTag[data-seat="3"] { --seat: #c4c5ca; --seat-ink: #0b0b0d; }
-:global([data-theme="dark"]) .turn[data-seat="0"], :global([data-theme="dark"]) .castItem[data-seat="0"] { --seat: #ededf0; --seat-ink: #0b0b0d; }
-:global([data-theme="dark"]) .turn[data-seat="1"], :global([data-theme="dark"]) .castItem[data-seat="1"] { --seat: #a4a6ad; --seat-ink: #0b0b0d; }
-:global([data-theme="dark"]) .turn[data-seat="2"], :global([data-theme="dark"]) .castItem[data-seat="2"] { --seat: #6f7178; --seat-ink: #0b0b0d; }
-:global([data-theme="dark"]) .turn[data-seat="3"], :global([data-theme="dark"]) .castItem[data-seat="3"] { --seat: #45474d; --seat-ink: #ffffff; }
+/* Seats are greys, not hues (brand: no blue/purple; the product videos use grey models): four steps of the ink ladder, each with
+   the ink that reads on it. The ink tokens flip with the theme, so one block serves Light and Dark. */
+.turn[data-seat="0"], .castItem[data-seat="0"], .summaryTag[data-seat="0"] { --seat: var(--c-ink); --seat-ink: var(--c-canvas); }
+.turn[data-seat="1"], .castItem[data-seat="1"], .summaryTag[data-seat="1"] { --seat: var(--c-ink-2); --seat-ink: var(--c-canvas); }
+.turn[data-seat="2"], .castItem[data-seat="2"], .summaryTag[data-seat="2"] { --seat: var(--c-ink-3); --seat-ink: var(--c-canvas); }
+.turn[data-seat="3"], .castItem[data-seat="3"], .summaryTag[data-seat="3"] { --seat: var(--hairline-strong); --seat-ink: var(--c-ink); }
 
 .turn[data-status="failed"] { border-left-color: var(--c-border-strong); }
 
@@ -108,7 +107,7 @@
   height: 20px;
   border-radius: 6px;
   background: var(--seat, var(--c-ink-2));
-  color: var(--seat-ink, #fff);
+  color: var(--seat-ink, var(--c-canvas));
   font-size: 11px;
   font-weight: 700;
 }
@@ -124,14 +123,13 @@
   border-radius: var(--shape-pill);
   font-size: 11px;
   font-weight: 600;
-  background: rgb(var(--rgb-ink) / 0.06);
+  background: var(--hover-wash);
   color: var(--c-ink-2);
 }
 /* "Changed position" is the one tag that matters: amber, as in the product videos. Refined is ink, held stays quiet. */
-.tag[data-update="changed"] { background: rgb(240 192 96 / 0.14); color: #8a5a0f; box-shadow: inset 0 0 0 1px rgb(200 135 58 / 0.45); }
-:global([data-theme="dark"]) .tag[data-update="changed"] { background: rgb(240 192 96 / 0.1); color: #f0c060; box-shadow: inset 0 0 0 1px rgb(240 192 96 / 0.45); }
-.tag[data-update="refined"] { color: var(--c-ink); box-shadow: inset 0 0 0 1px var(--c-border-strong); background: transparent; }
-.tag[data-update="held"] { box-shadow: inset 0 0 0 1px var(--c-border); background: transparent; }
+.tag[data-update="changed"] { background: rgb(var(--rgb-attention) / 0.12); color: var(--c-attention); box-shadow: inset 0 0 0 1px rgb(var(--rgb-attention) / 0.45); }
+.tag[data-update="refined"] { color: var(--c-ink); box-shadow: inset 0 0 0 1px var(--hairline-strong); background: transparent; }
+.tag[data-update="held"] { box-shadow: inset 0 0 0 1px var(--hairline); background: transparent; }
 /* collapsed record: each model's final move as a tag ("A refined · B changed · C held") */
 .summaryTags { display: inline-flex; flex-wrap: wrap; gap: 6px; }
 

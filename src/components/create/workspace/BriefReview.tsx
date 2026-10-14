@@ -4,6 +4,7 @@ import type { SiteBrief } from "@/lib/site-builder/brief";
 import { ProductCard, productReady } from "../ProductImport";
 import type { Flow } from "./flow";
 import s from "./ws.module.css";
+import { Button } from "@/components/kit";
 
 const MOTIONS: { id: SiteBrief["motion"]; label: string; note: string }[] = [
   { id: "none", label: "Still", note: "No animation. Fastest." },
@@ -69,9 +70,9 @@ export function BriefReview({ flow, busy, onApprove, onStartOver }: { flow: Flow
             {enh.enhanced.missing.length ? <p className={s.muted}>Worth telling me: {enh.enhanced.missing.join(" · ")}</p> : null}
             <div className={s.row}>
               {enh.used ? (
-                <button type="button" className={s.btnGhost} onClick={() => { set("idea", flow.idea); flow.setEnh({ ...enh, used: false }); }}>Use my original</button>
+                <Button variant="secondary" size="sm" onClick={() => { set("idea", flow.idea); flow.setEnh({ ...enh, used: false }); }}>Use my original</Button>
               ) : (
-                <button type="button" className={s.btn} onClick={() => { set("idea", enh.enhanced!.idea); flow.setEnh({ ...enh, used: true }); }}>Use the improved version</button>
+                <Button variant="primary" size="sm" onClick={() => { set("idea", enh.enhanced!.idea); flow.setEnh({ ...enh, used: true }); }}>Use the improved version</Button>
               )}
               <span className={s.muted}>{enh.used ? "The improved description will be used." : "Your original is used unless you choose this."}</span>
             </div>
@@ -116,7 +117,7 @@ export function BriefReview({ flow, busy, onApprove, onStartOver }: { flow: Flow
         <dl className={s.dl}>
           {info.structure.map((r) => <div key={r.label}><dt>{r.label}</dt><dd>{r.value}</dd></div>)}
         </dl>
-        <button type="button" className={s.btnGhost} disabled={working} onClick={() => void flow.reroll()}>Draw a different structure</button>
+        <Button variant="secondary" size="sm" disabled={working} onClick={() => void flow.reroll()}>Draw a different structure</Button>
       </details>
 
       <details className={s.fold}>
@@ -160,8 +161,8 @@ export function BriefReview({ flow, busy, onApprove, onStartOver }: { flow: Flow
 
       {flow.err ? <p className={s.error} role="alert">{flow.err}</p> : null}
       <div className={s.row}>
-        <button type="button" className={s.btn} disabled={busy || brief.name.trim().length < 1 || (reviewProduct ? !productReady(reviewProduct) : false)} onClick={() => onApprove({ ...brief, idea: shownIdea, name: brief.name.trim() })}>{busy ? "Building…" : "Approve and build"}</button>
-        <button type="button" className={s.btnGhost} disabled={busy} onClick={onStartOver}>Start over</button>
+        <Button variant="primary" size="sm" disabled={busy || brief.name.trim().length < 1 || (reviewProduct ? !productReady(reviewProduct) : false)} onClick={() => onApprove({ ...brief, idea: shownIdea, name: brief.name.trim() })}>{busy ? "Building…" : "Approve and build"}</Button>
+        <Button variant="secondary" size="sm" disabled={busy} onClick={onStartOver}>Start over</Button>
         <span className={s.muted} aria-live="polite">{estimate ? (estimate.free ? `Free · ${estimate.modelLabel} · text only` : `About ${estimate.units.toLocaleString()} credits (usually ${estimate.low.toLocaleString()}–${estimate.high.toLocaleString()}) · ${estimate.modelLabel}`) : ""}</span>
       </div>
     </div>

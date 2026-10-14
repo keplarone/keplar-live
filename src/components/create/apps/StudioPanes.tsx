@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { api } from "../api";
 import s from "./studio.module.css";
 import type { AppDetail } from "./types";
+import { Button, SegmentedControl } from "@/components/kit";
 
 export function DataPane({ id }: { id: string }) {
   const [env, setEnv] = useState<"draft" | "live">("draft");
@@ -18,7 +19,7 @@ export function DataPane({ id }: { id: string }) {
       <div className={s.paneHead}>
         <h2 className={s.paneTitle}>Backend</h2>
         <span className={s.grow} />
-        <div className={s.toggle} role="group" aria-label="Environment">{(["draft", "live"] as const).map((e) => <button key={e} type="button" aria-pressed={env === e} onClick={() => setEnv(e)}>{e === "draft" ? "Preview data" : "Live data"}</button>)}</div>
+        <SegmentedControl label="Environment" size="sm" value={env} onValueChange={setEnv} options={[{ value: "draft", label: "Preview data" }, { value: "live", label: "Live data" }]} />
       </div>
       {err ? <div className={s.paneMsg} role="alert">{err}</div> : null}
       {data ? (
@@ -26,7 +27,7 @@ export function DataPane({ id }: { id: string }) {
           <p className={s.paneMeta}>{data.users} account{data.users === 1 ? "" : "s"} · {data.files.count} file{data.files.count === 1 ? "" : "s"} ({Math.round(data.files.bytes / 1024)} KB) · {data.ai.calls30d} AI calls in 30 days</p>
           <table className={s.table}>
             <thead><tr><th>Collection</th><th>Records</th><th /></tr></thead>
-            <tbody>{data.collections.map((c) => <tr key={c.name}><td>{c.label} <span className={s.dim}>({c.name})</span></td><td>{c.count}</td><td><button type="button" className={s.textBtn} onClick={() => setCol(c.name)}>View</button></td></tr>)}</tbody>
+            <tbody>{data.collections.map((c) => <tr key={c.name}><td>{c.label} <span className={s.dim}>({c.name})</span></td><td>{c.count}</td><td><Button variant="ghost" size="sm" onClick={() => setCol(c.name)}>View</Button></td></tr>)}</tbody>
           </table>
           {col ? (
             <table className={s.table}>
@@ -60,7 +61,7 @@ export function SettingsPane({ app, onSaved }: { app: AppDetail; onSaved: () => 
       <label className={s.switch}><input type="checkbox" checked={settings.uploads} onChange={(e) => setSettings({ ...settings, uploads: e.target.checked })} />File and photo uploads</label>
       <label className={s.switch}><input type="checkbox" checked={settings.ai} onChange={(e) => setSettings({ ...settings, ai: e.target.checked })} />AI features (each call uses your credits)</label>
       <label className={s.field}><span>Admins (sign in to the app with these emails to get admin screens)</span><input className={s.input} value={admins} onChange={(e) => setAdmins(e.target.value)} /></label>
-      <div className={s.paneHead}><button type="button" className={s.ghostBtn} onClick={save}>Save</button><span className={s.paneMeta}>{msg}</span></div>
+      <div className={s.paneHead}><Button variant="primary" size="sm" onClick={save}>Save</Button><span className={s.paneMeta}>{msg}</span></div>
       {app.spec?.schedules?.length ? (
         <>
           <h2 className={s.paneTitle}>Runs by itself</h2>
@@ -77,7 +78,7 @@ export function SettingsPane({ app, onSaved }: { app: AppDetail; onSaved: () => 
               <span>{h.label}</span>
               <span className={s.hookRow}>
                 <input className={s.input} readOnly value={h.url} onFocus={(e) => e.currentTarget.select()} />
-                <button type="button" className={s.ghostBtn} onClick={() => { void navigator.clipboard?.writeText(h.url); setMsg(`Copied the ${h.label} webhook.`); }}>Copy</button>
+                <Button variant="secondary" size="sm" onClick={() => { void navigator.clipboard?.writeText(h.url); setMsg(`Copied the ${h.label} webhook.`); }}>Copy</Button>
               </span>
             </label>
           ))}

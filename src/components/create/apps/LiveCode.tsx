@@ -12,6 +12,7 @@ import { FileFinder, useGoToFile } from "./FileFinder";
 import { BUILD_ORDER, screenWritten, stepState, type StepState } from "./code-nav";
 import { langOf, sortFiles, tokenize } from "./highlight";
 import s from "./studio.module.css";
+import { ActivityIndicator, Button, SegmentedControl } from "@/components/kit";
 
 const VISIBLE_KEY = "kc-live-code";
 
@@ -62,22 +63,21 @@ export function LiveCode({ live, running }: { live: Live; running: boolean }) {
   return (
     <section className={s.liveCode} aria-label="Code being written">
       <header className={s.liveHead}>
-        <span className={s.liveDot} data-on={running || undefined} aria-hidden="true" />
+        {running ? <ActivityIndicator label="" /> : <span className={s.liveDot} aria-hidden="true" />}
         <strong>{running ? "Writing code" : "Code from this build"}</strong>
         <span className={s.codeMeta}>{paths.length} {paths.length === 1 ? "file" : "files"} · {(total / 1024).toFixed(1)} KB</span>
         <span className={s.grow} />
-        {pinned ? <button type="button" className={s.textBtn} onClick={() => setPinned(null)}>Follow latest</button> : null}
-        {open && paths.length ? <button type="button" className={s.textBtn} onClick={() => setFinding(true)} title="Go to file (Ctrl+P)">Go to file <kbd className={s.kbdHint}>Ctrl P</kbd></button> : null}
-        <button type="button" className={s.textBtn} aria-expanded={open} onClick={toggle}>{open ? "Hide code" : "Show code"}</button>
+        {pinned ? <Button variant="ghost" size="sm" onClick={() => setPinned(null)}>Follow latest</Button> : null}
+        {open && paths.length ? <Button variant="ghost" size="sm" onClick={() => setFinding(true)} title="Go to file (Ctrl+P)" trailingIcon={<kbd className={s.kbdHint}>Ctrl P</kbd>}>Go to file</Button> : null}
+        <Button variant="ghost" size="sm" aria-expanded={open} onClick={toggle}>{open ? "Hide code" : "Show code"}</Button>
       </header>
       {open ? (
         <>
           <div className={`${s.code} ${s.liveGrid}`}>
             {finding ? <FileFinder paths={paths} onPick={(p) => { setPinned(p); setSide("files"); }} onClose={() => setFinding(false)} /> : null}
             <div className={s.liveSide}>
-              <div className={s.liveSwitch} role="tablist" aria-label="Left column">
-                <button type="button" role="tab" aria-selected={side === "tasks"} onClick={() => setSide("tasks")}>Tasks</button>
-                <button type="button" role="tab" aria-selected={side === "files"} onClick={() => setSide("files")}>Files <span className={s.fileDir}>{paths.length}</span></button>
+              <div className={s.liveSwitch}>
+                <SegmentedControl label="Left column" size="sm" fullWidth value={side} onValueChange={setSide} options={[{ value: "tasks", label: "Tasks" }, { value: "files", label: <>Files <span className={s.fileDir}>{paths.length}</span></> }]} />
               </div>
               {side === "tasks" ? (
                 <ol className={s.tasks} aria-label="Build tasks">

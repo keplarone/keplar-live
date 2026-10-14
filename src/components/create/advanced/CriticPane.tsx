@@ -10,6 +10,7 @@ import { api, ndjson } from "../api";
 import { CATEGORY_LABEL, type Category, type CriticReport, type Finding } from "@/lib/critic/types";
 import type { LiveSession } from "./useLiveSession";
 import s from "./advanced.module.css";
+import { Button, EmptyState, Icon } from "@/components/kit";
 
 type PassState = "wait" | "run" | "done" | "skip" | "fail";
 type Pass = { id: "static" | "axe" | "ai"; label: string; state: PassState; text: string; ms?: number };
@@ -176,7 +177,7 @@ export function CriticPane({ siteId, headVersion, session, canRun, canEdit, onFi
             {report && !running ? <p className={s.fWhere}>{live ? "Live session" : `v${report.version}`} · {instant ? "instant check (rules only)" : "full review"} · {ago(report.createdAt)}</p> : null}
           </div>
           <div className={s.toolbar}>
-            {canRun ? <button type="button" className={s.primary} onClick={() => void run()} disabled={running || (!headVersion && !live)}>{running ? "Reviewing…" : report && !instant ? "Review again" : "Run full review"}</button> : <span className={s.dim} style={{ fontSize: "var(--t-label)" }}>Viewers can read reports. Editors run the critic.</span>}
+            {canRun ? <Button variant="primary" size="sm" onClick={() => void run()} disabled={running || (!headVersion && !live)}>{running ? "Reviewing…" : report && !instant ? "Review again" : "Run full review"}</Button> : <span className={`${s.dim} ${s.note}`}>Viewers can read reports. Editors run the critic.</span>}
           </div>
         </div>
 
@@ -220,8 +221,8 @@ export function CriticPane({ siteId, headVersion, session, canRun, canEdit, onFi
               <span className={s.grow} />
               {canEdit && fixable.length && !running ? (
                 <>
-                  <button type="button" className={s.quiet} onClick={() => setPicked(picked.size === fixable.length ? new Set() : new Set(fixable.map((f) => f.id)))}>{picked.size === fixable.length ? "Clear" : `Select all ${fixable.length}`}</button>
-                  <button type="button" className={s.btn} disabled={!picked.size || applying} onClick={() => void apply([...picked])}>{applying ? "Applying…" : picked.size ? `Apply ${picked.size} fix${picked.size === 1 ? "" : "es"}` : "Apply fixes"}</button>
+                  <Button variant="ghost" size="sm" onClick={() => setPicked(picked.size === fixable.length ? new Set() : new Set(fixable.map((f) => f.id)))}>{picked.size === fixable.length ? "Clear" : `Select all ${fixable.length}`}</Button>
+                  <Button variant="secondary" size="sm" disabled={!picked.size || applying} onClick={() => void apply([...picked])}>{applying ? "Applying…" : picked.size ? `Apply ${picked.size} fix${picked.size === 1 ? "" : "es"}` : "Apply fixes"}</Button>
                 </>
               ) : null}
             </div>
@@ -250,7 +251,7 @@ export function CriticPane({ siteId, headVersion, session, canRun, canEdit, onFi
                       ) : <button type="button" className={s.link} style={{ marginTop: 6, fontSize: "var(--t-label)" }} onClick={() => setOpen(f.id)}>Details and fix</button>}
                     </div>
                     <div className={s.fActions}>
-                      {applied.has(f.id) ? <span className={s.pill} data-t="live">Applied</span> : can ? <button type="button" className={s.btn} onClick={() => void apply([f.id])} disabled={applying}>Apply fix</button> : null}
+                      {applied.has(f.id) ? <span className={s.pill} data-t="live">Applied</span> : can ? <Button variant="secondary" size="sm" onClick={() => void apply([f.id])} disabled={applying}>Apply fix</Button> : null}
                     </div>
                   </article>
                 );
@@ -258,7 +259,7 @@ export function CriticPane({ siteId, headVersion, session, canRun, canEdit, onFi
             </div>
           </>
         ) : report && !running ? (
-          <div className={s.empty}><h3>Nothing to fix</h3><p>No check found an issue in {live ? "the live session" : `v${report.version}`}.</p></div>
+          <EmptyState icon={<Icon name="check" size={20} />} title="Nothing to fix" hint={`No check found an issue in ${live ? "the live session" : `v${report.version}`}.`} />
         ) : null}
       </div>
     </div>

@@ -28,7 +28,8 @@
 
 /* Poster: a drawn miniature of the page composition in the demo's own palette. */
 .poster { position: relative; aspect-ratio: 16 / 10; overflow: hidden; border-radius: var(--shape-card, 12px); background: var(--p-bg); color: var(--p-ink); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong); transition: transform 240ms var(--ease-out, ease); }
-.item:hover .poster, .item:focus-within .poster { transform: translateY(-3px); }
+/* UI v2: the edge strengthens on hover (no card jump). */
+.item:hover .poster, .item:focus-within .poster { box-shadow: inset 0 0 0 var(--b-hairline) var(--c-ink-3), var(--elev-2); }
 @media (prefers-reduced-motion: reduce) { .poster { transition: none; } .item:hover .poster, .item:focus-within .poster { transform: none; } }
 .pBar { position: absolute; left: 6%; right: 6%; top: 7%; display: flex; justify-content: space-between; align-items: center; font: 600 clamp(10px, 1.1vw, 13px)/1 var(--p-fd); letter-spacing: -0.01em; padding-bottom: 4%; border-bottom: 1px solid var(--p-line); }
 .pBar i { display: inline-flex; gap: 6px; }
@@ -79,7 +80,7 @@
 .frameWrap { border-radius: var(--shape-card, 12px); overflow: hidden; box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong); background: var(--c-surface-1); }
 .frameBar { display: flex; justify-content: space-between; gap: var(--s-3); padding: var(--s-2) var(--s-4); font-size: var(--t-label); color: var(--c-ink-3); border-bottom: var(--b-hairline) solid var(--c-border-strong); }
 .frameBar a { color: var(--c-ink-2); text-underline-offset: 3px; }
-.frame { display: block; width: 100%; height: min(78vh, 760px); min-height: 420px; border: 0; background: #fff; }
+.frame { display: block; width: 100%; height: min(78vh, 760px); min-height: 420px; border: 0; background: white; /* user content */ }
 .aside { display: grid; gap: var(--s-8); position: sticky; top: calc(var(--l-nav-h) + var(--s-8)); }
 .aside h2 { font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-2); font-weight: var(--w-medium); margin-bottom: var(--s-3); }
 .prompt { font-size: var(--t-body); line-height: 1.55; padding: var(--s-4) var(--s-5); background: var(--c-surface-1); border-radius: var(--shape-control, 10px); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border); margin: 0; }
@@ -90,9 +91,9 @@
 .swatches span { width: 28px; height: 28px; border-radius: 6px; box-shadow: inset 0 0 0 1px var(--c-border-strong); }
 .actions { display: flex; gap: var(--s-3); flex-wrap: wrap; align-items: center; }
 .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 var(--s-6); border-radius: var(--shape-control, 10px); background: var(--c-ink); color: var(--c-canvas); font: inherit; font-weight: var(--w-medium); border: 0; text-decoration: none; cursor: pointer; transition: background-color 160ms ease, transform 120ms ease; }
-.btn:hover { background: var(--c-ink-hover, var(--c-ink)); }
-.btn:active { transform: translateY(1px); }
-.btn:focus-visible { outline: none; }
+.btn:hover { background: var(--c-ink-hover); }
+.btn:active { scale: var(--m-press); }
+.btn:focus-visible { outline: none; text-decoration: underline; text-underline-offset: 4px; }
 .link { color: var(--c-ink); text-underline-offset: 3px; font-size: var(--t-small); }
 .link:focus-visible { outline: none; text-decoration-thickness: 2px; }
 .pager { margin-top: var(--s-16); padding-top: var(--s-6); border-top: var(--b-hairline) solid var(--c-border-strong); display: flex; justify-content: space-between; gap: var(--s-4); font-size: var(--t-small); }

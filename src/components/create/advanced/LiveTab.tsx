@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { LivePane } from "./LivePane";
 import { useLiveSession } from "./useLiveSession";
 import s from "./advanced.module.css";
+import { Button } from "@/components/kit";
 
 export default function LiveTab({ siteId, toast, onSaved, onOpenCritic, onDeployed }: { siteId: string; toast: (t: string) => void; onSaved?: (v: number) => void; onOpenCritic?: () => void; onDeployed?: () => void }) {
   const session = useLiveSession(siteId, { tab: "live" });
@@ -16,7 +17,7 @@ export default function LiveTab({ siteId, toast, onSaved, onOpenCritic, onDeploy
           <div>
             <h1>The live session didn&apos;t open</h1>
             <p>{error.message}</p>
-            <button type="button" className={s.btn} onClick={session.reconnect}>Try again</button>
+            <Button variant="secondary" size="sm" onClick={session.reconnect}>Try again</Button>
           </div>
         </div>
       </div>

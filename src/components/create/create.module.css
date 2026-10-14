@@ -1,4 +1,6 @@
-/* Create: monochrome product UI. Hairlines, mono labels, one ink. */
+/* Create: shared form controls and actions for the Images, Video, Mobile and Site views, on UI v2 (docs/ui-v2.md): inputs on
+   --surface-raised with a hairline, one ink pill per area (.btn), hairline secondary pills (.btnGhost). New code uses the kit's
+   Button; these classes draw the same shapes for the controls not yet moved. No glass, no swell. */
 
 .label {
   font-family: var(--f-sans);
@@ -13,8 +15,8 @@
 .textarea {
   font: inherit;
   color: var(--c-ink);
-  background: var(--c-canvas);
-  border: var(--b-hairline) solid var(--c-border-strong);
+  background: var(--surface-raised);
+  border: var(--b-hairline) solid var(--hairline-strong);
   border-radius: var(--r-input);
   padding: 0 var(--s-3);
   height: 36px;
@@ -29,10 +31,15 @@
 
 .select:focus-visible,
 .input:focus-visible,
-.textarea:focus-visible,
+.textarea:focus-visible {
+  outline: none;
+  border-color: var(--c-ink-3);
+}
 .btn:focus-visible,
 .iconBtn:focus-visible {
   outline: none;
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 .btn {
@@ -43,7 +50,7 @@
   height: 36px;
   padding: 0 var(--s-4);
   border-radius: var(--r-pill);
-  border: var(--b-hairline) solid var(--c-ink);
+  border: var(--b-hairline) solid transparent;
   background: var(--c-ink);
   color: var(--c-canvas);
   font: inherit;
@@ -51,8 +58,10 @@
   cursor: pointer;
   white-space: nowrap;
   text-decoration: none;
-  transition: opacity var(--d-fast) var(--e-standard);
+  transition: background-color var(--m-dur-1) var(--m-ease-out), box-shadow var(--m-dur-1) var(--m-ease-out);
 }
+.btn:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--c-ink-hover); }
+.btn:active:not(:disabled) { scale: var(--m-press); }
 
 .btn:disabled {
   opacity: 0.4;
@@ -60,16 +69,18 @@
 }
 
 .btnGhost {
-  background: transparent;
+  background: var(--surface-raised);
   color: var(--c-ink);
-  border-color: var(--c-border-strong);
+  border-color: var(--hairline-strong);
 }
+.btnGhost:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--hover-wash); }
 
 .btnDanger {
-  background: transparent;
-  color: var(--c-dissent-text);
-  border-color: var(--c-border-strong);
+  background: var(--surface-raised);
+  color: var(--c-destructive);
+  border-color: var(--hairline-strong);
 }
+.btnDanger:hover:not(:disabled):not([aria-disabled="true"]) { background: rgb(var(--rgb-destructive) / 0.08); }
 
 .iconBtn {
   display: inline-flex;
@@ -77,9 +88,9 @@
   gap: 6px;
   height: 26px;
   padding: 0 var(--s-2);
-  border: var(--b-hairline) solid var(--c-border);
+  border: var(--b-hairline) solid var(--hairline-strong);
   border-radius: var(--r-sm);
-  background: var(--c-canvas);
+  background: var(--surface-raised);
   color: var(--c-ink-2);
   font: inherit;
   font-size: var(--t-label);
@@ -88,8 +99,9 @@
 
 .iconBtn:hover {
   color: var(--c-ink);
-  border-color: var(--c-border-strong);
+  background: var(--hover-wash);
 }
+@media (pointer: coarse) { .btn { min-height: 44px; } .iconBtn { min-height: 36px; } }
 
 /* Builder */
 
@@ -131,12 +143,3 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-
-/* glass buttons (liquid glass: see src/styles/glass.css) */
-.btn { background: var(--btn-p-bg); color: var(--btn-p-ink); border-color: transparent; box-shadow: var(--btn-p-shadow); -webkit-backdrop-filter: blur(6px) saturate(1.4); backdrop-filter: blur(6px) saturate(1.4); transition: var(--btn-spring); }
-.btn:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--c-ink-hover); }
-.btn:active:not(:disabled) { scale: var(--m-press); }
-@media (prefers-reduced-motion: reduce) { .btn { transition: background-color 0.1s linear; transform: none !important; } }
-@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .btn { backdrop-filter: none; -webkit-backdrop-filter: none; } .btn { background: var(--btn-p-solid, #17171a); } }
-
-/* Card-like button: opt out of the sitewide pill rule (glass.css) with a doubled class. */

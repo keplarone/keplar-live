@@ -3,6 +3,7 @@ import { useState } from "react";
 import { imageSlotPrompt, listImageSlots, listSections, regeneratePrompt } from "@/lib/site-builder/sections";
 import s from "./create.module.css";
 import b from "./builder.module.css";
+import { Button } from "@/components/kit";
 
 /** Pick one block of one page and ask for just that block again. It sends a scoped change request through the normal edit path (same credits as any edit). */
 export function SectionsPane({ files, disabled, onRegenerate }: { files: Record<string, string>; disabled: boolean; onRegenerate: (prompt: string) => void }) {
@@ -34,14 +35,14 @@ export function SectionsPane({ files, disabled, onRegenerate }: { files: Record<
                   <div style={{ fontWeight: 600, overflowWrap: "anywhere" }}>{sec.title}</div>
                   <div className={b.hint}>{sec.tag}{sec.id ? ` #${sec.id}` : ""} · {sec.chars.toLocaleString("en-US")} characters of text</div>
                 </div>
-                <button type="button" className={s.iconBtn} disabled={disabled} aria-expanded={open === sec.index} onClick={() => { setOpen(open === sec.index ? null : sec.index); setNote(""); }}>Regenerate</button>
+                <Button variant="ghost" size="sm" disabled={disabled} aria-expanded={open === sec.index} onClick={() => { setOpen(open === sec.index ? null : sec.index); setNote(""); }}>Regenerate</Button>
               </div>
               {open === sec.index ? (
                 <div className={b.field}>
                   <span>What should change? (optional)</span>
                   <textarea className={s.textarea} rows={2} maxLength={400} placeholder="Leave empty for a fresh take, or say what you want." value={note} onChange={(e) => setNote(e.target.value)} />
                   <div className={b.row}>
-                    <button type="button" className={s.btn} disabled={disabled} onClick={() => { onRegenerate(regeneratePrompt(active, sec, note)); setOpen(null); setNote(""); }}>Regenerate this section</button>
+                    <Button variant="primary" size="sm" disabled={disabled} onClick={() => { onRegenerate(regeneratePrompt(active, sec, note)); setOpen(null); setNote(""); }}>Regenerate this section</Button>
                     <span className={b.hint}>Only this block is meant to change. It counts as one edit, and you can undo it in History.</span>
                   </div>
                 </div>
@@ -62,7 +63,7 @@ export function SectionsPane({ files, disabled, onRegenerate }: { files: Record<
                   <strong style={{ overflowWrap: "anywhere" }}>{sl.label}</strong>
                   <small>{sl.kind === "placeholder" ? "Photo placeholder" : "Image"}{sl.issue ? ` · ${sl.issue}` : " · looks fine"}</small>
                 </div>
-                {sl.issue || sl.kind === "placeholder" ? <button type="button" className={s.iconBtn} disabled={disabled} onClick={() => onRegenerate(imageSlotPrompt(active, sl, i))}>Make a better visual</button> : null}
+                {sl.issue || sl.kind === "placeholder" ? <Button variant="ghost" size="sm" disabled={disabled} onClick={() => onRegenerate(imageSlotPrompt(active, sl, i))}>Make a better visual</Button> : null}
               </li>
             ))}
           </ul>

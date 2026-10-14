@@ -1,34 +1,25 @@
 "use client";
-import { useEffect, useId, useRef, useState } from "react";
-import { UndoToast } from "@/components/app-ui/delete/DeleteChat";
+import { useEffect, useRef, useState } from "react";
 import { UNDO_MS } from "@/components/app-ui/delete/useChatDelete";
 import { IconTrash } from "@/components/app-ui/icons";
+import { Button, Dialog, notify } from "@/components/kit";
 import { removalSummary, UNDO_SECONDS, type RemovalImpact } from "@/lib/site-builder/deletion-copy";
 import type { DeleteTarget } from "./useSiteDelete";
 import cx from "./delete-site.module.css";
-import { Presence } from "@/components/motion/usePresence";
 
 type Loaded = { impact: RemovalImpact; removed: string[]; kept: string[] };
 
 /**
- * The confirm dialog: names the site and lists what is removed and what is kept, with real counts from the account.
- * A native modal <dialog>: focus is trapped, Escape and the backdrop cancel, focus starts on Cancel (the safe button)
- * and returns to whatever opened it. Delete is disabled while something blocks it (the reason is shown).
+ * The confirm dialog (UI v2: the kit Dialog): names the site and lists what is removed and what is kept, with real counts from
+ * the account. A native modal <dialog>: focus is trapped, Escape and the backdrop cancel (not while deleting), focus starts on
+ * Cancel (the safe button) and returns to whatever opened it. Delete is disabled while something blocks it (the reason is shown).
+ * The dialog element keeps role="alertdialog" and data-delete-site-dialog (e2e/site-delete).
  */
 export function DeleteSiteDialog({ target, busy, error, blockedReason, onCancel, onConfirm }: {
   target: DeleteTarget | null; busy: boolean; error: string | null; blockedReason?: string | null; onCancel: () => void; onConfirm: () => void;
 }) {
-  const ref = useRef<HTMLDialogElement>(null);
-  const titleId = useId();
-  const descId = useId();
+  const cancelRef = useRef<HTMLButtonElement>(null);
   const [loaded, setLoaded] = useState<{ id: string; data: Loaded | null; failed: boolean } | null>(null);
-
-  useEffect(() => {
-    const d = ref.current;
-    if (!d) return;
-    if (target && !d.open) d.showModal();
-    if (!target && d.open) d.close();
-  }, [target]);
 
   useEffect(() => {
     if (!target) return;
@@ -48,44 +39,41 @@ export function DeleteSiteDialog({ target, busy, error, blockedReason, onCancel,
   const ready = Boolean(data);
 
   return (
-    <dialog
-      ref={ref}
+    <Dialog
+      open={Boolean(target)}
+      onOpenChange={(open) => { if (!open && !busy) onCancel(); }}
+      dismissible={!busy}
+      title={target ? <>Delete “{target.name}”?</> : ""}
+      initialFocus={cancelRef}
       className={cx.dialog}
-      role="alertdialog"
-      aria-labelledby={titleId}
-      aria-describedby={descId}
-      data-delete-site-dialog=""
-      onCancel={(e) => { e.preventDefault(); if (!busy) onCancel(); }}
-      onClick={(e) => { if (e.target === ref.current && !busy) onCancel(); }}
+      footer={<>
+        <Button ref={cancelRef} variant="ghost" onClick={onCancel} disabled={busy}>Cancel</Button>
+        <Button variant="danger" data-delete-site-yes="" onClick={onConfirm} loading={busy} disabled={(!ready && !mine?.failed) || Boolean(stop)}>{busy ? "Deleting…" : "Delete site"}</Button>
+      </>}
     >
       {target ? (
-        <>
-          <div className={cx.body}>
-            <h2 id={titleId} className={cx.title}>Delete “{target.name}”?</h2>
-            <div id={descId} className={cx.body} style={{ padding: 0, overflow: "visible" }}>
-              {!mine ? <p className={cx.muted} role="status">Checking what this site contains…</p> : null}
-              {mine?.failed ? <p className={cx.muted}>Couldn&rsquo;t load the details. Deleting still removes the draft, every version, the published page, uploaded images, the custom domain connection and form messages.</p> : null}
-              {data || mine?.failed ? (
-                <>
-                  <p className={cx.h}>This removes</p>
-                  <ul className={cx.list}>{(data?.removed ?? fallback?.removed ?? []).map((t) => <li key={t}>{t}</li>)}</ul>
-                  <p className={cx.h}>This keeps</p>
-                  <ul className={cx.list}>{(data?.kept ?? fallback?.kept ?? []).map((t) => <li key={t}>{t}</li>)}</ul>
-                  {data && data.impact.leads > 0 ? <p className={cx.muted}><a className={cx.link} href={`/api/sites/${target.id}/leads?format=csv`}>Download the {data.impact.leads} message{data.impact.leads === 1 ? "" : "s"} as CSV</a> before you delete.</p> : null}
-                  <p className={cx.muted}>You&rsquo;ll have about {UNDO_SECONDS} seconds to undo. After that it can&rsquo;t be brought back.</p>
-                </>
-              ) : null}
-            </div>
-            {stop ? <p className={cx.blocked} role="alert">{stop}</p> : null}
-            {error ? <p className={cx.err} role="alert">{error}</p> : null}
-          </div>
-          <div className={cx.foot}>
-            <button type="button" className={cx.btn} autoFocus onClick={onCancel} disabled={busy}>Cancel</button>
-            <button type="button" className={`${cx.btn} ${cx.danger}`} data-delete-site-yes="" onClick={onConfirm} disabled={busy || (!ready && !mine?.failed) || Boolean(stop)}>{busy ? "Deleting…" : "Delete site"}</button>
-          </div>
-        </>
+        <div
+          className={cx.body}
+          // The kit Dialog owns the <dialog>; this names it as an alert dialog and gives e2e its hook.
+          ref={(el) => { const d = el?.closest("dialog"); if (d) { d.setAttribute("role", "alertdialog"); d.setAttribute("data-delete-site-dialog", ""); } }}
+        >
+          {!mine ? <p className={cx.muted} role="status">Checking what this site contains…</p> : null}
+          {mine?.failed ? <p className={cx.muted}>Couldn&rsquo;t load the details. Deleting still removes the draft, every version, the published page, uploaded images, the custom domain connection and form messages.</p> : null}
+          {data || mine?.failed ? (
+            <>
+              <p className={cx.h}>This removes</p>
+              <ul className={cx.list}>{(data?.removed ?? fallback?.removed ?? []).map((t) => <li key={t}>{t}</li>)}</ul>
+              <p className={cx.h}>This keeps</p>
+              <ul className={cx.list}>{(data?.kept ?? fallback?.kept ?? []).map((t) => <li key={t}>{t}</li>)}</ul>
+              {data && data.impact.leads > 0 ? <p className={cx.muted}><a className={cx.link} href={`/api/sites/${target.id}/leads?format=csv`}>Download the {data.impact.leads} message{data.impact.leads === 1 ? "" : "s"} as CSV</a> before you delete.</p> : null}
+              <p className={cx.muted}>You&rsquo;ll have about {UNDO_SECONDS} seconds to undo. After that it can&rsquo;t be brought back.</p>
+            </>
+          ) : null}
+          {stop ? <p className={cx.blocked} role="alert">{stop}</p> : null}
+          {error ? <p className={cx.err} role="alert">{error}</p> : null}
+        </div>
       ) : null}
-    </dialog>
+    </Dialog>
   );
 }
 
@@ -98,12 +86,16 @@ export function SiteTrash({ name, id, onClick, disabled }: { name: string; id: s
   );
 }
 
-/** "Deleted “name” · Undo" plus a polite live announcement of the outcome of an undo. */
+/**
+ * "Deleted “name” · Undo" as a kit toast (notify, UI v2), open for the undo window, plus a polite live announcement of the outcome
+ * of an undo. A new delete replaces the toast in place (one undo at a time).
+ */
 export function SiteUndo({ toast, notice, onUndo }: { toast: { id: string; title: string } | null; notice: string | null; onUndo: (id: string) => void }) {
-  return (
-    <>
-      <Presence value={toast}>{(t, p) => <UndoToast key={t.id} title={t.title} ms={UNDO_MS} onUndo={() => onUndo(t.id)} motion={p.motion("toast")} />}</Presence>
-      <p className="visually-hidden" role="status" aria-live="polite">{notice ?? ""}</p>
-    </>
-  );
+  const undo = useRef(onUndo);
+  useEffect(() => { undo.current = onUndo; });
+  useEffect(() => {
+    if (!toast) return;
+    notify({ id: "site-undo", title: `Deleted “${toast.title}”`, duration: UNDO_MS, action: { label: "Undo", onClick: () => undo.current(toast.id) } });
+  }, [toast]);
+  return <p className="visually-hidden" role="status" aria-live="polite">{notice ?? ""}</p>;
 }

@@ -4,6 +4,7 @@ import { diffFiles, hunks, lineDiff } from "@/lib/site-builder/diff";
 import { api } from "./api";
 import s from "./create.module.css";
 import b from "./builder.module.css";
+import { Button } from "@/components/kit";
 
 type V = { n: number; summary: string; kind: string };
 const WORD = { added: "added", removed: "removed", changed: "changed", same: "same" } as const;
@@ -46,7 +47,7 @@ export function ComparePane({ siteId, versions, head, initialFrom, onClose }: { 
         <label className={b.field}><span>From</span><select className={s.input} aria-label="From version" value={from} onChange={(e) => { setFrom(Number(e.target.value)); setOpen(null); }}>{opts}</select></label>
         <label className={b.field}><span>To</span><select className={s.input} aria-label="To version" value={to} onChange={(e) => { setTo(Number(e.target.value)); setOpen(null); }}>{opts}</select></label>
         <span className={b.grow} />
-        <button type="button" className={s.iconBtn} onClick={onClose}>Close</button>
+        <Button variant="ghost" size="sm" onClick={onClose}>Close</Button>
       </div>
       {err ? <p role="alert" className={s.muted}>{err}</p> : null}
       {!files && !err ? <p className={s.muted} role="status">Loading both versions…</p> : null}
@@ -59,7 +60,7 @@ export function ComparePane({ siteId, versions, head, initialFrom, onClose }: { 
               {changed.map((d) => (
                 <li key={d.path} className={b.item}>
                   <div className={b.itemMain}><strong style={{ overflowWrap: "anywhere" }}>{d.path}</strong><small>{WORD[d.status]} · +{d.plus} / −{d.minus}</small></div>
-                  {d.status === "changed" ? <button type="button" className={s.iconBtn} aria-expanded={open === d.path} onClick={() => setOpen(open === d.path ? null : d.path)}>{open === d.path ? "Hide lines" : "Show lines"}</button> : null}
+                  {d.status === "changed" ? <Button variant="ghost" size="sm" aria-expanded={open === d.path} onClick={() => setOpen(open === d.path ? null : d.path)}>{open === d.path ? "Hide lines" : "Show lines"}</Button> : null}
                 </li>
               ))}
             </ul>

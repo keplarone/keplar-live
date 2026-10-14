@@ -12,6 +12,7 @@ import { formatPrice, type ProductBuy, type ProductInfo } from "@/lib/site-build
 import p from "./productImport.module.css";
 import s from "./create.module.css";
 import b from "./builder.module.css";
+import { Button } from "@/components/kit";
 
 export type AssetView = { id: string; width: number; height: number; bytes: number; alt: string; original: boolean; notes: string[]; sourceUrl?: string; contentType: string };
 export type Draft = { product: ProductInfo; assets: AssetView[]; notes: string[]; excerpt?: string; host?: string; maxImages: number };
@@ -121,8 +122,8 @@ export function ProductStart({ onDraft, onManual, disabled }: { onDraft: (d: Dra
             <input className={s.input} data-product-link="1" inputMode="url" autoComplete="off" spellCheck={false} value={url} disabled={disabled || busy !== null} maxLength={2000} placeholder="https://shop.example.com/products/…" onChange={(e) => setUrl(e.target.value)} aria-describedby="pi-link-hint" />
           </label>
           <div className={b.row}>
-            <button type="submit" className={s.btn} disabled={disabled || busy !== null || url.trim().length < 4}>{busy === "link" ? "Reading the page…" : "Import from link"}</button>
-            {busy === "link" ? <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={() => abort.current?.abort()}>Cancel</button> : null}
+            <Button type="submit" variant="primary" loading={busy === "link"} disabled={disabled || busy !== null || url.trim().length < 4}>{busy === "link" ? "Reading the page…" : "Import from link"}</Button>
+            {busy === "link" ? <Button variant="secondary" size="sm" onClick={() => abort.current?.abort()}>Cancel</Button> : null}
           </div>
           <span id="pi-link-hint" className={b.hint}>Keplar reads the public page like a visitor would (respecting the site&rsquo;s robots.txt), then shows you what it found.</span>
         </form>
@@ -148,8 +149,8 @@ export function ProductStart({ onDraft, onManual, disabled }: { onDraft: (d: Dra
         <div className={p.fail} role="alert">
           <p>{err.text}</p>
           <div className={b.row}>
-            {err.manual ? <button type="button" className={s.btn} onClick={onManual}>Enter details manually</button> : null}
-            <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={() => setErr(null)}>Dismiss</button>
+            {err.manual ? <Button variant="primary" size="sm" onClick={onManual}>Enter details manually</Button> : null}
+            <Button variant="secondary" size="sm" onClick={() => setErr(null)}>Dismiss</Button>
           </div>
         </div>
       ) : null}
@@ -243,7 +244,7 @@ export function ProductCard({ product, assets, notes, excerpt, maxImages, onChan
           <h3 id="pi-card-title" className={p.title}>Imported product</h3>
           <span className={p.source}>{fromLabel}{product.via === "link" && product.sourceUrl ? <> · <a href={product.sourceUrl} target="_blank" rel="noopener noreferrer">open original</a></> : null}</span>
         </div>
-        <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={onRemove}>Remove</button>
+        <Button variant="secondary" size="sm" onClick={onRemove}>Remove</Button>
       </header>
       {notes?.length ? <ul className={p.notes} aria-label="Things to check">{notes.map((n) => <li key={n}>{n}</li>)}</ul> : null}
       <p className={b.hint}>Everything here is yours to edit. Keplar uses only what you leave in the card, and never makes up a price.</p>
@@ -324,7 +325,7 @@ export function ProductCard({ product, assets, notes, excerpt, maxImages, onChan
           </ul>
         ) : <p className={b.hint}>No photos yet. Add one, or build without photos: a marked placeholder is used.</p>}
         <div className={b.row}>
-          <button type="button" className={`${s.btn} ${s.btnGhost}`} disabled={adding || assets.length >= maxImages + 6} onClick={() => file.current?.click()}>{adding ? "Uploading…" : "Add a photo"}</button>
+          <Button variant="secondary" size="sm" disabled={adding || assets.length >= maxImages + 6} onClick={() => file.current?.click()}>{adding ? "Uploading…" : "Add a photo"}</Button>
           <input ref={file} type="file" hidden accept="image/png,image/jpeg,image/webp,image/gif,image/avif" onChange={(e) => { void addPhoto(e.target.files?.[0]); e.target.value = ""; }} />
         </div>
       </div>

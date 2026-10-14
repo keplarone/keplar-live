@@ -9,6 +9,7 @@ import { api } from "../api";
 import { ensurePreviewFonts } from "@/lib/app-builder/design/preview-fonts";
 import s from "./apps.module.css";
 import type { Config, Design, Palette } from "./types";
+import { Button } from "@/components/kit";
 
 const KEYS: (keyof Palette)[] = ["bg", "surface", "ink", "muted", "accent", "accent2"];
 const KEY_LABEL: Record<keyof Palette, string> = { bg: "Background", surface: "Surface", ink: "Text", muted: "Quiet text", accent: "Accent", accent2: "Second accent" };
@@ -77,7 +78,7 @@ export function DesignPicker({ cfg, design, onChange, idea, compact }: { cfg: Co
         <h2 className={s.h2}>Look and feel</h2>
         <span className={s.meta}>Your app gets its own design system from these choices. Nothing generic.</span>
         <span className={s.grow} />
-        <button type="button" className={s.btn} onClick={surprise} disabled={busy !== ""}>{busy === "surprise" ? "Composing a direction…" : "Surprise me"}</button>
+        <Button variant="secondary" size="sm" onClick={surprise} disabled={busy !== ""}>{busy === "surprise" ? "Composing a direction…" : "Surprise me"}</Button>
       </div>
       {err ? <div className={s.error} role="alert">{err}</div> : null}
       {design.direction ? <p className={s.direction}>{design.direction}</p> : null}

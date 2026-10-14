@@ -3,12 +3,12 @@
 .pill { height: 34px; padding: 0 var(--s-4); border: var(--b-hairline) solid var(--c-border); border-radius: var(--r-pill); background: var(--c-canvas); color: var(--c-ink-2); font: inherit; font-size: var(--t-small); cursor: pointer; transition: background 120ms ease, color 120ms ease, border-color 120ms ease; }
 .pill:hover { color: var(--c-ink); border-color: var(--c-border-strong); }
 .pill[aria-pressed="true"] { background: var(--c-ink); color: var(--c-canvas); border-color: var(--c-ink); }
-.pill:focus-visible { outline: var(--b-focus) solid var(--c-focus); outline-offset: 2px; }
+.pill:focus-visible { outline: none; filter: var(--focus-filter); text-decoration: underline; text-underline-offset: 3px; }
 .dirs { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: var(--s-3); }
 .dir { display: flex; flex-direction: column; gap: 4px; text-align: left; padding: var(--s-3); border: var(--b-hairline) solid var(--c-border); border-radius: var(--r-md); background: var(--c-canvas); color: var(--c-ink); font: inherit; cursor: pointer; }
 .dir:hover { border-color: var(--c-border-strong); }
 .dir[aria-checked="true"] { border-color: var(--c-ink); box-shadow: 0 0 0 1px var(--c-ink); }
-.dir:focus-visible { outline: var(--b-focus) solid var(--c-focus); outline-offset: 2px; }
+.dir:focus-visible { outline: none; filter: var(--focus-filter); box-shadow: inset 0 -2px 0 var(--c-ink); }
 .dir small { color: var(--c-ink-3); }
 .fonts { font-size: 11px; }
 .sw { display: flex; height: 30px; border-radius: var(--r-sm); overflow: hidden; box-shadow: var(--sh-hairline); margin-bottom: 4px; }

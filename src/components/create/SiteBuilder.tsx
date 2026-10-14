@@ -7,7 +7,6 @@ import { coverage, fixPrompt, gapsOf, type CoverageItem } from "@/lib/site-build
  */
 import { SignInGate } from "@/components/app-ui/SignInGate";
 import { useCallback, useEffect, useRef, useState } from "react";
-import dynamic from "next/dynamic";
 import { brand } from "@/lib/site";
 import { DomainPanel } from "./DomainPanel";
 import { ProductCard, ProductStart, productReady } from "./ProductImport";
@@ -30,10 +29,10 @@ import type { SiteBrief } from "@/lib/site-builder/brief";
 import type { LintSummary, QaSummary, SiteDesign } from "@/lib/site-builder/types";
 import type { SiteFx } from "@/lib/site-builder/fx/types";
 // Decorative three.js field: split out so the sign-in gate and the first paint never wait for the three.js chunk.
-const Backdrop = dynamic(() => import("./workspace/Backdrop").then((m) => m.Backdrop), { ssr: false });
 import s from "./create.module.css";
 import b from "./builder.module.css";
 import w from "./workspace/ws.module.css";
+import { Button, SegmentedControl } from "@/components/kit";
 
 type Seo = { title: string; description: string; ogImage: string; indexable: boolean; pages: Record<string, { title?: string; description?: string }> };
 type SiteSummary = { id: string; name: string; slug: string; headVersion: number; publishedVersion: number | null; publishedUrl: string | null; needsReview: boolean; takenDown: boolean; leadCount: number; seo: Seo; updatedAt: string; design?: SiteDesign | null; fx?: SiteFx | null; archived?: boolean };
@@ -148,7 +147,6 @@ export function SiteBuilder() {
   const [finished, setFinished] = useState(false);
   const [forgeFiles, setForgeFilesState] = useState<ForgeFile[]>([]);
   const setForgeFiles = (next: ForgeFile[]) => { forgeRef.current.files = next; setForgeFilesState(next); };
-  const energy = useRef(0);
   const flow = useFlow();
   const openId = useRef<string | null>(null);
 
@@ -284,7 +282,6 @@ export function SiteBuilder() {
   useEffect(() => {
     const p = progressOf(progress);
     forgeRef.current.progress = working ? p : 0;
-    energy.current = working ? 1 : 0;
   }, [progress, working]);
 
   const push = useCallback((gid: string, e: Entry) => setGroups((g) => g.map((x) => (x.id === gid ? { ...x, entries: [...x.entries, e] } : x))), []);
@@ -618,7 +615,7 @@ export function SiteBuilder() {
               </div>
               <label className={w.field}><span>Site name</span><input spellCheck={false} className={w.input} value={startName} maxLength={60} placeholder="e.g. Fig & Oat Cafe" onChange={(e) => setStartName(e.target.value)} /></label>
               <div className={w.row}>
-                <button type="button" className={w.btn} disabled={working || startTpl === "blank"} onClick={() => void startFromTemplate()}>Use this template</button>
+                <Button variant="primary" size="sm" disabled={working || startTpl === "blank"} onClick={() => void startFromTemplate()}>Use this template</Button>
                 <span className={w.muted}>{config?.limits.pages} pages · up to {config?.limits.siteKB} KB · {config?.limits.jobsPerDay} AI builds a day</span>
               </div>
             </div>
@@ -633,8 +630,8 @@ export function SiteBuilder() {
             <div className={w.card}>
               <ProductCard product={flow.product} assets={flow.assets} notes={flow.pNotes} excerpt={flow.excerpt} maxImages={flow.maxImages} onChange={flow.setProduct} onAssets={flow.setAssets} onRemove={flow.removeProduct} />
               <div className={w.row}>
-                <button type="button" className={w.btn} disabled={flow.working || !productReady(flow.product)} onClick={() => { const t = prompt.trim() || `A one-product page for ${flow.product?.name ?? "my product"}`; setPrompt(""); void flow.begin(t, false); }}>{flow.working ? "One moment…" : "Looks right, ask me a few questions"}</button>
-                <button type="button" className={w.btnGhost} disabled={flow.working || !productReady(flow.product)} onClick={() => void flow.begin(prompt.trim() || `A one-product page for ${flow.product?.name ?? "my product"}`, true)}>Just build it</button>
+                <Button variant="primary" size="sm" disabled={flow.working || !productReady(flow.product)} onClick={() => { const t = prompt.trim() || `A one-product page for ${flow.product?.name ?? "my product"}`; setPrompt(""); void flow.begin(t, false); }}>{flow.working ? "One moment…" : "Looks right, ask me a few questions"}</Button>
+                <Button variant="ghost" size="sm" disabled={flow.working || !productReady(flow.product)} onClick={() => void flow.begin(prompt.trim() || `A one-product page for ${flow.product?.name ?? "my product"}`, true)}>Just build it</Button>
                 <span className={w.muted}>{productReady(flow.product) ? "Free. Nothing is built until you approve the brief." : "Add a product name, confirm the photo rights, and give the Buy button an address (or pick another option)."}</span>
               </div>
             </div>
@@ -661,10 +658,10 @@ export function SiteBuilder() {
                 </div>
               ) : null}
               <div className={w.row}>
-                <button type="button" className={w.btn} disabled={flow.working} onClick={() => { flow.answer(prompt); setPrompt(""); }}>{flow.q + 1 >= flow.questions.length ? (flow.working ? "Writing the brief…" : "See the brief") : "Next"}</button>
-                <button type="button" className={w.btnGhost} disabled={flow.working} onClick={() => { flow.answer("", true); setPrompt(""); }}>Skip</button>
-                <button type="button" className={w.btnGhost} disabled={flow.working || flow.q === 0} onClick={flow.back}>Back</button>
-                <button type="button" className={w.btnGhost} disabled={flow.working} onClick={() => { flow.skipAll(prompt); setPrompt(""); }}>Just build it</button>
+                <Button variant="primary" size="sm" disabled={flow.working} onClick={() => { flow.answer(prompt); setPrompt(""); }}>{flow.q + 1 >= flow.questions.length ? (flow.working ? "Writing the brief…" : "See the brief") : "Next"}</Button>
+                <Button variant="ghost" size="sm" disabled={flow.working} onClick={() => { flow.answer("", true); setPrompt(""); }}>Skip</Button>
+                <Button variant="ghost" size="sm" disabled={flow.working || flow.q === 0} onClick={flow.back}>Back</Button>
+                <Button variant="ghost" size="sm" disabled={flow.working} onClick={() => { flow.skipAll(prompt); setPrompt(""); }}>Just build it</Button>
               </div>
               {flow.cur.multi ? <small className={w.muted}>Pick as many as you like, or type your own answer below.</small> : <small className={w.muted}>Pick one, or type your own answer below.</small>}
             </div>
@@ -704,7 +701,7 @@ export function SiteBuilder() {
             <div className={w.botBubble} data-testid="gap-offer">
               <strong>{fixOffer.n === 1 ? "1 thing you asked for isn't in the site yet." : `${fixOffer.n} things you asked for aren't in the site yet.`}</strong>
               <span className={w.muted}>Found by a text check of the finished files. One click adds them and leaves the rest alone.</span>
-              <div className={w.row}><button type="button" className={w.btn} onClick={() => void runGenerate(fixOffer.siteId, fixOffer.prompt, false, undefined, true)}>Add what&rsquo;s missing</button><button type="button" className={w.btnGhost} onClick={() => setFixOffer(null)}>Not now</button></div>
+              <div className={w.row}><Button variant="primary" size="sm" onClick={() => void runGenerate(fixOffer.siteId, fixOffer.prompt, false, undefined, true)}>Add what&rsquo;s missing</Button><Button variant="ghost" size="sm" onClick={() => setFixOffer(null)}>Not now</Button></div>
             </div>
           ) : null}
           <Groups groups={groups} siteId={detail.site.id} onToggle={(id) => setGroups((g) => g.map((x) => (x.id === id ? { ...x, open: !x.open } : x)))} onShot={(id) => { setStageTab("library"); setFocusShot(id); setPane("preview"); }} />
@@ -719,7 +716,6 @@ export function SiteBuilder() {
 
   return (
     <div className={w.root} data-testid="workspace">
-      <Backdrop energy={energy} />
       <div className={w.shell} data-pane={pane}>
         <Rail
           sites={sites}
@@ -738,9 +734,8 @@ export function SiteBuilder() {
           <header className={w.centerTop}>
             <button type="button" className={w.menuBtn} onClick={() => setRailOpen(true)} aria-label="Open the project list">Projects</button>
             <span className={w.goal} title={goal || undefined}><small>Goal</small><strong>{goal || "Describe what you want to build"}</strong></span>
-            <div className={w.paneSwitch} role="group" aria-label="Show">
-              <button type="button" className={w.segBtn} aria-pressed={pane === "chat"} onClick={() => setPane("chat")}>Chat</button>
-              <button type="button" className={w.segBtn} aria-pressed={pane === "preview"} onClick={() => setPane("preview")}>Preview</button>
+            <div className={w.paneSwitch}>
+              <SegmentedControl label="Show" size="sm" value={pane} onValueChange={setPane} options={[{ value: "chat", label: "Chat" }, { value: "preview", label: "Preview" }]} />
             </div>
           </header>
           {cooldownUntil ? <Cooldown until={cooldownUntil} onDone={onCooldownDone} /> : null}
@@ -752,8 +747,8 @@ export function SiteBuilder() {
               <div className={w.confirm} role="alertdialog" aria-label="Confirm cost">
                 <span>This will use about <strong>{confirm.units.toLocaleString()} credits</strong>. Continue?</span>
                 <div className={w.row}>
-                  <button type="button" className={w.btn} onClick={() => current && void runGenerate(current.id, confirm.prompt, true, confirm.brief)} disabled={working}>Yes, build it</button>
-                  <button type="button" className={w.btnGhost} onClick={() => setConfirm(null)}>Cancel</button>
+                  <Button variant="primary" size="sm" onClick={() => current && void runGenerate(current.id, confirm.prompt, true, confirm.brief)} disabled={working}>Yes, build it</Button>
+                  <Button variant="ghost" size="sm" onClick={() => setConfirm(null)}>Cancel</Button>
                 </div>
               </div>
             ) : null}
@@ -778,8 +773,8 @@ export function SiteBuilder() {
             <div className={w.composerRow}>
               <span className={w.estimate} aria-live="polite">{shownEstimate ? (shownEstimate.free ? `Free · ${shownEstimate.modelLabel} · text only` : `About ${shownEstimate.units.toLocaleString()} credits · ${shownEstimate.modelLabel}`) : config?.textOnly ? "Free plan: text-only, free models" : ""}</span>
               <label className={w.auto} title="After each build, open the site in a real browser, check three screen sizes, and fix what breaks"><input type="checkbox" checked={autoTest} onChange={(e) => { setAutoTest(e.target.checked); try { localStorage.setItem(AUTOTEST_KEY, e.target.checked ? "1" : "0"); } catch { /* storage unavailable */ } }} /> Test after build</label>
-              {!isNew ? <button type="button" className={w.btnGhost} disabled={working || !hasSite || (current?.headVersion ?? 0) < 2} onClick={() => void restore("undo")} title="Go back to the version before this one">Undo</button> : null}
-              <button className={w.btn} type="submit" disabled={composerLocked || prompt.trim().length < 3}>{working ? "Working…" : isNew ? (flow.stage === "asking" ? "Answer" : "Start") : hasSite ? "Update" : "Build"}</button>
+              {!isNew ? <Button variant="ghost" size="sm" disabled={working || !hasSite || (current?.headVersion ?? 0) < 2} onClick={() => void restore("undo")} title="Go back to the version before this one">Undo</Button> : null}
+              <Button variant="primary" size="sm" type="submit" loading={working} disabled={composerLocked || prompt.trim().length < 3}>{working ? "Working…" : isNew ? (flow.stage === "asking" ? "Answer" : "Start") : hasSite ? "Update" : "Build"}</Button>
             </div>
           </form>
         </section>
@@ -851,7 +846,7 @@ function CodePane({ detail }: { detail: Detail }) {
           ))}
         </div>
         <span className={b.grow} />
-        <button type="button" className={s.iconBtn} onClick={async () => { try { await navigator.clipboard.writeText(detail.files[active] ?? ""); } catch { /* clipboard may be blocked */ } setCopied(true); setTimeout(() => setCopied(false), 1200); }}>{copied ? "Copied" : "Copy"}</button>
+        <Button variant="ghost" size="sm" onClick={async () => { try { await navigator.clipboard.writeText(detail.files[active] ?? ""); } catch { /* clipboard may be blocked */ } setCopied(true); setTimeout(() => setCopied(false), 1200); }}>{copied ? "Copied" : "Copy"}</Button>
         <a className={s.iconBtn} href={`/api/sites/${detail.site.id}/export`}>Download ZIP</a>
       </div>
       <pre className={b.code} tabIndex={0} aria-label={`Source of ${active}`}><code>{detail.files[active]}</code></pre>
@@ -899,7 +894,7 @@ function SeoPane({ detail, onSaved }: { detail: Detail; onSaved: () => void }) {
         ))}
       </div>
       <div className={b.row}>
-        <button type="button" className={s.btn} onClick={save} disabled={saving}>{saving ? "Saving…" : "Save SEO"}</button>
+        <Button variant="primary" size="sm" onClick={save} disabled={saving}>{saving ? "Saving…" : "Save SEO"}</Button>
         {msg ? <span role="status">{msg}</span> : null}
         {err ? <span className={s.error} role="alert">{err}</span> : null}
       </div>
@@ -953,9 +948,9 @@ function VersionsPane({ detail, onRestore, onView }: { detail: Detail; onRestore
               <strong>v{v.n}{v.n === detail.site.headVersion ? " · current" : ""}{v.n === detail.site.publishedVersion ? " · live" : ""}</strong>
               <small>{v.summary || v.kind} · {v.pages} page{v.pages === 1 ? "" : "s"} · {fmtWhen(v.createdAt)}{v.units ? ` · ${v.units} credits` : ""}{v.lint ? ` · ${v.lint.errors === 0 ? "checks passed" : `${v.lint.errors} issue${v.lint.errors === 1 ? "" : "s"} left`}` : ""}</small>
             </div>
-            <button type="button" className={s.iconBtn} onClick={() => onView(v.n)}>Preview</button>
-            {v.n !== detail.site.headVersion ? <button type="button" className={s.iconBtn} onClick={() => setCmp(v.n)}>Compare</button> : null}
-            {v.n !== detail.site.headVersion ? <button type="button" className={s.iconBtn} onClick={() => onRestore(v.n)}>Restore</button> : null}
+            <Button variant="ghost" size="sm" onClick={() => onView(v.n)}>Preview</Button>
+            {v.n !== detail.site.headVersion ? <Button variant="ghost" size="sm" onClick={() => setCmp(v.n)}>Compare</Button> : null}
+            {v.n !== detail.site.headVersion ? <Button variant="ghost" size="sm" onClick={() => onRestore(v.n)}>Restore</Button> : null}
           </li>
         ))}
       </ul>
@@ -1001,8 +996,8 @@ function PublishPane({ detail, verified, onChanged, onDelete }: { detail: Detail
         {live ? <p><a href={url} target="_blank" rel="noreferrer" className={s.address}>{url}</a></p> : <p className={s.muted}>Your site will be at <span className={s.address}>{url}</span></p>}
         {!verified ? <p className={s.error}>Verify your email address before publishing.</p> : null}
         <div className={b.row}>
-          <button type="button" className={s.btn} disabled={busy || !detail.site.headVersion || !verified} onClick={() => run(() => api(`/api/sites/${site.id}/publish`, { method: "POST" }))}>{live ? (stale ? "Publish latest" : "Publish again") : "Publish"}</button>
-          {live ? <button type="button" className={`${s.btn} ${s.btnGhost}`} disabled={busy} onClick={() => run(() => api(`/api/sites/${site.id}/publish`, { method: "DELETE" }))}>Unpublish</button> : null}
+          <Button variant="primary" size="sm" disabled={busy || !detail.site.headVersion || !verified} onClick={() => run(() => api(`/api/sites/${site.id}/publish`, { method: "POST" }))}>{live ? (stale ? "Publish latest" : "Publish again") : "Publish"}</Button>
+          {live ? <Button variant="secondary" size="sm" disabled={busy} onClick={() => run(() => api(`/api/sites/${site.id}/publish`, { method: "DELETE" }))}>Unpublish</Button> : null}
         </div>
         {err ? <p className={s.error} role="alert">{err}</p> : null}
         {findings.length ? <ul>{findings.map((f) => <li key={f}>{f}</li>)}</ul> : null}
@@ -1011,7 +1006,7 @@ function PublishPane({ detail, verified, onChanged, onDelete }: { detail: Detail
       <div className={b.card}>
         <label className={b.field}><span>Site name</span><input spellCheck={false} className={s.input} value={name} maxLength={60} onChange={(e) => setName(e.target.value)} /></label>
         <label className={b.field}><span>Address</span><span className={b.row}><span className={s.address}>{origin}/s/</span><input className={s.input} value={slug} maxLength={40} disabled={live} onChange={(e) => setSlug(e.target.value.toLowerCase())} aria-label="Address" /></span>{live ? <span className={b.hint}>Unpublish to change the address.</span> : null}</label>
-        <div className={b.row}><button type="button" className={`${s.btn} ${s.btnGhost}`} disabled={busy || (slug === site.slug && name === site.name)} onClick={() => run(() => api(`/api/sites/${site.id}`, { method: "PATCH", body: JSON.stringify({ name, slug }) }))}>Save</button></div>
+        <div className={b.row}><Button variant="secondary" size="sm" disabled={busy || (slug === site.slug && name === site.name)} onClick={() => run(() => api(`/api/sites/${site.id}`, { method: "PATCH", body: JSON.stringify({ name, slug }) }))}>Save</Button></div>
       </div>
       <div className={b.card}>
         <strong>Custom domain</strong>
@@ -1024,7 +1019,7 @@ function PublishPane({ detail, verified, onChanged, onDelete }: { detail: Detail
       <div className={b.card}>
         <strong>Delete this site</strong>
         <p className={s.muted}>Removes the draft, every version, the published page, uploaded images, the custom domain connection and form messages. You&apos;ll see exactly what before you confirm, and get a few seconds to undo.</p>
-        <div className={b.row}><button type="button" className={`${s.btn} ${s.btnDanger}`} disabled={busy} aria-haspopup="dialog" onClick={onDelete}>Delete site…</button></div>
+        <div className={b.row}><Button variant="danger" size="sm" disabled={busy} aria-haspopup="dialog" onClick={onDelete}>Delete site…</Button></div>
       </div>
     </div>
   );

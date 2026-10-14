@@ -122,15 +122,17 @@ test("overlays use the shared exit pattern at the source", () => {
     ["src/components/app-ui/KeplarApp.tsx", /usePresence\(searchOpen\)[\s\S]*usePresence\(drawerOpen\)[\s\S]*drawerScrim\.motion\("fade"\)[\s\S]*<Presence value=\{del\.toast\}>[\s\S]*motion=\{p\.motion\("toast"\)\}[\s\S]*presence=\{search\}/],
     // Composer: attach, Modes and routing pop out of their buttons (usePopupOrigin) and close with an exit.
     ["src/components/app-ui/Composer.tsx", /usePresence\(attachOpen\)[\s\S]*usePresence\(moreOpen && overflow\.length > 0\)[\s\S]*usePresence\(routingOpen\)[\s\S]*usePopupOrigin\(attachOpen, attachBtnRef, attachMenuRef\)[\s\S]*usePopupOrigin\(moreOpen, moreBtnRef, moreMenuRef\)/],
-    ["src/components/create/advanced/InviteDialog.tsx", /useExit\(onClose\)[\s\S]*exit\.motion\("fade"\)[\s\S]*exit\.motion\("pop", false\)/],
-    ["src/components/create/advanced/PublishGate.tsx", /useExit\(onClose\)[\s\S]*exit\.motion\("fade"\)[\s\S]*exit\.motion\("pop", false\)/],
-    ["src/components/create/advanced/LiveStudio.tsx", /usePresence\(Boolean\(text\)\)[\s\S]*toastBox\.motion\("toast"\)/],
+    // UI v2: Create's invite and publish-gate dialogs are the kit Dialog (native <dialog>, motion in overlay.module.css), and
+    // the live studio's feedback is a kit toast (notify), which enters and leaves in the kit's own motion.
+    ["src/components/create/advanced/InviteDialog.tsx", /<Dialog open onOpenChange=/],
+    ["src/components/create/advanced/PublishGate.tsx", /<Dialog\s+open\s+onOpenChange=[\s\S]*dismissible=\{!publishing && !fixing\}/],
+    ["src/components/create/advanced/LiveStudio.tsx", /notify\(\{ title: x \}\)/],
     ["src/components/app-ui/Lightbox.tsx", /useExit\(onClose\)/],
     ["src/components/app-ui/ShareAnswer.tsx", /usePresence\(view !== "closed"\)/],
     ["src/components/app-ui/ThreadBar.tsx", /usePresence\(help\)/],
     ["src/components/app-ui/parity/ShareChatDialog.tsx", /useExit\(onClose\)/],
     ["src/components/consent/CookieBanner.tsx", /usePresence\(open\)/],
-    ["src/components/create/delete/DeleteSiteDialog.tsx", /<Presence value=\{toast\}>/],
+    ["src/components/create/delete/DeleteSiteDialog.tsx", /notify\(\{ id: "site-undo", title: `Deleted “\$\{toast\.title\}”`, duration: UNDO_MS, action: \{ label: "Undo"/],
     ["src/components/app-ui/delete/DeleteChat.tsx", /"data-motion": "toast"/],
   ];
   for (const [f, re] of uses) assert.match(read(f), re, f);
@@ -171,10 +173,16 @@ test("composer and create: menus have no keystroke-driven motion; no gradient sh
     assert.doesNotMatch(read(f), /@keyframes[^{]*\{[^}]*background-position/, f);
   }
   assert.doesNotMatch(read("src/components/app-ui/Composer.module.css"), /panelIn/, "composer menus use the shared pop");
-  for (const f of ["src/components/create/CreateStudio.tsx", "src/components/create/advanced/LiveStudio.tsx", "src/components/developers/CodeTabs.tsx"]) {
+  for (const f of ["src/components/developers/CodeTabs.tsx"]) {
     const src = read(f);
     assert.match(src, /useTabIndicator\(/, f);
     assert.match(src, /className="m-tab-indicator" aria-hidden="true"/, f);
   }
+  // UI v2: Create's kind switch and the Live studio's panes are the kit's Tabs, whose underline slides (useSlidingIndicator).
+  for (const f of ["src/components/create/CreateStudio.tsx", "src/components/create/advanced/LiveStudio.tsx"]) {
+    assert.match(read(f), /<Tabs id=/, f);
+    assert.match(read(f), /from "@\/components\/kit"/, f);
+  }
+  assert.match(read("src/components/kit/Layout.tsx"), /useSlidingIndicator\(listRef, lineRef, '\[aria-selected="true"\]', value\)/);
   assert.match(css, /--ti-inset/);
 });

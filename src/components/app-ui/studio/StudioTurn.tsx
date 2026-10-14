@@ -29,6 +29,7 @@ import type { KeplarMessage, Ledger, StudioTurn as Studio, UserMessage } from ".
 import { Confirm } from "../workspace/Confirm";
 import sl from "@/components/slides/slides.module.css";
 import s from "./studio.module.css";
+import { Button, SegmentedControl } from "@/components/kit";
 
 export type StudioOpen = { kind: "study"; id: string; tab?: "overview" | "cards" | "quiz" } | { kind: "slides"; id: string; slide?: number };
 
@@ -164,7 +165,7 @@ function StudyCard({ message: m, user, ledger, onPatch, onOpen, onSettled, sourc
       <section className={s.card} data-studio="study" data-phase={st.phase}>
         <Head busy={false} label="Study set not built" />
         <p className={s.note} role={st.phase === "failed" ? "alert" : undefined}>{st.phase === "interrupted" ? "The page reloaded while the study set was being built. If it finished, it is in the Study tab." : st.error}</p>
-        {st.phase === "interrupted" ? <div className={s.actions}><button type="button" className={sl.ghost} onClick={() => onOpen({ kind: "study", id: "" })}>Open in Study</button></div> : null}
+        {st.phase === "interrupted" ? <div className={s.actions}><Button variant="secondary" size="sm" onClick={() => onOpen({ kind: "study", id: "" })}>Open in Study</Button></div> : null}
       </section>
     );
   }
@@ -191,11 +192,7 @@ function StudyCard({ message: m, user, ledger, onPatch, onOpen, onSettled, sourc
             {overall === null ? "Mastery: take the quiz to start" : `Mastery ${overall}%`}
           </span>
         </div>
-        <div className={sl.seg} role="radiogroup" aria-label="Study">
-          {(["overview", "cards", "quiz", "plan"] as const).map((t) => (
-            <button key={t} type="button" role="radio" aria-checked={tab === t} className={sl.segBtn} onClick={() => setTab(t)}>{t === "overview" ? "Overview" : t === "cards" ? "Flashcards" : t === "quiz" ? "Quiz" : "Plan"}</button>
-          ))}
-        </div>
+        <SegmentedControl label="Study" size="sm" value={tab} onValueChange={setTab} options={(["overview", "cards", "quiz", "plan"] as const).map((t) => ({ value: t, label: t === "overview" ? "Overview" : t === "cards" ? "Flashcards" : t === "quiz" ? "Quiz" : "Plan" }))} />
       </div>
       {tab === "overview" ? (
         <>
@@ -223,11 +220,11 @@ function StudyCard({ message: m, user, ledger, onPatch, onOpen, onSettled, sourc
           ) : null}
           {detail.progress && !detail.progress.diagnosticDone ? <p className={s.note}>New here? Start with the placement quiz: a short quiz across every topic that finds your weak spots and sets your starting mastery.</p> : null}
           <div className={s.actions}>
-            {detail.progress && !detail.progress.diagnosticDone ? <button type="button" className={sl.primary} data-placement="" onClick={() => { setQuizKind("diagnostic"); setTab("quiz"); }}>Take the placement quiz</button> : null}
-            <button type="button" className={detail.progress && !detail.progress.diagnosticDone ? sl.ghost : sl.primary} onClick={() => setTab("cards")}>Practice flashcards</button>
-            <button type="button" className={sl.ghost} onClick={() => { setQuizKind("practice"); setTab("quiz"); }}>Take the quiz</button>
-            <button type="button" className={sl.ghost} onClick={() => setTab("plan")}>{set.examDate ? `Exam ${set.examDate}` : "Set exam date"}</button>
-            <button type="button" className={sl.ghost} onClick={() => onOpen({ kind: "study", id: set.id })}>Open in Study</button>
+            {detail.progress && !detail.progress.diagnosticDone ? <Button variant="primary" size="sm" data-placement="" onClick={() => { setQuizKind("diagnostic"); setTab("quiz"); }}>Take the placement quiz</Button> : null}
+            <Button variant={detail.progress && !detail.progress.diagnosticDone ? "secondary" : "primary"} size="sm" onClick={() => setTab("cards")}>Practice flashcards</Button>
+            <Button variant="secondary" size="sm" onClick={() => { setQuizKind("practice"); setTab("quiz"); }}>Take the quiz</Button>
+            <Button variant="secondary" size="sm" onClick={() => setTab("plan")}>{set.examDate ? `Exam ${set.examDate}` : "Set exam date"}</Button>
+            <Button variant="secondary" size="sm" onClick={() => onOpen({ kind: "study", id: set.id })}>Open in Study</Button>
             {st.credits ? <span className={s.meta}>Charged {st.credits} credits</span> : null}
           </div>
         </>
@@ -258,7 +255,7 @@ function PlanPanel({ examDate, plan, busy, err, onSave, onGo, onOpen }: { examDa
       <form className={s.slideEditRow} onSubmit={(e) => { e.preventDefault(); if (date) onSave(date); }}>
         <label className={s.meta} htmlFor="exam-date">Exam date</label>
         <input id="exam-date" className={sl.input} type="date" value={date} min={localDay()} onChange={(e) => setDate(e.target.value)} style={{ maxWidth: 200 }} />
-        <button type="submit" className={sl.primary} disabled={busy || !date || date === examDate}>{busy ? "Saving…" : "Save and plan"}</button>
+        <Button type="submit" variant="primary" size="sm" disabled={busy || !date || date === examDate}>{busy ? "Saving…" : "Save and plan"}</Button>
         {examDate ? <button type="button" className={sl.linkBtn} disabled={busy} onClick={() => { setDate(""); onSave(""); }}>Clear</button> : null}
       </form>
       {err ? <p className={s.note} role="alert">{err}</p> : null}
@@ -316,8 +313,8 @@ function CardDeck({ setId, onDone, onOpen }: { setId: string; onDone: () => void
         <p className={s.title}>Round done · {graded} {graded === 1 ? "card" : "cards"} reviewed</p>
         <p className={s.sub}>Each card is scheduled for review when you are about to forget it. Your mastery above is updated.</p>
         <div className={s.actions}>
-          <button type="button" className={sl.primary} onClick={() => { setI(0); setGraded(0); }}>Go again</button>
-          <button type="button" className={sl.ghost} onClick={onOpen}>Open in Study</button>
+          <Button variant="primary" size="sm" onClick={() => { setI(0); setGraded(0); }}>Go again</Button>
+          <Button variant="secondary" size="sm" onClick={onOpen}>Open in Study</Button>
         </div>
       </div>
     );
@@ -327,7 +324,7 @@ function CardDeck({ setId, onDone, onOpen }: { setId: string; onDone: () => void
       <FlipCard key={cards[i].id} card={cards[i]} index={i} total={cards.length} />
       <div className={s.gradeRow} role="group" aria-label="How well did you know it?">
         {(["again", "hard", "good", "easy"] as const).map((g) => (
-          <button key={g} type="button" className={g === "good" ? sl.primary : sl.ghost} disabled={busy} onClick={() => void grade(g)}>{g[0].toUpperCase() + g.slice(1)}</button>
+          <Button key={g} variant={g === "good" ? "primary" : "secondary"} size="sm" disabled={busy} onClick={() => void grade(g)}>{g[0].toUpperCase() + g.slice(1)}</Button>
         ))}
       </div>
       <div className={s.actions}>
@@ -368,8 +365,8 @@ function Quiz({ setId, kind = "practice", onKind, onDone, onOpen }: { setId: str
         <p className={s.title}>{kind === "diagnostic" ? "Placement quiz finished: " : "You got "}{score} of {qs.length}</p>
         <p className={s.sub}>{kind === "diagnostic" ? "Your starting mastery is set for every topic, and weak topics come first in quizzes and your plan." : "Missed questions come back first next round. Your mastery above is updated."}</p>
         <div className={s.actions}>
-          {kind === "diagnostic" && onKind ? <button type="button" className={sl.primary} onClick={() => onKind("practice")}>Practice quiz</button> : <button type="button" className={sl.primary} onClick={() => setRound((n) => n + 1)}>Another round</button>}
-          <button type="button" className={sl.ghost} onClick={onOpen}>Open in Study</button>
+          {kind === "diagnostic" && onKind ? <Button variant="primary" size="sm" onClick={() => onKind("practice")}>Practice quiz</Button> : <Button variant="primary" size="sm" onClick={() => setRound((n) => n + 1)}>Another round</Button>}
+          <Button variant="secondary" size="sm" onClick={onOpen}>Open in Study</Button>
         </div>
       </div>
     );
@@ -421,7 +418,7 @@ function Quiz({ setId, kind = "practice", onKind, onDone, onOpen }: { setId: str
         <form className={s.shortForm} onSubmit={(e) => { e.preventDefault(); if (text.trim()) void answer({ answer: text.trim() }); }}>
           <label className="visually-hidden" htmlFor={`qa-${q.id}`}>Your answer</label>
           <textarea id={`qa-${q.id}`} className={sl.input} rows={2} value={text} disabled={busy || result !== null} onChange={(e) => setText(e.target.value)} placeholder="Type your answer" />
-          {result ? null : <button type="submit" className={sl.primary} disabled={busy || !text.trim()}>{busy ? "Checking…" : "Check"}</button>}
+          {result ? null : <Button type="submit" variant="primary" size="sm" disabled={busy || !text.trim()}>{busy ? "Checking…" : "Check"}</Button>}
         </form>
       )}
       {err ? <p className={s.note} role="alert">{err}</p> : null}
@@ -430,7 +427,7 @@ function Quiz({ setId, kind = "practice", onKind, onDone, onOpen }: { setId: str
           <p className={s.verdictHead}>{result.correct ? "Correct" : `Not quite · the answer: ${result.reference}`}</p>
           {result.feedback ? <p className={s.note}>{result.feedback}</p> : null}
           {result.explanation ? <p className={s.note}>{result.explanation}</p> : null}
-          <div className={s.actions}><button type="button" className={sl.primary} onClick={next}>{i + 1 >= qs.length ? "See my score" : "Next question"}</button></div>
+          <div className={s.actions}><Button variant="primary" size="sm" onClick={next}>{i + 1 >= qs.length ? "See my score" : "Next question"}</Button></div>
         </div>
       ) : null}
     </div>
@@ -614,7 +611,7 @@ function SlidesCard({ message: m, user, ledger, onPatch, onOpen, onSettled, onAc
       <section className={s.card} data-studio="slides" data-phase={st.phase}>
         <Head busy={false} label={st.op?.type === "slide" ? "Slide not rewritten" : st.op ? "Deck not changed" : "Deck not made"} />
         <p className={s.note} role={st.phase === "failed" ? "alert" : undefined}>{st.phase === "interrupted" ? "The page reloaded while the deck was being written. If it finished, it is in the Slides tab." : st.error}</p>
-        {st.phase === "interrupted" || st.id ? <div className={s.actions}><button type="button" className={sl.ghost} onClick={() => onOpen({ kind: "slides", id: st.id ?? "" })}>Open in Slides</button></div> : null}
+        {st.phase === "interrupted" || st.id ? <div className={s.actions}><Button variant="secondary" size="sm" onClick={() => onOpen({ kind: "slides", id: st.id ?? "" })}>Open in Slides</Button></div> : null}
       </section>
     );
   }
@@ -641,10 +638,8 @@ function SlidesCard({ message: m, user, ledger, onPatch, onOpen, onSettled, onAc
           <h3 className={s.title}>{deck.title}</h3>
           <span className={s.sub}>{deck.slides.length} slides · {themeLabel} theme</span>
         </div>
-        <div className={sl.seg} role="radiogroup" aria-label="Deck theme">
-          {THEMES.map((t) => <button key={t.id} type="button" role="radio" aria-checked={deck.theme === t.id} className={sl.segBtn} onClick={() => void setTheme(t.id)}>{t.label}</button>)}
-        </div>
-        <button type="button" className={sl.primary} onClick={() => setPresent(sel ?? 0)}>Present</button>
+        <SegmentedControl label="Deck theme" size="sm" value={deck.theme} onValueChange={(v) => void setTheme(v)} options={THEMES.map((t) => ({ value: t.id, label: t.label }))} />
+        <Button variant="primary" size="sm" onClick={() => setPresent(sel ?? 0)}>Present</Button>
         <a className={sl.ghost} href={`/api/slides/decks/${deck.id}/export?format=pptx`} download>PPTX</a>
         <a className={sl.ghost} href={`/api/slides/decks/${deck.id}/export?format=pdf`} download>PDF</a>
       </div>
@@ -669,15 +664,12 @@ function SlidesCard({ message: m, user, ledger, onPatch, onOpen, onSettled, onAc
         <div className={s.slideEdit} data-slide-edit={sel}>
           <div className={s.slideEditHead}>
             <span className={s.meta}>Slide {sel + 1} of {deck.slides.length} · {deck.slides[sel].title}</span>
-            <div className={sl.seg} role="radiogroup" aria-label="How to change this slide">
-              <button type="button" role="radio" aria-checked={mode === "rewrite"} className={sl.segBtn} onClick={() => setMode("rewrite")}>Ask Keplar</button>
-              <button type="button" role="radio" aria-checked={mode === "text"} className={sl.segBtn} onClick={() => setMode("text")} data-mode="text">Edit text</button>
-            </div>
+            <SegmentedControl label="How to change this slide" size="sm" value={mode} onValueChange={setMode} options={[{ value: "rewrite", label: "Ask Keplar" }, { value: "text", label: "Edit text" }]} />
           </div>
           {mode === "rewrite" ? (
             <form className={s.slideEditRow} onSubmit={(e) => { e.preventDefault(); rewrite(sel); }}>
               <input id={`se-${m.id}`} aria-label={`How should slide ${sel + 1} change?`} className={sl.input} value={instr} maxLength={500} autoFocus onChange={(e) => setInstr(e.target.value)} placeholder="How should this slide change? e.g. shorter, add a statistic" />
-              <button type="submit" className={sl.primary} disabled={!instr.trim() || !onAct}>Rewrite</button>
+              <Button type="submit" variant="primary" size="sm" disabled={!instr.trim() || !onAct}>Rewrite</Button>
             </form>
           ) : (
             <form className={s.textEdit} onSubmit={(e) => { e.preventDefault(); void saveText(sel); }}>
@@ -685,8 +677,8 @@ function SlidesCard({ message: m, user, ledger, onPatch, onOpen, onSettled, onAc
               <label className={s.field}><span>Bullets · one per line, up to {FIELD_MAX.bullets}</span><textarea className={s.textarea} rows={5} value={draft.bullets} onChange={(e) => setDraft({ ...draft, bullets: e.target.value })} /></label>
               <label className={s.field}><span>Speaker notes</span><textarea className={s.textarea} rows={4} value={draft.notes} maxLength={FIELD_MAX.notes} onChange={(e) => setDraft({ ...draft, notes: e.target.value })} /></label>
               <div className={s.actions}>
-                <button type="submit" className={sl.primary} disabled={saving}>{saving ? "Saving…" : "Save slide"}</button>
-                <button type="button" className={sl.ghost} disabled={saving} onClick={() => pick(sel)}>Undo changes</button>
+                <Button type="submit" variant="primary" size="sm" disabled={saving}>{saving ? "Saving…" : "Save slide"}</Button>
+                <Button variant="secondary" size="sm" disabled={saving} onClick={() => pick(sel)}>Undo changes</Button>
               </div>
             </form>
           )}
@@ -704,7 +696,7 @@ function SlidesCard({ message: m, user, ledger, onPatch, onOpen, onSettled, onAc
         </div>
       ) : null}
       <div className={s.actions}>
-        <button type="button" className={sl.ghost} onClick={() => onOpen({ kind: "slides", id: deck.id, slide: sel ?? 0 })}>Open in Slides</button>
+        <Button variant="secondary" size="sm" onClick={() => onOpen({ kind: "slides", id: deck.id, slide: sel ?? 0 })}>Open in Slides</Button>
         <span className={s.meta}>Pick a slide to edit, move or delete it, or say &ldquo;make slide 3 shorter&rdquo; or &ldquo;move slide 4 to 2&rdquo;.{st.credits ? ` Charged ${st.credits} credits.` : ""}</span>
       </div>
       {present !== null ? <Present deck={deck} start={present} onClose={() => setPresent(null)} /> : null}

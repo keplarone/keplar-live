@@ -7,6 +7,7 @@ import { memo, useEffect } from "react";
 import { ensurePreviewFonts } from "@/lib/app-builder/design/preview-fonts";
 import s from "./studio.module.css";
 import type { Config, Design } from "./types";
+import { Button, SegmentedControl } from "@/components/kit";
 
 export const RADIUS_PX: Record<Design["shape"], number> = { sharp: 2, soft: 9, round: 16, pill: 999 };
 
@@ -55,14 +56,10 @@ export const LookTiles = memo(function LookTiles({ cfg, design, auto, onAuto, on
         })}
       </div>
       <div className={s.lookFoot}>
-        <div className={s.toggle} role="group" aria-label="Light or dark">
-          {(["light", "dark"] as const).map((m) => (
-            <button key={m} type="button" aria-pressed={mode === m} onClick={() => onMode(m)}>{m === "light" ? "Light" : "Dark"}</button>
-          ))}
-        </div>
-        <button type="button" className={s.textBtn} onClick={onFineTune} aria-haspopup="dialog">
+        <SegmentedControl label="Light or dark" size="sm" value={mode} onValueChange={onMode} options={[{ value: "light", label: "Light" }, { value: "dark", label: "Dark" }]} />
+        <Button variant="ghost" size="sm" onClick={onFineTune} aria-haspopup="dialog">
           {tuned ? "Edit colors, type and shape" : "Fine-tune colors, type and shape"}
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -16,9 +16,9 @@
  * work; ?tab=studio alone opens the environment used last. Outside the desktop app these links land on App with a note
  * pointing to the download page (see ./studio/keplar-studio-nav.ts).
  */
-import { lazy, Suspense, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useRef, useState, useSyncExternalStore, type FocusEvent, type PointerEvent } from "react";
 import { studioBridge } from "@/lib/desktop/studio-bridge";
-import { useTabIndicator } from "@/components/motion/useTabIndicator";
+import { ActivityIndicator, Button, Tabs, tabId, tabPanelId, type TabItem } from "@/components/kit";
 import { SignInGate } from "@/components/app-ui/SignInGate";
 import { AppBuilder } from "./apps/AppBuilder";
 import b from "./builder.module.css";
@@ -57,6 +57,8 @@ type Props = {
 };
 
 const SITE_HANDOFF_KEY = "keplar:create-site";
+/** The kit Tabs id of the kind switch (tab and panel ids derive from it). */
+const KIND_TABS = "create-kind";
 
 function initialLocation(initialTab?: string, initialEnv?: string): CreateLocation {
   const fromUrl = typeof window === "undefined" ? { view: "app" as const, env: null } : locationFromUrl(window.location.href);
@@ -161,15 +163,24 @@ export function CreateStudio({ initialTab, initialEnv, signedIn, plan = "free" }
     };
   }, [signedIn]);
 
-  // The underline slides between App, Images, Video, Mobile and (desktop app) Keplar Studio (placed once the tab bar renders after the auth probe).
-  const kindTabsRef = useRef<HTMLDivElement>(null);
-  useTabIndicator(kindTabsRef, `${shown}:${current}:${desktop}`);
-
-  const warm = (v: string) => () => void WARM[v === "studio" ? env : v]?.().catch(() => undefined);
-  const tab = (v: View, label: ReactNode) => (
-    <button type="button" role="tab" aria-selected={current === v} className={`${b.segBtn} ${st.kindTab}`} onClick={() => pick(v)} onPointerEnter={v === "app" ? undefined : warm(v)} onFocus={v === "app" ? undefined : warm(v)}>{label}</button>
-  );
-  const loading = <div className={st.paneMsg}>Loading…</div>;
+  // The kind switch is the kit's Tabs (UI v2): an underline that slides between App, Images, Video, Mobile and (desktop app)
+  // Keplar Studio. Pointing at or focusing a tab that is not open fetches its chunk early.
+  const kinds: TabItem<View>[] = [
+    { value: "app", label: "App" },
+    { value: "images", label: "Images" },
+    { value: "video", label: <>Video <span className={st.beta} aria-hidden="true">(Beta)</span></> },
+    { value: "mobile", label: <>Mobile <span className={st.beta} aria-hidden="true">(Beta)</span></> },
+    ...(desktop ? [{ value: "studio" as const, label: "Keplar Studio" }] : []),
+  ];
+  const warmFrom = (e: PointerEvent<HTMLElement> | FocusEvent<HTMLElement>) => {
+    const t = (e.target as HTMLElement).closest<HTMLElement>('[role="tab"]');
+    const v = t?.id.slice(`${KIND_TABS}-tab-`.length);
+    if (!v || v === "app" || v === current) return;
+    void WARM[v === "studio" ? env : v]?.().catch(() => undefined);
+  };
+  /** The panel each kind tab controls (the views stay mounted; only the open one shows). */
+  const panel = (v: View) => ({ id: tabPanelId(KIND_TABS, v), role: "tabpanel", "aria-labelledby": tabId(KIND_TABS, v), hidden: current !== v });
+  const loading = <div className={st.paneMsg}><ActivityIndicator label="Loading" showLabel /></div>;
 
   if (shown === "loading") {
     return (
@@ -198,10 +209,10 @@ export function CreateStudio({ initialTab, initialEnv, signedIn, plan = "free" }
     return (
       <div className={b.root}>
         <h1 className="visually-hidden">Create</h1>
-        <div className={`${b.stageBar} ${st.kindBar}`}>
-          <button type="button" className={`${b.segBtn} ${st.kindTab}`} onClick={() => setSiteHandoff(false)}>
+        <div className={st.kindBar}>
+          <Button variant="ghost" size="sm" onClick={() => setSiteHandoff(false)}>
             ← Back to Create
-          </button>
+          </Button>
         </div>
         <Suspense fallback={loading}>
           <SiteBuilder />
@@ -213,36 +224,30 @@ export function CreateStudio({ initialTab, initialEnv, signedIn, plan = "free" }
   return (
     <div className={b.root}>
       <h1 className="visually-hidden">Create</h1>
-      <div className={`${b.stageBar} ${st.kindBar}`} role="tablist" aria-label="Create">
-        <div ref={kindTabsRef} className={`${b.seg} ${st.kindTabs}`}>
-          {tab("app", "App")}
-          {tab("images", "Images")}
-          {tab("video", <>Video <span aria-hidden="true">(Beta)</span></>)}
-          {tab("mobile", <>Mobile <span aria-hidden="true">(Beta)</span></>)}
-          {desktop ? tab("studio", "Keplar Studio") : null}
-          <span className="m-tab-indicator" aria-hidden="true" />
-        </div>
+      <div className={st.kindBar} onPointerOver={warmFrom} onFocus={warmFrom}>
+        <Tabs id={KIND_TABS} label="Create" value={current} onValueChange={pick} items={kinds} className={st.kindTabs} />
       </div>
       {showElsewhere && current === "app" ? <KeplarStudioElsewhere onDismiss={() => setElsewhereDismissed(true)} /> : null}
-      <div className={b.root} style={current === "app" ? undefined : { display: "none" }}>
+      <div {...panel("app")} className={`${b.root} ${st.kindPanel}`}>
         <AppBuilder />
       </div>
       {imagesSeen ? (
-        <div style={current === "images" ? { overflowY: "auto", flex: 1 } : { display: "none" }}>
+        <div {...panel("images")} className={st.kindPanel} data-scroll="">
           <Suspense fallback={loading}><ImageStudio /></Suspense>
         </div>
       ) : null}
       {videoSeen ? (
-        <div style={current === "video" ? { overflowY: "auto", flex: 1 } : { display: "none" }}>
+        <div {...panel("video")} className={st.kindPanel} data-scroll="">
           <Suspense fallback={loading}><VideoStudio /></Suspense>
         </div>
       ) : null}
       {mobileSeen ? (
-        <div style={current === "mobile" ? { overflowY: "auto", flex: 1 } : { display: "none" }}>
+        <div {...panel("mobile")} className={st.kindPanel} data-scroll="">
           <Suspense fallback={loading}><MobileStudio /></Suspense>
         </div>
       ) : null}
       {desktop && (envSeen.roblox || envSeen.blender) ? (
+        <div {...panel("studio")} className={`${b.root} ${st.kindPanel}`}>
         <KeplarStudioPane
           env={env}
           onEnvChange={pickEnvironment}
@@ -253,6 +258,7 @@ export function CreateStudio({ initialTab, initialEnv, signedIn, plan = "free" }
             blender: envSeen.blender ? <Suspense fallback={loading}><StudioWorkspace env="blender" plan={plan} signedIn={shown === "in"} onEnvChange={pickEnvironment} /></Suspense> : null,
           }}
         />
+        </div>
       ) : null}
     </div>
   );

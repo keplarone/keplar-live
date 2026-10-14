@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import type { QaSummary } from "@/lib/site-builder/types";
 import type { ForgeFile, ForgeState } from "./forgeState";
 import s from "./ws.module.css";
+import { ActivityIndicator, Button, Dialog, EmptyState, Progress } from "@/components/kit";
 
 const WorkingHard = dynamic(() => import("@/components/loader/WorkingHard").then((m) => m.WorkingHard), { ssr: false });
 const Forge = dynamic(() => import("./Forge").then((m) => m.Forge), { ssr: false });
@@ -148,7 +149,8 @@ export function StagePanel(p: {
                 {building.active ? (
                   <div className={s.buildText}>
                     <strong>{building.label}</strong>
-                    <div className={s.bar} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(building.progress * 100)} aria-label={building.label}><span style={{ width: `${Math.round(building.progress * 100)}%` }} /></div>
+                    {/* Honest progress: files finished of files started (a real count), else the activity indicator. */}
+                    {building.files.length ? <Progress value={building.files.filter((f) => f.done).length} max={building.files.length} label="Files written" /> : <ActivityIndicator label={building.label} />}
                     {building.files.length ? (
                       <ul className={s.files} aria-label="Files">
                         {building.files.map((f) => <li key={f.path} data-done={f.done ? "1" : "0"}><i aria-hidden="true" />{f.path}</li>)}
@@ -161,10 +163,7 @@ export function StagePanel(p: {
             ) : p.previewSrc ? (
               chrome(realFrame)
             ) : (
-              <div className={s.placeholder}>
-                <strong>No preview yet</strong>
-                <span>Describe what you want in the chat. The preview builds here, then the browser tests it.</span>
-              </div>
+              <EmptyState className={s.placeholder} title="No preview yet" hint="Describe what you want in the chat. The preview builds here, then the browser tests it." />
             )}
           </div>
           <p className={s.fine}>{p.fx ? "Only Keplar\u2019s own effects script runs, and only because effects are on. Your code never runs scripts." : "No scripts run in a Keplar site unless you turn on effects."}</p>
@@ -179,15 +178,9 @@ export function StagePanel(p: {
 
 function Library(p: Parameters<typeof StagePanel>[0]) {
   const { shots, qa, siteId } = p;
-  const dlg = useRef<HTMLDialogElement>(null);
   const [local, setOpen] = useState<string | null>(null);
   const open = local ?? p.focusShot;
-  useEffect(() => {
-    const d = dlg.current;
-    if (!d) return;
-    if (open && !d.open) d.showModal();
-    if (!open && d.open) d.close();
-  }, [open]);
+  const close = () => { setOpen(null); p.onFocusShot(null); };
   const byPage = new Map<string, ShotView[]>();
   for (const x of shots) byPage.set(x.page, [...(byPage.get(x.page) ?? []), x]);
   const cur = shots.find((x) => x.id === open);
@@ -198,7 +191,7 @@ function Library(p: Parameters<typeof StagePanel>[0]) {
           <strong>{shots.length ? `${shots.length} screenshot${shots.length === 1 ? "" : "s"}${qa ? ` · v${qa.version}` : ""}` : "No screenshots yet"}</strong>
           <p className={s.muted}>{qa ? `${qa.errors} issue${qa.errors === 1 ? "" : "s"}, ${qa.warnings} note${qa.warnings === 1 ? "" : "s"}${qa.repaired ? " · one repair pass was applied" : ""}${qa.score !== null ? ` · design score ${qa.score}/10 (a model\u2019s opinion, not a measurement)` : ""}` : "Taken by a real headless browser at phone, tablet and desktop widths after each build."}</p>
         </div>
-        <button type="button" className={s.btn} disabled={!p.hasSite || p.testing} onClick={p.onTest}>{p.testing ? "Testing…" : shots.length ? "Test again" : "Run the test"}</button>
+        <Button variant="primary" size="sm" loading={p.testing} disabled={!p.hasSite} onClick={p.onTest}>{p.testing ? "Testing…" : shots.length ? "Test again" : "Run the test"}</Button>
       </div>
       {p.browserNote ? <p className={s.notice} role="status">{p.browserNote}</p> : null}
       {qa?.issues.length ? (
@@ -221,15 +214,18 @@ function Library(p: Parameters<typeof StagePanel>[0]) {
           </div>
         </section>
       ))}
-      <dialog ref={dlg} className={s.lightbox} onClose={() => { setOpen(null); p.onFocusShot(null); }} onClick={(e) => { if (e.target === dlg.current) dlg.current?.close(); }}>
+      <Dialog
+        open={Boolean(cur)}
+        onOpenChange={(o) => { if (!o) close(); }}
+        title={cur ? `${pageLabel(cur.page)} · ${cur.label}` : ""}
+        className={s.lightbox}
+        footer={cur ? <a className={s.linkBtn} href={`/api/sites/${siteId}/shots/${cur.id}`} download={`${pageLabel(cur.page)}-${cur.viewport}.jpg`}>Download</a> : null}
+      >
         {cur ? (
-          <div className={s.lbBody}>
-            <div className={s.row}><strong>{pageLabel(cur.page)} · {cur.label}</strong><span className={s.grow} /><a className={s.linkBtn} href={`/api/sites/${siteId}/shots/${cur.id}`} download={`${pageLabel(cur.page)}-${cur.viewport}.jpg`}>Download</a><button type="button" className={s.btnGhost} onClick={() => dlg.current?.close()}>Close</button></div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`/api/sites/${siteId}/shots/${cur.id}`} alt={`${pageLabel(cur.page)} at ${cur.label}`} />
-          </div>
+          // eslint-disable-next-line @next/next/no-img-element
+          <img className={s.lbImage} src={`/api/sites/${siteId}/shots/${cur.id}`} alt={`${pageLabel(cur.page)} at ${cur.label}`} />
         ) : null}
-      </dialog>
+      </Dialog>
     </div>
   );
 }

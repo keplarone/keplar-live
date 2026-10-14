@@ -12,6 +12,7 @@ import { FX_EFFECT_INFO, FX_EFFECTS } from "@/lib/site-builder/fx/types";
 import d from "./discovery.module.css";
 import s from "./create.module.css";
 import b from "./builder.module.css";
+import { Button } from "@/components/kit";
 
 export type DirectionInfo = { id: string; name: string; tagline: string; swatch: string[]; mode: string; display: string; body: string; effect: string };
 type SiteLike = { id: string; headVersion: number; design?: SiteDesign | null; fx?: SiteFx | null };
@@ -65,8 +66,8 @@ export function StylePane({ site, directions, lint, disabled, onChanged }: { sit
             <span>Accent color</span>
             <span className={b.row}>
               <input className={s.input} style={{ width: 120 }} value={accent} placeholder="#1f4bff" maxLength={7} disabled={off || !design} onChange={(e) => setAccent(e.target.value)} />
-              <button type="button" className={`${s.btn} ${s.btnGhost}`} disabled={off || !design || !/^#?[0-9a-fA-F]{6}$/.test(accent)} onClick={() => void applyDesign({ accent })}>Apply</button>
-              {design?.accent ? <button type="button" className={`${s.btn} ${s.btnGhost}`} disabled={off} onClick={() => { setAccent(""); void applyDesign({ accent: null }); }}>Reset</button> : null}
+              <Button variant="secondary" size="sm" disabled={off || !design || !/^#?[0-9a-fA-F]{6}$/.test(accent)} onClick={() => void applyDesign({ accent })}>Apply</Button>
+              {design?.accent ? <Button variant="secondary" size="sm" disabled={off} onClick={() => { setAccent(""); void applyDesign({ accent: null }); }}>Reset</Button> : null}
             </span>
             <span className={b.hint}>Text on it is adjusted automatically so it stays readable.</span>
           </label>

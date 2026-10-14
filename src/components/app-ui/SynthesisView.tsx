@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { KeplarSymbol } from "@/components/brand";
 import { prefersReducedMotion } from "@/lib/ui/presence";
 import { modelMark } from "./model-marks";
@@ -29,7 +29,6 @@ const serverReducedMotion = () => true;
  * writing step is doing right now, in plain words. Reduced motion: the same picture, still.
  */
 export function SynthesisView({ models, count, disagreement }: { models: ModelTick[]; count: number; disagreement?: string }) {
-  const gid = `kSynth${useId().replace(/[^A-Za-z0-9]/g, "")}`;
   const reduced = useSyncExternalStore(subscribeMotionPreference, prefersReducedMotion, serverReducedMotion);
   const [beat, setBeat] = useState(0);
   useEffect(() => {
@@ -64,13 +63,6 @@ export function SynthesisView({ models, count, disagreement }: { models: ModelTi
     <figure className={s.wrap} data-reduced={reduced || undefined} aria-label={`Combining ${n} model answers into one`}>
       <div className={s.scene} style={{ aspectRatio: `${W} / ${H}` }}>
         <svg className={s.streams} viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
-          <defs>
-            <radialGradient id={gid}>
-              <stop offset="0%" stopColor="var(--v-reasoning)" stopOpacity="0.32" />
-              <stop offset="100%" stopColor="var(--v-reasoning)" stopOpacity="0" />
-            </radialGradient>
-          </defs>
-          <circle cx={CX} cy={CY} r={H * 0.42} fill={`url(#${gid})`} className={s.glow} />
           {place.map((p, i) => {
             const st = models[i]?.status ?? "pending";
             const path = `M ${p.x} ${p.y} L ${CX} ${CY}`;

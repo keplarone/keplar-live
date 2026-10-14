@@ -86,8 +86,9 @@ test("outside the desktop app a Keplar Studio link lands on App with a note; nev
 
 test("Create shows one Keplar Studio tab (desktop only) and mounts the Keplar Studio Workspace inside it", () => {
   const create = read("src/components/create/CreateStudio.tsx");
-  assert.match(create, /\{desktop \? tab\("studio", "Keplar Studio"\) : null\}/);
-  assert.doesNotMatch(create, /tab\("roblox"|tab\("blender"/, "no separate Roblox Studio / Blender tabs");
+  // UI v2: the kinds are kit Tabs items; Keplar Studio is one of them only with the desktop bridge.
+  assert.match(create, /\.\.\.\(desktop \? \[\{ value: "studio" as const, label: "Keplar Studio" \}\] : \[\]\)/);
+  assert.doesNotMatch(create, /value: "roblox"|value: "blender"/, "no separate Roblox Studio / Blender tabs");
   assert.match(create, /import\("@\/components\/app-ui\/studio-mode\/workspace\/Workspace"\)/, "lazy");
   assert.match(create, /<StudioWorkspace env="roblox" plan=\{plan\} signedIn=\{shown === "in"\} onEnvChange=\{pickEnvironment\} \/>/);
   assert.match(create, /<StudioWorkspace env="blender" plan=\{plan\} signedIn=\{shown === "in"\} onEnvChange=\{pickEnvironment\} \/>/);

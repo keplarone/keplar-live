@@ -21,6 +21,7 @@ import { DomainsPanel } from "./DomainsPanel";
 import { colorPatch, currentColors, FONT_CHOICES, STYLE_COLORS } from "./look-edit";
 import { ScaledViewport } from "@/components/create/ScaledViewport";
 import s from "./create.module.css";
+import { ActivityIndicator, Button, Progress, SegmentedControl, notify } from "@/components/kit";
 
 type Props = {
   message: KeplarMessage;
@@ -44,16 +45,11 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
   return data;
 }
 
+const STAGE_ORDER = ["plan", "generate", "verify", "visual", "fix", "save", "done"];
+
 /** Cards started in this tab (StrictMode runs effects twice; a re-render must never start a second build). */
 const started = new Set<string>();
 
-const STAGE_ORDER = ["plan", "generate", "verify", "visual", "fix", "save", "done"];
-const progressOf = (stage: string, live: Live) => {
-  const i = Math.max(0, STAGE_ORDER.indexOf(stage));
-  const files = live.spec?.files.length ? Math.min(1, live.files.length / live.spec.files.length) : 0;
-  const base = [0.04, 0.12, 0.62, 0.8, 0.84, 0.95, 1][i] ?? 0.04;
-  return stage === "generate" ? 0.12 + files * 0.48 : base;
-};
 
 export function CreateTurn({ message: m, user, ledger, onPatch, onOpen, onSettled }: Props) {
   const c = m.create!;
@@ -64,7 +60,6 @@ export function CreateTurn({ message: m, user, ledger, onPatch, onOpen, onSettle
   const [tab, setTab] = useState<"preview" | "code">("preview");
   const [device, setDevice] = useState<"desktop" | "phone">("desktop");
   const [publishing, setPublishing] = useState(false);
-  const [toast, setToast] = useState("");
   const [err, setErr] = useState("");
   const [frameKey, setFrameKey] = useState(0);
   const [lookOpen, setLookOpen] = useState(c.op?.type === "theme");
@@ -213,7 +208,6 @@ export function CreateTurn({ message: m, user, ledger, onPatch, onOpen, onSettle
       const d = await api<Detail>(`/api/apps/${c.appId}`);
       setDetail(d.app);
       patch.current({ liveUrl: undefined, ...(op?.type === "unpublish" ? { opDone: "done" as const } : {}) });
-      setToast("");
     } catch (e) {
       setErr((e as Error).message);
     } finally {
@@ -237,8 +231,8 @@ export function CreateTurn({ message: m, user, ledger, onPatch, onOpen, onSettle
       setDetail(d.app);
       if (d.app.liveUrl) {
         patch.current({ liveUrl: d.app.liveUrl });
-        setToast(d.app.liveUrl);
-        setTimeout(() => setToast(""), 6000);
+        const url = d.app.liveUrl;
+        notify({ title: "Published", description: url.replace(/^https?:\/\//, ""), tone: "success", action: { label: "Open", onClick: () => window.open(url, "_blank", "noopener") } });
       }
     } catch (e) {
       setErr((e as Error).message);
@@ -295,8 +289,8 @@ export function CreateTurn({ message: m, user, ledger, onPatch, onOpen, onSettle
         </div>
         </>}
         <div className={s.actions}>
-          <button type="button" className={s.primary} onClick={build}>{op?.type === "edit" ? "Make the change" : "Build it"}</button>
-          {op?.type === "edit" ? <button type="button" className={s.ghost} onClick={() => onOpen({ id: c.appId })}>Open in Create studio</button> : <button type="button" className={s.ghost} onClick={() => onOpen({ prompt })}>Pick colors and fonts in Create</button>}
+          <Button variant="primary" size="sm" onClick={build}>{op?.type === "edit" ? "Make the change" : "Build it"}</Button>
+          {op?.type === "edit" ? <Button variant="secondary" size="sm" onClick={() => onOpen({ id: c.appId })}>Open in Create studio</Button> : <Button variant="secondary" size="sm" onClick={() => onOpen({ prompt })}>Pick colors and fonts in Create</Button>}
           <span className={s.meta}>Credits are charged for what the build uses, up to {cfg?.maxUnits?.toLocaleString("en-US") ?? "the plan cap"}.</span>
         </div>
       </section>
@@ -310,7 +304,8 @@ export function CreateTurn({ message: m, user, ledger, onPatch, onOpen, onSettle
   const liveUrl = detail?.liveUrl ?? c.liveUrl ?? null;
   const published = Boolean(detail?.publishedVersion && detail.publishedVersion === detail.headVersion) || Boolean(liveUrl && !detail);
   const name = spec?.name ?? c.name ?? "Your app";
-  const progress = running ? progressOf(live.stage || "plan", live) : 1;
+  /** Files the plan lists: the only real count a running build has (no stage-weighted guesses). */
+  const filesPlanned = live.spec?.files.length ?? 0;
 
   return (
     <section className={`${s.card} ${s.wide}`} data-create={c.phase} aria-label={`Create: ${name}`}>
@@ -328,40 +323,33 @@ export function CreateTurn({ message: m, user, ledger, onPatch, onOpen, onSettle
         </div>
         <div className={s.right}>
           <div className={s.paneBar}>
-            <div className={s.seg} role="tablist" aria-label="Preview or code">
-              <button type="button" role="tab" aria-selected={tab === "preview"} className={s.segBtn} onClick={() => setTab("preview")}>Preview</button>
-              <button type="button" role="tab" aria-selected={tab === "code"} className={s.segBtn} onClick={() => setTab("code")}>Code</button>
-            </div>
-            <div className={s.seg} role="radiogroup" aria-label="Device">
-              <button type="button" role="radio" aria-checked={device === "desktop"} className={s.segBtn} onClick={() => setDevice("desktop")} aria-label="Desktop"><DesktopIcon /></button>
-              <button type="button" role="radio" aria-checked={device === "phone"} className={s.segBtn} onClick={() => setDevice("phone")} aria-label="Phone"><PhoneIcon /></button>
-            </div>
+            <SegmentedControl label="Preview or code" size="sm" value={tab} onValueChange={setTab} options={[{ value: "preview", label: "Preview" }, { value: "code", label: "Code" }]} />
+            <SegmentedControl label="Device" size="sm" value={device} onValueChange={setDevice} options={[{ value: "desktop", label: null, icon: <DesktopIcon />, ariaLabel: "Desktop" }, { value: "phone", label: null, icon: <PhoneIcon />, ariaLabel: "Phone" }]} />
             <span className={s.grow} />
             {running ? (
               <span className={s.progress} aria-live="polite">
                 <span className={s.progressText}>{live.stageText || "Building preview"}</span>
-                <span className={s.bar} aria-hidden="true"><i style={{ width: `${Math.round(progress * 100)}%` }} /></span>
+                {filesPlanned > 0 ? <Progress className={s.bar} value={Math.min(live.files.length, filesPlanned)} max={filesPlanned} label="Files written" showLabel={false} /> : <ActivityIndicator label="" />}
               </span>
             ) : null}
-            {running ? <button type="button" className={s.primary} disabled title="Publish opens when the app passes its tests">Publish</button> : null}
+            {running ? <Button variant="primary" size="sm" disabled title="Publish opens when the app passes its tests">Publish</Button> : null}
             {c.phase === "ready" ? (
               published ? (
                 <>
                   <span className={s.pill}><i aria-hidden="true" />Published</span>
-                  <button type="button" className={s.ghost} onClick={() => void unpublish()} disabled={publishing}>{publishing ? "…" : "Unpublish"}</button>
+                  <Button variant="secondary" size="sm" onClick={() => void unpublish()} loading={publishing}>Unpublish</Button>
                 </>
-              ) : <button type="button" className={s.primary} onClick={() => void publish()} disabled={publishing}>{publishing ? "Publishing…" : detail?.publishedVersion ? "Publish changes" : "Publish"}</button>
+              ) : <Button variant="primary" size="sm" onClick={() => void publish()} loading={publishing}>{publishing ? "Publishing…" : detail?.publishedVersion ? "Publish changes" : "Publish"}</Button>
             ) : null}
           </div>
-          {toast ? <div className={s.toast} role="status"><span aria-hidden="true">✓</span> Published <a href={toast} target="_blank" rel="noreferrer">{toast.replace(/^https?:\/\//, "")}</a></div> : null}
           {c.phase === "ready" && (op?.type === "publish" || op?.type === "unpublish") && !c.opDone && detail ? (
             (op.type === "publish" && published) || (op.type === "unpublish" && !detail.publishedVersion) ? (
               <p className={s.meta} role="status">{op.type === "publish" ? `${name} is already live with this version.` : `${name} isn't published.`}</p>
             ) : (
               <div className={s.confirm} role="group" aria-label={op.type === "publish" ? "Publish this app?" : "Unpublish this app?"}>
                 <span>{op.type === "publish" ? (detail.publishedVersion ? `Put your latest changes to ${name} live? The current live version is v${detail.publishedVersion}.` : `Publish ${name} to the web? Anyone with the link can open it.`) : `Take ${name} offline? The link stops working until you publish again.`}</span>
-                <button type="button" className={s.primary} disabled={publishing} onClick={() => void (op.type === "publish" ? publish() : unpublish())}>{op.type === "publish" ? "Publish" : "Unpublish"}</button>
-                <button type="button" className={s.ghost} disabled={publishing} onClick={() => patch.current({ opDone: "declined" })}>Not now</button>
+                <Button variant="primary" size="sm" disabled={publishing} onClick={() => void (op.type === "publish" ? publish() : unpublish())}>{op.type === "publish" ? "Publish" : "Unpublish"}</Button>
+                <Button variant="secondary" size="sm" disabled={publishing} onClick={() => patch.current({ opDone: "declined" })}>Not now</Button>
               </div>
             )
           ) : null}
@@ -422,10 +410,10 @@ export function CreateTurn({ message: m, user, ledger, onPatch, onOpen, onSettle
           </div>
           {err ? <p className={s.note} role="alert">{err}</p> : null}
           <div className={s.actions}>
-            {c.appId ? <button type="button" className={s.ghost} onClick={() => onOpen({ id: c.appId })}>Open in Create studio</button> : null}
-            {c.phase === "ready" && c.appId ? <button type="button" className={s.ghost} aria-expanded={lookOpen} onClick={openLook}>Change look</button> : null}
-            {c.phase === "ready" && c.appId ? <button type="button" className={s.ghost} aria-expanded={domainsOpen} onClick={() => setDomainsOpen((v) => !v)}>Domains</button> : null}
-            {c.phase === "failed" && c.appId && op?.type !== "theme" ? <button type="button" className={s.ghost} onClick={() => void start(c.buildId ? { buildId: c.buildId } : op?.type === "edit" ? { prompt: op.instruction, edit: true, confirm: true } : { prompt, design: { auto: true }, confirm: true })}>Try again</button> : null}
+            {c.appId ? <Button variant="secondary" size="sm" onClick={() => onOpen({ id: c.appId })}>Open in Create studio</Button> : null}
+            {c.phase === "ready" && c.appId ? <Button variant="secondary" size="sm" aria-expanded={lookOpen} onClick={openLook}>Change look</Button> : null}
+            {c.phase === "ready" && c.appId ? <Button variant="secondary" size="sm" aria-expanded={domainsOpen} onClick={() => setDomainsOpen((v) => !v)}>Domains</Button> : null}
+            {c.phase === "failed" && c.appId && op?.type !== "theme" ? <Button variant="secondary" size="sm" onClick={() => void start(c.buildId ? { buildId: c.buildId } : op?.type === "edit" ? { prompt: op.instruction, edit: true, confirm: true } : { prompt, design: { auto: true }, confirm: true })}>Try again</Button> : null}
             {liveUrl ? <a className={s.ghost} href={liveUrl} target="_blank" rel="noreferrer">Open live app</a> : null}
             {spec?.notBuilt?.length && !running ? <span className={s.meta}>Not built on this plan: {spec.notBuilt.slice(0, 2).join("; ")}.</span> : null}
             {c.phase === "ready" ? <span className={s.meta}>Say what to change (&ldquo;add a contact form&rdquo;) and Keplar edits this app.</span> : null}

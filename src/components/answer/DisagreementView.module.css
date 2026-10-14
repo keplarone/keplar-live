@@ -1,11 +1,11 @@
 /* Side-by-side model positions. Columns come from the available width (auto-fit), so a phone gets one stacked column and a wide card gets two or three with no device breakpoints. Rounded rectangles only; the one chip is a pill by the shape system. */
-.root { display: flex; flex-direction: column; gap: var(--s-4); margin-top: var(--s-4); padding: var(--s-4); border-radius: var(--r-card); background: var(--c-surface-1, var(--c-glass-strong)); box-shadow: inset 0 0 0 var(--b-hairline, 1px) var(--c-border-strong); min-width: 0; }
+.root { display: flex; flex-direction: column; gap: var(--s-4); margin-top: var(--s-4); padding: var(--s-4); border-radius: var(--r-card); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1); min-width: 0; }
 .head { display: flex; flex-direction: column; gap: 2px; margin: 0; font-weight: var(--w-medium); }
 .count { font-size: var(--t-body); color: var(--c-ink); }
 .topic { font-size: var(--t-small); font-weight: 400; color: var(--c-ink-2); overflow-wrap: anywhere; }
 .cols { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-3); grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); }
 .col { display: flex; flex-direction: column; gap: var(--s-1, 4px); min-width: 0; padding: var(--s-4); border-radius: var(--r-md, 12px); background: color-mix(in srgb, var(--c-ink) 4%, transparent); box-shadow: inset 0 0 0 var(--b-hairline, 1px) var(--c-border-strong); font-size: var(--t-small); color: var(--c-ink-2); overflow-wrap: anywhere; }
-.col[data-lead] { background: color-mix(in srgb, var(--c-ink) 8%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c-ink) 38%, transparent), 0 0 28px color-mix(in srgb, var(--c-ink) 9%, transparent); }
+.col[data-lead] { background: color-mix(in srgb, var(--c-ink) 8%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c-ink) 38%, transparent); }
 .tag { align-self: flex-start; padding: 2px var(--s-3); border-radius: var(--shape-pill, 9999px); font-size: var(--t-label); letter-spacing: var(--tr-label, 0.02em); color: var(--c-ink-2); box-shadow: inset 0 0 0 1px var(--c-border-strong); }
 .col[data-lead] .tag { color: var(--c-ink); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c-ink) 55%, transparent); }
 .stance { color: var(--c-ink); }
