@@ -105,7 +105,8 @@ test.describe.serial("sidebar Recents", () => {
     await page.locator("[data-delete-yes]").click();
     await expect(page.getByRole("button", { name: T[2], exact: true })).toHaveCount(0);
     await expect(page.locator("[data-recents-count]").first()).toHaveText("2");
-    await page.locator("[data-undo-toast]").getByRole("button", { name: "Undo" }).click();
+    // The undo toast is the kit's (notify): find it in the Notifications list.
+    await page.getByRole("list", { name: "Notifications" }).getByRole("listitem").filter({ hasText: "Deleted" }).getByRole("button", { name: "Undo" }).click();
     await expect(page.getByRole("button", { name: T[2], exact: true })).toBeVisible();
     await expect(page.locator("[data-recents-count]").first()).toHaveText("3");
   });

@@ -113,3 +113,8 @@ test("resume list: relative dates", () => {
   assert.equal(ago(now - 10 * day, now), "Last week");
   assert.equal(ago(now - 30 * day, now), "4 weeks ago");
 });
+
+test("the kit hosts (toasts, confirmAction) stay usable inside the app, which makes the rest of the page inert", () => {
+  assert.match(read("src/components/kit/Hosts.tsx"), /<div data-kit-host="">/);
+  assert.match(read("src/components/app-ui/KeplarApp.tsx"), /!el\.hasAttribute\("data-kit-host"\)/);
+});

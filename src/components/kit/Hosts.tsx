@@ -68,11 +68,15 @@ function ToastBridge() {
   return null;
 }
 
+/** Mounted once in the root layout. The wrapper is marked data-kit-host so full-screen surfaces that make the rest of the page
+ *  inert (the /app shell does) leave it alone: its toasts and confirm dialog serve them. */
 export function KitHosts() {
   return (
-    <ToastProvider placement="bottom-center">
-      <ToastBridge />
-      <ConfirmHost />
-    </ToastProvider>
+    <div data-kit-host="">
+      <ToastProvider placement="bottom-center">
+        <ToastBridge />
+        <ConfirmHost />
+      </ToastProvider>
+    </div>
   );
 }
