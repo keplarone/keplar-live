@@ -4,6 +4,7 @@ import { api } from "./api";
 import s from "./create.module.css";
 import b from "./builder.module.css";
 import f from "./features.module.css";
+import { Button } from "@/components/kit";
 
 type Cat = { id: string; label: string; status: "live" | "beta" | "soon"; summary: string; note: string | null; prompt: string; addable: boolean; placed: number };
 type View = {
@@ -43,7 +44,7 @@ export function FeaturesPane({ siteId, version, disabled, onAdd }: { siteId: str
   }, [siteId, version, tick]);
   const load = async () => setTick((n) => n + 1);
   const act = async (fn: () => Promise<unknown>) => { try { await fn(); await load(); } catch (e) { setErr(e instanceof Error ? e.message : "That didn't work."); } };
-  if (err && !v) return <div className={b.pane}><p role="alert" className={s.muted}>{err}</p><button type="button" className={s.btn} onClick={() => void load()}>Try again</button></div>;
+  if (err && !v) return <div className={b.pane}><p role="alert" className={s.muted}>{err}</p><Button variant="primary" size="sm" onClick={() => void load()}>Try again</Button></div>;
   if (!v) return <div className={b.pane}><p className={s.muted} role="status">Loading features…</p></div>;
   const setting = (k: "notifyOwner" | "confirmVisitors" | "analytics", on: boolean) => act(() => api(`/api/sites/${siteId}`, { method: "PATCH", body: JSON.stringify({ featureSettings: { [k]: on } }) }));
   return (
@@ -59,7 +60,7 @@ export function FeaturesPane({ siteId, version, disabled, onAdd }: { siteId: str
                 <strong>{f.label} <span className={`${b.chip} ${b.chipStatic}`}>{CHIP[f.status]}</span>{f.placed ? <span className={`${b.chip} ${b.chipStatic}`} style={{ marginLeft: 6 }}>On this site ×{f.placed}</span> : null}</strong>
                 <small>{f.summary}{f.note ? ` ${f.note}` : ""}</small>
               </div>
-              {f.status === "soon" || !f.addable ? null : <button type="button" className={s.iconBtn} disabled={disabled} onClick={() => onAdd(f.prompt)}>{f.placed ? "Add another" : "Add"}</button>}
+              {f.status === "soon" || !f.addable ? null : <Button variant="ghost" size="sm" disabled={disabled} onClick={() => onAdd(f.prompt)}>{f.placed ? "Add another" : "Add"}</Button>}
             </li>
           ))}
         </ul>
@@ -86,7 +87,7 @@ export function FeaturesPane({ siteId, version, disabled, onAdd }: { siteId: str
         <section className={b.card} aria-label="Signups" data-testid="signups">
           <strong>Signups ({v.subscribers.length})</strong>
           <ul className={b.list}>{v.subscribers.map((x) => (
-            <li key={x.id} className={b.item}><div className={b.itemMain}><strong style={{ overflowWrap: "anywhere" }}>{x.email}</strong><small>{x.kind}{x.name ? ` · ${x.name}` : ""}</small></div><button type="button" className={s.iconBtn} onClick={() => void act(() => api(`/api/sites/${siteId}/features`, { method: "DELETE", body: JSON.stringify({ id: x.id }) }))}>Remove</button></li>
+            <li key={x.id} className={b.item}><div className={b.itemMain}><strong style={{ overflowWrap: "anywhere" }}>{x.email}</strong><small>{x.kind}{x.name ? ` · ${x.name}` : ""}</small></div><Button variant="ghost" size="sm" onClick={() => void act(() => api(`/api/sites/${siteId}/features`, { method: "DELETE", body: JSON.stringify({ id: x.id }) }))}>Remove</Button></li>
           ))}</ul>
           <p className={b.hint}>Each signup is also a contact in Business.</p>
         </section>
@@ -95,7 +96,7 @@ export function FeaturesPane({ siteId, version, disabled, onAdd }: { siteId: str
         <section className={b.card} aria-label="Members" data-testid="members">
           <strong>Members ({v.members.length}) <span className={`${b.chip} ${b.chipStatic}`}>BETA</span></strong>
           <ul className={b.list}>{v.members.map((x) => (
-            <li key={x.id} className={b.item}><div className={b.itemMain}><strong style={{ overflowWrap: "anywhere" }}>{x.email}</strong><small>Joined {new Date(x.at).toLocaleDateString()}</small></div><button type="button" className={s.iconBtn} onClick={() => void act(() => api(`/api/sites/${siteId}/features`, { method: "DELETE", body: JSON.stringify({ id: x.id }) }))}>Remove</button></li>
+            <li key={x.id} className={b.item}><div className={b.itemMain}><strong style={{ overflowWrap: "anywhere" }}>{x.email}</strong><small>Joined {new Date(x.at).toLocaleDateString()}</small></div><Button variant="ghost" size="sm" onClick={() => void act(() => api(`/api/sites/${siteId}/features`, { method: "DELETE", body: JSON.stringify({ id: x.id }) }))}>Remove</Button></li>
           ))}</ul>
           <p className={b.hint}>Removing a member signs them out right away. Passwords are never shown or stored in plain text.</p>
         </section>
@@ -104,7 +105,7 @@ export function FeaturesPane({ siteId, version, disabled, onAdd }: { siteId: str
         <section className={b.card} aria-label="Bookings" data-testid="bookings">
           <strong>Bookings ({v.bookings.length})</strong>
           <ul className={b.list}>{v.bookings.map((x) => (
-            <li key={x.id} className={b.item}><div className={b.itemMain}><strong>{when(x.start, x.tz)}</strong><small style={{ overflowWrap: "anywhere" }}>{x.name} · {x.email}{x.note ? ` · ${x.note}` : ""}</small></div><button type="button" className={s.iconBtn} onClick={() => void act(() => api(`/api/sites/${siteId}/features`, { method: "DELETE", body: JSON.stringify({ id: x.id }) }))}>Cancel booking</button></li>
+            <li key={x.id} className={b.item}><div className={b.itemMain}><strong>{when(x.start, x.tz)}</strong><small style={{ overflowWrap: "anywhere" }}>{x.name} · {x.email}{x.note ? ` · ${x.note}` : ""}</small></div><Button variant="ghost" size="sm" onClick={() => void act(() => api(`/api/sites/${siteId}/features`, { method: "DELETE", body: JSON.stringify({ id: x.id }) }))}>Cancel booking</Button></li>
           ))}</ul>
         </section>
       ) : null}
@@ -131,15 +132,15 @@ function TableEditor({ siteId, t, act }: { siteId: string; t: Table; act: (fn: (
           return (
             <li key={r.id} className={b.item} style={{ alignItems: "flex-end" }}>
               {t.columns.map((c) => <label key={c} className={b.field} style={{ flex: "1 1 8rem" }}><span>{label(c)}</span><input className={s.input} value={cur[c] ?? ""} maxLength={500} onChange={(e) => setEdit({ ...edit, [r.id]: { ...cur, [c]: e.target.value } })} /></label>)}
-              {dirty ? <button type="button" className={s.btn} onClick={() => void send("PATCH", { table: t.key, id: r.id, row: cur }).then(() => setEdit((p) => { const n = { ...p }; delete n[r.id]; return n; }))}>Save</button> : null}
-              <button type="button" className={s.iconBtn} onClick={() => void send("DELETE", { table: t.key, id: r.id })}>Delete</button>
+              {dirty ? <Button variant="primary" size="sm" onClick={() => void send("PATCH", { table: t.key, id: r.id, row: cur }).then(() => setEdit((p) => { const n = { ...p }; delete n[r.id]; return n; }))}>Save</Button> : null}
+              <Button variant="ghost" size="sm" onClick={() => void send("DELETE", { table: t.key, id: r.id })}>Delete</Button>
             </li>
           );
         })}
       </ul>
       <div className={b.row} style={{ alignItems: "flex-end" }}>
         {t.columns.map((c) => <label key={c} className={b.field} style={{ flex: "1 1 8rem" }}><span>{label(c)}</span><input className={s.input} value={draft[c] ?? ""} maxLength={500} onChange={(e) => setDraft({ ...draft, [c]: e.target.value })} /></label>)}
-        <button type="button" className={s.btn} disabled={!Object.values(draft).some((x) => x.trim())} onClick={() => void send("POST", { table: t.key, row: draft }).then(() => setDraft({}))}>Add row</button>
+        <Button variant="primary" size="sm" disabled={!Object.values(draft).some((x) => x.trim())} onClick={() => void send("POST", { table: t.key, row: draft }).then(() => setDraft({}))}>Add row</Button>
       </div>
     </section>
   );
@@ -163,17 +164,17 @@ function BlogEditor({ siteId, blog, act }: { siteId: string; blog: Blog; act: (f
                 <input value={draft.title} maxLength={140} aria-label="Post title" onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
                 <textarea value={draft.body} rows={8} maxLength={20000} aria-label="Post text" onChange={(e) => setDraft({ ...draft, body: e.target.value })} />
                 <div className={b.row}>
-                  <button type="button" className={s.btn} onClick={() => void call("PATCH", { id: p.id, ...draft }).then(() => setEditing(null))}>Save</button>
-                  <button type="button" className={s.iconBtn} onClick={() => setEditing(null)}>Cancel</button>
+                  <Button variant="primary" size="sm" onClick={() => void call("PATCH", { id: p.id, ...draft }).then(() => setEditing(null))}>Save</Button>
+                  <Button variant="ghost" size="sm" onClick={() => setEditing(null)}>Cancel</Button>
                 </div>
               </>
             ) : (
               <>
                 <div className={b.itemMain}><strong style={{ overflowWrap: "anywhere" }}>{p.title}</strong><small>{p.status === "published" ? "Published" : "Draft (not on the site)"} · /{p.slug}</small></div>
                 <div className={b.row}>
-                  <button type="button" className={s.iconBtn} onClick={() => { setEditing(p.id); setDraft({ title: p.title, body: p.body }); }}>Edit</button>
-                  <button type="button" className={s.iconBtn} onClick={() => void call("PATCH", { id: p.id, status: p.status === "published" ? "draft" : "published" })}>{p.status === "published" ? "Unpublish" : "Publish"}</button>
-                  <button type="button" className={s.iconBtn} onClick={() => void call("DELETE", { id: p.id })}>Delete</button>
+                  <Button variant="ghost" size="sm" onClick={() => { setEditing(p.id); setDraft({ title: p.title, body: p.body }); }}>Edit</Button>
+                  <Button variant="ghost" size="sm" onClick={() => void call("PATCH", { id: p.id, status: p.status === "published" ? "draft" : "published" })}>{p.status === "published" ? "Unpublish" : "Publish"}</Button>
+                  <Button variant="ghost" size="sm" onClick={() => void call("DELETE", { id: p.id })}>Delete</Button>
                 </div>
               </>
             )}
@@ -184,8 +185,8 @@ function BlogEditor({ siteId, blog, act }: { siteId: string; blog: Blog; act: (f
         <input value={title} maxLength={140} placeholder="New post title" aria-label="New post title" onChange={(e) => setTitle(e.target.value)} />
         <textarea value={text} rows={5} maxLength={20000} placeholder="Write something…" aria-label="New post text" onChange={(e) => setText(e.target.value)} />
         <div className={b.row}>
-          <button type="button" className={s.btn} disabled={!title.trim()} onClick={() => void call("POST", { title, body: text, publish: true }).then(() => { setTitle(""); setText(""); })}>Publish post</button>
-          <button type="button" className={s.iconBtn} disabled={!title.trim()} onClick={() => void call("POST", { title, body: text, publish: false }).then(() => { setTitle(""); setText(""); })}>Save as draft</button>
+          <Button variant="primary" size="sm" disabled={!title.trim()} onClick={() => void call("POST", { title, body: text, publish: true }).then(() => { setTitle(""); setText(""); })}>Publish post</Button>
+          <Button variant="ghost" size="sm" disabled={!title.trim()} onClick={() => void call("POST", { title, body: text, publish: false }).then(() => { setTitle(""); setText(""); })}>Save as draft</Button>
         </div>
       </div>
     </section>

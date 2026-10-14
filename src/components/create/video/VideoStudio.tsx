@@ -12,6 +12,7 @@ import { TwoTone } from "@/components/page/TwoTone";
 import s from "../create.module.css";
 import { ReferencePicker, type RefItem, type RefLimits } from "./ReferencePicker";
 import v from "./video.module.css";
+import { ActivityIndicator, Button, EmptyState } from "@/components/kit";
 
 type ModelCfg = {
   id: string; label: string; mode: string; note: string; default: boolean; durations: number[] | null; durationFollowsSource: boolean; aspectRatios: string[];
@@ -244,7 +245,7 @@ export function VideoStudio() {
         {j.status === "completed" && j.url ? (
           <video src={j.url} muted loop playsInline controls aria-label={j.prompt} />
         ) : active(j) ? (
-          <span className={s.label} role="status">{j.waiting ? "Waiting for a free slot" : j.status === "queued" ? "Queued" : "Generating"}</span>
+          <ActivityIndicator className={s.label} label={j.waiting ? "Waiting for a free slot" : j.status === "queued" ? "Queued" : "Generating"} showLabel />
         ) : (
           <span className={j.status === "blocked" ? v.err : v.hint}>{j.status === "blocked" ? "Blocked by the content safety check. Nothing was charged." : j.error ?? "Failed"}</span>
         )}
@@ -262,7 +263,7 @@ export function VideoStudio() {
   );
 
   if (loadErr) return <div className={v.root}><p className={v.err} role="alert">{loadErr}</p></div>;
-  if (!data || !config) return <div className={v.root}><p className={s.muted}>Loading…</p></div>;
+  if (!data || !config) return <div className={v.root}><p className={s.muted}><ActivityIndicator label="Loading your videos" showLabel /></p></div>;
 
   const off = !config.configured;
   const label = off ? "Not configured" : "Beta";
@@ -410,13 +411,13 @@ export function VideoStudio() {
                   <label className={v.rights}><input type="checkbox" checked={ackLarge} onChange={(e) => setAckLarge(e.target.checked)} /><span>This is a large job. I understand it uses {confirm.total.toLocaleString()} credits.</span></label>
                 ) : null}
                 <div className={v.btnRow}>
-                  <button type="button" className={s.btn} onClick={() => void start()} disabled={busy || (confirm.large && !ackLarge)}>{busy ? "Starting…" : "Approve and generate"}</button>
-                  <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={() => setConfirm(null)} disabled={busy}>Cancel</button>
+                  <Button variant="primary" size="sm" onClick={() => void start()} disabled={busy || (confirm.large && !ackLarge)}>{busy ? "Starting…" : "Approve and generate"}</Button>
+                  <Button variant="secondary" size="sm" onClick={() => setConfirm(null)} disabled={busy}>Cancel</Button>
                 </div>
               </div>
             ) : (
               <div className={v.btnRow}>
-                <button type="submit" className={s.btn} disabled={off || !canStart}>Preview and approve</button>
+                <Button type="submit" variant="primary" disabled={off || !canStart}>Preview and approve</Button>
               </div>
             )}
             {error ? <p className={v.err} role="alert">{error}</p> : null}
@@ -424,7 +425,7 @@ export function VideoStudio() {
           </form>
 
           <section aria-label="Your videos">
-            {jobs.length === 0 ? <p className={v.empty}>Your videos appear here.</p> : (
+            {jobs.length === 0 ? <EmptyState className={v.empty} title="Your videos appear here." hint="Describe a shot, pick a model, then approve the cost." /> : (
               <>
                 {groups.map((g) => (
                   <div key={g.id} className={v.cmp} data-testid="compare-grid">
@@ -442,11 +443,11 @@ export function VideoStudio() {
                       ))}
                     </div>
                     <div className={v.btnRow}>
-                      <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={() => setPicked(new Set(g.jobs.filter((j) => !active(j)).map((j) => j.id)))}>Select all</button>
-                      <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={() => setPicked(new Set())} disabled={picked.size === 0}>Select none</button>
-                      <button type="button" className={s.btn} onClick={() => downloadPicked(g.jobs)} disabled={!g.jobs.some((j) => picked.has(j.id) && j.url)}>Download selected</button>
-                      <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={() => void removeClips(g.jobs.filter((j) => !picked.has(j.id) && !active(j)).map((j) => j.id))} disabled={picked.size === 0 || !g.jobs.some((j) => !picked.has(j.id) && !active(j))} data-testid="remove-unselected">Remove the ones I didn&apos;t pick</button>
-                      <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={() => void removeClips(g.jobs.filter((j) => picked.has(j.id)).map((j) => j.id))} disabled={!g.jobs.some((j) => picked.has(j.id) && !active(j))}>Remove selected</button>
+                      <Button variant="secondary" size="sm" onClick={() => setPicked(new Set(g.jobs.filter((j) => !active(j)).map((j) => j.id)))}>Select all</Button>
+                      <Button variant="secondary" size="sm" onClick={() => setPicked(new Set())} disabled={picked.size === 0}>Select none</Button>
+                      <Button variant="primary" size="sm" onClick={() => downloadPicked(g.jobs)} disabled={!g.jobs.some((j) => picked.has(j.id) && j.url)}>Download selected</Button>
+                      <Button variant="secondary" size="sm" onClick={() => void removeClips(g.jobs.filter((j) => !picked.has(j.id) && !active(j)).map((j) => j.id))} disabled={picked.size === 0 || !g.jobs.some((j) => !picked.has(j.id) && !active(j))} data-testid="remove-unselected">Remove the ones I didn&apos;t pick</Button>
+                      <Button variant="secondary" size="sm" onClick={() => void removeClips(g.jobs.filter((j) => picked.has(j.id)).map((j) => j.id))} disabled={!g.jobs.some((j) => picked.has(j.id) && !active(j))}>Remove selected</Button>
                     </div>
                   </div>
                 ))}

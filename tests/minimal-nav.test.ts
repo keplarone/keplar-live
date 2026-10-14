@@ -58,7 +58,7 @@ test("Settings: one-word categories in the rail, old deep links still land", () 
 
 test("Create: the empty state is one prompt like Ask; extras sit behind Options; studio shows three tabs plus More", () => {
   const ab = readFileSync("src/components/create/apps/AppBuilder.tsx", "utf8");
-  const start = ab.slice(ab.indexOf("<div className={s.start}>"), ab.indexOf("{tuneOpen && cfg ? ("));
+  const start = ab.slice(ab.indexOf("<div className={s.start}>"), ab.indexOf("<Dialog open={tuneOpen"));
   assert.match(start, /What do you want to build\?/);
   assert.equal((start.match(/<PromptField /g) ?? []).length, 1, "a single prompt");
   const options = start.slice(start.indexOf('id="kc-options"'));

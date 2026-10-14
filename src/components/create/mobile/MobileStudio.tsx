@@ -6,6 +6,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import s from "./mobile.module.css";
+import { ActivityIndicator, Button } from "@/components/kit";
 
 type Cred = { kind: "apple" | "google" | "expo"; hint: string; status: "saved" | "verified" | "failed"; detail: string; checkedAt: string | null };
 type Facts = Record<"apple" | "google" | "expo", { program: string; price: string; needs: string; api: string; review: string }> & { honesty: string };
@@ -78,7 +79,7 @@ export function MobileStudio() {
     return c ? (
       <div className={s.status} data-s={c.status} role="status">
         <strong>{c.status === "verified" ? "Verified" : c.status === "failed" ? "Not accepted" : "Saved"}</strong> · {c.hint}. {c.detail}{" "}
-        <button type="button" className={s.ghost} onClick={() => remove(k)} disabled={busy === k}>Remove</button>
+        <Button variant="secondary" size="sm" onClick={() => remove(k)} disabled={busy === k}>Remove</Button>
       </div>
     ) : null;
   };
@@ -102,10 +103,10 @@ export function MobileStudio() {
               <div key={i} className={s.row}>
                 <input className={s.input} style={{ width: 150 }} aria-label={`Screen ${i + 1} title`} value={x.title} maxLength={24} onChange={(e) => setScreens(screens.map((y, j) => (j === i ? { ...y, title: e.target.value } : y)))} placeholder="Screen title" />
                 <input className={`${s.input} ${s.grow}`} aria-label={`Screen ${i + 1} text`} value={x.body} maxLength={400} onChange={(e) => setScreens(screens.map((y, j) => (j === i ? { ...y, body: e.target.value } : y)))} placeholder="What this screen says" />
-                {screens.length > 1 ? <button type="button" className={s.ghost} onClick={() => setScreens(screens.filter((_, j) => j !== i))} aria-label={`Remove screen ${i + 1}`}>Remove</button> : null}
+                {screens.length > 1 ? <Button variant="secondary" size="sm" onClick={() => setScreens(screens.filter((_, j) => j !== i))} aria-label={`Remove screen ${i + 1}`}>Remove</Button> : null}
               </div>
             ))}
-            {screens.length < 6 ? <div><button type="button" className={s.ghost} onClick={() => setScreens([...screens, { title: "", body: "" }])}>Add a screen</button></div> : null}
+            {screens.length < 6 ? <div><Button variant="secondary" size="sm" onClick={() => setScreens([...screens, { title: "", body: "" }])}>Add a screen</Button></div> : null}
           </div>
         </div>
       </details>
@@ -120,20 +121,20 @@ export function MobileStudio() {
               <label className={s.field}>Issuer ID<input className={s.input} value={apple.issuerId} autoComplete="off" onChange={(e) => setApple({ ...apple, issuerId: e.target.value })} /></label>
               <label className={s.field}>Key ID<input className={s.input} value={apple.keyId} autoComplete="off" onChange={(e) => setApple({ ...apple, keyId: e.target.value })} /></label>
               <label className={s.field}>.p8 private key (write-only, stored encrypted)<textarea className={s.area} value={apple.privateKey} autoComplete="off" spellCheck={false} onChange={(e) => setApple({ ...apple, privateKey: e.target.value })} /></label>
-              <div><button type="button" className={s.btn} disabled={busy === "apple" || !apple.privateKey} onClick={() => save("apple", apple, () => setApple({ issuerId: "", keyId: "", privateKey: "" }))}>{busy === "apple" ? "Checking with Apple…" : "Save and check with Apple"}</button></div>
+              <div><Button variant="primary" size="sm" disabled={busy === "apple" || !apple.privateKey} onClick={() => save("apple", apple, () => setApple({ issuerId: "", keyId: "", privateKey: "" }))}>{busy === "apple" ? "Checking with Apple…" : "Save and check with Apple"}</Button></div>
 
               <div className={s.limit}><strong>Google · {facts.google.price}.</strong> {facts.google.needs}<br />{facts.google.api}<br />{facts.google.review}</div>
               {status("google")}
               <label className={s.field}>Service account JSON (write-only, stored encrypted)<textarea className={s.area} value={google.serviceAccountJson} autoComplete="off" spellCheck={false} onChange={(e) => setGoogle({ ...google, serviceAccountJson: e.target.value })} /></label>
               <label className={s.field}>Package name of the app already in Play Console (optional)<input className={s.input} value={google.packageName} onChange={(e) => setGoogle({ ...google, packageName: e.target.value })} placeholder="com.yourname.appname" /></label>
-              <div><button type="button" className={s.btn} disabled={busy === "google" || !google.serviceAccountJson} onClick={() => save("google", google, () => setGoogle({ serviceAccountJson: "", packageName: google.packageName }))}>{busy === "google" ? "Checking with Google…" : "Save and check with Google"}</button></div>
+              <div><Button variant="primary" size="sm" disabled={busy === "google" || !google.serviceAccountJson} onClick={() => save("google", google, () => setGoogle({ serviceAccountJson: "", packageName: google.packageName }))}>{busy === "google" ? "Checking with Google…" : "Save and check with Google"}</Button></div>
 
               <div className={s.limit}><strong>Expo / EAS · {facts.expo.price}.</strong> {facts.expo.needs}</div>
               {status("expo")}
               <label className={s.field}>Expo access token (write-only)<input className={s.input} type="password" autoComplete="off" value={expo} onChange={(e) => setExpo(e.target.value)} /></label>
-              <div><button type="button" className={s.btn} disabled={busy === "expo" || !expo} onClick={() => save("expo", { token: expo }, () => setExpo(""))}>Save token</button></div>
+              <div><Button variant="primary" size="sm" disabled={busy === "expo" || !expo} onClick={() => save("expo", { token: expo }, () => setExpo(""))}>Save token</Button></div>
             </>
-          ) : <p className={s.muted}>Loading…</p>}
+          ) : <p className={s.muted}><ActivityIndicator label="Loading" showLabel /></p>}
         </div>
       </details>
 
@@ -141,7 +142,7 @@ export function MobileStudio() {
         <summary><span className={s.n}>3</span> Get the project</summary>
         <div className={s.body}>
           <p className={s.muted}>You get a ZIP: an Expo / React Native app with your screens, an EAS config and a GitHub Actions workflow you run by hand (BETA). Keplar has not built it on EAS or submitted it for you; the README lists the steps. Both stores review every submission.</p>
-          <div><button type="button" className={s.btn} onClick={download} disabled={busy === "zip" || app.name.trim().length < 2 || !app.bundleId.trim()}>{busy === "zip" ? "Preparing…" : "Download the Expo project"}</button></div>
+          <div><Button variant="primary" size="sm" onClick={download} disabled={busy === "zip" || app.name.trim().length < 2 || !app.bundleId.trim()}>{busy === "zip" ? "Preparing…" : "Download the Expo project"}</Button></div>
         </div>
       </details>
     </div>

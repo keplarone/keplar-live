@@ -8,6 +8,7 @@ import type { PlanDay, TopicMastery } from "@/lib/study/progress";
 import { STUDY_OPEN_KEY, takeHandoff } from "@/components/app-ui/studio/handoff";
 import c from "@/components/slides/slides.module.css";
 import s from "./study.module.css";
+import { ActivityIndicator, Button, Tabs, confirmAction, tabId, tabPanelId } from "@/components/kit";
 
 type Row = { id: string; title: string; pages: number; topics: number; cards: number; questions: number; examDate: string | null; updatedAt: string };
 type Detail = {
@@ -116,14 +117,14 @@ function Study({ plan }: { plan: "free" | "lite" | "plus" | "pro" | "business" }
             <label className={c.field}><span className={c.label}>Exam date <em>(optional)</em></span><input className={c.input} type="date" value={exam} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setExam(e.target.value)} /></label>
           </div>
           <div className={c.submitRow}>
-            <button type="submit" className={c.primary} disabled={busy || (!file && text.trim().length < 80)}>{busy ? "Reading and building…" : "Build my study set"}</button>
+            <Button type="submit" variant="primary" loading={busy} disabled={!file && text.trim().length < 80}>{busy ? "Reading and building…" : "Build my study set"}</Button>
             <span className={c.estimate}>{plan === "free" ? "Free: runs on free models, so it can be slower. No credits used." : "Charged by actual cost, shown in your usage."}</span>
           </div>
           <p className={c.hint}>Keplar treats your document as material to learn from, never as instructions. Answers come from the document, and Keplar says when something isn&rsquo;t in it.</p>
         </form>
         <aside className={c.card} aria-labelledby="st-sets">
           <h2 id="st-sets" className={c.cardTitle}>Your study sets</h2>
-          {rows === null ? <p className={c.hint}>Loading…</p> : rows.length ? (
+          {rows === null ? <p className={c.hint}><ActivityIndicator label="Loading" showLabel /></p> : rows.length ? (
             <ul className={c.deckList}>
               {rows.map((r) => (
                 <li key={r.id} className={c.deckRow}>
@@ -153,12 +154,12 @@ function SetView({ id, plan, notice, initialTab, onBack }: { id: string; plan: s
   }, [id]);
 
   const del = async () => {
-    if (!window.confirm("Delete this study set, its text and your progress? This can't be undone.")) return;
+    if (!(await confirmAction({ title: "Delete this study set?", body: "Its text and your progress are removed. This can't be undone.", confirmLabel: "Delete study set", danger: true }))) return;
     try { await api(`/api/study/sets/${id}`, { method: "DELETE" }); onBack(); } catch (e) { setError((e as Error).message); }
   };
   const setExam = async (date: string) => { try { await api(`/api/study/sets/${id}`, jsonInit("PATCH", { examDate: date || null })); await load(); } catch (e) { setError((e as Error).message); } };
 
-  if (!d) return <div className={c.studio}>{error ? <p className={c.error} role="alert">{error}</p> : <p className={c.hint}>Loading…</p>}<button type="button" className={c.ghost} onClick={onBack}>Back</button></div>;
+  if (!d) return <div className={c.studio}>{error ? <p className={c.error} role="alert">{error}</p> : <p className={c.hint}><ActivityIndicator label="Loading" showLabel /></p>}<Button variant="secondary" size="sm" onClick={onBack}>Back</Button></div>;
   const tabs: [Tab, string][] = [["overview", "Overview"], ["cards", `Flashcards${d.progress.dueCards ? ` · ${d.progress.dueCards} due` : ""}`], ["quiz", "Quiz"], ["plan", "Plan"], ["ask", "Ask the guide"], ["progress", "Progress"]];
   return (
     <div className={c.studio}>
@@ -172,10 +173,8 @@ function SetView({ id, plan, notice, initialTab, onBack }: { id: string; plan: s
       </header>
       {notice || d.set.coverage < 1 || d.set.source.truncated ? <p className={s.note}>{notice || `Your guide is longer than your plan reads at once, so about ${Math.round(d.set.coverage * 100)}% of it was used.`}</p> : null}
       {error ? <p className={c.error} role="alert">{error}</p> : null}
-      <div className={s.tabs} role="tablist" aria-label="Study sections">
-        {tabs.map(([k, label]) => <button key={k} id={`tab-${k}`} type="button" role="tab" aria-selected={tab === k} aria-controls="st-panel" className={s.tab} onClick={() => setTab(k)}>{label}</button>)}
-      </div>
-      <div id="st-panel" role="tabpanel" aria-labelledby={`tab-${tab}`} className={s.panel}>
+      <Tabs id="st" label="Study sections" value={tab} onValueChange={setTab} className={s.tabs} items={tabs.map(([k, label]) => ({ value: k, label }))} />
+      <div id={tabPanelId("st", tab)} role="tabpanel" aria-labelledby={tabId("st", tab)} className={s.panel}>
         {tab === "overview" ? <Overview d={d} /> : null}
         {tab === "cards" ? <Cards id={id} onChange={load} /> : null}
         {tab === "quiz" ? <Quiz id={id} d={d} onDone={load} /> : null}
@@ -217,13 +216,13 @@ function Cards({ id, onChange }: { id: string; onChange: () => Promise<void> }) 
     return () => { on = false; };
   }, [id, all]);
   if (error) return <p className={c.error} role="alert">{error}</p>;
-  if (!cards) return <p className={c.hint}>Loading…</p>;
+  if (!cards) return <p className={c.hint}><ActivityIndicator label="Loading" showLabel /></p>;
   if (!cards.length || i >= cards.length) {
     return (
       <div className={c.card}>
         <h2 className={c.cardTitle}>{cards.length ? "Session done" : "Nothing due today"}</h2>
         <p className={s.prose}>{cards.length ? "Cards you rated come back on a schedule: hard ones soon, easy ones later." : "Cards come back when they are due. You can also review everything now."}</p>
-        <button type="button" className={c.ghost} onClick={() => { setAll(true); setCards(null); }}>Review all cards</button>
+        <Button variant="secondary" size="sm" onClick={() => { setAll(true); setCards(null); }}>Review all cards</Button>
       </div>
     );
   }
@@ -250,10 +249,10 @@ function Cards({ id, onChange }: { id: string; onChange: () => Promise<void> }) 
       </button>
       {flip ? (
         <div className={s.grades} role="group" aria-label="How well did you know it?">
-          <button type="button" className={c.ghost} onClick={() => void grade("again")}>Again</button>
-          <button type="button" className={c.ghost} onClick={() => void grade("hard")}>Hard</button>
-          <button type="button" className={c.primary} onClick={() => void grade("good")}>Good</button>
-          <button type="button" className={c.ghost} onClick={() => void grade("easy")}>Easy</button>
+          <Button variant="secondary" size="sm" onClick={() => void grade("again")}>Again</Button>
+          <Button variant="secondary" size="sm" onClick={() => void grade("hard")}>Hard</Button>
+          <Button variant="primary" size="sm" onClick={() => void grade("good")}>Good</Button>
+          <Button variant="secondary" size="sm" onClick={() => void grade("easy")}>Easy</Button>
         </div>
       ) : <p className={c.hint}>Tap the card to reveal the answer.</p>}
     </div>
@@ -365,7 +364,7 @@ function Quiz({ id, d, onDone }: { id: string; d: Detail; onDone: () => Promise<
       ) : null}
       {error ? <p className={c.error} role="alert">{error}</p> : null}
       <div className={c.submitRow}>
-        {!res ? <button type="button" className={c.primary} onClick={() => void submit()} disabled={busy || (q.type === "mc" ? choice === null : text.trim().length < 2)}>{busy ? "Checking…" : "Check answer"}</button> : <button type="button" className={c.primary} onClick={() => void next()}>{i + 1 >= qs.length ? "Finish" : "Next"}</button>}
+        {!res ? <Button variant="primary" size="sm" onClick={() => void submit()} disabled={busy || (q.type === "mc" ? choice === null : text.trim().length < 2)}>{busy ? "Checking…" : "Check answer"}</Button> : <Button variant="primary" size="sm" onClick={() => void next()}>{i + 1 >= qs.length ? "Finish" : "Next"}</Button>}
       </div>
     </section>
   );
@@ -382,7 +381,7 @@ function Plan({ d, onExam, onGo }: { d: Detail; onExam: (date: string) => void; 
         <h2 className={c.cardTitle}>Exam date</h2>
         <div className={c.fileRow}>
           <input className={c.input} style={{ maxWidth: 220 }} type="date" value={date} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setDate(e.target.value)} aria-label="Exam date" />
-          <button type="button" className={c.primary} onClick={() => onExam(date)}>Save and plan</button>
+          <Button variant="primary" size="sm" onClick={() => onExam(date)}>Save and plan</Button>
           {d.set.examDate ? <button type="button" className={c.linkBtn} onClick={() => { setDate(""); onExam(""); }}>Clear</button> : null}
         </div>
       </section>
@@ -428,8 +427,8 @@ function Ask({ id, plan }: { id: string; plan: string }) {
       {error ? <p className={c.error} role="alert">{error}</p> : null}
       <textarea className={c.input} rows={3} value={q} onChange={(e) => setQ(e.target.value)} maxLength={800} placeholder="Ask about your guide, e.g. What is the difference between mitosis and meiosis?" aria-label="Question about your guide" />
       <div className={c.submitRow}>
-        <button type="button" className={c.primary} disabled={busy || !q.trim()} onClick={() => void send("ask")}>{busy ? "Reading your guide…" : "Ask the guide"}</button>
-        <button type="button" className={c.ghost} disabled={busy || !q.trim()} onClick={() => void send("simple")}>Explain this simply</button>
+        <Button variant="primary" size="sm" disabled={busy || !q.trim()} onClick={() => void send("ask")}>{busy ? "Reading your guide…" : "Ask the guide"}</Button>
+        <Button variant="secondary" size="sm" disabled={busy || !q.trim()} onClick={() => void send("simple")}>Explain this simply</Button>
       </div>
     </section>
   );

@@ -11,11 +11,9 @@
 .panel { border: var(--b-hairline) solid var(--c-border); border-radius: var(--r-card); background: var(--c-canvas); padding: var(--s-4); display: flex; flex-direction: column; gap: var(--s-3); min-width: 0; }
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field > span, .lbl { font-size: var(--t-label); color: var(--c-ink-3); letter-spacing: 0; text-transform: none; }
-.seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: var(--r-pill); background: var(--c-surface-2); flex-wrap: wrap; }
-.segBtn { min-height: 36px; padding: 0 var(--s-3); border: 0; border-radius: var(--r-pill); background: transparent; color: var(--c-ink-2); font: inherit; font-size: var(--t-small); cursor: pointer; }
-.segBtn:hover { color: var(--c-ink); }
-.segBtn[aria-pressed="true"] { background: var(--c-canvas); color: var(--c-ink); box-shadow: var(--sh-hairline); }
-.segBtn:focus-visible { outline: none; text-decoration: underline; text-underline-offset: 4px; }
+/* Shape and Quality are kit SegmentedControls; they may need a second row on a narrow panel. */
+.seg { align-self: flex-start; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+@media (pointer: coarse) { .seg [role="radio"] { min-height: 40px; } }
 .hint { color: var(--c-ink-3); font-size: var(--t-label); }
 .cost { font-size: var(--t-small); color: var(--c-ink-2); }
 .btnRow { display: flex; gap: var(--s-2); flex-wrap: wrap; }
@@ -62,71 +60,44 @@
   .root { min-width: 0; max-width: 100%; overflow-x: hidden; padding-left: max(12px, env(safe-area-inset-left)); padding-right: max(12px, env(safe-area-inset-right)); }
 }
 
-/* ── Oct 2026 redesign: the media studio in the site's light style, with smooth motion ──
- * Centred column on the aura backdrop; a two-tone light title; frosted rounded panels; sentence-case labels; soft rounded
- * inputs. Motion: the header, form and results rise in one after another; choices lift on hover and the chosen one gets an
- * ink ring; the empty result area breathes a slow colour glow; anything still generating carries a soft shimmer; finished
- * media fade and settle in. All of it stops under prefers-reduced-motion. */
+/* ── UI v2 (docs/ui-v2.md): the media studio on the plain canvas ──
+ * A light headline and grey lede; raised panels with a hairline (no frost); inputs on --surface-raised; a calm empty stage (no
+ * colour glow); thumbnails that strengthen their edge on hover (no lift or zoom). A finished image fades in once. Reduced motion
+ * removes even that. */
 .root { max-width: 1240px; width: 100%; margin: 0 auto; padding: 8px 28px 48px; box-sizing: border-box; gap: 24px; }
 .head { gap: 10px; }
 .head h2 { margin: 0; font-size: clamp(32px, 3.4vw, 44px); line-height: 1.08; font-weight: var(--w-regular); letter-spacing: -0.035em; color: var(--c-ink); }
 .head p { margin: 0; font-size: 16px; line-height: 1.6; color: var(--c-ink-3); max-width: 60ch; }
 .grid { gap: 24px; }
-.panel { border: 0; border-radius: 26px; padding: 22px; gap: 18px; background: color-mix(in srgb, var(--c-surface-1) 84%, transparent); box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 24px 60px -32px rgb(14 15 18 / 0.32); }
-.banner { border-radius: 18px; background: color-mix(in srgb, var(--c-surface-1) 70%, transparent); box-shadow: inset 0 0 0 1px rgb(var(--rgb-ink) / 0.06); }
+.panel { border: 0; border-radius: var(--r-card); padding: 22px; gap: 18px; background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1); }
+.banner { border-radius: var(--r-md); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline); }
 .field > span, .lbl { font-size: 13px; font-weight: var(--w-medium); letter-spacing: 0; text-transform: none; color: var(--c-ink-2); }
 .root textarea, .root select, .root input[type="text"], .root input[type="url"], .root input[type="number"] {
-  border-radius: 16px;
+  border-radius: var(--r-sm);
   border: 0;
-  background: rgb(var(--rgb-ink) / 0.045);
-  box-shadow: inset 0 0 0 1px rgb(var(--rgb-ink) / 0.08);
-  transition: box-shadow 220ms ease, background-color 220ms ease;
+  background: var(--c-canvas);
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
+  transition: box-shadow var(--m-dur-2) var(--m-ease-out);
 }
-.root textarea:focus-visible, .root select:focus-visible, .root input:focus-visible { outline: none; background: var(--c-surface-1); box-shadow: inset 0 0 0 1.5px var(--c-ink), 0 8px 24px -12px rgb(14 15 18 / 0.25); }
+.root textarea:focus-visible, .root select:focus-visible, .root input:focus-visible { outline: none; box-shadow: inset 0 0 0 1.5px var(--c-ink-3); }
 .root textarea { padding: 14px 16px; font-size: 16px; line-height: 1.5; }
-.confirm { border-radius: 18px; background: rgb(var(--rgb-ink) / 0.04); }
+.confirm { border-radius: var(--r-md); background: var(--c-surface-1); box-shadow: inset 0 0 0 1px var(--hairline); }
 .hint { font-size: 12.5px; line-height: 1.5; }
-
-@keyframes media-rise { from { opacity: 0; translate: 0 16px; } }
-@keyframes media-glow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-@keyframes media-shimmer { from { background-position: 150% 0; } to { background-position: -50% 0; } }
-@keyframes media-in { from { opacity: 0; scale: 1.03; filter: blur(8px); } }
-@media (prefers-reduced-motion: no-preference) {
-  .head { animation: media-rise 600ms cubic-bezier(0.16, 1, 0.3, 1) both; }
-  .grid > :nth-child(1) { animation: media-rise 640ms cubic-bezier(0.16, 1, 0.3, 1) 90ms both; }
-  .grid > :nth-child(2) { animation: media-rise 640ms cubic-bezier(0.16, 1, 0.3, 1) 180ms both; }
-}
-
-/* Images: pill segments, a breathing empty stage, rounded thumbnails that lift and zoom, a shimmer while an image is made */
-.seg { padding: 4px; background: rgb(var(--rgb-ink) / 0.06); }
-.segBtn { transition: background-color 220ms ease, color 220ms ease, box-shadow 220ms ease; }
-.segBtn[aria-pressed="true"] { background: var(--c-surface-1); box-shadow: 0 1px 2px rgb(14 15 18 / 0.1), 0 4px 12px -4px rgb(14 15 18 / 0.22); }
-:global(:root[data-theme="dark"]) .segBtn[aria-pressed="true"] { background: rgb(255 255 255 / 0.14); }
-.use { border-radius: 18px; background: rgb(var(--rgb-ink) / 0.04); }
-.viewer { border: 0; border-radius: 26px; background: color-mix(in srgb, var(--c-surface-1) 84%, transparent); box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 24px 60px -32px rgb(14 15 18 / 0.32); }
-.frame.frame { border-radius: 18px; }
-.viewer.state {
-  min-height: 420px;
-  background: linear-gradient(120deg, rgb(169 216 245 / 0.45), rgb(214 205 245 / 0.45), rgb(249 214 196 / 0.4), rgb(205 238 221 / 0.4), rgb(169 216 245 / 0.45));
-  background-size: 300% 300%;
-}
-:global(:root[data-theme="dark"]) .viewer.state { background-image: linear-gradient(120deg, rgb(38 92 140 / 0.35), rgb(74 58 140 / 0.35), rgb(128 70 52 / 0.3), rgb(34 104 80 / 0.3), rgb(38 92 140 / 0.35)); }
+.use { border-radius: var(--r-md); background: var(--c-surface-1); }
+.viewer { border: 0; border-radius: var(--r-card); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1); }
+.frame.frame { border-radius: var(--r-md); }
+.viewer.state { min-height: 420px; }
 .state strong { font-size: 18px; font-weight: var(--w-regular); letter-spacing: -0.01em; }
 .gallery { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
-.thumb.thumb { border: 0; border-radius: 16px; box-shadow: inset 0 0 0 1px rgb(var(--rgb-ink) / 0.06); transition: translate 300ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 240ms ease; }
-.thumb.thumb:hover { translate: 0 -3px; box-shadow: 0 12px 26px -14px rgb(14 15 18 / 0.35); }
-.thumb.thumb[aria-current="true"] { box-shadow: inset 0 0 0 2px var(--c-ink), 0 12px 26px -14px rgb(14 15 18 / 0.35); }
-.thumb img { transition: scale 600ms cubic-bezier(0.16, 1, 0.3, 1); }
-.thumb:hover img { scale: 1.06; }
-.thumb.thumb:has(span) { background: linear-gradient(100deg, rgb(var(--rgb-ink) / 0.04) 30%, rgb(var(--rgb-ink) / 0.1) 50%, rgb(var(--rgb-ink) / 0.04) 70%); background-size: 250% 100%; }
-.hist li { border: 0; border-radius: 14px; background: rgb(var(--rgb-ink) / 0.035); }
-.hist li[aria-current="true"] { background: var(--c-surface-1); box-shadow: inset 0 0 0 1.5px var(--c-ink); }
+.thumb.thumb { border: 0; border-radius: var(--r-sm); box-shadow: inset 0 0 0 1px var(--hairline); transition: box-shadow var(--m-dur-2) var(--m-ease-out); }
+.thumb.thumb:hover { box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-2); }
+.thumb.thumb[aria-current="true"] { box-shadow: inset 0 0 0 2px var(--c-ink); }
+.hist li { border: 0; border-radius: var(--r-sm); background: var(--c-surface-1); }
+.hist li[aria-current="true"] { background: var(--surface-raised); box-shadow: inset 0 0 0 1.5px var(--c-ink); }
 .dot { border-radius: 999px; }
+@keyframes media-in { from { opacity: 0; } }
 @media (prefers-reduced-motion: no-preference) {
-  .viewer.state { animation: media-glow 14s ease-in-out infinite; }
-  .thumb.thumb { animation: media-rise 480ms cubic-bezier(0.16, 1, 0.3, 1) both; }
-  .thumb.thumb:has(span) { animation: media-rise 480ms cubic-bezier(0.16, 1, 0.3, 1) both, media-shimmer 1.8s ease-in-out infinite; }
-  .frame img { animation: media-in 700ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .frame img { animation: media-in var(--m-dur-3) var(--m-ease-out) both; }
 }
 
 /* ── Inside the Keplar Business workspace (html[data-business-app]): the workspace's own look, like Dashboard and Reason ──
@@ -151,5 +122,5 @@
 :global(html[data-business-app]) .root .state strong { font-size: 14px; font-weight: 600; }
 :global(html[data-business-app]) .root .frame.frame, :global(html[data-business-app]) .root .use { border-radius: 8px; }
 :global(html[data-business-app]) .root .seg { padding: 3px; border-radius: 8px; background: var(--c-surface-2); }
-:global(html[data-business-app]) .root .seg .segBtn { border-radius: 6px; }
-:global(html[data-business-app]) .root .seg .segBtn[aria-pressed="true"] { background: var(--c-canvas); box-shadow: inset 0 0 0 1px var(--c-border-strong); }
+:global(html[data-business-app]) .root .seg [role="radio"] { border-radius: 6px; }
+:global(html[data-business-app]) .root .seg > span[aria-hidden] { border-radius: 6px; background: var(--c-canvas); box-shadow: inset 0 0 0 1px var(--c-border-strong); }

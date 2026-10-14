@@ -61,4 +61,8 @@ test("slide themes and debate seats carry no blue or purple", () => {
   }
   const css = readFileSync(new URL("../src/components/app-ui/DebateView.module.css", import.meta.url), "utf8");
   for (const m of css.matchAll(/--seat: #([0-9a-f]{6})/gi)) assert.equal(hue(m[1]), null, `seat #${m[1]} should be grey`);
+  // UI v2: the seats are steps of the (grey) ink ladder, so they stay grey in both themes with no hex in the module.
+  const seats = [...css.matchAll(/--seat: ([^;]+);/g)].map((m) => m[1].trim());
+  assert.equal(seats.length, 4);
+  for (const v of seats) assert.match(v, /^var\(--(c-ink(-2|-3)?|hairline-strong)\)$/, `seat ${v} is a grey token`);
 });

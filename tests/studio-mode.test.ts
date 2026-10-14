@@ -15,7 +15,7 @@ test("Roblox Studio mode: Lite and up only, desktop-only (no bridge outside the 
   // It lives in Create under one Keplar Studio tab (Roblox Studio | Blender) that only appears with the desktop bridge, not in the sidebar.
   const create = readFileSync("src/components/create/CreateStudio.tsx", "utf8");
   assert.match(create, /useSyncExternalStore\(noSubscribe, \(\) => Boolean\(studioBridge\(\)\), \(\) => false\)/);
-  assert.match(create, /\{desktop \? tab\("studio", "Keplar Studio"\) : null\}/);
+  assert.match(create, /\.\.\.\(desktop \? \[\{ value: "studio" as const, label: "Keplar Studio" \}\] : \[\]\)/);
   assert.doesNotMatch(readFileSync("src/components/app-ui/Sidebar.tsx", "utf8"), /studioBridge/);
 });
 

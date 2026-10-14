@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Confirm } from "../workspace/Confirm";
 import { domainGate, hostFrom, type DomainListing } from "./look-edit";
 import s from "./create.module.css";
+import { Button } from "@/components/kit";
 
 type Rec = { type: "A" | "CNAME" | "TXT"; name: string; host: string; value: string };
 type Dom = { id: string; hostname: string; status: "pending" | "verifying" | "active" | "error"; apex: boolean; records: Rec[]; problems: { title?: string; fix?: string; detail?: string }[]; message: string | null; lastCheckedAt: string | null; url: string };
@@ -65,7 +66,7 @@ export function DomainsPanel({ siteId, name, initial }: { siteId: string; name: 
       ) : (
         <form className={s.domainForm} onSubmit={(e) => { e.preventDefault(); if (hostFrom(input).length >= 4) void add(); }}>
           <input className={s.input} aria-label="Domain name" placeholder="example.com or shop.example.com" value={input} onChange={(e) => setInput(e.target.value)} autoComplete="off" autoCapitalize="none" spellCheck={false} maxLength={253} disabled={gate !== "open"} />
-          <button type="submit" className={s.primary} disabled={busy !== null || gate !== "open" || hostFrom(input).length < 4} data-add-domain="">{busy === "add" ? "Adding…" : "Add domain"}</button>
+          <Button type="submit" variant="primary" size="sm" loading={busy === "add"} disabled={busy !== null || gate !== "open" || hostFrom(input).length < 4} data-add-domain="">{busy === "add" ? "Adding…" : "Add domain"}</Button>
           <span className={s.meta}>{list.used} of {list.limit} {list.limit === 1 ? "domain" : "domains"} used on your plan{gate === "full" ? ". Remove one to add another" : ""}</span>
         </form>
       )}

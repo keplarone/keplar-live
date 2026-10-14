@@ -3,6 +3,7 @@ import { KIND_LABEL, type SiteKind } from "@/lib/site-builder/brief";
 import type { Flow } from "./flow";
 import { pickChoices } from "./understand";
 import s from "./ws.module.css";
+import { Button } from "@/components/kit";
 
 /**
  * Panel shown right after the idea is sent and before any questions: what Keplar understood (kind, audience, goal, tone, pages)
@@ -39,8 +40,8 @@ export function Understand({ flow, onSkipAll }: { flow: Flow; onSkipAll: () => v
         ))}
       </div>
       <div className={s.row}>
-        <button type="button" className={s.btn} disabled={flow.working} onClick={flow.continueFromUnderstand}>Continue</button>
-        <button type="button" className={s.btnGhost} disabled={flow.working} onClick={onSkipAll}>Just build it</button>
+        <Button variant="primary" size="sm" disabled={flow.working} onClick={flow.continueFromUnderstand}>Continue</Button>
+        <Button variant="secondary" size="sm" disabled={flow.working} onClick={onSkipAll}>Just build it</Button>
         <span className={s.muted}>I&rsquo;ll ask a few short questions next. You can skip any of them.</span>
       </div>
     </div>

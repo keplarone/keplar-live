@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "./api";
 import s from "./create.module.css";
 import d from "./domains.module.css";
+import { ActivityIndicator, Button, confirmAction } from "@/components/kit";
 
 type DomainRecord = { type: "A" | "CNAME" | "TXT"; name: string; host: string; value: string; alsoAccepted?: string[]; found?: string[]; purpose: string; done: boolean };
 type Problem = { code: string; severity: "error" | "warning" | "info"; title: string; detail: string; fix: string };
@@ -105,15 +106,16 @@ export function DomainPanel({ siteId }: { siteId: string }) {
       const r = await api<{ domain: SiteDomain }>(`/api/domains/${id}`, { method: "POST" });
       setList((cur) => (cur ? { ...cur, domains: cur.domains.map((x) => (x.id === id ? r.domain : x)) } : cur));
     });
-  const remove = (x: SiteDomain) => {
-    if (!window.confirm(`Disconnect ${x.hostname} from this site? Visitors will no longer reach the site at that address.`)) return;
+  const remove = async (x: SiteDomain) => {
+    const ok = await confirmAction({ title: `Disconnect ${x.hostname}?`, body: "Visitors will no longer reach the site at that address. You can connect it again later.", confirmLabel: "Disconnect", danger: true });
+    if (!ok) return;
     void act(`r:${x.id}`, async () => {
       await api(`/api/domains/${x.id}`, { method: "DELETE" });
       await load();
     });
   };
 
-  if (!list) return <p className={s.muted}>{loadErr ?? "Loading…"}</p>;
+  if (!list) return <p className={s.muted}>{loadErr ?? <ActivityIndicator label="Loading your domains" showLabel />}</p>;
   const free = list.limit <= 0;
   const full = list.used >= list.limit;
 
@@ -133,9 +135,9 @@ export function DomainPanel({ siteId }: { siteId: string }) {
             Domain name
           </label>
           <input id={`dom-${siteId}`} className={s.input} placeholder="example.com or shop.example.com" value={input} onChange={(e) => setInput(e.target.value)} autoComplete="off" autoCapitalize="none" spellCheck={false} maxLength={253} />
-          <button className={s.btn} type="submit" disabled={busy !== null || input.trim().length < 4 || full || !list.published}>
+          <Button variant="primary" size="sm" type="submit" loading={busy === "add"} disabled={busy !== null || input.trim().length < 4 || full || !list.published}>
             {busy === "add" ? "Adding…" : "Add domain"}
-          </button>
+          </Button>
           <span className={d.usage}>
             {list.used} of {list.limit} domain{list.limit === 1 ? "" : "s"} used on your plan
           </span>
@@ -220,17 +222,17 @@ export function DomainPanel({ siteId }: { siteId: string }) {
           )}
           <div className={d.actions}>
             {x.status !== "active" ? (
-              <button type="button" className={s.btn} disabled={busy !== null} onClick={() => void verify(x.id)}>
+              <Button variant="primary" size="sm" loading={busy === `v:${x.id}`} disabled={busy !== null} onClick={() => void verify(x.id)}>
                 {busy === `v:${x.id}` ? "Checking…" : "Check again"}
-              </button>
+              </Button>
             ) : (
-              <a className={`${s.btn} ${s.btnGhost}`} href={x.url} target="_blank" rel="noreferrer">
+              <a className={d.linkBtn} href={x.url} target="_blank" rel="noreferrer">
                 Open site
               </a>
             )}
-            <button type="button" className={`${s.btn} ${s.btnGhost}`} disabled={busy !== null} onClick={() => remove(x)}>
+            <Button variant="secondary" size="sm" loading={busy === `r:${x.id}`} disabled={busy !== null} onClick={() => void remove(x)}>
               {busy === `r:${x.id}` ? "Removing…" : "Remove"}
-            </button>
+            </Button>
           </div>
         </section>
       ))}

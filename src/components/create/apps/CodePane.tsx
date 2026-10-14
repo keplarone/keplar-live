@@ -5,6 +5,7 @@ import { api } from "../api";
 import { langOf, sortFiles, tokenize } from "./highlight";
 import { FileFinder, useGoToFile } from "./FileFinder";
 import s from "./studio.module.css";
+import { ActivityIndicator, Button } from "@/components/kit";
 
 export default function CodePane({ appId, version, onSaved }: { appId: string; version: number; onSaved?: (n: number) => void }) {
   const key = `${appId}:${version}`;
@@ -31,7 +32,7 @@ export default function CodePane({ appId, version, onSaved }: { appId: string; v
   const lines = useMemo(() => text.split("\n").length, [text]);
   const [finding, setFinding] = useGoToFile();
   if (err) return <div className={s.paneMsg} role="alert">{err}</div>;
-  if (!files) return <div className={s.paneMsg}>Opening the code…</div>;
+  if (!files) return <div className={s.paneMsg}><ActivityIndicator label="Opening the code" showLabel /></div>;
   return (
     <div className={s.code}>
       {finding ? <FileFinder paths={paths} onPick={(p) => { setSel(p); setEditing(false); setSaveErr(""); }} onClose={() => setFinding(false)} /> : null}
@@ -47,12 +48,12 @@ export default function CodePane({ appId, version, onSaved }: { appId: string; v
           <span className={s.codePath}>{pick}</span>
           <span className={s.codeMeta}>{lines} lines · {(text.length / 1024).toFixed(1)} KB</span>
           <span className={s.grow} />
-          <button type="button" className={s.textBtn} onClick={() => setFinding(true)} title="Go to file (Ctrl+P)">Go to file <kbd className={s.kbdHint}>Ctrl P</kbd></button>
-          <button type="button" className={s.textBtn} onClick={() => { void navigator.clipboard?.writeText(editing ? draft : text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1400); }); }}>{copied ? "Copied" : "Copy"}</button>
+          <Button variant="ghost" size="sm" onClick={() => setFinding(true)} title="Go to file (Ctrl+P)" trailingIcon={<kbd className={s.kbdHint}>Ctrl P</kbd>}>Go to file</Button>
+          <Button variant="ghost" size="sm" onClick={() => { void navigator.clipboard?.writeText(editing ? draft : text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1400); }); }}>{copied ? "Copied" : "Copy"}</Button>
           {editing ? (
             <>
-              <button type="button" className={s.textBtn} onClick={() => { setEditing(false); setSaveErr(""); }}>Cancel</button>
-              <button type="button" className={s.cta} disabled={saving || draft === text} onClick={() => {
+              <Button variant="ghost" size="sm" onClick={() => { setEditing(false); setSaveErr(""); }}>Cancel</Button>
+              <Button variant="primary" size="sm" loading={saving} disabled={draft === text} onClick={() => {
                 if (!pick) return;
                 setSaving(true);
                 setSaveErr("");
@@ -60,10 +61,10 @@ export default function CodePane({ appId, version, onSaved }: { appId: string; v
                   .then((r) => { setEditing(false); onSaved?.(r.version); })
                   .catch((e) => setSaveErr((e as Error).message))
                   .finally(() => setSaving(false));
-              }}>{saving ? "Saving…" : "Save as new version"}</button>
+              }}>{saving ? "Saving…" : "Save as new version"}</Button>
             </>
           ) : (
-            <button type="button" className={s.textBtn} onClick={() => { setDraft(text); setEditing(true); setSaveErr(""); }}>Edit</button>
+            <Button variant="secondary" size="sm" onClick={() => { setDraft(text); setEditing(true); setSaveErr(""); }}>Edit</Button>
           )}
         </div>
         {saveErr ? <p className={s.inlineErr} role="alert">{saveErr}</p> : null}

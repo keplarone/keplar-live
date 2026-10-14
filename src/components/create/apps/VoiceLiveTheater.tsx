@@ -16,6 +16,7 @@ import {
   type TheaterFrame,
 } from "@/lib/create/voice-live";
 import s from "./VoiceLiveTheater.module.css";
+import { Button } from "@/components/kit";
 
 type Props = {
   /** Current prompt text (shared with the text Create field). */
@@ -121,8 +122,9 @@ export function VoiceLiveTheater({ getText, setText, onBuild, disabled }: Props)
           {voice.state === "listening" ? "Listening — watch the build" : frame.phase === "paused" ? "Paused — last frame held" : frame.phase === "ready" ? "Ready to build" : open ? "Voice Live Create" : "Voice"}
         </span>
         {voice.supported ? (
-          <button
-            type="button"
+          <Button
+            variant="secondary"
+            size="sm"
             className={s.mic}
             data-live={voice.state === "listening" ? "true" : undefined}
             onClick={() => { setOpen(true); voice.toggle(); }}
@@ -133,16 +135,16 @@ export function VoiceLiveTheater({ getText, setText, onBuild, disabled }: Props)
           >
             <i className={s.dot} aria-hidden="true" />
             {voice.state === "listening" ? "Listening…" : voice.state === "processing" ? "Finishing…" : "Speak to create"}
-          </button>
+          </Button>
         ) : null}
-        <button
-          type="button"
-          className={s.build}
+        <Button
+          variant="primary"
+          size="sm"
           disabled={!canBuild}
           onClick={() => { voice.abort(); onBuild(getText().trim()); }}
         >
           Build this
-        </button>
+        </Button>
         <p className={s.hint}>
           Editor, terminal and preview update together as you talk. Pauses keep the last frame. Say “actually…” to revise. Build runs the real Create pipeline (tested app) — the theater is the live scaffold.
         </p>

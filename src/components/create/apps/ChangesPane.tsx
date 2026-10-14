@@ -9,6 +9,7 @@ import { api } from "../api";
 import { compareVersions, diffLines, toHunks, type FileChange } from "@/lib/app-builder/diff";
 import s from "./studio.module.css";
 import type { VersionMeta } from "./types";
+import { ActivityIndicator, Button } from "@/components/kit";
 
 type Files = Record<string, string>;
 const cache = new Map<string, Promise<Files>>();
@@ -88,13 +89,13 @@ export default function ChangesPane({ appId, versions, head, plan, onRestored, o
               {v.prompt ? <p className={s.asked}><span>You asked</span>{v.prompt}</p> : null}
               <p className={s.summary}>{v.summary}</p>
             </div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {n !== head ? <button type="button" className={s.ghostBtn} onClick={restore} disabled={restoring || branching}>{restoring ? "Restoring…" : `Restore v${n}`}</button> : null}
-              <button type="button" className={s.ghostBtn} onClick={branch} disabled={restoring || branching} title="Start a separate draft from this version. The original keeps its full history.">{branching ? "Branching…" : `Branch from v${n}`}</button>
+            <div className={s.changeActions}>
+              {n !== head ? <Button variant="primary" size="sm" onClick={restore} loading={restoring} disabled={branching}>{restoring ? "Restoring…" : `Restore v${n}`}</Button> : null}
+              <Button variant="secondary" size="sm" onClick={branch} loading={branching} disabled={restoring} title="Start a separate draft from this version. The original keeps its full history.">{branching ? "Branching…" : `Branch from v${n}`}</Button>
             </div>
           </div>
         ) : null}
-        {err ? <div className={s.paneMsg} role="alert">{err}</div> : !pair ? <div className={s.paneMsg}>Comparing with {prevN ? `v${prevN}` : "nothing (first version)"}…</div> : (
+        {err ? <div className={s.paneMsg} role="alert">{err}</div> : !pair ? <div className={s.paneMsg}><ActivityIndicator label={`Comparing with ${prevN ? `v${prevN}` : "nothing (first version)"}`} showLabel /></div> : (
           <>
             <p className={s.changeTotals}>{prevN ? `Compared with v${prevN}: ` : "First version: "}<b>{changes.length}</b> file{changes.length === 1 ? "" : "s"} · <span className={s.plus}>+{totals.add}</span> <span className={s.minus}>−{totals.rem}</span></p>
             {!changes.length ? <p className={s.paneMsg}>No file changed in this version.</p> : null}

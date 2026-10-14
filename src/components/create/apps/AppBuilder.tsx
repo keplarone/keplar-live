@@ -19,7 +19,7 @@ import { ScaledViewport } from "../ScaledViewport";
 import { IdeFrame, useBusinessApp } from "./IdeFrame";
 import { BuildTimeline, emptyLive, type Live } from "./BuildTimeline";
 import { Blueprint, type BlueprintLook } from "./BlueprintView";
-import { blueprintFromSpec, buildProgress, inferBlueprint } from "./blueprint";
+import { blueprintFromSpec, inferBlueprint } from "./blueprint";
 import { LookTiles, RADIUS_PX } from "./LookTiles";
 import { AppShelf } from "./AppShelf";
 import { createPromptStore, PromptField, usePromptReady, usePromptSettled, type PromptHandle, type PromptStore } from "./PromptField";
@@ -30,7 +30,7 @@ import { surpriseBrief } from "@/lib/create/surprise-brief";
 import { clearResume, isBusyError, loadResume, resumeAction, saveResume } from "./resume";
 import { TwoTone } from "@/components/page/TwoTone";
 import s from "./studio.module.css";
-import { usePresence } from "@/components/motion/usePresence";
+import { ActivityIndicator, Button, Dialog, Menu, MenuItem, SegmentedControl, Tabs, notify, tabId, tabPanelId } from "@/components/kit";
 import type { AppDetail, AppDetailResponse, AppSummary, Config, Design, VersionMeta } from "./types";
 
 const DesignPicker = lazy(() => import("./DesignPicker").then((m) => ({ default: m.DesignPicker })));
@@ -56,6 +56,8 @@ type Run = { appId: string; buildId: string | null; prompt: string; edit: boolea
 const TAB_LABEL: Record<Tab, string> = { preview: "Preview", code: "Code", changes: "Changes", live: "Live", critic: "Critic", deploy: "Deploy", look: "Look", data: "Data", settings: "Settings" };
 /** Always-visible studio tabs; the others (Live, Critic, Deploy, Look, Data, Settings) sit in the More menu. */
 const MAIN_TABS: Tab[] = ["preview", "code", "changes"];
+/** The kit Tabs id of the studio's view switch. */
+const VIEW_TABS = "kc-view";
 /** Tabs that take the whole studio width (the ledger hides). */
 const WIDE: Tab[] = ["live", "critic", "deploy"];
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -138,7 +140,6 @@ export function AppBuilder() {
   }, [frameKey, frameReady, studio]);
   const [panel, setPanel] = useState<"canvas" | "log">("canvas");
   const [busy, setBusy] = useState<Record<string, string>>({});
-  const [toast, setToast] = useState("");
   const [lastEdit, setLastEdit] = useState<number | null>(null);
   const [gate, setGate] = useState(false);
   const store = useMemo<PromptStore>(() => createPromptStore(), []);
@@ -146,15 +147,11 @@ export function AppBuilder() {
   const promptRef = useRef<PromptHandle>(null);
   const refineRef = useRef<PromptHandle>(null);
   const themeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const alive = useRef(true);
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
 
-  const say = useCallback((t: string) => {
-    setToast(t);
-    if (toastTimer.current) clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast(""), 4200);
-  }, []);
+  /** One line of feedback, as a kit toast (UI v2: no hand-rolled toasts). */
+  const say = useCallback((t: string) => { notify({ title: t }); }, []);
 
   const load = useCallback(async () => {
     const r = await api<{ apps: AppSummary[]; config: Config }>("/api/apps");
@@ -439,6 +436,8 @@ export function AppBuilder() {
   }, [auto, cfg, current, design, running]);
 
   const free = cfg?.plan === "free";
+  /** Each Options section is the panel of its kit tab. */
+  const optPanel = (v: typeof optTab) => ({ id: tabPanelId("kc-opt", v), role: "tabpanel", "aria-labelledby": tabId("kc-opt", v), hidden: optTab !== v });
 
   // ───────────────────────── start: Prompt · Look · Build ─────────────────────────
   if (!studio) {
@@ -519,19 +518,15 @@ export function AppBuilder() {
             {cfg && (free || !cfg.limits.ai) ? (
               <p className={s.upsell}>{free ? "Free builds are front-end apps made with free models (data stays in each visitor's browser). Accounts, shared data, uploads, AI features and generated imagery come with paid plans." : "Your plan includes a real backend. AI features inside your apps come with Plus and higher."} <Link href="/pricing">See plans</Link></p>
             ) : null}
-            {loadErr ? <p className={s.inlineErr} role="alert">{loadErr} <button type="button" className={s.textBtn} onClick={() => { setLoadErr(""); load().catch((e) => setLoadErr((e as Error).message)); }}>Try again</button></p> : null}
+            {loadErr ? <p className={s.inlineErr} role="alert">{loadErr} <Button variant="ghost" size="sm" onClick={() => { setLoadErr(""); load().catch((e) => setLoadErr((e as Error).message)); }}>Try again</Button></p> : null}
 
             <div id="kc-options" className={s.calmOptions} hidden={!optionsOpen}>
-              <div className={s.optTabs} role="tablist" aria-label="Options">
-                {([["look", "Look"], ["refs", "References"], ["voice", "Speak it"], ["screens", "Screens"]] as const).map(([id, label]) => (
-                  <button key={id} type="button" role="tab" aria-selected={optTab === id} className={s.optTab} onClick={() => setOptTab(id)}>{label}</button>
-                ))}
-              </div>
-              <section className={s.step} aria-labelledby="kc-voice" hidden={optTab !== "voice"}>
+              <Tabs id="kc-opt" label="Options" value={optTab} onValueChange={setOptTab} className={s.optTabs} items={[{ value: "look", label: "Look" }, { value: "refs", label: "References" }, { value: "voice", label: "Speak it" }, { value: "screens", label: "Screens" }]} />
+              <section className={s.step} {...optPanel("voice")}>
                 <h3 id="kc-voice" className={s.stepLabel}>Speak it</h3>
                 <div className={s.voiceLive}>
                   {optionsOpen && optTab === "voice" ? (
-                    <Suspense fallback={<p className={s.paneMsg}>Loading voice…</p>}>
+                    <Suspense fallback={<p className={s.paneMsg}><ActivityIndicator label="Loading voice" showLabel /></p>}>
                       <VoiceLiveTheater
                         getText={() => store.text()}
                         setText={(v) => promptRef.current?.set(v)}
@@ -543,18 +538,18 @@ export function AppBuilder() {
                 </div>
               </section>
 
-              <div hidden={optTab !== "refs"}>
+              <div {...optPanel("refs")}>
                 <ReferenceTray className={s.step} labelClass={s.stepLabel} onChange={onRefs} disabled={running} plan={cfg?.plan} />
               </div>
 
-              <section className={s.step} aria-labelledby="kc-shape" hidden={optTab !== "look"}>
+              <section className={s.step} {...optPanel("look")}>
                 <h3 id="kc-shape" className={s.stepLabel}>Look</h3>
                 {cfg ? (
                   <LookTiles cfg={cfg} design={design} auto={auto} tuned={!auto && design.paletteSource !== "style"} onAuto={() => setAuto(true)} onStyle={(id) => { const st = cfg.styles.find((x) => x.id === id)!; setAuto(false); setDesign((d) => ({ ...d, style: id, fonts: st.fonts, shape: st.shape, density: st.density, motion: st.motion, palette: null, paletteSource: "style", direction: undefined })); }} onMode={(m) => { setModeTouched(true); setDesign((d) => ({ ...d, mode: m, ...(d.paletteSource === "style" ? { palette: null } : {}) })); }} onFineTune={() => setTuneOpen(true)} />
                 ) : <div className={s.tilesGhost} aria-hidden="true">{Array.from({ length: 6 }, (_, i) => <span key={i} />)}</div>}
               </section>
 
-              <section className={s.step} aria-labelledby="kc-preview" hidden={optTab !== "screens"}>
+              <section className={s.step} {...optPanel("screens")}>
                 <h3 id="kc-preview" className={s.stepLabel}>Screens preview</h3>
                 <div className={`${s.canvas} ${s.calmCanvas}`} aria-label="Preview of your app">
                   {optionsOpen && optTab === "screens" ? <LiveBlueprint store={store} look={look} auto={auto} /> : null}
@@ -568,21 +563,13 @@ export function AppBuilder() {
           <p className={s.calmShowcase}>Need ideas? <Link href="/showcase">Browse the showcase</Link></p>
           </IdeFrame>
         </div>
-        {tuneOpen && cfg ? (
-          <div className={s.sheetWrap} role="dialog" aria-modal="true" aria-label="Fine-tune the look" onClick={(e) => { if (e.target === e.currentTarget) setTuneOpen(false); }}>
-            <div className={s.sheet}>
-              <div className={s.sheetHead}>
-                <h2 className={s.paneTitle}>Fine-tune the look</h2>
-                <span className={s.grow} />
-                <button type="button" className={s.ghostBtn} onClick={() => setTuneOpen(false)}>Done</button>
-              </div>
-              <Suspense fallback={<p className={s.paneMeta}>Opening the design picker…</p>}>
-                <DesignPicker cfg={cfg} design={design} onChange={(d) => { setDesign(d); setAuto(false); }} idea={store.text()} />
-              </Suspense>
-            </div>
-          </div>
-        ) : null}
-        <Toast text={toast} />
+        <Dialog open={tuneOpen && Boolean(cfg)} onOpenChange={setTuneOpen} title="Fine-tune the look" className={s.tuneDialog} footer={<Button variant="primary" onClick={() => setTuneOpen(false)}>Done</Button>}>
+          {cfg ? (
+            <Suspense fallback={<p className={s.paneMeta}><ActivityIndicator label="Opening the design picker" showLabel /></p>}>
+              <DesignPicker cfg={cfg} design={design} onChange={(d) => { setDesign(d); setAuto(false); }} idea={store.text()} />
+            </Suspense>
+          ) : null}
+        </Dialog>
       </div>
     );
   }
@@ -592,7 +579,7 @@ export function AppBuilder() {
   const published = current?.publishedVersion != null;
   const behind = published && (current?.headVersion ?? 0) > (current?.publishedVersion ?? 0);
   const filesPlanned = live.spec?.files?.length ?? 0;
-  const progress = running ? buildProgress(live.stage, live.files.length, filesPlanned) : 1;
+  const filesWritten = { done: Math.min(live.files.length, filesPlanned), total: filesPlanned };
   const bp = live.spec ? blueprintFromSpec(live.spec, live, { building: running }) : current?.spec ? blueprintFromSpec(current.spec) : inferBlueprint(run?.prompt ?? store.text());
   // While a build tests and fixes its code, the preview shows the app as written so far (refreshed after every fix round);
   // otherwise the saved version.
@@ -603,50 +590,43 @@ export function AppBuilder() {
   // Minimal pass: three tabs stay visible; the rest open from one "More" menu (only once a build exists).
   const shownTabs = tabs.filter((t) => MAIN_TABS.includes(t));
   const moreTabs = tabs.filter((t) => !MAIN_TABS.includes(t));
+  // A view opened from More joins the tab row while it is open, so the row always has a selected (and keyboard-reachable) tab.
+  const rowTabs = tabs.includes(tab) && !shownTabs.includes(tab) ? [...shownTabs, tab] : shownTabs;
   const wide = WIDE.includes(tab);
   const reopen = () => { if (current) { void open(current.id, { keepTab: true }); void load(); } };
 
   return (
     <div className={s.root}>
       <div className={s.top}>
-        <button type="button" className={s.back} onClick={backToStart} disabled={running} aria-label="All apps">
-          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          <span>Apps</span>
-        </button>
+        <Button variant="ghost" size="sm" onClick={backToStart} disabled={running} aria-label="All apps" leadingIcon={<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>}>
+          Apps
+        </Button>
         <div className={s.title}>
           <span className={s.appName} style={look ? { fontFamily: look.display } : undefined}>{name}</span>
           {current?.headVersion ? <span className={s.ver}>v{current.headVersion}</span> : null}
-          <span className={s.badge} data-tone={running ? "live" : err ? "warn" : published ? (behind ? "warn" : "ok") : undefined}>{running ? "Building" : err ? "Stopped" : published ? (behind ? "Update ready" : "Live") : current?.headVersion ? "Draft" : "New"}</span>
+          <span className={s.badge} data-tone={running ? "live" : err ? "warn" : published ? (behind ? "warn" : "ok") : undefined}>{running ? <ActivityIndicator label="" size={12} /> : null}{running ? "Building" : err ? "Stopped" : published ? (behind ? "Update ready" : "Live") : current?.headVersion ? "Draft" : "New"}</span>
         </div>
         <nav className={s.tabs} aria-label="App views">
-          <div role="tablist" aria-label="App views" className={s.tabRow}>
-            {shownTabs.map((t) => <button key={t} type="button" role="tab" aria-selected={tab === t} className={s.tab} onClick={() => setTab(t)}>{TAB_LABEL[t]}</button>)}
-          </div>
+          <Tabs id={VIEW_TABS} label="App views" value={tab} onValueChange={setTab} className={s.tabRow} items={rowTabs.map((t) => ({ value: t, label: TAB_LABEL[t] }))} />
           {moreTabs.length ? <MoreTabs tabs={moreTabs} active={moreTabs.includes(tab) ? tab : null} onPick={setTab} /> : null}
         </nav>
         <span className={s.grow} />
         {tab === "preview" && showFrame && !running ? (
-          <button type="button" className={s.pickBtn} aria-pressed={picking} aria-label={picking ? "Stop selecting" : "Select an element to change"} onClick={() => { setPicked(null); setPicking((x) => !x); }} title="Click anything in the preview to change it (Esc to stop)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 4l7 17 2.5-7.5L21 11z" /></svg>
+          <Button variant={picking ? "primary" : "secondary"} size="sm" className={s.pickBtn} aria-pressed={picking} aria-label={picking ? "Stop selecting" : "Select an element to change"} onClick={() => { setPicked(null); setPicking((x) => !x); }} title="Click anything in the preview to change it (Esc to stop)" leadingIcon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 4l7 17 2.5-7.5L21 11z" /></svg>}>
             <span className={s.pickLabel}>{picking ? "Click an element" : "Select"}</span>
-          </button>
+          </Button>
         ) : null}
         {tab === "preview" && showFrame ? (
-          <div className={`${s.toggle} ${s.devices}`} role="group" aria-label="Device">
-            {(["desktop", "tablet", "phone"] as const).map((d) => <button key={d} type="button" aria-pressed={device === d} onClick={() => setDevice(d)} aria-label={d} title={d[0].toUpperCase() + d.slice(1)}>{DEVICE_ICON[d]}</button>)}
-          </div>
+          <SegmentedControl label="Device" size="sm" className={s.devices} value={device} onValueChange={setDevice} options={(["desktop", "tablet", "phone"] as const).map((d) => ({ value: d, label: null, icon: DEVICE_ICON[d], ariaLabel: d[0].toUpperCase() + d.slice(1) }))} />
         ) : null}
-        {current?.previewUrl ? <a className={s.ghostBtn} href={current.previewUrl} target="_blank" rel="noopener">Open<span aria-hidden="true"> ↗</span></a> : null}
-        {current?.liveUrl ? <a className={s.ghostBtn} href={current.liveUrl} target="_blank" rel="noopener">Live<span aria-hidden="true"> ↗</span></a> : null}
-        {current?.previewUrl ? <button type="button" className={s.cta} onClick={() => setGate(true)} disabled={Boolean(busy[current.id]) || running || (published && !behind)}>{busy[current.id] === "publish" ? "Publishing…" : published ? (behind ? "Publish update" : "Published") : "Publish"}</button> : null}
+        {current?.previewUrl ? <a className={s.linkBtn} href={current.previewUrl} target="_blank" rel="noopener">Open<span aria-hidden="true"> ↗</span></a> : null}
+        {current?.liveUrl ? <a className={s.linkBtn} href={current.liveUrl} target="_blank" rel="noopener">Live<span aria-hidden="true"> ↗</span></a> : null}
+        {current?.previewUrl ? <Button variant="primary" size="sm" className={s.cta} onClick={() => setGate(true)} loading={busy[current.id] === "publish"} disabled={Boolean(busy[current.id]) || running || (published && !behind)}>{busy[current.id] === "publish" ? "Publishing…" : published ? (behind ? "Publish update" : "Published") : "Publish"}</Button> : null}
       </div>
 
       {wide ? null : (
-        <div className={s.panelSwitch} role="group" aria-label="Show">
-          <div className={s.toggle}>
-            <button type="button" aria-pressed={panel === "canvas"} onClick={() => setPanel("canvas")}>{running ? "Build" : "Preview"}</button>
-            <button type="button" aria-pressed={panel === "log"} onClick={() => setPanel("log")}>{running ? "Steps" : "Report & refine"}</button>
-          </div>
+        <div className={s.panelSwitch}>
+          <SegmentedControl label="Show" size="sm" fullWidth value={panel} onValueChange={setPanel} options={[{ value: "canvas", label: running ? "Build" : "Preview" }, { value: "log", label: running ? "Steps" : "Report & refine" }]} />
         </div>
       )}
 
@@ -664,8 +644,8 @@ export function AppBuilder() {
               <strong>{err.kind === "confirm" ? "Confirm the cost" : err.kind === "stopped" ? "Lost the connection" : err.kind === "setup" ? "Not available yet" : "The build stopped"}</strong>
               <p>{err.message}</p>
               <div className={s.errActions}>
-                {err.kind === "confirm" ? <button type="button" className={s.cta} onClick={retry}>Start the build{err.units ? ` · ${err.units.toLocaleString()} credits` : ""}</button> : err.kind === "setup" ? null : <button type="button" className={s.cta} onClick={retry}>{err.kind === "stopped" ? "Reconnect" : "Try again"}</button>}
-                {!run?.edit ? <button type="button" className={s.ghostBtn} onClick={() => { const p = run?.prompt ?? ""; backToStart(); setTimeout(() => p && promptRef.current?.set(p), 30); }}>Edit the prompt</button> : null}
+                {err.kind === "confirm" ? <Button variant="primary" size="sm" onClick={retry}>Start the build{err.units ? ` · ${err.units.toLocaleString()} credits` : ""}</Button> : err.kind === "setup" ? null : <Button variant="primary" size="sm" onClick={retry}>{err.kind === "stopped" ? "Reconnect" : "Try again"}</Button>}
+                {!run?.edit ? <Button variant="secondary" size="sm" onClick={() => { const p = run?.prompt ?? ""; backToStart(); setTimeout(() => p && promptRef.current?.set(p), 30); }}>Edit the prompt</Button> : null}
               </div>
             </div>
           ) : null}
@@ -675,9 +655,9 @@ export function AppBuilder() {
               <strong>Published v{shipped.version}</strong>
               <p>The live app is at this address. Further edits stay in the draft until you publish again. Deploy keeps a log and can roll back.</p>
               <div className={s.errActions}>
-                <a className={s.cta} href={shipped.url} target="_blank" rel="noopener">Open live app</a>
-                <button type="button" className={s.ghostBtn} onClick={() => { void navigator.clipboard?.writeText(shipped.url); say("Link copied."); }}>Copy link</button>
-                <button type="button" className={s.ghostBtn} onClick={() => setTab("deploy")}>Deploy log</button>
+                <a className={s.linkPrimary} href={shipped.url} target="_blank" rel="noopener">Open live app</a>
+                <Button variant="secondary" size="sm" onClick={() => { void navigator.clipboard?.writeText(shipped.url); say("Link copied."); }}>Copy link</Button>
+                <Button variant="ghost" size="sm" onClick={() => setTab("deploy")}>Deploy log</Button>
               </div>
             </div>
           ) : null}
@@ -704,7 +684,7 @@ export function AppBuilder() {
           ) : null}
         </aside>
 
-        <section className={s.stage} aria-label={tab === "preview" ? "Preview" : TAB_LABEL[tab]}>
+        <section className={s.stage} id={tabPanelId(VIEW_TABS, tab)} aria-label={tab === "preview" ? "Preview" : TAB_LABEL[tab]}>
           {tab === "preview" && !running && picked ? (
             <PickEditor picked={picked} onCancel={() => setPicked(null)} onApply={(what) => {
               const p = picked;
@@ -722,7 +702,7 @@ export function AppBuilder() {
           {tab === "preview" ? (
             <div className={s.canvas} data-device={device}>
               <div className={s.layer} data-hidden={showFrame && frameReady ? "true" : undefined}>
-                <Blueprint bp={bp} look={look} building={running} progress={progress} caption={running ? live.stageText : !current?.previewUrl ? (err ? "Nothing was published." : "Your app appears here as soon as it passes its tests.") : "Developing the preview…"} />
+                <Blueprint bp={bp} look={look} building={running} files={filesWritten} caption={running ? live.stageText : !current?.previewUrl ? (err ? "Nothing was published." : "Your app appears here as soon as it passes its tests.") : "Developing the preview…"} />
               </div>
               {showFrame ? (
                 <div className={s.frameLayer} data-ready={frameReady ? "true" : undefined}>
@@ -735,7 +715,7 @@ export function AppBuilder() {
               ) : null}
             </div>
           ) : (
-            <Suspense fallback={<div className={s.paneMsg}>Loading…</div>}>
+            <Suspense fallback={<div className={s.paneMsg}><ActivityIndicator label="Loading" showLabel /></div>}>
               {tab === "code" && current?.headVersion ? <CodePane appId={current.id} version={current.headVersion} onSaved={() => { void open(current.id, { keepTab: true }); void load(); say("Saved as a new version."); }} /> : null}
               {tab === "changes" && current ? <ChangesPane appId={current.id} versions={versions} head={current.headVersion} plan={cfg?.plan} onRestored={() => { void open(current.id, { keepTab: true }); void load(); say("Restored as a new version."); }} onBranched={(id) => { void load(); void open(id); say("Branched into a new draft. The original keeps its history."); }} /> : null}
               {tab === "look" && cfg && current ? <div className={s.pane}><DesignPicker cfg={cfg} design={design} onChange={saveTheme} idea={current.spec?.name ?? ""} compact /><p className={s.paneMeta}>Theme changes apply to the preview instantly and cost nothing. Publish to update the live app.</p></div> : null}
@@ -761,7 +741,6 @@ export function AppBuilder() {
           />
         </Suspense>
       ) : null}
-      <Toast text={toast} />
     </div>
   );
 }
@@ -779,8 +758,8 @@ function PickEditor({ picked, onApply, onCancel }: { picked: Picked; onApply: (w
       </div>
       <div className={s.pickRow}>
         <input className={s.pickInput} autoFocus value={what} onChange={(e) => setWhat(e.target.value)} onKeyDown={(e) => { if (e.key === "Escape") onCancel(); }} placeholder="What should change? e.g. “make it bigger and blue”, “say Start free instead”" aria-label="What should change" />
-        <button type="submit" className={s.cta} disabled={!what.trim()}>Change it</button>
-        <button type="button" className={s.ghostBtn} onClick={onCancel}>Cancel</button>
+        <Button type="submit" variant="primary" size="sm" disabled={!what.trim()}>Change it</Button>
+        <Button variant="ghost" size="sm" onClick={onCancel}>Cancel</Button>
       </div>
     </form>
   );
@@ -802,7 +781,7 @@ function IssueBar({ open, errors, onFix }: { open: string[]; errors: { message: 
       <div className={s.issueRow}>
         <span className={s.issueDot} aria-hidden="true" />
         <button type="button" className={s.issueTitle} onClick={() => setExpanded((x) => !x)} aria-expanded={expanded}>{title}</button>
-        <button type="button" className={s.cta} onClick={() => onFix(items)}>Fix {items.length === 1 ? "it" : "these"}</button>
+        <Button variant="primary" size="sm" onClick={() => onFix(items)}>Fix {items.length === 1 ? "it" : "these"}</Button>
       </div>
       {expanded ? <ul className={s.issueList}>{items.map((x) => <li key={x}>{x}</li>)}</ul> : null}
     </div>
@@ -831,17 +810,16 @@ function ShipRow({ store, cfg, onBuild }: { store: PromptStore; cfg: Config | nu
       </span>
       <span className={s.grow} />
       <span className={s.kbd} aria-hidden="true">{KEY_MOD}↵</span>
-      <button type="button" className={s.cta} disabled={!ready || !cfg} onClick={onBuild} aria-keyshortcuts="Control+Enter Meta+Enter">
+      <Button variant="primary" className={s.cta} disabled={!ready || !cfg} onClick={onBuild} aria-keyshortcuts="Control+Enter Meta+Enter" trailingIcon={<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>}>
         Build the app
-        <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-      </button>
+      </Button>
     </div>
   );
 }
 
 function RefineButton({ store, onApply }: { store: PromptStore; onApply: () => void }) {
   const ready = useSyncReady(store, 4);
-  return <button type="button" className={s.cta} disabled={!ready} onClick={onApply}>Apply change</button>;
+  return <Button variant="primary" size="sm" disabled={!ready} onClick={onApply}>Apply change</Button>;
 }
 
 /** Ready at a lower threshold for refinements ("denser feed" is a fine change request). */
@@ -862,52 +840,29 @@ function Elapsed({ since, text }: { since: number; text: string }) {
   const secs = Math.max(0, Math.round((now - since) / 1000));
   return (
     <div className={s.elapsed} aria-live="polite">
-      <span className={s.pulse} aria-hidden="true" />
+      <ActivityIndicator label="" />
       <span className={s.elapsedText}>{text || "Working"}</span>
       <span className={s.clock}>{Math.floor(secs / 60)}:{String(secs % 60).padStart(2, "0")}</span>
     </div>
   );
 }
 
-/** The studio's secondary views in one small menu. The button names the open view when it is one of them. */
+/** The studio's secondary views in one small menu (the kit Menu). The open one is checked (it also sits in the tab row while open). */
 function MoreTabs({ tabs, active, onPick }: { tabs: Tab[]; active: Tab | null; onPick: (t: Tab) => void }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  const pop = usePresence(open);
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e: PointerEvent) => { if (!ref.current?.contains(e.target as Node)) setOpen(false); };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { setOpen(false); ref.current?.querySelector<HTMLElement>("button")?.focus(); }
-      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-        const items = [...(ref.current?.querySelectorAll<HTMLElement>("[role=menuitem]") ?? [])];
-        if (!items.length) return;
-        e.preventDefault();
-        const i = items.indexOf(document.activeElement as HTMLElement);
-        items[e.key === "ArrowDown" ? (i + 1) % items.length : i <= 0 ? items.length - 1 : i - 1].focus();
-      }
-    };
-    window.addEventListener("pointerdown", onDown);
-    window.addEventListener("keydown", onKey);
-    return () => { window.removeEventListener("pointerdown", onDown); window.removeEventListener("keydown", onKey); };
-  }, [open]);
   return (
-    <div className={s.moreTabs} ref={ref}>
-      <button type="button" className={s.tab} aria-haspopup="menu" aria-expanded={open} data-active={active ? "true" : undefined} onClick={() => setOpen((v) => !v)} data-studio-more="">
-        {active ? TAB_LABEL[active] : "More"}
-        <svg width="10" height="10" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
-      </button>
-      {pop.mounted ? (
-        <div className={s.moreMenu} role="menu" aria-label="More views" {...pop.motion("pop")}>
-          {tabs.map((t) => (
-            <button key={t} type="button" role="menuitem" className={s.moreItem} aria-current={active === t ? "true" : undefined} onClick={() => { onPick(t); setOpen(false); }}>
-              <span>{TAB_LABEL[t]}</span>
-              <span className={s.moreHint}>{TAB_HINT[t]}</span>
-            </button>
-          ))}
-        </div>
-      ) : null}
-    </div>
+    <Menu
+      label="More views"
+      trigger={({ open, ...p }) => (
+        <button {...p} type="button" data-open={open || undefined} className={s.moreTrigger} data-studio-more="">
+          More
+          <svg width="10" height="10" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        </button>
+      )}
+    >
+      {tabs.map((t) => (
+        <MenuItem key={t} checked={active === t} hint={TAB_HINT[t]} onSelect={() => onPick(t)}>{TAB_LABEL[t]}</MenuItem>
+      ))}
+    </Menu>
   );
 }
 
@@ -919,10 +874,6 @@ const TAB_HINT: Partial<Record<Tab, string>> = {
   data: "Your app's stored data",
   settings: "Features and admins",
 };
-
-function Toast({ text }: { text: string }) {
-  return <div className={s.toast} role="status" aria-live="polite" data-on={text ? "true" : undefined}>{text}</div>;
-}
 
 const DEVICE_ICON: Record<Device, React.ReactNode> = {
   desktop: <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="9" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.3" /><path d="M5.5 14h5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" /></svg>,

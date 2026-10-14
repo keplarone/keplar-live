@@ -9,6 +9,7 @@ import { api, ndjson } from "../api";
 import { DomainPanel } from "../DomainPanel";
 import { durationMs, type Deploy, type Step } from "@/lib/deploy/machine";
 import s from "./advanced.module.css";
+import { Button, EmptyState } from "@/components/kit";
 
 type Version = { n: number; summary: string; kind: string; createdAt: string; bytes: number; previewUrl: string; wasLive?: boolean; lastLiveAt?: string | null; current?: boolean };
 type Overview = {
@@ -84,10 +85,10 @@ export function DeployPane({ siteId, onChanged, toast }: { siteId: string; onCha
             </div>
           </div>
           {ov.canDeploy ? (
-            <button type="button" className={s.primary} disabled={running || !head || (liveV === head) || ov.site.takenDown} onClick={() => void deploy(head)}>
+            <Button variant="primary" loading={running} disabled={!head || (liveV === head) || ov.site.takenDown} onClick={() => void deploy(head)}>
               {running ? "Deploying…" : liveV === head ? `v${head} is live` : `Deploy v${head}`}
-            </button>
-          ) : <span className={s.dim} style={{ fontSize: "var(--t-label)" }}>Owners and admins deploy.</span>}
+            </Button>
+          ) : <span className={`${s.dim} ${s.note}`}>Owners and admins deploy.</span>}
         </div>
 
         {err ? <p role="alert" className={s.errText}>{err}</p> : null}
@@ -99,7 +100,7 @@ export function DeployPane({ siteId, onChanged, toast }: { siteId: string; onCha
                 <div className={s.toolbar} style={{ marginBottom: 10 }}>
                   <h3 className={s.sectionTitle}>{shown.kind === "rollback" ? "Rollback" : "Deploy"} v{shown.version}</h3>
                   <span className={s.pill} data-t={shown.status === "live" ? "live" : shown.status === "failed" ? "failed" : "was"}>{STATUS_TEXT[shown.status]}</span>
-                  <span className={s.dim} style={{ fontSize: "var(--t-label)" }}>{shown.byName} · {when(shown.createdAt)}{durationMs(shown) != null ? ` · ${secs(durationMs(shown))}` : ""}{shown.criticScore != null ? ` · critic ${shown.criticScore}` : ""}</span>
+                  <span className={`${s.dim} ${s.note}`}>{shown.byName} · {when(shown.createdAt)}{durationMs(shown) != null ? ` · ${secs(durationMs(shown))}` : ""}{shown.criticScore != null ? ` · critic ${shown.criticScore}` : ""}</span>
                 </div>
                 <div className={s.steps}>
                   {shown.steps.map((st) => {
@@ -123,7 +124,7 @@ export function DeployPane({ siteId, onChanged, toast }: { siteId: string; onCha
                 </div>
                 {shown.status === "failed" && shown.error ? <p className={s.errText} style={{ marginTop: 10 }}>{shown.error}</p> : null}
               </section>
-            ) : <div className={s.empty}><h3>No deploys yet</h3><p>Deploy runs the safety checks, takes an immutable snapshot, moves the live pointer and checks the live page.</p></div>}
+            ) : <EmptyState title="No deploys yet" hint="Deploy runs the safety checks, takes an immutable snapshot, moves the live pointer and checks the live page." />}
 
             {ov.deploys.length > 1 ? (
               <section aria-label="Deploy history">

@@ -9,6 +9,7 @@ import type { TermKind } from "@/lib/collab/doc";
 import type { Deploy } from "@/lib/deploy/machine";
 import type { LiveSession } from "./useLiveSession";
 import s from "./advanced.module.css";
+import { Button } from "@/components/kit";
 
 type Out = { kind: TermKind; text: string };
 export type TermHooks = { open: (file: string, line?: number) => void; preview: () => void; critic: () => void; invite: () => void; deployed: () => void; toast: (t: string) => void };
@@ -208,7 +209,7 @@ export function Terminal({ session, hooks, open, onToggle, readOnly = false }: {
         <strong>Terminal</strong>
         <span>shared · {peers.length} {peers.length === 1 ? "person" : "people"} see this</span>
         <span className={s.grow} />
-        <button type="button" className={s.quiet} onClick={onToggle} aria-expanded={open}>{open ? "Hide" : "Show"}</button>
+        <Button variant="ghost" size="sm" onClick={onToggle} aria-expanded={open}>{open ? "Hide" : "Show"}</Button>
       </div>
       {open ? (
         <>

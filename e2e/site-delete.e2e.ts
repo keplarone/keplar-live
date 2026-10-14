@@ -43,6 +43,8 @@ async function openCreate(page: Page) {
 const rail = (page: Page) => page.getByRole("navigation", { name: "Projects" });
 const rowOf = (page: Page, name: string) => rail(page).locator("li", { has: page.getByRole("button", { name: `Delete site: ${name}` }) });
 const dialog = (page: Page) => page.locator("[data-delete-site-dialog]");
+// UI v2: the undo is a kit toast (notify) in the site-wide Notifications list.
+const undoToast = (page: Page) => page.getByRole("list", { name: "Notifications" }).getByRole("listitem").filter({ hasText: "Deleted “" });
 
 
 test.describe.serial("delete a site", () => {
@@ -99,7 +101,7 @@ test.describe.serial("delete a site", () => {
     await expect(rail(page).getByRole("button", { name: new RegExp(`^${alpha.name}`) })).toHaveAttribute("aria-current", "true");
     await rowOf(page, alpha.name).getByRole("button", { name: `Delete site: ${alpha.name}` }).click();
     await dialog(page).getByRole("button", { name: "Delete site" }).click();
-    const toast = page.locator("[data-undo-toast]");
+    const toast = undoToast(page);
     await expect(toast).toContainText(`Deleted “${alpha.name}”`);
     await expect(rowOf(page, alpha.name)).toHaveCount(0);
     expect(await status(ctx, `/api/sites/${alpha.id}`)).toBe(404);
@@ -117,10 +119,10 @@ test.describe.serial("delete a site", () => {
     await expect(dialog(page)).toContainText(`/s/${bravo.slug}`);
     await expect(dialog(page)).toContainText("goes offline right away");
     await dialog(page).getByRole("button", { name: "Delete site" }).click();
-    await expect(page.locator("[data-undo-toast]")).toBeVisible();
+    await expect(undoToast(page)).toBeVisible();
     expect(await status(ctx, `/s/${bravo.slug}`)).toBe(410);
     expect(await status(ctx, `/s/${bravo.slug}/sitemap.xml`)).toBe(410);
-    await expect(page.locator("[data-undo-toast]")).toHaveCount(0, { timeout: 12_000 });
+    await expect(undoToast(page)).toHaveCount(0, { timeout: 12_000 });
     await expect.poll(async () => (await ctx.request.post(`/api/sites/${bravo.id}/restore`, { data: {} })).status(), { timeout: 10_000 }).toBe(404);
     expect(await status(ctx, `/s/${bravo.slug}`)).toBe(410); // the address stays reserved for you
     await openCreate(page);
@@ -134,15 +136,15 @@ test.describe.serial("delete a site", () => {
     await page.getByRole("button", { name: /^delete site…$/i }).click();
     await expect(dialog(page).getByRole("heading", { name: `Delete “${charlie.name}”?` })).toBeVisible();
     await dialog(page).getByRole("button", { name: "Delete site" }).click();
-    await expect(page.locator("[data-undo-toast]")).toBeVisible();
+    await expect(undoToast(page)).toBeVisible();
     // Alpha is still there: switched to it. Delete it too, from the rail: nothing is left.
     await expect(rail(page).locator('[aria-current="true"]')).toContainText(alpha.name);
     await rowOf(page, alpha.name).getByRole("button", { name: `Delete site: ${alpha.name}` }).click();
     await dialog(page).getByRole("button", { name: "Delete site" }).click();
     await expect(page.getByRole("heading", { name: "What are we building?" })).toBeVisible();
     await expect(rail(page).getByText(/nothing yet/i)).toBeVisible();
-    await expect(page.locator("[data-undo-toast]")).toContainText(alpha.name);
-    await page.locator("[data-undo-toast]").getByRole("button", { name: "Undo" }).click();
+    await expect(undoToast(page)).toContainText(alpha.name);
+    await undoToast(page).getByRole("button", { name: "Undo" }).click();
     await expect(rowOf(page, alpha.name)).toBeVisible();
   });
 

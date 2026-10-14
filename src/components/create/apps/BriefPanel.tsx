@@ -7,6 +7,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import s from "./studio.module.css";
+import { ActivityIndicator, Button } from "@/components/kit";
 
 type Question = { id: string; field: string; text: string; chips: string[]; multi: boolean; placeholder: string };
 type Direction = { id: string; name: string; tagline: string; swatch: [string, string, string] };
@@ -69,10 +70,10 @@ export function BriefPanel({ idea, onApply, onClose }: { idea: string; onApply: 
           <h3 className={s.briefTitle}>Shape the brief</h3>
           <p className={s.briefLede}>Answer what you know. Keplar keeps your words as the only facts, and leaves a marked placeholder everywhere else. It does not invent prices, customers, or testimonials.</p>
         </div>
-        <button type="button" className={s.textBtn} onClick={onClose}>Back to the prompt</button>
+        <Button variant="ghost" size="sm" onClick={onClose}>Back to the prompt</Button>
       </header>
       {err ? <p className={s.inlineErr} role="alert">{err}</p> : null}
-      {!data && !err ? <p className={s.paneMsg}>Reading the idea…</p> : null}
+      {!data && !err ? <p className={s.paneMsg}><ActivityIndicator label="Reading the idea" showLabel /></p> : null}
       {data ? (
         <>
           <ol className={s.briefQuestions}>
@@ -109,7 +110,7 @@ export function BriefPanel({ idea, onApply, onClose }: { idea: string; onApply: 
             </div>
           </div>
           <div className={s.briefActions}>
-            <button type="button" className={s.cta} disabled={busy} onClick={() => void build()}>{busy ? "Preparing…" : "Build from this brief"}</button>
+            <Button variant="primary" loading={busy} onClick={() => void build()}>{busy ? "Preparing…" : "Build from this brief"}</Button>
             <p className={s.briefNote}>The direction sets the type, color and layout tokens. You can change the look after the preview is up, without another build.</p>
           </div>
         </>

@@ -6,6 +6,7 @@
 import { memo } from "react";
 import s from "./studio.module.css";
 import type { AppSummary } from "./types";
+import { Button } from "@/components/kit";
 
 type Props = {
   apps: AppSummary[];
@@ -68,10 +69,10 @@ export const AppShelf = memo(function AppShelf({ apps, busy, onOpen, onRefine, o
                 </div>
                 <span className={s.cardMeta}>{[a.kind, a.headVersion ? `v${a.headVersion}` : "", ago(a.updatedAt)].filter(Boolean).join(" · ")}</span>
                 <div className={s.cardActions}>
-                  <button type="button" className={s.textBtn} onClick={() => onOpen(a.id)}>Open</button>
-                  {a.headVersion ? <button type="button" className={s.textBtn} onClick={() => onRefine(a.id)}>Refine</button> : null}
-                  <button type="button" className={s.textBtn} onClick={() => onDuplicate(a.id)} disabled={Boolean(b)}>{b === "duplicate" ? "Copying…" : "Duplicate"}</button>
-                  {a.headVersion && (!published || behind) ? <button type="button" className={s.textBtn} onClick={() => onPublish(a.id)} disabled={Boolean(b)}>{b === "publish" ? "Publishing…" : behind ? "Publish update" : "Publish"}</button> : null}
+                  <Button variant="ghost" size="sm" onClick={() => onOpen(a.id)}>Open</Button>
+                  {a.headVersion ? <Button variant="ghost" size="sm" onClick={() => onRefine(a.id)}>Refine</Button> : null}
+                  <Button variant="ghost" size="sm" onClick={() => onDuplicate(a.id)} loading={b === "duplicate"} disabled={Boolean(b)}>{b === "duplicate" ? "Copying…" : "Duplicate"}</Button>
+                  {a.headVersion && (!published || behind) ? <Button variant="ghost" size="sm" onClick={() => onPublish(a.id)} loading={b === "publish"} disabled={Boolean(b)}>{b === "publish" ? "Publishing…" : behind ? "Publish update" : "Publish"}</Button> : null}
                   {published && a.liveUrl ? <a className={s.textBtn} href={a.liveUrl} target="_blank" rel="noopener">Visit</a> : null}
                 </div>
               </div>

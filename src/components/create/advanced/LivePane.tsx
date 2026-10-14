@@ -12,6 +12,7 @@ import { Terminal, type TermHooks } from "./Terminal";
 import { siteSrcDoc } from "./live-preview";
 import type { LiveSession, Peer } from "./useLiveSession";
 import s from "./advanced.module.css";
+import { Button, SegmentedControl } from "@/components/kit";
 
 export type OpenRequest = { file: string; line?: number; at: number };
 
@@ -149,37 +150,34 @@ export function LivePane({ session, toast, request, onOpenCritic, onDeployed, on
         <span className={s.roleTag}>{info.me.roleName}</span>
         <span className={s.baseTag}>On <b>v{session.base}</b>{changed ? ` · ${changed} unsaved file${changed === 1 ? "" : "s"}` : ""}</span>
         <span className={s.grow} />
-        {fullHref ? <a className={s.btn} href={fullHref}>Full screen</a> : null}
-        <button type="button" className={`${s.btn} ${s.wideOnly}`} onClick={() => setPreview((p) => !p)} aria-pressed={preview}>{preview ? "Hide preview" : "Show preview"}</button>
-        {can("invite") ? <button type="button" className={s.btn} onClick={() => setInvite(true)}>Invite</button> : null}
-        {can("save") ? <button type="button" className={s.primary} onClick={() => void save()} disabled={saving || !changed || !synced}>{saving ? "Saving…" : "Save version"}</button> : null}
+        {fullHref ? <a className={s.linkBtn} href={fullHref}>Full screen</a> : null}
+        <Button variant="secondary" size="sm" className={s.wideOnly} onClick={() => setPreview((p) => !p)} aria-pressed={preview}>{preview ? "Hide preview" : "Show preview"}</Button>
+        {can("invite") ? <Button variant="secondary" size="sm" onClick={() => setInvite(true)}>Invite</Button> : null}
+        {can("save") ? <Button variant="primary" size="sm" onClick={() => void save()} disabled={saving || !changed || !synced}>{saving ? "Saving…" : "Save version"}</Button> : null}
       </div>
 
       {status === "offline" ? (
         <div className={s.banner} data-tone={tone} role="alert">
           <span className={s.grow}>The live connection is closed. Your edits stay in this tab until it reconnects.</span>
-          <button type="button" className={s.btn} onClick={session.reconnect}>Reconnect</button>
+          <Button variant="secondary" size="sm" onClick={session.reconnect}>Reconnect</Button>
         </div>
       ) : null}
       {info.room.behind ? (
         <div className={s.banner}>
           <span className={s.grow}>v{info.room.head} was saved outside this session. Pull moves everyone onto it{changed ? " and replaces the unsaved live edits" : ""}.</span>
-          {can("edit") ? <button type="button" className={s.btn} onClick={() => void pull()}>Pull v{info.room.head}</button> : null}
+          {can("edit") ? <Button variant="secondary" size="sm" onClick={() => void pull()}>Pull v{info.room.head}</Button> : null}
         </div>
       ) : null}
       {leader ? (
         <div className={s.banner} data-tone="person" style={{ "--who": leader.color } as React.CSSProperties}>
           <span className={s.grow}>Following <b>{leader.name}</b>{leader.file ? ` in ${leader.file}` : ""}. Press Esc or open a file to stop.</span>
-          <button type="button" className={s.btn} onClick={() => follow(null)}>Stop following</button>
+          <Button variant="secondary" size="sm" onClick={() => follow(null)}>Stop following</Button>
         </div>
       ) : null}
       {readOnly ? <div className={s.banner} data-tone="quiet"><span className={s.grow}>You are watching as a viewer: cursors, terminal and preview update live. Ask an owner for an editor link to type.</span></div> : null}
 
       <div className={s.mobileSwitch}>
-        <div className={s.seg} role="group" aria-label="Show">
-          <button type="button" aria-pressed={view === "code"} onClick={() => setView("code")}>Code</button>
-          <button type="button" aria-pressed={view === "preview"} onClick={() => setView("preview")}>Preview</button>
-        </div>
+        <SegmentedControl label="Show" size="sm" value={view} onValueChange={setView} options={[{ value: "code", label: "Code" }, { value: "preview", label: "Preview" }]} />
       </div>
 
       <div className={s.split} data-preview={preview ? "on" : "off"} data-view={view}>
@@ -205,7 +203,7 @@ export function LivePane({ session, toast, request, onOpenCritic, onDeployed, on
             {readOnly ? <span>read-only</span> : null}
             <span className={s.grow} />
             {here.length ? <span className={s.here}>{here.slice(0, 4).map((p) => <i key={p.clientId} className={s.dot} style={{ background: p.color }} title={`${p.name}${p.line ? `, line ${p.line}` : ""}`} />)}<span>{here.length === 1 ? `${here[0].name.split(/[\s@]/)[0]} is here` : `${here.length} people here`}</span></span> : null}
-            {findings.length ? <button type="button" className={s.quiet} onClick={() => onOpenCritic?.()}>{findings.filter((f) => f.file === file).length} in this file · Critic</button> : null}
+            {findings.length ? <Button variant="ghost" size="sm" onClick={() => onOpenCritic?.()}>{findings.filter((f) => f.file === file).length} in this file · Critic</Button> : null}
           </div>
           {doc && awareness && file ? (
             <Editor key={`${file}:${readOnly}`} doc={doc} awareness={awareness} path={file} readOnly={readOnly} findings={findings} jump={leader ? followJump : jump}
@@ -218,7 +216,7 @@ export function LivePane({ session, toast, request, onOpenCritic, onDeployed, on
             <div className={s.editorHead}>
               <span>Live preview</span>
               <span className={s.grow} />
-              <button type="button" className={s.quiet} onClick={hooks.preview}>Reload</button>
+              <Button variant="ghost" size="sm" onClick={hooks.preview}>Reload</Button>
               {isApp && info.livePreview ? <a className={s.quiet} href={info.livePreview} target="_blank" rel="noopener">Open</a> : null}
             </div>
             {isApp && info.livePreview ? (
@@ -245,7 +243,7 @@ function Faces({ peers, following, onFollow }: { peers: Peer[]; following: numbe
           key={p.clientId}
           type="button"
           className={s.avatar}
-          style={{ background: p.color, color: "#0b0b0d" }}
+          style={{ background: p.color }}
           data-me={p.me}
           data-following={following === p.clientId}
           disabled={p.me}
