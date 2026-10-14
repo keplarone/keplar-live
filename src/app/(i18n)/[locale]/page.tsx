@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { MonolithHome } from "@/components/home/MonolithHome";
+import { LocaleHome } from "@/components/home/LocaleHome";
 import { Chapters } from "@/components/landing/Chapters";
 import { ChapterSync } from "@/components/landing/ChapterSync";
 import { Pricing } from "@/components/sections/Pricing";
@@ -12,12 +12,12 @@ export async function generateMetadata({ params }: P): Promise<Metadata> {
   return localeMetadata((await params).locale, "home");
 }
 
-/** The home page in a locale: the same one-screen hero and chapters as /, with translated copy. */
-export default async function LocaleHome({ params }: P) {
+/** The home page in a locale, on the same UI v2 system as / (docs/ui-v2.md): the hero and how it works, then the chapters, with translated copy. */
+export default async function LocalizedHomePage({ params }: P) {
   const { locale } = await params;
   return (
     <>
-      <MonolithHome />
+      <LocaleHome />
       <Chapters locale={locale} beforeClose={<Pricing showCompute={false} locale={locale} />} />
       <ChapterSync />
       <JsonLd data={softwareApp()} />
