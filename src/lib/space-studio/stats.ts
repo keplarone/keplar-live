@@ -2,7 +2,7 @@
  * Real experience stats for Space Studio.
  *
  * Players (CCU): Roblox publishes only the CURRENT player count (games.roblox.com/v1/games: playing, visits, favoritedCount), no
- * history. So Space Studio records its own samples: whenever stats are read, or the hourly cron runs, every tracked universe whose
+ * history. So Space Studio records its own samples: whenever stats are read, or the daily cron runs, every tracked universe whose
  * newest sample is older than 60 s is sampled (one call per 50 universes). Points exist only where a sample was taken; there is no
  * interpolation and no filler.
  *   - space_ccu_min   one row per universe per minute with a sample (t, playing, visits, favorites). Kept 4 days (1h and 24h views).
@@ -205,7 +205,7 @@ export async function statsFor(wsId: string, universe: string, range: RangeId, n
   };
 }
 
-/** The hourly cron: sample every tracked universe across all workspaces, then apply retention. */
+/** The daily cron: sample every tracked universe across all workspaces, then apply retention. */
 export async function sampleAllTracked(now = Date.now()) {
   const rows = await experiences().listSystem();
   const sampled = await sampleStale(rows, now);

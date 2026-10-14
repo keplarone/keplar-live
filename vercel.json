@@ -42,7 +42,7 @@
     },
     {
       "path": "/api/cron/space-stats",
-      "schedule": "11 * * * *"
+      "schedule": "11 4 * * *"
     }
   ]
 }

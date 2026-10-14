@@ -9,7 +9,7 @@ export const maxDuration = 60;
 const digest = (s: string) => createHash("sha256").update(s).digest();
 
 /**
- * Hourly (vercel.json "11 * * * *"): samples the live player count of every experience tracked in Space Studio (Roblox keeps no
+ * Daily (vercel.json "11 4 * * *"; the Hobby plan allows daily crons only): samples the live player count of every experience tracked in Space Studio (Roblox keeps no
  * history, so these samples ARE the history) and prunes stats past their retention. On a plan that only allows daily crons this
  * runs daily; stats reads still sample on demand.
  */
