@@ -3,22 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import { KeplarSymbol } from "@/components/brand";
 import { brand } from "@/lib/site";
+import { MODELS } from "./ModelStack";
 import s from "./Sky.module.css";
-
-/** The model families shown in the example (marks in public/models). Names belong to their owners. */
-const MODELS = [
-  { id: "claude", name: "Claude", src: "/models/claude.svg" },
-  { id: "chatgpt", name: "ChatGPT", src: "/models/chatgpt.svg" },
-  { id: "gemini", name: "Gemini", src: "/models/gemini.svg" },
-  { id: "deepseek", name: "DeepSeek", src: "/models/deepseek.svg" },
-  { id: "mistral", name: "Mistral", src: "/models/mistral.svg" },
-] as const;
 
 const QUESTION = "Should my small business site use Webflow or WordPress?";
 const ANSWER =
   "For most small businesses that want a polished site without a developer, Webflow is the better fit: hosting, security and updates are handled for you, and the visual editor is easy to hand off. Pick WordPress if you need a specific plugin, a store with complex inventory, or full control over hosting.";
 const WORDS = ANSWER.split(" ");
-const PANEL = MODELS;
+const PANEL = MODELS.slice(0, 5);
 const DISSENT = 3; // DeepSeek
 
 /** Timeline in ms from the start of a loop. Everything on screen is derived from the elapsed time, so the layout never jumps. */
@@ -39,9 +31,8 @@ const FADE_AT = DISSENT_AT + T.hold;
 const LOOP = FADE_AT + T.fade + 400;
 
 /**
- * The home's product window as a short looping demo on a raised surface (docs/ui-v2.md): the question types itself, each model's
- * row appears thinking and then resolves, Keplar's answer fades in word by word and the disagreement note appears. Opacity and a
- * few pixels of rise only: no zoom, blur or spring. Runs only while on screen and the tab is
+ * The home's product window as a short looping demo: the question types itself, each model's pill appears thinking and then
+ * resolves, Keplar's answer streams in word by word and the disagreement note slides up. Runs only while on screen and the tab is
  * visible; prefers-reduced-motion shows the finished state. Example content, labelled under the window.
  */
 export function DemoWindow() {
@@ -91,10 +82,10 @@ export function DemoWindow() {
   return (
     <section ref={ref} className={s.window} aria-label="Example answer" data-fading={fading || undefined}>
       <div className={s.windowBar}>
-        <i /><i /><i />
-        <span aria-hidden="true">{brand.name}</span>
+        <i data-light="close" /><i data-light="min" /><i data-light="max" />
+        <span>{brand.name}</span>
       </div>
-      <p className="visually-hidden">
+      <p className={s.srOnly}>
         Example. Question: {QUESTION} Claude, ChatGPT, Gemini and Mistral agree; DeepSeek disagrees. {brand.name}&apos;s answer: {ANSWER} Where they
         disagree: DeepSeek recommends WordPress for long-term cost, since Webflow plans cost more as the site grows.
       </p>

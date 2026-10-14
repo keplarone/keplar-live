@@ -58,7 +58,7 @@ test("aura tokens exist only under the light theme", () => {
   assert.doesNotMatch(stripComments(aura), /background-attachment|filter:\s*blur|@keyframes|animation:/);
 });
 
-test("no rule paints an aura, and any that did would be scoped to light, sitewide", () => {
+test("every rule that paints an aura is scoped to light, sitewide", () => {
   let painters = 0;
   for (const { f, css } of all) {
     for (const r of rules(css)) {
@@ -69,8 +69,8 @@ test("no rule paints an aura, and any that did would be scoped to light, sitewid
       assert.match(r.body, /pointer-events:\s*none|animation:/, `${f}: aura layer must not take pointer events`);
     }
   }
-  // UI v2 (docs/ui-v2.md): no aura behind pages anywhere; the last placements (the home close and the Monolith hero) are gone.
-  assert.equal(painters, 0, `no rule paints an aura (found ${painters})`);
+  // Marketing only (the home close and the Monolith hero): the /app workspace keeps a calm, flat canvas in both themes.
+  assert.ok(painters >= 2, `expected aura placements, found ${painters}`);
 });
 
 test("the /app workspace paints no aura and no backdrop art", () => {
@@ -92,10 +92,9 @@ test("dark theme defines and paints no aura", () => {
   }
   // and the dark canvas stays flat graphite
   assert.match(read("src/styles/tokens.css"), /:root\[data-theme="dark"\]\s*\{[^}]*--c-canvas:\s*#0b0b0d/);
-  // the homes draw no scene and no aura in either theme (docs/ui-v2.md: the plain canvas)
-  for (const f of ["src/components/sky/Sky.module.css", "src/components/landing/Chapters.module.css", "src/components/landing/LiveDemo.module.css"]) {
-    assert.doesNotMatch(read(f), /--aura-|var\(--aura-/, `${f}: no aura on the home`);
-  }
+  // the home scene stays the opaque night sky in dark; it is only transparent (over the aura) in light
+  const home = read("src/components/home/MonolithHome.tsx");
+  assert.match(home, /opaque:\s*sceneTheme === "dark"/);
 });
 
 test("the aura stays static: no drift, no viewport blur, no background-attachment; colour off under increased contrast", () => {

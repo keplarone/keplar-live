@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 /**
- * The home on UI v2 (docs/ui-v2.md, src/components/sky): hero, the product window as a raised surface, the "Everything in Keplar"
+ * The light home (Oct 2026 redesign, src/components/sky): hero, a product window that zooms in on scroll, the "Everything in Keplar"
  * list (src/lib/features.ts), how it works, use cases (content/use-cases), the live demo (#demo) and pricing.
  */
 export default function Home() {

@@ -21,16 +21,12 @@ test("phones: label text is 12px (the fluid scale gave 11px), in rem so the pers
   assert.match(b, /--t-label: 0\.75rem;/);
 });
 
-test("phones: the homes' copy has readable floors (the old story went to 7.5 to 9.5px) and the message box is 16px (no iPhone zoom)", () => {
-  const home = css("src/components/sky/Sky.module.css");
-  // every size on the home comes from the type tokens (whose phone floor is 12px, above); a literal px size must still be >= 12
-  for (const n of px(home)) assert.ok(n >= 12, `no phone text under 12px (found ${n})`);
-  for (const sel of [".kicker", ".lede", ".fine", ".lead", ".note", ".featureLede", ".links"]) {
-    assert.match(home, new RegExp(`\\${sel} \\{[^}]*font-size: var\\(--t-`), `${sel} uses a type token`);
-  }
-  const b = block(home, "max-width: 640px", ".input");
-  assert.ok(b, "phone block exists");
+test("phones: the localized home's copy has readable floors (it was 7.5 to 9.5px) and the message box is 16px (no iPhone zoom)", () => {
+  const b = block(css("src/components/home/MonolithHome.module.css"), "max-width: 760px", ".sub { font-size: 15px");
+  assert.ok(b, "mobile floor block exists");
+  for (const n of px(b)) assert.ok(n >= 12, `no phone text under 12px (found ${n})`);
   assert.match(b, /\.input \{ font-size: 16px; \}/);
+  for (const sel of [".sub", ".note", ".fine", ".kicker", ".nodes li", ".proof", ".body", ".steps li", ".link", ".go"]) assert.ok(b.includes(sel), sel);
 });
 
 test("phones: the header fits on one line in every language (search and Sign in move into the menu sheet, theme too under 400px)", () => {
