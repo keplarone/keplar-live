@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { Switch } from "@/components/kit";
 import s from "./account.module.css";
 
 type Case = { id: string; at: string; category: string; reason: string; text: string };
@@ -44,13 +45,11 @@ export function LearningConsent() {
 
   return (
     <div className={s.panel} id="learning" aria-labelledby="learning-h">
-      <div className={s.row}>
-        <h2 id="learning-h" className={s.k} style={{ margin: 0 }}>Help improve Keplar</h2>
-        <button type="button" role="switch" aria-checked={on ?? false} aria-label="Help improve Keplar" className={s.btn} style={{ height: 36 }} onClick={() => void toggle()} disabled={on === null}>
-          {on === null ? "…" : on ? "On" : "Off"}
-        </button>
+      <div className={s.prefRow}>
+        <h2 id="learning-h" className={s.cardTitle}>Help improve Keplar</h2>
+        <Switch className={s.kSwitch} checked={on ?? false} onCheckedChange={() => void toggle()} label="Help improve Keplar" hideLabel describedBy="learning-h-d" disabled={on === null} />
       </div>
-      <p className={s.note}>
+      <p className={s.note} id="learning-h-d">
         Keplar gets better at choosing which models to ask. It does this by keeping score, for each kind of question, of which models answered well, how fast, and whether people copied, regenerated or rated the answer. That score holds no question text and no account.
         The AI models themselves are not retrained: this is Keplar tuning its own routing within fixed safety rules.
       </p>
@@ -63,7 +62,7 @@ export function LearningConsent() {
         <>
           <ul style={{ display: "flex", flexDirection: "column", gap: "var(--s-2)", listStyle: "none", padding: 0, margin: 0 }} aria-label="Saved questions">
             {cases.map((c) => (
-              <li key={c.id} style={{ borderTop: "1px solid var(--c-border)", paddingTop: "var(--s-2)", overflowWrap: "anywhere" }}>
+              <li key={c.id} style={{ borderTop: "1px solid var(--hairline)", paddingTop: "var(--s-2)", overflowWrap: "anywhere" }}>
                 {c.text || <em>(question not kept: it looked sensitive)</em>} <span className={s.badge}>{c.reason.replace("_", " ")}</span>
               </li>
             ))}

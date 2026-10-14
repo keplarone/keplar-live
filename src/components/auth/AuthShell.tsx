@@ -12,8 +12,8 @@ const PANEL: Record<Variant, { eyebrow: string; title: string; lead: string }> =
 const POINTS = ["Asks the models your question needs", "Shows you where they disagree", "One answer, with the disagreements shown"];
 
 /**
- * Split layout: form on the left, a calm product panel on the right (desktop); one column on mobile, where the
- * panel is hidden. The right side is transparent on purpose: it is where the page-wide particle layer shows.
+ * One calm layout on the plain canvas (docs/ui-v2.md): a short statement on the left and the form card on the right (desktop);
+ * one column on phones, where the statement is hidden. The Sign up / Sign in links are drawn as a segmented control.
  */
 /** Translated chrome for a localized auth page (/es/signin); English pages pass nothing. */
 export type AuthShellCopy = { panel: { eyebrow: string; title: string; lead: string }; points: string[]; signUp: string; logIn: string; toggle: string; about: string; prefix: string };

@@ -5,6 +5,7 @@
  */
 import { useSyncExternalStore, useState } from "react";
 import { predictionOn, predictionStats, setPredictionOn } from "@/components/app-ui/predict";
+import { Switch } from "@/components/kit";
 import s from "./account.module.css";
 
 const noop = () => () => {};
@@ -18,13 +19,11 @@ export function PredictionSettings() {
   const toggle = () => { setPredictionOn(!on); bump((n) => n + 1); };
   return (
     <div className={s.panel} id="predictive-preloading" aria-labelledby="pred-h">
-      <div className={s.row}>
-        <h2 id="pred-h" className={s.k} style={{ margin: 0 }}>Predictive preloading</h2>
-        <button type="button" role="switch" aria-checked={on} aria-label="Predictive preloading on this browser" className={s.btn} style={{ height: 36 }} disabled={!ready} onClick={toggle}>
-          {!ready ? "…" : on ? "On" : "Off"}
-        </button>
+      <div className={s.prefRow}>
+        <h2 id="pred-h" className={s.cardTitle}>Predictive preloading</h2>
+        <Switch className={s.kSwitch} checked={on} onCheckedChange={toggle} label="Predictive preloading on this browser" hideLabel describedBy="pred-d" disabled={!ready} />
       </div>
-      <p className={s.note}>
+      <p className={s.note} id="pred-d">
         This browser learns which studio you usually open next (Create, Slides, Study) and downloads it early, so it opens at once. It keeps
         view names only, here on this device; nothing is sent to Keplar and nothing runs by itself. Turning it off forgets what it learned.
         {stats.made ? ` So far ${stats.used} of ${stats.made} preloads were for the view you opened next.` : ""}

@@ -12,7 +12,7 @@ export default async function UsagePage() {
   if (!cfg.flags.freeDailyLimits && !cfg.flags.overage) notFound();
   return (
     <div style={{ maxWidth: 760, margin: "0 auto", padding: "var(--s-16) var(--l-gutter) var(--s-24)", display: "grid", gap: "var(--s-6)" }}>
-      <h1 style={{ fontSize: "var(--t-title)", fontWeight: "var(--w-medium)", margin: 0 }}>Usage</h1>
+      <h1 style={{ fontSize: "var(--t-title)", fontWeight: "var(--w-regular)", letterSpacing: "var(--tr-title)", margin: 0 }}>Usage</h1>
       <FreeAllowance />
       <OverageSettings />
     </div>

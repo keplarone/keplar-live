@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { startRegistration, browserSupportsWebAuthn } from "@simplewebauthn/browser";
+import { confirmAction } from "@/components/kit";
 import s from "./account.module.css";
 
 type Passkey = { id: string; name: string; createdAt: string; lastUsedAt: string | null; synced: boolean };
@@ -62,7 +63,7 @@ export function PasskeySettings() {
   return (
     <div className={s.panel} id="passkeys" aria-labelledby="passkeys-h">
       <div className={s.row}>
-        <h2 id="passkeys-h" className={s.k} style={{ margin: 0 }}>Passkeys</h2>
+        <h2 id="passkeys-h" className={s.cardTitle}>Passkeys</h2>
         <span className={s.v}>{list ? (list.length ? `${list.length} added` : "None") : "…"}</span>
       </div>
       <p className={s.note}>A passkey lets you sign in with your fingerprint, face or device PIN instead of an email link. It&rsquo;s optional and extra: your other ways to sign in keep working. Passkeys stay on your device or in your password manager; Keplar only keeps the public half.</p>
@@ -98,7 +99,7 @@ export function PasskeySettings() {
                       className={`${s.btn} ${s.btnGhost}`}
                       disabled={busy}
                       aria-label={`Remove ${p.name}`}
-                      onClick={() => { if (window.confirm(`Remove the passkey “${p.name}”? You won't be able to sign in with it any more.`)) void run(async () => { setList((await api("POST", { action: "remove", id: p.id })).passkeys as Passkey[]); setNote("Passkey removed."); }); }}
+                      onClick={async () => { if (await confirmAction({ title: `Remove the passkey “${p.name}”?`, body: "You won't be able to sign in with it any more.", confirmLabel: "Remove passkey", danger: true })) void run(async () => { setList((await api("POST", { action: "remove", id: p.id })).passkeys as Passkey[]); setNote("Passkey removed."); }); }}
                     >
                       Remove
                     </button>

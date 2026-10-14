@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { Switch } from "@/components/kit";
 import s from "./account.module.css";
 
 /**
@@ -30,13 +31,11 @@ export function FaqConsent() {
   };
   return (
     <div className={s.panel} id="faq-count" aria-labelledby="faq-count-h">
-      <div className={s.row}>
-        <h2 id="faq-count-h" className={s.k} style={{ margin: 0 }}>Count my questions</h2>
-        <button type="button" role="switch" aria-checked={on ?? false} aria-label="Count my questions" className={s.btn} style={{ height: 36 }} onClick={() => void toggle()} disabled={on === null}>
-          {on === null ? "…" : on ? "On" : "Off"}
-        </button>
+      <div className={s.prefRow}>
+        <h2 id="faq-count-h" className={s.cardTitle}>Count my questions</h2>
+        <Switch className={s.kSwitch} checked={on ?? false} onCheckedChange={() => void toggle()} label="Count my questions" hideLabel describedBy="faq-count-h-d" disabled={on === null} />
       </div>
-      <p className={s.note}>
+      <p className={s.note} id="faq-count-h-d">
         The home screen lists the most frequently asked questions. If you turn this on, a general question you ask (nothing with personal details, links, numbers or rude words) is counted toward that list.
         A question is stored as a scrambled code, not as text, and appears in the list only after at least five different people asked the same thing. Nothing is tied to your name or email. It is off until you say so, and turning it off removes you from every count.
       </p>

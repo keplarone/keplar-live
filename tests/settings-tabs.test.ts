@@ -15,9 +15,11 @@ test("Settings: categories are real tabs with an active state, search covers pan
   assert.match(src, /textContent/);
 });
 
-test("Settings CSS: secondary buttons are declared after the primary glass override, and the category rail is one swipeable line on phones", () => {
+test("Settings CSS: secondary buttons are declared after the ink primary, no glass, and the category rail is one swipeable line on phones", () => {
   const css = read("src/components/account/account.module.css");
-  assert.ok(css.lastIndexOf(".btn.btnGhost {") > css.indexOf("glass buttons"), ".btnGhost must win over the glass .btn background");
+  assert.ok(css.lastIndexOf(".btn.btnGhost {") > css.indexOf(".btn {"), ".btnGhost must win over the ink .btn background");
+  assert.match(css.match(/\.btn \{[^}]*\}/)?.[0] ?? "", /background: var\(--c-ink\)/, "the primary is the ink pill (docs/ui-v2.md)");
+  assert.doesNotMatch(css, /backdrop-filter|--btn-|--lt-|#[0-9a-fA-F]{3,8}\b|rgba?\(\d/, "UI v2: tokens only, no glass");
   assert.match(css, /@media \(max-width: 720px\)[\s\S]*\.settingsNav \{ flex-direction: row; overflow-x: auto/);
 });
 
@@ -50,7 +52,7 @@ test("Settings window: a dialog over the app via an intercepted route, the same 
 
 test("Settings rail: rows with constant label weight, and selecting never scrolls the page behind", () => {
   const css = read("src/components/account/account.module.css");
-  assert.match(css, /\.navItem\.navItem \{ border-radius: 9px; \}/, "rounded rows, not pills");
+  assert.match(css, /\.navItem\.navItem \{ border-radius: var\(--r-xs\); \}/, "rounded rows, not pills");
   const chip = css.match(/\.navItem \{[^}]*\}/)?.[0] ?? "";
   assert.match(chip, /font-weight: var\(--w-medium\)/, "same weight active or not, so rows do not change width on selection");
   assert.doesNotMatch(css, /\.navItem[^{]*\[data-on\][^}]*font-weight/);

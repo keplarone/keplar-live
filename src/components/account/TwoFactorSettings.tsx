@@ -46,7 +46,7 @@ export function TwoFactorSettings({ admin }: { admin: boolean }) {
   return (
     <div className={s.panel} id="two-factor" aria-labelledby="mfa-h">
       <div className={s.row}>
-        <h2 id="mfa-h" className={s.k} style={{ margin: 0 }}>Two-factor sign-in</h2>
+        <h2 id="mfa-h" className={s.cardTitle}>Two-factor sign-in</h2>
         <span className={s.v}>{status ? (status.enabled ? "On" : "Off") : "…"}</span>
       </div>
       {codes ? (

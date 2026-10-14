@@ -44,7 +44,7 @@ const PLAN_LABEL: Record<string, string> = { free: "Free", lite: "Lite", plus: "
  */
 function sub(id: string | null, heading: React.ReactNode, node: React.ReactNode) {
   return (
-    <div className={s.sub} id={id ?? undefined}>
+    <div className={s.part} id={id ?? undefined}>
       {heading ? <h3 className={s.subHeading}>{heading}</h3> : null}
       {node}
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { Children, useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { Icon as KitIcon } from "@/components/kit";
 import s from "./account.module.css";
 
 export type SettingsSection = { id: string; label: string; keywords: string; node: ReactNode };
@@ -131,7 +132,7 @@ export function SettingsSections({ sections, initial }: { sections: SettingsSect
               autoComplete="off"
               enterKeyHint="search"
             />
-            {q ? <button type="button" className={s.searchClear} onClick={() => { setQ(""); document.getElementById(inputId)?.focus(); }} aria-label="Clear search">✕</button> : null}
+            {q ? <button type="button" className={s.searchClear} onClick={() => { setQ(""); document.getElementById(inputId)?.focus(); }} aria-label="Clear search"><KitIcon name="close" size={14} /></button> : null}
           </div>
         </div>
         <div role="tablist" aria-label="Settings categories" aria-orientation="vertical" className={s.settingsNav}>
