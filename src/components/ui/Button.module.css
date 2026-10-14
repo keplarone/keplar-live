@@ -21,6 +21,9 @@
 .button:active:not(:disabled):not([aria-disabled="true"]) { scale: var(--m-press); }
 .button:disabled, .button[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
 
+/* The label and any icon sit on one line ("[download icon] Download for desktop" wrapped the icon above the text). */
+.button > span[data-fit] { display: inline-flex; align-items: center; gap: var(--s-2); }
+
 .sm { height: 36px; padding: 0 var(--s-4); }
 .lg { height: 52px; padding: 0 var(--s-6); font-size: var(--t-body); }
 

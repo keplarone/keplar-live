@@ -163,6 +163,10 @@
   color: var(--c-ink-3);
   font-style: italic;
 }
+/* On the Plus column's wash the quiet ink fell under 4.5:1 in dark; the "coming soon" cells there use the next ink up. */
+.table td[data-soon][data-plan="plus"] {
+  color: var(--c-ink-2);
+}
 
 /* The feature column stays put while the plans scroll: it needs the card's own opaque fill. */
 .featureHead,
