@@ -108,16 +108,22 @@ Before and after (left: the previous build, right: UI v2), in `docs/assets/ui-v2
 Checks run on the integrated build:
 
 - `next build`: passes.
-- `npm test`: the only failures are three that also fail on `main` (two Keplar Browser acceptance tests and the Business
-  sign-out test).
+- `npm test`: 2838 pass. Three failures also fail on `main`: two Keplar Browser acceptance tests and the Business sign-out
+  test. A fourth (the Space Studio presence "leave beacon") failed once under full-suite load and passes on its own.
 - `scripts/interface-audit.mjs` (axe, target size, overflow): no violations on the app screens. Two findings are intentional:
   the sign-in checkbox (its label is the target) and the Settings tab row on phones (it scrolls sideways).
-- Playwright e2e: the failures that remain also fail on `main`. They are tests that have not caught up with the product:
+- Playwright e2e: every failure that remains was checked against a build of `main` run the same way, with the same result.
+  The 19 files with failures ran on both: 49 failures matched and none were new. These tests have not caught up with the
+  product. They include:
   - `/enterprise` now redirects to business.keplar.one.
   - The starter cards are gone from Ask home.
   - Settings has no "Advanced" tab; Team and Developer are separate tabs.
   - `/developers` has no "Keplar API" h1.
   - The template gallery has no "Community templates · Beta" heading, and its report button is "Report this template".
+  - The home page no longer has the Creation section, the `#hero-q` headline or the FAQ disclosure. The sidebar has no
+    Agents or Projects buttons, and some app routes redirect to business.keplar.one.
 - Bugs found and fixed during integration:
   - The /app shell made the kit's toasts and confirm dialog inert. The host is now marked `data-kit-host` and left out.
   - A toast replaced in place by id kept its old timer. A sticky toast that became a timed one closed at once.
+  - The account menu, now a kit popover, was a fixed 300px. On a 320px phone it ran past the sidebar. It is now capped at
+    the sidebar row's width.
