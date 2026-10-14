@@ -1,9 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { canInterpolate, parsePath, pathPoints, pathSignature } from "@/components/app-ui/studio-mode/ui/icons/path-signature";
-import { MORPH_ICONS, MORPH_ICON_NAMES, morphStates, morphState, type MorphStateDef } from "@/components/app-ui/studio-mode/ui/icons/morph-paths";
-import { GLYPHS, ICON_NAMES } from "@/components/app-ui/studio-mode/ui/icons/glyphs";
-import { ULTIMATE } from "@/components/app-ui/studio-mode/ui/ultimate-geometry";
+import { canInterpolate, parsePath, pathPoints, pathSignature } from "@/components/kit/icons/path-signature";
+import { MORPH_ICONS, MORPH_ICON_NAMES, morphStates, morphState, type MorphStateDef } from "@/components/kit/icons/morph-paths";
+import { GLYPHS, ICON_NAMES } from "@/components/kit/icons/glyphs";
+import { ULTIMATE } from "@/components/kit/ultimate-geometry";
 
 test("parsePath reads absolute commands, expands implicit linetos and rejects junk", () => {
   assert.deepEqual(parsePath("M4 7 L20 7"), [

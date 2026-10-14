@@ -2,9 +2,9 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { DURATION, springLinear } from "@/components/app-ui/studio-mode/ui/motion";
+import { DURATION, springLinear } from "@/components/kit/motion";
 
-const UI = join(__dirname, "../src/components/app-ui/studio-mode/ui");
+const UI = join(__dirname, "../src/components/kit");
 const css = readFileSync(join(UI, "tokens.module.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
 
 /** The declaration block that follows a selector (first match). */

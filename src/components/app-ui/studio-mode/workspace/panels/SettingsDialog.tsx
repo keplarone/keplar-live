@@ -7,7 +7,7 @@
  * - Appearance: the theme follows the site's setting (<html data-theme>, src/lib/theme.ts); shown, not duplicated.
  */
 import { useSyncExternalStore } from "react";
-import { Button, Dialog, Icon, SegmentedControl, Switch } from "../../ui";
+import { Button, Dialog, Icon, SegmentedControl, Switch } from "@/components/kit";
 import type { StudioAgent } from "../../useStudioAgent";
 import s from "./panels.module.css";
 

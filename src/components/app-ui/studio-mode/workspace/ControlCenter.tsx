@@ -6,7 +6,7 @@
  * event log, credits from a.units (what the server charged), approvals from the waiting actions.
  */
 import { useId, useState, type ReactNode } from "react";
-import { Badge, Button, Icon, MorphIcon, Progress, StatusDot, Switch } from "../ui";
+import { Badge, Button, Icon, MorphIcon, Progress, StatusDot, Switch } from "@/components/kit";
 import type { StudioAgent } from "../useStudioAgent";
 import type { SolarModeId } from "@/lib/studio/solar-modes";
 import { useNow } from "./layout/hooks";

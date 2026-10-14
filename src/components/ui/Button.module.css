@@ -1,86 +1,41 @@
+/* Page and marketing CTAs (docs/ui-v2.md): pills. primary = ink, secondary = raised surface with a hairline, quiet = text.
+   Hover changes colour or edge; press is the site's var(--m-press) dip. No glass, no swell, no pointer light. */
 .button {
   position: relative;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--s-2);
   height: 44px;
   padding: 0 var(--s-5);
+  border: 0;
   border-radius: var(--r-pill);
   font-size: var(--t-small);
   font-weight: var(--w-medium);
   letter-spacing: var(--tr-body);
   white-space: nowrap;
-  transition:
-    background-color var(--d-base) var(--e-standard),
-    color var(--d-base) var(--e-standard),
-    box-shadow var(--d-base) var(--e-standard);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--m-dur-1) var(--m-ease-out), color var(--m-dur-1) var(--m-ease-out), box-shadow var(--m-dur-2) var(--m-ease-out), scale var(--m-dur-1) var(--m-ease-out);
 }
+.button:active:not(:disabled):not([aria-disabled="true"]) { scale: var(--m-press); }
+.button:disabled, .button[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
 
-.sm {
-  height: 36px;
-  padding: 0 var(--s-4);
-}
+.sm { height: 36px; padding: 0 var(--s-4); }
+.lg { height: 52px; padding: 0 var(--s-6); font-size: var(--t-body); }
 
-.lg {
-  height: 52px;
-  padding: 0 var(--s-6);
-  font-size: var(--t-body);
-}
-
-.primary {
-  background: var(--btn-p-bg);
-  color: var(--btn-p-ink);
-  box-shadow: var(--btn-p-shadow);
-}
+.primary { background: var(--c-ink); color: var(--c-canvas); box-shadow: var(--elev-1); }
 .primary:hover { background: var(--c-ink-hover); }
 
-.secondary {
-  color: var(--btn-s-ink);
-  background: var(--btn-s-bg);
-  -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
-  backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
-  box-shadow: var(--btn-s-shadow);
-}
-html[data-lens] .secondary { backdrop-filter: url(#lg-refract) blur(5px) saturate(1.4); }
-.secondary:hover { background: var(--lg-fill-strong); }
+.secondary { background: var(--surface-raised); color: var(--c-ink); box-shadow: inset 0 0 0 1px var(--hairline-strong); }
+.secondary:hover { box-shadow: inset 0 0 0 1px rgb(var(--rgb-ink) / 0.28); }
 
-/* One interaction model for every button (docs/interface-overhaul.md): colour and shadow change on hover, a uniform
-   var(--m-press) dip while pressed (motion.css / redesign.css), no swell, squash or pointer pull. */
+.quiet { padding: 0 var(--s-3); color: var(--c-ink-2); background: transparent; }
+.quiet:hover { color: var(--c-ink); background: var(--hover-wash); }
 
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .secondary { background: var(--lg-solid); }
-}
-@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  .primary { background: var(--btn-p-solid, #17171a); }
-  .secondary { background: var(--lg-solid); backdrop-filter: none; -webkit-backdrop-filter: none; }
-}
-html[data-glass="lite"] .secondary { backdrop-filter: none; -webkit-backdrop-filter: none; }
+.arrow { display: inline-block; transition: translate var(--m-dur-2) var(--m-ease-out); }
+.button:hover .arrow { translate: 3px 0; }
 
-.quiet {
-  padding: 0 var(--s-3);
-  color: var(--c-ink-2);
-}
-
-.quiet:hover {
-  color: var(--c-ink);
-}
-
-.arrow {
-  display: inline-block;
-  transition: transform var(--d-base) var(--e-standard);
-}
-
-.button:hover .arrow {
-  transform: translateX(3px);
-}
-
-.button:focus-visible {
-  outline-offset: 3px;
-  border-radius: var(--r-pill);
-}
-
-
-/* Touch: the small button is still a full 44px target (nav CTA, hero secondary links). */
-@media (pointer: coarse) {
-  .sm { height: 44px; }
-}
+/* Touch: the small button is still a full 44px target. */
+@media (pointer: coarse) { .sm { height: 44px; } }
+@media (prefers-reduced-motion: reduce) { .button:hover .arrow { translate: none; } }

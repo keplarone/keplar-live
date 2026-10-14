@@ -28,9 +28,9 @@ test("desktop app: detected before paint (keplar-desktop UA token / html marker)
   assert.match(read("src/components/app-ui/KeplarApp.tsx"), /className=\{s\.topbar\} data-keplar-drag/);
 });
 
-test("nav: logo pill left, Menu pill centred, theme + Sign in + Try right; real mark at a readable size; no refraction filter", () => {
+test("nav: one bar (brand left, links centred, actions right); real mark at a readable size; no refraction filter", () => {
   const css = read("src/components/chrome/Nav.module.css");
-  assert.match(css, /grid-template-columns: 1fr auto 1fr/);
+  assert.match(css, /grid-template-columns: auto 1fr auto/);
   const tsx = read("src/components/chrome/Nav.tsx");
   assert.doesNotMatch(tsx, /lg-lens/);
   assert.match(tsx, /<KeplarSymbol size=\{22\}/);

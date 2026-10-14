@@ -7,7 +7,7 @@
  * charges immediately; charges only happen during a Studio run (the run loop's recharge call).
  */
 import { useEffect, useId, useState } from "react";
-import { Badge, Button, Icon } from "../../ui";
+import { Badge, Button, Icon } from "@/components/kit";
 import {
   canEnableTopUp, chosenOffer, money, offerLabel, TOPUP_ENDPOINT, TOPUP_LIMITS, topUpConsent, topUpMonthly, topUpStatus, topUpSummary,
   type TopUpQuote, type TopUpState,

@@ -11,7 +11,7 @@
  */
 import { useMemo, useState } from "react";
 import { ChangesList, CodePanel, DiffView, Timeline, codePanelProps, type ScriptChange } from "../code";
-import { Badge, Button, EmptyState, Icon, MorphIcon, Progress, TabPanel, Tabs, INSPECTOR_TABS, INSPECTOR_TAB_LABELS, type InspectorTab } from "../ui";
+import { Badge, Button, EmptyState, Icon, MorphIcon, Progress, TabPanel, Tabs, INSPECTOR_TABS, INSPECTOR_TAB_LABELS, type InspectorTab } from "@/components/kit";
 import type { StudioAgent } from "../useStudioAgent";
 import { ago, formatCredits, planProgress, type Env } from "./layout/run-status";
 import { useNow } from "./layout/hooks";

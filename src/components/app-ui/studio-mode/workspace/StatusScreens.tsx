@@ -9,7 +9,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import type { BlenderStatus, StudioStatus } from "@/lib/desktop/studio-bridge";
 import { studioHref } from "@/components/create/studio/keplar-studio-nav";
-import { ActivityIndicator, Button, Icon, StatusDot, type IconName } from "../ui";
+import { ActivityIndicator, Button, Icon, StatusDot, type IconName } from "@/components/kit";
 import { connectionDot, connectionLabel, ENV_LABEL, type Env } from "./layout/run-status";
 import s from "./panels/panels.module.css";
 

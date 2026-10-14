@@ -1,6 +1,7 @@
-/* ── Page 1 style for every marketing page (Oct 2026 canvas designs) ──
- * One layer instead of 40 module rewrites: light-weight headlines with tight tracking, frosted pill kickers instead of mono
- * all-caps labels, no ink glows, and pill buttons. Scoped to the marketing <main id="main"> so /app and /admin are untouched.
+/* ── Page layer for every marketing page (UI v2, docs/ui-v2.md) ──
+ * Light-weight headlines with tight tracking, plain sentence-case kickers (not pills, not mono all-caps), no ink glows.
+ * Scoped to the marketing <main id="main"> so /app and /admin are untouched. Buttons, cards and surfaces are NOT restyled here:
+ * each component draws its own from the tokens (the old class-name button rule is gone).
  * Hooks use the readable CSS-module names Next emits ("Name-module__hash__class"), the same way aura.css targets shared modules.
  * Both themes: colours come from the theme tokens. */
 
@@ -17,32 +18,25 @@
 }
 #main:not([data-kb]) h3 { letter-spacing: -0.02em; }
 
-/* Kickers / eyebrows / labels above titles: a frosted pill in sentence case */
+/* Kickers / eyebrows / labels above titles: plain small text in the quiet ink, sentence case (no pill, no dot, no mono caps) */
 #main:not([data-kb]) :is([class*="-module__"][class$="__eyebrow"], [class*="-module__"][class$="__kicker"], [class*="RoutePlaceholder-module__"][class$="__label"], [class*="compare-module__"][class$="__label"]) {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  display: inline-block;
   width: auto;
-  min-height: 34px;
-  padding: 0 14px;
-  border: 1px solid rgb(var(--rgb-ink) / 0.07);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--c-surface-1) 80%, transparent);
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
   box-shadow: none;
   font-family: var(--f-sans);
-  font-size: 13px;
-  font-weight: var(--w-regular);
+  font-size: 14px;
+  font-weight: var(--w-medium);
   letter-spacing: 0;
   text-transform: none;
   color: var(--c-ink-3);
 }
 #main :is([class$="__eyebrow"], [class$="__kicker"], [class$="__label"])::before { box-shadow: none !important; }
-#main :is([class*="RoutePlaceholder-module__"][class$="__label"], [class*="compare-module__"][class$="__label"], [class*="Legal-module__"][class$="__eyebrow"], [class*="Feedback-module__"][class$="__eyebrow"], [class*="auth-module__"][class$="__eyebrow"])::before {
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  background: var(--c-ink-3);
-}
+#main :is([class*="RoutePlaceholder-module__"][class$="__label"], [class*="compare-module__"][class$="__label"], [class*="Legal-module__"][class$="__eyebrow"], [class*="Feedback-module__"][class$="__eyebrow"], [class*="auth-module__"][class$="__eyebrow"])::before { display: none; }
 
 /* No glowing hairlines under headers */
 #main [class*="Legal-module__"][class$="__header"]::after { box-shadow: none; }
@@ -67,31 +61,9 @@
 /* Two-tone headlines (components/page/TwoTone.tsx) */
 .tt-g { color: var(--c-ink-3); }
 
-/* Buttons everywhere: a soft drop shadow instead of an outline (no borders, no hairline rings). Applies to real buttons and
-   button-styled links, by the class names the modules use (btn / Btn / button / cta / primary / secondary / ghost / go / pill /
-   chip / tab). Sidebar rows, menu items, switches and radio options (segmented choices: every option wore the same lifted shadow,
-   so the selected one could not be told apart) keep their own look, and so do the
-   whole product workspace ([data-product]: the /app shell and the Settings dialog). There every control draws its own states from
-   the product surface tokens (tokens.css: --hover-wash, --press-wash, --hairline, --elev-*); lifted, shadowed pills there turned
-   the answer footer, the top bar, "Edit" and "Shortcuts" into rows of floating discs.
-   The shadow stays the same on hover and press (the 1px lift and the colour carry hover): a shadow that deepens reads as a glow
-   box, which e2e/no-focus-box.e2e.ts rules out.
-   Keyboard focus rings (outline on :focus-visible) are untouched. Never inside the Keplar Business workspace (html[data-business-app]):
-   it uses flat buttons with hairlines like Cursor, including the Keplar One screens it embeds. */
-:root {
-  --button-shadow: 0 1px 2px rgb(14 15 18 / 0.08), 0 8px 20px -10px rgb(14 15 18 / 0.3);
-}
-:root[data-theme="dark"] {
-  --button-shadow: 0 1px 2px rgb(0 0 0 / 0.45), 0 10px 24px -12px rgb(0 0 0 / 0.75);
-}
-:is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="radio"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *):not([data-kb] *):not([data-product] *) {
-  border-color: transparent !important;
-  box-shadow: var(--button-shadow) !important;
-}
-
 /* ── Motion, expressive but never in the way ──
- * The motion system (motion.css) stays the engine; this gives it a little more life: springier overlays and page transitions,
- * buttons that lift a pixel on hover and press in, cards that rise, and each page's first blocks easing into place.
+ * The motion system (motion.css) stays the engine; this adds springier overlays and each page's first blocks easing into
+ * place. Buttons and cards do not lift or rise (docs/ui-v2.md): hover changes colour or edge, press is var(--m-press).
  * Every value stays inside the timing budget (menus ≤ 200 ms, dialogs and sheets ≤ 320 ms, page entry ≤ 360 ms with at most 80 ms
  * of stagger), with one soft overshoot: nothing makes anyone wait to read or click.
  * prefers-reduced-motion: none of the movement below applies (motion.css already collapses its tokens to a short fade). */
@@ -111,30 +83,11 @@
     animation-timing-function: var(--m-ease-spring);
   }
 
-  /* Buttons: lift on hover, press in on click (same selector family as the shadow rule above) */
-  :is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="radio"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *):not([data-kb] *):not([data-product] *) {
-    transition: translate 220ms var(--m-ease-spring), scale 140ms var(--m-ease-out), box-shadow 200ms var(--m-ease-out), background-color 140ms ease, color 140ms ease;
-  }
-  :is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="radio"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *):not([data-kb] *):not([data-product] *):hover:not(:disabled) {
-    translate: 0 -1px;
-  }
-  :is(button, a, [role="button"], input[type="submit"]):is([class*="btn" i], [class*="button" i], [class*="cta" i], [class*="__primary"], [class*="__secondary"], [class*="__ghost"], [class*="__go"], [class*="__pill"], [class*="Pill"], [class*="__chip"], [class*="Chip"], [class*="__tab"], [class*="toggleItem"], [class*="homeChip"]):not([class*="sideItem"]):not([class*="textBtn"]):not([role="switch"]):not([role="radio"]):not([role="menuitem"]):not([role="option"]):not([class*="business-site-module"]):not([class*="cursor-module"]):not([class*="workspace-module"]):not(html[data-business-app] *):not([data-kb] *):not([data-product] *):active:not(:disabled) {
-    translate: 0 0;
-    scale: var(--m-press);
-    transition-duration: 90ms;
-  }
-
-  /* Linked cards (blog, docs, prompts, help, showcase, templates, featured post): rise a little on hover */
-  #main:not([data-kb]) a:is([class*="__card"], [class*="__featured"], [class*="__tile"], [class*="__product"]) {
-    transition: translate 260ms var(--m-ease-spring), box-shadow 220ms var(--m-ease-out);
-  }
-  #main:not([data-kb]) a:is([class*="__card"], [class*="__featured"], [class*="__tile"], [class*="__product"]):hover { translate: 0 -2px; }
-
   /* Page entry: the page's first blocks ease up into place, close together (the backdrop and nav stay put). The hero is readable
      within one beat; anything after the third block simply arrives with it. Not the Keplar Business workspace: it is an app window,
      and sliding its shell in pushed the bottom 18px off-screen while it ran. */
   @keyframes kp-page-in { from { opacity: 0; translate: 0 10px; } }
-  #main:not([data-kb]) > :not([class*="Sky-module__"][class$="__backdrop"]):not([class*="workspace-module__"]) > :is(header, section, div, article, nav, form):nth-child(-n + 6) {
+  #main:not([data-kb]) > :not([class*="workspace-module__"]) > :is(header, section, div, article, nav, form):nth-child(-n + 6) {
     animation: kp-page-in 360ms var(--m-ease-out) both;
   }
   #main > * > :nth-child(2) { animation-delay: 40ms; }
@@ -158,14 +111,10 @@
 }
 
 /* ── Mobile performance ──
- * Phones (touch-first or narrow): no live backdrop blurs (each frosted surface would re-blur the animated background every
- * frame); the frosted fills are already 80–90% opaque, so they read the same. The liquid canvas skips its extra CSS blur
- * (its low-res upscale is already soft) and the auras use a smaller blur radius. Long pages skip rendering sections that are
+ * Phones (touch-first or narrow): no live backdrop blurs on in-page surfaces. Long pages skip rendering sections that are
  * off-screen until they come near (content-visibility), which cuts first paint and scroll work. */
 @media (pointer: coarse), (max-width: 767px) {
   :is(*, *::before, *::after) { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
-  [class*="Sky-module__"][class$="__liquid"] { filter: none; }
-  [class*="Sky-module__"][class$="__backdrop"] > i { filter: blur(64px); }
   #main section:not(:first-of-type) { content-visibility: auto; contain-intrinsic-size: auto 720px; }
 }
 
@@ -177,7 +126,7 @@
    desktop overlay window): its dialogs and menus are opaque token surfaces and never blur. */
 @media (pointer: coarse), (max-width: 767px) {
   :not([data-ks-root], [data-ks-root] *):is([role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], [role="tooltip"],
-      [class*="CookieBanner-module__"][class$="__banner"], [class*="Nav-module__"][class$="__panel"], [class*="Nav-module__"][class*="__morph"],
+      [class*="CookieBanner-module__"][class$="__banner"],
       [class*="CommandPalette-module__"]) {
     -webkit-backdrop-filter: blur(18px) saturate(1.3) !important;
     backdrop-filter: blur(18px) saturate(1.3) !important;

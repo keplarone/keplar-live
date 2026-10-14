@@ -8,7 +8,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { blenderCloud, type CloudPack, type CloudProgress } from "@/lib/desktop/studio-bridge";
-import { ActivityIndicator, Badge, Button, Checkbox, Icon, MorphIcon, Progress } from "../../ui";
+import { ActivityIndicator, Badge, Button, Checkbox, Icon, MorphIcon, Progress } from "@/components/kit";
 import {
   api, BLENDER_HOURS, BLENDER_STATUS, blenderActive, canDownload, canRender, capacityText, clock, downloadLabel, ENGINE, FORMATS, formFromReport, frameCount,
   hoursLabel, INITIAL_FORM, jobTone, MAX_FRAMES, mb, missingText, RENDER_BUDGET, renderSettings, resolutionOptions, when,

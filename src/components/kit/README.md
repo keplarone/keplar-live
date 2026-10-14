@@ -1,9 +1,9 @@
 # Keplar Studio design system
 
-`src/components/app-ui/studio-mode/ui/`. Import everything from the barrel:
+`src/components/kit/`. Import everything from the barrel:
 
 ```tsx
-import { StudioRoot, Button, IconButton, Icon, MorphIcon, Tabs } from "@/components/app-ui/studio-mode/ui";
+import { StudioRoot, Button, IconButton, Icon, MorphIcon, Tabs } from "@/components/kit";
 ```
 
 The direction: minimal, monochrome first, built to look engineered rather than decorated. The design system has no glass, blur, gradients, glow or overshoot. The accent appears only where it means something (selection, focus, progress). Both themes are complete, and the system uses the standard cursor. `tests/studio-ui-tokens.test.ts` enforces the color and styling rules.

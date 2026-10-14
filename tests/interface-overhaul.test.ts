@@ -47,11 +47,9 @@ test("no backdrop art, corner glow or animated gradient text in the app", () => 
   assert.equal(existsSync("src/components/app-ui/WelcomeBack.tsx"), false, "one home: the welcome-back overlay is gone");
 });
 
-test("the marketing lifted-button rule never reaches the product (data-product)", () => {
-  const r = read("src/styles/redesign.css");
-  const rules = r.split("\n").filter((l) => l.includes(':is(button, a, [role="button"], input[type="submit"])'));
-  assert.ok(rules.length >= 4);
-  for (const l of rules) assert.match(l, /:not\(\[data-product\] \*\)/);
+test("no class-name button rule anywhere: every component draws its own buttons from the tokens (UI v2)", () => {
+  const r = strip(read("src/styles/redesign.css"));
+  assert.doesNotMatch(r, /\[class\*="btn" i\]|--button-shadow|\[class\*="__card"\][^{]*:hover/);
   assert.match(read("src/components/app-ui/KeplarApp.tsx"), /className=\{s\.app\} data-product=""/);
   assert.match(read("src/components/account/SettingsDialog.tsx"), /className=\{s\.dlg\} data-product=""/);
 });
@@ -62,7 +60,8 @@ test("one button motion model: no swell, squash or default pointer pull", () => 
     const css = strip(read(f));
     assert.doesNotMatch(css, /scale\(1\.03, 1\.015\)|scale\(1\.035, 1\.02\)|scale\(0\.97, 0\.92\)|scale\(0\.98, 0\.95\)/, `${f}: no swell or squash`);
   }
-  assert.match(read("src/components/ui/Button.tsx"), /magnetic = false,/, "ButtonLink no longer pulls toward the pointer by default");
+  const button = read("src/components/ui/Button.tsx");
+  assert.doesNotMatch(button, /import \{ Magnetic \}|data-lit=/, "Button has no pointer pull and no proximity light");
 });
 
 test("radius tokens are declared once (tokens.css), not re-declared down the cascade", () => {

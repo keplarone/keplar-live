@@ -23,6 +23,7 @@ import { PageMonolith } from "@/components/monolith/PageMonolith";
 import { StaticAssetSw } from "@/components/perf/StaticAssetSw";
 import { CommandPalette } from "@/components/nav/CommandPalette";
 import { LocaleHtml } from "@/components/i18n/LocaleHtml";
+import { KitHosts } from "@/components/kit/Hosts";
 import "@/styles/globals.css";
 import "@/styles/redesign.css";
 
@@ -119,6 +120,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to content
         </a>
         {children}
+        <KitHosts />
       </body>
     </LocaleHtml>
   );

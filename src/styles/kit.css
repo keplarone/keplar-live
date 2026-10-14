@@ -1,0 +1,134 @@
+/*
+ * The shared component kit (src/components/kit: Button, IconButton, Dialog, Menu, Popover, Tooltip, Toast, Tabs, Switch,
+ * Badge, Kbd, confirm()) reads only --ks-* custom properties. Keplar Studio sets its own dense values on <StudioRoot>
+ * (kit/tokens.module.css: 13px text, 28px controls). Everywhere else on keplar.one, these are the values: the same components
+ * at Keplar One's consumer proportions (15px text, 40px controls, rounder corners), with every colour taken from the product
+ * tokens (tokens.css, light.css), so there is one palette and it follows the theme on its own.
+ */
+:root {
+  /* surfaces */
+  --ks-bg: var(--c-canvas);
+  --ks-surface-1: var(--surface-raised);
+  --ks-surface-2: var(--surface-overlay);
+  --ks-surface-3: var(--c-surface-2);
+  --ks-surface-inset: var(--c-surface-1);
+  --ks-fill-hover: var(--hover-wash);
+  --ks-fill-active: var(--press-wash);
+  --ks-fill-selected: rgb(var(--ring-rgb) / 0.12);
+  /* text */
+  --ks-text-1: var(--c-ink);
+  --ks-text-2: var(--c-ink-2);
+  --ks-text-3: var(--c-ink-3);
+  --ks-text-disabled: rgb(var(--rgb-ink) / 0.38);
+  /* lines */
+  --ks-border: var(--hairline);
+  --ks-border-strong: var(--hairline-strong);
+  --ks-divider: var(--hairline);
+  /* accent, focus, primary */
+  --ks-accent: var(--c-accent);
+  --ks-accent-text: var(--c-reasoning);
+  --ks-accent-ink: var(--c-canvas);
+  --ks-accent-subtle: rgb(var(--ring-rgb) / 0.12);
+  --ks-focus: var(--c-focus);
+  --ks-primary-bg: var(--c-ink);
+  --ks-primary-bg-hover: var(--c-ink-hover);
+  --ks-primary-text: var(--c-canvas);
+  /* status */
+  --ks-success: var(--c-verified);
+  --ks-warning: var(--c-attention);
+  --ks-danger: var(--c-destructive);
+  --ks-info: var(--c-research);
+  --ks-success-subtle: rgb(var(--rgb-verified) / 0.12);
+  --ks-warning-subtle: rgb(var(--rgb-attention) / 0.12);
+  --ks-danger-subtle: rgb(var(--rgb-destructive) / 0.1);
+  --ks-info-subtle: rgb(var(--rgb-research) / 0.1);
+  --ks-danger-solid: var(--c-destructive);
+  --ks-danger-solid-hover: var(--v-destructive);
+  --ks-danger-ink: var(--c-canvas);
+  --ks-diff-add-bg: rgb(var(--rgb-verified) / 0.1);
+  --ks-diff-add-emph: rgb(var(--rgb-verified) / 0.22);
+  --ks-diff-del-bg: rgb(var(--rgb-destructive) / 0.08);
+  --ks-diff-del-emph: rgb(var(--rgb-destructive) / 0.18);
+  /* depth */
+  --ks-elev-1: var(--elev-2);
+  --ks-elev-2: var(--elev-3);
+  --ks-scrim: rgb(14 15 18 / 0.32);
+  /* space (the same 4px grid as Studio) */
+  --ks-space-0: 0;
+  --ks-space-px: 1px;
+  --ks-space-0-5: 2px;
+  --ks-space-1: 4px;
+  --ks-space-1-5: 6px;
+  --ks-space-2: 8px;
+  --ks-space-2-5: 10px;
+  --ks-space-3: 12px;
+  --ks-space-4: 16px;
+  --ks-space-5: 20px;
+  --ks-space-6: 24px;
+  --ks-space-8: 32px;
+  --ks-space-10: 40px;
+  --ks-space-12: 48px;
+  --ks-space-16: 64px;
+  /* shape and size: Keplar One's rounder, roomier controls */
+  --ks-radius-xs: 6px;
+  --ks-radius-sm: 10px;
+  --ks-radius-md: 14px;
+  --ks-radius-lg: 22px;
+  --ks-radius-pill: 999px;
+  --ks-control-sm: 32px;
+  --ks-control-md: 40px;
+  --ks-control-lg: 48px;
+  /* type */
+  --ks-font-sans: var(--f-sans);
+  --ks-font-mono: var(--f-mono);
+  --ks-text-xs: 0.75rem;
+  --ks-text-sm: 0.8125rem;
+  --ks-text-base: 0.9375rem;
+  --ks-text-md: 1rem;
+  --ks-text-lg: 1.125rem;
+  --ks-text-xl: 1.375rem;
+  --ks-leading-xs: 1.125rem;
+  --ks-leading-sm: 1.25rem;
+  --ks-leading-base: 1.4rem;
+  --ks-leading-md: 1.5rem;
+  --ks-leading-lg: 1.625rem;
+  --ks-leading-xl: 1.875rem;
+  --ks-leading-code: 1.25rem;
+  --ks-weight-regular: var(--w-regular);
+  --ks-weight-medium: var(--w-medium);
+  --ks-weight-semibold: var(--w-semibold);
+  --ks-tracking-tight: -0.015em;
+  --ks-tracking-normal: -0.006em;
+  --ks-tracking-label: 0.02em;
+  --ks-tracking-mono: 0;
+  /* motion (the site's own budget: motion.css) */
+  --ks-dur-instant: 80ms;
+  --ks-dur-fast: 140ms;
+  --ks-dur-base: 200ms;
+  --ks-dur-morph: 220ms;
+  --ks-dur-slow: 280ms;
+  --ks-dur-sequence: 900ms;
+  --ks-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ks-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+  --ks-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ks-ease-spring: cubic-bezier(0.34, 1.2, 0.64, 1);
+  /* Focus is never a box on keplar.one (globals.css, e2e/no-focus-box): the kit draws no ring here; the site-wide keyboard cue
+     (a brightness shift plus an underline or bar) applies instead. Keplar Studio keeps its ring inside <StudioRoot>. */
+  --ks-focus-ring: 0 0 0 0 transparent;
+  --ks-icon-stroke: 1.6;
+  --ks-z-sticky: 10;
+  --ks-z-overlay: 400;
+}
+:root[data-theme="dark"] {
+  --ks-scrim: rgb(0 0 0 / 0.6);
+}
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ks-dur-instant: 0ms;
+    --ks-dur-fast: 0ms;
+    --ks-dur-base: 0ms;
+    --ks-dur-morph: 0ms;
+    --ks-dur-slow: 0ms;
+    --ks-dur-sequence: 0ms;
+  }
+}
