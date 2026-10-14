@@ -23,12 +23,12 @@ async def run(state: WantsState, user_id: str, ctx: Context) -> AsyncIterator[Ev
         yield {"type": "card", "card": q}
         return
 
-    spec = ROUTER.dispatch(Frame("spec", state.want, Track.APP_GAME, dict(state.answers)))
+    spec = ROUTER.dispatch(Frame("spec", state.want, Track.APPS_ENGINE, dict(state.answers)))
     yield trace(stage="plan", subtasks=[{"expert": a, "task": "spec"} for a in spec.log if not a.startswith("tap.")])
     if not spec.data.get("spec_ok"):
         yield card("error", message=f"The spec is incomplete: {', '.join(spec.data.get('spec_problems', []))}.")
         return
-    files = ROUTER.dispatch(Frame("files", state.want, Track.APP_GAME, dict(state.answers), dict(spec.data)))
+    files = ROUTER.dispatch(Frame("files", state.want, Track.APPS_ENGINE, dict(state.answers), dict(spec.data)))
     project = spec.data["slug"]
     root = ctx.workspace_root / _user_dir(user_id) / project
     try:

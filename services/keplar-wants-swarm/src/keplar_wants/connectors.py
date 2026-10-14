@@ -31,7 +31,7 @@ import sqlite3
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Literal, Optional
+from typing import Any, Callable, Literal, Optional
 from urllib.parse import quote, urlencode
 
 import httpx
@@ -68,6 +68,8 @@ class Connector(ABC):
 
     id: str
     name: str
+    #: The OAuth scope `place_order` needs (checked by TokenValidator before the call).
+    order_scope: str = "orders.write"
 
     @abstractmethod
     def status(self) -> ConnStatus: ...
@@ -82,6 +84,41 @@ class Connector(ABC):
     def handoff_link(self, order: Order) -> Optional[str]:
         """A page where the person can finish the order themselves (signed in as themselves). Optional."""
         return None
+
+
+@dataclass(frozen=True)
+class TokenCheck:
+    ok: bool
+    reason: str
+
+
+class TokenValidator:
+    """The one gate in front of every logistics / purchase hook. A connector call that would change anything (an order, a
+    booking) runs only when this says ok: the connector is a real integration (not a placeholder) with its credentials
+    configured, a token is stored for this user and this connector, it isn't expired (with a 60 s margin), it has the
+    scope the operation needs, and it is shaped like a bearer token (no whitespace or control characters, sane length).
+    Anything else returns ok=False with the reason, and the caller hands the step to the person or Palmo instead."""
+
+    MARGIN_S = 60.0
+
+    def __init__(self, now: Callable[[], float] = time.time) -> None:
+        self.now = now
+
+    def validate(self, connector: "Connector", token: Optional[TokenSet], scope: str) -> TokenCheck:
+        if connector.status() == "placeholder":
+            return TokenCheck(False, f"{connector.name} has no official integration yet.")
+        if connector.status() != "available":
+            return TokenCheck(False, f"{connector.name} isn't configured on this server.")
+        if token is None:
+            return TokenCheck(False, f"{connector.name} isn't connected for this account.")
+        if not (16 <= len(token.access_token) <= 4096) or any(c.isspace() or ord(c) < 33 for c in token.access_token):
+            return TokenCheck(False, "The stored token is malformed.")
+        if token.expires_at and token.expires_at - self.MARGIN_S <= self.now():
+            return TokenCheck(False, f"The {connector.name} sign-in expired. Connect again.")
+        granted = set(token.scope.split()) if token.scope else set(getattr(connector, "scopes", ()))
+        if scope and scope not in granted:
+            return TokenCheck(False, f"{connector.name} wasn't given permission for {scope}.")
+        return TokenCheck(True, "ok")
 
 
 class TokenStore:
@@ -206,6 +243,7 @@ class UberEatsConnector(OAuth2Connector):
     id, name = "ubereats", "Uber Eats"
     client_id_env, client_secret_env = "UBEREATS_CLIENT_ID", "UBEREATS_CLIENT_SECRET"
     scopes = ("eats.order",)
+    order_scope = "eats.order"
 
     def handoff_link(self, order: Order) -> str:
         return f"https://www.ubereats.com/search?{urlencode({'q': order.store})}"
@@ -215,6 +253,7 @@ class GrubhubConnector(OAuth2Connector):
     id, name = "grubhub", "Grubhub"
     client_id_env, client_secret_env = "GRUBHUB_CLIENT_ID", "GRUBHUB_CLIENT_SECRET"
     scopes = ("order",)
+    order_scope = "order"
 
     def handoff_link(self, order: Order) -> str:
         return f"https://www.grubhub.com/search?{urlencode({'queryText': order.store})}"
@@ -269,6 +308,24 @@ class ConnectorRegistry:
 
     def all(self) -> list[dict[str, Any]]:
         return [c.describe() for c in self._items.values()]
+
+
+VALIDATOR = TokenValidator()
+
+
+async def place_order_validated(connector: Connector, token: Optional[TokenSet], order: Order, validator: TokenValidator = VALIDATOR) -> OrderResult:
+    """The only way the engine places an order: validate first; a connector function runs only on a valid token.
+    Errors from the provider are caught and logged, and become a hand-off, never an exception to the caller."""
+    from . import diagnostics as diag
+
+    check = validator.validate(connector, token, connector.order_scope)
+    if not check.ok:
+        return OrderResult("needs_connection" if connector.status() != "placeholder" else "handoff", check.reason, connector.handoff_link(order))
+    try:
+        return await connector.place_order(token, order)
+    except Exception as e:  # noqa: BLE001
+        diag.api_failure(f"connector:{connector.id}", e, getattr(getattr(e, "response", None), "status_code", None))
+        return OrderResult("failed", f"{connector.name} didn't accept the order. Nothing was charged by Keplar; you can finish it there.", connector.handoff_link(order))
 
 
 REGISTRY = ConnectorRegistry()

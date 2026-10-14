@@ -21,12 +21,16 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class Track(str, Enum):
-    """The execution track a want is routed to."""
+    """The finite set of execution routes. Every want maps to exactly one, by deterministic pattern matching
+    (intents.route); nothing interprets free text to invent a new path. Values are the wire format (stable)."""
 
-    APP_GAME = "app_game"  # A. app / game engine: questionnaire -> source files in a contained workspace
-    COMMERCE = "commerce"  # B. geolocation & commerce: radius scan -> price tiers -> address / PIN -> connector
-    GOAL = "goal"  # C. long-term goals: branching state machine -> plan -> Palmo hook
+    APPS_ENGINE = "app_game"  # questionnaire -> source files in a contained workspace
+    LOGISTICS_GATEWAY = "commerce"  # radius scan -> price tiers -> address / PIN -> validated connector call
+    CAP_ROUTE = "goal"  # capital / long-term goals: branching state machine -> plan -> Palmo hook
     GENERAL = "general"  # anything else: the expert swarm answers
+
+
+Route = Track
 
 
 class Option(BaseModel):

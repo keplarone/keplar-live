@@ -102,6 +102,34 @@ AUDIENCES = [
 LENSES = ["speed", "lowest cost", "quality", "safety", "simplicity", "scale", "creativity", "certainty"]
 CATALOGUE_MAX = len(DOMAINS) * len(ROLES) * len(AUDIENCES) * len(LENSES)  # 100,000
 
+#: Rows read from SQLite per fetch (lookups stream through a cursor, never a full result set).
+PAGE_SIZE = 5
+#: Most rows one selection may stream before it settles (bounds the work per request).
+SCAN_CAP = 200
+#: Per-task ceiling on data held in memory (the payload: task + every step's output), in bytes.
+TASK_MEMORY_LIMIT = int(os.environ.get("KEPLAR_WANTS_TASK_MEMORY_LIMIT", str(50 * 1024 * 1024)))
+
+
+class ResourceLimitExceeded(RuntimeError):
+    """A task tried to hold more than TASK_MEMORY_LIMIT bytes. The task is stopped; the process carries on."""
+
+
+def payload_bytes(payload: Any) -> int:
+    """Size of a task's data as it would be held / sent (UTF-8 JSON). Cheap for the small payloads this pipeline carries."""
+    return len(json.dumps(payload, ensure_ascii=False, default=str).encode("utf-8"))
+
+
+def guard_memory(payload: Any, job_id: str = "-", limit: int | None = None) -> None:
+    """Raises ResourceLimitExceeded (after logging the diagnostic token) when `payload` is over the limit.
+    Python can't cap one coroutine's RAM, so the ceiling is enforced on the data each task loads and accumulates:
+    every expert step's output is measured before it is accepted."""
+    cap = TASK_MEMORY_LIMIT if limit is None else limit
+    size = payload_bytes(payload)
+    if size > cap:
+        METRICS.inc("resource_limit_exceeded")
+        diag.log("ResourceLimitExceeded", job_id=job_id, bytes=size, limit=cap)
+        raise ResourceLimitExceeded(f"Task data reached {size} bytes (limit {cap}).")
+
 
 @dataclass(frozen=True)
 class ExpertProfile:
@@ -215,9 +243,12 @@ class Catalogue:
         METRICS.inc("cache_miss", len(missing))
         if missing:
             try:
-                q = f"SELECT id,name,domain,role,audience,lens,skills,needs,hook FROM experts WHERE id IN ({','.join('?' * len(missing))})"
+                rows = []
                 with self._lock:
-                    rows = self.db.execute(q, missing).fetchall()
+                    for k in range(0, len(missing), PAGE_SIZE):
+                        page = missing[k : k + PAGE_SIZE]
+                        cur = self.db.execute(f"SELECT id,name,domain,role,audience,lens,skills,needs,hook FROM experts WHERE id IN ({','.join('?' * len(page))})", page)
+                        rows.extend(cur.fetchmany(PAGE_SIZE))
                 for r in rows:
                     try:
                         p = ExpertProfile(*r)
@@ -266,12 +297,23 @@ class Catalogue:
             match = " OR ".join(f'"{t}"' for t in dict.fromkeys(terms))
             try:
                 with self._lock:
-                    rows = self.db.execute(
-                # bm25 column weights: domain, skills, needs, role, audience, lens
-                "SELECT e.id,e.name,e.domain,e.role,e.audience,e.lens,e.skills,e.needs,e.hook FROM experts_fts f JOIN experts e ON e.id=f.rowid "
-                "WHERE experts_fts MATCH ? ORDER BY bm25(experts_fts, 3.0, 2.0, 4.0, 1.5, 1.2, 1.0) LIMIT ?",
-                (match, k * 40),
-                    ).fetchall()
+                    cur = self.db.execute(
+                        # bm25 column weights: domain, skills, needs, role, audience, lens
+                        "SELECT e.id,e.name,e.domain,e.role,e.audience,e.lens,e.skills,e.needs,e.hook FROM experts_fts f JOIN experts e ON e.id=f.rowid "
+                        "WHERE experts_fts MATCH ? ORDER BY bm25(experts_fts, 3.0, 2.0, 4.0, 1.5, 1.2, 1.0) LIMIT ?",
+                        (match, SCAN_CAP),
+                    )
+                    # Streamed PAGE_SIZE rows at a time; stops as soon as enough distinct roles are found.
+                    roles: set[str] = set()
+                    while len(rows) < SCAN_CAP:
+                        page = cur.fetchmany(PAGE_SIZE)
+                        if not page:
+                            break
+                        rows.extend(page)
+                        roles.update(r[3] for r in page if not rows or r[2] == rows[0][2])
+                        if len(roles) >= k + 2:
+                            break
+                    cur.close()
             except sqlite3.Error as e:
                 diag.log("select_failed", error=type(e).__name__, query_terms=len(terms))
                 METRICS.inc("select_failed")
@@ -441,6 +483,10 @@ class SwarmPipeline:
 
     async def run(self, task: str, expert_ids: list[int], emit: Emit = lambda e: None, job_id: str = "-") -> dict[str, Any]:
         payload: dict[str, Any] = {"task": task, "steps": [], "failed": [], "recovered": []}
+        try:
+            guard_memory(payload, job_id)
+        except ResourceLimitExceeded as e:
+            return {**{"task": task[:200], "steps": [], "recovered": []}, "failed": [{"expert_id": None, "error": "ResourceLimitExceeded", "why": str(e)}], "stopped": "ResourceLimitExceeded"}
 
         def say(e: dict[str, Any]) -> None:
             try:
@@ -461,6 +507,7 @@ class SwarmPipeline:
                 snapshot = {**payload, "steps": list(payload["steps"])}
                 try:
                     payload = await self._step(expert, payload, self.executor)
+                    guard_memory(payload, job_id)
                     ms = (time.perf_counter() - t0) * 1000
                     METRICS.inc("step_ok")
                     METRICS.time("step", ms)
@@ -477,6 +524,13 @@ class SwarmPipeline:
                     fallback, why = verifier, "timeout"
                 except asyncio.CancelledError:
                     raise
+                except ResourceLimitExceeded as e:
+                    # Not retried: the task's data is too big. The task context ends here, with what it had.
+                    payload = snapshot
+                    payload["failed"].append({"expert_id": expert.id, "error": "ResourceLimitExceeded", "why": str(e)})
+                    payload["stopped"] = "ResourceLimitExceeded"
+                    say({"stage": "expert", "expert": label, "status": "failed"})
+                    break
                 except Exception as e:  # noqa: BLE001
                     payload = snapshot
                     METRICS.inc("step_error")
@@ -486,11 +540,17 @@ class SwarmPipeline:
                 # Recovery: the verifier (after a timeout) or the same expert (after an error), on the baseline model.
                 try:
                     payload = await self._step(fallback, payload, self.baseline)
+                    guard_memory(payload, job_id)
                     payload["recovered"].append({"expert_id": expert.id, "by": fallback.id, "why": why})
                     METRICS.inc("step_recovered")
                     say({"stage": "expert", "expert": f"#{fallback.id} {fallback.name}", "status": "done"})
                 except asyncio.CancelledError:
                     raise
+                except ResourceLimitExceeded as e:
+                    payload = snapshot
+                    payload["failed"].append({"expert_id": expert.id, "error": "ResourceLimitExceeded", "why": str(e)})
+                    payload["stopped"] = "ResourceLimitExceeded"
+                    break
                 except Exception as e:  # noqa: BLE001
                     payload = snapshot
                     payload["failed"].append({"expert_id": expert.id, "error": type(e).__name__, "why": why})

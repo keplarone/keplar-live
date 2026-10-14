@@ -15,7 +15,7 @@ import random
 from typing import AsyncIterator
 
 from ..agents import ROUTER, Frame
-from ..connectors import Order
+from ..connectors import Order, place_order_validated
 from ..context import Context
 from ..models import Event, Place, Track, WantsState, card, say
 from .questions import FOOD, next_question_card
@@ -56,7 +56,7 @@ async def run(state: WantsState, user_id: str, ctx: Context, pin: str | None, co
         yield card("location", question="Where are you? Keplar looks for places near you.")
         return
     if not state.places:
-        f = ROUTER.dispatch(Frame("scan", state.want, Track.COMMERCE, dict(state.answers)))
+        f = ROUTER.dispatch(Frame("scan", state.want, Track.LOGISTICS_GATEWAY, dict(state.answers)))
         state.places = simulated_scan(state.location.lat, state.location.lon, f.data["category"], f.data["radius_km"], f.data.get("named"), f.data["sort"])
         yield {"type": "state", "state": state.model_dump(mode="json"), "label": "Order it"}
         yield card("places", places=[p.model_dump() for p in state.places], note="Cheapest to most expensive. These places are SIMULATED by the Python swarm service (no places API connected).")
@@ -76,7 +76,7 @@ async def run(state: WantsState, user_id: str, ctx: Context, pin: str | None, co
         return
 
     connector = ctx.connectors.get(state.delivery or "pickup")
-    f = ROUTER.dispatch(Frame("order", state.want, Track.COMMERCE, dict(state.answers), {"place": place.model_dump(), "address": state.address, "fulfilment": state.fulfilment, "delivery": state.delivery, "has_pin": ctx.pins.has(user_id), "connector_name": connector.name}))
+    f = ROUTER.dispatch(Frame("order", state.want, Track.LOGISTICS_GATEWAY, dict(state.answers), {"place": place.model_dump(), "address": state.address, "fulfilment": state.fulfilment, "delivery": state.delivery, "has_pin": ctx.pins.has(user_id), "connector_name": connector.name}))
 
     if not state.confirmed:
         if confirm and (not ctx.pins.has(user_id) or ctx.pins.check(user_id, pin)):
@@ -90,7 +90,8 @@ async def run(state: WantsState, user_id: str, ctx: Context, pin: str | None, co
 
     o = f.data["order"]
     order = Order(store=o["store"], items=o["items"], address=o["address"], fulfilment=o["fulfilment"])
-    result = await connector.place_order(ctx.tokens.get(user_id, connector.id), order)
+    # OAuth 2.0 validation runs before any connector function (place_order_validated).
+    result = await place_order_validated(connector, ctx.tokens.get(user_id, connector.id), order)
     if result.status == "placed":
         yield card("answer", markdown=f"**Ordered.** {result.message}", nextSteps=[], experts=[], verified=True)
         return

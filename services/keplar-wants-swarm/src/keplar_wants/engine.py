@@ -17,7 +17,7 @@ from .models import Event, Location, LocationQuery, OrchestrateRequest, Track, W
 from .registry_swarm import summarise
 from .tracks import app_engine, commerce, goals
 
-LABEL = {Track.APP_GAME: "Build it", Track.COMMERCE: "Order it", Track.GOAL: "Make money", Track.GENERAL: "Get it done"}
+LABEL = {Track.APPS_ENGINE: "Build it", Track.LOGISTICS_GATEWAY: "Order it", Track.CAP_ROUTE: "Make money", Track.GENERAL: "Get it done"}
 
 
 async def geocode(q: str) -> Optional[Location]:
@@ -86,14 +86,16 @@ async def run_turn(req: OrchestrateRequest, ctx: Context, geo=geocode) -> AsyncI
         return
     yield {"type": "state", "state": state.model_dump(mode="json"), "label": LABEL[state.track]}
     try:
-        if state.track is Track.APP_GAME:
-            gen = app_engine.run(state, req.user.id, ctx)
-        elif state.track is Track.COMMERCE:
-            gen = commerce.run(state, req.user.id, ctx, req.input.pin, bool(req.input.confirm))
-        elif state.track is Track.GOAL:
-            gen = goals.run(state, ctx)
-        else:
-            gen = general(state, ctx)
+        # A closed set of routes, each a hard-coded path. Unknown values can't reach here (WantsState validates the enum).
+        match state.track:
+            case Track.APPS_ENGINE:
+                gen = app_engine.run(state, req.user.id, ctx)
+            case Track.LOGISTICS_GATEWAY:
+                gen = commerce.run(state, req.user.id, ctx, req.input.pin, bool(req.input.confirm))
+            case Track.CAP_ROUTE:
+                gen = goals.run(state, ctx)
+            case Track.GENERAL:
+                gen = general(state, ctx)
         async for ev in gen:
             yield ev
     except Exception as e:  # noqa: BLE001 - a track bug becomes a retryable card, never a frozen chat

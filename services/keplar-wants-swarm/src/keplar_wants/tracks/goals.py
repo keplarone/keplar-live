@@ -50,7 +50,7 @@ async def run(state: WantsState, ctx: Context, hook: PalmoHook | None = None) ->
         return
     if state.goalState == "ask":
         state.goalState = advance("ask", "plan")
-    f = ROUTER.dispatch(Frame("goal", state.want, Track.GOAL, dict(state.answers)))
+    f = ROUTER.dispatch(Frame("goal", state.want, Track.CAP_ROUTE, dict(state.answers)))
 
     # The expert swarm writes the plan in the background; this turn streams its progress.
     facts = "; ".join(f"{k}: {v}" for k, v in state.answers.items())

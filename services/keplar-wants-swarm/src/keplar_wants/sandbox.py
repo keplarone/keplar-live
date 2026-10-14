@@ -94,23 +94,60 @@ class ContainedWriter:
         if self._total + len(data) > MAX_TOTAL_BYTES:
             raise ContainmentError("The workspace size limit was reached.")
         path = self.target(rel)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        # O_NOFOLLOW: even if a symlink appeared after the check (a race), opening it fails instead of following it.
-        flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | getattr(os, "O_NOFOLLOW", 0)
-        fd = os.open(path, flags, 0o644)
-        with os.fdopen(fd, "wb") as fh:
-            fh.write(data)
+        # Written to a temp file in the same folder, then renamed into place: a failure part-way never leaves a
+        # half-written file, and the descriptor is always closed. OSErrors become ContainmentError with the reason.
+        tmp = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+        fd: int | None = None
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            # O_NOFOLLOW / O_EXCL: a symlink planted after the check (a race) makes the open fail instead of being followed.
+            flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+            fd = os.open(tmp, flags, 0o644)
+            view = memoryview(data)
+            while view:
+                n = os.write(fd, view)
+                view = view[n:]
+            os.fsync(fd)
+            os.close(fd)
+            fd = None
+            os.replace(tmp, path)
+        except OSError as e:
+            raise ContainmentError(f"Couldn't write {rel}: {e.strerror or type(e).__name__}") from e
+        finally:
+            if fd is not None:
+                try:
+                    os.close(fd)
+                except OSError:
+                    pass
+            if tmp.exists():
+                try:
+                    tmp.unlink()
+                except OSError:
+                    pass
         self._total += len(data)
         self.written.append((str(safe_relative(rel)), len(data)))
         return path
 
     def write_all(self, files: Iterable[tuple[str, str]]) -> list[tuple[str, int]]:
-        """Validates EVERY path first, then writes: a bad path means nothing is written."""
+        """Validates EVERY path first, then writes. A bad path means nothing is written; a write that fails part-way
+        removes the files this call already wrote (all or nothing), then raises ContainmentError."""
         files = list(files)
         for rel, _ in files:
             self.target(rel)
-        for rel, content in files:
-            self.write(rel, content)
+        before = len(self.written)
+        done: list[Path] = []
+        try:
+            for rel, content in files:
+                done.append(self.write(rel, content))
+        except Exception:
+            for p in done:
+                try:
+                    p.unlink()
+                except OSError:
+                    pass
+            del self.written[before:]
+            self._total = sum(b for _, b in self.written)
+            raise
         return list(self.written)
 
 

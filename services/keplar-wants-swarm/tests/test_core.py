@@ -55,10 +55,10 @@ def test_action_gate(tmp_path):
 # ── intents (the examples from the brief) ──
 
 @pytest.mark.parametrize("want,track,intent", [
-    ("to build an app", Track.APP_GAME, "build_app"),
-    ("to build a roblox game", Track.APP_GAME, "roblox"),
-    ("a coffee", Track.COMMERCE, "food"),
-    ("a million dollars", Track.GOAL, "money"),
+    ("to build an app", Track.APPS_ENGINE, "build_app"),
+    ("to build a roblox game", Track.APPS_ENGINE, "roblox"),
+    ("a coffee", Track.LOGISTICS_GATEWAY, "food"),
+    ("a million dollars", Track.CAP_ROUTE, "money"),
     ("to understand black holes", Track.GENERAL, "general"),
 ])
 def test_route(want, track, intent):
@@ -75,13 +75,13 @@ def test_at_least_50_agents_with_unique_ids():
 
 
 def test_frame_skips_agents_missing_inputs():
-    f = ROUTER.dispatch(Frame("order", "a coffee", Track.COMMERCE, {}, {}))
+    f = ROUTER.dispatch(Frame("order", "a coffee", Track.LOGISTICS_GATEWAY, {}, {}))
     assert "commerce.order" in f.skipped  # needs `place`
     assert "order" not in f.data
 
 
 def test_goal_agents_parse_money():
-    f = ROUTER.dispatch(Frame("goal", "a million dollars", Track.GOAL, {"capital": "$500 – $2,000", "timeline": "5 years", "path": "Business"}))
+    f = ROUTER.dispatch(Frame("goal", "a million dollars", Track.CAP_ROUTE, {"capital": "$500 – $2,000", "timeline": "5 years", "path": "Business"}))
     assert f.data["target_usd"] == 1_000_000
     assert f.data["capital_usd"] == 2000
     assert f.data["per_month_usd"] == round(1_000_000 / 60)

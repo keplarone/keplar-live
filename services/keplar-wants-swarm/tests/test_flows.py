@@ -3,7 +3,7 @@ import json
 
 import httpx
 
-from keplar_wants import app as app_module
+from keplar_wants import orchestrator as app_module
 from keplar_wants.engine import run_turn
 from keplar_wants.models import Location, OrchestrateRequest, WantsState
 
