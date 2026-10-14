@@ -52,7 +52,7 @@ export default function SpaceStudioPage() {
                 <h3 className={s.cellTitle}>{m.name}</h3>
                 <p className={s.cellTag}>{m.tagline}</p>
                 <ul className={s.plain}>{m.strengths.map((x) => <li key={x}>{x}</li>)}</ul>
-                <p className={s.cellMeta}>Runs on {m.underlyingModel} · {m.creditNote} · from {PLANS[m.minPlan].name.replace("Space Studio ", "")}</p>
+                <p className={s.cellMeta}>{m.creditNote} · from {PLANS[m.minPlan].name.replace("Space Studio ", "")}</p>
               </article>
             ))}
           </div>
