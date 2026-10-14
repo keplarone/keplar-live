@@ -65,6 +65,8 @@ test("no electric blue-dominant spam (teal OK: green channel stays close to blue
     "src/components/create/images.module.css": ["38,92,140"],
     "src/components/create/video/video.module.css": ["38,92,140"],
     "src/components/kb/blogCovers.ts": ["91,116,201", "66,133,244", "77,107,254"],
+    "src/components/sky/MiniDemos.module.css": ["74,99,184"],
+    "src/components/sky/SkyHome.tsx": ["74,99,184"],
   };
   const hits: string[] = [];
   for (const f of files) {

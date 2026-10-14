@@ -1,7 +1,7 @@
 /**
  * The landing after the hero story, kept short (minimal pass): the live demo (Ask), one compact "Everything in Keplar" list with
  * a row per remaining chapter linking to its section on /features (every feature, with honest Live / Beta / Coming soon, lives
- * there), then pricing and the closing CTA, on the UI v2 canvas (docs/ui-v2.md). Each row carries data-chapter (ChapterSync mirrors it).
+ * there), then pricing and the closing CTA. Each overview row carries data-chapter so the space scene still follows the story.
  * Data: src/lib/features.ts.
  */
 import Link from "next/link";
@@ -27,7 +27,7 @@ export async function Chapters({ beforeClose, locale = "en" }: { beforeClose?: R
     <div className={s.chapters}>
       <section id="demo" className={s.chapter} data-chapter={ask.id} aria-labelledby="ch-ask">
         <div className={s.wrap}>
-          <header className={s.head} data-reveal="">
+          <header className={s.head}>
             <p className={s.kicker}><b>{ask.n}</b>{ch.demoKicker}</p>
             <h2 id="ch-ask" className={s.title}>{ch.demoTitle}</h2>
             <p className={s.lede}>{tx(ask.id)?.lede ?? ask.lede}</p>
@@ -40,7 +40,7 @@ export async function Chapters({ beforeClose, locale = "en" }: { beforeClose?: R
       </section>
       <section id="everything" className={s.chapter} aria-labelledby="ch-everything">
         <div className={`${s.wrap} ${s.split}`}>
-          <div className={s.side} data-reveal="">
+          <div className={s.side}>
             <p className={s.kicker}>{m.featuresPage.kicker}</p>
             <h2 id="ch-everything" className={s.title}>{m.featuresPage.title}</h2>
           </div>
