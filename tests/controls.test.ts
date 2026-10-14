@@ -6,7 +6,7 @@ const css = readFileSync("src/styles/lit.css", "utf8");
 
 test("proprietary controls: reduced motion and touch fall back to a plain press, no light, no movement", () => {
   const rm = css.slice(css.indexOf("prefers-reduced-motion"));
-  assert.match(rm, /transform: none/);
+  assert.match(rm, /scale: none/, "reduced motion: the press does not move (the same `scale` property as every button press)");
   assert.match(rm, /\[data-lit\]::before, \[data-lit\]::after \{ display: none; \}/);
   assert.match(css, /@media \(hover: none\), \(pointer: coarse\)/);
 });

@@ -154,8 +154,8 @@
 
 /* glass buttons (liquid glass: see src/styles/glass.css) */
 .tryGo { background: var(--btn-p-bg); color: var(--btn-p-ink); border-color: transparent; box-shadow: var(--btn-p-shadow); -webkit-backdrop-filter: blur(6px) saturate(1.4); backdrop-filter: blur(6px) saturate(1.4); transition: var(--btn-spring); }
-.tryGo:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--btn-p-bg); transform: scale(1.03, 1.015); }
-.tryGo:active:not(:disabled) { transform: scale(0.97, 0.92); }
+.tryGo:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--c-ink-hover); }
+.tryGo:active:not(:disabled) { scale: var(--m-press); }
 @media (prefers-reduced-motion: reduce) { .tryGo { transition: background-color 0.1s linear; transform: none !important; } }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .tryGo { backdrop-filter: none; -webkit-backdrop-filter: none; } .tryGo { background: var(--btn-p-solid, #17171a); } }
 

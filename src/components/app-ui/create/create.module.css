@@ -98,7 +98,7 @@
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); }
 .primary, .ghost { display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2); height: 36px; padding: 0 var(--s-4); border-radius: var(--r-pill); font: inherit; font-size: var(--t-label); font-weight: var(--w-medium); text-decoration: none; cursor: pointer; white-space: nowrap; }
 .primary { background: var(--btn-p-bg, var(--c-ink)); color: var(--btn-p-ink, var(--c-canvas)); box-shadow: var(--btn-p-shadow, 0 0 18px rgb(var(--rgb-ink) / 0.25)); }
-.primary:hover:not(:disabled) { transform: scale(1.03, 1.015); }
+.primary:hover:not(:disabled) { background: var(--c-ink-hover); }
 .ghost { color: var(--c-ink); box-shadow: inset 0 0 0 1px var(--c-border-strong); background: transparent; }
 .ghost:hover:not(:disabled) { background: rgb(var(--rgb-ink) / 0.05); }
 .primary:disabled, .ghost:disabled { opacity: 0.45; cursor: default; }

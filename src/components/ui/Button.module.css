@@ -31,9 +31,8 @@
   background: var(--btn-p-bg);
   color: var(--btn-p-ink);
   box-shadow: var(--btn-p-shadow);
-  -webkit-backdrop-filter: blur(6px) saturate(1.4);
-  backdrop-filter: blur(6px) saturate(1.4);
 }
+.primary:hover { background: var(--c-ink-hover); }
 
 .secondary {
   color: var(--btn-s-ink);
@@ -45,20 +44,17 @@
 html[data-lens] .secondary { backdrop-filter: url(#lg-refract) blur(5px) saturate(1.4); }
 .secondary:hover { background: var(--lg-fill-strong); }
 
-/* Liquid response: swell on hover, squash and spring back on press (fine pointers, motion allowed). */
-.primary, .secondary { transition: var(--btn-spring), color var(--d-base) var(--e-standard); }
-@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  .primary:hover, .secondary:hover { transform: scale(1.035, 1.02); }
-}
+/* One interaction model for every button (docs/interface-overhaul.md): colour and shadow change on hover, a uniform
+   var(--m-press) dip while pressed (motion.css / redesign.css), no swell, squash or pointer pull. */
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .secondary { background: var(--lg-solid); }
 }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  .primary { background: var(--btn-p-solid, #17171a); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .primary { background: var(--btn-p-solid, #17171a); }
   .secondary { background: var(--lg-solid); backdrop-filter: none; -webkit-backdrop-filter: none; }
 }
-html[data-glass="lite"] .primary, html[data-glass="lite"] .secondary { backdrop-filter: none; -webkit-backdrop-filter: none; }
+html[data-glass="lite"] .secondary { backdrop-filter: none; -webkit-backdrop-filter: none; }
 
 .quiet {
   padding: 0 var(--s-3);
@@ -83,16 +79,6 @@ html[data-glass="lite"] .primary, html[data-glass="lite"] .secondary { backdrop-
   border-radius: var(--r-pill);
 }
 
-/* Liquid press: the pill squashes slightly wider/flatter and springs back. */
-.button:active {
-  transform: scale(0.97, 0.92);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .button:active {
-    transform: none;
-  }
-}
 
 /* Touch: the small button is still a full 44px target (nav CTA, hero secondary links). */
 @media (pointer: coarse) {

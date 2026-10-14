@@ -268,7 +268,8 @@ export function AuthForm({ mode, providers, caps, next, devTools, nextQs }: Prop
         ) : null}
       </form>
 
-      <button type="button" className={`${s.btn} ${s.btnSecondary}`} onClick={() => void emailLink()} disabled={busy !== null || mailOff} aria-describedby={mailOff ? "mail-off" : undefined}>
+      {/* The email link is the primary action when it is the only way in (no password accounts on this server). */}
+      <button type="button" className={`${s.btn} ${caps.passwords ? s.btnSecondary : s.btnPrimary}`} onClick={() => void emailLink()} disabled={busy !== null || mailOff} aria-describedby={mailOff ? "mail-off" : undefined}>
         {linkLabel}
       </button>
       {mailOff ? (
