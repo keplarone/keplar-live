@@ -130,25 +130,21 @@ html[data-glass="lite"] .lg, html[data-glass="lite"] .lg-strong { background: va
   --btn-p-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 10px 22px -10px rgb(0 0 0 / 0.7);
   --btn-s-shadow: 0 6px 18px -8px rgb(0 0 0 / 0.6);
 }
-.lgb-p, .lgb-s {
+.lgb-s {
   -webkit-backdrop-filter: blur(6px) saturate(1.4);
   backdrop-filter: blur(6px) saturate(1.4);
-  transition: var(--btn-spring);
 }
+.lgb-p, .lgb-s { transition: background-color var(--m-dur-1) var(--m-ease-out), box-shadow var(--m-dur-2) var(--m-ease-out), color var(--m-dur-1) var(--m-ease-out); }
 .lgb-p { background: var(--btn-p-bg); color: var(--btn-p-ink); box-shadow: var(--btn-p-shadow); border-color: transparent; }
 .lgb-s { background: var(--btn-s-bg); color: var(--btn-s-ink); box-shadow: var(--btn-s-shadow); }
 html[data-lens] .lgb-s { backdrop-filter: url(#lg-refract) blur(5px) saturate(1.4); }
-@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  .lgb-p:hover:not(:disabled), .lgb-s:hover:not(:disabled) { transform: scale(1.035, 1.02); }
-}
-@media (prefers-reduced-motion: no-preference) {
-  .lgb-p:active:not(:disabled), .lgb-s:active:not(:disabled) { transform: scale(0.97, 0.92); transition-duration: 0.1s; }
-}
+.lgb-p:hover:not(:disabled) { background: var(--c-ink-hover); }
+/* No swell or squash: the press is motion.css's uniform var(--m-press) dip. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .lgb-s { background: var(--lg-solid); }
 }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  .lgb-p, .lgb-s { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .lgb-s { backdrop-filter: none; -webkit-backdrop-filter: none; }
   .lgb-p { background: var(--btn-p-solid, #17171a); }
   .lgb-s { background: var(--lg-solid); }
 }
@@ -202,11 +198,7 @@ html[data-typing-mode="ovr"] :is(textarea, input) { caret-shape: block; caret-co
  * The default below has ZERO specificity (:where), so a component's own class decides its shape and nothing is forced to a pill any more.
  * A button with no radius of its own is a rounded rectangle. To opt in to a pill, either set `border-radius: var(--shape-pill)` in the
  * component's class, or add `data-shape="pill"` / `.pill` to the element (utility below). A round icon button is a square with the pill token. */
-:root {
-  --shape-pill: 9999px;
-  --shape-control: 12px;
-  --shape-card: 16px;
-}
+/* (--shape-pill / --shape-control / --shape-card are defined with the other radius tokens in tokens.css) */
 :where(button, [role="button"], [role="tab"], [role="switch"], input[type="button"], input[type="submit"], input[type="reset"]) {
   border-radius: var(--shape-control);
 }

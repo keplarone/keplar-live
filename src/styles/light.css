@@ -12,8 +12,8 @@
   --c-ink: #0e0f12;
   --c-ink-2: #4b4f58;
   --c-ink-3: #686d78;
-  --c-border: rgb(14 15 18 / 0.09);
-  --c-border-strong: rgb(14 15 18 / 0.15);
+  --c-border: rgb(14 15 18 / 0.07);
+  --c-border-strong: rgb(14 15 18 / 0.12);
   --c-glass: rgb(255 255 255 / 0.62);
   --c-glass-strong: rgb(255 255 255 / 0.82);
   --c-glass-border: rgb(255 255 255 / 0.78);
@@ -24,7 +24,7 @@
   --rgb-canvas: 247 248 250;
   --rgb-surface: 241 243 246;
 
-  --sh-hairline: 0 0 0 1px rgb(14 15 18 / 0.08);
+  --sh-hairline: 0 0 0 1px rgb(14 15 18 / 0.06), 0 6px 18px -12px rgb(14 15 18 / 0.25);
   --sh-float: 0 1px 2px rgb(14 15 18 / 0.05), 0 10px 28px -14px rgb(14 15 18 / 0.16);
   --sh-window: 0 1px 0 rgb(255 255 255 / 0.9) inset, 0 30px 80px -40px rgb(14 15 18 / 0.22), 0 2px 6px rgb(14 15 18 / 0.04);
 

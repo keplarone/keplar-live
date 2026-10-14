@@ -5,11 +5,16 @@ import path from "node:path";
 
 const read = (p: string) => readFileSync(path.join(process.cwd(), p), "utf8");
 const glass = read("src/styles/glass.css");
+const tokens = read("src/styles/tokens.css");
 
-test("shape tokens exist: pill, control (rounded rectangle) and card", () => {
-  assert.match(glass, /--shape-pill:\s*9999px/);
-  assert.match(glass, /--shape-control:\s*12px/);
-  assert.match(glass, /--shape-card:\s*16px/);
+test("shape tokens exist once, in tokens.css: pill, control (rounded rectangle) and card", () => {
+  assert.match(tokens, /--shape-pill:\s*9999px/);
+  assert.match(tokens, /--shape-control:\s*14px/);
+  assert.match(tokens, /--shape-card:\s*22px/);
+  for (const f of ["src/styles/glass.css", "src/styles/redesign.css", "src/styles/light.css"]) {
+    const css = read(f).replace(/\/\*[\s\S]*?\*\//g, "");
+    assert.doesNotMatch(css, /--(shape-(pill|control|card)|r-(xs|sm|md|card|card-lg)):/, `${f} re-declares a radius token`);
+  }
 });
 
 test("buttons default to a rounded rectangle at zero specificity, so a component's own class decides its shape", () => {

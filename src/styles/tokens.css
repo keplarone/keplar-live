@@ -120,14 +120,20 @@
   --s-40: calc(160 * var(--u));
   --s-48: calc(192 * var(--u));
 
-  /* radius (track --ui-scale; pill stays full) */
-  --r-xs: calc(8px * var(--ui-scale));
-  --r-sm: calc(12px * var(--ui-scale));
-  --r-md: calc(16px * var(--ui-scale));
+  /* radius (track --ui-scale; pill stays full). The one source for corner shapes: these are the values every page renders with
+     (they used to be re-declared further down the cascade in glass.css and redesign.css). */
+  --r-xs: calc(10px * var(--ui-scale));
+  --r-sm: calc(14px * var(--ui-scale));
+  --r-md: calc(18px * var(--ui-scale));
   --r-card: calc(24px * var(--ui-scale));
-  --r-card-lg: calc(32px * var(--ui-scale));
+  --r-card-lg: calc(28px * var(--ui-scale));
   --r-input: calc(22px * var(--ui-scale));
   --r-pill: 999px;
+  /* shape roles (glass.css "Shape system"): pill = CTAs, chips, badges, switches, round icon buttons; control = every other
+     button (a rounded rectangle); card = cards, tiles, thumbnails, list rows */
+  --shape-pill: 9999px;
+  --shape-control: 14px;
+  --shape-card: 22px;
 
   /* border */
   --b-hairline: 1px;
@@ -185,8 +191,8 @@
   --c-ink: #ededf0;
   --c-ink-2: #a4a6ad;
   --c-ink-3: #8b8d94;
-  --c-border: rgba(255, 255, 255, 0.09);
-  --c-border-strong: rgba(255, 255, 255, 0.17);
+  --c-border: rgb(255 255 255 / 0.07);
+  --c-border-strong: rgb(255 255 255 / 0.13);
   --c-glass: rgba(22, 22, 26, 0.6);
   --c-glass-strong: rgba(26, 26, 30, 0.82);
   --c-glass-border: rgba(255, 255, 255, 0.08);
@@ -228,6 +234,41 @@
   --sh-float: 0 1px 1px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
   --sh-window: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 30px 80px -40px rgba(0, 0, 0, 0.8), 0 2px 6px rgba(0, 0, 0, 0.3);
   color-scheme: dark;
+}
+
+/*
+ * Product surfaces (the /app workspace, its menus and dialogs). One set of names for both themes, so a component writes
+ * `background: var(--surface-raised); box-shadow: var(--elev-2)` once instead of a light block and a hex-copied dark block.
+ *   --surface-panel    the sidebar card and drawer
+ *   --surface-raised   cards, the composer, message bubbles, selected rows
+ *   --surface-overlay  menus, popovers, drawers, dialogs: always opaque, so nothing behind them bleeds through the text
+ *   --hairline(-strong) 1px edges · --hover-wash  the hover/pressed fill for quiet controls
+ *   --elev-1/2/3       resting edge, raised card, floating overlay
+ * Light values sit on the light canvas (#f7f8fa, light.css); dark on graphite #0b0b0d.
+ */
+:root {
+  --surface-panel: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-overlay: #ffffff;
+  --hairline: rgb(14 15 18 / 0.08);
+  --hairline-strong: rgb(14 15 18 / 0.14);
+  --hover-wash: rgb(14 15 18 / 0.05);
+  --press-wash: rgb(14 15 18 / 0.09);
+  --elev-1: 0 1px 2px rgb(14 15 18 / 0.06);
+  --elev-2: 0 1px 2px rgb(14 15 18 / 0.05), 0 8px 24px -14px rgb(14 15 18 / 0.18);
+  --elev-3: 0 2px 6px rgb(14 15 18 / 0.06), 0 20px 48px -18px rgb(14 15 18 / 0.3);
+}
+:root[data-theme="dark"] {
+  --surface-panel: #141417;
+  --surface-raised: #1c1c20;
+  --surface-overlay: #1c1c20;
+  --hairline: rgb(255 255 255 / 0.07);
+  --hairline-strong: rgb(255 255 255 / 0.13);
+  --hover-wash: rgb(255 255 255 / 0.06);
+  --press-wash: rgb(255 255 255 / 0.1);
+  --elev-1: 0 1px 2px rgb(0 0 0 / 0.4);
+  --elev-2: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -14px rgb(0 0 0 / 0.7);
+  --elev-3: 0 2px 6px rgb(0 0 0 / 0.45), 0 20px 48px -18px rgb(0 0 0 / 0.8);
 }
 
 /* Phones: labels (footer headings, status tags, table headers, kickers) come out at 11px from the fluid scale above. 12px is the
