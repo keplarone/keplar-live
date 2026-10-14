@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
+import { Dialog } from "@/components/kit";
 import { IconSearch } from "./icons";
 import type { Thread, View } from "./state/types";
 import s from "./App.module.css";
-import { useExit, type ExitParent } from "@/components/motion/usePresence";
 import { saveThemePref } from "@/lib/theme";
 import { rankCommands, staticCommands } from "@/lib/nav/commands";
 
@@ -23,8 +23,6 @@ type Props = {
   onOpen: (id: string) => void;
   onNew: () => void;
   onView: (v: View) => void;
-  /** The app's presence for this dialog, so a Cmd+K toggle that closes it from outside animates out too. */
-  presence?: ExitParent;
 };
 
 function snippet(text: string, needle: string) {
@@ -34,19 +32,15 @@ function snippet(text: string, needle: string) {
   return `${start > 0 ? "…" : ""}${text.slice(start, i + needle.length + 70).replace(/[#*`|]/g, "").replace(/\s+/g, " ")}…`;
 }
 
-export function SearchDialog({ threads, onClose, onOpen, onNew, onView, presence }: Props) {
+/**
+ * Cmd+K in the app: chats, places, settings and every site page. The app renders it only while open, inside the kit Dialog
+ * (a native modal <dialog>: Escape, the backdrop and Close dismiss it; focus starts in the field and returns where it was).
+ */
+export function SearchDialog({ threads, onClose, onOpen, onNew, onView }: Props) {
   const uid = useId();
   const [q, setQ] = useState("");
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
-  // Escape and the scrim play the exit (scrim fades, panel shrinks to 96%) before the app unmounts the dialog.
-  const exit = useExit(onClose, { parent: presence });
-
-  useEffect(() => {
-    const prev = document.activeElement as HTMLElement | null;
-    inputRef.current?.focus();
-    return () => prev?.focus?.();
-  }, []);
 
   const items: Item[] = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -109,7 +103,7 @@ export function SearchDialog({ threads, onClose, onOpen, onNew, onView, presence
     if (e.key === "ArrowDown") { e.preventDefault(); setActive((a) => Math.min(items.length - 1, a + 1)); }
     else if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => Math.max(0, a - 1)); }
     else if (e.key === "Enter") { e.preventDefault(); choose(items[active]); }
-    else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); exit.close(); }
+    // Escape is the Dialog's (the native cancel). Tab keeps focus in the field: the list is driven by the arrows.
     else if (e.key === "Tab") { e.preventDefault(); inputRef.current?.focus(); }
   };
 
@@ -135,14 +129,15 @@ export function SearchDialog({ threads, onClose, onOpen, onNew, onView, presence
   };
 
   return (
-    <div className={s.scrim} onMouseDown={(e) => e.target === e.currentTarget && exit.close()} {...exit.motion("fade")}>
-      <div className={s.search} role="dialog" aria-modal="true" aria-label="Search chats and Keplar" onKeyDown={onKeyDown} {...exit.motion("pop", false)}>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }} title="Search" size="lg" initialFocus={inputRef} className={s.search}>
+      <div className={s.searchBody} onKeyDown={onKeyDown}>
         <div className={s.searchBar}>
           <IconSearch size={16} />
           <input
             ref={inputRef}
             className={s.searchInput}
             placeholder="Search chats, places and settings"
+            aria-label="Search chats and Keplar"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             role="combobox"
@@ -166,6 +161,6 @@ export function SearchDialog({ threads, onClose, onOpen, onNew, onView, presence
           })}
         </ul>
       </div>
-    </div>
+    </Dialog>
   );
 }

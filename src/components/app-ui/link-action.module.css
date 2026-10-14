@@ -1,0 +1,37 @@
+/*
+ * The one style for a link that looks like a kit Button (a navigation must stay an <a>: upgrade, checkout, "View", "Sign in").
+ * Same geometry, variants and press as the kit's Button (kit/controls.module.css), from the same --ks-* values, so a link and a
+ * button side by side are indistinguishable. Use: className={la.act} data-variant="primary|secondary|ghost" data-size="sm".
+ */
+.act {
+  --act-h: var(--ks-control-md);
+  --act-px: var(--ks-space-4);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ks-space-1-5);
+  height: var(--act-h);
+  padding: 0 var(--act-px);
+  border: 1px solid transparent;
+  border-radius: var(--ks-radius-pill);
+  font-family: var(--ks-font-sans);
+  font-size: var(--ks-text-base);
+  line-height: 1;
+  font-weight: var(--ks-weight-medium);
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--ks-text-1);
+  background: transparent;
+  cursor: pointer;
+  transition: background-color var(--ks-dur-instant) var(--ks-ease-standard), color var(--ks-dur-instant) var(--ks-ease-standard);
+}
+.act[data-size="sm"] { --act-h: var(--ks-control-sm); --act-px: var(--ks-space-3); font-size: var(--ks-text-sm); }
+.act[data-variant="primary"] { background: var(--ks-primary-bg); color: var(--ks-primary-text); }
+.act[data-variant="primary"]:hover { background: var(--ks-primary-bg-hover); }
+.act[data-variant="secondary"] { border-color: var(--ks-border-strong); background: var(--ks-surface-1); }
+.act[data-variant="secondary"]:hover { background: var(--ks-surface-3); }
+.act[data-variant="ghost"] { color: var(--ks-text-2); border-radius: var(--ks-radius-sm); }
+.act[data-variant="ghost"]:hover { background: var(--ks-fill-hover); color: var(--ks-text-1); }
+.act:active { scale: var(--m-press); }
+@media (prefers-reduced-motion: reduce) { .act:active { scale: none; } }
+@media (pointer: coarse) { .act { min-height: 44px; } }

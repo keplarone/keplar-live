@@ -82,9 +82,9 @@ test.describe.serial("delete chat", () => {
     await row(page, T.a).getByRole("button", { name: /^Delete chat/ }).click();
     await page.locator("[data-delete-yes]").click();
     await expect(page.getByRole("button", { name: T.a, exact: true })).toHaveCount(0); // gone at once
-    const toast = page.locator("[data-undo-toast]");
+    const toast = page.getByRole("list", { name: "Notifications" }).getByRole("listitem").filter({ hasText: "Deleted" });
     await expect(toast).toContainText("Deleted");
-    await textFits(page, "[data-undo-toast]");
+    await textFits(page, 'ol[aria-label="Notifications"] > li');
     expect(await status(ctx, ID.a)).toBe(200); // still safe on the server during the undo window
     await toast.getByRole("button", { name: "Undo" }).click();
     await expect(page.getByRole("button", { name: T.a, exact: true })).toBeVisible();
@@ -100,7 +100,7 @@ test.describe.serial("delete chat", () => {
     await expect(page.getByRole("button", { name: T.b, exact: true })).toHaveCount(0);
     expect(await status(ctx, ID.b)).toBe(200);
     await expect.poll(() => status(ctx, ID.b), { timeout: 15_000 }).toBe(404);
-    await expect(page.locator("[data-undo-toast]")).toHaveCount(0);
+    await expect(page.getByRole("list", { name: "Notifications" }).getByRole("listitem").filter({ hasText: "Deleted" })).toHaveCount(0);
     expect(await listed(ctx)).not.toContain(ID.b);
     expect(await listed(ctx)).toEqual(expect.arrayContaining([ID.a, ID.c, ID.d]));
     await page.reload();
@@ -137,7 +137,7 @@ test.describe.serial("delete chat", () => {
     await trigger.click();
     await page.locator("[data-delete-yes]").click();
     await expect(page.getByText(T.d, { exact: true })).toHaveCount(0);
-    await page.locator("[data-undo-toast]").getByRole("button", { name: "Undo" }).click();
+    await page.getByRole("list", { name: "Notifications" }).getByRole("listitem").filter({ hasText: "Deleted" }).getByRole("button", { name: "Undo" }).click();
     await expect(page.getByText(T.d, { exact: true }).first()).toBeVisible();
     expect(await status(ctx, ID.d)).toBe(200);
   });

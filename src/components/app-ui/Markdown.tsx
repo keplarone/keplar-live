@@ -13,6 +13,7 @@ import { MATH_TOKEN, maskMath, type MathItem } from "@/lib/math/extract";
 import { joinLines, splitLines } from "@/lib/md-lines";
 import { IconCheck, IconCopy } from "./icons";
 import { MathSpan } from "./MathSpan";
+import { Button } from "@/components/kit";
 import s from "./Markdown.module.css";
 import { CodeRunner, runnableLang } from "./parity/CodeRunner";
 
@@ -175,14 +176,13 @@ export function CodeBlock({ code, lang, streaming }: { code: string; lang: strin
     <figure className={s.code}>
       <figcaption className={s.codeBar}>
         <span className={s.codeLang}>{lang || "text"}</span>
-        <button type="button" className={s.copy} onClick={copy} disabled={streaming} aria-label={copied ? "Copied" : `Copy ${lang || "code"}`}>
-          {copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
-          <span>{copied ? "Copied" : "Copy"}</span>
-        </button>
+        <Button size="sm" variant="ghost" className={s.copy} onClick={copy} disabled={streaming} aria-label={copied ? "Copied" : `Copy ${lang || "code"}`} leadingIcon={copied ? <IconCheck size={14} /> : <IconCopy size={14} />}>
+          {copied ? "Copied" : "Copy"}
+        </Button>
         {runLang && !streaming && !runOpen ? (
-          <button type="button" className={s.copy} onClick={() => setRunOpen(true)} aria-label={`Run this ${runLang === "python" ? "Python" : "JavaScript"} in a sandbox`} data-run-code="">
-            <span>Run</span>
-          </button>
+          <Button size="sm" variant="ghost" className={s.copy} onClick={() => setRunOpen(true)} aria-label={`Run this ${runLang === "python" ? "Python" : "JavaScript"} in a sandbox`} data-run-code="">
+            Run
+          </Button>
         ) : null}
       </figcaption>
       <pre className={s.pre} tabIndex={0}>

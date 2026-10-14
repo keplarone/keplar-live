@@ -18,7 +18,9 @@ import type { OpResult } from "./project-ops";
 import { buildCron, formFromCron, type CronForm, type CronMode } from "@/lib/business/cron-form";
 import { approveBody, CAP_MAX, capsPatch, editableDraft, filterOrders, matchName, money, orderSummary, relDay, historyHits, type OrderFilter, type OrderRow } from "./workspace-data";
 import { Confirm } from "./Confirm";
+import { Button, SegmentedControl, notify } from "@/components/kit";
 import s from "./workspace.module.css";
+import la from "../link-action.module.css";
 
 export type TabTarget =
   | { view: "create"; appId?: string }
@@ -88,7 +90,7 @@ export function WorkspaceTurn(props: Props) {
     return (
       <Card kind={w.kind} title={TITLES[w.kind]}>
         <p className={s.note}>Sign in to see {w.kind === "apps" || w.kind === "deployments" ? "the apps and sites you built" : "your business workspace"} here. Everything the {TAB_NAME[w.kind]} tab shows also works in the chat once you are signed in.</p>
-        <div className={s.actions}><Link href="/signin?next=/app" className={s.primary}>Sign in</Link><Link href="/signup?next=/app" className={s.ghost}>Create a free account</Link></div>
+        <div className={s.actions}><Link href="/signin?next=/app" className={la.act} data-variant="primary">Sign in</Link><Link href="/signup?next=/app" className={la.act} data-variant="secondary">Create a free account</Link></div>
       </Card>
     );
   }
@@ -126,7 +128,7 @@ function Problem({ error, retry }: { error: ApiErr; retry: () => void }) {
   return (
     <p className={s.note} role="alert">
       {error.message}{" "}
-      {plan ? <Link href="/pricing" className={s.inline}>See plans</Link> : error.status === 401 ? <Link href="/signin?next=/app" className={s.inline}>Sign in</Link> : <button type="button" className={s.inlineBtn} onClick={retry}>Try again</button>}
+      {plan ? <Link href="/pricing" className={s.inline}>See plans</Link> : error.status === 401 ? <Link href="/signin?next=/app" className={s.inline}>Sign in</Link> : <Button size="sm" variant="ghost" className={s.quiet} onClick={retry}>Try again</Button>}
     </p>
   );
 }
@@ -137,7 +139,7 @@ const Skeleton = () => <div className={s.skeleton} aria-hidden="true"><i /><i />
 function Footer({ label, onOpen, children }: { label: string; onOpen: () => void; children?: React.ReactNode }) {
   return (
     <div className={s.actions}>
-      <button type="button" className={s.ghost} onClick={onOpen}>{label}</button>
+      <Button variant="secondary" onClick={onOpen}>{label}</Button>
       {children}
     </div>
   );
@@ -181,11 +183,11 @@ function AppsCard({ onOpenTab, onAct, onSeed, onSettled }: Props) {
                   <span className={s.rowMeta}>{live ? `Live · v${a.publishedVersion}` : a.headVersion ? `Draft · v${a.headVersion}` : "Not built yet"}{ahead ? ` · unpublished changes` : ""}{a.kind ? ` · ${a.kind}` : ""} · {relDay(a.updatedAt)}</span>
                 </span>
                 <span className={s.rowActions}>
-                  {a.headVersion ? <button type="button" className={s.small} onClick={() => onAct(`Show my ${name} app`, { type: "create.show", appId: a.id })}>Show here</button> : null}
-                  {a.headVersion ? <button type="button" className={s.small} onClick={() => onSeed(`/edit ${name}: `)}>Edit</button> : null}
-                  {a.headVersion ? (live && !ahead ? <button type="button" className={s.small} disabled={busy === a.id} onClick={() => void setLive(a, false)}>Unpublish</button> : <button type="button" className={s.smallPrimary} disabled={busy === a.id} onClick={() => void setLive(a, true)}>{ahead ? "Publish changes" : "Publish"}</button>) : null}
-                  {live && a.publishedUrl ? <a className={s.small} href={a.publishedUrl} target="_blank" rel="noreferrer noopener">Open live</a> : null}
-                  <button type="button" className={s.small} onClick={() => onOpenTab({ view: "create", appId: a.id })}>Open in Create</button>
+                  {a.headVersion ? <Button size="sm" variant="secondary" onClick={() => onAct(`Show my ${name} app`, { type: "create.show", appId: a.id })}>Show here</Button> : null}
+                  {a.headVersion ? <Button size="sm" variant="secondary" onClick={() => onSeed(`/edit ${name}: `)}>Edit</Button> : null}
+                  {a.headVersion ? (live && !ahead ? <Button size="sm" variant="secondary" disabled={busy === a.id} onClick={() => void setLive(a, false)}>Unpublish</Button> : <Button size="sm" variant="primary" disabled={busy === a.id} onClick={() => void setLive(a, true)}>{ahead ? "Publish changes" : "Publish"}</Button>) : null}
+                  {live && a.publishedUrl ? <a className={la.act} data-variant="secondary" data-size="sm" href={a.publishedUrl} target="_blank" rel="noreferrer noopener">Open live</a> : null}
+                  <Button size="sm" variant="secondary" onClick={() => onOpenTab({ view: "create", appId: a.id })}>Open in Create</Button>
                 </span>
               </li>
             );
@@ -206,12 +208,12 @@ function ApprovalsCard({ onOpenTab, onSettled }: Props) {
   const { data, error, reload, setData } = useLoad<{ approvals: ApprovalRow[] }>("/api/business/approvals");
   const [busy, setBusy] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
-  const [toast, setToast] = useState("");
   /** The draft being edited before approval: its id and the owner's text (sent as the route's `edits`). */
   const [editing, setEditing] = useState<{ id: string; text: string } | null>(null);
+  // The outcome is a kit toast (one at a time, replaced in place); the row's own status chip keeps the result on the card.
+  const say = (title: string, tone: "success" | "danger" | "neutral") => notify({ id: "approvals-card", title, tone, duration: tone === "danger" ? 0 : 5000 });
   const decide = async (a: ApprovalRow, decision: "approve" | "reject") => {
     setBusy(a.id);
-    setToast("");
     const edited = decision === "approve" && editing?.id === a.id ? editing.text : null;
     const req = decision === "approve" ? approveBody(a.action, edited) : { decision };
     try {
@@ -219,9 +221,11 @@ function ApprovalsCard({ onOpenTab, onSettled }: Props) {
       setData((d) => (d ? { approvals: d.approvals.map((x) => (x.id === a.id ? { ...x, status: r.approval.status, result: r.approval.result, action: r.approval.action ?? x.action } : x)) } : d));
       if (editing?.id === a.id) setEditing(null);
       const ed = "edits" in req && req.edits ? " with your edits" : "";
-      setToast(decision === "reject" ? "Rejected · nothing was sent" : r.approval.status === "failed" ? `Not sent: ${r.approval.result ?? "the app refused it"}` : `Approved · sent${ed}`);
+      if (decision === "reject") say("Rejected · nothing was sent", "neutral");
+      else if (r.approval.status === "failed") say(`Not sent: ${r.approval.result ?? "the app refused it"}`, "danger");
+      else say(`Approved · sent${ed}`, "success");
       onSettled();
-    } catch (e) { setToast((e as Error).message); } finally { setBusy(null); }
+    } catch (e) { say((e as Error).message, "danger"); } finally { setBusy(null); }
   };
   if (error) return <Card kind="approvals" title={TITLES.approvals}><Problem error={error} retry={reload} /></Card>;
   if (!data) return <Card kind="approvals" title={TITLES.approvals} busy><Skeleton /></Card>;
@@ -252,11 +256,11 @@ function ApprovalsCard({ onOpenTab, onSettled }: Props) {
                 {a.status === "failed" && a.result ? <p className={s.note} role="alert">{a.result}</p> : null}
                 {a.status === "pending" ? (
                   <div className={s.actions}>
-                    <button type="button" className={s.ghost} disabled={busy !== null} onClick={() => void decide(a, "reject")}>{busy === a.id ? "…" : "Reject"}</button>
+                    <Button variant="secondary" disabled={busy !== null} onClick={() => void decide(a, "reject")}>{busy === a.id ? "…" : "Reject"}</Button>
                     {ed ? (editing?.id === a.id
-                      ? <button type="button" className={s.ghost} disabled={busy !== null} onClick={() => setEditing(null)}>Discard edits</button>
-                      : <button type="button" className={s.ghost} disabled={busy !== null} onClick={() => setEditing({ id: a.id, text: ed.value })} data-edit-draft="">Edit</button>) : null}
-                    <button type="button" className={s.primary} disabled={busy !== null || (editing?.id === a.id && !editing.text.trim())} onClick={() => void decide(a, "approve")} data-approve="">{busy === a.id ? "Sending…" : editing?.id === a.id ? "Approve and send edited" : "Approve and send"}</button>
+                      ? <Button variant="secondary" disabled={busy !== null} onClick={() => setEditing(null)}>Discard edits</Button>
+                      : <Button variant="secondary" disabled={busy !== null} onClick={() => setEditing({ id: a.id, text: ed.value })} data-edit-draft="">Edit</Button>) : null}
+                    <Button variant="primary" disabled={busy !== null || (editing?.id === a.id && !editing.text.trim())} onClick={() => void decide(a, "approve")} data-approve="">{busy === a.id ? "Sending…" : editing?.id === a.id ? "Approve and send edited" : "Approve and send"}</Button>
                   </div>
                 ) : null}
               </li>
@@ -264,9 +268,8 @@ function ApprovalsCard({ onOpenTab, onSettled }: Props) {
           })}
         </ul>
       )}
-      {toast ? <p className={s.toast} role="status">{toast}</p> : null}
       <Footer label="Open in Approvals" onOpen={() => onOpenTab({ view: "approvals" })}>
-        <button type="button" className={s.inlineBtn} onClick={() => setShowAll((v) => !v)}>{showAll ? "Only pending" : "Show recent decisions"}</button>
+        <Button size="sm" variant="ghost" className={s.quiet} onClick={() => setShowAll((v) => !v)}>{showAll ? "Only pending" : "Show recent decisions"}</Button>
         <span className={s.meta}>You approve anything that leaves Keplar. Edit an email or post here before you approve it.</span>
       </Footer>
     </Card>
@@ -332,12 +335,12 @@ function CrmCard({ onOpenTab }: Props) {
         </ul>
       ) : null}
       <ContactList contacts={data.contacts.slice(0, 8)} empty="No contacts yet. Form messages and checkouts on your published sites land here." />
-      <form className={s.inlineForm} onSubmit={(e) => void add(e)}>
+      <form className={s.inlineForm} onSubmit={(e) => { if (!email.trim()) { e.preventDefault(); return; } void add(e); }}>
         <label className="visually-hidden" htmlFor="crm-name">Name</label>
         <input spellCheck={false} id="crm-name" className={s.input} placeholder="Name" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} />
         <label className="visually-hidden" htmlFor="crm-email">Email</label>
         <input id="crm-email" className={s.input} placeholder="Email" type="email" value={email} maxLength={200} onChange={(e) => setEmail(e.target.value)} required />
-        <button type="submit" className={s.small} disabled={!email.trim()}>Add contact</button>
+        <Button type="submit" size="sm" variant="secondary" disabled={!email.trim()}>Add contact</Button>
       </form>
       {msg ? <p className={s.meta} role="status">{msg}</p> : null}
       <Footer label="Open in Business" onOpen={() => onOpenTab({ view: "business", tab: "crm" })} />
@@ -371,7 +374,7 @@ function LeadsCard({ onOpenTab, onAct }: Props) {
     <Card kind="leads" title={TITLES.leads} chip={`${recent} in the last 30 days · ${leads.length} total`}>
       <ContactList contacts={leads.slice(0, 10)} empty="No leads yet. When someone fills in a form or checks out on one of your published sites, they show up here." />
       <Footer label="Open in Business" onOpen={() => onOpenTab({ view: "business", tab: "crm" })}>
-        {leads.length ? <button type="button" className={s.small} onClick={() => onAct("Set up an agent that follows up with new leads", { type: "agent.new" })}>Follow up with an agent</button> : null}
+        {leads.length ? <Button size="sm" variant="secondary" onClick={() => onAct("Set up an agent that follows up with new leads", { type: "agent.new" })}>Follow up with an agent</Button> : null}
         <span className={s.meta}>Follow-up emails are drafted for your approval; nothing is sent on its own.</span>
       </Footer>
     </Card>
@@ -413,10 +416,10 @@ function DashboardCard({ onOpenTab, onAct }: Props) {
         {data.traffic.days.map((d) => <i key={d.day} style={{ height: `${Math.max(4, Math.round((d.views / max) * 100))}%` }} title={`${d.day}: ${d.views}`} />)}
       </div>
       <Footer label="Open in Business" onOpen={() => onOpenTab({ view: "business", tab: "overview" })}>
-        {data.approvals.pending ? <button type="button" className={s.smallPrimary} onClick={() => onAct("Show my pending approvals", { type: "workspace", card: "approvals" })}>{data.approvals.pending} waiting for approval</button> : null}
-        <button type="button" className={s.small} onClick={() => onAct("Show my orders", { type: "workspace", card: "orders" })}>Orders</button>
-        <button type="button" className={s.small} onClick={() => onAct("Show my leads", { type: "workspace", card: "leads" })}>Leads</button>
-        <button type="button" className={s.small} onClick={() => onAct("Open my CRM", { type: "workspace", card: "crm" })}>CRM</button>
+        {data.approvals.pending ? <Button size="sm" variant="primary" onClick={() => onAct("Show my pending approvals", { type: "workspace", card: "approvals" })}>{data.approvals.pending} waiting for approval</Button> : null}
+        <Button size="sm" variant="secondary" onClick={() => onAct("Show my orders", { type: "workspace", card: "orders" })}>Orders</Button>
+        <Button size="sm" variant="secondary" onClick={() => onAct("Show my leads", { type: "workspace", card: "leads" })}>Leads</Button>
+        <Button size="sm" variant="secondary" onClick={() => onAct("Open my CRM", { type: "workspace", card: "crm" })}>CRM</Button>
       </Footer>
     </Card>
   );
@@ -440,9 +443,14 @@ function OrdersCard({ onOpenTab }: Props) {
     <Card kind="orders" title={TITLES.orders} chip={`${sum.counts.all} ${sum.counts.all === 1 ? "order" : "orders"} · ${money(sum.net, sum.currency)} paid`}>
       {data.orders.length === 0 ? <p className={s.note}>No orders yet. When someone buys from a shop you built in Create, the order shows up here and in Business.</p> : (
         <>
-          <div className={s.seg} role="radiogroup" aria-label="Show orders">
-            {ORDER_FILTERS.map(([f, label]) => <button key={f} type="button" role="radio" aria-checked={filter === f} className={s.segBtn} onClick={() => { setFilter(f); setMore(false); }}>{label} · {sum.counts[f]}</button>)}
-          </div>
+          <SegmentedControl
+            label="Show orders"
+            size="sm"
+            className={s.seg}
+            value={filter}
+            onValueChange={(f) => { setFilter(f); setMore(false); }}
+            options={ORDER_FILTERS.map(([f, label]) => ({ value: f, label: `${label} · ${sum.counts[f]}` }))}
+          />
           {list.length === 0 ? <p className={s.note}>No {filter} orders.</p> : (
             <ul className={s.rows} aria-label="Orders">
               {shown.map((o) => (
@@ -459,7 +467,7 @@ function OrdersCard({ onOpenTab }: Props) {
               ))}
             </ul>
           )}
-          {list.length > shown.length ? <button type="button" className={s.inlineBtn} onClick={() => setMore(true)}>Show {Math.min(list.length, 50) - shown.length} more</button> : null}
+          {list.length > shown.length ? <Button size="sm" variant="ghost" className={s.quiet} onClick={() => setMore(true)}>Show {Math.min(list.length, 50) - shown.length} more</Button> : null}
         </>
       )}
       <Footer label="Open in Business" onOpen={() => onOpenTab({ view: "business", tab: "orders" })}>
@@ -552,11 +560,11 @@ function AgentsCard({ message: m, onPatch, onOpenTab, onAct, onSettled }: Props)
       {act?.type === "run" && pick && !w.acted ? (
         <div className={s.confirm} role="group" aria-label={`Run ${pick.name} now?`}>
           <span>Run {pick.name} now? About {data.runEstimateUnits.toLocaleString("en-US")} credits. Anything it drafts waits for your approval.</span>
-          <button type="button" className={s.primary} disabled={busy !== null} onClick={() => void runNow(pick).then((r) => onPatch({ acted: r }))}>Run now</button>
-          <button type="button" className={s.ghost} onClick={() => onPatch({ acted: { ok: false, text: "Not run." } })}>Not now</button>
+          <Button variant="primary" disabled={busy !== null} onClick={() => void runNow(pick).then((r) => onPatch({ acted: r }))}>Run now</Button>
+          <Button variant="secondary" onClick={() => onPatch({ acted: { ok: false, text: "Not run." } })}>Not now</Button>
         </div>
       ) : null}
-      {w.acted ? <p className={s.toast} role="status" data-ok={w.acted.ok || undefined}>{w.acted.text}</p> : null}
+      {w.acted ? <p className={s.result} role="status" data-ok={w.acted.ok || undefined}>{w.acted.text}</p> : null}
       {agents.length === 0 ? <p className={s.note}>No agents yet. An agent runs a workflow on a schedule (a lead sweep, a daily brief, a weekly report) and anything it would send waits for your approval.</p> : (
         <ul className={s.rows}>
           {agents.map((a) => (
@@ -567,9 +575,9 @@ function AgentsCard({ message: m, onPatch, onOpenTab, onAct, onSettled }: Props)
                 <span className={s.rowMeta}>{a.status === "paused" ? "Paused" : a.trigger.label ?? (a.trigger.type === "event" ? `On ${a.trigger.event}` : "By hand")}{a.next && a.status === "active" ? ` · next ${relDay(a.next)}` : ""} · {a.unitsThisMonth.toLocaleString("en-US")} credits this month</span>
               </span>
               <span className={s.rowActions}>
-                <button type="button" className={s.small} disabled={busy !== null} onClick={() => void runNow(a)}>Run now</button>
-                {a.status === "active" ? <button type="button" className={s.small} disabled={busy !== null} onClick={() => void setStatus(a, "paused")}>Pause</button> : <button type="button" className={s.small} disabled={busy !== null} onClick={() => void setStatus(a, "active")}>Resume</button>}
-                <button type="button" className={s.small} aria-pressed={open === a.id} aria-expanded={open === a.id} onClick={() => setOpen(open === a.id ? null : a.id)} data-agent-settings="">Settings</button>
+                <Button size="sm" variant="secondary" disabled={busy !== null} onClick={() => void runNow(a)}>Run now</Button>
+                {a.status === "active" ? <Button size="sm" variant="secondary" disabled={busy !== null} onClick={() => void setStatus(a, "paused")}>Pause</Button> : <Button size="sm" variant="secondary" disabled={busy !== null} onClick={() => void setStatus(a, "active")}>Resume</Button>}
+                <Button size="sm" variant="secondary" aria-pressed={open === a.id} aria-expanded={open === a.id} onClick={() => setOpen(open === a.id ? null : a.id)} data-agent-settings="">Settings</Button>
               </span>
             </div>
             {open === a.id ? <AgentSettings key={a.id} agent={a} busy={busy === a.id} fastest={data.schedule?.fastestAllowed ?? null} onSave={(body, done) => void patchAgent(a, body, done)} onStop={() => void patchAgent(a, { status: "killed" }, (x) => `Stopped ${x.name} for good. Its waiting drafts were cancelled.`).then((r) => { if (r.ok) setOpen(null); })} /> : null}
@@ -579,8 +587,8 @@ function AgentsCard({ message: m, onPatch, onOpenTab, onAct, onSettled }: Props)
       )}
       {note && note !== w.acted?.text ? <p className={s.meta} role="status">{note}</p> : null}
       <Footer label="Open in Agents" onOpen={() => onOpenTab({ view: "agents" })}>
-        <button type="button" className={s.smallPrimary} onClick={() => onAct("Set up a new agent", { type: "agent.new" })}>New agent</button>
-        {needsApproval ? <button type="button" className={s.small} onClick={() => onAct("Show my pending approvals", { type: "workspace", card: "approvals" })}>Review drafts</button> : null}
+        <Button size="sm" variant="primary" onClick={() => onAct("Set up a new agent", { type: "agent.new" })}>New agent</Button>
+        {needsApproval ? <Button size="sm" variant="secondary" onClick={() => onAct("Show my pending approvals", { type: "workspace", card: "approvals" })}>Review drafts</Button> : null}
       </Footer>
     </Card>
   );
@@ -602,7 +610,7 @@ function AgentSettings({ agent: a, busy, fastest, onSave, onStop }: { agent: Age
   return (
     <div className={s.editBlock} data-agent-edit={a.id}>
       {a.trigger.type === "schedule" ? (
-        <form className={s.inlineForm} onSubmit={(e) => { e.preventDefault(); onSave({ schedule: { cron, tz: tz.trim() || "UTC" } }, (x) => `Saved. ${x.name} now runs ${(x.trigger.label ?? cron).replace(/^Every/, "every")}.`); }} aria-label={`When ${a.name} runs`}>
+        <form className={s.inlineForm} onSubmit={(e) => { e.preventDefault(); if (busy || !cron) return; onSave({ schedule: { cron, tz: tz.trim() || "UTC" } }, (x) => `Saved. ${x.name} now runs ${(x.trigger.label ?? cron).replace(/^Every/, "every")}.`); }} aria-label={`When ${a.name} runs`}>
           <select className={s.select} aria-label="Repeat" value={form.mode} onChange={(e) => setForm({ ...form, mode: e.target.value as CronMode })}>
             <option value="daily">Every day</option><option value="weekdays">Weekdays</option><option value="weekly">Once a week</option><option value="hours">Every N hours</option><option value="custom">Custom cron</option>
           </select>
@@ -611,30 +619,30 @@ function AgentSettings({ agent: a, busy, fastest, onSave, onStop }: { agent: Age
           {form.mode === "hours" ? <input className={s.input} style={{ flex: "0 1 90px" }} type="number" min={1} max={23} aria-label="Every how many hours" value={form.every} onChange={(e) => setForm({ ...form, every: e.target.value })} /> : null}
           {form.mode === "custom" ? <input className={s.input} aria-label="Cron" value={form.custom} onChange={(e) => setForm({ ...form, custom: e.target.value })} placeholder="minute hour day month weekday" /> : null}
           <input className={s.input} style={{ flex: "1 1 150px" }} aria-label="Time zone" value={tz} onChange={(e) => setTz(e.target.value)} />
-          <button type="submit" className={s.smallPrimary} disabled={busy || !cron}>Save schedule</button>
+          <Button type="submit" size="sm" variant="primary" disabled={busy || !cron}>Save schedule</Button>
         </form>
       ) : <p className={s.meta}>{a.trigger.type === "event" ? `Runs when ${a.trigger.event ?? "something happens"}` : "Runs when you press Run now"}, so it has no schedule to change.</p>}
       {a.trigger.type === "schedule" ? <p className={s.meta}>Now: {a.trigger.label ?? a.trigger.cron}{fastest ? ` · fastest your plan allows: ${fastest}` : ""}. The time follows that zone&rsquo;s clock, including daylight saving.</p> : null}
       {a.scheduleError ? <p className={s.note} role="alert">Schedule problem: {a.scheduleError}</p> : null}
       {a.template === "monitor" ? (
-        <form className={s.inlineForm} onSubmit={(e) => { e.preventDefault(); onSave({ monitor: { url: url.trim(), keyword: keyword.trim() } }, (x) => `Saved. ${x.name} watches ${x.monitor?.url ?? url}${x.monitor?.keyword ? ` for “${x.monitor.keyword}”` : ""}.`); }} aria-label="Page to watch">
+        <form className={s.inlineForm} onSubmit={(e) => { e.preventDefault(); if (busy || !url.trim()) return; onSave({ monitor: { url: url.trim(), keyword: keyword.trim() } }, (x) => `Saved. ${x.name} watches ${x.monitor?.url ?? url}${x.monitor?.keyword ? ` for “${x.monitor.keyword}”` : ""}.`); }} aria-label="Page to watch">
           <input className={s.input} type="url" aria-label="Page to watch" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://example.com/page" />
           <input className={s.input} style={{ flex: "0 1 160px" }} aria-label="Word to look for (optional)" value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="Word (optional)" />
-          <button type="submit" className={s.smallPrimary} disabled={busy || !url.trim()}>Save page</button>
+          <Button type="submit" size="sm" variant="primary" disabled={busy || !url.trim()}>Save page</Button>
         </form>
       ) : null}
       {caps0 ? (
-        <form className={s.inlineForm} onSubmit={(e) => { e.preventDefault(); if (capBody) onSave({ caps: capBody }, (x) => `Saved. ${x.name}: up to ${x.caps?.runsPerDay} runs a day, ${x.caps?.outboundPerDay} sends a day, $${x.caps?.spendUsdPerMonth} a month.`); }} aria-label="Limits">
+        <form className={s.inlineForm} onSubmit={(e) => { e.preventDefault(); if (capBody && !busy) onSave({ caps: capBody }, (x) => `Saved. ${x.name}: up to ${x.caps?.runsPerDay} runs a day, ${x.caps?.outboundPerDay} sends a day, $${x.caps?.spendUsdPerMonth} a month.`); }} aria-label="Limits">
           <label className={s.field}><span>Runs a day</span><input className={s.input} type="number" min={0} max={CAP_MAX.runsPerDay} value={caps.runsPerDay} onChange={(e) => setCaps({ ...caps, runsPerDay: e.target.value })} /></label>
           <label className={s.field}><span>Sends a day</span><input className={s.input} type="number" min={0} max={CAP_MAX.outboundPerDay} value={caps.outboundPerDay} onChange={(e) => setCaps({ ...caps, outboundPerDay: e.target.value })} /></label>
           <label className={s.field}><span>Spend a month ($)</span><input className={s.input} type="number" min={0} max={CAP_MAX.spendUsdPerMonth} step="0.5" value={caps.spendUsdPerMonth} onChange={(e) => setCaps({ ...caps, spendUsdPerMonth: e.target.value })} /></label>
-          <button type="submit" className={s.small} disabled={busy || !capBody}>Save limits</button>
+          <Button type="submit" size="sm" variant="secondary" disabled={busy || !capBody}>Save limits</Button>
         </form>
       ) : null}
       <p className={s.meta}>Auto-send is {a.autoSend ? "on (set in Business); scheduled runs still queue everything for your approval" : "off: everything this agent drafts waits for your approval"}.</p>
       {confirmStop
         ? <Confirm text={`Stop ${a.name} for good? It can't be restarted, and its waiting drafts are cancelled.`} yes="Stop for good" busy={busy} onYes={onStop} onNo={() => setConfirmStop(false)} />
-        : <div className={s.actions}><button type="button" className={s.inlineBtn} onClick={() => setConfirmStop(true)} data-stop-agent="">Stop for good…</button></div>}
+        : <div className={s.actions}><Button size="sm" variant="ghost" className={s.quiet} onClick={() => setConfirmStop(true)} data-stop-agent="">Stop for good…</Button></div>}
     </div>
   );
 }
@@ -698,7 +706,7 @@ function ProjectsCard(props: Props) {
   };
   return (
     <Card kind="projects" title={TITLES.projects} chip={`${projects.length} ${projects.length === 1 ? "project" : "projects"}`}>
-      {w.acted ? <p className={s.toast} role="status" data-ok={w.acted.ok || undefined}>{w.acted.text}</p> : null}
+      {w.acted ? <p className={s.result} role="status" data-ok={w.acted.ok || undefined}>{w.acted.text}</p> : null}
       {ask && askFrom && !("id" in askFrom) ? <p className={s.note}>{`No project matches “${ask.name}”.`}</p> : null}
       {ask?.type === "merge-projects" && askInto && !("id" in askInto) ? <p className={s.note}>{`No project matches “${ask.into}”.`}</p> : null}
       {ask?.type === "delete-project" && askFrom && "id" in askFrom ? (
@@ -719,19 +727,19 @@ function ProjectsCard(props: Props) {
                   <span className={s.avatar} aria-hidden="true">{p.name.slice(0, 1).toUpperCase()}</span>
                   <span className={s.rowMain}><span className={s.rowTitle}>{p.name}</span><span className={s.rowMeta}>{n === 1 ? "1 chat" : `${n} chats`}</span></span>
                   <span className={s.rowActions}>
-                    <button type="button" className={s.small} onClick={() => onOpenTab({ view: "history", projectId: p.id })}>Chats</button>
-                    <button type="button" className={s.small} onClick={() => onNewInProject(p.id)}>New chat</button>
-                    <button type="button" className={s.small} aria-pressed={e?.mode === "rename"} onClick={() => setEdit(e?.mode === "rename" ? null : { id: p.id, mode: "rename", name: p.name })}>Rename</button>
-                    {projects.length > 1 ? <button type="button" className={s.small} aria-pressed={e?.mode === "merge"} onClick={() => setEdit(e?.mode === "merge" ? null : { id: p.id, mode: "merge", into: projects.find((x) => x.id !== p.id)!.id })}>Merge</button> : null}
-                    <button type="button" className={s.small} aria-pressed={e?.mode === "delete"} onClick={() => setEdit(e?.mode === "delete" ? null : { id: p.id, mode: "delete", chats: "keep" })}>Delete</button>
-                    <button type="button" className={s.small} onClick={() => onOpenTab({ view: "projects", projectId: p.id })}>Open in Projects</button>
+                    <Button size="sm" variant="secondary" onClick={() => onOpenTab({ view: "history", projectId: p.id })}>Chats</Button>
+                    <Button size="sm" variant="secondary" onClick={() => onNewInProject(p.id)}>New chat</Button>
+                    <Button size="sm" variant="secondary" aria-pressed={e?.mode === "rename"} onClick={() => setEdit(e?.mode === "rename" ? null : { id: p.id, mode: "rename", name: p.name })}>Rename</Button>
+                    {projects.length > 1 ? <Button size="sm" variant="secondary" aria-pressed={e?.mode === "merge"} onClick={() => setEdit(e?.mode === "merge" ? null : { id: p.id, mode: "merge", into: projects.find((x) => x.id !== p.id)!.id })}>Merge</Button> : null}
+                    <Button size="sm" variant="secondary" aria-pressed={e?.mode === "delete"} onClick={() => setEdit(e?.mode === "delete" ? null : { id: p.id, mode: "delete", chats: "keep" })}>Delete</Button>
+                    <Button size="sm" variant="secondary" onClick={() => onOpenTab({ view: "projects", projectId: p.id })}>Open in Projects</Button>
                   </span>
                 </div>
                 {e?.mode === "rename" ? (
-                  <form className={s.inlineForm} onSubmit={(ev) => { ev.preventDefault(); void run(() => onRenameProject(p.id, e.name ?? ""), false); }}>
+                  <form className={s.inlineForm} onSubmit={(ev) => { ev.preventDefault(); if (busy || !(e.name ?? "").trim()) return; void run(() => onRenameProject(p.id, e.name ?? ""), false); }}>
                     <label className="visually-hidden" htmlFor={`pr-${p.id}`}>New name for {p.name}</label>
                     <input id={`pr-${p.id}`} className={s.input} value={e.name ?? ""} maxLength={60} autoFocus onChange={(ev) => setEdit({ ...e, name: ev.target.value })} />
-                    <button type="submit" className={s.smallPrimary} disabled={busy || !(e.name ?? "").trim()}>Save name</button>
+                    <Button type="submit" size="sm" variant="primary" disabled={busy || !(e.name ?? "").trim()}>Save name</Button>
                   </form>
                 ) : null}
                 {e?.mode === "merge" ? (
@@ -748,10 +756,14 @@ function ProjectsCard(props: Props) {
                 {e?.mode === "delete" ? (
                   <div className={s.editBlock}>
                     {n ? (
-                      <div className={s.seg} role="radiogroup" aria-label="Its chats">
-                        <button type="button" role="radio" aria-checked={e.chats === "keep"} className={s.segBtn} onClick={() => setEdit({ ...e, chats: "keep" })}>Keep its chats</button>
-                        <button type="button" role="radio" aria-checked={e.chats === "delete"} className={s.segBtn} onClick={() => setEdit({ ...e, chats: "delete" })}>Delete its chats too</button>
-                      </div>
+                      <SegmentedControl
+                        label="Its chats"
+                        size="sm"
+                        className={s.seg}
+                        value={e.chats ?? "keep"}
+                        onValueChange={(chats) => setEdit({ ...e, chats })}
+                        options={[{ value: "keep", label: "Keep its chats" }, { value: "delete", label: "Delete its chats too" }]}
+                      />
                     ) : null}
                     <Confirm text={deleteText(p.id, e.chats ?? "keep")} yes="Delete project" busy={busy} onYes={() => void run(() => onDeleteProject(p.id, e.chats ?? "keep"), false)} onNo={() => setEdit(null)} />
                   </div>
@@ -761,10 +773,10 @@ function ProjectsCard(props: Props) {
           })}
         </ul>
       )}
-      <form className={s.inlineForm} onSubmit={add}>
+      <form className={s.inlineForm} onSubmit={(e) => { if (!name.trim()) { e.preventDefault(); return; } add(e); }}>
         <label className="visually-hidden" htmlFor={`pj-${m.id}`}>New project name</label>
         <input spellCheck={false} id={`pj-${m.id}`} className={s.input} placeholder="New project name" value={name} maxLength={60} onChange={(e) => { setName(e.target.value); setMsg(""); }} />
-        <button type="submit" className={s.small} disabled={!name.trim()}>Create project</button>
+        <Button type="submit" size="sm" variant="secondary" disabled={!name.trim()}>Create project</Button>
       </form>
       {msg ? <p className={s.meta} role="status">{msg}</p> : null}
       <Footer label="Open in Projects" onOpen={() => onOpenTab({ view: "projects" })} />
@@ -808,8 +820,8 @@ function DeploymentsCard({ onOpenTab, onSettled }: Props) {
                   <span className={s.rowMeta}>{x.takenDown ? "Taken down" : isLive ? `Live · v${x.publishedVersion}` : `Draft · v${x.headVersion}`}{ahead ? ` · unpublished changes (v${x.headVersion})` : ""}{x.needsReview ? " · needs review" : ""}{x.leadCount ? ` · ${x.leadCount} form ${x.leadCount === 1 ? "message" : "messages"}` : ""} · {relDay(x.updatedAt)}</span>
                 </span>
                 <span className={s.rowActions}>
-                  {isLive && x.publishedUrl ? <a className={s.small} href={x.publishedUrl} target="_blank" rel="noreferrer noopener">{x.publishedUrl.replace(/^https?:\/\//, "")}</a> : null}
-                  {x.takenDown ? null : ahead || !isLive ? <button type="button" className={s.smallPrimary} disabled={busy === x.id || !x.headVersion} onClick={() => void setLive(x, true)}>{ahead ? "Publish changes" : "Publish"}</button> : <button type="button" className={s.small} disabled={busy === x.id} onClick={() => void setLive(x, false)}>Unpublish</button>}
+                  {isLive && x.publishedUrl ? <a className={la.act} data-variant="secondary" data-size="sm" href={x.publishedUrl} target="_blank" rel="noreferrer noopener">{x.publishedUrl.replace(/^https?:\/\//, "")}</a> : null}
+                  {x.takenDown ? null : ahead || !isLive ? <Button size="sm" variant="primary" disabled={busy === x.id || !x.headVersion} onClick={() => void setLive(x, true)}>{ahead ? "Publish changes" : "Publish"}</Button> : <Button size="sm" variant="secondary" disabled={busy === x.id} onClick={() => void setLive(x, false)}>Unpublish</Button>}
                 </span>
               </li>
             );
@@ -852,7 +864,7 @@ function HistoryCard({ message: m, onPatch, onOpenTab, threads, projects, active
   const title = (id: string) => threads.find((t) => t.id === id)?.title ?? "this chat";
   return (
     <Card kind="history" title={TITLES.history} chip={q ? `${hits.length} ${hits.length === 1 ? "match" : "matches"}` : `${threads.length} chats`}>
-      {w.acted ? <p className={s.toast} role="status" data-ok={w.acted.ok || undefined}>{w.acted.text}</p> : null}
+      {w.acted ? <p className={s.result} role="status" data-ok={w.acted.ok || undefined}>{w.acted.text}</p> : null}
       {delTarget ? (
         <Confirm text={`Delete “${delTarget.title}”${delTarget.id === activeThreadId ? " (the chat you are in)" : ""}? You can undo for a few seconds.`} yes="Delete chat" onYes={() => { const t = delTarget; onPatch({ acted: { ok: true, text: `Deleted “${t.title}”.` } }); onDeleteThread(t.id); }} onNo={() => onPatch({ acted: { ok: false, text: "Left as it was." } })} />
       ) : act?.type === "delete-chat" && act.query && !w.acted && hits.length > 1 ? <p className={s.note}>{hits.length} chats mention “{act.query}”. Pick the one to delete below.</p> : null}
@@ -881,15 +893,15 @@ function HistoryCard({ message: m, onPatch, onOpenTab, threads, projects, active
                     </>
                   ) : null}
                   <span className={s.rowActions}>
-                    <button type="button" className={s.small} aria-pressed={e?.mode === "rename"} onClick={() => setEdit(e?.mode === "rename" ? null : { id: t.id, mode: "rename", title: t.title })}>Rename</button>
-                    <button type="button" className={s.small} aria-pressed={e?.mode === "delete"} onClick={() => setEdit(e?.mode === "delete" ? null : { id: t.id, mode: "delete" })}>Delete</button>
+                    <Button size="sm" variant="secondary" aria-pressed={e?.mode === "rename"} onClick={() => setEdit(e?.mode === "rename" ? null : { id: t.id, mode: "rename", title: t.title })}>Rename</Button>
+                    <Button size="sm" variant="secondary" aria-pressed={e?.mode === "delete"} onClick={() => setEdit(e?.mode === "delete" ? null : { id: t.id, mode: "delete" })}>Delete</Button>
                   </span>
                 </div>
                 {e?.mode === "rename" ? (
                   <form className={s.inlineForm} onSubmit={(ev) => { ev.preventDefault(); const v = (e.title ?? "").trim().slice(0, 120); if (!v) return; onRenameThread(t.id, v); setMsg(`Renamed to “${v}”.`); setEdit(null); }}>
                     <label className="visually-hidden" htmlFor={`hr-${t.id}`}>New title for {t.title}</label>
                     <input id={`hr-${t.id}`} className={s.input} value={e.title ?? ""} maxLength={120} autoFocus onChange={(ev) => setEdit({ ...e, title: ev.target.value })} />
-                    <button type="submit" className={s.smallPrimary} disabled={!(e.title ?? "").trim()}>Save title</button>
+                    <Button type="submit" size="sm" variant="primary" disabled={!(e.title ?? "").trim()}>Save title</Button>
                   </form>
                 ) : null}
                 {e?.mode === "delete" ? <Confirm text={`Delete “${title(t.id)}”? You can undo for a few seconds.`} yes="Delete chat" onYes={() => { setMsg(`Deleted “${t.title}”.`); setEdit(null); onDeleteThread(t.id); }} onNo={() => setEdit(null)} /> : null}

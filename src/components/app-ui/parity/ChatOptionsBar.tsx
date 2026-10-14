@@ -5,6 +5,7 @@ import { activeScopeHeaders } from "../state/scope";
 import { LiveVoice, useLiveVoice } from "./LiveVoice";
 import { RecordNotes } from "./RecordNotes";
 import { useFamilyMode } from "./family-client";
+import { Button, Tooltip } from "@/components/kit";
 import s from "./parity.module.css";
 
 export type SpecialistLite = { id: string; name: string; description: string; starters: string[] };
@@ -54,10 +55,11 @@ export function ChatOptionsBar({
   return (
     <div className={s.bar} data-chat-options="">
       {showPrivate ? (
-        <button type="button" className={s.toggle} aria-pressed={privateOn} onClick={() => onPrivate(!privateOn)} title="Not saved to your history, never used for memory, gone when you leave it" data-private-toggle="">
-          <span className={s.pip} aria-hidden="true" />
-          <span>Private chat {privateOn ? "on" : "off"}</span>
-        </button>
+        <Tooltip content="Not saved to your history, never used for memory, gone when you leave it">
+          <Button size="sm" variant="ghost" className={s.toggle} aria-pressed={privateOn} onClick={() => onPrivate(!privateOn)} data-private-toggle="" leadingIcon={<span className={s.pip} aria-hidden="true" />}>
+            Private chat {privateOn ? "on" : "off"}
+          </Button>
+        </Tooltip>
       ) : null}
       {showSpecialist ? (
         <label className={s.row}>
@@ -83,7 +85,7 @@ export function PrivateBanner({ onClose }: { onClose: () => void }) {
     <div className={s.banner} role="note" data-private-banner="">
       <strong>Private chat</strong>
       <span>Not saved to your history, not used for memory or learning, and gone when you leave it or reload. Your answer preferences still apply.</span>
-      <button type="button" className={s.link} onClick={onClose}>Close private chat</button>
+      <Button size="sm" variant="ghost" onClick={onClose}>Close private chat</Button>
     </div>
   );
 }
@@ -94,7 +96,7 @@ export function SpecialistStarters({ specialist, onSend }: { specialist: Special
   return (
     <div className={s.tools} aria-label={`Starters for ${specialist.name}`}>
       <div className={s.row}>
-        {specialist.starters.map((t) => <button key={t} type="button" className={s.btn} onClick={() => onSend(t)}>{t}</button>)}
+        {specialist.starters.map((t) => <Button key={t} size="sm" variant="secondary" onClick={() => onSend(t)}>{t}</Button>)}
       </div>
     </div>
   );

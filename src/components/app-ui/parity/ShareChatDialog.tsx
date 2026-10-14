@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { redactText } from "@/lib/growth/redact";
+import { Button, Dialog } from "@/components/kit";
 import type { Thread } from "../state/types";
 import s from "./parity.module.css";
-import { useExit } from "@/components/motion/usePresence";
+import la from "../link-action.module.css";
 
 type Turn = { key: string; role: "user" | "keplar"; text: string };
 
@@ -21,6 +22,7 @@ export function shareableTurns(thread: Thread): Turn[] {
  * Share a chat as a read-only link. Nothing leaves the browser until "Create link": pick the turns, keep "Hide personal details"
  * on (emails, phone and long numbers) and list any other words to hide; the preview shows exactly what the link will contain
  * (the server applies the same redaction again). Links can be revoked here or in Account > Shared links.
+ * The bar renders it only while open; the kit Dialog owns Escape, the backdrop, Close and returning focus.
  */
 export function ShareChatDialog({ thread, signedIn, onClose }: { thread: Thread; signedIn: boolean; onClose: () => void }) {
   const turns = useMemo(() => shareableTurns(thread), [thread]);
@@ -32,14 +34,6 @@ export function ShareChatDialog({ thread, signedIn, onClose }: { thread: Thread;
   const [msg, setMsg] = useState("");
   const [link, setLink] = useState<{ url: string; token: string } | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
-  const exit = useExit(onClose); // Escape, the scrim and Cancel/Done animate out before the bar unmounts the dialog
-  const close = exit.close;
-  useEffect(() => { closeRef.current?.focus(); }, []);
-  useEffect(() => {
-    const k = (e: KeyboardEvent) => { if (e.key === "Escape") close(); };
-    window.addEventListener("keydown", k);
-    return () => window.removeEventListener("keydown", k);
-  }, [close]);
 
   const terms = termsText.split(/[,\n]/).map((t) => t.trim()).filter((t) => t.length >= 2).slice(0, 20);
   const chosen = turns.filter((t) => picked.has(t.key));
@@ -69,15 +63,24 @@ export function ShareChatDialog({ thread, signedIn, onClose }: { thread: Thread;
     setBusy(true);
     try {
       const r = await fetch("/api/share/chat", { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify({ token: link.token }) });
-      if (r.ok) { setLink(null); setMsg("Link revoked. Anyone who opens it now sees \u201cnot found\u201d."); }
+      if (r.ok) { setLink(null); setMsg("Link revoked. Anyone who opens it now sees “not found”."); }
       else setMsg("Couldn't revoke the link. Try again from Account > Shared links.");
     } finally { setBusy(false); }
   };
 
   return (
-    <div className={s.scrim} onMouseDown={(e) => { if (e.target === e.currentTarget) close(); }} {...exit.motion("fade")}>
-      <div className={s.dialog} role="dialog" aria-modal="true" aria-labelledby="share-chat-h" data-share-chat="" {...exit.motion("pop", false)}>
-        <h2 id="share-chat-h">Share this chat</h2>
+    <Dialog
+      open
+      onOpenChange={(o) => { if (!o) onClose(); }}
+      title="Share this chat"
+      size="lg"
+      initialFocus={closeRef}
+      footer={<>
+        <Button ref={closeRef} variant="secondary" onClick={onClose}>{link ? "Done" : "Cancel"}</Button>
+        {signedIn && !link ? <Button variant="primary" disabled={!canShare} loading={busy} onClick={create}>{busy ? "Creating..." : "Create link"}</Button> : null}
+      </>}
+    >
+      <div className={s.share} data-share-chat="">
         {!signedIn ? (
           <p className={s.muted}>Sign in to create a link. You can still use Export chat to save a copy.</p>
         ) : (
@@ -110,16 +113,12 @@ export function ShareChatDialog({ thread, signedIn, onClose }: { thread: Thread;
         {link ? (
           <div className={s.row}>
             <input className={s.input} readOnly value={link.url} aria-label="Shared link" onFocus={(e) => e.currentTarget.select()} />
-            <a className={s.btn} href={link.url} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", textDecoration: "none" }}>Open</a>
-            <button type="button" className={s.btn} onClick={revoke} disabled={busy}>Revoke</button>
+            <a className={la.act} data-variant="secondary" data-size="sm" href={link.url} target="_blank" rel="noopener noreferrer">Open</a>
+            <Button size="sm" variant="secondary" onClick={revoke} disabled={busy}>Revoke</Button>
           </div>
         ) : null}
         <p className={s.status} role="status">{msg}</p>
-        <div className={s.row}>
-          {signedIn && !link ? <button type="button" className={s.btn} data-primary="" disabled={!canShare || busy} onClick={create}>{busy ? "Creating..." : "Create link"}</button> : null}
-          <button type="button" ref={closeRef} className={s.btn} onClick={close}>{link ? "Done" : "Cancel"}</button>
-        </div>
       </div>
-    </div>
+    </Dialog>
   );
 }

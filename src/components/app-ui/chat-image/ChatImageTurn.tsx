@@ -13,7 +13,9 @@ import type { ChatImage } from "@/lib/images/chat-types";
 import { blockedFrom, fetchStored, ImgError, needsApproval, newKey, quote, RIGHTS_TEXT, SIZE_LABEL, startImage, uploadSources, waitForJob } from "@/lib/images/chat-flow";
 import type { SignedRef } from "@/lib/higgsfield/upload-client";
 import { Lightbox } from "../Lightbox";
+import { Button } from "@/components/kit";
 import css from "./chat-image.module.css";
+import la from "../link-action.module.css";
 
 type Props = {
   message: KeplarMessage;
@@ -168,7 +170,7 @@ export function ChatImageTurn({ message: m, media, onPatch, onFollowUp, onAskTex
           <fieldset className={css.sizes}>
             <legend>Shape</legend>
             {SIZES.map((sz) => (
-              <button key={sz} type="button" className={css.chip} aria-pressed={img.size === sz} onClick={() => void resize(sz)}>{SIZE_LABEL[sz]}</button>
+              <Button key={sz} size="sm" variant="secondary" className={css.chip} aria-pressed={img.size === sz} onClick={() => void resize(sz)}>{SIZE_LABEL[sz]}</Button>
             ))}
           </fieldset>
           {img.ref ? (
@@ -178,8 +180,8 @@ export function ChatImageTurn({ message: m, media, onPatch, onFollowUp, onAskTex
             </label>
           ) : null}
           <div className={css.row}>
-            <button type="button" className={css.primary} disabled={busy || (Boolean(img.ref) && !rights)} onClick={() => void approve()}>{busy ? "Starting…" : `Create image · ${credits(img.estimateUnits ?? 0)}`}</button>
-            <button type="button" className={css.ghost} onClick={() => { uploaded.delete(m.id); onPatch({ phase: "canceled", error: "Not started. Nothing was charged." }); }}>Cancel</button>
+            <Button size="sm" variant="primary" disabled={busy || (Boolean(img.ref) && !rights)} onClick={() => void approve()}>{busy ? "Starting…" : `Create image · ${credits(img.estimateUnits ?? 0)}`}</Button>
+            <Button size="sm" variant="secondary" onClick={() => { uploaded.delete(m.id); onPatch({ phase: "canceled", error: "Not started. Nothing was charged." }); }}>Cancel</Button>
           </div>
         </section>
       ) : null}
@@ -201,15 +203,15 @@ export function ChatImageTurn({ message: m, media, onPatch, onFollowUp, onAskTex
           </figure>
           <p className={css.meta}>{typeof img.units === "number" ? `${credits(img.units)} · ` : ""}{SIZE_LABEL[img.size]} · full quality original kept in Create &gt; Images</p>
           <div className={css.row}>
-            <a className={css.ghost} href={`${img.url}?download=1`} download>Download original</a>
-            <button type="button" className={css.ghost} onClick={() => onFollowUp({ kind: "regenerate" })}>Regenerate</button>
-            <button type="button" className={css.ghost} onClick={() => onFollowUp({ kind: "variation" })}>Variation</button>
-            <button type="button" className={css.ghost} aria-expanded={editing} onClick={() => setEditing((v) => !v)}>Edit</button>
+            <a className={la.act} data-variant="secondary" data-size="sm" href={`${img.url}?download=1`} download>Download original</a>
+            <Button size="sm" variant="secondary" onClick={() => onFollowUp({ kind: "regenerate" })}>Regenerate</Button>
+            <Button size="sm" variant="secondary" onClick={() => onFollowUp({ kind: "variation" })}>Variation</Button>
+            <Button size="sm" variant="secondary" aria-expanded={editing} onClick={() => setEditing((v) => !v)}>Edit</Button>
           </div>
           {editing ? (
             <form className={css.edit} onSubmit={(e) => { e.preventDefault(); if (instruction.trim().length >= 4) { onFollowUp({ kind: "edit", instruction: instruction.trim() }); setEditing(false); setInstruction(""); } }}>
               <input aria-label="What should change?" placeholder="What should change? e.g. make it night" value={instruction} onChange={(e) => setInstruction(e.target.value)} maxLength={400} />
-              <button type="submit" className={css.primary} disabled={instruction.trim().length < 4}>Edit picture</button>
+              <Button type="submit" size="sm" variant="primary" disabled={instruction.trim().length < 4}>Edit picture</Button>
             </form>
           ) : null}
           {viewer ? <Lightbox src={img.url} alt={img.prompt} caption={img.prompt} downloadHref={`${img.url}?download=1`} downloadName="keplar-image.png" onClose={() => setViewer(false)} /> : null}
@@ -221,8 +223,8 @@ export function ChatImageTurn({ message: m, media, onPatch, onFollowUp, onAskTex
           <h3>That picture didn&apos;t work out</h3>
           <p>{img.error ?? "Nothing was charged."}</p>
           <div className={css.row}>
-            <button type="button" className={css.primary} onClick={() => onPatch({ phase: "checking", key: newKey(), error: undefined, jobId: undefined })}>Try again</button>
-            <button type="button" className={css.ghost} onClick={onAskText}>Ask as a normal question</button>
+            <Button size="sm" variant="primary" onClick={() => onPatch({ phase: "checking", key: newKey(), error: undefined, jobId: undefined })}>Try again</Button>
+            <Button size="sm" variant="secondary" onClick={onAskText}>Ask as a normal question</Button>
           </div>
         </section>
       ) : null}
@@ -232,10 +234,10 @@ export function ChatImageTurn({ message: m, media, onPatch, onFollowUp, onAskTex
           <h3>{img.blocked.reason === "signin" ? "Sign in to create images" : img.blocked.reason === "plan" ? "Images are part of Plus and Pro" : img.blocked.reason === "limit" ? "That's today's limit" : img.blocked.reason === "credits" ? "Not enough credits" : "Images aren't available right now"}</h3>
           <p>{img.blocked.message}</p>
           <div className={css.row}>
-            {img.blocked.reason === "signin" ? <Link className={css.primary} href="/signin?next=%2Fapp">Sign in</Link> : null}
-            {img.blocked.reason === "plan" || img.blocked.reason === "credits" ? <Link className={css.primary} href="/pricing">See plans</Link> : null}
-            {img.blocked.reason === "paused" || img.blocked.reason === "config" ? <button type="button" className={css.primary} onClick={() => onPatch({ phase: "checking", key: newKey(), blocked: undefined })}>Try again</button> : null}
-            <button type="button" className={css.ghost} onClick={onAskText}>Ask as a normal question</button>
+            {img.blocked.reason === "signin" ? <Link className={la.act} data-variant="primary" data-size="sm" href="/signin?next=%2Fapp">Sign in</Link> : null}
+            {img.blocked.reason === "plan" || img.blocked.reason === "credits" ? <Link className={la.act} data-variant="primary" data-size="sm" href="/pricing">See plans</Link> : null}
+            {img.blocked.reason === "paused" || img.blocked.reason === "config" ? <Button size="sm" variant="primary" onClick={() => onPatch({ phase: "checking", key: newKey(), blocked: undefined })}>Try again</Button> : null}
+            <Button size="sm" variant="secondary" onClick={onAskText}>Ask as a normal question</Button>
           </div>
         </section>
       ) : null}

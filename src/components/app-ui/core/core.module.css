@@ -6,8 +6,8 @@
   margin: var(--s-2) 0 var(--s-3);
   padding: var(--s-3) var(--s-4);
   border-radius: var(--shape-card);
-  background: rgb(var(--rgb-ink) / 0.03);
-  box-shadow: inset 0 0 0 var(--b-hairline, 1px) var(--c-border);
+  background: var(--hover-wash);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline);
 }
 .head { display: flex; align-items: center; gap: var(--s-2); font-size: var(--t-small); color: var(--c-ink); }
 .headLabel { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -19,7 +19,7 @@
   border-radius: var(--shape-pill);
   font-size: var(--t-label);
   color: var(--c-ink-2);
-  box-shadow: inset 0 0 0 1px var(--c-border-strong);
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
 }
 .reason { margin: 0; font-size: var(--t-small); color: var(--c-ink-2); }
 .steps { display: flex; flex-direction: column; gap: var(--s-2); margin: 0; padding: 0; list-style: none; }
@@ -35,7 +35,7 @@
   height: 14px;
   margin-top: 2px;
   border-radius: var(--shape-pill);
-  box-shadow: inset 0 0 0 1px var(--c-border-strong);
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
   color: var(--c-canvas);
 }
 .step[data-state="done"] .dot, .step[data-state="revised"] .dot { background: var(--c-ink); box-shadow: none; }
@@ -54,23 +54,8 @@
 .row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); }
 .conf { margin: 0; font-size: var(--t-small); color: var(--c-ink-2); }
 .conf[data-level="low"] { color: var(--c-ink); }
-.toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-1);
-  min-height: 28px;
-  padding: 0 var(--s-2);
-  border: 0;
-  border-radius: var(--shape-control);
-  background: transparent;
-  font: inherit;
-  font-size: var(--t-label);
-  color: var(--c-ink-3);
-  cursor: pointer;
-}
-.toggle:hover { color: var(--c-ink); background: rgb(var(--rgb-ink) / 0.05); }
-.toggle:focus { outline: none; }
-.toggle:focus-visible { outline: 2px solid var(--c-ink); outline-offset: 2px; }
+/* the details disclosure: a quiet kit ghost Button (sm) */
+.toggle { font-size: var(--t-label); font-weight: var(--w-regular); color: var(--c-ink-3); }
 .chev { display: inline-flex; transition: transform 160ms var(--e-standard, ease-out); }
 .chev[data-open] { transform: rotate(180deg); }
 .details {
@@ -79,7 +64,7 @@
   gap: var(--s-3);
   padding: var(--s-3) var(--s-4);
   border-radius: var(--shape-card);
-  box-shadow: inset 0 0 0 var(--b-hairline, 1px) var(--c-border);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline);
 }
 .details[hidden] { display: none; }
 .checks { display: flex; flex-direction: column; gap: var(--s-1); margin: 0; padding: 0; list-style: none; font-size: var(--t-small); color: var(--c-ink-2); }
@@ -91,40 +76,25 @@
 .next { display: flex; flex-direction: column; gap: var(--s-1); }
 .nextLabel { margin: 0; }
 .next ul { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; }
-.nextBtn {
-  display: block;
-  width: 100%;
-  padding: var(--s-2) var(--s-3);
-  border: 0;
-  border-radius: var(--shape-control);
-  background: rgb(var(--rgb-ink) / 0.03);
-  font: inherit;
-  font-size: var(--t-small);
+/* a suggested next question: a full-width kit ghost Button whose text wraps and reads left to right */
+.nextAct.nextAct {
+  height: auto;
+  min-height: var(--ks-control-md);
+  padding-block: var(--s-2);
+  justify-content: flex-start;
   text-align: left;
-  color: var(--c-ink);
-  cursor: pointer;
-}
-.nextBtn:hover { background: rgb(var(--rgb-ink) / 0.07); }
-.nextBtn:focus { outline: none; }
-.nextBtn:focus-visible { outline: 2px solid var(--c-ink); outline-offset: 2px; }
-.job { display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-3) var(--s-4); border-radius: var(--shape-card); box-shadow: inset 0 0 0 var(--b-hairline, 1px) var(--c-border); }
-.jobHead { margin: 0; font-size: var(--t-small); color: var(--c-ink); font-weight: 500; }
-.jobBtn {
-  align-self: flex-start;
-  min-height: 32px;
-  padding: 0 var(--s-3);
-  border: 0;
-  border-radius: var(--shape-control);
-  background: var(--c-ink);
-  color: var(--c-canvas);
-  font: inherit;
+  white-space: normal;
+  text-wrap: pretty;
+  line-height: 1.4;
   font-size: var(--t-small);
-  font-weight: 500;
-  cursor: pointer;
+  font-weight: var(--w-regular);
+  color: var(--c-ink);
+  background: var(--hover-wash);
 }
-.jobBtn:disabled { opacity: 0.6; cursor: default; }
-.jobBtn:focus { outline: none; }
-.jobBtn:focus-visible { outline: 2px solid var(--c-ink); outline-offset: 2px; }
+.nextAct > span { white-space: normal; overflow: visible; }
+.job { display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-3) var(--s-4); border-radius: var(--shape-card); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline); }
+.jobHead { margin: 0; font-size: var(--t-small); color: var(--c-ink); font-weight: 500; }
+.jobAct { align-self: flex-start; }
 .jobErr { margin: 0; font-size: var(--t-small); color: var(--c-ink); }
 @keyframes pulse { from { opacity: 1; } to { opacity: 0.45; } }
 @media (prefers-reduced-motion: reduce) { .step[data-state="active"] .dot { animation: none; } .chev { transition: none; } }

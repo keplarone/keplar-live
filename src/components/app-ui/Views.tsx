@@ -9,6 +9,7 @@ import { ProjectWorkspace } from "./ProjectWorkspace";
 import { AgentsPanel } from "./AgentsPanel";
 import { activeScopeHeaders } from "./state/scope";
 import s from "./App.module.css";
+import { Button, IconButton, SegmentedControl } from "@/components/kit";
 import { DeleteConfirm, DeleteTrigger } from "./delete/DeleteChat";
 
 function Header({ title, lede, children }: { title: string; lede: string; children?: React.ReactNode }) {
@@ -98,9 +99,7 @@ export function HistoryView({ state, signedIn, onRename, onOpen, onDelete, onMov
                       <span className={s.rowMeta}>{t.remote ? "Saved in your account" : preview(t) || `${t.messages.filter((m) => m.role === "user").length} questions`}</span>
                     </button>
                   )}
-                  <button type="button" className={s.rowAction} aria-label={`Rename ${t.title}`} onMouseDown={(e) => e.preventDefault()} onClick={() => { setDraft(t.title); setEditing(t.id); }}>
-                    <IconEdit size={15} />
-                  </button>
+                  <IconButton size="sm" className={s.rowAction} label={`Rename ${t.title}`} tooltip={false} onMouseDown={(e) => e.preventDefault()} onClick={() => { setDraft(t.title); setEditing(t.id); }} icon={<IconEdit size={15} />} />
                   {state.projects.length ? (
                     <select
                       className={s.rowSelect}
@@ -189,9 +188,9 @@ export function ProjectsView({ state, signedIn, onCreate, onMerge, onRemoved, on
           aria-describedby={error ? `${uid}-err` : undefined}
           maxLength={60}
         />
-        <button type="submit" className={s.secondaryBtn}>
-          <IconPlus size={14} /> Create project
-        </button>
+        <Button type="submit" variant="secondary" size="lg" leadingIcon={<IconPlus size={14} />}>
+          Create project
+        </Button>
         {error ? <p id={`${uid}-err`} className={s.fieldError}>{error}</p> : null}
       </form>
       <div className={s.inlineForm}>
@@ -201,10 +200,7 @@ export function ProjectsView({ state, signedIn, onCreate, onMerge, onRemoved, on
       {state.projects.length === 0 ? (
         <p className={s.viewEmpty}>No projects yet. Name one above to keep its chats, files and memory in one place.</p>
       ) : (
-        <div role="group" aria-label="View" className={s.viewToggle}>
-          <button type="button" className={s.textBtn} aria-pressed={mode === "list"} onClick={() => setMode("list")}>List</button>
-          <button type="button" className={s.textBtn} aria-pressed={mode === "timeline"} onClick={() => setMode("timeline")}>Timeline</button>
-        </div>
+        <SegmentedControl label="View" size="sm" className={s.viewToggle} value={mode} onValueChange={setMode} options={[{ value: "list", label: "List" }, { value: "timeline", label: "Timeline" }]} />
       )}
       {state.projects.length > 0 && mode === "timeline" ? <ProjectTimeline state={state} onOpenThread={onOpenThread} /> : null}
       {state.projects.length === 0 || mode === "timeline" ? null : (
@@ -217,8 +213,8 @@ export function ProjectsView({ state, signedIn, onCreate, onMerge, onRemoved, on
                   <span className={s.rowTitle}>{p.name}</span>
                   <span className={s.rowMeta}>{n === 1 ? "1 thread" : `${n} threads`}</span>
                 </button>
-                <button type="button" className={s.textBtn} onClick={() => onNewInProject(p.id)}>New chat</button>
-                <button type="button" className={s.textBtn} onClick={() => setOpenId(p.id)} aria-label={`Open the ${p.name} workspace: memory, files and instructions`}>Workspace</button>
+                <Button size="sm" variant="ghost" onClick={() => onNewInProject(p.id)}>New chat</Button>
+                <Button size="sm" variant="ghost" onClick={() => setOpenId(p.id)} aria-label={`Open the ${p.name} workspace: memory, files and instructions`}>Workspace</Button>
               </li>
             );
           })}
@@ -233,9 +229,9 @@ export function AgentsView({ onStart, signedIn, onOpenApprovals }: { onStart: ()
   return (
     <div className={s.view} data-hue="creation">
       <Header title="Agents" lede="Agents keep working after you close the tab, on a schedule you set, inside the limits of your plan. Anything that would leave Keplar waits for your approval.">
-        <button type="button" className={s.primaryBtn} data-lit="on-ink" onClick={onStart}>
-          Draft an agent task <span aria-hidden="true">→</span>
-        </button>
+        <Button variant="primary" onClick={onStart} trailingIcon={<span aria-hidden="true">→</span>}>
+          Draft an agent task
+        </Button>
       </Header>
       <AgentsPanel signedIn={signedIn} onOpenApprovals={onOpenApprovals} />
     </div>

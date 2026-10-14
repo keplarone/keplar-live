@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
+import { Button } from "@/components/kit";
 import s from "./limit-extensions.module.css";
 
 type Pack = { id: string; label: string; credits: number; priceUsd: number | null };
@@ -74,9 +75,9 @@ export function ExtensionOffer({ plan }: { plan: "free" | "lite" | "plus" | "pro
 
   return (
     <div className={s.offer} data-extension="available">
-      <button type="button" className={s.buy} aria-expanded={open} aria-controls={listId} onClick={() => setOpen((v) => !v)}>
+      <Button variant="primary" className={s.buy} aria-expanded={open} aria-controls={listId} onClick={() => setOpen((v) => !v)}>
         Buy more
-      </button>
+      </Button>
       {open ? (
         <div id={listId} className={s.packs} role="group" aria-label="Extension packs">
           {offer.packs.map((p) => (

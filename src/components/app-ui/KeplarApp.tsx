@@ -40,10 +40,10 @@ import { AgentsView, HistoryView, ProjectsView } from "./Views";
 import { ReferralClaim } from "./ReferralClaim";
 import { useChatSync } from "./useChatSync";
 import { useTopicTitles } from "./useTopicTitles";
-import { DeleteChatAction, UndoToast } from "./delete/DeleteChat";
-import { Presence, usePresence } from "@/components/motion/usePresence";
+import { DeleteChatAction } from "./delete/DeleteChat";
+import { usePresence } from "@/components/motion/usePresence";
 import { withViewTransition } from "@/lib/ui/view-transition";
-import { UNDO_MS, useChatDelete } from "./delete/useChatDelete";
+import { useChatDelete } from "./delete/useChatDelete";
 import { UseForPrompt } from "./UseForPrompt";
 import { ResumeChats } from "./ResumeChats";
 import { OfflineNotice } from "./OfflineNotice";
@@ -191,8 +191,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     window.addEventListener(OPEN_APP_SEARCH_EVENT, open);
     return () => window.removeEventListener(OPEN_APP_SEARCH_EVENT, open);
   }, []);
-  // Search (Cmd+K toggles it from outside) and the drawer scrim stay mounted while they animate out.
-  const search = usePresence(searchOpen);
+  // The drawer scrim stays mounted while it fades out. (Search is the kit Dialog, rendered while searchOpen.)
   const drawerScrim = usePresence(drawerOpen);
   const [atBottom, setAtBottom] = useState(true);
   const router = useRouter();
@@ -942,6 +941,8 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
         router.push("/account"); // opens the Settings dialog over the app (src/app/app/@modal)
       } else if (e.key === "Escape") {
         if (searchOpen) return;
+        // Escape in a kit Dialog or pop-up closes that overlay only (the overlay owns it): it never also stops the answer.
+        if ((e.target as HTMLElement | null)?.closest?.("dialog, [popover]")) return;
         if (drawerOpen) { setDrawerOpen(false); return; }
         if (running) { e.preventDefault(); stop(); return; }
         (document.activeElement as HTMLElement | null)?.blur?.();
@@ -1389,12 +1390,11 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
         )}
       </div>
 
-      <Presence value={del.toast}>{(t, p) => <UndoToast key={t.id} title={t.title} ms={UNDO_MS} onUndo={() => del.undo(t.id)} motion={p.motion("toast")} />}</Presence>
-
+      {/* Deleting a chat shows the kit toast ("Deleted …", Undo) from useChatDelete through notify(). */}
       <DraftPane key={state.scope} scope={state.scope} plan={state.ledger.plan} onAsk={(text) => send(text, [], { web: false, deepResearch: false, create: false, agent: false })} />
 
-      {search.mounted ? (
-        <SearchDialog threads={listedThreads} onClose={() => setSearchOpen(false)} onOpen={openThread} onNew={() => newThread()} onView={(v) => goView(v)} presence={search} />
+      {searchOpen ? (
+        <SearchDialog threads={listedThreads} onClose={() => setSearchOpen(false)} onOpen={openThread} onNew={() => newThread()} onView={(v) => goView(v)} />
       ) : null}
     </div>
   );

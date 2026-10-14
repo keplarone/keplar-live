@@ -15,10 +15,10 @@ test("report dialog is closed after an answer, opens only on click, and every cl
   const card = page.locator("article").last();
   await expect(card).toContainText("Hassen", { timeout: 30_000 });
 
-  const dialog = page.getByTestId("report-dialog");
+  // The kit Dialog: a native modal <dialog> that exists only while open (UI v2).
+  const dialog = page.getByRole("dialog", { name: "Report this answer" });
   const isOpen = () => dialog.evaluate((d: HTMLDialogElement) => d.open);
-  await expect(dialog).toBeHidden();
-  expect(await isOpen()).toBe(false);
+  await expect(dialog).toHaveCount(0);
   // Nothing blocks the page: the composer is still usable.
   await page.locator(composerSel).first().fill("still typing");
   await expect(page.locator(composerSel).first()).toHaveValue("still typing");
@@ -32,8 +32,8 @@ test("report dialog is closed after an answer, opens only on click, and every cl
     else if (how === "X") await dialog.getByRole("button", { name: "Close" }).click();
     else if (how === "Escape") await page.keyboard.press("Escape");
     else await page.mouse.click(5, 5);
-    await expect(dialog).toBeHidden();
-    expect(await isOpen()).toBe(false);
+    await expect(dialog).toHaveCount(0);
+    if (how !== "Backdrop") await expect(trigger).toBeFocused(); // focus returns to the button
   }
   await page.locator(composerSel).first().fill("typing after close");
   await expect(page.locator(composerSel).first()).toHaveValue("typing after close");

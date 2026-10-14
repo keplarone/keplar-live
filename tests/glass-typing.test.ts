@@ -59,7 +59,8 @@ test("glass buttons: primary is graphite (light) / white (dark), AA+ text, never
   // secondary glass: ink text on the clear fill over white and over a pale page wash
   assert.ok(ratio("#09090b", mix("#ffffff", 0.42, "#e8f4f8")) >= 12);
   // every module that adopts the glass buttons also carries reduced-transparency / reduced-motion fallbacks
-  for (const f of ["src/components/app-ui/App.module.css", "src/components/business/business.module.css"]) {
+  // (the /app shell and the shared page Button left glass in UI v2: their controls are solid, see interface-overhaul.test.ts)
+  for (const f of ["src/components/business/business.module.css"]) {
     const c = read(f);
     assert.match(c, /prefers-reduced-transparency: reduce/);
   }
