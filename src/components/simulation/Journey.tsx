@@ -1,7 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ButtonLink } from "@/components/ui/Button";
-import { Particles } from "./Particles";
 import { AGENT_DRAFT, AGENT_TASK, CHAPTERS, CHECKS, CREATE_BLOCKS, CREATE_CHECKLIST, CREATE_CHOICES, CREATE_IDEA, CREATE_UNDERSTOOD, FINAL, LANES, QUESTION, ROUTING, SPLIT } from "./script";
 import s from "./journey.module.css";
 
@@ -48,17 +47,6 @@ export function Journey() {
   const playRef = useRef(false);
   const lastSet = useRef(-1);
   const reduced = useRef(false);
-  // The site-wide Monolith layer (the design system's Three.js scroll scene) shows through the stage when it can run; we then draw only the beams.
-  // When it cannot (no WebGL, CPU rendering, data saver) our own small canvas draws the points too.
-  const [fieldOn, setFieldOn] = useState(false);
-  useEffect(() => {
-    const root = document.documentElement;
-    const read = () => setFieldOn(root.getAttribute("data-field") === "page");
-    read();
-    const mo = new MutationObserver(read);
-    mo.observe(root, { attributes: true, attributeFilter: ["data-field"] });
-    return () => mo.disconnect();
-  }, []);
   const [approved, setApproved] = useState<null | "approve" | "decline" | "edit">(null);
   const [choice, setChoice] = useState<number | null>(null);
 
@@ -181,7 +169,6 @@ export function Journey() {
   return (
     <div ref={wrap} className={s.wrap} style={{ ["--n" as string]: N }} data-testid="simulation" data-chapter={id} data-playing={playing ? "1" : "0"}>
       <div className={s.stage}>
-        <Particles fRef={fRef} points={!fieldOn} />
         <p className={s.banner} role="note"><strong>SIMULATION</strong><span>Pre-written sample. No model is called, nothing is measured.</span></p>
 
         <div className={s.slide} key={id === "create" || id === "agent" ? id : "x"}>

@@ -6,6 +6,7 @@
  */
 import { useMemo, useState } from "react";
 import s from "./Developers.module.css";
+import emb from "@/components/embed/EmbedAsk.module.css"; // the widget's own palette (--emb-* per theme), so the miniature matches it exactly
 import { CodeTabs } from "./CodeTabs";
 import { EMBED_ACCENTS, EMBED_ACCENT_HEX, EMBED_SIZES, EMBED_SIZE_PX, EMBED_THEMES, type EmbedAccent, type EmbedSize, type EmbedTheme } from "@/lib/embed/config";
 
@@ -70,7 +71,7 @@ export function EmbedConfigurator({ origin }: { origin: string }) {
       </div>
       <div className={s.previewWrap}>
         <div
-          className={s.mini}
+          className={`${emb.root} ${s.mini}`}
           data-theme={theme}
           style={{ ["--mini-accent" as string]: EMBED_ACCENT_HEX[accent], maxWidth: dims.width * scale, minHeight: dims.height * scale * 0.82 }}
           aria-label={`Look of the ${theme} ${size} widget with the ${accent} accent`}

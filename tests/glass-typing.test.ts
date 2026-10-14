@@ -81,5 +81,6 @@ test("buttons default to a rounded rectangle (not a sitewide pill); cards keep t
   assert.match(rule, /:where\(button, \[role="button"\], \[role="tab"\], \[role="switch"\][^)]*\)[^{]*\{\s*border-radius: var\(--shape-control\);/);
   assert.doesNotMatch(rule.slice(rule.indexOf(":where("), rule.indexOf("{", rule.indexOf(":where("))), /summary/);
   assert.match(read("src/components/app-ui/App.module.css"), /\.homeTile\.homeTile, \.useForOption\.useForOption \{ border-radius: 22px; \}/);
-  assert.match(read("src/components/sections/KeplarOnePipeline.module.css"), /\.tab\.tab \{ border-radius: 22px/);
+  // UI v2: the pipeline stage tabs keep the card radius through the doubled class, now as the --shape-card token (22px).
+  assert.match(read("src/components/sections/KeplarOnePipeline.module.css"), /\.tab\.tab \{[^}]*border-radius: var\(--shape-card\);/);
 });

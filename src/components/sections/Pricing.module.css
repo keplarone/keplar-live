@@ -1,8 +1,9 @@
+/* Plans (UI v2, docs/ui-v2.md): calm, scannable cards on the plain canvas. A card is --surface-raised with a 1px hairline,
+   --r-card and --elev-1; hover strengthens the edge (no lift). The recommended plan (Plus) is marked by an ink edge, never a glow. */
 .section {
   position: relative;
   z-index: var(--z-content);
-  background: var(--c-canvas);
-  padding: var(--s-40) var(--l-gutter);
+  padding: var(--s-24) var(--l-gutter);
 }
 
 .inner {
@@ -11,10 +12,10 @@
 }
 
 .plans {
-  margin-top: var(--s-16);
+  margin-top: var(--s-12);
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--s-3);
+  gap: var(--s-4);
   align-items: stretch;
 }
 
@@ -23,17 +24,18 @@
   flex-direction: column;
   padding: var(--s-8) var(--s-6) var(--s-6);
   border-radius: var(--r-card);
-  border: var(--b-hairline) solid var(--c-border);
-  background:
-    rgb(var(--rgb-ink) / 0.06);
-  box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.1);
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1);
+  transition: box-shadow var(--m-dur-2) var(--m-ease-out);
 }
 
-.plan[data-plan="plus"] {
-  border-color: rgb(var(--rgb-ink) / 0.28);
-  background:
-    rgb(var(--rgb-ink) / 0.06);
-  box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.22), 0 40px 90px -46px rgb(var(--rgb-ink) / 0.4);
+.plan:hover {
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), var(--elev-1);
+}
+
+.plan[data-plan="plus"],
+.plan[data-plan="plus"]:hover {
+  box-shadow: inset 0 0 0 1.5px var(--c-ink), var(--elev-1);
 }
 
 .plan[data-plan="business"] {
@@ -53,31 +55,33 @@
 .plan[data-plan="business"] .amount { font-size: clamp(30px, 2.6vw, 56px); }
 
 .name {
-  font-size: var(--t-small);
+  font-size: var(--t-lead);
+  line-height: 1.2;
   font-weight: var(--w-medium);
-  letter-spacing: 0;
+  letter-spacing: -0.01em;
   text-transform: none;
-  color: var(--c-ink-2);
+  color: var(--c-ink);
 }
 
 .price {
   display: flex;
   flex-direction: column;
   gap: var(--s-2);
-  margin-top: var(--s-8);
+  margin-top: var(--s-6);
 }
 
 .amount {
-  font-size: clamp(44px, 4.6vw, 96px);
+  font-size: clamp(40px, 3.8vw, 80px);
   line-height: 0.95;
-  letter-spacing: -0.045em;
-  font-weight: var(--w-light);
+  letter-spacing: -0.04em;
+  font-weight: var(--w-regular);
   font-variant-numeric: tabular-nums;
+  color: var(--c-ink);
 }
 
 .cadence {
-  font-family: var(--f-sans);
-  font-size: var(--t-label);
+  font-size: var(--t-small);
+  line-height: var(--lh-small);
   letter-spacing: 0;
   text-transform: none;
   color: var(--c-ink-3);
@@ -87,6 +91,7 @@
   margin-top: var(--s-5);
   color: var(--c-ink-2);
   font-size: var(--t-small);
+  line-height: var(--lh-small);
   min-height: 3em;
 }
 
@@ -96,49 +101,61 @@
   display: flex;
   flex-direction: column;
   gap: var(--s-3);
-  border-top: var(--b-hairline) solid var(--c-border);
+  border-top: var(--b-hairline) solid var(--hairline);
   flex: 1;
 }
 
 .features li {
   position: relative;
-  padding-left: var(--s-5);
+  padding-left: var(--s-6);
   font-size: var(--t-small);
-  line-height: 1.45;
+  line-height: var(--lh-small);
+  color: var(--c-ink);
 }
 
+/* A small check, drawn in ink-2 (a mask, so it follows the theme). */
 .features li::before {
   content: "";
   position: absolute;
   left: 0;
-  top: 0.62em;
-  width: 8px;
-  height: 1px;
+  top: 0.18em;
+  width: 16px;
+  height: 16px;
   background: var(--c-ink-2);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
 .cta {
   margin-top: var(--s-8);
 }
 
+.fine {
+  margin-top: var(--s-6);
+  max-width: 68ch;
+  color: var(--c-ink-2);
+  font-size: var(--t-small);
+  line-height: var(--lh-small);
+}
+
+/* What things cost: a plain card with a hairline table inside. */
 .compute {
-  margin-top: var(--s-24);
+  margin-top: var(--s-16);
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
   gap: var(--s-16);
   align-items: start;
-  padding: var(--s-12);
-  border-radius: var(--r-card-lg);
-  border: var(--b-hairline) solid var(--c-border);
-  background: rgb(var(--rgb-ink) / 0.06);
-  box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.09);
+  padding: var(--s-10);
+  border-radius: var(--r-card);
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1);
 }
 
 .computeTitle {
   font-size: var(--t-title);
-  line-height: var(--lh-title);
-  letter-spacing: var(--tr-title);
-  font-weight: var(--w-medium);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  font-weight: var(--w-regular);
 }
 
 .computeLede {
@@ -149,14 +166,14 @@
 
 .scale {
   margin: 0;
-  border-top: var(--b-hairline) solid var(--c-border);
+  border-top: var(--b-hairline) solid var(--hairline-strong);
 }
 
 .scaleRow {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   padding: var(--s-4) 0;
-  border-bottom: var(--b-hairline) solid var(--c-border);
+  border-bottom: var(--b-hairline) solid var(--hairline);
   font-size: var(--t-small);
 }
 
@@ -178,20 +195,18 @@
   height: 5px;
   border-radius: var(--r-pill);
   background: var(--c-surface-2);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline);
 }
 
 .bars i[data-on] {
   background: var(--c-ink);
-  box-shadow: 0 0 12px rgb(var(--rgb-ink) / 0.5);
+  box-shadow: none;
 }
 
 @media (max-width: 1080px) {
   .plans {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-}
-
-@media (max-width: 1080px) {
   .plan[data-plan="business"] { grid-template-columns: minmax(0, 1fr); }
   .plan[data-plan="business"] :is(.name, .price, .summary, .features, .cta) { grid-column: 1; grid-row: auto; margin-top: var(--s-4); }
   .plan[data-plan="business"] .features { grid-template-columns: minmax(0, 1fr); }
@@ -199,16 +214,22 @@
 
 @media (max-width: 899px) {
   .section {
-    padding: var(--s-24) var(--l-gutter);
+    padding: var(--s-16) var(--l-gutter);
   }
   .plans {
-    grid-template-columns: 1fr;
-    margin-top: var(--s-12);
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: var(--s-10);
   }
-  .plan {
-    padding: var(--s-6) var(--s-5) var(--s-6);
+  .plan,
+  .plan[data-plan="business"] {
+    padding: var(--s-6) var(--s-5);
+  }
+  .summary {
+    min-height: 0;
   }
   .compute {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-8);
     padding: var(--s-6) var(--s-5);
   }
   .scaleRow {
@@ -218,66 +239,8 @@
   .scaleRow dd {
     flex-wrap: wrap;
   }
-  .summary {
-    min-height: 0;
-  }
-  .compute {
-    grid-template-columns: 1fr;
-    gap: var(--s-8);
-  }
 }
 
-.fine {
-  margin-top: var(--s-6);
-  max-width: 70ch;
-  color: var(--c-ink-2);
-  font-size: var(--t-small);
+@media (prefers-reduced-motion: reduce) {
+  .plan { transition: none; }
 }
-
-/* Light theme (Oct 2026 redesign): frosted white cards with large radii and soft cool shadows on the aura page, Plus as the one dark
-   card, plan names in sentence case, check marks for features. Dark above is unchanged. */
-:global(:root[data-theme="light"]) .section { background: transparent; isolation: isolate; }
-:global(:root[data-theme="light"]) .plan {
-  background: rgb(255 255 255 / 0.82);
-  border-color: var(--c-border);
-  border-radius: 28px;
-  padding: 32px 28px 28px;
-  box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 12px 28px -14px rgb(14 15 18 / 0.25);
-}
-:global(:root[data-theme="light"]) .plan[data-plan="plus"] {
-  background: #0e0f12;
-  border-color: #0e0f12;
-  color: #ffffff;
-  box-shadow: 0 40px 90px -40px rgb(14 15 18 / 0.7);
-  --c-ink: #ffffff;
-  --c-ink-2: #c9cbd1;
-  --c-ink-3: #b4b6bd;
-  --c-border: rgb(255 255 255 / 0.14);
-  --btn-p-bg: #ffffff;
-  --btn-p-solid: #ffffff;
-  --btn-p-ink: #0e0f12;
-}
-:global(:root[data-theme="light"]) .name { text-transform: none; letter-spacing: -0.01em; font-size: 22px; color: var(--c-ink); }
-:global(:root[data-theme="light"]) .amount { font-weight: 400; }
-:global(:root[data-theme="light"]) .cadence { text-transform: none; letter-spacing: 0; font-size: 15px; }
-/* Dark: the cards are translucent over the aura, which lifts their fill to ~#3c3736 in places; ink-3 there was 3.5:1 (axe,
-   serious). ink-2 holds ≥4.5:1 on the lightest spot. */
-:global(:root[data-theme="dark"]) .cadence { color: var(--c-ink-2); }
-:global(:root[data-theme="light"]) .summary { font-size: 15px; line-height: 1.5; }
-:global(:root[data-theme="light"]) .features { border-top: 0; padding-top: 0; }
-:global(:root[data-theme="light"]) .features li { padding-left: 28px; font-size: 15px; line-height: 1.5; }
-:global(:root[data-theme="light"]) .features li::before {
-  top: 0.18em;
-  width: 18px;
-  height: 18px;
-  background: currentColor;
-  color: var(--c-verified);
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / contain no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / contain no-repeat;
-}
-:global(:root[data-theme="light"]) .plan[data-plan="plus"] .features li::before { color: #6fd3a0; }
-:global(:root[data-theme="light"]) .compute { background: rgb(255 255 255 / 0.82); border-color: var(--c-border); border-radius: 28px; box-shadow: 0 1px 2px rgb(14 15 18 / 0.06), 0 12px 28px -14px rgb(14 15 18 / 0.25); }
-:global(:root[data-theme="light"]) .bars i[data-on] { box-shadow: none; }
-
-/* Oct 2026 redesign: let the aura backdrop show through */
-.section { background: transparent; }

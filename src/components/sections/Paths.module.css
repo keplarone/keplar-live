@@ -1,8 +1,8 @@
+/* "For you / For business": two UI v2 cards side by side. Personal carries the one primary button; no wash, no float. */
 .section {
   position: relative;
   z-index: var(--z-content);
-  background: var(--c-canvas);
-  padding: var(--s-40) var(--l-gutter);
+  padding: var(--s-24) var(--l-gutter);
 }
 
 .inner {
@@ -11,10 +11,10 @@
 }
 
 .cards {
-  margin-top: var(--s-20);
+  margin-top: var(--s-12);
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--s-6);
+  gap: var(--s-4);
 }
 
 .card {
@@ -23,32 +23,28 @@
   flex-direction: column;
   gap: var(--s-5);
   padding: var(--s-10);
-  border-radius: var(--r-card-lg);
-  border: var(--b-hairline) solid var(--c-border);
-  background: var(--c-surface-1);
-  overflow: hidden;
+  border-radius: var(--r-card);
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1);
+  transition: box-shadow var(--m-dur-2) var(--m-ease-out);
 }
 
-/* A restrained spectral wash, only on the personal path. */
-.card[data-path="personal"] {
-  background:
-    var(--c-canvas);
-  box-shadow: var(--sh-float);
+.card:hover {
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), var(--elev-1);
 }
 
 .cardLabel {
-  font-family: var(--f-sans);
-  font-size: var(--t-label);
+  font-size: var(--t-small);
   letter-spacing: 0;
   text-transform: none;
-  color: var(--c-ink-2);
+  color: var(--c-ink-3);
 }
 
 .cardTitle {
   font-size: var(--t-title);
-  line-height: var(--lh-title);
-  letter-spacing: var(--tr-title);
-  font-weight: var(--w-medium);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  font-weight: var(--w-regular);
   text-wrap: balance;
   max-width: 18ch;
 }
@@ -56,20 +52,18 @@
 .points {
   display: flex;
   flex-direction: column;
-  border-top: var(--b-hairline) solid var(--c-border);
+  border-top: var(--b-hairline) solid var(--hairline);
 }
 
 .points li {
   padding: var(--s-3) 0;
-  border-bottom: var(--b-hairline) solid var(--c-border);
+  border-bottom: var(--b-hairline) solid var(--hairline);
   font-size: var(--t-body);
   color: var(--c-ink);
 }
 
 .note {
-  font-family: var(--f-sans);
-  font-size: var(--t-label);
-  letter-spacing: 0.02em;
+  font-size: var(--t-small);
   color: var(--c-ink-3);
 }
 
@@ -83,17 +77,17 @@
 
 @media (max-width: 899px) {
   .section {
-    padding: var(--s-24) var(--l-gutter);
+    padding: var(--s-16) var(--l-gutter);
   }
   .cards {
-    margin-top: var(--s-12);
-    grid-template-columns: 1fr;
+    margin-top: var(--s-10);
+    grid-template-columns: minmax(0, 1fr);
   }
   .card {
     padding: var(--s-8) var(--s-6);
-    border-radius: var(--r-card);
   }
 }
 
-/* Oct 2026 redesign: let the aura backdrop show through */
-.section { background: transparent; }
+@media (prefers-reduced-motion: reduce) {
+  .card { transition: none; }
+}

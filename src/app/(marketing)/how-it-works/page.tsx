@@ -3,7 +3,6 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui/Button";
-import { HeroField } from "@/components/motion/HeroField";
 import { StepDiagram } from "@/components/how/StepDiagram";
 import { Faq } from "@/components/sections/Faq";
 import { LearnLinks } from "@/components/sections/LearnLinks";
@@ -107,7 +106,6 @@ export default function HowItWorksPage() {
     <>
     <JsonLd data={breadcrumbs([{ name: "How it works", path: "/how-it-works" }])} />
     <article className={s.page}>
-      <HeroField variant="how" />
       <header className={s.hero}>
         <p className={s.kicker}>How it works</p>
         <h1 className={s.h1}><TwoTone text={"Stop trusting one AI."} /></h1>

@@ -6,7 +6,8 @@ import { getMessages } from "@/lib/i18n/server";
 import { SectionHeader } from "./SectionHeader";
 import s from "./Pricing.module.css";
 
-/** Four plans as one systematic table-like row. No highlighted "most popular", no urgency. */
+/** Four plans as one systematic row of calm cards (docs/ui-v2.md). Plus, the recommended plan, carries an ink edge and the one
+ *  primary button; there is no "most popular" badge and no urgency. */
 export async function Pricing({ headingLevel = "h2", showCompute = true, locale = "en" }: { headingLevel?: "h1" | "h2"; showCompute?: boolean; locale?: string }) {
   const Sub = headingLevel === "h1" ? "h2" : "h3";
   // Plan names and USD prices are never translated; summaries, features and labels are (English: src/lib/tiers.ts, src/lib/sections.ts).
@@ -36,7 +37,7 @@ export async function Pricing({ headingLevel = "h2", showCompute = true, locale 
               </ul>
               <div className={s.cta}>
                 {t.id === "business" ? (
-                  <ButtonLink href={t.cta.href} variant="primary" arrow magnetic={false}>
+                  <ButtonLink href={t.cta.href} variant="secondary" arrow>
                     {x.cta}
                   </ButtonLink>
                 ) : (

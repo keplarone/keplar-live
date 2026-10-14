@@ -1,9 +1,9 @@
-/* Shared primitives for marketing sections. */
+/* Shared primitives for marketing sections (UI v2, docs/ui-v2.md): plain canvas, sentence-case kicker, regular-weight titles with
+   tight tracking, hairline rules. Section rhythm: --s-24 between sections on desktop, --s-16 on phones. */
 .section {
   position: relative;
   z-index: var(--z-content);
-  background: var(--c-canvas);
-  padding: var(--s-40) var(--l-gutter);
+  padding: var(--s-24) var(--l-gutter);
 }
 
 .inner {
@@ -13,7 +13,7 @@
 
 .header {
   display: grid;
-  gap: var(--s-6);
+  gap: var(--s-5);
 }
 
 .header[data-align="split"] {
@@ -22,42 +22,34 @@
   gap: var(--s-16);
 }
 
+/* Kicker: plain small text, sentence case. Not a pill, not mono all-caps. */
 .label {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-2);
-  font-family: var(--f-sans);
-  font-size: var(--t-label);
+  font-size: var(--t-small);
+  line-height: var(--lh-small);
   letter-spacing: 0;
   text-transform: none;
-  color: var(--c-ink-2);
-  margin-bottom: var(--s-5);
+  color: var(--c-ink-3);
+  margin-bottom: var(--s-4);
 }
 
-.label::before {
-  content: "";
-  width: var(--s-6);
-  height: var(--b-hairline);
-  background: currentColor;
-  opacity: 0.5;
-}
-
+/* A section title (h2). */
 .headline {
+  font-size: var(--t-title);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  font-weight: var(--w-regular);
+  text-wrap: balance;
+  max-width: 22ch;
+}
+
+/* The page title (h1) when a section opens the page: the page-hero size. */
+.display {
   font-size: var(--t-headline);
   line-height: var(--lh-headline);
-  letter-spacing: var(--tr-headline);
-  font-weight: var(--w-medium);
+  letter-spacing: -0.04em;
+  font-weight: var(--w-regular);
   text-wrap: balance;
-  max-width: 16ch;
-}
-
-.display {
-  font-size: var(--t-display);
-  line-height: var(--lh-display);
-  letter-spacing: var(--tr-display);
-  font-weight: var(--w-medium);
-  text-wrap: balance;
-  max-width: 14ch;
+  max-width: 18ch;
 }
 
 .lede {
@@ -70,21 +62,23 @@
 }
 
 .prose {
-  max-width: 64ch;
+  max-width: 68ch;
   display: flex;
   flex-direction: column;
   gap: var(--s-5);
   color: var(--c-ink-2);
   font-size: var(--t-body);
+  line-height: var(--lh-body);
 }
 
 .prose h2 {
-  margin-top: var(--s-16);
+  margin-top: var(--s-12);
   font-size: var(--t-title);
-  line-height: var(--lh-title);
-  letter-spacing: var(--tr-title);
-  font-weight: var(--w-medium);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  font-weight: var(--w-regular);
   color: var(--c-ink);
+  text-wrap: balance;
 }
 
 .prose h2:first-child {
@@ -99,9 +93,9 @@
 .prose a {
   color: var(--c-ink);
   text-decoration: underline;
-  text-decoration-color: var(--c-border-strong);
+  text-decoration-color: var(--hairline-strong);
   text-underline-offset: 3px;
-  transition: text-decoration-color var(--d-fast) var(--e-standard);
+  transition: text-decoration-color var(--m-dur-1) var(--m-ease-out);
 }
 
 .prose a:hover {
@@ -117,7 +111,7 @@
 
 .steps {
   counter-reset: step;
-  border-top: var(--b-hairline) solid var(--c-border);
+  border-top: var(--b-hairline) solid var(--hairline-strong);
 }
 
 .steps li {
@@ -126,14 +120,14 @@
   grid-template-columns: var(--s-12) minmax(0, 12rem) minmax(0, 1fr);
   gap: var(--s-4);
   padding: var(--s-5) 0;
-  border-bottom: var(--b-hairline) solid var(--c-border);
+  border-bottom: var(--b-hairline) solid var(--hairline);
   align-items: baseline;
 }
 
 .steps li::before {
   content: counter(step, decimal-leading-zero);
-  font-family: var(--f-sans);
-  font-size: var(--t-label);
+  font-size: var(--t-small);
+  font-variant-numeric: tabular-nums;
   color: var(--c-ink-3);
 }
 
@@ -144,26 +138,19 @@
 
 @media (max-width: 899px) {
   .section {
-    padding: var(--s-24) var(--l-gutter);
+    padding: var(--s-16) var(--l-gutter);
   }
   .header[data-align="split"] {
-    grid-template-columns: 1fr;
-    gap: var(--s-6);
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-5);
   }
   .steps li {
-    grid-template-columns: var(--s-10) 1fr;
+    grid-template-columns: var(--s-10) minmax(0, 1fr);
   }
   .steps li > :last-child {
     grid-column: 2;
   }
 }
-
-/* Light theme (Oct 2026 redesign): display headings are light-weight with tight tracking, like the home and canvas designs. */
-:global(:root[data-theme="light"]) .headline,
-:global(:root[data-theme="light"]) .display { font-weight: 400; letter-spacing: -0.04em; }
-
-/* Oct 2026 redesign: let the aura backdrop show through */
-.section { background: transparent; }
 
 /* A list of standalone links ("Keep reading" on the landing pages). On touch screens each link is a 44px row (HIG accessibility). */
 @media (pointer: coarse) {

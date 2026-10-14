@@ -1,8 +1,9 @@
+/* Agents (UI v2): the overnight log sits on a plain card (raised surface, hairline, --r-card, --elev-1), the controls beside an
+   example panel drawn the same way. Colours are product tokens only, so both themes follow on their own. */
 .section {
   position: relative;
   z-index: var(--z-content);
-  background: var(--c-canvas);
-  padding: var(--s-40) var(--l-gutter);
+  padding: var(--s-24) var(--l-gutter);
 }
 
 .inner {
@@ -11,12 +12,11 @@
 }
 
 .night {
-  margin-top: var(--s-20);
-  padding: var(--s-12) var(--s-12) var(--s-10);
-  border-radius: var(--r-card-lg);
-  background: var(--c-night);
-  color: var(--c-night-ink);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border);
+  margin-top: var(--s-12);
+  padding: var(--s-10) var(--s-10) var(--s-8);
+  border-radius: var(--r-card);
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1);
 }
 
 .timeline {
@@ -36,14 +36,14 @@
   right: 0;
   top: calc(var(--s-8) + 36px);
   height: 1px;
-  background: rgba(255, 255, 255, 0.16);
+  background: var(--hairline-strong);
 }
 
 .timeline::after {
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--c-ink);
   transform-origin: left;
   transform: scaleX(var(--p));
-  transition: transform var(--d-fast) linear;
+  transition: transform var(--m-dur-1) linear;
 }
 
 .event {
@@ -51,18 +51,17 @@
   display: flex;
   flex-direction: column;
   gap: var(--s-3);
-  color: rgba(255, 255, 255, 0.64); /* ≥4.5:1 on ink before the step is reached */
-  transition: color var(--d-slow) var(--e-standard);
+  color: var(--c-ink-3);
+  transition: color var(--m-dur-3) var(--m-ease-out);
 }
 
 .event[data-reached] {
-  color: var(--c-night-ink);
+  color: var(--c-ink);
 }
 
 .time {
-  font-family: var(--f-sans);
   font-size: var(--t-small);
-  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
 }
 
 .dot {
@@ -72,19 +71,19 @@
   height: 9px;
   margin: 0;
   border-radius: 50%;
-  background: var(--c-night);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35);
-  transition: background-color var(--d-slow) var(--e-standard), box-shadow var(--d-slow) var(--e-standard);
+  background: var(--surface-raised);
+  box-shadow: 0 0 0 1px var(--hairline-strong);
+  transition: background-color var(--m-dur-3) var(--m-ease-out), box-shadow var(--m-dur-3) var(--m-ease-out);
 }
 
 .event[data-reached] .dot {
-  background: var(--c-night-ink);
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12);
+  background: var(--c-ink);
+  box-shadow: 0 0 0 4px var(--hover-wash);
 }
 
 .event[data-pending][data-reached] .dot {
-  background: var(--c-warm);
-  box-shadow: 0 0 0 5px rgba(242, 179, 139, 0.2);
+  background: var(--v-attention);
+  box-shadow: 0 0 0 4px var(--hover-wash);
 }
 
 .text {
@@ -95,26 +94,25 @@
 
 .badge {
   align-self: flex-start;
-  font-family: var(--f-sans);
-  font-size: var(--t-label);
+  font-size: var(--t-small);
   letter-spacing: 0;
   text-transform: none;
-  color: var(--c-warm);
+  color: var(--c-attention);
 }
 
 .controls {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--s-16);
-  margin-top: var(--s-24);
+  margin-top: var(--s-16);
   align-items: start;
 }
 
 .controlsTitle {
   font-size: var(--t-title);
-  line-height: var(--lh-title);
-  letter-spacing: var(--tr-title);
-  font-weight: var(--w-medium);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  font-weight: var(--w-regular);
 }
 
 .controlsLede {
@@ -127,20 +125,20 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   column-gap: var(--s-8);
-  border-top: var(--b-hairline) solid var(--c-border);
+  border-top: var(--b-hairline) solid var(--hairline-strong);
 }
 
 .list li {
   padding: var(--s-3) 0;
-  border-bottom: var(--b-hairline) solid var(--c-border);
+  border-bottom: var(--b-hairline) solid var(--hairline);
   font-size: var(--t-small);
 }
 
 .panel {
   margin: 0;
   border-radius: var(--r-card);
-  background: var(--c-canvas);
-  box-shadow: var(--sh-hairline), var(--sh-float);
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1);
   overflow: hidden;
 }
 
@@ -149,7 +147,7 @@
   justify-content: space-between;
   align-items: center;
   padding: var(--s-4) var(--s-6);
-  border-bottom: var(--b-hairline) solid var(--c-border);
+  border-bottom: var(--b-hairline) solid var(--hairline);
 }
 
 .panelTitle {
@@ -161,8 +159,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
-  font-family: var(--f-sans);
-  font-size: var(--t-label);
+  font-size: var(--t-small);
   letter-spacing: 0;
   text-transform: none;
   color: var(--c-ink-2);
@@ -172,7 +169,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #2f9e6b;
+  background: var(--c-verified);
 }
 
 .panelRows {
@@ -185,12 +182,11 @@
   gap: var(--s-4);
   align-items: center;
   padding: var(--s-5) var(--s-6);
-  border-bottom: var(--b-hairline) solid var(--c-border);
+  border-bottom: var(--b-hairline) solid var(--hairline);
 }
 
 .panelRow dt {
-  font-family: var(--f-sans);
-  font-size: var(--t-label);
+  font-size: var(--t-small);
   letter-spacing: 0;
   text-transform: none;
   color: var(--c-ink-3);
@@ -234,10 +230,12 @@
 
 .panelActions {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--s-2);
   padding: var(--s-4) var(--s-6) var(--s-5);
 }
 
+/* Drawn (aria-hidden) buttons in the example panel: the same ink and hairline pills as the real ones. */
 .approve,
 .stop {
   display: inline-flex;
@@ -245,7 +243,7 @@
   height: 32px;
   padding: 0 var(--s-4);
   border-radius: var(--r-pill);
-  font-size: var(--t-label);
+  font-size: var(--t-small);
   font-weight: var(--w-medium);
 }
 
@@ -255,20 +253,20 @@
 }
 
 .stop {
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong);
   color: var(--c-ink-2);
 }
 
 @media (max-width: 899px) {
   .section {
-    padding: var(--s-24) var(--l-gutter);
+    padding: var(--s-16) var(--l-gutter);
   }
   .night {
-    margin-top: var(--s-12);
+    margin-top: var(--s-10);
     padding: var(--s-8) var(--s-6);
   }
   .timeline {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--s-6);
     padding-top: 0;
     padding-left: var(--s-6);
@@ -295,14 +293,19 @@
     top: 6px;
   }
   .controls {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--s-12);
-    margin-top: var(--s-16);
+    margin-top: var(--s-12);
   }
   .list {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
-/* Oct 2026 redesign: let the aura backdrop show through */
-.section { background: transparent; }
+@media (prefers-reduced-motion: reduce) {
+  .timeline::after,
+  .event,
+  .dot {
+    transition: none;
+  }
+}

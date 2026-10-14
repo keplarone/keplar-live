@@ -24,7 +24,6 @@ export function StickyCta({ where }: { where: string }) {
         href={upgrade ? "/pricing" : "/app"}
         size="md"
         arrow
-        magnetic={false}
         tabIndex={shown ? 0 : -1}
       >
         {upgrade ? "Upgrade your plan" : "Try Keplar free"}

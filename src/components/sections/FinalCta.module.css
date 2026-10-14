@@ -1,8 +1,8 @@
+/* Closing call to action (UI v2): the mark, a regular-weight title, one primary and one secondary pill. Plain canvas. */
 .section {
   position: relative;
   z-index: var(--z-content);
-  background: var(--c-canvas);
-  padding: var(--s-24) var(--l-gutter) var(--s-40);
+  padding: var(--s-24) var(--l-gutter);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -12,16 +12,16 @@
 .canvas {
   width: 100%;
   max-width: var(--l-max);
-  height: clamp(260px, 38vh, 400px);
+  height: clamp(200px, 30vh, 320px);
 }
 
 .title {
-  margin-top: var(--s-10);
+  margin-top: var(--s-8);
   font-size: var(--t-headline);
   line-height: var(--lh-headline);
-  letter-spacing: var(--tr-headline);
-  font-weight: var(--w-medium);
-  max-width: 14ch;
+  letter-spacing: -0.04em;
+  font-weight: var(--w-regular);
+  max-width: 16ch;
   text-wrap: balance;
 }
 
@@ -35,9 +35,6 @@
 
 @media (max-width: 899px) {
   .section {
-    padding: var(--s-16) var(--l-gutter) var(--s-24);
+    padding: var(--s-16) var(--l-gutter);
   }
 }
-
-/* Oct 2026 redesign: let the aura backdrop show through */
-.section { background: transparent; }

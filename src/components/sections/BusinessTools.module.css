@@ -1,15 +1,16 @@
+/* "What Business adds" on /enterprise (UI v2): a hairline row of four tools on the plain canvas. */
 .title {
   font-size: var(--t-title);
-  line-height: var(--lh-title);
-  letter-spacing: var(--tr-title);
-  font-weight: var(--w-medium);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  font-weight: var(--w-regular);
 }
 
 .tools {
   margin-top: var(--s-10);
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  border-top: var(--b-hairline) solid var(--c-ink);
+  border-top: var(--b-hairline) solid var(--hairline-strong);
 }
 
 .tool {
@@ -21,7 +22,7 @@
 
 .tool + .tool {
   padding-left: var(--s-6);
-  border-left: var(--b-hairline) solid var(--c-border);
+  border-left: var(--b-hairline) solid var(--hairline);
 }
 
 .tool dt {
@@ -37,21 +38,20 @@
 
 .note {
   margin-top: var(--s-6);
-  font-family: var(--f-sans);
-  font-size: var(--t-label);
-  letter-spacing: 0.02em;
+  font-size: var(--t-small);
+  line-height: var(--lh-small);
   color: var(--c-ink-3);
-  max-width: 72ch;
+  max-width: 68ch;
 }
 
 @media (max-width: 899px) {
   .tools {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .tool,
   .tool + .tool {
     padding: var(--s-5) 0;
     border-left: 0;
-    border-bottom: var(--b-hairline) solid var(--c-border);
+    border-bottom: var(--b-hairline) solid var(--hairline);
   }
 }

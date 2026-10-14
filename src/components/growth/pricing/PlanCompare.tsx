@@ -67,7 +67,7 @@ export function PlanCompare() {
                   return (
                     <td key={p} data-plan={p} className={s.ctaCell}>
                       {p === "business" ? (
-                        <TrackedLink where="pricing:compare-business" href={t.cta.href} variant="secondary" magnetic={false}>Contact</TrackedLink>
+                        <TrackedLink where="pricing:compare-business" href={t.cta.href} variant="secondary">Contact</TrackedLink>
                       ) : (
                         <PlanCta plan={p} label={p === "free" ? "Start free" : `Get ${NAME[p]}`} href={t.cta.href} primary={p === "plus"} />
                       )}

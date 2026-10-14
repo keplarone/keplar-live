@@ -1,10 +1,8 @@
+/* Business controls (UI v2): a plan drawing in hairlines on the plain canvas, then the six controls as a hairline spec list. */
 .section {
   position: relative;
   z-index: var(--z-content);
-  background: var(--c-surface-1);
-  padding: var(--s-40) var(--l-gutter);
-  border-top: var(--b-hairline) solid var(--c-border);
-  border-bottom: var(--b-hairline) solid var(--c-border);
+  padding: var(--s-24) var(--l-gutter);
 }
 
 .inner {
@@ -13,7 +11,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
   column-gap: var(--s-16);
-  row-gap: var(--s-20);
+  row-gap: var(--s-16);
   align-items: center;
 }
 
@@ -30,10 +28,10 @@
 .boundary {
   position: relative;
   height: 100%;
-  border: var(--b-hairline) dashed rgb(var(--rgb-ink) / 0.28);
+  border: var(--b-hairline) dashed var(--hairline-strong);
   border-radius: var(--r-card);
-  background:
-    var(--c-canvas);
+  background: var(--surface-raised);
+  box-shadow: var(--elev-1);
 }
 
 .cornerTL,
@@ -63,8 +61,8 @@
   height: 64px;
   margin: -32px 0 0 -32px;
   border-radius: 50%;
-  background: var(--c-canvas);
-  box-shadow: var(--sh-hairline), var(--sh-float);
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), var(--elev-2);
   color: var(--c-ink);
 }
 
@@ -104,11 +102,10 @@
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
-  font-family: var(--f-sans);
-  font-size: var(--t-label);
+  font-size: var(--t-small);
   letter-spacing: 0;
   text-transform: none;
-  color: var(--c-ink);
+  color: var(--c-ink-2);
   white-space: nowrap;
 }
 
@@ -130,36 +127,38 @@
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: var(--s-8);
   margin: 0;
-  border-top: var(--b-hairline) solid var(--c-border-strong);
+  border-top: var(--b-hairline) solid var(--hairline-strong);
 }
 
 .spec {
-  padding: var(--s-6) var(--s-8) var(--s-8) 0;
-  border-bottom: var(--b-hairline) solid var(--c-border);
+  padding: var(--s-6) 0 var(--s-8);
+  border-bottom: var(--b-hairline) solid var(--hairline);
 }
 
 .spec dt {
-  font-family: var(--f-sans);
-  font-size: var(--t-label);
+  font-weight: var(--w-medium);
+  color: var(--c-ink);
   letter-spacing: 0;
   text-transform: none;
-  margin-bottom: var(--s-3);
+  margin-bottom: var(--s-2);
 }
 
 .spec dd {
   margin: 0;
   color: var(--c-ink-2);
   font-size: var(--t-small);
+  line-height: var(--lh-small);
   max-width: 36ch;
 }
 
 @media (max-width: 899px) {
   .section {
-    padding: var(--s-24) var(--l-gutter);
+    padding: var(--s-16) var(--l-gutter);
   }
   .inner {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     row-gap: var(--s-12);
   }
   .drawing {
@@ -167,7 +166,7 @@
     overflow: clip;
   }
   .tag {
-    font-size: 11px;
+    font-size: var(--t-label);
   }
   .tag[data-pos="0"] { left: var(--s-8); top: var(--s-2); }
   .tag[data-pos="1"] { right: var(--s-8); top: var(--s-2); }
@@ -181,7 +180,7 @@
     100% { transform: translate(-90px, -50px); }
   }
   .specs {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -191,6 +190,3 @@
     transform: translate(calc((var(--i) - 3) * 38px), calc(sin(var(--i)) * 60px));
   }
 }
-
-/* Oct 2026 redesign: let the aura backdrop show through */
-.section { background: transparent; }
