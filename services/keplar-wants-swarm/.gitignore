@@ -1,0 +1,5 @@
+__pycache__/
+.pytest_cache/
+data/
+swarm_diagnostics.log*
+*.egg-info/

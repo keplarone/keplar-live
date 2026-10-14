@@ -50,6 +50,7 @@ export function SearchDialog({ threads, onClose, onOpen, onNew, onView }: Props)
       { kind: "action", group: "Go to", id: "projects", title: "Projects", run: () => onView("projects"), keywords: "folders files" },
       { kind: "action", group: "Go to", id: "slides", title: "Slides", run: () => onView("slides"), keywords: "deck presentation" },
       { kind: "action", group: "Go to", id: "study", title: "Study", run: () => onView("study"), keywords: "flashcards quiz learn" },
+      { kind: "action", group: "Go to", id: "wants", title: "Keplar Wants", run: () => onView("wants"), keywords: "i want get it done order buy book build anything" },
       { kind: "action", group: "Go to", id: "deployments", title: "Deployments", run: () => onView("deployments"), keywords: "publish live sites" },
       { kind: "action", group: "Go to", id: "history", title: "All chats", run: () => onView("history"), keywords: "history past threads" },
       { kind: "action", group: "Settings", id: "settings", title: "Settings", run: go("/account"), keywords: "account preferences" },
