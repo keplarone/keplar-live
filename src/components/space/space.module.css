@@ -268,3 +268,8 @@
   .swap, .swapWord, .aura { transition: none; }
   .brand, .word, .mark, .cell, .cell::before, .row, .btn, .btnGhost, .navCta { transition: none; }
 }
+
+/* ---- the platform logo inside Download ---- */
+.osIcon { display: inline-flex; margin-left: -2px; animation: osIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes osIn { from { opacity: 0; transform: translateX(-6px) scale(0.8); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .osIcon { animation: none; } }

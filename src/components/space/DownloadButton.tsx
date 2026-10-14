@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { OsIcon, type OsKind } from "./OsIcon";
+import s from "./space.module.css";
 
 type Platform = "windows" | "mac-arm" | "mac-intel" | "linux" | "deb";
 const BASE = "/api/space-studio/download";
@@ -30,13 +32,32 @@ async function detect(): Promise<Platform | null> {
   return null; // phones and tablets: let the server pick (the link still works)
 }
 
-/** "Download": starts the installer for this computer straight away. Without JavaScript the server picks from the user agent. */
+const KIND: Record<Platform, OsKind> = { windows: "windows", "mac-arm": "mac", "mac-intel": "mac", linux: "linux", deb: "linux" };
+const NAME: Record<OsKind, string> = { windows: "Windows", mac: "macOS", linux: "Linux" };
+
+/**
+ * "Download" with the visitor's platform logo (Windows, Apple or Linux) beside it. Starts the installer for this computer straight
+ * away. Without JavaScript (or on phones) there is no logo and the server picks the file from the user agent.
+ */
 export function DownloadButton({ className, children = "Download" }: { className?: string; children?: React.ReactNode }) {
-  const [href, setHref] = useState(BASE);
+  const [platform, setPlatform] = useState<Platform | null>(null);
   useEffect(() => {
     let alive = true;
-    void detect().then((p) => { if (alive && p) setHref(`${BASE}?os=${p}`); });
+    void detect().then((p) => { if (alive) setPlatform(p); });
     return () => { alive = false; };
   }, []);
-  return <a className={className} href={href} download rel="nofollow">{children}</a>;
+  const kind = platform ? KIND[platform] : null;
+  return (
+    <a
+      className={className}
+      href={platform ? `${BASE}?os=${platform}` : BASE}
+      download
+      rel="nofollow"
+      aria-label={kind ? `Download for ${NAME[kind]}` : undefined}
+      style={{ display: "inline-flex", alignItems: "center", gap: 9 }}
+    >
+      {kind && <span className={s.osIcon}><OsIcon os={kind} size={17} /></span>}
+      {children}
+    </a>
+  );
 }
