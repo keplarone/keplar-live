@@ -899,7 +899,7 @@ function HistoryCard({ message: m, onPatch, onOpenTab, threads, projects, active
         </ul>
       )}
       {msg ? <p className={s.meta} role="status">{msg}</p> : null}
-      <Footer label="Open in History" onOpen={() => onOpenTab({ view: "history", query: q })} />
+      <Footer label="Open in All chats" onOpen={() => onOpenTab({ view: "history", query: q })} />
     </Card>
   );
 }

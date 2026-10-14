@@ -12,7 +12,7 @@ async function begin(path: string, body: Record<string, unknown>) {
   return res.ok ? ((await res.json()) as { options: Parameters<typeof startAuthentication>[0]["optionsJSON"]; token: string }) : null;
 }
 
-/** "Log in with a passkey". Only shown where the browser supports passkeys; the browser lists the passkeys it has for this site, so no email is needed. */
+/** "Sign in with a passkey". Only shown where the browser supports passkeys; the browser lists the passkeys it has for this site, so no email is needed. */
 export function PasskeyButton({ next, remember = true }: { next: string; remember?: boolean }) {
   const supported = useSyncExternalStore(noSubscribe, browserSupportsWebAuthn, () => false);
   const t = useClientText().authForm;
@@ -25,10 +25,10 @@ export function PasskeyButton({ next, remember = true }: { next: string; remembe
     setError(null);
     try {
       const o = await begin("passkey/login/options", {});
-      if (!o) throw new Error("Passkeys aren't available right now. Use another way to log in.");
+      if (!o) throw new Error("Passkeys aren't available right now. Use another way to sign in.");
       const response = await startAuthentication({ optionsJSON: o.options });
       const r = await postAuth("passkey/login/verify", { token: o.token, response, callbackURL: next, remember });
-      if (!r.ok) throw new Error(r.status === 401 ? "We couldn't log you in with that passkey. Try again, or use another way to log in." : r.message);
+      if (!r.ok) throw new Error(r.status === 401 ? "We couldn't log you in with that passkey. Try again, or use another way to sign in." : r.message);
       window.location.assign(r.redirectTo || next);
       return;
     } catch (e) {

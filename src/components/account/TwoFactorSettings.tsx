@@ -93,7 +93,7 @@ export function TwoFactorSettings({ admin }: { admin: boolean }) {
         )
       ) : status ? (
         <>
-          <p className={s.note}>Add a second step to logging in: a 6-digit code from an authenticator app. It&rsquo;s optional{admin ? ", but strongly recommended for admin accounts" : ""}. Anyone who can get into your email could otherwise log in with a link.</p>
+          <p className={s.note}>Add a second step to signing in: a 6-digit code from an authenticator app. It&rsquo;s optional{admin ? ", but strongly recommended for admin accounts" : ""}. Anyone who can get into your email could otherwise sign in with a link.</p>
           <div className={s.actions}>
             <button type="button" className={s.btn} disabled={busy} onClick={() => void run(async () => setSetup((await api("POST", { action: "setup" })) as unknown as { secret: string; uri: string }))}>Set up</button>
           </div>

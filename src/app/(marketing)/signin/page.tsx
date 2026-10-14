@@ -13,7 +13,7 @@ import { AuthForm } from "@/components/auth/AuthForm";
 import { SavedAccounts } from "@/components/auth/SavedAccounts";
 import { savedAccounts } from "@/lib/accounts/multi-api";
 
-export const metadata = pageMeta("/signin", "Log in", "Log in to Keplar.");
+export const metadata = pageMeta("/signin", "Sign in", "Sign in to Keplar.");
 export const dynamic = "force-dynamic";
 
 type Props = { searchParams: Promise<{ error?: string; next?: string; add?: string; expired?: string }> };
@@ -34,8 +34,8 @@ export default async function SignInPage({ searchParams }: Props) {
     <AuthShell
       variant="signin"
       nextQs={nextQs}
-      title={adding ? "Add an account" : "Log in to Keplar"}
-      lead={adding ? "Sign in with another account. The account you're using stays signed in on this device." : next.startsWith("/checkout") ? "Log in to continue to checkout. You'll go straight to payment after." : "Pick up your threads, projects, and plan."}
+      title={adding ? "Add an account" : "Sign in to Keplar"}
+      lead={adding ? "Sign in with another account. The account you're using stays signed in on this device." : next.startsWith("/checkout") ? "Sign in to continue to checkout. You'll go straight to payment after." : "Pick up your threads, projects, and plan."}
       notice={oauthErrorMessage(error) ?? (expiredEmail ? `${expiredEmail} was signed out. Sign in again to use it.` : null)}
     >
       <SavedAccounts accounts={saved} />

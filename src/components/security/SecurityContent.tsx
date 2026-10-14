@@ -62,7 +62,7 @@ export function SecurityContent({ accountOrigin = "" }: { accountOrigin?: string
         <h2 id="not-h" className={s.label} style={{ fontSize: "var(--t-title)" }}>What we do not have</h2>
         <ul style={list}>
           <li>We hold no security certifications (no SOC 2, ISO 27001 or similar) and have not had an independent audit or penetration test.</li>
-          <li>Optional passkeys (fingerprint, face or device PIN) as an extra way to log in; a passkey login counts as two factors. Add one in <Link href={`${accountOrigin}/account#passkeys`}>Account</Link>. Two-factor sign-in and passkeys are both optional, so accounts that have turned on neither are protected only by their password, email link or Google/Microsoft login.</li>
+          <li>Optional passkeys (fingerprint, face or device PIN) as an extra way to sign in; a passkey sign-in counts as two factors. Add one in <Link href={`${accountOrigin}/account#passkeys`}>Account</Link>. Two-factor sign-in and passkeys are both optional, so accounts that have turned on neither are protected only by their password, email link or Google/Microsoft sign-in.</li>
         </ul>
         <p className={s.note}>We will update this page when that changes, and not before.</p>
       </section>

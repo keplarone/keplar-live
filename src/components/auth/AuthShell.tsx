@@ -27,12 +27,12 @@ export function AuthShell({ variant, nextQs = "", title, lead, notice, children,
       <div className={s.formSide}>
         <div className={s.card}>
           {variant !== "recover" ? (
-            <nav className={s.toggle} aria-label={copy?.toggle ?? "Sign up or log in"}>
+            <nav className={s.toggle} aria-label={copy?.toggle ?? "Sign up or sign in"}>
               <Link href={`${prefix}/signup${nextQs}`} aria-current={variant === "signup" ? "page" : undefined} className={s.toggleItem}>
                 {copy?.signUp ?? "Sign up"}
               </Link>
               <Link href={`${prefix}/signin${nextQs}`} aria-current={variant === "signin" ? "page" : undefined} className={s.toggleItem}>
-                {copy?.logIn ?? "Log in"}
+                {copy?.logIn ?? "Sign in"}
               </Link>
             </nav>
           ) : null}

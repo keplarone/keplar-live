@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 type Props = { searchParams: Promise<{ rid?: string | string[] }> };
 
 /**
- * Where the desktop app's "Sign in" lands, in the person's own browser. Not signed in: the normal log-in page first (Google,
+ * Where the desktop app's "Sign in" lands, in the person's own browser. Not signed in: the normal sign-in page first (Google,
  * Microsoft, password or an emailed link) and back here. Signed in: show which account will be connected and the code the
  * app is showing, and wait for an explicit click (a link someone else sent can't connect your account by itself).
  */
@@ -27,7 +27,7 @@ export default async function DesktopConnectPage({ searchParams }: Props) {
   const rid = typeof raw === "string" ? raw : "";
   const problem = (message: string, name = "Keplar") => (
     <AuthShell variant="recover" title={`Connect ${name}`}>
-      <LinkProblem message={message} actions={<Link className={`${s.btn} ${s.btnPrimary}`} href="/signin">Back to log in</Link>} />
+      <LinkProblem message={message} actions={<Link className={`${s.btn} ${s.btnPrimary}`} href="/signin">Back to sign in</Link>} />
     </AuthShell>
   );
   if (!isRequestId(rid)) return problem("This sign-in link isn't valid. Click Sign in in the Keplar app to start again.");

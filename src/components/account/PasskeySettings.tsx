@@ -16,7 +16,7 @@ async function api(method: "GET" | "POST", payload?: unknown) {
 
 const day = (iso: string) => new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 
-/** Passkeys: optional, extra ways to log in with a fingerprint, face or device PIN. Hidden when the account database isn't connected. */
+/** Passkeys: optional, extra ways to sign in with a fingerprint, face or device PIN. Hidden when the account database isn't connected. */
 export function PasskeySettings() {
   const [list, setList] = useState<Passkey[] | null>(null);
   const [off, setOff] = useState(false);
@@ -55,7 +55,7 @@ export function PasskeySettings() {
       const j = await api("POST", { action: "add", token: o.token, response, name: name.trim() });
       setList(j.passkeys as Passkey[]);
       setName("");
-      setNote("Passkey added. You can now log in with it from the log-in page.");
+      setNote("Passkey added. You can now sign in with it from the sign-in page.");
     });
 
   if (off) return null;
@@ -65,7 +65,7 @@ export function PasskeySettings() {
         <h2 id="passkeys-h" className={s.k} style={{ margin: 0 }}>Passkeys</h2>
         <span className={s.v}>{list ? (list.length ? `${list.length} added` : "None") : "…"}</span>
       </div>
-      <p className={s.note}>A passkey lets you log in with your fingerprint, face or device PIN instead of an email link. It&rsquo;s optional and extra: your other ways to log in keep working. Passkeys stay on your device or in your password manager; Keplar only keeps the public half.</p>
+      <p className={s.note}>A passkey lets you sign in with your fingerprint, face or device PIN instead of an email link. It&rsquo;s optional and extra: your other ways to sign in keep working. Passkeys stay on your device or in your password manager; Keplar only keeps the public half.</p>
       {list && list.length > 0 ? (
         <ul className={s.note} style={{ listStyle: "none", padding: 0, display: "grid", gap: "var(--s-3)" }}>
           {list.map((p) => (
@@ -98,7 +98,7 @@ export function PasskeySettings() {
                       className={`${s.btn} ${s.btnGhost}`}
                       disabled={busy}
                       aria-label={`Remove ${p.name}`}
-                      onClick={() => { if (window.confirm(`Remove the passkey “${p.name}”? You won't be able to log in with it any more.`)) void run(async () => { setList((await api("POST", { action: "remove", id: p.id })).passkeys as Passkey[]); setNote("Passkey removed."); }); }}
+                      onClick={() => { if (window.confirm(`Remove the passkey “${p.name}”? You won't be able to sign in with it any more.`)) void run(async () => { setList((await api("POST", { action: "remove", id: p.id })).passkeys as Passkey[]); setNote("Passkey removed."); }); }}
                     >
                       Remove
                     </button>

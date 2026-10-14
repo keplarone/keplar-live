@@ -104,7 +104,7 @@ const en = {
     creating: "Creating account…",
     loggingIn: "Logging in…",
     create: "Create account",
-    logIn: "Log in",
+    logIn: "Sign in",
     noPassword: "No password needed. We email you a one-time link that proves your address.",
     errEmail: "Enter a valid email address, like you@example.com.",
     errEmailEmpty: "Enter your email address.",
@@ -117,7 +117,7 @@ const en = {
     continueWith: "Continue with {name}",
     opening: "Opening {name}…",
     soon: "Coming soon",
-    passkey: "Log in with a passkey",
+    passkey: "Sign in with a passkey",
     passkeyWaiting: "Waiting for your device…",
   },
 };
