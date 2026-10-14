@@ -1,33 +1,21 @@
-.wrap {
-  position: relative;
-  width: 100%;
-  min-height: 420px;
-}
+/* Embedded Whop checkout (docs/ui-v2.md): the form sits in a calm raised frame; loading is a quiet status line, a failure says
+   what happened in words and offers one ink retry plus a secondary fallback. Tokens only. */
+.wrap { position: relative; width: 100%; min-height: 420px; }
 
 .mount {
   box-sizing: border-box;
   width: 100%;
   min-height: 380px;
   padding: var(--s-4);
-  border: var(--b-hairline) solid var(--c-border-strong);
-  border-radius: var(--r-card, 20px);
-  background: var(--c-surface-1);
+  border-radius: var(--r-card);
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1);
   overflow: hidden;
   color-scheme: light dark;
 }
-
 .mount > *,
-.mount iframe {
-  display: block;
-  width: 100% !important;
-  max-width: 100%;
-  margin-inline: auto;
-  border-radius: var(--r-md);
-}
-
-.mount[hidden] {
-  display: none;
-}
+.mount iframe { display: block; width: 100% !important; max-width: 100%; margin-inline: auto; border-radius: var(--r-md); }
+.mount[hidden] { display: none; }
 
 .skeleton {
   position: absolute;
@@ -37,82 +25,56 @@
   justify-content: center;
   gap: var(--s-3);
   min-height: 380px;
-  border: var(--b-hairline) solid var(--c-border-strong);
-  border-radius: var(--r-md);
-  background: var(--c-surface-1);
+  padding: var(--s-6);
+  border-radius: var(--r-card);
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 1px var(--hairline);
   color: var(--c-ink-2);
   font-size: var(--t-small);
   text-align: center;
-  padding: var(--s-6);
   pointer-events: none;
 }
-
-.pulse {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--c-agree);
-  animation: pulse 1.1s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 0.25; transform: scale(0.8); }
-  50% { opacity: 1; transform: scale(1.1); }
-}
+.pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--c-ink-3); animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
 .fail {
   display: flex;
   flex-direction: column;
   gap: var(--s-4);
   padding: var(--s-6);
-  border: var(--b-hairline) solid var(--c-border-strong);
   border-radius: var(--r-md);
-  color: var(--c-err);
+  background: rgb(var(--rgb-destructive) / 0.06);
+  box-shadow: inset 0 0 0 1px rgb(var(--rgb-destructive) / 0.35);
+  color: var(--c-destructive);
   font-size: var(--t-small);
 }
-
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-3);
-}
+.row { display: flex; flex-wrap: wrap; gap: var(--s-3); }
 
 .btn {
-  height: 44px;
+  min-height: 44px;
   padding: 0 var(--s-5);
-  border-radius: var(--r-pill);
   border: 0;
+  border-radius: var(--r-pill);
   background: var(--c-ink);
   color: var(--c-canvas);
   font: inherit;
+  font-size: var(--t-small);
   font-weight: var(--w-medium);
   cursor: pointer;
+  transition: background-color var(--m-dur-1) var(--m-ease-out);
 }
-
-.ghost {
-  background: var(--c-canvas);
-  color: var(--c-ink);
-  border: var(--b-hairline) solid var(--c-border-strong);
-}
-
-.btn:focus-visible {
-  outline: none;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
+.btn:hover:not(:disabled) { background: var(--c-ink-hover); }
+.btn:active:not(:disabled) { scale: var(--m-press); }
+.btn.ghost { background: var(--surface-raised); color: var(--c-ink); box-shadow: inset 0 0 0 1px var(--hairline-strong); }
+.btn.ghost:hover:not(:disabled) { background: var(--hover-wash); }
 
 @media (prefers-reduced-motion: reduce) {
   .pulse { animation: none; opacity: 0.7; }
+  .btn { transition: none; }
+  .btn:active:not(:disabled) { scale: none; }
 }
-
 @media (max-width: 599px) {
   .wrap { min-height: 460px; }
   .skeleton { min-height: 420px; }
+  .mount { padding: var(--s-2); border-radius: var(--r-md); }
 }
-
-/* glass buttons (liquid glass: see src/styles/glass.css) */
-.btn { background: var(--btn-p-bg); color: var(--btn-p-ink); border-color: transparent; box-shadow: var(--btn-p-shadow); -webkit-backdrop-filter: blur(6px) saturate(1.4); backdrop-filter: blur(6px) saturate(1.4); transition: var(--btn-spring); }
-.btn:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--c-ink-hover); }
-.btn:active:not(:disabled) { scale: var(--m-press); }
-@media (prefers-reduced-motion: reduce) { .btn { transition: background-color 0.1s linear; transform: none !important; } }
-@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .btn { backdrop-filter: none; -webkit-backdrop-filter: none; } .btn { background: var(--btn-p-solid, #17171a); } }

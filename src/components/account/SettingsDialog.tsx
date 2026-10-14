@@ -6,6 +6,7 @@
  */
 import { useCallback, useEffect, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { Icon, IconButton } from "@/components/kit";
 import s from "./account.module.css";
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -43,6 +44,8 @@ export function SettingsDialog({ mode, children }: { mode: "modal" | "page"; chi
   useEffect(() => {
     if (!modal) return;
     const onKey = (e: KeyboardEvent) => {
+      // A kit dialog opened from here (confirmAction) is a native <dialog> in the top layer: its Escape and Tab are its own.
+      if (e.target instanceof Element && e.target.closest("dialog")) return;
       // Inner controls that use Esc themselves (search clear, menus, confirm boxes) call preventDefault first.
       if (e.key === "Escape" && !e.defaultPrevented) { e.preventDefault(); close(); return; }
       if (e.key !== "Tab" || !box.current) return;
@@ -60,9 +63,7 @@ export function SettingsDialog({ mode, children }: { mode: "modal" | "page"; chi
     <div ref={box} className={s.dlg} data-product="" role={modal ? "dialog" : undefined} aria-modal={modal || undefined} aria-labelledby="settings-title" data-mode={mode}>
       <header className={s.dlgHead}>
         <h1 id="settings-title" className={s.dlgTitle}>Settings</h1>
-        <button type="button" className={s.dlgClose} onClick={close} aria-label="Close settings" title="Close (Esc)">
-          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
-        </button>
+        <IconButton className={s.dlgClose} onClick={close} label="Close settings" shortcut={["Esc"]} tooltipSide="bottom" icon={<Icon name="close" size={18} />} />
       </header>
       {children}
     </div>

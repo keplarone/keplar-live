@@ -63,7 +63,7 @@ export function DataControls({ email, admin }: { email: string; admin: boolean }
   return (
     <div className={s.panel} id="data" aria-labelledby="data-h">
       <div className={s.row}>
-        <h2 id="data-h" className={s.k} style={{ margin: 0 }}>Your data</h2>
+        <h2 id="data-h" className={s.cardTitle}>Your data</h2>
       </div>
       <p className={s.note}>Download a copy of what Keplar holds for you: chats, memory, sites, decks, study sets, business data and billing records (connector secrets are left out; images are listed, download the files from Create).</p>
       <h3 className={s.k} style={{ margin: 0, fontSize: "var(--t-small)" }}>How your questions are used</h3>

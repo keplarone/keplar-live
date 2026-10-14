@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { Switch } from "@/components/kit";
 import s from "./account.module.css";
 
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
@@ -38,19 +39,17 @@ export function CorePrefs() {
   const tracking = p ? !p.optOut : null;
   return (
     <div className={s.panel} id="core-learning" aria-labelledby="core-learning-h">
-      <div className={s.row}>
-        <h2 id="core-learning-h" className={s.k} style={{ margin: 0 }}>Learn from how answers land</h2>
-        <button type="button" role="switch" aria-checked={tracking ?? false} aria-label="Learn from how answers land" className={s.btn} style={{ height: 36 }} onClick={() => p && void save({ optOut: !p.optOut })} disabled={p === null}>
-          {tracking === null ? "…" : tracking ? "On" : "Off"}
-        </button>
+      <div className={s.prefRow}>
+        <h2 id="core-learning-h" className={s.cardTitle}>Learn from how answers land</h2>
+        <Switch className={s.kSwitch} checked={tracking ?? false} onCheckedChange={() => p && void save({ optOut: !p.optOut })} label="Learn from how answers land" hideLabel describedBy="core-learning-d" disabled={p === null} />
       </div>
-      <p className={s.note}>
+      <p className={s.note} id="core-learning-d">
         For questions answered step by step, Keplar notes how it went: how confident the checks were, and whether you rated, copied, regenerated, corrected or re-asked. It uses this to adjust its own prompts, model choices, search and checking strategies. Changes are tested on a small share of answers first and rolled back if they do worse. No question text and no account is kept for this. The AI models themselves are not retrained.
       </p>
       {p ? (
         <div className={s.row}>
-          <p className={s.note} style={{ margin: 0 }}>Learned from your feedback: {brevityWords(p.brevity)}.</p>
-          {Math.abs(p.brevity) >= 0.05 ? <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={() => void save({ resetBrevity: true })}>Clear</button> : null}
+          <p className={s.note}>Learned from your feedback: {brevityWords(p.brevity)}.</p>
+          {Math.abs(p.brevity) >= 0.05 ? <button type="button" className={`${s.btn} ${s.btnGhost} ${s.btnSm}`} onClick={() => void save({ resetBrevity: true })}>Clear</button> : null}
         </div>
       ) : null}
       {error ? <p className={`${s.note} ${s.err}`} role="alert">{error}</p> : null}

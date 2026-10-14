@@ -1,70 +1,60 @@
+/* Auto / Light / Dark (docs/ui-v2.md): a segmented control drawn like the kit's. A quiet wash track; the chosen option sits on a
+   raised thumb with a hairline that slides to it. Colour and edge only, no spring, no glyph swell. Tokens only. */
 .group {
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  padding: 3px;
+  padding: 2px;
   border-radius: var(--r-pill);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong);
-  background: var(--c-canvas);
+  background: var(--press-wash);
 }
 
 .option {
+  position: relative;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--s-2);
   height: 28px;
+  min-width: 28px;
   padding: 0 var(--s-3);
+  border: 0;
   border-radius: var(--r-pill);
+  background: transparent;
+  font: inherit;
   font-size: var(--t-small);
+  font-weight: var(--w-medium);
   color: var(--c-ink-2);
-  transition: color var(--d-fast) var(--e-standard), background-color var(--d-fast) var(--e-standard);
+  cursor: pointer;
+  transition: color var(--m-dur-1) var(--m-ease-out);
 }
+.option:hover { color: var(--c-ink); }
+.option[aria-checked="true"] { color: var(--c-ink); }
+.option:active { scale: var(--m-press); }
+/* Keyboard cue: brightness shift plus an underline under the label (never an outline box). */
+.option:focus-visible { outline: none; filter: var(--focus-filter); text-decoration: underline; text-underline-offset: 3px; }
 
-.option:hover {
-  color: var(--c-ink);
-}
+.compact .option { width: 28px; padding: 0; }
 
-.option[aria-checked="true"] {
-  color: var(--c-ink);
-  background: rgb(var(--rgb-ink) / 0.09);
-}
-
-.option:focus-visible {
-  outline-offset: 1px;
+.thumb {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 0;
+  z-index: -1;
   border-radius: var(--r-pill);
-}
-
-.compact .option {
-  width: 28px;
-  padding: 0;
-  justify-content: center;
+  background: var(--surface-raised);
+  box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1);
+  transition: translate var(--m-dur-2) var(--m-ease-out), width var(--m-dur-2) var(--m-ease-out);
 }
 
 @media (pointer: coarse) {
   .option { height: 44px; padding: 0 var(--s-4); }
   .compact .option { width: 44px; padding: 0; }
 }
-
-/* Sliding highlight (ThemeControl.tsx): one pill under the options that glides to the chosen one with a soft spring.
-   The chosen option's own fill is dropped so only the pill shows. */
-.group { position: relative; isolation: isolate; }
-.thumb {
-  position: absolute;
-  top: 3px;
-  bottom: 3px;
-  left: 0;
-  z-index: -1;
-  border-radius: var(--r-pill);
-  background: var(--c-surface-1);
-  box-shadow: 0 1px 2px rgb(14 15 18 / 0.1), 0 4px 12px -4px rgb(14 15 18 / 0.25);
-  transition: translate 420ms cubic-bezier(0.34, 1.4, 0.64, 1), width 420ms cubic-bezier(0.34, 1.4, 0.64, 1);
-}
-:global(:root[data-theme="dark"]) .thumb { background: rgb(255 255 255 / 0.14); box-shadow: 0 1px 2px rgb(0 0 0 / 0.4); }
-.option[aria-checked="true"] { background: transparent; }
-.option { position: relative; transition: color 260ms ease; }
-.option svg { transition: scale 300ms cubic-bezier(0.34, 1.56, 0.64, 1), rotate 420ms cubic-bezier(0.34, 1.4, 0.64, 1); }
-.option[aria-checked="true"] svg { scale: 1.12; }
-.option:active svg { scale: 0.88; }
 @media (prefers-reduced-motion: reduce) {
-  .thumb, .option svg { transition: none; }
+  .thumb, .option { transition: none; }
+  .option:active { scale: none; }
 }

@@ -80,8 +80,8 @@ test("create a key (shown once), ask with only the bearer key (JSON and stream),
 
   await page.reload();
   await page.getByRole("tab", { name: /^advanced$/i }).click(); // Developer API lives in Settings > Advanced
-  page.once("dialog", (d) => void d.accept());
   await page.locator("[data-key='e2e script']").getByRole("button", { name: "Revoke" }).click();
+  await page.getByRole("dialog", { name: /^Revoke / }).locator("[data-confirm-yes]").click(); // the kit confirm dialog (confirmAction)
   await expect(page.locator("[data-key='e2e script']")).toHaveCount(0);
   expect((await api.post("/api/v1/ask", { headers: auth, data: { question: "Who created Keplar?" } })).status()).toBe(401);
   await api.dispose();

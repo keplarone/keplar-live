@@ -9,6 +9,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { ALL_LOCALES, localeInfo, type LocaleInfo, type Region } from "@/lib/i18n/locales";
 import { localizedPath, splitLocale } from "@/lib/i18n/routing";
 import { saveLocale, savedLocale, useCommon, useLocale } from "@/lib/i18n/client";
+import { Icon } from "@/components/kit";
 import s from "./LanguagePicker.module.css";
 
 const REGIONS: Region[] = ["americas", "europe", "middleEast", "africa", "southAsia", "centralAsia", "eastAsia", "southeastAsia"];
@@ -76,7 +77,7 @@ export function LanguagePicker({ variant = "footer" }: { variant?: "footer" | "s
           <div className={s.head}>
             <label className="visually-hidden" htmlFor={`${id}-q`}>{c.search}</label>
             <input ref={input} id={`${id}-q`} className={s.search} type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={c.search} autoComplete="off" spellCheck={false} />
-            <button type="button" className={s.close} onClick={() => setOpen(false)} aria-label={c.close}>×</button>
+            <button type="button" className={s.close} onClick={() => setOpen(false)} aria-label={c.close}><Icon name="close" size={16} /></button>
           </div>
           <div className={s.list}>
             {groups.length === 0 ? <p className={s.none}>{c.none}</p> : null}

@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { LearningConsent } from "./LearningConsent";
 import { CorePrefs } from "./CorePrefs";
 import { FaqConsent } from "./FaqConsent";
+import { Switch } from "@/components/kit";
 import s from "./account.module.css";
 
 const MemoryConstellation = dynamic(() => import("@/components/spatial/MemoryConstellation").then((m) => m.MemoryConstellation), { ssr: false });
@@ -64,13 +65,11 @@ export function MemorySettings() {
 
   return (
     <div className={s.panel} id="memory" aria-labelledby="memory-h">
-      <div className={s.row}>
-        <h2 id="memory-h" className={s.k} style={{ margin: 0 }}>Memory</h2>
-        <button type="button" role="switch" aria-checked={enabled ?? false} aria-label="Memory" className={s.btn} style={{ height: 36 }} onClick={() => void toggle()} disabled={enabled === null}>
-          {enabled === null ? "…" : enabled ? "On" : "Off"}
-        </button>
+      <div className={s.prefRow}>
+        <h2 id="memory-h" className={s.cardTitle}>Memory</h2>
+        <Switch className={s.kSwitch} checked={enabled ?? false} onCheckedChange={() => void toggle()} label="Memory" hideLabel describedBy="memory-h-d" disabled={enabled === null} />
       </div>
-      <p className={s.note}>When memory is on, Keplar can remember durable things you tell it, such as your name, goals and preferences, and use them to answer better. A free model picks them out of your own messages after an answer; it never reads documents you upload, and it doesn&rsquo;t use your credits. It never saves passwords, card numbers, birthdates or other secrets, and it only uses what you actually told it. You can edit or delete any note. Signed-out chats use no memory at all. When it&rsquo;s off, nothing new is saved and nothing saved is used. Notes also cover how you like answers written and things you correct, so Keplar can adapt from your next message on; the AI models themselves are not retrained. On the Free plan, saved memory is not sent to the free models and no model learns new memory from Free chats, because the hosts of free models may log prompts and use them to improve their models; it is used again on a paid plan.</p>
+      <p className={s.note} id="memory-h-d">When memory is on, Keplar can remember durable things you tell it, such as your name, goals and preferences, and use them to answer better. A free model picks them out of your own messages after an answer; it never reads documents you upload, and it doesn&rsquo;t use your credits. It never saves passwords, card numbers, birthdates or other secrets, and it only uses what you actually told it. You can edit or delete any note. Signed-out chats use no memory at all. When it&rsquo;s off, nothing new is saved and nothing saved is used. Notes also cover how you like answers written and things you correct, so Keplar can adapt from your next message on; the AI models themselves are not retrained. On the Free plan, saved memory is not sent to the free models and no model learns new memory from Free chats, because the hosts of free models may log prompts and use them to improve their models; it is used again on a paid plan.</p>
       {error ? <p className={`${s.note} ${s.err}`} role="alert">{error}</p> : null}
       {note ? <p className={`${s.note} ${s.ok}`} role="status">{note}</p> : null}
       <form className={s.form} onSubmit={add}>
@@ -82,18 +81,18 @@ export function MemorySettings() {
       {items.length ? (
         <ul style={{ display: "flex", flexDirection: "column", gap: "var(--s-2)", listStyle: "none", padding: 0, margin: 0 }} aria-label="Remembered items">
           {items.map((i) => (
-            <li key={i.id} className={s.row} style={{ alignItems: "center", borderTop: "1px solid var(--c-border)", paddingTop: "var(--s-2)" }}>
+            <li key={i.id} className={s.row} style={{ alignItems: "center", borderTop: "1px solid var(--hairline)", paddingTop: "var(--s-2)" }}>
               {editing?.id === i.id ? (
                 <>
                   <input className={s.input} style={{ flex: 1, minWidth: 0 }} value={editing.text} maxLength={220} aria-label="Edit this note" onChange={(e) => setEditing({ id: i.id, text: e.target.value })} />
-                  <button type="button" className={`${s.btn} ${s.btnGhost}`} style={{ height: 34 }} onClick={() => void saveEdit()} disabled={editing.text.trim().length < 4}>Save</button>
-                  <button type="button" className={`${s.btn} ${s.btnGhost}`} style={{ height: 34 }} onClick={() => setEditing(null)}>Cancel</button>
+                  <button type="button" className={`${s.btn} ${s.btnGhost} ${s.btnSm}`} onClick={() => void saveEdit()} disabled={editing.text.trim().length < 4}>Save</button>
+                  <button type="button" className={`${s.btn} ${s.btnGhost} ${s.btnSm}`} onClick={() => setEditing(null)}>Cancel</button>
                 </>
               ) : (
                 <>
                   <span style={{ flex: 1, minWidth: 0, overflowWrap: "anywhere" }}>{i.text} <span className={s.badge}>{i.source === "user" ? "You added" : "Learned"}</span></span>
-                  <button type="button" className={`${s.btn} ${s.btnGhost}`} style={{ height: 34 }} onClick={() => setEditing({ id: i.id, text: i.text })} aria-label={`Edit: ${i.text}`}>Edit</button>
-                  <button type="button" className={`${s.btn} ${s.btnGhost}`} style={{ height: 34 }} onClick={() => void remove(i.id)} aria-label={`Delete: ${i.text}`}>Delete</button>
+                  <button type="button" className={`${s.btn} ${s.btnGhost} ${s.btnSm}`} onClick={() => setEditing({ id: i.id, text: i.text })} aria-label={`Edit: ${i.text}`}>Edit</button>
+                  <button type="button" className={`${s.btn} ${s.btnGhost} ${s.btnSm}`} onClick={() => void remove(i.id)} aria-label={`Delete: ${i.text}`}>Delete</button>
                 </>
               )}
             </li>

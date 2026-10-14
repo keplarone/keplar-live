@@ -4,6 +4,7 @@
  * All of it is the signed-in person's own data in their personal workspace; exported and deleted with the account.
  */
 import { useEffect, useState } from "react";
+import { confirmAction, Switch } from "@/components/kit";
 import s from "./account.module.css";
 
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
@@ -13,10 +14,9 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
   return j;
 }
 
-const area: React.CSSProperties = { minHeight: 110, padding: "var(--s-3) var(--s-4)", borderRadius: "var(--r-sm)", border: "1px solid var(--c-border-strong)", background: "var(--c-canvas)", color: "var(--c-ink)", font: "inherit", resize: "vertical" };
+const area: React.CSSProperties = { minHeight: 110, padding: "var(--s-3) var(--s-4)", borderRadius: "var(--r-sm)", border: "1px solid var(--hairline-strong)", background: "var(--c-canvas)", color: "var(--c-ink)", font: "inherit", resize: "vertical" };
 const list: React.CSSProperties = { display: "flex", flexDirection: "column", gap: "var(--s-2)", listStyle: "none", padding: 0, margin: 0 };
-const item: React.CSSProperties = { alignItems: "center", borderTop: "1px solid var(--c-border)", paddingTop: "var(--s-2)" };
-const small = { height: 34 };
+const item: React.CSSProperties = { alignItems: "center", borderTop: "1px solid var(--hairline)", paddingTop: "var(--s-2)" };
 const when = (iso: string) => new Date(iso).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
 
 type Prefs = { enabled: boolean; aboutYou: string; howToAnswer: string; style: string; customStyle: string; location?: string; updatedAt?: string };
@@ -42,20 +42,18 @@ export function PersonalizationSettings() {
     catch (er) { setError((er as Error).message); } finally { setBusy(false); }
   };
   const clear = async () => {
-    if (!window.confirm("Clear all your answer preferences?")) return;
+    if (!(await confirmAction({ title: "Clear all your answer preferences?", body: "About you, how to answer and your style go back to empty. This can’t be undone.", confirmLabel: "Clear preferences", danger: true }))) return;
     setError(""); setNote("");
     try { await api("/api/preferences", { method: "DELETE" }); setP({ enabled: true, aboutYou: "", howToAnswer: "", style: "standard", customStyle: "", location: "" }); setNote("Cleared."); } catch (er) { setError((er as Error).message); }
   };
   const hint = styles.find((x) => x.id === p?.style)?.hint;
   return (
     <div className={s.panel} id="personalization" aria-labelledby="pers-h">
-      <div className={s.row}>
-        <h2 id="pers-h" className={s.k} style={{ margin: 0 }}>Answer preferences</h2>
-        <button type="button" role="switch" aria-checked={p?.enabled ?? false} aria-label="Use answer preferences" className={s.btn} style={{ height: 36 }} disabled={!p} onClick={() => p && setP({ ...p, enabled: !p.enabled })}>
-          {!p ? "…" : p.enabled ? "On" : "Off"}
-        </button>
+      <div className={s.prefRow}>
+        <h2 id="pers-h" className={s.cardTitle}>Answer preferences</h2>
+        <Switch className={s.kSwitch} checked={p?.enabled ?? false} onCheckedChange={() => p && setP({ ...p, enabled: !p.enabled })} label="Use answer preferences" hideLabel describedBy="pers-h-d" disabled={!p} />
       </div>
-      <p className={s.note}>Tell Keplar about you and how you like answers. Every model on the panel and the final answer follow it, in every chat (private chats too). It is separate from memory: nothing here is learned automatically, and you can change or clear it any time.{plan === "free" ? " On the Free plan, \u201cAbout you\u201d isn't sent to the free models (their hosts may log prompts); your style and answer instructions are." : ""}</p>
+      <p className={s.note} id="pers-h-d">Tell Keplar about you and how you like answers. Every model on the panel and the final answer follow it, in every chat (private chats too). It is separate from memory: nothing here is learned automatically, and you can change or clear it any time.{plan === "free" ? " On the Free plan, \u201cAbout you\u201d isn't sent to the free models (their hosts may log prompts); your style and answer instructions are." : ""}</p>
       {error ? <p className={`${s.note} ${s.err}`} role="alert">{error}</p> : null}
       {note ? <p className={`${s.note} ${s.ok}`} role="status">{note}</p> : null}
       {p ? (
@@ -145,13 +143,13 @@ export function SpecialistsSettings() {
     } catch (er) { setError((er as Error).message); } finally { setBusy(false); }
   };
   const remove = async (x: Specialist) => {
-    if (!window.confirm(`Delete the specialist \u201c${x.name}\u201d? Chats that used it keep their answers.`)) return;
+    if (!(await confirmAction({ title: `Delete the specialist \u201c${x.name}\u201d?`, body: "Chats that used it keep their answers.", confirmLabel: "Delete specialist", danger: true }))) return;
     setError("");
     try { await api(`/api/specialists/${encodeURIComponent(x.id)}`, { method: "DELETE" }); setItems((v) => (v ?? []).filter((i) => i.id !== x.id)); setNote("Deleted."); } catch (er) { setError((er as Error).message); }
   };
   return (
     <div className={s.panel} id="specialists" aria-labelledby="spec-h">
-      <h2 id="spec-h" className={s.k} style={{ margin: 0 }}>Specialists</h2>
+      <h2 id="spec-h" className={s.cardTitle}>Specialists</h2>
       <p className={s.note}>A specialist is a saved setup for one kind of work: its own instructions, reference notes and conversation starters. Choose one for a chat from &ldquo;Specialist&rdquo; above the message box; the whole panel of models answers with it, and Keplar still cross-checks them. You can have {limit}.{knowledgeUsed ? "" : " On the Free plan, reference notes are kept but not sent to the free models (their hosts may log prompts); instructions are."}</p>
       {error ? <p className={`${s.note} ${s.err}`} role="alert">{error}</p> : null}
       {note ? <p className={`${s.note} ${s.ok}`} role="status">{note}</p> : null}
@@ -180,9 +178,9 @@ export function SpecialistsSettings() {
           {items.map((x) => (
             <li key={x.id} className={s.row} style={item}>
               <span style={{ flex: 1, minWidth: 0, overflowWrap: "anywhere" }}>{x.name}{x.description ? <span className={s.sub}>{x.description}</span> : null}</span>
-              <button type="button" className={`${s.btn} ${s.btnGhost}`} style={small} onClick={() => open(x)} aria-label={`Edit ${x.name}`}>Edit</button>
-              <button type="button" className={`${s.btn} ${s.btnGhost}`} style={small} aria-expanded={sharing?.id === x.id} onClick={() => setSharing(sharing?.id === x.id ? null : { id: x.id, includeNotes: false, url: "" })} aria-label={`Share ${x.name}`}>Share</button>
-              <button type="button" className={`${s.btn} ${s.btnGhost}`} style={small} onClick={() => void remove(x)} aria-label={`Delete ${x.name}`}>Delete</button>
+              <button type="button" className={`${s.btn} ${s.btnGhost} ${s.btnSm}`} onClick={() => open(x)} aria-label={`Edit ${x.name}`}>Edit</button>
+              <button type="button" className={`${s.btn} ${s.btnGhost} ${s.btnSm}`} aria-expanded={sharing?.id === x.id} onClick={() => setSharing(sharing?.id === x.id ? null : { id: x.id, includeNotes: false, url: "" })} aria-label={`Share ${x.name}`}>Share</button>
+              <button type="button" className={`${s.btn} ${s.btnGhost} ${s.btnSm}`} onClick={() => void remove(x)} aria-label={`Delete ${x.name}`}>Delete</button>
               {sharing?.id === x.id ? (
                 <div style={{ flexBasis: "100%", display: "grid", gap: "var(--s-2)" }} data-specialist-share="">
                   <p className={s.note} style={{ margin: 0 }}>Anyone with the link can read this specialist&rsquo;s name, description, instructions and starters, and add a copy to their own account. They never see your chats. The link shows it as it is now; later edits aren&rsquo;t shared.</p>
@@ -243,14 +241,14 @@ export function SharedLinksSettings() {
   const row = (kind: "answer" | "chat" | "specialist", token: string, url: string, label: string, meta: string) => (
     <li key={token} className={s.row} style={item}>
       <span style={{ flex: 1, minWidth: 0, overflowWrap: "anywhere" }}>{label}<span className={s.sub}>{meta}</span></span>
-      <a className={`${s.btn} ${s.btnGhost}`} style={small} href={url} target="_blank" rel="noopener noreferrer">Open</a>
-      <button type="button" className={`${s.btn} ${s.btnGhost}`} style={small} onClick={() => void revoke(kind, token)} aria-label={`Revoke link: ${label}`}>Revoke</button>
+      <a className={`${s.btn} ${s.btnGhost} ${s.btnSm}`} href={url} target="_blank" rel="noopener noreferrer">Open</a>
+      <button type="button" className={`${s.btn} ${s.btnGhost} ${s.btnSm}`} onClick={() => void revoke(kind, token)} aria-label={`Revoke link: ${label}`}>Revoke</button>
     </li>
   );
   const none = answers && chats && specs && !answers.length && !chats.length && !specs.length;
   return (
     <div className={s.panel} id="shared-links" aria-labelledby="links-h">
-      <h2 id="links-h" className={s.k} style={{ margin: 0 }}>Shared links</h2>
+      <h2 id="links-h" className={s.cardTitle}>Shared links</h2>
       <p className={s.note}>Every live link you created to an answer, a chat or a specialist. Revoking one takes it down at once. Answer and chat links expire after 90 days, specialist links after 180.</p>
       {error ? <p className={`${s.note} ${s.err}`} role="alert">{error}</p> : null}
       {note ? <p className={`${s.note} ${s.ok}`} role="status">{note}</p> : null}
@@ -296,7 +294,7 @@ export function FamilySettings() {
   </>);
   return (
     <div className={s.panel} id="family" aria-labelledby="family-h">
-      <h2 id="family-h" className={s.k} style={{ margin: 0 }}>Family mode</h2>
+      <h2 id="family-h" className={s.cardTitle}>Family mode</h2>
       <p className={s.note}>
         For an account a teenager uses (Keplar is for ages 13 and up). Every answer, including ones through an API key or embed on this account, follows age-appropriate rules, and Private chat, Talk live and Posts on X are hidden so chats stay in history. Turning it off or changing it needs your PIN.
         These rules guide the models; they don&rsquo;t guarantee every answer, so stay involved.
