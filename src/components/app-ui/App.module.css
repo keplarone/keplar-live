@@ -35,7 +35,7 @@
 
 .sideWrap {
   min-height: 0;
-  border-right: var(--b-hairline) solid var(--c-border);
+  border-right: var(--b-hairline) solid var(--hairline);
   background: var(--c-surface-1);
 }
 
@@ -74,14 +74,14 @@
   padding: 0 var(--s-3);
   border-radius: var(--r-sm);
   background: var(--c-canvas);
-  box-shadow: var(--sh-hairline), 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1);
   color: var(--c-ink);
   font-weight: var(--w-medium);
   transition: box-shadow var(--d-fast) var(--e-standard);
 }
 
 .newThread:hover {
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-1);
 }
 
 .newThread svg {
@@ -117,12 +117,12 @@
 
 .sideItem:hover {
   color: var(--c-ink);
-  background: rgb(var(--rgb-ink) / 0.04);
+  background: var(--hover-wash);
 }
 
 .sideItem[aria-current="page"] {
   color: var(--c-ink);
-  background: rgb(var(--rgb-ink) / 0.055);
+  background: var(--hover-wash);
 }
 
 .sideLabel {
@@ -157,7 +157,7 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
-  scrollbar-color: rgb(var(--rgb-ink) / 0.12) transparent;
+  scrollbar-color: var(--hairline-strong) transparent;
 }
 
 .sideScroll > * {
@@ -192,7 +192,7 @@
 
 .recentAll:hover {
   color: var(--c-ink);
-  background: rgb(var(--rgb-ink) / 0.04);
+  background: var(--hover-wash);
 }
 
 .recentList {
@@ -200,7 +200,7 @@
   flex-direction: column;
   gap: 1px;
   scrollbar-width: thin;
-  scrollbar-color: rgb(var(--rgb-ink) / 0.12) transparent;
+  scrollbar-color: var(--hairline-strong) transparent;
 }
 
 .threadLink {
@@ -218,12 +218,12 @@
 
 .threadLink:hover {
   color: var(--c-ink);
-  background: rgb(var(--rgb-ink) / 0.04);
+  background: var(--hover-wash);
 }
 
 .threadLink[aria-current="page"] {
   color: var(--c-ink);
-  background: rgb(var(--rgb-ink) / 0.055);
+  background: var(--hover-wash);
 }
 
 .recentEmpty {
@@ -236,7 +236,7 @@
   flex-direction: column;
   gap: var(--s-2);
   padding: var(--s-4) var(--s-3) var(--s-1);
-  border-top: var(--b-hairline) solid var(--c-border);
+  border-top: var(--b-hairline) solid var(--hairline);
 }
 
 .meterHead {
@@ -258,7 +258,7 @@
   height: 3px;
   border-radius: var(--r-pill);
   background: var(--c-surface-2);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline);
   overflow: hidden;
 }
 
@@ -287,26 +287,9 @@
   overflow-wrap: anywhere;
 }
 
-.upgradeBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 40px;
-  border-radius: var(--r-pill);
-  background: var(--c-ink);
-  color: var(--c-canvas);
-  font-size: var(--t-small);
-  font-weight: var(--w-medium);
-  text-decoration: none;
-}
-
-.upgradeBtn:hover {
-  background: var(--c-ink-hover);
-}
-
-.upgradeBtn:focus-visible {
-  outline: 2px solid var(--c-focus);
-  outline-offset: 2px;
+/* "Sign in" in the signed-out sidebar: the kit's primary pill (link-action.module.css), full width */
+.signInCta {
+  width: 100%;
 }
 
 .meterLink {
@@ -317,53 +300,41 @@
   width: fit-content;
 }
 
-.meterLink:focus-visible {
-  outline: 2px solid var(--c-focus);
-  outline-offset: 2px;
-  border-radius: 2px;
-}
-
+/*
+ * The one shared icon-control class for elements that cannot be the kit's IconButton: the top bar's phone-only menu and New chat
+ * buttons (they are display:none on wide screens, which a tooltip wrapper would leave behind as a flex gap), the theme toggle
+ * (ThemeToggle takes a className) and the Settings link (a link, not a button). Same look as a ghost IconButton: transparent,
+ * filling with the hover wash, a press dip.
+ */
 .iconBtn {
   display: inline-grid;
   place-items: center;
   width: 36px;
   height: 36px;
   flex: none;
+  border: 0;
   border-radius: var(--r-pill);
+  background: transparent;
   color: var(--c-ink-2);
+  cursor: pointer;
   transition: color var(--d-fast) var(--e-standard), background-color var(--d-fast) var(--e-standard);
 }
 
 .iconBtn:hover {
   color: var(--c-ink);
-  background: rgb(var(--rgb-ink) / 0.05);
+  background: var(--hover-wash);
 }
 
-/* A quiet icon action inside a list row (rename in All chats): flat like the row's delete action. Its name has no "btn", so the
-   global lifted-pill rule (redesign.css) leaves it alone; the round top-bar buttons keep .iconBtn and their lift. */
-.rowAction {
-  display: inline-grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  flex: none;
-  border-radius: var(--r-pill);
-  color: var(--c-ink-2);
-  transition: color var(--d-fast) var(--e-standard), background-color var(--d-fast) var(--e-standard);
+.iconBtn:active {
+  scale: var(--m-press);
 }
-.rowAction:hover {
-  color: var(--c-ink);
-  background: rgb(var(--rgb-ink) / 0.05);
+
+/* The rename action in an All chats row: a kit IconButton (sm), quiet until the row is hovered or focused. */
+.rowAction {
+  color: var(--c-ink-3);
 }
 @media (pointer: coarse) {
-  .rowAction { width: 44px; height: 44px; }
-}
-
-.iconBtn:focus-visible,
-.sideItem:focus-visible,
-.threadLink:focus-visible,
-.newThread:focus-visible {
-  outline-offset: 0;
+  .rowAction.rowAction { --size: 44px; }
 }
 
 /* ── main ──────────────────────────────────────────── */
@@ -421,7 +392,7 @@
   border-radius: var(--r-pill);
   font-size: var(--t-small);
   color: var(--c-ink-3);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline);
   white-space: nowrap;
   text-decoration: none;
 }
@@ -437,7 +408,7 @@
   font-size: var(--t-small);
   font-weight: var(--w-medium);
   color: var(--c-ink);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong);
   background: var(--c-canvas);
   white-space: nowrap;
 }
@@ -450,7 +421,7 @@
   /* bottom pad = overlay dock height so the last turn is never hidden under the floating composer */
   padding: 72px var(--s-6) calc(var(--dock-h, 160px) + var(--s-4));
   scrollbar-width: thin;
-  scrollbar-color: rgb(var(--rgb-ink) / 0.12) transparent;
+  scrollbar-color: var(--hairline-strong) transparent;
 }
 
 .thread {
@@ -527,11 +498,11 @@
 
 .examples {
   margin-top: var(--s-12);
-  border-top: var(--b-hairline) solid var(--c-border);
+  border-top: var(--b-hairline) solid var(--hairline);
 }
 
 .examples li {
-  border-bottom: var(--b-hairline) solid var(--c-border);
+  border-bottom: var(--b-hairline) solid var(--hairline);
 }
 
 .example {
@@ -655,7 +626,7 @@
 .viewEmpty {
   padding: var(--s-6) 0;
   color: var(--c-ink-3);
-  border-top: var(--b-hairline) solid var(--c-border);
+  border-top: var(--b-hairline) solid var(--hairline);
 }
 
 .textInput {
@@ -665,7 +636,7 @@
   border: 0;
   border-radius: var(--r-sm);
   background: var(--c-canvas);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong);
   font: inherit;
   font-size: var(--t-small);
   color: var(--c-ink);
@@ -677,8 +648,7 @@
 }
 
 .textInput:focus-visible {
-  outline: none;
-  box-shadow: inset 0 0 0 var(--b-focus) var(--c-focus);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), inset 0 -2px 0 var(--c-focus);
   border-radius: var(--r-sm);
 }
 
@@ -713,14 +683,14 @@
 }
 
 .rows {
-  border-top: var(--b-hairline) solid var(--c-border);
+  border-top: var(--b-hairline) solid var(--hairline);
 }
 
 .rowItem {
   display: flex;
   align-items: center;
   gap: var(--s-2);
-  border-bottom: var(--b-hairline) solid var(--c-border);
+  border-bottom: var(--b-hairline) solid var(--hairline);
 }
 
 .rowMain {
@@ -735,7 +705,7 @@
 
 .rowMain:hover .rowTitle {
   text-decoration: underline;
-  text-decoration-color: var(--c-border-strong);
+  text-decoration-color: var(--hairline-strong);
   text-underline-offset: 3px;
 }
 
@@ -765,89 +735,55 @@
   border: 0;
   border-radius: var(--r-xs);
   background: transparent;
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline);
   font: inherit;
   font-size: var(--t-label);
   color: var(--c-ink-2);
 }
 
-.primaryBtn,
-.secondaryBtn,
-.textBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-2);
-  height: 40px;
-  padding: 0 var(--s-5);
-  border-radius: var(--r-pill);
-  font-size: var(--t-small);
-  font-weight: var(--w-medium);
-  white-space: nowrap;
-  transition: background-color var(--d-fast) var(--e-standard), color var(--d-fast) var(--e-standard);
-}
-
-.primaryBtn {
-  background: var(--c-ink);
-  color: var(--c-canvas);
-}
-
-.primaryBtn:hover {
-  background: var(--c-ink-hover);
-}
-
-.secondaryBtn {
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong);
-}
-
-.secondaryBtn:hover {
-  background: var(--c-surface-1);
-}
-
-.textBtn {
-  font-weight: var(--w-regular);
-  color: var(--c-ink-2);
-  padding: 0 var(--s-3);
-}
-
-.textBtn:hover {
-  color: var(--c-ink);
-}
+/* (The views' actions are kit Buttons; links that look like them use link-action.module.css.) */
 
 /* ── search ────────────────────────────────────────── */
 
-.scrim {
-  position: fixed;
-  inset: 0;
-  z-index: 10;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 14vh var(--s-4) var(--s-4);
-  background: rgb(var(--rgb-surface) / 0.6);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  animation: fade var(--d-base) var(--e-standard) both;
+/* The kit Dialog (size lg, 600px) is the frame: opaque overlay surface, scrim, focus trap. These place it near the top like a
+   palette, keep its head compact, and let the result list (not the field) scroll. */
+.search.search {
+  margin-block: 12vh auto;
+  max-height: min(64vh, calc(100dvh - 24vh));
 }
 
-.search {
-  width: min(600px, 100%);
-  max-height: 64vh;
+.search > :first-child {
+  align-items: center;
+  padding: var(--s-2) var(--s-2) 0 var(--s-5);
+}
+
+.search > :first-child h2 {
+  font-size: var(--t-label);
+  font-weight: var(--w-regular);
+  color: var(--c-ink-3);
+}
+
+.search > :last-child {
   display: flex;
   flex-direction: column;
-  border-radius: var(--r-card);
-  background: var(--c-canvas);
-  box-shadow: var(--sh-hairline), var(--sh-window);
+  padding: 0;
   overflow: hidden;
-  animation: rise var(--d-base) var(--e-emphasized) both;
+}
+
+.searchBody {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .searchBar {
   display: flex;
+  flex: none;
   align-items: center;
   gap: var(--s-3);
   height: 56px;
   padding: 0 var(--s-5);
-  border-bottom: var(--b-hairline) solid var(--c-border);
+  border-bottom: var(--b-hairline) solid var(--hairline);
   color: var(--c-ink-3);
 }
 
@@ -867,8 +803,11 @@
 }
 
 .searchList {
+  min-height: 0;
   overflow-y: auto;
+  margin: 0;
   padding: var(--s-2);
+  list-style: none;
 }
 
 .searchGroup {
@@ -897,7 +836,7 @@
 }
 
 .searchItem[aria-selected="true"] {
-  background: var(--c-surface-2);
+  background: var(--hover-wash);
 }
 
 .searchTitle {
@@ -953,7 +892,7 @@
     position: fixed;
     inset: 0;
     z-index: 7;
-    background: rgb(var(--rgb-ink) / 0.18);
+    background: var(--ks-scrim);
     animation: fade var(--d-base) var(--e-standard) both;
   }
   .topbar {
@@ -1003,10 +942,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scrim,
-  .search,
   .drawerScrim {
     animation: none;
+  }
+  .iconBtn:active {
+    scale: none;
   }
   .sideWrap {
     transition: none;
@@ -1029,7 +969,7 @@
   margin-top: var(--s-10);
   padding: var(--s-6);
   border-radius: var(--r-card);
-  border: var(--b-hairline) solid var(--c-border);
+  border: var(--b-hairline) solid var(--hairline);
   background:
     var(--c-canvas);
   box-shadow: var(--sh-float);
@@ -1053,7 +993,7 @@
   font-size: var(--t-small);
   color: var(--c-ink-2);
   text-decoration: underline;
-  text-decoration-color: var(--c-border-strong);
+  text-decoration-color: var(--hairline-strong);
   text-underline-offset: 3px;
   border-radius: var(--r-xs);
 }
@@ -1085,7 +1025,7 @@
   gap: var(--s-1);
   padding: var(--s-4);
   border-radius: var(--r-md);
-  border: var(--b-hairline) solid var(--c-border-strong);
+  border: var(--b-hairline) solid var(--hairline-strong);
   background: var(--c-canvas);
   text-align: left;
   transition: border-color var(--d-fast) var(--e-standard), background-color var(--d-fast) var(--e-standard);
@@ -1153,7 +1093,7 @@
 .sideTheme {
   margin-top: var(--s-4);
   padding-top: var(--s-3);
-  border-top: var(--b-hairline) solid var(--c-border);
+  border-top: var(--b-hairline) solid var(--hairline);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1166,11 +1106,11 @@
 }
 
 /* Usage cooldown / breaker notice above the composer (quiet, semantic amber; no layout jump: it only exists while active). */
-.usageNotice { font-size: var(--t-small); line-height: var(--lh-small); color: var(--c-ink-2); padding: var(--s-2) var(--s-3); margin-bottom: var(--s-2); border-radius: var(--r-sm); border: var(--b-hairline) solid rgb(201 140 20 / 0.45); background: rgb(201 140 20 / 0.08); }
+.usageNotice { font-size: var(--t-small); line-height: var(--lh-small); color: var(--c-ink-2); padding: var(--s-2) var(--s-3); margin-bottom: var(--s-2); border-radius: var(--r-sm); border: var(--b-hairline) solid rgb(var(--rgb-attention) / 0.45); background: rgb(var(--rgb-attention) / 0.08); }
 .usageNotice p { margin: 0; }
 .usageNotice b { color: var(--c-ink); font-weight: var(--w-medium); }
 .usageClock { font-variant-numeric: tabular-nums; color: var(--c-ink); font-weight: var(--w-medium); }
-.usageNotice[data-kind="breaker"] { border-color: var(--c-border); background: var(--c-surface-1); }
+.usageNotice[data-kind="breaker"] { border-color: var(--hairline); background: var(--c-surface-1); }
 
 /* ── nav: secondary group ──────────────────────────── */
 .sideMore {
@@ -1201,7 +1141,7 @@ a.sideItem {
 /* ── deployments ───────────────────────────────────── */
 .deployList {
   margin-top: var(--s-8);
-  border-top: var(--b-hairline) solid var(--c-border);
+  border-top: var(--b-hairline) solid var(--hairline);
 }
 .deployRow {
   display: flex;
@@ -1210,7 +1150,7 @@ a.sideItem {
   justify-content: space-between;
   gap: var(--s-2) var(--s-6);
   padding: var(--s-4) var(--s-1);
-  border-bottom: var(--b-hairline) solid var(--c-border);
+  border-bottom: var(--b-hairline) solid var(--hairline);
 }
 .deployName {
   font-weight: var(--w-medium);
@@ -1247,12 +1187,12 @@ a.sideItem {
   text-align: left;
   color: var(--c-ink);
   background: var(--c-surface-1);
-  border: var(--b-hairline) solid var(--c-border);
+  border: var(--b-hairline) solid var(--hairline);
   border-radius: var(--r-md, 16px);
   transition: border-color var(--d-fast) var(--e-standard), background-color var(--d-fast) var(--e-standard);
 }
 .homeTile:hover {
-  border-color: var(--c-border-strong);
+  border-color: var(--hairline-strong);
   background: var(--c-surface-2);
 }
 .homeTileDot {
@@ -1286,7 +1226,7 @@ a.sideItem {
   padding: var(--s-3) var(--s-1);
   text-align: left;
   color: var(--c-ink);
-  border-bottom: var(--b-hairline) solid var(--c-border);
+  border-bottom: var(--b-hairline) solid var(--hairline);
   overflow-wrap: anywhere; /* a long question wraps, it is never cut */
 }
 .homeRecentItem:hover { color: var(--c-ink-2); }
@@ -1312,9 +1252,9 @@ a.sideItem {
 .tlLanes { display: flex; flex-direction: column; gap: var(--s-3); }
 .tlLane { display: grid; grid-template-columns: minmax(80px, 160px) 1fr; align-items: center; gap: var(--s-4); }
 .tlName { font-size: var(--t-small); color: var(--c-ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tlTrack { position: relative; height: 28px; border-bottom: var(--b-hairline) solid var(--c-border-strong); margin-right: 8px; }
+.tlTrack { position: relative; height: 28px; border-bottom: var(--b-hairline) solid var(--hairline-strong); margin-right: 8px; }
 .tlStart { position: absolute; bottom: -4px; width: 1px; height: 8px; background: var(--c-ink-3); }
-.tlDot { position: absolute; top: 6px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--c-reasoning); border: 2px solid var(--c-canvas); box-shadow: 0 0 0 1px var(--c-border-strong); }
+.tlDot { position: absolute; top: 6px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--c-reasoning); border: 2px solid var(--c-canvas); box-shadow: 0 0 0 1px var(--hairline-strong); }
 .tlDot:hover { transform: scale(1.3); }
 .tlAxis { display: flex; justify-content: space-between; margin-top: var(--s-2); padding-left: calc(min(160px, 25%) + var(--s-4)); font-size: var(--t-label); color: var(--c-ink-3); }
 @media (pointer: coarse) { .tlDot { width: 22px; height: 22px; margin-left: -11px; top: 2px; } }
@@ -1341,91 +1281,53 @@ a.sideItem {
 @media (pointer: coarse) {
   .meterLink { display: inline-flex; align-items: center; min-height: 44px; }
   .sideBrand { min-height: 44px; align-items: center; }
-  .sideItem, .newThread, .upgradeBtn { height: 44px; }
+  .sideItem, .newThread { height: 44px; }
   .threadLink { padding-block: 12px; }
   .recentAll { min-height: 44px; }
 }
 
-/* glass buttons (liquid glass: see src/styles/glass.css) */
-.upgradeBtn { background: var(--btn-p-bg); color: var(--btn-p-ink); border-color: transparent; box-shadow: var(--btn-p-shadow); -webkit-backdrop-filter: blur(6px) saturate(1.4); backdrop-filter: blur(6px) saturate(1.4); transition: var(--btn-spring); }
-.upgradeBtn:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--c-ink-hover); }
-.upgradeBtn:active:not(:disabled) { scale: var(--m-press); }
-.primaryBtn { background: var(--btn-p-bg); color: var(--btn-p-ink); border-color: transparent; box-shadow: var(--btn-p-shadow); -webkit-backdrop-filter: blur(6px) saturate(1.4); backdrop-filter: blur(6px) saturate(1.4); transition: var(--btn-spring); }
-.primaryBtn:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--c-ink-hover); }
-.primaryBtn:active:not(:disabled) { scale: var(--m-press); }
-.secondaryBtn { background: var(--btn-s-bg); color: var(--btn-s-ink); border-color: transparent; box-shadow: var(--btn-s-shadow); -webkit-backdrop-filter: blur(5px) saturate(1.4); backdrop-filter: blur(5px) saturate(1.4); transition: var(--btn-spring); }
-.secondaryBtn:hover:not(:disabled) { background: var(--lg-fill-strong); }
-.secondaryBtn:active:not(:disabled) { scale: var(--m-press); }
-@media (prefers-reduced-motion: reduce) { .upgradeBtn, .primaryBtn, .secondaryBtn { transition: background-color 0.1s linear; transform: none !important; } }
-@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .upgradeBtn, .primaryBtn, .secondaryBtn { backdrop-filter: none; -webkit-backdrop-filter: none; } .upgradeBtn, .primaryBtn { background: var(--btn-p-solid, #17171a); } .secondaryBtn { background: var(--lg-solid); } }
-
-/* ── liquid glass surfaces (CP-6c) ─────────────────────
- * The shell sits on a soft light wash so clear glass has something to refract. Sidebar, search dialog and drawer are real
- * glass (one blur layer each); repeated cards use the translucent card fill with the specular ring but no backdrop. */
-.app { background: var(--lg-wash); }
+/* ── shell surfaces (UI v2: one surface ladder, no glass) ─────────────────────
+ * The canvas, then the sidebar as an opaque panel card, then raised cards; edges are hairlines, depth is --elev-*. */
 .sideWrap { padding: var(--s-2); border-right: 0; background: transparent; }
 .sidebar {
   height: 100%;
   padding: var(--s-4) var(--s-3);
   border-radius: 26px;
-  background: var(--lg-fill);
-  -webkit-backdrop-filter: var(--lg-bf);
-  backdrop-filter: var(--lg-bf);
-  box-shadow: var(--lg-ring), var(--lg-shadow);
+  background: var(--surface-panel);
+  box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1);
 }
-.newThread {
-  border-radius: var(--shape-control);
-  background: var(--btn-s-bg);
-  box-shadow: var(--btn-s-shadow);
-  transition: var(--btn-spring);
-}
-.newThread:hover { box-shadow: var(--btn-s-shadow); }
+.newThread { border-radius: var(--shape-control); }
 .sideItem { border-radius: var(--shape-control); }
-.sideItem:hover { background: rgb(var(--rgb-ink) / 0.05); }
-.sideItem[aria-current="page"] { background: var(--lg-card-hover); box-shadow: var(--lg-ring); }
+.sideItem:hover { background: var(--hover-wash); }
+.sideItem[aria-current="page"] { background: var(--hover-wash); }
 /* Study / Slides chip on (or this thread's latest turn is a study set / deck): that item takes the highlight from Ask, as in the product videos. */
-.sideItem[data-mode-on] { color: var(--c-ink); background: var(--lg-card-hover); box-shadow: var(--lg-ring); transition: background-color var(--d-base) var(--e-standard), box-shadow var(--d-base) var(--e-standard); }
+.sideItem[data-mode-on] { color: var(--c-ink); background: var(--hover-wash); box-shadow: inset 0 0 0 1px var(--hairline); transition: background-color var(--d-base) var(--e-standard), box-shadow var(--d-base) var(--e-standard); }
 .sideNav:has([data-mode-on]) .sideItem[data-nav="thread"][aria-current="page"] { background: transparent; box-shadow: none; }
 @media (prefers-reduced-motion: reduce) { .sideItem[data-mode-on] { transition: none; } }
 .sideBrand { border-radius: var(--r-pill); }
 
-.scrim { background: rgb(var(--rgb-ink) / 0.14); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
-.search {
-  border-radius: 28px;
-  background: var(--lg-fill-strong);
-  -webkit-backdrop-filter: var(--lg-bf);
-  backdrop-filter: var(--lg-bf);
-  box-shadow: var(--lg-ring), 0 2px 4px rgb(0 0 0 / 0.06), 0 30px 80px -24px rgb(0 0 0 / 0.4);
-}
-html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
-.searchBar { border-bottom-color: rgb(var(--rgb-ink) / 0.08); }
 .searchItem { border-radius: 16px; }
-.searchItem[aria-selected="true"] { background: var(--lg-card-hover); box-shadow: var(--lg-ring); }
 
+/* Cards that act (a tile holding a title and a sentence): raised surface and a hairline; hover strengthens the edge (no lift). */
 .homeTile, .useForOption {
-  background: var(--lg-card);
+  background: var(--surface-raised);
   border-color: transparent;
-  box-shadow: var(--lg-ring), 0 1px 2px rgb(0 0 0 / 0.05), 0 12px 28px -18px rgb(0 0 0 / 0.25);
-  transition: var(--btn-spring), background-color var(--d-fast) var(--e-standard);
+  box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1);
+  transition: box-shadow var(--d-fast) var(--e-standard), background-color var(--d-fast) var(--e-standard);
 }
-.homeTile, .useForOption { border-radius: 22px; }
-.homeTile:hover, .useForOption:hover { background: var(--surface-raised); border-color: transparent; box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-2); }
-.useForOption[aria-pressed="true"] { background: var(--surface-raised); box-shadow: 0 0 0 2px rgb(var(--rgb-ink) / 0.8); } /* selected: a plain ink outline, no glow */
-@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  .homeTile:hover, .useForOption:hover { transform: translateY(-2px) scale(1.012); }
-}
+.homeTile:hover, .useForOption:hover { background: var(--surface-raised); border-color: transparent; box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-1); }
+.useForOption[aria-pressed="true"] { background: var(--surface-raised); box-shadow: inset 0 0 0 2px var(--c-ink); } /* selected: a plain ink edge, no glow */
 
 @media (max-width: 899px) {
   .sideWrap { padding: var(--s-2); box-shadow: none; }
-  .sidebar { box-shadow: var(--lg-ring), 0 30px 60px -20px rgb(0 0 0 / 0.45); }
-  .scrim { -webkit-backdrop-filter: none; backdrop-filter: none; }
-  .drawerScrim { background: rgb(var(--rgb-ink) / 0.22); }
+  .sidebar { box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-3); }
+  .drawerScrim { background: var(--ks-scrim); }
 }
 
-/* Card-like buttons (a tile holding a title and a sentence) keep a soft card radius; every other button is a pill (glass.css). */
+/* Card-like buttons keep a soft card radius. */
 .homeTile.homeTile, .useForOption.useForOption { border-radius: 22px; }
-.example.example { border-radius: 22px; padding: var(--s-3) var(--s-4); background: var(--lg-card); box-shadow: var(--lg-ring); }
-.example.example:hover { padding-left: var(--s-4); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-2); }
+.example.example { border-radius: 22px; padding: var(--s-3) var(--s-4); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline); }
+.example.example:hover { padding-left: var(--s-4); box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-1); }
 
 /* ── page-wide particle layer (CP-6d) ──
  * The app is a fixed overlay; when the layer is drawing, let it show through the shell. While a question is running the
@@ -1475,18 +1377,18 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 /* ── Ask start page, Monolith redesign: centred statement, lit action tiles, quieter lists (all behaviour unchanged) ── */
 .empty { max-width: clamp(880px, 62vw, 1500px); padding-top: clamp(24px, 9vh, 110px); }
 .emptyHead { display: flex; flex-direction: column; align-items: center; text-align: center; }
-.emptyMark { margin-bottom: var(--s-6); filter: drop-shadow(0 0 14px rgb(var(--rgb-ink) / 0.55)); }
-.emptyTitle { font-size: clamp(36px, 4.8vw, 92px); line-height: 0.98; letter-spacing: -0.05em; text-wrap: balance; text-shadow: 0 0 44px rgb(var(--rgb-ink) / 0.14); }
+.emptyMark { margin-bottom: var(--s-6); }
+.emptyTitle { font-size: clamp(36px, 4.8vw, 92px); line-height: 0.98; letter-spacing: -0.05em; text-wrap: balance; }
 .emptyLede { margin-top: var(--s-5); max-width: 46ch; text-wrap: balance; }
 .homeTiles { grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); margin-top: var(--s-10); counter-reset: tile; }
-.homeTile.homeTile { counter-increment: tile; position: relative; min-height: 132px; align-content: start; gap: var(--s-2); padding: var(--s-5); border-radius: 24px; border: var(--b-hairline) solid var(--c-border-strong); background: rgb(var(--rgb-ink) / 0.06); box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.12), 0 30px 60px -44px rgb(0 0 0 / 0.6); }
-.homeTile.homeTile:hover { background: rgb(var(--rgb-ink) / 0.06); border-color: rgb(var(--rgb-ink) / 0.28); }
+.homeTile.homeTile { counter-increment: tile; position: relative; min-height: 132px; align-content: start; gap: var(--s-2); padding: var(--s-5); border-radius: 24px; border: var(--b-hairline) solid var(--hairline-strong); background: var(--surface-raised); box-shadow: var(--elev-1); }
+.homeTile.homeTile:hover { background: var(--surface-raised); border-color: var(--c-ink-3); }
 .homeTile.homeTile .homeTileDot { width: auto; height: auto; border-radius: 0; background: none; box-shadow: none; }
 .homeTile.homeTile .homeTileDot::before { content: counter(tile, decimal-leading-zero); font-size: var(--t-label); letter-spacing: 0.16em; color: var(--c-ink-3); font-variant-numeric: tabular-nums; }
 .homeTileTitle { font-size: calc(var(--t-body) * 1.12); letter-spacing: -0.02em; }
 .homeRecent .sideLabel { letter-spacing: 0.16em; }
-.homeRecentItem.homeRecentItem { border: var(--b-hairline) solid transparent; border-bottom-color: var(--c-border); border-radius: 14px; }
-.homeRecentItem.homeRecentItem:hover { background: rgb(var(--rgb-ink) / 0.045); border-color: var(--c-border); color: var(--c-ink); }
+.homeRecentItem.homeRecentItem { border: var(--b-hairline) solid transparent; border-bottom-color: var(--hairline); border-radius: 14px; }
+.homeRecentItem.homeRecentItem:hover { background: var(--hover-wash); border-color: var(--hairline); color: var(--c-ink); }
 @media (max-width: 640px) { .emptyHead { align-items: flex-start; text-align: left; } .homeTile.homeTile { min-height: 0; } }
 
 /* Phones (<= 520px): the top bar has menu + title + Memory + "N of N left" + Upgrade + New. At 360px that left the title one letter wide
@@ -1513,11 +1415,11 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 .homeChips { display: flex; flex-wrap: wrap; gap: var(--s-2); margin: var(--s-8) 0 0; padding: 0; list-style: none; }
 .homeChip {
   display: inline-flex; align-items: center; min-height: 36px; padding: 0 var(--s-4);
-  border: var(--b-hairline) solid var(--c-border); border-radius: var(--r-pill); background: transparent;
+  border: var(--b-hairline) solid var(--hairline); border-radius: var(--r-pill); background: transparent;
   color: var(--c-ink-2); font: inherit; font-size: var(--t-small); white-space: nowrap; cursor: pointer;
   transition: background-color var(--d-fast) var(--e-standard), color var(--d-fast) var(--e-standard), border-color var(--d-fast) var(--e-standard);
 }
-.homeChip:hover { background: rgb(var(--rgb-ink) / 0.05); border-color: var(--c-border-strong); color: var(--c-ink); }
+.homeChip:hover { background: var(--hover-wash); border-color: var(--hairline-strong); color: var(--c-ink); }
 .homeMore { margin-top: var(--s-10); }
 .homeMoreSummary { display: inline-flex; align-items: center; gap: var(--s-2); min-height: 32px; color: var(--c-ink-3); font-size: var(--t-small); cursor: pointer; list-style: none; }
 .homeMoreSummary::-webkit-details-marker { display: none; }
@@ -1556,12 +1458,10 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 @media (hover: none) { .kbd { display: none; } }
 .sideMoreLabel { font-size: var(--t-small); letter-spacing: 0; text-transform: none; }
 .sideNav { gap: 3px; }
-.upgradeBtn.upgradeBtn[data-plan-cta="upgrade"]:not([data-low]) { background: transparent; color: var(--c-ink); border-color: var(--c-border-strong); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong); -webkit-backdrop-filter: none; backdrop-filter: none; }
-.upgradeBtn.upgradeBtn[data-plan-cta="upgrade"]:not([data-low]):hover { background: rgb(var(--rgb-ink) / 0.05); transform: none; }
 .memoryChip { box-shadow: none; padding: 0 var(--s-2); }
 .dailyLeft:not([data-low]) { color: var(--c-ink-3); }
 .dock :global([data-chat-options]) :is(button, select) { box-shadow: none; background: transparent; color: var(--c-ink-3); }
-.dock :global([data-chat-options]) :is(button, select):hover { color: var(--c-ink-2); background: rgb(var(--rgb-ink) / 0.04); }
+.dock :global([data-chat-options]) :is(button, select):hover { color: var(--c-ink-2); background: var(--hover-wash); }
 .dock :global([data-chat-options]) button[aria-pressed="true"] { color: var(--c-ink); }
 .homeMore ~ .useFor { margin-top: var(--s-8); }
 
@@ -1574,7 +1474,7 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 .grow { flex: 1; }
 .signedOutRow { display: flex; flex-direction: column; gap: var(--s-2); padding: 0 var(--s-1); }
 .usageBlock { display: flex; flex-direction: column; gap: var(--s-2); }
-.lowUsage { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--s-2) var(--s-3); padding: var(--s-3); border-radius: var(--shape-control); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border); }
+.lowUsage { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--s-2) var(--s-3); padding: var(--s-3); border-radius: var(--shape-control); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline); }
 .lowUsage .meterNote { color: var(--c-ink); }
 .lowUsage .meterTrack { grid-column: 1 / -1; grid-row: 2; }
 .lowUsageCta { grid-column: 2; grid-row: 1; font-size: var(--t-small); font-weight: var(--w-medium); color: var(--c-ink); text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
@@ -1582,7 +1482,7 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 /* Minimal pass: memory status is a small icon (state in its name/tooltip), not a "Memory on" chip. Off draws a slash. */
 .memoryChip.memoryChip { position: relative; justify-content: center; width: 32px; height: 32px; padding: 0; border-radius: 999px; box-shadow: none; color: var(--c-ink-3); transition: color var(--d-fast) ease, background-color var(--d-fast) ease; }
 .memoryChip.memoryChip[data-on] { color: var(--c-ink-2); }
-.memoryChip.memoryChip:hover { color: var(--c-ink); background: rgb(var(--rgb-ink) / 0.06); }
+.memoryChip.memoryChip:hover { color: var(--c-ink); background: var(--hover-wash); }
 .memoryChip.memoryChip:not([data-on])::after { content: ""; position: absolute; left: 9px; right: 9px; top: 50%; height: 1.5px; border-radius: 1px; background: currentColor; transform: rotate(-45deg); }
 
 /* ── App workspace layout (both themes) ──────────────────────────────────────────────────────────────────────────────────
@@ -1595,8 +1495,6 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 :global(:root[data-theme]) .sidebar {
   border-radius: 24px;
   background: var(--surface-panel);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
   box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1);
 }
 :global(:root[data-theme]) .sideItem { border-radius: 999px; }
@@ -1623,12 +1521,11 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
   color: var(--c-ink);
 }
 :global(:root[data-theme]) .topTitle:empty { visibility: hidden; }
-:global(:root[data-theme]) .memoryChip,
-:global(:root[data-theme]) .topbar > :global([class*="delete-chat-module"][class*="__trigger"]) { display: inline-grid; }
-/* (.iconBtn keeps its own display: the phone-only menu and New chat buttons stay hidden on wide screens) */
+:global(:root[data-theme]) .memoryChip { display: inline-grid; }
+/* (.iconBtn keeps its own display: the phone-only menu and New chat buttons stay hidden on wide screens. The header's delete
+   trigger is the kit's IconButton, a 40px ghost circle already.) */
 :global(:root[data-theme]) .topbar .iconBtn,
-:global(:root[data-theme]) .memoryChip,
-:global(:root[data-theme]) .topbar > :global([class*="delete-chat-module"][class*="__trigger"]) {
+:global(:root[data-theme]) .memoryChip {
   place-items: center;
   width: 40px;
   height: 40px;
@@ -1641,10 +1538,8 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
   transition: background-color var(--m-dur-1) var(--m-ease-out), color var(--m-dur-1) var(--m-ease-out);
 }
 :global(:root[data-theme]) .topbar .iconBtn:hover,
-:global(:root[data-theme]) .memoryChip:hover,
-:global(:root[data-theme]) .topbar > :global([class*="delete-chat-module"][class*="__trigger"]):hover { background: var(--hover-wash); color: var(--c-ink); }
-:global(:root[data-theme]) .topbar .iconBtn:active,
-:global(:root[data-theme]) .topbar > :global([class*="delete-chat-module"][class*="__trigger"]):active { background: var(--press-wash); }
+:global(:root[data-theme]) .memoryChip:hover { background: var(--hover-wash); color: var(--c-ink); }
+:global(:root[data-theme]) .topbar .iconBtn:active { background: var(--press-wash); }
 :global(:root[data-theme]) .upgradeTop {
   display: inline-flex;
   align-items: center;
@@ -1760,9 +1655,8 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
    and list rows on the aura backdrop. */
 .viewTitle { font-size: clamp(32px, 3vw, 44px); line-height: 1.08; letter-spacing: -0.035em; font-weight: var(--w-regular); }
 .viewLede { font-size: 17px; line-height: 1.6; color: var(--c-ink-3); }
-.textInput { height: 48px; border-radius: 999px; padding: 0 18px; background: color-mix(in srgb, var(--c-surface-1) 85%, transparent); box-shadow: inset 0 0 0 1px rgb(var(--rgb-ink) / 0.1); font-size: 15px; }
+.textInput { height: 48px; border-radius: 999px; padding: 0 18px; background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline-strong); font-size: 15px; }
 .textInput:focus-visible { border-radius: 999px; }
-.inlineForm .secondaryBtn { min-height: 48px; border-radius: 999px; padding: 0 20px; }
 
 /* Sidebar "Business · Learn more": links out to business.keplar.one (Business, Agents and Approvals live there for now) */
 

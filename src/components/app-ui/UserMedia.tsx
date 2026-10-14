@@ -19,7 +19,7 @@ export function UserMedia({ media }: { media: MessageMedia[] }) {
           return (
             <li key={x.id} className={css.item}>
               {src ? (
-                <button type="button" className={css.btn} onClick={() => (x.kind === "image" ? setOpen(x) : undefined)} data-viewable={x.kind === "image" || undefined} aria-label={x.kind === "image" ? `View ${x.name} full size` : `Video: ${x.name}`} title={x.kind === "image" ? "Click to view full size" : x.name}>
+                <button type="button" className={css.view} onClick={() => (x.kind === "image" ? setOpen(x) : undefined)} data-viewable={x.kind === "image" || undefined} aria-label={x.kind === "image" ? `View ${x.name} full size` : `Video: ${x.name}`}>
                   {/* eslint-disable-next-line @next/next/no-img-element -- in-memory original */}
                   <img src={x.kind === "video" ? (x.thumb ?? src) : src} alt={x.kind === "video" ? `Video: ${x.name}` : `Image: ${x.name}`} />
                 </button>

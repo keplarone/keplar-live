@@ -5,6 +5,7 @@ import { draftIdIn } from "@/lib/personalize/drafts";
 import type { KeplarMessage, UserMessage } from "../state/types";
 import { openDraft } from "./draft-bus";
 import { XPostsTool } from "./XPosts";
+import { Button } from "@/components/kit";
 import s from "./parity.module.css";
 
 /**
@@ -34,9 +35,9 @@ export function AnswerTools({ message: m, user }: { message: KeplarMessage; user
       ) : null}
       <div className={s.row}>
         {fromDraft ? (
-          <button type="button" className={s.btn} data-primary="" onClick={() => openDraft({ kind: "apply", draftId: fromDraft, markdown: a.markdown })}>Apply to draft</button>
+          <Button size="sm" variant="primary" onClick={() => openDraft({ kind: "apply", draftId: fromDraft, markdown: a.markdown })}>Apply to draft</Button>
         ) : null}
-        <button type="button" className={s.toolLink} onClick={() => openDraft({ kind: "open", markdown: a.markdown, title })} data-open-draft="">Open as draft</button>
+        <Button size="sm" variant="ghost" className={s.quiet} onClick={() => openDraft({ kind: "open", markdown: a.markdown, title })} data-open-draft="">Open as draft</Button>
         {user && !fromDraft ? <XPostsTool question={user.text} /> : null}
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { ToolUse } from "@/lib/orchestration/types";
+import { Button } from "@/components/kit";
 import s from "./ChatTools.module.css";
 
 type Decision = { state: "idle" | "busy" | "sent" | "failed" | "rejected" | "cancelled"; result?: string; error?: string };
@@ -82,12 +83,12 @@ function UseCard({ use: u }: { use: ToolUse }) {
       {pending ? (
         <>
           <div className={s.row}>
-            <button type="button" className={s.btn} data-primary="" disabled={d.state === "busy"} onClick={() => void decide("approve")}>
+            <Button size="sm" variant="primary" loading={d.state === "busy"} onClick={() => void decide("approve")}>
               {d.state === "busy" ? "Working…" : "Approve and run"}
-            </button>
-            <button type="button" className={s.btn} disabled={d.state === "busy"} onClick={() => void decide("reject")}>
+            </Button>
+            <Button size="sm" variant="secondary" disabled={d.state === "busy"} onClick={() => void decide("reject")}>
               Decline
-            </button>
+            </Button>
           </div>
           {d.error ? <p className={s.msg} role="alert">{d.error}</p> : null}
         </>

@@ -4,6 +4,14 @@
   container: composer / inline-size;
 }
 
+/* Invisible box over the whole composer: the anchor of its pop-ups (kit Popover), so they open clear of the text field. */
+.popAnchor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
 .composer {
   position: relative;
   display: flex;
@@ -11,15 +19,6 @@
   gap: var(--s-2);
   padding: var(--s-3) var(--s-3) var(--s-3) var(--s-4);
   border-radius: var(--r-input);
-  background: var(--c-glass-strong);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-glass-border), 0 0 0 var(--b-hairline) rgb(var(--rgb-ink) / 0.07), var(--sh-float);
-  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(var(--glass-saturate));
-  backdrop-filter: blur(var(--blur-glass)) saturate(var(--glass-saturate));
-  transition: box-shadow var(--d-base) var(--e-standard);
-}
-
-.composer:has(:is(textarea, input):focus) {
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-glass-border), 0 0 0 var(--b-hairline) rgb(var(--rgb-ink) / 0.16), var(--sh-float);
 }
 
 .input {
@@ -80,13 +79,17 @@
 
 .tool:hover {
   color: var(--c-ink);
-  background: rgb(var(--rgb-ink) / 0.04);
+  background: var(--hover-wash);
+}
+
+.tool:active {
+  scale: var(--m-press);
 }
 
 .tool[aria-pressed="true"] {
   color: var(--c-ink);
   background: var(--c-canvas);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong), 0 0 0 3px rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong);
 }
 
 .tool[aria-pressed="true"] svg {
@@ -94,11 +97,8 @@
 }
 
 .tool:focus-visible,
-.routingBtn:focus-visible,
-.send:focus-visible,
-.stop:focus-visible {
+.routingBtn:focus-visible {
   border-radius: var(--r-pill);
-  outline-offset: 1px;
 }
 
 .actions {
@@ -124,7 +124,11 @@
 .routingBtn:hover,
 .routingBtn[aria-expanded="true"] {
   color: var(--c-ink);
-  background: rgb(var(--rgb-ink) / 0.04);
+  background: var(--hover-wash);
+}
+
+.routingBtn:active {
+  scale: var(--m-press);
 }
 
 .routingBtn[data-custom]::after {
@@ -138,50 +142,18 @@
   background: var(--c-agree);
 }
 
-.send,
-.stop {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-2);
-  height: 36px;
-  padding: 0 var(--s-4);
-  border-radius: var(--r-pill);
-  background: var(--c-ink);
-  color: var(--c-canvas);
-  font-size: var(--t-small);
-  font-weight: var(--w-medium);
-  white-space: nowrap;
-  box-shadow: inset 0 1px 0 rgb(var(--rgb-canvas) / 0.14);
-  transition: background-color var(--d-base) var(--e-standard), opacity var(--d-base) var(--e-standard);
+/* Send: the kit's primary IconButton (a 44px ink circle, the area's one ink action). While it can't send it sits back as a
+   quiet wash instead of a faded ink disc. Stop: the kit's secondary Button. */
+.send.send {
+  --size: 44px;
+  box-shadow: var(--elev-1);
 }
 
-.send:hover:not(:disabled),
-.stop:hover {
-  background: var(--c-ink-hover);
-}
-
-.send:disabled {
-  opacity: 0.28;
-  cursor: default;
-}
-
-.arrow {
-  display: inline-block;
-  transition: transform var(--d-base) var(--e-standard);
-}
-
-.send:hover:not(:disabled) .arrow {
-  transform: translateX(3px);
-}
-
-.stop {
-  background: var(--c-canvas);
-  color: var(--c-ink);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong);
-}
-
-.stop:hover {
-  background: var(--c-surface-1);
+.send.send[aria-disabled="true"] {
+  opacity: 1;
+  background: var(--press-wash);
+  color: var(--c-ink-3);
+  box-shadow: none;
 }
 
 /* attachments */
@@ -191,25 +163,11 @@
   color: var(--c-dissent-text);
 }
 
-/* advanced routing */
+/* advanced routing: a kit Popover (placement, surface and size are set in "Pop-ups" below) */
 .panel {
-  position: absolute;
-  right: 0;
-  bottom: calc(100% + var(--s-2));
-  z-index: 5;
-  width: min(420px, 100%);
-  max-height: min(70vh, 620px);
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: var(--s-5);
-  padding: var(--s-5);
-  border-radius: var(--r-card);
-  background: rgb(var(--rgb-canvas) / 0.9);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-glass-border), 0 0 0 var(--b-hairline) rgb(var(--rgb-ink) / 0.08), var(--sh-window);
-  -webkit-backdrop-filter: blur(var(--blur-glass-strong)) saturate(var(--glass-saturate));
-  backdrop-filter: blur(var(--blur-glass-strong)) saturate(var(--glass-saturate));
-  /* enter and exit: data-motion="pop" from the routing button (src/styles/motion.css) */
   scrollbar-width: thin;
 }
 
@@ -302,11 +260,11 @@
   box-shadow: var(--sh-hairline);
 }
 
+/* the site's keyboard cue (never a box): a bar under the option */
 .segment input:focus-visible + span,
 .family input:focus-visible + span,
 .check input:focus-visible + span {
-  outline: var(--b-focus) solid var(--c-focus);
-  outline-offset: 1px;
+  box-shadow: inset 0 -2px 0 var(--c-focus);
 }
 
 .rangeRow {
@@ -348,7 +306,7 @@
   height: 16px;
   border-radius: var(--r-pill);
   background: var(--c-surface-2);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline);
   transition: background-color var(--d-fast) var(--e-standard);
 }
 
@@ -362,7 +320,7 @@
   margin-top: -6px;
   border-radius: 50%;
   background: var(--c-canvas);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--elev-1);
   transition: transform var(--d-fast) var(--e-standard);
 }
 
@@ -392,7 +350,7 @@
   border-radius: var(--r-pill);
   font-size: var(--t-label);
   color: var(--c-ink-2);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline);
   cursor: pointer;
   transition: color var(--d-fast) var(--e-standard), background-color var(--d-fast) var(--e-standard);
 }
@@ -405,7 +363,7 @@
 
 .previewLine {
   padding-top: var(--s-4);
-  border-top: var(--b-hairline) solid var(--c-border);
+  border-top: var(--b-hairline) solid var(--hairline);
   font-size: var(--t-label);
   color: var(--c-ink-2);
   font-family: var(--f-sans);
@@ -420,7 +378,7 @@
   height: 16px;
   padding: 0 6px;
   border-radius: var(--r-pill);
-  border: 1px solid var(--c-border-strong);
+  border: 1px solid var(--hairline-strong);
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -449,16 +407,6 @@
   .routingBtn[data-custom]::after {
     left: 22px;
   }
-  .send {
-    padding: 0 var(--s-3);
-  }
-  .panel {
-    position: fixed;
-    left: var(--s-3);
-    right: var(--s-3);
-    bottom: calc(var(--s-3) + 120px);
-    width: auto;
-  }
 }
 
 
@@ -472,14 +420,14 @@
   margin: 0 var(--s-2) var(--s-2);
   padding: var(--s-2) var(--s-3);
   border-radius: var(--r-md);
-  background: rgba(23, 23, 26, 0.06);
+  background: var(--hover-wash);
   font-size: var(--t-label);
   color: var(--c-ink-2);
   font-variant-numeric: tabular-nums;
 }
 
 .budget[data-blocked] {
-  background: rgba(201, 102, 74, 0.07);
+  background: rgb(var(--rgb-attention) / 0.1);
   color: var(--c-ink);
 }
 
@@ -493,24 +441,27 @@
   gap: var(--s-4);
 }
 
-.budgetBtn,
+/* "Turn off Study" and friends: quiet kit ghost Buttons (sm) */
+.budgetAct {
+  color: var(--c-ink);
+}
+
 .budgetLink {
   font-size: var(--t-label);
   font-weight: var(--w-medium);
   color: var(--c-ink);
   text-decoration: underline;
-  text-decoration-color: var(--c-border-strong);
+  text-decoration-color: var(--hairline-strong);
   text-underline-offset: 3px;
 }
 
-.budgetBtn:hover,
 .budgetLink:hover {
   text-decoration-color: currentColor;
 }
 
-/* media attachments (images, video frames) */
-.composer[data-dragging] {
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-glass-border), 0 0 0 2px rgba(23, 23, 26, 0.35), var(--sh-float);
+/* media attachments (images, video frames): a file held over the composer strengthens its edge */
+:global(:root[data-theme]) .composer[data-dragging] {
+  box-shadow: inset 0 0 0 1px var(--hairline-strong), 0 0 0 2px var(--c-ink-3), var(--elev-2);
 }
 
 .dropZone {
@@ -522,8 +473,8 @@
   justify-content: center;
   gap: var(--s-2);
   border-radius: calc(var(--r-input) - 4px);
-  border: 1.5px dashed rgba(23, 23, 26, 0.55);
-  background: rgb(var(--rgb-canvas) / 0.92);
+  border: 1.5px dashed var(--c-ink-3);
+  background: var(--surface-raised);
   font-family: var(--f-sans);
   font-size: var(--t-label);
   letter-spacing: 0;
@@ -577,70 +528,38 @@
 @media (prefers-reduced-motion: reduce) { .tool[data-voice-btn="listening"]::after { animation: none; } }
 
 @media (pointer: coarse) {
-  .tool, .routingBtn, .send, .stop { min-width: 44px; min-height: 44px; height: 44px; }
+  .tool, .routingBtn, .stop { min-width: 44px; min-height: 44px; height: 44px; }
 }
-
-/* glass buttons (liquid glass: see src/styles/glass.css) */
-.send { background: var(--btn-p-bg); color: var(--btn-p-ink); border-color: transparent; box-shadow: var(--btn-p-shadow); -webkit-backdrop-filter: blur(6px) saturate(1.4); backdrop-filter: blur(6px) saturate(1.4); transition: var(--btn-spring); }
-.send:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--c-ink-hover); }
-.send:active:not(:disabled) { scale: var(--m-press); }
-@media (prefers-reduced-motion: reduce) { .send { transition: background-color 0.1s linear; transform: none !important; } }
-@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .send { backdrop-filter: none; -webkit-backdrop-filter: none; } .send { background: var(--btn-p-solid, #17171a); } }
-
-/* ── liquid glass (CP-6c): clear glass composer + menus, ink focus glow (no blue/purple), refraction in Chromium ── */
-.composer {
-  border-radius: 28px;
-  background: var(--lg-fill-strong);
-  -webkit-backdrop-filter: var(--lg-bf);
-  backdrop-filter: var(--lg-bf);
-  box-shadow: var(--lg-ring), var(--lg-shadow);
-  transition: box-shadow 0.25s var(--e-standard);
-}
-html[data-lens] .composer { backdrop-filter: url(#lg-refract) var(--lg-bf); }
-.composer:has(:is(textarea, input):focus) {
-  box-shadow: var(--lg-ring), inset 0 0 0 1px rgb(var(--ring-rgb, 23 23 26) / 0.32), 0 0 0 4px rgb(var(--ring-rgb, 23 23 26) / 0.09), var(--lg-shadow);
+@media (prefers-reduced-motion: reduce) {
+  .tool:active, .routingBtn:active { scale: none; }
 }
 
 /* Phones and narrow columns: mode chips that don't fit move into the "More" menu (measured in Composer.tsx); the row never scrolls or clips. */
 .tool[data-overflow] { display: none; }
 .more:not([data-show]) { display: none; }
-.more[aria-expanded="true"] { color: var(--c-ink); background: rgb(var(--rgb-ink) / 0.06); }
+.more[aria-expanded="true"] { color: var(--c-ink); background: var(--press-wash); }
 /* a pressed mode that had to move into More (narrow phones): More looks pressed, like the chip it holds */
-.more[data-active] { color: var(--c-ink); background: var(--c-canvas); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong), 0 0 0 3px rgba(255, 255, 255, 0.22); }
+.more[data-active] { color: var(--c-ink); background: var(--c-canvas); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong); }
 .more[data-active] svg { color: var(--c-agree); }
-.moreMenu {
-  position: absolute;
-  left: 0;
-  bottom: calc(100% + var(--s-2));
-  z-index: 6;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 200px;
-  max-width: calc(100% - var(--s-4));
-  padding: var(--s-1);
-  border-radius: var(--shape-card, 16px);
-  /* Opaque like the slash-command menu: a blur inside the composer's own glass can't reach the page behind, so a glass fill reads as see-through. */
-  background: var(--c-canvas);
-  box-shadow: inset 0 0 0 var(--b-hairline, 1px) var(--c-border-strong), var(--lg-shadow, var(--sh-float));
-  /* enter and exit: data-motion="pop" from the button that opened it (src/styles/motion.css) */
-}
 .moreItem {
   display: flex;
   align-items: center;
   gap: var(--s-2);
   min-height: 40px;
   padding: 0 var(--s-3);
-  border-radius: var(--shape-control, 12px);
+  border: 0;
+  border-radius: var(--shape-control);
+  background: transparent;
+  font: inherit;
   font-size: var(--t-small);
   color: var(--c-ink-2);
   text-align: left;
   white-space: nowrap;
+  cursor: pointer;
 }
-.moreItem:hover { color: var(--c-ink); background: rgb(var(--rgb-ink) / 0.05); }
-.moreItem[aria-checked="true"] { color: var(--c-ink); background: rgb(var(--rgb-ink) / 0.08); }
+.moreItem:hover, .moreItem:focus-visible { color: var(--c-ink); background: var(--hover-wash); }
+.moreItem[aria-checked="true"] { color: var(--c-ink); background: var(--press-wash); }
 .moreItem .toolBeta { display: inline-flex; margin-left: auto; }
-.moreItem:focus-visible { outline-offset: -2px; }
 @media (pointer: coarse) { .moreItem { min-height: 44px; } }
 
 /* The composer, not the window, decides: when the toolbar cannot show every label (a narrow main column beside the sidebar, 200% zoom, a split view),
@@ -703,25 +622,15 @@ html[data-lens] .composer { backdrop-filter: url(#lg-refract) var(--lg-bf); }
   user-select: none;
 }
 .readsKinds {
-  color: rgb(var(--rgb-ink) / 0.38);
+  color: var(--c-ink-3);
 }
 @container composer (max-width: 420px) {
   .readsKinds { display: none; }
 }
 
 .attachMenu {
-  position: absolute;
-  left: 0;
-  bottom: calc(100% + var(--s-2));
-  z-index: 7;
   display: flex;
   flex-direction: column;
-  width: min(340px, calc(100% - var(--s-2)));
-  padding: var(--s-1);
-  border-radius: var(--shape-card, 16px);
-  background: var(--c-canvas);
-  box-shadow: inset 0 0 0 var(--b-hairline, 1px) var(--c-border-strong), var(--lg-shadow, var(--sh-float));
-  /* enter and exit: data-motion="pop" from the button that opened it (src/styles/motion.css) */
 }
 .attachItem {
   display: flex;
@@ -729,10 +638,13 @@ html[data-lens] .composer { backdrop-filter: url(#lg-refract) var(--lg-bf); }
   gap: var(--s-3);
   width: 100%;
   padding: 10px var(--s-3);
-  border-radius: 10px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  font: inherit;
   text-align: left;
   color: var(--c-ink);
-  outline: none;
+  cursor: pointer;
   transition: background-color var(--d-fast) var(--e-standard);
 }
 .attachItem > svg {
@@ -742,7 +654,7 @@ html[data-lens] .composer { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 }
 .attachItem:hover,
 .attachItem:focus-visible {
-  background: rgb(var(--rgb-ink) / 0.06);
+  background: var(--hover-wash);
 }
 .attachText {
   display: flex;
@@ -762,9 +674,9 @@ html[data-lens] .composer { backdrop-filter: url(#lg-refract) var(--lg-bf); }
   gap: var(--s-2);
   margin: 2px 0;
   padding: 4px 4px 4px var(--s-3);
-  border-radius: 10px;
-  background: rgb(var(--rgb-ink) / 0.05);
-  box-shadow: inset 0 0 0 var(--b-hairline, 1px) var(--c-border-strong);
+  border-radius: var(--r-sm);
+  background: var(--hover-wash);
+  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong);
 }
 .linkForm > svg {
   flex: none;
@@ -784,27 +696,10 @@ html[data-lens] .composer { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 .linkInput::placeholder {
   color: var(--c-ink-3);
 }
-.linkGo {
-  flex: none;
-  height: 30px;
-  padding: 0 var(--s-3);
-  border-radius: 8px;
-  font-size: var(--t-small);
-  font-weight: 500;
-  background: var(--c-ink);
-  color: var(--c-canvas);
-  outline: none;
-}
-.linkGo:disabled {
-  opacity: 0.35;
-}
-.linkGo:focus-visible {
-  box-shadow: 0 0 0 2px var(--c-canvas), 0 0 0 3px var(--c-ink-2);
-}
 .attachReads {
   margin-top: var(--s-1);
   padding: var(--s-2) var(--s-3) var(--s-1);
-  border-top: var(--b-hairline, 1px) solid var(--c-border);
+  border-top: var(--b-hairline) solid var(--hairline);
 }
 .attachReadsTitle {
   margin: 0 0 6px;
@@ -856,18 +751,9 @@ html[data-lens] .composer { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 .dropZone:has(.dropKinds) {
   flex-direction: column;
 }
-:global(html[data-theme="dark"]) .dropZone {
-  border-color: rgb(var(--rgb-ink) / 0.4);
-}
-
 @media (pointer: coarse) {
   .attachItem { min-height: 48px; }
-  .linkGo { height: 40px; }
   .linkInput { height: 40px; font-size: 16px; }
-}
-@media (max-width: 520px) {
-  .attachMenu { width: calc(100% - var(--s-2)); }
-  .attachReads ul { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 /* Calm composer: the "Paste a link or drop a file" line (aria-hidden; the same guidance is in the input's description and the + menu)
@@ -884,13 +770,11 @@ html[data-lens] .composer { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 }
 
 /* Composer (both themes, from the product surface tokens): a raised card with a hairline edge, round tool pills on a quiet wash
-   and a round send button in ink. The edge strengthens while the field has focus. */
+   and a round send button in ink. The edge strengthens while the field has focus (an ink focus glow, never a blue accent). */
 :global(:root[data-theme]) .composer {
   padding: 16px 16px 12px 18px;
   border-radius: 26px;
   background: var(--surface-raised);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
   box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-2);
   transition: box-shadow var(--m-dur-2) var(--m-ease-out);
 }
@@ -900,42 +784,31 @@ html[data-lens] .composer { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 :global(:root[data-theme]) .input { font-size: 17px; }
 :global(:root[data-theme]) .tool { border-radius: 999px; background: var(--hover-wash); box-shadow: none; }
 :global(:root[data-theme]) .tool:hover { background: var(--press-wash); }
-:global(:root[data-theme]) .send { border-radius: 999px; background: var(--c-ink); color: var(--c-canvas); box-shadow: var(--elev-1); -webkit-backdrop-filter: none; backdrop-filter: none; }
-:global(:root[data-theme]) .send:disabled { background: var(--press-wash); color: var(--c-ink-3); box-shadow: none; }
 
-/* The send button is a round arrow; the label stays for screen readers */
-:global(:root[data-theme]) .send { width: 44px; height: 44px; min-width: 44px; padding: 0; justify-content: center; }
-:global(:root[data-theme]) .send > span:first-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-:global(:root[data-theme]) .send .arrow { display: inline-block; margin: 0; font-size: 18px; transform: rotate(-90deg); }
-:global(:root[data-theme]) .send:hover:not(:disabled) .arrow { transform: rotate(-90deg) translateX(1px); }
-
-/* ── Pop-ups, rebuilt (Oct 2026) ──
- * Placement: Composer.tsx measures the room above and below the composer when one opens and sets data-pop="above|below" plus
- * --pop-room (that space) and --more-x (the Modes button's offset). On the empty home the composer sits mid-screen, so they open
- * downward instead of running off the top over the greeting; in a chat they open upward as before. Height is capped to the room
- * so nothing is clipped. Look: one opaque overlay surface (nothing behind a menu reads through its text), sentence-case section
- * labels, roomy rows. */
-.panel, .moreMenu, .attachMenu {
+/* ── Pop-ups (Attach, Modes, Advanced routing): kit Popovers ──
+ * Placement: Composer.tsx measures the room above and below the composer when one opens, picks the side with more (data-pop and
+ * the Popover's side) and sets --pop-room to that space. On the empty home the composer sits mid-screen, so they open downward
+ * instead of running off the top over the greeting; in a chat they open upward. Height is capped to the room so nothing is
+ * clipped. Look: the kit's one opaque overlay surface (nothing behind a menu reads through its text), roomy rows. The doubled
+ * class outranks the kit's compact popover defaults. */
+.panel.panel, .moreMenu.moreMenu, .attachMenu.attachMenu {
   border-radius: 24px;
   background: var(--surface-overlay);
   box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-3);
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-  max-height: var(--pop-room, 560px);
+  max-width: calc(100vw - 16px);
+  max-height: min(var(--pop-room, 560px), calc(100dvh - 16px));
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
 }
-.wrap[data-pop="below"] .panel,
-.wrap[data-pop="below"] .moreMenu,
-.wrap[data-pop="below"] .attachMenu { bottom: auto; top: calc(100% + 10px); }
+.attachMenu.attachMenu { width: 340px; padding: var(--s-1); }
 
 /* Advanced routing */
-.panel { width: min(400px, 100%); padding: 20px; gap: 20px; }
+.panel.panel { width: 400px; padding: 20px; gap: 20px; }
 .panelTitle { font-size: 17px; font-weight: var(--w-medium); letter-spacing: -0.01em; }
 .panelLede { font-size: 13px; line-height: 1.5; color: var(--c-ink-3); }
 .legend { margin-bottom: 8px; font-size: 13px; font-weight: var(--w-medium); letter-spacing: 0; text-transform: none; color: var(--c-ink-2); }
-.segmented { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; flex-wrap: nowrap; gap: 2px; padding: 3px; border-radius: 999px; background: rgb(var(--rgb-ink) / 0.06); }
+.segmented { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; flex-wrap: nowrap; gap: 2px; padding: 3px; border-radius: 999px; background: var(--hover-wash); }
 .segment span { height: 32px; padding: 0 8px; border-radius: 999px; font-size: 13px; transition: background-color 220ms ease, color 220ms ease, box-shadow 220ms ease; }
 .segment input:checked + span { background: var(--surface-raised); color: var(--c-ink); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1); }
 
@@ -944,11 +817,11 @@ html[data-lens] .composer { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 .choice { position: relative; display: block; cursor: pointer; }
 .choice input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .choiceText { display: flex; flex-direction: column; gap: 2px; padding: 10px 14px 10px 38px; border-radius: 16px; transition: background-color 200ms ease; position: relative; }
-.choiceText::before { content: ""; position: absolute; left: 14px; top: 13px; width: 14px; height: 14px; border-radius: 999px; box-shadow: inset 0 0 0 1.5px rgb(var(--rgb-ink) / 0.3); transition: box-shadow 200ms ease; }
-.choice:hover .choiceText { background: rgb(var(--rgb-ink) / 0.04); }
-.choice input:checked + .choiceText { background: rgb(var(--rgb-ink) / 0.06); }
+.choiceText::before { content: ""; position: absolute; left: 14px; top: 13px; width: 14px; height: 14px; border-radius: 999px; box-shadow: inset 0 0 0 1.5px var(--c-ink-3); transition: box-shadow 200ms ease; }
+.choice:hover .choiceText { background: var(--hover-wash); }
+.choice input:checked + .choiceText { background: var(--press-wash); }
 .choice input:checked + .choiceText::before { box-shadow: inset 0 0 0 4.5px var(--c-ink); }
-.choice input:focus-visible + .choiceText { outline: var(--b-focus) solid var(--c-focus); outline-offset: 1px; }
+.choice input:focus-visible + .choiceText { box-shadow: inset 0 -2px 0 var(--c-focus); }
 .choiceLabel { font-size: 14px; font-weight: var(--w-medium); color: var(--c-ink); }
 .choiceHint { font-size: 12.5px; line-height: 1.4; color: var(--c-ink-3); }
 
@@ -957,14 +830,12 @@ html[data-lens] .composer { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 .help { font-size: 12.5px; }
 
 /* Modes: two columns of tiles, each an icon disc, the name and one short line */
-.moreMenu {
-  left: var(--more-x, 0px);
+.moreMenu.moreMenu {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 4px;
-  width: min(380px, calc(100% - var(--more-x, 0px)));
+  width: 380px;
   min-width: 0;
-  max-width: none;
   padding: 8px;
 }
 .moreItem { align-items: center; gap: 10px; min-height: 56px; padding: 8px 10px; border-radius: 16px; white-space: normal; transition: background-color 180ms ease; }
@@ -974,23 +845,20 @@ html[data-lens] .composer { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 .moreLabel { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: var(--w-medium); color: var(--c-ink); }
 .moreBlurb { font-size: 12px; line-height: 1.35; color: var(--c-ink-3); }
 .moreItem .toolBeta { margin-left: 0; }
-@container composer (max-width: 420px) {
-  .moreMenu { grid-template-columns: minmax(0, 1fr); left: 0; width: 100%; }
+@media (max-width: 440px) {
+  .moreMenu.moreMenu { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* Attach: same surface; rows already carry a title and a sub-line */
 .attachItem { border-radius: 16px; }
 
 /* Keplar Vision: the bar shown while a screen is shared (screen-share.ts). Always visible while sharing; Stop ends it. */
-.shareBar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 8px; padding: 6px 8px 6px 12px; border-radius: 10px; background: rgb(var(--rgb-ink) / 0.05); box-shadow: inset 0 0 0 1px var(--c-border); font-size: 12.5px; }
+.shareBar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 8px; padding: 6px 8px 6px 12px; border-radius: 10px; background: var(--hover-wash); box-shadow: inset 0 0 0 1px var(--hairline); font-size: 12.5px; }
 .shareDot { width: 8px; height: 8px; border-radius: 50%; background: var(--c-destructive); flex: none; }
 @media (prefers-reduced-motion: no-preference) { .shareDot { animation: share-pulse 1.6s ease-in-out infinite; } }
 @keyframes share-pulse { 50% { opacity: 0.35; } }
 .shareLabel { font-weight: 500; color: var(--c-ink); max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .shareNote { color: var(--c-ink-3); flex: 1; min-width: 0; }
-.shareBtn { height: 26px; padding: 0 10px; border: 0; border-radius: 7px; background: rgb(var(--rgb-ink) / 0.07); color: var(--c-ink); font: inherit; font-size: 12.5px; cursor: pointer; }
-.shareBtn:hover { background: rgb(var(--rgb-ink) / 0.12); }
-.shareBtn:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
 
 /* Live Research depth (desktop app only): the routing panel's segmented control, compact enough for the status row. */
 .liveDepth { display: inline-grid; grid-auto-flow: column; grid-auto-columns: auto; padding: 2px; }

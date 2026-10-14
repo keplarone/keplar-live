@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { appendCapped, parseRunnerMsg, RUN_LIMITS, type RunLang } from "@/lib/sandbox/runner";
+import { Button } from "@/components/kit";
 import s from "./parity.module.css";
 
 export { runnableLang } from "@/lib/sandbox/runner";
@@ -88,8 +89,8 @@ export function CodeRunner({ code, lang, compact = false, autoRun = false }: { c
     <div className={s.runner} data-code-runner="" data-compact={compact ? "" : undefined}>
       <div className={s.row}>
         {running
-          ? <button type="button" className={s.btn} onClick={stop}>Stop</button>
-          : <button type="button" className={s.btn} onClick={run} aria-label={`Run this ${lang === "python" ? "Python" : "JavaScript"} in a sandbox`}>Run</button>}
+          ? <Button size="sm" variant="secondary" onClick={stop}>Stop</Button>
+          : <Button size="sm" variant="secondary" onClick={run} aria-label={`Run this ${lang === "python" ? "Python" : "JavaScript"} in a sandbox`}>Run</Button>}
         <span className={s.muted}>{lang === "python" ? "Python" : "JavaScript"} · runs in a sandbox in this browser, with no access to your account or the network</span>
       </div>
       {out.length || images.length || status ? (

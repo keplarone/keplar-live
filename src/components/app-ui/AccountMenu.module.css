@@ -1,14 +1,15 @@
-/* Account switcher + import prompt. Tokens only (src/styles/tokens.css). */
+/* Account switcher + import prompt. The menu surface is the kit Popover (opaque, top layer); product tokens only. */
 .wrap { position: relative; padding: 0 var(--s-1); }
 
 .chip {
   display: flex; align-items: center; gap: var(--s-3); width: 100%; min-height: 44px;
-  padding: var(--s-2) var(--s-3); border-radius: var(--r-sm); text-align: left;
-  color: var(--c-ink); background: var(--c-surface-1); border: 1px solid var(--c-border);
-  transition: background-color var(--d-fast) var(--e-standard), border-color var(--d-fast) var(--e-standard);
+  padding: var(--s-2) var(--s-3); border: 0; border-radius: var(--shape-control); text-align: left;
+  color: var(--c-ink); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1);
+  cursor: pointer;
+  transition: background-color var(--d-fast) var(--e-standard), box-shadow var(--d-fast) var(--e-standard);
 }
-.chip:hover { background: var(--c-surface-2); border-color: var(--c-border-strong); }
-.chip:focus-visible, .item:focus-visible, .btn:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+.chip:hover, .chip[aria-expanded="true"] { background: var(--c-surface-2); box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-1); }
+.chip:active { scale: var(--m-press); }
 
 .avatar {
   display: inline-grid; place-items: center; flex: none; width: 28px; height: 28px; border-radius: var(--r-pill);
@@ -19,62 +20,43 @@
 .email { font-size: var(--t-label); color: var(--c-ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .caret { color: var(--c-ink-3); font-size: var(--t-label); }
 
-.menu {
-  position: absolute; left: var(--s-1); right: var(--s-1); bottom: calc(100% + var(--s-2)); z-index: 30;
+/* the kit Popover, sized for the sidebar: as wide as the sidebar row, as tall as the window allows */
+.menu.menu {
+  width: min(300px, calc(100vw - 16px)); max-width: none;
+  max-height: min(640px, calc(100dvh - 96px)); overflow-y: auto; overscroll-behavior: contain;
   display: flex; flex-direction: column; gap: var(--s-1); padding: var(--s-2);
-  background: var(--c-canvas); border: 1px solid var(--c-border-strong); border-radius: var(--r-md);
-  box-shadow: 0 12px 32px rgb(var(--rgb-ink) / 0.14);
+  border-radius: var(--r-md);
 }
-.menuHead { padding: var(--s-2) var(--s-3); display: flex; flex-direction: column; gap: 2px; border-bottom: 1px solid var(--c-border); margin-bottom: var(--s-1); }
+.menuHead { padding: var(--s-2) var(--s-3); display: flex; flex-direction: column; gap: 2px; border-bottom: 1px solid var(--hairline); margin-bottom: var(--s-1); }
 .menuLabel { font-size: var(--t-label); color: var(--c-ink-3); text-transform: none; letter-spacing: 0; }
 .item {
-  display: flex; align-items: center; width: 100%; min-height: 36px; padding: 0 var(--s-3); border-radius: var(--r-xs);
-  font-size: var(--t-small); color: var(--c-ink-2); text-align: left; text-decoration: none; cursor: pointer;
+  display: flex; align-items: center; width: 100%; min-height: 36px; padding: 0 var(--s-3); border: 0; border-radius: var(--shape-control);
+  background: transparent; font: inherit; font-size: var(--t-small); color: var(--c-ink-2); text-align: left; text-decoration: none; cursor: pointer;
 }
-.item:hover { color: var(--c-ink); background: rgb(var(--rgb-ink) / 0.05); }
-.item[aria-disabled="true"] { opacity: 0.5; pointer-events: none; }
+.item:hover, .item:focus-visible { color: var(--c-ink); background: var(--hover-wash); }
+.item:disabled, .item[aria-disabled="true"] { opacity: 0.5; pointer-events: none; }
 .note { padding: var(--s-1) var(--s-3) var(--s-2); font-size: var(--t-label); color: var(--c-ink-3); }
 
 .import {
-  margin: 0 var(--s-1) var(--s-2); padding: var(--s-4); border-radius: var(--r-sm);
-  background: rgb(var(--rgb-reasoning) / 0.07); border: 1px solid rgb(var(--rgb-reasoning) / 0.25);
+  margin: 0 var(--s-1) var(--s-2); padding: var(--s-4); border-radius: var(--r-md);
+  background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline);
   display: flex; flex-direction: column; gap: var(--s-3); font-size: var(--t-small); line-height: 1.4; color: var(--c-ink);
 }
 .importTitle { font-weight: var(--w-medium); }
 .importBody { color: var(--c-ink-2); font-size: var(--t-label); line-height: 1.5; text-wrap: pretty; }
 .row { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-1); }
-.btn {
-  /* equal pills that never wrap their label: side by side when they fit, stacked when the sidebar is narrow */
-  flex: 1 1 max-content; min-width: max-content; min-height: 40px; padding: 0 var(--s-5); border-radius: var(--r-pill); font-size: var(--t-small); font-weight: var(--w-medium); line-height: 1; white-space: nowrap;
-  display: inline-flex; align-items: center; justify-content: center;
-  border: 1px solid var(--c-border-strong); color: var(--c-ink); background: transparent; cursor: pointer;
-}
-.btnPrimary { background: var(--c-ink); color: var(--c-canvas); border-color: var(--c-ink); }
-.btnPrimary:hover { background: var(--c-ink-hover); }
-.btn:disabled { opacity: 0.6; cursor: default; }
-
-/* ── liquid glass (CP-6c) ── */
-.chip { border-radius: var(--shape-control); background: var(--btn-s-bg); border-color: transparent; box-shadow: var(--btn-s-shadow); transition: var(--btn-spring); }
-.chip:hover { background: var(--lg-card-hover); border-color: transparent; }
-.menu {
-  border-radius: 22px; border: 0;
-  background: var(--lg-fill-strong); -webkit-backdrop-filter: var(--lg-bf); backdrop-filter: var(--lg-bf);
-  box-shadow: var(--lg-ring), 0 2px 4px rgb(0 0 0 / 0.06), 0 24px 56px -20px rgb(0 0 0 / 0.4);
-}
-.item { border-radius: var(--shape-control); }
-.item:hover { background: var(--lg-card-hover); }
-.import { border-radius: 18px; background: var(--lg-card); border-color: transparent; box-shadow: var(--lg-ring); }
+/* equal kit pills that never wrap their label: side by side when they fit, stacked when the sidebar is narrow */
+.importAct { flex: 1 1 max-content; min-width: max-content; }
 
 /* ── several accounts on this device ── */
-.list { display: flex; flex-direction: column; gap: 2px; margin-bottom: var(--s-1); padding-bottom: var(--s-1); border-bottom: 1px solid var(--c-border); }
+.list { display: flex; flex-direction: column; gap: 2px; margin-bottom: var(--s-1); padding-bottom: var(--s-1); border-bottom: 1px solid var(--hairline); }
 .acctRow { display: flex; align-items: center; gap: var(--s-1); }
 .acctRow .item { gap: var(--s-3); min-height: 44px; flex: 1; }
 .acctRow[data-expired] .email { color: var(--c-ink-3); }
-.rm { flex: none; min-height: 32px; padding: 0 var(--s-3); border-radius: var(--shape-control); font-size: var(--t-label); color: var(--c-ink-2); background: transparent; border: 1px solid var(--c-border); cursor: pointer; }
-.rm:hover { color: var(--c-ink); border-color: var(--c-border-strong); }
-.rm:disabled { opacity: 0.5; cursor: default; }
+.rm { flex: none; }
 
 /* ── minimal pass: usage and theme live in the menu ── */
-.menu { max-height: min(640px, calc(100dvh - 96px)); overflow-y: auto; overscroll-behavior: contain; }
-.usage { padding: var(--s-2) var(--s-3) var(--s-3); margin-bottom: var(--s-1); border-bottom: 1px solid var(--c-border); font-size: var(--t-small); }
+.usage { padding: var(--s-2) var(--s-3) var(--s-3); margin-bottom: var(--s-1); border-bottom: 1px solid var(--hairline); font-size: var(--t-small); }
 .themeRow { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); min-height: 40px; padding: 0 var(--s-1) 0 var(--s-3); font-size: var(--t-small); color: var(--c-ink-2); }
+
+@media (prefers-reduced-motion: reduce) { .chip:active { scale: none; } }

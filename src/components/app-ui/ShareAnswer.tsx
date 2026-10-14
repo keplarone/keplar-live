@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { KeplarAnswer } from "@/lib/orchestration/types";
 import { growthTrack } from "@/lib/growth/client";
+import { Button, Dialog, IconButton } from "@/components/kit";
 import s from "./ShareAnswer.module.css";
-import { usePresence } from "@/components/motion/usePresence";
+import la from "./link-action.module.css";
 
 type LinkRow = { token: string; url: string; createdAt: string; expiresAt: string; views: number; hasQuestion: boolean; preview: string; public?: boolean; publicUrl?: string | null; canPublic?: boolean };
 type View = "closed" | "confirm" | "made" | "signin";
@@ -30,8 +31,11 @@ const snapshot = (a: KeplarAnswer) => ({
   reviewer: a.verification.mode === "cross-model" ? a.verification.reviewer : undefined,
 });
 
-export function ShareAnswer({ answer, triggerClass }: { answer: KeplarAnswer; triggerClass: string }) {
-  const uid = useId();
+/**
+ * "Share this answer": an icon button under the answer and a kit Dialog with three steps (sign in, confirm, link made).
+ * Nothing is shared until Create link. The Dialog owns Escape, the backdrop, Close and returning focus to the button.
+ */
+export function ShareAnswer({ answer, triggerClass }: { answer: KeplarAnswer; triggerClass?: string }) {
   const [view, setView] = useState<View>("closed");
   const [question, setQuestion] = useState("");
   const [includeQuestion, setIncludeQuestion] = useState(true);
@@ -72,22 +76,11 @@ export function ShareAnswer({ answer, triggerClass }: { answer: KeplarAnswer; tr
     growthTrack("share_dialog");
     void loadLinks();
   };
-  // The dialog keeps showing its last step while it animates out (usePresence keeps it mounted until the exit ends).
-  const dialog = usePresence(view !== "closed");
-  const [lastView, setLastView] = useState<View>("confirm");
-  if (view !== "closed" && view !== lastView) setLastView(view);
-  const shown: View = view === "closed" ? lastView : view;
-  const close = () => {
-    setView("closed");
-    trigger.current?.focus();
-  };
+  const close = () => setView("closed");
 
+  // Each step starts on its first control (the Dialog focuses the first one on open; this follows step changes).
   useEffect(() => {
-    if (view === "closed") return;
-    first.current?.focus();
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    if (view !== "closed") first.current?.focus();
   }, [view]);
 
   const create = async () => {
@@ -160,101 +153,95 @@ export function ShareAnswer({ answer, triggerClass }: { answer: KeplarAnswer; tr
 
   return (
     <>
-      <button ref={trigger} type="button" className={triggerClass} onClick={open} aria-label="Share this answer" aria-haspopup="dialog">
-        <ShareIcon />
-      </button>
-      {dialog.mounted ? (
-        <div className={s.scrim} onMouseDown={(e) => e.target === e.currentTarget && close()} {...dialog.motion("fade")}>
-          <div className={s.dialog} role="dialog" aria-modal="true" aria-labelledby={`${uid}-t`} {...dialog.motion("pop", false)}>
-            <h2 id={`${uid}-t`} className={s.h}>{shown === "made" ? "Your link is ready" : "Share this answer"}</h2>
+      <IconButton ref={trigger} size="sm" className={triggerClass} onClick={open} label="Share this answer" aria-haspopup="dialog" icon={<ShareIcon />} />
+      <Dialog open={view !== "closed"} onOpenChange={(o) => { if (!o) close(); }} title={view === "made" ? "Your link is ready" : "Share this answer"} size="lg">
+        <div className={s.body}>
+          {view === "signin" ? (
+            <>
+              <p className={s.p}>Sign in to make a link. Links belong to your account so you can turn them off later.</p>
+              <div className={s.row}>
+                <Link className={la.act} data-variant="primary" href="/signin?next=/app" ref={(el) => { first.current = el; }}>Sign in</Link>
+                <Button variant="secondary" onClick={close}>Not now</Button>
+              </div>
+            </>
+          ) : null}
 
-            {shown === "signin" ? (
-              <>
-                <p className={s.p}>Sign in to make a link. Links belong to your account so you can turn them off later.</p>
-                <div className={s.row}>
-                  <Link className={s.primary} style={{ display: "inline-flex", alignItems: "center", textDecoration: "none" }} href="/signin?next=/app" ref={(el) => { first.current = el; }}>Sign in</Link>
-                  <button type="button" className={s.ghost} onClick={close}>Not now</button>
-                </div>
-              </>
-            ) : null}
+          {view === "confirm" ? (
+            <>
+              <p className={s.p}>Nothing is shared until you press Create link. Anyone who has the link can open it, so share it only with people you trust.</p>
+              <ul className={s.list}>
+                <li>Included: this answer, how many models agreed, the models consulted, where they disagreed, why the answer went the way it did, and the web source check if one ran.</li>
+                <li>Not included: your name, email, other chats, memory or files.</li>
+                <li>Not listed in search engines. Chat apps may show your question and how many models agreed as a preview card. You can turn it off at any time, and it expires after 90 days.</li>
+              </ul>
+              <label className={s.check}>
+                <input type="checkbox" checked={includeQuestion} onChange={(e) => setIncludeQuestion(e.target.checked)} ref={(el) => { first.current = el; }} />
+                <span>Include my question (edit it below, remove private details)</span>
+              </label>
+              {includeQuestion ? <textarea className={s.area} aria-label="Question shown on the shared page" maxLength={1500} value={question} onChange={(e) => setQuestion(e.target.value)} /> : null}
+              {error ? <p className={s.err} role="alert">{error}</p> : null}
+              <div className={s.row}>
+                <Button variant="primary" onClick={create} loading={busy}>{busy ? "Creating…" : "Create link"}</Button>
+                <Button variant="secondary" onClick={close}>Cancel</Button>
+              </div>
+            </>
+          ) : null}
 
-            {shown === "confirm" ? (
-              <>
-                <p className={s.p}>Nothing is shared until you press Create link. Anyone who has the link can open it, so share it only with people you trust.</p>
-                <ul className={s.list}>
-                  <li>Included: this answer, how many models agreed, the models consulted, where they disagreed, why the answer went the way it did, and the web source check if one ran.</li>
-                  <li>Not included: your name, email, other chats, memory or files.</li>
-                  <li>Not listed in search engines. Chat apps may show your question and how many models agreed as a preview card. You can turn it off at any time, and it expires after 90 days.</li>
-                </ul>
-                <label className={s.check}>
-                  <input type="checkbox" checked={includeQuestion} onChange={(e) => setIncludeQuestion(e.target.checked)} ref={(el) => { first.current = el; }} />
-                  <span>Include my question (edit it below, remove private details)</span>
-                </label>
-                {includeQuestion ? <textarea className={s.area} aria-label="Question shown on the shared page" maxLength={1500} value={question} onChange={(e) => setQuestion(e.target.value)} /> : null}
-                {error ? <p className={s.err} role="alert">{error}</p> : null}
-                <div className={s.row}>
-                  <button type="button" className={s.primary} onClick={create} disabled={busy}>{busy ? "Creating…" : "Create link"}</button>
-                  <button type="button" className={s.ghost} onClick={close}>Cancel</button>
-                </div>
-              </>
-            ) : null}
+          {view === "made" ? (
+            <>
+              <input className={s.url} readOnly value={made} aria-label="Shared link" onFocus={(e) => e.currentTarget.select()} ref={(el) => { first.current = el; }} />
+              <div className={s.row}>
+                <Button variant="primary" onClick={copy}>{copied ? "Copied" : "Copy link"}</Button>
+                <Button variant="secondary" onClick={() => revoke(made.split("/").pop() ?? "")}>Turn off this link</Button>
+                <Button variant="ghost" onClick={close}>Done</Button>
+              </div>
+              {error ? <p className={s.err} role="alert">{error}</p> : null}
+              <div className={s.pub}>
+                <p className={s.p}><strong>Optional: make this a public page</strong></p>
+                {madeRow?.public && madeRow.publicUrl ? (
+                  <>
+                    <p className={s.p}>This answer is public. Search engines may index it, and it is listed on keplar.one/answers.</p>
+                    <input className={s.url} readOnly value={madeRow.publicUrl} aria-label="Public page address" onFocus={(e) => e.currentTarget.select()} />
+                    <div className={s.row}>
+                      <Button variant="secondary" onClick={() => copyPublic(madeRow.publicUrl!)}>{pubCopied ? "Copied" : "Copy public link"}</Button>
+                      <Button variant="ghost" onClick={() => setPublic(madeToken, false)} disabled={pubBusy}>Make private</Button>
+                    </div>
+                  </>
+                ) : madeRow && !madeRow.canPublic ? (
+                  <p className={s.p}>A public page needs your question as its title. Make a new link with your question included.</p>
+                ) : (
+                  <>
+                    <p className={s.p}>Your private link is not listed in search engines. A public page is: it gets its own address, a preview image, and may be found through Google or Bing. Your question and this answer will be visible to everyone, with no name or email. Keplar checks for emails, phone numbers, card numbers and keys, but you should re-read it yourself. You can make it private again at any time. Verified email required.</p>
+                    <label className={s.check}>
+                      <input type="checkbox" checked={pubOk} onChange={(e) => setPubOk(e.target.checked)} />
+                      <span>I understand this page will be public and search engines may index it.</span>
+                    </label>
+                    <div className={s.row}>
+                      <Button variant="secondary" onClick={() => setPublic(madeToken, true)} disabled={!pubOk || !madeRow} loading={pubBusy}>{pubBusy ? "Working…" : "Make public"}</Button>
+                    </div>
+                  </>
+                )}
+                {pubErr ? <p className={s.err} role="alert">{pubErr}</p> : null}
+              </div>
+            </>
+          ) : null}
 
-            {shown === "made" ? (
-              <>
-                <input className={s.url} readOnly value={made} aria-label="Shared link" onFocus={(e) => e.currentTarget.select()} ref={(el) => { first.current = el; }} />
-                <div className={s.row}>
-                  <button type="button" className={s.primary} onClick={copy}>{copied ? "Copied" : "Copy link"}</button>
-                  <button type="button" className={s.ghost} onClick={() => revoke(made.split("/").pop() ?? "")}>Turn off this link</button>
-                  <button type="button" className={s.ghost} onClick={close}>Done</button>
-                </div>
-                {error ? <p className={s.err} role="alert">{error}</p> : null}
-                <div className={s.pub}>
-                  <p className={s.p}><strong>Optional: make this a public page</strong></p>
-                  {madeRow?.public && madeRow.publicUrl ? (
-                    <>
-                      <p className={s.p}>This answer is public. Search engines may index it, and it is listed on keplar.one/answers.</p>
-                      <input className={s.url} readOnly value={madeRow.publicUrl} aria-label="Public page address" onFocus={(e) => e.currentTarget.select()} />
-                      <div className={s.row}>
-                        <button type="button" className={s.primary} onClick={() => copyPublic(madeRow.publicUrl!)}>{pubCopied ? "Copied" : "Copy public link"}</button>
-                        <button type="button" className={s.ghost} onClick={() => setPublic(madeToken, false)} disabled={pubBusy}>Make private</button>
-                      </div>
-                    </>
-                  ) : madeRow && !madeRow.canPublic ? (
-                    <p className={s.p}>A public page needs your question as its title. Make a new link with your question included.</p>
-                  ) : (
-                    <>
-                      <p className={s.p}>Your private link is not listed in search engines. A public page is: it gets its own address, a preview image, and may be found through Google or Bing. Your question and this answer will be visible to everyone, with no name or email. Keplar checks for emails, phone numbers, card numbers and keys, but you should re-read it yourself. You can make it private again at any time. Verified email required.</p>
-                      <label className={s.check}>
-                        <input type="checkbox" checked={pubOk} onChange={(e) => setPubOk(e.target.checked)} />
-                        <span>I understand this page will be public and search engines may index it.</span>
-                      </label>
-                      <div className={s.row}>
-                        <button type="button" className={s.ghost} onClick={() => setPublic(madeToken, true)} disabled={!pubOk || pubBusy || !madeRow}>{pubBusy ? "Working…" : "Make public"}</button>
-                      </div>
-                    </>
-                  )}
-                  {pubErr ? <p className={s.err} role="alert">{pubErr}</p> : null}
-                </div>
-              </>
-            ) : null}
-
-            {shown !== "signin" && links.length ? (
-              <>
-                <p className={s.p}>Your live links</p>
-                <ul className={s.links}>
-                  {links.slice(0, 6).map((l) => (
-                    <li key={l.token}>
-                      <span>{new Date(l.createdAt).toLocaleDateString()} · {l.views} {l.views === 1 ? "view" : "views"}{l.public ? " · Public" : ""}</span>
-                      {l.public ? <button type="button" className={s.revoke} onClick={() => setPublic(l.token, false)}>Make private</button> : null}
-                      <button type="button" className={s.revoke} onClick={() => revoke(l.token)}>Turn off</button>
-                    </li>
-                  ))}
-                </ul>
-              </>
-            ) : null}
-          </div>
+          {view !== "signin" && links.length ? (
+            <>
+              <p className={s.p}>Your live links</p>
+              <ul className={s.links}>
+                {links.slice(0, 6).map((l) => (
+                  <li key={l.token}>
+                    <span>{new Date(l.createdAt).toLocaleDateString()} · {l.views} {l.views === 1 ? "view" : "views"}{l.public ? " · Public" : ""}</span>
+                    {l.public ? <Button size="sm" variant="ghost" onClick={() => setPublic(l.token, false)}>Make private</Button> : null}
+                    <Button size="sm" variant="ghost" onClick={() => revoke(l.token)}>Turn off</Button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
         </div>
-      ) : null}
+      </Dialog>
     </>
   );
 }

@@ -67,7 +67,7 @@ test("private link: noindex, question + models + side-by-side disagreement, prev
 
   // abuse report from the page, signed out
   await v.getByRole("button", { name: "Report this page" }).click();
-  const dlg = v.getByTestId("report-dialog");
+  const dlg = v.getByRole("dialog");
   await expect(dlg).toBeVisible();
   await dlg.getByLabel("Reveals private information").check();
   await dlg.getByRole("button", { name: "Send report" }).click();

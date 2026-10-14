@@ -29,9 +29,12 @@ test("the app layout and the composer are one block for both themes (no hex-copi
 });
 
 test("menus, popovers and the sidebar drawer are opaque inside the app", () => {
+  // UI v2: the composer's Attach, Modes and routing pop-ups are kit Popovers on the opaque overlay surface; no glass anywhere in it.
   const composer = strip(read("src/components/app-ui/Composer.module.css"));
-  assert.match(composer, /\.panel, \.moreMenu, \.attachMenu \{[^}]*background: var\(--surface-overlay\)/);
-  assert.match(composer, /\.panel, \.moreMenu, \.attachMenu \{[^}]*backdrop-filter: none/);
+  assert.match(composer, /\.panel\.panel, \.moreMenu\.moreMenu, \.attachMenu\.attachMenu \{[^}]*background: var\(--surface-overlay\)/);
+  assert.doesNotMatch(composer, /backdrop-filter|--lg-|--c-glass/, "no glass in the composer");
+  const tsx = read("src/components/app-ui/Composer.tsx");
+  assert.equal((tsx.match(/<Popover /g) ?? []).length, 3, "Attach, Modes and routing are kit Popovers");
   const app = strip(read("src/components/app-ui/App.module.css"));
   assert.match(app, /\.app \{[^}]*--lg-fill: var\(--surface-overlay\)[^}]*--lg-bf: none/, "glass tokens resolve to opaque surfaces in the app");
   assert.match(app, /\.sidebar \{[^}]*background: var\(--surface-panel\)/);

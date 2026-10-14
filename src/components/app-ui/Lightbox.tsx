@@ -1,8 +1,14 @@
 "use client";
-/** Full-size image viewer: shows the image at its real resolution (scrollable when larger than the screen), Esc / backdrop closes. */
+/**
+ * Full-size image viewer: shows the image at its real resolution (scrollable when larger than the screen), Esc / backdrop closes.
+ * It stays its own full-screen layer (the kit Dialog is a width-capped card, wrong for a picture at 100%): an opaque canvas, the
+ * kit's Buttons, focus held on the controls and returned on close.
+ */
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { Button } from "@/components/kit";
 import css from "./Lightbox.module.css";
+import la from "./link-action.module.css";
 import { lockScroll } from "@/lib/ui/scroll-lock";
 import { useExit } from "@/components/motion/usePresence";
 
@@ -45,9 +51,9 @@ export function Lightbox({ src, alt, caption, downloadHref, downloadName, onClos
       <div className={css.bar}>
         <span className={css.cap}>{caption ?? alt}{dims ? ` · ${dims}` : ""}</span>
         <span className={css.actions}>
-          <button type="button" className={css.btn} onClick={() => setActual((v) => !v)} aria-pressed={actual}>{actual ? "Fit to screen" : "Actual size"}</button>
-          {downloadHref ? <a className={css.btn} href={downloadHref} download={downloadName ?? ""}>Download original</a> : null}
-          <button ref={closeRef} type="button" className={css.btn} onClick={close}>Close</button>
+          <Button size="sm" variant="secondary" onClick={() => setActual((v) => !v)} aria-pressed={actual}>{actual ? "Fit to screen" : "Actual size"}</Button>
+          {downloadHref ? <a className={la.act} data-variant="secondary" data-size="sm" href={downloadHref} download={downloadName ?? ""}>Download original</a> : null}
+          <Button ref={closeRef} size="sm" variant="primary" onClick={close}>Close</Button>
         </span>
       </div>
       <div className={`${css.stage} ${actual ? css.actual : ""}`} onClick={(e) => { if (e.target === e.currentTarget) close(); }} data-motion="pop" data-state={exit.state} style={{ ["--m-origin" as string]: "50% 50%" }}>

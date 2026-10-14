@@ -9,10 +9,10 @@
 .frame {
   position: relative;
   margin: 0;
-  border-radius: var(--r-md, 14px);
+  border-radius: var(--r-md);
   overflow: hidden;
   background: var(--c-surface-2);
-  box-shadow: var(--sh-hairline);
+  box-shadow: inset 0 0 0 1px var(--hairline);
 }
 
 .frame button {
@@ -24,10 +24,6 @@
   cursor: zoom-in;
 }
 
-.frame button:focus-visible {
-  outline: 2px solid var(--c-accent);
-  outline-offset: -2px;
-}
 
 .frame img {
   display: block;
@@ -82,9 +78,9 @@
   flex-direction: column;
   gap: var(--s-3);
   padding: var(--s-4);
-  border-radius: var(--r-md, 14px);
+  border-radius: var(--r-md);
   background: var(--c-surface-2);
-  box-shadow: var(--sh-hairline);
+  box-shadow: inset 0 0 0 1px var(--hairline);
 }
 
 .panel h3 {
@@ -121,16 +117,13 @@
   color: var(--c-ink-3);
 }
 
+/* picture sizes: kit secondary Buttons (sm); the chosen one is ink */
 .chip {
-  height: 32px;
-  padding: 0 var(--s-3);
-  border-radius: var(--r-pill);
-  font-size: var(--t-small);
   color: var(--c-ink-2);
-  box-shadow: var(--sh-hairline);
 }
 
 .chip[aria-pressed="true"] {
+  border-color: var(--c-ink);
   background: var(--c-ink);
   color: var(--c-canvas);
 }
@@ -154,39 +147,6 @@
   gap: var(--s-2);
 }
 
-.primary,
-.ghost {
-  display: inline-flex;
-  align-items: center;
-  height: 36px;
-  padding: 0 var(--s-4);
-  border-radius: var(--r-pill);
-  font-size: var(--t-small);
-  white-space: nowrap;
-  text-decoration: none;
-}
-
-.primary {
-  background: var(--c-ink);
-  color: var(--c-canvas);
-  font-weight: var(--w-medium);
-}
-
-.primary:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.ghost {
-  color: var(--c-ink-2);
-  box-shadow: var(--sh-hairline);
-}
-
-.ghost:hover {
-  color: var(--c-ink);
-  background: rgb(var(--rgb-ink) / 0.04);
-}
-
 .edit {
   display: flex;
   gap: var(--s-2);
@@ -200,7 +160,7 @@
   padding: 0 var(--s-3);
   border-radius: var(--r-sm);
   background: var(--c-surface-2);
-  box-shadow: var(--sh-hairline);
+  box-shadow: inset 0 0 0 1px var(--hairline);
   color: var(--c-ink);
   font: inherit;
   font-size: var(--t-small);

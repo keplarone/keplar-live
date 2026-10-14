@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { activeScopeHeaders } from "../state/scope";
 import { openDraft } from "./draft-bus";
+import { Button, Tooltip } from "@/components/kit";
 import s from "./parity.module.css";
 
 /** Whether live voice is switched on for this person (src/lib/voice/realtime.ts). Hidden entirely when it isn't. */
@@ -90,12 +91,13 @@ export function LiveVoice() {
   const busy = state === "connecting" || state === "live";
   return (
     <>
-      <button type="button" className={s.toggle} aria-pressed={busy} onClick={() => (busy ? stop("Call ended.") : void start())} data-live-voice="" title="Talk out loud with one model in real time. Not cross-checked by the panel.">
-        <span className={s.pip} aria-hidden="true" />
-        <span>{state === "live" ? "End live voice" : state === "connecting" ? "Connecting..." : "Talk live"}</span>
-      </button>
+      <Tooltip content="Talk out loud with one model in real time. Not cross-checked by the panel.">
+        <Button size="sm" variant="ghost" className={s.toggle} aria-pressed={busy} onClick={() => (busy ? stop("Call ended.") : void start())} data-live-voice="" leadingIcon={<span className={s.pip} aria-hidden="true" />}>
+          {state === "live" ? "End live voice" : state === "connecting" ? "Connecting..." : "Talk live"}
+        </Button>
+      </Tooltip>
       {msg ? <span className={s.note} role="status">{msg}{state === "live" ? " One model, not cross-checked." : ""}</span> : null}
-      {!busy && lines.length ? <button type="button" className={s.link} onClick={toDraft}>Open transcript as a draft</button> : null}
+      {!busy && lines.length ? <Button size="sm" variant="ghost" onClick={toDraft}>Open transcript as a draft</Button> : null}
       <audio ref={audio} autoPlay hidden />
     </>
   );

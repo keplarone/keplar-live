@@ -9,8 +9,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DeleteSiteDialog, SiteUndo } from "@/components/create/delete/DeleteSiteDialog";
 import { useSiteDelete } from "@/components/create/delete/useSiteDelete";
 import { ShareTemplate, type MyTemplate } from "./ShareTemplate";
+import { Button, SegmentedControl, Tooltip } from "@/components/kit";
 import s from "./App.module.css";
 import css from "./SiteProjects.module.css";
+import la from "./link-action.module.css";
 
 type Site = {
   id: string; name: string; slug: string; headVersion: number; publishedVersion: number | null; publishedUrl: string | null;
@@ -106,11 +108,14 @@ export function SiteProjects({ query, onResume }: { query: string; onResume: (id
       <div className={css.head}>
         <h2 className={css.h2}>Sites</h2>
         <span className={css.count}>{counts.all}{max ? ` of ${max}` : ""}</span>
-        <div role="group" aria-label="Filter sites" className={css.filters}>
-          {([["all", "All"], ["live", "Live"], ["draft", "Draft"], ["update", "Needs update"], ["archived", `Archived${counts.archived ? ` (${counts.archived})` : ""}`]] as [Filter, string][]).map(([id, label]) => (
-            <button key={id} type="button" className={css.chip} aria-pressed={filter === id} onClick={() => setFilter(id)}>{label}</button>
-          ))}
-        </div>
+        <SegmentedControl
+          label="Filter sites"
+          size="sm"
+          className={css.filters}
+          value={filter}
+          onValueChange={setFilter}
+          options={([["all", "All"], ["live", "Live"], ["draft", "Draft"], ["update", "Needs update"], ["archived", `Archived${counts.archived ? ` (${counts.archived})` : ""}`]] as [Filter, string][]).map(([value, label]) => ({ value, label }))}
+        />
       </div>
       {err ? <p className={s.fieldError} role="alert">{err}</p> : null}
       <p className="visually-hidden" role="status" aria-live="polite">{live}</p>
@@ -127,7 +132,7 @@ export function SiteProjects({ query, onResume }: { query: string; onResume: (id
                       <form className={css.rename} onSubmit={(e) => { e.preventDefault(); const n = draft.trim(); if (n) void act(x.id, `Renamed to ${n}.`, async () => { await api(`/api/sites/${x.id}`, { method: "PATCH", body: JSON.stringify({ name: n }) }); setRenaming(null); }); }}>
                         <label className="visually-hidden" htmlFor={`rn-${x.id}`}>Site name</label>
                         <input id={`rn-${x.id}`} className={s.textInput} value={draft} maxLength={60} autoFocus onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Escape") setRenaming(null); }} />
-                        <button type="submit" className={s.textBtn}>Save</button>
+                        <Button type="submit" size="sm" variant="primary">Save</Button>
                       </form>
                     ) : (
                       <h3 className={css.name} title={x.name}>{x.name}</h3>
@@ -142,14 +147,18 @@ export function SiteProjects({ query, onResume }: { query: string; onResume: (id
                     {x.archived ? " · archived" : ""}
                   </p>
                   <div className={css.actions}>
-                    <button type="button" className={s.secondaryBtn} onClick={() => onResume(x.id)}>Resume in Create</button>
-                    {x.publishedUrl && !x.takenDown ? <a className={s.textBtn} href={x.publishedUrl} target="_blank" rel="noreferrer">Open live</a> : null}
-                    <button type="button" className={s.textBtn} aria-expanded={open === x.id} onClick={() => setOpen(open === x.id ? null : x.id)}>{open === x.id ? "Hide details" : "Details"}</button>
-                    <button type="button" className={s.textBtn} onClick={() => { setRenaming(x.id); setDraft(x.name); }}>Rename</button>
-                    <button type="button" className={s.textBtn} disabled={busy === x.id || (max !== null && sites.length >= max)} title={max !== null && sites.length >= max ? "You're at your plan's site limit" : "Copy the latest version into a new draft"} onClick={() => void act(x.id, `Duplicated ${x.name}.`, () => api(`/api/sites/${x.id}/duplicate`, { method: "POST", body: "{}" }))}>Duplicate</button>
+                    <Button size="sm" variant="secondary" onClick={() => onResume(x.id)}>Resume in Create</Button>
+                    {x.publishedUrl && !x.takenDown ? <a className={la.act} data-variant="ghost" data-size="sm" href={x.publishedUrl} target="_blank" rel="noreferrer">Open live</a> : null}
+                    <Button size="sm" variant="ghost" aria-expanded={open === x.id} onClick={() => setOpen(open === x.id ? null : x.id)}>{open === x.id ? "Hide details" : "Details"}</Button>
+                    <Button size="sm" variant="ghost" onClick={() => { setRenaming(x.id); setDraft(x.name); }}>Rename</Button>
+                    <Tooltip content={max !== null && sites.length >= max ? "You're at your plan's site limit" : "Copy the latest version into a new draft"}>
+                      <Button size="sm" variant="ghost" disabled={busy === x.id || (max !== null && sites.length >= max)} onClick={() => void act(x.id, `Duplicated ${x.name}.`, () => api(`/api/sites/${x.id}/duplicate`, { method: "POST", body: "{}" }))}>Duplicate</Button>
+                    </Tooltip>
                     {x.headVersion && !x.takenDown && !x.archived ? <ShareTemplate siteId={x.id} siteName={x.name} existing={tpls.find((t) => t.sourceSiteId === x.id) ?? null} onChanged={() => { void loadTemplates(); setLive("Template settings updated."); }} /> : null}
-                    <button type="button" className={s.textBtn} disabled={busy === x.id || (!x.archived && x.publishedVersion !== null)} title={!x.archived && x.publishedVersion !== null ? "Unpublish it first" : undefined} onClick={() => void act(x.id, x.archived ? `Restored ${x.name}.` : `Archived ${x.name}.`, () => api(`/api/sites/${x.id}`, { method: "PATCH", body: JSON.stringify({ archived: !x.archived }) }))}>{x.archived ? "Restore" : "Archive"}</button>
-                    <button type="button" className={s.textBtn} disabled={busy === x.id} aria-haspopup="dialog" aria-label={`Delete site: ${x.name}`} data-delete-site-for={x.id} onClick={() => del.ask({ id: x.id, name: x.name })}>Delete</button>
+                    <Tooltip content="Unpublish it first" disabled={x.archived || x.publishedVersion === null}>
+                      <Button size="sm" variant="ghost" disabled={busy === x.id || (!x.archived && x.publishedVersion !== null)} onClick={() => void act(x.id, x.archived ? `Restored ${x.name}.` : `Archived ${x.name}.`, () => api(`/api/sites/${x.id}`, { method: "PATCH", body: JSON.stringify({ archived: !x.archived }) }))}>{x.archived ? "Restore" : "Archive"}</Button>
+                    </Tooltip>
+                    <Button size="sm" variant="ghost" className={css.danger} disabled={busy === x.id} aria-haspopup="dialog" aria-label={`Delete site: ${x.name}`} data-delete-site-for={x.id} onClick={() => del.ask({ id: x.id, name: x.name })}>Delete</Button>
                   </div>
                   {open === x.id ? <Drawer site={x} /> : null}
                 </div>

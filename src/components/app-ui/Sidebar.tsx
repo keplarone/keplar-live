@@ -12,6 +12,8 @@ import { pathForView } from "./app-paths";
 import type { AccountInfo, AppState, View } from "./state/types";
 import { AccountMenu, ImportPrompt, type ImportOffer } from "./AccountMenu";
 import s from "./App.module.css";
+import la from "./link-action.module.css";
+import { IconButton, Tooltip } from "@/components/kit";
 import { Recents } from "./Recents";
 
 type Props = {
@@ -135,9 +137,7 @@ export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteC
           <KeplarLogo height={18} />
         </Link>
         {onClose ? (
-          <button type="button" className={s.iconBtn} onClick={onClose} aria-label="Close sidebar">
-            <IconClose size={16} />
-          </button>
+          <IconButton shape="circle" onClick={onClose} label="Close sidebar" tooltipSide="left" icon={<IconClose size={16} />} />
         ) : null}
       </div>
 
@@ -190,7 +190,7 @@ export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteC
         {state.ledger.synced && !state.ledger.signedIn ? (
           // Signed out: no usage meter at all, just the way in.
           <div className={s.signedOutRow}>
-            <Link className={s.upgradeBtn} href="/signin" data-plan-cta="signin">Sign in</Link>
+            <Link className={`${la.act} ${s.signInCta}`} data-variant="primary" href="/signin" data-plan-cta="signin">Sign in</Link>
             <Link className={s.meterLink} href="/pricing">See plans</Link>
           </div>
         ) : null}
@@ -207,9 +207,11 @@ export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteC
             ) : null}
             <div className={s.accountRow}>
               {account ? <AccountMenu account={account} plan={planName} paid={paidPlan} usage={usage} /> : <span className={s.grow} />}
-              <Link href="/account" className={s.iconBtn} aria-label="Settings" title="Settings" data-nav="settings">
-                <IconSettings size={16} />
-              </Link>
+              <Tooltip content="Settings">
+                <Link href="/account" className={s.iconBtn} aria-label="Settings" data-nav="settings">
+                  <IconSettings size={16} />
+                </Link>
+              </Tooltip>
             </div>
           </>
         ) : null}

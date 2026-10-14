@@ -1,15 +1,19 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
+import { notify } from "@/components/kit";
 import type { Thread } from "../state/types";
 
 /** How long a deleted chat can still be brought back. After this the server copy is deleted for good. */
 export const UNDO_MS = 6000;
+/** One undo toast at a time: every delete replaces it in place (the kit toast's id). */
+export const UNDO_TOAST_ID = "chat-delete-undo";
 
 type Pending = { thread: Thread; wasActive: boolean; timer: number };
 
 /**
- * Optimistic delete with undo. `request` removes the chat from the screen right away and starts the undo window;
- * `undo` puts it back untouched (nothing was sent to the server); when the window ends (or the page is closing) `commit` deletes it for good.
+ * Optimistic delete with undo. `request` removes the chat from the screen right away, starts the undo window and shows the kit
+ * toast ("Deleted …", action Undo) for that window; `undo` puts it back untouched (nothing was sent to the server); when the
+ * window ends (or the page is closing) `commit` deletes it for good.
  */
 export function useChatDelete(opts: {
   threads: Thread[];
@@ -22,7 +26,6 @@ export function useChatDelete(opts: {
   const latest = useRef(opts);
   useEffect(() => { latest.current = opts; });
   const pending = useRef(new Map<string, Pending>());
-  const [toast, setToast] = useState<{ id: string; title: string } | null>(null);
 
   const finish = useCallback((id: string, keepalive = false) => {
     const p = pending.current.get(id);
@@ -30,8 +33,15 @@ export function useChatDelete(opts: {
     window.clearTimeout(p.timer);
     pending.current.delete(id);
     commit(id, keepalive);
-    setToast((t) => (t && t.id === id ? null : t));
   }, [commit]);
+
+  const undo = useCallback((id: string) => {
+    const p = pending.current.get(id);
+    if (!p) return;
+    window.clearTimeout(p.timer);
+    pending.current.delete(id);
+    restore(p.thread, p.wasActive);
+  }, [restore]);
 
   const request = useCallback((id: string) => {
     const { threads, activeId } = latest.current;
@@ -42,18 +52,9 @@ export function useChatDelete(opts: {
     drop(id);
     const timer = window.setTimeout(() => finish(id), UNDO_MS);
     pending.current.set(id, { thread, wasActive: activeId === id, timer });
-    setToast({ id, title: thread.title.length > 40 ? `${thread.title.slice(0, 39)}…` : thread.title });
-  }, [drop, finish]);
-
-  const undo = useCallback((id: string) => {
-    const p = pending.current.get(id);
-    if (p) {
-      window.clearTimeout(p.timer);
-      pending.current.delete(id);
-      restore(p.thread, p.wasActive);
-    }
-    setToast((t) => (t && t.id === id ? null : t));
-  }, [restore]);
+    const title = thread.title.length > 40 ? `${thread.title.slice(0, 39)}…` : thread.title;
+    notify({ id: UNDO_TOAST_ID, title: `Deleted “${title}”`, duration: UNDO_MS, action: { label: "Undo", onClick: () => undo(id) } });
+  }, [drop, finish, undo]);
 
   // Closing or leaving the page ends the undo window: finish the deletes so they are not lost.
   useEffect(() => {
@@ -66,5 +67,5 @@ export function useChatDelete(opts: {
     };
   }, [finish]);
 
-  return { toast, request, undo };
+  return { request, undo };
 }

@@ -1,4 +1,5 @@
-/* Slash command autocomplete. Uses global shape/type tokens (Google Sans via --f-sans). */
+/* Slash command autocomplete: a combobox listbox (focus stays in the text field, so it is not a kit Menu), drawn on the same opaque
+   overlay surface as the kit's menus. Product tokens only (Google Sans via --f-sans). */
 .menu {
   list-style: none;
   margin: 0 0 6px;
@@ -8,10 +9,10 @@
   gap: 2px;
   max-height: min(280px, 40vh);
   overflow: auto;
-  border: var(--b-hairline) solid var(--c-border);
+  border: var(--b-hairline) solid var(--hairline-strong);
   border-radius: var(--r-md);
-  background: var(--c-canvas);
-  box-shadow: var(--sh-float);
+  background: var(--surface-overlay);
+  box-shadow: var(--elev-3);
   font-family: var(--f-sans);
 }
 
@@ -24,7 +25,7 @@
   min-height: 44px;
   padding: 8px 10px;
   border: 0;
-  border-radius: var(--r-sm, 8px);
+  border-radius: var(--r-sm);
   background: transparent;
   color: var(--c-ink);
   font: inherit;
@@ -34,13 +35,9 @@
 }
 
 .item:hover,
-.item[data-active] {
-  background: var(--c-surface-2);
-}
-
+.item[data-active],
 .item:focus-visible {
-  outline: var(--b-focus) solid var(--c-focus);
-  outline-offset: 1px;
+  background: var(--hover-wash);
 }
 
 .slash {
@@ -75,7 +72,7 @@
   letter-spacing: 0;
   text-transform: none;
   color: var(--c-ink-3);
-  border: var(--b-hairline) solid var(--c-border);
+  border: var(--b-hairline) solid var(--hairline-strong);
   border-radius: var(--r-pill);
   padding: 2px 6px;
   white-space: nowrap;

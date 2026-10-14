@@ -13,7 +13,9 @@ import { KeplarSymbol } from "@/components/brand";
 import { CHAT_INFO as INFO, CHAT_TEMPLATES, isInApp, outboundNoun, pickTemplate, plannedNodes, runNodes, type ChatTemplate, type FlowApproval, type FlowNode } from "@/lib/business/chat-flow";
 import type { AgentFlow, KeplarMessage, Ledger, UserMessage } from "../state/types";
 import { IconAgents, IconApprovals, IconCheck, IconHistory } from "../icons";
+import { Button, Icon, IconButton, notify } from "@/components/kit";
 import s from "./agent-flow.module.css";
+import la from "../link-action.module.css";
 
 type Props = {
   message: KeplarMessage;
@@ -143,7 +145,7 @@ export function AgentFlowTurn({ message: m, user, ledger, isLast, onPatch, onSet
       {f.phase === "ready" ? (
         <div className={s.actions}>
           <span className={s.fine}><IconApprovals size={14} /> {isInApp(template) ? "This workflow only writes to your Keplar inbox; nothing leaves Keplar." : "You approve anything that leaves Keplar."}</span>
-          <button type="button" className={s.primary} disabled={!isLast} onClick={() => void run(template)}>Set up and run now</button>
+          <Button variant="primary" disabled={!isLast} onClick={() => void run(template)}>Set up and run now</Button>
         </div>
       ) : null}
 
@@ -157,7 +159,7 @@ export function AgentFlowTurn({ message: m, user, ledger, isLast, onPatch, onSet
         <p className={s.note} role="alert">
           {f.error ?? "The workflow didn't run. Nothing was sent."}
           {f.code === "entitlement" ? <> <Link href="/pricing" className={s.inline}>See plans</Link></> : null}
-          {isLast && f.code !== "entitlement" && f.code !== "not_available" ? <> <button type="button" className={s.inlineBtn} onClick={() => void run(template)}>Try again</button></> : null}
+          {isLast && f.code !== "entitlement" && f.code !== "not_available" ? <> <Button size="sm" variant="ghost" className={s.inlineAct} onClick={() => void run(template)}>Try again</Button></> : null}
         </p>
       ) : null}
 
@@ -184,7 +186,6 @@ const scheduleChip = (label: string) => label.replace(/\s*\(America\/New_York\)\
 function Approvals({ flow: f, template, name, onPatch, onSettled }: { flow: AgentFlow; template: ChatTemplate; name: string; onPatch: (p: Partial<AgentFlow>) => void; onSettled: () => void }) {
   const [i, setI] = useState(0);
   const [busy, setBusy] = useState<"approve" | "reject" | null>(null);
-  const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
   const list = f.approvals;
   const pending = list.filter((a) => a.status === "pending");
   const cur = list[Math.min(i, list.length - 1)];
@@ -211,7 +212,10 @@ function Approvals({ flow: f, template, name, onPatch, onSettled }: { flow: Agen
     }
     setBusy(null);
     onSettled();
-    setToast(decision === "reject" ? { text: "Rejected · nothing was sent", ok: true } : failed ? { text: `${ok ? `${ok} sent · ` : ""}${failed} not sent${lastError ? `: ${lastError}` : ""}`, ok: false } : { text: `Approved · sent ${ok} ${noun}${ok === 1 ? "" : "s"}`, ok: true });
+    // The outcome is a kit toast; each draft's own status chip keeps the result on the card.
+    if (decision === "reject") notify({ id: "agent-flow-approvals", title: "Rejected · nothing was sent", tone: "neutral" });
+    else if (failed) notify({ id: "agent-flow-approvals", title: `${ok ? `${ok} sent · ` : ""}${failed} not sent${lastError ? `: ${lastError}` : ""}`, tone: "danger" });
+    else notify({ id: "agent-flow-approvals", title: `Approved · sent ${ok} ${noun}${ok === 1 ? "" : "s"}`, tone: "success" });
   };
 
   return (
@@ -230,8 +234,8 @@ function Approvals({ flow: f, template, name, onPatch, onSettled }: { flow: Agen
             {cur.status !== "pending" ? <span className={s.previewStatus} data-status={cur.status}>{cur.status === "sent" ? "Sent" : cur.status === "failed" ? "Not sent" : cur.status === "rejected" ? "Rejected" : cur.status}</span> : null}
             {list.length > 1 ? (
               <span className={s.pager}>
-                <button type="button" className={s.pageBtn} aria-label="Previous draft" disabled={i === 0} onClick={() => setI((x) => Math.max(0, x - 1))}>‹</button>
-                <button type="button" className={s.pageBtn} aria-label="Next draft" disabled={i >= list.length - 1} onClick={() => setI((x) => Math.min(list.length - 1, x + 1))}>›</button>
+                <IconButton size="sm" variant="secondary" label="Previous draft" disabled={i === 0} onClick={() => setI((x) => Math.max(0, x - 1))} icon={<Icon name="chevron-right" size={14} className={s.flip} />} />
+                <IconButton size="sm" variant="secondary" label="Next draft" disabled={i >= list.length - 1} onClick={() => setI((x) => Math.min(list.length - 1, x + 1))} icon={<Icon name="chevron-right" size={14} />} />
               </span>
             ) : null}
           </div>
@@ -244,14 +248,13 @@ function Approvals({ flow: f, template, name, onPatch, onSettled }: { flow: Agen
         <span className={s.fine}><IconApprovals size={14} /> You approve anything that leaves Keplar.</span>
         {pending.length ? (
           <>
-            <button type="button" className={s.ghost} disabled={busy !== null} onClick={() => void decide("reject")}>{busy === "reject" ? "Rejecting…" : "Reject"}</button>
-            <button type="button" className={s.primary} disabled={busy !== null} onClick={() => void decide("approve")} data-approve="">{busy === "approve" ? "Sending…" : "Approve and send"}</button>
+            <Button variant="secondary" disabled={busy !== null && busy !== "reject"} loading={busy === "reject"} onClick={() => void decide("reject")}>{busy === "reject" ? "Rejecting…" : "Reject"}</Button>
+            <Button variant="primary" disabled={busy !== null && busy !== "approve"} loading={busy === "approve"} onClick={() => void decide("approve")} data-approve="">{busy === "approve" ? "Sending…" : "Approve and send"}</Button>
           </>
         ) : (
-          <a href={BUSINESS_URL} className={s.ghostLink}>Open Keplar Business</a>
+          <a href={BUSINESS_URL} className={la.act} data-variant="secondary">Open Keplar Business</a>
         )}
       </div>
-      {toast ? <div className={s.toast} role="status" data-ok={toast.ok || undefined}>{toast.ok ? <IconCheck size={14} /> : null} {toast.text}</div> : null}
     </div>
   );
 }

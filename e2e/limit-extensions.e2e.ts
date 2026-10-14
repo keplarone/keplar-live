@@ -158,8 +158,8 @@ test.describe.serial("limit extensions", () => {
       await route.fulfill({ response: res, json: { ...j, ...plus, extension: n >= 3 ? { balance: 1500, expiresAt: resets(), latestGrantAt: fresh, grants: [] } : { balance: 0, expiresAt: null, latestGrantAt: null, grants: [] } } });
     });
     await page.goto("/app?extension=success");
-    await expect(page.locator("[data-extension-return]")).toContainText(/Confirming your purchase/i, { timeout: 15_000 });
-    await expect(page.locator("[data-extension-return]")).toContainText(/extra credits are in/i, { timeout: 30_000 });
+    await expect(page.getByRole("list", { name: "Notifications" })).toContainText(/Confirming your purchase/i, { timeout: 15_000 });
+    await expect(page.getByRole("list", { name: "Notifications" })).toContainText(/extra credits are in/i, { timeout: 30_000 });
     expect(page.url()).not.toContain("extension=success");
   });
 
