@@ -1,0 +1,21 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "keplar-business",
+  "version": "0.1.0",
+  "description": "Work with your existing Keplar Business projects, tasks, reports and agent status from ChatGPT.",
+  "homepage": "https://business.keplar.one",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Keplar Business",
+        "shortDescription": "Your business, in ChatGPT",
+        "longDescription": "Connect your Keplar Business account to read projects, tasks, reports and agent status, and save project work from ChatGPT.",
+        "capabilities": [],
+        "logo": "./assets/icon.png",
+        "composerIcon": "./assets/icon.png",
+        "websiteURL": "https://business.keplar.one",
+        "defaultPrompt": "Show my Keplar Business projects and help me make progress on my business."
+      }
+    }
+  }
+}

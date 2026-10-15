@@ -1,0 +1,10 @@
+import { siteUrl } from '@/lib/site';
+import { BUSINESS_URL } from '@/lib/business-site';
+import { READ, WRITE, SCOPES } from './core';
+export const ISSUER = new URL(siteUrl).origin;
+export const BUSINESS_ORIGIN = new URL(BUSINESS_URL).origin;
+export const RESOURCE = `${BUSINESS_ORIGIN}/api/chatgpt/mcp`;
+export const RESOURCE_METADATA = `${BUSINESS_ORIGIN}/.well-known/oauth-protected-resource`;
+export const authorizationMetadata = () => ({issuer:ISSUER,authorization_endpoint:`${ISSUER}/api/chatgpt/oauth/authorize`,token_endpoint:`${ISSUER}/api/chatgpt/oauth/token`,revocation_endpoint:`${ISSUER}/api/chatgpt/oauth/revoke`,response_types_supported:['code'],grant_types_supported:['authorization_code','refresh_token'],token_endpoint_auth_methods_supported:['none'],code_challenge_methods_supported:['S256'],scopes_supported:SCOPES,client_id_metadata_document_supported:true,authorization_response_iss_parameter_supported:true});
+export const resourceMetadata = () => ({resource:RESOURCE,authorization_servers:[ISSUER],scopes_supported:SCOPES,bearer_methods_supported:['header'],resource_name:'Keplar Business',resource_documentation:`${BUSINESS_ORIGIN}/security`});
+export const challenge = (scope=READ) => `Bearer resource_metadata="${RESOURCE_METADATA}", scope="${scope === WRITE ? `${READ} ${WRITE}` : READ}"`;

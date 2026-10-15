@@ -76,4 +76,7 @@ export const ORIGIN_EXEMPT_PREFIXES = [
   "/api/extension/", // the browser extension connecting (chrome-extension:// origin): never reads cookies; the PKCE verifier or the bearer key is the credential
 ];
 
-export const isOriginExempt = (pathname: string) => ORIGIN_EXEMPT_PREFIXES.some((p) => pathname.startsWith(p));
+// OAuth token exchanges and MCP calls use explicit credentials, never ambient browser cookies.
+// Consent POST stays protected by the normal same-origin guard.
+const CHATGPT_SERVER_PATHS = new Set(["/api/chatgpt/mcp", "/api/chatgpt/oauth/token", "/api/chatgpt/oauth/revoke"]);
+export const isOriginExempt = (pathname: string) => CHATGPT_SERVER_PATHS.has(pathname) || ORIGIN_EXEMPT_PREFIXES.some((p) => pathname.startsWith(p));

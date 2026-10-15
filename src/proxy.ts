@@ -129,7 +129,7 @@ const BUSINESS_PAGES = new Set(["", "account", "signin", "work", "status", "term
 
 export function businessHost(req: NextRequest): NextResponse | null {
   const { pathname, search } = req.nextUrl;
-  if (pathname.startsWith("/api/")) return null;
+  if (pathname.startsWith("/api/") || pathname === "/.well-known/oauth-protected-resource" || pathname === "/.well-known/oauth-authorization-server") return null;
   // Browsers ask for /favicon.ico (and Apple's touch icons) on their own: the Business mark here, never Keplar One's.
   const asset = pathname === "/manifest.webmanifest" ? BUSINESS_MANIFEST_PATH : BUSINESS_ICON_PATHS[pathname];
   if (asset) {

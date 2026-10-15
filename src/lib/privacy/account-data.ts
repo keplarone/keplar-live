@@ -51,6 +51,7 @@ export const RETAINED_PATTERNS = [/^usage_window_/, /^system_/, /^admin_/, /^ops
 
 /** Collections that hold user content/data. Listed so the file backend can enumerate and so new ones must be classified. */
 export const USER_COLLECTIONS = [
+  "chatgpt_codes", "chatgpt_grants", // OAuth authorization codes and revocable connection hashes; removed with the account, never exported.
   "studio_topup_settings", "studio_topup_quotes", // deleting an account also removes automatic-payment authorization
   "studio_chats", // Roblox Studio mode: one saved conversation per game (src/lib/studio/chats.ts); exported and deleted with the account
   "roblox_cloud_jobs", "roblox_cloud_files", // Roblox Cloud overnight jobs: the goal, plan, log, report and the game's script snapshot with edits (src/lib/roblox-cloud); kept 30 days, exported and deleted with the account
@@ -75,7 +76,7 @@ export const USER_COLLECTIONS = [
 
 export const isRetained = (name: string) => (RETAINED as readonly string[]).includes(name) || RETAINED_PATTERNS.some((p) => p.test(name));
 /** Not worth exporting: internal telemetry with no user-authored content. */
-const NOT_EXPORTED = new Set(["model_calls", "live_model_spend", "job_slots", "dev_outbox", "seo_events", "growth_events", "sb_fingerprints"]);
+const NOT_EXPORTED = new Set(["model_calls", "live_model_spend", "job_slots", "dev_outbox", "seo_events", "growth_events", "sb_fingerprints", "chatgpt_codes", "chatgpt_grants"]);
 
 const SECRET_KEY = /token|secret|password|passwd|api[-_]?key|authorization|credential|signing|^hash$/i;
 /** Redact secret-looking fields at any depth. */
