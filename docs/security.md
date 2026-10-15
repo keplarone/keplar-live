@@ -21,6 +21,9 @@ Report issues to team@keplar.one (`/.well-known/security.txt`).
   magic link 3 per email per 10 min, 2 per IP+email per minute, 10 per IP per 10 min.
 - Rate limiter (`create/platform/ratelimit.ts`) is in-memory per instance; it uses Upstash Redis automatically when
   `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are set (shared across instances). Set them before real traffic.
+  The sign-in limits (magic link, password, desktop and Business sign-in, two-factor codes, passkeys) are called with
+  `{ shared: true }`, so without Upstash they count in Postgres and still hold across instances. Better Auth's own
+  per-IP limiter (`/api/auth/*`, 30/min) stays in memory, i.e. per instance.
 
 ## Custom domains (`docs/custom-domains.md`)
 - A request on a Host that is not Keplar's own is served only as the published site of the active domain with that Host, or 404; no app, admin or API route is reachable there (`src/proxy.ts`, re-checked in the `/s` route).
@@ -50,6 +53,21 @@ Report issues to team@keplar.one (`/.well-known/security.txt`).
 - Magic-link callback URLs and all post-login redirects go through `safeCallbackPath`: same-origin relative paths only
   (`//evil`, `https://evil`, backslashes and control characters fall back to `/account`).
 - Email + password (`docs/accounts-billing.md` §1): scrypt hashes in `keplar_credentials`; sign-in, sign-up and forgot answer identically for known and unknown addresses (no enumeration); lockout and rate limits per IP, IP+email and email; emailed links are signed, expiring and single use, and pages only check them (the button consumes); endpoints require a same-site `Origin`; pending sign-ups can't log in and are replaced or deleted when the address is proven another way; a reset signs out other devices. Redirects after login use `authRedirectPath` (same-origin paths only, never an auth page).
+- Sessions with the account database: a session id without a row in `keplar_sessions` is refused (fail closed), so a
+  pruned, revoked, still-pending-2FA or deleted session can't be brought back by its cookie. Only cookies from before the
+  table (created before 2026-10-02) are adopted, and only until 2026-11-02. Deleting an account leaves a tombstone (a keyed
+  hash of the email and the time) so an old cookie can't recreate it. "Remember me" off: the cookie's encrypted payload
+  expires with the 1-day server record.
+- Only the Better Auth endpoints the app uses are served (`DISABLED_AUTH_PATHS` in `src/lib/accounts/auth.ts`); Google
+  and Microsoft sign in by redirect only (`disableIdTokenSignIn`). `http://localhost:3000/3001` are trusted origins only
+  outside production.
+- Recent sign-in (10 minutes, `src/lib/accounts/reauth.ts`) is required to add a passkey, set up or turn on two-factor
+  sign-in, make new recovery codes, delete the account immediately, export its data and create an API key: 403
+  `reauth_required`, and the page links to `/signin?reauth=1&next=…`. Business and desktop-app sessions inherit the
+  sign-in time of the session that handed them over. The owner is emailed when 2FA is turned on or off, recovery codes are
+  replaced, a passkey is added or removed, or an API key is created.
+- Password sign-up for an address that already has an account (email link, Google, Microsoft) sends the "you already
+  have an account" email, never a link that would attach the new password; the answer is the same either way.
 - In production a missing `BETTER_AUTH_SECRET` makes a random per-instance secret (sessions then don't survive restarts); set it.
   `GET /api/health` reports `security.authSecret` (boolean) and `security.rateLimit` (`upstash` | `postgres` | `memory`) without leaking values.
 

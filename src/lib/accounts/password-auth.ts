@@ -33,7 +33,7 @@ import { hashPassword, verifyPassword } from "better-auth/crypto";
 import { after } from "next/server";
 import { clientIpOf, rateLimit, RateLimitError } from "@/lib/create/platform/ratelimit";
 import { createActionToken, fingerprint, verifyActionToken, type ActionPurpose } from "./action-token";
-import { accountExists, getCredential, markVerified, replacePassword, savePendingCredential } from "./credentials";
+import { accountExists, dropUnverifiedCredential, getCredential, markVerified, replacePassword, savePendingCredential, userAccountExists } from "./credentials";
 import { checkMailDomain, mailDomainOf } from "./email-domain";
 import { badMailDomain } from "./email-check";
 import { normalizeEmail } from "./magic-token";
@@ -145,10 +145,12 @@ export const passwordAuth = (opts: PasswordAuthOptions) => {
         const hash = await hashPassword(password); // same work whether or not the address is taken
         const callbackURL = authRedirectPath(typeof body.callbackURL === "string" ? body.callbackURL : undefined, "/app?welcome=1");
         const remember = body.remember !== false;
-        const saved = await savePendingCredential({ email, hash, name });
+        // An address that already has an account (email link, Google, Microsoft, passkey, or a verified password) never gets a
+        // pending credential: its verification link would let whoever typed this password into the owner's account.
+        const saved = (await userAccountExists(email)) ? "exists" : await savePendingCredential({ email, hash, name });
         let ok: boolean;
         if (saved === "created") ok = await deliverVerification(email, hash, { callbackURL, remember });
-        else ok = await sendEmail({ to: email, kind: "signup-existing", subject: "You already have a Keplar account", text: `Someone (hopefully you) tried to create a Keplar account with this email address, but you already have one.\n\nLog in: ${new URL("/signin", opts.origin()).toString()}\nForgot your password? ${new URL("/forgot-password", opts.origin()).toString()}${footer}` });
+        else ok = await sendEmail({ to: email, kind: "signup-existing", subject: "You already have a Keplar account", text: `Someone (hopefully you) tried to create a Keplar account with this email address, but you already have one. No password was added to it.\n\nLog in: ${new URL("/signin", opts.origin()).toString()}\nForgot your password, or want to add one? ${new URL("/forgot-password", opts.origin()).toString()}${footer}` });
         if (!ok && !emailAvailable()) throw new APIError("SERVICE_UNAVAILABLE", { message: "Email delivery isn't configured on this server yet.", code: "EMAIL_NOT_CONFIGURED" });
         if (!ok && process.env.RESEND_API_KEY) throw new APIError("BAD_GATEWAY", { message: "We couldn't send the email just now. Try again in a minute.", code: "EMAIL_FAILED" });
         // Identical answer for new and existing addresses.
@@ -198,6 +200,12 @@ export const passwordAuth = (opts: PasswordAuthOptions) => {
         const cred = await getCredential(email);
         if (!cred || fingerprint(opts.secret, cred.hash) !== f) throw new APIError("BAD_REQUEST", { message: "This verification link is out of date. Sign up again to get a new one.", code: "LINK_USED" });
         if (cred.verifiedAt) throw new APIError("BAD_REQUEST", { message: "This email is already verified. Log in instead.", code: "ALREADY_VERIFIED" });
+        // The address got an account another way after this sign-up started (that sign-in should have dropped the pending
+        // credential): never attach a password to an existing account through a sign-up link.
+        if (await userAccountExists(email)) {
+          await dropUnverifiedCredential(email).catch(() => undefined);
+          throw new APIError("BAD_REQUEST", { message: "This email already has a Keplar account. Log in instead, or use Forgot password to add a password.", code: "ACCOUNT_EXISTS" });
+        }
         if (!(await markVerified(email, cred.hash))) throw new APIError("BAD_REQUEST", { message: "This verification link was already used.", code: "LINK_USED" });
         const { userId } = await startSession(ctx, { email, name: cred.name, provider: "password", remember: res.payload.r !== 0 });
         return ctx.json({ status: true, redirectTo: await afterSignInPath(userId, authRedirectPath(cb, "/app?welcome=1")) });

@@ -8,15 +8,19 @@ import { siteUrl } from "@/lib/site";
 export const runtime = "nodejs";
 
 /**
- * business.keplar.one/signin (step 1 of the handoff, src/lib/business/handoff.ts): already signed in here, go straight on;
- * otherwise set this browser's nonce and ask keplar.one, where the Keplar account signs in, for a ticket.
+ * business.keplar.one/signin (step 1 of the handoff, src/lib/business/handoff.ts): already signed in here, go straight on
+ * (unless `reauth=1` asks for a fresh sign-in); otherwise set this browser's nonce and ask keplar.one, where the Keplar
+ * account signs in, for a ticket.
  */
 export async function GET(req: Request) {
   if (!isBusinessHost(hostOf(req))) return new NextResponse("Not found.", { status: 404 });
-  const next = safeBusinessNext(new URL(req.url).searchParams.get("next"));
-  if (await getSession(req.headers)) return NextResponse.redirect(businessUrl(next), 303);
+  const params = new URL(req.url).searchParams;
+  const next = safeBusinessNext(params.get("next"));
+  // reauth=1 ("Please sign in again to continue", src/lib/accounts/reauth.ts): go through the handoff even when signed in.
+  const reauth = params.get("reauth") === "1";
+  if (!reauth && (await getSession(req.headers))) return NextResponse.redirect(businessUrl(next), 303);
   const nonce = newNonce();
-  const res = NextResponse.redirect(`${siteUrl}/api/business/handoff?n=${nonceHash(nonce)}&next=${encodeURIComponent(next)}`, 303);
+  const res = NextResponse.redirect(`${siteUrl}/api/business/handoff?n=${nonceHash(nonce)}&next=${encodeURIComponent(next)}${reauth ? "&reauth=1" : ""}`, 303);
   res.cookies.set(HANDOFF_NONCE_COOKIE, nonce, { httpOnly: true, sameSite: "lax", secure: new URL(req.url).protocol === "https:", path: "/", maxAge: NONCE_TTL_SECONDS });
   res.headers.set("cache-control", "no-store");
   return res;

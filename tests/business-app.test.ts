@@ -13,7 +13,10 @@ const who = { userId: "u_1", email: "pat@example.com", name: "Pat" };
 test("handoff: a ticket signs in only the browser holding the matching nonce, within the minute", () => {
   const nonce = newNonce();
   const t = signTicket(SECRET, who, nonceHash(nonce));
-  assert.deepEqual(verifyTicket(SECRET, t, nonce), { ok: true, user: who });
+  assert.deepEqual(verifyTicket(SECRET, t, nonce), { ok: true, user: { ...who, authAt: null } });
+  // The Keplar session's sign-in time rides along, so the Business session can't look fresher than it (src/lib/accounts/reauth.ts).
+  const at = Date.now() - 3_600_000;
+  assert.deepEqual(verifyTicket(SECRET, signTicket(SECRET, { ...who, authAt: at }, nonceHash(nonce)), nonce), { ok: true, user: { ...who, authAt: at } });
   assert.deepEqual(verifyTicket(SECRET, t, newNonce()), { ok: false, reason: "wrong_browser" }, "a leaked ticket is useless elsewhere");
   assert.deepEqual(verifyTicket(SECRET, t, null), { ok: false, reason: "wrong_browser" });
   assert.deepEqual(verifyTicket(SECRET, t, nonce, Date.now() + (TICKET_TTL_SECONDS + 5) * 1000), { ok: false, reason: "expired" });
@@ -29,7 +32,7 @@ test("handoff: a 2FA user's Business session is complete, because only a fully v
   // The Business host has no two-factor page; without this a 2FA user's Business session stays mfa_pending (signed out in a loop).
   assert.match(readFileSync("src/lib/accounts/business-auth.ts", "utf8"), /provider: "business", remember: true, secondFactorDone: true/);
   // ...which is safe only while keplar.one refuses to sign tickets for a session still waiting on its second factor.
-  assert.match(readFileSync("src/app/api/business/handoff/route.ts", "utf8"), /const session = await getSession\(req\.headers\);\s*if \(!session\)/);
+  assert.match(readFileSync("src/app/api/business/handoff/route.ts", "utf8"), /const session = await getSession\(req\.headers\);\s*if \(!session \|\| \(reauth && !signedInRecently\(session\)\)\)/);
   assert.match(readFileSync("src/lib/accounts/persist.ts", "utf8"), /if \(bool\(r\.mfa_pending\)\) return \{ ok: false, reason: "mfa_required" \}/);
 });
 
@@ -150,7 +153,7 @@ test("Business settings: a popover over the workspace (never a page), from the a
   const page = readFileSync("src/components/business-app/Settings.tsx", "utf8");
   assert.ok(page.includes(`role="dialog" aria-modal="true"`));
   assert.ok(page.includes(`e.key === "Escape"`));
-  for (const endpoint of ['"/api/business/account", { method: "POST"', '"/api/billing/portal"', 'href="/api/account/export"', '"/api/business/dashboard"', '"/api/business/agents/halt"']) assert.ok(page.includes(endpoint), endpoint);
+  for (const endpoint of ['"/api/business/account", { method: "POST"', '"/api/billing/portal"', "startExport()", '"/api/business/dashboard"', '"/api/business/agents/halt"']) assert.ok(page.includes(endpoint), endpoint);
   assert.ok(page.includes("signOutOfBusiness()"));
   // What the workspace can't do yet is labelled, never simulated.
   // Computer use is the desktop app's (window.keplarComputer); the browser says so instead of simulating it.

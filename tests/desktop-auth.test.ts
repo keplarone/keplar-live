@@ -82,8 +82,24 @@ test("happy path: start -> approve -> exchange -> redeem ticket, and the state m
   const x = await exchangeCode(r.deps, { rid, code, verifier: p.verifier });
   assert.ok(x.ok);
   const who2 = await redeemTicket(r.deps, x.ticket);
-  assert.deepEqual(who2, { ...who, app: "one" }, "a request with no app is Keplar One");
+  assert.deepEqual(who2, { ...who, authAt: null, app: "one" }, "a request with no app is Keplar One");
   assert.equal((await describeRequest(r.deps, rid)).state, "finished");
+});
+
+test("the app's session inherits the approving browser session's sign-in time (so it can't pass a recent-sign-in check on its own)", async () => {
+  const r = rig();
+  const p = pair();
+  const s = await startRequest(r.deps, { challenge: p.challenge, label: "Keplar One on Windows" });
+  assert.ok(s.ok);
+  const authAt = 123_456_789;
+  const a = await approveRequest(r.deps, s.rid, { ...who, authAt });
+  assert.ok(a.ok);
+  // A poll re-mints the code from the stored row: the sign-in time must survive that too.
+  const polled = await pollRequest(r.deps, s.rid, p.verifier);
+  assert.equal(polled.status, "approved");
+  const x = await exchangeCode(r.deps, { rid: s.rid, code: (polled as { code: string }).code, verifier: p.verifier });
+  assert.ok(x.ok);
+  assert.deepEqual(await redeemTicket(r.deps, x.ticket), { ...who, authAt, app: "one" });
 });
 
 test("the code is single use: a second exchange fails even with the right verifier", async () => {

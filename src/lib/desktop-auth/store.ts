@@ -19,6 +19,8 @@ export type Row = {
   userId: string | null;
   email: string | null;
   name: string | null;
+  /** When the approving browser session signed in (epoch ms): the app's session inherits it (src/lib/accounts/reauth.ts). */
+  authAt?: number | null;
   codeHash: string | null;
   codeExpiresAt: number | null;
   finishHash: string | null;
@@ -26,7 +28,7 @@ export type Row = {
   attempts: number;
 };
 
-export type Who = { userId: string; email: string; name: string | null };
+export type Who = { userId: string; email: string; name: string | null; authAt?: number | null };
 /** A redeemed finish ticket: whose session to start, and for which app. */
 export type Finished = Who & { app: DesktopApp };
 
@@ -64,7 +66,7 @@ export const memoryStore: DesktopAuthStore = {
   async approve(id, who, codeHash, codeExpiresAt, now) {
     const r = mem().get(id);
     if (!r || (r.status !== "pending" && r.status !== "approved") || r.expiresAt <= now) return false;
-    Object.assign(r, { status: "approved", userId: who.userId, email: who.email, name: who.name, codeHash, codeExpiresAt });
+    Object.assign(r, { status: "approved", userId: who.userId, email: who.email, name: who.name, authAt: who.authAt ?? null, codeHash, codeExpiresAt });
     return true;
   },
   async transition(id, from, to) {
@@ -90,7 +92,7 @@ export const memoryStore: DesktopAuthStore = {
       if (r.status === "used" && r.finishHash === finishHash && (r.finishExpiresAt ?? 0) > now && r.userId && r.email) {
         r.status = "finished";
         r.finishHash = null;
-        return { userId: r.userId, email: r.email, name: r.name, app: r.app };
+        return { userId: r.userId, email: r.email, name: r.name, authAt: r.authAt ?? null, app: r.app };
       }
     }
     return null;
@@ -108,6 +110,8 @@ const ensure = (): Promise<void> => {
     await neonQuery("CREATE INDEX IF NOT EXISTS keplar_desktop_auth_finish ON keplar_desktop_auth (finish_hash) WHERE finish_hash IS NOT NULL");
     // Added for the Keplar Business desktop app; existing rows (and older deploys, which never write it) are Keplar One.
     await neonQuery("ALTER TABLE keplar_desktop_auth ADD COLUMN IF NOT EXISTS app text NOT NULL DEFAULT 'one'");
+    // When the approving browser session signed in (epoch ms); null on rows from older deploys.
+    await neonQuery("ALTER TABLE keplar_desktop_auth ADD COLUMN IF NOT EXISTS auth_at bigint");
   })().catch((e) => {
     ready = null;
     throw e;
@@ -131,6 +135,7 @@ const toRow = (r: Record<string, unknown>): Row => ({
   userId: str(r.user_id),
   email: str(r.email),
   name: str(r.name),
+  authAt: num(r.auth_at),
   codeHash: str(r.code_hash),
   codeExpiresAt: num(r.code_expires_at),
   finishHash: str(r.finish_hash),
@@ -152,8 +157,8 @@ export const sqlStore: DesktopAuthStore = {
   },
   async approve(id, who, codeHash, codeExpiresAt, now) {
     const rows = await q(
-      "UPDATE keplar_desktop_auth SET status='approved', user_id=$2, email=$3, name=$4, code_hash=$5, code_expires_at=$6 WHERE id=$1 AND status IN ('pending','approved') AND expires_at > $7 RETURNING id",
-      [id, who.userId, who.email, who.name, codeHash, String(codeExpiresAt), String(now)],
+      "UPDATE keplar_desktop_auth SET status='approved', user_id=$2, email=$3, name=$4, code_hash=$5, code_expires_at=$6, auth_at=$8 WHERE id=$1 AND status IN ('pending','approved') AND expires_at > $7 RETURNING id",
+      [id, who.userId, who.email, who.name, codeHash, String(codeExpiresAt), String(now), typeof who.authAt === "number" ? String(Math.floor(who.authAt)) : null],
     );
     return rows.length === 1;
   },
@@ -174,11 +179,11 @@ export const sqlStore: DesktopAuthStore = {
   },
   async finish(finishHash, now) {
     const rows = await q(
-      "UPDATE keplar_desktop_auth SET status='finished', finish_hash=NULL WHERE finish_hash=$1 AND status='used' AND finish_expires_at > $2 RETURNING user_id, email, name, app",
+      "UPDATE keplar_desktop_auth SET status='finished', finish_hash=NULL WHERE finish_hash=$1 AND status='used' AND finish_expires_at > $2 RETURNING user_id, email, name, app, auth_at",
       [finishHash, String(now)],
     );
     const r = rows[0];
-    return r && r.user_id && r.email ? { userId: String(r.user_id), email: String(r.email), name: str(r.name), app: appOf(r.app) } : null;
+    return r && r.user_id && r.email ? { userId: String(r.user_id), email: String(r.email), name: str(r.name), authAt: num(r.auth_at), app: appOf(r.app) } : null;
   },
 };
 

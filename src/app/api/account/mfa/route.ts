@@ -7,11 +7,15 @@
  *   POST { action: "regenerate", code }  needs a current code; the old recovery codes stop working
  *   POST { action: "challenge", code }   finish a sign-in that is waiting for its code (authenticator code or recovery code)
  * Same-origin only. The challenge is limited per IP, per session (the 5th wrong code ends that session) and per account.
+ * "setup", "enable" and "regenerate" need a sign-in from the last 10 minutes: 403 reauth_required otherwise
+ * (src/lib/accounts/reauth.ts). The owner is emailed when 2FA is turned on or off and when recovery codes are replaced.
  */
 import { getSession } from "@/lib/accounts/auth";
 import { completeMfa, persistenceEnabled, revokeSession } from "@/lib/accounts/persist";
 import { forgetSession } from "@/lib/accounts/session-guard";
 import { pendingMfaFor } from "@/lib/accounts/mfa/gate";
+import { requireRecentSignIn } from "@/lib/accounts/reauth";
+import { notifySecurityChange } from "@/lib/accounts/security-notice";
 import { beginSetup, confirmSetup, disableMfa, mfaStatus, regenerateRecovery, verifySecondFactor } from "@/lib/accounts/mfa/store";
 import { brand } from "@/lib/site";
 import { body, errorResponse, HttpError, json } from "@/lib/create/platform/http";
@@ -59,6 +63,7 @@ export async function POST(req: Request) {
     const { action, code } = await body<{ action?: unknown; code?: unknown }>(req);
     if (action === "setup") {
       const session = await signedIn(req);
+      requireRecentSignIn(session);
       try {
         return json(await beginSetup(session.user.id, session.user.email, brand.name));
       } catch (e) {
@@ -70,11 +75,13 @@ export async function POST(req: Request) {
       const session = await signedIn(req);
       if (typeof code !== "string" || code.length < 6 || code.length > 20) throw new HttpError(400, "Enter the 6-digit code from your authenticator app.", "bad_code");
       const uid = session.user.id;
+      if (action !== "disable") requireRecentSignIn(session); // turning it off already needs a current code
       await guessBudget(uid);
       if (action === "enable") {
         const done = await confirmSetup(uid, code);
         if (!done.ok) throw new HttpError(400, "That code isn't right. Check the code in your authenticator app and try again.", "wrong_code");
         await writeAudit("user", "mfa.enabled", `user ${uid}`).catch(() => undefined);
+        await notifySecurityChange(session.user.email, "mfa_enabled", req.headers);
         return json({ ok: true, recoveryCodes: done.recoveryCodes });
       }
       const check = await verifySecondFactor(uid, code);
@@ -82,10 +89,12 @@ export async function POST(req: Request) {
       if (action === "disable") {
         await disableMfa(uid);
         await writeAudit("user", "mfa.disabled", `user ${uid}`).catch(() => undefined);
+        await notifySecurityChange(session.user.email, "mfa_disabled", req.headers);
         return json({ ok: true });
       }
       const codes = await regenerateRecovery(uid);
       await writeAudit("user", "mfa.recovery_regenerated", `user ${uid}`).catch(() => undefined);
+      await notifySecurityChange(session.user.email, "recovery_regenerated", req.headers);
       return json({ ok: true, recoveryCodes: codes });
     }
     if (action !== "challenge") throw new HttpError(400, "Unknown action.", "bad_request");

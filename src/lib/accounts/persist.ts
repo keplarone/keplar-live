@@ -6,8 +6,12 @@
  *   The row's id is what workspaces (plan, credits, chats, memory, study, slides) hang off; it is
  *   the HMAC-derived id for new users, and a stored id always wins afterwards.
  * - keplar_sessions: one row per signed-in browser. The cookie only proves "this session id was issued";
- *   the row decides whether it still counts (revoked? expired? signed out of all devices?).
- *   Sessions that predate this table (old stateless cookies) are adopted on first sight.
+ *   the row decides whether it still counts (revoked? expired? signed out of all devices?). A session id with no row
+ *   is refused (fail closed): rows are pruned, revoked, still waiting for their second factor, or deleted with the
+ *   account, and an encrypted cookie outlives all of those. The one exception is the migration window: cookies issued
+ *   before this table existed (LEGACY_SESSION_CUTOFF) are adopted on first sight until LEGACY_ADOPTION_UNTIL.
+ * - keplar_deleted_logins: a keyed hash of each deleted account's email and when it was deleted (no address, no
+ *   name), so an old cookie can never recreate a deleted account.
  * - No DATABASE_URL: everything here is a no-op and the stateless cookie keeps working as before.
  * Secrets and tokens never touch these tables: only the opaque session id, a user-agent string and an
  * HMAC of the IP (never the raw address).
@@ -26,7 +30,20 @@ export const TOUCH_EVERY_SECONDS = 5 * 60;
 
 export const persistenceEnabled = () => neonConfigured();
 
-export type Validation = { ok: true; userId: string } | { ok: false; reason: "revoked" | "expired" | "signed_out_everywhere" | "mfa_required" };
+export type Validation = { ok: true; userId: string } | { ok: false; reason: "revoked" | "expired" | "signed_out_everywhere" | "mfa_required" | "unknown" | "deleted" };
+
+/**
+ * keplar_sessions went live with the 2026-10-01 release ("sign-in lasts 60 days, see your devices"). Every session issued
+ * since has a row from its first request. A cookie from before then (the old stateless sessions, whose encrypted payload
+ * claims at most 30 days) may still turn up without one, so it is adopted, but only until those cookies have all expired.
+ * After LEGACY_ADOPTION_UNTIL nothing is adopted, and any session id without a row is refused.
+ */
+export const LEGACY_SESSION_CUTOFF = Date.parse("2026-10-02T00:00:00Z");
+export const LEGACY_ADOPTION_UNTIL = LEGACY_SESSION_CUTOFF + 31 * 86_400_000;
+export const legacyAdoptable = (createdAt: Date, now = Date.now()) => {
+  const t = createdAt.getTime();
+  return Number.isFinite(t) && t < LEGACY_SESSION_CUTOFF && now < LEGACY_ADOPTION_UNTIL;
+};
 
 export type UserRow = { id: string; email: string; name: string; createdAt: string; lastLogin: string | null; providers: string[] };
 export type SessionRow = { id: string; userId: string; createdAt: string; lastSeen: string; expiresAt: string; userAgent: string; provider: string; remember: boolean };
@@ -58,6 +75,8 @@ export function ensureAuthSchema(): Promise<void> {
       // Second factor: a session created for an account with 2FA on stays unusable until the code is checked (src/lib/accounts/mfa).
       await neonQuery("ALTER TABLE keplar_sessions ADD COLUMN IF NOT EXISTS mfa_pending boolean NOT NULL DEFAULT false");
       await neonQuery("CREATE TABLE IF NOT EXISTS keplar_magic_used (jti text PRIMARY KEY, expires_at timestamptz NOT NULL)");
+      // Deleted accounts: keyed hash of the email only (see deletedLoginKey), so old cookies can't bring the account back.
+      await neonQuery("CREATE TABLE IF NOT EXISTS keplar_deleted_logins (email_key text PRIMARY KEY, deleted_at timestamptz NOT NULL DEFAULT now())");
     };
     await run().catch(async () => {
       await new Promise((r) => setTimeout(r, 300));
@@ -135,12 +154,23 @@ export async function createSessionRecord(s: { id: string; userId: string; userA
      ON CONFLICT (id) DO NOTHING`,
     [s.id, s.userId, (s.createdAt ?? new Date()).toISOString(), secs(ttl), (s.userAgent ?? "").slice(0, 300), hashIp(s.ip), s.provider ?? "", String(remember), String(s.mfaPending === true)],
   );
+  // Pruning is safe because a session id without a row is refused (validateSession): a pruned revoked, expired or
+  // still-pending session stays dead. Only migration-window cookies are adopted, and those rows outlive the window.
   if (Math.random() < 0.01) void neonQuery("DELETE FROM keplar_sessions WHERE expires_at < now() - interval '30 days'").catch(() => undefined);
 }
 
+/** Keyed hash of an email for the deleted-accounts list: says nothing about the address without the server secret. */
+export const deletedLoginKey = (email: string) => createHmac("sha256", authSecret()).update(`deleted-login:${normalizeEmail(email)}`).digest("hex");
+
+/** Remember that the account for this email was deleted (called before its rows are removed). */
+export async function tombstoneLogin(email: string): Promise<void> {
+  await q("INSERT INTO keplar_deleted_logins (email_key, deleted_at) VALUES ($1, now()) ON CONFLICT (email_key) DO UPDATE SET deleted_at = now()", [deletedLoginKey(email)]);
+}
+
 /**
- * Does this cookie session still count? Slides expiry forward on activity (at most every 5 minutes),
- * and adopts a pre-existing stateless session the first time it is seen.
+ * Does this cookie session still count? Slides expiry forward on activity (at most every 5 minutes).
+ * A session id with no row is refused, except a cookie from before the sessions table during the migration window
+ * (see LEGACY_SESSION_CUTOFF), which is adopted unless its account signed out everywhere or was deleted since.
  */
 export async function validateSession(cookie: { id: string; userId: string; email: string; name?: string | null; createdAt: Date; expiresAt: Date; userAgent?: string | null; ip?: string | null }): Promise<Validation> {
   const rows = await q(
@@ -162,8 +192,11 @@ export async function validateSession(cookie: { id: string; userId: string; emai
     }
     return { ok: true, userId: String(r.user_id) };
   }
-  // Not recorded: a session issued before this table existed (or while the database was unreachable).
+  // No row: pruned, deleted with the account, or never written. Fail closed, except for a pre-table cookie in the window.
+  if (!legacyAdoptable(cookie.createdAt)) return { ok: false, reason: "unknown" };
   const email = normalizeEmail(cookie.email);
+  const gone = await q("SELECT deleted_at FROM keplar_deleted_logins WHERE email_key = $1", [deletedLoginKey(email)]);
+  if (gone[0]) return { ok: false, reason: "deleted" };
   const known = await q("SELECT id, sessions_valid_after FROM keplar_users WHERE email = $1", [email]);
   const after = known[0]?.sessions_valid_after ? new Date(String(known[0].sessions_valid_after)).getTime() : 0;
   if (after && cookie.createdAt.getTime() <= after) return { ok: false, reason: "signed_out_everywhere" };

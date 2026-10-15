@@ -118,7 +118,7 @@ export async function pollRequest(d: Deps, rid: unknown, verifier: unknown): Pro
   // approved: hand the verifier holder a fresh code (the earlier one went to the keplar:// link and may or may not be used).
   if (!row.userId || !row.email) return { status: "invalid" };
   const secret = newSecret();
-  const ok = await d.store.approve(rid as string, { userId: row.userId, email: row.email, name: row.name }, hashSecret(secret), now + CODE_TTL_SECONDS * 1000, now);
+  const ok = await d.store.approve(rid as string, { userId: row.userId, email: row.email, name: row.name, authAt: row.authAt ?? null }, hashSecret(secret), now + CODE_TTL_SECONDS * 1000, now);
   return ok ? { status: "approved", code: secret } : { status: "used" };
 }
 

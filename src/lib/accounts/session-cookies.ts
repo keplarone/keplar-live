@@ -5,13 +5,14 @@
  *   so it survives browser restarts. It is re-issued while the user is active (sliding window).
  * - "Remember me" off: the same cookies but with no Max-Age/Expires (a browser-session cookie), plus a signed
  *   `dont_remember` marker so refreshes keep it session-only. The server record also lapses after a day.
- * - The embedded session in the encrypted `session_data` cookie claims a long life (the cookie's own lifetime and the
- *   server record decide the real expiry): without it Better Auth's stateless mode would sign users out when the
- *   embedded date passes even though they were active.
+ * - The embedded session in the encrypted `session_data` cookie claims a long life when remembered (the cookie's own
+ *   lifetime and the server record decide the real expiry): without it Better Auth's stateless mode would sign users out
+ *   when the embedded date passes even though they were active. A session-only ("Remember me" off) sign-in embeds the
+ *   same one day as its server record, which never slides, so the cookie stops working on its own when the record does.
  */
 import { setSessionCookie, expireCookie, getCookieCache } from "better-auth/cookies";
 import type { GenericEndpointContext } from "@better-auth/core";
-import { SESSION_TTL_SECONDS } from "./persist";
+import { SESSION_TTL_SECONDS, SHORT_SESSION_TTL_SECONDS } from "./persist";
 
 export const SESSION_COOKIE_MAX_AGE = SESSION_TTL_SECONDS;
 /** Lifetime claimed inside the encrypted cache (days); never the cookie's Max-Age. */
@@ -39,7 +40,7 @@ export function dropPendingCookies(ctx: GenericEndpointContext, names: string[])
 export async function issueSessionCookies(ctx: GenericEndpointContext, sess: Sess, remember: boolean) {
   const cookies = ctx.context.authCookies;
   dropPendingCookies(ctx, [cookies.sessionToken.name, cookies.sessionData.name, cookies.dontRememberToken.name]);
-  const embedded = { ...sess, session: { ...sess.session, expiresAt: new Date(Date.now() + EMBEDDED_DAYS * 86_400_000) } };
+  const embedded = { ...sess, session: { ...sess.session, expiresAt: new Date(Date.now() + (remember ? EMBEDDED_DAYS * 86_400 : SHORT_SESSION_TTL_SECONDS) * 1000) } };
   // dontRememberMe is passed as false on purpose: Better Auth would otherwise shrink the encrypted cache to 5 minutes
   // (it assumes a database behind it). The token cookie's Max-Age is what differs.
   await setSessionCookie(ctx, embedded as never, false, remember ? { maxAge: SESSION_COOKIE_MAX_AGE } : { maxAge: undefined });

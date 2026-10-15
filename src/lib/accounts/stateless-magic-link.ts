@@ -25,7 +25,7 @@ import { afterSignInPath } from "@/lib/onboarding/redirect";
 import { claimMagicJti, createSessionRecord, ipFromHeaders, persistenceEnabled, revokeSession, SESSION_TTL_SECONDS, SHORT_SESSION_TTL_SECONDS, upsertUser } from "./persist";
 import { noticeIfNewDevice } from "./new-device";
 import { mfaEnabled } from "./mfa/store";
-import { cookieSessionOf, hasCookie, issueSessionCookies, REMEMBER_COOKIE, rememberFromRequest } from "./session-cookies";
+import { cookieSessionOf, dropPendingCookies, hasCookie, issueSessionCookies, REMEMBER_COOKIE, rememberFromRequest } from "./session-cookies";
 import { forgetSession, guardSession } from "./session-guard";
 import { stashPreviousAccount } from "./multi-ctx";
 
@@ -45,7 +45,9 @@ export async function recordSignIn(a: { session: { id: string; createdAt: Date }
       forgetSession(a.previousId);
     }
   } catch {
-    console.error("[auth] could not save the session record; it will be adopted on its next request");
+    // A session id without a row is refused (persist.ts validateSession), so don't answer "signed in" with a dead cookie.
+    console.error("[auth] could not save the session record; the sign-in is refused");
+    throw new APIError("SERVICE_UNAVAILABLE", { message: "We couldn't finish signing you in. Try again in a minute.", code: "SESSION_STORE_UNAVAILABLE" });
   }
 }
 
@@ -70,12 +72,14 @@ export const statelessMagicLink = (opts: StatelessMagicLinkOptions) =>
           const email = typeof body.email === "string" ? body.email.trim() : "";
           if (!EMAIL.test(email) || email.length > 254) throw new APIError("BAD_REQUEST", { message: "Enter a valid email address.", code: "INVALID_EMAIL" });
           // Per email (anyone can ask for a link to an address) and per IP+email, on top of the per-IP plugin limit.
+          // Shared across instances (Upstash, else Postgres), like the password endpoints: per-instance memory would let a
+          // flood spread over Vercel's instances multiply the limit.
           const key = email.toLowerCase();
           const ip = ctx.headers ? clientIpOf(new Request("http://x", { headers: ctx.headers })) : "local";
           try {
-            await rateLimit(`magic:email:${key}`, 3, 600);
-            await rateLimit(`magic:ipemail:${ip}:${key}`, 2, 60);
-            await rateLimit(`magic:ip:${ip}`, 10, 600);
+            await rateLimit(`magic:email:${key}`, 3, 600, { shared: true });
+            await rateLimit(`magic:ipemail:${ip}:${key}`, 2, 60, { shared: true });
+            await rateLimit(`magic:ip:${ip}`, 10, 600, { shared: true });
           } catch (e) {
             if (e instanceof RateLimitError) throw new APIError("TOO_MANY_REQUESTS", { message: "Too many sign-in emails requested. Try again in a few minutes.", code: "RATE_LIMITED" });
             throw e;
@@ -233,7 +237,13 @@ export const statelessMagicLink = (opts: StatelessMagicLinkOptions) =>
             await stashPreviousAccount(ctx as never, user.email);
             await issueSessionCookies(ctx, { session, user }, remember);
             if (/(?:^|;\s*)keplar_remember=/.test(ctx.headers?.get("cookie") ?? "")) ctx.setCookie(REMEMBER_COOKIE, "", { maxAge: 0, path: "/" });
-            await recordSignIn({ session, userId: user.id, email: user.email, headers: ctx.headers, provider, remember, previousId: previous?.id });
+            try {
+              await recordSignIn({ session, userId: user.id, email: user.email, headers: ctx.headers, provider, remember, previousId: previous?.id });
+            } catch {
+              // The browser is redirected, so a JSON error would be a dead end: back to the sign-in page with a message.
+              dropPendingCookies(ctx, [ctx.context.authCookies.sessionToken.name, ctx.context.authCookies.sessionData.name, ctx.context.authCookies.dontRememberToken.name]);
+              throw ctx.redirect("/signin?error=session_store");
+            }
           }),
         },
       ],

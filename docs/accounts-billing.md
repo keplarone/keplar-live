@@ -67,8 +67,10 @@ Flows:
   `/api/auth/magic-link/confirm`, which checks origin, signature and
   expiry, marks the token id used (per instance: best-effort single use
   without shared storage) and sets the session. The user id is derived
-  from the email. 3 link requests/min and 10 confirms/min per IP plus a
-  30/min global auth limit (per instance). The link proves the address,
+  from the email. Per email, per IP+email and per IP limits shared across
+  instances (Upstash or Postgres), plus Better Auth's 3 link requests/min,
+  10 confirms/min and 30/min global auth limit per IP (in memory, per
+  instance). The link proves the address,
   so users are `emailVerified: true`.
 - **Sessions (persistent, revocable)**: the browser holds Better Auth's signed
   `session_token` and an encrypted `session_data` (JWE) cookie, both
@@ -85,12 +87,17 @@ Flows:
   so **Sign out** (this device), the per-device sign-out and **Sign out of all
   devices** on /account take effect everywhere within seconds. Every sign-in
   mints a fresh session id and revokes the one the browser held (rotation).
-  Cookies issued before this change are adopted into the table on first use
-  (same user id, so nobody is signed out and no data moves). A user's id is the
+  Cookies issued before this change (created before 2026-10-02) are adopted
+  into the table on first use until 2026-11-02 (same user id, so nobody is
+  signed out and no data moves); any other session id without a row is
+  refused, and a deleted account leaves a tombstone so an old cookie can't
+  recreate it. A user's id is the
   one stored for their email, so magic link, Google and Microsoft are one
   account. Without `DATABASE_URL` the stateless cookie is the only session
   (still 60-day persistent); the device list answers 501 and is hidden.
-  A Neon outage fails open (cookie session) instead of signing everyone out.
+  A Neon outage fails closed (the session is treated as signed out; see
+  `src/lib/accounts/session-guard.ts`), and a sign-in whose session row
+  can't be written is refused rather than left half-recorded.
   `GET/DELETE/POST /api/account/sessions` list / revoke one / revoke all
   (same-origin + rate limited). Nothing secret is stored or logged.
 - **Google / Microsoft** (`src/lib/accounts/oauth.ts`): each is enabled only

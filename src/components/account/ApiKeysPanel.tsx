@@ -7,6 +7,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { confirmAction } from "@/components/kit";
+import { isReauth, ReauthNotice } from "./reauth";
 import s from "./account.module.css";
 
 type Policy = { available: boolean; maxKeys: number; keyPerMinute: number; keyPerDay: number };
@@ -17,14 +18,15 @@ const day = (iso: string) => new Date(iso).toLocaleDateString("en-US", { month: 
 
 async function api<T>(path: string, method = "GET", body?: unknown): Promise<T> {
   const r = await fetch(path, { method, cache: "no-store", credentials: "same-origin", headers: body === undefined ? undefined : { "content-type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body) });
-  const j = (await r.json().catch(() => ({}))) as T & { error?: string };
-  if (!r.ok) throw new Error(j.error ?? "That didn't work.");
+  const j = (await r.json().catch(() => ({}))) as T & { error?: string; code?: string };
+  if (!r.ok) throw Object.assign(new Error(j.error ?? "That didn't work."), { status: r.status, code: j.code });
   return j;
 }
 
 export function ApiKeysPanel() {
   const [me, setMe] = useState<Me | null>(null);
   const [err, setErr] = useState("");
+  const [reauth, setReauth] = useState(false);
   const [busy, setBusy] = useState(false);
   const [name, setName] = useState("");
   const [usage, setUsage] = useState(false);
@@ -39,8 +41,8 @@ export function ApiKeysPanel() {
   useEffect(() => { void load(); }, [load]);
 
   const act = async (fn: () => Promise<void>) => {
-    setBusy(true); setErr("");
-    try { await fn(); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
+    setBusy(true); setErr(""); setReauth(false);
+    try { await fn(); } catch (e) { if (isReauth(e)) setReauth(true); else setErr((e as Error).message); } finally { setBusy(false); }
   };
 
   if (!me) return err ? <p className={`${s.note} ${s.err}`} role="alert">{err}</p> : <p className={s.note}>Loading…</p>;
@@ -81,6 +83,7 @@ export function ApiKeysPanel() {
         </>
       )}
       {err ? <p className={`${s.note} ${s.err}`} role="alert">{err}</p> : null}
+      {reauth ? <ReauthNotice className={`${s.note} ${s.err}`} linkClassName={s.link} /> : null}
       {live.length ? (
         <ul className={s.sessions} aria-label="API keys">
           {live.map((k) => (

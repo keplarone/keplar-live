@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { TRAINING_STATEMENT } from "@/lib/privacy/training-statement";
+import { isReauth, ReauthNotice, startExport } from "./reauth";
 import s from "./account.module.css";
 
 /** Download everything Keplar holds for the account, or permanently delete it. Delete needs the email typed back. */
@@ -10,6 +11,7 @@ export function DataControls({ email, admin }: { email: string; admin: boolean }
   const [typed, setTyped] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reauth, setReauth] = useState(false);
 
   const [scheduled, setScheduled] = useState<string | null>(null);
   const [grace, setGrace] = useState(14);
@@ -24,9 +26,21 @@ export function DataControls({ email, admin }: { email: string; admin: boolean }
 
   async function post(payload: Record<string, unknown>) {
     const res = await fetch("/api/account/delete", { method: "POST", headers: { "content-type": "application/json" }, credentials: "same-origin", body: JSON.stringify(payload) });
-    const j = (await res.json().catch(() => ({}))) as { error?: string; scheduledFor?: string | null };
-    if (!res.ok) throw new Error(j.error || "Couldn't update the account.");
+    const j = (await res.json().catch(() => ({}))) as { error?: string; code?: string; scheduledFor?: string | null };
+    if (!res.ok) throw Object.assign(new Error(j.error || "Couldn't update the account."), { status: res.status, code: j.code });
     return j;
+  }
+
+  /** Export needs a recent sign-in: ask first (no download yet), then let the browser stream the file. */
+  async function download() {
+    setError(null);
+    setReauth(false);
+    try {
+      await startExport();
+    } catch (e) {
+      if (isReauth(e)) setReauth(true);
+      else setError(e instanceof Error ? e.message : "Couldn't start the download.");
+    }
   }
 
   async function cancel() {
@@ -44,6 +58,7 @@ export function DataControls({ email, admin }: { email: string; admin: boolean }
   async function remove(now: boolean) {
     setBusy(true);
     setError(null);
+    setReauth(false);
     try {
       const j = await post({ confirmEmail: typed, now });
       if (j.scheduledFor) {
@@ -55,7 +70,8 @@ export function DataControls({ email, admin }: { email: string; admin: boolean }
       }
       window.location.assign("/?account=deleted");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't delete the account.");
+      if (isReauth(e)) setReauth(true);
+      else setError(e instanceof Error ? e.message : "Couldn't delete the account.");
       setBusy(false);
     }
   }
@@ -70,7 +86,7 @@ export function DataControls({ email, admin }: { email: string; admin: boolean }
       {TRAINING_STATEMENT.map((t) => <p key={t} className={s.note}>{t}</p>)}
       <p className={s.note}>Details: <Link href="/privacy#model-providers">Privacy Policy</Link>.</p>
       <div className={s.actions}>
-        <a className={`${s.btn} ${s.btnGhost}`} href="/api/account/export" download>Download my data</a>
+        <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={() => void download()} disabled={busy}>Download my data</button>
       </div>
       {admin ? (
         <p className={s.note}>Admin accounts can&rsquo;t be deleted here. Contact team@keplar.one.</p>
@@ -100,6 +116,7 @@ export function DataControls({ email, admin }: { email: string; admin: boolean }
         </form>
       )}
       {error ? <p className={`${s.note} ${s.err}`} role="alert">{error}</p> : null}
+      {reauth ? <ReauthNotice className={`${s.note} ${s.err}`} linkClassName={s.link} /> : null}
     </div>
   );
 }

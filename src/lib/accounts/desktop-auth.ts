@@ -21,6 +21,7 @@ import { connectPath, DESKTOP_APPS, REQUEST_TTL_SECONDS } from "@/lib/desktop-au
 import { approveRequest, cancelRequest, denyRequest, exchangeCode, pollRequest, redeemTicket, startRequest, type Deps } from "@/lib/desktop-auth/service";
 import { isBusinessHost } from "@/lib/business-site";
 import { defaultStore } from "@/lib/desktop-auth/store";
+import { signedInAt } from "./reauth";
 import { startSession } from "./session-issue";
 
 type Opts = { secret: string; origin: () => string };
@@ -70,7 +71,8 @@ export const desktopAuth = (opts: Opts) => {
         const s = ctx.headers ? await getSession(ctx.headers) : null;
         if (!s) throw new APIError("UNAUTHORIZED", { message: "Log in first.", code: "NOT_SIGNED_IN" });
         await limit(`desktop:approve:user:${s.user.id}`, 20, 600);
-        const r = await approveRequest(d(), obj(ctx.body).rid, { userId: s.user.id, email: s.user.email, name: s.user.name ?? null });
+        // The app's session inherits this browser session's sign-in time (src/lib/accounts/reauth.ts).
+        const r = await approveRequest(d(), obj(ctx.body).rid, { userId: s.user.id, email: s.user.email, name: s.user.name ?? null, authAt: signedInAt(s) });
         if (!r.ok) throw new APIError("BAD_REQUEST", { message: r.reason === "expired" ? REASON_TEXT.expired : r.reason === "closed" ? "This sign-in request is closed. Start again from the app." : REASON_TEXT.invalid, code: `REQUEST_${r.reason.toUpperCase()}` });
         return ctx.json({ deepLink: r.deepLink });
       }),
@@ -109,7 +111,7 @@ export const desktopAuth = (opts: Opts) => {
         const who = await redeemTicket(d(), (ctx.query as Record<string, unknown> | undefined)?.ticket);
         // The browser extension is given an API key (src/lib/api/extension.ts), never a session cookie: its ticket is used up here for nothing.
         if (!who || who.app === "extension" || (who.app === "business") !== onBusiness) throw ctx.redirect(onBusiness ? "/?signin=expired" : "/signin?error=desktop_link_used&next=%2Fapp");
-        const { userId } = await startSession(ctx, { email: who.email, name: who.name, provider: who.app === "business" ? "desktop-business" : "desktop", remember: true });
+        const { userId } = await startSession(ctx, { email: who.email, name: who.name, provider: who.app === "business" ? "desktop-business" : "desktop", remember: true, authAt: who.authAt ? new Date(who.authAt) : null });
         if (who.app === "business") throw ctx.redirect(DESKTOP_APPS.business.home);
         throw ctx.redirect(await afterSignInPath(userId, "/app"));
       }),

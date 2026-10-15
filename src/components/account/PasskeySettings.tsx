@@ -2,6 +2,7 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { startRegistration, browserSupportsWebAuthn } from "@simplewebauthn/browser";
 import { confirmAction } from "@/components/kit";
+import { isReauth, ReauthNotice } from "./reauth";
 import s from "./account.module.css";
 
 type Passkey = { id: string; name: string; createdAt: string; lastUsedAt: string | null; synced: boolean };
@@ -10,8 +11,8 @@ const noSubscribe = () => () => undefined;
 
 async function api(method: "GET" | "POST", payload?: unknown) {
   const res = await fetch("/api/account/passkeys", { method, headers: { "content-type": "application/json" }, credentials: "same-origin", cache: "no-store", body: payload ? JSON.stringify(payload) : undefined });
-  const j = (await res.json().catch(() => ({}))) as Record<string, unknown> & { error?: string };
-  if (!res.ok) throw Object.assign(new Error(j.error || "Something went wrong."), { status: res.status });
+  const j = (await res.json().catch(() => ({}))) as Record<string, unknown> & { error?: string; code?: string };
+  if (!res.ok) throw Object.assign(new Error(j.error || "Something went wrong."), { status: res.status, code: j.code });
   return j;
 }
 
@@ -27,6 +28,7 @@ export function PasskeySettings() {
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reauth, setReauth] = useState(false);
   const [note, setNote] = useState<string | null>(null);
 
   useEffect(() => {
@@ -38,13 +40,15 @@ export function PasskeySettings() {
   async function run(fn: () => Promise<void>) {
     setBusy(true);
     setError(null);
+    setReauth(false);
     setNote(null);
     try {
       await fn();
     } catch (e) {
       const err = e as Error & { name?: string };
       // The person closing the browser's prompt is not an error worth shouting about.
-      setError(err.name === "NotAllowedError" ? "The passkey prompt was closed or timed out. Try again when you're ready." : err.message || "Something went wrong.");
+      if (isReauth(err)) setReauth(true);
+      else setError(err.name === "NotAllowedError" ? "The passkey prompt was closed or timed out. Try again when you're ready." : err.message || "Something went wrong.");
     }
     setBusy(false);
   }
@@ -123,6 +127,7 @@ export function PasskeySettings() {
       ) : null}
       {note ? <p className={s.note} role="status">{note}</p> : null}
       {error ? <p className={`${s.note} ${s.err}`} role="alert">{error}</p> : null}
+      {reauth ? <ReauthNotice className={`${s.note} ${s.err}`} linkClassName={s.link} /> : null}
     </div>
   );
 }

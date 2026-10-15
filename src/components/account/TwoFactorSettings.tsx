@@ -1,13 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
+import { isReauth, ReauthNotice } from "./reauth";
 import s from "./account.module.css";
 
 type Status = { enabled: boolean; recoveryLeft: number };
 
 async function api(method: "GET" | "POST", payload?: unknown) {
   const res = await fetch("/api/account/mfa", { method, headers: { "content-type": "application/json" }, credentials: "same-origin", cache: "no-store", body: payload ? JSON.stringify(payload) : undefined });
-  const j = (await res.json().catch(() => ({}))) as Record<string, unknown> & { error?: string };
-  if (!res.ok) throw Object.assign(new Error(j.error || "Something went wrong."), { status: res.status });
+  const j = (await res.json().catch(() => ({}))) as Record<string, unknown> & { error?: string; code?: string };
+  if (!res.ok) throw Object.assign(new Error(j.error || "Something went wrong."), { status: res.status, code: j.code });
   return j;
 }
 
@@ -23,6 +24,7 @@ export function TwoFactorSettings({ admin }: { admin: boolean }) {
   const [mode, setMode] = useState<"idle" | "disable" | "regenerate">("idle");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reauth, setReauth] = useState(false);
 
   useEffect(() => {
     let live = true;
@@ -33,10 +35,12 @@ export function TwoFactorSettings({ admin }: { admin: boolean }) {
   async function run(fn: () => Promise<void>) {
     setBusy(true);
     setError(null);
+    setReauth(false);
     try {
       await fn();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong.");
+      if (isReauth(e)) setReauth(true);
+      else setError(e instanceof Error ? e.message : "Something went wrong.");
     }
     setBusy(false);
   }
@@ -100,6 +104,7 @@ export function TwoFactorSettings({ admin }: { admin: boolean }) {
         </>
       ) : null}
       {error ? <p className={`${s.note} ${s.err}`} role="alert">{error}</p> : null}
+      {reauth ? <ReauthNotice className={`${s.note} ${s.err}`} linkClassName={s.link} /> : null}
     </div>
   );
 }
