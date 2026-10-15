@@ -1,8 +1,8 @@
 import { projects } from "@/lib/create/repo";
 import { rateLimit, RateLimitError } from "@/lib/create/platform/ratelimit";
-import { HttpError } from "@/lib/create/platform/http";
+import { HttpError, readFormData } from "@/lib/create/platform/http";
 import { recordFormSubmission } from "@/lib/business/crm";
-import { safeReturnPath } from "@/lib/business/commerce";
+import { isPublished, safeReturnPath } from "@/lib/business/commerce";
 import { emit } from "@/lib/business/events";
 import { clientIp, htmlPage, seeOther, withParam, esc } from "../../_html";
 
@@ -15,7 +15,9 @@ export async function POST(req: Request, ctx: { params: Promise<{ projectId: str
   const { projectId } = await ctx.params;
   const project = await projects().findSystem((p) => p.id === projectId);
   if (!project || project.takenDown) return htmlPage(404, "Not found", "<h1>This form isn't available.</h1>");
-  const form = await req.formData().catch(() => null);
+  // Only a published site's form takes submissions (AZ-7): a draft or unpublished project is not open to the public.
+  if (!isPublished(project)) return htmlPage(404, "Not found", "<h1>This form isn't available yet.</h1><p>It starts working once the site is published.</p>");
+  const form = await readFormData(req, 64_000).catch(() => null);
   if (!form) return htmlPage(400, "Bad request", "<h1>Something went wrong.</h1>");
   const ret = safeReturnPath(form.get("_return"), `/sites/${project.slug}/`);
   // Honeypot: bots fill hidden fields. Pretend success, store nothing.

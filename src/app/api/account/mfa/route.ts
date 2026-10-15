@@ -7,6 +7,9 @@
  *   POST { action: "regenerate", code }  needs a current code; the old recovery codes stop working
  *   POST { action: "challenge", code }   finish a sign-in that is waiting for its code (authenticator code or recovery code)
  * Same-origin only. The challenge is limited per IP, per session (the 5th wrong code ends that session) and per account.
+ * Lockout: after MFA_LOCK_AFTER wrong codes for one account within MFA_LOCK_WINDOW_SEC (sign-in, turning it off and new recovery
+ * codes together), every code is refused for the rest of that window, even a right one, and the owner is emailed once: someone
+ * who got that far knows the password or holds a session.
  * "setup", "enable" and "regenerate" need a sign-in from the last 10 minutes: 403 reauth_required otherwise
  * (src/lib/accounts/reauth.ts). The owner is emailed when 2FA is turned on or off and when recovery codes are replaced.
  */
@@ -19,7 +22,7 @@ import { notifySecurityChange } from "@/lib/accounts/security-notice";
 import { beginSetup, confirmSetup, disableMfa, mfaStatus, regenerateRecovery, verifySecondFactor } from "@/lib/accounts/mfa/store";
 import { brand } from "@/lib/site";
 import { body, errorResponse, HttpError, json } from "@/lib/create/platform/http";
-import { limitRequest, rateLimit, RateLimitError } from "@/lib/create/platform/ratelimit";
+import { countHit, limitRequest, peekHits, rateLimit, RateLimitError } from "@/lib/create/platform/ratelimit";
 import { writeAudit } from "@/lib/ops/audit";
 import { assertSameOrigin } from "@/lib/security/origin";
 
@@ -43,13 +46,29 @@ export async function GET(req: Request) {
   }
 }
 
+/** Wrong codes for one account within the window before every code is refused until the window ends. */
+const MFA_LOCK_AFTER = 8;
+const MFA_LOCK_WINDOW_SEC = 60 * 60;
+const failKey = (userId: string) => `mfa:fail:user:${userId}`;
+
 async function guessBudget(userId: string) {
+  if ((await peekHits(failKey(userId), MFA_LOCK_WINDOW_SEC, { shared: true })) >= MFA_LOCK_AFTER) {
+    throw new HttpError(429, "Two-factor codes are paused for this account after too many wrong codes. Try again in an hour. We emailed the account owner.", "mfa_locked");
+  }
   try {
     await rateLimit(`mfa:user:${userId}`, 8, 600, { shared: true });
   } catch (e) {
     if (e instanceof RateLimitError) throw new HttpError(429, "Too many attempts. Wait a few minutes and try again.", "rate_limited");
     throw e;
   }
+}
+
+/** Count a wrong code; the one that reaches the limit locks the account's codes and tells the owner (once per window). */
+async function wrongCode(userId: string, email: string, headers: Headers) {
+  const n = await countHit(failKey(userId), MFA_LOCK_WINDOW_SEC, { shared: true });
+  if (n !== MFA_LOCK_AFTER) return;
+  await writeAudit("user", "mfa.locked_too_many_failures", `user ${userId}`).catch(() => undefined);
+  await notifySecurityChange(email, "mfa_locked", headers);
 }
 
 export async function POST(req: Request) {
@@ -85,6 +104,7 @@ export async function POST(req: Request) {
         return json({ ok: true, recoveryCodes: done.recoveryCodes });
       }
       const check = await verifySecondFactor(uid, code);
+      if (!check.ok) await wrongCode(uid, session.user.email, req.headers);
       if (!check.ok) throw new HttpError(400, "That code isn't right. Use a current code from your authenticator app, or a recovery code.", "wrong_code");
       if (action === "disable") {
         await disableMfa(uid);
@@ -104,6 +124,7 @@ export async function POST(req: Request) {
     await guessBudget(pending.userId);
     const res = await verifySecondFactor(pending.userId, code);
     if (!res.ok) {
+      await wrongCode(pending.userId, pending.email, req.headers);
       let ended = false;
       try {
         await rateLimit(`mfa:session:${pending.sessionId}`, 4, 600, { shared: true });

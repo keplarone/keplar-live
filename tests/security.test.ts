@@ -178,3 +178,23 @@ test("Keplar Business pages can show images stored on keplar.one (the tester's s
   assert.equal(biz.replace(" https://keplar.one", ""), app, "only img-src differs from the /app CSP");
   assert.ok(readFileSync("next.config.ts", "utf8").includes("BUSINESS_HOSTS }], headers: BUSINESS_PAGE_HEADERS"));
 });
+
+// IN-5 (docs/rebirth/AUDIT.md): script-src 'self' covers user files under /s/, /sites/ and /apps/. A keplar.one page may not run
+// them; their own sandboxed (opaque-origin) pages still load them (those requests are cross-site).
+test("proxy: user files can't be loaded as scripts by a keplar.one page; their own sandboxed pages still load them", async () => {
+  const mk = (path: string, headers: Record<string, string>) => new NextRequest(`https://keplar.one${path}`, { method: "GET", headers });
+  for (const path of ["/s/demo/app.js", "/sites/demo/x.js", "/apps/draft/sit_1/live/t/app.js"]) {
+    for (const dest of ["script", "worker", "serviceworker"]) {
+      const r = await proxy(mk(path, { "sec-fetch-dest": dest, "sec-fetch-site": "same-origin" }));
+      assert.equal(r.status, 403, `${dest} ${path}`);
+    }
+    const own = await proxy(mk(path, { "sec-fetch-dest": "script", "sec-fetch-site": "cross-site" }));
+    assert.notEqual(own.status, 403, "the app's own sandboxed page");
+    const page = await proxy(mk(path, { "sec-fetch-dest": "document", "sec-fetch-site": "same-origin" }));
+    assert.notEqual(page.status, 403, "opening the page itself");
+    const fetched = await proxy(mk(path, { "sec-fetch-dest": "empty", "sec-fetch-site": "same-origin" }));
+    assert.notEqual(fetched.status, 403, "fetch() of the file (as data) is not running it");
+  }
+  assert.notEqual((await proxy(mk("/_next/static/chunks/main.js", { "sec-fetch-dest": "script", "sec-fetch-site": "same-origin" }))).status, 403);
+  assert.notEqual((await proxy(mk("/fx/kapp.1.js", { "sec-fetch-dest": "script", "sec-fetch-site": "cross-site" }))).status, 403);
+});

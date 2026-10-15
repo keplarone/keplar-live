@@ -123,3 +123,47 @@ test("settings API: set up, prove with a code, see status, regenerate recovery c
   assert.equal((await post({ action: "disable", code: regen.recoveryCodes[0] })).status, 200);
   assert.deepEqual(await (await mfaGET(jsonReq(cookie, "/api/account/mfa", "GET"))).json(), { enabled: false, recoveryLeft: 0 });
 });
+
+// AUTH-9 (docs/rebirth/AUDIT.md): guessing was slowed (8 per 10 minutes) but never stopped, and the owner never knew. Now the 8th
+// wrong code within an hour locks the account's codes for the rest of that hour, even a right one, and emails the owner once.
+test("too many wrong codes across sessions lock the account's codes and email the owner once", async (ctx) => {
+  if (!fake) return ctx.skip("PGlite not installed");
+  const store = await import("../src/lib/accounts/mfa/store");
+  const { listOutbox } = await import("../src/lib/accounts/outbox");
+  const email = "mfa-brute@example.com";
+  const first = await signIn(email);
+  const uid = await uidOf(first.cookie);
+  const { secret } = await store.beginSetup(uid, email);
+  const t0 = Date.now();
+  assert.ok((await store.confirmSetup(uid, totpAt(secret, t0), t0)).ok);
+  const notices = async () => (await listOutbox()).filter((m) => m.to === email && /Too many wrong two-factor codes/.test(m.subject)).length;
+  assert.equal(await notices(), 0);
+
+  // An attacker with the password: one pending session takes 4 wrong codes (the 5th ends it), so they sign in again.
+  const a = await rawSignIn(email);
+  for (let i = 0; i < 4; i++) assert.equal((await challenge(a.cookie, "111111")).status, 400);
+  const b = await rawSignIn(email);
+  const statuses: number[] = [];
+  for (let i = 0; i < 4; i++) statuses.push((await challenge(b.cookie, "222222")).status);
+  assert.deepEqual(statuses, [400, 400, 400, 400], "the 8th wrong code is still answered as wrong");
+  assert.equal(await notices(), 1, "the owner is told when the lock starts");
+
+  // Locked: even the right code is refused (the session isn't ended for it), and so is turning 2FA off from a signed-in session.
+  const t1 = t0 + 60_000;
+  const realNow = Date.now;
+  Date.now = () => t1;
+  let locked: Response;
+  let off: Response;
+  try {
+    locked = await challenge(b.cookie, totpAt(secret, t1));
+    off = await mfaPOST(jsonReq(first.cookie, "/api/account/mfa", "POST", { action: "disable", code: totpAt(secret, t1) }));
+  } finally {
+    Date.now = realNow;
+  }
+  assert.equal(locked.status, 429);
+  assert.equal(((await locked.json()) as { code?: string }).code, "mfa_locked");
+  assert.equal(await usable(b.cookie), null);
+  assert.equal(off.status, 429);
+  assert.equal(((await off.json()) as { code?: string }).code, "mfa_locked");
+  assert.equal(await notices(), 1);
+});

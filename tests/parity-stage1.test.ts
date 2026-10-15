@@ -144,6 +144,8 @@ test("code runner: languages, capped output, strict message parsing and CSP", ()
   assert.equal(parseRunnerMsg({ type: "out", text: "no id" }), null);
   assert.match(RUNNER_CSP, /default-src 'none'/);
   assert.match(RUNNER_CSP, /frame-ancestors 'self'/);
+  assert.match(RUNNER_CSP, /(^|; )sandbox allow-scripts($|;)/, "IN-8: opaque origin even when opened outside its sandboxed iframe");
+  assert.ok(!/allow-same-origin/.test(RUNNER_CSP));
   assert.ok(!/connect-src[^;]*\*/.test(RUNNER_CSP));
 });
 

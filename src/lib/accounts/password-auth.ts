@@ -38,7 +38,7 @@ import { checkMailDomain, mailDomainOf } from "./email-domain";
 import { badMailDomain } from "./email-check";
 import { normalizeEmail } from "./magic-token";
 import { emailAvailable, sendEmail } from "./outbox";
-import { persistenceEnabled, revokeAllSessions, upsertUser } from "./persist";
+import { networkPrefix, persistenceEnabled, revokeAllSessions, upsertUser } from "./persist";
 import { checkPassword, EMAIL_MAX, PASSWORD_MAX, validEmail } from "./password-policy";
 import { authRedirectPath } from "./redirect";
 import { afterSignInPath } from "@/lib/onboarding/redirect";
@@ -58,6 +58,9 @@ const dummy = () => (dummyHash ??= hashPassword("keplar-dummy-password-for-timin
 const ipOf = (ctx: { headers?: Headers | null }) => (ctx.headers ? clientIpOf(new Request("http://x", { headers: ctx.headers })) : "local");
 
 const tooMany = (message = "Too many attempts. Wait a few minutes and try again, or email yourself a sign-in link.") => new APIError("TOO_MANY_REQUESTS", { message, code: "RATE_LIMITED" });
+
+/** Password sign-in attempts for one address per 15 minutes from all networks together (see passwordSignIn). */
+const PW_EMAIL_CEILING = 60;
 
 async function limits(rules: [key: string, max: number, windowSec: number][]) {
   try {
@@ -165,7 +168,11 @@ export const passwordAuth = (opts: PasswordAuthOptions) => {
         const password = str(body.password, PASSWORD_MAX * 4);
         if (!password) throw new APIError("BAD_REQUEST", { message: "Enter your password.", code: "PASSWORD_REQUIRED" });
         const ip = ipOf(ctx);
-        await limits([[`pw:in:ip:${ip}`, 40, 600], [`pw:in:ipemail:${ip}:${email}`, 6, 300], [`pw:in:email:${email}`, 12, 900]]);
+        // Per address, the budget is per network (IPv4 /16, IPv6 /32): someone guessing from elsewhere uses up their own network's
+        // budget, not the owner's, so they can't lock the owner out with a dozen tries. A much higher per-address ceiling still caps
+        // a guess spread over many networks.
+        const net = networkPrefix(ip) ?? ip;
+        await limits([[`pw:in:ip:${ip}`, 40, 600], [`pw:in:ipemail:${ip}:${email}`, 6, 300], [`pw:in:netemail:${net}:${email}`, 12, 900], [`pw:in:email:${email}`, PW_EMAIL_CEILING, 900]]);
         const cred = await getCredential(email);
         const valid = await verifyPassword({ hash: cred?.hash ?? (await dummy()), password }).catch(() => false);
         if (!cred || !valid) throw new APIError("UNAUTHORIZED", { message: GENERIC_CREDENTIALS, code: "INVALID_CREDENTIALS" });

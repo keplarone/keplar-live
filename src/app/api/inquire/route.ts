@@ -4,6 +4,7 @@
  * when the email was accepted by Resend; if it wasn't, the row stays in the database
  * (email_status = 'failed') and the visitor gets a clear error.
  */
+import { readText } from "@/lib/create/platform/http";
 import { createHash } from "node:crypto";
 import { clientIpOf, rateLimit, RateLimitError } from "@/lib/create/platform/ratelimit";
 import { isSameOrigin } from "@/lib/security/origin";
@@ -29,8 +30,8 @@ export async function POST(request: Request) {
   }
   const type = request.headers.get("content-type") ?? "";
   if (!type.includes("application/json")) return fail(415, "Send the inquiry as JSON.");
-  const raw = await request.text();
-  if (raw.length > MAX_BODY_BYTES) return fail(413, "That inquiry is too long.");
+  const raw = await readText(request, MAX_BODY_BYTES);
+  if (raw === null) return fail(413, "That inquiry is too long.");
   let body: unknown;
   try {
     body = JSON.parse(raw);

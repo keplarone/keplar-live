@@ -21,6 +21,17 @@ export type PendingWant = {
 };
 
 const rows = () => collection<PendingWant>("wants_confirmations");
+/** One row per confirmation that ran (id = confirmation id), inserted with insertIfAbsent: two confirms can't both run it. */
+type Claim = { id: string; workspaceId: string; at: string };
+const claims = () => collection<Claim>("wants_confirm_claims");
+
+/**
+ * Take this confirmation for running, atomically (the biz_approval_claims pattern): true for exactly one caller, however many
+ * confirm the same plan at once. Call after the PIN checked out and before anything runs.
+ */
+export async function claimPending(workspaceId: string, id: string): Promise<boolean> {
+  return (await claims().insertIfAbsent({ id, workspaceId, at: new Date().toISOString() })).inserted;
+}
 
 export async function savePending(row: Omit<PendingWant, "id" | "createdAt"> & { createdAt?: number }): Promise<PendingWant> {
   const saved: PendingWant = { ...row, id: randomBytes(9).toString("base64url"), createdAt: row.createdAt ?? Date.now() };

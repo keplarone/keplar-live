@@ -39,7 +39,8 @@ export async function GET(req: Request, { params }: Ctx) {
       // apps run their modules from a signed draft URL that serves the live session; sites render client-side from the doc
       // fingerprints of the base version's files, so the file tree can mark what changed in this session
       baseFingerprints: Object.fromEntries(Object.entries((await getVersion(a.site, room.base).catch(() => null))?.files ?? {}).map(([p, t]) => [p, fingerprint(t)])),
-      livePreview: a.site.kind === "app" ? `/apps/draft/${a.site.id}/live/${previewToken(a.site.id)}/` : null,
+      // Viewers get a look-only preview: the draft app never hands them sign-in links for its users (AZ-5).
+      livePreview: a.site.kind === "app" ? `/apps/draft/${a.site.id}/live/${previewToken(a.site.id, undefined, undefined, collabCan(a.role, "edit") ? "full" : "view")}/` : null,
     });
   } catch (e) {
     return errorResponse(e);

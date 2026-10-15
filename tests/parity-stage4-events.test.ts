@@ -118,6 +118,15 @@ test("incoming email: 503 until set up, 401 without the secret, unknown routes a
     assert.equal(run.trigger, "email.received");
     assert.ok((await inbox().list(ws.id, (m) => m.channel === "email" && m.from === "x@client.com")).length === 1);
     assert.ok(run.steps.some((s) => /Connect Gmail/.test(s.text)));
+    // IN-8 (docs/rebirth/AUDIT.md): a retried or replayed delivery of the same message doesn't start the agent again.
+    const withId = { ...mail("x@client.com", `agent+${a.inboxRoute}@in.keplar.test`), MessageID: "pm-msg-1" };
+    assert.deepEqual(await (await mailPOST(req(withId, auth))).json(), { ok: true });
+    assert.deepEqual(await (await mailPOST(req(withId, auth))).json(), { ok: true, dropped: "duplicate" });
+    assert.deepEqual(await (await mailPOST(req({ ...withId, Subject: "edited, same id" }, auth))).json(), { ok: true, dropped: "duplicate" });
+    // Without a Message-ID the exact body is the key.
+    assert.deepEqual(await (await mailPOST(req(mail("x@client.com", `agent+${a.inboxRoute}@in.keplar.test`), auth))).json(), { ok: true, dropped: "duplicate" });
+    await waitFor(async () => (await runs().list(ws.id, (x) => x.agentId === a.id && x.status !== "running")).length === 2 || null);
+    assert.equal((await runs().list(ws.id, (x) => x.agentId === a.id)).length, 2, "one more run, for the one new message");
   } finally {
     for (const k of ["KEPLAR_INBOUND_EMAIL", "KEPLAR_INBOUND_EMAIL_DOMAIN", "KEPLAR_INBOUND_EMAIL_SECRET"]) delete process.env[k];
   }

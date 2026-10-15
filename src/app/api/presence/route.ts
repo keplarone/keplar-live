@@ -1,3 +1,4 @@
+import { readText } from "@/lib/create/platform/http";
 import { after } from "next/server";
 import { noteHeartbeat } from "@/lib/traffic/presence";
 
@@ -12,8 +13,8 @@ const NO_CONTENT = () => new Response(null, { status: 204, headers: { "cache-con
  * lib/traffic/presence.ts); no IP, path, referrer or account is stored. Skips bots, Do Not Track and Global Privacy Control.
  */
 export async function POST(req: Request) {
-  const text = await req.text().catch(() => "");
-  if (text.length > 16) return NO_CONTENT();
+  const text = await readText(req, 64).catch(() => null);
+  if (text === null || text.length > 16) return NO_CONTENT();
   const kind = text.trim() === "hb" ? "hb" : text.trim() === "bye" ? "bye" : null;
   if (!kind) return NO_CONTENT();
   const work = noteHeartbeat(req, kind);

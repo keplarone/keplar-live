@@ -16,6 +16,9 @@ export const approvals = () => collection<Approval>("biz_approvals");
 /** One row per decided approval (id = approval id), inserted with insertIfAbsent BEFORE anything runs: two clicks can't both execute. */
 export type ApprovalClaim = { id: string; workspaceId: string; decision: "approve" | "reject"; by: string; at: string };
 export const approvalClaims = () => collection<ApprovalClaim>("biz_approval_claims");
+/** One row per delivered inbound email (id = hash of its Message-ID), inserted with insertIfAbsent: a retried or replayed delivery doesn't start the agent twice. */
+export type InboundClaim = { id: string; workspaceId: string; agentId: string; at: string };
+export const inboundClaims = () => collection<InboundClaim>("biz_inbound_claims");
 export const auditLog = () => collection<AuditEntry>("biz_audit");
 export const tableRows = () => collection<{ id: string; workspaceId: string; sheet: string; row: unknown[]; at: string }>("biz_table_rows");
 /** Legacy per-view rows (read until they age out; nothing writes them any more). */

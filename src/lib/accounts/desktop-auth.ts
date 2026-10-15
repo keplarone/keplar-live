@@ -3,12 +3,13 @@
  * src/lib/desktop-auth/{core,service,store}.ts. Endpoints (under /api/auth):
  *
  *   POST /desktop/start     app      {challenge, label}          -> {rid, code, url, expiresIn}
- *   POST /desktop/approve   browser  {rid}  (signed in, same origin) -> {deepLink}
+ *   POST /desktop/approve   browser  {rid, code}  (signed in, same origin; code = the one the app shows, typed) -> {deepLink}
  *   POST /desktop/deny      browser  {rid}  (same origin)
  *   POST /desktop/poll      app      {rid, verifier}             -> {status, code?}     (fallback when keplar:// is not registered)
  *   POST /desktop/exchange  app      {rid, code, verifier}       -> {ticket}            (single use)
  *   POST /desktop/cancel    app      {rid, verifier}
  *   GET  /desktop/finish?ticket=...  the app's window            -> sets the session cookie, redirects into the app
+ *                                    (refused when another site linked to it, and for Keplar One outside its desktop window)
  *
  * The app endpoints carry no cookies and no secrets of the user; what protects them is the PKCE verifier that never
  * leaves the app. The browser endpoints need the signed-in cookie and our Origin, like every other sign-in action.
@@ -21,7 +22,7 @@ import { connectPath, DESKTOP_APPS, REQUEST_TTL_SECONDS } from "@/lib/desktop-au
 import { approveRequest, cancelRequest, denyRequest, exchangeCode, pollRequest, redeemTicket, startRequest, type Deps } from "@/lib/desktop-auth/service";
 import { isBusinessHost } from "@/lib/business-site";
 import { defaultStore } from "@/lib/desktop-auth/store";
-import { signedInAt } from "./reauth";
+import { REAUTH_CODE, REAUTH_MESSAGE, signedInAt } from "./reauth";
 import { startSession } from "./session-issue";
 
 type Opts = { secret: string; origin: () => string };
@@ -52,6 +53,25 @@ const REASON_TEXT: Record<string, string> = {
   not_approved: "This sign-in hasn't been approved in the browser yet.",
 };
 
+const APPROVE_TEXT: Record<"unknown" | "expired" | "closed" | "wrong_code", string> = {
+  unknown: REASON_TEXT.invalid,
+  expired: REASON_TEXT.expired,
+  closed: "This sign-in request is closed. Start again from the app.",
+  wrong_code: "That code doesn't match. Type the code shown in the app that asked to sign in. If no app is asking, choose This wasn't me.",
+};
+
+/**
+ * Was /desktop/finish opened by the app itself rather than by a link or a redirect on some other site? The app loads the URL
+ * directly, so its browser sends Sec-Fetch-Site "none". A header-less client (an old browser) is let through to the checks after.
+ */
+export function openedByTheApp(h: Headers | null | undefined): boolean {
+  const site = h?.get("sec-fetch-site")?.trim().toLowerCase();
+  return !site || site === "none" || site === "same-origin";
+}
+
+/** The Keplar One desktop window's user agent: "keplar-desktop" (0.1.3 and later), and Electron's own token in every version. */
+export const isDesktopShell = (h: Headers | null | undefined): boolean => /\bkeplar-desktop\b|\bElectron\/\d/.test(h?.get("user-agent") ?? "");
+
 export const desktopAuth = (opts: Opts) => {
   const d = () => deps(opts.secret);
   return {
@@ -72,8 +92,12 @@ export const desktopAuth = (opts: Opts) => {
         if (!s) throw new APIError("UNAUTHORIZED", { message: "Log in first.", code: "NOT_SIGNED_IN" });
         await limit(`desktop:approve:user:${s.user.id}`, 20, 600);
         // The app's session inherits this browser session's sign-in time (src/lib/accounts/reauth.ts).
-        const r = await approveRequest(d(), obj(ctx.body).rid, { userId: s.user.id, email: s.user.email, name: s.user.name ?? null, authAt: signedInAt(s) });
-        if (!r.ok) throw new APIError("BAD_REQUEST", { message: r.reason === "expired" ? REASON_TEXT.expired : r.reason === "closed" ? "This sign-in request is closed. Start again from the app." : REASON_TEXT.invalid, code: `REQUEST_${r.reason.toUpperCase()}` });
+        const b = obj(ctx.body);
+        const r = await approveRequest(d(), b.rid, { userId: s.user.id, email: s.user.email, name: s.user.name ?? null, authAt: signedInAt(s) }, b.code);
+        if (!r.ok) {
+          if (r.reason === "reauth") throw new APIError("FORBIDDEN", { message: REAUTH_MESSAGE, code: REAUTH_CODE });
+          throw new APIError("BAD_REQUEST", { message: APPROVE_TEXT[r.reason], code: `REQUEST_${r.reason.toUpperCase()}` });
+        }
         return ctx.json({ deepLink: r.deepLink });
       }),
 
@@ -108,9 +132,17 @@ export const desktopAuth = (opts: Opts) => {
         // Each desktop app gets its session on its own host: Keplar One on keplar.one, Keplar Business on business.keplar.one.
         // A ticket opened on the other host is used up without signing anyone in (only misuse gets there).
         const onBusiness = isBusinessHost((ctx.headers?.get("host") ?? "").toLowerCase().replace(/:\d+$/, "").replace(/\.$/, ""));
+        const used = onBusiness ? "/?signin=expired" : "/signin?error=desktop_link_used&next=%2Fapp";
+        // Login CSRF: someone who finished their OWN sign-in up to the ticket must not be able to open it in your browser and sign
+        // you in as them. The app loads the ticket itself (no page links to it), so a link or redirect from another site is refused
+        // before the ticket is touched.
+        if (!openedByTheApp(ctx.headers)) throw ctx.redirect(used);
         const who = await redeemTicket(d(), (ctx.query as Record<string, unknown> | undefined)?.ticket);
         // The browser extension is given an API key (src/lib/api/extension.ts), never a session cookie: its ticket is used up here for nothing.
-        if (!who || who.app === "extension" || (who.app === "business") !== onBusiness) throw ctx.redirect(onBusiness ? "/?signin=expired" : "/signin?error=desktop_link_used&next=%2Fapp");
+        if (!who || who.app === "extension" || (who.app === "business") !== onBusiness) throw ctx.redirect(used);
+        // Keplar One's window identifies itself (keplar-desktop's user-agent.ts adds "keplar-desktop"; every version also says Electron/).
+        // A ticket opened in an ordinary browser is used up without signing anyone in.
+        if (who.app === "one" && !isDesktopShell(ctx.headers)) throw ctx.redirect(used);
         const { userId } = await startSession(ctx, { email: who.email, name: who.name, provider: who.app === "business" ? "desktop-business" : "desktop", remember: true, authAt: who.authAt ? new Date(who.authAt) : null });
         if (who.app === "business") throw ctx.redirect(DESKTOP_APPS.business.home);
         throw ctx.redirect(await afterSignInPath(userId, "/app"));

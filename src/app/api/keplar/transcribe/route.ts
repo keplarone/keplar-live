@@ -5,7 +5,7 @@
  * Byte-identical audio re-sent by the same person within 15 minutes reuses the result held in this instance's memory (lib/reuse):
  * no second speech call and no second daily count. Never written anywhere.
  */
-import { errorResponse, HttpError, json } from "@/lib/create/platform/http";
+import { errorResponse, HttpError, json, readBytes } from "@/lib/create/platform/http";
 import { currentWorkspace } from "@/lib/create/platform/workspace";
 import { clientIpOf, limitRequest } from "@/lib/create/platform/ratelimit";
 import { isSameOrigin } from "@/lib/security/origin";
@@ -29,8 +29,8 @@ export async function POST(req: Request) {
     const ws = await currentWorkspace(req, { allowAnonymous: true });
     await limitRequest(req, "keplar-transcribe", { perIp: 30, perAccount: 40, accountId: ws.anonymous ? null : ws.id, windowSec: 60 });
     const plan = ws.anonymous ? "free" : ws.plan;
-    const buf = new Uint8Array(await req.arrayBuffer());
-    if (buf.length > MAX_BODY) throw new HttpError(413, "That audio chunk is too large.", "too_large");
+    const buf = await readBytes(req, MAX_BODY);
+    if (buf === null) throw new HttpError(413, "That audio chunk is too large.", "too_large");
     // Same person, same bytes, same engine tier (free and paid engines differ) -> the same text. Only a miss is counted and transcribed.
     const scope = reuseScope(ws, { deviceId: readDeviceId(req.headers.get("cookie")), ip: clientIpOf(req) });
     const input = `${plan === "free" ? "free" : "paid"}:${createHash("sha256").update(buf).digest("hex")}`;

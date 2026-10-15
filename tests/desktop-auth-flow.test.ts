@@ -17,15 +17,24 @@ after(() => fake?.restore());
 const auth = async () => (await import("@/lib/accounts/auth")).auth;
 let n = 0;
 const ip = () => `10.77.${(++n >> 8) & 255}.${n & 255}`;
-const post = async (path: string, body: unknown, opts: { cookie?: string; origin?: string | null } = {}) => {
+/** The short code each started request showed in the app: the person types it on the connect page (AUTH-6). */
+const shownFor = new Map<string, string>();
+const post = async (path: string, body: unknown, opts: { cookie?: string; origin?: string | null; typed?: boolean } = {}) => {
   const a = await auth();
+  const b = body as Record<string, unknown>;
+  if (path === "approve" && opts.typed !== false && b && typeof b.rid === "string" && b.code === undefined && shownFor.has(b.rid)) body = { ...b, code: shownFor.get(b.rid) };
   const headers: Record<string, string> = { "content-type": "application/json", "x-forwarded-for": ip() };
   if (opts.origin !== null) headers.origin = opts.origin ?? ORIGIN;
   if (opts.cookie) headers.cookie = opts.cookie;
   const res = await a.handler(new Request(`${ORIGIN}/api/auth/desktop/${path}`, { method: "POST", headers, body: JSON.stringify(body) }));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test helper reads loosely-typed JSON
-  return { res, json: (await res.json().catch(() => ({}))) as Record<string, any> };
+  const json = (await res.json().catch(() => ({}))) as Record<string, any>;
+  if (path === "start" && typeof json.rid === "string") shownFor.set(json.rid, json.code);
+  return { res, json };
 };
+/** What the Keplar One window sends when it loads the finish URL itself (keplar-desktop src/main/user-agent.ts). */
+const DESKTOP_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) keplar-desktop/0.3.1 Chrome/140.0.0.0 Electron/38.1.0 Safari/537.36 keplar-desktop";
+const BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36";
 /** The desktop app's own requests: no cookies, no Origin (it is not a web page). */
 const app = (path: string, body: unknown) => post(path, body, { origin: null });
 const cookieOf = (res: Response) => res.headers.getSetCookie().map((c) => c.split(";")[0]).filter((c) => !/=$/.test(c)).join("; ");
@@ -41,10 +50,20 @@ async function begin() {
   return { verifier, rid: json.rid as string, shown: json.code as string };
 }
 
-async function finish(ticket: string, cookie?: string) {
+async function finish(ticket: string, cookie?: string, headers: Record<string, string> = { "user-agent": DESKTOP_UA, "sec-fetch-site": "none" }) {
   const a = await auth();
-  const res = await a.handler(new Request(`${ORIGIN}/api/auth/desktop/finish?ticket=${ticket}`, { method: "GET", redirect: "manual", headers: { "x-forwarded-for": ip(), ...(cookie ? { cookie } : {}) } } as RequestInit));
+  const res = await a.handler(new Request(`${ORIGIN}/api/auth/desktop/finish?ticket=${ticket}`, { method: "GET", redirect: "manual", headers: { "x-forwarded-for": ip(), ...headers, ...(cookie ? { cookie } : {}) } } as RequestInit));
   return res;
+}
+
+/** Start, approve as `email`, exchange with the verifier: the ticket the app would load. */
+async function ticketFor(email: string): Promise<string> {
+  const b = await begin();
+  const { cookie } = await signIn(email);
+  const ok = await post("approve", { rid: b.rid }, { cookie });
+  const ex = await app("exchange", { rid: b.rid, code: parseAuthDeepLink(ok.json.deepLink)!.code, verifier: b.verifier });
+  assert.equal(ex.res.status, 200);
+  return ex.json.ticket as string;
 }
 
 test("start validates the challenge", async () => {
@@ -188,4 +207,39 @@ test("Keplar Business desktop app: keplar-business:// link, and the session is i
   assert.match(cookie, /session_token=/);
   const session = await (await import("@/lib/accounts/auth")).getSession(new Headers({ cookie }));
   assert.equal(session?.user.email, "flow-business@example.com");
+});
+
+// AUTH-6 (docs/rebirth/AUDIT.md): phishing. Someone starts a sign-in in THEIR app and sends you the connect link; you're signed in
+// and click Connect. Without the code their app shows (which the page never shows) nothing is approved.
+test("approve without the app's code (a link someone sent) is refused, and the app learns nothing", async () => {
+  const b = await begin();
+  const { cookie } = await signIn("flow-phish@example.com");
+  const bare = await post("approve", { rid: b.rid }, { cookie, typed: false });
+  assert.equal(bare.res.status, 400);
+  assert.equal(bare.json.code, "REQUEST_WRONG_CODE");
+  assert.equal((await post("approve", { rid: b.rid, code: "AAA-AAA" }, { cookie })).res.status, 400);
+  assert.equal((await app("poll", { rid: b.rid, verifier: b.verifier })).json.status, "pending");
+  assert.equal((await post("approve", { rid: b.rid, code: b.shown.toLowerCase() }, { cookie })).res.status, 200);
+});
+
+// AUTH-6: login CSRF. Someone finishes their own sign-in up to the ticket and gets YOUR browser to open the finish link: you would
+// be signed in to their account (and type your data into it). The ticket only works when the Keplar One window loads it itself.
+test("finish refuses a ticket opened from another site's link or in an ordinary browser", async () => {
+  // A link or redirect from another site: refused before the ticket is touched, so the app can still finish with it.
+  const t1 = await ticketFor("flow-csrf-1@example.com");
+  for (const site of ["cross-site", "same-site"]) {
+    const res = await finish(t1, undefined, { "user-agent": BROWSER_UA, "sec-fetch-site": site });
+    assert.equal(res.status, 302);
+    assert.match(res.headers.get("location") ?? "", /error=desktop_link_used/);
+    assert.equal(cookieOf(res), "", `no session from a ${site} link`);
+  }
+  const app1 = await finish(t1);
+  assert.match(cookieOf(app1), /session_token=/, "the app's own load still works");
+
+  // Pasted or typed into an ordinary browser (no app user agent): no session, and the ticket is spent.
+  const t2 = await ticketFor("flow-csrf-2@example.com");
+  const typed = await finish(t2, undefined, { "user-agent": BROWSER_UA, "sec-fetch-site": "none" });
+  assert.equal(typed.status, 302);
+  assert.equal(cookieOf(typed), "");
+  assert.equal(cookieOf(await finish(t2)), "", "single use");
 });

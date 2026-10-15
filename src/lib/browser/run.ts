@@ -38,7 +38,15 @@ export const networkTransport: Transport = async (route, url) => {
 const MAX_HOPS = 5;
 const attr = (u: string) => u.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 
-const dnsResolve: Resolver = async (host) => (await dns.promises.lookup(host, { all: true, verbatim: true })).map((a) => a.address);
+const originOf = (u: string) => {
+  try {
+    return new URL(u).origin;
+  } catch {
+    return null;
+  }
+};
+
+export const dnsResolve: Resolver = async (host) => (await dns.promises.lookup(host, { all: true, verbatim: true })).map((a) => a.address);
 
 /** May the browser load this address? Public http(s) only, every resolved address public; data:/blob:/about: stay in the page. */
 export async function allowedUrl(raw: string, resolve: Resolver = dnsResolve): Promise<boolean> {
@@ -69,13 +77,16 @@ export function sendsData(req: { method: string; resourceType: string }): boolea
 /**
  * Route every request through the guard. A redirect is never handed to Chromium (it would follow it without asking this
  * route again): each hop is checked here; a page redirect becomes a fresh navigation, which comes back through the guard.
+ * `trustedOrigin` (the site builder's QA run: our own server, which may be localhost in development) is passed straight
+ * through, form posts included; everything else gets the public-web-only, read-only rules.
  */
-export async function guardContext(ctx: BrowserContext, resolve: Resolver, transport: Transport, blocked: Set<string>, sent: Set<string> = new Set()) {
+export async function guardContext(ctx: BrowserContext, resolve: Resolver, transport: Transport, blocked: Set<string>, sent: Set<string> = new Set(), opts: { trustedOrigin?: string } = {}) {
   // WebSockets don't pass through ctx.route: close every one, so page script can't open a socket to a private address.
   if (typeof ctx.routeWebSocket === "function") await ctx.routeWebSocket(/.*/, (ws) => { void ws.close({ code: 1008, reason: "blocked" }); });
   await ctx.route("**/*", async (route: Route) => {
     const req = route.request();
     const type = req.resourceType();
+    if (opts.trustedOrigin && originOf(req.url()) === opts.trustedOrigin) return route.continue();
     if (type === "media" || type === "websocket" || type === "eventsource") return route.abort("blockedbyclient");
     if (sendsData({ method: req.method(), resourceType: type })) {
       sent.add(req.url().slice(0, 200));

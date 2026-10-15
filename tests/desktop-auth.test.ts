@@ -24,7 +24,7 @@ async function approved(r = rig()) {
   const p = pair();
   const s = await startRequest(r.deps, { challenge: p.challenge, label: "Keplar One on Windows" });
   assert.ok(s.ok);
-  const a = await approveRequest(r.deps, s.rid, who);
+  const a = await approveRequest(r.deps, s.rid, who, displayCode(KEY, s.rid));
   assert.ok(a.ok);
   return { r, p, rid: s.rid, code: a.code, a };
 }
@@ -92,7 +92,7 @@ test("the app's session inherits the approving browser session's sign-in time (s
   const s = await startRequest(r.deps, { challenge: p.challenge, label: "Keplar One on Windows" });
   assert.ok(s.ok);
   const authAt = 123_456_789;
-  const a = await approveRequest(r.deps, s.rid, { ...who, authAt });
+  const a = await approveRequest(r.deps, s.rid, { ...who, authAt }, displayCode(KEY, s.rid));
   assert.ok(a.ok);
   // A poll re-mints the code from the stored row: the sign-in time must survive that too.
   const polled = await pollRequest(r.deps, s.rid, p.verifier);
@@ -155,7 +155,7 @@ test("the code dies after two minutes; the request after ten", async () => {
   assert.ok(s.ok);
   q.tick(REQUEST_TTL_SECONDS + 1);
   assert.equal((await describeRequest(q.deps, s.rid)).state, "expired");
-  assert.deepEqual(await approveRequest(q.deps, s.rid, who), { ok: false, reason: "expired" });
+  assert.deepEqual(await approveRequest(q.deps, s.rid, who, displayCode(KEY, s.rid)), { ok: false, reason: "expired" });
   assert.deepEqual(await pollRequest(q.deps, s.rid, pr.verifier), { status: "expired" });
 });
 
@@ -174,7 +174,7 @@ test("polling fallback: pending until approved, then the verifier holder (only) 
   assert.ok(s.ok);
   assert.deepEqual(await pollRequest(r.deps, s.rid, p.verifier), { status: "pending" });
   assert.deepEqual(await pollRequest(r.deps, s.rid, pair().verifier), { status: "invalid" }); // someone with only the request id learns nothing
-  const a = await approveRequest(r.deps, s.rid, who);
+  const a = await approveRequest(r.deps, s.rid, who, displayCode(KEY, s.rid));
   assert.ok(a.ok);
   const polled = await pollRequest(r.deps, s.rid, p.verifier);
   assert.equal(polled.status, "approved");
@@ -189,7 +189,7 @@ test("cancel: only the app (with its verifier) can cancel; afterwards nothing wo
   assert.deepEqual(await cancelRequest(r.deps, rid, pair().verifier), { ok: false });
   assert.deepEqual(await cancelRequest(r.deps, rid, p.verifier), { ok: true });
   assert.deepEqual(await exchangeCode(r.deps, { rid, code, verifier: p.verifier }), { ok: false, reason: "cancelled" });
-  assert.deepEqual(await approveRequest(r.deps, rid, who), { ok: false, reason: "closed" });
+  assert.deepEqual(await approveRequest(r.deps, rid, who, displayCode(KEY, rid)), { ok: false, reason: "closed" });
   assert.deepEqual(await pollRequest(r.deps, rid, p.verifier), { status: "cancelled" });
   assert.equal((await describeRequest(r.deps, rid)).state, "cancelled");
 });
@@ -220,7 +220,7 @@ test("malformed input never throws and never matches", async () => {
     assert.deepEqual(await startRequest(r.deps, { challenge: bad }), { ok: false, reason: "bad_challenge" });
     assert.deepEqual(await exchangeCode(r.deps, { rid: bad, code: bad, verifier: bad }), { ok: false, reason: "invalid" });
     assert.deepEqual(await pollRequest(r.deps, bad, bad), { status: "invalid" });
-    assert.deepEqual(await approveRequest(r.deps, bad, who), { ok: false, reason: "unknown" });
+    assert.deepEqual(await approveRequest(r.deps, bad, who, "AAA-AAA"), { ok: false, reason: "unknown" });
     assert.deepEqual((await describeRequest(r.deps, bad)).state, "unknown");
     assert.equal(await redeemTicket(r.deps, bad), null);
   }
@@ -228,7 +228,7 @@ test("malformed input never throws and never matches", async () => {
 
 test("approving twice (browser retry after the protocol prompt was dismissed) issues a fresh code and kills the old one", async () => {
   const { r, p, rid, code } = await approved();
-  const second = await approveRequest(r.deps, rid, who);
+  const second = await approveRequest(r.deps, rid, who, displayCode(KEY, rid));
   assert.ok(second.ok);
   assert.notEqual(second.code, code);
   assert.deepEqual(await exchangeCode(r.deps, { rid, code, verifier: p.verifier }), { ok: false, reason: "invalid" });
@@ -255,4 +255,46 @@ test("Keplar Business: its own link scheme and default label; unknown apps are K
   assert.equal(label(undefined, "business"), "Keplar Business desktop");
   assert.equal(appOf("business"), "business");
   for (const x of [undefined, "one", "Business", "evil", 1]) assert.equal(appOf(x), "one");
+});
+
+// AUTH-6 (docs/rebirth/AUDIT.md): a sign-in link someone else started and sent can't be approved by a click. The person types the
+// code the app in front of them shows; the connect page never shows it.
+test("approve needs the code the app shows: a missing or wrong code approves nothing and counts as a bad attempt", async () => {
+  const r = rig();
+  const p = pair();
+  const s = await startRequest(r.deps, { challenge: p.challenge });
+  assert.ok(s.ok);
+  for (const typed of [undefined, "", "AAA-AAA", 42, displayCode(KEY, newRequestId())]) {
+    if (typed === displayCode(KEY, s.rid)) continue;
+    assert.deepEqual(await approveRequest(r.deps, s.rid, who, typed), { ok: false, reason: "wrong_code" });
+  }
+  assert.equal((await pollRequest(r.deps, s.rid, p.verifier)).status, "pending", "nothing was approved");
+  // Case, spaces and the dash don't matter.
+  const loose = displayCode(KEY, s.rid).toLowerCase().replace("-", " ");
+  assert.ok((await approveRequest(r.deps, s.rid, who, loose)).ok);
+});
+
+test("guessing the code burns the request after MAX_BAD_ATTEMPTS", async () => {
+  const r = rig();
+  const p = pair();
+  const s = await startRequest(r.deps, { challenge: p.challenge });
+  assert.ok(s.ok);
+  for (let i = 0; i < MAX_BAD_ATTEMPTS; i++) await approveRequest(r.deps, s.rid, who, "ZZZ-ZZZ");
+  assert.deepEqual(await approveRequest(r.deps, s.rid, who, displayCode(KEY, s.rid)), { ok: false, reason: "closed" });
+  assert.equal((await pollRequest(r.deps, s.rid, p.verifier)).status, "cancelled");
+});
+
+test("the browser extension (it gets an API key) needs a recent sign-in, like creating a key by hand", async () => {
+  const r = rig();
+  const s = await startRequest(r.deps, { challenge: pair().challenge, app: "extension" });
+  assert.ok(s.ok);
+  const now = 1_000_000;
+  const code = displayCode(KEY, s.rid);
+  assert.deepEqual(await approveRequest(r.deps, s.rid, who, code), { ok: false, reason: "reauth" }, "sign-in time unknown");
+  assert.deepEqual(await approveRequest(r.deps, s.rid, { ...who, authAt: now - 11 * 60_000 }, code), { ok: false, reason: "reauth" });
+  assert.ok((await approveRequest(r.deps, s.rid, { ...who, authAt: now - 60_000 }, code)).ok);
+  // The desktop app's session inherits the sign-in time instead (no extra prompt there).
+  const d = await startRequest(r.deps, { challenge: pair().challenge });
+  assert.ok(d.ok);
+  assert.ok((await approveRequest(r.deps, d.rid, { ...who, authAt: now - 3 * 3600_000 }, displayCode(KEY, d.rid))).ok);
 });

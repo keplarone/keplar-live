@@ -7,7 +7,7 @@
  */
 import { keepAlive } from "@/lib/create/platform/after";
 import * as Y from "yjs";
-import { errorResponse, HttpError, json, body } from "@/lib/create/platform/http";
+import { errorResponse, HttpError, json, body, publicErrorText } from "@/lib/create/platform/http";
 import { rateLimit } from "@/lib/create/platform/ratelimit";
 import { assertSameOrigin } from "@/lib/security/origin";
 import { access } from "@/lib/collab/caller";
@@ -74,7 +74,7 @@ export async function GET(req: Request, { params }: Ctx) {
           }
           send({ t: "bye", seq: cursor });
         } catch (e) {
-          send({ t: "err", error: e instanceof Error ? e.message.slice(0, 120) : "stream failed" });
+          send({ t: "err", error: publicErrorText(e, "The live session stream stopped. Reconnecting.") });
         } finally {
           try { ctl.close(); } catch { /* already closed */ }
         }

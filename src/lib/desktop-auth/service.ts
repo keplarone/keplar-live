@@ -15,6 +15,7 @@ import {
   cleanLabel,
   deepLinkFor,
   displayCode,
+  displayCodeMatches,
   hashSecret,
   isChallenge,
   isRequestId,
@@ -28,6 +29,7 @@ import {
   type Status,
 } from "./core";
 import type { DesktopAuthStore, Finished, Row, Who } from "./store";
+import { recentlyAuthenticated } from "@/lib/space-studio/core/identities";
 
 export type Clock = () => number;
 export type Deps = { store: DesktopAuthStore; key: string; now?: Clock };
@@ -82,16 +84,28 @@ export async function describeRequest(d: Deps, rid: unknown): Promise<PageState>
 
 export type ApproveResult =
   | { ok: true; deepLink: string; code: string }
-  | { ok: false; reason: "unknown" | "expired" | "closed" };
+  | { ok: false; reason: "unknown" | "expired" | "closed" | "wrong_code" | "reauth" };
 
-/** Called by the signed-in browser. Mints the one-time code and the keplar:// link that carries it. */
-export async function approveRequest(d: Deps, rid: unknown, who: Who): Promise<ApproveResult> {
+/**
+ * Called by the signed-in browser. Mints the one-time code and the keplar:// link that carries it.
+ *
+ * `shown` is the short code the person typed from the app or extension (displayCode). The connect page never shows it: a link
+ * someone else started and sent (phishing) can't be approved by clicking alone, the person has to read the code off the app that
+ * is actually in front of them. A wrong code counts as a bad attempt (MAX_BAD_ATTEMPTS cancels the request).
+ * The browser extension is given an API key, so like creating a key by hand it needs a recent sign-in (src/lib/accounts/reauth.ts).
+ */
+export async function approveRequest(d: Deps, rid: unknown, who: Who, shown: unknown): Promise<ApproveResult> {
   if (!isRequestId(rid)) return { ok: false, reason: "unknown" };
   const row = await d.store.get(rid);
   if (!row) return { ok: false, reason: "unknown" };
   const now = nowOf(d);
   if (row.status === "cancelled" || row.status === "denied" || row.status === "used" || row.status === "finished") return { ok: false, reason: "closed" };
   if (row.expiresAt <= now) return { ok: false, reason: "expired" };
+  if (!displayCodeMatches(d.key, rid, shown)) {
+    await wrongGuess(d, row);
+    return { ok: false, reason: "wrong_code" };
+  }
+  if (row.app === "extension" && !recentlyAuthenticated(who.authAt ?? null, now)) return { ok: false, reason: "reauth" };
   const secret = newSecret();
   const ok = await d.store.approve(rid, who, hashSecret(secret), now + CODE_TTL_SECONDS * 1000, now);
   if (!ok) return { ok: false, reason: "closed" };

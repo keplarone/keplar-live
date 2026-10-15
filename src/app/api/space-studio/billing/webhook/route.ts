@@ -1,5 +1,5 @@
 import { limitRequest } from "@/lib/create/platform/ratelimit";
-import { errorResponse, HttpError, json } from "@/lib/create/platform/http";
+import { errorResponse, HttpError, json, readText } from "@/lib/create/platform/http";
 import { workspaceById } from "@/lib/create/platform/workspace";
 import { parseBillingEvent, verifySpaceSignature, webhookSecret } from "@/lib/space-studio/billing";
 import { applyEventTo } from "@/lib/space-studio/store";
@@ -17,8 +17,8 @@ export async function POST(req: Request) {
     const secret = webhookSecret();
     if (!secret) throw new HttpError(503, "Space Studio billing isn't set up yet.", "billing_unconfigured");
     if (Number(req.headers.get("content-length") ?? 0) > 64_000) throw new HttpError(413, "That request is too large.", "too_large");
-    const raw = await req.text();
-    if (raw.length > 64_000) throw new HttpError(413, "That request is too large.", "too_large");
+    const raw = await readText(req, 64_000);
+    if (raw === null) throw new HttpError(413, "That request is too large.", "too_large");
     if (!verifySpaceSignature(raw, req.headers, secret)) throw new HttpError(401, "Invalid signature.", "bad_signature");
     const parsed = parseBillingEvent(raw);
     if (!parsed) throw new HttpError(400, "Malformed billing event.", "bad_event");

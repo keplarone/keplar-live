@@ -168,7 +168,7 @@ async function liveStore(label: string) {
   const acct = await testAccount(ws.id);
   await connectAccounts().update(ws.id, acct.id, { status: "active", chargesEnabled: true, payoutsEnabled: true });
   const t = now();
-  const project = await projects().insert({ id: `prj_${label}`, workspaceId: ws.id, name: "Shop", slug: `${label}-shop`, kind: "site", spec: { products: [{ id: "p1", name: "Mug", price: 2500, currency: "usd", description: "" }] }, draftVersion: 0, files: [], messages: [], liveDeployId: null, publishedAt: t, scan: null, takenDown: false, createdAt: t, updatedAt: t } as never);
+  const project = await projects().insert({ id: `prj_${label}`, workspaceId: ws.id, name: "Shop", slug: `${label}-shop`, kind: "site", spec: { products: [{ id: "p1", name: "Mug", price: 2500, currency: "usd", description: "" }] }, draftVersion: 0, files: [], messages: [], liveDeployId: "dep_live", publishedAt: t, scan: null, takenDown: false, createdAt: t, updatedAt: t } as never);
   return { ws, acct: (await getAccount(ws.id))!, project };
 }
 
@@ -392,5 +392,24 @@ test("live mode webhook: live events applied with live secrets only; test events
 
 async function liveStoreFor(workspaceId: string, projectId: string) {
   const t = now();
-  return projects().insert({ id: projectId, workspaceId, name: "Shop", slug: projectId, kind: "site", spec: { products: [{ id: "p1", name: "Poster", price: 4000, currency: "usd", description: "" }] }, draftVersion: 0, files: [], messages: [], liveDeployId: null, publishedAt: t, scan: null, takenDown: false, createdAt: t, updatedAt: t } as never);
+  return projects().insert({ id: projectId, workspaceId, name: "Shop", slug: projectId, kind: "site", spec: { products: [{ id: "p1", name: "Poster", price: 4000, currency: "usd", description: "" }] }, draftVersion: 0, files: [], messages: [], liveDeployId: "dep_live", publishedAt: t, scan: null, takenDown: false, createdAt: t, updatedAt: t } as never);
 }
+
+// AZ-7 (docs/rebirth/AUDIT.md): the public form and checkout endpoints took any project id, published or not.
+test("public checkout and contact forms refuse a project whose site isn't published", async () => {
+  const { POST: formPOST } = await import("@/app/api/business/forms/[projectId]/route");
+  const ws = await testWorkspace("az7", "plus");
+  const acct = await testAccount(ws.id);
+  await connectAccounts().update(ws.id, acct.id, { status: "active", chargesEnabled: true, payoutsEnabled: true });
+  const t = now();
+  await projects().insert({ id: "prj_az7", workspaceId: ws.id, name: "Draft shop", slug: "az7-shop", kind: "site", spec: { products: [{ id: "p1", name: "Mug", price: 2500, currency: "usd", description: "" }] }, draftVersion: 1, files: [], messages: [], liveDeployId: null, publishedAt: null, scan: null, takenDown: false, createdAt: t, updatedAt: t } as never);
+  await assert.rejects(startCheckout({ projectId: "prj_az7", productId: "p1", origin: "https://keplar.one" }), (e: unknown) => e instanceof HttpError && e.status === 404 && e.code === "not_published");
+  const fd = new FormData();
+  fd.set("name", "Spam");
+  fd.set("email", "spam@example.com");
+  fd.set("message", "hello");
+  const res = await formPOST(new Request("https://keplar.one/api/business/forms/prj_az7", { method: "POST", body: fd }), { params: Promise.resolve({ projectId: "prj_az7" }) });
+  assert.equal(res.status, 404);
+  const { contacts } = await import("@/lib/business/repo");
+  assert.equal((await contacts().list(ws.id)).length, 0, "nothing reached the owner's CRM");
+});

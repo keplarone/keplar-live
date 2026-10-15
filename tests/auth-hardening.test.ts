@@ -369,3 +369,18 @@ test("F7: magic-link limits are shared across instances (Postgres without Upstas
   const fourth = await auth.handler(new Request(`${ORIGIN}/api/auth/sign-in/magic-link`, { method: "POST", headers: { "content-type": "application/json", origin: ORIGIN, "x-forwarded-for": "10.82.0.9" }, body: JSON.stringify({ email }) }));
   assert.equal(fourth.status, 429);
 });
+
+// AUTH-12 (docs/rebirth/AUDIT.md): 3 link requests from anywhere used to block the owner's email sign-in for 10 minutes.
+test("AUTH-12: a stranger's link requests from another network don't block the owner's; a per-address ceiling still holds", async (t) => {
+  if (!fake) return t.skip("@electric-sql/pglite is not installed");
+  const auth = await getAuth();
+  const email = "magic-lockout@example.com";
+  const ask = (ip: string) => auth.handler(new Request(`${ORIGIN}/api/auth/sign-in/magic-link`, { method: "POST", headers: { "content-type": "application/json", origin: ORIGIN, "x-forwarded-for": ip }, body: JSON.stringify({ email }) }));
+  const stranger = [];
+  for (let i = 0; i < 4; i++) stranger.push((await ask(`198.51.100.${i + 1}`)).status);
+  assert.deepEqual(stranger, [200, 200, 200, 429], "the stranger's network gets 3");
+  assert.equal((await ask("203.0.113.5")).status, 200, "the owner, on another network, still gets a link");
+  assert.equal((await ask("192.0.2.5")).status, 200);
+  assert.equal((await ask("192.0.3.5")).status, 200);
+  assert.equal((await ask("100.64.0.5")).status, 429, "no more than 6 links per address per 10 minutes in all");
+});

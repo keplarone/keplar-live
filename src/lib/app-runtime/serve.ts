@@ -6,13 +6,13 @@ import type { Site, SiteVersion } from "@/lib/site-builder/types";
 import { appCtx, effectiveMeta, type AppEnv } from "./context";
 import { handleAppApi, json, preflight } from "./router";
 
-export type ServeOpts = { site: Site; version: SiteVersion; env: AppEnv; parts: string[]; base: string; origin: string; plan: PlanId; reportHref: string | null; workspace?: Workspace };
+export type ServeOpts = { site: Site; version: SiteVersion; env: AppEnv; parts: string[]; base: string; origin: string; plan: PlanId; reportHref: string | null; workspace?: Workspace; viewOnly?: boolean };
 
 export async function serveApp(req: Request, o0: ServeOpts): Promise<Response> {
   const o = o0.site.app ? { ...o0, site: { ...o0.site, app: effectiveMeta(o0.site.app, o0.env) } } : o0;
   const base = appCtx(o0.site, o.env, o.plan);
   if (!base) return json(404, { error: "Not an app." });
-  const ctx = o.workspace && o.workspace.id === o0.site.workspaceId ? { ...base, workspace: o.workspace } : base;
+  const ctx = { ...(o.workspace && o.workspace.id === o0.site.workspaceId ? { ...base, workspace: o.workspace } : base), ...(o.viewOnly ? { viewOnly: true } : {}) };
   if (req.method === "OPTIONS") return preflight();
   if (o.parts[0] === "_api") return handleAppApi(req, ctx, o.parts.slice(1), `${o.origin}${o.base}/`);
   if (req.method !== "GET" && req.method !== "HEAD") return new Response("Method not allowed", { status: 405, headers: { allow: "GET, HEAD" } });

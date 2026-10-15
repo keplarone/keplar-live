@@ -15,7 +15,7 @@
  * - Idempotent on event id (biz_connect_events). Handler errors → 500 so Stripe retries.
  * Logic: src/lib/business/connect-webhook.ts. Fixtures: tests/helpers/connect-fixtures.ts.
  */
-import { json } from "@/lib/create/platform/http";
+import { json, readText } from "@/lib/create/platform/http";
 import { connectWebhookSecrets, stripeMode } from "@/lib/business/stripe";
 import { webhookVerifier } from "@/lib/billing/stripe";
 import { ConnectEventInFlight, fetchV2Account, handleConnectEvent, type ConnectEvent } from "@/lib/business/connect-webhook";
@@ -28,7 +28,8 @@ export async function POST(req: Request) {
   if (!connectWebhookSecrets(appMode).length) return json({ error: "Connect webhook not configured." }, { status: 503 });
   const sig = req.headers.get("stripe-signature");
   if (!sig) return json({ error: "Missing Stripe-Signature." }, { status: 400 });
-  const raw = await req.text();
+  const raw = await readText(req, 1_000_000); // Stripe events are a few KB; their documented ceiling is far below this
+  if (raw === null) return json({ error: "Payload too large." }, { status: 413 });
   let parsed: ConnectEvent;
   try {
     parsed = JSON.parse(raw) as ConnectEvent;

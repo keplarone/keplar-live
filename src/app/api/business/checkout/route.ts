@@ -1,5 +1,5 @@
 import { rateLimit, RateLimitError } from "@/lib/create/platform/ratelimit";
-import { HttpError } from "@/lib/create/platform/http";
+import { HttpError, readFormData } from "@/lib/create/platform/http";
 import { siteOrigin, startCheckout } from "@/lib/business/commerce";
 import { clientIp, esc, htmlPage, seeOther } from "../_html";
 
@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 
 /** Public "Buy" button target on generated shops → Checkout Session on the owner's connected account. */
 export async function POST(req: Request) {
-  const form = await req.formData().catch(() => null);
+  const form = await readFormData(req, 16_000).catch(() => null);
   if (!form) return htmlPage(400, "Bad request", "<h1>Something went wrong.</h1>");
   try {
     await rateLimit(`checkout:${clientIp(req)}`, 20);

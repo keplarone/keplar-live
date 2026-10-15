@@ -22,7 +22,7 @@ import { checkMailDomain, mailDomainOf } from "./email-domain";
 import { badMailDomain } from "./email-check";
 import { consumeMagicToken, createMagicToken, MAGIC_LINK_TTL_SECONDS, randomToken, userIdForEmail, verifyMagicToken } from "./magic-token";
 import { afterSignInPath } from "@/lib/onboarding/redirect";
-import { claimMagicJti, createSessionRecord, ipFromHeaders, persistenceEnabled, revokeSession, SESSION_TTL_SECONDS, SHORT_SESSION_TTL_SECONDS, upsertUser } from "./persist";
+import { claimMagicJti, createSessionRecord, ipFromHeaders, networkPrefix, persistenceEnabled, revokeSession, SESSION_TTL_SECONDS, SHORT_SESSION_TTL_SECONDS, upsertUser } from "./persist";
 import { noticeIfNewDevice } from "./new-device";
 import { mfaEnabled } from "./mfa/store";
 import { cookieSessionOf, dropPendingCookies, hasCookie, issueSessionCookies, REMEMBER_COOKIE, rememberFromRequest } from "./session-cookies";
@@ -76,8 +76,12 @@ export const statelessMagicLink = (opts: StatelessMagicLinkOptions) =>
           // flood spread over Vercel's instances multiply the limit.
           const key = email.toLowerCase();
           const ip = ctx.headers ? clientIpOf(new Request("http://x", { headers: ctx.headers })) : "local";
+          // Per address, 3 per network (IPv4 /16, IPv6 /32) so a stranger elsewhere can't use up the owner's links, and at most 6
+          // from all networks together, which still keeps the inbox from being flooded.
+          const net = networkPrefix(ip) ?? ip;
           try {
-            await rateLimit(`magic:email:${key}`, 3, 600, { shared: true });
+            await rateLimit(`magic:netemail:${net}:${key}`, 3, 600, { shared: true });
+            await rateLimit(`magic:email:${key}`, 6, 600, { shared: true });
             await rateLimit(`magic:ipemail:${ip}:${key}`, 2, 60, { shared: true });
             await rateLimit(`magic:ip:${ip}`, 10, 600, { shared: true });
           } catch (e) {

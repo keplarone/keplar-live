@@ -3,7 +3,7 @@
  *
  * Dry-run by default: fields are filled, submit is not clicked.
  * A real click requires a server-verified PIN (`confirmed`) and KEPLAR_BROWSER_DRY_RUN=0.
- * Targets are allowlisted to file:// fixtures and localhost. Real sites are refused.
+ * Targets are allowlisted to this module's own file:// fixtures and localhost. Real sites and other files are refused.
  * Each run gets a fresh context with no stored session. Pages with a CAPTCHA or a
  * password field are refused. Logins, CAPTCHAs, paywalls and site terms are not bypassed.
  * On a driver error or a missing selector the browser is closed and a fallback card is returned.
@@ -11,12 +11,28 @@
 import { existsSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import type { Browser } from "playwright-core";
 import { CAPTCHA_HTML, FORM_HTML } from "./fixtures";
 
 const ALLOWED_HOSTS = new Set(["localhost", "127.0.0.1"]);
 const BLOCK_SELECTORS = ["iframe[src*='captcha']", "[class*='captcha']", "input[type='password']"];
+
+/**
+ * file: only for this module's own fixtures (form.html / captcha.html in a keplar-wants-* folder it made under the temp
+ * directory), never any other file on the server (/etc/passwd, the app's env files, another user's upload).
+ */
+function isOwnFixture(u: URL): boolean {
+  if (u.host || u.search || u.hash) return false;
+  let file: string;
+  try {
+    file = path.resolve(fileURLToPath(u));
+  } catch {
+    return false;
+  }
+  const dir = path.dirname(file);
+  return path.dirname(dir) === path.resolve(tmpdir()) && /^keplar-wants-[A-Za-z0-9_-]+$/.test(path.basename(dir)) && (path.basename(file) === "form.html" || path.basename(file) === "captcha.html");
+}
 
 export function urlAllowed(url: string): boolean {
   let u: URL;
@@ -25,7 +41,8 @@ export function urlAllowed(url: string): boolean {
   } catch {
     return false;
   }
-  return u.protocol === "file:" || ((u.protocol === "http:" || u.protocol === "https:") && u.hostname !== null && ALLOWED_HOSTS.has(u.hostname));
+  if (u.protocol === "file:") return isOwnFixture(u);
+  return (u.protocol === "http:" || u.protocol === "https:") && ALLOWED_HOSTS.has(u.hostname);
 }
 
 export type FallbackCard = {

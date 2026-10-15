@@ -152,3 +152,24 @@ test("official gateway connect is a placeholder and stays PIN-gated", async () =
   assert.match(done.note ?? "", /Placeholder/);
 });
 
+
+// AI-13 (docs/rebirth/AUDIT.md): confirming read the plan, checked the PIN and only then dropped it, so two confirmations sent
+// at once could both run it. Now one atomic claim per confirmation: exactly one runs.
+test("two confirmations of one plan sent at once: exactly one runs", async () => {
+  const page = scriptedPage(FORM_HTML);
+  wantsTestHooks.openPage = page.open;
+  try {
+    const u = await signIn("wants-race@example.com");
+    await setPin(u.workspaceId, "1234");
+    const plan = await (await POST(jsonReq(u.cookie, "/api/keplar/wants/orchestrate", "POST", { prompt: "I want pizza", answers: { [QUESTION]: "Tomorrow" } }))).json();
+    assert.ok(plan.confirmationId);
+    const confirm = async () => (await POST(jsonReq(u.cookie, "/api/keplar/wants/orchestrate", "POST", { prompt: "confirm", confirmationId: plan.confirmationId, pin: "1234" }))).json();
+    const results = await Promise.all([confirm(), confirm(), confirm()]);
+    const ran = results.filter((r) => r.status === "dry_run");
+    assert.equal(ran.length, 1, JSON.stringify(results.map((r) => r.status ?? r.reason)));
+    assert.ok(results.filter((r) => r.status !== "dry_run").every((r) => r.reason === "unknown_or_expired_confirmation"));
+    assert.equal(page.fills.filter(([sel]) => sel === "#item").length, 1, "the form was filled once");
+  } finally {
+    resetHooks();
+  }
+});

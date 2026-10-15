@@ -32,6 +32,9 @@ export const RUNNER_CSP = [
   "form-action 'none'",
   "frame-src 'none'",
   "frame-ancestors 'self'",
+  // Same as the <iframe sandbox="allow-scripts"> it is loaded in: an opaque origin even if the URL is opened on its own, so the
+  // code it runs can never act as keplar.one (cookies, storage, same-origin requests).
+  "sandbox allow-scripts",
 ].join("; ");
 
 /** Appends to an output buffer without passing the cap; returns the new text and whether it was cut. */

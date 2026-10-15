@@ -9,6 +9,12 @@
  *  - Whop Elements (embedded checkout): see WHOP below. Whop Pixel (inline snippet in the head, which then loads /s.js from t.whop.tw): see WHOP_PIXEL.
  *  - three.js renders to a canvas (WebGL) and may use blob: workers/textures.
  *  - Published user sites (/sites/*) set their own sandbox CSP and are excluded.
+ *  - Why 'unsafe-inline' stays (IN-5, Accepted): every App Router page carries inline <script> tags of its own (the RSC flight
+ *    data, self.__next_f.push(...), different on every render), besides THEME_SCRIPT, JSON-LD and the Whop Pixel snippet. A
+ *    nonce would need every page rendered per request (Next sets nonces only on dynamic renders; the static and ISR marketing
+ *    pages would lose their caching), and hashes can't cover per-render flight data. 'strict-dynamic' needs one of the two.
+ *  - 'self' also matches user files under /s/, /sites/ and /apps/: src/proxy.ts (firstPartyLoadOfUserCode) refuses loading
+ *    them as a script or worker from a keplar.one page; their own sandboxed pages load them as cross-site requests.
  */
 const dev = process.env.NODE_ENV !== "production";
 

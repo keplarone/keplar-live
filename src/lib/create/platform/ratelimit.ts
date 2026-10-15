@@ -96,6 +96,55 @@ export async function countHit(key: string, windowSec = 60, opts: { shared?: boo
   return (await upstashHit(key, windowSec)) ?? (opts.shared ? await postgresHit(key, windowSec) : null) ?? memoryHit(key, windowSec);
 }
 
+/**
+ * The hits `key` has in its current window, without counting one (0 once the window is over). For lockouts: count failures with
+ * countHit, check here before trying. Reads the same backend countHit writes to.
+ */
+export async function peekHits(key: string, windowSec = 60, opts: { shared?: boolean } = {}): Promise<number> {
+  return (await upstashPeek(key)) ?? (opts.shared ? await postgresPeek(key, windowSec) : null) ?? memoryPeek(key, windowSec);
+}
+
+function memoryPeek(key: string, windowSec: number): number {
+  const w = windows.get(key);
+  return w && Date.now() - w.start <= windowSec * 1000 ? w.count : 0;
+}
+
+async function upstashPeek(key: string): Promise<number | null> {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  try {
+    const res = await fetch(`${url.replace(/\/$/, "")}/pipeline`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+      body: JSON.stringify([["GET", `rl:${key}`]]),
+      cache: "no-store",
+      signal: AbortSignal.timeout(1500),
+    });
+    const data = (await res.json()) as { result?: string | null }[];
+    if (!Array.isArray(data) || !data[0] || !("result" in data[0])) return null;
+    const n = Number(data[0].result ?? 0);
+    return Number.isFinite(n) ? n : null;
+  } catch {
+    return null;
+  }
+}
+
+async function postgresPeek(key: string, windowSec: number): Promise<number | null> {
+  if (!neonConfigured()) return null;
+  try {
+    await ensureRateSchema();
+    const rows = await neonQuery(
+      `SELECT hits::text AS hits FROM keplar_ratelimit WHERE key = $1 AND window_start > now() - make_interval(secs => $2::double precision)`,
+      [key, String(windowSec)],
+    );
+    const n = Number(rows[0]?.hits ?? 0);
+    return Number.isFinite(n) ? n : null;
+  } catch {
+    return null;
+  }
+}
+
 export function clientIpOf(req: Request) {
   return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "local";
 }

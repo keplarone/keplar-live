@@ -2,7 +2,7 @@
  * The browser extension's connection to a Keplar account: no key to create or paste, and it spends the account's credits.
  *
  *   extension: POST /api/extension/connect {challenge, label}   -> {rid, code, url}       (the desktop sign-in flow, app "extension")
- *   browser  : /desktop/connect?rid=...  signed in, checks the code, presses Connect    (POST /api/auth/desktop/approve)
+ *   browser  : /desktop/connect?rid=...  signed in recently, types the code, presses Connect (POST /api/auth/desktop/approve)
  *   extension: POST /api/extension/token {rid, verifier}        -> {status: "pending"} ... then {status: "connected", key}
  *   extension: POST /api/extension/disconnect  (Bearer key)     -> the connection is revoked
  *

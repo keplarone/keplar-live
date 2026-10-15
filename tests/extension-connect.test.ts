@@ -25,7 +25,9 @@ const ext = (path: string, body: unknown, headers: Record<string, string> = {}) 
 const authHandler = async (req: Request) => (await import("@/lib/accounts/auth")).auth.handler(req);
 const desktop = (path: string, body: unknown, headers: Record<string, string> = {}) =>
   authHandler(new Request(`${ORIGIN}/api/auth/desktop/${path}`, { method: "POST", headers: { "content-type": "application/json", "x-forwarded-for": ip(), ...headers }, body: JSON.stringify(body) }));
-const approve = (rid: string, cookie: string) => desktop("approve", { rid }, { origin: ORIGIN, cookie });
+/** The code the extension's popup shows, which the person types on the connect page (AUTH-6). */
+const shownFor = new Map<string, string>();
+const approve = (rid: string, cookie: string) => desktop("approve", { rid, code: shownFor.get(rid) }, { origin: ORIGIN, cookie });
 const poll = async (rid: string, verifier: string) => (await tokenPost(ext("token", { rid, verifier }))).json() as Promise<Record<string, any>>;
 const usage = (key: string) => usageGet(new Request(`${ORIGIN}/api/v1/usage`, { headers: { authorization: `Bearer ${key}`, "x-forwarded-for": ip() } }));
 
@@ -35,6 +37,7 @@ async function begin(label = "Keplar One extension (Chrome)") {
   assert.equal(res.status, 200);
   assert.equal(res.headers.get("access-control-allow-origin"), "*", "the extension reads it cross-origin, without cookies");
   const j = (await res.json()) as Record<string, any>;
+  shownFor.set(j.rid, j.code);
   return { verifier, rid: j.rid as string, code: j.code as string, url: j.url as string };
 }
 
@@ -112,6 +115,7 @@ test("never a browser session: an extension ticket can't open /desktop/finish, a
   // A desktop app's request (Keplar One) approved by the same person is never turned into a key.
   const verifier = newSecret();
   const started = (await (await desktop("start", { challenge: challengeOf(verifier), label: "Keplar One on Windows" })).json()) as Record<string, any>;
+  shownFor.set(started.rid, started.code);
   assert.equal((await approve(started.rid, u.cookie)).status, 200);
   assert.equal((await poll(started.rid, verifier)).status, "invalid");
   assert.equal((await apiKeys().list(u.workspaceId)).length, 0, "no key was made");
@@ -169,4 +173,25 @@ test(`at most ${MAX_EXTENSION_CONNECTIONS} browsers per account: connecting one 
   for (let i = 0; i <= MAX_EXTENSION_CONNECTIONS; i++) keys.push(await connect(u.cookie, `Browser ${i}`));
   assert.equal((await usage(keys[0]!)).status, 401, "the oldest connection was retired");
   for (const k of keys.slice(1)) assert.equal((await usage(k)).status, 200);
+});
+
+// AUTH-6 (docs/rebirth/AUDIT.md): the extension is given an API key, so approving it needs a recent sign-in, like creating a key
+// by hand (src/lib/accounts/reauth.ts). A browser that signed in long ago is asked to sign in again; nothing is connected.
+test("connect: approving the extension needs a recent sign-in", async () => {
+  const u = await signIn(email("stale"), "plus");
+  const realNow = Date.now;
+  Date.now = () => realNow() + 11 * 60_000; // the browser signed in 11 minutes ago; the extension asks now
+  let res: Response;
+  let b: Awaited<ReturnType<typeof begin>>;
+  try {
+    b = await begin();
+    res = await approve(b.rid, u.cookie);
+  } finally {
+    Date.now = realNow;
+  }
+  assert.equal(res.status, 403);
+  assert.equal(((await res.json()) as Record<string, any>).code, "reauth_required");
+  assert.equal((await poll(b.rid, b.verifier)).status, "pending", "no key");
+  assert.equal((await approve(b.rid, u.cookie)).status, 200, "right after a sign-in it works");
+  assert.equal((await poll(b.rid, b.verifier)).status, "connected");
 });
