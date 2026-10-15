@@ -183,7 +183,8 @@ export type Approval = {
   agentId: string;
   runId: string;
   action: OutboundAction;
-  status: "pending" | "approved" | "rejected" | "cancelled" | "sent" | "failed";
+  /** "executing": claimed and being sent right now (src/lib/business/agents.ts decide). */
+  status: "pending" | "approved" | "rejected" | "cancelled" | "executing" | "sent" | "failed";
   decidedAt: string | null;
   result?: string;
   createdAt: string;

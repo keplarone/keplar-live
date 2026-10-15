@@ -13,6 +13,9 @@ export const connections = () => collection<Connection>("biz_connections");
 export const agents = () => collection<Agent>("biz_agents");
 export const runs = () => collection<AgentRun>("biz_agent_runs");
 export const approvals = () => collection<Approval>("biz_approvals");
+/** One row per decided approval (id = approval id), inserted with insertIfAbsent BEFORE anything runs: two clicks can't both execute. */
+export type ApprovalClaim = { id: string; workspaceId: string; decision: "approve" | "reject"; by: string; at: string };
+export const approvalClaims = () => collection<ApprovalClaim>("biz_approval_claims");
 export const auditLog = () => collection<AuditEntry>("biz_audit");
 export const tableRows = () => collection<{ id: string; workspaceId: string; sheet: string; row: unknown[]; at: string }>("biz_table_rows");
 export const pageViews = () => collection<PageView>("biz_pageviews");
