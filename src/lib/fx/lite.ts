@@ -16,3 +16,13 @@ export function liteFx(): boolean {
 
 /** Frame interval for a requestAnimationFrame loop: about 30 fps in lite mode, every frame otherwise. */
 export const frameGap = (lite: boolean) => (lite ? 1000 / 30 - 2 : 0);
+
+/**
+ * Phones (640px and narrower): the marketing pages run no decorative animation at all there. The animated backdrop, the pinned
+ * particle scene and the looping product demo are replaced by static versions (CSS in the matching modules), which keeps the
+ * main thread free for the hero and the first tap. Keep the width in sync with the `max-width: 640px` blocks in the CSS.
+ */
+export const PHONE_QUERY = "(max-width: 640px)";
+export function isPhone(): boolean {
+  return typeof window !== "undefined" && matchMedia(PHONE_QUERY).matches;
+}

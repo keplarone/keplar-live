@@ -58,3 +58,38 @@ body {
 @media (pointer: coarse) {
   nav[aria-label="On this page"] a { display: flex; align-items: center; min-height: 44px; }
 }
+
+/* Progressive disclosure on phones (src/components/ui/MobileMore.tsx): 640px and narrower, a block shows its first items and a
+ * "See more" button; items marked data-more-rest fold away until it is pressed. Wider screens never see the button. */
+.more-btn {
+  display: none;
+}
+@media (max-width: 640px) {
+  [data-more="closed"] [data-more-rest] {
+    display: none !important;
+  }
+  .more-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: var(--t-small);
+    font-weight: var(--w-medium);
+    color: var(--c-ink);
+    cursor: pointer;
+  }
+  .more-btn svg {
+    flex: none;
+    transition: transform var(--m-dur-2, 0.2s) var(--m-ease-out, ease-out);
+  }
+  .more-btn[aria-expanded="true"] svg {
+    transform: rotate(180deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .more-btn svg { transition: none; }
+}

@@ -333,6 +333,8 @@ const m: MarketingCatalog = {
         "cta": "Pro’ya yükselt"
       }
     },
+    "seeAll": "{plan} içindeki her şeyi gör",
+    "showLess": "Daha az göster",
     "fitTitle": "Hangi plan size uygun?",
     "fits": {
       "free": {

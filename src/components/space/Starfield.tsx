@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { isPhone } from "@/lib/fx/lite";
 import {
   AdditiveBlending,
   BufferAttribute,
@@ -33,8 +34,8 @@ import {
  * - Cluster: a dense globular cluster of stars the camera flies into at the end of the scroll (no planets).
  * - Shooting stars: streak quads in a screen-space overlay with a bright head and a long fading tail.
  *
- * Budget: DPR capped at 2, ≤ 40 fps, pauses when the tab is hidden or the canvas is off screen. Reduced motion draws one still
- * frame (no twinkle, drift, flight or parallax). The canvas is fixed behind the page with pointer-events: none.
+ * Budget: DPR capped at 2, ≤ 40 fps, pauses when the tab is hidden or the canvas is off screen. Reduced motion and phones
+ * (isPhone, 640px and narrower) draw one still frame (no twinkle, drift, flight or parallax). The canvas is fixed behind the page with pointer-events: none.
  */
 
 const FPS = 40;
@@ -173,7 +174,8 @@ export default function Starfield() {
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Phones draw one still frame too, like reduced motion: a calm star field behind the text, no per-frame work while scrolling.
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches || isPhone();
     const mobile = window.matchMedia("(max-width: 700px)").matches;
 
     let renderer: WebGLRenderer;

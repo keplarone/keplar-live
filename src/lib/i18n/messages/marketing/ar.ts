@@ -333,6 +333,8 @@ const m: MarketingCatalog = {
         "cta": "الترقية إلى Pro"
       }
     },
+    "seeAll": "اطّلع على كل ما في {plan}",
+    "showLess": "عرض أقل",
     "fitTitle": "أي خطة تناسبك؟",
     "fits": {
       "free": {

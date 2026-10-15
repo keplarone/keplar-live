@@ -170,3 +170,42 @@
   .col ul { gap: 0; } /* the links are 44px tall now: the gap between them is inside the targets */
   .col[data-wide] li { margin-bottom: 0; }
 }
+
+/* Phones (640px and narrower): the link groups are accordions, one per row, so the footer is five short rows instead of a
+   two-column wall of links. The heading's own text gives way to the toggle (MoreButton) that carries the same words. */
+@media (max-width: 640px) {
+  .footer {
+    padding-top: var(--s-12);
+  }
+  .inner {
+    gap: var(--s-8);
+  }
+  .cols {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    border-top: var(--b-hairline) solid var(--hairline);
+  }
+  .col[data-wide] {
+    grid-column: auto;
+  }
+  .col {
+    border-bottom: var(--b-hairline) solid var(--hairline);
+  }
+  .heading {
+    margin-bottom: 0;
+  }
+  .headingText {
+    display: none;
+  }
+  .headingBtn {
+    width: 100%;
+    justify-content: space-between;
+    min-height: 52px;
+  }
+  .col[data-more="open"] ul {
+    padding-bottom: var(--s-4);
+  }
+  .base {
+    margin-top: var(--s-10);
+  }
+}

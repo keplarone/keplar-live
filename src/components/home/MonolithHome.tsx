@@ -11,6 +11,7 @@ import { useClientText, useCommon, useLocale } from "@/lib/i18n/client";
 import { localizedPath } from "@/lib/i18n/routing";
 import { fmt } from "@/lib/i18n/format";
 import { afterPaint } from "@/lib/perf/after-paint";
+import { isPhone } from "@/lib/fx/lite";
 import { currentTheme, onThemeChange } from "@/lib/theme";
 import { runScramble, scrambleAt } from "@/lib/typing/scramble";
 import s from "./MonolithHome.module.css";
@@ -145,7 +146,9 @@ export function MonolithHome() {
     const sky = skyRef.current;
     if (!section || !canvas || !sky) return;
     const caps = probeCaps();
-    if (!caps.webgl || softwareRenderer()) { setMode("static"); return; }
+    // Phones get the static composition: the acts read as a plain sequence of sections instead of a pinned seven-screen WebGL
+    // story, and no scene code is fetched (src/lib/fx/lite.ts isPhone).
+    if (!caps.webgl || softwareRenderer() || isPhone()) { setMode("static"); return; }
     const still = caps.reducedMotion;
     if (still) setMode("static");
     else setMode("webgl");

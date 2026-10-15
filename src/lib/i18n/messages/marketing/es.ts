@@ -333,6 +333,8 @@ const m: MarketingCatalog = {
         "cta": "Mejorar a Pro"
       }
     },
+    "seeAll": "Ver todo lo que incluye {plan}",
+    "showLess": "Mostrar menos",
     "fitTitle": "¿Qué plan te encaja?",
     "fits": {
       "free": {

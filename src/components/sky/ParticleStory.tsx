@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { detectTier } from "@/gl/capability";
-import { frameGap, liteFx } from "@/lib/fx/lite";
+import { frameGap, isPhone, liteFx } from "@/lib/fx/lite";
 import type { ParticleScene } from "./particle-scene";
 import s from "./Sky.module.css";
 
@@ -15,6 +15,7 @@ type Step = { title: string; body: string };
  * viewport, and only on devices with a real GPU (detectTier), independent of the sitewide THREE_D_ENABLED switch. No GPU keeps a
  * CSS glow; prefers-reduced-motion unpins the section (CSS) and draws one still frame of the sphere. Frames run only while the
  * stage is on screen and the tab is visible; lite devices draw fewer points at about 30 fps.
+ * Phones (isPhone) never fetch three.js: the section is a plain, unpinned list of the three steps there (Sky.module.css).
  */
 export function ParticleStory({ title, muted, steps }: { title: string; muted: string; steps: Step[] }) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -25,7 +26,7 @@ export function ParticleStory({ title, muted, steps }: { title: string; muted: s
   useEffect(() => {
     const section = sectionRef.current;
     const canvas = canvasRef.current;
-    if (!section || !canvas || detectTier() === "none") return;
+    if (!section || !canvas || isPhone() || detectTier() === "none") return;
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const lite = liteFx();
     const gap = frameGap(lite);

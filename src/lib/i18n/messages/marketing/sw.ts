@@ -333,6 +333,8 @@ const m: MarketingCatalog = {
         "cta": "Pandisha hadi Pro"
       }
     },
+    "seeAll": "Tazama kila kitu katika {plan}",
+    "showLess": "Onyesha kidogo",
     "fitTitle": "Mpango upi unakufaa?",
     "fits": {
       "free": {

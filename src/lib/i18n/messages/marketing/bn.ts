@@ -333,6 +333,8 @@ const m: MarketingCatalog = {
         "cta": "Pro-তে আপগ্রেড করুন"
       }
     },
+    "seeAll": "{plan}-এ যা যা আছে সব দেখুন",
+    "showLess": "কম দেখান",
     "fitTitle": "কোন প্ল্যান উপযুক্ত?",
     "fits": {
       "free": {
