@@ -172,6 +172,24 @@ export function businessMoved(req: NextRequest): NextResponse | null {
   return moved === null ? null : NextResponse.redirect(businessUrl(`${moved}${search}`), 308);
 }
 
+/** Where user-authored files are served (sites, apps, drafts). Their pages are sandboxed to an opaque origin (CSP sandbox). */
+const USER_CONTENT = /^\/(s|sites|apps)\//;
+/** Request destinations that execute what they load. */
+const RUNS_CODE = new Set(["script", "worker", "sharedworker", "serviceworker", "audioworklet", "paintworklet"]);
+
+/**
+ * IN-5 (docs/rebirth/AUDIT.md): the app CSP's script-src 'self' also covers user files under /s/, /sites/ and /apps/. Their own
+ * pages are sandboxed (opaque origin), so their scripts arrive as cross-site requests; a keplar.one page loading one as a
+ * script (what an injected <script src="/s/..."> or a service-worker registration would do) arrives as same-origin and is
+ * refused here. Browsers that send no fetch metadata are not refused (defence in depth, not the only guard).
+ */
+export function firstPartyLoadOfUserCode(req: Pick<NextRequest, "headers"> & { nextUrl: { pathname: string } }): boolean {
+  if (!USER_CONTENT.test(req.nextUrl.pathname)) return false;
+  const dest = req.headers.get("sec-fetch-dest")?.toLowerCase() ?? "";
+  const site = req.headers.get("sec-fetch-site")?.toLowerCase() ?? "";
+  return RUNS_CODE.has(dest) && site === "same-origin";
+}
+
 export async function proxy(req: NextRequest, event?: NextFetchEvent) {
   const host = hostOf(req);
   if (!isAppHost(host)) return customHost(req, host);
@@ -188,6 +206,7 @@ export async function proxy(req: NextRequest, event?: NextFetchEvent) {
     if (moved) return moved;
   }
   const { pathname } = req.nextUrl;
+  if (firstPartyLoadOfUserCode(req)) return new NextResponse("User content can't run as a Keplar script.", { status: 403, headers: PLAIN });
   // Referral short link: /?ref=CODE → /invite/CODE (same cookies/claim flow).
   if ((pathname === "/" || pathname === "") && req.method === "GET") {
     const ref = req.nextUrl.searchParams.get("ref");
