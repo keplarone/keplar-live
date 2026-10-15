@@ -77,7 +77,7 @@ export function BriefPanel({ idea, onApply, onClose }: { idea: string; onApply: 
       {data ? (
         <>
           <ol className={s.briefQuestions}>
-            {data.questions.slice(0, 4).map((q) => (
+            {data.questions.slice(0, 3).map((q) => (
               <li key={q.id}>
                 <p className={s.briefQ}>{q.text}</p>
                 {q.chips.length ? (
@@ -90,6 +90,7 @@ export function BriefPanel({ idea, onApply, onClose }: { idea: string; onApply: 
                 ) : null}
                 <input
                   className={s.briefInput}
+                  aria-label={`${q.text} — your own answer`}
                   value={answers[q.field]?.text ?? ""}
                   placeholder={q.placeholder}
                   onChange={(e) => setAnswers((prev) => ({ ...prev, [q.field]: { ...prev[q.field], text: e.target.value.slice(0, 400) } }))}
@@ -118,3 +119,4 @@ export function BriefPanel({ idea, onApply, onClose }: { idea: string; onApply: 
     </section>
   );
 }
+

@@ -17,6 +17,12 @@ type ConnectionState =
 export function ChatGPTConnection() {
   const [status, setStatus] = useState<ConnectionState>({ state: "loading" });
   const [refresh, setRefresh] = useState(0);
+  const [example, setExample] = useState<"Website" | "App" | "3D experience">("Website");
+  const examples = {
+    Website: "Create a considered website for my independent coffee shop. Help me choose the style and pages.",
+    App: "Build a booking app for my dog-walking business. Let me choose the app type and first features.",
+    "3D experience": "Create a product website with a Three.js viewer and a simple fallback for smaller devices.",
+  };
   useEffect(() => {
     const controller = new AbortController();
     void fetch("/api/chatgpt/status", { cache: "no-store", signal: controller.signal })
@@ -39,14 +45,30 @@ export function ChatGPTConnection() {
         <Link href="/work">Open workspace <span aria-hidden="true">↗</span></Link>
       </header>
       <div className={s.main}>
-        <p className={s.eyebrow}>Keplar Business + ChatGPT</p>
-        <h1>Your business.<br />In the conversation.</h1>
-        <p className={s.intro}>Bring your Keplar projects, tasks and saved reports into ChatGPT. Keep making progress with the same Keplar account.</p>
-        <div className={s.actions}>
-          <a href={PLUGIN_URL} target="_blank" rel="noopener noreferrer" className={s.primary}>Open plugin in ChatGPT <span aria-hidden="true">↗</span></a>
-          <a href="#setup" className={s.secondary}>How to connect</a>
-        </div>
-        <p className={s.caption}>Installation and permission approval happen in ChatGPT. This website cannot install it for you.</p>
+        <section className={s.hero} aria-labelledby="chatgpt-hero-title">
+          <div className={s.heroCopy}>
+            <p className={s.eyebrow}>Keplar One / Business / ChatGPT</p>
+            <h1 id="chatgpt-hero-title">Small idea.<br />Next big thing.</h1>
+            <p className={s.intro}>A little clarity goes a long way. Shape your idea in ChatGPT, then keep your projects, tasks and reports together in Keplar.</p>
+            <div className={s.actions}>
+              <a href={PLUGIN_URL} target="_blank" rel="noopener noreferrer" className={s.primary}>Open in ChatGPT <span aria-hidden="true">↗</span></a>
+              <a href="#setup" className={s.secondary}>Connect your account</a>
+            </div>
+            <p className={s.caption}>By Keplar One. Installation and permission approval happen in ChatGPT.</p>
+          </div>
+          <aside className={s.briefPreview} aria-label="Example starting prompts">
+            <div className={s.previewTop}><BusinessMark size={26} /><span>A starting point, made yours</span><span aria-hidden="true">↗</span></div>
+            <div className={s.previewBody}>
+              <p className={s.previewLabel}>01 / The idea</p>
+              <h2>What are we<br />making?</h2>
+              <div className={s.typeChoices} role="group" aria-label="Choose an example">
+                {(["Website", "App", "3D experience"] as const).map((type) => <button key={type} type="button" aria-pressed={example === type} onClick={() => setExample(type)}>{type}</button>)}
+              </div>
+              <p className={s.examplePrompt} aria-live="polite">“{examples[example]}”</p>
+              <p className={s.previewFoot}>Example prompt · use it to start a conversation in ChatGPT</p>
+            </div>
+          </aside>
+        </section>
 
         <section className={s.status} aria-labelledby="connection-status-title">
           <div>
@@ -85,7 +107,7 @@ export function ChatGPTConnection() {
 
         <section className={s.permissions} aria-labelledby="permissions-title">
           <div><p className={s.eyebrow}>Your permission, your projects</p><h2 id="permissions-title">Continue your work from ChatGPT.</h2></div>
-          <div><ul><li>Read your projects, tasks, reports and agent status.</li><li>Create projects and tasks, update progress and save report drafts.</li><li>Open the same projects in your Keplar workspace.</li></ul><p>The current connector cannot build or publish a website, send email, take payments or start overnight jobs. Those actions need their own website integrations.</p></div>
+          <div><ul><li>Read your projects, tasks, reports and agent status.</li><li>Create projects and tasks, update progress and save report drafts.</li><li>Open the same projects in your Keplar workspace.</li></ul><p>Website and app creation uses the building tools available in your ChatGPT session or the Keplar website builder. The account connector saves your project work; publishing, email, payments and overnight jobs each need a supported integration and the appropriate account access.</p></div>
         </section>
         <section className={s.help} aria-labelledby="help-title">
           <h2 id="help-title">Seeing “Couldn’t connect”?</h2>

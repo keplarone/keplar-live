@@ -1,0 +1,24 @@
+{
+  "interface": {
+    "capabilities": [],
+    "composerIcon": "./assets/icon.png",
+    "defaultPrompt": "Show my Keplar Business projects and help me make progress on my business.",
+    "developerName": "8club business",
+    "displayName": "Keplar Business",
+    "logo": "./assets/icon.png",
+    "longDescription": "Connect your Keplar Business account to read projects, tasks, reports and agent status, and save project work from ChatGPT.",
+    "shortDescription": "Your business, in ChatGPT",
+    "websiteURL": "https://business.keplar.one",
+    "category": "Other"
+  },
+  "name": "keplar-business",
+  "version": "0.1.2",
+  "description": "Work with your existing Keplar Business projects, tasks, reports and agent status from ChatGPT.",
+  "author": {
+    "name": "8club business",
+    "email": "8clubfranchise@gmail.com"
+  },
+  "keywords": [],
+  "homepage": "https://business.keplar.one",
+  "mcpServers": "./.mcp.json"
+}

@@ -34,7 +34,7 @@ Primitives (use them, combine them, add your own classes beside them):
 - Header markup: <a class="k-skip" href="#main">Skip to content</a><header class="k-header"><div class="k-wrap k-header__in"><a class="k-brand" href="index.html">Name</a><nav class="k-nav" aria-label="Main"><a href="about.html">About</a>…</nav></div></header>. Set aria-current="page" on the current page's link.`;
 
 const CRAFT = `DESIGN RULES (these are what make it look made by a studio, not generated)
-1. Composition over components. Each page uses at least three clearly different section compositions (for example: huge-type hero; asymmetric split with a figure; numbered index list; label|content rows; full-bleed inverse band with one sentence; menu/price list). Never the same block repeated, never a row of three identical cards with icons. At most one equal-tile grid on the entire site, and only for real equal items.
+1. Anti-vibe-code means bespoke art direction for the actual business, not a template with different colors. Honor the owner's style and use the strongest composition the brief supports. Do not default every business to green or purple. Composition over components. Each page uses at least three clearly different section compositions (for example: huge-type hero; asymmetric split with a figure; numbered index list; label|content rows; full-bleed inverse band with one sentence; menu/price list). Never the same block repeated, never a row of three identical cards with icons. At most one equal-tile grid on the entire site, and only for real equal items.
 2. Scale contrast. At least one headline per page at --step-5 or --step-6 (the hero), body copy at --step-0, small labels in .k-kicker. Whitespace is a feature: use --sec between sections, and let things sit off-center (.k-at-*).
 3. Restraint. One accent, used on one or two things per screen (a button, an italic word, a rule). No gradients except flat two-stop fields from the tokens, no glass, no drop-shadow cards, no rounded-corner tile walls, no floating blobs, no gradient text, no centered-everything layouts. Hairlines (--line) and type do the structure.
 4. Copy is specific and plain: say what it is, who it is for, what it costs only if the owner gave prices. Headlines are short and concrete. Never use: "Welcome to", "unlock", "elevate", "seamless", "cutting-edge", "game-changer", "revolutionize", "empower", "leverage", "world-class", "one-stop shop", "take it to the next level", "your journey".
@@ -280,3 +280,4 @@ export async function* generateSite(input: GenInput, opts: { signal?: AbortSigna
   }
   throw new GenError(lastError, "generation_failed", spent);
 }
+

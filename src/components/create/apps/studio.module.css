@@ -640,3 +640,13 @@
 
 /* Fine-tune the look: the kit Dialog, wide enough for the design picker. */
 .tuneDialog { --dialog-w: 760px; }
+
+
+/* Optional, keyboard-accessible brief choices before a new build. */
+.intake { display:grid; gap:14px; padding:18px 0; }
+.intakeHint { margin:0; color:var(--c-ink-3); font-size:13px; line-height:1.5; }
+.intakeQuestion { border:0; padding:0; margin:0; min-width:0; }
+.intakeQuestion legend { margin-bottom:8px; font-size:13px; font-weight:500; }
+.intakeQuestion button[aria-pressed="true"] { background:var(--c-ink); color:var(--c-canvas); border-color:var(--c-ink); }
+.intakeQuestion button:focus-visible { outline:2px solid var(--c-ink); outline-offset:3px; }
+@media(pointer:coarse) { .intakeQuestion button { min-height:44px; } }

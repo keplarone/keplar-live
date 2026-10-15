@@ -1,0 +1,26 @@
+name: Build experience
+on:
+  pull_request:
+    paths:
+      - 'src/components/create/apps/**'
+      - 'src/components/business-site/ChatGPTConnection.tsx'
+      - 'src/components/business-site/chatgpt-connection.module.css'
+      - 'src/lib/app-builder/**'
+      - 'src/lib/site-builder/generate.ts'
+      - 'tests/build-intake.test.ts'
+      - '.github/workflows/build-experience.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run typecheck
+      - run: node --import tsx --test tests/build-intake.test.ts tests/app-builder*.test.ts

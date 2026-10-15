@@ -24,7 +24,7 @@ function filePlanRules(L: AppBuildLimits): string {
   return `FILE PLAN RULES
 - Up to ${L.maxFiles} files, ${L.maxPages} pages/screens. Choose the smallest structure that builds everything well.
 - Single-page apps (anything interactive): "uses" includes "ui" (Preact+htm) unless it is a pure canvas game; "three" only for real 3D. Files: app.js (entry: routes, frame, nav), lib/*.js (shared components/helpers/state, list their "exports" exactly, e.g. ["Avatar","PostCard","timeAgo"]), pages/*.js (one per screen, default export), styles.css. Do NOT list index.html for single-page apps (Keplar writes it).
-- Multi-page sites (kind "site"): index.html + one .html per page + styles.css (+ optional site.js). No "ui".
+- Multi-page sites (kind "site"): index.html + one .html per page + styles.css (+ optional site.js). No "ui". Three.js is supported for websites too: include "three" in uses when the user requests a 3D scene, product viewer or other real 3D interaction; put its implementation in site.js using the injected window.THREE. Plan a readable HTML fallback and reduced-motion behavior. Never require CDN scripts or external imports.
 - Games: app.js + game/*.js modules (+ lib/*.js) + styles.css.
 - Seed rows must satisfy every required field. Image fields in seeds take "keplar-image:<slot>" values that name one of your "images" slots (declare slots for example content too, e.g. post1..post4 for a photo feed); never invent URLs.
 - Each file's "purpose" says precisely what it contains (components, behaviors, states), so files written in parallel fit together. Shared modules list every export with a short signature in the purpose, e.g. "PostCard({post, likes, liked, onLike}) -> card with image, caption, owner, like button".`;

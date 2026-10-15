@@ -25,6 +25,8 @@ import { AppShelf } from "./AppShelf";
 import { createPromptStore, PromptField, usePromptReady, usePromptSettled, type PromptHandle, type PromptStore } from "./PromptField";
 import { STARTERS } from "./starters";
 import { ReferenceTray, withReferences } from "./ReferenceTray";
+import { BuildIntake } from "./BuildIntake";
+import { EMPTY_INTAKE, withBuildIntake } from "./build-intake";
 import { BriefPanel } from "./BriefPanel";
 import { surpriseBrief } from "@/lib/create/surprise-brief";
 import { clearResume, isBusyError, loadResume, resumeAction, saveResume } from "./resume";
@@ -81,6 +83,7 @@ export function AppBuilder() {
   /** Options show one section at a time (tabs), so opening them never turns the prompt page into a long scroll. */
   const [optTab, setOptTab] = useState<"look" | "refs" | "voice" | "screens">("look");
   const [briefOpen, setBriefOpen] = useState(false);
+  const [intake, setIntake] = useState({ ...EMPTY_INTAKE });
   const [shipped, setShipped] = useState<{ url: string; version: number } | null>(null);
   const [studio, setStudio] = useState(false);
   const [run, setRun] = useState<Run | null>(null);
@@ -265,8 +268,8 @@ export function AppBuilder() {
   const onRefs = useCallback((b: string[]) => { refBriefs.current = b; }, []);
   const buildBody = useCallback((prompt: string, edit: boolean) => {
     const d = edit ? current?.design ?? design : auto ? { auto: true, ...(modeTouched ? { mode: design.mode } : {}) } : design;
-    return { prompt: edit ? prompt : withReferences(prompt, refBriefs.current, cfg?.plan), design: d, edit, confirm: true };
-  }, [auto, cfg?.plan, current, design, modeTouched]);
+    return { prompt: edit ? prompt : withReferences(withBuildIntake(prompt, intake), refBriefs.current, cfg?.plan), design: d, edit, confirm: true };
+  }, [auto, cfg?.plan, current, design, modeTouched, intake]);
 
   /** Build (new app) or refine (edit). Feedback is instant: the studio and the blueprint show before the first request returns. */
   const build = useCallback(async (prompt: string, edit = false) => {
@@ -452,8 +455,10 @@ export function AppBuilder() {
               <p className={s.calmLede}>Describe it or say it. Keplar designs it, writes the code and tests every screen.</p>
             </header>
 
-            <section className={s.calmCard} aria-label="Describe your app">
-              <PromptField ref={promptRef} store={store} id="kc-prompt" className={s.prompt} draftKey={DRAFT_KEY} autoFocus label="Describe your app" placeholder="A place where film photographers post scans, follow each other and vote on a weekly darkroom challenge…" onSubmit={() => { const t = store.text().trim(); if (t.length >= 8) void build(t); }} />
+            <BuildIntake value={intake} onChange={setIntake} />
+
+            <section className={s.calmCard} aria-label="Describe your app or website">
+              <PromptField ref={promptRef} store={store} id="kc-prompt" className={s.prompt} draftKey={DRAFT_KEY} autoFocus label="Describe your app or website" placeholder="A place where film photographers post scans, follow each other and vote on a weekly darkroom challenge…" onSubmit={() => { const t = store.text().trim(); if (t.length >= 8) void build(t); }} />
               <div className={s.calmBar}>
                 <button type="button" className={s.textBtn} onClick={() => { if (store.text().trim().length < 8) { say("Write a sentence about what you want, then shape the brief."); return; } setBriefOpen(true); }}>Shape the brief</button>
                 <button type="button" className={s.textBtn} aria-expanded={optionsOpen} aria-controls="kc-options" onClick={() => setOptionsOpen((v) => !v)} data-create-options="">
@@ -466,7 +471,7 @@ export function AppBuilder() {
 
             {briefOpen ? (
               <BriefPanel
-                idea={store.text().trim()}
+                idea={withBuildIntake(store.text().trim(), intake)}
                 onClose={() => setBriefOpen(false)}
                 onApply={(prompt, styleId) => {
                   promptRef.current?.set(prompt);

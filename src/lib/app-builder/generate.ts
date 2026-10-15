@@ -48,7 +48,8 @@ const SITE_RULES = `MULTI-PAGE SITE CONVENTIONS
 - Pages share the exact same header/footer markup and class names as index.html.
 - Optional interactions go in site.js (type="module" script tag at the end of body): menu toggle, reveal on scroll, gallery, tabs. No inline scripts or inline event handlers.
 - Forms that should work post through keplar.db when a collection exists (then site.js handles submit), otherwise do not invent a form backend.
-- Images: "keplar-image:<slot>" for the spec's slots; otherwise SVG/CSS illustration.`;
+- Images: "keplar-image:<slot>" for the spec's slots; otherwise SVG/CSS illustration.
+- If spec.uses includes "three", Keplar injects its bundled Three.js as window.THREE before site.js. Use that global; no npm imports, CDN, import maps or inline scripts. Load 3D code from site.js, keep semantic HTML visible if WebGL fails, honor prefers-reduced-motion, cap pixel ratio at 2, resize to the container, pause offscreen animation and dispose resources on teardown. If "three" is absent, use CSS/SVG instead.`;
 
 /** Dates in example content (events, schedules, posts) must look current, not like the model's training year. */
 export const todayLine = () => {
@@ -67,6 +68,7 @@ ${RUBRIC}
 
 ART DIRECTION
 ${designBrief}
+WEBSITE CRAFT (anti-vibe-code): design specifically for this business and audience. Choose a clear visual concept, strong readable typography, deliberate spacing and a useful lead image or illustration. Vary section composition instead of repeating a generic hero plus feature-card grid. Do not default to green/purple gradients, glowing blobs, glass panels, emoji icons or invented social proof. Respect an explicitly requested visual style. Use accurate, specific copy; mark missing business facts rather than inventing them. Make navigation, primary actions, mobile menus and forms work, including loading, empty, success and error states where needed. Preserve the requested scope; implement the strongest working version within the actual plan limits and state any missing external setup honestly. 3D is welcome when it serves the brief, never as a substitute for useful content. Before returning, review the complete layout at narrow and wide widths, keyboard focus, contrast and every action. Repair issues you find.
 Translate this direction into composition, not just colors: layout rhythm, type scale, imagery treatment, signature details (a distinctive nav, a characteristic card/list treatment, purposeful micro-interactions). Every screen should feel like the same product.
 
 OUTPUT FORMAT
