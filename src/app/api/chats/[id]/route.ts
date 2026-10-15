@@ -57,7 +57,7 @@ export async function PUT(req: Request, ctx: Ctx) {
     const messages = strip(b.messages);
     if (JSON.stringify(messages).length > MAX_BYTES) throw new HttpError(413, "That chat is too long to save. Start a new one.", "too_large");
     const existing = await chats().get(ws.id, id);
-    if (!existing && (await chats().list(ws.id)).length >= MAX_CHATS) throw new HttpError(409, `You have ${MAX_CHATS} saved chats. Delete some to save more.`, "limit");
+    if (!existing && (await chats().count(ws.id)) >= MAX_CHATS) throw new HttpError(409, `You have ${MAX_CHATS} saved chats. Delete some to save more.`, "limit");
     const t = Date.now();
     const row = {
       id, workspaceId: ws.id,

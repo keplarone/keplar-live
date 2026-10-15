@@ -18,7 +18,8 @@ export async function GET(req: Request) {
   try {
     const ws = await currentWorkspace(req, { team: true });
     assertSameAccount(req, ws.userId);
-    const rows = (await chats().list(ws.id)).sort((a, b) => b.updatedAt - a.updatedAt);
+    // Only the sidebar's fields: the messages stay in the database (a full list was every message of up to 200 chats).
+    const rows = (await chats().listFields(ws.id, ["title", "projectId", "createdAt", "updatedAt", "specialistId"])).sort((a, b) => b.updatedAt - a.updatedAt);
     return json({ chats: rows.map((c) => ({ id: c.id, title: c.title, projectId: c.projectId, createdAt: c.createdAt, updatedAt: c.updatedAt, ...(c.specialistId ? { specialistId: c.specialistId } : {}) })) });
   } catch (e) {
     return errorResponse(e);

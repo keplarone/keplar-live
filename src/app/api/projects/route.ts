@@ -15,8 +15,9 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   try {
     const ws = await projectOwner(req);
-    const [ps, notes, files, cs] = await Promise.all([listProjects(ws.id), noteRows().list(ws.id), fileRows().list(ws.id), chats().list(ws.id)]);
-    const count = <T extends { projectId: string | null }>(rows: T[], id: string) => rows.filter((r) => r.projectId === id).length;
+    // Counts per project, made by the store (no note text, file text or chat messages are loaded for them).
+    const [ps, notes, files, cs] = await Promise.all([listProjects(ws.id), noteRows().countBy(ws.id, "projectId"), fileRows().countBy(ws.id, "projectId"), chats().countBy(ws.id, "projectId")]);
+    const count = (counts: Map<string, number>, id: string) => counts.get(id) ?? 0;
     return json({ projects: ps.map((p) => ({ id: p.id, name: p.name, memoryOn: p.memoryOn, createdAt: p.createdAt, counts: { notes: count(notes, p.id), files: count(files, p.id), chats: count(cs, p.id) } })) });
   } catch (e) {
     return errorResponse(e);

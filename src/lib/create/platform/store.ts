@@ -28,7 +28,21 @@ export interface Collection<T extends Row> {
    * Cross-tenant lookup by one field (dotted path, e.g. "ownerEmail" or "billing.subscriptionId").
    * Postgres answers it from an index instead of scanning the collection. `ci` compares case-insensitively.
    */
-  findSystemBy(field: string, value: string, opts?: { ci?: boolean }): Promise<T | null>;
+  findSystemBy(field: string, value: string, opts?: { ci?: boolean; workspaceId?: string }): Promise<T | null>;
+  /** Every row (cross-tenant, up to `limit`, default 100) whose field equals `value`. Same index use as findSystemBy. */
+  listSystemBy(field: string, value: string, limit?: number): Promise<T[]>;
+  /**
+   * A tenant's rows with only the named top-level fields (plus id and workspaceId). Postgres builds the smaller
+   * document in SQL, so heavy fields (a chat's messages) never leave the database. A field a row lacks stays absent.
+   */
+  listFields<K extends keyof T & string>(workspaceId: string, fields: readonly K[]): Promise<Pick<T, K | "id" | "workspaceId">[]>;
+  /** How many rows a tenant has, optionally only those whose top-level string field `where.field` equals `where.value`. */
+  count(workspaceId: string, where?: { field: string; value: string }): Promise<number>;
+  /**
+   * A tenant's row counts grouped by a top-level field's string value (rows where it is missing or not a string are left out),
+   * optionally only rows whose ISO field `range.field` is in [gte, lt). Postgres counts in SQL.
+   */
+  countBy(workspaceId: string, field: string, range?: { field: string; gte?: string; lt?: string }): Promise<Map<string, number>>;
   /**
    * Atomically add to numeric fields of one row, creating it from `init` (which must include the
    * numeric fields at 0) when missing. Concurrent callers never lose an increment.
@@ -202,11 +216,38 @@ class FileCollection<T extends Row> implements Collection<T> {
     });
     return rows.reduce((t, r) => t + (Number((r as Record<string, unknown>)[field]) || 0), 0);
   }
-  async findSystemBy(field: string, value: string, opts: { ci?: boolean } = {}) {
+  async findSystemBy(field: string, value: string, opts: { ci?: boolean; workspaceId?: string } = {}) {
     checkField(field);
     const norm = (v: unknown) => (typeof v === "string" ? (opts.ci ? v.toLowerCase() : v) : null);
     const want = norm(value);
-    return (await this.snapshot()).find((r) => norm(field.split(".").reduce<unknown>((o, k) => (o as Record<string, unknown> | null | undefined)?.[k], r)) === want) ?? null;
+    if (want === null) return null; // like SQL `= NULL`: a missing value never matches rows that lack the field
+    return (await this.snapshot()).find((r) => (opts.workspaceId === undefined || r.workspaceId === opts.workspaceId) && norm(pick(r, field)) === want) ?? null;
+  }
+  async listSystemBy(field: string, value: string, limit = 100) {
+    checkField(field);
+    return (await this.snapshot()).filter((r) => pick(r, field) === value).slice(0, limit);
+  }
+  async listFields<K extends keyof T & string>(workspaceId: string, fields: readonly K[]) {
+    const keys = projectionKeys(fields);
+    return (await this.list(workspaceId)).map((r) => Object.fromEntries(keys.filter((k) => k in r).map((k) => [k, (r as Record<string, unknown>)[k]])) as Pick<T, K | "id" | "workspaceId">);
+  }
+  async count(workspaceId: string, where?: { field: string; value: string }) {
+    if (where) checkTopField(where.field);
+    return (await this.list(workspaceId, where ? (r) => (r as Record<string, unknown>)[where.field] === where.value : undefined)).length;
+  }
+  async countBy(workspaceId: string, field: string, range?: { field: string; gte?: string; lt?: string }) {
+    checkTopField(field);
+    if (range) checkField(range.field);
+    const out = new Map<string, number>();
+    for (const r of await this.list(workspaceId)) {
+      if (range) {
+        const at = String(pick(r, range.field) ?? "");
+        if ((range.gte !== undefined && at < range.gte) || (range.lt !== undefined && at >= range.lt)) continue;
+      }
+      const k = (r as Record<string, unknown>)[field];
+      if (typeof k === "string") out.set(k, (out.get(k) ?? 0) + 1);
+    }
+    return out;
   }
   increment(workspaceId: string, id: string, deltas: Record<string, number>, init: T) {
     return withLock(this.file, async () => {
@@ -229,6 +270,21 @@ class FileCollection<T extends Row> implements Collection<T> {
 function checkField(field: string) {
   if (!/^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)*$/.test(field)) throw new Error("Invalid field path.");
 }
+/** A top-level field name only (no dotted path). */
+function checkTopField(field: string) {
+  checkField(field);
+  if (field.includes(".")) throw new Error("Only top-level fields are supported here.");
+}
+/** The value at a dotted path of a row. */
+const pick = (row: unknown, field: string): unknown => field.split(".").reduce<unknown>((o, k) => (o as Record<string, unknown> | null | undefined)?.[k], row);
+/** The keys a projection returns: the named fields plus id and workspaceId, validated and de-duplicated. */
+function projectionKeys(fields: readonly string[]): string[] {
+  const keys = [...new Set(["id", "workspaceId", ...fields])];
+  keys.forEach(checkTopField);
+  return keys;
+}
+/** An ISO-string field compared in plain byte order (C collation), the same order the file store uses. */
+const isoExpr = (field: string) => `(data #>> '{${field.split(".").join(",")}}') COLLATE "C"`;
 
 class NeonCollection<T extends Row> implements Collection<T> {
   constructor(private name: string) {}
@@ -327,12 +383,56 @@ class NeonCollection<T extends Row> implements Collection<T> {
     const r = await neonQuery(`SELECT COALESCE(SUM((data #>> '{${field.split(".").join(",")}}')::numeric), 0)::text AS total FROM keplar_rows WHERE collection = $1 AND workspace_id = $2${where}`, params);
     return Number(r[0]?.total ?? 0) || 0;
   }
-  async findSystemBy(field: string, value: string, opts: { ci?: boolean } = {}) {
+  async findSystemBy(field: string, value: string, opts: { ci?: boolean; workspaceId?: string } = {}) {
     checkField(field);
     const expr = field === "id" ? "id" : `data #>> '{${field.split(".").join(",")}}'`;
     const lhs = opts.ci ? `lower(${expr})` : expr;
     const rhs = opts.ci ? "lower($2)" : "$2";
+    if (opts.workspaceId !== undefined) return (await this.rows(` AND ${lhs} = ${rhs} AND workspace_id = $3 LIMIT 1`, [value, opts.workspaceId]))[0] ?? null;
     return (await this.rows(` AND ${lhs} = ${rhs} LIMIT 1`, [value]))[0] ?? null;
+  }
+  async listSystemBy(field: string, value: string, limit = 100) {
+    checkField(field);
+    const expr = field === "id" ? "id" : `data #>> '{${field.split(".").join(",")}}'`;
+    const lim = Math.max(1, Math.min(10_000, Math.floor(limit)));
+    return this.rows(` AND ${expr} = $2 LIMIT ${lim}`, [value]);
+  }
+  async listFields<K extends keyof T & string>(workspaceId: string, fields: readonly K[]) {
+    const keys = projectionKeys(fields);
+    await ensureSchema();
+    // Only the named keys are copied out of each document (a missing key stays missing, a null stays null).
+    const r = await neonQuery(
+      "SELECT COALESCE((SELECT jsonb_object_agg(e.key, e.value) FROM jsonb_each(data) e WHERE e.key = ANY($3::text[])), '{}'::jsonb) AS data FROM keplar_rows WHERE collection = $1 AND workspace_id = $2",
+      [this.name, workspaceId, `{${keys.map((k) => JSON.stringify(k)).join(",")}}`],
+    );
+    return r.map((x) => parseData<Pick<T, K | "id" | "workspaceId">>(x.data));
+  }
+  async count(workspaceId: string, where?: { field: string; value: string }) {
+    await ensureSchema();
+    const params: unknown[] = [this.name, workspaceId];
+    let cond = "";
+    if (where) {
+      checkTopField(where.field);
+      cond = ` AND jsonb_typeof(data -> '${where.field}') = 'string' AND data ->> '${where.field}' = $${params.push(where.value)}`;
+    }
+    const r = await neonQuery(`SELECT count(*)::text AS n FROM keplar_rows WHERE collection = $1 AND workspace_id = $2${cond}`, params);
+    return Number(r[0]?.n ?? 0) || 0;
+  }
+  async countBy(workspaceId: string, field: string, range?: { field: string; gte?: string; lt?: string }) {
+    checkTopField(field);
+    await ensureSchema();
+    const params: unknown[] = [this.name, workspaceId];
+    let cond = "";
+    if (range) {
+      checkField(range.field);
+      if (range.gte !== undefined) cond += ` AND ${isoExpr(range.field)} >= $${params.push(range.gte)}`;
+      if (range.lt !== undefined) cond += ` AND ${isoExpr(range.field)} < $${params.push(range.lt)}`;
+    }
+    const r = await neonQuery(
+      `SELECT data ->> '${field}' AS k, count(*)::text AS n FROM keplar_rows WHERE collection = $1 AND workspace_id = $2 AND jsonb_typeof(data -> '${field}') = 'string'${cond} GROUP BY 1`,
+      params,
+    );
+    return new Map(r.map((x) => [String(x.k), Number(x.n) || 0]));
   }
 }
 

@@ -59,6 +59,16 @@ export async function neonQuery(query: string, params: unknown[] = []): Promise<
 /** A jsonb column comes back as text (raw text output); tolerate an already-parsed value too. */
 export const parseData = <T>(v: unknown): T => (typeof v === "string" ? (JSON.parse(v) as T) : (v as T));
 
+/** Expression indexes for findSystemBy / listSystemBy lookups on hot system paths. */
+export const LOOKUP_INDEXES = [
+  // Stripe Connect webhooks: orders by Checkout Session / PaymentIntent, connected accounts by Stripe account id.
+  "CREATE INDEX IF NOT EXISTS keplar_rows_checkout_session ON keplar_rows (collection, (data #>> '{checkoutSessionId}'))",
+  "CREATE INDEX IF NOT EXISTS keplar_rows_payment_intent ON keplar_rows (collection, (data #>> '{paymentIntentId}'))",
+  "CREATE INDEX IF NOT EXISTS keplar_rows_stripe_account ON keplar_rows (collection, (data #>> '{stripeAccountId}'))",
+  // Custom-domain site routing (create_domains by host name). Partial: `name` is a common field in other collections.
+  "CREATE INDEX IF NOT EXISTS keplar_rows_domain_name ON keplar_rows (collection, (data #>> '{name}')) WHERE collection = 'create_domains'",
+];
+
 let ready: Promise<void> | null = null;
 /** Creates the tables and indexes on first use (idempotent; safe when several instances start at once). */
 export function ensureSchema(): Promise<void> {
@@ -72,6 +82,9 @@ export function ensureSchema(): Promise<void> {
       await neonQuery("CREATE INDEX IF NOT EXISTS keplar_rows_owner_email ON keplar_rows (collection, lower(data #>> '{ownerEmail}'))");
       await neonQuery("CREATE INDEX IF NOT EXISTS keplar_rows_subscription ON keplar_rows (collection, (data #>> '{billing,subscriptionId}'))");
       await neonQuery("CREATE INDEX IF NOT EXISTS keplar_rows_slug ON keplar_rows (collection, (data #>> '{slug}'))");
+      // Added after launch, on a table that already holds data: best effort, so a slow one-time build never fails the request
+      // that triggered it (lookups still work without the index, only slower; the next instance tries again).
+      for (const q of LOOKUP_INDEXES) await neonQuery(q).catch(() => undefined);
     };
     // Concurrent CREATE ... IF NOT EXISTS from two instances can lose a catalog race once; a retry succeeds.
     await run().catch(async () => {

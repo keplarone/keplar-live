@@ -45,6 +45,7 @@ export const RETAINED = [
   "overage_settings", // overage opt-in and monthly cap: the billing authorization behind any overage charge
   "overage_usage", // overage amounts billed per month: a financial record
   "space_billing_events", // Space Studio billing idempotency log (event id, type, plan, timestamps, target workspace id; workspace "system", no content): a financial record, kept so a replayed event can never re-grant a plan
+  "biz_connect_event_claims", // Stripe Connect webhook dedupe claims (Stripe event id + attempt number + time; workspace "system", no content); pruned after 30 days
   "answer_turns", // answer recovery checkpoints (orchestration/turn-recovery.ts): workspace "system", keyed by a hash of owner + turn key (no account id), the last answer as sent; unreadable after 30 minutes and deleted within a day, so they expire on their own
 ] as const;
 export const RETAINED_PATTERNS = [/^usage_window_/, /^system_/, /^admin_/, /^ops_/, /^_health$/, /^_cron_beats$/ /* cron heartbeat timestamps, no personal data */];
