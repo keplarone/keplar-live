@@ -7,7 +7,7 @@
 import { checkWant } from "./safety";
 import { activeRegistry, type AgentRow } from "./registry";
 import { connected, executeGateway } from "./gateways";
-import { dropPending, readPending, savePending } from "./confirmations";
+import { claimPending, dropPending, readPending, savePending } from "./confirmations";
 import { verifyPin } from "./pin";
 import { fallback, formFixtureUrl, runFormTask } from "./browser";
 import type { WantBody, WantResult } from "./types";
@@ -92,6 +92,10 @@ async function executeConfirmed(userId: string, body: WantBody): Promise<WantRes
       ui: { type: "pin", summary: "Try your PIN again" },
       confirmationId: body.confirmationId ?? undefined,
     };
+  }
+  // Single claim (AI-13): of two confirmations racing with the right PIN, only one runs the plan.
+  if (!(await claimPending(userId, pending.id))) {
+    return { status: "error", reason: "unknown_or_expired_confirmation", message: "That confirmation was already used." };
   }
   await dropPending(userId, pending.id);
   try {

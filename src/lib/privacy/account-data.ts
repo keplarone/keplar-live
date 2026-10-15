@@ -76,7 +76,7 @@ export const USER_COLLECTIONS = [
   "browser_tasks" /* Keplar Browser tasks: the task, step notes and addresses, the newest screenshot and the result; the newest 20 are kept, exported and deleted with the account */,
   // Keplar Wants (src/lib/wants): the pending plan awaiting PIN confirmation (prompt, answers, provider; 10-minute expiry) is exported;
   // the PIN's scrypt hash, OAuth states and (sandbox) provider tokens are credentials, deleted with the account and never exported.
-  "wants_confirmations", "wants_pins", "wants_oauth_states", "wants_oauth_tokens",
+  "wants_confirmations", "wants_confirm_claims" /* which confirmations already ran (ids only) */, "wants_pins", "wants_oauth_states", "wants_oauth_tokens",
 ] as const;
 
 export const isRetained = (name: string) => (RETAINED as readonly string[]).includes(name) || RETAINED_PATTERNS.some((p) => p.test(name));
