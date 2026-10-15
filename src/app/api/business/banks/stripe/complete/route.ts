@@ -1,4 +1,4 @@
-import { errorResponse, HttpError, json } from "@/lib/create/platform/http";
+import { errorResponse, HttpError, json, readText } from "@/lib/create/platform/http";
 import { listBanks } from "@/lib/business/plaid";
 import { completeStripeBanks } from "@/lib/business/stripe-banks";
 import { hideSetupDetail } from "@/lib/business/visibility";
@@ -14,7 +14,8 @@ export async function POST(req: Request) {
     const ws = await owner(req);
     requireBusinessRole(ws, "connect a bank");
     admin = ws.admin;
-    const raw = await req.text();
+    const raw = await readText(req, 16_000);
+    if (raw === null) throw new HttpError(413, "That request is too large.", "too_large");
     let sessionId: string | undefined;
     if (raw.trim()) {
       let b: { sessionId?: unknown };

@@ -3,6 +3,7 @@
  * `"stream": true` (or `Accept: text/event-stream`) returns Server-Sent Events: progress, delta (preview only), answer, done / error.
  * The same credits, rolling windows and spend caps as the app apply; an answer is metered once. Nothing is stored (no memory, no chat).
  */
+import { readText } from "@/lib/create/platform/http";
 import { authenticateKey, recordKeyUse, ApiError } from "@/lib/api/keys";
 import { parseAsk, runAsk, type PublicEvent } from "@/lib/api/ask";
 import { CORS, preflight, v1Failure, v1Json } from "@/lib/api/http";
@@ -20,8 +21,8 @@ export async function POST(req: Request) {
     const { key, ws } = await authenticateKey(req, "ask");
     let raw: unknown;
     try {
-      const text = await req.text();
-      if (text.length > API_ASK_LIMITS.bodyChars) throw new ApiError(413, "too_large", "The request body is too large.");
+      const text = await readText(req, API_ASK_LIMITS.bodyChars * 4);
+      if (text === null || text.length > API_ASK_LIMITS.bodyChars) throw new ApiError(413, "too_large", "The request body is too large.");
       raw = JSON.parse(text);
     } catch (e) {
       if (e instanceof ApiError) throw e;

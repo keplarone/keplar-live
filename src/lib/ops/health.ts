@@ -24,7 +24,9 @@ export async function probeStore() {
     if (!back || !removed) throw new Error("round trip mismatch");
     cached = { at: Date.now(), ok: true, ms: Date.now() - started };
   } catch (e) {
-    cached = { at: Date.now(), ok: false, ms: Date.now() - started, error: e instanceof Error ? e.message.slice(0, 120) : "error" };
+    // The public answer says only that the round trip failed; the database's own error text stays in the log.
+    console.error("[health] store round trip failed:", e instanceof Error ? e.message.slice(0, 200) : "error");
+    cached = { at: Date.now(), ok: false, ms: Date.now() - started, error: "store round trip failed" };
   }
   return cached;
 }

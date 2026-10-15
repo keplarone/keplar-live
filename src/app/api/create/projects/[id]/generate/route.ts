@@ -5,7 +5,7 @@
 import { createReady } from "@/lib/create/platform/config";
 import { generate } from "@/lib/create/codegen";
 import { assertCanSpend, charge, estimateUnits } from "@/lib/create/platform/compute";
-import { errorResponse, HttpError, body } from "@/lib/create/platform/http";
+import { errorResponse, HttpError, body, publicErrorText } from "@/lib/create/platform/http";
 import { id as newId, now } from "@/lib/create/platform/ids";
 import { moderateText } from "@/lib/create/platform/moderation";
 import { rateLimit } from "@/lib/create/platform/ratelimit";
@@ -65,7 +65,7 @@ export async function POST(req: Request, { params }: Ctx) {
         send({ type: "message", text: result.summary });
         send({ type: "done", version, units, preview: `/sites/preview/${p.id}/?v=${version}` });
       } catch (err) {
-        send({ type: "error", error: err instanceof Error ? err.message : "Generation failed." });
+        send({ type: "error", error: publicErrorText(err, "Generation failed. Try again in a moment.") });
       } finally {
         controller.close();
       }

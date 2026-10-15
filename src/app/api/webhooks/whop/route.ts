@@ -7,7 +7,7 @@
  *   payment.failed, membership.cancel_at_period_end_changed, refund.created, dispute.created. Anything else is acknowledged and ignored.
  * - Idempotent by webhook-id. Handler errors → 500 so Whop retries.
  */
-import { json } from "@/lib/create/platform/http";
+import { json, readText } from "@/lib/create/platform/http";
 import { handleWhopEvent } from "@/lib/billing/sync";
 import { verifyWebhook } from "@/lib/billing/whop";
 
@@ -21,8 +21,8 @@ export async function POST(req: Request) {
   const secret = process.env.WHOP_WEBHOOK_SECRET?.trim();
   if (!secret) return json({ error: "Webhook not configured." }, { status: 503 });
   if (Number(req.headers.get("content-length") ?? 0) > MAX_BODY) return json({ error: "Payload too large." }, { status: 413 });
-  const raw = await req.text();
-  if (raw.length > MAX_BODY) return json({ error: "Payload too large." }, { status: 413 });
+  const raw = await readText(req, MAX_BODY);
+  if (raw === null) return json({ error: "Payload too large." }, { status: 413 });
   if (!verifyWebhook(raw, req.headers, secret)) return json({ error: "Invalid signature." }, { status: 401 });
   let event: { type?: unknown; data?: unknown };
   try {

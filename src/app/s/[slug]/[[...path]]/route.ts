@@ -3,6 +3,7 @@
  * sanitized again on the way out. CSP: no scripts, sandboxed to an opaque origin, forms post only to this host.
  * Special paths: _lead (form posts), _thanks, _report (abuse), sitemap.xml, robots.txt.
  */
+import { readFormData } from "@/lib/create/platform/http";
 import { orders } from "@/lib/business/repo";
 import { alertOwner } from "@/lib/accounts/alerts";
 import { getWorkspace } from "@/lib/accounts/workspaces";
@@ -214,9 +215,10 @@ async function readForm(req: Request): Promise<Record<string, string> | null> {
   if (len > MAX_BODY) return null;
   const ct = req.headers.get("content-type") ?? "";
   if (!/application\/x-www-form-urlencoded|multipart\/form-data/i.test(ct)) return null;
-  const text = ct.includes("urlencoded") ? await req.text() : null;
-  if (text !== null && text.length > MAX_BODY) return null;
-  const entries = text !== null ? [...new URLSearchParams(text).entries()] : [...(await req.formData()).entries()];
+  // Read through the cap (a chunked body has no Content-Length to check above).
+  const form = await readFormData(req, MAX_BODY);
+  if (!form) return null;
+  const entries = [...form.entries()];
   const out: Record<string, string> = {};
   for (const [k, v] of entries.slice(0, 40)) if (typeof v === "string") out[k] = v;
   return out;

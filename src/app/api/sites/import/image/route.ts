@@ -2,7 +2,7 @@
  * Product import from a photo. The body is the image itself (raw bytes, `x-file-name` header). The original is stored per
  * workspace at full quality (see product/image.ts for the only cases where bytes change) and stays private until a site uses it.
  */
-import { errorResponse, HttpError, json } from "@/lib/create/platform/http";
+import { errorResponse, HttpError, json, readBytes } from "@/lib/create/platform/http";
 import { rateLimit } from "@/lib/create/platform/ratelimit";
 import { currentWorkspace } from "@/lib/create/platform/workspace";
 import { MAX_ASSET_BYTES } from "@/lib/site-builder/product/limits";
@@ -18,7 +18,9 @@ export async function POST(req: Request) {
     await rateLimit(`sb:import:image:${ws.id}`, 12, 60, { shared: true });
     const declared = Number(req.headers.get("content-length") ?? 0);
     if (declared > MAX_ASSET_BYTES + 200_000) throw new HttpError(413, "That image is too large to upload here (4 MB). Keplar reduces large photos in your browser first; try again.", "too_large");
-    const bytes = Buffer.from(await req.arrayBuffer());
+    const read = await readBytes(req, MAX_ASSET_BYTES + 200_000);
+    if (read === null) throw new HttpError(413, "That image is too large to upload here (4 MB). Keplar reduces large photos in your browser first; try again.", "too_large");
+    const bytes = Buffer.from(read);
     if (bytes.length === 0) throw new HttpError(400, "No image was received.", "empty");
     if (bytes.length > MAX_ASSET_BYTES + 200_000) throw new HttpError(413, "That image is too large to upload here (4 MB). Keplar reduces large photos in your browser first; try again.", "too_large");
     let name = "product";

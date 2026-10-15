@@ -9,7 +9,11 @@ const FORM = "file:///tmp/keplar-wants-fixture/form.html";
 
 test("Track B refuses real sites and will not submit without a confirmed PIN", async () => {
   assert.equal(urlAllowed("https://www.amazon.com"), false);
-  assert.equal(urlAllowed("file:///tmp/form.html"), true);
+  assert.equal(urlAllowed(FORM), true);
+  assert.equal(urlAllowed(formFixtureUrl()), true);
+  assert.equal(urlAllowed(captchaFixtureUrl()), true);
+  // IN-8 (docs/rebirth/AUDIT.md): any file: URL used to pass, so a target could read files on the server.
+  for (const bad of ["file:///etc/passwd", "file:///tmp/form.html", "file:///tmp/keplar-wants-x/../../etc/passwd", "file:///tmp/keplar-wants-x/secret.html", "file:///var/keplar-wants-x/form.html", "file://host/tmp/keplar-wants-x/form.html", "file:///tmp/keplar-wants-x/sub/form.html"]) assert.equal(urlAllowed(bad), false, bad);
   assert.equal(urlAllowed("http://127.0.0.1:9/form"), true);
   assert.equal(urlAllowed("http://localhost/form"), true);
   const opened = { n: 0 };

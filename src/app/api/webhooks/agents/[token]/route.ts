@@ -3,7 +3,7 @@
  * stores only its hash. POST any JSON or text (up to 32 KB) -> 202. The agent records it, summarizes it, and drafts anything
  * outbound for the owner's approval.
  */
-import { errorResponse, HttpError, json } from "@/lib/create/platform/http";
+import { errorResponse, HttpError, json, readText } from "@/lib/create/platform/http";
 import { limitRequest } from "@/lib/create/platform/ratelimit";
 import { agents } from "@/lib/business/repo";
 import { EVENT_LIMITS, hashHookToken, validHookToken, webhookPayload } from "@/lib/business/event-agents";
@@ -22,8 +22,8 @@ export async function POST(req: Request, ctx: Ctx) {
     await limitRequest(req, "agent-hook", { perIp: 30, perAccount: 60, accountId: agent.workspaceId, windowSec: 60 });
     if (agent.status !== "active") throw new HttpError(409, "This agent is paused.", "agent_inactive");
     if (Number(req.headers.get("content-length") ?? 0) > EVENT_LIMITS.bodyBytes) throw new HttpError(413, "Send at most 32 KB.", "too_large");
-    const text = (await req.text()).slice(0, EVENT_LIMITS.bodyBytes + 1);
-    if (text.length > EVENT_LIMITS.bodyBytes) throw new HttpError(413, "Send at most 32 KB.", "too_large");
+    const text = await readText(req, EVENT_LIMITS.bodyBytes);
+    if (text === null) throw new HttpError(413, "Send at most 32 KB.", "too_large");
     await dispatchEvent(agent, "webhook.received", webhookPayload(text, req.headers.get("content-type") ?? ""));
     return json({ accepted: true }, { status: 202 });
   } catch (e) {

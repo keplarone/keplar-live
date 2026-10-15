@@ -3,7 +3,7 @@
  * Body: { signedPayload: "<JWS>" }. Verified with Apple Root CAs + APPLE_BUNDLE_ID.
  * Missing config → 503 (safe empty deploy). Bad signature → 401.
  */
-import { json } from "@/lib/create/platform/http";
+import { json, readText } from "@/lib/create/platform/http";
 import { appleIapConfigured, AppleIapNotConfiguredError, AppleIapVerifyError, verifySignedNotification } from "@/lib/billing/apple";
 import { handleAppleNotification } from "@/lib/billing/apple-sync";
 
@@ -17,8 +17,8 @@ export async function POST(req: Request) {
   if (Number(req.headers.get("content-length") ?? 0) > MAX_BODY) return json({ error: "Payload too large." }, { status: 413 });
   let body: { signedPayload?: unknown };
   try {
-    const raw = await req.text();
-    if (raw.length > MAX_BODY) return json({ error: "Payload too large." }, { status: 413 });
+    const raw = await readText(req, MAX_BODY);
+    if (raw === null) return json({ error: "Payload too large." }, { status: 413 });
     body = JSON.parse(raw) as { signedPayload?: unknown };
   } catch {
     return json({ error: "Invalid payload." }, { status: 400 });

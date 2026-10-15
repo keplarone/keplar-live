@@ -1,3 +1,4 @@
+import { readText } from "@/lib/create/platform/http";
 import { clientIpOf, rateLimit, RateLimitError } from "@/lib/create/platform/ratelimit";
 import { consentOk, recordSeoEvent, sanitizeSeoEvent } from "@/lib/seo/events";
 
@@ -16,8 +17,8 @@ export async function POST(req: Request) {
     if (e instanceof RateLimitError) return NO_CONTENT();
     throw e;
   }
-  const text = await req.text();
-  if (text.length > 1024) return NO_CONTENT();
+  const text = await readText(req, 4096).catch(() => null);
+  if (text === null || text.length > 1024) return NO_CONTENT();
   let body: unknown;
   try {
     body = JSON.parse(text);

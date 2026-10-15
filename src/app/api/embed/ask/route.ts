@@ -3,6 +3,7 @@
  * Body: { widgetId, question, history?, parent? }. Metered to the publisher.
  * CORS open (iframe same-origin for typical embeds; script callers may POST cross-origin).
  */
+import { readText } from "@/lib/create/platform/http";
 import { parseEmbedAsk, runEmbedAsk } from "@/lib/embed/ask";
 import { EmbedError, recordEmbedUse, resolveWidgetForAsk } from "@/lib/embed/store";
 
@@ -36,8 +37,8 @@ export async function POST(req: Request) {
   try {
     let raw: unknown;
     try {
-      const text = await req.text();
-      if (text.length > 40_000) throw new EmbedError(413, "too_large", "The request body is too large.");
+      const text = await readText(req, 160_000);
+      if (text === null || text.length > 40_000) throw new EmbedError(413, "too_large", "The request body is too large.");
       raw = JSON.parse(text);
     } catch (e) {
       if (e instanceof EmbedError) throw e;

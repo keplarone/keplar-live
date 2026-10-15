@@ -63,7 +63,7 @@ export const USER_COLLECTIONS = [
   "collab_invites" /* live-session invite links you created (token hashes only) */, "collab_grants" /* who joined your creations by link */, "collab_branches" /* split-off records */, "critic_reports" /* AI critic reports on your creations */, "sb_deploys" /* deploy and rollback history with logs */,
   "slide_decks", "study_sets", "study_guides", "study_progress", "dev_outbox",
   "biz_settings", "biz_connect_accounts", "biz_connect_events", "biz_orders", "biz_contacts", "biz_deals", "biz_activities", "biz_inbox",
-  "biz_connections", "biz_bank_items", "biz_agents", "biz_agent_runs", "biz_approvals", "biz_approval_claims", "biz_audit", "biz_table_rows", "biz_pageviews", "biz_schedule_claims", "biz_mock_v2_accounts",
+  "biz_connections", "biz_bank_items", "biz_agents", "biz_agent_runs", "biz_approvals", "biz_approval_claims", "biz_inbound_claims" /* hashed Message-IDs of delivered agent emails (replay guard) */, "biz_audit", "biz_table_rows", "biz_pageviews", "biz_schedule_claims", "biz_mock_v2_accounts",
   "business_accounts", "business_reports", "business_layouts", "business_tasks", "business_summaries", // Business profiles and workspace content: exported and removed with their owner.
   "guard_targets", "guard_runs", "guard_reports", // Revenue Guard: sites the owner verified for testing, test runs and their reports (src/lib/business/guard/core.ts); the verification token is redacted in the export.
   "mcp_servers", "mcp_tools", "mcp_grants", "mcp_receipts", "mcp_oauth", "mobile_creds",

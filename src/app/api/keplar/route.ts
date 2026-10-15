@@ -39,7 +39,7 @@ import { FREE_DAY_BUDGET_MESSAGE, freePaused, nextUtcMidnight } from "@/lib/crea
 import { breakerLevel } from "@/lib/create/platform/breaker";
 import { lighterRouting } from "@/lib/orchestration/breaker-routing";
 import { limitRequest } from "@/lib/create/platform/ratelimit";
-import { errorResponse } from "@/lib/create/platform/http";
+import { errorResponse, readText } from "@/lib/create/platform/http";
 import { enterUsage, inflight, reserveUnits, UsageLimitError } from "@/lib/create/platform/usage";
 import { claimDaily, claimExtra, DailyLimitError, dailySubjects, readDeviceId, resetOf, type Claim } from "@/lib/usage/daily";
 import { cancelRequested, claimTurn, finishTurn, readTurn, turnOwner, validTurnKey, type TurnRow } from "@/lib/orchestration/turn-recovery";
@@ -154,8 +154,8 @@ export async function POST(request: Request) {
   if (Number(request.headers.get("content-length") ?? 0) > MEDIA_LIMITS.maxBodyBytes) return Response.json({ error: TOO_LARGE }, { status: 413 });
   let json: unknown;
   try {
-    const raw = await request.text();
-    if (raw.length > MEDIA_LIMITS.maxBodyBytes) return Response.json({ error: TOO_LARGE }, { status: 413 });
+    const raw = await readText(request, MEDIA_LIMITS.maxBodyBytes);
+    if (raw === null) return Response.json({ error: TOO_LARGE }, { status: 413 });
     json = JSON.parse(raw);
   } catch {
     return Response.json({ error: "Invalid JSON." }, { status: 400 });
