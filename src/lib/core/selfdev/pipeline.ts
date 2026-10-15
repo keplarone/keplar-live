@@ -1,10 +1,12 @@
 /**
  * The self-development run (daily via /api/cron/core; admins can run it on demand). In order:
  *   1. calibration: how often answers at each stated confidence were actually good (from real feedback, 30+ turns a bucket);
- *   2. canary decisions: promote a canary that matched or beat its champion on 40+ turns with no guard regression; roll back
- *      one that did worse; a breaker rolls a recent promotion back if its live reward falls below the champion it replaced;
- *   3. one candidate is evaluated against the champion on benchmark items (live, free models, capped calls); it becomes a
- *      canary only if it scores at least as well with no guard regression (latency, calls, any category);
+ *   2. canary decisions: a canary that matched or beat its champion on 40+ turns with no guard regression is marked ready to
+ *      promote and waits for an admin (it is never promoted by this job); one that did worse is rolled back; a breaker rolls a
+ *      recent promotion back if its live reward falls below the champion it replaced (rolling back is always automatic);
+ *   3. one candidate is evaluated against the champion on benchmark items (live, free models, capped calls); if it scores at
+ *      least as well with no guard regression (latency, calls, any category) it waits for admin review (pending_review) and
+ *      serves no traffic until an admin approves it as a canary (admin.ts#approveCandidate, MFA-gated admin route, audited);
  *   4. scheduled eval of the champion, plus a replay of a few redacted failed questions (people who opted in to sharing);
  *   5. gap finding over recent turns, and new candidates from the worst clusters. Fixes that need code become proposals
  *      in the admin review queue; they are never applied by this job.
@@ -97,10 +99,11 @@ export async function decideCanaries(set: ActiveSet, turns: TurnRow[], at: strin
     if (h.latency > 0 && c.latency > h.latency * PIPELINE.maxLatencyRatio) regress.push("latency");
     if (c.bad > h.bad + PIPELINE.maxBadRateRise) regress.push("bad-outcome rate");
     if (c.reward >= h.reward && !regress.length) {
-      if (champion.origin !== "seed") await variantRows().update(SYSTEM, champion.id, { status: "retired" });
-      await variantRows().update(SYSTEM, canary.id, { status: "champion", promotedAt: at, replaced: champion.id, baseline: h.reward });
-      await logChange({ action: "promote", target: t, variantId: canary.id, by: "auto", note: `Canary reward ${c.reward.toFixed(2)} (n=${c.n}) ≥ champion ${h.reward.toFixed(2)} (n=${h.n}); no guard regression.` });
-      out.push(`${t}: promoted ${canary.id}`);
+      // Never promoted by the job (AI-12): recorded as ready, and an admin promotes it (admin.ts#promote).
+      if (canary.readyToPromote) continue;
+      await variantRows().update(SYSTEM, canary.id, { readyToPromote: { at, reward: c.reward, championReward: h.reward, n: c.n } });
+      await logChange({ action: "review", target: t, variantId: canary.id, by: "auto", note: `Canary reward ${c.reward.toFixed(2)} (n=${c.n}) ≥ champion ${h.reward.toFixed(2)} (n=${h.n}); no guard regression. Ready to promote: waiting for an admin.` });
+      out.push(`${t}: ${canary.id} ready to promote (waiting for an admin)`);
     } else if (c.reward < h.reward - PIPELINE.rollbackMargin || regress.length) {
       await variantRows().update(SYSTEM, canary.id, { status: "rolled_back", note: regress.length ? `regressed: ${regress.join(", ")}` : `reward ${c.reward.toFixed(2)} < ${h.reward.toFixed(2)}` });
       await logChange({ action: "rollback", target: t, variantId: canary.id, by: "auto", note: regress.length ? `Canary regressed on ${regress.join(", ")}.` : `Canary reward ${c.reward.toFixed(2)} below champion ${h.reward.toFixed(2)}.` });
@@ -163,7 +166,7 @@ export async function runCorePipeline(opts: PipelineOpts = {}): Promise<Pipeline
   let championRan = false;
   if (!set.state.frozen) {
     const all = await variantRows().list(SYSTEM);
-    const busy = new Set(VARIANT_TARGETS.filter((t) => set.byTarget[t].canary));
+    const busy = new Set([...VARIANT_TARGETS.filter((t) => set.byTarget[t].canary), ...all.filter((v) => v.status === "pending_review").map((v) => v.target)]);
     const next = all.filter((v) => v.status === "candidate" && !busy.has(v.target)).sort((a, b) => a.createdAt.localeCompare(b.createdAt))[0];
     if (next) {
       const g = checkVariant(next);
@@ -187,9 +190,10 @@ export async function runCorePipeline(opts: PipelineOpts = {}): Promise<Pipeline
           await logChange({ action: "reject", target: next.target, variantId: next.id, by: "auto", note: `Eval ${m1.score.toFixed(2)} vs champion ${m0.score.toFixed(2)}: ${fails.join("; ")}.` });
           report.decisions.push(`${next.target}: rejected ${next.id}`);
         } else {
-          await variantRows().update(SYSTEM, next.id, { status: "canary", evalScore: m1.score, championEvalScore: m0.score, guardFailures: [] });
-          await logChange({ action: "canary", target: next.target, variantId: next.id, by: "auto", note: `Eval ${m1.score.toFixed(2)} vs champion ${m0.score.toFixed(2)}, no guard regression; canary at ${state.canaryPct}% of traffic.` });
-          report.decisions.push(`${next.target}: ${next.id} is now a canary`);
+          // Passed: it waits for an admin to approve it before it serves any traffic (AI-12).
+          await variantRows().update(SYSTEM, next.id, { status: "pending_review", evalScore: m1.score, championEvalScore: m0.score, guardFailures: [] });
+          await logChange({ action: "review", target: next.target, variantId: next.id, by: "auto", note: `Eval ${m1.score.toFixed(2)} vs champion ${m0.score.toFixed(2)}, no guard regression; waiting for an admin to approve it as a ${state.canaryPct}% canary.` });
+          report.decisions.push(`${next.target}: ${next.id} passed evals and is waiting for admin review`);
         }
         report.evals.push(`candidate ${next.id}: ${m1.score.toFixed(2)} vs champion ${m0.score.toFixed(2)}`);
       }

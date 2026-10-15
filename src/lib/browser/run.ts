@@ -59,16 +59,28 @@ export async function allowedUrl(raw: string, resolve: Resolver = dnsResolve): P
 }
 
 /**
+ * Keplar only reads: a page load that would SEND something (a POST/PUT/PATCH/DELETE navigation, i.e. a form submission,
+ * however it was triggered: a neutral-label button, Enter, or the page's own script after a click) is refused.
+ */
+export function sendsData(req: { method: string; resourceType: string }): boolean {
+  return req.resourceType === "document" && !/^(GET|HEAD)$/i.test(req.method);
+}
+
+/**
  * Route every request through the guard. A redirect is never handed to Chromium (it would follow it without asking this
  * route again): each hop is checked here; a page redirect becomes a fresh navigation, which comes back through the guard.
  */
-async function guardContext(ctx: BrowserContext, resolve: Resolver, transport: Transport, blocked: Set<string>) {
+export async function guardContext(ctx: BrowserContext, resolve: Resolver, transport: Transport, blocked: Set<string>, sent: Set<string> = new Set()) {
   // WebSockets don't pass through ctx.route: close every one, so page script can't open a socket to a private address.
   if (typeof ctx.routeWebSocket === "function") await ctx.routeWebSocket(/.*/, (ws) => { void ws.close({ code: 1008, reason: "blocked" }); });
   await ctx.route("**/*", async (route: Route) => {
     const req = route.request();
     const type = req.resourceType();
     if (type === "media" || type === "websocket" || type === "eventsource") return route.abort("blockedbyclient");
+    if (sendsData({ method: req.method(), resourceType: type })) {
+      sent.add(req.url().slice(0, 200));
+      return route.abort("blockedbyclient");
+    }
     if (!(await allowedUrl(req.url(), resolve))) {
       if (type === "document") blocked.add(req.url().slice(0, 200));
       return route.abort("blockedbyclient");
@@ -114,7 +126,7 @@ async function snapshot(page: Page): Promise<Snapshot> {
 async function readPage(page: Page): Promise<Snapshot> {
   const data = await page.evaluate(
     ({ maxEl, maxText }) => {
-      const els: { i: number; tag: string; text: string; type?: string; name?: string; href?: string }[] = [];
+      const els: { i: number; tag: string; text: string; type?: string; name?: string; href?: string; form?: string; submits?: boolean; role?: string }[] = [];
       document.querySelectorAll("[data-keplar-i]").forEach((e) => e.removeAttribute("data-keplar-i"));
       const nodes = document.querySelectorAll<HTMLElement>("a[href], button, input:not([type=hidden]), textarea, select, [role=button], [role=link], [role=searchbox], [contenteditable=true]");
       for (const n of Array.from(nodes)) {
@@ -127,7 +139,11 @@ async function readPage(page: Page): Promise<Snapshot> {
         const inp = n as HTMLInputElement;
         const text = (n.innerText || inp.value || n.getAttribute("aria-label") || inp.placeholder || n.getAttribute("title") || "").replace(/\s+/g, " ").trim().slice(0, 80);
         const href = n instanceof HTMLAnchorElement ? n.href.slice(0, 160) : undefined;
-        els.push({ i, tag: n.tagName.toLowerCase(), text, type: inp.type && n.tagName !== "BUTTON" ? inp.type : n.getAttribute("type") ?? undefined, name: (inp.name || n.id || n.getAttribute("autocomplete") || "").slice(0, 40) || undefined, href });
+        // The form it belongs to and the method that form would really submit with (a button's formmethod overrides the form's).
+        const form = (inp.form as HTMLFormElement | null) ?? n.closest("form");
+        const submits = !!form && ((n instanceof HTMLButtonElement && n.type === "submit") || (n instanceof HTMLInputElement && (n.type === "submit" || n.type === "image")));
+        const method = form ? ((submits && n.getAttribute("formmethod")) || form.getAttribute("method") || "get").trim().toLowerCase() : undefined;
+        els.push({ i, tag: n.tagName.toLowerCase(), text, type: inp.type && n.tagName !== "BUTTON" ? inp.type : n.getAttribute("type") ?? undefined, name: (inp.name || n.id || n.getAttribute("autocomplete") || "").slice(0, 40) || undefined, href, form: method, submits: submits || undefined, role: n.getAttribute("role") ?? undefined });
       }
       return { title: document.title.slice(0, 160), text: (document.body?.innerText ?? "").replace(/\n{3,}/g, "\n\n").slice(0, maxText), elements: els };
     },
@@ -196,9 +212,10 @@ export async function runBrowserTask(
   const resolve = deps.resolve ?? dnsResolve;
   const maxSteps = Math.min(deps.maxSteps ?? MAX_STEPS, MAX_STEPS);
   const blocked = new Set<string>();
+  const sent = new Set<string>();
   const ctx = await deps.browser.newContext({ viewport: { width: 1280, height: 800 }, acceptDownloads: false, serviceWorkers: "block", javaScriptEnabled: true, locale: "en-US" });
   try {
-    await guardContext(ctx, resolve, deps.transport ?? networkTransport, blocked);
+    await guardContext(ctx, resolve, deps.transport ?? networkTransport, blocked, sent);
     const page = await ctx.newPage();
     ctx.on("page", (p) => { if (p !== page) void p.close().catch(() => undefined); }); // one tab: popups are closed
     page.on("dialog", (d) => void d.dismiss().catch(() => undefined));
@@ -225,6 +242,7 @@ export async function runBrowserTask(
       if (stop) return { status: "needs_you", reason: stop, answer: history.length ? `Done so far: ${history.join("; ")}.` : undefined, steps: n - 1 };
       let note = describe(action, el);
       blocked.clear();
+      sent.clear();
       try {
         const moved = action.kind === "click" || (action.kind === "type" && action.submit) ? settled(page) : Promise.resolve();
         await act(page, action, resolve);
@@ -234,6 +252,7 @@ export async function runBrowserTask(
         note += ` (didn't work: ${e instanceof Error ? e.message.split("\n")[0].slice(0, 100) : "error"})`;
       }
       if (blocked.size) note += " (a private or internal address was blocked)";
+      if (sent.size) note += " (a form submission that would send information was blocked)";
       history.push(note);
       deps.onStep({ n, note, url: page.url(), title: await page.title().catch(() => ""), shot: await shot(page) });
     }

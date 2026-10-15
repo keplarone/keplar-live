@@ -143,6 +143,34 @@ export function parseProposals(text: string, list: ChatTool[], max: number): Pro
   return out;
 }
 
+/** Lower-cased "words" of a value, flattened through objects/arrays: what an argument could carry out of the turn. */
+function argTokens(v: unknown, out = new Set<string>(), depth = 0): Set<string> {
+  if (depth > 6) return out;
+  if (typeof v === "string" || typeof v === "number") for (const w of String(v).toLowerCase().match(/[\p{L}\p{N}@._+-]{4,}/gu) ?? []) out.add(w.replace(/^[._+-]+|[._+-]+$/g, ""));
+  else if (Array.isArray(v)) for (const x of v) argTokens(x, out, depth + 1);
+  else if (v && typeof v === "object") for (const x of Object.values(v)) argTokens(x, out, depth + 1);
+  return out;
+}
+
+/**
+ * Taint rule for auto-run (AI-4). Before any app output has entered the turn, the planner only saw the user's own request,
+ * so the normal auto-run rules apply. Once untrusted output is in the planner's prompt, it may be steering the next proposal,
+ * so a read that would auto-run becomes an approval card when EITHER
+ *   - it targets a different app than the one(s) whose output is in the turn (output from app A must not decide what is sent to app B), or
+ *   - its arguments carry a word that the user did not type in this request but that appears in the conversation context or in
+ *     another app's output (conversation data must not leave through a call the user never saw).
+ * A follow-up read on the SAME app using that app's own output (e.g. search, then open a result) still runs by itself:
+ * it sends that app nothing it did not already have. Returns the reason, or null when the call may still auto-run.
+ */
+export function taintReason(input: { serverId: string; args: Record<string, unknown>; prompt: string; context: string; outputs: { serverId: string; text: string }[] }): string | null {
+  if (!input.outputs.length) return null;
+  if (!input.outputs.some((o) => o.serverId === input.serverId)) return "another app's output is part of this turn and this call goes to a different app";
+  const prompt = input.prompt.toLowerCase();
+  const foreign = `${input.context}\n${input.outputs.filter((o) => o.serverId !== input.serverId).map((o) => o.text).join("\n")}`.toLowerCase();
+  for (const w of argTokens(input.args)) if (w.length >= 4 && !prompt.includes(w) && foreign.includes(w)) return "its arguments carry conversation or other-app data you didn't type in this request";
+  return null;
+}
+
 export type ChatToolsResult = { block: string; uses: ToolUse[]; units: number; planned: boolean };
 const EMPTY: ChatToolsResult = { block: "", uses: [], units: 0, planned: false };
 
@@ -178,7 +206,7 @@ export async function runChatTools(input: {
   const autoPolicy = await chatAutoRunAllowed(ws.id).catch(() => false);
   const byRef = new Map(list.map((t) => [t.ref, t]));
   const uses: ToolUse[] = [];
-  const results: { ref: string; text: string }[] = [];
+  const results: { ref: string; text: string; serverId: string }[] = [];
   const seen = new Set<string>();
   let steps = 0;
   let units = 0;
@@ -239,7 +267,10 @@ export async function runChatTools(input: {
       }
       // All five: tool is read, tool is set to auto-run, the owner granted it to Ask (it is in `list`), the account lets Ask run reads,
       // and the AI Firewall did not rate these arguments high risk. A high-risk call waits for the owner like a write.
-      const auto = tool.risk === "read" && tool.autoRun && autoPolicy && verdict.autoSendAllowed;
+      // A sixth once app output is in the turn: the call must not be steered by that output (see taintReason).
+      const autoBase = tool.risk === "read" && tool.autoRun && autoPolicy && verdict.autoSendAllowed;
+      const tainted = autoBase ? taintReason({ serverId: server.id, args: p.args, prompt: input.prompt, context, outputs: results }) : null;
+      const auto = autoBase && !tainted;
       const idem = `chat:${createHash("sha256").update(`${turnId}|${steps}`).digest("hex").slice(0, 24)}`;
       if (auto) {
         put({ ...base, status: "running", args: argsPreview });
@@ -247,7 +278,7 @@ export async function runChatTools(input: {
           const r = await runChatAutoCall(ws, { serverId: server.id, tool: tool.name, args: p.args, idempotencyKey: idem });
           units += r.units;
           const text = r.output.slice(0, CHAT_LIMITS.contextPerCall);
-          results.push({ ref: p.ref, text: `[${server.name} / ${tool.name}${r.status === "tool_error" ? ", the tool reported an error" : ""}]\n${text}` });
+          results.push({ ref: p.ref, serverId: server.id, text: `[${server.name} / ${tool.name}${r.status === "tool_error" ? ", the tool reported an error" : ""}]\n${text}` });
           put({ ...base, status: r.status === "ok" ? "done" : "error", args: argsPreview, receiptId: r.receiptId, durationMs: r.durationMs, message: r.status === "ok" ? `Ran ${tool.name} on ${server.name}.${r.truncated ? " Output was shortened." : ""}` : "The tool reported an error." });
         } catch (e) {
           const code = e instanceof HttpError ? e.code : undefined;
@@ -258,7 +289,7 @@ export async function runChatTools(input: {
       }
       try {
         const q = await requestChatCall(ws, { serverId: server.id, tool: tool.name, args: p.args, idempotencyKey: idem, runId: `mcpc_${turnId}` });
-        put({ ...base, status: "awaiting_approval", args: argsPreview, approvalId: q.approvalId, message: !verdict.autoSendAllowed ? `Waiting for your approval: the AI Firewall rated this ${verdict.risk} risk (${verdict.reasons.join("; ")}). Nothing has run.` : tool.risk === "read" ? "Waiting for your approval (this read isn't set to run on its own)." : "Waiting for your approval. Nothing has been sent." });
+        put({ ...base, status: "awaiting_approval", args: argsPreview, approvalId: q.approvalId, message: tainted ? `Waiting for your approval: ${tainted}. Nothing has run.` : !verdict.autoSendAllowed ? `Waiting for your approval: the AI Firewall rated this ${verdict.risk} risk (${verdict.reasons.join("; ")}). Nothing has run.` : tool.risk === "read" ? "Waiting for your approval (this read isn't set to run on its own)." : "Waiting for your approval. Nothing has been sent." });
       } catch (e) {
         const code = e instanceof HttpError ? e.code : undefined;
         put({ ...base, status: code === "firewall_blocked" ? "blocked" : "error", args: argsPreview, message: safeMsg(e) });

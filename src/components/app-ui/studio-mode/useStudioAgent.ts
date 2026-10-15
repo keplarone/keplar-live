@@ -27,6 +27,7 @@ import { scaleDataUrl } from "./references";
 import { appendEvent, clip, eventStamper, MAX_EVENT_TEXT, type ActionOrigin, type ReadPurpose, type StudioEvent, type StudioEventBody, type TurnUsage } from "./code/events";
 import { applyEdits, buildRevert, deriveDocuments, editOutcome, isRevertLineage, multiEditSchema, parseMultiEdit, parseScriptRead, retryAvailabilityFor, type ScriptSource } from "./code/documents";
 import { ROBLOX_DOCS_TOOL_NAME } from "@/lib/studio/roblox-docs-tool";
+import { needsApproval } from "@/lib/blender/agent";
 
 /** Keplar's roblox_docs tool, answered by Keplar (/api/studio/docs) in the same shape as a Studio tool call through the bridge. */
 async function lookUpRobloxDocs(args: Record<string, unknown>): Promise<{ ok: true; result: { content: StudioContent[]; isError?: boolean } } | { ok: false; error: string }> {
@@ -412,14 +413,15 @@ ${text || "(could not read the scene)"}` });
 
   /**
    * Runs one action: shows it, waits for approval when it needs one, calls the bridge, records the result. Reads run by
-   * themselves; changes wait for Approve unless auto-approve is on; destructive actions and reverts always wait. A script edit
+   * themselves; changes wait for Approve unless auto-approve is on; destructive actions, reverts and Blender Python always wait. A script edit
    * (multi_edit in the known shape) is read before (preview while waiting, then the true before-content right before it runs)
    * and re-read after, to confirm what was applied.
    */
   const execute = useCallback(async (a: RunnableAction, origin: ActionOrigin = "model", of: string | null = null): Promise<ActionResult> => {
     if (!bridge) return { outcome: "skipped" };
     const k = key();
-    const needsYes = origin === "revert" || a.ask === true || a.risk === "destructive" || (a.risk === "change" && !flags.current.auto);
+    // Blender's Python never auto-runs (its block-list is a text check, not a sandbox).
+    const needsYes = needsApproval(a, { revert: origin === "revert", auto: flags.current.auto, blender });
     add({ kind: "action", key: k, name: a.name, args: a.args, risk: a.risk, status: needsYes ? "waiting" : "running", ...(origin !== "model" ? { origin, ...(of ? { of } : {}) } : {}) });
     emit({ kind: "action.proposed", action: k, callId: a.id, name: a.name, args: a.args, risk: a.risk, title: describeAction(a.name, a.args), origin, of });
     const edit = !blender && a.name === "multi_edit" && multiEditSchema(toolDefs.current) !== "differs" ? parseMultiEdit(a.args) : null;

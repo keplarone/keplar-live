@@ -4,7 +4,9 @@ import assert from "node:assert/strict";
 import { runCorePipeline, decideCanaries, calibrationFrom, pickedWith } from "@/lib/core/selfdev/pipeline";
 import { changeRows, getCoreState, proposalRows, saveCoreState, SYSTEM, turnRows, variantRows } from "@/lib/core/selfdev/repo";
 import { loadActive, seedVariant, setActiveForTests } from "@/lib/core/selfdev/variants";
-import { rollback, setKilled } from "@/lib/core/selfdev/admin";
+import { approveCandidate, promote, rollback, setKilled } from "@/lib/core/selfdev/admin";
+import { recentAudit } from "@/lib/ops/audit";
+import { jsonReq, signIn } from "./helpers/session";
 import { recordTurn, noteSignal } from "@/lib/core/selfdev/outcomes";
 import { savePrefs } from "@/lib/core/selfdev/repo";
 import type { TurnRow, VariantRow } from "@/lib/core/selfdev/types";
@@ -22,17 +24,26 @@ async function reset() {
 }
 beforeEach(reset);
 
-test("canary that matches the champion on 40+ turns with no regression is promoted; the change is logged", async () => {
+test("canary that matches the champion on 40+ turns with no regression is NOT promoted by the job: it waits for an admin (AI-12)", async () => {
   const canary = await variantRows().insert(variant({ status: "canary" }));
   for (let i = 0; i < 45; i++) await turnRows().insert(turn({ variants: { critic: canary.id }, criticScore: 9 }));
   for (let i = 0; i < 45; i++) await turnRows().insert(turn({ variants: { critic: "seed-critic" }, criticScore: 7 }));
   const set = await loadActive(true);
   const d = await decideCanaries(set, await turnRows().listSystem(), iso());
-  assert.deepEqual(d, [`critic: promoted ${canary.id}`]);
-  const row = await variantRows().get(SYSTEM, canary.id);
+  assert.deepEqual(d, [`critic: ${canary.id} ready to promote (waiting for an admin)`]);
+  let row = await variantRows().get(SYSTEM, canary.id);
+  assert.equal(row!.status, "canary", "still a canary: not promoted");
+  assert.ok(row!.readyToPromote && row!.readyToPromote.n === 45);
+  assert.equal((await loadActive(true)).byTarget.critic.champion.id, "seed-critic");
+  assert.ok(!(await changeRows().listSystem()).some((c) => c.action === "promote"), "no automatic promotion");
+  assert.ok((await changeRows().listSystem()).some((c) => c.action === "review" && c.variantId === canary.id));
+  // The next run doesn't log it again; an admin promotes it.
+  assert.deepEqual(await decideCanaries(await loadActive(true), await turnRows().listSystem(), iso()), []);
+  await promote(canary.id, "admin@test");
+  row = await variantRows().get(SYSTEM, canary.id);
   assert.equal(row!.status, "champion");
   assert.equal(row!.replaced, "seed-critic");
-  assert.ok((await changeRows().listSystem()).some((c) => c.action === "promote" && c.variantId === canary.id));
+  assert.ok((await changeRows().listSystem()).some((c) => c.action === "promote" && c.by === "admin" && c.variantId === canary.id));
 });
 
 test("canary that does worse, or regresses latency, is rolled back automatically", async () => {
@@ -87,14 +98,54 @@ function goodAnswer(item: BenchItem): string {
   return "no code";
 }
 
-test("pipeline: a candidate that loses the eval is rejected; one that holds up becomes a canary; both logged", async () => {
+test("pipeline: a candidate that loses the eval is rejected; one that holds up waits for admin review and serves nothing until approved (AI-12)", async () => {
   // Starter candidates are seeded by the first run; the oldest is evaluated.
   const r1 = await runCorePipeline({ armFor: fakeArm(false), deadline: Date.now() + 600_000 });
   assert.ok(r1.decisions.some((d) => d.includes("rejected")), JSON.stringify(r1));
   const r2 = await runCorePipeline({ armFor: fakeArm(true), deadline: Date.now() + 600_000 });
-  assert.ok(r2.decisions.some((d) => d.includes("canary")), JSON.stringify(r2));
+  assert.ok(r2.decisions.some((d) => d.includes("waiting for admin review")), JSON.stringify(r2));
+  assert.ok(r2.evals.some((e) => e.startsWith("candidate ")), "evaluation still runs");
   const log = await changeRows().listSystem();
-  assert.ok(log.some((c) => c.action === "reject") && log.some((c) => c.action === "canary"));
+  assert.ok(log.some((c) => c.action === "reject") && log.some((c) => c.action === "review"));
+  assert.ok(!log.some((c) => c.action === "canary"), "nothing became a canary on its own");
+  const pending = (await variantRows().listSystem()).filter((v) => v.status === "pending_review");
+  assert.equal(pending.length, 1);
+  const set = await loadActive(true);
+  assert.equal(set.byTarget[pending[0]!.target].canary, null, "a pending candidate gets no traffic");
+  // A third run doesn't evaluate another candidate for the same target while one waits.
+  const r3 = await runCorePipeline({ armFor: fakeArm(true), deadline: Date.now() + 600_000 });
+  assert.equal((await variantRows().listSystem()).filter((v) => v.status === "pending_review" && v.target === pending[0]!.target).length, 1, JSON.stringify(r3));
+  // An admin approves it: now it is a canary.
+  await approveCandidate(pending[0]!.id, "admin@test");
+  assert.equal((await loadActive(true)).byTarget[pending[0]!.target].canary?.id, pending[0]!.id);
+  assert.ok((await changeRows().listSystem()).some((c) => c.action === "canary" && c.by === "admin"));
+  await assert.rejects(approveCandidate(pending[0]!.id, "admin@test"), /waiting for review/);
+});
+
+test("admin route: approving a candidate is admin-only, MFA-gated when required, and written to the admin audit log (AI-12)", async () => {
+  const prev = { admins: process.env.KEPLAR_ADMIN_EMAILS, mfa: process.env.KEPLAR_ADMIN_REQUIRE_MFA };
+  process.env.KEPLAR_ADMIN_EMAILS = "core-admin@example.com";
+  delete process.env.KEPLAR_ADMIN_REQUIRE_MFA;
+  try {
+    const route = await import("../src/app/api/admin/core/route");
+    const v = await variantRows().insert(variant({ status: "pending_review" }));
+    const approve = (cookie: string) => route.POST(jsonReq(cookie, "/api/admin/core", "POST", { action: "approve", id: v.id }));
+    const user = await signIn("core-user@example.com");
+    assert.equal((await approve(user.cookie)).status, 404, "not an admin");
+    const admin = await signIn("core-admin@example.com");
+    process.env.KEPLAR_ADMIN_REQUIRE_MFA = "1";
+    assert.equal((await approve(admin.cookie)).status, 404, "admin MFA required and not set up: refused");
+    assert.equal((await variantRows().get(SYSTEM, v.id))!.status, "pending_review");
+    delete process.env.KEPLAR_ADMIN_REQUIRE_MFA;
+    assert.equal((await approve(admin.cookie)).status, 200);
+    assert.equal((await variantRows().get(SYSTEM, v.id))!.status, "canary");
+    assert.ok((await recentAudit(50)).some((a) => a.action === "core:approve" && a.detail.includes(v.id)));
+  } finally {
+    for (const [k, val] of [["KEPLAR_ADMIN_EMAILS", prev.admins], ["KEPLAR_ADMIN_REQUIRE_MFA", prev.mfa]] as const) {
+      if (val === undefined) delete process.env[k];
+      else process.env[k] = val;
+    }
+  }
 });
 
 test("pipeline: without live evals, candidates wait (nothing reaches users unevaluated)", async () => {

@@ -11,7 +11,11 @@ export const MAX_GOAL_CHARS = 600;
 export const PAGE_TEXT_CHARS = 3500;
 export const MAX_ELEMENTS = 60;
 
-export type El = { i: number; tag: string; text: string; type?: string; name?: string; href?: string };
+/**
+ * A numbered control. `form` is the method its form would submit with ("get", "post", "dialog", lower-case; absent when it
+ * isn't in a form); `submits` is true when clicking it submits that form (a submit button, a button with no type, an image input).
+ */
+export type El = { i: number; tag: string; text: string; type?: string; name?: string; href?: string; form?: string; submits?: boolean; role?: string };
 export type Snapshot = { url: string; title: string; text: string; elements: El[] };
 
 export type Action =
@@ -50,11 +54,28 @@ export const RISKY = /\b(buy|purchase|pay|payment|checkout|check out|place (?:an
 const SECRET_FIELD = /pass(word|code|phrase)?|pwd|otp|one-time|2fa|mfa|card|cc-|cvc|cvv|csc|expir|iban|routing|account.?number|ssn|social.?security|passport|national.?id|tax.?id/i;
 const CARDLIKE = /\b(?:\d[ -]?){13,19}\b|\b\d{3}-\d{2}-\d{4}\b/;
 
+const SEND_STOP = "Keplar doesn't submit forms that send information to a website (it only reads and searches). Submit it yourself if you want to.";
+/**
+ * A form submission is only harmless when it is a GET: the browser then just opens an address with the fields in it, which is
+ * the same as following a link (Keplar can already open any public address). POST/dialog forms send or change something.
+ */
+const isGetForm = (el: El) => (el.form ?? "").toLowerCase() === "get";
+const isSearchField = (el: El) => el.type === "search" || el.role === "searchbox";
+
 /** Why this action must be left to the person, or null when Keplar may do it. */
 export function needsPerson(a: Action, el?: El): string | null {
   if (a.kind === "click" && el) {
     const label = `${el.text} ${el.name ?? ""}`;
-    if (RISKY.test(label) || (el.type === "submit" && RISKY.test(label))) return `Keplar stopped before "${el.text.slice(0, 60) || "that button"}": spending, sending, deleting, accepting terms and signing in are yours to do.`;
+    if (RISKY.test(label)) return `Keplar stopped before "${el.text.slice(0, 60) || "that button"}": spending, sending, deleting, accepting terms and signing in are yours to do.`;
+    // A neutral label ("Continue", "OK", "→") on a button that submits a non-GET form still sends: judged by what it does, not what it says.
+    if ((el.submits || (el.form && (el.type === "submit" || el.type === "image"))) && !isGetForm(el)) return SEND_STOP;
+  }
+  if (a.kind === "type" && a.submit && el) {
+    // Enter submits the field's form (or, outside a form, whatever the page's script does with it, e.g. "send" in a chat box).
+    // Allowed only for a GET form's single-line field, or a search box that isn't in a form.
+    const multiline = el.tag === "textarea" || el.type === "textarea" || el.tag === "div";
+    const ok = !multiline && (el.form ? isGetForm(el) : isSearchField(el));
+    if (!ok) return SEND_STOP;
   }
   if (a.kind === "type") {
     if (el && (el.type === "password" || SECRET_FIELD.test(`${el.type ?? ""} ${el.name ?? ""} ${el.text}`))) return "Keplar doesn't type into password, payment or ID fields. Fill that in yourself.";

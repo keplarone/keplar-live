@@ -4,7 +4,8 @@
  *   kill / unkill          switch Core off (Ask runs exactly as before) / on
  *   freeze / unfreeze      use only the built-in prompts and stop promotions / resume
  *   rollback {target}      stop that target's canary, or restore the champion it replaced (one click)
- *   promote {id}           promote a canary by hand        reject {id}   reject a candidate or canary
+ *   approve {id}           approve a candidate that passed evals: it becomes a canary (nothing learned serves traffic before this)
+ *   promote {id}           promote a canary (the pipeline only marks it ready)   reject {id}   reject a candidate or canary
  *   canary {pct}           first share of traffic a canary gets (1-50%)
  *   approve-proposal / reject-proposal {id}   decide a code proposal (approval records the decision; code still goes through review)
  *   run                    run the daily pipeline now
@@ -12,7 +13,7 @@
  */
 import { body, errorResponse, HttpError, json } from "@/lib/create/platform/http";
 import { rateLimit } from "@/lib/create/platform/ratelimit";
-import { CoreAdminError, dashboard, decideProposal, promote, rejectVariant, rollback, setCanaryPct, setFrozen, setKilled } from "@/lib/core/selfdev/admin";
+import { approveCandidate, CoreAdminError, dashboard, decideProposal, promote, rejectVariant, rollback, setCanaryPct, setFrozen, setKilled } from "@/lib/core/selfdev/admin";
 import { runCorePipeline } from "@/lib/core/selfdev/pipeline";
 import type { VariantTarget } from "@/lib/core/selfdev/types";
 import { engineDeps } from "@/lib/orchestration/orchestrator";
@@ -48,6 +49,7 @@ export async function POST(req: Request) {
         case "freeze": await setFrozen(true, admin.email, reason); break;
         case "unfreeze": await setFrozen(false, admin.email, reason); break;
         case "rollback": await rollback(String(b.target ?? "") as VariantTarget, admin.email, reason); break;
+        case "approve": await approveCandidate(id, admin.email); break;
         case "promote": await promote(id, admin.email); break;
         case "reject": await rejectVariant(id, admin.email); break;
         case "canary": await setCanaryPct(Number(b.pct), admin.email); break;

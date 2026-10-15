@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import s from "./Admin.module.css";
 
-export type CoreAction = { label: string; action: "kill" | "unkill" | "freeze" | "unfreeze" | "rollback" | "promote" | "reject" | "canary" | "approve-proposal" | "reject-proposal" | "run"; id?: string; target?: string; pct?: number; tone?: "warn" | "danger"; confirm?: string; askReason?: boolean };
+export type CoreAction = { label: string; action: "kill" | "unkill" | "freeze" | "unfreeze" | "rollback" | "approve" | "promote" | "reject" | "canary" | "approve-proposal" | "reject-proposal" | "run"; id?: string; target?: string; pct?: number; tone?: "warn" | "danger"; confirm?: string; askReason?: boolean };
 
 /** One-click admin actions for Keplar Core's self-development. Audited server-side; destructive ones ask first. */
 export function CoreActions({ actions }: { actions: CoreAction[] }) {

@@ -76,15 +76,15 @@ live data found anywhere).
 | AI-1 | Medium | Event-triggered agent runs (e.g. a public form submission) can auto-send email from the owner's Gmail with attacker-controlled text and links. | `business/events.ts:10`, `inngest/functions.ts:66`, `business/agents.ts:446,515` | **Fixed** (3e59286) |
 | AI-2 | Medium | Approving an action isn't atomic: double clicks or retries send twice. | `business/agents.ts:474-506` | **Fixed** (422a95e; a crash between claim and send leaves the approval stuck) |
 | AI-3 | Medium | The firewall's "high risk, never auto-sent" rating is ignored on the MCP auto-run path. | `mcp/chat.ts:235-246`, `mcp/gateway.ts:527-531` | **Fixed** (3aeaf87) |
-| AI-4 | Medium | A tool result can steer later auto-run calls that carry conversation data to another MCP server. | `mcp/chat.ts:187-249` | Open |
-| AI-5 | Medium | Keplar Browser can submit forms (Enter, neutral-label buttons) despite "never send/post". | `browser/policy.ts:54-64`, `browser/run.ts:165-168` | Open |
-| AI-6 | Medium | Computer-use confirmation trusts the model's own "sensitive" label; vision calls aren't charged. | `business/computer.ts:136-137`, `api/business/computer/step/route.ts:50-64` | Open |
-| AI-7 | Medium | Blender auto-approve can run Python that evades the text block-list. | `blender/agent.ts:27-38`, `studio-mode/useStudioAgent.ts:437` | Open |
+| AI-4 | Medium | A tool result can steer later auto-run calls that carry conversation data to another MCP server. | `mcp/chat.ts:187-249` | **Fixed** (9a79020) |
+| AI-5 | Medium | Keplar Browser can submit forms (Enter, neutral-label buttons) despite "never send/post". | `browser/policy.ts:54-64`, `browser/run.ts:165-168` | **Fixed** (cff8f5e) |
+| AI-6 | Medium | Computer-use confirmation trusts the model's own "sensitive" label; vision calls aren't charged. | `business/computer.ts:136-137`, `api/business/computer/step/route.ts:50-64` | **Fixed** (d182a42) |
+| AI-7 | Medium | Blender auto-approve can run Python that evades the text block-list. | `blender/agent.ts:27-38`, `studio-mode/useStudioAgent.ts:437` | **Fixed** (d439c23) |
 | AI-8 | Low | Business Editors can approve irreversible sends (see AZ-2). | `business/team.ts:37-39` | **Fixed** (a1876c6) |
 | AI-9 | Low | A failed approval can still mark the run "succeeded". | `business/agents.ts:505-506` | **Fixed** (422a95e) |
 | AI-10 | Low | Agent draft model calls have no timeout or output cap; runs can stay "running" forever; retries can re-send. | `business/agents.ts:194-207,400-466` | **Fixed** (422a95e: 45 s timeout, 1,200-token cap) |
 | AI-11 | Low | Core's code checker relies on `node:vm`, which isn't a security boundary. | `core/sandbox.ts:14-31` | Open |
-| AI-12 | Low | Self-learning prompt changes are promoted without human review. | `core/selfdev/pipeline.ts:101` | Open |
+| AI-12 | Low | Self-learning prompt changes are promoted without human review. | `core/selfdev/pipeline.ts:101` | **Fixed** (069f29d) |
 | AI-13 | Info | Keplar Wants PIN has no lockout and non-atomic confirmation (sandbox-only today). | `wants/pin.ts`, `wants/sandbox.ts:77-96` | Partly fixed (e70f342: PIN tries limited to 10 per 15 min); confirmation still not atomic |
 
 ## Performance, reliability and supply chain
