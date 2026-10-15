@@ -1,3 +1,4 @@
+import path from "node:path";
 import { blobs } from "@/lib/create/platform/blob";
 import { currentWorkspace } from "@/lib/create/platform/workspace";
 import { errorResponse } from "@/lib/create/platform/http";
@@ -13,9 +14,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ key: str
     return errorResponse(e); // signed out is a clean 401, not an unhandled 500
   }
   const parts = (await params).key;
-  if (parts.some((p) => p === ".." || p === "." || p === "")) return new Response("Not found", { status: 404 });
-  const key = parts.join("/");
-  if (!key.startsWith(`media/${ws.id}/`)) return new Response("Not found", { status: 404 });
+  // Segments arrive URL-decoded, so "..%2F" is the single segment "../". Refuse any segment that is empty or "." or holds a
+  // separator ("/" or "\"), "..", or a NUL; then normalize exactly as the blob store does and check the owner prefix on THAT key.
+  if (!parts.length || parts.some((p) => p === "" || p === "." || /[/\\\0]|\.\./.test(p))) return new Response("Not found", { status: 404 });
+  const raw = parts.join("/");
+  const key = path.posix.normalize(raw).replace(/^\/+/, "");
+  if (key !== raw || !key.startsWith(`media/${ws.id}/`)) return new Response("Not found", { status: 404 });
   const b = await blobs().get(key);
   if (!b) return new Response("Not found", { status: 404 });
   return new Response(new Uint8Array(b.body), {
