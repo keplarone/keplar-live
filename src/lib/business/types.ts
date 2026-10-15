@@ -205,4 +205,12 @@ export type AuditEntry = {
   at: string;
 };
 
+/**
+ * Page views aggregated per site and UTC day (biz_pageview_counts): one "day" row (views, visitors), one "path" row per page and one
+ * "ref" row per referring host, each a counter bumped by an atomic upsert. Replaced the one-row-per-view PageView rows, which readers
+ * still include until they age out (KEEP_DAYS).
+ */
+export type PageViewCount = { id: string; workspaceId: string; projectId: string; day: string; /** Start of the day (ISO), for range reads. */ at: string; kind: "day" | "path" | "ref"; key: string; views: number; visitors: number };
+
+/** Legacy: one row per view (no longer written). */
 export type PageView = { id: string; workspaceId: string; projectId: string; path: string; day: string; at: string; /** Site analytics: daily-rotating visitor mark (never an IP) and the referring host. */ v?: string; ref?: string };

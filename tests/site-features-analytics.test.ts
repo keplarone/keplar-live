@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { signIn, jsonReq, call } from "./helpers/session";
 import { featureSite } from "./helpers/feature-site";
 import { countable, refHost, visitorMark } from "@/lib/site-builder/features/analytics";
-import { pageViews } from "@/lib/business/repo";
+import { pageViewCounts, pageViews } from "@/lib/business/repo";
 
 const CHROME = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36";
 let n = 0;
@@ -62,10 +62,12 @@ test("published pages are counted; the owner sees real totals, top pages and ref
   assert.equal(body.series.length, 30);
   assert.equal(body.series.at(-1)?.views, 3);
   assert.equal(body.counting, true);
-  // nothing identifying is stored
-  const rows = await pageViews().list(workspaceId, (v) => v.projectId === s.id);
-  assert.equal(rows.length, 3);
+  // stored as per-day counters (no row per view), and nothing identifying is stored: no IP, browser, visitor mark or full referrer URL
+  assert.equal((await pageViews().list(workspaceId, (v) => v.projectId === s.id)).length, 0, "no legacy per-view rows are written");
+  const rows = await pageViewCounts().list(workspaceId, (v) => v.projectId === s.id);
+  assert.deepEqual(rows.map((r) => `${r.kind}:${r.key}:${r.views}`).sort(), ["day::3", "path:/:2", "path:/menu:1", "ref:google.com:1", "ref:news.example:1"]);
   assert.doesNotMatch(JSON.stringify(rows), /192\.0\.2\.|Mozilla|search\?q|bread/);
+  for (const mark of ["192.0.2.", "203.0.113."]) assert.ok(!JSON.stringify(rows).includes(mark));
 });
 
 test("the same visitor is one daily visitor; reloading in a loop can't inflate the count forever", async () => {
@@ -102,8 +104,10 @@ test("switching it off stops counting; sites never see each other's numbers; del
   assert.equal(after.counting, false);
   // when the site's data is removed, its views go too; the other site's stay
   const { deleteSiteRecords } = await import("@/lib/site-builder/features/records");
-  assert.equal((await pageViews().list(a.workspaceId, (v) => v.projectId === sa.id)).length, 1);
+  await pageViews().insert({ id: "pv_legacy_an3", workspaceId: a.workspaceId, projectId: sa.id, path: "/", day: new Date().toISOString().slice(0, 10), at: new Date().toISOString() }); // a legacy per-view row
+  assert.equal((await pageViewCounts().list(a.workspaceId, (v) => v.projectId === sa.id)).length, 2);
   await deleteSiteRecords(a.workspaceId, sa.id);
+  assert.equal((await pageViewCounts().list(a.workspaceId, (v) => v.projectId === sa.id)).length, 0);
   assert.equal((await pageViews().list(a.workspaceId, (v) => v.projectId === sa.id)).length, 0);
-  assert.equal((await pageViews().list(b.workspaceId, (v) => v.projectId === sb.id)).length, 2);
+  assert.equal((await pageViewCounts().list(b.workspaceId, (v) => v.projectId === sb.id && v.kind === "day"))[0]?.views, 2);
 });

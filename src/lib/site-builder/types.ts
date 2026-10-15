@@ -83,6 +83,8 @@ export type SiteVersion = {
   createdAt: string;
   /** Result of the post-generation critique pass (AI builds). */
   lint?: LintSummary;
+  /** HTML pages in `files`, stored at save time so listing versions never reads their files (absent on versions saved before). */
+  pages?: number;
 };
 
 export type Lead = {

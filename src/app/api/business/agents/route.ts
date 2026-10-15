@@ -8,6 +8,7 @@ import { inngestEnabled } from "@/lib/inngest/client";
 import { nextRunFor } from "@/lib/business/scheduler";
 import { SCHEDULED_RUNS_PER_DAY, effectiveCadence, minIntervalFor, scheduleDriver, cadenceName } from "@/lib/business/schedule-limits";
 import { owner } from "../_owner";
+import { reapSoon } from "@/lib/create/platform/queue";
 import { inboundEmailConfig, inboxAddress } from "@/lib/business/event-agents";
 import type { Agent } from "@/lib/business/types";
 
@@ -15,9 +16,12 @@ import type { Agent } from "@/lib/business/types";
 const agentView = <A extends Agent>({ hookHash: _h, ...a }: A) => { const cfg = inboundEmailConfig(); return { ...a, ...(a.inboxRoute && cfg ? { inboxAddress: inboxAddress(a.inboxRoute, cfg.domain) } : {}) }; };
 
 export const runtime = "nodejs";
+/** Queued background jobs (platform/queue.ts) started or resumed here run after the response, within this limit. */
+export const maxDuration = 120;
 export async function GET(req: Request) {
   try {
     const ws = await owner(req);
+    reapSoon(ws.id); // event-triggered runs (form.submitted, order.paid) queued without Inngest whose instance died are resumed after the response
     const [ags, rs, settings, nexts] = await Promise.all([agents().list(ws.id), runs().list(ws.id), getSettings(ws.id), nextRunFor(ws.id)]);
     const driver = scheduleDriver(inngestEnabled());
     const minInterval = minIntervalFor(ws.plan);

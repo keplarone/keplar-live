@@ -20,6 +20,7 @@
  *
  * Range totals over 7d/30d/90d use hourly rows, so the start of the window is at hour granularity.
  */
+import { keepAlive } from "@/lib/create/platform/after";
 import { collection, type Row } from "@/lib/create/platform/store";
 import { HttpError } from "@/lib/create/platform/http";
 import { experiences, listExperiences, type ExperienceRow, type LastSample } from "./experiences";
@@ -153,7 +154,7 @@ export async function statsFor(wsId: string, universe: string, range: RangeId, n
   if (universe !== "all" && !scope.length) throw new HttpError(404, "You don't track that experience.", "experience_not_found");
   if (opts.sample !== false && scope.length) {
     await sampleStale(scope, now);
-    if (Math.random() < 0.05) void pruneStats(now).catch(() => undefined);
+    if (Math.random() < 0.05) keepAlive(() => pruneStats(now), "space stats prune");
   }
   const ids = new Set(scope.map((e) => e.universeId));
   const fresh = universe === "all" ? await listExperiences(wsId) : await Promise.all(scope.map((e) => experiences().get(wsId, e.universeId)));

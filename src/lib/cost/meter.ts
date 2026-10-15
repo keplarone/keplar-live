@@ -12,6 +12,7 @@
  * Going around the meter would mean calling a provider without `fetch`; tests/cost-meter-coverage.test.ts fails the build if
  * src/ references a provider host the meter does not cover, or imports an HTTP client that bypasses fetch.
  */
+import { keepAlive } from "@/lib/create/platform/after";
 import { collection } from "@/lib/create/platform/store";
 import { ensureSchema, neonConfigured, neonQuery } from "@/lib/create/platform/neon";
 import { currentCostScope } from "@/lib/ops/request-cost";
@@ -163,7 +164,7 @@ export function flushCostEvents(sink: (rows: CostEvent[]) => Promise<void> = wri
 
 function scheduleFlush(sink: (rows: CostEvent[]) => Promise<void>, ms: number) {
   if (buffer.length >= 100) {
-    void flushCostEvents(sink);
+    keepAlive(flushCostEvents(sink), "cost events");
     return;
   }
   // Inside a request: write after the response is sent (Vercel keeps the function alive for `after`).
@@ -201,7 +202,7 @@ function maybeWatch() {
   const now = Date.now();
   if (now - lastWatch < 10 * 60_000 || process.env.NODE_ENV === "test" || process.env.NODE_TEST_CONTEXT || process.env.KEPLAR_COST_WATCH === "0") return;
   lastWatch = now;
-  void import("./watch").then((w) => w.runCostWatch({ trigger: "traffic" })).catch(() => undefined);
+  keepAlive(() => import("./watch").then((w) => w.runCostWatch({ trigger: "traffic" })), "cost watch");
 }
 
 /* ── the wrapper ─────────────────────────────────────────────────────── */
@@ -302,7 +303,7 @@ export function createMeteredFetch(deps: MeterDeps): Fetch {
 
     // Out of OpenRouter credit on a paid model: remember it (every instance degrades within ~20 s) and retry once on a :free model.
     if (res.status === 402 && provider === "openrouter" && paid) {
-      void onExhausted(`OpenRouter answered 402 on ${model ?? "a paid model"}`).catch(() => undefined);
+      keepAlive(onExhausted(`OpenRouter answered 402 on ${model ?? "a paid model"}`), "credits exhausted alert");
       enqueue({ ...base, id: rid(), at: new Date(t0).toISOString(), day: utcDay(t0), model, tokensIn: 0, tokensOut: 0, usd: 0, costSource: "none", latencyMs: now() - t0, status: 402, ok: false }, sink, flushMs);
       const cfg = await getConfig().catch(() => null);
       const fb = cfg?.degrade.freeFallbackModels[0];

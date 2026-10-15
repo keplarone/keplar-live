@@ -20,6 +20,7 @@ import { collectionsIn, listRows, publicRows } from "@/lib/site-builder/features
 import { FEATURE_IDS, type FeatureId } from "@/lib/site-builder/features/catalog";
 import { highlight, isGated, MAX_QUERY, search, terms } from "@/lib/site-builder/features/search";
 import { recordSiteView } from "@/lib/site-builder/features/analytics";
+import { afterResponse } from "@/lib/create/platform/after";
 import { blogsIn, dateLabel, listPosts, publishedPost, renderBody } from "@/lib/site-builder/features/blog";
 import { findIn } from "@/lib/site-builder/features/placeholders";
 import { memberFor } from "@/lib/site-builder/features/members";
@@ -118,7 +119,7 @@ export async function GET(req: Request, { params }: Ctx) {
   if (site.kind === "app" && site.app) {
     // Keplar app: API under _api/. Pages carry a <base> so relative files resolve with or without the trailing slash (Next.js
     // strips it with a 308, so redirecting back to it would loop).
-    if (!rel.startsWith("_api")) await recordSiteView(site, req, "/");
+    if (!rel.startsWith("_api")) await afterResponse(recordSiteView(site, req, "/"), "site view"); // counted after the response
     return serveApp(req, { site, version: v, env: "live", parts: path ?? [], base: at.base, origin, plan, reportHref: `${at.base}/_report` });
   }
   if (rel === "_search") return await searchPage(req, site, v.files, at, { site, mode: "live" as const, origin, base: at.base, plan });
@@ -133,7 +134,7 @@ export async function GET(req: Request, { params }: Ctx) {
   if (!file) return shell(404, "Page not found", `<h1>Page not found</h1><p>This page doesn't exist on this site.</p><p><a href="${esc(home)}">Go to the home page</a></p>`);
   const ctx = { site, mode: "live" as const, origin, base: at.base, plan };
   if (file.endsWith(".css")) return new Response(renderCss(v.files, file, ctx), { headers: siteHeaders("live", "text/css; charset=utf-8") });
-  await recordSiteView(site, req, file === "index.html" ? "/" : `/${file.replace(/\.html$/, "")}`);
+  await afterResponse(recordSiteView(site, req, file === "index.html" ? "/" : `/${file.replace(/\.html$/, "")}`), "site view"); // counted after the response
   const member = await memberFor(site, req.headers.get("cookie")).catch(() => null);
   const html = await expandFeatures(renderPage(v.files, file, ctx), { site, base: at.base, preview: false, file, member });
   return new Response(html, { headers: siteHeaders("live", "text/html; charset=utf-8", { scripts: fxActive(site, v.files[file] ?? "") }) });

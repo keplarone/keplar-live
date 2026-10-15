@@ -57,6 +57,7 @@ import { MEDIA_LIMITS, parseMedia } from "@/lib/orchestration/media";
 import { createSettler, type RunState } from "@/lib/orchestration/settle";
 import { isEmptyAnswer, noResponseEvent } from "@/lib/orchestration/no-response";
 import { after } from "next/server";
+import { keepAlive } from "@/lib/create/platform/after";
 import { memoryIntent } from "@/lib/memory/intent";
 import { runMemoryIntent } from "@/lib/memory/actions";
 import { listItems, memoryEnabled } from "@/lib/memory/repo";
@@ -222,7 +223,7 @@ export async function POST(request: Request) {
     const screened = screenPrompt(req.prompt);
     if (screened.action !== "allow") {
       memoryReply = screened.reply;
-      void recordSafetyEvent({ category: screened.category, action: screened.action, plan: ws.plan, signedIn: !ws.anonymous });
+      keepAlive(recordSafetyEvent({ category: screened.category, action: screened.action, plan: ws.plan, signedIn: !ws.anonymous }), "safety event");
     }
   }
   // A standing output rule the person set ("say nothing more and nothing less, just say Yess") is enforced here, in code: while it
@@ -417,8 +418,8 @@ export async function POST(request: Request) {
   let degradedBy: "daily_fanout" | "load" | "breaker" | "pool" | "calls" | null = null;
   let fanoutCap: number | null = null;
   if (!creator && !smallTalk) {
-    const level = await breakerLevel();
-    const used = ws.plan === "free" || ws.admin ? 0 : await fanoutUsedToday(ws.id);
+    // Independent reads, in parallel (PERF-8): the day's breaker level and this workspace's fan-out count.
+    const [level, used] = await Promise.all([breakerLevel(), ws.plan === "free" || ws.admin ? 0 : fanoutUsedToday(ws.id)]);
     const policy = fanoutPolicy({ plan: ws.plan as LimitPlan, usedToday: used, loadInflight: loadInflight(), admin: ws.admin });
     // Live Research: the desktop's depth picks the panel (fast: one model; standard: balanced; deep: thorough) unless the person chose a strategy.
     // Free answers with one model: its combined free writer never reads the brief (free-merged.ts), the single panel model does.
@@ -430,7 +431,7 @@ export async function POST(request: Request) {
     if (req.modes?.reason && ws.plan !== "free" && !singleBy) req.routing = { ...(req.routing ?? {}), strategy: "thorough" };
     fanoutCap = req.routing?.maxModels ?? null;
     degradedBy = policy.reason ?? (level !== "normal" ? "breaker" : singleBy);
-    if (ws.plan !== "free" && !ws.admin) void bumpFanout(ws.id);
+    if (ws.plan !== "free" && !ws.admin) keepAlive(bumpFanout(ws.id), "fan-out count"); // the daily cap depends on it: finish it even after the response
   }
   // Context for the models. Everyone: the conversation so far (recent turns word for word, older ones shortened).
   // Signed in with memory on: also long-term notes, summaries of the last chats (new chats), and relevant past-chat snippets.
@@ -438,13 +439,18 @@ export async function POST(request: Request) {
   let usedMemory = 0;
   let withheld = false;
   if (!creator && !smallTalk) {
+    // Saved notes, past-chat summaries and snippets stay home whenever the request will be answered by free hosts that may train (Free plan; and an
+    // emotional-support reply on any plan, which also runs on the free roster). The conversation so far still goes: it is the question's own context.
+    withheld = !creator && mayTrain && (ws.plan === "free" || isSupportRequest(req));
+    // Answer preferences, the chosen specialist and Reason framing (src/lib/personalize/turn.ts): read in parallel with the context below (PERF-8).
+    const personalP = personalContext({ workspaceId: ws.id, personalAllowed, withhold: mayTrain && ws.plan === "free", specialistId: req.specialistId, reason: req.modes?.reason === true }).catch(() => null);
     try {
-      // Saved notes, past-chat summaries and snippets stay home whenever the request will be answered by free hosts that may train (Free plan; and an
-      // emotional-support reply on any plan, which also runs on the free roster). The conversation so far still goes: it is the question's own context.
-      withheld = !creator && mayTrain && (ws.plan === "free" || isSupportRequest(req));
-      const preface = await prepareContext({ workspaceId: ws.id, memory: memoryOn && !withheld, history, prompt: askedPrompt, chatId: req.chatId, tz: req.tz, maxChars: Math.min(limits.maxHistoryChars, 16_000) });
-      // The project the chat sits in (signed in, memory on, the project's own switch on): its instructions, notes and file passages. Same gate as above.
-      const projectPart = ws.anonymous ? "" : await projectContextFor({ workspaceId: ws.id, projectId: req.projectId, prompt: askedPrompt, allowed: !withheld, accountMemoryOn: projectsOn() });
+      // The conversation/memory preface and the project the chat sits in (signed in, memory on, the project's own switch on: its instructions,
+      // notes and file passages; same gate) are independent reads, so they run in parallel (PERF-8).
+      const [preface, projectPart] = await Promise.all([
+        prepareContext({ workspaceId: ws.id, memory: memoryOn && !withheld, history, prompt: askedPrompt, chatId: req.chatId, tz: req.tz, maxChars: Math.min(limits.maxHistoryChars, 16_000) }),
+        ws.anonymous ? "" : projectContextFor({ workspaceId: ws.id, projectId: req.projectId, prompt: askedPrompt, allowed: !withheld, accountMemoryOn: projectsOn() }),
+      ]);
       if (preface || projectPart) req.memory = projectPart ? `${projectPart}\n\n${preface || "The question:\n"}` : preface;
       usedMemory = memoryUsedCount(preface) + (projectPart ? projectItemCount(projectPart) : 0);
     } catch {
@@ -455,8 +461,8 @@ export async function POST(request: Request) {
     // Questions about Keplar itself ("can you build a website?", "do you have an API?") get the product's own fact sheet.
     const guidance = [understood ? understandingBlock(understood, askedPrompt) : "", selfKnowledgeNote(understood?.followup?.question ?? askedPrompt), commonSenseNote(understood?.followup?.question ?? askedPrompt), moodNote(mood), humorNote(askedPrompt, mood), answerLanguageNote(request.headers.get("cookie"))].filter(Boolean).join("\n");
     if (guidance) req.memory = `${guidance}\n\n${req.memory ?? "The question:\n"}`;
-    // Answer preferences, the chosen specialist and Reason framing (src/lib/personalize/turn.ts). Fenced data; Free keeps "About you" and knowledge home.
-    const personal = await personalContext({ workspaceId: ws.id, personalAllowed, withhold: mayTrain && ws.plan === "free", specialistId: req.specialistId, reason: req.modes?.reason === true }).catch(() => null);
+    // Answer preferences, the chosen specialist and Reason framing (started above). Fenced data; Free keeps "About you" and knowledge home.
+    const personal = await personalP;
     if (personal?.block) req.memory = `${personal.block}\n\n${req.memory ?? "The question:\n"}`;
   }
   // Attached documents: their text goes ahead of the question as material (data, not instructions), for this message only.
@@ -473,13 +479,13 @@ export async function POST(request: Request) {
     // Free has no monthly credit balance. A shared-budget pause is refused above; never report it as "0 credits left this month".
     else if (ws.plan === "free") req.computeRemaining = Infinity;
     else {
-      const monthly = Math.max(0, ws.entitlements.monthlyUnits - (await usedThisPeriod(ws)) - (gate ? inflight(gate.wsKey).units : 0));
-      const room = await windowRoom(ws);
+      // Three independent reads in parallel (PERF-8): this period's usage, the rolling window, and bought extension credits
+      // (limit_extensions, which add to what is left once the allowance or a window runs out; the per-request cap still applies).
+      const [usedNow, room, extra] = await Promise.all([usedThisPeriod(ws), windowRoom(ws), ws.admin || !canBuyExtension(ws.plan) ? 0 : extensionBalance(ws.id)]);
+      const monthly = Math.max(0, ws.entitlements.monthlyUnits - usedNow - (gate ? inflight(gate.wsKey).units : 0));
       const inflightUnits = gate ? inflight(gate.wsKey).units : 0;
       const windowLeft = Math.max(0, room.remaining - inflightUnits);
       if (room.binding && windowLeft < monthly) windowBound = room.binding;
-      // Bought extension credits (limit_extensions) add to what is left once the allowance or a window runs out. The per-request cap still applies.
-      const extra = ws.admin || !canBuyExtension(ws.plan) ? 0 : await extensionBalance(ws.id);
       req.computeRemaining = Math.min(monthly, windowLeft) + extra;
     }
   } catch (e) {

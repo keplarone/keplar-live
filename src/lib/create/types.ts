@@ -82,6 +82,9 @@ export type MediaJob = {
   completedAt: string | null;
   /** Higgsfield jobs only (src/lib/higgsfield). Absent on legacy OpenRouter jobs. */
   hf?: HiggsfieldJobMeta;
+  /** OpenRouter video: the provider's polling URL once submitted (internal; a resumed job polls it instead of submitting again). */
+  pollUrl?: string;
+  submittedAt?: string;
 };
 
 export type HiggsfieldJobMeta = {

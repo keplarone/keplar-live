@@ -7,6 +7,7 @@
  * Collected only after the visitor allowed Analytics in the cookie banner (re-checked on the server from the consent cookie);
  * Global Privacy Control and Do Not Track visitors are skipped. Retention: 180 days (KEPLAR_RETAIN_GROWTH_EVENTS_DAYS).
  */
+import { keepAlive } from "@/lib/create/platform/after";
 import { allows, parseRecord } from "@/lib/consent";
 import { collection } from "@/lib/create/platform/store";
 import { id } from "@/lib/create/platform/ids";
@@ -87,7 +88,7 @@ export async function recordGrowthEvent(input: GrowthInput, at = new Date()): Pr
   // Opportunistic retention: at most once an hour per instance, bounded batch, never blocks or fails the write.
   if (Date.now() - lastPrune > 3_600_000) {
     lastPrune = Date.now();
-    void pruneGrowthEvents().catch(() => undefined);
+    keepAlive(() => pruneGrowthEvents(), "growth prune");
   }
   return rows().insert({ id: id("ge"), workspaceId: SYSTEM, at: iso, day: iso.slice(0, 10), ...input });
 }

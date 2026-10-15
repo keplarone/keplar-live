@@ -1,7 +1,8 @@
 /** Dashboard aggregate: revenue, orders, leads, traffic, agent activity, approvals. */
 import { meter } from "@/lib/create/platform/compute";
 import type { Workspace } from "@/lib/create/platform/workspace";
-import { agents, approvals, contacts, orders, pageViews, runs } from "./repo";
+import { agents, approvals, contacts, orders, runs } from "./repo";
+import { viewsByDay as trafficByDay } from "./traffic";
 import { getAccount, inCurrentMode, paymentsPaused, stripeConfigured, stripeMode } from "./stripe";
 import { getSettings } from "./agents";
 
@@ -11,11 +12,12 @@ const net = (o: { amount: number; refundedAmount?: number }) => o.amount - (o.re
 export async function dashboard(ws: Workspace) {
   const since30 = new Date(Date.now() - 30 * 864e5).toISOString();
   const since14 = new Date(Date.now() - 14 * 864e5).toISOString();
+  const firstDay = new Date(Date.now() - 13 * 864e5).toISOString().slice(0, 10); // the oldest of the 14 days shown
   const [os, cs, viewsByDay, rs, aps, ags, acct, compute, settings] = await Promise.all([
     orders().list(ws.id, inCurrentMode),
     contacts().list(ws.id),
-    // Views per day over the last 14 days, counted by the store: older views (every view ever) are never read.
-    pageViews().countBy(ws.id, "day", { field: "at", gte: since14 }),
+    // Views per day over the last 14 days: per-day counters plus legacy per-view rows (counted by the store) until they age out.
+    trafficByDay(ws.id, firstDay, since14),
     runs().list(ws.id),
     approvals().list(ws.id, (a) => a.status === "pending"),
     agents().list(ws.id),

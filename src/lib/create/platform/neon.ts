@@ -69,32 +69,77 @@ export const LOOKUP_INDEXES = [
   "CREATE INDEX CONCURRENTLY IF NOT EXISTS keplar_rows_domain_name ON keplar_rows (collection, (data #>> '{name}')) WHERE collection = 'create_domains'",
 ];
 
+/** The table and the indexes every deployment needs (each idempotent). */
+const BASE_SCHEMA = [
+  "CREATE TABLE IF NOT EXISTS keplar_rows (collection text NOT NULL, workspace_id text NOT NULL, id text NOT NULL, data jsonb NOT NULL, PRIMARY KEY (collection, workspace_id, id))",
+  "CREATE INDEX IF NOT EXISTS keplar_rows_ws ON keplar_rows (collection, workspace_id)",
+  // Cross-tenant lookups used on hot paths (session -> workspace, webhooks, public site routing).
+  "CREATE INDEX IF NOT EXISTS keplar_rows_id ON keplar_rows (collection, id)",
+  "CREATE INDEX IF NOT EXISTS keplar_rows_owner_user ON keplar_rows (collection, (data #>> '{ownerUserId}'))",
+  "CREATE INDEX IF NOT EXISTS keplar_rows_owner_email ON keplar_rows (collection, lower(data #>> '{ownerEmail}'))",
+  "CREATE INDEX IF NOT EXISTS keplar_rows_subscription ON keplar_rows (collection, (data #>> '{billing,subscriptionId}'))",
+  "CREATE INDEX IF NOT EXISTS keplar_rows_slug ON keplar_rows (collection, (data #>> '{slug}'))",
+];
+
+/**
+ * Schema marker: a row in keplar_rows (collection "_schema") holding a fingerprint of every statement above. When it matches, a cold
+ * start does one indexed read instead of ~12 DDL statements; any change to the statements changes the fingerprint, so the DDL runs
+ * again once (and rewrites the marker). The marker is only written after every statement, including each CONCURRENTLY index, succeeded.
+ */
+const fingerprint = (list: string[]) => {
+  let h = 5381;
+  for (const ch of list.join("\n")) h = ((h * 33) ^ ch.charCodeAt(0)) >>> 0;
+  return `v1-${list.length}-${h.toString(36)}`;
+};
+export const SCHEMA_VERSION = fingerprint([...BASE_SCHEMA, ...LOOKUP_INDEXES]);
+const MARKER = { collection: "_schema", workspace: "_schema", id: "keplar_rows" } as const;
+
+async function schemaCurrent(): Promise<boolean> {
+  try {
+    const r = await neonQuery("SELECT data ->> 'version' AS v FROM keplar_rows WHERE collection = $1 AND workspace_id = $2 AND id = $3", [MARKER.collection, MARKER.workspace, MARKER.id]);
+    return r[0]?.v === SCHEMA_VERSION;
+  } catch {
+    return false; // no table yet (42P01), or the read failed: the full, idempotent DDL path decides
+  }
+}
+
 let ready: Promise<void> | null = null;
 /** Creates the tables and indexes on first use (idempotent; safe when several instances start at once). */
 export function ensureSchema(): Promise<void> {
   ready ??= (async () => {
+    if (await schemaCurrent()) return;
+    let complete = true;
     const run = async () => {
-      await neonQuery("CREATE TABLE IF NOT EXISTS keplar_rows (collection text NOT NULL, workspace_id text NOT NULL, id text NOT NULL, data jsonb NOT NULL, PRIMARY KEY (collection, workspace_id, id))");
-      await neonQuery("CREATE INDEX IF NOT EXISTS keplar_rows_ws ON keplar_rows (collection, workspace_id)");
-      // Cross-tenant lookups used on hot paths (session -> workspace, webhooks, public site routing).
-      await neonQuery("CREATE INDEX IF NOT EXISTS keplar_rows_id ON keplar_rows (collection, id)");
-      await neonQuery("CREATE INDEX IF NOT EXISTS keplar_rows_owner_user ON keplar_rows (collection, (data #>> '{ownerUserId}'))");
-      await neonQuery("CREATE INDEX IF NOT EXISTS keplar_rows_owner_email ON keplar_rows (collection, lower(data #>> '{ownerEmail}'))");
-      await neonQuery("CREATE INDEX IF NOT EXISTS keplar_rows_subscription ON keplar_rows (collection, (data #>> '{billing,subscriptionId}'))");
-      await neonQuery("CREATE INDEX IF NOT EXISTS keplar_rows_slug ON keplar_rows (collection, (data #>> '{slug}'))");
+      complete = true;
+      for (const q of BASE_SCHEMA) await neonQuery(q);
       // Added after launch, on a table that already holds data: best effort, so a slow one-time build never fails the request
       // that triggered it (lookups still work without the index, only slower; the next instance tries again). CONCURRENTLY so
       // the build never blocks writes to keplar_rows (Neon HTTP runs each statement outside a transaction).
-      for (const q of LOOKUP_INDEXES) await neonQuery(q).catch(() => undefined);
+      for (const q of LOOKUP_INDEXES) {
+        await neonQuery(q).catch(() => {
+          complete = false;
+        });
+      }
     };
     // Concurrent CREATE ... IF NOT EXISTS from two instances can lose a catalog race once; a retry succeeds.
     await run().catch(async () => {
       await sleep(300);
       await run();
     });
+    if (complete) {
+      await neonQuery(
+        "INSERT INTO keplar_rows (collection, workspace_id, id, data) VALUES ($1, $2, $3, $4::jsonb) ON CONFLICT (collection, workspace_id, id) DO UPDATE SET data = EXCLUDED.data",
+        [MARKER.collection, MARKER.workspace, MARKER.id, JSON.stringify({ version: SCHEMA_VERSION, at: new Date().toISOString() })],
+      ).catch(() => undefined); // no marker = the next cold start runs the DDL again, as before
+    }
   })().catch((e) => {
     ready = null;
     throw e;
   });
   return ready;
 }
+
+/** Tests: forget that this process already checked the schema (a new cold start). */
+export const resetSchemaCheck = () => {
+  ready = null;
+};

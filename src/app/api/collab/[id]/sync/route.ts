@@ -5,6 +5,7 @@
  * POST { u?: base64[], aw?: state | null, sv?: base64 } → appends updates (editors only; viewers are read-only), stores your
  *      presence stamped with your real identity and role, and (with sv) returns what you are missing.
  */
+import { keepAlive } from "@/lib/create/platform/after";
 import * as Y from "yjs";
 import { errorResponse, HttpError, json, body } from "@/lib/create/platform/http";
 import { rateLimit } from "@/lib/create/platform/ratelimit";
@@ -104,7 +105,7 @@ export async function POST(req: Request, { params }: Ctx) {
       // Reject anything that is not a valid Yjs update before it reaches everyone else.
       try { Y.applyUpdate(new Y.Doc(), merged); } catch { throw new HttpError(400, "That isn't a valid document update."); }
       seq = await store.append(room, client, merged);
-      if (seq % 50 === 0) void maybeCompact(room, store).catch(() => false);
+      if (seq % 50 === 0) keepAlive(maybeCompact(room, store), "collab compact");
     }
     if (input.aw !== undefined) {
       const st = input.aw === null ? null : cleanAw(input.aw);

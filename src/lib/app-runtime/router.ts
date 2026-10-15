@@ -4,6 +4,7 @@
  * end user's session is a bearer token, never a cookie) and preflights are answered. The context (app id, environment, spec,
  * creator plan) is always resolved by the server from the URL; nothing in the request can point it at another app.
  */
+import { keepAlive } from "@/lib/create/platform/after";
 import { clientIpOf, rateLimit, RateLimitError } from "@/lib/create/platform/ratelimit";
 import { sendEmail, emailConfigured } from "@/lib/accounts/outbox";
 import type { AppCtx } from "./context";
@@ -67,7 +68,7 @@ export async function handleAppApi(req: Request, ctx: AppCtx, parts: string[], a
       if (!checkHookKey(ctx.appId, ctx.env, b, url.searchParams.get("key") ?? req.headers.get("x-keplar-key"))) return json(403, { error: "Unknown or wrong webhook key.", code: "bad_key" });
       await limit(`apphook:${ctx.appId}:${ctx.env}:${b}`, 60, 60);
       const item = await createItem(ctx, null, b, hookRecord(await readJson(req)), { ownerId: "hook", ownerName: "Webhook" });
-      void recordUsage(ctx, "write").catch(() => undefined);
+      keepAlive(recordUsage(ctx, "write"), "app usage");
       return json(201, { ok: true, id: item.id });
     }
     const user = await userFor(ctx, req.headers.get("authorization"));
@@ -141,7 +142,7 @@ export async function handleAppApi(req: Request, ctx: AppCtx, parts: string[], a
         if (req.method === "POST") {
           await write();
           const item = await createItem(ctx, user, b, (await readJson(req)).data ?? undefined);
-          void recordUsage(ctx, "write").catch(() => undefined);
+          keepAlive(recordUsage(ctx, "write"), "app usage");
           return dbJson(201, { item });
         }
       }

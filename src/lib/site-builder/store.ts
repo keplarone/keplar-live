@@ -147,9 +147,29 @@ export async function headFiles(site: Site): Promise<Record<string, string>> {
   return (await getVersion(site, site.headVersion))?.files ?? {};
 }
 
+const pageCount = (files: Record<string, string>) => Object.keys(files).filter((f) => f.endsWith(".html")).length;
+/** Every SiteVersion field except `files`: what listing, pruning and counting versions read (the store builds the projection). */
+const VERSION_META = ["siteId", "n", "summary", "prompt", "kind", "model", "units", "bytes", "createdAt", "lint", "pages"] as const satisfies readonly (keyof SiteVersion)[];
+export type VersionMeta = Omit<SiteVersion, "files">;
+
+/** One site's versions without their files, newest first. */
+export async function versionMetas(site: Pick<Site, "id" | "workspaceId">): Promise<VersionMeta[]> {
+  const rows = await versions().listFields(site.workspaceId, VERSION_META);
+  return (rows as VersionMeta[]).filter((v) => v.siteId === site.id).sort((a, b) => b.n - a.n);
+}
+
 export async function versionList(site: Site) {
-  const rows = (await versions().list(site.workspaceId, (v) => v.siteId === site.id)).sort((a, b) => b.n - a.n);
-  return rows.map(({ files, ...meta }) => ({ ...meta, pages: Object.keys(files).filter((f) => f.endsWith(".html")).length }));
+  const rows = await versionMetas(site);
+  return Promise.all(
+    rows.map(async (meta) => {
+      if (typeof meta.pages === "number") return { ...meta, pages: meta.pages };
+      // Saved before page counts were stored: read this one version once and store its count, so the next listing doesn't.
+      const full = await versions().get(site.workspaceId, meta.id);
+      const pages = pageCount(full?.files ?? {});
+      if (full) await versions().update(site.workspaceId, meta.id, { pages }).catch(() => null);
+      return { ...meta, pages };
+    }),
+  );
 }
 
 export async function addVersion(
@@ -162,7 +182,7 @@ export async function addVersion(
   const fresh = (await sites().get(site.workspaceId, site.id)) ?? site;
   if (isDeleted(fresh)) throw new HttpError(404, "Site not found.", "not_found"); // deleted while a build was running: nothing is saved
   const n = fresh.versionCount + 1;
-  const version: SiteVersion = { id: `${site.id}_v${n}`, workspaceId: site.workspaceId, siteId: site.id, n, files, summary: meta.summary.slice(0, 600), prompt: meta.prompt.slice(0, 2000), kind: meta.kind, model: meta.model, units: meta.units, bytes: bytesOf(files), createdAt: now(), ...(meta.lint ? { lint: meta.lint } : {}) };
+  const version: SiteVersion = { id: `${site.id}_v${n}`, workspaceId: site.workspaceId, siteId: site.id, n, files, summary: meta.summary.slice(0, 600), prompt: meta.prompt.slice(0, 2000), kind: meta.kind, model: meta.model, units: meta.units, bytes: bytesOf(files), pages: pageCount(files), createdAt: now(), ...(meta.lint ? { lint: meta.lint } : {}) };
   await versions().insert(version);
   const keep = BUILDER_LIMITS[ws.plan].chatKept;
   const extra = typeof chat === "function" ? chat(n) : (chat ?? []);
@@ -175,7 +195,7 @@ export async function addVersion(
 
 async function pruneVersions(plan: PlanId, site: Site) {
   const keep = BUILDER_LIMITS[plan].versionsKept;
-  const all = (await versions().list(site.workspaceId, (v) => v.siteId === site.id)).sort((a, b) => b.n - a.n);
+  const all = await versionMetas(site); // numbers only: no version's files are read to decide what to prune
   for (const v of all.slice(keep)) {
     if (v.n === site.publishedVersion || v.n === site.headVersion) continue;
     await versions().remove(site.workspaceId, v.id);
@@ -387,7 +407,7 @@ export async function unpublishSite(ws: Workspace, site: Site) {
 }
 
 export async function deleteSite(ws: Workspace, site: Site) {
-  for (const v of await versions().list(ws.id, (x) => x.siteId === site.id)) await versions().remove(ws.id, v.id);
+  for (const v of await versionMetas(site)) await versions().remove(ws.id, v.id);
   for (const l of await leads().list(ws.id, (x) => x.siteId === site.id)) await leads().remove(ws.id, l.id);
   await deleteSiteRecords(ws.id, site.id); // feature data (signups, bookings, rows) goes with the site
   if (site.kind === "app") await deleteAppData(site.id).catch((e) => console.error("[apps] data delete failed", e));

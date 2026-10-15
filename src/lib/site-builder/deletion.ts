@@ -27,7 +27,7 @@ import { listAssets } from "./product/assets";
 import { SLUG_HOLD_DAYS, UNDO_SECONDS, type RemovalBlocker, type RemovalImpact } from "./deletion-copy";
 import { removeTemplatesOfSite } from "@/lib/templates/store";
 import { holdSlug, sweepHolds } from "./slug-holds";
-import { deleteSite, isDeleted, leads, sites, versions } from "./store";
+import { deleteSite, isDeleted, leads, sites, versionMetas, versions } from "./store";
 import { purgeSiteCaches } from "./revalidate";
 import type { Site } from "./types";
 
@@ -50,7 +50,7 @@ export async function deletionBlockers(site: Site): Promise<RemovalBlocker[]> {
 
 export async function removalImpact(site: Site): Promise<RemovalImpact> {
   const [vs, ls, assets, domains, jobs, blockers] = await Promise.all([
-    versions().list(site.workspaceId, (v) => v.siteId === site.id),
+    versionMetas(site), // counted without reading any version's files
     leads().list(site.workspaceId, (l) => l.siteId === site.id),
     listAssets(asWs(site)).catch(() => []),
     domainStore().listBySite(site.workspaceId, site.id).catch(() => []),
