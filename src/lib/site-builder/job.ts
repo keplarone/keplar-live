@@ -3,6 +3,7 @@
  * `prepareJob` does everything that can refuse (so the route can answer with a proper HTTP status);
  * `runJob` then streams progress events and always releases the concurrency slot.
  */
+import { keepAlive } from "@/lib/create/platform/after";
 import { assertCanSpend, charge } from "@/lib/create/platform/compute";
 import { breakerLevel, type BreakerLevel } from "@/lib/create/platform/breaker";
 import { HttpError } from "@/lib/create/platform/http";
@@ -236,7 +237,7 @@ export async function* runJob(ws: Workspace, site: Site, prep: Prepared): AsyncG
       const b = brief!;
       await saveBrief(ws, site, { ...b, direction: design.direction, accent: design.accent, mode: design.mode }).catch(() => undefined);
     }
-    if (!legacy && !prep.current) void rememberFingerprint({ kind: brief?.kind ?? "other", direction: design.direction, tokens: prints() });
+    if (!legacy && !prep.current) keepAlive(rememberFingerprint({ kind: brief?.kind ?? "other", direction: design.direction, tokens: prints() }), "design fingerprint");
     const { version } = await addVersion(ws, site, res.norm.files, { kind: "ai", summary, prompt: prep.prompt, model, units, lint }, chat);
     yield { type: "done", version: version.n, units, summary, removed: res.norm.removed, lint };
   } catch (e) {

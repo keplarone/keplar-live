@@ -1,5 +1,5 @@
 /** Everything visitors (and owners) put into a site's features lives here, one tenant-scoped collection. */
-import { pageViews } from "@/lib/business/repo";
+import { deleteSiteViews } from "@/lib/business/traffic";
 import { id as newId, now } from "@/lib/create/platform/ids";
 import { collection } from "@/lib/create/platform/store";
 import type { FeatureId } from "./catalog";
@@ -30,6 +30,6 @@ export async function listRecords(workspaceId: string, siteId: string, feature?:
 }
 
 export async function deleteSiteRecords(workspaceId: string, siteId: string) {
-  for (const v of await pageViews().list(workspaceId, (x) => x.projectId === siteId)) await pageViews().remove(workspaceId, v.id); // analytics views go with the site
+  await deleteSiteViews(workspaceId, siteId); // analytics views (counters and legacy rows) go with the site
   for (const r of await records().list(workspaceId, (x) => x.siteId === siteId)) await records().remove(workspaceId, r.id);
 }

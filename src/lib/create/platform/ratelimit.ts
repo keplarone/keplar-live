@@ -4,6 +4,7 @@
  *   instances (INCR + EXPIRE NX in one pipeline).
  * - Otherwise: in-memory, per instance (mock).
  */
+import { keepAlive } from "./after";
 import { neonConfigured, neonQuery } from "./neon";
 
 export class RateLimitError extends Error {
@@ -59,7 +60,7 @@ async function postgresHit(key: string, windowSec: number): Promise<number | nul
        RETURNING hits::text AS hits`,
       [key, String(windowSec)],
     );
-    if (Math.random() < 0.01) void neonQuery("DELETE FROM keplar_ratelimit WHERE window_start < now() - interval '2 days'").catch(() => undefined);
+    if (Math.random() < 0.01) keepAlive(() => neonQuery("DELETE FROM keplar_ratelimit WHERE window_start < now() - interval '2 days'"), "rate-limit prune");
     const n = Number(rows[0]?.hits);
     return Number.isFinite(n) ? n : null;
   } catch {
@@ -86,8 +87,13 @@ export const rateLimitBackend = () => (process.env.UPSTASH_REDIS_REST_URL && pro
  * per-user counters that must hold across serverless instances; the coarse per-IP edge limit stays in memory.
  */
 export async function rateLimit(key: string, max: number, windowSec = 60, opts: { shared?: boolean } = {}) {
-  const n = (await upstashHit(key, windowSec)) ?? (opts.shared ? await postgresHit(key, windowSec) : null) ?? memoryHit(key, windowSec);
+  const n = await countHit(key, windowSec, opts);
   if (n > max) throw new RateLimitError("Too many requests. Try again in a minute.", windowSec);
+}
+
+/** Records one hit on `key` and returns the hits in its current window (1 = the first). Same backends as rateLimit. */
+export async function countHit(key: string, windowSec = 60, opts: { shared?: boolean } = {}): Promise<number> {
+  return (await upstashHit(key, windowSec)) ?? (opts.shared ? await postgresHit(key, windowSec) : null) ?? memoryHit(key, windowSec);
 }
 
 export function clientIpOf(req: Request) {

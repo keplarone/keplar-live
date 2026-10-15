@@ -13,6 +13,8 @@
  */
 import { collection } from "@/lib/create/platform/store";
 import { pruneSeoEvents } from "@/lib/seo/events";
+import { keepAlive } from "@/lib/create/platform/after";
+import { maybePruneViews } from "@/lib/business/traffic";
 
 export type RetentionResult = Record<string, number>;
 
@@ -69,6 +71,8 @@ export async function pruneOperational(at = Date.now(), batch = 5000): Promise<R
     ["dev_outbox", "at", 14], // undelivered / dev-mode mail records (outbox.ts): masked recipient in production, body withheld
     ["biz_connect_event_claims", "at", 30], // Stripe Connect webhook dedupe claims (connect-webhook.ts); Stripe stops retrying an event after 3 days
     ["answer_turns", "expiresAt", 1], // answer recovery checkpoints (turn-recovery.ts): unreadable after 30 min, deleted within a day
+    ["queue_claims", "at", 30], // per-run claims of durable jobs (platform/queue.ts); a job lives minutes, at most a day
+    ["queue_jobs", "updatedAt", 30], // jobs that were given up (finished jobs delete their own row)
   ];
   for (const [name, field, days] of jobs) {
     try {
@@ -82,13 +86,17 @@ export async function pruneOperational(at = Date.now(), batch = 5000): Promise<R
 }
 
 let lastRun = 0;
-/** Cheap trigger for the request path: runs at most once an hour per instance, never throws, never awaited. */
+/**
+ * Cheap trigger for the request path: runs at most once an hour per instance, never throws, never awaited. The work runs after the
+ * response (Next `after`), so a frozen instance can't drop it half-way.
+ */
 export function maybePrune(at = Date.now()): void {
   if (at - lastRun < 3_600_000) return;
   lastRun = at;
-  void pruneTelemetry(at).catch(() => undefined);
-  void pruneOperational(at).catch(() => undefined);
-  void pruneSeoEvents(at).catch(() => undefined); // search-to-activation events: 180 days (KEPLAR_RETAIN_SEO_EVENTS_DAYS)
+  keepAlive(() => pruneTelemetry(at), "retention: telemetry");
+  keepAlive(() => pruneOperational(at), "retention: operational");
+  keepAlive(() => pruneSeoEvents(at), "retention: seo events"); // search-to-activation events: 180 days (KEPLAR_RETAIN_SEO_EVENTS_DAYS)
+  keepAlive(() => maybePruneViews(at), "retention: page views"); // site page views (counters and legacy rows): 90 days, one bulk delete each
 }
 export const resetPruneClock = () => {
   lastRun = 0;

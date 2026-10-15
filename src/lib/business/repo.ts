@@ -1,7 +1,7 @@
 import { collection } from "@/lib/create/platform/store";
 import { id, now } from "@/lib/create/platform/ids";
 import type { McpGrant, McpOauthPending, McpReceipt, McpServer, McpTool } from "@/lib/mcp/types";
-import type { Activity, Agent, AgentRun, Approval, AuditEntry, Connection, ConnectAccount, Contact, Deal, InboxMessage, Order, PageView } from "./types";
+import type { Activity, Agent, AgentRun, Approval, AuditEntry, Connection, ConnectAccount, Contact, Deal, InboxMessage, Order, PageView, PageViewCount } from "./types";
 
 export const connectAccounts = () => collection<ConnectAccount>("biz_connect_accounts");
 export const orders = () => collection<Order>("biz_orders");
@@ -18,7 +18,10 @@ export type ApprovalClaim = { id: string; workspaceId: string; decision: "approv
 export const approvalClaims = () => collection<ApprovalClaim>("biz_approval_claims");
 export const auditLog = () => collection<AuditEntry>("biz_audit");
 export const tableRows = () => collection<{ id: string; workspaceId: string; sheet: string; row: unknown[]; at: string }>("biz_table_rows");
+/** Legacy per-view rows (read until they age out; nothing writes them any more). */
 export const pageViews = () => collection<PageView>("biz_pageviews");
+/** Per-site, per-day view counters (src/lib/business/traffic.ts). */
+export const pageViewCounts = () => collection<PageViewCount>("biz_pageview_counts");
 export type BankItem = { id: string; workspaceId: string; provider: "plaid" | "stripe"; status: "pending" | "connected" | "error"; institution: string; linkTokenEnc: string | null; accessEnc: string | null; connectedAt: string | null; createdAt: string };
 export const bankItems = () => collection<BankItem>("biz_bank_items");
 

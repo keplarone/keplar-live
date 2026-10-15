@@ -7,6 +7,8 @@ import { emit } from "@/lib/business/events";
 import { clientIp, htmlPage, seeOther, withParam, esc } from "../../_html";
 
 export const runtime = "nodejs";
+/** Queued background jobs (platform/queue.ts) started or resumed here run after the response, within this limit. */
+export const maxDuration = 120;
 
 /** Public endpoint for contact forms on generated sites → CRM + inbox (+ lead follow-up agent). */
 export async function POST(req: Request, ctx: { params: Promise<{ projectId: string }> }) {

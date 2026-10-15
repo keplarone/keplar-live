@@ -3,6 +3,7 @@
  * option ids, direction). No text, no names, no account link (workspace "system"). Read across tenants to compare a new build with
  * what Keplar made recently; pruned after 120 days. Best effort: a store failure never blocks a build.
  */
+import { keepAlive } from "@/lib/create/platform/after";
 import { collection } from "@/lib/create/platform/store";
 import { id as newId, now } from "@/lib/create/platform/ids";
 import type { FingerprintRow, FingerprintTokens } from "./sameness";
@@ -21,7 +22,7 @@ export async function loadLibrary(limit = 300): Promise<FingerprintRow[]> {
 export async function rememberFingerprint(meta: { kind: string; direction: string; tokens: FingerprintTokens }): Promise<void> {
   try {
     await fp().insert({ id: newId("fp"), workspaceId: "system", createdAt: now(), kind: meta.kind, direction: meta.direction, tokens: meta.tokens });
-    void fp().purgeSystemBefore("createdAt", new Date(Date.now() - 120 * DAY).toISOString(), 200).catch(() => undefined);
+    keepAlive(() => fp().purgeSystemBefore("createdAt", new Date(Date.now() - 120 * DAY).toISOString(), 200), "fingerprint prune");
   } catch {
     /* the library is an aid, not a requirement */
   }

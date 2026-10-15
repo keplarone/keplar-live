@@ -11,7 +11,7 @@ import { createReady } from "./platform/config";
 import { id, now } from "./platform/ids";
 import { moderateMediaOutput, moderateText } from "./platform/moderation";
 import { EntitlementError } from "./platform/plans";
-import { defineJob, enqueue } from "./platform/queue";
+import { defineJob, enqueue, type JobContext } from "./platform/queue";
 import { HttpError } from "./platform/http";
 import type { Workspace } from "./platform/workspace";
 import { mediaJobs } from "./repo";
@@ -105,26 +105,33 @@ export function authFor(u: URL, headers: Record<string, string>): Record<string,
   return u.hostname === "openrouter.ai" ? headers : {};
 }
 
-async function runLive(job: MediaJob) {
-  const headers = { authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`, "content-type": "application/json" };
-  if (job.kind === "image") {
-    const res = await fetch("https://openrouter.ai/api/v1/images", {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ model: job.model, prompt: job.prompt, aspect_ratio: job.params.aspectRatio }),
-      // Synchronous image generation: some models take most of a minute. A timeout fails the job like any provider error.
-      signal: AbortSignal.timeout(90_000),
-    });
-    if (!res.ok) throw new Error(`Image generation failed (${res.status}).`);
-    const data = (await res.json()) as { data: { b64_json: string; media_type?: string }[]; usage?: { cost?: number } };
-    const ct = data.data[0]?.media_type ?? "image/png";
-    const key = `media/${job.workspaceId}/${job.id}.${ct.split("/")[1] ?? "png"}`;
-    await blobs().put(key, Buffer.from(data.data[0].b64_json, "base64"), ct);
-    return { key, contentType: ct, usd: data.usage?.cost };
-  }
+type MediaOut = { key: string; contentType: string; usd?: number };
+const openRouterHeaders = () => ({ authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`, "content-type": "application/json" });
+
+/** Poll interval and the overall video limit (40 polls of 15 s, as before). Tests shorten them. */
+export const mediaTiming = { pollMs: 15_000, videoLimitMs: 10 * 60_000, /** Time a poll plus the download may need before the run's deadline. */ reserveMs: 165_000 };
+
+async function runImage(job: MediaJob): Promise<MediaOut> {
+  const res = await fetch("https://openrouter.ai/api/v1/images", {
+    method: "POST",
+    headers: openRouterHeaders(),
+    body: JSON.stringify({ model: job.model, prompt: job.prompt, aspect_ratio: job.params.aspectRatio }),
+    // Synchronous image generation: some models take most of a minute. A timeout fails the job like any provider error.
+    signal: AbortSignal.timeout(90_000),
+  });
+  if (!res.ok) throw new Error(`Image generation failed (${res.status}).`);
+  const data = (await res.json()) as { data: { b64_json: string; media_type?: string }[]; usage?: { cost?: number } };
+  const ct = data.data[0]?.media_type ?? "image/png";
+  const key = `media/${job.workspaceId}/${job.id}.${ct.split("/")[1] ?? "png"}`;
+  await blobs().put(key, Buffer.from(data.data[0].b64_json, "base64"), ct);
+  return { key, contentType: ct, usd: data.usage?.cost };
+}
+
+/** Submits a video once and returns the provider's polling URL (stored on the job, so a resumed run never submits again). */
+async function submitVideo(job: MediaJob): Promise<string> {
   const submit = await fetch("https://openrouter.ai/api/v1/videos", {
     method: "POST",
-    headers,
+    headers: openRouterHeaders(),
     body: JSON.stringify({ model: job.model, prompt: job.prompt, duration: job.params.durationSec, aspect_ratio: job.params.aspectRatio, resolution: "720p" }),
     signal: AbortSignal.timeout(30_000), // submission only returns a polling URL
   });
@@ -133,9 +140,22 @@ async function runLive(job: MediaJob) {
   // Provider-supplied URLs: https only, and the OpenRouter key is only ever sent to openrouter.ai (never to a CDN or any other host).
   const pollUrl = providerUrl(polling_url);
   if (!pollUrl) throw new Error("Video submission returned an unusable polling URL.");
-  // Production: this loop is a durable Inngest step with step.sleep("30s"), not an in-process wait.
-  for (let i = 0; i < 40; i++) {
-    await new Promise((r) => setTimeout(r, 15_000));
+  return pollUrl.href;
+}
+
+/**
+ * Polls a submitted video until it is done, or returns "pending" when this run is close to its deadline (the queue continues it
+ * in a later run, from the stored polling URL). Throws when the provider fails or the overall limit passes.
+ */
+async function pollVideo(job: MediaJob, pollHref: string, submittedAt: string, ctx: JobContext): Promise<MediaOut | "pending"> {
+  const pollUrl = providerUrl(pollHref);
+  if (!pollUrl) throw new Error("Video submission returned an unusable polling URL.");
+  const headers = openRouterHeaders();
+  for (;;) {
+    if (Date.now() - Date.parse(submittedAt) > mediaTiming.videoLimitMs) throw new Error("Video generation timed out.");
+    if (ctx.deadline - Date.now() < mediaTiming.reserveMs) return "pending";
+    await new Promise((r) => setTimeout(r, mediaTiming.pollMs));
+    await ctx.heartbeat();
     const pollRes = await fetch(pollUrl, { headers: authFor(pollUrl, headers), signal: AbortSignal.timeout(30_000) });
     if (!pollRes.ok) continue;
     const poll = (await pollRes.json().catch(() => ({ status: "unknown" }))) as { status: string; unsigned_urls?: string[]; usage?: { cost?: number }; error?: string };
@@ -153,31 +173,66 @@ async function runLive(job: MediaJob) {
       return { key, contentType: "video/mp4", usd: poll.usage?.cost };
     }
   }
-  throw new Error("Video generation timed out.");
 }
 
-defineJob("media.run", async ({ workspaceId, jobId, plan }) => {
-  const wsId = String(workspaceId);
-  const job = await mediaJobs().get(wsId, String(jobId));
-  if (!job || job.status !== "queued") return;
-  await mediaJobs().update(wsId, job.id, { status: "running" });
-  try {
-    const out = await runLive(job);
-    const post = await moderateMediaOutput(out.key, job.prompt);
-    if (!post.allowed) {
-      await blobs().removePrefix(out.key);
-      await mediaJobs().update(wsId, job.id, { status: "blocked", error: post.reason, completedAt: now() });
-      return;
+export const MEDIA_GAVE_UP = "Generation stopped before it finished. Nothing was charged. Please try again.";
+
+/**
+ * Durable job (platform/queue.ts): a row in the store, started after the response. If the instance dies mid-run the lease lapses
+ * and the reaper resumes it (a video resumes polling the stored URL; it is never submitted twice). After 3 crashed runs the job
+ * is marked failed. Users are only charged once the output is stored, so a failed or abandoned job costs nothing.
+ */
+defineJob(
+  "media.run",
+  async ({ workspaceId, jobId, plan }, ctx) => {
+    const wsId = String(workspaceId);
+    let job = await mediaJobs().get(wsId, String(jobId));
+    // A "running" job is only picked up again by a resumed run of the queue (its earlier run died or yielded).
+    if (!job || !(job.status === "queued" || (job.status === "running" && ctx.resumed))) return;
+    if (job.status === "queued") await mediaJobs().update(wsId, job.id, { status: "running" });
+    try {
+      let out: MediaOut;
+      if (job.kind === "image") out = await runImage(job);
+      else {
+        if (!job.pollUrl) {
+          const pollUrl = await submitVideo(job);
+          job = (await mediaJobs().update(wsId, job.id, { pollUrl, submittedAt: now() })) ?? { ...job, pollUrl, submittedAt: now() };
+        }
+        const r = await pollVideo(job, job.pollUrl!, job.submittedAt ?? job.createdAt, ctx);
+        if (r === "pending") return { requeue: true, delayMs: mediaTiming.pollMs };
+        out = r;
+      }
+      const post = await moderateMediaOutput(out.key, job.prompt);
+      if (!post.allowed) {
+        await blobs().removePrefix(out.key);
+        await mediaJobs().update(wsId, job.id, { status: "blocked", error: post.reason, completedAt: now() });
+        return;
+      }
+      const { workspaceById } = await import("./platform/workspace");
+      const ws = await workspaceById(wsId, plan as Workspace["plan"]);
+      if (!ws) throw new Error("Workspace not found.");
+      const units = await charge(ws, job.kind === "video" ? "video.generate" : "image.generate", { usd: out.usd ?? estimateMedia(MEDIA_MODELS.find((m) => m.id === job!.model)!, job.params.durationSec).usd, ref: job.id });
+      await mediaJobs().update(wsId, job.id, { status: "completed", outputKey: out.key, contentType: out.contentType, units, completedAt: now() });
+    } catch (err) {
+      await mediaJobs().update(wsId, job.id, { status: "failed", error: err instanceof Error ? err.message : "Generation failed.", completedAt: now() });
     }
-    const { workspaceById } = await import("./platform/workspace");
-    const ws = await workspaceById(wsId, plan as Workspace["plan"]);
-    if (!ws) throw new Error("Workspace not found.");
-    const units = await charge(ws, job.kind === "video" ? "video.generate" : "image.generate", { usd: out.usd ?? estimateMedia(MEDIA_MODELS.find((m) => m.id === job.model)!, job.params.durationSec).usd, ref: job.id });
-    await mediaJobs().update(wsId, job.id, { status: "completed", outputKey: out.key, contentType: out.contentType, units, completedAt: now() });
-  } catch (err) {
-    await mediaJobs().update(wsId, job.id, { status: "failed", error: err instanceof Error ? err.message : "Generation failed.", completedAt: now() });
-  }
-});
+  },
+  {
+    maxAttempts: 3,
+    onGiveUp: async ({ workspaceId, jobId }) => {
+      const job = await mediaJobs().get(String(workspaceId), String(jobId));
+      if (job && (job.status === "queued" || job.status === "running")) await mediaJobs().update(job.workspaceId, job.id, { status: "failed", error: MEDIA_GAVE_UP, completedAt: now() });
+    },
+  },
+);
+
+/** What the API returns for a job: never the provider's polling URL. */
+export function publicMediaJob(job: MediaJob) {
+  const { pollUrl: _p, submittedAt: _s, ...rest } = job;
+  void _p;
+  void _s;
+  return { ...rest, url: mediaUrl(job) };
+}
 
 export function mediaUrl(job: MediaJob) {
   if (job.hf) return videoUrl(job);

@@ -1,18 +1,22 @@
 /**
  * Owner analytics for published sites. Cookie-free and script-free: the server counts a page view when it serves the page.
- * Stored per view: site, path, day, and (a) a visitor mark that is a hash of IP + browser + a secret + the day, so it cannot be
- * linked from one day to the next and the IP itself is never stored, (b) the referring site's host, never a full URL.
+ * Stored as per-day counters (src/lib/business/traffic.ts): views per site and day, per page and per referring host, and the
+ * day's visitors. A visitor is told apart by a mark that is a hash of IP + browser + a secret + the day, used only as a short-lived
+ * rate-limit key (never stored with the counts, never linkable across days); the IP itself is never stored. Referrers: host only.
  * Not counted: bots, link previews, prefetches, Do Not Track / Global Privacy Control visitors, previews, the owner's builder.
  * Capped per site per day, and the cap is shown ("5,000+") rather than hidden.
  */
 import { createHmac } from "node:crypto";
-import { pageViews } from "@/lib/business/repo";
-import { id, now } from "@/lib/create/platform/ids";
-import { clientIpOf, rateLimit } from "@/lib/create/platform/ratelimit";
+import { pageViewCounts, pageViews } from "@/lib/business/repo";
+import { countView, KEEP_DAYS, maybePruneViews } from "@/lib/business/traffic";
+import { now } from "@/lib/create/platform/ids";
+import { clientIpOf, countHit, rateLimit } from "@/lib/create/platform/ratelimit";
 import type { Site } from "../types";
 
 export const DAILY_CAP = 5000;
-export const KEEP_DAYS = 90;
+/** Views one visitor can add to a site per day (reloading in a loop can't inflate the count). */
+export const VISITOR_DAILY_CAP = 200;
+export { KEEP_DAYS };
 const BOT = /bot|crawl|spider|slurp|preview|facebookexternalhit|headless|monitor|uptime|curl\/|wget|python-|go-http|java\/|httpclient|lighthouse|pingdom/i;
 const secret = () => process.env.BETTER_AUTH_SECRET || "dev-only-form-secret";
 
@@ -37,16 +41,21 @@ export function refHost(referer: string | null, ownHost: string): string {
   }
 }
 
+/**
+ * Counts one view. Everything it needs from the request is read before the first await, so callers can run it after the response
+ * (keepAlive / afterResponse): a page is never slowed by its own analytics.
+ */
 export async function recordSiteView(site: Site, req: Request, path: string) {
   if (site.featureSettings?.analytics === false || !countable(req.headers)) return;
   const day = now().slice(0, 10);
+  const mark = visitorMark(clientIpOf(req), req.headers.get("user-agent") ?? "", day);
+  const ref = refHost(req.headers.get("referer"), new URL(req.url).hostname);
   try {
     await rateLimit(`an:cap:${site.id}:${day}`, DAILY_CAP, 86_400, { shared: true });
-    const ip = clientIpOf(req);
-    const mark = visitorMark(ip, req.headers.get("user-agent") ?? "", day);
-    await rateLimit(`an:v:${site.id}:${mark}`, 200, 3600, { shared: true }); // one visitor can't inflate the count by reloading in a loop
-    const ref = refHost(req.headers.get("referer"), new URL(req.url).hostname);
-    await pageViews().insert({ id: id("pv"), workspaceId: site.workspaceId, projectId: site.id, path: path.slice(0, 200), day, at: now(), v: mark, ...(ref ? { ref } : {}) });
+    // The mark changes every day, so this key is per visitor per day: hit 1 is a new visitor, and one visitor adds at most VISITOR_DAILY_CAP views.
+    const hits = await countHit(`an:v:${site.id}:${mark}`, 86_400, { shared: true });
+    if (hits > VISITOR_DAILY_CAP) return;
+    await countView({ workspaceId: site.workspaceId, projectId: site.id, path, day, ...(ref ? { ref } : {}), newVisitor: hits === 1 });
   } catch {
     /* over a cap, or the store is busy: a missed view is better than a slow page */
   }
@@ -66,20 +75,36 @@ export type Summary = {
 export async function summarize(site: Pick<Site, "id" | "workspaceId">, days = 30, at = Date.now()): Promise<Summary> {
   const n = Math.min(Math.max(Math.floor(days) || 30, 1), KEEP_DAYS);
   const since = new Date(at - (n - 1) * 864e5).toISOString().slice(0, 10);
-  const rows = await pageViews().list(site.workspaceId, (v) => v.projectId === site.id && v.day >= since);
-  const byDay = new Map<string, { views: number; marks: Set<string> }>();
+  const [legacy, counts] = await Promise.all([
+    pageViews().list(site.workspaceId, (v) => v.projectId === site.id && v.day >= since),
+    pageViewCounts().list(site.workspaceId, (c) => c.projectId === site.id && c.day >= since),
+  ]);
+  const byDay = new Map<string, { views: number; visitors: number; marks: Set<string> }>();
   const pages = new Map<string, number>();
   const refs = new Map<string, number>();
-  for (let i = 0; i < n; i++) byDay.set(new Date(at - (n - 1 - i) * 864e5).toISOString().slice(0, 10), { views: 0, marks: new Set() });
-  for (const r of rows) {
+  const add = (m: Map<string, number>, k: string, v: number) => m.set(k, (m.get(k) ?? 0) + v);
+  for (let i = 0; i < n; i++) byDay.set(new Date(at - (n - 1 - i) * 864e5).toISOString().slice(0, 10), { views: 0, visitors: 0, marks: new Set() });
+  // Counters (every view since the switch to aggregates).
+  for (const c of counts) {
+    const views = Number(c.views) || 0;
+    if (c.kind === "day") {
+      const d = byDay.get(c.day);
+      if (!d) continue;
+      d.views += views;
+      d.visitors += Number(c.visitors) || 0;
+    } else if (c.kind === "path") add(pages, c.key, views);
+    else if (c.kind === "ref") add(refs, c.key, views);
+  }
+  // Legacy one-row-per-view records, until they age out.
+  for (const r of legacy) {
     const d = byDay.get(r.day);
     if (!d) continue;
     d.views++;
     if (r.v) d.marks.add(r.v);
-    pages.set(r.path, (pages.get(r.path) ?? 0) + 1);
-    if (r.ref) refs.set(r.ref, (refs.get(r.ref) ?? 0) + 1);
+    add(pages, r.path, 1);
+    if (r.ref) add(refs, r.ref, 1);
   }
-  const series = [...byDay].map(([day, d]) => ({ day, views: d.views, visitors: d.marks.size }));
+  const series = [...byDay].map(([day, d]) => ({ day, views: d.views, visitors: d.visitors + d.marks.size }));
   const top = <T extends string>(m: Map<string, number>, k: T) => [...m].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 10).map(([key, views]) => ({ [k]: key, views }));
   return {
     days: n,
@@ -92,9 +117,10 @@ export async function summarize(site: Pick<Site, "id" | "workspaceId">, days = 3
   };
 }
 
-/** Delete the views older than the retention period for one site (called when the owner opens the stats). */
-export async function pruneViews(site: Pick<Site, "id" | "workspaceId">, at = Date.now()) {
-  const cutoff = new Date(at - KEEP_DAYS * 864e5).toISOString().slice(0, 10);
-  for (const v of await pageViews().list(site.workspaceId, (x) => x.projectId === site.id && x.day < cutoff)) await pageViews().remove(site.workspaceId, v.id);
+/**
+ * Retention, called when the owner opens the stats: views older than KEEP_DAYS go in one bulk delete per collection (every site at
+ * once, at most once an hour per instance; the hourly retention job does the same). `_site` is kept for the callers' signature.
+ */
+export async function pruneViews(_site: Pick<Site, "id" | "workspaceId">, at = Date.now()) {
+  await maybePruneViews(at);
 }
-

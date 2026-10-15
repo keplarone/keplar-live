@@ -7,6 +7,7 @@
  * or user ids are stored. If SENTRY_DSN is set, each event is also forwarded to Sentry's store endpoint with plain fetch (no SDK).
  * That forwarder is tested against a mock only, NOT against a real Sentry project.
  */
+import { keepAlive } from "@/lib/create/platform/after";
 import { createHash } from "node:crypto";
 import { collection } from "@/lib/create/platform/store";
 import { logEvent } from "./log";
@@ -74,7 +75,7 @@ export async function recordError(input: ErrorInput, now = Date.now()): Promise<
     const route = normRoute(input.route || "unknown");
     const sample = scrub(input.sample || "", 60);
     logEvent("error", "tracked_error", { source: input.source, name, route, sample });
-    void forwardToSentry({ ...input, name, message, route, sample });
+    keepAlive(forwardToSentry({ ...input, name, message, route, sample }), "sentry forward");
     if (!allow(now)) return;
     const id = fingerprint(input.source, name, message, route);
     const iso = new Date(now).toISOString();

@@ -10,6 +10,7 @@
  *  - Subjects: the signed-in account (50), or for a signed-out visitor a signed per-browser id (50); plus the network (IP)
  *    ceiling (`dailyIpRequests`) for both. Resets at 00:00 UTC.
  */
+import { keepAlive } from "@/lib/create/platform/after";
 import { FREE_UPGRADE_HINT } from "@/lib/upgrade-copy";
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { authSecret } from "@/lib/accounts/secret";
@@ -48,7 +49,7 @@ export async function claimOne(key: string, limit: number, day = dayOf()): Promi
          RETURNING used::text AS used`,
         [key, day, String(limit)],
       );
-      if (Math.random() < 0.01) void neonQuery("DELETE FROM keplar_daily_use WHERE day < (now() at time zone 'utc')::date - 3").catch(() => undefined);
+      if (Math.random() < 0.01) keepAlive(() => neonQuery("DELETE FROM keplar_daily_use WHERE day < (now() at time zone 'utc')::date - 3"), "daily-use prune");
       return rows[0] ? Number(rows[0].used) : null;
     } catch {
       console.error("[usage] daily counter unavailable; using this instance's count");

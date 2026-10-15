@@ -5,6 +5,7 @@
  * CSP `sandbox` (opaque origin, no same-origin access) as the equivalent guard.
  */
 import { recordView } from "@/lib/business/traffic";
+import { afterResponse } from "./platform/after";
 import path from "node:path";
 import { blobs, contentTypeFor } from "./platform/blob";
 import { USER_CONTENT_DOMAIN } from "./platform/config";
@@ -65,7 +66,7 @@ export async function serveLive(key: string, parts?: string[]) {
   if (project.takenDown) return page(451, "Site unavailable", "This site was removed for violating the terms of service.");
   if (!project.liveDeployId) return page(404, "Not published", "This site isn't published yet.");
   const file = (parts ?? []).join("/");
-  if (file === "" || file === "index.html") void recordView(project.workspaceId, project.id, "/").catch(() => undefined);
+  if (file === "" || file === "index.html") await afterResponse(recordView(project.workspaceId, project.id, "/"), "page view");
   return serveFrom(deployPrefix(project.id, project.liveDeployId), parts, `/sites/${key}/`);
 }
 

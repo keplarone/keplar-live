@@ -1,3 +1,4 @@
+import { keepAlive } from "@/lib/create/platform/after";
 import { breakerLevel, BREAKER_NOTICE } from "@/lib/create/platform/breaker";
 import { meter } from "@/lib/create/platform/compute";
 import { errorResponse, json, body } from "@/lib/create/platform/http";
@@ -18,7 +19,7 @@ export async function GET(req: Request) {
   try {
     const ws = await currentWorkspace(req, { team: true });
     const origin = new URL(req.url).origin;
-    void purgeDueSites({ workspaceId: ws.id }).catch(() => undefined); // backstop for deletes whose finalize call never arrived
+    keepAlive(() => purgeDueSites({ workspaceId: ws.id }), "site purge"); // backstop for deletes whose finalize call never arrived; after the response
     const [rows, m, level] = await Promise.all([listSites(ws), meter(ws), breakerLevel()]);
     const L = BUILDER_LIMITS[ws.plan];
     return json({

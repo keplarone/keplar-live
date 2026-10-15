@@ -16,6 +16,7 @@
  * Secrets and tokens never touch these tables: only the opaque session id, a user-agent string and an
  * HMAC of the IP (never the raw address).
  */
+import { keepAlive } from "@/lib/create/platform/after";
 import { createHmac } from "node:crypto";
 import { neonConfigured, neonQuery } from "@/lib/create/platform/neon";
 import { authSecret } from "./secret";
@@ -156,7 +157,7 @@ export async function createSessionRecord(s: { id: string; userId: string; userA
   );
   // Pruning is safe because a session id without a row is refused (validateSession): a pruned revoked, expired or
   // still-pending session stays dead. Only migration-window cookies are adopted, and those rows outlive the window.
-  if (Math.random() < 0.01) void neonQuery("DELETE FROM keplar_sessions WHERE expires_at < now() - interval '30 days'").catch(() => undefined);
+  if (Math.random() < 0.01) keepAlive(() => neonQuery("DELETE FROM keplar_sessions WHERE expires_at < now() - interval '30 days'"), "session prune");
 }
 
 /** Keyed hash of an email for the deleted-accounts list: says nothing about the address without the server secret. */

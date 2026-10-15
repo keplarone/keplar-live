@@ -13,6 +13,7 @@
  * bounded in count and bytes, and never written to disk or the database. Errors are never cached. Identical work already in flight
  * is shared instead of started twice (single-flight). Hit, miss, share, store and skip counts are kept (counts only) for /admin.
  */
+import { keepAlive } from "@/lib/create/platform/after";
 import { createHash } from "node:crypto";
 import { collection } from "@/lib/create/platform/store";
 
@@ -133,7 +134,7 @@ let lastFlush = 0;
 function maybeFlush(at = Date.now()): void {
   if (at - lastFlush < 60_000) return;
   lastFlush = at;
-  void flushReuseCounts(at).catch(() => undefined);
+  keepAlive(flushReuseCounts(at), "reuse counts");
 }
 
 export async function flushReuseCounts(at = Date.now()): Promise<void> {

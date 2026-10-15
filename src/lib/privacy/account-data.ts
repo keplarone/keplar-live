@@ -63,7 +63,7 @@ export const USER_COLLECTIONS = [
   "collab_invites" /* live-session invite links you created (token hashes only) */, "collab_grants" /* who joined your creations by link */, "collab_branches" /* split-off records */, "critic_reports" /* AI critic reports on your creations */, "sb_deploys" /* deploy and rollback history with logs */,
   "slide_decks", "study_sets", "study_guides", "study_progress", "dev_outbox",
   "biz_settings", "biz_connect_accounts", "biz_connect_events", "biz_orders", "biz_contacts", "biz_deals", "biz_activities", "biz_inbox",
-  "biz_connections", "biz_bank_items", "biz_agents", "biz_agent_runs", "biz_approvals", "biz_approval_claims", "biz_audit", "biz_table_rows", "biz_pageviews", "biz_schedule_claims", "biz_mock_v2_accounts",
+  "biz_connections", "biz_bank_items", "biz_agents", "biz_agent_runs", "biz_approvals", "biz_approval_claims", "biz_audit", "biz_table_rows", "biz_pageviews", "biz_pageview_counts" /* per-site, per-day view counters (no visitor data) */, "biz_schedule_claims", "biz_mock_v2_accounts",
   "business_accounts", "business_reports", "business_layouts", "business_tasks", "business_summaries", // Business profiles and workspace content: exported and removed with their owner.
   "guard_targets", "guard_runs", "guard_reports", // Revenue Guard: sites the owner verified for testing, test runs and their reports (src/lib/business/guard/core.ts); the verification token is redacted in the export.
   "mcp_servers", "mcp_tools", "mcp_grants", "mcp_receipts", "mcp_oauth", "mobile_creds",
@@ -77,11 +77,12 @@ export const USER_COLLECTIONS = [
   // Keplar Wants (src/lib/wants): the pending plan awaiting PIN confirmation (prompt, answers, provider; 10-minute expiry) is exported;
   // the PIN's scrypt hash, OAuth states and (sandbox) provider tokens are credentials, deleted with the account and never exported.
   "wants_confirmations", "wants_pins", "wants_oauth_states", "wants_oauth_tokens",
+  "queue_jobs", "queue_claims", // durable background jobs (src/lib/create/platform/queue.ts): the job's input (ids, an event's form fields) while it is pending or failed, and its per-run claims; internal, deleted with the account, pruned after 30 days
 ] as const;
 
 export const isRetained = (name: string) => (RETAINED as readonly string[]).includes(name) || RETAINED_PATTERNS.some((p) => p.test(name));
 /** Not worth exporting: internal telemetry with no user-authored content. */
-const NOT_EXPORTED = new Set(["model_calls", "live_model_spend", "job_slots", "dev_outbox", "seo_events", "growth_events", "sb_fingerprints", "chatgpt_codes", "chatgpt_grants", "wants_pins", "wants_oauth_states", "wants_oauth_tokens"]);
+const NOT_EXPORTED = new Set(["model_calls", "live_model_spend", "job_slots", "dev_outbox", "seo_events", "growth_events", "sb_fingerprints", "chatgpt_codes", "chatgpt_grants", "wants_pins", "wants_oauth_states", "wants_oauth_tokens", "queue_jobs", "queue_claims"]);
 
 const SECRET_KEY = /token|secret|password|passwd|api[-_]?key|authorization|credential|signing|^hash$/i;
 /** Redact secret-looking fields at any depth. */

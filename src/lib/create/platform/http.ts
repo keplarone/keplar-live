@@ -1,3 +1,4 @@
+import { keepAlive } from "./after";
 import { EntitlementError } from "./plans";
 import { RateLimitError } from "./ratelimit";
 import { CooldownError } from "./cooldown";
@@ -14,7 +15,7 @@ export function errorResponse(err: unknown) {
   if (err instanceof RateLimitError) return json({ error: err.message, code: "rate_limited" }, { status: 429 });
   if (err instanceof HttpError) return json({ error: err.message, code: err.code, ...(err.extra ?? {}) }, { status: err.status });
   logEvent("error", "unhandled_route_error", { name: err instanceof Error ? err.name : "unknown" });
-  void recordError({ source: "server", name: err instanceof Error ? err.name : "unknown", message: err instanceof Error ? err.message : String(err), route: err instanceof Error ? routeFromStack(err.stack) : undefined });
+  keepAlive(recordError({ source: "server", name: err instanceof Error ? err.name : "unknown", message: err instanceof Error ? err.message : String(err), route: err instanceof Error ? routeFromStack(err.stack) : undefined }), "error record");
   return json({ error: "Something went wrong.", code: "internal" }, { status: 500 });
 }
 
