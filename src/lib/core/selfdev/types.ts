@@ -7,7 +7,8 @@
 export type VariantTarget = "planner" | "step" | "critic" | "insight" | "retrieval" | "tools";
 export const VARIANT_TARGETS: readonly VariantTarget[] = ["planner", "step", "critic", "insight", "retrieval", "tools"];
 
-export type VariantStatus = "champion" | "canary" | "candidate" | "retired" | "rolled_back" | "rejected" | "failed_checks";
+/** pending_review: passed safety checks and evals, waiting for an admin to approve it before it serves any traffic. */
+export type VariantStatus = "champion" | "canary" | "candidate" | "pending_review" | "retired" | "rolled_back" | "rejected" | "failed_checks";
 
 /** Bounded knobs a variant may set (validated in guard.ts). */
 export type VariantParams = {
@@ -50,6 +51,8 @@ export type VariantRow = {
   championEvalScore?: number;
   guardFailures?: string[];
   note?: string;
+  /** A canary that met the promotion bar on live turns: waits here for an admin to promote it (never promoted automatically). */
+  readyToPromote?: { at: string; reward: number; championReward: number; n: number };
 };
 
 export type CoreState = {
@@ -116,7 +119,7 @@ export type ChangeRow = {
   id: string;
   workspaceId: "system";
   at: string;
-  action: "candidate" | "canary" | "promote" | "rollback" | "reject" | "kill" | "unkill" | "freeze" | "unfreeze" | "proposal" | "approve-proposal" | "reject-proposal" | "eval";
+  action: "candidate" | "review" | "canary" | "promote" | "rollback" | "reject" | "kill" | "unkill" | "freeze" | "unfreeze" | "proposal" | "approve-proposal" | "reject-proposal" | "eval";
   target?: VariantTarget;
   variantId?: string;
   by: "auto" | "admin" | "breaker";

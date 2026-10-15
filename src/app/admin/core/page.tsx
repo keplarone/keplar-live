@@ -47,6 +47,7 @@ export default async function AdminCorePage() {
   const series = d.series;
   const live = d.variants.filter((v) => v.status === "champion" || v.status === "canary");
   const queue = d.variants.filter((v) => v.status === "candidate");
+  const review = d.variants.filter((v) => v.status === "pending_review");
   const open = d.proposals.filter((p) => p.status === "open");
   const targetActions: CoreAction[] = VARIANT_TARGETS.filter((t) => live.some((v) => v.target === t)).map((t) => ({ label: `Roll back ${t}`, action: "rollback", target: t, tone: "danger", confirm: `Roll back the ${t} change? It takes effect within a minute.`, askReason: true }));
   return (
@@ -56,7 +57,7 @@ export default async function AdminCorePage() {
         <h1>Core</h1>
         <p className={s.sub}>
           Keplar Core plans, checks and revises answers. It improves its own prompts, routing hints, retrieval and strategies from outcomes; it does <b>not</b> retrain the AI models.
-          Automatic changes are limited to short prompt strategies and bounded settings; each must pass safety checks and beat the current version on evals before a {d.state.canaryPct}% canary, and is then promoted or rolled back on live results.
+          Automatic changes are limited to short prompt strategies and bounded settings; each must pass safety checks and beat the current version on evals, then waits for your approval before it serves a {d.state.canaryPct}% canary; a canary that does as well on live results waits for you to promote it. Roll-backs stay automatic.
           Changes that need code are only proposed here. <Link href="/admin">Back to Operations</Link>
         </p>
       </header>
@@ -101,8 +102,12 @@ export default async function AdminCorePage() {
 
       <section className={s.panel} aria-labelledby="vars">
         <h2 id="vars">Live variants and canaries</h2>
-        <Table head={["Target", "Status", "Label", "Turns", "Reward", "Eval vs champion", "Since"]} rows={live.map((v) => [v.target, v.status, v.label, v.stats.turns, v.stats.turns ? pct(v.stats.good / Math.max(1, v.stats.good + v.stats.bad)) : "—", v.evalScore !== undefined ? `${pct(v.evalScore)} vs ${pct(v.championEvalScore)}` : "—", when(v.promotedAt ?? v.createdAt)])} empty="Built-in prompts everywhere (no learned variant yet)." />
+        <Table head={["Target", "Status", "Label", "Turns", "Reward", "Eval vs champion", "Since"]} rows={live.map((v) => [v.target, v.readyToPromote ? "canary · ready to promote" : v.status, v.label, v.stats.turns, v.stats.turns ? pct(v.stats.good / Math.max(1, v.stats.good + v.stats.bad)) : "—", v.evalScore !== undefined ? `${pct(v.evalScore)} vs ${pct(v.championEvalScore)}` : "—", when(v.promotedAt ?? v.createdAt)])} empty="Built-in prompts everywhere (no learned variant yet)." />
         <CoreActions actions={live.filter((v) => v.status === "canary").flatMap((v): CoreAction[] => [{ label: `Promote ${v.label}`, action: "promote", id: v.id, tone: "warn", confirm: "Promote this canary to champion now?" }, { label: `Reject ${v.label}`, action: "reject", id: v.id }])} />
+        <h3>Waiting for your review</h3>
+        <p className={s.sub}>Passed safety checks and evals. Nothing here serves any traffic until you approve it as a canary.</p>
+        <Table head={["Target", "Label", "Strategy text", "Settings", "Eval vs champion", "From"]} rows={review.map((v) => [v.target, v.label, v.text || "—", JSON.stringify(v.params), v.evalScore !== undefined ? `${pct(v.evalScore)} vs ${pct(v.championEvalScore)}` : "—", v.cluster ?? v.origin])} empty="Nothing waiting for review." />
+        <CoreActions actions={review.slice(0, 6).flatMap((v): CoreAction[] => [{ label: `Approve ${v.label} as canary`, action: "approve", id: v.id, tone: "warn", confirm: "Read the strategy text first. Approve it as a canary?" }, { label: `Reject ${v.label}`, action: "reject", id: v.id }])} />
         <h3>Waiting for evaluation</h3>
         <Table head={["Target", "Label", "Strategy text", "Settings", "From"]} rows={queue.map((v) => [v.target, v.label, v.text || "—", JSON.stringify(v.params), v.cluster ?? v.origin])} empty="No candidates queued." />
         <CoreActions actions={queue.slice(0, 6).map((v): CoreAction => ({ label: `Reject ${v.label}`, action: "reject", id: v.id }))} />

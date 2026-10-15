@@ -42,20 +42,35 @@ export async function rollback(target: VariantTarget, by: string, note = "") {
   await loadActive(true);
 }
 
+/**
+ * An admin approves a candidate that passed safety checks and evals: only then does it serve traffic, as a canary. The route
+ * (api/admin/core) is admin-only (requireAdmin -> adminFromHeaders, with admin MFA when required) and writes the admin audit log.
+ */
+export async function approveCandidate(id: string, by: string) {
+  const v = await variantRows().get(SYSTEM, id);
+  if (!v || v.status !== "pending_review") throw new CoreAdminError("Only a candidate waiting for review can be approved.");
+  const set = await loadActive(true);
+  if (set.byTarget[v.target].canary) throw new CoreAdminError("That target already has a canary: promote or reject it first.");
+  await variantRows().update(SYSTEM, id, { status: "canary", note: `approved by ${by}` });
+  await logChange({ action: "canary", target: v.target, variantId: id, by: "admin", note: `${by}: approved after review; canary at ${set.state.canaryPct}% of traffic.` });
+  await loadActive(true);
+}
+
+/** Canary -> champion. Only an admin does this (the pipeline marks a canary readyToPromote and waits). */
 export async function promote(id: string, by: string) {
   const v = await variantRows().get(SYSTEM, id);
   if (!v || v.status !== "canary") throw new CoreAdminError("Only a canary can be promoted.");
   const set = await loadActive(true);
   const champ = set.byTarget[v.target].champion;
   if (champ.origin !== "seed") await variantRows().update(SYSTEM, champ.id, { status: "retired" });
-  await variantRows().update(SYSTEM, id, { status: "champion", promotedAt: now(), replaced: champ.id, baseline: posterior(champ.stats) });
-  await logChange({ action: "promote", target: v.target, variantId: id, by: "admin", note: `${by}: promoted by hand.` });
+  await variantRows().update(SYSTEM, id, { status: "champion", promotedAt: now(), replaced: champ.id, baseline: v.readyToPromote?.championReward ?? posterior(champ.stats) });
+  await logChange({ action: "promote", target: v.target, variantId: id, by: "admin", note: `${by}: ${v.readyToPromote ? `approved the promotion (canary ${v.readyToPromote.reward.toFixed(2)} vs champion ${v.readyToPromote.championReward.toFixed(2)} on ${v.readyToPromote.n} turns)` : "promoted by hand"}.` });
   await loadActive(true);
 }
 
 export async function rejectVariant(id: string, by: string) {
   const v = await variantRows().get(SYSTEM, id);
-  if (!v || !["candidate", "canary"].includes(v.status)) throw new CoreAdminError("Only a candidate or canary can be rejected.");
+  if (!v || !["candidate", "pending_review", "canary"].includes(v.status)) throw new CoreAdminError("Only a candidate or canary can be rejected.");
   await variantRows().update(SYSTEM, id, { status: "rejected", note: `rejected by ${by}` });
   await logChange({ action: "reject", target: v.target, variantId: id, by: "admin", note: `${by}: rejected.` });
   await loadActive(true);
