@@ -8,6 +8,8 @@ import { planWant, QUESTION } from "@/lib/wants/orchestrate";
 import { catalogAgents, catalogIsBundled, Registry, resolveSwarmPath, useRegistryForTests, type AgentRow } from "@/lib/wants/registry";
 import type { WantBody } from "@/lib/wants/types";
 
+// Catalog tests exercise only the explicitly opted-in legacy fixture planner.
+process.env.KEPLAR_WANTS_SANDBOX = "1";
 const PROMPTS = ["I want mcdonalds", "I want pizza", "I want food", "I want a ride", "I want help"] as const;
 
 function body(prompt: string, answers: Record<string, string> = {}): WantBody {
@@ -82,3 +84,4 @@ test("production resolves the bundled catalog instead of an empty tmp database",
   const isolated = resolveSwarmPath({ ...env, KEPLAR_DATA_DIR: "/tmp/keplar-test" }, cwd, () => true);
   assert.equal(isolated, path.join("/tmp/keplar-test", "keplar-wants", "swarm.db"));
 });
+

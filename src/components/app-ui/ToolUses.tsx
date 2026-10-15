@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { ToolUse } from "@/lib/orchestration/types";
 import { Button } from "@/components/kit";
+import { activeScopeHeaders } from "./state/scope";
 import s from "./ChatTools.module.css";
 
 type Decision = { state: "idle" | "busy" | "sent" | "failed" | "rejected" | "cancelled"; result?: string; error?: string };
@@ -21,25 +22,25 @@ const VERB: Record<ToolUse["status"], string> = {
  * anything that isn't allowed to run on its own. Text here is our own sentences plus the owner-visible arguments;
  * app output is never rendered as markup or as instructions.
  */
-export function ToolUses({ uses }: { uses?: ToolUse[] }) {
+export function ToolUses({ uses, onComplete }: { uses?: ToolUse[]; onComplete?: (result: { status: string; result?: string }) => void }) {
   if (!uses?.length) return null;
   return (
     <ul className={s.list} aria-label="Connected apps used for this answer">
       {uses.map((u) => (
-        <UseCard key={u.id} use={u} />
+        <UseCard key={u.id} use={u} onComplete={onComplete} />
       ))}
     </ul>
   );
 }
 
-function UseCard({ use: u }: { use: ToolUse }) {
+function UseCard({ use: u, onComplete }: { use: ToolUse; onComplete?: (result: { status: string; result?: string }) => void }) {
   const [d, setD] = useState<Decision>({ state: "idle" });
 
   // A stored answer can outlive its approval: look up the real status once.
   useEffect(() => {
     if (u.status !== "awaiting_approval" || !u.approvalId) return;
     let off = false;
-    fetch("/api/business/approvals", { cache: "no-store" })
+    fetch("/api/business/approvals", { cache: "no-store", headers: activeScopeHeaders() })
       .then((r) => (r.ok ? r.json() : null))
       .then((j: { approvals?: { id: string; status: string; result?: string }[] } | null) => {
         const a = j?.approvals?.find((x) => x.id === u.approvalId);
@@ -55,13 +56,14 @@ function UseCard({ use: u }: { use: ToolUse }) {
   async function decide(decision: "approve" | "reject") {
     setD({ state: "busy" });
     try {
-      const res = await fetch(`/api/business/approvals/${encodeURIComponent(u.approvalId ?? "")}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ decision }) });
+      const res = await fetch(`/api/business/approvals/${encodeURIComponent(u.approvalId ?? "")}`, { method: "POST", headers: { "Content-Type": "application/json", ...activeScopeHeaders() }, body: JSON.stringify({ decision }) });
       const j = (await res.json().catch(() => null)) as { approval?: { status: string; result?: string }; error?: string } | null;
       if (!res.ok || !j?.approval) {
         setD({ state: "idle", error: j?.error ?? "That didn't go through. Try again." });
         return;
       }
       const a = j.approval;
+      onComplete?.(a);
       setD(a.status === "sent" ? { state: "sent", result: a.result } : a.status === "failed" ? { state: "failed", error: a.result } : a.status === "rejected" ? { state: "rejected" } : { state: "cancelled" });
     } catch {
       setD({ state: "idle", error: "Couldn't reach Keplar. Try again." });
@@ -101,3 +103,4 @@ function UseCard({ use: u }: { use: ToolUse }) {
     </li>
   );
 }
+

@@ -13,6 +13,8 @@ import { collection } from "@/lib/create/platform/store";
 import type { PendingWant } from "@/lib/wants/confirmations";
 import { scriptedPage } from "./helpers/wants-page";
 
+// These legacy fixture tests explicitly opt into the non-production sandbox.
+process.env.KEPLAR_WANTS_SANDBOX = "1";
 const origin = "https://keplar.one";
 const ctx = (provider: string) => ({ params: Promise.resolve({ provider }) });
 
@@ -149,3 +151,4 @@ test("official gateway connect is a placeholder and stays PIN-gated", async () =
   assert.equal(done.status, "simulated");
   assert.match(done.note ?? "", /Placeholder/);
 });
+

@@ -8,6 +8,11 @@
 import { randomBytes } from "node:crypto";
 import { collection } from "@/lib/create/platform/store";
 import { verifyPin } from "./pin";
+import { HttpError } from "@/lib/create/platform/http";
+
+function requireSandbox(): void {
+  if (process.env.NODE_ENV === "production" || process.env.KEPLAR_WANTS_SANDBOX !== "1") throw new HttpError(503, "Use Connected apps to authorize a real provider. This demo gateway does not place orders.", "not_configured");
+}
 
 export const PROVIDERS: Record<string, { authorizeUrl: string; scopes: string[] }> = {
   logistics: { authorizeUrl: "https://example.com/oauth/authorize", scopes: ["shipments.read", "shipments.write"] },
@@ -24,6 +29,7 @@ const states = () => collection<StateRow>("wants_oauth_states");
 const tokens = () => collection<TokenRow>("wants_oauth_tokens");
 
 export function startConnect(workspaceId: string, provider: string, redirectUri: string): { authorizeUrl: string; state: string; placeholder: true } {
+  requireSandbox();
   const cfg = PROVIDERS[provider];
   if (!cfg) throw new Error("unknown_provider");
   const state = randomBytes(16).toString("base64url");
@@ -47,6 +53,7 @@ export async function connected(workspaceId: string, provider: string): Promise<
 }
 
 export async function finishConnect(workspaceId: string, state: string, pin: string | null): Promise<{ status: string; reason?: string; provider?: string; simulated?: true }> {
+  requireSandbox();
   const row = await states().findSystemBy("id", state);
   if (!row || row.workspaceId !== workspaceId || Date.now() - row.createdAt > STATE_TTL_MS) {
     if (row) await states().remove(row.workspaceId, row.id);
@@ -65,8 +72,10 @@ export async function finishConnect(workspaceId: string, state: string, pin: str
 
 /** Placeholder execution: no real provider API is called. */
 export async function executeGateway(workspaceId: string, provider: string, op: string, params: Record<string, unknown>): Promise<{ status: string; provider: string; reason?: string; op?: string; params?: Record<string, unknown>; note?: string; simulated?: true }> {
+  requireSandbox();
   if (!(await connected(workspaceId, provider))) {
     return { status: "needs_connection", provider, reason: `Connect your ${provider} account first (OAuth).` };
   }
   return { status: "simulated", provider, op, params, simulated: true, note: "Placeholder gateway: no real API call made." };
 }
+

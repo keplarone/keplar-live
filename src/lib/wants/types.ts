@@ -11,12 +11,14 @@ export type AgentHit = {
 
 export type WantUi =
   | { type: "notice" }
-  | { type: "question"; question: string; options: string[] }
+  | { type: "question"; question: string; options: string[]; key?: string; placeholder?: string }
+  | { type: "assistant"; prompt: string; needsLiveData: boolean }
   | { type: "pin"; summary: string }
   | { type: "fallback_modal"; title: string; message: string };
 
 export type WantResult = {
   status: string;
+  kind?: "food" | "groceries" | "shopping" | "booking" | "service" | "advice";
   code?: string;
   reason?: string;
   message?: string;
@@ -42,3 +44,4 @@ export type WantBody = {
   confirmationId: string | null;
   pin: string | null;
 };
+

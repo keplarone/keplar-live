@@ -38,7 +38,7 @@ export async function readCapped(req: Request): Promise<string | "too_large"> {
 
 export async function wantsSession(req: Request): Promise<{ id: string }> {
   if (!isSameOrigin(req)) throw new HttpError(403, "Cross-site request blocked.", "bad_origin");
-  const ws = await currentWorkspace(req, { allowAnonymous: false });
+  const ws = await currentWorkspace(req, { allowAnonymous: false, team: true });
   await limitRequest(req, "wants", { perIp: 120, perAccount: 120, accountId: ws.id, windowSec: 60 });
   return { id: ws.id };
 }
@@ -48,10 +48,12 @@ export function parseWant(raw: unknown): WantBody {
   const o = raw as Record<string, unknown>;
   if (typeof o.prompt !== "string") throw new HttpError(400, "prompt must be a string.", "invalid");
   if (o.prompt.length > MAX_PROMPT) throw new HttpError(400, "prompt is too long.", "invalid");
-  const answers: Record<string, string> = {};
+  const answers: Record<string, string> = Object.create(null);
   if (o.answers !== undefined) {
     if (!o.answers || typeof o.answers !== "object" || Array.isArray(o.answers)) throw new HttpError(400, "answers must be an object.", "invalid");
+    if (Object.keys(o.answers).length > 20) throw new HttpError(400, "Too many answers.", "invalid");
     for (const [k, v] of Object.entries(o.answers as Record<string, unknown>)) {
+      if (["__proto__", "constructor", "prototype"].includes(k)) throw new HttpError(400, "Invalid answer key.", "invalid");
       if (typeof v !== "string" || k.length > 200 || v.length > 500) throw new HttpError(400, "answers must be short strings.", "invalid");
       answers[k] = v;
     }
@@ -62,3 +64,4 @@ export function parseWant(raw: unknown): WantBody {
   if (o.pin !== undefined && o.pin !== null && typeof o.pin !== "string") throw new HttpError(400, "pin must be a string.", "invalid");
   return { prompt: o.prompt, answers, confirmationId, pin };
 }
+
