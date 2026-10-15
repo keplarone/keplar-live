@@ -105,8 +105,9 @@ export async function handleAppApi(req: Request, ctx: AppCtx, parts: string[], a
         const { email, token } = await magicToken(ctx, body.email);
         const link = `${appUrl}#k-magic=${token}`;
         const sent = emailConfigured() ? await sendEmail({ to: email, subject: `Your sign-in link for ${ctx.spec.name}`, text: `Open this link to sign in to ${ctx.spec.name}:\n\n${link}\n\nIt works once and expires in 20 minutes. If you didn't ask for it, ignore this email.`, kind: "app-magic" }).catch(() => false) : false;
-        // The draft preview is only seen by its creator: the link is also returned so magic-link sign-in can be tried without email.
-        return json(200, { sent, ...(ctx.env !== "live" ? { link } : {}) });
+        // The draft preview is the creator's (and editors') test bench: the link is also returned so magic-link sign-in can be
+        // tried without email. Never to a view-only collaborator, who could otherwise sign in as any of the draft's users (AZ-5).
+        return json(200, { sent, ...(ctx.env !== "live" && !ctx.viewOnly ? { link } : {}) });
       }
       if (b === "profile" && req.method === "PATCH") {
         if (!user) return json(401, { error: "Sign in first.", code: "sign_in" });

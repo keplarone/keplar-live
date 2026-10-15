@@ -3,7 +3,7 @@
  * Access is a short-lived signed token in the PATH (not the query), so the app's relative module imports keep working.
  * The app's API for the preview lives under `_api/` here and uses the app's separate draft data.
  */
-import { checkPreviewToken } from "@/lib/site-builder/render";
+import { previewScope } from "@/lib/site-builder/render";
 import { getVersion, isDeleted, sites } from "@/lib/site-builder/store";
 import { siteOwnerPlan } from "@/lib/site-builder/watermark-plan";
 import { serveApp } from "@/lib/app-runtime/serve";
@@ -41,14 +41,16 @@ const note = (status: number, title: string, text: string) =>
 
 async function handle(req: Request, { params }: Ctx) {
   const { siteId, version, token, path } = await params;
-  if (!checkPreviewToken(siteId, token)) return note(403, "Preview expired", "Reload the builder to refresh this preview.");
+  const scope = previewScope(siteId, token);
+  if (!scope) return note(403, "Preview expired", "Reload the builder to refresh this preview.");
+  const viewOnly = scope === "view";
   const parts = path ?? [];
   const url = new URL(req.url);
   if (version.startsWith("b.")) {
     const bp = await buildPreview(siteId, version.slice(2)).catch(() => null);
     if (!bp) return note(404, "Still writing", "The preview appears as soon as the code is written.");
     const plan = await siteOwnerPlan(bp.site.workspaceId);
-    return serveApp(req, { site: bp.site, version: bp.version, env: "draft", parts, base: `/apps/draft/${siteId}/${version}/${token}`, origin: url.origin.startsWith("http://localhost") || url.origin.startsWith("http://127.") ? url.origin : siteUrl, plan, reportHref: null });
+    return serveApp(req, { site: bp.site, version: bp.version, env: "draft", parts, base: `/apps/draft/${siteId}/${version}/${token}`, origin: url.origin.startsWith("http://localhost") || url.origin.startsWith("http://127.") ? url.origin : siteUrl, plan, reportHref: null, viewOnly });
   }
   // No redirect to a trailing slash: Next.js strips it (308), so that would loop. Pages carry a <base> instead.
   const found = await sites().findSystemBy("id", siteId);
@@ -62,7 +64,7 @@ async function handle(req: Request, { params }: Ctx) {
   if (!site || !v) return note(404, "No preview yet", "Describe what you want to build to see a preview.");
   const plan = await siteOwnerPlan(site.workspaceId);
   const base = `/apps/draft/${siteId}/${isLive ? "live" : n}/${token}`;
-  return serveApp(req, { site, version: v, env: "draft", parts, base, origin: url.origin.startsWith("http://localhost") || url.origin.startsWith("http://127.") ? url.origin : siteUrl, plan, reportHref: null });
+  return serveApp(req, { site, version: v, env: "draft", parts, base, origin: url.origin.startsWith("http://localhost") || url.origin.startsWith("http://127.") ? url.origin : siteUrl, plan, reportHref: null, viewOnly });
 }
 
 export const GET = handle;

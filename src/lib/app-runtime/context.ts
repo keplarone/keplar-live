@@ -18,6 +18,8 @@ export type AppCtx = {
   limits: RuntimeLimits;
   /** The creator's workspace when the caller already has it (the builder's own test runs); otherwise looked up on demand. */
   workspace?: Workspace;
+  /** A draft preview opened by a collaborator who may only look (a "view" preview token): no sign-in links are handed out. */
+  viewOnly?: boolean;
 };
 
 /** The app meta an environment runs with: live uses the publish snapshot when there is one. */

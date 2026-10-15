@@ -20,17 +20,28 @@ export type Mode = "preview" | "live";
 /* ── preview tokens: let the sandboxed preview iframe (no cookies) load its own pages ── */
 const sign = (data: string) => createHmac("sha256", createHmac("sha256", authSecret()).update("keplar:site-preview:v1").digest()).update(data).digest("base64url").slice(0, 32);
 
-export function previewToken(siteId: string, ttlMs = 2 * 3_600_000, at = Date.now()) {
+/**
+ * "full" is the creator's (and editors') preview. "view" is for collaborators who may only look (collab viewers): the app's
+ * draft runtime then never hands out sign-in links, so a viewer can't sign in as the app's draft users (AZ-5).
+ */
+export type PreviewScope = "full" | "view";
+
+export function previewToken(siteId: string, ttlMs = 2 * 3_600_000, at = Date.now(), scope: PreviewScope = "full") {
   const exp = Math.floor((at + ttlMs) / 1000);
-  return `${exp}.${sign(`${siteId}.${exp}`)}`;
+  return scope === "view" ? `${exp}.${sign(`${siteId}.${exp}.view`)}.v` : `${exp}.${sign(`${siteId}.${exp}`)}`;
+}
+/** The scope a valid, unexpired token grants, or null. */
+export function previewScope(siteId: string, token: string | null, at = Date.now()): PreviewScope | null {
+  if (!token) return null;
+  const [exp, sig, kind, extra] = token.split(".");
+  if (!exp || !sig || extra !== undefined || (kind !== undefined && kind !== "v") || !(Number(exp) * 1000 > at)) return null;
+  const want = Buffer.from(sign(kind === "v" ? `${siteId}.${exp}.view` : `${siteId}.${exp}`));
+  const got = Buffer.from(sig);
+  if (want.length !== got.length || !timingSafeEqual(want, got)) return null;
+  return kind === "v" ? "view" : "full";
 }
 export function checkPreviewToken(siteId: string, token: string | null, at = Date.now()) {
-  if (!token) return false;
-  const [exp, sig] = token.split(".");
-  if (!exp || !sig || !(Number(exp) * 1000 > at)) return false;
-  const want = Buffer.from(sign(`${siteId}.${exp}`));
-  const got = Buffer.from(sig);
-  return want.length === got.length && timingSafeEqual(want, got);
+  return previewScope(siteId, token, at) !== null;
 }
 
 /* ── page <-> URL mapping ── */

@@ -156,3 +156,29 @@ test("app uploads: sniff accepts PNG/text and refuses HTML, SVG and XML disguise
   assert.equal(sniff(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><script/></svg>', "utf8"), "icon.svg"), null);
   assert.equal(sniff(Buffer.from('<?xml version="1.0"?><x/>', "utf8"), "x.xml"), null);
 });
+
+// AZ-5 (docs/rebirth/AUDIT.md): a collab viewer's live preview of an app's draft used to hand out magic sign-in links for any
+// address, i.e. sign in as any of the draft's users. Viewers now get a "view" preview token, and such a preview never returns links.
+test("draft preview: a view-only token is its own scope, and its magic-link answer carries no link", async () => {
+  const { previewToken, previewScope, checkPreviewToken } = await import("@/lib/site-builder/render");
+  const full = previewToken("sit_az5");
+  const view = previewToken("sit_az5", undefined, undefined, "view");
+  assert.equal(previewScope("sit_az5", full), "full");
+  assert.equal(previewScope("sit_az5", view), "view");
+  assert.ok(checkPreviewToken("sit_az5", view), "a viewer can still open the preview");
+  assert.equal(previewScope("sit_other", view), null);
+  assert.equal(previewScope("sit_az5", `${full}.v`), null, "a full token can't be relabelled, nor a view token promoted");
+  assert.equal(previewScope("sit_az5", view.replace(/\.v$/, "")), null);
+  assert.equal(previewScope("sit_az5", previewToken("sit_az5", -1000, undefined, "view")), null, "expired");
+
+  const s = site("sit_az5");
+  const v = { id: "v1", n: 1, files: { "index.html": "<!doctype html><title>x</title>" } } as unknown as SiteVersion;
+  const ask = async (viewOnly: boolean) => {
+    const req = new Request("https://keplar.one/apps/draft/sit_az5/live/t/_api/auth/magic", { method: "POST", headers: { "content-type": "application/json", "x-forwarded-for": "203.0.113.77" }, body: JSON.stringify({ email: "owner@x.test" }) });
+    const res = await serveApp(req, { site: s, version: v, env: "draft", parts: ["_api", "auth", "magic"], base: "/apps/draft/sit_az5/live/t", origin: "https://keplar.one", plan: "pro", reportHref: null, viewOnly });
+    assert.equal(res.status, 200);
+    return (await res.json()) as Record<string, unknown>;
+  };
+  assert.match(String((await ask(false)).link ?? ""), /#k-magic=/, "the creator's preview still shows the link (no email needed to try it)");
+  assert.equal((await ask(true)).link, undefined, "a viewer's does not");
+});
