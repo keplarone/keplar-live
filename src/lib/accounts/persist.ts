@@ -74,6 +74,8 @@ export function ensureAuthSchema(): Promise<void> {
       await neonQuery("ALTER TABLE keplar_users ADD COLUMN IF NOT EXISTS deletion_scheduled_at timestamptz");
       // Second factor: a session created for an account with 2FA on stays unusable until the code is checked (src/lib/accounts/mfa).
       await neonQuery("ALTER TABLE keplar_sessions ADD COLUMN IF NOT EXISTS mfa_pending boolean NOT NULL DEFAULT false");
+      // New-device notice (./new-device.ts): a keyed hash of the coarse network (IPv4 /16, IPv6 /32), never the address.
+      await neonQuery("ALTER TABLE keplar_sessions ADD COLUMN IF NOT EXISTS net_hash text NOT NULL DEFAULT ''");
       await neonQuery("CREATE TABLE IF NOT EXISTS keplar_magic_used (jti text PRIMARY KEY, expires_at timestamptz NOT NULL)");
       // Deleted accounts: keyed hash of the email only (see deletedLoginKey), so old cookies can't bring the account back.
       await neonQuery("CREATE TABLE IF NOT EXISTS keplar_deleted_logins (email_key text PRIMARY KEY, deleted_at timestamptz NOT NULL DEFAULT now())");
@@ -107,6 +109,25 @@ const toUser = (r: Record<string, unknown>): UserRow => {
 
 /** Privacy: only a keyed hash of the IP is kept (enough to tell devices apart, useless as an address). */
 export const hashIp = (ip: string | null | undefined) => (ip && ip !== "local" ? createHmac("sha256", authSecret()).update(`ip:${ip}`).digest("hex").slice(0, 24) : "");
+/**
+ * The coarse network an address belongs to: IPv4 /16 ("203.0"), IPv6 /32 ("2001:db8"). Roughly "which provider and region",
+ * so a phone moving between cells or a home router's new address stays the same network. Null for local or unparseable input.
+ */
+export function networkPrefix(ip: string | null | undefined): string | null {
+  const v = (ip ?? "").trim().toLowerCase();
+  if (!v || v === "local" || v === "unknown") return null;
+  const v4 = v.match(/^(?:::ffff:)?(\d{1,3})\.(\d{1,3})\.\d{1,3}\.\d{1,3}$/);
+  if (v4) return Number(v4[1]) <= 255 && Number(v4[2]) <= 255 ? `${Number(v4[1])}.${Number(v4[2])}` : null;
+  if (!v.includes(":") || v.startsWith("::")) return null;
+  const groups = v.split("%")[0].split(":");
+  if (groups.length < 3 || !groups.slice(0, 2).every((g) => /^[0-9a-f]{1,4}$/.test(g))) return null;
+  return `${parseInt(groups[0], 16).toString(16)}:${parseInt(groups[1], 16).toString(16)}`;
+}
+/** Keyed hash of networkPrefix: lets sign-ins be compared by network without keeping the network, let alone the address. */
+export const hashNetwork = (ip: string | null | undefined) => {
+  const net = networkPrefix(ip);
+  return net ? createHmac("sha256", authSecret()).update(`net:${net}`).digest("hex").slice(0, 24) : "";
+};
 export const ipFromHeaders = (h: Headers | null | undefined) => h?.get("x-forwarded-for")?.split(",")[0]?.trim() || h?.get("x-real-ip") || "";
 
 /**
@@ -149,10 +170,10 @@ export async function createSessionRecord(s: { id: string; userId: string; userA
   const remember = s.remember !== false;
   const ttl = remember ? SESSION_TTL_SECONDS : SHORT_SESSION_TTL_SECONDS;
   await q(
-    `INSERT INTO keplar_sessions (id, user_id, created_at, last_seen, expires_at, user_agent, ip_hash, provider, remember, mfa_pending)
-     VALUES ($1, $2, $3::timestamptz, now(), now() + make_interval(secs => $4::double precision), $5, $6, $7, $8::boolean, $9::boolean)
+    `INSERT INTO keplar_sessions (id, user_id, created_at, last_seen, expires_at, user_agent, ip_hash, provider, remember, mfa_pending, net_hash)
+     VALUES ($1, $2, $3::timestamptz, now(), now() + make_interval(secs => $4::double precision), $5, $6, $7, $8::boolean, $9::boolean, $10)
      ON CONFLICT (id) DO NOTHING`,
-    [s.id, s.userId, (s.createdAt ?? new Date()).toISOString(), secs(ttl), (s.userAgent ?? "").slice(0, 300), hashIp(s.ip), s.provider ?? "", String(remember), String(s.mfaPending === true)],
+    [s.id, s.userId, (s.createdAt ?? new Date()).toISOString(), secs(ttl), (s.userAgent ?? "").slice(0, 300), hashIp(s.ip), s.provider ?? "", String(remember), String(s.mfaPending === true), hashNetwork(s.ip)],
   );
   // Pruning is safe because a session id without a row is refused (validateSession): a pruned revoked, expired or
   // still-pending session stays dead. Only migration-window cookies are adopted, and those rows outlive the window.
@@ -215,9 +236,9 @@ export async function listSessions(userId: string): Promise<SessionRow[]> {
 }
 
 /** Browsers/devices this account has signed in from before (live or ended; rows are pruned 30 days after expiry). */
-export async function priorDevices(userId: string): Promise<{ userAgent: string; ipHash: string }[]> {
-  const rows = await q("SELECT user_agent, ip_hash FROM keplar_sessions WHERE user_id = $1 ORDER BY created_at DESC LIMIT 100", [userId]);
-  return rows.map((r) => ({ userAgent: String(r.user_agent ?? ""), ipHash: String(r.ip_hash ?? "") }));
+export async function priorDevices(userId: string): Promise<{ userAgent: string; ipHash: string; netHash: string }[]> {
+  const rows = await q("SELECT user_agent, ip_hash, net_hash FROM keplar_sessions WHERE user_id = $1 ORDER BY created_at DESC LIMIT 100", [userId]);
+  return rows.map((r) => ({ userAgent: String(r.user_agent ?? ""), ipHash: String(r.ip_hash ?? ""), netHash: String(r.net_hash ?? "") }));
 }
 
 /** Revoke one session. With `userId`, only if it belongs to that user. Returns whether a live session was revoked. */
