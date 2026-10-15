@@ -1,10 +1,12 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Deck } from "@/lib/slides/types";
+import { isInteractive } from "@/lib/ui/focus-trap";
+import { presentAction } from "./present-keys";
 import { SlideView } from "./SlideView";
 import s from "./slides.module.css";
 
-/** Full-screen presenting: arrow keys / Space / click to move, Esc to leave, N toggles speaker notes. */
+/** Full-screen presenting: arrow keys / Space / Enter / click to move, Esc to leave, N toggles speaker notes. The bar's buttons work by keyboard. */
 export function Present({ deck, start, onClose }: { deck: Deck; start: number; onClose: () => void }) {
   const [i, setI] = useState(Math.min(start, deck.slides.length - 1));
   const [notes, setNotes] = useState(false);
@@ -30,12 +32,15 @@ export function Present({ deck, start, onClose }: { deck: Deck; start: number; o
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === "PageDown" || e.key === " " || e.key === "Enter") { e.preventDefault(); go(1); }
-      else if (e.key === "ArrowLeft" || e.key === "ArrowUp" || e.key === "PageUp" || e.key === "Backspace") { e.preventDefault(); go(-1); }
-      else if (e.key === "Home") setI(0);
-      else if (e.key === "End") setI(deck.slides.length - 1);
-      else if (e.key.toLowerCase() === "n") setNotes((v) => !v);
-      else if (e.key === "Escape") onClose();
+      if (e.ctrlKey || e.metaKey || e.altKey) return; // browser and system shortcuts stay theirs
+      // Enter / Space on one of the bar's buttons press that button; anywhere else they move to the next slide.
+      const a = presentAction(e.key, isInteractive(e.target as HTMLElement | null));
+      if (!a) return;
+      if (a === "next" || a === "prev") { e.preventDefault(); go(a === "next" ? 1 : -1); }
+      else if (a === "first") setI(0);
+      else if (a === "last") setI(deck.slides.length - 1);
+      else if (a === "notes") setNotes((v) => !v);
+      else onClose();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);

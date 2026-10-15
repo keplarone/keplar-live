@@ -2,7 +2,7 @@
 /**
  * Full-size image viewer: shows the image at its real resolution (scrollable when larger than the screen), Esc / backdrop closes.
  * It stays its own full-screen layer (the kit Dialog is a width-capped card, wrong for a picture at 100%): an opaque canvas, the
- * kit's Buttons, focus held on the controls and returned on close.
+ * kit's Buttons, Tab cycling through its controls (focus starts on Close) and returned on close.
  */
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -10,6 +10,7 @@ import { Button } from "@/components/kit";
 import css from "./Lightbox.module.css";
 import la from "./link-action.module.css";
 import { lockScroll } from "@/lib/ui/scroll-lock";
+import { trapTab } from "@/lib/ui/focus-trap";
 import { useExit } from "@/components/motion/usePresence";
 
 export type LightboxProps = {
@@ -24,6 +25,7 @@ export type LightboxProps = {
 
 export function Lightbox({ src, alt, caption, downloadHref, downloadName, onClose }: LightboxProps) {
   const closeRef = useRef<HTMLButtonElement>(null);
+  const layerRef = useRef<HTMLDivElement>(null);
   const [actual, setActual] = useState(false);
   const [dims, setDims] = useState<string | null>(null);
   const exit = useExit(onClose); // every close path fades the viewer out first
@@ -34,7 +36,7 @@ export function Lightbox({ src, alt, caption, downloadHref, downloadName, onClos
     closeRef.current?.focus();
     const key = (e: KeyboardEvent) => {
       if (e.key === "Escape") { e.stopPropagation(); close(); }
-      if (e.key === "Tab") { e.preventDefault(); closeRef.current?.focus(); }
+      if (e.key === "Tab") trapTab(e, layerRef.current); // cycle through every control (Actual size, Download, Close), not just Close
     };
     window.addEventListener("keydown", key, true);
     const release = lockScroll();
@@ -47,7 +49,7 @@ export function Lightbox({ src, alt, caption, downloadHref, downloadName, onClos
 
   if (typeof document === "undefined") return null;
   return createPortal(
-    <div className={css.scrim} role="dialog" aria-modal="true" aria-label={alt} onClick={(e) => { if (e.target === e.currentTarget) close(); }} {...exit.motion("fade")}>
+    <div ref={layerRef} className={css.scrim} role="dialog" aria-modal="true" aria-label={alt} onClick={(e) => { if (e.target === e.currentTarget) close(); }} {...exit.motion("fade")}>
       <div className={css.bar}>
         <span className={css.cap}>{caption ?? alt}{dims ? ` · ${dims}` : ""}</span>
         <span className={css.actions}>
