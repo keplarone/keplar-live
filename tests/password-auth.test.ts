@@ -342,3 +342,20 @@ test("landing pages inspect links without consuming them", async (t) => {
   const expired = createActionToken(SECRET, "reset", { email, fp: "-" }, { now: Date.now() - 2 * 3600_000 });
   assert.equal((await inspectLink("reset", expired)).state, "expired");
 });
+
+// AUTH-12 (docs/rebirth/AUDIT.md): 12 wrong passwords from anywhere used to lock the address's password sign-in for 15 minutes.
+// Now the budget is per network: a stranger elsewhere uses up only their own, the owner on their network still gets in.
+test("a stranger's wrong passwords from another network don't lock the owner out", async (t) => {
+  if (!fake) return t.skip("pglite not installed");
+  const email = "lockout.target@example.com";
+  await post("sign-up", { email, password: GOOD, acceptTerms: true });
+  await post("verify-email", { token: tokenIn((await lastMail(email, "verify-email"))!.text) });
+  // The stranger, from a few addresses in one network (so the per-IP limits don't stop them first).
+  let m = 0;
+  const stranger = () => `198.51.${(++m >> 6) & 255}.${m & 63}`;
+  const tries: number[] = [];
+  for (let i = 0; i < 14; i++) tries.push((await post("sign-in", { email, password: "definitely wrong 1" }, { ip: stranger() })).status);
+  assert.equal(tries.filter((s) => s === 429).length, 2, `the stranger's network is limited after 12: ${tries}`);
+  // The owner, at home on another network: signs in.
+  assert.equal((await post("sign-in", { email, password: GOOD }, { ip: "203.0.113.7" })).status, 200);
+});
