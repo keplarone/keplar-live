@@ -3,8 +3,10 @@
 import { useState } from "react";
 import s from "./Admin.module.css";
 
-/** Status buttons for one report or ticket. Posts to /api/admin/inbox (admin only, audited), then reloads the list. */
-export function InboxActions({ kind, id, current, options }: { kind: "report" | "ticket"; id: string; current: string; options: string[] }) {
+const ABUSE_LABEL: Record<string, string> = { takedown: "Take down", restore: "Restore site", dismiss: "Dismiss", reopen: "Reopen" };
+
+/** Status buttons for one report or ticket (or actions for a site abuse report: take down, restore, dismiss, reopen). Posts to /api/admin/inbox (admin only, audited), then reloads the list. */
+export function InboxActions({ kind, id, current, options }: { kind: "report" | "ticket" | "abuse"; id: string; current: string; options: string[] }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const set = async (status: string) => {
@@ -21,7 +23,7 @@ export function InboxActions({ kind, id, current, options }: { kind: "report" | 
   };
   return (
     <span className={s.switches}>
-      {options.filter((o) => o !== current).map((o) => <button key={o} type="button" className={s.btn} disabled={busy} onClick={() => set(o)}>Mark {o}</button>)}
+      {options.filter((o) => o !== current).map((o) => <button key={o} type="button" className={s.btn} disabled={busy} onClick={() => set(o)}>{kind === "abuse" ? ABUSE_LABEL[o] ?? o : `Mark ${o}`}</button>)}
       {err ? <span role="alert">{err}</span> : null}
     </span>
   );

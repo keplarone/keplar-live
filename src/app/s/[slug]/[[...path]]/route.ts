@@ -7,8 +7,7 @@ import { orders } from "@/lib/business/repo";
 import { alertOwner } from "@/lib/accounts/alerts";
 import { getWorkspace } from "@/lib/accounts/workspaces";
 import { clientIpOf, rateLimit, RateLimitError } from "@/lib/create/platform/ratelimit";
-import { id as newId, now } from "@/lib/create/platform/ids";
-import { abuseReports } from "@/lib/create/repo";
+import { fileAbuseReport, reporterOf, takedownNote } from "@/lib/create/abuse-policy";
 import { hostOf, isAppHost, resolveCustomHost } from "@/lib/domains/routing";
 import { siteUrl } from "@/lib/site";
 import { fxActive, liveHref, pageFromPath, renderCss, renderPage, sitemapXml, siteHeaders } from "@/lib/site-builder/render";
@@ -294,10 +293,11 @@ async function postReport(req: Request, slug: string, at: Where) {
   const form = await readForm(req);
   if (!form) return shell(400, "Invalid report", "<h1>Invalid report</h1>");
   const reason = ["phishing", "malware", "csam", "ncii", "impersonation", "copyright", "other"].includes(form.reason) ? form.reason : "other";
-  await abuseReports().insert({ id: newId("abr"), workspaceId: site.workspaceId, target: `site:${site.slug}`, reason, details: (form.details ?? "").slice(0, 4000), reporterEmail: form.email ? form.email.slice(0, 200) : undefined, status: "open", createdAt: now() });
-  // Child-safety and intimate-image reports take the site down at once, pending human review.
-  if (reason === "csam" || reason === "ncii") await sites().update(site.workspaceId, site.id, { takenDown: true });
-  await alertOwner(`Abuse report: ${reason} on /s/${site.slug}`, `Site ${site.name} (/s/${site.slug}, workspace ${site.workspaceId}) was reported for ${reason}.\n\n${(form.details ?? "").slice(0, 1000)}\n\n${reason === "csam" || reason === "ncii" ? "The site was taken down automatically pending review." : "Review it and take it down if it breaks the terms."}`).catch(() => undefined);
+  // Child-safety and intimate-image reports take the site down at once only from a verified account or 3+ distinct reporters in 24 h;
+  // otherwise they are stored as urgent and alerted for immediate human review (src/lib/create/abuse-policy.ts).
+  const filed = await fileAbuseReport({ workspaceId: site.workspaceId, target: `site:${site.slug}`, reason, details: (form.details ?? "").slice(0, 4000), reporterEmail: form.email ? form.email.slice(0, 200) : undefined, reporter: await reporterOf(req) });
+  if (filed.takeDown) await sites().update(site.workspaceId, site.id, { takenDown: true });
+  await alertOwner(`${filed.urgent && !filed.takeDown ? "URGENT " : ""}Abuse report: ${reason} on /s/${site.slug}`, `Site ${site.name} (/s/${site.slug}, workspace ${site.workspaceId}) was reported for ${reason}. Report ${filed.report.id}.\n\n${(form.details ?? "").slice(0, 1000)}\n\n${takedownNote(filed)}`).catch(() => undefined);
   return new Response(null, { status: 303, headers: { location: `${at.base}/_report?done=1` } });
 }
 

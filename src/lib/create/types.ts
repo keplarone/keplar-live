@@ -117,6 +117,17 @@ export type AbuseReport = {
   reason: string;
   details: string;
   reporterEmail?: string;
+  /** `u:<account id>` or `ip:<keyed hash>`: counts distinct reporters (see src/lib/create/abuse-policy.ts). Never the raw IP. */
+  reporterKey?: string;
+  /** The reporter was signed in with a verified email. */
+  verifiedReporter?: boolean;
+  /** CSAM/NCII: shown first in the admin inbox. */
+  urgent?: boolean;
+  /** This report took the target down automatically (verified reporter or enough distinct reporters). */
+  autoTakedown?: boolean;
   status: "open" | "actioned" | "dismissed";
+  reviewedBy?: string;
+  reviewedAt?: string;
+  lastAction?: "takedown" | "restore" | "dismiss" | "reopen";
   createdAt: string;
 };

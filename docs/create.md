@@ -75,8 +75,9 @@ video up to 8 s; Business 100 projects, 10 domains, video up to 10 s (domain lim
   seed-phrase fields, obfuscated `eval`, crypto miners, hidden iframes, meta refresh, external form
   actions, and text moderation. Verdict pass / review / block; block returns 422 and the site isn't published.
 - **Abuse reports**: "Report abuse" link in every site footer → `/api/create/abuse`. CSAM and NCII
-  reports take the site down immediately (451) pending review; admins act via
-  `POST /api/create/abuse/<id>` with `KEPLAR_ADMIN_TOKEN`.
+  reports take the site down immediately (451) pending review when the reporter is a verified account or 3+ distinct
+  reporters report it within 24 h; otherwise they are filed as urgent and alerted (same policy as section 8). Admins act
+  from the admin inbox or via `POST /api/create/abuse/<id>` (`takedown` | `restore` | `dismiss`) with `KEPLAR_ADMIN_TOKEN`.
 - **Rate limits** per workspace (10/30/60/120 rpm by plan; Upstash in production), **Usage gating**,
   **verified email** required to publish, **custom domains on paid plans only**, **user content on a separate domain**.
 
@@ -116,7 +117,7 @@ The disk-based project/deploy code above (`src/lib/create/*`, `/api/create/*`) n
 - **SEO:** site title, description, link-preview image and per-page overrides, injected into `<head>` with canonical and Open Graph tags.
 - **Leads:** forms post to `/s/<slug>/_lead` (outside `/api` because sandboxed pages send `Origin: null`, which the proxy's origin check would reject). Honeypot field, per-IP and per-site rate limits, stored in Neon, listed in the Leads tab and exported as CSV (formula-injection safe).
 - **Publishing rules:** verified email required; a scan (`safety.ts`) blocks card/ID/seed-phrase/password collection, look-alike sign-in pages for known brands, malware file links, URL shorteners, raw-IP links and scam wording; "review" verdicts publish and queue for a human look. Free can publish 1 site.
-- **Abuse:** every published page has a "Report abuse" link to `/s/<slug>/_report`; reports are stored in `create_abuse_reports`; CSAM/NCII reports take the site down immediately and alert the owner.
+- **Abuse:** every published page has a "Report abuse" link to `/s/<slug>/_report`; reports are stored in `create_abuse_reports` (5 per IP per 10 min). CSAM/NCII reports are urgent: they take the site down immediately when the reporter is signed in with a verified email, or when at least 3 distinct reporters (distinct signed-in accounts or distinct hashed IPs; the raw IP is never stored) report the same site within 24 h. Otherwise the report is stored as urgent, the owner alert goes out marked URGENT, and it heads the admin inbox (`/admin/inbox`, `GET /api/admin/inbox`) for immediate human review. One anonymous form post can no longer take a site down. Admins take down, restore, dismiss or reopen from the inbox (`POST /api/admin/inbox` `{ kind: "abuse", id, status: "takedown" | "restore" | "dismiss" | "reopen" }`, requireAdmin + audit log); restore clears `takenDown` on the site (or legacy project). Policy: `src/lib/create/abuse-policy.ts`, tests: `tests/abuse-takedown.test.ts`.
 - **Export:** `/api/sites/:id/export` returns a ZIP of the current version; the Code tab shows each file.
 - **Env vars:** `OPENROUTER_API_KEY` (required for AI builds), `DATABASE_URL`, optional `KEPLAR_OPENROUTER_BASE` (tests/mocks), `KEPLAR_SITE_CONFIRM_UNITS`. Preview tokens are signed with a key derived from the auth secret (`BETTER_AUTH_SECRET`).
 - **Custom domains** (Plus/Pro/Business): see `docs/custom-domains.md`. Proxy rewrite from the customer's Host to `/s/<slug>`, DNS records from Vercel's API, ownership TXT, Verify button and a background re-check.
