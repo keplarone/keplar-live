@@ -36,13 +36,13 @@ live data found anywhere).
 | AUTH-3 | Low | Unused built-in Better Auth endpoints are reachable and re-issue cookies without `guardSession` (enabler for AUTH-1). | `src/lib/accounts/auth.ts:47-116` | **Fixed** (51aa28c; `/reset-password/:token` stays, it creates no session) |
 | AUTH-4 | Medium | Pre-account hijack: an attacker's password can be attached to an existing account when the victim clicks an unsolicited verification email. | `src/lib/accounts/credentials.ts:244-253`, `password-auth.ts:148-150,191-203` | **Fixed** (51aa28c) |
 | AUTH-5 | Medium | Adding a passkey, enabling 2FA, regenerating codes, immediate deletion, data export and API-key creation need no recent re-authentication. | `src/app/api/account/{passkeys,mfa,delete,export}/route.ts`, `/api/keys` | **Fixed** (51aa28c) |
-| AUTH-6 | Medium | Desktop/extension sign-in can be used for phishing and login CSRF (finish ticket not bound to the starting browser). | `src/lib/accounts/desktop-auth.ts:169-175,214-225` | Open |
+| AUTH-6 | Medium | Desktop/extension sign-in can be used for phishing and login CSRF (finish ticket not bound to the starting browser). | `src/lib/accounts/desktop-auth.ts:169-175,214-225` | **Fixed** (d62f3d9: the browser must type the code the app shows, never shown on the page; `/desktop/finish` refuses links from other sites and, for Keplar One, any browser but the desktop window; the extension's approval needs a recent sign-in. No desktop app change needed) |
 | AUTH-7 | Low-Med | Magic-link rate limits are per serverless instance. | `src/lib/accounts/stateless-magic-link.ts:76-78` | **Fixed** (51aa28c) |
 | AUTH-8 | Low | `localhost` origins are trusted in production. | `src/lib/accounts/auth.ts:71` | **Fixed** (51aa28c) |
-| AUTH-9 | Low-Med | TOTP brute force is slowed (8/10 min) but never blocked, and the owner isn't told. | `src/app/api/account/mfa/route.ts:42-49,95-111` | Open |
+| AUTH-9 | Low-Med | TOTP brute force is slowed (8/10 min) but never blocked, and the owner isn't told. | `src/app/api/account/mfa/route.ts:42-49,95-111` | **Fixed** (41880ce: 8 wrong codes in an hour lock every code for the rest of the hour and email the owner once) |
 | AUTH-10 | Low | No email for 2FA, passkey, recovery-code or API-key changes. | `mfa/route.ts`, `passkeys/route.ts` | **Fixed** (51aa28c) |
-| AUTH-11 | Low | New-device detection compares only the user-agent label. | `src/lib/accounts/new-device.ts:17-21` | Open |
-| AUTH-12 | Low | Per-email limits let anyone lock a sign-in method for 15 minutes. | `password-auth.ts:166` | Open |
+| AUTH-11 | Low | New-device detection compares only the user-agent label. | `src/lib/accounts/new-device.ts:17-21` | **Fixed** (a91c47f: a keyed hash of the IPv4 /16 or IPv6 /32 is kept per session; a known browser on a never-seen network emails, at most once a day) |
+| AUTH-12 | Low | Per-email limits let anyone lock a sign-in method for 15 minutes. | `password-auth.ts:166` | **Fixed** (310f346: per-address budgets per network, ceilings of 60 passwords/15 min and 6 links/10 min; sign-up, resend and forgot-password keep their per-address caps, which only limit emails) |
 
 ## Authorization and tenancy
 
@@ -52,9 +52,9 @@ live data found anywhere).
 | AZ-2 | High | Business teammates with the Editor role can set up the owner's Stripe payouts, approve the owner's outbound actions, turn on auto-send and (as Viewers) read bank data; audit logs record them as "owner". | `src/lib/business/team.ts:27-50`, `api/business/payments/*`, `approvals/[id]`, `agents/[id]`, `banks` | **Fixed** (a1876c6) |
 | AZ-3 | High | In apps built on Keplar, signing up with the creator's email (unverified) grants app admin. | `src/lib/app-runtime/auth.ts:66-80,94-99` | **Fixed** (4934317; admins created earlier keep the role) |
 | AZ-4 | Medium | Encoded-slash path traversal in the blob route allows cross-tenant media reads on the same instance. | `src/app/api/create/blob/[...key]/route.ts:16-19`, `create/platform/blob.ts:20-24` | **Fixed** (dd88bfa) |
-| AZ-5 | Low | Collab viewers can sign in as anyone in an app's draft environment. | `src/app/api/collab/[id]/route.ts:42`, `app-runtime/router.ts:103-109` | Open |
+| AZ-5 | Low | Collab viewers can sign in as anyone in an app's draft environment. | `src/app/api/collab/[id]/route.ts:42`, `app-runtime/router.ts:103-109` | **Fixed** (99b6611: viewers get a look-only preview token; it never returns sign-in links) |
 | AZ-6 | Low | Two admin actions skip the admin 2FA requirement. | `src/app/api/templates/route.ts:67`, `src/app/api/share/route.ts:78` | **Fixed** (4f414d2) |
-| AZ-7 | Low | Public form and checkout endpoints accept unpublished projects. | `api/business/forms/[projectId]/route.ts:14`, `business/commerce.ts:25` | Open |
+| AZ-7 | Low | Public form and checkout endpoints accept unpublished projects. | `api/business/forms/[projectId]/route.ts:14`, `business/commerce.ts:25` | **Fixed** (3f89153) |
 
 ## Input handling and browser security
 
@@ -64,10 +64,10 @@ live data found anywhere).
 | IN-2 | Medium | Apple in-app purchases from Apple's Sandbox (free) grant real paid plans in production. | `src/lib/billing/apple.ts:54-58,142`, `apple-sync.ts:76` | **Fixed** (667a874) |
 | IN-3 | Low | The API edge guard (rate limit, CSRF backstop) is skipped for `/api` on docs.keplar.one and space.keplar.one. | `src/proxy.ts:78,106` | **Fixed** (667a874) |
 | IN-4 | Low | space.keplar.one pages miss CSP, frame rules and HSTS. | `next.config.ts:7` | **Fixed** (667a874) |
-| IN-5 | Low | App CSP allows `'unsafe-inline'` scripts, and `'self'` includes user-authored app JavaScript under `/s/`. | `src/lib/security/headers.ts:26`, `app-builder/files.ts:150-160` | Open |
-| IN-6 | Low | Site QA browser has no network allow-list. | `src/lib/site-builder/qa/run.ts:31-43` | Open |
+| IN-5 | Low | App CSP allows `'unsafe-inline'` scripts, and `'self'` includes user-authored app JavaScript under `/s/`. | `src/lib/security/headers.ts:26`, `app-builder/files.ts:150-160` | **Accepted** for `'unsafe-inline'` (Next's per-render inline flight scripts on static pages; a nonce needs every page dynamic; reasons in `headers.ts`). **Fixed** for `'self'` (000ca97: the proxy refuses same-origin script/worker loads of `/s/`, `/sites/`, `/apps/`) |
+| IN-6 | Low | Site QA browser has no network allow-list. | `src/lib/site-builder/qa/run.ts:31-43` | **Fixed** (15bdeb2: Keplar Browser's SSRF guard; own origin passes) |
 | IN-7 | Info | Revenue Guard (not wired) would verify sites with an unguarded fetch. | `src/lib/business/guard/core.ts:89-138` | Open |
-| IN-8 | Low | Unbounded body reads before size checks; inbound-email webhook has no replay key; `/api/health/qa-browser` launches Chromium unauthenticated; `wants/browser.ts` accepts any `file:` URL; code-runner CSP lacks `sandbox`; some provider error text reaches clients. | see review | Open |
+| IN-8 | Low | Unbounded body reads before size checks; inbound-email webhook has no replay key; `/api/health/qa-browser` launches Chromium unauthenticated; `wants/browser.ts` accepts any `file:` URL; code-runner CSP lacks `sandbox`; some provider error text reaches clients. | see review | **Fixed** (f6f8b5a: streamed capped reads on 20+ routes and `body()`; inbound-email claim per Message-ID; qa-browser admins/monitoring only; Wants `file:` only its fixtures; runner CSP `sandbox`; mid-stream and `/api/health` error text generic) |
 
 ## AI agents and tool execution
 
@@ -85,7 +85,7 @@ live data found anywhere).
 | AI-10 | Low | Agent draft model calls have no timeout or output cap; runs can stay "running" forever; retries can re-send. | `business/agents.ts:194-207,400-466` | **Fixed** (422a95e: 45 s timeout, 1,200-token cap) |
 | AI-11 | Low | Core's code checker relies on `node:vm`, which isn't a security boundary. | `core/sandbox.ts:14-31` | Open |
 | AI-12 | Low | Self-learning prompt changes are promoted without human review. | `core/selfdev/pipeline.ts:101` | **Fixed** (069f29d) |
-| AI-13 | Info | Keplar Wants PIN has no lockout and non-atomic confirmation (sandbox-only today). | `wants/pin.ts`, `wants/sandbox.ts:77-96` | Partly fixed (e70f342: PIN tries limited to 10 per 15 min); confirmation still not atomic |
+| AI-13 | Info | Keplar Wants PIN has no lockout and non-atomic confirmation (sandbox-only today). | `wants/pin.ts`, `wants/sandbox.ts:77-96` | **Fixed** (e70f342: PIN tries limited to 10 per 15 min; dbcb47e: confirmation is one `insertIfAbsent` claim) |
 
 ## Performance, reliability and supply chain
 
