@@ -9,6 +9,7 @@
  */
 import { neonConfigured, neonQuery, parseData } from "@/lib/create/platform/neon";
 import { collection } from "@/lib/create/platform/store";
+import { tombstoneLogin } from "@/lib/accounts/persist";
 
 /** Kept after deletion (and why): financial records, usage/abuse counters. */
 export const RETAINED = [
@@ -198,9 +199,14 @@ export async function deleteWorkspaceData(wsId: string): Promise<DeleteResult> {
   return { deleted, retained: kept.filter((n) => n.length) };
 }
 
-/** Removes the login itself (user row + sessions). Neon only; the file/cookie fallback has no user table. */
+/**
+ * Removes the login itself (user row + sessions). Neon only; the file/cookie fallback has no user table.
+ * First records a tombstone (a keyed hash of the email and the time, nothing else), so a cookie issued before the
+ * deletion can never recreate the account: see validateSession in src/lib/accounts/persist.ts.
+ */
 export async function deleteLogin(userId: string, email: string): Promise<void> {
   if (!neonConfigured()) return;
+  await tombstoneLogin(email);
   await neonQuery("DELETE FROM keplar_sessions WHERE user_id = $1", [userId]);
   await neonQuery("DELETE FROM keplar_users WHERE id = $1", [userId]);
   // Second-factor secret, recovery-code hashes and passkeys (the tables exist only once someone has used the feature).

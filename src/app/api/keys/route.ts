@@ -2,11 +2,15 @@
  * API keys (BETA), managed from Account → Developer API.
  *   GET  -> your keys (never the secret), the plan's key policy, and the stated limits.
  *   POST { name, scopes?, expiresInDays? } -> create a key. The full key is in this response ONCE; only its hash is stored.
- * Session sign-in only (a key can't create keys), same-origin, personal workspace only.
+ * Session sign-in only (a key can't create keys), same-origin, personal workspace only. Creating a key needs a sign-in from
+ * the last 10 minutes (403 reauth_required, src/lib/accounts/reauth.ts), and the owner is emailed about the new key.
  */
 import { body, errorResponse, json } from "@/lib/create/platform/http";
 import { limitRequest } from "@/lib/create/platform/ratelimit";
 import { requireAccount } from "@/lib/create/platform/workspace";
+import { getSession } from "@/lib/accounts/auth";
+import { requireRecentSignIn } from "@/lib/accounts/reauth";
+import { notifySecurityChange } from "@/lib/accounts/security-notice";
 import { assertSameOrigin, SAFE_METHODS } from "@/lib/security/origin";
 import { API_POLICY, API_SCOPES, API_STATEMENT, SCOPE_BLURB } from "@/lib/api/policy";
 import { createKey, listKeys, publicKey } from "@/lib/api/keys";
@@ -34,8 +38,10 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const ws = await owner(req);
+    requireRecentSignIn(await getSession(req.headers));
     const b = await body<{ name?: unknown; scopes?: unknown; expiresInDays?: unknown }>(req);
     const { key, row } = await createKey(ws.admin ? { ...ws, plan: "business" } : ws, b);
+    if (ws.email) await notifySecurityChange(ws.email, "api_key_created", req.headers, row.name);
     return json({ key, shownOnce: true, apiKey: publicKey(row) }, { status: 201 });
   } catch (e) {
     return errorResponse(e);

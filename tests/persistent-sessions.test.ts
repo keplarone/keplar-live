@@ -1,10 +1,11 @@
 import "./setup";
 import "./helpers/oauth-env";
-import { test, before, after } from "node:test";
+import { test, before, after, mock } from "node:test";
 import assert from "node:assert/strict";
 import { installFakeNeon } from "./helpers/fake-neon";
 import { signIn, call, jsonReq } from "./helpers/session";
 import { userIdForEmail } from "@/lib/accounts/magic-token";
+import { LEGACY_SESSION_CUTOFF } from "@/lib/accounts/persist";
 import { neonQuery } from "@/lib/create/platform/neon";
 import { GET as sessionsGET, DELETE as sessionsDELETE, POST as sessionsPOST } from "@/app/api/account/sessions/route";
 import { GET as chatsGET } from "@/app/api/chats/route";
@@ -73,6 +74,17 @@ async function oauthSignIn(provider: "google" | "microsoft", claims: object, opt
 const googleClaims = (email: string, name = "Ada") => ({ iss: "https://accounts.google.com", aud: process.env.GOOGLE_CLIENT_ID, sub: `g-${email}`, email, email_verified: true, name });
 const attr = (setCookie: string, name: string) => setCookie.split(";").map((p) => p.trim()).find((p) => p.toLowerCase().startsWith(`${name.toLowerCase()}`));
 const rowOf = async (sql: string, p: unknown[] = []) => (await neonQuery(sql, p))[0];
+/** Run `fn` with the clock (Date only) at `when`: for cookies issued before the sessions table existed. */
+async function at<T>(when: number, fn: () => Promise<T>): Promise<T> {
+  mock.timers.enable({ apis: ["Date"], now: when });
+  try {
+    return await fn();
+  } finally {
+    mock.timers.reset();
+  }
+}
+const PRE_TABLE = LEGACY_SESSION_CUTOFF - 10 * 86_400_000; // issued before keplar_sessions existed
+const IN_WINDOW = LEGACY_SESSION_CUTOFF + 10 * 86_400_000; // checked while such cookies are still adopted (see persist.ts)
 
 test("no database: magic-link sign-in still works (stateless cookie) and the device list is unavailable", async () => {
   const keep = process.env.DATABASE_URL;
@@ -90,13 +102,13 @@ test("no database: magic-link sign-in still works (stateless cookie) and the dev
   }
 });
 
-test("old stateless cookies keep working after the upgrade and are adopted into Neon", async (t) => {
+test("old stateless cookies keep working after the upgrade and are adopted into Neon (during the migration window)", async (t) => {
   if (!fake) return t.skip("@electric-sql/pglite is not installed");
   const keep = process.env.DATABASE_URL;
   delete process.env.DATABASE_URL; // sign in the way production did before this change
-  const old = await magicSignIn("legacy@example.com");
+  const old = await at(PRE_TABLE, () => magicSignIn("legacy@example.com"));
   process.env.DATABASE_URL = keep;
-  const s = await getSess(old.cookie);
+  const s = await at(IN_WINDOW, () => getSess(old.cookie));
   assert.ok(s, "existing signed-in user is not logged out");
   assert.equal(s.user.email, "legacy@example.com");
   assert.equal(s.user.id, userIdForEmail(SECRET, "legacy@example.com"), "same account id as before, so the same plan/credits/chats");
@@ -230,12 +242,12 @@ test("after 'sign out of all devices' the user can sign in again, and old never-
   const email = "again@example.com";
   const keep = process.env.DATABASE_URL;
   delete process.env.DATABASE_URL;
-  const legacy = await magicSignIn(email); // issued before the table existed: no row
+  const legacy = await at(PRE_TABLE, () => magicSignIn(email)); // issued before the table existed: no row
   process.env.DATABASE_URL = keep;
   const first = await magicSignIn(email);
   const all = await sessionsPOST(jsonReq(first.cookie, "/api/account/sessions", "POST", { action: "all" }));
   assert.equal(all.status, 200);
-  assert.equal(await getSess(legacy.cookie), null, "a cookie older than the sign-out-everywhere cutoff is refused even without a row");
+  assert.equal(await at(IN_WINDOW, () => getSess(legacy.cookie)), null, "a cookie older than the sign-out-everywhere cutoff is refused even without a row, inside the adoption window too");
   assert.equal(await getSess(first.cookie), null);
   await new Promise((r) => setTimeout(r, 20));
   const fresh = await magicSignIn(email);

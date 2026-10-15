@@ -15,6 +15,7 @@ import { COMPANY_SIZES, INDUSTRIES } from "@/lib/business/account-fields";
 import { BUSINESS_TIERS, type BusinessTier } from "@/lib/business/tiers";
 import { siteUrl } from "@/lib/site";
 import { SIGN_OUT_FAILED, signOutOfBusiness } from "@/components/business-site/sign-out";
+import { isReauth, ReauthNotice, startExport } from "@/components/account/reauth";
 import { MODE_KEY, SETTINGS_SECTIONS, SIDE_KEY, type SettingsSection } from "./settings-sections";
 import { TeamPanel } from "./TeamPanel";
 import s from "./settings.module.css";
@@ -70,6 +71,7 @@ export function Settings({ section, onSection, onClose, onOpenPlace }: {
   const [errors, setErrors] = useState<Partial<Record<keyof Profile, string>>>({});
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState("");
+  const [reauth, setReauth] = useState(false);
   const [sideClosed, setSideClosed] = useState(() => read(SIDE_KEY) === "closed");
   const [liveCode, setLiveCode] = useState(() => read(LIVE_CODE_KEY) !== "hidden");
   const [mode, setMode] = useState(() => read(MODE_KEY) ?? "ask");
@@ -246,7 +248,10 @@ export function Settings({ section, onSection, onClose, onOpenPlace }: {
                   <button type="button" className={s.ghost} disabled={busy === "signout"} onClick={async () => { setBusy("signout"); if (!(await signOutOfBusiness())) { setBusy(""); say(SIGN_OUT_FAILED); } }}>{busy === "signout" ? "Signing out…" : "Sign out"}</button>
                 </Row>
                 <h3 className={s.group}>Data</h3>
-                <Row label="Export your data" hint="Everything your account owns, as JSON, with secrets redacted."><a className={s.ghost} href="/api/account/export" download>Download export</a></Row>
+                <Row label="Export your data" hint="Everything your account owns, as JSON, with secrets redacted.">
+                  <button type="button" className={s.ghost} disabled={busy === "export"} onClick={async () => { setBusy("export"); setReauth(false); try { await startExport(); } catch (e) { if (isReauth(e)) setReauth(true); else say(e instanceof Error ? e.message : "Couldn't start the download."); } setBusy(""); }}>Download export</button>
+                </Row>
+                {reauth ? <ReauthNotice /> : null}
                 <Row label="Delete your account" hint="Deletes the Keplar account and its Business data after a 14-day grace period. Payment records the law requires are kept."><a className={s.ghost} href={`${siteUrl}/account`} target="_blank" rel="noopener">Account settings</a></Row>
               </>
             ) : null}

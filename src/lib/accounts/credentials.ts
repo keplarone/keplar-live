@@ -55,8 +55,19 @@ export async function accountExists(email: string): Promise<boolean> {
 }
 
 /**
+ * Does this address already have a Keplar account (signed in before by email link, Google, Microsoft, passkey or a verified
+ * password)? A password sign-up for such an address must not create a pending credential: its verification link would go
+ * to the owner, who would attach a stranger's password to their own account by clicking it.
+ */
+export async function userAccountExists(email: string): Promise<boolean> {
+  await ensureAuthSchema(); // keplar_users
+  const rows = await neonQuery("SELECT 1 AS x FROM keplar_users WHERE email = $1 LIMIT 1", [normalizeEmail(email)]);
+  return rows.length > 0;
+}
+
+/**
  * Start (or restart) a pending sign-up. Returns "exists" without touching anything when the address already has a
- * verified password account.
+ * verified password account. Callers check userAccountExists first (an account without a password is "exists" too).
  */
 export async function savePendingCredential(input: { email: string; hash: string; name?: string }): Promise<"created" | "exists"> {
   const rows = await q(

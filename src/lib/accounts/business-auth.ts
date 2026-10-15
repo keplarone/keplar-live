@@ -34,7 +34,9 @@ export const businessAuth = (opts: Opts) => ({
       // The ticket is minted only from a keplar.one session that already passed its second factor (getSession refuses a session
       // whose mfa_pending is still set), and business.keplar.one has no two-factor page: asking again would leave a 2FA user's
       // Business session pending forever, i.e. signed out in a loop.
-      await startSession(ctx, { email: check.user.email, name: check.user.name, provider: "business", remember: true, secondFactorDone: true });
+      // The Business session inherits the Keplar session's sign-in time (not "now"), so it counts as a recent sign-in only
+      // when that one does (src/lib/accounts/reauth.ts).
+      await startSession(ctx, { email: check.user.email, name: check.user.name, provider: "business", remember: true, secondFactorDone: true, authAt: check.user.authAt ? new Date(check.user.authAt) : null });
       throw ctx.redirect(safeBusinessNext(q.next));
     }),
   },

@@ -7,9 +7,13 @@
  *   POST { action: "rename", id, name }
  *   POST { action: "remove", id }
  * Same-origin only. Passkeys are optional and extra: email links, passwords and 2FA keep working without them.
+ * Adding one ("options", "add") needs a sign-in from the last 10 minutes: 403 reauth_required otherwise (src/lib/accounts/reauth.ts).
+ * The owner is emailed when a passkey is added or removed.
  */
 import { getSession } from "@/lib/accounts/auth";
 import { persistenceEnabled } from "@/lib/accounts/persist";
+import { requireRecentSignIn } from "@/lib/accounts/reauth";
+import { notifySecurityChange } from "@/lib/accounts/security-notice";
 import { deletePasskey, listPasskeys, renamePasskey, summarize } from "@/lib/accounts/passkeys/store";
 import { registrationOptions, verifyRegistration } from "@/lib/accounts/passkeys/webauthn";
 import { body, errorResponse, HttpError, json } from "@/lib/create/platform/http";
@@ -51,6 +55,7 @@ export async function POST(req: Request) {
     }
     const b = await body<{ action?: unknown; token?: unknown; response?: unknown; name?: unknown; id?: unknown }>(req);
     const name = typeof b.name === "string" ? b.name.trim().slice(0, 60) : "";
+    if (b.action === "options" || b.action === "add") requireRecentSignIn(session);
     if (b.action === "options") {
       const { options, token } = await registrationOptions({ id: uid, email: session.user.email });
       return json({ options, token });
@@ -63,6 +68,7 @@ export async function POST(req: Request) {
         throw new HttpError(400, res.reason === "expired" ? "That took too long. Start again." : "We couldn't verify that passkey. Try again, or use a different device.", `passkey_${res.reason}`);
       }
       await writeAudit("user", "passkey.added", `user ${uid}`).catch(() => undefined);
+      await notifySecurityChange(session.user.email, "passkey_added", req.headers);
       return json({ ok: true, passkeys: (await listPasskeys(uid)).map(summarize) });
     }
     if (b.action === "rename" || b.action === "remove") {
@@ -73,6 +79,7 @@ export async function POST(req: Request) {
       } else {
         if (!(await deletePasskey(uid, b.id))) throw new HttpError(404, "Passkey not found.", "not_found");
         await writeAudit("user", "passkey.removed", `user ${uid}`).catch(() => undefined);
+        await notifySecurityChange(session.user.email, "passkey_removed", req.headers);
       }
       return json({ ok: true, passkeys: (await listPasskeys(uid)).map(summarize) });
     }

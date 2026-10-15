@@ -13,6 +13,10 @@
  *   link all land on the same account for the same address.
  * - Only provider-verified emails are accepted (an unverified email claim
  *   could otherwise impersonate another address's account).
+ * - Redirect flow only: `disableIdTokenSignIn` turns off Better Auth's
+ *   "POST /sign-in/social with an idToken" shortcut, which would set a session
+ *   cookie without the /callback/ hook (session record, rotation, two-factor
+ *   gate, new-device notice) in ./stateless-magic-link.ts.
  */
 import type { SocialProviders } from "better-auth/social-providers";
 
@@ -69,13 +73,14 @@ export function socialProvidersFromEnv(env: Env = process.env): SocialProviders 
   const c = oauthCredentials(env);
   const out: SocialProviders = {};
   if (c.google) {
-    out.google = { ...c.google, prompt: "select_account" };
+    out.google = { ...c.google, prompt: "select_account", disableIdTokenSignIn: true };
   }
   if (c.microsoft) {
     out.microsoft = {
       ...c.microsoft,
       // "common": personal Microsoft accounts and any work/school tenant.
       tenantId: "common",
+      disableIdTokenSignIn: true,
       // No offline_access: tokens aren't kept, so don't ask for long-lived access.
       disableDefaultScope: true,
       scope: ["openid", "profile", "email", "User.Read"],

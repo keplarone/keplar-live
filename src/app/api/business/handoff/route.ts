@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/accounts/auth";
 import { authSecret } from "@/lib/accounts/secret";
+import { signedInAt, signedInRecently } from "@/lib/accounts/reauth";
 import { businessUrl, isBusinessHost, safeBusinessNext } from "@/lib/business-site";
 import { isNonceHash, signTicket } from "@/lib/business/handoff";
 import { limitRequest } from "@/lib/create/platform/ratelimit";
@@ -21,12 +22,15 @@ export async function GET(req: Request) {
   const n = url.searchParams.get("n");
   const next = safeBusinessNext(url.searchParams.get("next"));
   if (!isNonceHash(n)) return NextResponse.redirect(businessUrl("/?signin=invalid"), 303);
+  // reauth=1: Business asked for a fresh sign-in (src/lib/accounts/reauth.ts). The Business session inherits this
+  // session's sign-in time, so an older Keplar session signs in again here first.
+  const reauth = url.searchParams.get("reauth") === "1";
   const session = await getSession(req.headers);
-  if (!session) {
-    const back = `/api/business/handoff?n=${encodeURIComponent(n)}&next=${encodeURIComponent(next)}`;
-    return NextResponse.redirect(`${siteUrl}/signin?next=${encodeURIComponent(back)}`, 303);
+  if (!session || (reauth && !signedInRecently(session))) {
+    const back = `/api/business/handoff?n=${encodeURIComponent(n)}&next=${encodeURIComponent(next)}${reauth ? "&reauth=1" : ""}`;
+    return NextResponse.redirect(`${siteUrl}/signin?${reauth ? "reauth=1&" : ""}next=${encodeURIComponent(back)}`, 303);
   }
-  const ticket = signTicket(authSecret(), { userId: session.user.id, email: session.user.email, name: session.user.name ?? null }, n);
+  const ticket = signTicket(authSecret(), { userId: session.user.id, email: session.user.email, name: session.user.name ?? null, authAt: signedInAt(session) }, n);
   const res = NextResponse.redirect(businessUrl(`/api/auth/business/finish?t=${encodeURIComponent(ticket)}&next=${encodeURIComponent(next)}`), 303);
   res.headers.set("cache-control", "no-store");
   res.headers.set("referrer-policy", "no-referrer");

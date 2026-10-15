@@ -4,6 +4,8 @@
  *   scheduled deletion. Without the account database there is nothing to schedule on, so it deletes immediately as before.
  * GET returns the scheduled date, if any.
  * The deletion, when it happens, removes the account and everything it owns.
+ * Deleting immediately ({ now: true }) needs a sign-in from the last 10 minutes (403 reauth_required, src/lib/accounts/reauth.ts);
+ * scheduling does not, because it can be cancelled for the whole grace period and the owner is emailed.
  * Guards: same origin, verified signed-in session, typed email must match, rate limited, admin accounts refused, and an
  * active paid subscription must be cancelled first (Keplar cannot cancel it on Whop's side). Retained records: see
  * src/lib/privacy/account-data.ts. Nothing is deleted on any other route.
@@ -11,6 +13,7 @@
 import { auth, getSession } from "@/lib/accounts/auth";
 import { deletionScheduledFor, persistenceEnabled, revokeAllSessions } from "@/lib/accounts/persist";
 import { forgetAllSessions } from "@/lib/accounts/session-guard";
+import { requireRecentSignIn } from "@/lib/accounts/reauth";
 import { getWorkspace } from "@/lib/accounts/workspaces";
 import { body, errorResponse, HttpError, json } from "@/lib/create/platform/http";
 import { limitRequest } from "@/lib/create/platform/ratelimit";
@@ -52,6 +55,8 @@ export async function POST(req: Request) {
       throw new HttpError(400, "Type your account email exactly to confirm.", "confirm_mismatch");
     }
     if (ws.admin) throw new HttpError(403, "Admin accounts can't be deleted here. Contact team@keplar.one.", "admin_protected");
+    // Immediate deletion can't be undone: ask for a fresh sign-in. (Without the account database every deletion is immediate.)
+    if (immediately === true || !persistenceEnabled()) requireRecentSignIn(session);
     const row = await getWorkspace(ws.id);
     if (row && activeSubscription(row.billing)) {
       throw new HttpError(409, "Cancel your subscription first (Manage billing), then delete the account. Keplar can't cancel it for you.", "subscription_active");

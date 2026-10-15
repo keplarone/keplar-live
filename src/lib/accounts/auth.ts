@@ -5,8 +5,13 @@
  *   each shown only when its env vars are set, see ./oauth.ts).
  * - Email + password (verified email required) via ./password-auth.ts, available when DATABASE_URL is set.
  * - Each new user gets a workspace (tenant) via databaseHooks.
- * - Built-in rate limiting on auth endpoints (memory; Upstash-backed
- *   secondary storage in production).
+ * - Rate limits: Better Auth's built-in per-IP limiter (in memory, so per
+ *   serverless instance), plus our own per-email / per-IP limits on magic links,
+ *   passwords, desktop and Business sign-in, which are shared across instances
+ *   (Upstash, or Postgres, via rateLimit(..., { shared: true })).
+ * - Only the Better Auth endpoints the app uses are served (`disabledPaths`):
+ *   the rest (update-user, list-sessions, link-social, …) would skip our
+ *   session checks (./session-guard.ts) and re-issue cookies.
  * - Stateless (no `database`): Vercel serves each request from whichever
  *   serverless instance is free, so nothing may live in process memory.
  *   Sessions are Better Auth's encrypted JWE cookie cache and magic links are
@@ -39,6 +44,41 @@ import { guardSession } from "./session-guard";
 import { storedUserId } from "./persist";
 
 const oauthEnabled = enabledOAuthProviders();
+
+/**
+ * Better Auth's built-in endpoints that Keplar does not use. They run on Better Auth's own session lookup, which skips the
+ * revocation / two-factor check in ./session-guard.ts, and several re-issue the session cookie, so they are switched off.
+ * Kept: /get-session and /sign-out (with our hooks in ./stateless-magic-link.ts), /sign-in/social + /callback/:id
+ * (Google, Microsoft), /error and /ok. Everything else Keplar serves is one of our plugins' own endpoints.
+ */
+export const DISABLED_AUTH_PATHS = [
+  "/account-info",
+  "/change-email",
+  "/change-password",
+  "/delete-user",
+  "/delete-user/callback",
+  "/get-access-token",
+  "/link-social",
+  "/list-accounts",
+  "/list-sessions",
+  "/refresh-token",
+  "/request-password-reset",
+  "/reset-password",
+  "/revoke-other-sessions",
+  "/revoke-session",
+  "/revoke-sessions",
+  "/send-verification-email",
+  "/sign-in/email",
+  "/sign-up/email",
+  "/unlink-account",
+  "/update-session",
+  "/update-user",
+  "/verify-email",
+  "/verify-password",
+] as const;
+
+/** localhost origins only outside production. */
+export const trustedOriginsFor = (nodeEnv: string | undefined) => [siteUrl, BUSINESS_URL, ...(nodeEnv === "production" ? [] : ["http://localhost:3000", "http://localhost:3001"])];
 export const authProviders = { magicLink: true, ...oauthEnabled };
 
 /** Also keys the magic-link HMAC and the plan cookie; never exposed. */
@@ -66,9 +106,11 @@ export const auth = betterAuth({
     cookieCache: { enabled: true, strategy: "jwe", maxAge: SESSION_COOKIE_MAX_AGE, refreshCache: { updateAge: SESSION_COOKIE_MAX_AGE - 60 * 60 * 24 } },
   },
   rateLimit: { enabled: true, window: 60, max: 30, storage: "memory" },
+  // Built-in endpoints the app doesn't use answer 404 (see DISABLED_AUTH_PATHS).
+  disabledPaths: [...DISABLED_AUTH_PATHS],
   advanced: { useSecureCookies: (process.env.BETTER_AUTH_URL || siteUrl).startsWith("https://") },
   // business.keplar.one (Keplar Business) runs on this same server with its own session cookie (src/lib/business/handoff.ts).
-  trustedOrigins: [siteUrl, BUSINESS_URL, "http://localhost:3000", "http://localhost:3001"],
+  trustedOrigins: trustedOriginsFor(process.env.NODE_ENV),
   databaseHooks: {
     user: {
       create: {
