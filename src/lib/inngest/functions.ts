@@ -63,7 +63,8 @@ export const agentEventRun = inngest.createFunction(
       const ws = await workspaceById(workspaceId);
       if (!ws) return { skipped: "workspace_missing" };
       try {
-        const run = await runAgent(ws, agentId, trigger, rest);
+        // Event-triggered: outbound actions always wait for the owner's approval.
+        const run = await runAgent(ws, agentId, trigger, rest, { forceApproval: true });
         return { runId: run.id, status: run.status };
       } catch (err) {
         if (err instanceof HttpError || err instanceof EntitlementError) {

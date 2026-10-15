@@ -375,16 +375,21 @@ async function plan(ws: Workspace, agent: Agent, payload: Record<string, unknown
 
 export type RunOptions = {
   /**
-   * Queue every outbound action for owner approval even if the agent has
-   * autoSend on. Unattended scheduled runs (Inngest cron / local scheduler)
-   * always set this (docs/business-os.md §4).
+   * Queue every outbound action for owner approval even if the agent has autoSend on. Only a run the owner starts by hand
+   * (trigger "manual", the Run button) may auto-send; every other trigger (events such as form.submitted or order.paid,
+   * schedules, chat, webhooks, email) is forced to approval inside runAgent whatever the caller passes (docs/business-os.md §4).
    */
   forceApproval?: boolean;
   /** Called with each step as it happens (a run started from the chat streams them to the card). Never affects the run. */
   onStep?: (step: AgentRun["steps"][number]) => void;
 };
 
+/** The only trigger that is a direct owner action in the UI. Anything else is unattended or driven by outside input. */
+export const OWNER_TRIGGERS: ReadonlySet<string> = new Set(["manual"]);
+
 export async function runAgent(ws: Workspace, agentId: string, trigger: string, payload: Record<string, unknown> = {}, opts: RunOptions = {}): Promise<AgentRun> {
+  // Fail closed: an event, schedule or any unknown trigger never auto-sends, even if a caller forgets forceApproval.
+  const forceApproval = opts.forceApproval === true || !OWNER_TRIGGERS.has(trigger);
   const agent = await agents().get(ws.id, agentId);
   if (!agent) throw new HttpError(404, "Agent not found.");
   if ((await getSettings(ws.id)).agentsHalted) throw new HttpError(409, "All agents are halted. Resume them first.", "halted");
@@ -446,7 +451,7 @@ export async function runAgent(ws: Workspace, agentId: string, trigger: string, 
       }
       const runUsd = run.units * USD_PER_UNIT;
       // Event responders act on untrusted input, so their outbound actions always wait for the owner (on every run path).
-      if (!opts.forceApproval && agent.template !== "event-reply" && agent.autoSend && verdict.autoSendAllowed && mcpMayAutoRun && ws.entitlements.autoSendAllowed && sent < agent.caps.outboundPerDay) {
+      if (!forceApproval && agent.template !== "event-reply" && agent.autoSend && verdict.autoSendAllowed && mcpMayAutoRun && ws.entitlements.autoSendAllowed && sent < agent.caps.outboundPerDay) {
         const summary = await execute(ws.id, `agent:${agent.id}`, action, { ws });
         await approvals().insert({ id: id("apr"), workspaceId: ws.id, agentId, runId: run.id, action, status: "sent", decidedAt: now(), result: `Auto-sent: ${summary}`, createdAt: now(), risk: verdict.risk, riskReasons: verdict.reasons, runUsd });
         sent += 1;
@@ -454,7 +459,7 @@ export async function runAgent(ws: Workspace, agentId: string, trigger: string, 
       } else {
         await approvals().insert({ id: id("apr"), workspaceId: ws.id, agentId, runId: run.id, action, status: "pending", decidedAt: null, createdAt: now(), risk: verdict.risk, riskReasons: verdict.reasons, runUsd });
         waiting += 1;
-        step(agent.autoSend && opts.forceApproval ? `Scheduled run: queued ${action.type} for your approval` : agent.autoSend && !verdict.autoSendAllowed ? `Firewall (${verdict.risk} risk: ${verdict.reasons.join("; ")}): queued ${action.type} for your approval` : agent.autoSend && sent >= agent.caps.outboundPerDay ? "Outbound cap reached; queued for approval" : `Queued ${action.type} for your approval`);
+        step(agent.autoSend && forceApproval ? `${trigger.startsWith("schedule") ? "Scheduled run" : "Unattended run"}: queued ${action.type} for your approval` : agent.autoSend && !verdict.autoSendAllowed ? `Firewall (${verdict.risk} risk: ${verdict.reasons.join("; ")}): queued ${action.type} for your approval` : agent.autoSend && sent >= agent.caps.outboundPerDay ? "Outbound cap reached; queued for approval" : `Queued ${action.type} for your approval`);
       }
     }
     run.status = waiting ? "waiting_approval" : "succeeded";
@@ -470,8 +475,12 @@ export async function runAgent(ws: Workspace, agentId: string, trigger: string, 
   return run;
 }
 
-async function knownEmails(workspaceId: string): Promise<Set<string>> {
-  return new Set((await contacts().list(workspaceId)).map((c) => (c.email ?? "").toLowerCase()).filter(Boolean));
+/** A contact a public form created this recently is not "known" to the firewall: anyone can create one by posting the form. */
+export const FRESH_FORM_CONTACT_MS = 60 * 60_000;
+
+export async function knownEmails(workspaceId: string, at = Date.now()): Promise<Set<string>> {
+  const fresh = new Date(at - FRESH_FORM_CONTACT_MS).toISOString();
+  return new Set((await contacts().list(workspaceId)).filter((c) => !(c.source === "form" && c.createdAt >= fresh)).map((c) => (c.email ?? "").toLowerCase()).filter(Boolean));
 }
 
 export async function decide(ws: Workspace, approvalId: string, decision: "approve" | "reject", edits?: { body?: string; text?: string }) {
@@ -515,5 +524,6 @@ defineJob("agent.run", async (payload) => {
   const { agentId, trigger, workspaceId, ...rest } = payload as { agentId: string; trigger: string; workspaceId: string };
   const ws = await workspaceById(workspaceId);
   if (!ws) return;
-  await runAgent(ws, agentId, trigger, rest).catch((e) => console.warn("[agent.run]", e instanceof Error ? e.message : e));
+  // Queued runs come from events (form.submitted, order.paid): never auto-send.
+  await runAgent(ws, agentId, trigger, rest, { forceApproval: true }).catch((e) => console.warn("[agent.run]", e instanceof Error ? e.message : e));
 });

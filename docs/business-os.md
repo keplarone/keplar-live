@@ -72,8 +72,13 @@ production) and never returned by the API (`hasToken` only).
   per-agent opt-in, Plus and up, still bounded by an outbound-per-day cap (over the cap → back to approval).
 - **Caps per agent** (defaults): 1,500 credits/month, 24 runs/day, 20 sends/day, $3 spend/month. The
   workspace allowance is also checked before each run.
-- **Scheduled (unattended) runs never auto-send:** every outbound action goes to the approval queue even
-  when the agent has auto-send on (`runAgent(..., { forceApproval: true })`). No override.
+- **Only a run the owner starts by hand may auto-send.** Every other run (schedules, chat, and every event:
+  `form.submitted`, `order.paid`, webhooks, inbound email) queues every outbound action for approval even when
+  the agent has auto-send on. `runAgent` forces this itself for any trigger other than `manual`, and the
+  queue/Inngest `agent.run` handlers also pass `{ forceApproval: true }`. No override. A public form can create a
+  contact, so a contact created by a form in the last hour does not count as a "known" recipient for the AI
+  Firewall (the reply is rated high risk).
+- **Teammates:** auto-send and caps can be changed by the workspace owner only; approvals are decided by the owner or an admin.
 - **Kill switch** per agent (irreversible; cancels its pending approvals) and **Stop all agents** per workspace.
 - **Audit log** for every step. Model calls: OpenRouter (`KEPLAR_AGENT_MODEL`), system prompt forbids invented facts/prices.
 - Agents per plan: Free 0, Plus 3, Pro 10, Business 50.
