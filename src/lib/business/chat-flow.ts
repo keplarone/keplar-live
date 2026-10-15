@@ -83,7 +83,7 @@ export function stepNode(text: string): FlowNodeKind | "start" | "fail" {
   return "data";
 }
 
-export type FlowApproval = { id: string; status: "pending" | "approved" | "rejected" | "cancelled" | "sent" | "failed"; risk?: "low" | "medium" | "high"; result?: string; preview: ActionPreview };
+export type FlowApproval = { id: string; status: "pending" | "approved" | "rejected" | "cancelled" | "executing" | "sent" | "failed"; risk?: "low" | "medium" | "high"; result?: string; preview: ActionPreview };
 export type ActionPreview = { kind: OutboundAction["type"]; to?: string; title: string; body: string };
 
 /** What the owner reads before approving: who it goes to and the exact text. */

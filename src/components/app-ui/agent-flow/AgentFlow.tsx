@@ -231,7 +231,7 @@ function Approvals({ flow: f, template, name, onPatch, onSettled }: { flow: Agen
           <div className={s.previewHead}>
             <span className={s.previewTitle}>{cur.preview.title}</span>
             <span className={s.previewOf}>· {Math.min(i, list.length - 1) + 1} of {list.length}</span>
-            {cur.status !== "pending" ? <span className={s.previewStatus} data-status={cur.status}>{cur.status === "sent" ? "Sent" : cur.status === "failed" ? "Not sent" : cur.status === "rejected" ? "Rejected" : cur.status}</span> : null}
+            {cur.status !== "pending" ? <span className={s.previewStatus} data-status={cur.status}>{cur.status === "sent" ? "Sent" : cur.status === "failed" ? "Not sent" : cur.status === "rejected" ? "Rejected" : cur.status === "executing" ? "Sending" : cur.status}</span> : null}
             {list.length > 1 ? (
               <span className={s.pager}>
                 <IconButton size="sm" variant="secondary" label="Previous draft" disabled={i === 0} onClick={() => setI((x) => Math.max(0, x - 1))} icon={<Icon name="chevron-right" size={14} className={s.flip} />} />
