@@ -9,6 +9,8 @@
  * Signed out is 401. Same-origin only for writes. Rate limited. The public page is /r/<token> (noindex).
  */
 import { currentWorkspace } from "@/lib/create/platform/workspace";
+import { adminFromHeaders } from "@/lib/ops/admin-auth";
+import { writeAudit } from "@/lib/ops/audit";
 import { body, errorResponse, HttpError, json } from "@/lib/create/platform/http";
 import { limitRequest } from "@/lib/create/platform/ratelimit";
 import { isSameOrigin } from "@/lib/security/origin";
@@ -75,8 +77,11 @@ export async function PATCH(req: Request) {
     const ws = await owner(req, true);
     const b = await body<{ token?: unknown; public?: unknown; consent?: unknown; slug?: unknown; takedown?: unknown }>(req);
     if (b.takedown === true) {
-      if (!ws.admin) throw new HttpError(403, "Admins only.", "forbidden");
+      // The full admin gate (verified session, admin list, MFA when required), not the workspace's admin flag.
+      const admin = await adminFromHeaders(req.headers);
+      if (!admin) throw new HttpError(403, "Admins only.", "forbidden");
       if (typeof b.slug !== "string" || !(await takeDownPublic(b.slug))) throw new HttpError(404, "No such public page.", "not_found");
+      await writeAudit(admin.email, "share_takedown", b.slug.slice(0, 80));
       return json({ ok: true });
     }
     if (!validToken(b.token) || typeof b.public !== "boolean") throw new HttpError(400, "Unknown link.", "invalid");

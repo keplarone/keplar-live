@@ -8,6 +8,8 @@
  * Same-origin only for writes. Rate limited. The public gallery is /templates.
  */
 import { currentWorkspace } from "@/lib/create/platform/workspace";
+import { adminFromHeaders } from "@/lib/ops/admin-auth";
+import { writeAudit } from "@/lib/ops/audit";
 import { body, errorResponse, HttpError, json } from "@/lib/create/platform/http";
 import { limitRequest } from "@/lib/create/platform/ratelimit";
 import { isSameOrigin } from "@/lib/security/origin";
@@ -63,11 +65,14 @@ export async function DELETE(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
-    const ws = await owner(req, true);
-    if (!ws.admin) throw new HttpError(403, "Admins only.", "forbidden");
+    await owner(req, true);
+    // The full admin gate (verified session, admin list, MFA when required), not the workspace's admin flag.
+    const admin = await adminFromHeaders(req.headers);
+    if (!admin) throw new HttpError(403, "Admins only.", "forbidden");
     const b = await body<{ slug?: unknown; status?: unknown }>(req);
     if (typeof b.slug !== "string" || (b.status !== "live" && b.status !== "hidden")) throw new HttpError(400, "Expected a slug and a status of live or hidden.", "invalid");
     if (!(await setTemplateStatus(b.slug, b.status))) throw new HttpError(404, "No such template.", "not_found");
+    await writeAudit(admin.email, `template_${b.status}`, b.slug.slice(0, 80));
     return json({ ok: true });
   } catch (e) {
     return errorResponse(e);
