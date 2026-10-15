@@ -29,7 +29,7 @@ Every figure below was measured on the development machine with providers stubbe
 
 - **6 Capacity and cost governor**: per-request USD caps, cost guard (kill switch, negative-margin throttle, quotas), global daily cap and circuit
   breaker (`breaker-routing.ts`), spend-spike auto-pause, usage cooldown, load shedding (`fanout.ts`), the shared Free-key governor
-  (`pool-governor.ts`), agent limits (`business/guard/core.ts`: 40 steps per agent, concurrency, budget). Limits are told to the person.
+  (`pool-governor.ts`). Limits are told to the person.
 - **11 Command palette**: Ctrl/⌘+K (`components/nav/CommandPalette.tsx`), keyboard navigable, in-app search dialog.
 - **12 Adaptive rendering**: the FX tiers and Save-Data/reduced-motion handling, `after-paint.ts`, 3D scenes that pause on `visibilitychange`,
   `content-visibility: auto` for long chats, lazily loaded studios.

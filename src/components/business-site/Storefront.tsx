@@ -85,21 +85,12 @@ const CONTROLS = [
   { title: "A complete audit log", body: "Who or what did each thing, when, and what it cost." },
 ];
 
-const GUARD_STEPS = [
-  { title: "Explore", body: "Agents walk signup, checkout, billing, cancellation and recovery in real browsers." },
-  { title: "Screen", body: "Every report needs steps, screenshots and a network log. Guesses are dropped." },
-  { title: "Reproduce", body: "A separate agent replays each report in a clean session." },
-  { title: "Patch", body: "A proposed fix with a regression test that fails before and passes after." },
-  { title: "Review", body: "A different reviewer checks it. Nothing merges without your approval." },
-];
-
 const TRUST = [
   { title: "Your approval gates every external action", body: "Agents prepare; people decide. Approvals are on by default." },
   { title: "Paid model requests stay out of training", body: "Requests go only to model endpoints that say they do not train on prompts." },
   { title: "Everything is recorded", body: "The audit log keeps each agent action with its time, actor and cost." },
   { title: "Your data leaves when you do", body: "Export your account's data at any time from Settings." },
   { title: "Payments handled by Whop", body: "Checkout runs in Whop's own form. Keplar never sees your card." },
-  { title: "Testing only what you own", body: "Revenue Guard runs only against apps your company has verified." },
 ];
 
 function osOf(ua: string): "windows" | "macos" | "linux" {
@@ -379,20 +370,6 @@ export function Storefront() {
           <ul className={s.columns} data-reveal="">
             {CONTROLS.map((g) => <li key={g.title}><h3 className={s.h5}>{g.title}</h3><p>{g.body}</p></li>)}
           </ul>
-
-          <div id="revenue-guard" className={s.guard} data-reveal="">
-            <div className={s.guardHead}>
-              <div>
-                <p className={s.overline}>Revenue Guard · Enterprise · Early access</p>
-                <h3 className={s.h3}>A swarm that tests where money changes hands.</h3>
-              </div>
-              <p className={s.body}>For example: a customer cancels, reopens an old checkout tab and is charged again. Revenue Guard finds it, proves it, and proposes the fix with a test. Results depend on your product; we report what was found and fixed, never a promised amount.</p>
-            </div>
-            <ol className={s.guardSteps}>
-              {GUARD_STEPS.map((x, i) => <li key={x.title}><span className={s.index}>{String(i + 1).padStart(2, "0")}</span><h4 className={s.h6}>{x.title}</h4><p>{x.body}</p></li>)}
-            </ol>
-            <a href="#contact" className={s.textLink}>Request early access <Arrow /></a>
-          </div>
         </div>
       </section>
 
@@ -447,7 +424,6 @@ export function Storefront() {
                   <tr><th scope="row">AI credits</th>{ORDER.map((id) => <td key={id}>{BUSINESS_TIERS[id].credits === null ? "Negotiated" : fmt(BUSINESS_TIERS[id].credits!)}</td>)}</tr>
                   <tr><th scope="row">Projects</th>{ORDER.map((id) => <td key={id}>{BUSINESS_TIERS[id].projects === null ? "Unlimited (fair use)" : fmt(BUSINESS_TIERS[id].projects!)}</td>)}</tr>
                   <tr><th scope="row">Custom domains</th>{ORDER.map((id) => <td key={id}>{fmt(BUSINESS_TIERS[id].customDomains)}</td>)}</tr>
-                  <tr><th scope="row">Revenue Guard</th>{ORDER.map((id) => <td key={id}>{BUSINESS_TIERS[id].swarm ? "Included" : "—"}</td>)}</tr>
                 </tbody>
               </table>
             </div>
@@ -491,7 +467,6 @@ export function Storefront() {
               <ul className={s.checks}>
                 <li>SSO / SAML and SCIM</li>
                 <li>Negotiated seats, usage and concurrency</li>
-                <li>Revenue Guard testing swarm</li>
                 <li>Dedicated onboarding</li>
               </ul>
               <a href="#contact" className={s.btnGhost}>Contact sales</a>
@@ -505,7 +480,7 @@ export function Storefront() {
           <div className={s.splitHead} data-reveal="">
             <p className={s.overline}>Contact sales</p>
             <h2 id="contact-h" className={s.h2}>Talk to the team.</h2>
-            <p className={s.body}>Enterprise plans, Revenue Guard early access, security reviews and custom terms. We reply by email, usually within one business day.</p>
+            <p className={s.body}>Enterprise plans, security reviews and custom terms. We reply by email, usually within one business day.</p>
           </div>
           <div className={s.formWrap} data-reveal="">
             <InquiryForm defaultEmail={status.state === "in" ? status.email ?? "" : ""} defaultCompany={status.state === "in" ? status.account?.company ?? "" : ""} />
@@ -523,7 +498,6 @@ const Chevron = () => <svg width="14" height="14" viewBox="0 0 14 14" aria-hidde
 
 const TOPICS = [
   { id: "Enterprise", label: "Enterprise plan" },
-  { id: "Autonomous Agents", label: "Revenue Guard early access" },
   { id: "Keplar Business", label: "Starter, Growth or Scale" },
   { id: "General Inquiry", label: "Something else" },
 ] as const;

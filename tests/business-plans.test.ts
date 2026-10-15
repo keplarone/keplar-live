@@ -1,7 +1,7 @@
 import "./setup";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { BUSINESS_TIERS, businessTierForWhopPlanId, businessTierOf, businessWhopPlanId, listPriceFor, priceFor, tierEntitlements } from "@/lib/business/tiers";
 import { ENTITLEMENTS } from "@/lib/create/platform/plans";
 import { PLAN_ALLOWANCES } from "@/lib/orchestration/plans";
@@ -36,9 +36,16 @@ test("Business plans: monthly only, no annual plans anywhere in checkout or the 
   }
 });
 
-test("Business plans: the swarm is Enterprise-only; no Study or Skills anywhere in a Business plan", () => {
-  assert.deepEqual(Object.values(BUSINESS_TIERS).filter((t) => t.swarm).map((t) => t.id), ["enterprise"]);
+test("Business plans: no Study or Skills anywhere in a Business plan", () => {
   for (const t of Object.values(BUSINESS_TIERS)) assert.equal(t.includes.some((x) => /study|skill/i.test(x)), false, t.id);
+});
+
+test("Revenue Guard is not built (owner decision), so no plan, page or footer offers it", () => {
+  for (const t of Object.values(BUSINESS_TIERS)) assert.equal(t.includes.some((x) => /revenue guard|testing swarm/i.test(x)), false, t.id);
+  for (const f of ["src/components/business-site/Storefront.tsx", "src/components/business-site/BusinessFooter.tsx", "src/lib/business/tiers.ts", "src/lib/privacy/account-data.ts"]) {
+    assert.doesNotMatch(readFileSync(f, "utf8"), /revenue.?guard|testing swarm|guard_targets/i, f);
+  }
+  assert.equal(existsSync("src/lib/business/guard"), false, "the unwired Revenue Guard module is gone");
 });
 
 test("Business plans: AI credits keep model spend at or under ~40% of the price (unit economics, with room after the price rise)", () => {

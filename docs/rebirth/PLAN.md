@@ -45,7 +45,7 @@ severity of REL-3 and PERF-12), backup/restore drill for Neon, structured timing
 and job failures. Desktop: code signing (DSK-2) once certificates exist, gated releases (DSK-3), cookie encryption (DSK-4).
 
 ## Decisions needed from the owner
-- **Revenue Guard (UX-5):** build it, or label it "coming soon" in the storefront and plan table.
+- **Revenue Guard (UX-5):** decided: it will not be built. Removed from the storefront, plans, footer and contact form; the unwired module is deleted.
 - **Abuse takedowns (AZ-1):** the fix keeps instant takedown for verified signed-in reporters or several independent reports,
   and routes a single anonymous report to urgent human review. Confirm this policy.
 - **UI v2 vs current code (UX-9):** which visual direction is final.

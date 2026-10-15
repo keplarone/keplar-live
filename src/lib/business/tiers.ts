@@ -40,8 +40,6 @@ export type BusinessTierSpec = {
   projects: number | null;
   customDomains: number;
   rpm: number;
-  /** The autonomous testing swarm (Revenue Guard). Enterprise only. */
-  swarm: boolean;
   includes: string[];
 };
 
@@ -50,23 +48,23 @@ const CORE = ["Business dashboard", "Projects", "Images", "Deep Research", "Reas
 export const BUSINESS_TIERS: Record<BusinessTier, BusinessTierSpec> = {
   starter: {
     id: "starter", name: "Keplar Business Starter", monthly: 199.99, listMonthly: 219.99, audience: "Small businesses and startups",
-    seats: 1, activeAgents: 5, actionsPerMonth: 3_000, credits: 30_000, projects: 10, customDomains: 3, rpm: 120, swarm: false,
+    seats: 1, activeAgents: 5, actionsPerMonth: 3_000, credits: 30_000, projects: 10, customDomains: 3, rpm: 120,
     includes: [...CORE, "1 seat", "5 active agents", "3,000 automation actions a month", "10 projects", "High-priority AI requests", "Standard support"],
   },
   growth: {
     id: "growth", name: "Keplar Business Growth", monthly: 499.99, listMonthly: 549.99, audience: "Growing teams and agencies",
-    seats: 5, activeAgents: 25, actionsPerMonth: 15_000, credits: 70_000, projects: null, customDomains: 10, rpm: 240, swarm: false,
+    seats: 5, activeAgents: 25, actionsPerMonth: 15_000, credits: 70_000, projects: null, customDomains: 10, rpm: 240,
     includes: ["Everything in Starter", "5 seats", "25 active agents", "15,000 automation actions a month", "Unlimited projects (fair use)", "Shared team workspaces", "Multi-agent workflows", "Team permissions", "Priority support"],
   },
   scale: {
     id: "scale", name: "Keplar Business Scale", monthly: 2_499.99, listMonthly: 2_749.99, audience: "Automation-intensive organizations",
-    seats: 15, activeAgents: 100, actionsPerMonth: 75_000, credits: 400_000, projects: null, customDomains: 50, rpm: 600, swarm: false,
+    seats: 15, activeAgents: 100, actionsPerMonth: 75_000, credits: 400_000, projects: null, customDomains: 50, rpm: 600,
     includes: ["Everything in Growth", "15 seats", "100 active agents", "75,000 automation actions a month", "Department workspaces", "Advanced model routing", "Audit logs", "API access", "Advanced approval workflows", "Priority technical support"],
   },
   enterprise: {
     id: "enterprise", name: "Keplar Enterprise", monthly: null, listMonthly: null, audience: "Large organizations",
-    seats: null, activeAgents: null, actionsPerMonth: null, credits: null, projects: null, customDomains: 200, rpm: 1_200, swarm: true,
-    includes: ["Everything in Scale", "Revenue Guard: autonomous testing swarm", "Negotiated seats, usage and concurrency", "SSO / SAML and SCIM", "Custom retention and security policies", "Dedicated onboarding", "Contractual service commitments"],
+    seats: null, activeAgents: null, actionsPerMonth: null, credits: null, projects: null, customDomains: 200, rpm: 1_200,
+    includes: ["Everything in Scale", "Negotiated seats, usage and concurrency", "SSO / SAML and SCIM", "Custom retention and security policies", "Dedicated onboarding", "Contractual service commitments"],
   },
 };
 
