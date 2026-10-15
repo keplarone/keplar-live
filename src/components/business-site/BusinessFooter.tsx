@@ -18,7 +18,7 @@ export function BusinessFooter() {
           <p>© Keplar</p>
         </div>
         <nav className={s.footCols} aria-label="Footer">
-          <div><h2>Product</h2><Link href="/work">Workspace</Link><Link href="/#pricing">Pricing</Link><Link href="/#download-app">Desktop app</Link><Link href="/#revenue-guard">Revenue Guard</Link></div>
+          <div><h2>Product</h2><Link href="/work">Workspace</Link><Link href="/chatgpt">ChatGPT plugin</Link><Link href="/#pricing">Pricing</Link><Link href="/#download-app">Desktop app</Link><Link href="/#revenue-guard">Revenue Guard</Link></div>
           <div><h2>Company</h2><a href={APP}>Keplar One</a><Link href="/#contact">Contact sales</Link><Link href="/status">Status</Link></div>
           <div><h2>Legal</h2><Link href="/terms">Terms</Link><Link href="/privacy">Privacy</Link><Link href="/security">Security</Link></div>
         </nav>

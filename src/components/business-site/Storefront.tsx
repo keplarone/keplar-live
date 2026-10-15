@@ -259,6 +259,7 @@ export function Storefront() {
           </Link>
           <nav className={s.navLinks} aria-label="Sections">
             {links.map((l) => <a key={l.href} href={l.href}>{l.label}</a>)}
+            <Link href="/chatgpt">ChatGPT</Link>
           </nav>
           <div className={s.navEnd}>
             {status.state === "out" ? (
@@ -281,6 +282,7 @@ export function Storefront() {
         {menu ? (
           <nav id="business-menu" className={s.sheet} aria-label="Sections">
             {links.map((l) => <a key={l.href} href={l.href} onClick={() => setMenu(false)}>{l.label}</a>)}
+            <Link href="/chatgpt" onClick={() => setMenu(false)}>ChatGPT</Link>
             {status.state === "out" ? (
               <a href={`/signin?next=${encodeURIComponent("/work")}`}>Sign in</a>
             ) : status.state === "in" ? <div className={s.sheetAccount}><span>{status.email}</span><SignOutButton email={status.email} /></div> : null}
@@ -301,6 +303,7 @@ export function Storefront() {
         <div className={s.heroActions}>
           {status.state === "loading" ? <span className={s.skeleton} aria-hidden="true" /> : <a href={start.href} className={s.btnPrimary}>Start Building<Arrow /></a>}
           <a href="#product" className={s.btnGhost}>Explore Keplar Business</a>
+          <Link href="/chatgpt" className={s.btnGhost}>Connect to ChatGPT</Link>
         </div>
         {start.sub ? <p className={s.heroSub}>{start.sub}</p> : null}
       </section>

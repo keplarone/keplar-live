@@ -125,7 +125,7 @@ export function spaceHost(req: NextRequest) {
  * The Business app's own pages (first path segment), each under /biz: storefront, account setup, sign-in handoff, workspace, and
  * its own copies of keplar.one's Status, Terms, Privacy and Security pages.
  */
-const BUSINESS_PAGES = new Set(["", "account", "signin", "work", "status", "terms", "privacy", "security"]);
+const BUSINESS_PAGES = new Set(["", "account", "signin", "work", "chatgpt", "status", "terms", "privacy", "security"]);
 
 export function businessHost(req: NextRequest): NextResponse | null {
   const { pathname, search } = req.nextUrl;
