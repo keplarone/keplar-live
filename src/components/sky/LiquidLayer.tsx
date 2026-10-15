@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { frameGap, liteFx } from "@/lib/fx/lite";
+import { frameGap, isPhone, liteFx } from "@/lib/fx/lite";
 import s from "./Sky.module.css";
 
 type Blob = { x: number; y: number; r: number; depth: number; phase: number; color: [number, number, number] };
@@ -15,13 +15,14 @@ const DARK: [number, number, number][] = [[38, 92, 150], [44, 78, 160], [30, 104
  * Scroll animation: each blob drifts at its own depth as the page scrolls (parallax), and scroll speed stretches the blobs
  * vertically and swells them a little, settling back when scrolling stops. Colours are all light blues (dark theme: deeper blues), so the blobs read as one connected aura when they merge. Paused while the tab is
  * hidden; prefers-reduced-motion draws one still frame and ignores scrolling. Phones and modest devices (liteFx) compute a
- * quarter as many pixels at about 30 fps.
+ * quarter as many pixels at about 30 fps. Phones (isPhone) skip it entirely: the canvas is hidden there (Sky.module.css).
  */
 export function LiquidLayer() {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = ref.current;
+    if (isPhone()) return;
     const ctx = canvas?.getContext("2d", { alpha: true });
     if (!canvas || !ctx) return;
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;

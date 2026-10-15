@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { LiquidLayer } from "./LiquidLayer";
-import { frameGap, liteFx } from "@/lib/fx/lite";
+import { frameGap, isPhone, liteFx } from "@/lib/fx/lite";
 import s from "./Sky.module.css";
 
 /**
@@ -11,13 +11,15 @@ import s from "./Sky.module.css";
  * The dots follow slow sine waves, deep blue low on the left and sky blue high on the right, like the reference. Pauses when the tab is
  * hidden or scrolled out of view; prefers-reduced-motion draws one still frame. Phones and modest devices (liteFx) draw a
  * third of the dots at 1x pixel density and about 30 fps. Dark theme dims the auras and uses deeper liquid colours (Sky.module.css).
+ * Phones (isPhone, 640px and narrower) draw nothing: the canvases are hidden and the auras become one still CSS glow behind the
+ * hero (Sky.module.css), so no frame loop competes with the page on a phone's main thread.
  */
 export function SkyBackdrop() {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = ref.current;
-    if (!canvas) return;
+    if (!canvas || isPhone()) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;

@@ -7,9 +7,12 @@ import { LanguagePicker } from "@/components/i18n/LanguagePicker";
 import { getMessages } from "@/lib/i18n/server";
 import { loadConsent } from "@/lib/i18n/consent";
 import { localizedPath } from "@/lib/i18n/routing";
+import { MoreButton, MoreRoot } from "@/components/ui/MobileMore";
 import s from "./Footer.module.css";
 
-/** Site footer. In a localized layout labels come from that locale's catalog and links to translated pages stay in the locale. */
+/** Site footer. In a localized layout labels come from that locale's catalog and links to translated pages stay in the locale.
+ *  Phones (640px and narrower): each link group is an accordion whose heading is the toggle (src/components/ui/MobileMore.tsx);
+ *  every link is still in the page, and wider screens show the open columns as before. */
 export async function Footer({ locale = "en" }: { locale?: string }) {
   const year = new Date().getFullYear();
   const [f, consent] = await Promise.all([getMessages(locale, "common").then((m) => m.footer), loadConsent(locale)]);
@@ -25,10 +28,15 @@ export async function Footer({ locale = "en" }: { locale?: string }) {
           </a>
         </div>
         <nav className={s.cols} aria-label={f.label}>
-          {footerNav.map((col) => (
-            <div key={col.heading} className={s.col} data-wide={col.links.length > 8 ? "" : undefined}>
-              <h2 className={s.heading}>{f.headings[col.heading] ?? col.heading}</h2>
-              <ul>
+          {footerNav.map((col) => {
+            const heading = f.headings[col.heading] ?? col.heading;
+            return (
+            <MoreRoot key={col.heading} className={s.col} data-wide={col.links.length > 8 ? "" : undefined}>
+              <h2 className={s.heading}>
+                <span className={s.headingText}>{heading}</span>
+                <MoreButton more={heading} less={heading} className={s.headingBtn} />
+              </h2>
+              <ul data-more-rest="">
                 {col.links.map((l) => (
                   <li key={l.href}>
                     <Link href={localizedPath(l.href, locale)} className={s.link}>
@@ -37,8 +45,9 @@ export async function Footer({ locale = "en" }: { locale?: string }) {
                   </li>
                 ))}
               </ul>
-            </div>
-          ))}
+            </MoreRoot>
+            );
+          })}
         </nav>
       </div>
       <div className={s.base}>

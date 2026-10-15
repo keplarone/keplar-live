@@ -56,3 +56,5 @@
   .stages li[data-s="active"] i, .caret, .models li, .dis { animation: none; }
   .input, .go, .more, .samples button, .stages li { transition: none; }
 }
+/* Phones: the idle "What you will see" panel is only as tall as its list (340px of empty card read as a broken box). */
+@media (max-width: 640px) { .out { min-height: 0; padding: var(--s-5); } }

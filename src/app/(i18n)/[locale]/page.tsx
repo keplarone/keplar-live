@@ -18,7 +18,7 @@ export default async function LocaleHome({ params }: P) {
   return (
     <>
       <MonolithHome />
-      <Chapters locale={locale} beforeClose={<Pricing showCompute={false} locale={locale} />} />
+      <Chapters locale={locale} beforeClose={<Pricing showCompute={false} locale={locale} phoneFeatures={3} />} />
       <ChapterSync />
       <JsonLd data={softwareApp()} />
     </>

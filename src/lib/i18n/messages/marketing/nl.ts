@@ -333,6 +333,8 @@ const m: MarketingCatalog = {
         "cta": "Upgraden naar Pro"
       }
     },
+    "seeAll": "Alles in {plan} bekijken",
+    "showLess": "Minder tonen",
     "fitTitle": "Welk abonnement past bij je?",
     "fits": {
       "free": {

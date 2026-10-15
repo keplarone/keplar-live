@@ -3,12 +3,16 @@ import { PlanCta } from "@/components/billing/PlanCta";
 import { computeAllowance, computeScale, formatPrice, SHOW_COMPUTE_ALLOWANCES, tiers } from "@/lib/tiers";
 import { pricingCopy } from "@/lib/sections";
 import { getMessages } from "@/lib/i18n/server";
+import { fmt } from "@/lib/i18n/format";
+import { MoreButton, MoreRoot } from "@/components/ui/MobileMore";
 import { SectionHeader } from "./SectionHeader";
 import s from "./Pricing.module.css";
 
 /** Four plans as one systematic row of calm cards (docs/ui-v2.md). Plus, the recommended plan, carries an ink edge and the one
- *  primary button; there is no "most popular" badge and no urgency. */
-export async function Pricing({ headingLevel = "h2", showCompute = true, locale = "en" }: { headingLevel?: "h1" | "h2"; showCompute?: boolean; locale?: string }) {
+ *  primary button; there is no "most popular" badge and no urgency.
+ *  Phones (640px and narrower) show each plan's price, summary, first `phoneFeatures` features and button; the rest of the list
+ *  folds behind "See everything in <plan>" (src/components/ui/MobileMore.tsx). Every feature stays in the page. */
+export async function Pricing({ headingLevel = "h2", showCompute = true, locale = "en", phoneFeatures = 4 }: { headingLevel?: "h1" | "h2"; showCompute?: boolean; locale?: string; phoneFeatures?: number }) {
   const Sub = headingLevel === "h1" ? "h2" : "h3";
   // Plan names and USD prices are never translated; summaries, features and labels are (English: src/lib/tiers.ts, src/lib/sections.ts).
   const p = (await getMessages(locale, "marketing")).pricing;
@@ -21,7 +25,7 @@ export async function Pricing({ headingLevel = "h2", showCompute = true, locale 
           {tiers.map((t) => {
             const x = p.tiers[t.id] ?? { summary: t.summary, features: t.features, cta: t.cta.label };
             return (
-            <li key={t.id} className={s.plan} data-plan={t.id} data-reveal>
+            <MoreRoot as="li" key={t.id} className={s.plan} data-plan={t.id} data-reveal>
               <Sub className={s.name}>{t.name}</Sub>
               <p className={s.price}>
                 {/* The real price, always: a count-up from $0 read as "$0 per month" to find-in-page, translation and assistive tech. */}
@@ -31,10 +35,13 @@ export async function Pricing({ headingLevel = "h2", showCompute = true, locale 
               <p className={s.summary}>{x.summary}</p>
               {SHOW_COMPUTE_ALLOWANCES && computeAllowance(t.id) ? <p className={s.cadence}>{computeAllowance(t.id)}</p> : null}
               <ul className={s.features}>
-                {x.features.map((f) => (
-                  <li key={f}>{f}</li>
+                {x.features.map((f, i) => (
+                  <li key={f} data-more-rest={i >= phoneFeatures ? "" : undefined}>{f}</li>
                 ))}
               </ul>
+              {x.features.length > phoneFeatures ? (
+                <MoreButton more={fmt(p.seeAll, { plan: t.name })} less={p.showLess} className={s.more} />
+              ) : null}
               <div className={s.cta}>
                 {t.id === "business" ? (
                   <ButtonLink href={t.cta.href} variant="secondary" arrow>
@@ -44,7 +51,7 @@ export async function Pricing({ headingLevel = "h2", showCompute = true, locale 
                   <PlanCta plan={t.id} label={x.cta} href={t.cta.href} primary={t.id === "plus"} />
                 )}
               </div>
-            </li>
+            </MoreRoot>
             );
           })}
         </ul>

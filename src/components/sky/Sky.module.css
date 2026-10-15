@@ -390,3 +390,71 @@
   .storySteps li { opacity: 1; transition: none; }
   .storySteps li p { display: block !important; }
 }
+
+/* Use cases: the wrapper is layout-neutral (the list stays a direct flex child of the section); on phones it folds cases 4-6
+   behind a "Show more" button (src/components/ui/MobileMore.tsx). */
+.casesWrap { display: contents; }
+.moreBtn { align-self: center; }
+
+/* ---- Phones (640px and narrower): calm and static. Nothing on the page moves on its own, nothing is pinned, and text is never
+   mid-fade. Same content and order as the wide layout; only the decoration and the spacing change. ---- */
+@media (max-width: 640px) {
+  /* One still glow behind the hero instead of the blurred auras, the liquid layer and the drifting dots (no canvas runs: SkyBackdrop, LiquidLayer). */
+  .backdrop i, .liquid, .dust { display: none; }
+  .backdrop { background: radial-gradient(130% 560px at 50% 0, rgb(169 216 245 / 0.5), rgb(196 226 251 / 0.22) 55%, transparent 100%) no-repeat; }
+  :global(:root[data-theme="dark"]) .backdrop { background: radial-gradient(130% 560px at 50% 0, rgb(40 110 140 / 0.22), transparent 100%) no-repeat; }
+
+  /* Hero: painted at once (the rise-in delayed the largest paint), a little tighter. */
+  .hero { animation: none; padding: 112px 16px 32px; gap: 20px; }
+  .h1 { font-size: 40px; }
+  .lede { font-size: 17px; }
+
+  /* The example window: the finished answer, no zoom or blur (DemoWindow, ScrollZoom), at a phone's scale. */
+  .previewWrap { padding: 8px 16px 48px; }
+  .window { transform: none; filter: none; opacity: 1; will-change: auto; border-radius: 22px; }
+  .windowBar { padding: 10px 14px; }
+  .windowBody { gap: 14px; padding: 20px 18px 22px; }
+  .userMsg { padding: 10px 14px; font-size: 15px; }
+  .verdicts { gap: 6px; }
+  .verdicts li { min-height: 30px; padding: 0 10px 0 6px; gap: 6px; font-size: 12px; }
+  .answer p { font-size: 15px; line-height: 1.6; }
+  .dissent { padding: 12px 14px; font-size: 14px !important; }
+
+  .section { padding: 32px 16px 56px; gap: 28px; }
+  .h2 { font-size: 30px; }
+
+  /* Feature list: no hover dimming (a tap leaves :hover stuck on touch screens, which greyed the whole list). */
+  .featureList:hover .featureRow { opacity: 1; }
+  .featureRow { padding: 16px 4px; gap: 4px 12px; }
+  .featureName { font-size: 20px; }
+
+  .cards3 { gap: 12px; }
+  .card { padding: 20px; gap: 8px; border-radius: 20px; }
+  .card h3 { font-size: 18px; }
+  .demo { gap: 20px; padding: 20px 16px; border-radius: 24px; }
+
+  /* How it works: a plain numbered list instead of the pinned three-screen particle scene (ParticleStory never loads three.js here). */
+  .story { height: auto; }
+  .storyStage { position: relative; height: auto; display: block; padding-block: 32px 56px; overflow: visible; }
+  .storyCanvas, .storyGlow { display: none; }
+  .storyText { padding: 0 16px; gap: 20px; justify-content: flex-start; }
+  .storyTitle { font-size: 30px; }
+  .storySteps { gap: 0; }
+  .storySteps li,
+  .storySteps li[data-active] {
+    opacity: 1;
+    padding: 16px 0;
+    background: none;
+    border: 0;
+    border-top: 1px solid var(--c-border);
+    border-radius: 0;
+    box-shadow: none;
+    transform: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    transition: none;
+  }
+  .storySteps li p { display: block !important; }
+  .storySteps .stepN { width: 32px; height: 32px; font-size: 14px; }
+  .storySteps h3 { font-size: 18px; margin-bottom: 4px; }
+}

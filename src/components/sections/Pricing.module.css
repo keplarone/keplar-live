@@ -244,3 +244,45 @@
 @media (prefers-reduced-motion: reduce) {
   .plan { transition: none; }
 }
+
+/* "See everything in <plan>" (phones only: the button is hidden on wider screens, src/styles/mobile.css). */
+.more {
+  margin-top: var(--s-3);
+  align-self: flex-start;
+}
+
+/* Phones: the same cards, tighter, so a plan reads as price, one line, its first features and one button. */
+@media (max-width: 640px) {
+  .section {
+    padding: var(--s-12) var(--l-gutter);
+  }
+  .plans {
+    margin-top: var(--s-8);
+    gap: var(--s-3);
+  }
+  .price {
+    flex-direction: row;
+    align-items: baseline;
+    gap: var(--s-2);
+    margin-top: var(--s-3);
+  }
+  .amount,
+  .plan[data-plan="business"] .amount {
+    font-size: 36px;
+  }
+  .summary {
+    margin-top: var(--s-3);
+  }
+  .features {
+    margin-top: var(--s-4);
+    padding-top: var(--s-4);
+    gap: var(--s-2);
+    flex: none;
+  }
+  .cta {
+    margin-top: var(--s-5);
+  }
+  .compute {
+    margin-top: var(--s-10);
+  }
+}

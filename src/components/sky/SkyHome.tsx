@@ -9,6 +9,7 @@ import { DemoWindow } from "./DemoWindow";
 import { FeatureList } from "./FeatureList";
 import { ParticleStory } from "./ParticleStory";
 import { HeroCta } from "@/components/growth/HeroCta";
+import { MoreButton, MoreRoot } from "@/components/ui/MobileMore";
 import s from "./Sky.module.css";
 
 /** Use cases shown on the home, in this order (slugs from content/use-cases), each with its icon stroke colour. */
@@ -20,6 +21,9 @@ const USE_CASES: { slug: string; color: string; icon: React.ReactNode }[] = [
   { slug: "study-for-an-exam", color: "#4a63b8", icon: <><path d="M4 6l8-3 8 3-8 3-8-3z" /><path d="M8 8v5c0 1.5 2 3 4 3s4-1.5 4-3V8" /></> },
   { slug: "understand-a-document", color: "#8a4f24", icon: <><path d="M7 3h7l4 4v14H7z" /><path d="M14 3v4h4M10 12h5M10 16h5" /></> },
 ];
+
+/** Phones show this many use cases; the rest fold behind "Show more" (src/components/ui/MobileMore.tsx). */
+const PHONE_CASES = 3;
 
 const STEPS = [
   { title: "Ask once", body: "Type your question the way you would anywhere else. You don't need to pick a model." },
@@ -70,17 +74,20 @@ export function SkyHome({ pricing }: { pricing?: React.ReactNode }) {
 
       <section className={s.section} aria-labelledby="cases-title">
         <h2 id="cases-title" className={s.h2}><span>Built for questions that matter.</span> <span className={s.muted}>And everyday ones too.</span></h2>
-        <ul className={s.cards3} data-reveal-stagger>
-          {useCases.map((u) => (
-            <li key={u.slug} data-reveal>
-              <Link href={u.data!.path} className={`${s.card} ${s.cardLink}`}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={u.color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{u.icon}</svg>
-                <h3>{u.data!.title}</h3>
-                <p>{u.data!.description}</p>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <MoreRoot className={s.casesWrap}>
+          <ul className={s.cards3} data-reveal-stagger>
+            {useCases.map((u, i) => (
+              <li key={u.slug} data-reveal data-more-rest={i >= PHONE_CASES ? "" : undefined}>
+                <Link href={u.data!.path} className={`${s.card} ${s.cardLink}`}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={u.color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{u.icon}</svg>
+                  <h3>{u.data!.title}</h3>
+                  <p>{u.data!.description}</p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <MoreButton more={`Show ${useCases.length - PHONE_CASES} more use cases`} less="Show fewer use cases" className={s.moreBtn} />
+        </MoreRoot>
       </section>
 
       <section id="demo" className={s.section} aria-labelledby="demo-title">

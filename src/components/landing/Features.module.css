@@ -38,14 +38,22 @@
 .status[data-s="beta"] { color: var(--c-attention); }
 .status[data-s]::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: var(--r-pill); background: currentColor; vertical-align: 1px; }
 
-@media (max-width: 560px) {
-  .table th { width: auto; display: block; padding-bottom: 0; }
-  .table td { display: inline-block; }
-  .table td.status { padding-right: var(--s-4) !important; }
-  .table td:not(.status) { padding-left: var(--s-6); }
-  .table tr { display: block; padding: var(--s-2) 0; }
+/* Phones (640px and narrower): each feature is one compact row: name and status on one line, what it does under it. */
+@media (max-width: 640px) {
+  .page { padding-top: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-10)); padding-bottom: var(--s-16); }
+  .head { padding-bottom: var(--s-8); }
+  .group { gap: var(--s-5); padding: var(--s-8) 0; }
+  .table, .table tbody { display: block; }
+  .table tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--s-3); align-items: baseline; padding: var(--s-3) var(--s-4); }
   .table tr + tr { border-top: var(--b-hairline) solid var(--hairline); }
   .table tr + tr th, .table tr + tr td { border-top: 0; }
+  .table th { grid-column: 1; width: auto; display: block; padding: 0; }
+  .table th[colspan] { grid-column: 1 / -1; }
+  .table td { display: block; padding: 0; }
+  .table td.status { grid-column: 2; grid-row: 1; padding: 0 !important; }
+  .table td:not(.status) { grid-column: 1 / -1; padding-top: var(--s-1); }
+  /* Links inside a row's note are 24px tap targets (WCAG 2.5.8), not just a line of text. */
+  .note a { display: inline-block; min-height: 24px; line-height: 24px; }
 }
 
 .foot { margin-top: var(--s-10); color: var(--c-ink-2); font-size: var(--t-small); max-width: 68ch; }

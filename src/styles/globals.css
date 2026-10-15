@@ -257,6 +257,12 @@ canvas { outline: none; }
     }
   }
 }
+/* Phones: no scroll reveal. On a 390px screen most blocks are mid-entry most of the time, so text read as washed out while scrolling. */
+@media (max-width: 640px) {
+  [data-reveal] {
+    animation: none;
+  }
+}
 @keyframes kp-flow {
   from {
     stroke-dashoffset: 36;

@@ -333,6 +333,8 @@ const m: MarketingCatalog = {
         "cta": "升級到 Pro"
       }
     },
+    "seeAll": "查看 {plan} 的全部內容",
+    "showLess": "收合",
     "fitTitle": "哪個方案適合你？",
     "fits": {
       "free": {

@@ -333,6 +333,8 @@ const m: MarketingCatalog = {
         "cta": "อัปเกรดเป็น Pro"
       }
     },
+    "seeAll": "ดูทุกอย่างใน {plan}",
+    "showLess": "แสดงน้อยลง",
     "fitTitle": "แพ็กเกจไหนเหมาะกับคุณ",
     "fits": {
       "free": {

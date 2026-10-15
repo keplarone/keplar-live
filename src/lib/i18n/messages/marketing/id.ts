@@ -333,6 +333,8 @@ const m: MarketingCatalog = {
         "cta": "Tingkatkan ke Pro"
       }
     },
+    "seeAll": "Lihat semua isi {plan}",
+    "showLess": "Tampilkan lebih sedikit",
     "fitTitle": "Paket mana yang cocok?",
     "fits": {
       "free": {

@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <>
-      <SkyHome pricing={<Pricing showCompute={false} />} />
+      <SkyHome pricing={<Pricing showCompute={false} phoneFeatures={3} />} />
       <JsonLd data={softwareApp()} />
     </>
   );

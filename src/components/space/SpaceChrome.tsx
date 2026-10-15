@@ -2,13 +2,32 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
+import { isPhone } from "@/lib/fx/lite";
 
 // three.js only runs in the browser: loaded after hydration, never on the server.
 const Starfield = dynamic(() => import("./Starfield"), { ssr: false });
 
-/** The star field (mounted once by the Space layout, so it survives navigation) and the scroll reveals. */
+/**
+ * The star field (mounted once by the Space layout, so it survives navigation) and the scroll reveals. Phones start it once the
+ * page is idle (at most 2.5s after load), so three.js never competes with the hero's first paint and first tap there; wider
+ * screens start it on the first frame after hydration, as before.
+ */
 export function SpaceBackground() {
-  return <Starfield />;
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    if (!isPhone()) {
+      const raf = requestAnimationFrame(() => setOn(true));
+      return () => cancelAnimationFrame(raf);
+    }
+    const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number; cancelIdleCallback?: (id: number) => void };
+    if (w.requestIdleCallback) {
+      const id = w.requestIdleCallback(() => setOn(true), { timeout: 2500 });
+      return () => w.cancelIdleCallback?.(id);
+    }
+    const t = window.setTimeout(() => setOn(true), 1200);
+    return () => window.clearTimeout(t);
+  }, []);
+  return on ? <Starfield /> : null;
 }
 
 /**
@@ -37,7 +56,8 @@ export function SpaceReveal() {
 
   useEffect(() => {
     const root = document.documentElement;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // Phones: no reveal, text is simply there (a fade on every block left it half-transparent while scrolling a small screen).
+    if (isPhone() || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     root.dataset.spaceReveal = "on";
     const io = new IntersectionObserver(
       (entries) => {

@@ -333,6 +333,8 @@ const m: MarketingCatalog = {
         "cta": "Pro로 업그레이드"
       }
     },
+    "seeAll": "{plan}에 포함된 모든 기능 보기",
+    "showLess": "간단히 보기",
     "fitTitle": "어떤 요금제가 맞을까요?",
     "fits": {
       "free": {

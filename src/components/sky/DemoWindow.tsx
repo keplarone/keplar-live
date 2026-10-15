@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { KeplarSymbol } from "@/components/brand";
 import { brand } from "@/lib/site";
+import { isPhone } from "@/lib/fx/lite";
 import { MODELS } from "./ModelStack";
 import s from "./Sky.module.css";
 
@@ -29,19 +30,24 @@ const WORDS_AT = ANSWER_AT + 220;
 const DISSENT_AT = WORDS_AT + WORDS.length * T.wordEach + 300;
 const FADE_AT = DISSENT_AT + T.hold;
 const LOOP = FADE_AT + T.fade + 400;
+const FINISHED = FADE_AT - 1; // every part shown, before the fade-out starts
 
 /**
  * The home's product window as a short looping demo: the question types itself, each model's pill appears thinking and then
  * resolves, Keplar's answer streams in word by word and the disagreement note slides up. Runs only while on screen and the tab is
  * visible; prefers-reduced-motion shows the finished state. Example content, labelled under the window.
+ * Phones show the finished state too, always: below the fold the loop used to rewind to its first frame and only restart once 30%
+ * of the (tall, on a phone) window was on screen, so people scrolling past saw a large empty white card for several seconds.
  */
 export function DemoWindow() {
   const ref = useRef<HTMLElement>(null);
-  const [t, setT] = useState(LOOP - T.fade - 400); // server render and reduced motion: the finished frame
+  // Server render, reduced motion and phones: the finished frame. (It used to be LOOP - fade - 400, which is FADE_AT: the first frame
+  // of the fade-out, so everything inside was at opacity 0 and the window rendered as an empty white card until a loop ran.)
+  const [t, setT] = useState(FINISHED);
 
   useEffect(() => {
     const el = ref.current;
-    if (!el || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!el || isPhone() || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let visible = false;
     // Never snap the finished frame (the server render) to an empty window in front of someone: if the window is on screen at load,
     // the loop carries on from the finished answer (hold, fade, then replay); below the fold it rewinds now, while nobody can see it,

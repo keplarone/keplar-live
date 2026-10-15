@@ -273,3 +273,12 @@
 .osIcon { display: inline-flex; margin-left: -2px; animation: osIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
 @keyframes osIn { from { opacity: 0; transform: translateX(-6px) scale(0.8); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .osIcon { animation: none; } }
+/* Phones: the hero is painted at once (the staggered rise delayed the largest paint by up to 1.3s). */
+@media (max-width: 640px) { .rise { animation: none; } }
+/* Phones: the quietest ink one step lighter (#74747f was 4.4:1 on the cards' #050507; this is 4.9:1). The small labels that use it
+   were faded out by the scroll reveal until now, so checkers never measured them. */
+@media (max-width: 640px) { .root { --sp-ink-3: #7c7c87; } }
+/* Phones: a soft dark band behind the floating nav, so text scrolling under the two pills does not collide with them. */
+@media (max-width: 640px) {
+  .nav::before { content: ""; position: fixed; inset: 0 0 auto; height: 76px; z-index: -1; pointer-events: none; background: linear-gradient(#000 55%, transparent); }
+}

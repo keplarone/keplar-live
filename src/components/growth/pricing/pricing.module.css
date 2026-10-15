@@ -277,3 +277,50 @@
 @media (prefers-reduced-motion: reduce) {
   .fit { transition: none; }
 }
+
+/* ── Comparison plan picker (ComparePicker.tsx): phones only ── */
+.picker {
+  display: none;
+}
+
+/* Phones (640px and narrower). "Which plan fits?" keeps who each plan is for, without repeating the prices and buttons the plan
+   cards right above already show. The comparison shows the feature column and the picked plan, so nothing is cut off at 320px. */
+@media (max-width: 640px) {
+  .section { padding-top: var(--s-12); }
+  .fits { margin-top: var(--s-5); gap: var(--s-3); }
+  .fit { padding: var(--s-5); }
+  .fitPrice, .fitCta { display: none; }
+  .fitWho { margin-top: var(--s-2); }
+
+  .picker {
+    display: flex;
+    margin-top: var(--s-6);
+    padding: 4px;
+    gap: 4px;
+    border-radius: var(--r-pill);
+    background: var(--surface-raised);
+    box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong);
+  }
+  .picker button {
+    flex: 1;
+    min-height: 44px;
+    padding: 0 var(--s-2);
+    border: 0;
+    border-radius: var(--r-pill);
+    background: none;
+    font: inherit;
+    font-size: var(--t-small);
+    color: var(--c-ink-2);
+    cursor: pointer;
+  }
+  .picker button[aria-pressed="true"] {
+    background: var(--c-ink);
+    color: var(--c-canvas);
+    font-weight: var(--w-medium);
+  }
+  .scroller { margin-top: var(--s-3); }
+  .table { min-width: 0; }
+  .featureHead, .feature { min-width: 0; width: 56%; }
+  .table th, .table td { padding: var(--s-3); overflow-wrap: anywhere; }
+  .ctaCell { white-space: normal; }
+}

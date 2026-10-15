@@ -333,6 +333,8 @@ const m: MarketingCatalog = {
         "cta": "שדרוג ל-Pro"
       }
     },
+    "seeAll": "כל מה שכלול ב-{plan}",
+    "showLess": "הצג פחות",
     "fitTitle": "איזו תוכנית מתאימה?",
     "fits": {
       "free": {

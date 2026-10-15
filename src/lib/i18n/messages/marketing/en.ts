@@ -71,6 +71,8 @@ const en = {
     perMonth: "{price}/mo",
     fine: "Cancel any time from your account. Checkout is handled by Whop. Credits renew every month and are used according to how much model work a question needs: simple questions cost very little.",
     tiers: { free: tier("free"), lite: tier("lite"), plus: tier("plus"), pro: tier("pro") } as Record<string, { summary: string; features: string[]; cta: string }>,
+    seeAll: "See everything in {plan}",
+    showLess: "Show less",
     fitTitle: "Which plan fits?",
     fits: { free: fit("free"), plus: fit("plus"), pro: fit("pro") } as Record<string, { who: string; outcome: string; cta: string }>,
     compareTitle: "Compare every plan",

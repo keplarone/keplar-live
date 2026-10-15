@@ -92,6 +92,13 @@
   }
   #main > * > :nth-child(2) { animation-delay: 40ms; }
   #main > * > :nth-child(n + 3) { animation-delay: 80ms; }
+  /* Phones: no page entry. Text that starts at opacity 0 is not "painted" until its first visible frame, and on a phone that frame
+     waits behind hydration, so the hero counted as painted ~2s late (LCP). The page is simply there. */
+  @media (max-width: 640px) {
+    #main:not([data-kb]) > :not([class*="workspace-module__"]) > :is(header, section, div, article, nav, form):nth-child(-n + 6) {
+      animation: none;
+    }
+  }
   /* Not Keplar Studio (the overlay window mounts it straight under #main): an app surface, not a page; it never slides in. */
   #main > [data-ks-root] > * { animation: none !important; } /* outranks the page-entry selector above */
 
