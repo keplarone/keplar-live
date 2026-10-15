@@ -6,6 +6,7 @@
 import sharp from "sharp";
 import type { Browser, BrowserContext, Page } from "playwright-core";
 import { issuesFromConsole, issuesFromProbe, PROBE_JS, VIEWPORTS, type Probe, type QaIssue, type Viewport } from "./probe";
+import { dnsResolve, guardContext, networkTransport, type Resolver, type Transport } from "@/lib/browser/run";
 
 export type QaEvent =
   | { type: "step"; text: string }
@@ -14,7 +15,19 @@ export type QaEvent =
   | { type: "check"; name: string; ok: boolean; detail: string }
   | { type: "done"; issues: QaIssue[]; pages: number; shots: number; homeShots: { viewport: Viewport["id"]; jpeg: Buffer }[] };
 
-export type QaInput = { browser: Browser; baseUrl: string; siteId: string; version: number; token: string; pages: string[]; hasErrorPage: boolean; deadline: number };
+export type QaInput = {
+  browser: Browser; baseUrl: string; siteId: string; version: number; token: string; pages: string[]; hasErrorPage: boolean; deadline: number;
+  /** Tests inject these; production resolves DNS and fetches through the pinned SSRF-safe transport (src/lib/browser/run.ts). */
+  resolve?: Resolver; transport?: Transport;
+};
+
+/**
+ * The draft is user-authored HTML running in a browser on our servers: its images, scripts and fetches may only reach our own
+ * origin (the draft itself) and the public web, never a private, loopback or metadata address (IN-6). Same guard as Keplar Browser.
+ */
+export async function guardQaContext(ctx: BrowserContext, i: Pick<QaInput, "baseUrl" | "resolve" | "transport">): Promise<void> {
+  await guardContext(ctx, i.resolve ?? dnsResolve, i.transport ?? networkTransport, new Set(), new Set(), { trustedOrigin: new URL(i.baseUrl).origin });
+}
 
 const pageName = (f: string) => (f === "index.html" ? "the home page" : `the ${f.replace(/\.html$/, "").replace(/[-_]/g, " ")} page`);
 const urlFor = (i: QaInput, file: string) => `${i.baseUrl}/sites/draft/${i.siteId}/${i.version}${file === "index.html" ? "" : `/${file}`}?t=${i.token}`;
@@ -51,6 +64,7 @@ export async function* runQa(i: QaInput): AsyncGenerator<QaEvent> {
   for (const vp of VIEWPORTS) {
     const ctx = await i.browser.newContext({ viewport: { width: vp.width, height: vp.height }, deviceScaleFactor: vp.id === "mobile" ? 2 : 1, isMobile: vp.id === "mobile", hasTouch: vp.id !== "desktop", userAgent: vp.id === "mobile" ? "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1 KeplarQA" : undefined });
     try {
+      await guardQaContext(ctx, i);
       // Phone and desktop see every page; the tablet only the home page (it sits between the two).
       const list = vp.id === "tablet" ? pages.slice(0, 1) : pages;
       for (const file of list) {
