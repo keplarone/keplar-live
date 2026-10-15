@@ -5,7 +5,7 @@
  * Track B on the local fixture (dry-run unless KEPLAR_BROWSER_DRY_RUN=0).
  */
 import { checkWant } from "./safety";
-import { activeRegistry } from "./registry";
+import { activeRegistry, type AgentRow } from "./registry";
 import { connected, executeGateway } from "./gateways";
 import { dropPending, readPending, savePending } from "./confirmations";
 import { verifyPin } from "./pin";
@@ -43,13 +43,22 @@ function providerOf(prompt: string): "logistics" | "commerce" | null {
   return null;
 }
 
+/**
+ * Commerce and logistics words still start a plan on their own. Any other prompt
+ * starts one only when the catalog actually returned a helper. An empty index
+ * does not invent a match.
+ */
+function providerFor(prompt: string, agents: AgentRow[]): "logistics" | "commerce" | "general" | null {
+  return providerOf(prompt) ?? (agents.length ? "general" : null);
+}
+
 export async function planWant(userId: string, body: WantBody, signal: AbortSignal = AbortSignal.timeout(wantsTimeoutMs())): Promise<WantResult> {
   if (body.confirmationId) return executeConfirmed(userId, body);
   const verdict = checkWant(body.prompt);
   if (verdict) return { ...verdict, message: verdict.reason, ui: { type: "notice" } };
   const agents = await activeRegistry().lookup(body.prompt);
   if (signal.aborted) return timeoutResult();
-  const provider = providerOf(body.prompt);
+  const provider = providerFor(body.prompt, agents);
   if (!provider) {
     return { status: "answered", agents, message: "Noted. I found related helpers but nothing here needs an action yet." };
   }

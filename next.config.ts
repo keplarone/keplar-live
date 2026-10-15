@@ -20,7 +20,8 @@ const nextConfig: NextConfig = {
     // Keplar Browser drives the same serverless Chromium for a person's task.
     "/api/browser/tasks": ["./node_modules/@sparticuz/chromium/bin/**", "./node_modules/playwright-core/**"],
     // Keplar Wants Track B fills a local fixture in headless Chromium (dry-run unless a PIN confirmed a submit).
-    "/api/keplar/wants/orchestrate": ["./node_modules/@sparticuz/chromium/bin/**", "./node_modules/playwright-core/**"],
+    // The swarm catalog is seeded by `npm run build` into data/wants/swarm.db and opened read-only.
+    "/api/keplar/wants/orchestrate": ["./node_modules/@sparticuz/chromium/bin/**", "./node_modules/playwright-core/**", "./data/wants/swarm.db"],
     "/api/health/qa-browser": ["./node_modules/@sparticuz/chromium/bin/**", "./node_modules/playwright-core/**"],
     // The app builder tests generated apps in a real browser, serving the runtime scripts from public/fx in-process.
     "/api/apps/[id]/build": ["./node_modules/@sparticuz/chromium/bin/**", "./node_modules/playwright-core/**", "./public/fx/**"],

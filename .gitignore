@@ -6,6 +6,10 @@ node_modules/
 .next/
 *.tsbuildinfo
 .data/
+# Built by scripts/seed-wants-swarm.ts during `npm run build`. Not source.
+data/wants/swarm.db
+data/wants/swarm.db-wal
+data/wants/swarm.db-shm
 
 # written by scripts/build-guard.mjs on production builds
 public/deploy-stamp.json

@@ -2,17 +2,17 @@
  * Virtual micro-agent registry.
  *
  * Storage: Node's built-in `node:sqlite` (this app runs on Node 22; no native addon).
- * The file lives at KEPLAR_SWARM_DB, or under .data/ locally, or /tmp on Vercel.
- * Vercel's disk is ephemeral, and this catalog is synthetic metadata, not user data,
- * so it is rebuilt per instance rather than written to Neon. PINs and confirmations
- * use the app's Neon/file store instead (see pin.ts).
+ * Production reads a catalog seeded at build time into data/wants/swarm.db and traced
+ * into the serverless bundle. That file is opened read-only. PINs and confirmations
+ * stay in the app's Neon/file store (see pin.ts). KEPLAR_SWARM_DB overrides the path.
+ * KEPLAR_DATA_DIR (tests, e2e) gets its own writable file so a suite never shares the bundle.
  *
  * This Node build ships SQLite without FTS5. When FTS5 is present it is used;
  * otherwise a keyword table with an index is the fallback. Rows come from a
  * generator and are inserted in batches. Lookups return at most 5 rows.
  */
 import { DatabaseSync } from "node:sqlite";
-import { mkdirSync } from "node:fs";
+import { existsSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import os from "node:os";
 
@@ -64,40 +64,72 @@ export function gcHint(): void {
   }
 }
 
+/** Shipped with the deployment. `npm run build` writes this before `next build` traces it. */
+export const BUNDLED_SWARM_RELATIVE = path.join("data", "wants", "swarm.db");
+
+export function bundledSwarmPath(cwd = process.cwd()): string {
+  return path.join(cwd, BUNDLED_SWARM_RELATIVE);
+}
+
+export function resolveSwarmPath(env: NodeJS.ProcessEnv = process.env, cwd = process.cwd(), exists: (p: string) => boolean = existsSync): string {
+  const explicit = env.KEPLAR_SWARM_DB?.trim();
+  if (explicit) return explicit;
+  // Tests and e2e set this so they never read or write the bundled catalog.
+  if (env.KEPLAR_DATA_DIR) return path.join(env.KEPLAR_DATA_DIR, "keplar-wants", "swarm.db");
+  const bundled = bundledSwarmPath(cwd);
+  if (exists(bundled)) return bundled;
+  if (env.VERCEL) return path.join(os.tmpdir(), "keplar-wants", "swarm.db");
+  return path.join(cwd, ".data", "keplar-wants", "swarm.db");
+}
+
+export function catalogIsBundled(dbPath: string, cwd = process.cwd()): boolean {
+  return path.resolve(dbPath) === path.resolve(bundledSwarmPath(cwd));
+}
+
 export function defaultSwarmPath(): string {
-  if (process.env.KEPLAR_SWARM_DB?.trim()) return process.env.KEPLAR_SWARM_DB.trim();
-  // KEPLAR_DATA_DIR isolates tests. On Vercel only /tmp is writable; the catalog is rebuilt there.
-  const dir = process.env.KEPLAR_DATA_DIR
-    ? path.join(process.env.KEPLAR_DATA_DIR, "keplar-wants")
-    : process.env.VERCEL
-      ? path.join(os.tmpdir(), "keplar-wants")
-      : path.join(process.cwd(), ".data", "keplar-wants");
-  return path.join(dir, "swarm.db");
+  return resolveSwarmPath();
 }
 
 type SqlRow = { agent_id: string; name: string; track: string; keywords: string; skills: string; api_schema: string };
 
 export class Registry {
   readonly fts: boolean;
+  readonly readOnly: boolean;
   private db: DatabaseSync;
-  constructor(dbPath: string = defaultSwarmPath(), private batchSize = 2000) {
-    if (dbPath !== ":memory:") mkdirSync(path.dirname(dbPath), { recursive: true });
-    this.db = new DatabaseSync(dbPath);
-    this.db.exec("PRAGMA journal_mode=WAL");
-    this.db.exec("PRAGMA synchronous=NORMAL");
-    this.db.exec("PRAGMA cache_size=-8000");
-    this.db.exec("PRAGMA temp_store=FILE");
-    this.fts = fts5Available();
-    this.db.exec(`CREATE TABLE IF NOT EXISTS agents(
-      agent_id TEXT PRIMARY KEY, name TEXT, track TEXT,
-      keywords TEXT, skills TEXT, api_schema TEXT)`);
-    if (this.fts) {
-      this.db.exec(`CREATE VIRTUAL TABLE IF NOT EXISTS agents_fts USING fts5(
-        agent_id UNINDEXED, keywords, skills, tokenize='porter unicode61')`);
+  constructor(dbPath: string = defaultSwarmPath(), private batchSize = 2000, opts: { readOnly?: boolean } = {}) {
+    this.readOnly = opts.readOnly === true;
+    if (this.readOnly) {
+      this.db = new DatabaseSync(dbPath, { readOnly: true });
+      this.db.exec("PRAGMA query_only=ON");
     } else {
-      this.db.exec("CREATE TABLE IF NOT EXISTS agent_kw(kw TEXT, agent_id TEXT)");
-      this.db.exec("CREATE INDEX IF NOT EXISTS ix_kw ON agent_kw(kw)");
+      if (dbPath !== ":memory:") mkdirSync(path.dirname(dbPath), { recursive: true });
+      this.db = new DatabaseSync(dbPath);
+      this.db.exec("PRAGMA journal_mode=WAL");
+      this.db.exec("PRAGMA synchronous=NORMAL");
+      this.db.exec("PRAGMA cache_size=-8000");
+      this.db.exec("PRAGMA temp_store=FILE");
     }
+    this.fts = fts5Available();
+    if (!this.readOnly) {
+      this.db.exec(`CREATE TABLE IF NOT EXISTS agents(
+        agent_id TEXT PRIMARY KEY, name TEXT, track TEXT,
+        keywords TEXT, skills TEXT, api_schema TEXT)`);
+      if (this.fts) {
+        this.db.exec(`CREATE VIRTUAL TABLE IF NOT EXISTS agents_fts USING fts5(
+          agent_id UNINDEXED, keywords, skills, tokenize='porter unicode61')`);
+      } else {
+        this.db.exec("CREATE TABLE IF NOT EXISTS agent_kw(kw TEXT, agent_id TEXT)");
+        this.db.exec("CREATE INDEX IF NOT EXISTS ix_kw ON agent_kw(kw)");
+      }
+    }
+  }
+
+  /** Collapse the WAL into one file so the bundle can be opened read-only. */
+  prepareBundle(): void {
+    if (this.readOnly) throw new Error("catalog is read-only");
+    this.db.exec("PRAGMA wal_checkpoint(TRUNCATE)");
+    this.db.exec("PRAGMA journal_mode=DELETE");
+    this.db.exec("VACUUM");
   }
 
   count(): number {
@@ -111,6 +143,9 @@ export class Registry {
 
   /** Insert from any iterable in fixed-size transactions. Never materialises the source. */
   async index(entries: Iterable<AgentInput>): Promise<number> {
+    if (this.readOnly) throw new Error("catalog is read-only");
+    // Rebuilding the keyword index once is much faster than updating it on every row.
+    if (!this.fts) this.db.exec("DROP INDEX IF EXISTS ix_kw");
     let n = 0;
     let batch: AgentInput[] = [];
     try {
@@ -126,26 +161,38 @@ export class Registry {
       return n;
     } finally {
       batch = [];
+      if (!this.fts) this.db.exec("CREATE INDEX IF NOT EXISTS ix_kw ON agent_kw(kw)");
       gcHint();
     }
   }
 
   private flush(batch: AgentInput[]): number {
-    const insert = this.db.prepare("INSERT OR REPLACE INTO agents VALUES (?,?,?,?,?,?)");
-    const delKw = this.fts ? null : this.db.prepare("DELETE FROM agent_kw WHERE agent_id = ?");
-    const addKw = this.fts ? null : this.db.prepare("INSERT INTO agent_kw VALUES (?,?)");
-    const addFts = this.fts ? this.db.prepare("INSERT INTO agents_fts(agent_id, keywords, skills) VALUES (?,?,?)") : null;
+    const rows = batch.map((e) => {
+      const keywords = (e.keywords ?? []).map((k) => k.toLowerCase()).join(" ");
+      const skills = (e.skills ?? []).map((k) => k.toLowerCase()).join(" ");
+      const kws = [...new Set(`${keywords} ${skills}`.split(" ").filter(Boolean))];
+      return { e, keywords, skills, kws };
+    });
     this.db.exec("BEGIN");
     try {
-      for (const e of batch) {
-        const keywords = (e.keywords ?? []).join(" ");
-        const skills = (e.skills ?? []).join(" ");
-        insert.run(e.agentId, e.name ?? "", e.track ?? "A", keywords, skills, JSON.stringify(e.apiSchema ?? {}));
-        if (addFts) addFts.run(e.agentId, keywords, skills);
-        else if (delKw && addKw) {
-          delKw.run(e.agentId);
-          const seen = new Set(`${keywords} ${skills}`.split(" ").filter(Boolean));
-          for (const kw of seen) addKw.run(kw, e.agentId);
+      for (let i = 0; i < rows.length; i += 400) {
+        const slice = rows.slice(i, i + 400);
+        this.insertMany(
+          "INSERT OR REPLACE INTO agents VALUES ",
+          slice.map(() => "(?,?,?,?,?,?)"),
+          slice.flatMap(({ e, keywords, skills }) => [e.agentId, e.name ?? "", e.track ?? "A", keywords, skills, JSON.stringify(e.apiSchema ?? {})]),
+        );
+        if (this.fts) {
+          this.insertMany(
+            "INSERT INTO agents_fts(agent_id, keywords, skills) VALUES ",
+            slice.map(() => "(?,?,?)"),
+            slice.flatMap(({ e, keywords, skills }) => [e.agentId, keywords, skills]),
+          );
+        } else {
+          const ids = slice.map((r) => r.e.agentId);
+          this.db.prepare(`DELETE FROM agent_kw WHERE agent_id IN (${ids.map(() => "?").join(",")})`).run(...ids);
+          const pairs = slice.flatMap(({ e, kws }) => kws.flatMap((kw) => [kw, e.agentId]));
+          if (pairs.length) this.insertMany("INSERT INTO agent_kw VALUES ", Array.from({ length: pairs.length / 2 }, () => "(?,?)"), pairs);
         }
       }
       this.db.exec("COMMIT");
@@ -154,6 +201,12 @@ export class Registry {
       throw err;
     }
     return batch.length;
+  }
+
+  /** One statement for many rows, staying under SQLite's bound-variable cap. */
+  private insertMany(prefix: string, tuples: string[], params: string[]): void {
+    if (!tuples.length) return;
+    this.db.prepare(prefix + tuples.join(",")).run(...params);
   }
 
   private lookupSync(prompt: string, limit: number): AgentRow[] {
@@ -193,15 +246,47 @@ export class Registry {
 }
 
 const DOMAINS: Record<string, string[]> = {
-  food: ["pizza", "groceries", "delivery", "restaurant", "takeout", "coffee"],
-  travel: ["flight", "hotel", "train", "rental", "booking", "trip"],
+  food: ["pizza", "mcdonalds", "groceries", "delivery", "restaurant", "takeout", "coffee", "food"],
+  travel: ["flight", "hotel", "train", "rental", "booking", "ride"],
   logistics: ["shipping", "package", "courier", "tracking", "parcel", "return"],
   commerce: ["buy", "order", "shoes", "laptop", "gift", "price"],
   finance: ["invoice", "budget", "payment", "refund", "subscription", "bill"],
   home: ["cleaning", "plumber", "furniture", "repair", "moving", "laundry"],
   health: ["appointment", "doctor", "pharmacy", "fitness", "dentist", "therapy"],
   media: ["music", "movie", "podcast", "tickets", "concert", "book"],
+  help: ["help", "support", "guide", "question"],
 };
+
+/**
+ * Always present in the shipped catalog. Random sampling of DOMAINS can miss a
+ * word in a small draw; these rows make the ordinary prompts match exactly.
+ */
+export const ANCHORS: AgentInput[] = [
+  {
+    agentId: "agt_anchor_food",
+    name: "food-order",
+    track: "B",
+    keywords: ["food", "pizza", "mcdonalds", "restaurant", "delivery", "takeout"],
+    skills: ["food.order"],
+    apiSchema: { op: "food.order", params: { query: "string" } },
+  },
+  {
+    agentId: "agt_anchor_ride",
+    name: "ride",
+    track: "B",
+    keywords: ["ride", "rideshare", "taxi", "transit"],
+    skills: ["travel.ride"],
+    apiSchema: { op: "travel.ride", params: { query: "string" } },
+  },
+  {
+    agentId: "agt_anchor_help",
+    name: "help",
+    track: "B",
+    keywords: ["help", "support"],
+    skills: ["help.ask"],
+    apiSchema: { op: "help.ask", params: { query: "string" } },
+  },
+];
 
 function sample(rng: () => number, items: string[], k: number): string[] {
   const copy = items.slice();
@@ -224,6 +309,17 @@ function mulberry32(seed: number): () => number {
   };
 }
 
+/** Anchors first, then the synthetic generator, still without buffering the whole list. */
+export function* catalogAgents(n: number, seed = 7): Generator<AgentInput> {
+  let left = n;
+  for (const anchor of ANCHORS) {
+    if (left <= 0) return;
+    yield anchor;
+    left--;
+  }
+  if (left > 0) yield* syntheticAgents(left, seed);
+}
+
 /** Synthetic catalog. A generator: callers must not buffer it. These are not real agents. */
 export function* syntheticAgents(n: number, seed = 7): Generator<AgentInput> {
   const rng = mulberry32(seed);
@@ -244,7 +340,10 @@ export function* syntheticAgents(n: number, seed = 7): Generator<AgentInput> {
 
 let singleton: Registry | null = null;
 export function swarmRegistry(): Registry {
-  singleton ??= new Registry();
+  if (!singleton) {
+    const dbPath = defaultSwarmPath();
+    singleton = new Registry(dbPath, 2000, { readOnly: catalogIsBundled(dbPath) });
+  }
   return singleton;
 }
 
