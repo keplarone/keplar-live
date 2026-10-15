@@ -500,7 +500,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
  * Run one tool call. `via` states the authority being claimed; each claim is verified here against stored state:
- *  - approval: a pending approval for this exact server/tool/arguments exists (the owner just decided it)
+ *  - approval: a claimed (executing) approval for this exact server/tool/arguments exists (the owner just decided it)
  *  - auto: tool is read-only AND auto-run AND the agent has a grant (with budget left)
  *  - manual: the signed-in owner pressed Run on a read-only tool
  */
@@ -513,9 +513,10 @@ export async function runToolCall(ws: Workspace, req: { serverId: string; tool: 
   if (agentId) await haltedCheck(ws);
 
   if (req.via === "approval") {
+    // "executing": decide() claimed this approval (biz_approval_claims) and is running it now; nothing else may run it.
     const ap = req.approvalId ? await approvals().get(ws.id, req.approvalId) : null;
     const a = ap?.action;
-    if (!ap || ap.status !== "pending" || a?.type !== "mcp.call" || a.serverId !== server.id || a.tool !== tool.name || argsHash(a.args) !== argsHash(args)) throw new HttpError(403, "No matching approval for this call.", "no_approval");
+    if (!ap || ap.status !== "executing" || a?.type !== "mcp.call" || a.serverId !== server.id || a.tool !== tool.name || argsHash(a.args) !== argsHash(args)) throw new HttpError(403, "No matching approval for this call.", "no_approval");
   } else if (req.via === "auto") {
     if (tool.risk !== "read" || !tool.autoRun) throw new HttpError(403, "This tool needs your approval before it runs.", "needs_approval");
     if (!agentId) throw new HttpError(403, "This tool needs your approval before it runs.", "needs_approval");
@@ -528,6 +529,11 @@ export async function runToolCall(ws: Workspace, req: { serverId: string; tool: 
   if (verdict.blocked) {
     await audit(ws.id, agentId ? `agent:${agentId}` : "owner", "firewall.blocked", `${server.id}/${tool.name}`, verdict.blocked);
     throw new HttpError(422, verdict.blocked, "firewall_blocked");
+  }
+  // Nothing runs on its own when the firewall rates it high risk: those calls need the owner's approval (chat and agents queue them).
+  if (req.via === "auto" && !verdict.autoSendAllowed) {
+    await audit(ws.id, `agent:${agentId}`, "mcp.call.needs_approval", `${server.id}/${tool.name}`, `${verdict.risk} risk: ${verdict.reasons.join("; ")}`.slice(0, 300));
+    throw new HttpError(403, "The AI Firewall rated this call high risk, so it needs your approval before it runs.", "needs_approval");
   }
 
   const actor = agentId ? `agent:${agentId}` : "owner";

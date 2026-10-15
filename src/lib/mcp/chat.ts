@@ -237,8 +237,9 @@ export async function runChatTools(input: {
         put({ ...base, status: "blocked", args: argsPreview, message: `Blocked by the AI Firewall: ${verdict.blocked}` });
         continue;
       }
-      // All four: tool is read, tool is set to auto-run, the owner granted it to Ask (it is in `list`), the account lets Ask run reads.
-      const auto = tool.risk === "read" && tool.autoRun && autoPolicy;
+      // All five: tool is read, tool is set to auto-run, the owner granted it to Ask (it is in `list`), the account lets Ask run reads,
+      // and the AI Firewall did not rate these arguments high risk. A high-risk call waits for the owner like a write.
+      const auto = tool.risk === "read" && tool.autoRun && autoPolicy && verdict.autoSendAllowed;
       const idem = `chat:${createHash("sha256").update(`${turnId}|${steps}`).digest("hex").slice(0, 24)}`;
       if (auto) {
         put({ ...base, status: "running", args: argsPreview });
@@ -257,7 +258,7 @@ export async function runChatTools(input: {
       }
       try {
         const q = await requestChatCall(ws, { serverId: server.id, tool: tool.name, args: p.args, idempotencyKey: idem, runId: `mcpc_${turnId}` });
-        put({ ...base, status: "awaiting_approval", args: argsPreview, approvalId: q.approvalId, message: tool.risk === "read" ? "Waiting for your approval (this read isn't set to run on its own)." : "Waiting for your approval. Nothing has been sent." });
+        put({ ...base, status: "awaiting_approval", args: argsPreview, approvalId: q.approvalId, message: !verdict.autoSendAllowed ? `Waiting for your approval: the AI Firewall rated this ${verdict.risk} risk (${verdict.reasons.join("; ")}). Nothing has run.` : tool.risk === "read" ? "Waiting for your approval (this read isn't set to run on its own)." : "Waiting for your approval. Nothing has been sent." });
       } catch (e) {
         const code = e instanceof HttpError ? e.code : undefined;
         put({ ...base, status: code === "firewall_blocked" ? "blocked" : "error", args: argsPreview, message: safeMsg(e) });
