@@ -7,6 +7,10 @@ import { applicationFee, createCheckoutSession, getAccount, inCurrentMode, PAUSE
 import { upsertContact } from "./crm";
 import { emit } from "./events";
 import type { Order } from "./types";
+import type { Project } from "@/lib/create/types";
+
+/** Is this project's site live (what /sites/<slug>/ serves; src/lib/create/serve.ts)? Public forms and checkout need it. */
+export const isPublished = (p: Pick<Project, "liveDeployId" | "takenDown">) => Boolean(p.liveDeployId) && !p.takenDown;
 
 export function safeReturnPath(raw: unknown, fallback: string) {
   const s = typeof raw === "string" ? raw : "";
@@ -24,6 +28,7 @@ export function siteOrigin(requestUrl?: string) {
 export async function startCheckout(input: { projectId: string; productId: string; returnPath?: string; origin?: string }) {
   const project = await projects().findSystemBy("id", input.projectId);
   if (!project || project.takenDown) throw new HttpError(404, "This store isn't available.");
+  if (!isPublished(project)) throw new HttpError(404, "This store isn't open yet. It opens when the site is published.", "not_published");
   const product = project.spec?.products.find((p) => p.id === input.productId);
   if (!product) throw new HttpError(404, "Product not found.");
   if (await paymentsPaused()) throw new HttpError(503, PAUSED_MESSAGE, "payments_paused");
