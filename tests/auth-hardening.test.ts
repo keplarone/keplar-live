@@ -151,7 +151,7 @@ test("F1: a 'Remember me' off cookie stops working with its one-day server recor
 
 test("F2: Google and Microsoft accept no client id token: sign-in is the redirect flow only", async () => {
   const { socialProvidersFromEnv } = await import("@/lib/accounts/oauth");
-  const p = socialProvidersFromEnv();
+  const p = socialProvidersFromEnv() as Record<string, { disableIdTokenSignIn?: boolean } | undefined>;
   assert.equal(p.google?.disableIdTokenSignIn, true);
   assert.equal(p.microsoft?.disableIdTokenSignIn, true);
   const auth = await getAuth();

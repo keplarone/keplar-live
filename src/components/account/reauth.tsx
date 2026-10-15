@@ -37,5 +37,7 @@ export async function startExport(): Promise<void> {
     const j = (await res.json().catch(() => ({}))) as { error?: string; code?: string };
     throw Object.assign(new Error(j.error || "Couldn't start the download."), { status: res.status, code: j.code }) as CodedError;
   }
+  // A file download from an API route (streamed, attachment), not a page: the router can't do this.
+  // eslint-disable-next-line @next/next/no-location-assign-relative-destination
   window.location.assign("/api/account/export");
 }
