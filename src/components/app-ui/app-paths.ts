@@ -20,6 +20,9 @@ export const VIEW_PATH: Record<View, string> = {
   study: "/app/study",
   history: "/app/history",
   studio: "/app/studio",
+  apps: "/app/apps",
+  browser: "/app/browser",
+  wants: "/app/wants",
 };
 
 const BY_PATH = new Map<string, View>(Object.entries(VIEW_PATH).map(([v, p]) => [p, v as View]));
@@ -38,4 +41,12 @@ export function viewForPath(pathname: string): View | null {
 export function isAppPath(pathname: string): boolean {
   const p = pathname.replace(/\/+$/, "") || "/";
   return p === "/app" || p.startsWith("/app/");
+}
+
+/**
+ * Where the app opens after an outside redirect back to /app: Stripe onboarding and Business connector or bank sign-ins
+ * (`conn_…`, `bank_…`) return to Business; a connected app's (MCP) sign-in returns to Connected apps.
+ */
+export function oauthReturnView(result: string): View {
+  return result === "stripe" || /^(conn_|bank_)/.test(result) ? "business" : "apps";
 }

@@ -1,9 +1,7 @@
-import type { Metadata } from "next";
-import { pageMeta } from "@/lib/seo";
-import { BrowserTask } from "@/components/browser/BrowserTask";
+import { tabMeta, TabPage } from "../_tab";
 
-export const metadata: Metadata = pageMeta("/app/browser", "Keplar Browser", "Keplar works in its own private browser while you watch, and stops before buying, sending or signing in.");
+export const metadata = tabMeta("browser");
 
 export default function Page() {
-  return <BrowserTask />;
+  return <TabPage view="browser" />;
 }

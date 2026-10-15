@@ -8,6 +8,7 @@ import { activeScopeHeaders } from "@/components/app-ui/state/scope";
 import { Markdown } from "@/components/app-ui/Markdown";
 import { ToolUses } from "@/components/app-ui/ToolUses";
 import { McpConnections } from "@/components/business/McpConnections";
+import { loadPendingMcpApprovals } from "@/components/business/mcp-pending";
 import { prepareImage } from "@/components/app-ui/media-client";
 import type { MediaInput } from "@/lib/orchestration/media";
 import type { ToolUse } from "@/lib/orchestration/types";
@@ -368,10 +369,7 @@ export function KeplarWantsTab() {
 
   const loadApprovals = async () => {
     try {
-      const r = await fetch("/api/business/approvals", { cache: "no-store", headers: activeScopeHeaders() });
-      if (!r.ok) throw new Error("Couldn't load pending approvals.");
-      const data = await r.json() as { approvals?: { id: string; status: string; action?: { type?: string; serverName?: string; tool?: string; args?: unknown } }[] };
-      setPending((data.approvals ?? []).filter((a) => a.status === "pending" && a.action?.type === "mcp.call").map((a): ToolUse => ({ id: a.id, app: a.action?.serverName ?? "Connected app", tool: a.action?.tool ?? "Action", status: "awaiting_approval", kind: "unknown", approvalId: a.id, args: JSON.stringify(a.action?.args ?? {}) })));
+      setPending(await loadPendingMcpApprovals());
     } catch (e) { push({ kind: "agent", id: uid(), text: e instanceof Error ? e.message : "Couldn't load approvals." }); }
   };
 

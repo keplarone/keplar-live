@@ -1,4 +1,4 @@
-.page { max-width: 1120px; margin: 0 auto; padding: var(--s-8) var(--s-4) var(--s-16); color: var(--c-ink); background: var(--c-canvas); min-height: 100dvh; box-sizing: border-box; }
+.page { max-width: 1120px; margin: 0 auto; padding: var(--s-8) var(--s-4) var(--s-16); color: var(--c-ink); background: var(--c-canvas); box-sizing: border-box; }
 .head { margin-bottom: var(--s-6); }
 .title { font-size: var(--t-title); font-weight: var(--w-semibold); margin: 0 0 var(--s-2); }
 .lede { color: var(--c-ink-2); font-size: var(--t-body); margin: 0; max-width: 68ch; }

@@ -49,7 +49,7 @@ import { ResumeChats } from "./ResumeChats";
 import { OfflineNotice } from "./OfflineNotice";
 import { useDockHeight } from "./dock-height";
 import { HomeStart } from "./HomeStart";
-import { pathForView, viewForPath } from "./app-paths";
+import { oauthReturnView, pathForView, viewForPath } from "./app-paths";
 import { AppOnboarding } from "@/components/onboarding/AppOnboarding";
 import { DeploymentsView } from "./DeploymentsView";
 import { KeplarStudio } from "./studio-mode/workspace/KeplarStudio";
@@ -108,7 +108,15 @@ const CreateStudio = create.View;
 const BusinessOS = business.View;
 const SlidesStudio = slides.View;
 const StudyMode = study.View;
+const appsView = lazyView(() => import("./ConnectedAppsView").then((m) => m.ConnectedAppsView as ComponentType<object>));
+const browserView = lazyView(() => import("@/components/browser/BrowserTask").then((m) => m.BrowserTask as ComponentType<object>));
+const wantsView = lazyView(() => import("@/components/wants/KeplarWantsTab").then((m) => m.KeplarWantsTab as ComponentType<object>));
+const ConnectedAppsView = appsView.View;
+const BrowserTask = browserView.View;
+const KeplarWantsTab = wantsView.View;
 /** Fetch (not run) the studios so opening one is instant: Create once the page is idle, the others when the pointer reaches the sidebar. Skipped on Data Saver. */
+/** Top-bar titles that are not just the capitalised view name. */
+const VIEW_TITLE: Partial<Record<View, string>> = { history: "All chats", apps: "Connected apps", browser: "Keplar Browser", wants: "Keplar Wants" };
 function warmViews(all: boolean) {
   const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
   if (conn?.saveData) return;
@@ -181,7 +189,8 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     }
     return r;
   });
-  const [state, dispatch] = useReducer(reducer, initialView, (v?: View) => { const base = initialState(); return oauthBack ? { ...base, view: "business" as View } : v ? { ...base, view: v } : base; });
+  const backView = oauthBack ? oauthReturnView(oauthBack) : null;
+  const [state, dispatch] = useReducer(reducer, initialView, (v?: View) => { const base = initialState(); return backView ? { ...base, view: backView } : v ? { ...base, view: v } : base; });
   const dockRef = useDockHeight<HTMLDivElement>();
   const [searchOpen, setSearchOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -845,10 +854,10 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     }
   }, [switchView]);
 
-  /* Back from an app's OAuth sign-in (the callback redirects to /app?mcp_oauth=<result>): keep only the result word, clean the URL. Business opens on /app/business. */
+  /* Back from an app's OAuth sign-in (the callback redirects to /app?mcp_oauth=<result>): keep only the result word, clean the URL. Connected apps opens on /app/apps (Stripe: /app/business). */
   useEffect(() => {
     if (!oauthBack) return;
-    const path = pathForView("business");
+    const path = pathForView(oauthReturnView(oauthBack));
     window.history.replaceState(null, "", path);
   }, [oauthBack]);
 
@@ -1027,7 +1036,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     ro.observe(thread);
     return () => ro.disconnect();
   }, [state.activeThreadId, state.view, messages.length]);
-  const title = state.view === "thread" ? thread?.title ?? "New chat" : state.view === "history" ? "All chats" : state.view[0].toUpperCase() + state.view.slice(1);
+  const title = state.view === "thread" ? thread?.title ?? "New chat" : VIEW_TITLE[state.view] ?? state.view[0].toUpperCase() + state.view.slice(1);
   const dailyLow = Boolean(state.ledger.daily && (state.ledger.paused || state.ledger.daily.left / Math.max(1, state.ledger.daily.limit) < 0.2));
   const projectName = state.projects.find((p) => p.id === (thread?.projectId ?? state.projectFilter))?.name;
 
@@ -1317,7 +1326,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                 synced={state.ledger.synced}
                 on={Boolean(toolsMap[state.activeThreadId ?? "new"])}
                 onChange={(v) => { const key = state.activeThreadId ?? "new"; toolsRef.current = { ...toolsRef.current, [key]: v }; setToolsMap((m) => ({ ...m, [key]: v })); }}
-                onOpenApps={() => goView("business")}
+                onOpenApps={() => goView("apps")}
               />
               <Composer
                 ref={composerRef}
@@ -1360,6 +1369,18 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
         ) : state.view === "studio" ? (
           <div className={s.createHost}>
             <KeplarStudio plan={state.ledger.plan} signedIn={state.ledger.synced ? state.ledger.signedIn : null} />
+          </div>
+        ) : state.view === "apps" ? (
+          <div className={s.scroll}>
+            <ConnectedAppsView />
+          </div>
+        ) : state.view === "browser" ? (
+          <div className={s.createHost}>
+            <BrowserTask />
+          </div>
+        ) : state.view === "wants" ? (
+          <div className={s.createHost}>
+            <KeplarWantsTab />
           </div>
         ) : state.view === "deployments" ? (
           <div className={s.scroll}>
