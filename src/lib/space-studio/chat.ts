@@ -15,7 +15,7 @@
 import { HttpError } from "@/lib/create/platform/http";
 import type { Workspace } from "@/lib/create/platform/workspace";
 import { liveEnv } from "@/lib/orchestration/config";
-import { creditBalance, creditsFor, effectivePlan, extractEscalation, modelAllowed, modelById, outOfCreditsReason, route, USD_PER_CREDIT, type CreditBalance, type CreditUsage, type ModelId, type ModelProfile, type Subscription, type Workload } from "./core";
+import { classifyIntent, creditBalance, creditsFor, specialistBlock, effectivePlan, extractEscalation, modelAllowed, modelById, outOfCreditsReason, route, USD_PER_CREDIT, type CreditBalance, type CreditUsage, type ModelId, type ModelProfile, type Subscription, type Workload } from "./core";
 import { costUsd, PROVIDERS, resolvedSlug } from "./providers";
 import { addCredits, loadCreditUsage } from "./store";
 
@@ -183,7 +183,10 @@ export async function runSpaceChat(ws: Workspace, body: ChatBody, gate: ChatGate
   // Credits: what's left in every window that applies, and caps so this call can't cost more than that.
   const now = gate.now ?? Date.now();
   const plan = effectivePlan(gate.sub, now);
-  const system = `${served.system}\n\n${HINT[body.workspace]}`;
+  // Specialist track (core/specialists.ts), chosen here from the person's own words; a track sent by a client is never read.
+  const lastUserText = [...body.messages].reverse().find((m) => m.role === "user")!.content;
+  const { track } = classifyIntent(lastUserText, body.workspace);
+  const system = `${served.system}\n\n${HINT[body.workspace]}\n\n${specialistBlock(track)}`;
   const promptChars = body.messages.reduce((n, m) => n + m.content.length, 0) + served.system.length;
   const before = creditBalance(plan, await (deps.loadCreditUsage ?? loadCreditUsage)(ws.id, now), now);
   const taskUsd = Math.min(budgets.maxUsdPerTask, before.remaining * USD_PER_CREDIT);
@@ -242,6 +245,7 @@ export async function runSpaceChat(ws: Workspace, body: ChatBody, gate: ChatGate
     escalation: { suggested: Boolean(suggestTo), to: suggestTo, reason: r.suggestion?.reason ?? (suggestTo ? flagged.reason : null) },
     effort,
     passes,
+    track,
     note,
     usage: { promptTokens, completionTokens, credits, latencyMs },
     credits: { remaining, resetsAt: before.resetsAt, limitedBy: before.limitedBy },

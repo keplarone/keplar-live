@@ -1011,3 +1011,16 @@ test("download: each platform gets its installer from the latest release, and th
     globalThis.fetch = realFetch;
   }
 });
+
+test("chat: the specialist track is chosen on the server from the prompt and added to the system prompt", async () => {
+  const sent: Record<string, unknown>[] = [];
+  const body = validateChatBody({ model: "orbit", messages: [{ role: "user", content: "Make a TweenService pop animation for my shop UI" }], workspace: "roblox", track: "audio" });
+  const out = await runSpaceChat(ws("ws_track"), body, { sub: null, robloxRequired: false, robloxLinked: false }, {
+    key: "k", env: {},
+    loadCreditUsage: async () => ({ fiveHour: 0, week: 0, month: 0, previousMonth: 0 }), addCredits: async () => {},
+    fetch: (async (_u: unknown, init: RequestInit) => { sent.push(JSON.parse(String(init.body))); return Response.json({ model: "anthropic/claude-haiku-4.5", choices: [{ message: { content: "ok" } }], usage: { prompt_tokens: 10, completion_tokens: 5, cost: 0.001 } }); }) as typeof fetch,
+  });
+  const system = String((sent[0]!.messages as { content: string }[])[0]!.content);
+  assert.match(system, /Specialist focus: UI and TweenService animation/);
+  assert.equal((out as { track?: string }).track, "ui"); // the client's "audio" was ignored
+});
