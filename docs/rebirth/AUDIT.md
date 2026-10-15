@@ -66,7 +66,7 @@ live data found anywhere).
 | IN-4 | Low | space.keplar.one pages miss CSP, frame rules and HSTS. | `next.config.ts:7` | **Fixed** (667a874) |
 | IN-5 | Low | App CSP allows `'unsafe-inline'` scripts, and `'self'` includes user-authored app JavaScript under `/s/`. | `src/lib/security/headers.ts:26`, `app-builder/files.ts:150-160` | Open |
 | IN-6 | Low | Site QA browser has no network allow-list. | `src/lib/site-builder/qa/run.ts:31-43` | Open |
-| IN-7 | Info | Revenue Guard (not wired) would verify sites with an unguarded fetch. | `src/lib/business/guard/core.ts:89-138` | Open |
+| IN-7 | Info | Revenue Guard (not wired) would verify sites with an unguarded fetch. | `src/lib/business/guard/core.ts:89-138` | **Fixed** (a54bd31: the unwired module is deleted; owner decided not to build Revenue Guard) |
 | IN-8 | Low | Unbounded body reads before size checks; inbound-email webhook has no replay key; `/api/health/qa-browser` launches Chromium unauthenticated; `wants/browser.ts` accepts any `file:` URL; code-runner CSP lacks `sandbox`; some provider error text reaches clients. | see review | Open |
 
 ## AI agents and tool execution
@@ -112,12 +112,12 @@ live data found anywhere).
 
 | ID | Sev | Finding | Where | Status |
 |---|---|---|---|---|
-| UX-1 | High | "Manage" connected apps in Keplar One sends people to the Business sales page. | `ChatTools.tsx:58`, `KeplarApp.tsx:837,1320` | Open |
-| UX-2 | High | Keplar Browser and Keplar Wants have no way in (no nav entry) and no way out (no app shell). | `app/app/{browser,wants}/page.tsx`, `Sidebar.tsx:43-53` | Open |
-| UX-3 | High | Slides presenter hijacks Enter/Space at window level, so its own buttons can't be pressed by keyboard. | `slides/Present.tsx:33,51-56` | Open |
-| UX-4 | High | Lightbox forces every Tab to Close; its other buttons are unreachable by keyboard. | `Lightbox.tsx:37,54-55` | Open |
-| UX-5 | High | Revenue Guard is sold as included but isn't built. | `Storefront.tsx:386-389,450,494`, `tiers.ts:43,69` | Open (product decision) |
-| UX-6..13 | Medium | Feature claims disagree with code (both ways); stale copy; 878 hard-coded colours and other token drift; UI v2 partly reverted; chat heading structure; weak focus indicator for some controls; pointer-only design canvas and `window.confirm`; unreachable Business code paths. | see `PARITY.md` | Open |
+| UX-1 | High | "Manage" connected apps in Keplar One sends people to the Business sales page. | `ChatTools.tsx:58`, `KeplarApp.tsx:837,1320` | **Fixed** (d972c56: Connected apps open in the app at `/app/apps`; MCP sign-ins return there) |
+| UX-2 | High | Keplar Browser and Keplar Wants have no way in (no nav entry) and no way out (no app shell). | `app/app/{browser,wants}/page.tsx`, `Sidebar.tsx:43-53` | **Fixed** (d972c56: app views in the shell, sidebar More and search; neither is flagged) |
+| UX-3 | High | Slides presenter hijacks Enter/Space at window level, so its own buttons can't be pressed by keyboard. | `slides/Present.tsx:33,51-56` | **Fixed** (68fda9e) |
+| UX-4 | High | Lightbox forces every Tab to Close; its other buttons are unreachable by keyboard. | `Lightbox.tsx:37,54-55` | **Fixed** (68fda9e) |
+| UX-5 | High | Revenue Guard is sold as included but isn't built. | `Storefront.tsx:386-389,450,494`, `tiers.ts:43,69` | **Fixed** (a54bd31: owner decided it will not be built; every offer of it removed) |
+| UX-6..13 | Medium | Feature claims disagree with code (both ways); stale copy; 878 hard-coded colours and other token drift; UI v2 partly reverted; chat heading structure; weak focus indicator for some controls; pointer-only design canvas and `window.confirm`; unreachable Business code paths. | see `PARITY.md` | Partly fixed (4b40ad2: feature claims, stale copy, chat headings, limit-card ids, focus cue, `window.confirm`, design-canvas keyboard path); UX-9 (UI v2 decision), the colour-token migration and unreachable Business code paths open |
 
 ## Desktop app (keplar-desktop)
 
