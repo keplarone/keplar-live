@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { pageMeta } from "@/lib/seo";
 import { getSession, magicLinkSecret } from "@/lib/accounts/auth";
+import { signedInRecently } from "@/lib/accounts/reauth";
 import { AuthShell, LinkProblem } from "@/components/auth/AuthShell";
 import { DesktopConnect } from "@/components/account/DesktopConnect";
 import { connectPath, DESKTOP_APPS, isRequestId } from "@/lib/desktop-auth/core";
@@ -19,8 +20,9 @@ type Props = { searchParams: Promise<{ rid?: string | string[] }> };
 
 /**
  * Where the desktop app's "Sign in" lands, in the person's own browser. Not signed in: the normal sign-in page first (Google,
- * Microsoft, password or an emailed link) and back here. Signed in: show which account will be connected and the code the
- * app is showing, and wait for an explicit click (a link someone else sent can't connect your account by itself).
+ * Microsoft, password or an emailed link) and back here. Signed in: show which account will be connected and ask for the code
+ * the app is showing (never shown here: a link someone else started and sent can't connect your account by a click). The
+ * extension gets an API key, so it also needs a recent sign-in, like creating a key by hand (src/lib/accounts/reauth.ts).
  */
 export default async function DesktopConnectPage({ searchParams }: Props) {
   const raw = (await searchParams).rid;
@@ -44,10 +46,11 @@ export default async function DesktopConnectPage({ searchParams }: Props) {
   const h = await headers();
   const session = await getSession(h);
   if (!session) redirect(`/signin?next=${encodeURIComponent(connectPath(rid))}`);
+  if (extension && !signedInRecently(session)) redirect(`/signin?reauth=1&next=${encodeURIComponent(connectPath(rid))}`);
   const switchTo = `/signin?add=1&next=${encodeURIComponent(connectPath(rid))}`;
   return (
-    <AuthShell variant="recover" title={`Connect ${name}`} lead={`Check that the code below matches the one in the ${extension ? "extension" : "app"}, then connect.`}>
-      <DesktopConnect rid={rid} code={info.code} label={info.label} email={session.user.email} switchHref={switchTo} appName={name} scheme={DESKTOP_APPS[info.app].scheme} extension={extension} />
+    <AuthShell variant="recover" title={`Connect ${name}`} lead={`Type the code shown in the ${extension ? "extension" : "app"} to connect it.`}>
+      <DesktopConnect rid={rid} connectPath={connectPath(rid)} label={info.label} email={session.user.email} switchHref={switchTo} appName={name} scheme={DESKTOP_APPS[info.app].scheme} extension={extension} />
     </AuthShell>
   );
 }

@@ -25,7 +25,7 @@ async function render() {
   show("connect-wait", waiting);
   show("connect-cancel", waiting);
   $("connect").disabled = waiting;
-  if (waiting) $("connect-wait").textContent = `Approve in the keplar.one tab that opened. It shows the code ${connect.code || "this extension started"}.`;
+  if (waiting) $("connect-wait").textContent = connect.code ? `In the keplar.one tab that opened, type the code ${connect.code} and press Connect.` : "Approve in the keplar.one tab that opened.";
   say($("setup-msg"), connectError || "", Boolean(connectError));
 }
 
