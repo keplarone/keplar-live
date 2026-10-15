@@ -52,7 +52,8 @@ export async function pruneTelemetry(at = Date.now(), batch = 5000): Promise<Ret
 /**
  * Newer operational collections, pruned separately so the result shape above stays stable:
  * system_request_costs 30 days (KEPLAR_RETAIN_REQUEST_COSTS_DAYS), system_error_events 30 days (KEPLAR_RETAIN_ERRORS_DAYS),
- * system_fanout_day 3 days, system_safety_events 180 days (KEPLAR_RETAIN_SAFETY_DAYS), system_flight 7 days (KEPLAR_RETAIN_FLIGHT_DAYS).
+ * system_fanout_day 3 days, system_safety_events 180 days (KEPLAR_RETAIN_SAFETY_DAYS), system_flight 7 days (KEPLAR_RETAIN_FLIGHT_DAYS),
+ * dev_outbox 14 days, biz_connect_event_claims 30 days.
  */
 export async function pruneOperational(at = Date.now(), batch = 5000): Promise<RetentionResult> {
   const n = (k: string, d: number) => (Number.isFinite(Number(process.env[k])) && Number(process.env[k]) >= 1 ? Math.floor(Number(process.env[k])) : d);
@@ -65,6 +66,8 @@ export async function pruneOperational(at = Date.now(), batch = 5000): Promise<R
     ["system_fanout_day", "day", 3],
     ["system_flight", "at", n("KEPLAR_RETAIN_FLIGHT_DAYS", 7)], // execution timelines (flight.ts): incident review only
     ["system_observatory_alerts", "at", 30], // one row per drift alert sent (dedupe per model, kind and day)
+    ["dev_outbox", "at", 14], // undelivered / dev-mode mail records (outbox.ts): masked recipient in production, body withheld
+    ["biz_connect_event_claims", "at", 30], // Stripe Connect webhook dedupe claims (connect-webhook.ts); Stripe stops retrying an event after 3 days
     ["answer_turns", "expiresAt", 1], // answer recovery checkpoints (turn-recovery.ts): unreadable after 30 min, deleted within a day
   ];
   for (const [name, field, days] of jobs) {
