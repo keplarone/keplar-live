@@ -4,22 +4,22 @@
  *   -> { step: { action, say, sensitive }, model }
  * A Business plan (or an editor on a Business team), same origin, rate limited. It only proposes: the desktop app shows the
  * step, asks the person (always for sensitive steps) and performs it on their computer. Screenshots are used for this one
- * call and never stored.
+ * call and never stored. Each step's vision call is metered like other model calls (business/computer-step.ts).
  */
 import { body, errorResponse, HttpError, json } from "@/lib/create/platform/http";
 import { rateLimit } from "@/lib/create/platform/ratelimit";
 import { assertSameOrigin } from "@/lib/security/origin";
 import { requireBusiness } from "@/lib/business/require";
-import { COMPUTER_LIMITS, COMPUTER_SYSTEM, parseStep, stepPrompt, type StepHistory } from "@/lib/business/computer";
+import { COMPUTER_LIMITS, type StepHistory } from "@/lib/business/computer";
+import { decideComputerStep } from "@/lib/business/computer-step";
 import { engineDeps } from "@/lib/orchestration/orchestrator";
 import { loadLiveCatalog } from "@/lib/orchestration/catalog-sync";
-import type { Classification, ModelSpec } from "@/lib/orchestration/types";
+import type { ModelSpec } from "@/lib/orchestration/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-const CLS: Classification = { kind: "general", complexity: "moderate", capabilities: [], estimatedInputTokens: 3000, estimatedOutputTokens: 160, needsWeb: false, rationale: "Computer use step." };
 const PREFERRED = [/claude/i, /gpt-?5|gpt-?4\.1|gpt-?4o/i, /gemini/i];
 
 /** Vision models from the live roster, the strongest families first. */
@@ -51,20 +51,8 @@ export async function POST(req: Request) {
     const registry = deps?.registry;
     const models = visionModels();
     if (!registry || !models.length) throw new HttpError(503, "Computer use isn't available right now: no vision model is set up.", "unavailable");
-    const prompt = stepPrompt(goal, history, { width, height });
-    for (const model of models.slice(0, 3)) {
-      try {
-        const r = await registry.once({
-          model, prompt, system: COMPUTER_SYSTEM, classification: CLS, slot: "panel",
-          params: { maxOutputTokens: 300 },
-          images: [{ name: "screen", dataUrl: shot, width, height }],
-          imagePreamble: "The person's screen right now:",
-          signal: AbortSignal.timeout(25_000),
-        });
-        if (r.ok && r.text) return json({ step: parseStep(r.text, { width, height }), model: model.id });
-      } catch { /* next model */ }
-    }
-    throw new HttpError(502, "Keplar couldn't decide the next step. Try again.", "no_model");
+    const { step, model } = await decideComputerStep(ws, { goal, history, screen: { width, height }, shot }, { registry, models });
+    return json({ step, model });
   } catch (e) {
     return errorResponse(e);
   }
