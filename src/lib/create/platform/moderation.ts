@@ -24,6 +24,7 @@ export async function moderateText(text: string): Promise<ModerationVerdict> {
         method: "POST",
         headers: { "content-type": "application/json", authorization: `Bearer ${process.env.OPENAI_MODERATION_API_KEY}` },
         body: JSON.stringify({ model: "omni-moderation-latest", input: text }),
+        signal: AbortSignal.timeout(10_000), // on timeout the keyword rules below still apply
       });
       if (res.ok) {
         const json = (await res.json()) as { results: { flagged: boolean; categories: Record<string, boolean> }[] };

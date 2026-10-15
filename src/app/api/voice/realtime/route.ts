@@ -35,7 +35,8 @@ export async function POST(req: Request) {
     const fd = new FormData();
     fd.set("sdp", sdp);
     fd.set("session", sessionConfig(p));
-    const r = await fetch(OPENAI_REALTIME_CALLS, { method: "POST", headers: { authorization: `Bearer ${process.env.OPENAI_API_KEY}`, "OpenAI-Safety-Identifier": safetyId(ws.userId!) }, body: fd });
+    const r = await fetch(OPENAI_REALTIME_CALLS, { method: "POST", headers: { authorization: `Bearer ${process.env.OPENAI_API_KEY}`, "OpenAI-Safety-Identifier": safetyId(ws.userId!) }, body: fd, signal: AbortSignal.timeout(15_000) }).catch(() => null);
+    if (!r) throw new HttpError(504, "The voice service didn't answer in time. Try again in a moment.", "upstream_timeout");
     if (!r.ok) throw new HttpError(502, "The voice service didn't accept the connection. Try again in a moment.", "upstream");
     return new Response(await r.text(), { status: 200, headers: { "content-type": "application/sdp", "cache-control": "no-store" } });
   } catch (e) {

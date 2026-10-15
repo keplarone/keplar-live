@@ -34,6 +34,10 @@ async function* liveGenerate(prompt: string, prevFiles: Record<string, string> |
         { role: "user", content: prompt },
       ],
     }),
+    // A whole-site generation is slow, but a stalled connection must not hold the request until the platform kills it.
+    signal: AbortSignal.timeout(120_000),
+  }).catch((e: unknown) => {
+    throw new Error((e as Error)?.name === "TimeoutError" ? "Code generation took too long. Try again." : "Code generation couldn't reach the model.");
   });
   if (!res.ok) throw new Error(`Code generation failed (${res.status}).`);
   const data = (await res.json()) as { choices: { message: { content: string } }[]; usage?: { cost?: number } };

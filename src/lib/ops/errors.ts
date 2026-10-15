@@ -127,6 +127,7 @@ export async function forwardToSentry(e: Required<Pick<ErrorInput, "source">> & 
         tags: { source: e.source, route: e.route || "unknown" },
         extra: { sample: e.sample || "" },
       }),
+      signal: AbortSignal.timeout(3000), // error reporting must never hold up the request that failed
     });
     return res.ok;
   } catch {

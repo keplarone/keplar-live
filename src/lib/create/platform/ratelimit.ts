@@ -37,6 +37,7 @@ async function upstashHit(key: string, windowSec: number): Promise<number | null
       headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
       body: JSON.stringify([["INCR", `rl:${key}`], ["EXPIRE", `rl:${key}`, String(windowSec), "NX"]]),
       cache: "no-store",
+      signal: AbortSignal.timeout(1500), // a slow Upstash must not slow every request: on timeout fall through like any error
     });
     const data = (await res.json()) as { result?: number }[];
     return typeof data?.[0]?.result === "number" ? data[0].result : null;
