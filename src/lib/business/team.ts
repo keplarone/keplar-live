@@ -4,6 +4,9 @@
  * orders and reports), not in a separate team copy, with their team role checked on every request:
  *   viewer  reads everything (GET only)            member (Editor)  also creates and changes things
  *   admin   also deletes, and invites or removes members and viewers           owner  everything
+ * On top of the method check, owner-only surfaces call requireBusinessRole: payments setup and onboarding, bank data and bank
+ * links, connector sign-in/disconnect and tool switches, agent auto-send and caps. Approvals need owner or admin. The audit log
+ * records the teammate (auditActor), never "owner", when a teammate acts.
  * Seats follow the Business tier the owner bought (src/lib/business/seats.ts), owner included.
  * Everything is read fresh from the member row and the owner's workspace, so removing someone or a lapsed plan applies at once.
  */
@@ -50,4 +53,27 @@ export async function businessTeamWorkspace(req: Request, personal: Workspace): 
     };
   }
   return null;
+}
+
+/** The teammate context on a Business workspace, or null when the signed-in person is the owner themself. */
+export function memberOf(ws: Workspace): BusinessMember | null {
+  return (ws as Workspace & { member?: BusinessMember }).member ?? null;
+}
+
+/**
+ * Owner-only Business surfaces (src/lib/team/policy.ts TEAM_SCOPE: "Billing and the owner's account" are not shared): payments
+ * setup, bank data and bank links, connector sign-ins, and agent auto-send/caps. `roles` widens it (approvals: owner or admin).
+ * The owner acting in their own workspace has no `member` and always passes.
+ */
+export function requireBusinessRole(ws: Workspace, what: string, roles: readonly TeamRole[] = ["owner"]): void {
+  const m = memberOf(ws);
+  if (!m || roles.includes(m.role)) return;
+  const who = roles.length === 1 ? "the workspace owner" : `the ${roles.map((r) => ROLE_LABEL[r].toLowerCase()).join(" or ")}`;
+  throw new HttpError(403, `Only ${who} can ${what}. Your role on ${m.teamName} is ${ROLE_LABEL[m.role].toLowerCase()}.`, "team_forbidden", { role: m.role, needs: roles[0] });
+}
+
+/** Who to record in the Business audit log: "owner", or the teammate (`member:<role>:<email>#<userId>`). */
+export function auditActor(ws: Workspace): string {
+  const m = memberOf(ws);
+  return m ? `member:${m.role}:${ws.email ?? ""}#${ws.userId ?? ""}` : "owner";
 }

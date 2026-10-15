@@ -146,7 +146,10 @@ export function authorizeUrl(workspaceId: string, connector: OAuthConnectorId): 
 }
 
 type Tokens = { access: string; refresh?: string; expiresAt?: number };
-const fx = (): typeof fetch => globalThis.fetch;
+/** Every provider call gives up after this long, so a hung provider can't hold an approval (or a request) open. */
+export const CONNECTOR_TIMEOUT_MS = 20_000;
+const fx = (): typeof fetch => ((url: string | URL | Request, init?: RequestInit) => globalThis.fetch(url, { ...init, signal: init?.signal ?? AbortSignal.timeout(CONNECTOR_TIMEOUT_MS) })) as typeof fetch;
+const isTimeout = (e: unknown) => e instanceof Error && (e.name === "TimeoutError" || e.name === "AbortError");
 
 /** Exchange the code and store the connection. Tools start OFF. */
 export async function completeAuthorization(workspaceId: string, connector: OAuthConnectorId, code: string): Promise<Connection> {
@@ -242,7 +245,14 @@ export function rfc822(to: string, subject: string, body: string): string {
  * A 2xx that is not JSON (a proxy or captive-portal page) or does not confirm is an error, never "sent".
  */
 async function call(label: string, url: string, init: RequestInit, token: string, confirms: (j: Record<string, unknown>) => boolean = () => true): Promise<Record<string, unknown>> {
-  const res = await fx()(url, { ...init, headers: { ...(init.headers as Record<string, string>), authorization: `Bearer ${token}` } });
+  let res: Response;
+  try {
+    res = await fx()(url, { ...init, headers: { ...(init.headers as Record<string, string>), authorization: `Bearer ${token}` } });
+  } catch (e) {
+    // A timeout is not proof that nothing happened: the provider may have done it. Say so rather than inviting a blind retry.
+    if (isTimeout(e)) throw new HttpError(504, `${label} didn't answer in time, so it may or may not have happened. Check ${label} before trying again.`, "provider_timeout");
+    throw e;
+  }
   const parsed = await res.json().catch(() => null);
   if (res.ok && (!parsed || typeof parsed !== "object" || Array.isArray(parsed))) throw new HttpError(502, `${label} sent back something unexpected, so nothing was confirmed. Check ${label} before trying again.`, "provider_unconfirmed");
   const j = (parsed ?? {}) as Record<string, unknown>;

@@ -191,11 +191,14 @@ test("free end to end: template, preview, AI build (sanitized, $0), version hist
   assert.match(zip.toString("latin1"), /index\.html/);
   assert.match(zip.toString("latin1"), /README\.txt/);
 
-  // Abuse: an ordinary report is stored; a CSAM report takes the site down at once.
-  const rep = (reason: string) => live.POST(new Request(`https://keplar.one/s/${site.slug}/_report`, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded", "x-forwarded-for": `8.8.${reason.length}.1` }, body: new URLSearchParams({ reason, details: "bad" }).toString() }), lctx(["_report"]));
+  // Abuse: an ordinary report is stored; an anonymous CSAM report is urgent but needs 3 distinct reporters (or a verified account) to take the site down at once.
+  const rep = (reason: string, ip = `8.8.${reason.length}.1`) => live.POST(new Request(`https://keplar.one/s/${site.slug}/_report`, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded", "x-forwarded-for": ip }, body: new URLSearchParams({ reason, details: "bad" }).toString() }), lctx(["_report"]));
   assert.equal((await rep("other")).status, 303);
   assert.equal((await live.GET(call(null, `/s/${site.slug}`), lctx())).status, 200);
   assert.equal((await rep("csam")).status, 303);
+  assert.equal((await live.GET(call(null, `/s/${site.slug}`), lctx())).status, 200);
+  await rep("csam", "8.8.4.2");
+  await rep("csam", "8.8.4.3");
   assert.equal((await live.GET(call(null, `/s/${site.slug}`), lctx())).status, 451);
 
   // A site taken down for abuse is kept for review: the owner can't delete it (tests/site-delete.test.ts covers the delete flow itself).

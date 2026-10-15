@@ -1,6 +1,7 @@
 import { errorResponse, json } from "@/lib/create/platform/http";
 import { startStripeBank } from "@/lib/business/stripe-banks";
 import { hideSetupDetail } from "@/lib/business/visibility";
+import { requireBusinessRole } from "@/lib/business/team";
 import { owner } from "../../../_owner";
 
 export const runtime = "nodejs";
@@ -10,6 +11,7 @@ export async function POST(req: Request) {
   let admin = false;
   try {
     const ws = await owner(req);
+    requireBusinessRole(ws, "connect a bank");
     admin = ws.admin;
     return json(await startStripeBank(ws.id));
   } catch (e) {

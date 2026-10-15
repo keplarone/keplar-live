@@ -213,7 +213,7 @@ export type AppMeta = {
   design: DesignChoice;
   /** Draft data has been seeded for this version. */
   seededVersion?: number;
-  /** Emails that sign in to the app with the admin role (the creator's email by default). */
+  /** Emails that get the admin role once proven by a magic-link sign-in (the creator's email by default). Password sign-up alone never grants admin. */
   admins: string[];
   /** Runtime switches the owner controls. */
   settings: { signups: boolean; ai: boolean; uploads: boolean };

@@ -20,8 +20,9 @@ import { HttpError } from "@/lib/create/platform/http";
 import { EntitlementError } from "@/lib/create/platform/plans";
 import { workspaceById, type Workspace } from "@/lib/create/platform/workspace";
 import { projects } from "@/lib/create/repo";
-import { activities, agents, approvals, audit, contacts, deals, inbox, logActivity, orders, runs } from "./repo";
+import { activities, agents, approvalClaims, approvals, audit, contacts, deals, inbox, logActivity, orders, runs } from "./repo";
 import { execute } from "./connectors";
+import { auditActor, requireBusinessRole } from "./team";
 import { inspectAction } from "./firewall";
 import { acceptDraft, draftMessages } from "./draft-safety";
 import type { Agent, AgentRun, Approval, OutboundAction, WorkflowTemplate } from "./types";
@@ -61,7 +62,7 @@ export async function setHalted(ws: Workspace, halted: boolean) {
   if (cur) await settings().update(ws.id, "settings", next);
   else await settings().insert({ id: "settings", workspaceId: ws.id, ...next });
   if (halted) await cancelPending(ws.id);
-  await audit(ws.id, "owner", halted ? "agents.halted" : "agents.resumed", "workspace");
+  await audit(ws.id, auditActor(ws), halted ? "agents.halted" : "agents.resumed", "workspace");
 }
 
 async function cancelPending(workspaceId: string, agentId?: string) {
@@ -137,7 +138,7 @@ export async function createAgent(ws: Workspace, template: WorkflowTemplate, nam
   const agent: Agent = { id: id("agt"), workspaceId: ws.id, name: name?.slice(0, 80) || (task ? `${t.name}: ${task.tool}`.slice(0, 80) : monitor ? `Watch ${new URL(monitor.url).hostname}`.slice(0, 80) : question ? `Ask: ${question}`.slice(0, 80) : event ? (event.source === "email" ? "Reply to incoming email" : "Webhook responder") : t.name), template, trigger, autoSend: false, status: "active", caps: { ...DEFAULT_CAPS }, createdAt: now(), lastRunAt: null, ...(task ? { mcp: task } : {}), ...(monitor ? { monitor } : {}), ...(question ? { question } : {}), ...(event ? { event } : {}), ...(hookToken ? { hookHash: hashHookToken(hookToken) } : {}), ...(event?.source === "email" ? { inboxRoute: newInboxRoute() } : {}) };
   await agents().insert(agent);
   if (task) await grantForNewAgent(ws, agent.id, task);
-  await audit(ws.id, "owner", "agent.created", agent.id, template);
+  await audit(ws.id, auditActor(ws), "agent.created", agent.id, template);
   return hookToken ? { ...agent, hookToken } : agent; // the webhook token is shown once; only its hash is stored
 }
 
@@ -145,6 +146,8 @@ export async function updateAgent(ws: Workspace, agentId: string, patch: { autoS
   const agent = await agents().get(ws.id, agentId);
   if (!agent) throw new HttpError(404, "Agent not found.");
   if (agent.status === "killed" && patch.status !== undefined) throw new HttpError(409, "This agent was stopped with the kill switch. Create a new one.");
+  // Auto-send and spending caps decide what goes out from the owner's accounts without a review: owner only.
+  if (patch.autoSend !== undefined || patch.caps !== undefined) requireBusinessRole(ws, "change auto-send or an agent's caps");
   const next: Partial<Agent> = {};
   if (typeof patch.autoSend === "boolean") {
     if (patch.autoSend && !ws.entitlements.autoSendAllowed) throw new EntitlementError("Auto-send is available on Plus and up.", "plus");
@@ -175,7 +178,7 @@ export async function updateAgent(ws: Workspace, agentId: string, patch: { autoS
   if (patch.caps) next.caps = { ...agent.caps, ...Object.fromEntries(Object.entries(patch.caps).filter(([, v]) => typeof v === "number" && v >= 0)) };
   const updated = await agents().update(ws.id, agentId, next);
   if (patch.status === "killed") await cancelPending(ws.id, agentId);
-  await audit(ws.id, "owner", patch.status === "killed" ? "agent.killed" : "agent.updated", agentId, JSON.stringify(patch));
+  await audit(ws.id, auditActor(ws), patch.status === "killed" ? "agent.killed" : "agent.updated", agentId, JSON.stringify(patch));
   return hookToken && updated ? { ...updated, hookToken } : updated;
 }
 
@@ -190,6 +193,9 @@ async function usage(ws: Workspace, agent: Agent) {
   };
 }
 
+const DRAFT_TIMEOUT_MS = 45_000;
+const DRAFT_MAX_TOKENS = 1200;
+
 /** One model call. Live: OpenRouter chat completions (KEPLAR_AGENT_MODEL). Not live: the starting draft. */
 async function draft(fallback: string, instruction: string): Promise<{ text: string; usd?: number }> {
   if (!isLive("codegen")) return { text: fallback };
@@ -197,7 +203,9 @@ async function draft(fallback: string, instruction: string): Promise<{ text: str
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: { authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`, "content-type": "application/json" },
-      body: JSON.stringify({ model: process.env.KEPLAR_AGENT_MODEL || "openrouter/auto", usage: { include: true }, provider: { data_collection: "deny" }, messages: draftMessages(fallback, instruction) }),
+      body: JSON.stringify({ model: process.env.KEPLAR_AGENT_MODEL || "openrouter/auto", max_tokens: DRAFT_MAX_TOKENS, usage: { include: true }, provider: { data_collection: "deny" }, messages: draftMessages(fallback, instruction) }),
+      // A hung model never holds a run open: on timeout the starting draft is used (catch below).
+      signal: AbortSignal.timeout(DRAFT_TIMEOUT_MS),
     });
     const data = (await res.json()) as { choices?: { message?: { content?: string } }[]; usage?: { cost?: number } };
     return { text: acceptDraft(data.choices?.[0]?.message?.content ?? "", fallback) ?? fallback, usd: data.usage?.cost };
@@ -372,16 +380,21 @@ async function plan(ws: Workspace, agent: Agent, payload: Record<string, unknown
 
 export type RunOptions = {
   /**
-   * Queue every outbound action for owner approval even if the agent has
-   * autoSend on. Unattended scheduled runs (Inngest cron / local scheduler)
-   * always set this (docs/business-os.md §4).
+   * Queue every outbound action for owner approval even if the agent has autoSend on. Only a run the owner starts by hand
+   * (trigger "manual", the Run button) may auto-send; every other trigger (events such as form.submitted or order.paid,
+   * schedules, chat, webhooks, email) is forced to approval inside runAgent whatever the caller passes (docs/business-os.md §4).
    */
   forceApproval?: boolean;
   /** Called with each step as it happens (a run started from the chat streams them to the card). Never affects the run. */
   onStep?: (step: AgentRun["steps"][number]) => void;
 };
 
+/** The only trigger that is a direct owner action in the UI. Anything else is unattended or driven by outside input. */
+export const OWNER_TRIGGERS: ReadonlySet<string> = new Set(["manual"]);
+
 export async function runAgent(ws: Workspace, agentId: string, trigger: string, payload: Record<string, unknown> = {}, opts: RunOptions = {}): Promise<AgentRun> {
+  // Fail closed: an event, schedule or any unknown trigger never auto-sends, even if a caller forgets forceApproval.
+  const forceApproval = opts.forceApproval === true || !OWNER_TRIGGERS.has(trigger);
   const agent = await agents().get(ws.id, agentId);
   if (!agent) throw new HttpError(404, "Agent not found.");
   if ((await getSettings(ws.id)).agentsHalted) throw new HttpError(409, "All agents are halted. Resume them first.", "halted");
@@ -443,7 +456,7 @@ export async function runAgent(ws: Workspace, agentId: string, trigger: string, 
       }
       const runUsd = run.units * USD_PER_UNIT;
       // Event responders act on untrusted input, so their outbound actions always wait for the owner (on every run path).
-      if (!opts.forceApproval && agent.template !== "event-reply" && agent.autoSend && verdict.autoSendAllowed && mcpMayAutoRun && ws.entitlements.autoSendAllowed && sent < agent.caps.outboundPerDay) {
+      if (!forceApproval && agent.template !== "event-reply" && agent.autoSend && verdict.autoSendAllowed && mcpMayAutoRun && ws.entitlements.autoSendAllowed && sent < agent.caps.outboundPerDay) {
         const summary = await execute(ws.id, `agent:${agent.id}`, action, { ws });
         await approvals().insert({ id: id("apr"), workspaceId: ws.id, agentId, runId: run.id, action, status: "sent", decidedAt: now(), result: `Auto-sent: ${summary}`, createdAt: now(), risk: verdict.risk, riskReasons: verdict.reasons, runUsd });
         sent += 1;
@@ -451,7 +464,7 @@ export async function runAgent(ws: Workspace, agentId: string, trigger: string, 
       } else {
         await approvals().insert({ id: id("apr"), workspaceId: ws.id, agentId, runId: run.id, action, status: "pending", decidedAt: null, createdAt: now(), risk: verdict.risk, riskReasons: verdict.reasons, runUsd });
         waiting += 1;
-        step(agent.autoSend && opts.forceApproval ? `Scheduled run: queued ${action.type} for your approval` : agent.autoSend && !verdict.autoSendAllowed ? `Firewall (${verdict.risk} risk: ${verdict.reasons.join("; ")}): queued ${action.type} for your approval` : agent.autoSend && sent >= agent.caps.outboundPerDay ? "Outbound cap reached; queued for approval" : `Queued ${action.type} for your approval`);
+        step(agent.autoSend && forceApproval ? `${trigger.startsWith("schedule") ? "Scheduled run" : "Unattended run"}: queued ${action.type} for your approval` : agent.autoSend && !verdict.autoSendAllowed ? `Firewall (${verdict.risk} risk: ${verdict.reasons.join("; ")}): queued ${action.type} for your approval` : agent.autoSend && sent >= agent.caps.outboundPerDay ? "Outbound cap reached; queued for approval" : `Queued ${action.type} for your approval`);
       }
     }
     run.status = waiting ? "waiting_approval" : "succeeded";
@@ -467,8 +480,12 @@ export async function runAgent(ws: Workspace, agentId: string, trigger: string, 
   return run;
 }
 
-async function knownEmails(workspaceId: string): Promise<Set<string>> {
-  return new Set((await contacts().list(workspaceId)).map((c) => (c.email ?? "").toLowerCase()).filter(Boolean));
+/** A contact a public form created this recently is not "known" to the firewall: anyone can create one by posting the form. */
+export const FRESH_FORM_CONTACT_MS = 60 * 60_000;
+
+export async function knownEmails(workspaceId: string, at = Date.now()): Promise<Set<string>> {
+  const fresh = new Date(at - FRESH_FORM_CONTACT_MS).toISOString();
+  return new Set((await contacts().list(workspaceId)).filter((c) => !(c.source === "form" && c.createdAt >= fresh)).map((c) => (c.email ?? "").toLowerCase()).filter(Boolean));
 }
 
 export async function decide(ws: Workspace, approvalId: string, decision: "approve" | "reject", edits?: { body?: string; text?: string }) {
@@ -484,27 +501,43 @@ export async function decide(ws: Workspace, approvalId: string, decision: "appro
     // Edits are inspected again: the owner can approve a high-risk action they have read, but a blocked one never goes out.
     const v = inspectAction(action, await knownEmails(ws.id));
     if (v.blocked) {
-      await audit(ws.id, "owner", "firewall.blocked", a.id, `${action.type}: ${v.blocked}`);
+      await audit(ws.id, auditActor(ws), "firewall.blocked", a.id, `${action.type}: ${v.blocked}`);
       throw new HttpError(422, v.blocked, "firewall_blocked");
     }
   }
+  // Atomic claim BEFORE anything runs: of two concurrent clicks (or tabs, or teammates) exactly one gets past this line.
+  const claim = await approvalClaims().insertIfAbsent({ id: a.id, workspaceId: ws.id, decision, by: auditActor(ws), at: now() });
+  if (!claim.inserted) throw new HttpError(409, "This approval is already being processed.", "already_processing");
+  // A kill switch or halt may have cancelled it between the read above and the claim.
+  if ((await approvals().get(ws.id, a.id))?.status !== "pending") throw new HttpError(409, "This approval is no longer waiting.", "not_pending");
   if (decision === "reject") {
     patch = { status: "rejected", decidedAt: now(), action };
-    await audit(ws.id, "owner", "approval.rejected", a.id, action.type);
+    await audit(ws.id, auditActor(ws), "approval.rejected", a.id, action.type);
   } else {
+    await approvals().update(ws.id, a.id, { status: "executing", action });
     try {
-      const summary = await execute(ws.id, "owner", action, { approvalId: a.id, ws });
+      const summary = await execute(ws.id, auditActor(ws), action, { approvalId: a.id, ws });
       patch = { status: "sent", decidedAt: now(), result: summary, action };
       if (action.type === "email.send" && action.contactId) await logActivity(ws.id, action.contactId, "email_sent", action.subject, a.id);
     } catch (err) {
       patch = { status: "failed", decidedAt: now(), result: err instanceof Error ? err.message : "Failed", action };
     }
-    await audit(ws.id, "owner", "approval.approved", a.id, patch.result);
+    await audit(ws.id, auditActor(ws), "approval.approved", a.id, patch.result);
   }
   const updated = await approvals().update(ws.id, a.id, patch);
-  const left = await approvals().list(ws.id, (x) => x.runId === a.runId && x.status === "pending");
-  if (!left.length) await runs().update(ws.id, a.runId, { status: "succeeded", endedAt: now() });
+  await settleRun(ws.id, a.runId);
   return updated;
+}
+
+/**
+ * The run's status once nothing of it is waiting: "failed" when any action failed, otherwise "succeeded" (every action was sent,
+ * rejected or cancelled by the owner). While anything is pending or executing, the run keeps waiting.
+ */
+async function settleRun(workspaceId: string, runId: string) {
+  const all = await approvals().list(workspaceId, (x) => x.runId === runId);
+  if (all.some((x) => x.status === "pending" || x.status === "executing")) return;
+  const failed = all.filter((x) => x.status === "failed").length;
+  await runs().update(workspaceId, runId, failed ? { status: "failed", endedAt: now(), error: `${failed} of ${all.length} action${all.length === 1 ? "" : "s"} failed` } : { status: "succeeded", endedAt: now() });
 }
 
 /** Background execution (Inngest in production). */
@@ -512,5 +545,6 @@ defineJob("agent.run", async (payload) => {
   const { agentId, trigger, workspaceId, ...rest } = payload as { agentId: string; trigger: string; workspaceId: string };
   const ws = await workspaceById(workspaceId);
   if (!ws) return;
-  await runAgent(ws, agentId, trigger, rest).catch((e) => console.warn("[agent.run]", e instanceof Error ? e.message : e));
+  // Queued runs come from events (form.submitted, order.paid): never auto-send.
+  await runAgent(ws, agentId, trigger, rest, { forceApproval: true }).catch((e) => console.warn("[agent.run]", e instanceof Error ? e.message : e));
 });

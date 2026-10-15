@@ -12,6 +12,19 @@ import { POST as joinPost } from "../src/app/api/team/join/route";
 import { GET as accountGet } from "../src/app/api/business/account/route";
 import { GET as agentsGet } from "../src/app/api/business/agents/route";
 import { POST as haltPost } from "../src/app/api/business/agents/halt/route";
+import { POST as agentsPost } from "../src/app/api/business/agents/route";
+import { PATCH as agentPatch } from "../src/app/api/business/agents/[id]/route";
+import { POST as decidePost } from "../src/app/api/business/approvals/[id]/route";
+import { GET as banksGet, DELETE as banksDelete } from "../src/app/api/business/banks/route";
+import { POST as plaidStart } from "../src/app/api/business/banks/plaid/start/route";
+import { POST as stripeBankSession } from "../src/app/api/business/banks/stripe/session/route";
+import { POST as connectorsPost } from "../src/app/api/business/connectors/route";
+import { POST as connectorToolsPost } from "../src/app/api/business/connectors/tools/route";
+import { POST as oauthStart } from "../src/app/api/business/connectors/oauth/start/route";
+import { GET as paymentsGet, POST as paymentsPost } from "../src/app/api/business/payments/route";
+import { POST as onboardingPost } from "../src/app/api/business/payments/onboarding/route";
+import { POST as paymentsRefresh } from "../src/app/api/business/payments/refresh/route";
+import { auditLog } from "../src/lib/business/repo";
 import { updateWorkspace } from "../src/lib/accounts/workspaces";
 import { knownTier, seatsForTier, ENTERPRISE_SEATS } from "../src/lib/business/seats";
 
@@ -31,12 +44,12 @@ async function invite(owner: { cookie: string }, teamId: string, addr: string, r
 }
 
 /** A Business owner with a known tier (an enterprise contract key here), a team, and people who joined with each role. */
-async function businessTeam(lookupKey = "enterprise:acme-test") {
+async function businessTeam(lookupKey = "enterprise:acme-test", roles: string[] = ["member", "viewer"]) {
   const owner = await signIn(email("owner"), "business");
   await updateWorkspace(owner.workspaceId, { billing: { lookupKey, status: "active" } });
   const teamId = (await j(await teamsPost(jsonReq(owner.cookie, "/api/team", "POST", { name: "Acme" })))).team.id as string;
   const people: Record<string, { cookie: string; email: string }> = {};
-  for (const role of ["member", "viewer"]) {
+  for (const role of roles) {
     const addr = email(role);
     const who = await signIn(addr, "free");
     const token = await invite(owner, teamId, addr, role);
@@ -94,4 +107,50 @@ test("a Starter plan has one seat: the owner. Inviting is refused and says why",
   assert.match((await j(r)).error, /limit of 1 member/);
   const detail = await j(await teamGet(call(owner.cookie, `/api/team/${teamId}`), P(teamId)));
   assert.equal(detail.capacity.maxMembers, 1);
+});
+
+test("teammates can't act as the owner: payments, banks, connectors, auto-send/caps are owner only; approvals need owner or admin", async () => {
+  const { owner, people } = await businessTeam("enterprise:acme-roles", ["member", "viewer", "admin"]);
+  const forbidden = async (r: Response, label: string) => {
+    assert.equal(r.status, 403, `${label}: ${r.status} ${await r.clone().text()}`);
+    assert.equal((await j(r)).code, "team_forbidden", label);
+  };
+  for (const role of ["member", "admin", "viewer"]) {
+    const c = people[role].cookie;
+    await forbidden(await paymentsPost(jsonReq(c, "/api/business/payments", "POST", { businessName: "Mine" })), `${role} payments setup`);
+    await forbidden(await onboardingPost(jsonReq(c, "/api/business/payments/onboarding", "POST", {})), `${role} onboarding`);
+    await forbidden(await paymentsRefresh(jsonReq(c, "/api/business/payments/refresh", "POST", {})), `${role} payments refresh`);
+    await forbidden(await banksGet(call(c, "/api/business/banks?data=1")), `${role} bank data`);
+    await forbidden(await banksDelete(jsonReq(c, "/api/business/banks", "DELETE", { id: "x" })), `${role} bank remove`);
+    await forbidden(await plaidStart(jsonReq(c, "/api/business/banks/plaid/start", "POST", {})), `${role} plaid start`);
+    await forbidden(await stripeBankSession(jsonReq(c, "/api/business/banks/stripe/session", "POST", {})), `${role} stripe bank`);
+    await forbidden(await connectorsPost(jsonReq(c, "/api/business/connectors", "POST", { connector: "gmail", action: "disconnect" })), `${role} connector`);
+    await forbidden(await connectorToolsPost(jsonReq(c, "/api/business/connectors/tools", "POST", { connector: "gmail", tool: "send", enabled: true })), `${role} connector tools`);
+    await forbidden(await oauthStart(jsonReq(c, "/api/business/connectors/oauth/start", "POST", { connector: "gmail" })), `${role} oauth start`);
+  }
+  // The owner still gets through the role gate (whatever the provider setup then says).
+  assert.notEqual((await banksGet(call(owner.cookie, "/api/business/banks"))).status, 403);
+  // Teammates see payment status but not the balance and payouts.
+  assert.equal((await paymentsGet(call(people.viewer.cookie, "/api/business/payments?details=1"))).status, 200);
+
+  // Agents: an Editor may pause/resume, but not turn on auto-send or change caps.
+  const created = await agentsPost(jsonReq(owner.cookie, "/api/business/agents", "POST", { template: "daily-brief" }));
+  assert.equal(created.status, 201, await created.clone().text());
+  const agentId = (await j(created)).agent.id as string;
+  const P1 = { params: Promise.resolve({ id: agentId }) };
+  await forbidden(await agentPatch(jsonReq(people.member.cookie, `/api/business/agents/${agentId}`, "PATCH", { autoSend: true }), P1), "member autoSend");
+  await forbidden(await agentPatch(jsonReq(people.admin.cookie, `/api/business/agents/${agentId}`, "PATCH", { caps: { maxPerDay: 999 } }), P1), "admin caps");
+  assert.equal((await agentPatch(jsonReq(people.member.cookie, `/api/business/agents/${agentId}`, "PATCH", { status: "paused" }), P1)).status, 200);
+  assert.equal((await agentPatch(jsonReq(owner.cookie, `/api/business/agents/${agentId}`, "PATCH", { autoSend: true }), P1)).status, 200);
+
+  // Approvals: owner or admin decide; an Editor can't (a missing approval is 404 once past the role gate).
+  const PA = { params: Promise.resolve({ id: "apr_missing" }) };
+  await forbidden(await decidePost(jsonReq(people.member.cookie, "/api/business/approvals/apr_missing", "POST", { decision: "approve" }), PA), "member decide");
+  assert.equal((await decidePost(jsonReq(people.admin.cookie, "/api/business/approvals/apr_missing", "POST", { decision: "approve" }), PA)).status, 404);
+  assert.equal((await decidePost(jsonReq(owner.cookie, "/api/business/approvals/apr_missing", "POST", { decision: "reject" }), PA)).status, 404);
+
+  // The audit log names the teammate who acted, not "owner".
+  const rows = await auditLog().listSystem((r) => r.action === "agent.updated" && r.target === agentId);
+  assert.ok(rows.some((r) => r.actor.startsWith(`member:member:${people.member.email}#`)), JSON.stringify(rows.map((r) => r.actor)));
+  assert.ok(rows.some((r) => r.actor === "owner"));
 });

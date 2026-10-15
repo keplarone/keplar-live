@@ -2,6 +2,7 @@ import { body, errorResponse, json } from "@/lib/create/platform/http";
 import { EntitlementError } from "@/lib/create/platform/plans";
 import { CONNECT_WEBHOOK_EVENTS, CONNECT_WEBHOOK_PATH, CONNECT_WEBHOOK_V2_EVENTS, connectProblem, ensureAccount, getAccount, MAX_FEE_BPS, orderLimits, payoutSummary, paymentsPaused, STRIPE_API_VERSION, stripeConfigured, stripeMode, WEBHOOK_SECRET_ENV } from "@/lib/business/stripe";
 import { siteOrigin } from "@/lib/business/commerce";
+import { memberOf, requireBusinessRole } from "@/lib/business/team";
 import { owner } from "../_owner";
 
 export const runtime = "nodejs";
@@ -14,7 +15,8 @@ export async function GET(req: Request) {
     const configured = stripeConfigured();
     let payouts = null;
     let payoutsError: string | null = null;
-    if (configured && account?.chargesEnabled && new URL(req.url).searchParams.get("details") === "1") {
+    // Balance and payouts are the owner's bank-side data: teammates see the account status only.
+    if (configured && account?.chargesEnabled && !memberOf(ws) && new URL(req.url).searchParams.get("details") === "1") {
       try {
         payouts = await payoutSummary(account);
       } catch {
@@ -43,9 +45,11 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const ws = await owner(req);
+    requireBusinessRole(ws, "set up payments");
     if (!ws.entitlements.commerce) throw new EntitlementError("Selling on your site is available on Plus and up.", "plus");
     const b = await body<{ email?: string; businessName?: string; country?: string }>(req);
-    const account = await ensureAccount(ws.id, { email: ws.email || (b.email ?? ""), businessName: (b.businessName ?? ws.name).slice(0, 120), country: b.country });
+    // The connected account is the owner's: never a teammate's address (a teammate acts in the owner's workspace with their own email).
+    const account = await ensureAccount(ws.id, { email: memberOf(ws)?.ownerEmail || ws.email || (b.email ?? ""), businessName: (b.businessName ?? ws.name).slice(0, 120), country: b.country });
     return json({ account });
   } catch (e) {
     return errorResponse(e);

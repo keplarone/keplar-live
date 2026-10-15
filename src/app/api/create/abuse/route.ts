@@ -4,9 +4,10 @@
  * Reports are reviewed by a human; takedown is POST /api/create/abuse/{id}.
  */
 import { errorResponse, HttpError, json } from "@/lib/create/platform/http";
-import { id, now } from "@/lib/create/platform/ids";
+import { alertOwner } from "@/lib/accounts/alerts";
+import { fileAbuseReport, reporterOf, takedownNote } from "@/lib/create/abuse-policy";
 import { clientIpOf, rateLimit } from "@/lib/create/platform/ratelimit";
-import { abuseReports, projects } from "@/lib/create/repo";
+import { projects } from "@/lib/create/repo";
 import { brand } from "@/lib/site";
 
 export const runtime = "nodejs";
@@ -38,20 +39,13 @@ export async function POST(req: Request) {
     const target = String(form.target ?? "").slice(0, 200);
     if (!target) throw new HttpError(400, "Which site are you reporting?");
     const project = await projects().findSystem((p) => p.id === target || p.slug === target);
-    const report = await abuseReports().insert({
-      id: id("abr"),
-      workspaceId: project?.workspaceId ?? "system",
-      target: project?.id ?? target,
-      reason: String(form.reason ?? "other").slice(0, 40),
-      details: String(form.details ?? "").slice(0, 4000),
-      reporterEmail: form.email ? String(form.email).slice(0, 200) : undefined,
-      status: "open",
-      createdAt: now(),
-    });
-    // csam/ncii: production auto-disables the site pending review and files required reports (e.g. NCMEC).
-    if (project && (report.reason === "csam" || report.reason === "ncii")) {
-      await projects().update(project.workspaceId, project.id, { takenDown: true });
-    }
+    const reason = String(form.reason ?? "other").slice(0, 40);
+    const details = String(form.details ?? "").slice(0, 4000);
+    // csam/ncii: taken down at once only from a verified account or 3+ distinct reporters in 24 h; otherwise urgent + alert (abuse-policy.ts).
+    const filed = await fileAbuseReport({ workspaceId: project?.workspaceId ?? "system", target: project?.id ?? target, reason, details, reporterEmail: form.email ? String(form.email).slice(0, 200) : undefined, reporter: await reporterOf(req) });
+    const report = filed.report;
+    if (project && filed.takeDown) await projects().update(project.workspaceId, project.id, { takenDown: true });
+    if (project && filed.urgent) await alertOwner(`${filed.takeDown ? "" : "URGENT "}Abuse report: ${reason} on project ${project.slug}`, `Project ${project.name} (${project.id}, workspace ${project.workspaceId}) was reported for ${reason}. Report ${report.id}.\n\n${details.slice(0, 1000)}\n\n${takedownNote(filed)}`).catch(() => undefined);
     if (req.headers.get("accept")?.includes("text/html")) return Response.redirect(new URL(`/api/create/abuse?done=1`, req.url), 303);
     return json({ report: { id: report.id, status: report.status } }, { status: 201 });
   } catch (e) {

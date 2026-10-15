@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { adminFromHeaders } from "@/lib/ops/admin-auth";
 import { maskEmail } from "@/lib/ops/audit";
+import { listAbuseReports } from "@/lib/create/abuse-policy";
 import { listReports, recentSafetyEvents, REPORT_LABEL } from "@/lib/safety/store";
 import { listTickets, TICKET_TOPIC_LABEL } from "@/lib/support/tickets";
 import { InboxActions } from "@/components/admin/InboxActions";
@@ -19,11 +20,11 @@ const sharedRef = (id?: string) => {
 };
 const when = (iso: string) => iso.replace("T", " ").slice(0, 16) + " UTC";
 
-/** Admin inbox: answer reports, support tickets and input-screen refusals. Stored in the database; nothing here is emailed automatically. */
+/** Admin inbox: site abuse reports (urgent first, with take down / restore), answer reports, support tickets and input-screen refusals. Stored in the database; nothing here is emailed automatically. */
 export default async function AdminInboxPage() {
   const admin = await adminFromHeaders(await headers());
   if (!admin) notFound();
-  const [reports, tickets, events] = await Promise.all([listReports(100).catch(() => null), listTickets(100).catch(() => null), recentSafetyEvents(30, 500).catch(() => null)]);
+  const [reports, tickets, events, abuse] = await Promise.all([listReports(100).catch(() => null), listTickets(100).catch(() => null), recentSafetyEvents(30, 500).catch(() => null), listAbuseReports(100).catch(() => null)]);
   const byCat: Record<string, number> = {};
   for (const e of events ?? []) byCat[`${e.category} (${e.action})`] = (byCat[`${e.category} (${e.action})`] ?? 0) + 1;
   return (
@@ -33,6 +34,30 @@ export default async function AdminInboxPage() {
         <h1>Reports and support</h1>
         <p className={s.sub}>Stored in the database. Nothing here is emailed automatically: reply from team@keplar.one yourself. <Link href="/admin">Operations</Link></p>
       </header>
+
+      <section className={s.panel} aria-labelledby="ab-h">
+        <h2 id="ab-h">Site abuse reports {abuse ? `(${abuse.filter((r) => r.status === "open" && r.urgent).length} urgent open)` : ""}</h2>
+        <p className={s.sub}>CSAM/NCII reports are urgent. They take a site down by themselves only from a verified account or 3+ distinct reporters in 24 h; otherwise review them now. Restore puts a wrongly removed site back.</p>
+        {!abuse ? <p className={s.empty}>Could not read abuse reports.</p> : !abuse.length ? <p className={s.empty}>No abuse reports.</p> : (
+          <div className={s.scroll}>
+            <table className={s.table}>
+              <thead><tr><th scope="col">When</th><th scope="col">Target</th><th scope="col">Reason</th><th scope="col">Details</th><th scope="col">Reporter</th><th scope="col">Status</th><th scope="col">Action</th></tr></thead>
+              <tbody>
+                {abuse.map((r) => (
+                  <tr key={r.id}>
+                    <td>{when(r.createdAt)}<br /><small>{r.id}</small></td>
+                    <td>{r.target.startsWith("site:") ? <Link href={`/s/${r.target.slice(5)}`}>/s/{r.target.slice(5)}</Link> : r.target}</td>
+                    <td>{r.urgent ? <b>URGENT {r.reason}</b> : r.reason}</td><td>{r.details || "—"}</td>
+                    <td>{r.verifiedReporter ? "verified account" : "unverified"}</td>
+                    <td>{r.status}{r.autoTakedown ? " (auto takedown)" : ""}{r.lastAction ? `, last: ${r.lastAction}` : ""}</td>
+                    <td><InboxActions kind="abuse" id={r.id} current={r.lastAction ?? ""} options={["takedown", "restore", "dismiss", "reopen"]} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
       <section className={s.panel} aria-labelledby="rep-h">
         <h2 id="rep-h">Answer reports {reports ? `(${reports.filter((r) => r.status === "open").length} open)` : ""}</h2>

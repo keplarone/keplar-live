@@ -139,6 +139,10 @@ test("cross-user isolation: projects, domains, media, blobs, business data", asy
   const bk = (key: string[]) => ({ params: Promise.resolve({ key }) });
   gone(await blob.GET(call(b.cookie, `/api/create/blob/media/${a.workspaceId}/secret.png`), bk(["media", a.workspaceId, "secret.png"])), "blob GET");
   gone(await blob.GET(call(b.cookie, `/api/create/blob/media/${a.workspaceId}/../${b.workspaceId}/x`), bk(["media", a.workspaceId, "..", b.workspaceId, "x"])), "blob traversal");
+  // An encoded slash ("..%2F") arrives decoded inside ONE segment ("../"): B's own prefix, then normalization lands in A's folder.
+  gone(await blob.GET(call(b.cookie, `/api/create/blob/media/${b.workspaceId}/..%2F/${a.workspaceId}/secret.png`), bk(["media", b.workspaceId, "../", a.workspaceId, "secret.png"])), "blob encoded-slash traversal");
+  gone(await blob.GET(call(b.cookie, `/api/create/blob/media/${b.workspaceId}/..%2F${a.workspaceId}/secret.png`), bk(["media", b.workspaceId, `../${a.workspaceId}`, "secret.png"])), "blob encoded-slash traversal (joined)");
+  gone(await blob.GET(call(b.cookie, `/api/create/blob/media/${b.workspaceId}/..%5C${a.workspaceId}/secret.png`), bk(["media", b.workspaceId, `..\\${a.workspaceId}`, "secret.png"])), "blob backslash traversal");
   assert.equal((await blob.GET(call(a.cookie, `/api/create/blob/media/${a.workspaceId}/secret.png`), bk(["media", a.workspaceId, "secret.png"]))).status, 200, "owner can read their own media");
 
   const agent = await import("@/app/api/business/agents/[id]/route");
