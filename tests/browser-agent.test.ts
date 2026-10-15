@@ -3,7 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe as say, needsPerson, parseAction, startUrl, stepPrompt, type El } from "../src/lib/browser/policy";
-import { allowedUrl, runBrowserTask, type Decide, type Fetched, type Step, type Transport } from "../src/lib/browser/run";
+import { allowedUrl, guardContext, runBrowserTask, sendsData, type Decide, type Fetched, type Step, type Transport } from "../src/lib/browser/run";
 
 // A fake public web: names resolve to a public address, pages are served from fixtures (nothing touches the network).
 const PUBLIC = async () => ["93.184.216.34"];
@@ -215,4 +215,54 @@ test("Keplar Browser fetches through a socket pinned to a checked address: a nam
   } finally {
     setNetworkForTests();
   }
+});
+
+test("Keplar Browser (AI-5): it never submits a form that sends information, whatever the button says", async () => {
+  const click = { kind: "click", index: 0 } as const;
+  // Neutral labels on buttons that submit a POST form are refused: judged by what the button does, not its label.
+  for (const el of [
+    { i: 0, tag: "button", text: "Continue", form: "post", submits: true },
+    { i: 0, tag: "button", text: "→", form: "post", submits: true },
+    { i: 0, tag: "input", text: "OK", type: "submit", form: "post", submits: true },
+    { i: 0, tag: "input", text: "", type: "image", form: "dialog", submits: true },
+  ] as El[]) assert.match(needsPerson(click, el) ?? "", /doesn't submit forms/, el.text);
+  // A GET form's submit just opens an address (like following a link): searching still works.
+  assert.equal(needsPerson(click, { i: 0, tag: "button", text: "Search", form: "get", submits: true }), null);
+  // A plain link or a non-submitting button inside a POST form is fine; the network guard below still stops a script-driven POST.
+  assert.equal(needsPerson(click, { i: 0, tag: "a", text: "Help", href: "https://x.example/help", form: "post" }), null);
+  assert.equal(needsPerson(click, { i: 0, tag: "button", text: "Show more", type: "button", form: "post" }), null);
+
+  // Enter is a submit: only in a GET form's single-line field, or a search box that isn't in a form.
+  const enter = (text: string) => ({ kind: "type", index: 0, text, submit: true }) as const;
+  assert.match(needsPerson(enter("hello"), { i: 0, tag: "input", text: "Your message", type: "text", form: "post" }) ?? "", /doesn't submit forms/);
+  assert.match(needsPerson(enter("hello"), { i: 0, tag: "textarea", text: "Write a reply", form: "get" }) ?? "", /doesn't submit forms/);
+  assert.match(needsPerson(enter("hello"), { i: 0, tag: "textarea", text: "Message #general" }) ?? "", /doesn't submit forms/, "a chat box outside a form");
+  assert.match(needsPerson(enter("hello"), { i: 0, tag: "div", text: "", role: "textbox" }) ?? "", /doesn't submit forms/);
+  assert.equal(needsPerson(enter("steel kettle"), { i: 0, tag: "input", text: "Search", type: "search", form: "get" }), null);
+  assert.equal(needsPerson(enter("steel kettle"), { i: 0, tag: "input", text: "Search", type: "text", form: "get" }), null);
+  assert.equal(needsPerson(enter("steel kettle"), { i: 0, tag: "input", text: "Search", type: "search" }), null);
+  assert.equal(needsPerson({ kind: "type", index: 0, text: "hello" }, { i: 0, tag: "textarea", text: "Message", form: "post" }), null, "typing without Enter sends nothing");
+
+  // Network guard: a page load that sends (POST etc.) is refused however it was triggered; GET loads go through.
+  assert.equal(sendsData({ method: "POST", resourceType: "document" }), true);
+  assert.equal(sendsData({ method: "put", resourceType: "document" }), true);
+  assert.equal(sendsData({ method: "GET", resourceType: "document" }), false);
+  let handler: ((r: unknown) => Promise<unknown>) | undefined;
+  const ctx = { route: async (_p: string, h: (r: unknown) => Promise<unknown>) => { handler = h; } };
+  const blocked = new Set<string>();
+  const sent = new Set<string>();
+  const seen: string[] = [];
+  await guardContext(ctx as never, PUBLIC, async (_r, url) => { seen.push(url); return { status: 200, headers: {}, body: Buffer.from("ok") }; }, blocked, sent);
+  const req = (method: string) => {
+    const r = { result: "", request: () => ({ url: () => "https://shop.example.com/checkout", method: () => method, resourceType: () => "document" }), abort: async () => { r.result = "aborted"; }, fulfill: async () => { r.result = "fulfilled"; }, continue: async () => { r.result = "continued"; } };
+    return r;
+  };
+  const post = req("POST");
+  await handler!(post);
+  assert.equal(post.result, "aborted");
+  assert.deepEqual([...sent], ["https://shop.example.com/checkout"]);
+  assert.equal(seen.length, 0, "nothing was sent to the site");
+  const get = req("GET");
+  await handler!(get);
+  assert.equal(get.result, "fulfilled");
 });
