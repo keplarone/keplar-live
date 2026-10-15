@@ -31,16 +31,16 @@ live data found anywhere).
 
 | ID | Sev | Finding | Where | Status |
 |---|---|---|---|---|
-| AUTH-1 | High | A session id with no database row is adopted as fully valid; with row pruning and the 60-day cookie envelope this allows a 2FA bypass, un-revoking a revoked session, and recreating a deleted account. | `src/lib/accounts/persist.ts:138,155,165-172`, `auth.ts:66`, `privacy/account-data.ts:204` | In progress |
-| AUTH-2 | High | Better Auth's ID-token social sign-in creates a session without the 2FA gate or session record. | Better Auth `sign-in.mjs:154-200`; `src/lib/accounts/oauth.ts:71-86` | In progress |
-| AUTH-3 | Low | Unused built-in Better Auth endpoints are reachable and re-issue cookies without `guardSession` (enabler for AUTH-1). | `src/lib/accounts/auth.ts:47-116` | In progress |
-| AUTH-4 | Medium | Pre-account hijack: an attacker's password can be attached to an existing account when the victim clicks an unsolicited verification email. | `src/lib/accounts/credentials.ts:244-253`, `password-auth.ts:148-150,191-203` | In progress |
-| AUTH-5 | Medium | Adding a passkey, enabling 2FA, regenerating codes, immediate deletion, data export and API-key creation need no recent re-authentication. | `src/app/api/account/{passkeys,mfa,delete,export}/route.ts`, `/api/keys` | In progress |
+| AUTH-1 | High | A session id with no database row is adopted as fully valid; with row pruning and the 60-day cookie envelope this allows a 2FA bypass, un-revoking a revoked session, and recreating a deleted account. | `src/lib/accounts/persist.ts:138,155,165-172`, `auth.ts:66`, `privacy/account-data.ts:204` | **Fixed** (51aa28c) |
+| AUTH-2 | High | Better Auth's ID-token social sign-in creates a session without the 2FA gate or session record. | Better Auth `sign-in.mjs:154-200`; `src/lib/accounts/oauth.ts:71-86` | **Fixed** (51aa28c) |
+| AUTH-3 | Low | Unused built-in Better Auth endpoints are reachable and re-issue cookies without `guardSession` (enabler for AUTH-1). | `src/lib/accounts/auth.ts:47-116` | **Fixed** (51aa28c; `/reset-password/:token` stays, it creates no session) |
+| AUTH-4 | Medium | Pre-account hijack: an attacker's password can be attached to an existing account when the victim clicks an unsolicited verification email. | `src/lib/accounts/credentials.ts:244-253`, `password-auth.ts:148-150,191-203` | **Fixed** (51aa28c) |
+| AUTH-5 | Medium | Adding a passkey, enabling 2FA, regenerating codes, immediate deletion, data export and API-key creation need no recent re-authentication. | `src/app/api/account/{passkeys,mfa,delete,export}/route.ts`, `/api/keys` | **Fixed** (51aa28c) |
 | AUTH-6 | Medium | Desktop/extension sign-in can be used for phishing and login CSRF (finish ticket not bound to the starting browser). | `src/lib/accounts/desktop-auth.ts:169-175,214-225` | Open |
-| AUTH-7 | Low-Med | Magic-link rate limits are per serverless instance. | `src/lib/accounts/stateless-magic-link.ts:76-78` | In progress |
-| AUTH-8 | Low | `localhost` origins are trusted in production. | `src/lib/accounts/auth.ts:71` | In progress |
+| AUTH-7 | Low-Med | Magic-link rate limits are per serverless instance. | `src/lib/accounts/stateless-magic-link.ts:76-78` | **Fixed** (51aa28c) |
+| AUTH-8 | Low | `localhost` origins are trusted in production. | `src/lib/accounts/auth.ts:71` | **Fixed** (51aa28c) |
 | AUTH-9 | Low-Med | TOTP brute force is slowed (8/10 min) but never blocked, and the owner isn't told. | `src/app/api/account/mfa/route.ts:42-49,95-111` | Open |
-| AUTH-10 | Low | No email for 2FA, passkey, recovery-code or API-key changes. | `mfa/route.ts`, `passkeys/route.ts` | In progress |
+| AUTH-10 | Low | No email for 2FA, passkey, recovery-code or API-key changes. | `mfa/route.ts`, `passkeys/route.ts` | **Fixed** (51aa28c) |
 | AUTH-11 | Low | New-device detection compares only the user-agent label. | `src/lib/accounts/new-device.ts:17-21` | Open |
 | AUTH-12 | Low | Per-email limits let anyone lock a sign-in method for 15 minutes. | `password-auth.ts:166` | Open |
 
@@ -48,12 +48,12 @@ live data found anywhere).
 
 | ID | Sev | Finding | Where | Status |
 |---|---|---|---|---|
-| AZ-1 | High | Anyone, signed out, can permanently take down any published site or project with a CSAM/NCII report; there is no restore path for sites. | `src/app/s/[slug]/[[...path]]/route.ts:289-299`, `src/app/api/create/abuse/route.ts:40-54`, `site-builder/store.ts:345` | In progress |
-| AZ-2 | High | Business teammates with the Editor role can set up the owner's Stripe payouts, approve the owner's outbound actions, turn on auto-send and (as Viewers) read bank data; audit logs record them as "owner". | `src/lib/business/team.ts:27-50`, `api/business/payments/*`, `approvals/[id]`, `agents/[id]`, `banks` | In progress |
-| AZ-3 | High | In apps built on Keplar, signing up with the creator's email (unverified) grants app admin. | `src/lib/app-runtime/auth.ts:66-80,94-99` | In progress |
-| AZ-4 | Medium | Encoded-slash path traversal in the blob route allows cross-tenant media reads on the same instance. | `src/app/api/create/blob/[...key]/route.ts:16-19`, `create/platform/blob.ts:20-24` | In progress |
+| AZ-1 | High | Anyone, signed out, can permanently take down any published site or project with a CSAM/NCII report; there is no restore path for sites. | `src/app/s/[slug]/[[...path]]/route.ts:289-299`, `src/app/api/create/abuse/route.ts:40-54`, `site-builder/store.ts:345` | **Fixed** (05e3377; policy awaiting owner confirmation) |
+| AZ-2 | High | Business teammates with the Editor role can set up the owner's Stripe payouts, approve the owner's outbound actions, turn on auto-send and (as Viewers) read bank data; audit logs record them as "owner". | `src/lib/business/team.ts:27-50`, `api/business/payments/*`, `approvals/[id]`, `agents/[id]`, `banks` | **Fixed** (a1876c6) |
+| AZ-3 | High | In apps built on Keplar, signing up with the creator's email (unverified) grants app admin. | `src/lib/app-runtime/auth.ts:66-80,94-99` | **Fixed** (4934317; admins created earlier keep the role) |
+| AZ-4 | Medium | Encoded-slash path traversal in the blob route allows cross-tenant media reads on the same instance. | `src/app/api/create/blob/[...key]/route.ts:16-19`, `create/platform/blob.ts:20-24` | **Fixed** (dd88bfa) |
 | AZ-5 | Low | Collab viewers can sign in as anyone in an app's draft environment. | `src/app/api/collab/[id]/route.ts:42`, `app-runtime/router.ts:103-109` | Open |
-| AZ-6 | Low | Two admin actions skip the admin 2FA requirement. | `src/app/api/templates/route.ts:67`, `src/app/api/share/route.ts:78` | In progress |
+| AZ-6 | Low | Two admin actions skip the admin 2FA requirement. | `src/app/api/templates/route.ts:67`, `src/app/api/share/route.ts:78` | **Fixed** (4f414d2) |
 | AZ-7 | Low | Public form and checkout endpoints accept unpublished projects. | `api/business/forms/[projectId]/route.ts:14`, `business/commerce.ts:25` | Open |
 
 ## Input handling and browser security
@@ -73,40 +73,40 @@ live data found anywhere).
 
 | ID | Sev | Finding | Where | Status |
 |---|---|---|---|---|
-| AI-1 | Medium | Event-triggered agent runs (e.g. a public form submission) can auto-send email from the owner's Gmail with attacker-controlled text and links. | `business/events.ts:10`, `inngest/functions.ts:66`, `business/agents.ts:446,515` | In progress |
-| AI-2 | Medium | Approving an action isn't atomic: double clicks or retries send twice. | `business/agents.ts:474-506` | In progress |
-| AI-3 | Medium | The firewall's "high risk, never auto-sent" rating is ignored on the MCP auto-run path. | `mcp/chat.ts:235-246`, `mcp/gateway.ts:527-531` | In progress |
+| AI-1 | Medium | Event-triggered agent runs (e.g. a public form submission) can auto-send email from the owner's Gmail with attacker-controlled text and links. | `business/events.ts:10`, `inngest/functions.ts:66`, `business/agents.ts:446,515` | **Fixed** (3e59286) |
+| AI-2 | Medium | Approving an action isn't atomic: double clicks or retries send twice. | `business/agents.ts:474-506` | **Fixed** (422a95e; a crash between claim and send leaves the approval stuck) |
+| AI-3 | Medium | The firewall's "high risk, never auto-sent" rating is ignored on the MCP auto-run path. | `mcp/chat.ts:235-246`, `mcp/gateway.ts:527-531` | **Fixed** (3aeaf87) |
 | AI-4 | Medium | A tool result can steer later auto-run calls that carry conversation data to another MCP server. | `mcp/chat.ts:187-249` | Open |
 | AI-5 | Medium | Keplar Browser can submit forms (Enter, neutral-label buttons) despite "never send/post". | `browser/policy.ts:54-64`, `browser/run.ts:165-168` | Open |
 | AI-6 | Medium | Computer-use confirmation trusts the model's own "sensitive" label; vision calls aren't charged. | `business/computer.ts:136-137`, `api/business/computer/step/route.ts:50-64` | Open |
 | AI-7 | Medium | Blender auto-approve can run Python that evades the text block-list. | `blender/agent.ts:27-38`, `studio-mode/useStudioAgent.ts:437` | Open |
-| AI-8 | Low | Business Editors can approve irreversible sends (see AZ-2). | `business/team.ts:37-39` | In progress |
-| AI-9 | Low | A failed approval can still mark the run "succeeded". | `business/agents.ts:505-506` | In progress |
-| AI-10 | Low | Agent draft model calls have no timeout or output cap; runs can stay "running" forever; retries can re-send. | `business/agents.ts:194-207,400-466` | In progress (timeouts) |
+| AI-8 | Low | Business Editors can approve irreversible sends (see AZ-2). | `business/team.ts:37-39` | **Fixed** (a1876c6) |
+| AI-9 | Low | A failed approval can still mark the run "succeeded". | `business/agents.ts:505-506` | **Fixed** (422a95e) |
+| AI-10 | Low | Agent draft model calls have no timeout or output cap; runs can stay "running" forever; retries can re-send. | `business/agents.ts:194-207,400-466` | **Fixed** (422a95e: 45 s timeout, 1,200-token cap) |
 | AI-11 | Low | Core's code checker relies on `node:vm`, which isn't a security boundary. | `core/sandbox.ts:14-31` | Open |
 | AI-12 | Low | Self-learning prompt changes are promoted without human review. | `core/selfdev/pipeline.ts:101` | Open |
-| AI-13 | Info | Keplar Wants PIN has no lockout and non-atomic confirmation (sandbox-only today). | `wants/pin.ts`, `wants/sandbox.ts:77-96` | Open |
+| AI-13 | Info | Keplar Wants PIN has no lockout and non-atomic confirmation (sandbox-only today). | `wants/pin.ts`, `wants/sandbox.ts:77-96` | Partly fixed (e70f342: PIN tries limited to 10 per 15 min); confirmation still not atomic |
 
 ## Performance, reliability and supply chain
 
 | ID | Sev | Finding | Where | Status |
 |---|---|---|---|---|
-| OPS-1 | High | Merges to `main` auto-deploy, but no CI runs the tests, lint, typecheck, audit or build (only two path-filtered workflows). | `.github/workflows/` | In progress |
-| PERF-1 | High | Chat sidebar and new-chat count load every chat with every message (up to ~80 MB). | `api/chats/route.ts:21`, `api/chats/[id]/route.ts:56-60` | In progress |
-| PERF-2 | High | Projects list loads all chats and files to count them. | `api/projects/route.ts:18-20` | In progress |
-| PERF-3 | High | Business dashboard reads every page view ever recorded. | `business/dashboard.ts:13-19` | In progress |
+| OPS-1 | High | Merges to `main` auto-deploy, but no CI runs the tests, lint, typecheck, audit or build (only two path-filtered workflows). | `.github/workflows/` | **Fixed** (5552d24) |
+| PERF-1 | High | Chat sidebar and new-chat count load every chat with every message (up to ~80 MB). | `api/chats/route.ts:21`, `api/chats/[id]/route.ts:56-60` | **Fixed** (b1c3ac7) |
+| PERF-2 | High | Projects list loads all chats and files to count them. | `api/projects/route.ts:18-20` | **Fixed** (b1c3ac7) |
+| PERF-3 | High | Business dashboard reads every page view ever recorded. | `business/dashboard.ts:13-19` | **Fixed** (b1c3ac7) |
 | PERF-4 | High | Page views are one row per view with no cap on the legacy path; pruning deletes one row at a time. | `create/serve.ts:66`, `business/traffic.ts`, `site-builder/features/analytics.ts:98` | Open |
-| PERF-5 | High | Stripe Connect webhook scans every stored event and order; dedupe isn't atomic. | `business/connect-webhook.ts:171,210,346,351`, `business/commerce.ts:25,60` | In progress |
-| PERF-6 | High | Custom-domain serving scans all domains and all projects on a miss. | `create/serve.ts:52-58` | In progress |
+| PERF-5 | High | Stripe Connect webhook scans every stored event and order; dedupe isn't atomic. | `business/connect-webhook.ts:171,210,346,351`, `business/commerce.ts:25,60` | **Fixed** (b1c3ac7) |
+| PERF-6 | High | Custom-domain serving scans all domains and all projects on a miss. | `create/serve.ts:52-58` | **Fixed** (b1c3ac7) |
 | PERF-7 | High | Site version handling loads every version's files on every save. | `site-builder/store.ts:151,178,390` | Open |
 | REL-1 | High | Media generation (and agent runs without Inngest) run as in-process `setTimeout` on serverless; jobs can stay queued forever. | `create/platform/queue.ts:18-28`, `create/media.ts:87,156-175` | Open |
-| REL-2 | Medium | ~10 outbound fetches have no timeout (incl. the Upstash limiter called on most API requests). | see review §3.1 | In progress |
+| REL-2 | Medium | ~10 outbound fetches have no timeout (incl. the Upstash limiter called on most API requests). | see review §3.1 | **Fixed** (8ffc937, 923654a) |
 | REL-3 | Medium | Daily-only crons carry work that needs to run more often unless Inngest is configured. | `vercel.json`, cron headers | Open (needs production config check) |
 | REL-4 | Medium | Fire-and-forget promises after the response (`void p`) can be dropped when the instance freezes. | review §6.3 | Open |
-| REL-5 | Medium | Production silently uses a random per-instance auth secret if `BETTER_AUTH_SECRET` is missing. | `accounts/secret.ts:14-17` | In progress |
-| REL-6 | Medium | Recipient emails are logged; every outgoing mail is stored with no retention. | `accounts/outbox.ts:27-30` | In progress |
+| REL-5 | Medium | Production silently uses a random per-instance auth secret if `BETTER_AUTH_SECRET` is missing. | `accounts/secret.ts:14-17` | **Fixed** (923654a: health check fails, no hard stop) |
+| REL-6 | Medium | Recipient emails are logged; every outgoing mail is stored with no retention. | `accounts/outbox.ts:27-30` | **Fixed** (923654a) |
 | PERF-8..12 | Medium | Sequential awaits before first byte on chat; DDL on every cold start; N+1 in teams; collab long-poll load; per-instance rate limits without Upstash. | review §2-5 | Open |
-| SUP-1..6 | Low | Actions pinned by tag; no Dependabot; Playwright traces committed; unmaintained `pdf-lib`; outdated patches (`next`, `better-auth`); vendored code without hashes. | review §1 | In progress (CI items) |
+| SUP-1..6 | Low | Actions pinned by tag; no Dependabot; Playwright traces committed; unmaintained `pdf-lib`; outdated patches (`next`, `better-auth`); vendored code without hashes. | review §1 | Partly fixed (5552d24: Dependabot, CI actions pinned by SHA, traces untracked); `pdf-lib`, patches and vendored hashes open |
 
 ## UX and accessibility
 
@@ -123,11 +123,11 @@ live data found anywhere).
 
 | ID | Sev | Finding | Where | Status |
 |---|---|---|---|---|
-| DSK-1 | High | Palmo rates code-executing commands as read-only (`git grep -O…`, `rg --pre`, `GIT_PAGER=…`, `LD_PRELOAD=…`, `go vet -vettool`, `sort --compress-program`), so they run without asking. | `src/main/palmo/risk.ts:173-194,288` | In progress |
+| DSK-1 | High | Palmo rates code-executing commands as read-only (`git grep -O…`, `rg --pre`, `GIT_PAGER=…`, `LD_PRELOAD=…`, `go vet -vettool`, `sort --compress-program`), so they run without asking. | `src/main/palmo/risk.ts:173-194,288` | Fixed on keplar-desktop branch (f49111a), not yet released; repo-local `diff.external` still open |
 | DSK-2 | Medium | Updates are trusted on GitHub-release write access alone (no code signing, Windows signature check off, deb installed as root). | `electron-builder.yml:50-53`, updater | Open (needs signing certificates) |
 | DSK-3 | Medium | Publishing isn't gated by review or a green CI run; `--clobber` can replace published binaries. | `.github/workflows/release.yml` | Open (owner decision) |
 | DSK-4 | Medium | The keplar.one session cookie is stored unencrypted on disk. | `electron-builder.yml:39-49` | Open |
-| DSK-5..20 | Low | Asar integrity off; sign-in ticket can reach logs; README claim about the PKCE verifier; broad sign-in host list; Blender token to a stale port; Poly Haven host and size; keys under the fixed "basic" key on keyring-less Linux; Palmo overlay crash handling; Electron 4 patches behind; sync save dialog; `hold_key` can't be stopped; Research ignores proxies; release-notes token persistence; broad macOS entitlements; raw HTTP error pages. | see review | Some in progress |
+| DSK-5..20 | Low | Asar integrity off; sign-in ticket can reach logs; README claim about the PKCE verifier; broad sign-in host list; Blender token to a stale port; Poly Haven host and size; keys under the fixed "basic" key on keyring-less Linux; Palmo overlay crash handling; Electron 4 patches behind; sync save dialog; `hold_key` can't be stopped; Research ignores proxies; release-notes token persistence; broad macOS entitlements; raw HTTP error pages. | see review | Partly fixed on keplar-desktop branch (f49111a: log redaction, PKCE wording, Poly Haven host/size, async save dialog, checkout credentials); rest open |
 
 ## Verified controls (selection)
 

@@ -9,7 +9,7 @@ and is kept.
 `AUDIT.md` (all findings with file/line and status), `PARITY.md` (every feature and its disposition), `BASELINE.md` (measured
 performance). Seven independent reviews; high findings re-checked by reading code.
 
-## Phase 2 — Security and reliability of what exists (in progress)
+## Phase 2 — Security and reliability of what exists (mostly shipped 2026-10-15, `5303a7f`)
 1. Auth: AUTH-1, 2, 3, 4, 5, 7, 8, 10.
 2. Authorization: AZ-1, 2, 3, 4, 6.
 3. Agents: AI-1, 2, 3, 9, 10.
