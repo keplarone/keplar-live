@@ -263,8 +263,8 @@ test("useStudioAgent: events map to the real moments in the run loop; no invente
   assert.match(src, /new Promise<boolean>\(\(resolve\) => decisions\.current\.set\(k, resolve\)\);\s*emit\(\{ kind: "approval\.requested"/);
   assert.match(src, /by: flags\.current\.stop \? "stop" : "person"/);
   assert.match(src, /emit\(\{ kind: "approval\.granted", action: k, by: "auto-approve" \}\)/);
-  // Reverts always ask; destructive always asks; changes ask unless auto-approve.
-  assert.match(src, /const needsYes = origin === "revert" \|\| a\.ask === true \|\| a\.risk === "destructive" \|\| \(a\.risk === "change" && !flags\.current\.auto\);/);
+  // Reverts always ask; destructive always asks; Blender Python always asks; changes ask unless auto-approve (blender/agent.ts#needsApproval).
+  assert.match(src, /const needsYes = needsApproval\(a, \{ revert: origin === "revert", auto: flags\.current\.auto, blender \}\);/);
   // A retry of a revert keeps the revert's rule; a second click cannot start a second page action.
   assert.match(src, /const ask = isRevertLineage\(eventsRef\.current, actionKey\);/);
   assert.match(src, /if \(!bridge \|\| running \|\| pageBusy\.current\) return \{ outcome: "skipped" \};\s*pageBusy\.current = true;/);

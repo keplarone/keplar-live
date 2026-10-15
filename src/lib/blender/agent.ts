@@ -6,8 +6,9 @@
  *
  * Blender's Python is not sandboxed the way Studio's Luau is: it can reach files and the network. So Python that imports system,
  * file or network modules, opens files, or quits/saves Blender is blocked (the add-on's own tools do downloads and export), and
- * Python that deletes things always waits for the person. This is a check on the code's text, not a sandbox: the real gate is
- * that changes wait for approval unless the person turned on auto-approve for safe changes.
+ * Python that deletes things always waits for the person. This is a check on the code's text, not a sandbox (it can be evaded,
+ * e.g. "import bpy, os" or an aliased bpy.ops.wm), so it is only an extra warning: Python code steps ALWAYS wait for the
+ * person, even with auto-approve on (BLENDER_ALWAYS_ASK). Auto-approve covers only the add-on's own fixed tools.
  */
 import type { Risk, TurnProfile } from "@/lib/studio/agent";
 
@@ -22,6 +23,19 @@ export const BLENDER_TOOL_POLICY: Record<string, Risk | "blocked"> = {
   ph_model: "change",
   export: "change",
 };
+
+/** Tools whose steps always wait for the person in Blender, whatever auto-approve says: arbitrary code can't be judged by its text. */
+export const BLENDER_ALWAYS_ASK: ReadonlySet<string> = new Set(["python"]);
+
+/**
+ * Must this step wait for the person? Reads never do; reverts, steps marked ask, destructive steps and Blender's Python always
+ * do; other changes wait unless auto-approve is on. Used by the studio run loop (useStudioAgent) for Roblox Studio and Blender.
+ */
+export function needsApproval(a: { name: string; risk: Risk; ask?: boolean }, ctx: { revert: boolean; auto: boolean; blender: boolean }): boolean {
+  if (ctx.revert || a.ask === true || a.risk === "destructive") return true;
+  if (ctx.blender && BLENDER_ALWAYS_ASK.has(a.name)) return true;
+  return a.risk === "change" && !ctx.auto;
+}
 
 /** Modules and calls that reach outside Blender (files, processes, network, the add-on system itself). */
 const OUTSIDE = /\b(?:import|from)\s+(?:os|sys|subprocess|shutil|socket|ctypes|importlib|pathlib|requests|urllib|http|ftplib|smtplib|webbrowser|winreg|multiprocessing|threading|asyncio|pickle|marshal|zipfile|tarfile|tempfile|glob|io|builtins|addon_utils|_winapi|nt|posix)\b|__import__|__builtins__|__subclasses__|\bopen\s*\(|\beval\s*\(|\bexec\s*\(|\bcompile\s*\(|\bgetattr\s*\(\s*bpy\s*,|bpy\.ops\.wm\.(?:quit|save|open|read|append|link|recover|url_open|path_open)|bpy\.ops\.(?:preferences|script|extensions)\.|bpy\.utils\.(?:register|unregister|execfile)|bpy\.app\.handlers|bpy\.app\.timers|\.filepath(?:_raw)?\s*=|bpy\.ops\.(?:export_scene|export_mesh|wm\.\w+_export)|\.save\s*\(|\.save_render\s*\(/;
