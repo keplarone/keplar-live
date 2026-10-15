@@ -38,7 +38,7 @@ export function ChatGPTConnection() {
         <Link href="/" className={s.brand}><BusinessMark size={30} /><span>Keplar Business</span></Link>
         <Link href="/work">Open workspace <span aria-hidden="true">↗</span></Link>
       </header>
-      <main className={s.main}>
+      <div className={s.main}>
         <p className={s.eyebrow}>Keplar Business + ChatGPT</p>
         <h1>Your business.<br />In the conversation.</h1>
         <p className={s.intro}>Bring your Keplar projects, tasks and saved reports into ChatGPT. Keep making progress with the same Keplar account.</p>
@@ -92,7 +92,7 @@ export function ChatGPTConnection() {
           <p>Open the plugin directly using the button above. Confirm that you are in the ChatGPT workspace that owns this private plugin. If Keplar sign-in opens, use the same verified owner account as your Business workspace. After approving the connection, return here and check its status.</p>
           <p>A link opening successfully does not confirm account access. The status above checks for a saved account grant; your first project request in ChatGPT verifies tool access.</p>
         </section>
-      </main>
+      </div>
       <BusinessFooter />
     </div>
   );
