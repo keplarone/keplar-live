@@ -22,6 +22,7 @@ import { workspaceById, type Workspace } from "@/lib/create/platform/workspace";
 import { projects } from "@/lib/create/repo";
 import { activities, agents, approvals, audit, contacts, deals, inbox, logActivity, orders, runs } from "./repo";
 import { execute } from "./connectors";
+import { auditActor, requireBusinessRole } from "./team";
 import { inspectAction } from "./firewall";
 import { acceptDraft, draftMessages } from "./draft-safety";
 import type { Agent, AgentRun, Approval, OutboundAction, WorkflowTemplate } from "./types";
@@ -61,7 +62,7 @@ export async function setHalted(ws: Workspace, halted: boolean) {
   if (cur) await settings().update(ws.id, "settings", next);
   else await settings().insert({ id: "settings", workspaceId: ws.id, ...next });
   if (halted) await cancelPending(ws.id);
-  await audit(ws.id, "owner", halted ? "agents.halted" : "agents.resumed", "workspace");
+  await audit(ws.id, auditActor(ws), halted ? "agents.halted" : "agents.resumed", "workspace");
 }
 
 async function cancelPending(workspaceId: string, agentId?: string) {
@@ -137,7 +138,7 @@ export async function createAgent(ws: Workspace, template: WorkflowTemplate, nam
   const agent: Agent = { id: id("agt"), workspaceId: ws.id, name: name?.slice(0, 80) || (task ? `${t.name}: ${task.tool}`.slice(0, 80) : monitor ? `Watch ${new URL(monitor.url).hostname}`.slice(0, 80) : question ? `Ask: ${question}`.slice(0, 80) : event ? (event.source === "email" ? "Reply to incoming email" : "Webhook responder") : t.name), template, trigger, autoSend: false, status: "active", caps: { ...DEFAULT_CAPS }, createdAt: now(), lastRunAt: null, ...(task ? { mcp: task } : {}), ...(monitor ? { monitor } : {}), ...(question ? { question } : {}), ...(event ? { event } : {}), ...(hookToken ? { hookHash: hashHookToken(hookToken) } : {}), ...(event?.source === "email" ? { inboxRoute: newInboxRoute() } : {}) };
   await agents().insert(agent);
   if (task) await grantForNewAgent(ws, agent.id, task);
-  await audit(ws.id, "owner", "agent.created", agent.id, template);
+  await audit(ws.id, auditActor(ws), "agent.created", agent.id, template);
   return hookToken ? { ...agent, hookToken } : agent; // the webhook token is shown once; only its hash is stored
 }
 
@@ -145,6 +146,8 @@ export async function updateAgent(ws: Workspace, agentId: string, patch: { autoS
   const agent = await agents().get(ws.id, agentId);
   if (!agent) throw new HttpError(404, "Agent not found.");
   if (agent.status === "killed" && patch.status !== undefined) throw new HttpError(409, "This agent was stopped with the kill switch. Create a new one.");
+  // Auto-send and spending caps decide what goes out from the owner's accounts without a review: owner only.
+  if (patch.autoSend !== undefined || patch.caps !== undefined) requireBusinessRole(ws, "change auto-send or an agent's caps");
   const next: Partial<Agent> = {};
   if (typeof patch.autoSend === "boolean") {
     if (patch.autoSend && !ws.entitlements.autoSendAllowed) throw new EntitlementError("Auto-send is available on Plus and up.", "plus");
@@ -175,7 +178,7 @@ export async function updateAgent(ws: Workspace, agentId: string, patch: { autoS
   if (patch.caps) next.caps = { ...agent.caps, ...Object.fromEntries(Object.entries(patch.caps).filter(([, v]) => typeof v === "number" && v >= 0)) };
   const updated = await agents().update(ws.id, agentId, next);
   if (patch.status === "killed") await cancelPending(ws.id, agentId);
-  await audit(ws.id, "owner", patch.status === "killed" ? "agent.killed" : "agent.updated", agentId, JSON.stringify(patch));
+  await audit(ws.id, auditActor(ws), patch.status === "killed" ? "agent.killed" : "agent.updated", agentId, JSON.stringify(patch));
   return hookToken && updated ? { ...updated, hookToken } : updated;
 }
 
@@ -484,13 +487,13 @@ export async function decide(ws: Workspace, approvalId: string, decision: "appro
     // Edits are inspected again: the owner can approve a high-risk action they have read, but a blocked one never goes out.
     const v = inspectAction(action, await knownEmails(ws.id));
     if (v.blocked) {
-      await audit(ws.id, "owner", "firewall.blocked", a.id, `${action.type}: ${v.blocked}`);
+      await audit(ws.id, auditActor(ws), "firewall.blocked", a.id, `${action.type}: ${v.blocked}`);
       throw new HttpError(422, v.blocked, "firewall_blocked");
     }
   }
   if (decision === "reject") {
     patch = { status: "rejected", decidedAt: now(), action };
-    await audit(ws.id, "owner", "approval.rejected", a.id, action.type);
+    await audit(ws.id, auditActor(ws), "approval.rejected", a.id, action.type);
   } else {
     try {
       const summary = await execute(ws.id, "owner", action, { approvalId: a.id, ws });
@@ -499,7 +502,7 @@ export async function decide(ws: Workspace, approvalId: string, decision: "appro
     } catch (err) {
       patch = { status: "failed", decidedAt: now(), result: err instanceof Error ? err.message : "Failed", action };
     }
-    await audit(ws.id, "owner", "approval.approved", a.id, patch.result);
+    await audit(ws.id, auditActor(ws), "approval.approved", a.id, patch.result);
   }
   const updated = await approvals().update(ws.id, a.id, patch);
   const left = await approvals().list(ws.id, (x) => x.runId === a.runId && x.status === "pending");
