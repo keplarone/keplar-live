@@ -32,10 +32,20 @@ function script(replies: string[]) {
   return { decide, seen };
 }
 
+/**
+ * A real headless Chromium, or null when its executable isn't installed on this machine (`npx playwright install chromium`).
+ * Only a missing executable skips; any other launch failure still fails the test. The pages come from fixtures, so no network is needed.
+ */
 async function chromium() {
   const { chromium: pw } = await import("playwright");
-  return pw.launch({ headless: true });
+  try {
+    return await pw.launch({ headless: true });
+  } catch (e) {
+    if (/Executable doesn't exist/i.test(e instanceof Error ? e.message : String(e))) return null;
+    throw e;
+  }
 }
+const NO_CHROMIUM = "Chromium isn't installed here (run `npx playwright install chromium`); CI installs it and runs this test";
 
 test("browser policy: actions parse strictly; buying, sending, signing in and secret fields are left to the person", () => {
   assert.deepEqual(parseAction(`Sure! {"action":"click","index":"3"}`), { kind: "click", index: 3 });
@@ -67,8 +77,9 @@ test("browser network guard: public web only", async () => {
   assert.equal(await allowedUrl("https://split.example.com/", async () => ["93.184.216.34", "127.0.0.1"]), false, "every address must be public");
 });
 
-test("Keplar Browser acceptance: a real browser reads a page, answers with its source, and stops before buying", async () => {
+test("Keplar Browser acceptance: a real browser reads a page, answers with its source, and stops before buying", async (t) => {
   const browser = await chromium();
+  if (!browser) return t.skip(NO_CHROMIUM);
   try {
     // 1) Read: open the shop, click through to the product, answer with the price and where it came from.
     const steps: Step[] = [];
@@ -98,8 +109,9 @@ test("Keplar Browser acceptance: a real browser reads a page, answers with its s
   }
 });
 
-test("Keplar Browser acceptance: private addresses are blocked, including through a public page's redirect", async () => {
+test("Keplar Browser acceptance: private addresses are blocked, including through a public page's redirect", async (t) => {
   const browser = await chromium();
+  if (!browser) return t.skip(NO_CHROMIUM);
   try {
     assert.equal((await runBrowserTask({ goal: "open it", url: "http://127.0.0.1:8080/" }, { browser, decide: script([]).decide, onStep: () => undefined, resolve: PUBLIC, transport: fixtures })).status, "failed");
     const steps: Step[] = [];

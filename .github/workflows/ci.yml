@@ -1,0 +1,50 @@
+# The release gate (scripts/verify.mjs) on every pull request and every push to main: Vercel deploys main on its own, so this is
+# what stands between a merge and production. Same steps and order as `npm run verify --no-e2e`; the browser smoke test stays local.
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          # No engines field or .nvmrc: Node 22 LTS, as in the other workflows.
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Secret scan
+        run: node scripts/secret-scan.mjs
+      - name: Production dependency audit
+        run: npm audit --omit=dev --audit-level=high
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Lint
+        run: npx eslint . --quiet
+      # Headless Chromium for the tests that drive a real browser (Keplar Browser acceptance, layout probe). Without it they skip.
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Unit tests
+        run: npm test
+      - name: Build
+        run: npx next build
+        env:
+          # The same throwaway values verify.mjs builds with: no real secret is needed or used.
+          BETTER_AUTH_SECRET: ci-build-secret-0123456789abcdefghijklmnop
+          BETTER_AUTH_URL: http://localhost:3199
+          KEPLAR_DEV_TOOLS: '1'
+          KEPLAR_MX_CHECK: 'off'
+          RESEND_API_KEY: ''

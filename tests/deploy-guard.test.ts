@@ -31,7 +31,8 @@ test("deploy guard: Git deployments are allowed from main only", () => {
 
 test("deploy guard: wired into the build and both deploy commands", () => {
   const pkg = JSON.parse(readFileSync("package.json", "utf8"));
-  assert.match(pkg.scripts.build, /^node scripts\/build-guard\.mjs && next build$/);
+  // The guard runs first (nothing else, e.g. the Wants catalog seed, runs for a refused upload) and next build last.
+  assert.match(pkg.scripts.build, /^node scripts\/build-guard\.mjs && (?:[^&]+ && )*next build$/);
   assert.equal(pkg.scripts["deploy:prod"], "node scripts/deploy-prod.mjs");
   assert.ok(readFileSync("scripts/deploy.mjs", "utf8").includes("...stamp.args"), "the gated deploy carries the stamp");
   assert.ok(readFileSync("scripts/deploy-prod.mjs", "utf8").includes("...s.args"), "the fast deploy carries the stamp");

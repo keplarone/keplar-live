@@ -88,7 +88,8 @@ test("Create: References sit inside Options and ride with a new build's prompt (
   const ab = readFileSync("src/components/create/apps/AppBuilder.tsx", "utf8");
   const options = ab.slice(ab.indexOf('id="kc-options"'), ab.indexOf("<AppShelf"));
   assert.match(options, /<ReferenceTray [^>]*onChange=\{onRefs\}/);
-  assert.match(ab, /prompt: edit \? prompt : withReferences\(prompt, refBriefs\.current, cfg\?\.plan\)/);
+  // A new build's prompt also carries the build intake answers (withBuildIntake); an edit sends the prompt alone.
+  assert.match(ab, /prompt: edit \? prompt : withReferences\(withBuildIntake\(prompt, intake\), refBriefs\.current, cfg\?\.plan\)/);
 });
 
 test("agents: schedule notes speak plainly, with no hosting provider or plan names", async () => {

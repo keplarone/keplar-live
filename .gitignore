@@ -13,3 +13,7 @@ data/wants/swarm.db-shm
 
 # written by scripts/build-guard.mjs on production builds
 public/deploy-stamp.json
+
+# Playwright output (traces can hold page content and cookies). Never committed.
+test-results/
+playwright-report/
