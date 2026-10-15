@@ -53,8 +53,10 @@ export async function resolveSite(key: string): Promise<Project | null> {
   const slug = k.endsWith(`.${USER_CONTENT_DOMAIN}`) ? k.slice(0, -(USER_CONTENT_DOMAIN.length + 1)) : k;
   const bySlug = await projects().findSystemBy("slug", slug);
   if (bySlug) return bySlug;
-  const dom = await domains().findSystem((d) => d.status === "active" && (d.name === k || (d.apex && `www.${d.name}` === k)));
-  return dom ? projects().findSystem((p) => p.id === dom.projectId) : null;
+  // Indexed lookups by name (the host itself, or the apex for www.<apex>), never a scan of every domain or project.
+  const candidates = [...(await domains().listSystemBy("name", k)), ...(k.startsWith("www.") ? await domains().listSystemBy("name", k.slice(4)) : [])];
+  const dom = candidates.find((d) => d.status === "active" && (d.name === k || (d.apex && `www.${d.name}` === k)));
+  return dom ? projects().findSystemBy("id", dom.projectId) : null;
 }
 
 export async function serveLive(key: string, parts?: string[]) {

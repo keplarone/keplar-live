@@ -63,7 +63,7 @@ function routes(dir: string, out: string[] = []) {
 const API = "src/app/api";
 const LIMITER = /limitRequest\(|rateLimit\(|enterUsage|dailyLimit\(|minuteLimit\(|chargeUnits/;
 /** Helpers that apply a per-account limit before returning. Each is checked below. */
-const HELPERS: Record<string, string> = { "owner(": "src/app/api/business/_owner.ts", "mcpOwner(": "src/app/api/mcp/_ctx.ts", "projectOwner(": "src/lib/projects/api.ts", "authenticateKey(": "src/lib/api/keys.ts", "teamAs(": "src/lib/team/api.ts", "accountOf(": "src/lib/team/api.ts", "requireBusiness(": "src/lib/business/require.ts", "cloudOwner(": "src/lib/roblox-cloud/api.ts", "renderOwner(": "src/lib/blender-cloud/api.ts" };
+const HELPERS: Record<string, string> = { "owner(": "src/app/api/business/_owner.ts", "mcpOwner(": "src/app/api/mcp/_ctx.ts", "projectOwner(": "src/lib/projects/api.ts", "authenticateKey(": "src/lib/api/keys.ts", "teamAs(": "src/lib/team/api.ts", "accountOf(": "src/lib/team/api.ts", "wantsSession(": "src/lib/wants/http.ts" /* Keplar Wants: 120/min per IP and account; PIN checks also 10 per 15 min (src/lib/wants/pin.ts) */, "requireBusiness(": "src/lib/business/require.ts", "cloudOwner(": "src/lib/roblox-cloud/api.ts", "renderOwner(": "src/lib/blender-cloud/api.ts" };
 /** Cost-bearing work whose limits live in the library the route calls (checked: that file must contain a limiter). */
 const LIB_LIMITED: Record<string, string> = {
   "sites/[id]/generate": "src/lib/site-builder/job.ts",

@@ -5,7 +5,7 @@ import { POST } from "@/app/api/business/stripe/webhook/route";
 import { testAccount, testWorkspace } from "./helpers/workspace";
 import { getAccount } from "@/lib/business/stripe";
 import { auditLog, connectAccounts, contacts, inbox, orders } from "@/lib/business/repo";
-import { connectEvents, handleConnectEvent, setMockV2Account, type ConnectEvent } from "@/lib/business/connect-webhook";
+import { connectEventClaims, connectEvents, ConnectEventInFlight, handleConnectEvent, setMockV2Account, type ConnectEvent } from "@/lib/business/connect-webhook";
 import { fixtures, signFixture } from "./helpers/connect-fixtures";
 import { id, now } from "@/lib/create/platform/ids";
 
@@ -145,4 +145,30 @@ test("handler failures are stored as failed and re-processed on Stripe's retry",
   const row = await connectEvents().findSystem((r) => r.id === ev.id);
   assert.equal(row?.attempts, 2);
   assert.equal((await connectAccounts().list(acct.workspaceId)).length, 1);
+});
+
+test("dedupe across instances: an attempt claimed elsewhere is refused (409 path), a stale 'processing' attempt is taken over", async () => {
+  const { acct } = await setup();
+  const ctx = { fetchV2Account: async () => fixtures.v2Account(acct.stripeAccountId) };
+
+  // Another instance claimed the first attempt of this event a moment ago (its row isn't written yet): this delivery must not process it too.
+  const ev = fixtures.v2AccountEvent(acct.stripeAccountId);
+  assert.equal((await connectEventClaims().insertIfAbsent({ id: `${ev.id}#1`, workspaceId: "system", eventId: ev.id, at: now() })).inserted, true);
+  await assert.rejects(handleConnectEvent(ev, ctx), ConnectEventInFlight);
+  assert.equal(await connectEvents().findSystemBy("id", ev.id), null, "nothing was processed or recorded");
+
+  // A fresh "processing" row (another instance is working on it right now) is refused too.
+  const ev2 = fixtures.v2AccountEvent(acct.stripeAccountId);
+  const row = { id: ev2.id, workspaceId: acct.workspaceId, type: ev2.type, account: acct.stripeAccountId, livemode: false, status: "processing" as const, attempts: 1, receivedAt: now(), claimedAt: now(), processedAt: null };
+  await connectEvents().insert(row);
+  await assert.rejects(handleConnectEvent(ev2, ctx), ConnectEventInFlight);
+
+  // ...but once it is older than the stale window (the instance died), Stripe's retry takes it over as attempt 2.
+  const old = new Date(Date.now() - 11 * 60_000).toISOString();
+  await connectEvents().update(acct.workspaceId, ev2.id, { receivedAt: old, claimedAt: old });
+  const out = await handleConnectEvent(ev2, ctx);
+  assert.equal(out.status, "processed");
+  assert.equal((await connectEvents().findSystemBy("id", ev2.id))?.attempts, 2);
+  // A replay after that is a duplicate, never a second run.
+  assert.equal((await handleConnectEvent(ev2, ctx)).duplicate, true);
 });

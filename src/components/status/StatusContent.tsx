@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { brand } from "@/lib/site";
-import { cronStatus, healthSummary } from "@/lib/ops/health";
+import { AUTH_SECRET_ERROR, cronStatus, healthSummary } from "@/lib/ops/health";
 import { checkoutAvailable } from "@/lib/billing/whop";
 import { liveMode } from "@/lib/orchestration/providers";
 import s from "@/components/status/Status.module.css";
@@ -18,7 +18,7 @@ export async function StatusContent() {
   const crons = await cronStatus();
   const lines: Line[] = [
     { name: "Website", detail: "This page was just rendered by the live server.", state: "ok" },
-    { name: "Accounts and data", detail: h.body.ok ? ("roundTripMs" in h.body ? `A test write and read of the database just worked (${h.body.roundTripMs} ms).` : "Using the local store.") : "A test write and read of the database failed.", state: h.body.ok ? "ok" : "down" },
+    { name: "Accounts and data", detail: h.body.ok ? ("roundTripMs" in h.body ? `A test write and read of the database just worked (${h.body.roundTripMs} ms).` : "Using the local store.") : "error" in h.body && h.body.error === AUTH_SECRET_ERROR ? "Sign-in is not fully configured: sessions may end when the server restarts." : "A test write and read of the database failed.", state: h.body.ok ? "ok" : "down" },
     { name: "Answers", detail: liveMode() ? "Model access is switched on." : "Model access is not switched on for this deployment.", state: liveMode() ? "ok" : "down" },
     { name: "Plan checkout", detail: checkoutAvailable() ? "Checkout is available." : "Checkout opens soon.", state: checkoutAvailable() ? "ok" : "info" },
     ...crons.map((c): Line => ({

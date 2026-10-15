@@ -55,6 +55,8 @@ export type ConnectEventRow = {
   result?: string;
   attempts: number;
   receivedAt: string;
+  /** When the current (or last) processing attempt started. Rows written before this field existed fall back to receivedAt. */
+  claimedAt?: string;
   processedAt: string | null;
 };
 export const connectEvents = () => collection<ConnectEventRow>("biz_connect_events");
@@ -168,7 +170,7 @@ async function onCheckoutPaid(acct: ConnectAccount, s: SessionLike, livemode: bo
   if (s.payment_status && !["paid", "no_payment_required"].includes(s.payment_status)) return "awaiting_async_payment";
   const email = (s.customer_details?.email ?? s.customer_email ?? "").trim().toLowerCase() || undefined;
   const pi = idOf(s.payment_intent);
-  let order = await orders().findSystem((o) => o.checkoutSessionId === s.id);
+  let order = await orders().findSystemBy("checkoutSessionId", s.id);
   if (order && order.workspaceId !== acct.workspaceId) return "ignored_foreign_order";
   if (!order) {
     const amount = s.amount_total ?? 0;
@@ -207,7 +209,7 @@ async function onCheckoutPaid(acct: ConnectAccount, s: SessionLike, livemode: bo
 }
 
 async function onCheckoutClosed(acct: ConnectAccount, s: SessionLike, reason: "expired" | "payment_failed"): Promise<string> {
-  const order = await orders().findSystem((o) => o.checkoutSessionId === s.id);
+  const order = await orders().findSystemBy("checkoutSessionId", s.id);
   if (!order) return "no_order";
   if (order.workspaceId !== acct.workspaceId) return "ignored_foreign_order";
   if (order.status !== "pending") return `order_already_${order.status}`;
@@ -220,7 +222,7 @@ async function onCheckoutClosed(acct: ConnectAccount, s: SessionLike, reason: "e
 
 async function orderForPayment(acct: ConnectAccount, pi: string | null) {
   if (!pi) return null;
-  return (await orders().list(acct.workspaceId, (o) => o.paymentIntentId === pi))[0] ?? null;
+  return orders().findSystemBy("paymentIntentId", pi, { workspaceId: acct.workspaceId });
 }
 
 async function onRefund(acct: ConnectAccount, c: ChargeLike): Promise<string> {
@@ -325,11 +327,26 @@ async function dispatch(e: ConnectEvent, acct: ConnectAccount, ctx: ConnectConte
 
 export type ConnectResult = { duplicate?: boolean; status: EventStatus; result: string; workspaceId: string };
 
-// File store has no unique constraint; this stops two concurrent deliveries of one event
-// racing in-process. Postgres: the event id is the primary key, so the insert is the lock.
+// A fast path for two deliveries of one event in the same instance. Across instances, the claim below is the lock.
 const inFlight = new Set<string>();
 
 export class ConnectEventInFlight extends Error {}
+
+/**
+ * One row per processing attempt of an event, keyed `<event id>#<attempt>` in the system workspace. insertIfAbsent is atomic
+ * (Postgres: INSERT ... ON CONFLICT DO NOTHING on the primary key; file store: under the file lock), so of two deliveries that
+ * read the same prior state, exactly one wins the claim and the other gets a 409 (Stripe retries it later).
+ */
+export type ConnectEventClaim = { id: string; workspaceId: string; eventId: string; at: string };
+export const connectEventClaims = () => collection<ConnectEventClaim>("biz_connect_event_claims");
+
+/** A "processing" attempt older than this is treated as abandoned (the instance died) and may be taken over by a retry. */
+const STALE_PROCESSING_MS = 10 * 60_000;
+
+async function claim(eventId: string, attempt: number): Promise<boolean> {
+  const { inserted } = await connectEventClaims().insertIfAbsent({ id: `${eventId}#${attempt}`, workspaceId: SYSTEM_WS, eventId, at: now() });
+  return inserted;
+}
 
 export async function handleConnectEvent(e: ConnectEvent, ctx: ConnectContext): Promise<ConnectResult> {
   if (!e?.id || !e.type) throw new Error("Malformed event");
@@ -343,16 +360,26 @@ export async function handleConnectEvent(e: ConnectEvent, ctx: ConnectContext): 
 }
 
 async function handleOnce(e: ConnectEvent, ctx: ConnectContext): Promise<ConnectResult> {
-  const prior = await connectEvents().findSystem((r) => r.id === e.id);
-  if (prior && (prior.status === "processed" || prior.status === "ignored")) {
-    return { duplicate: true, status: prior.status, result: prior.result ?? "", workspaceId: prior.workspaceId };
+  const prior = await connectEvents().findSystemBy("id", e.id);
+  const done = (p: ConnectEventRow): ConnectResult => ({ duplicate: true, status: p.status, result: p.result ?? "", workspaceId: p.workspaceId });
+  if (prior && (prior.status === "processed" || prior.status === "ignored")) return done(prior);
+  if (prior?.status === "processing" && Date.now() - Date.parse(prior.claimedAt ?? prior.receivedAt) < STALE_PROCESSING_MS) {
+    throw new ConnectEventInFlight(`Event ${e.id} is already being processed`);
+  }
+  const attempts = (prior?.attempts ?? 0) + 1;
+  if (!(await claim(e.id, attempts))) {
+    // Another delivery claimed this attempt first. If it has already finished, answer like any duplicate.
+    const latest = await connectEvents().findSystemBy("id", e.id);
+    if (latest && (latest.status === "processed" || latest.status === "ignored")) return done(latest);
+    throw new ConnectEventInFlight(`Event ${e.id} is already being processed`);
   }
   const accountId = accountIdOf(e);
-  const acct = accountId ? await connectAccounts().findSystem((a) => a.stripeAccountId === accountId) : null;
+  const acct = accountId ? await connectAccounts().findSystemBy("stripeAccountId", accountId) : null;
   const workspaceId = acct?.workspaceId ?? SYSTEM_WS;
+  const claimedAt = now();
   const row: ConnectEventRow = prior
-    ? { ...prior, workspaceId, status: "processing", attempts: prior.attempts + 1 }
-    : { id: e.id, workspaceId, type: e.type, account: accountId, livemode: Boolean(e.livemode), status: "processing", attempts: 1, receivedAt: now(), processedAt: null };
+    ? { ...prior, workspaceId, status: "processing", attempts, claimedAt }
+    : { id: e.id, workspaceId, type: e.type, account: accountId, livemode: Boolean(e.livemode), status: "processing", attempts, receivedAt: claimedAt, claimedAt, processedAt: null };
   if (prior) {
     // workspaceId can change if the account was linked after the first attempt; re-key the row.
     await connectEvents().remove(prior.workspaceId, prior.id);

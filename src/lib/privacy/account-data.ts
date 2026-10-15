@@ -46,6 +46,7 @@ export const RETAINED = [
   "overage_settings", // overage opt-in and monthly cap: the billing authorization behind any overage charge
   "overage_usage", // overage amounts billed per month: a financial record
   "space_billing_events", // Space Studio billing idempotency log (event id, type, plan, timestamps, target workspace id; workspace "system", no content): a financial record, kept so a replayed event can never re-grant a plan
+  "biz_connect_event_claims", // Stripe Connect webhook dedupe claims (Stripe event id + attempt number + time; workspace "system", no content); pruned after 30 days
   "answer_turns", // answer recovery checkpoints (orchestration/turn-recovery.ts): workspace "system", keyed by a hash of owner + turn key (no account id), the last answer as sent; unreadable after 30 minutes and deleted within a day, so they expire on their own
 ] as const;
 export const RETAINED_PATTERNS = [/^usage_window_/, /^system_/, /^admin_/, /^ops_/, /^_health$/, /^_cron_beats$/ /* cron heartbeat timestamps, no personal data */];
@@ -73,11 +74,14 @@ export const USER_COLLECTIONS = [
   "space_rev_min", "space_rev_hour", "space_sales" /* the tracked experiences' own sales from their beacon (item id, kind, price, time; no player data) and their per-minute/hour totals; deleted with the account */,
   "space_profiles" /* Space Studio onboarding: birth date, age band, answers, consents, parental consent state and the parent's email; deleted with the account */, "space_parent_consents" /* system-scoped parental consent token hashes (7-day expiry), freed explicitly on deletion (freeConsentTokens) */,
   "browser_tasks" /* Keplar Browser tasks: the task, step notes and addresses, the newest screenshot and the result; the newest 20 are kept, exported and deleted with the account */,
+  // Keplar Wants (src/lib/wants): the pending plan awaiting PIN confirmation (prompt, answers, provider; 10-minute expiry) is exported;
+  // the PIN's scrypt hash, OAuth states and (sandbox) provider tokens are credentials, deleted with the account and never exported.
+  "wants_confirmations", "wants_pins", "wants_oauth_states", "wants_oauth_tokens",
 ] as const;
 
 export const isRetained = (name: string) => (RETAINED as readonly string[]).includes(name) || RETAINED_PATTERNS.some((p) => p.test(name));
 /** Not worth exporting: internal telemetry with no user-authored content. */
-const NOT_EXPORTED = new Set(["model_calls", "live_model_spend", "job_slots", "dev_outbox", "seo_events", "growth_events", "sb_fingerprints", "chatgpt_codes", "chatgpt_grants"]);
+const NOT_EXPORTED = new Set(["model_calls", "live_model_spend", "job_slots", "dev_outbox", "seo_events", "growth_events", "sb_fingerprints", "chatgpt_codes", "chatgpt_grants", "wants_pins", "wants_oauth_states", "wants_oauth_tokens"]);
 
 const SECRET_KEY = /token|secret|password|passwd|api[-_]?key|authorization|credential|signing|^hash$/i;
 /** Redact secret-looking fields at any depth. */

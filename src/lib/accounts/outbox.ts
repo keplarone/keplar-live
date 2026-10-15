@@ -6,6 +6,8 @@
  */
 import { collection } from "@/lib/create/platform/store";
 import { id, now } from "@/lib/create/platform/ids";
+import { maskEmail } from "@/lib/ops/audit";
+import { isProductionRuntime } from "./secret";
 
 export type OutboxMail = { id: string; workspaceId: string; to: string; subject: string; text: string; kind: string; at: string; delivered: boolean };
 const outbox = () => collection<OutboxMail>("dev_outbox");
@@ -20,14 +22,17 @@ export async function sendEmail(input: { to: string; subject: string; text: stri
       method: "POST",
       headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
       body: JSON.stringify({ from: process.env.KEPLAR_EMAIL_FROM || "Keplar <no-reply@keplar.one>", to: [input.to], subject: input.subject, text: input.text }),
+      signal: AbortSignal.timeout(10_000), // a hung request counts as not delivered (logged and kept below), never a hung sign-in
     }).catch(() => null);
     delivered = Boolean(res?.ok);
   }
-  // Bodies (which may hold sign-in links) are only kept/logged in dev tools mode.
+  // Bodies (which may hold sign-in links) are only kept/logged in dev tools mode. Recipient addresses are personal data: in
+  // production (without dev tools) they are masked in the log and in the stored record.
   const keepBody = devToolsEnabled();
-  if (!delivered) console.info(`[outbox] ${input.kind} → ${input.to}: ${input.subject}${keepBody ? `\n${input.text}` : " (body withheld; set RESEND_API_KEY)"}`);
+  const to = keepBody || !isProductionRuntime() ? input.to : maskEmail(input.to);
+  if (!delivered) console.info(`[outbox] ${input.kind} → ${to}: ${input.subject}${keepBody ? `\n${input.text}` : " (body withheld; set RESEND_API_KEY)"}`);
   if (!delivered && key) console.error(`[outbox] Resend delivery failed for ${input.kind}`);
-  await outbox().insert({ id: id("mail"), workspaceId: SYSTEM, ...input, text: keepBody ? input.text : "[withheld]", at: now(), delivered });
+  await outbox().insert({ id: id("mail"), workspaceId: SYSTEM, ...input, to, text: keepBody ? input.text : "[withheld]", at: now(), delivered });
   return delivered;
 }
 

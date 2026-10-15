@@ -1,4 +1,4 @@
-.page{background:#fff;color:#161616;min-height:100vh;font-family:Arial,Helvetica,sans-serif;color-scheme:light}
+.page{background:#fff;color:#161616;min-height:100vh;font-family:var(--f-sans);color-scheme:light}
 .nav{max-width:1320px;margin:auto;padding:26px 40px;display:flex;align-items:center;justify-content:space-between;gap:24px;border-bottom:1px solid #e5e5e5}
 .nav a{color:inherit;text-decoration:none;font-size:13px}.brand{display:flex;align-items:center;gap:12px;font-weight:600}
 .main{max-width:1240px;margin:auto;padding:80px 40px 72px}.eyebrow{text-transform:uppercase;letter-spacing:.15em;font-size:10px;font-weight:600;color:#686868;margin:0 0 24px}

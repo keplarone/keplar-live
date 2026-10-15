@@ -22,7 +22,7 @@ export function siteOrigin(requestUrl?: string) {
 }
 
 export async function startCheckout(input: { projectId: string; productId: string; returnPath?: string; origin?: string }) {
-  const project = await projects().findSystem((p) => p.id === input.projectId);
+  const project = await projects().findSystemBy("id", input.projectId);
   if (!project || project.takenDown) throw new HttpError(404, "This store isn't available.");
   const product = project.spec?.products.find((p) => p.id === input.productId);
   if (!product) throw new HttpError(404, "Product not found.");
@@ -57,7 +57,7 @@ export async function startCheckout(input: { projectId: string; productId: strin
 }
 
 export async function orderBySession(sessionId: string) {
-  return orders().findSystem((o) => o.checkoutSessionId === sessionId);
+  return orders().findSystemBy("checkoutSessionId", sessionId);
 }
 
 /**

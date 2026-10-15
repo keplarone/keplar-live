@@ -52,7 +52,10 @@ test("a cross-site page can't sign someone out of Business", async () => {
 
 test("Sign out is offered in the Business workspace (and so the desktop app), the storefront and account setup", () => {
   const ws = readFileSync("src/components/business-app/BusinessWorkspace.tsx", "utf8");
-  assert.equal((ws.match(/onClick=\{\(\) => void signOut\(\)\}/g) ?? []).length, 2, "sidebar account footer and the no-plan screen");
+  assert.equal((ws.match(/onClick=\{\(\) => void signOut\(\)\}/g) ?? []).length, 1, "the no-plan screen");
+  // The sidebar footer's account menu (AccountRow): its "Sign out" item calls onSignOut, which the footer wires to signOut().
+  assert.match(ws, /onClick=\{\(\) => \{ setOpen\(false\); onSignOut\(\); \}\}[^>]*>\{signingOut \? "Signing out…" : "Sign out"\}/, "account menu item");
+  assert.match(ws, /<AccountRow[\s\S]*?onSignOut=\{\(\) => void signOut\(\)\}/, "sidebar account footer");
   assert.match(readFileSync("src/components/business-site/Storefront.tsx", "utf8"), /<SignOutButton email=\{status\.email\} \/>/);
   assert.match(readFileSync("src/components/business-site/AccountSetup.tsx", "utf8"), /<SignOutButton /);
   const helper = readFileSync("src/components/business-site/sign-out.ts", "utf8");

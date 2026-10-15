@@ -6,6 +6,7 @@ import { neonConfigured } from "@/lib/create/platform/neon";
 import { rateLimitBackend } from "@/lib/create/platform/ratelimit";
 import { collection, storeDurable } from "@/lib/create/platform/store";
 import { id as newId } from "@/lib/create/platform/ids";
+import { authSecretConfigured, authSecretMissingInProduction } from "@/lib/accounts/secret";
 
 type Probe = { id: string; workspaceId: string; at: string };
 let cached: { at: number; ok: boolean; ms: number; error?: string } | null = null;
@@ -28,11 +29,10 @@ export async function probeStore() {
   return cached;
 }
 
-/** True when BETTER_AUTH_SECRET is set long enough to key sessions across restarts. Never returns the secret. */
-export function authSecretConfigured(): boolean {
-  const s = process.env.BETTER_AUTH_SECRET?.trim() ?? "";
-  return s.length >= 16;
-}
+export { authSecretConfigured };
+
+/** Shown (and logged) when production runs without BETTER_AUTH_SECRET. A label only, never a value. */
+export const AUTH_SECRET_ERROR = "auth secret not configured";
 
 export async function healthSummary() {
   const postgres = neonConfigured();
@@ -40,9 +40,17 @@ export async function healthSummary() {
     authSecret: authSecretConfigured(),
     rateLimit: rateLimitBackend(),
   };
-  if (!postgres) return { status: 200, body: { ok: true, store: "file" as const, durable: storeDurable(), security } };
+  // Production on a temporary random secret is a failure, not a warning: sessions and sign-in links break on every restart.
+  const secretMissing = authSecretMissingInProduction();
+  if (secretMissing) console.error("[health] CRITICAL: auth secret not configured. Set BETTER_AUTH_SECRET to 32+ random characters in the production environment.");
+  if (!postgres) {
+    const ok = !secretMissing;
+    return { status: ok ? 200 : 503, body: { ok, store: "file" as const, durable: storeDurable(), security, ...(ok ? {} : { error: AUTH_SECRET_ERROR }) } };
+  }
   const p = await probeStore();
-  return { status: p.ok ? 200 : 503, body: { ok: p.ok, store: "postgres" as const, durable: true, roundTripMs: p.ms, security, ...(p.ok ? {} : { error: p.error }) } };
+  const ok = p.ok && !secretMissing;
+  const error = !p.ok ? p.error : secretMissing ? AUTH_SECRET_ERROR : undefined;
+  return { status: ok ? 200 : 503, body: { ok, store: "postgres" as const, durable: true, roundTripMs: p.ms, security, ...(error ? { error } : {}) } };
 }
 
 /* ───────────── Scheduled jobs (Vercel Cron) ───────────── */

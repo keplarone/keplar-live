@@ -58,6 +58,9 @@ export function KeplarWantsTab() {
   const [pending, setPending] = useState<ToolUse[] | null>(null);
   const [photo, setPhoto] = useState<MediaInput | undefined>();
   const requestRef = useRef<RequestState | null>(null);
+  // Render-time mirrors of refs (a ref change alone never re-renders): the request the question cards belong to, and whether an answer is streaming.
+  const [activeRequestId, setActiveRequestId] = useState<string | null>(null);
+  const [streaming, setStreaming] = useState(false);
   const historyRef = useRef<{ role: "user" | "keplar"; text: string }[]>([]);
   const controllerRef = useRef<AbortController | null>(null);
   const turnRef = useRef<string | null>(null);
@@ -238,9 +241,10 @@ export function KeplarWantsTab() {
   }, []);
 
   useEffect(() => {
-    void refreshApps();
+    // The first load is scheduled, not run inside the effect body (react-hooks/set-state-in-effect); focus refreshes as before.
+    const first = window.setTimeout(() => void refreshApps(), 0);
     window.addEventListener("focus", refreshApps);
-    return () => { window.removeEventListener("focus", refreshApps); recRef.current?.stop(); controllerRef.current?.abort(); };
+    return () => { window.clearTimeout(first); window.removeEventListener("focus", refreshApps); recRef.current?.stop(); controllerRef.current?.abort(); };
   }, [refreshApps]);
 
   useEffect(() => { timelineRef.current?.scrollTo({ top: timelineRef.current.scrollHeight }); }, [cards, busy]);
@@ -253,6 +257,7 @@ export function KeplarWantsTab() {
     const ctl = new AbortController();
     const key = crypto.randomUUID().replace(/-/g, "");
     controllerRef.current = ctl;
+    setStreaming(true);
     turnRef.current = key;
     push({ kind: "reply", id, text: "", goal, uses: [], streaming: true });
     let answered = false;
@@ -279,6 +284,7 @@ export function KeplarWantsTab() {
     } finally {
       patchReply(id, (c) => ({ ...c, streaming: false, text: c.text || (answered ? "The answer was empty." : "No answer was returned. No order or booking is confirmed here.") }));
       controllerRef.current = null;
+      setStreaming(false);
       turnRef.current = null;
     }
   };
@@ -337,6 +343,7 @@ export function KeplarWantsTab() {
       }
       const next = { id: uid(), prompt: text, answers: {}, ready: false };
       requestRef.current = next;
+      setActiveRequestId(next.id);
       await callOrchestrate(next);
     });
   };
@@ -389,7 +396,7 @@ export function KeplarWantsTab() {
         <header className={s.head}>
           <span className={s.dot} aria-hidden />
           <span>Keplar Wants</span>
-          <button type="button" className={s.newRequest} disabled={busy} onClick={() => { requestRef.current = null; historyRef.current = []; setCards([]); setDrafts({}); setPhoto(undefined); setAndPlace(PREFIX); }}>New request</button>
+          <button type="button" className={s.newRequest} disabled={busy} onClick={() => { requestRef.current = null; setActiveRequestId(null); historyRef.current = []; setCards([]); setDrafts({}); setPhoto(undefined); setAndPlace(PREFIX); }}>New request</button>
         </header>
         <div className={s.connections}>
           <label><input type="checkbox" checked={toolsOn} disabled={!apps?.available || !apps.apps.length || busy} onChange={(e) => setToolsOn(e.target.checked)} /> Use my connected apps</label>
@@ -411,22 +418,22 @@ export function KeplarWantsTab() {
             if (c.kind === "question") return <div key={c.id} className={s.card} data-testid="question-card">
               <div className={s.label}>A little context</div><label className={s.title} htmlFor={`answer-${c.id}`}>{c.question}</label>
               {c.answered ? <p>{c.answered}</p> : <>
-                <div className={s.options}>{c.options.map((o) => <button key={o} type="button" disabled={busy || requestRef.current?.id !== c.requestId} onClick={() => void answer(c, o)}>{o}</button>)}</div>
+                <div className={s.options}>{c.options.map((o) => <button key={o} type="button" disabled={busy || activeRequestId !== c.requestId} onClick={() => void answer(c, o)}>{o}</button>)}</div>
                 <form className={s.answerRow} onSubmit={(e) => { e.preventDefault(); void answer(c, drafts[c.id] ?? ""); }}>
-                  <input id={`answer-${c.id}`} maxLength={500} placeholder={c.placeholder ?? "Your answer"} value={drafts[c.id] ?? ""} disabled={busy || requestRef.current?.id !== c.requestId} onChange={(e) => setDrafts((d) => ({ ...d, [c.id]: e.target.value }))} />
-                  <button type="submit" disabled={busy || !drafts[c.id]?.trim() || requestRef.current?.id !== c.requestId}>Continue</button>
+                  <input id={`answer-${c.id}`} maxLength={500} placeholder={c.placeholder ?? "Your answer"} value={drafts[c.id] ?? ""} disabled={busy || activeRequestId !== c.requestId} onChange={(e) => setDrafts((d) => ({ ...d, [c.id]: e.target.value }))} />
+                  <button type="submit" disabled={busy || !drafts[c.id]?.trim() || activeRequestId !== c.requestId}>Continue</button>
                 </form>
               </>}
             </div>;
             return <div key={c.id} className={`${s.card} ${s.fallback}`} role="alert"><div className={s.title}>{c.title}</div><p>{c.message}</p></div>;
           })}
-          {busy && !controllerRef.current && <p role="status">Preparing your request…</p>}
+          {busy && !streaming && <p role="status">Preparing your request…</p>}
         </div>
         <div className={s.attachments}>
           <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden onChange={(e) => { void attachPhoto(e.target.files?.[0]); e.target.value = ""; }} />
           <button type="button" disabled={busy} onClick={() => fileRef.current?.click()}>Attach a photo</button>
           {photo && <span>Photo attached <button type="button" disabled={busy} onClick={() => setPhoto(undefined)} aria-label="Remove attached photo">Remove</button></span>}
-          {busy && controllerRef.current && <button type="button" onClick={stop}>Stop</button>}
+          {busy && streaming && <button type="button" onClick={stop}>Stop</button>}
         </div>
         <div className={s.row}>
           <input ref={inputRef} data-testid="want-input" className={s.input} value={value} disabled={busy} maxLength={4000} spellCheck onChange={onChange} onKeyDown={onKeyDown} onCut={onCut} onPaste={onPaste} onDrop={onDrop} onBeforeInput={fixCaret} onSelect={fixCaret} onClick={fixCaret} onFocus={fixCaret} onCompositionStart={fixCaret} onCompositionUpdate={fixCaret} aria-label="I want" />

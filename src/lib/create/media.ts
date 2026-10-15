@@ -112,6 +112,8 @@ async function runLive(job: MediaJob) {
       method: "POST",
       headers,
       body: JSON.stringify({ model: job.model, prompt: job.prompt, aspect_ratio: job.params.aspectRatio }),
+      // Synchronous image generation: some models take most of a minute. A timeout fails the job like any provider error.
+      signal: AbortSignal.timeout(90_000),
     });
     if (!res.ok) throw new Error(`Image generation failed (${res.status}).`);
     const data = (await res.json()) as { data: { b64_json: string; media_type?: string }[]; usage?: { cost?: number } };
@@ -124,6 +126,7 @@ async function runLive(job: MediaJob) {
     method: "POST",
     headers,
     body: JSON.stringify({ model: job.model, prompt: job.prompt, duration: job.params.durationSec, aspect_ratio: job.params.aspectRatio, resolution: "720p" }),
+    signal: AbortSignal.timeout(30_000), // submission only returns a polling URL
   });
   if (!submit.ok) throw new Error(`Video submission failed (${submit.status}).`);
   const { polling_url } = (await submit.json()) as { polling_url: string };
