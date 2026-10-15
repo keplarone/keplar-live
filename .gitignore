@@ -5,6 +5,7 @@ tmp/
 node_modules/
 .next/
 *.tsbuildinfo
+.data/
 
 # written by scripts/build-guard.mjs on production builds
 public/deploy-stamp.json
