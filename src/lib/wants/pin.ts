@@ -7,6 +7,14 @@
 import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { collection, storeDurable } from "@/lib/create/platform/store";
 import { now } from "@/lib/create/platform/ids";
+import { rateLimit } from "@/lib/create/platform/ratelimit";
+
+/**
+ * A 4-6 digit PIN is guessable at the general request rate (120/min), so every check of a presented PIN is also limited per
+ * account across instances: 10 per 15 minutes, then 429 until the window passes.
+ */
+export const PIN_ATTEMPTS = { max: 10, windowSec: 15 * 60 };
+const countAttempt = (workspaceId: string) => rateLimit(`wants-pin:${workspaceId}`, PIN_ATTEMPTS.max, PIN_ATTEMPTS.windowSec, { shared: true });
 
 const PIN = /^\d{4,6}$/;
 type PinRow = { id: string; workspaceId: string; hash: string; updatedAt: string };
@@ -38,6 +46,7 @@ export async function setPin(workspaceId: string, pin: string, current?: string 
   if (!PIN.test(pin)) return "bad_format";
   const existing = await rows().get(workspaceId, "pin");
   if (existing) {
+    await countAttempt(workspaceId);
     if (!current || !verifyHash(current, existing.hash)) return "bad_current";
     await rows().update(workspaceId, "pin", { hash: hashPin(pin), updatedAt: now() });
     return "set";
@@ -51,5 +60,6 @@ export type PinCheck = "ok" | "bad" | "unset";
 export async function verifyPin(workspaceId: string, pin: string | null | undefined): Promise<PinCheck> {
   const existing = await rows().get(workspaceId, "pin");
   if (!existing) return "unset";
+  await countAttempt(workspaceId);
   return verifyHash(pin ?? "", existing.hash) ? "ok" : "bad";
 }

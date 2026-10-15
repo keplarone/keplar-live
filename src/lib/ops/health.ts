@@ -42,7 +42,7 @@ export async function healthSummary() {
   };
   // Production on a temporary random secret is a failure, not a warning: sessions and sign-in links break on every restart.
   const secretMissing = authSecretMissingInProduction();
-  if (secretMissing) console.error(`[health] CRITICAL: ${AUTH_SECRET_ERROR}. Set BETTER_AUTH_SECRET (32+ random characters) in the production environment.`);
+  if (secretMissing) console.error("[health] CRITICAL: auth secret not configured. Set BETTER_AUTH_SECRET to 32+ random characters in the production environment.");
   if (!postgres) {
     const ok = !secretMissing;
     return { status: ok ? 200 : 503, body: { ok, store: "file" as const, durable: storeDurable(), security, ...(ok ? {} : { error: AUTH_SECRET_ERROR }) } };

@@ -4,6 +4,7 @@ import { errorResponse, HttpError } from '@/lib/create/platform/http';
 import { grants, requireStorage } from '@/lib/chatgpt/store';
 import { ISSUER } from '@/lib/chatgpt/config';
 import { boundedText } from '@/lib/chatgpt/oauth-http';
+import { limitRequest } from '@/lib/create/platform/ratelimit';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 const esc=(v:string)=>v.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
@@ -15,6 +16,7 @@ export async function GET(req:Request){try{
 export async function POST(req:Request){try{
  assertSameOrigin(req);if(req.headers.get('origin')!==ISSUER)throw new HttpError(403,'Invalid request origin.');
  requireStorage();const ws=await requireAccount(req);
+ await limitRequest(req,'chatgpt_connections_revoke',{perIp:30,perAccount:30,accountId:ws.id});
  const id=new URLSearchParams(await boundedText(req)).get('id');if(!id)throw new HttpError(400,'Connection id required.');
  await grants().remove(ws.id,id);
  return new Response(null,{status:303,headers:{location:`${ISSUER}/api/chatgpt/connections`,'cache-control':'no-store'}});
