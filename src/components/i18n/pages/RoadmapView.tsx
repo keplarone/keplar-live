@@ -30,12 +30,15 @@ export async function RoadmapView({ locale = "en" }: { locale?: string }) {
         <p className={s.lead}>{rich(r.lead, { changelog: (t) => <Link href="/changelog">{t}</Link>, features: (t) => <Link href={L("/features")}>{t}</Link> })}</p>
       </header>
 
-      <section className={s.group} aria-labelledby="r-now">
-        <div><p className={s.num}>{r.nowNum}</p><h2 id="r-now" className={s.h2}>{r.nowTitle}</h2><p className={s.gLede}>{r.nowLede}</p></div>
-        <table className={s.table}><tbody>
-          {building.map((f) => <tr key={f.id} data-s="soon"><th scope="row">{m.chapters.items[f.id]?.name ?? f.name}</th><td>{m.chapters.items[f.id]?.line ?? f.line}</td><td className={s.status} data-s="soon">{chapterOf(f.id)}</td></tr>)}
-        </tbody></table>
-      </section>
+      {/* Only while something in the feature registry is marked "soon": no empty table. */}
+      {building.length ? (
+        <section className={s.group} aria-labelledby="r-now">
+          <div><p className={s.num}>{r.nowNum}</p><h2 id="r-now" className={s.h2}>{r.nowTitle}</h2><p className={s.gLede}>{r.nowLede}</p></div>
+          <table className={s.table}><tbody>
+            {building.map((f) => <tr key={f.id} data-s="soon"><th scope="row">{m.chapters.items[f.id]?.name ?? f.name}</th><td>{m.chapters.items[f.id]?.line ?? f.line}</td><td className={s.status} data-s="soon">{chapterOf(f.id)}</td></tr>)}
+          </tbody></table>
+        </section>
+      ) : null}
 
       <section className={s.group} aria-labelledby="r-beta">
         <div><p className={s.num}>{r.nextNum}</p><h2 id="r-beta" className={s.h2}>{r.nextTitle}</h2><p className={s.gLede}>{r.nextLede}</p></div>

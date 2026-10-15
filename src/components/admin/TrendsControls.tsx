@@ -1,5 +1,6 @@
 "use client";
 
+import { confirmAction, confirmQuestion } from "@/components/kit";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import s from "./Admin.module.css";
@@ -14,7 +15,7 @@ export function TrendsControls({ settings }: { settings: Settings }) {
   const [maxLive, setMaxLive] = useState(String(settings.maxLive));
 
   const call = async (payload: Record<string, unknown>, confirmText?: string) => {
-    if (confirmText && !window.confirm(confirmText)) return;
+    if (confirmText && !(await confirmQuestion(confirmText, { danger: true }))) return;
     setBusy(true);
     setMsg("");
     try {
@@ -57,7 +58,7 @@ export function RowActions({ slug, status }: { slug: string; status: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const act = async (action: "publish" | "rollback") => {
-    if (action === "rollback" && !window.confirm(`Roll back ${slug}? It will 404 immediately.`)) return;
+    if (action === "rollback" && !(await confirmAction({ title: `Roll back ${slug}?`, body: "It will 404 immediately.", confirmLabel: "Roll back", danger: true }))) return;
     setBusy(true);
     await fetch("/api/admin/trends", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action, slug }) }).catch(() => null);
     setBusy(false);

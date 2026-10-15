@@ -97,7 +97,7 @@ export default function SpaceStudioPage() {
           <div className={s.head} data-reveal>
             <div>
               <span className={s.label}>03 · Status</span>
-              <h2 id="today-title" className={s.h2}>What 0.1 does today</h2>
+              <h2 id="today-title" className={s.h2}>What 0.2 does today</h2>
             </div>
           </div>
           <ul className={s.status} data-reveal-stagger data-reveal>

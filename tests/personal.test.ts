@@ -20,9 +20,9 @@ test("honest copy: prices unchanged, Plus doesn't promise web lookups, health us
   assert.deepEqual(tiers.map((t) => t.price), [0, 20, 45, 99]); // Business is sold at business.keplar.one
   const plus = tiers.find((t) => t.id === "plus")!;
   assert.ok(!plus.features.some((f) => /^web,/i.test(f)), "no 'Web, coding…' claim");
-  assert.ok(plus.features.some((f) => /web lookups off/i.test(f)));
+  assert.ok(plus.features.includes("Web search only in the desktop app (Live Research, beta)"), "web search is the desktop's Live Research, not browser answers");
   const free = tiers.find((t) => t.id === "free")!;
-  for (const f of ["Free open models only", "No web lookups", "Image and video questions on free vision models"]) assert.ok(free.features.includes(f), f);
+  for (const f of ["Free open models only", "Web search only in the desktop app (Live Research, beta)", "Image and video questions on free vision models"]) assert.ok(free.features.includes(f), f);
   assert.match(useCases.find((u) => u.id === "health")?.caveat ?? "", /not medical advice/i);
   const all = JSON.stringify({ tiers, useCases });
   assert.doesNotMatch(all, /against sources|accurate|accuracy/i);

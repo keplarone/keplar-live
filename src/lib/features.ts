@@ -70,9 +70,9 @@ export const CHAPTERS: Chapter[] = [
     features: [
       { id: "images", name: "Images and screenshots", line: "Charts, receipts, whiteboards, UI. Sent only to models that can see.", href: "/app/ask", status: "live" },
       { id: "video", name: "Video", line: "Keyframes are sampled in your browser; the clip itself is not uploaded.", href: "/app/ask", status: "live" },
-      { id: "docs", name: "Documents, code and data", line: "PDF, text, CSV, JSON and source files, read as text.", href: "/app/ask", status: "live" },
-      { id: "office", name: "Word, PowerPoint, Excel and audio", line: "Office files parsed safely; audio transcribed.", href: "/app/ask", status: "soon" },
-      { id: "links", name: "Links", line: "Paste a URL and Keplar reads the page through a guarded fetch.", href: "/app/ask", status: "soon" },
+      { id: "docs", name: "Documents, code and data", line: "PDF, RTF, text, CSV, JSON, source files and zips of code, read as text.", href: "/app/ask", status: "live" },
+      { id: "office", name: "Word, PowerPoint, Excel and audio", line: "Office files parsed safely; audio transcribed.", href: "/app/ask", status: "live" },
+      { id: "links", name: "Links", line: "Paste a URL and Keplar reads the page through a guarded fetch.", href: "/app/ask", status: "live" },
     ],
   },
   {

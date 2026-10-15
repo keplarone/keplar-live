@@ -56,7 +56,7 @@ export const FACT_SECTIONS: FactSection[] = [
     facts: [
       { name: "Images and screenshots", what: "Charts, receipts, whiteboards and interfaces, sent only to models that can see.", plans: "Every plan", feature: "images" },
       { name: "Video", what: "Keyframes are sampled in your browser, so the clip itself is never uploaded.", plans: "Every plan", feature: "video" },
-      { name: "Documents, code and data", what: "PDF, text, CSV, JSON and source files, read as text; coding help and file analysis on paid plans.", plans: "Every plan", feature: "docs" },
+      { name: "Documents, code and data", what: "PDF, RTF, text, CSV, JSON, source files and zips of code, read as text; coding help and file analysis on paid plans.", plans: "Every plan", feature: "docs" },
       { name: "Word, PowerPoint, Excel and audio", what: "Office files parsed safely and audio transcribed.", feature: "office" },
       { name: "Links", what: "Paste a URL and Keplar reads the page through a guarded fetch.", feature: "links" },
     ],

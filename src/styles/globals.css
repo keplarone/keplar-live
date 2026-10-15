@@ -195,6 +195,17 @@ canvas { outline: none; }
     background-size: min(60%, 20px) 2px;
     background-position: 50% calc(100% - 2px);
   }
+  /* Controls with no label to underline, where the brightness shift alone was too faint to see (checkboxes, radios, sliders, selects,
+   * switches, focusable scroll regions): a 2px accent bar along the bottom edge. Keyboard only, still never an outline or a box. */
+  :is(select, input:is([type="checkbox"], [type="radio"], [type="range"])):focus-visible {
+    box-shadow: 0 3px 0 -1px var(--c-focus);
+  }
+  :is([role="switch"], [role="checkbox"], [role="radio"], [role="slider"], [tabindex="0"]):not(a, button, input, select, textarea):focus-visible {
+    background-image: linear-gradient(var(--c-focus), var(--c-focus));
+    background-repeat: no-repeat;
+    background-size: min(60%, 24px) 2px;
+    background-position: 50% calc(100% - 1px);
+  }
   /* Programmatic focus targets (skip link target, palette section jumps) never show anything. */
   [tabindex="-1"]:focus { outline: none !important; }
 }

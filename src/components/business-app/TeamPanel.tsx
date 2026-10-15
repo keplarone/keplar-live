@@ -6,6 +6,7 @@
  * and then work in this Business workspace with their role (src/lib/business/team.ts).
  */
 import { useCallback, useEffect, useState } from "react";
+import { confirmAction } from "@/components/kit";
 import s from "./settings.module.css";
 
 type Role = "owner" | "admin" | "member" | "viewer";
@@ -91,7 +92,9 @@ export function TeamPanel({ company, seats, say }: { company: string | null; sea
   };
   const remove = async (m: Member) => {
     if (!detail) return;
-    if (!window.confirm(m.you ? `Leave ${detail.team.name}? You'll lose access to this Business workspace.` : `Remove ${m.email} from ${detail.team.name}? They lose access at once.`)) return;
+    if (!(await confirmAction(m.you
+      ? { title: `Leave ${detail.team.name}?`, body: "You'll lose access to this Business workspace.", confirmLabel: "Leave", danger: true }
+      : { title: `Remove ${m.email} from ${detail.team.name}?`, body: "They lose access at once.", confirmLabel: "Remove", danger: true }))) return;
     setBusy(m.id);
     try { await call(`/api/team/${detail.team.id}/members/${m.id}`, { method: "DELETE" }); say(m.you ? "You left the team." : `${m.email} was removed.`); if (m.you) window.location.reload(); else await load(); } catch (e) { say((e as Error).message); } finally { setBusy(""); }
   };

@@ -1,4 +1,5 @@
 "use client";
+import { confirmQuestion } from "@/components/kit";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import s from "./Admin.module.css";
@@ -11,7 +12,7 @@ export function LearningActions({ actions }: { actions: Action[] }) {
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
   const go = async (a: Action) => {
-    if (a.confirm && !window.confirm(a.confirm)) return;
+    if (a.confirm && !(await confirmQuestion(a.confirm, { confirmLabel: a.label, danger: a.tone === "danger" }))) return;
     setBusy(true);
     setMsg("");
     try {

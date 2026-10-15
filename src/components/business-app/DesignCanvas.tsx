@@ -9,6 +9,7 @@
  * The canvas renders the draft in a sandboxed frame with scripts, forms and navigation disabled.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { confirmAction } from "@/components/kit";
 import { diffFiles } from "@/lib/site-builder/diff";
 import s from "./workspace.module.css";
 import d from "./canvas.module.css";
@@ -122,7 +123,7 @@ export function DesignCanvas() {
   }, [dirty]);
 
   async function openSite(id: string) {
-    if (dirty && !window.confirm("Discard the changes you haven't saved?")) return;
+    if (dirty && !(await confirmAction({ title: "Discard the changes you haven't saved?", confirmLabel: "Discard", danger: true }))) return;
     setBusy("load"); setError(null); setStatus(null);
     try {
       const r = await call<{ site: { id: string; name: string; headVersion: number }; files: Record<string, string>; pages: string[] }>(`/api/sites/${id}`);
@@ -180,8 +181,8 @@ export function DesignCanvas() {
     setDraft(last.draft); setNotes(last.notes); setPicked(null); reloadWith(last.draft);
   }
 
-  function discard() {
-    if (!open || !window.confirm("Discard every change on the canvas? The saved version stays as it is.")) return;
+  async function discard() {
+    if (!open || !(await confirmAction({ title: "Discard every change on the canvas?", body: "The saved version stays as it is.", confirmLabel: "Discard", danger: true }))) return;
     setDraft(open.files); setNotes([]); setUndo([]); setPicked(null); reloadWith(open.files); setStatus("Changes discarded.");
   }
 
@@ -260,7 +261,7 @@ export function DesignCanvas() {
   return (
     <div className={d.root}>
       <header className={d.bar}>
-        <button type="button" className={s.btnGhost} onClick={() => { if (!dirty || window.confirm("Leave without saving your changes?")) { setOpen(null); setDraft({}); } }}>Projects</button>
+        <button type="button" className={s.btnGhost} onClick={async () => { if (!dirty || await confirmAction({ title: "Leave without saving your changes?", confirmLabel: "Leave", danger: true })) { setOpen(null); setDraft({}); } }}>Projects</button>
         <strong className={d.name} title={open.name}>{open.name}</strong>
         <span className={d.meta}>v{open.headVersion}</span>
         <div className={d.seg} role="tablist" aria-label="Canvas mode">
@@ -308,6 +309,10 @@ export function DesignCanvas() {
                 <p className={d.label}>Selected: <code>{picked!.label}</code></p>
                 <div className={d.row}>
                   <button type="button" className={s.btnGhost} onClick={() => { const p = el.parentElement; if (p && p.tagName !== "BODY") setPicked({ el: p, box: boxOf(p), label: describe(p) }); }}>Select parent</button>
+                  {/* Keyboard path through the page without the pointer: into the element and across its siblings. */}
+                  {el.firstElementChild ? <button type="button" className={s.btnGhost} onClick={() => { const c = el.firstElementChild; if (c) { c.scrollIntoView({ block: "center" }); setPicked({ el: c, box: boxOf(c), label: describe(c) }); } }}>Select inside</button> : null}
+                  {el.previousElementSibling ? <button type="button" className={s.btnGhost} onClick={() => { const c = el.previousElementSibling; if (c) { c.scrollIntoView({ block: "center" }); setPicked({ el: c, box: boxOf(c), label: describe(c) }); } }}>Previous</button> : null}
+                  {el.nextElementSibling ? <button type="button" className={s.btnGhost} onClick={() => { const c = el.nextElementSibling; if (c) { c.scrollIntoView({ block: "center" }); setPicked({ el: c, box: boxOf(c), label: describe(c) }); } }}>Next</button> : null}
                   <button type="button" className={s.btnGhost} onClick={() => { const c = el.cloneNode(true) as Element; el.after(c); fromDom(`Duplicated ${el.tagName.toLowerCase()}`); }}>Duplicate</button>
                   <button type="button" className={s.btnGhost} onClick={() => { const t = el.tagName.toLowerCase(); el.remove(); setPicked(null); fromDom(`Removed ${t}`); }}>Remove</button>
                 </div>
@@ -346,7 +351,7 @@ export function DesignCanvas() {
               </div>
             ) : (
               <div className={d.stack}>
-                <p className={d.hint}>Click anything on the canvas to select it. Scroll the canvas with your mouse wheel.</p>
+                <p className={d.hint}>Click anything on the canvas to select it, or choose a part of the page below. Scroll the canvas with your mouse wheel.</p>
                 <SectionPicker doc={doc} rev={rev} onPick={(t) => setPicked({ el: t, box: boxOf(t), label: describe(t) })} />
               </div>
             )
@@ -370,7 +375,8 @@ export function DesignCanvas() {
 
           {mode === "ai" ? (
             <div className={d.stack}>
-              {picked ? <p className={d.label}>Change: <code>{picked.label}</code></p> : <p className={d.hint}>Click the part of the page you want changed: a section, a card, a button.</p>}
+              {picked ? <p className={d.label}>Change: <code>{picked.label}</code></p> : <p className={d.hint}>Click the part of the page you want changed (a section, a card, a button), or choose it below.</p>}
+              <SectionPicker doc={doc} rev={rev} onPick={(t) => setPicked({ el: t, box: boxOf(t), label: describe(t) })} />
               <label className={s.field}>What should change?
                 <textarea className={s.textarea} rows={4} maxLength={600} value={instruction} onChange={(e) => setInstruction(e.target.value)} placeholder="Make this a two-column layout with the image on the right" disabled={!picked || busy === "ai"} />
               </label>

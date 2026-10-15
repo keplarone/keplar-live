@@ -1168,13 +1168,15 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                 </div>
               ) : (
                 <div ref={threadRef} className={s.thread} role="log" aria-label={thread?.title} aria-live="off" data-motion="stream">
+                  {/* Heading structure for screen readers: the chat's title, then each question as an h2 heading its turn (answers use h3/h4). */}
+                  <h1 className="visually-hidden">{thread?.title ?? "Chat"}</h1>
                   {thread?.private ? <PrivateBanner onClose={() => newThread()} /> : null}
                   {thread ? <ThreadBar thread={thread} signedIn={state.ledger.signedIn} /> : null}
                   {messages.map((m) =>
                     m.role === "user" ? (
                       <div key={m.id} className={s.userTurn}>
                         {m.media?.length ? <UserMedia media={m.media} /> : null}
-                        <p className={s.userMsg} dir="auto">{m.text}</p>
+                        {m.text ? <h2 className={s.userMsg} dir="auto">{m.text}</h2> : <h2 className="visually-hidden">Your message</h2>}
                         {m.text && !running ? <EditMessage onEdit={() => { composerRef.current?.setText(m.text); composerRef.current?.focus(); }} /> : null}
                         {m.attachments.length || m.via || Object.values(m.modes).some(Boolean) ? (
                           <p className={s.userMeta}>

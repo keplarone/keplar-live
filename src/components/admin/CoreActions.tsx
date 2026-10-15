@@ -1,4 +1,5 @@
 "use client";
+import { confirmQuestion } from "@/components/kit";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import s from "./Admin.module.css";
@@ -12,7 +13,7 @@ export function CoreActions({ actions }: { actions: CoreAction[] }) {
   const [busy, setBusy] = useState(false);
   if (!actions.length) return null;
   const go = async (a: CoreAction) => {
-    if (a.confirm && !window.confirm(a.confirm)) return;
+    if (a.confirm && !(await confirmQuestion(a.confirm, { confirmLabel: a.label, danger: a.tone === "danger" }))) return;
     const reason = a.askReason ? window.prompt("Why? (kept in the audit log)") ?? "" : "";
     setBusy(true);
     setMsg(a.action === "run" ? "Running… this can take a few minutes." : "");

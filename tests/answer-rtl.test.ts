@@ -13,5 +13,5 @@ test("answer blocks and the question bubble carry dir=auto so right-to-left text
     for (const o of opens) assert.match(o, /dir="auto"/, `${o} has dir=auto`);
   }
   const app = readFileSync("src/components/app-ui/KeplarApp.tsx", "utf8");
-  assert.match(app, /<p className=\{s\.userMsg\} dir="auto">/);
+  assert.match(app, /<h2 className=\{s\.userMsg\} dir="auto">/); // the question bubble is its turn's h2 heading (tests/ux-claims.test.ts)
 });

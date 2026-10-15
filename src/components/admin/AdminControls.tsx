@@ -1,5 +1,6 @@
 "use client";
 
+import { confirmQuestion } from "@/components/kit";
 import { useState } from "react";
 import s from "./Admin.module.css";
 
@@ -20,7 +21,7 @@ export function AdminControls({ initial, autoPaused, hourly }: { initial: State;
   const [msg, setMsg] = useState<string | null>(null);
 
   async function send(patch: Record<string, unknown>, confirmText?: string) {
-    if (confirmText && !window.confirm(confirmText)) return;
+    if (confirmText && !(await confirmQuestion(confirmText, { danger: true }))) return;
     setBusy(true);
     setMsg(null);
     try {

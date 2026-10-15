@@ -54,7 +54,7 @@ export default async function VsPage({ params }: Props) {
           <h2 id="choose-keplar">When Keplar may fit better</h2>
           <ul>{v.chooseKeplar.map((c) => <li key={c}>{c}</li>)}</ul>
           <h2 id="not-claimed">What this page does not claim</h2>
-          <p>It does not claim Keplar answers more accurately, more safely or more privately than {v.name}. Keplar&apos;s own limits: it has no live web lookups on normal questions, does not open or check sources, and shows no confidence or accuracy score. Keplar is not AGI or superintelligence. See <Link href="/docs/get-started/what-keplar-cannot-do">what Keplar cannot do</Link>.</p>
+          <p>It does not claim Keplar answers more accurately, more safely or more privately than {v.name}. Keplar&apos;s own limits: answers in the browser do not search the web (it reads a page only when you paste its link, and web search runs in the desktop app&apos;s Live Research, in beta), and it shows no confidence or accuracy score. Keplar is not AGI or superintelligence. See <Link href="/docs/get-started/what-keplar-cannot-do">what Keplar cannot do</Link>.</p>
         </article>
         <section className={s.faq} aria-labelledby="vs-faq">
           <h2 id="vs-faq">Questions</h2>

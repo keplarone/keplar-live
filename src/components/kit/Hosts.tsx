@@ -32,6 +32,12 @@ export function confirmAction(options: ConfirmOptions): Promise<boolean> {
   return new Promise((resolve) => openConfirm!({ ...options, resolve }));
 }
 
+/** confirmAction for a written-out question ("Roll back X? It takes effect within a minute."): the question is the title, the rest the body. */
+export function confirmQuestion(text: string, options: Omit<ConfirmOptions, "title" | "body"> = {}): Promise<boolean> {
+  const at = text.indexOf("? ");
+  return confirmAction({ ...options, title: at < 0 ? text : text.slice(0, at + 1), body: at < 0 ? undefined : text.slice(at + 2) });
+}
+
 /** Shows a toast from anywhere (no hook). A no-op on the server or before the host mounts. */
 export function notify(options: ToastOptions): void {
   showToast?.(options);

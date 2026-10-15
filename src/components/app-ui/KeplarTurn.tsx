@@ -320,10 +320,11 @@ const upgradeTiersFor = (plan: Ledger["plan"]) =>
 
 /** A rolling 5-hour or weekly limit stopped the question: say which, when it resets, and (Plus) suggest Pro. */
 function WindowLimit({ window: w, ledger }: { window: NonNullable<NonNullable<KeplarMessage["limit"]>["window"]>; ledger: Ledger }) {
+  const titleId = useId(); // one per card: a thread can show several limit cards
   const when = windowResetText(w.id, w.resetsAt);
   return (
-    <section className={s.limit} aria-labelledby="limit-title" role="alert" data-window={w.id}>
-      <h3 id="limit-title" className={s.limitTitle}>You&rsquo;ve reached your {w.label.toLowerCase()} {brand.usage} limit.</h3>
+    <section className={s.limit} aria-labelledby={titleId} role="alert" data-window={w.id}>
+      <h3 id={titleId} className={s.limitTitle}>You&rsquo;ve reached your {w.label.toLowerCase()} {brand.usage} limit.</h3>
       <p className={s.limitBody}>
         Keplar didn&rsquo;t start this question, so none of your allowance was used. Your {w.label.toLowerCase()} limit {when}
         {w.id === "weekly" ? ` (${new Date(w.resetsAt).toLocaleString("en-US", { weekday: "long", hour: "numeric", minute: "2-digit" })})` : ""}. Your monthly credits are kept.
@@ -343,11 +344,12 @@ function WindowLimit({ window: w, ledger }: { window: NonNullable<NonNullable<Ke
 
 /** The Free plan's questions for today are used up. Honest: Free uses free models only, so there is no credit pack to buy; upgrading is the way on. */
 function DailyLimit({ daily, ledger }: { daily: NonNullable<NonNullable<KeplarMessage["limit"]>["daily"]>; ledger: Ledger }) {
+  const titleId = useId(); // one per card: a thread can show several limit cards
   const upgradeTiers = upgradeTiersFor(ledger.plan);
   const nextPaid = upgradeTiers.find((t) => t.id === "plus") ?? null;
   return (
-    <section className={s.limit} aria-labelledby="limit-title" role="alert" data-daily-limit="">
-      <h3 id="limit-title" className={s.limitTitle}>You&rsquo;ve used today&rsquo;s {daily.limit} Free questions.</h3>
+    <section className={s.limit} aria-labelledby={titleId} role="alert" data-daily-limit="">
+      <h3 id={titleId} className={s.limitTitle}>You&rsquo;ve used today&rsquo;s {daily.limit} Free questions.</h3>
       <p className={s.limitBody}>
         Keplar didn&rsquo;t start this question. Your Free questions come back {formatDailyReset(daily.resetsAt)}. Free runs on free models only, so there are no extra credits to buy;
         a paid plan runs stronger models with a bigger allowance, and upgrading is how you keep going now.
@@ -378,10 +380,11 @@ function DailyLimit({ daily, ledger }: { daily: NonNullable<NonNullable<KeplarMe
 
 /** Today's shared usage budget paused Free. The person's own questions were not used, and there is no monthly balance to show. */
 function DayBudget({ resetsAt }: { resetsAt?: string }) {
+  const titleId = useId(); // one per card: a thread can show several limit cards
   const when = resetsAt ? formatDailyReset(resetsAt) : "at 00:00 UTC";
   return (
-    <section className={s.limit} aria-labelledby="limit-title" role="alert" data-day-budget="">
-      <h3 id="limit-title" className={s.limitTitle}>Keplar has reached today&rsquo;s usage budget.</h3>
+    <section className={s.limit} aria-labelledby={titleId} role="alert" data-day-budget="">
+      <h3 id={titleId} className={s.limitTitle}>Keplar has reached today&rsquo;s usage budget.</h3>
       <p className={s.limitBody}>
         Free is paused until 00:00 UTC ({when}). This question did not run, and it was not counted against your Free questions.
         Paid plans keep working, so upgrading is how you keep going now.
@@ -397,6 +400,7 @@ function DayBudget({ resetsAt }: { resetsAt?: string }) {
 }
 
 function UsageLimit({ limit, ledger }: { limit: NonNullable<KeplarMessage["limit"]>; ledger: Ledger }) {
+  const titleId = useId(); // one per card: a thread can show several limit cards
   if (limit.budget === "day") return <DayBudget resetsAt={limit.resetsAt} />;
   if (limit.window) return <WindowLimit window={limit.window} ledger={ledger} />;
   if (limit.daily) return <DailyLimit daily={limit.daily} ledger={ledger} />;
@@ -407,8 +411,8 @@ function UsageLimit({ limit, ledger }: { limit: NonNullable<KeplarMessage["limit
   const empty = limit.remaining <= 0;
   const left = empty ? 0 : Math.max(1, Math.floor((limit.remaining / total) * 100));
   return (
-    <section className={s.limit} aria-labelledby="limit-title" role="alert">
-      <h3 id="limit-title" className={s.limitTitle}>
+    <section className={s.limit} aria-labelledby={titleId} role="alert">
+      <h3 id={titleId} className={s.limitTitle}>
         {empty ? <>You&rsquo;ve used this month&rsquo;s {brand.usage}.</> : <>This question needs more {brand.usage} than you have left.</>}
       </h3>
       <div className={s.limitMeterRow}>

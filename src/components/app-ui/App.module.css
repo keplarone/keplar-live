@@ -451,6 +451,11 @@
 }
 
 .userMsg {
+  /* An h2 (each question heads its turn, for heading navigation) that looks like the message bubble it always was. */
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
   max-width: min(78%, clamp(620px, 40vw, 1040px));
   padding: var(--s-3) var(--s-4);
   border-radius: var(--r-md) var(--r-md) var(--r-xs) var(--r-md);

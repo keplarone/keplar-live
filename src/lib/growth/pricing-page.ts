@@ -56,7 +56,8 @@ export const compareGroups: CompareGroup[] = [
     rows: [
       { label: "Several models, one answer, disagreement shown", values: per((p) => (p === "free" ? "Limited" : "Included")) },
       { label: "Deep Research", values: per((p) => (PLAN_ALLOWANCES[p].deepResearch ? "Included" : null)) },
-      { label: "Live web lookups", soon: true, values: per(() => "Coming soon") },
+      { label: "Live Research: web search in the desktop app", values: per(() => "Beta") },
+      { label: "Web search in browser answers", soon: true, values: per(() => "Coming soon") },
       { label: "Study mode from your PDFs", values: per((p) => `Up to ${n(STUDY_LIMITS[p].maxSets)} study sets${p === "free" ? " (free models)" : ""}`) },
       {
         label: "Slides with PowerPoint and PDF export",

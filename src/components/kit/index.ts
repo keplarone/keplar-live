@@ -38,7 +38,7 @@ export { ResizableSplit, type ResizableSplitProps } from "./ResizableSplit";
 export { SPLIT_STORAGE_PREFIX, type SplitValue, type SplitBounds, type SplitCollapsible } from "./split-storage";
 export { ToastProvider, useToast, type ToastApi, type ToastOptions, type ToastTone, type ToastProviderProps } from "./Toast";
 export { Dialog, type DialogProps } from "./Dialog";
-export { KitHosts, confirmAction, notify, type ConfirmOptions } from "./Hosts";
+export { KitHosts, confirmAction, confirmQuestion, notify, type ConfirmOptions } from "./Hosts";
 export { progressRatio, defaultToastDuration } from "./feedback-logic";
 export { Progress, ActivityIndicator, EmptyState, type ProgressProps, type ActivityIndicatorProps, type EmptyStateProps } from "./Feedback";
 export { computePlacement, type Side, type Align, type Placement } from "./position";

@@ -39,7 +39,7 @@ test("comparison numbers come from the enforcing modules", () => {
 
 test("features that are not live are labelled Coming soon, never as included", () => {
   assert.equal(DEFAULT_COST_CONFIG.flags.overage, false, "overage flag is off by default; if this changes, revisit the copy");
-  for (const label of ["Pay-as-you-go above your plan", "Live web lookups"]) {
+  for (const label of ["Pay-as-you-go above your plan", "Web search in browser answers"]) {
     const r = row(label);
     assert.equal(r.soon, true);
     for (const v of Object.values(r.values)) assert.ok(v === null || v === "Coming soon", `${label}: ${v}`);
