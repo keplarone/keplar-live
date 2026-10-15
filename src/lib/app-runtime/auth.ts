@@ -2,7 +2,10 @@
  * End-user accounts for generated apps. Accounts belong to one app and one environment (a preview account means nothing on the
  * live app and nothing on any other app). Passwords: scrypt. Sessions: 256-bit random bearer tokens, only their SHA-256 is
  * stored, 30-day expiry, revocable (sign out, removal). Magic links: single-use, 20 minutes, sent with Resend when configured.
- * The app's admins are the emails in AppMeta.admins (the creator's email by default): they get role "admin" on sign-in.
+ * The app's admins are the emails in AppMeta.admins (the creator's email by default). Admin is granted only once the email is
+ * proven: password sign-up always creates a "member" (anyone can type the creator's address), and a listed email becomes "admin"
+ * on a magic-link sign-in (which verifies the address) or a password sign-in to an account already verified that way. An account
+ * that already holds "admin" for a listed email keeps it; an email removed from the list drops back to "member".
  */
 import { createHash, randomBytes } from "node:crypto";
 import { hashPassword, verifyPassword } from "@/lib/site-builder/features/members";
@@ -74,7 +77,8 @@ export async function signUp(ctx: AppCtx, input: { email?: unknown; password?: u
   if (password.length < MIN_PASSWORD || password.length > 200) throw new AuthError(`Use a password of at least ${MIN_PASSWORD} characters.`);
   if ((await countUsers(ctx)) >= ctx.limits.users) throw new AuthError("This app has reached its account limit.", 403, "limit");
   const id = newId();
-  const role = isAdminEmail(ctx, email) ? "admin" : "member";
+  // Never admin here: the address is unproven. A listed admin becomes admin after a magic-link sign-in (redeemMagic).
+  const role = "member";
   const rows = await appSql(
     "INSERT INTO app_users (app_id, env, id, email, pass_hash, name, role, profile) VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb) ON CONFLICT DO NOTHING RETURNING *",
     [ctx.appId, ctx.env, id, email, hashPassword(password), name, role, JSON.stringify(cleanProfile(input.profile, ctx.spec.auth.profileFields))],
@@ -93,11 +97,7 @@ export async function signIn(ctx: AppCtx, input: { email?: unknown; password?: u
   // Same answer for an unknown email and a wrong password.
   if (!r || !r.pass_hash || !verifyPassword(password, r.pass_hash)) throw new AuthError("That email and password don't match.", 401, "invalid");
   let user = toUser(r);
-  const want = isAdminEmail(ctx, email) ? "admin" : user.role === "admin" ? "member" : user.role;
-  if (want !== user.role) {
-    await appSql("UPDATE app_users SET role = $4 WHERE app_id = $1 AND env = $2 AND id = $3", [ctx.appId, ctx.env, user.id, want]);
-    user = { ...user, role: want };
-  }
+  user = await syncAdminRole(ctx, user);
   return { user, token: await issue(ctx, user.id) };
 }
 
@@ -127,8 +127,21 @@ export async function redeemMagic(ctx: AppCtx, tokenRaw: unknown) {
   } else if (r.verified !== "true" && r.verified !== "t") {
     await appSql("UPDATE app_users SET verified = true WHERE app_id = $1 AND env = $2 AND id = $3", [ctx.appId, ctx.env, r.id]);
   }
-  const user = toUser(r!);
+  // The link proved the address: a listed admin email gets "admin" now.
+  const user = await syncAdminRole(ctx, { ...toUser(r!), verified: true });
   return { user, token: await issue(ctx, user.id) };
+}
+
+/**
+ * Role from the admin list. Promotes to admin only a verified account (verified = signed in by magic link at least once);
+ * keeps an existing admin whose email is still listed; demotes an admin whose email was removed from the list.
+ */
+async function syncAdminRole(ctx: AppCtx, user: AppUser): Promise<AppUser> {
+  const listed = isAdminEmail(ctx, user.email);
+  const want = listed ? (user.verified || user.role === "admin" ? "admin" : user.role) : user.role === "admin" ? "member" : user.role;
+  if (want === user.role) return user;
+  await appSql("UPDATE app_users SET role = $4 WHERE app_id = $1 AND env = $2 AND id = $3", [ctx.appId, ctx.env, user.id, want]);
+  return { ...user, role: want };
 }
 
 /** The signed-in end user for a bearer token, or null. Re-reads the user every time (removal signs out at once). */

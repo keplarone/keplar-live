@@ -49,7 +49,18 @@ test("runtime: accounts, data access rules, unique toggles, owner-only reads, ad
   assert.equal(u1.body.user.role, "member");
   const u2 = await call(A, "draft", "POST", "auth/signup", { email: "bo@x.test", password: "correct-horse", name: "Bo" });
   const t2 = u2.body.token as string;
-  const own = await call(A, "draft", "POST", "auth/signup", { email: "owner@x.test", password: "correct-horse", name: "Owner" });
+  // A password sign-up with the creator's email is NOT admin (anyone could type it); a password sign-in doesn't promote it either.
+  const own0 = await call(A, "draft", "POST", "auth/signup", { email: "owner@x.test", password: "correct-horse", name: "Owner" });
+  assert.equal(own0.body.user.role, "member");
+  assert.equal((await call(A, "draft", "POST", "auth/signin", { email: "owner@x.test", password: "correct-horse" })).body.user.role, "member");
+  assert.equal((await call(A, "draft", "POST", "db/services", { data: { title: "x" } }, own0.body.token)).status, 403);
+  // Proving the address with a magic link makes the listed creator admin; later password sign-ins keep it.
+  const link = await call(A, "draft", "POST", "auth/magic", { email: "owner@x.test" });
+  const magic = String(link.body.link ?? link.body.devLink ?? "").split("#k-magic=")[1];
+  assert.ok(magic, JSON.stringify(link.body));
+  const verified = await call(A, "draft", "POST", "auth/magic/verify", { token: magic });
+  assert.equal(verified.body.user.role, "admin", JSON.stringify(verified.body));
+  const own = await call(A, "draft", "POST", "auth/signin", { email: "owner@x.test", password: "correct-horse" });
   assert.equal(own.body.user.role, "admin");
   assert.equal((await call(A, "draft", "POST", "auth/signup", { email: "ana@x.test", password: "correct-horse" })).status >= 400, true, "duplicate email refused");
   assert.equal((await call(A, "draft", "POST", "auth/signin", { email: "ana@x.test", password: "wrong-pass" })).status, 401);
