@@ -191,3 +191,16 @@ test("Keplar Browser routes: signed-in, same-origin, rate limited, owner-scoped,
   assert.ok(one.includes("isSameOrigin(req)"));
   assert.ok(readFileSync("next.config.ts", "utf8").includes(`"/api/browser/tasks": ["./node_modules/@sparticuz/chromium/bin/**"`));
 });
+
+test("Keplar Browser fetches through a socket pinned to a checked address: a name that now resolves privately is refused", async () => {
+  const { networkTransport } = await import("../src/lib/browser/run");
+  const { setNetworkForTests } = await import("../src/lib/mcp/ssrf");
+  // The guard's earlier check saw a public address; by fetch time the attacker's DNS answers 127.0.0.1 (rebinding).
+  setNetworkForTests({ resolver: async () => ["127.0.0.1"] });
+  try {
+    const route = { request: () => ({ headers: () => ({}), method: () => "GET", postData: () => null }) } as never;
+    await assert.rejects(networkTransport(route, "http://rebind.example:9001/2018-06-01/runtime/invocation/next"), /private or internal/);
+  } finally {
+    setNetworkForTests();
+  }
+});

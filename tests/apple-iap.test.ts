@@ -141,3 +141,15 @@ test("Pro product grant and refund revoke", async () => {
   assert.equal((await getWorkspace(ws.id))!.plan, "free");
   assert.equal((await getWorkspace(ws.id))!.billing.status, "unpaid");
 });
+
+test("Apple sandbox purchases never grant a paid plan on the live site, except for listed testers", async () => {
+  const { appleEnvironmentAllowed } = await import("../src/lib/billing/apple");
+  const live = { VERCEL_ENV: "production", APPLE_SANDBOX_TESTERS: "Review@apple.example, qa@keplar.one" };
+  assert.equal(appleEnvironmentAllowed("Production", "a@b.c", live), true);
+  assert.equal(appleEnvironmentAllowed("Sandbox", "a@b.c", live), false);
+  assert.equal(appleEnvironmentAllowed("Sandbox", "review@apple.example", live), true);
+  assert.equal(appleEnvironmentAllowed("Xcode", null, live), false);
+  // Previews and local development keep accepting sandbox purchases.
+  assert.equal(appleEnvironmentAllowed("Sandbox", "a@b.c", { VERCEL_ENV: "preview" }), true);
+  assert.equal(appleEnvironmentAllowed("Sandbox", "a@b.c", {}), true);
+});

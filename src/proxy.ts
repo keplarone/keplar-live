@@ -175,8 +175,10 @@ export function businessMoved(req: NextRequest): NextResponse | null {
 export async function proxy(req: NextRequest, event?: NextFetchEvent) {
   const host = hostOf(req);
   if (!isAppHost(host)) return customHost(req, host);
-  if (host === DOCS_HOST) return docsHost(req);
-  if (host === SPACE_HOST) return spaceHost(req);
+  // /api on the docs and Space hosts goes through the same API guard as keplar.one (rate limit, same-origin check) below.
+  const api = req.nextUrl.pathname.startsWith("/api/");
+  if (host === DOCS_HOST && !api) return docsHost(req);
+  if (host === SPACE_HOST && !api) return spaceHost(req);
   const business = isBusinessHost(host);
   if (business) {
     const page = businessHost(req);

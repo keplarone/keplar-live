@@ -10,6 +10,7 @@ import { now } from "@/lib/create/platform/ids";
 import { alertOwner } from "@/lib/accounts/alerts";
 import { updateWorkspace, workspaces, type WorkspaceRow } from "@/lib/accounts/workspaces";
 import {
+  appleEnvironmentAllowed,
   decodeTransactionPayload,
   type DecodedAppleTransaction,
   verifySignedTransaction,
@@ -74,6 +75,9 @@ async function workspaceForOriginal(originalTransactionId: string): Promise<Work
 }
 
 async function grantApple(ws: WorkspaceRow, decoded: DecodedAppleTransaction) {
+  if (!appleEnvironmentAllowed(decoded.environment, ws.ownerEmail)) {
+    throw Object.assign(new Error("This purchase was made in Apple's test environment, so it can't unlock a paid plan."), { status: 403, code: "apple_sandbox_refused" });
+  }
   const start = decoded.purchaseDate ?? now();
   const end = decoded.expiresDate ?? null;
   await updateWorkspace(ws.id, {
@@ -177,8 +181,11 @@ export async function handleAppleNotification(notification: ResponseBodyV2Decode
         result = "unbound";
         await alertOwner(`Apple ASN unbound (${type})`, `originalTransactionId=${decoded.originalTransactionId} product=${decoded.productId}. User must restore purchases while signed in.`).catch(() => undefined);
       } else if (GRANT_TYPES.has(type) || type === NotificationTypeV2.DID_CHANGE_RENEWAL_PREF) {
-        await grantApple(ws, decoded);
-        result = `plan=${decoded.plan}`;
+        if (!appleEnvironmentAllowed(decoded.environment, ws.ownerEmail)) result = "sandbox_refused";
+        else {
+          await grantApple(ws, decoded);
+          result = `plan=${decoded.plan}`;
+        }
       } else if (REVOKE_TYPES.has(type)) {
         const st = type === NotificationTypeV2.REFUND || type === NotificationTypeV2.REVOKE ? "revoked" : "expired";
         await revokeApple(ws, decoded.originalTransactionId, st);

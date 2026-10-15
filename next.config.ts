@@ -4,7 +4,7 @@ import { APP_HEADERS, APP_PAGE_HEADERS, BASE_HEADERS, BUSINESS_PAGE_HEADERS, FX_
 const PRODUCTION_HOST = "keplar.one"; // keep in sync with src/lib/site.ts
 // Keplar's own hosts. Anything else that reaches the app is a customer's custom domain (src/proxy.ts), which must NOT get the
 // app CSP (it would override the site's own CSP) or an HSTS that covers the customer's whole domain (includeSubDomains, preload).
-const OWN_HOSTS = "(keplar\\.one|www\\.keplar\\.one|docs\\.keplar\\.one|business\\.keplar\\.one|business\\.localhost|localhost|127\\.0\\.0\\.1|.*\\.vercel\\.app)";
+const OWN_HOSTS = "(keplar\\.one|www\\.keplar\\.one|docs\\.keplar\\.one|space\\.keplar\\.one|business\\.keplar\\.one|business\\.localhost|localhost|127\\.0\\.0\\.1|.*\\.vercel\\.app)";
 const HSTS = "Strict-Transport-Security";
 // Keplar Business (src/lib/business-site.ts): its own app on this server; its pages get the signed-in app headers (Stripe.js for bank linking).
 const BUSINESS_HOSTS = "(business\\.keplar\\.one|business\\.localhost)";

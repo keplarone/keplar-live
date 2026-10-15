@@ -54,7 +54,20 @@ export function appleIapConfigured(): boolean {
 export function appleEnvironment(): Environment {
   const v = env("APPLE_ENVIRONMENT").toLowerCase();
   if (v === "production" || v === "prod" || v === "live") return Environment.PRODUCTION;
-  return Environment.SANDBOX;
+  if (v === "sandbox") return Environment.SANDBOX;
+  // Unset: the live site prefers Production; previews and local dev prefer Sandbox.
+  return process.env.VERCEL_ENV === "production" ? Environment.PRODUCTION : Environment.SANDBOX;
+}
+
+/**
+ * Sandbox purchases are free (TestFlight and sandbox Apple IDs), so on the live site they never grant a paid plan, except for
+ * accounts listed in APPLE_SANDBOX_TESTERS (comma-separated emails, e.g. App Review and internal testers).
+ */
+export function appleEnvironmentAllowed(transactionEnvironment: string | null | undefined, ownerEmail: string | null | undefined, envVars: Record<string, string | undefined> = process.env): boolean {
+  if (envVars.VERCEL_ENV !== "production") return true;
+  if (String(transactionEnvironment ?? "").toLowerCase() === "production") return true;
+  const testers = (envVars.APPLE_SANDBOX_TESTERS ?? "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+  return !!ownerEmail && testers.includes(ownerEmail.trim().toLowerCase());
 }
 
 export function appleAppAppleId(): number | undefined {

@@ -9,7 +9,7 @@
  */
 import dns from "node:dns";
 import type { Browser, BrowserContext, Page, Route } from "playwright-core";
-import { checkUrl, isPublicIp } from "@/lib/mcp/ssrf";
+import { checkUrl, directTransport, isPublicIp, resolvePublic } from "@/lib/mcp/ssrf";
 import { describe, MAX_ELEMENTS, MAX_STEPS, needsPerson, PAGE_TEXT_CHARS, parseAction, startUrl, stepPrompt, type Action, type El, type Snapshot } from "./policy";
 
 const ACTION_MS = 15_000;
@@ -21,9 +21,19 @@ export type Resolver = (host: string) => Promise<string[]>;
 export type Fetched = { status: number; headers: Record<string, string>; body: Buffer };
 /** Fetches one allowed address for a request WITHOUT following redirects (tests serve fixtures here instead of the network). */
 export type Transport = (route: Route, url: string) => Promise<Fetched>;
-const networkTransport: Transport = async (route, url) => {
-  const res = await route.fetch({ url, maxRedirects: 0, timeout: ACTION_MS });
-  return { status: res.status(), headers: res.headers(), body: await res.body() };
+const MAX_RESPONSE_BYTES = 15 * 1024 * 1024;
+/**
+ * The request is made from here, not by Chromium or Playwright's own client, so the socket is pinned to the address that was
+ * just checked: a DNS answer that changes between the check and the connection (DNS rebinding) can't reach a private address.
+ */
+export const networkTransport: Transport = async (route, url) => {
+  const u = checkUrl(url, { allowHttp: true });
+  const ip = await resolvePublic(u.hostname);
+  const req = route.request();
+  const headers = Object.fromEntries(Object.entries(req.headers()).filter(([k]) => !/^(host|cookie|accept-encoding|content-length|connection)$/i.test(k)));
+  const method = req.method().toUpperCase();
+  const res = await directTransport({ url: u, ip, method, headers, body: method === "GET" || method === "HEAD" ? undefined : req.postData() ?? undefined, timeoutMs: ACTION_MS, maxBytes: MAX_RESPONSE_BYTES });
+  return { status: res.status, headers: res.headers, body: res.body };
 };
 const MAX_HOPS = 5;
 const attr = (u: string) => u.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
@@ -53,6 +63,8 @@ export async function allowedUrl(raw: string, resolve: Resolver = dnsResolve): P
  * route again): each hop is checked here; a page redirect becomes a fresh navigation, which comes back through the guard.
  */
 async function guardContext(ctx: BrowserContext, resolve: Resolver, transport: Transport, blocked: Set<string>) {
+  // WebSockets don't pass through ctx.route: close every one, so page script can't open a socket to a private address.
+  if (typeof ctx.routeWebSocket === "function") await ctx.routeWebSocket(/.*/, (ws) => { void ws.close({ code: 1008, reason: "blocked" }); });
   await ctx.route("**/*", async (route: Route) => {
     const req = route.request();
     const type = req.resourceType();
