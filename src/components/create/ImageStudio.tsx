@@ -123,8 +123,6 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
   const [size, setSize] = useState("1536x1024");
   const [quality, setQuality] = useState("high");
   const [regenOf, setRegenOf] = useState<string | null>(null);
-  const [model, setModel] = useState("");
-  const [seed, setSeed] = useState("");
   const [negative, setNegative] = useState("");
   const [count, setCount] = useState(1);
   const [refs, setRefs] = useState<RefItem[]>([]);
@@ -169,7 +167,6 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
         setListing(r);
         try {
           const p = JSON.parse(localStorage.getItem("keplar.image.prefs.v1") ?? "{}") as { model?: string; size?: string; quality?: string; count?: number };
-          if (p.model && r.config.models?.some((m) => m.id === p.model && m.available)) setModel(p.model);
           if (p.size && r.config.sizes?.some((x) => x.id === p.size)) setSize(p.size);
           if (p.quality && r.config.qualities?.some((x) => x.id === p.quality)) setQuality(p.quality);
           if (p.count) setCount(Math.min(p.count, r.config.limits?.concurrent ?? 1));
@@ -219,9 +216,9 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
 
   const history = histFor && job && histFor.id === job.id ? histFor.rows : [];
   const readyRefs = refs.filter((r) => r.status === "ready" && r.ref);
-  const modelCfg = config?.models?.find((m) => m.id === (model || config.models?.find((x) => x.default)?.id));
+  const modelCfg = config?.models?.find((m) => m.default);
   const estUnits = readyRefs.length && config?.references ? config.references.estimateUnits : (modelCfg?.estimates?.[quality]?.[size] ?? config?.estimates?.[quality]?.[size] ?? null);
-  const remember = (p: Record<string, unknown>) => { try { localStorage.setItem("keplar.image.prefs.v1", JSON.stringify({ model, size, quality, count, ...p })); } catch { /* private mode */ } };
+  const remember = (p: Record<string, unknown>) => { try { localStorage.setItem("keplar.image.prefs.v1", JSON.stringify({ size, quality, count, ...p })); } catch { /* private mode */ } };
   const maxCount = Math.max(1, config?.limits?.concurrent ?? 1);
   const cooldown = listing?.meter?.cooldown ?? null;
   const dayLeft = config?.limits?.perDay != null && listing?.usage ? Math.max(0, config.limits.perDay - listing.usage.today) : null;
@@ -285,7 +282,7 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
     try {
       const finalPrompt = expandPromptIfSlash(prompt, { hasReference: readyRefs.length > 0 }).prompt.trim();
       const extra = {
-        ...(model ? { model } : {}), ...(seed.trim() && modelCfg?.supports.seed ? { seed: Number(seed) } : {}), ...(negative.trim() && modelCfg?.supports.negativePrompt ? { negativePrompt: negative.trim() } : {}),
+        ...(negative.trim() && modelCfg?.supports.negativePrompt ? { negativePrompt: negative.trim() } : {}),
         ...(readyRefs.length ? { references: readyRefs.map((x) => x.ref), rightsConfirmed: rights } : {}),
       };
       let r = await api<{ job: Job }>("/api/images", {
@@ -404,7 +401,7 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
         <h2 className={b.h1}><TwoTone text="Create images" /></h2>
         <p className={s.muted}>Describe an image. You see the cost first, and you are charged only if the image is created.</p>
       </div>
-      {!config.configured ? <p className={b.banner} role="status">Image generation isn&apos;t connected yet (Not configured).</p> : null}
+      {!config.configured ? <p className={b.banner} role="status">Image creation isn&apos;t available right now. Please try again later.</p> : null}
       {config.notice ? <p className={b.banner} role="status">{config.notice}</p> : null}
       {cooldown ? (
         <p className={b.banner} role="status"><strong>Keplar usage cooldown</strong> {cooldown.message} Resumes at {new Date(cooldown.until).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}.</p>
@@ -414,7 +411,7 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
       <div className={b.grid}>
         <form ref={formRef} className={b.panel} onSubmit={(e) => { e.preventDefault(); openConfirm(); }} aria-label="New image">
           <label className={b.field}>
-            <span>{regenOf ? "Regenerate (edit the prompt if you like)" : "Prompt"}</span>
+            <span>{regenOf ? "Make another version (edit the description if you like)" : "Describe your image"}</span>
             {slashOpen ? (
               <SlashCommandMenu
                 id={slashListId}
@@ -447,9 +444,9 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
               aria-controls={slashOpen ? slashListId : undefined}
               aria-expanded={slashOpen || undefined}
               aria-activedescendant={slashOpen && slashItems[slashActive] ? `${slashListId}-opt-${slashItems[slashActive]!.id}` : undefined}
-              placeholder="A warm, sunlit bakery counter… or type / for commands like /BTS"
+              placeholder="A warm, sunlit bakery counter in the morning…"
             />
-            <span className={b.hint}>Type / for slash commands (/BTS, /Adcreative, /Explodeview, …).</span>
+            <span className={b.hint}>Tip: type / for ready-made styles.</span>
           </label>
           <div className={b.field}>
             <span id="img-size">Shape</span>
@@ -466,33 +463,23 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
                 <button key={x.id} type="button" className={b.segBtn} aria-pressed={quality === x.id} onClick={() => { setQuality(x.id); remember({ quality: x.id }); keyRef.current = null; setConfirm(null); }}>{x.label}</button>
               ))}
             </div>
-            <span className={b.hint}>{config.qualities?.find((x) => x.id === quality)?.note}</span>
           </div>
-          {config.models && config.models.length > 1 ? (
-            <label className={b.field}>
-              <span>Model</span>
-              <select className={s.select} value={model || modelCfg?.id || ""} disabled={Boolean(readyRefs.length)} onChange={(e) => { setModel(e.target.value); remember({ model: e.target.value }); keyRef.current = null; setConfirm(null); }}>
-                {config.models.map((m) => <option key={m.id} value={m.id} disabled={!m.available}>{m.label}{m.default ? " (default)" : ""}{m.available ? "" : " · not configured"}</option>)}
-              </select>
-              <span className={b.hint}>{readyRefs.length ? `With a reference, Keplar uses ${config.references?.model ?? "an edit model"}.` : modelCfg?.note}</span>
-            </label>
-          ) : null}
-          {modelCfg?.supports.seed && !readyRefs.length ? (
-            <label className={b.field}><span>Seed <em className={b.hint}>optional</em></span>
-              <input className={s.input} inputMode="numeric" value={seed} onChange={(e) => { setSeed(e.target.value.replace(/\D/g, "").slice(0, 10)); keyRef.current = null; setConfirm(null); }} placeholder="Same seed, similar result" />
-            </label>
-          ) : null}
-          {modelCfg?.supports.negativePrompt && !readyRefs.length ? (
-            <label className={b.field}><span>Avoid <em className={b.hint}>optional</em></span>
-              <input className={s.input} maxLength={500} value={negative} onChange={(e) => { setNegative(e.target.value); keyRef.current = null; setConfirm(null); }} placeholder="blurry, text overlays" />
-            </label>
-          ) : null}
-          {maxCount > 1 ? (
-            <label className={b.field}><span>Outputs</span>
-              <select className={s.select} value={count} onChange={(e) => { setCount(Number(e.target.value)); remember({ count: Number(e.target.value) }); keyRef.current = null; setConfirm(null); }}>
-                {Array.from({ length: maxCount }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{n}</option>)}
-              </select>
-            </label>
+          {(modelCfg?.supports.negativePrompt && !readyRefs.length) || maxCount > 1 ? (
+            <details className={b.more}>
+              <summary>More options</summary>
+              {maxCount > 1 ? (
+                <label className={b.field}><span>How many images</span>
+                  <select className={s.select} value={count} onChange={(e) => { setCount(Number(e.target.value)); remember({ count: Number(e.target.value) }); keyRef.current = null; setConfirm(null); }}>
+                    {Array.from({ length: maxCount }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </label>
+              ) : null}
+              {modelCfg?.supports.negativePrompt && !readyRefs.length ? (
+                <label className={b.field}><span>Leave out <em className={b.hint}>optional</em></span>
+                  <input className={s.input} maxLength={500} value={negative} onChange={(e) => { setNegative(e.target.value); keyRef.current = null; setConfirm(null); }} placeholder="Blurry backgrounds, text" />
+                </label>
+              ) : null}
+            </details>
           ) : null}
           {config.references ? (
             config.references.available ? (
@@ -504,9 +491,9 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
                 onChange={(x) => { setRefs(x); keyRef.current = null; setConfirm(null); }}
                 rights={rights}
                 onRights={(r) => { setRights(r); keyRef.current = null; setConfirm(null); }}
-                label="Reference image"
+                label="Start from a photo"
               />
-            ) : <p className={b.hint}>Reference images need Higgsfield (Not configured).</p>
+            ) : null
           ) : null}
           <p className={b.cost}>
             {estUnits ? <>Up to <strong>{(estUnits * count).toLocaleString()} credits</strong>{count > 1 ? ` for ${count} images` : ""}, only if {count > 1 ? "they are" : "the image is"} created.</> : null}
@@ -528,7 +515,7 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
           )}
           {error ? <p className={b.error} role="alert">{error}</p> : null}
           <span className={b.hint}>
-            {listing.usage ? `${listing.usage.stored} of ${config.limits?.storedImages} saved images. ` : ""}No real people, no explicit or violent content, nothing that imitates a brand&apos;s login or payment page.
+            {listing.usage ? `${listing.usage.stored} of ${config.limits?.storedImages} saved images. ` : ""}Please don&apos;t create images of real people, or anything explicit or violent.
           </span>
         </form>
 

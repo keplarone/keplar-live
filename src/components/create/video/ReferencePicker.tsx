@@ -110,7 +110,7 @@ export function ReferencePicker({ limits, accepts, maxImages, items, onChange, r
       {none ? <p className={s.hint} role="status">The selected model ignores references. Remove them, or pick a model that uses them.</p> : null}
       {none ? null : <input ref={input} id={`${id}-file`} type="file" accept={accept} multiple={accepts.image && maxImages > 1} className="visually-hidden" onChange={(e) => void add(e.target.files)} data-testid="reference-input" />}
       {none ? null : <label htmlFor={`${id}-file`} className={s.pick}>Add {accepts.image && accepts.video ? "an image or video" : accepts.image ? "an image" : "a video"}</label>}
-      {none ? null : <span className={s.hint}>{types}. Uploaded at full quality; images up to {mb(limits.image.maxBytes)}, video up to {mb(limits.video.maxBytes)}.</span>}
+      {none ? null : <span className={s.hint}>{types}{accepts.image ? `, images up to ${mb(limits.image.maxBytes)}` : ""}{accepts.video ? `, video up to ${mb(limits.video.maxBytes)}` : ""}.</span>}
       {items.length ? (
         <ul className={s.thumbs} aria-label="Attached references">
           {items.map((x) => (
