@@ -1,6 +1,6 @@
 /*
  * Keplar One 3D pills and motion (the "Ask for the outrageous" home and errand cards).
- *  - .k3d is a pill-shaped button with a glossy top, a crisp edge and a 4px ledge underneath. It lifts 1px on hover and sinks
+ *  - .k3d is a solid pill-shaped button (no gradients) with a crisp edge and a 4px ledge underneath. It lifts 1px on hover and sinks
  *    the full 4px when pressed, so a click feels physical. Variants: .k3d-primary (the one main action), .k3d-secondary,
  *    and [aria-pressed="true"] reads as pushed in (a chosen option).
  *  - .k-enter animates a block in with a short motion blur (blur only while it travels, sharp when it lands); stagger
@@ -13,8 +13,7 @@
   --k3d-spring: cubic-bezier(0.22, 1.2, 0.36, 1);
 
   --k3d-pd-ink: #ffffff;
-  --k3d-pd-bg: linear-gradient(180deg, #43464e 0%, #1d1e22 55%, #0e0f11 100%);
-  --k3d-pd-gloss: rgba(255, 255, 255, 0.16);
+  --k3d-pd-bg: #1d1e22;
   --k3d-pd-hi: rgba(255, 255, 255, 0.32);
   --k3d-pd-lo: rgba(0, 0, 0, 0.45);
   --k3d-pd-edge: rgba(0, 0, 0, 0.55);
@@ -22,8 +21,7 @@
   --k3d-pd-shadow: rgba(9, 9, 11, 0.6);
 
   --k3d-pl-ink: #09090b;
-  --k3d-pl-bg: linear-gradient(180deg, #ffffff 0%, #f5f6f8 50%, #e9ebef 100%);
-  --k3d-pl-gloss: rgba(255, 255, 255, 0.7);
+  --k3d-pl-bg: #ffffff;
   --k3d-pl-hi: #ffffff;
   --k3d-pl-lo: rgba(9, 9, 11, 0.06);
   --k3d-pl-edge: rgba(9, 9, 11, 0.12);
@@ -31,7 +29,7 @@
   --k3d-pl-shadow: rgba(9, 9, 11, 0.32);
 
   --k3d-po-ink: #09090b;
-  --k3d-po-bg: linear-gradient(180deg, #d9dce2 0%, #e6e8ec 100%);
+  --k3d-po-bg: #dfe2e7;
   --k3d-po-inset: rgba(9, 9, 11, 0.22);
   --k3d-po-ring: rgba(9, 9, 11, 0.35);
   --k3d-po-ledge: rgba(255, 255, 255, 0.9);
@@ -41,8 +39,7 @@
 
 :root[data-theme="dark"] {
   --k3d-pd-ink: #09090b;
-  --k3d-pd-bg: linear-gradient(180deg, #ffffff 0%, #eceef1 50%, #d3d6dc 100%);
-  --k3d-pd-gloss: rgba(255, 255, 255, 0.6);
+  --k3d-pd-bg: #eceef1;
   --k3d-pd-hi: #ffffff;
   --k3d-pd-lo: rgba(0, 0, 0, 0.14);
   --k3d-pd-edge: rgba(0, 0, 0, 0.5);
@@ -50,8 +47,7 @@
   --k3d-pd-shadow: rgba(0, 0, 0, 0.75);
 
   --k3d-pl-ink: #f2f3f5;
-  --k3d-pl-bg: linear-gradient(180deg, #3b3e46 0%, #2c2e35 50%, #23252b 100%);
-  --k3d-pl-gloss: rgba(255, 255, 255, 0.07);
+  --k3d-pl-bg: #2c2e35;
   --k3d-pl-hi: rgba(255, 255, 255, 0.16);
   --k3d-pl-lo: rgba(0, 0, 0, 0.35);
   --k3d-pl-edge: rgba(0, 0, 0, 0.6);
@@ -59,7 +55,7 @@
   --k3d-pl-shadow: rgba(0, 0, 0, 0.8);
 
   --k3d-po-ink: #ffffff;
-  --k3d-po-bg: linear-gradient(180deg, #1c1d22 0%, #26282e 100%);
+  --k3d-po-bg: #212328;
   --k3d-po-inset: rgba(0, 0, 0, 0.6);
   --k3d-po-ring: rgba(255, 255, 255, 0.3);
   --k3d-po-ledge: rgba(255, 255, 255, 0.06);
@@ -70,7 +66,6 @@
 .k3d {
   --ink: var(--k3d-pl-ink);
   --bg: var(--k3d-pl-bg);
-  --gloss: var(--k3d-pl-gloss);
   --hi: var(--k3d-pl-hi);
   --lo: var(--k3d-pl-lo);
   --edge: var(--k3d-pl-edge);
@@ -93,7 +88,7 @@
   white-space: nowrap;
   text-decoration: none;
   color: var(--ink);
-  background: linear-gradient(180deg, var(--gloss) 0%, rgba(255, 255, 255, 0) 52%), var(--bg);
+  background: var(--bg);
   box-shadow:
     inset 0 1px 0 var(--hi),
     inset 0 -2px 0 var(--lo),
@@ -109,7 +104,6 @@
 .k3d-primary {
   --ink: var(--k3d-pd-ink);
   --bg: var(--k3d-pd-bg);
-  --gloss: var(--k3d-pd-gloss);
   --hi: var(--k3d-pd-hi);
   --lo: var(--k3d-pd-lo);
   --edge: var(--k3d-pd-edge);
