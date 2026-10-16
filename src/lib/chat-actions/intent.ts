@@ -55,7 +55,11 @@ export type Intent =
   | { type: "create.domain"; appId?: string; appName?: string; hostname?: string }
   | { type: "workspace"; card: WorkspaceKind; query?: string; act?: WorkspaceAct }
   | { type: "agent.new" }
+  | { type: "errand"; goal: string; kind: ErrandKind }
   | { type: "choose"; topic: string; choices: Choice[] };
+
+/** A real-world errand Keplar Browser can work through on the public web ("order", "book", "buy", "sign me up", "fill out"). */
+export type ErrandKind = "order" | "book" | "buy" | "signup" | "form" | "compare";
 
 export type Routed = { intent: Intent; via: "slash" | "language" | "follow-up" };
 
@@ -88,6 +92,7 @@ export const CHAT_COMMANDS: readonly ChatCommand[] = [
   { id: "projects", slash: "/projects", label: "Projects", summary: "/projects new, rename A to B, merge A into B, delete A", takesText: true },
   { id: "deployments", slash: "/deployments", label: "Deployments", summary: "What is live, and where", takesText: false },
   { id: "history", slash: "/history", label: "History", summary: "Find a chat (/history taxes), /history rename, /history delete", takesText: true },
+  { id: "do", slash: "/do", label: "Do it for me", summary: "Keplar works on the web for you, and stops before paying or sending", takesText: true },
 ];
 
 const COMMAND_BY_ID = new Map(CHAT_COMMANDS.map((c) => [c.id, c]));
@@ -460,6 +465,39 @@ function followUp(body: string, last: LastCard, today: string): Intent | null {
   return null;
 }
 
+/* ───────────── errands (Keplar Browser) ───────────── */
+
+/** Things handled elsewhere (a calendar invite, an email, an app build, an image), not by browsing for the person. */
+const NOT_ERRAND = /\b(?:meeting|call with|reminder|email|e-mail|message|text (?:to|for)|app|website|site|slides?|slideshow|deck|quiz|flashcards?|image|picture|photo|drawing|logo|agent)\b/i;
+const ERRAND_VERB: [RegExp, ErrandKind][] = [
+  // "order" alone is too common a word ("order matters"): it needs something orderable after it.
+  [/^(?:order|reorder|get me|get us|grab me|deliver)\s+((?:a|an|some|the|my|me|us|two|three|four|\d+|food|takeout|takeaway|dinner|lunch|breakfast|groceries|pizza|coffee|flowers)\b.{1,}|.+\bfrom\b.+)$/i, "order"],
+  [/^(?:book|reserve|rent)\s+(.{3,})$/i, "book"],
+  [/^(?:buy|purchase|shop for)\s+(.{3,})$/i, "buy"],
+  [/^(?:sign (?:me|us) up (?:for|to)|register (?:me|us) for|apply (?:for|to))\s+(.{3,})$/i, "signup"],
+  [/^(?:fill (?:out|in)|complete)\s+(?:the|this|a|my)\s+(.{3,}?form.*)$/i, "form"],
+  [/^(?:compare (?:prices|deals|rates)\s+(?:for|on)|find (?:me )?the (?:cheapest|best deal on|lowest price for))\s+(.{3,})$/i, "compare"],
+];
+
+/** The kind of a "/do" errand, for the card's wording; anything unclear is an order. */
+export function errandKindOf(goal: string): ErrandKind {
+  const t = requestBody(goal);
+  for (const [re, kind] of ERRAND_VERB) if (re.test(t)) return kind;
+  return /\b(?:book|reserv|hotel|flight|table|appointment|ticket)/i.test(t) ? "book" : /\b(?:buy|purchase|shop)/i.test(t) ? "buy" : "order";
+}
+
+/** "order a pizza", "book a hotel in Rome", "I want McDonald's delivered": a real errand, done in Keplar's browser. */
+export function errandIntent(text: string, body: string): Intent | null {
+  const t = stripEnd(body);
+  if (t.length > 300 || NOT_ERRAND.test(t)) return null;
+  const want = /^i(?: really)? (?:want|need|'d like|would like)\s+(?:some\s+)?(.{2,}?)\s+(?:delivered|ordered|booked|brought)(?:\s+(?:to|for)\s+.+)?$/i.exec(stripEnd(clean(text)));
+  if (want && !NOT_ERRAND.test(want[1])) return { type: "errand", goal: stripEnd(clean(text)), kind: /booked/i.test(want[0]) ? "book" : "order" };
+  for (const [re, kind] of ERRAND_VERB) {
+    if (re.test(t)) return { type: "errand", goal: t, kind };
+  }
+  return null;
+}
+
 /** A bare topic that names a tool but doesn't ask for it: offer the tool or a normal answer. */
 function choiceFor(text: string, body: string): Intent | null {
   const t = stripEnd(body);
@@ -529,6 +567,8 @@ function fromSlash(text: string, ctx: RouteContext): Intent | null {
       return { type: command.id === "publish" ? "create.publish" : "create.unpublish", ...appTarget(rest.replace(/\s+(?:app|site|website)$/i, "").trim()) };
     case "agent":
       return { type: "agent.new" };
+    case "do":
+      return rest.length >= 4 ? { type: "errand", goal: rest, kind: errandKindOf(rest) } : null;
     case "agents": {
       const m = /^(run|pause|resume)\s+(.+)$/i.exec(rest);
       return m ? { type: "workspace", card: "agents", act: { type: m[1].toLowerCase() as "run" | "pause" | "resume", name: m[2].replace(/\s+agent$/i, "").trim() } } : { type: "workspace", card: "agents" };
@@ -576,7 +616,7 @@ export function routeChat(text: string, ctx: RouteContext = {}): Routed | null {
     const w = (/\b(?:my|our|i|me)\b/i.test(t) || /^what(?:'s| is) live\b/i.test(t)) ? workspaceIntent(body) : null;
     return w ? { intent: w, via: "language" } : null;
   }
-  const hit = workspaceIntent(body) ?? studyIntent(body) ?? slidesIntent(t, body) ?? createIntent(t, body, ctx.last);
+  const hit = workspaceIntent(body) ?? studyIntent(body) ?? slidesIntent(t, body) ?? createIntent(t, body, ctx.last) ?? errandIntent(t, body);
   if (hit) return { intent: hit, via: "language" };
   const choice = choiceFor(t, body);
   return choice ? { intent: choice, via: "language" } : null;
@@ -589,6 +629,7 @@ export function intentLabel(i: Intent): string {
     case "study.new": case "study.again": return i.focus === "quiz" ? "Quiz" : i.focus === "cards" ? "Flashcards" : i.focus === "plan" ? "Study plan" : i.focus === "placement" ? "Placement quiz" : "Study";
     case "create.new": case "create.edit": case "create.theme": case "create.publish": case "create.unpublish": case "create.show": case "create.domain": return "Create";
     case "agent.new": return "Agent";
+    case "errand": return "Errand";
     case "choose": return "";
     case "workspace": return { apps: "Apps", approvals: "Approvals", crm: "CRM", leads: "Leads", dashboard: "Dashboard", orders: "Orders", agents: "Agents", projects: "Projects", deployments: "Deployments", history: "History" }[i.card];
   }

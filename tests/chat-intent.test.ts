@@ -147,3 +147,22 @@ test("intent: helpers", () => {
   assert.equal(intentLabel({ type: "study.new", topic: "x", focus: "quiz" }), "Quiz");
   assert.equal(intentLabel({ type: "workspace", card: "crm" }), "CRM");
 });
+
+test("intent: real-world errands go to Keplar Browser", () => {
+  assert.deepEqual(r("I want McDonald's delivered")?.intent, { type: "errand", goal: "I want McDonald's delivered", kind: "order" });
+  assert.deepEqual(r("order a large pepperoni pizza from Domino's")?.intent, { type: "errand", goal: "order a large pepperoni pizza from Domino's", kind: "order" });
+  assert.deepEqual(r("Can you book a hotel in Rome for next weekend?")?.intent, { type: "errand", goal: "book a hotel in Rome for next weekend", kind: "book" });
+  assert.equal(r("I want to buy noise-cancelling headphones under $200")?.intent.type, "errand");
+  assert.equal((r("help me reserve a table for two at 8pm") ?.intent as { kind?: string })?.kind, "book");
+  assert.equal((r("sign me up for the city half marathon")?.intent as { kind?: string })?.kind, "signup");
+  assert.equal((r("compare prices for a PS5")?.intent as { kind?: string })?.kind, "compare");
+  assert.equal(intentLabel({ type: "errand", goal: "x", kind: "order" }), "Errand");
+  // Questions and other tools are not errands.
+  assert.equal(type("how do I order from McDonald's?"), null);
+  assert.equal(type("book a meeting with Sam on Friday"), null);
+  assert.equal(type("buy me a logo"), null);
+  assert.equal(type("order matters in recursion"), null);
+  // /do runs anything as an errand.
+  assert.deepEqual(r("/do find a dentist near me that is open Saturday")?.intent, { type: "errand", goal: "find a dentist near me that is open Saturday", kind: "order" });
+  assert.equal(r("/do")?.intent ?? null, null);
+});

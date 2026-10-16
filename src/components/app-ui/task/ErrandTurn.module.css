@@ -1,0 +1,13 @@
+.card { display: grid; gap: var(--s-3); max-width: 720px; padding: var(--s-5); border-radius: var(--r-card); background: var(--c-surface-1); box-shadow: 0 0 0 1px var(--c-border), 0 3px 0 var(--c-border), 0 20px 40px -28px rgba(var(--rgb-ink) / 0.35); }
+.head { display: flex; align-items: center; gap: var(--s-2); }
+.title { margin: 0; font-size: var(--t-body); font-weight: var(--w-semibold); color: var(--c-ink); }
+.goal { margin: 0; font-size: var(--t-body); color: var(--c-ink); padding: var(--s-2) var(--s-3); border-radius: var(--r-sm); background: var(--c-canvas); box-shadow: inset 0 0 0 1px var(--c-border); overflow-wrap: anywhere; }
+.promise { margin: 0; padding: 0 0 0 var(--s-5); display: grid; gap: var(--s-1); font-size: var(--t-small); color: var(--c-ink-2); }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3); padding-top: var(--s-1); }
+.error { margin: 0; font-size: var(--t-small); color: var(--c-err); }
+.note { margin: 0; font-size: var(--t-small); color: var(--c-ink-2); }
+
+.run { display: grid; gap: var(--s-4); }
+.view { margin: 0; display: grid; gap: var(--s-1); }
+.view img { width: 100%; max-height: 320px; object-fit: cover; object-position: top; border-radius: var(--r-md); box-shadow: 0 0 0 1px var(--c-border); }
+.view figcaption { font-size: var(--t-label); color: var(--c-ink-2); }

@@ -1,0 +1,20 @@
+.hero { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--s-2); }
+.greet { margin: var(--s-4) 0 0; font-size: var(--t-body); color: var(--c-ink-2); }
+.title { margin: 0; font-size: clamp(30px, calc(2.6vw + 12px), 46px); line-height: 1.08; letter-spacing: -0.03em; font-weight: var(--w-semibold); color: var(--c-ink); text-wrap: balance; }
+.lede { margin: 0; font-size: calc(var(--t-body) * 1.08); color: var(--c-ink-2); text-wrap: pretty; }
+
+.space { min-height: 38px; padding: 0 var(--s-4) 0 var(--s-2); font-size: var(--t-small); gap: var(--s-2); }
+.space img { width: 26px; height: 26px; object-fit: contain; flex: none; }
+.spaceHint { font-weight: var(--w-medium); color: var(--c-ink-2); }
+
+.ideas { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s-3); margin: var(--s-8) auto 0; padding: 0; list-style: none; max-width: 720px; }
+.idea { padding-left: var(--s-2); font-weight: var(--w-medium); }
+.tile { width: 28px; height: 28px; flex: none; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; background: #ffffff; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.08), 0 1px 2px rgb(0 0 0 / 0.12); }
+
+.limits { margin: var(--s-5) auto 0; max-width: 60ch; text-align: center; font-size: var(--t-label); line-height: 1.5; color: var(--c-ink-2); }
+
+@media (max-width: 560px) {
+  .spaceHint { display: none; }
+  .ideas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-2); }
+  .idea { width: 100%; justify-content: flex-start; white-space: normal; text-align: left; line-height: 1.2; }
+}

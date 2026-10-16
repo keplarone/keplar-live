@@ -1,0 +1,163 @@
+/*
+ * Keplar One 3D pills and motion (the "Ask for the outrageous" home and errand cards).
+ *  - .k3d is a pill-shaped button with a glossy top, a crisp edge and a 4px ledge underneath. It lifts 1px on hover and sinks
+ *    the full 4px when pressed, so a click feels physical. Variants: .k3d-primary (the one main action), .k3d-secondary,
+ *    and [aria-pressed="true"] reads as pushed in (a chosen option).
+ *  - .k-enter animates a block in with a short motion blur (blur only while it travels, sharp when it lands); stagger
+ *    children with style="--i: n". Reduce Motion turns every lift, press and entrance off.
+ * Colours follow <html data-theme> like the rest of tokens.css: graphite and silver, no accent hue.
+ */
+:root {
+  --k3d-ledge: 4px;
+  --k3d-ease: cubic-bezier(0.3, 0.7, 0.4, 1);
+  --k3d-spring: cubic-bezier(0.22, 1.2, 0.36, 1);
+
+  --k3d-pd-ink: #ffffff;
+  --k3d-pd-bg: linear-gradient(180deg, #43464e 0%, #1d1e22 55%, #0e0f11 100%);
+  --k3d-pd-gloss: rgba(255, 255, 255, 0.16);
+  --k3d-pd-hi: rgba(255, 255, 255, 0.32);
+  --k3d-pd-lo: rgba(0, 0, 0, 0.45);
+  --k3d-pd-edge: rgba(0, 0, 0, 0.55);
+  --k3d-pd-ledge: #000000;
+  --k3d-pd-shadow: rgba(9, 9, 11, 0.6);
+
+  --k3d-pl-ink: #09090b;
+  --k3d-pl-bg: linear-gradient(180deg, #ffffff 0%, #f5f6f8 50%, #e9ebef 100%);
+  --k3d-pl-gloss: rgba(255, 255, 255, 0.7);
+  --k3d-pl-hi: #ffffff;
+  --k3d-pl-lo: rgba(9, 9, 11, 0.06);
+  --k3d-pl-edge: rgba(9, 9, 11, 0.12);
+  --k3d-pl-ledge: #c4c7ce;
+  --k3d-pl-shadow: rgba(9, 9, 11, 0.32);
+
+  --k3d-po-ink: #09090b;
+  --k3d-po-bg: linear-gradient(180deg, #d9dce2 0%, #e6e8ec 100%);
+  --k3d-po-inset: rgba(9, 9, 11, 0.22);
+  --k3d-po-ring: rgba(9, 9, 11, 0.35);
+  --k3d-po-ledge: rgba(255, 255, 255, 0.9);
+
+  --k3d-focus: rgba(9, 9, 11, 0.5);
+}
+
+:root[data-theme="dark"] {
+  --k3d-pd-ink: #09090b;
+  --k3d-pd-bg: linear-gradient(180deg, #ffffff 0%, #eceef1 50%, #d3d6dc 100%);
+  --k3d-pd-gloss: rgba(255, 255, 255, 0.6);
+  --k3d-pd-hi: #ffffff;
+  --k3d-pd-lo: rgba(0, 0, 0, 0.14);
+  --k3d-pd-edge: rgba(0, 0, 0, 0.5);
+  --k3d-pd-ledge: #8a8d95;
+  --k3d-pd-shadow: rgba(0, 0, 0, 0.75);
+
+  --k3d-pl-ink: #f2f3f5;
+  --k3d-pl-bg: linear-gradient(180deg, #3b3e46 0%, #2c2e35 50%, #23252b 100%);
+  --k3d-pl-gloss: rgba(255, 255, 255, 0.07);
+  --k3d-pl-hi: rgba(255, 255, 255, 0.16);
+  --k3d-pl-lo: rgba(0, 0, 0, 0.35);
+  --k3d-pl-edge: rgba(0, 0, 0, 0.6);
+  --k3d-pl-ledge: #08090a;
+  --k3d-pl-shadow: rgba(0, 0, 0, 0.8);
+
+  --k3d-po-ink: #ffffff;
+  --k3d-po-bg: linear-gradient(180deg, #1c1d22 0%, #26282e 100%);
+  --k3d-po-inset: rgba(0, 0, 0, 0.6);
+  --k3d-po-ring: rgba(255, 255, 255, 0.3);
+  --k3d-po-ledge: rgba(255, 255, 255, 0.06);
+
+  --k3d-focus: rgba(255, 255, 255, 0.6);
+}
+
+.k3d {
+  --ink: var(--k3d-pl-ink);
+  --bg: var(--k3d-pl-bg);
+  --gloss: var(--k3d-pl-gloss);
+  --hi: var(--k3d-pl-hi);
+  --lo: var(--k3d-pl-lo);
+  --edge: var(--k3d-pl-edge);
+  --ledge: var(--k3d-pl-ledge);
+  --shadow: var(--k3d-pl-shadow);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  min-height: 44px;
+  padding: 0 var(--s-5);
+  margin-bottom: var(--k3d-ledge);
+  border: 0;
+  border-radius: var(--r-pill);
+  font: inherit;
+  font-size: var(--t-small);
+  font-weight: var(--w-semibold);
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--ink);
+  background: linear-gradient(180deg, var(--gloss) 0%, rgba(255, 255, 255, 0) 52%), var(--bg);
+  box-shadow:
+    inset 0 1px 0 var(--hi),
+    inset 0 -2px 0 var(--lo),
+    0 0 0 1px var(--edge),
+    0 var(--k3d-ledge) 0 var(--ledge),
+    0 calc(var(--k3d-ledge) + 1px) 1px var(--edge),
+    0 14px 22px -10px var(--shadow);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 140ms var(--k3d-ease), box-shadow 140ms var(--k3d-ease), background 140ms ease;
+}
+.k3d svg { flex: none; }
+.k3d-primary {
+  --ink: var(--k3d-pd-ink);
+  --bg: var(--k3d-pd-bg);
+  --gloss: var(--k3d-pd-gloss);
+  --hi: var(--k3d-pd-hi);
+  --lo: var(--k3d-pd-lo);
+  --edge: var(--k3d-pd-edge);
+  --ledge: var(--k3d-pd-ledge);
+  --shadow: var(--k3d-pd-shadow);
+}
+.k3d-icon { width: 44px; padding: 0; }
+.k3d:hover { color: var(--ink); transform: translateY(-1px); box-shadow: inset 0 1px 0 var(--hi), inset 0 -2px 0 var(--lo), 0 0 0 1px var(--edge), 0 calc(var(--k3d-ledge) + 1px) 0 var(--ledge), 0 calc(var(--k3d-ledge) + 2px) 1px var(--edge), 0 18px 26px -10px var(--shadow); }
+.k3d:active { transform: translateY(var(--k3d-ledge)); box-shadow: inset 0 1px 0 var(--hi), inset 0 -1px 0 var(--lo), 0 0 0 1px var(--edge), 0 0 0 var(--ledge), 0 1px 1px var(--edge), 0 4px 8px -4px var(--shadow); }
+.k3d:focus-visible { outline: 3px solid var(--k3d-focus); outline-offset: 3px; }
+.k3d[aria-pressed="true"],
+.k3d[aria-pressed="true"]:hover {
+  color: var(--k3d-po-ink);
+  background: var(--k3d-po-bg);
+  transform: translateY(3px);
+  box-shadow: inset 0 2px 5px var(--k3d-po-inset), inset 0 0 0 1px var(--k3d-po-ring), 0 1px 0 var(--k3d-po-ledge);
+}
+.k3d:disabled,
+.k3d[aria-disabled="true"] { cursor: default; opacity: 0.55; transform: none; }
+
+/* Motion-blurred entrance: travels up and into focus. Stagger with style="--i: n". */
+@keyframes k-enter {
+  0% { opacity: 0; transform: translate3d(0, 18px, 0) scale(0.97); filter: blur(10px); }
+  60% { opacity: 1; filter: blur(1.5px); }
+  100% { opacity: 1; transform: none; filter: none; }
+}
+@keyframes k-enter-side {
+  0% { opacity: 0; transform: translate3d(-24px, 0, 0); filter: blur(8px); }
+  100% { opacity: 1; transform: none; filter: none; }
+}
+.k-enter { animation: k-enter 620ms var(--k3d-spring) both; animation-delay: calc(var(--i, 0) * 70ms); }
+.k-enter-side { animation: k-enter-side 480ms var(--k3d-ease) both; animation-delay: calc(var(--i, 0) * 60ms); }
+
+/* The 3D sink is the press: no extra 0.98 dip from motion.css on top. */
+.k3d:active { scale: none; }
+
+/* New chat turns arrive with the same motion blur (replaces motion.css's plain rise for the /app thread). Mount only, so
+   streamed tokens inside a turn never re-trigger it. */
+@keyframes k-turn-in {
+  0% { opacity: 0; transform: translate3d(0, 14px, 0); filter: blur(8px); }
+  70% { opacity: 1; filter: blur(0.8px); }
+  100% { opacity: 1; transform: none; filter: none; }
+}
+:where([data-motion="stream"]) > :where(*) { animation: k-turn-in 520ms var(--k3d-spring) backwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  :where([data-motion="stream"]) > :where(*) { animation: none; }
+  .k3d, .k3d:hover, .k3d:active { transition: none; transform: none; }
+  .k3d[aria-pressed="true"] { transform: none; }
+  .k-enter, .k-enter-side { animation: none; }
+}

@@ -1,0 +1,28 @@
+.list { list-style: none; margin: 0; padding: 0; display: grid; }
+.item { position: relative; display: grid; grid-template-columns: 22px 1fr; column-gap: var(--s-3); padding-bottom: var(--s-3); }
+/* The rail between marks. */
+.item:not(:last-child)::before { content: ""; position: absolute; left: 10px; top: 24px; bottom: 2px; width: 2px; border-radius: 2px; background: var(--c-border-strong); }
+.item[data-status="done"]:not(:last-child)::before { background: var(--c-ink-3); }
+
+.mark { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; color: var(--c-canvas); background: var(--c-surface-2); box-shadow: inset 0 0 0 1.5px var(--c-border-strong); }
+.mark svg { width: 14px; height: 14px; }
+.item[data-status="done"] .mark { background: var(--c-ink); box-shadow: none; }
+.item[data-status="failed"] .mark { background: var(--c-err); box-shadow: none; color: var(--c-canvas); }
+.item[data-status="needs_you"] .mark { background: var(--c-attention); box-shadow: none; color: var(--c-canvas); }
+.item[data-status="canceled"] .mark,
+.item[data-status="skipped"] .mark { color: var(--c-ink-2); }
+/* Running: a ring that turns. */
+.item[data-status="running"] .mark { background: transparent; box-shadow: none; border: 2px solid var(--c-border-strong); border-top-color: var(--c-ink); animation: spin 900ms linear infinite; box-sizing: border-box; }
+.item[data-status="waiting"] .mark { box-shadow: inset 0 0 0 1.5px var(--c-ink-3); }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.text { display: grid; gap: 2px; padding-top: 2px; min-width: 0; }
+.label { font-size: var(--t-small); font-weight: var(--w-medium); color: var(--c-ink); overflow-wrap: anywhere; }
+.item[data-status="pending"] .label,
+.item[data-status="skipped"] .label,
+.item[data-status="canceled"] .label { color: var(--c-ink-2); font-weight: var(--w-regular); }
+.detail { font-size: var(--t-label); color: var(--c-ink-2); overflow-wrap: anywhere; }
+
+@media (prefers-reduced-motion: reduce) {
+  .item[data-status="running"] .mark { animation: none; border-top-color: var(--c-ink-3); }
+}

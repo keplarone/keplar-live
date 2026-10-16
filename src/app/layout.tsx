@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Google_Sans, IBM_Plex_Mono } from "next/font/google";
+import { IBM_Plex_Mono, Montserrat } from "next/font/google";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { brand, isIndexable, site, siteVerification } from "@/lib/site";
 import { siteGraph } from "@/lib/structuredData";
@@ -26,11 +26,11 @@ import { LocaleHtml } from "@/components/i18n/LocaleHtml";
 import "@/styles/globals.css";
 import "@/styles/redesign.css";
 
-// Google Sans (the current open-source family, SIL OFL 1.1, published on Google Fonts as "Google Sans"; NOT the legacy proprietary
-// Google Sans / Product Sans) is the one sitewide UI font: body, headings, buttons, inputs. next/font fetches it at build time and
-// self-hosts it from our own origin as one variable file (wght 400-700), latin subset, display swap, preloaded, with a metrics-matched
-// fallback so the swap does not shift layout. The CSS variable is --font-sans (tokens.css --f-sans). IBM Plex Mono stays for code.
-const sans = Google_Sans({
+// Montserrat (SIL OFL 1.1, Google Fonts) is the one sitewide UI font: body, headings, buttons, inputs. next/font fetches it at build
+// time and self-hosts it from our own origin as one variable file (wght 400-700), latin subset, display swap, preloaded, with a
+// metrics-matched fallback so the swap does not shift layout. The CSS variable is --font-sans (tokens.css --f-sans). IBM Plex Mono
+// stays for code. (Keplar Business keeps its own Google Sans wordmark: src/components/business-site/fonts.ts.)
+const sans = Montserrat({
   subsets: ["latin"],
   variable: "--font-sans",
   display: "swap",

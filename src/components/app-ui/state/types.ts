@@ -14,7 +14,7 @@ import type { LiveDebate } from "./debate";
 import type { LiveResearch } from "./research";
 import type { LiveCore } from "./core";
 import type { DeckTheme } from "@/lib/slides/types";
-import type { Choice, StudyFocus, WorkspaceAct, WorkspaceKind } from "@/lib/chat-actions/intent";
+import type { Choice, ErrandKind, StudyFocus, WorkspaceAct, WorkspaceKind } from "@/lib/chat-actions/intent";
 
 export type { ChatImage };
 
@@ -157,6 +157,21 @@ export type WorkspaceCard = {
   picked?: number;
 };
 
+/**
+ * An errand in the chat ("order a pizza", "book a hotel"), worked through by Keplar Browser (/api/browser/tasks).
+ *   ready -> started (taskId set; the card follows the task live) | declined (answered normally instead) | failed (couldn't start)
+ * The task itself lives on Keplar's servers, so a reload picks it back up from `taskId` and never starts it twice.
+ */
+export type ErrandCard = {
+  goal: string;
+  kind: ErrandKind;
+  phase: "ready" | "starting" | "started" | "declined" | "failed";
+  taskId?: string;
+  error?: string;
+  /** Couldn’t start because the person is signed out: offer Sign in. */
+  signin?: boolean;
+};
+
 export type KeplarMessage = {
   id: string;
   role: "keplar";
@@ -208,6 +223,8 @@ export type KeplarMessage = {
   create?: ChatCreate;
   /** A workspace card (apps, approvals, CRM, leads, dashboard, agents, projects, deployments, history) or a choice card. No panel answer. */
   workspace?: WorkspaceCard;
+  /** An errand Keplar Browser works through for the person. */
+  errand?: ErrandCard;
   limit?: { required: number; remaining: number; window?: { id: "fiveHour" | "weekly"; label: string; resetsAt: string; message: string }; daily?: { limit: number; resetsAt: string }; budget?: "day"; resetsAt?: string };
   startedAt: number;
   finishedAt?: number;

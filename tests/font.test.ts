@@ -14,10 +14,11 @@ function walk(dir: string, out: string[] = []) {
   return out;
 }
 
-test("font: Google Sans (open-source OFL family, variable, swap) via next/font/google in the root layout; sans token feeds body; mono only for code", () => {
+test("font: Montserrat (OFL family, variable, swap) via next/font/google in the root layout; sans token feeds body; mono only for code", () => {
   const layout = read("src/app/layout.tsx");
-  assert.match(layout, /import \{ Google_Sans, IBM_Plex_Mono \} from "next\/font\/google"/);
-  assert.match(layout, /Google_Sans\(\{[\s\S]*display: "swap"/);
+  assert.match(layout, /import \{ IBM_Plex_Mono, Montserrat \} from "next\/font\/google"/);
+  assert.match(layout, /Montserrat\(\{[\s\S]*display: "swap"/);
+  assert.ok(!/Google_Sans/.test(layout), "the root layout no longer loads Google Sans");
   assert.ok(!/Lexend/i.test(layout), "Lexend Deca is gone");
   // the OFL text ships with the static copies used for share images
   assert.match(read("assets/fonts/OFL-GoogleSans.txt"), /SIL OPEN FONT LICENSE Version 1\.1/);

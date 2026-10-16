@@ -1699,10 +1699,10 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
  * "More ideas" and the empty title pill are hidden, as in the design. As soon as the first message is sent the dock returns to the bottom. */
 :global(:root[data-theme="light"]) .sidebar { background: rgb(255 255 255 / 0.86); }
 :global(:root[data-theme="light"]) .main[data-empty] .topTitle { visibility: hidden; }
-:global(:root[data-theme="light"]) .main[data-empty] .scroll { padding-top: max(96px, calc(50vh - 190px)); }
+:global(:root[data-theme="light"]) .main[data-empty] .scroll { padding-top: var(--home-top); }
 :global(:root[data-theme="light"]) .main[data-empty] .empty.empty { padding-top: 0; }
 :global(:root[data-theme="light"]) .main[data-empty] .dock {
-  top: calc(max(96px, calc(50vh - 190px)) + 78px);
+  top: calc(var(--home-top) + var(--home-hero-h));
   bottom: auto;
   padding-top: 0;
   background: transparent;
@@ -1846,10 +1846,10 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
  * "More ideas" and the empty title pill are hidden, as in the design. As soon as the first message is sent the dock returns to the bottom. */
 :global(:root[data-theme="dark"]) .sidebar { background: rgb(28 28 32 / 0.86); }
 :global(:root[data-theme="dark"]) .main[data-empty] .topTitle { visibility: hidden; }
-:global(:root[data-theme="dark"]) .main[data-empty] .scroll { padding-top: max(96px, calc(50vh - 190px)); }
+:global(:root[data-theme="dark"]) .main[data-empty] .scroll { padding-top: var(--home-top); }
 :global(:root[data-theme="dark"]) .main[data-empty] .empty.empty { padding-top: 0; }
 :global(:root[data-theme="dark"]) .main[data-empty] .dock {
-  top: calc(max(96px, calc(50vh - 190px)) + 78px);
+  top: calc(var(--home-top) + var(--home-hero-h));
   bottom: auto;
   padding-top: 0;
   background: transparent;
@@ -1932,3 +1932,9 @@ html[data-lens] .search { backdrop-filter: url(#lg-refract) var(--lg-bf); }
 @media (pointer: coarse) {
   .homeChip, .homeMoreSummary { min-height: 44px; }
 }
+
+/* The empty home's headline block (HomeHero: Space Studio pill, greeting, "Ask for the outrageous.", the line under it) is
+   --home-hero-h tall; the centred dock sits right under it and the whole column is centred a little above the middle. */
+.main[data-empty] { --home-hero-h: 214px; --home-top: max(56px, calc(50vh - 270px)); }
+@media (max-width: 560px) { .main[data-empty] { --home-hero-h: 190px; --home-top: 64px; } }
+.main[data-empty] :global([data-home-hero]) { min-height: var(--home-hero-h); box-sizing: border-box; }

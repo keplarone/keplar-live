@@ -49,7 +49,7 @@ import { UNDO_MS, useChatDelete } from "./delete/useChatDelete";
 import { UseForPrompt } from "./UseForPrompt";
 import { shouldWelcomeBack, WelcomeBack } from "./WelcomeBack";
 import { useDockHeight } from "./dock-height";
-import { HomeStart } from "./HomeStart";
+import { HomeHero, HomeStart } from "./HomeStart";
 import { pathForView, viewForPath } from "./app-paths";
 import { AppOnboarding } from "@/components/onboarding/AppOnboarding";
 import { DeploymentsView } from "./DeploymentsView";
@@ -75,6 +75,7 @@ import { intentLabel, routeChat, type Intent } from "@/lib/chat-actions/intent";
 import { cardHistoryLine, lastCardOf, previousAnswer, previousQuestion } from "./state/cards";
 import { deleteProject, mergeProjects, renameProject, type Ops } from "./workspace/project-ops";
 import { WorkspaceTurn, type TabTarget } from "./workspace/WorkspaceTurn";
+import { ErrandTurn } from "./task/ErrandTurn";
 import { AnswerTools } from "./parity/AnswerTools";
 import { ChatOptionsBar, PrivateBanner, SpecialistStarters, useSpecialists } from "./parity/ChatOptionsBar";
 import { DraftPane } from "./parity/DraftPane";
@@ -691,6 +692,8 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
             return card({ workspace: { kind: i.card, ...(i.query ? { query: i.query } : {}), ...(i.act ? { act: i.act } : {}) } });
           case "choose":
             return card({ workspace: { kind: "choose", topic: i.topic, choices: i.choices } });
+          case "errand":
+            return card({ errand: { goal: i.goal, kind: i.kind, phase: "ready" } });
           case "agent.new": {
             const rest = routed.via === "slash" ? text.replace(/^\s*\/agent\b[\s:]*/i, "").trim() : text;
             const u: UserMessage = { ...base, text: rest || "Set up an agent for me", modes: { ...modes, agent: true } };
@@ -884,6 +887,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   const patchCreate = useCallback((threadId: string, keplarId: string, patch: Partial<NonNullable<KeplarMessage["create"]>>) => dispatch({ type: "create", threadId, keplarId, patch }), []);
   const patchStudio = useCallback((threadId: string, keplarId: string, patch: Partial<NonNullable<KeplarMessage["studio"]>>) => dispatch({ type: "studio", threadId, keplarId, patch }), []);
   const patchAgentFlow = useCallback((threadId: string, keplarId: string, patch: Partial<NonNullable<KeplarMessage["agentFlow"]>>) => dispatch({ type: "agentFlow", threadId, keplarId, patch }), []);
+  const patchErrand = useCallback((threadId: string, keplarId: string, patch: Partial<NonNullable<KeplarMessage["errand"]>>) => dispatch({ type: "errand", threadId, keplarId, patch }), []);
   const patchWorkspace = useCallback((threadId: string, keplarId: string, patch: Partial<NonNullable<KeplarMessage["workspace"]>>) => dispatch({ type: "workspace", threadId, keplarId, patch }), []);
   /** A card asks for a follow-up in the chat (a choice, "Show here", "Review drafts", "Rewrite this slide"). */
   const actFromCard = useCallback((text: string, intent: Intent | null) => send(text, [], { web: false, deepResearch: false, create: false, agent: false }, undefined, { intent }), [send]);
@@ -1138,21 +1142,14 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
             <div ref={scrollRef} className={s.scroll} onScroll={onScroll}>
               {messages.length === 0 ? (
                 <div className={s.empty}>
-                  <div className={s.welcome}>
-                    {/* Held invisible (same height) until the session is known, so the name never pops in over a generic line.
-                        firstName is only set after the client knows the session, so the time-of-day greeting never renders on the server. */}
-                    <h1 className={s.welcomeTitle} data-welcome-name={firstName || undefined} style={state.ledger.synced ? undefined : { visibility: "hidden" }}>
-                      <KeplarSymbol size={22} className={s.welcomeMark} />
-                      <span>
-                        {firstName ? (
-                          <>
-                            <span className={s.welcomeGreet}>{welcome ? "Welcome," : `${dayGreeting(new Date().getHours())},`}</span> <span className={s.welcomeName}>{firstName}</span>
-                          </>
-                        ) : <span className={s.welcomeGreet}>{state.ledger.synced ? `${dayGreeting(new Date().getHours())}.` : "Welcome to Keplar."}</span>}
-                      </span>
-                    </h1>
-                    <p className={s.welcomeLede}>Ask anything. Keplar checks with several models and gives you one clear answer.</p>
-                  </div>
+                  {/* Held invisible (same height) until the session is known, so the name never pops in over a generic line.
+                      firstName is only set after the client knows the session, so the time-of-day greeting never renders on the server. */}
+                  <HomeHero
+                    hidden={!state.ledger.synced}
+                    greeting={firstName ? (
+                      <span data-welcome-name={firstName}>{welcome ? "Welcome," : `${dayGreeting(new Date().getHours())},`} {firstName}</span>
+                    ) : state.ledger.synced ? `${dayGreeting(new Date().getHours())}.` : "Welcome to Keplar."}
+                  />
                   <div className={s.emptyBody}>
                   {state.privateNext ? <PrivateBanner onClose={() => dispatch({ type: "private-next", on: false })} /> : null}
                   <SpecialistStarters specialist={specialists.find((x) => x.id === chatSpecialistId) ?? null} onSend={(text) => send(text, [], { web: false, deepResearch: false, create: false, agent: false })} />
@@ -1242,6 +1239,14 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                         onPatch={(patch) => patchCreate(thread!.id, m.id, patch)}
                         onOpen={openCreateApp}
                         onSettled={() => void syncMeter()}
+                      />
+                    ) : m.errand ? (
+                      <ErrandTurn
+                        key={m.id}
+                        message={m}
+                        isLast={m.id === lastKeplar?.id}
+                        onPatch={(patch) => patchErrand(thread!.id, m.id, patch)}
+                        onAnswer={(text) => actFromCard(text, null)}
                       />
                     ) : m.workspace ? (
                       <WorkspaceTurn

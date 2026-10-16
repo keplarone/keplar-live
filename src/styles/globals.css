@@ -11,6 +11,7 @@
 @import "./light.css";
 @import "./aura.css";
 @import "./prefs.css";
+@import "./k3d.css";
 
 /*
  * Metric-matched fallback for Google Sans. next/font cannot generate one (the font is not in its metrics table), so without this the

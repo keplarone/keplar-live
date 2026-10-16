@@ -65,5 +65,7 @@ export function cardHistoryLine(m: KeplarMessage): string | null {
     return `[Keplar ${op.type === "edit" ? `changed the app ${m.create.name ?? ""}: ${op.instruction.slice(0, 160)}` : op.type === "theme" ? `restyled the app ${m.create.name ?? ""}` : `${m.create.opDone === "done" ? (op.type === "publish" ? "published" : "unpublished") : "offered to " + op.type} the app ${m.create.name ?? ""}`}]`;
   }
   if (m.create?.phase === "ready") return `[Keplar built an app here: ${(m.create.name ?? "").slice(0, 200)}]`;
+  if (m.errand?.phase === "started") return `[Keplar started working on this in its own browser: ${m.errand.goal.slice(0, 200)}]`;
+  if (m.errand?.phase === "ready" || m.errand?.phase === "failed") return `[Keplar offered to do this in its own browser; it has not started: ${m.errand.goal.slice(0, 200)}]`;
   return null;
 }
