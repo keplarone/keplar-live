@@ -10,12 +10,13 @@
 import dns from "node:dns";
 import type { Browser, BrowserContext, Page, Route } from "playwright-core";
 import { checkUrl, isPublicIp } from "@/lib/mcp/ssrf";
-import { describe, MAX_ELEMENTS, MAX_STEPS, needsPerson, PAGE_TEXT_CHARS, parseAction, startUrl, stepPrompt, type Action, type El, type Snapshot } from "./policy";
+import { describe, handoverPrompt, MAX_ELEMENTS, MAX_STEPS, needsPerson, PAGE_TEXT_CHARS, parseAction, startUrl, stepPrompt, type Action, type El, type Snapshot } from "./policy";
+import type { ErrandResult } from "./errand-result";
 
 const ACTION_MS = 15_000;
 
 export type Step = { n: number; note: string; url: string; title: string; shot?: string };
-export type Outcome = { status: "done" | "needs_you" | "failed" | "stopped"; answer?: string; reason?: string; steps: number };
+export type Outcome = { status: "done" | "needs_you" | "failed" | "stopped"; answer?: string; result?: ErrandResult; reason?: string; steps: number };
 export type Decide = (prompt: string) => Promise<string | null>;
 export type Resolver = (host: string) => Promise<string[]>;
 export type Fetched = { status: number; headers: Record<string, string>; body: Buffer };
@@ -207,10 +208,15 @@ export async function runBrowserTask(
       let action: Action | null = null;
       for (let tries = 0; tries < 2 && !action; tries++) action = parseAction((await deps.decide(stepPrompt(input.goal, snap, history, maxSteps - n + 1))) ?? "");
       if (!action) return { status: "failed", reason: "The model didn't choose a browser action. Nothing else was done.", steps: n - 1 };
-      if (action.kind === "done") return { status: "done", answer: action.answer, steps: n - 1 };
+      if (action.kind === "done") return { status: "done", answer: action.answer, ...(action.result ? { result: action.result } : {}), steps: n - 1 };
       const el: El | undefined = "index" in action ? snap.elements.find((e) => e.i === action.index) : undefined;
       const stop = needsPerson(action, el);
-      if (stop) return { status: "needs_you", reason: stop, answer: history.length ? `Done so far: ${history.join("; ")}.` : undefined, steps: n - 1 };
+      if (stop) {
+        // What is in the cart (or on offer) at the handover, read from the page as it is. Best effort: never blocks the handover.
+        const read = parseAction((await deps.decide(handoverPrompt(input.goal, snap, history)).catch(() => null)) ?? "");
+        const result = read?.kind === "done" ? read.result : undefined;
+        return { status: "needs_you", reason: stop, answer: history.length ? `Done so far: ${history.join("; ")}.` : undefined, ...(result ? { result } : {}), steps: n - 1 };
+      }
       let note = describe(action, el);
       blocked.clear();
       try {
@@ -228,7 +234,7 @@ export async function runBrowserTask(
     // Out of steps: one last chance to answer from the page as it is.
     const snap = await snapshot(page);
     const last = parseAction((await deps.decide(stepPrompt(input.goal, snap, history, 0))) ?? "");
-    if (last?.kind === "done") return { status: "done", answer: last.answer, steps: maxSteps };
+    if (last?.kind === "done") return { status: "done", answer: last.answer, ...(last.result ? { result: last.result } : {}), steps: maxSteps };
     return { status: "failed", reason: `Keplar used all ${maxSteps} steps without finishing. Try a more specific task or a starting address.`, steps: maxSteps };
   } finally {
     await ctx.close().catch(() => undefined);

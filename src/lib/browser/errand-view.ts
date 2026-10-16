@@ -4,10 +4,16 @@
  */
 import type { ErrandKind } from "@/lib/chat-actions/intent";
 import type { Stage } from "@/components/app-ui/task/TaskTimeline";
+import { parseErrandResult, type ErrandResult } from "./errand-result";
 
 export type ErrandStep = { n: number; note: string; url: string; title: string; shot?: string };
 export type ErrandStatus = "running" | "done" | "needs_you" | "failed" | "stopped" | "interrupted";
-export type ErrandTask = { id: string; goal: string; status: ErrandStatus; steps: ErrandStep[]; answer?: string; reason?: string };
+export type ErrandTask = { id: string; goal: string; status: ErrandStatus; steps: ErrandStep[]; answer?: string; result?: unknown; reason?: string };
+
+/** The task's order summary or options, re-checked on the way in (the card never trusts the shape blindly). */
+export function errandResultOf(t: ErrandTask): ErrandResult | null {
+  return t.status === "done" || t.status === "needs_you" ? parseErrandResult(t.result) : null;
+}
 
 /** What Keplar will do, and where it hands over, in one sentence per kind. */
 export const ERRAND_PLAN: Record<ErrandKind, { title: string; does: string; handsOver: string }> = {

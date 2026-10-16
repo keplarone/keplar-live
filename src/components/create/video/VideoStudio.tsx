@@ -8,6 +8,7 @@
  */
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { VIDEO_HANDOFF_KEY } from "@/lib/higgsfield/handoff";
 import { TwoTone } from "@/components/page/TwoTone";
 import s from "../create.module.css";
 import { ReferencePicker, type RefItem, type RefLimits } from "./ReferencePicker";
@@ -54,6 +55,18 @@ export function VideoStudio() {
   const [data, setData] = useState<{ config: Config; jobs: Job[] } | null>(null);
   const [loadErr, setLoadErr] = useState<string | null>(null);
   const [prompt, setPrompt] = useState("");
+  // A video asked for in the chat ("make a video of a fox in the snow") arrives with its prompt: filled in, never started.
+  useEffect(() => {
+    try {
+      const handed = sessionStorage.getItem(VIDEO_HANDOFF_KEY);
+      if (handed) {
+        sessionStorage.removeItem(VIDEO_HANDOFF_KEY);
+        setPrompt(handed.slice(0, 1000));
+      }
+    } catch {
+      /* storage blocked: start empty */
+    }
+  }, []);
   const [models, setModels] = useState<string[]>([]);
   const [compare, setCompare] = useState(false);
   const [ratio0, setRatio] = useState("16:9");

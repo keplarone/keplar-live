@@ -76,6 +76,8 @@ import { cardHistoryLine, lastCardOf, previousAnswer, previousQuestion } from ".
 import { deleteProject, mergeProjects, renameProject, type Ops } from "./workspace/project-ops";
 import { WorkspaceTurn, type TabTarget } from "./workspace/WorkspaceTurn";
 import { ErrandTurn } from "./task/ErrandTurn";
+import { OutboundTurn } from "./task/OutboundTurn";
+import { HandoffTurn } from "./task/HandoffTurn";
 import { AnswerTools } from "./parity/AnswerTools";
 import { ChatOptionsBar, PrivateBanner, SpecialistStarters, useSpecialists } from "./parity/ChatOptionsBar";
 import { DraftPane } from "./parity/DraftPane";
@@ -87,6 +89,9 @@ import s from "./App.module.css";
  * A studio view that downloads when first needed. Not next/dynamic: that suspends once even when the chunk is already in, and React holds a
  * Suspense fallback for ~300 ms before revealing, which made opening Create feel slow. Here an already-fetched view renders on the first pass.
  */
+/** One key per email or event card: pressing Send again (or after a reload) never sends it twice. */
+const outboundKey = () => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID().replace(/-/g, "") : `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 12)}`);
+
 function lazyView<P extends object>(load: () => Promise<ComponentType<P>>) {
   let cached: ComponentType<P> | null = null;
   const warm = () => load().then((c) => (cached = c));
@@ -694,6 +699,13 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
             return card({ workspace: { kind: "choose", topic: i.topic, choices: i.choices } });
           case "errand":
             return card({ errand: { goal: i.goal, kind: i.kind, phase: "ready" } });
+          case "email":
+            return card({ outbound: { kind: "email", phase: "drafting", key: outboundKey(), to: i.to, about: i.about } });
+          case "event":
+            return card({ outbound: { kind: "event", phase: "ready", key: outboundKey(), title: i.title, ...(i.with ? { with: i.with } : {}), ...(i.date ? { date: i.date } : {}), ...(i.time ? { time: i.time } : {}), minutes: i.minutes ?? 30, ...(i.words ? { words: i.words } : {}) } });
+          case "video":
+          case "roblox":
+            return card({ handoff: { kind: i.type, prompt: i.type === "video" ? i.prompt : i.brief } });
           case "agent.new": {
             const rest = routed.via === "slash" ? text.replace(/^\s*\/agent\b[\s:]*/i, "").trim() : text;
             const u: UserMessage = { ...base, text: rest || "Set up an agent for me", modes: { ...modes, agent: true } };
@@ -887,6 +899,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   const patchCreate = useCallback((threadId: string, keplarId: string, patch: Partial<NonNullable<KeplarMessage["create"]>>) => dispatch({ type: "create", threadId, keplarId, patch }), []);
   const patchStudio = useCallback((threadId: string, keplarId: string, patch: Partial<NonNullable<KeplarMessage["studio"]>>) => dispatch({ type: "studio", threadId, keplarId, patch }), []);
   const patchAgentFlow = useCallback((threadId: string, keplarId: string, patch: Partial<NonNullable<KeplarMessage["agentFlow"]>>) => dispatch({ type: "agentFlow", threadId, keplarId, patch }), []);
+  const patchOutbound = useCallback((threadId: string, keplarId: string, patch: Partial<NonNullable<KeplarMessage["outbound"]>>) => dispatch({ type: "outbound", threadId, keplarId, patch }), []);
   const patchErrand = useCallback((threadId: string, keplarId: string, patch: Partial<NonNullable<KeplarMessage["errand"]>>) => dispatch({ type: "errand", threadId, keplarId, patch }), []);
   const patchWorkspace = useCallback((threadId: string, keplarId: string, patch: Partial<NonNullable<KeplarMessage["workspace"]>>) => dispatch({ type: "workspace", threadId, keplarId, patch }), []);
   /** A card asks for a follow-up in the chat (a choice, "Show here", "Review drafts", "Rewrite this slide"). */
@@ -1240,6 +1253,15 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                         onOpen={openCreateApp}
                         onSettled={() => void syncMeter()}
                       />
+                    ) : m.outbound ? (
+                      <OutboundTurn
+                        key={m.id}
+                        message={m}
+                        isLast={m.id === lastKeplar?.id}
+                        onPatch={(patch) => patchOutbound(thread!.id, m.id, patch)}
+                      />
+                    ) : m.handoff ? (
+                      <HandoffTurn key={m.id} message={m} plan={state.ledger.plan} />
                     ) : m.errand ? (
                       <ErrandTurn
                         key={m.id}

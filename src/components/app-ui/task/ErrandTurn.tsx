@@ -7,7 +7,8 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { KeplarSymbol } from "@/components/brand";
-import { ERRAND_PLAN, errandStages, handoverUrl, hostOf, type ErrandTask } from "@/lib/browser/errand-view";
+import { ERRAND_PLAN, errandResultOf, errandStages, handoverUrl, hostOf, type ErrandTask } from "@/lib/browser/errand-view";
+import { ErrandResultView } from "./ErrandResultView";
 import type { ErrandCard, KeplarMessage } from "../state/types";
 import { TaskTimeline } from "./TaskTimeline";
 import s from "./ErrandTurn.module.css";
@@ -76,6 +77,7 @@ export function ErrandTurn({ message, isLast, onPatch, onAnswer }: Props) {
   const running = task?.status === "running";
   const shot = task ? [...task.steps].reverse().find((x) => x.shot) : undefined;
   const takeOver = task?.status === "needs_you" ? handoverUrl(task) : null;
+  const result = task ? errandResultOf(task) : null;
 
   return (
     <section className={`${s.card} k-enter`} aria-label={plan.title} aria-busy={running || e.phase === "starting" || undefined}>
@@ -110,6 +112,7 @@ export function ErrandTurn({ message, isLast, onPatch, onAnswer }: Props) {
       {e.phase === "started" ? (
         task ? (
           <div className={s.run}>
+            {result ? <ErrandResultView result={result} stoppedAt={task.status === "needs_you" ? task.reason ?? null : null} /> : null}
             <TaskTimeline stages={errandStages(task)} label="What Keplar did" />
             {shot?.shot ? (
               <figure className={s.view}>

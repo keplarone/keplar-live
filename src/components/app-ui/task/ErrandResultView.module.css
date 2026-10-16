@@ -1,0 +1,26 @@
+.box { display: grid; gap: var(--s-2); padding: var(--s-4); border-radius: var(--r-md); background: var(--c-canvas); box-shadow: inset 0 0 0 1px var(--c-border); }
+.title { margin: 0; font-size: var(--t-small); font-weight: var(--w-semibold); color: var(--c-ink); }
+.foot { margin: 0; font-size: var(--t-label); color: var(--c-ink-2); }
+.none { color: var(--c-ink-2); font-weight: var(--w-regular); }
+.est { font-size: var(--t-label); font-weight: var(--w-regular); color: var(--c-ink-2); }
+
+/* Order: a receipt with a dotted rule before the total. */
+.receipt { width: 100%; border-collapse: collapse; font-size: var(--t-small); font-variant-numeric: tabular-nums; }
+.receipt th, .receipt td { padding: 6px 0; vertical-align: top; }
+.receipt th { text-align: left; font-weight: var(--w-regular); color: var(--c-ink); overflow-wrap: anywhere; padding-right: var(--s-3); }
+.receipt td { text-align: right; white-space: nowrap; color: var(--c-ink); }
+.qty { color: var(--c-ink-2); margin-right: 6px; }
+.fee th, .fee td { color: var(--c-ink-2); }
+.total th, .total td { padding-top: var(--s-2); border-top: 1.5px dashed var(--c-border-strong); font-weight: var(--w-semibold); color: var(--c-ink); }
+.stop { margin: 0; padding: var(--s-2) var(--s-3); border-radius: var(--r-sm); font-size: var(--t-small); color: var(--c-ink); background: color-mix(in srgb, var(--c-attention) 14%, transparent); box-shadow: inset 3px 0 0 var(--c-attention); }
+
+/* Options: one row each, price on the right. */
+.options { list-style: none; margin: 0; padding: 0; display: grid; }
+.option { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--s-3); padding: var(--s-2) 0; border-top: 1px solid var(--c-border); }
+.option:first-child { border-top: 0; }
+.optText { display: grid; gap: 2px; min-width: 0; }
+.name { font-size: var(--t-small); font-weight: var(--w-medium); color: var(--c-ink); overflow-wrap: anywhere; }
+.detail { font-size: var(--t-label); color: var(--c-ink-2); overflow-wrap: anywhere; }
+.link { font-size: var(--t-label); color: var(--c-ink); text-decoration: underline; text-underline-offset: 2px; justify-self: start; padding: 4px 0; }
+.link:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; border-radius: var(--r-xs); }
+.price { flex: none; font-size: var(--t-small); font-weight: var(--w-semibold); color: var(--c-ink); text-align: right; font-variant-numeric: tabular-nums; max-width: 45%; }

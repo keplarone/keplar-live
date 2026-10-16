@@ -67,5 +67,8 @@ export function cardHistoryLine(m: KeplarMessage): string | null {
   if (m.create?.phase === "ready") return `[Keplar built an app here: ${(m.create.name ?? "").slice(0, 200)}]`;
   if (m.errand?.phase === "started") return `[Keplar started working on this in its own browser: ${m.errand.goal.slice(0, 200)}]`;
   if (m.errand?.phase === "ready" || m.errand?.phase === "failed") return `[Keplar offered to do this in its own browser; it has not started: ${m.errand.goal.slice(0, 200)}]`;
+  if (m.outbound?.kind === "email") return m.outbound.phase === "sent" ? `[Keplar sent an email from the person's Gmail to ${m.outbound.to ?? ""}: ${(m.outbound.subject ?? "").slice(0, 160)}]` : `[Keplar drafted an email to ${m.outbound.to ?? ""}; it has not been sent]`;
+  if (m.outbound?.kind === "event") return m.outbound.phase === "sent" ? `[Keplar added an event to the person's Google Calendar: ${(m.outbound.title ?? "").slice(0, 160)} ${m.outbound.date ?? ""} ${m.outbound.time ?? ""}]` : `[Keplar suggested a calendar event; it has not been added: ${(m.outbound.title ?? "").slice(0, 160)}]`;
+  if (m.handoff) return `[Keplar pointed to ${m.handoff.kind === "video" ? "Create > Video" : "Space Studio"} for: ${m.handoff.prompt.slice(0, 200)}]`;
   return null;
 }

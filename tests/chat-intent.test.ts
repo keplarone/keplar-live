@@ -159,10 +159,53 @@ test("intent: real-world errands go to Keplar Browser", () => {
   assert.equal(intentLabel({ type: "errand", goal: "x", kind: "order" }), "Errand");
   // Questions and other tools are not errands.
   assert.equal(type("how do I order from McDonald's?"), null);
-  assert.equal(type("book a meeting with Sam on Friday"), null);
+  assert.equal(type("book a meeting with Sam on Friday"), "event");
   assert.equal(type("buy me a logo"), null);
   assert.equal(type("order matters in recursion"), null);
   // /do runs anything as an errand.
   assert.deepEqual(r("/do find a dentist near me that is open Saturday")?.intent, { type: "errand", goal: "find a dentist near me that is open Saturday", kind: "order" });
   assert.equal(r("/do")?.intent ?? null, null);
+});
+
+// 2026-10-15 is a Thursday.
+const at = (text: string, last?: LastCard) => routeChat(text, { last, today: "2026-10-15" })?.intent ?? null;
+
+test("intent: email requests go to the Gmail connector, never the browser", () => {
+  assert.deepEqual(at("Email Sam about Friday"), { type: "email", to: "Sam", about: "Friday" });
+  assert.deepEqual(at("can you email sam@acme.com to say thanks for the demo?"), { type: "email", to: "sam@acme.com", about: "to say thanks for the demo" });
+  assert.deepEqual(at("send Priya an email about the invoice"), { type: "email", to: "Priya", about: "the invoice" });
+  assert.deepEqual(at("write an email to my landlord about the leaky sink"), { type: "email", to: "my landlord", about: "the leaky sink" });
+  assert.deepEqual(at("/email Sam about Friday"), { type: "email", to: "Sam", about: "Friday" });
+  assert.deepEqual(at("/email sam@acme.com lunch next week"), { type: "email", to: "sam@acme.com", about: "lunch next week" });
+  assert.equal(intentLabel({ type: "email", to: "Sam", about: "x" }), "Gmail");
+  // Not emails to send.
+  assert.equal(at("how do I email Sam?"), null);
+  assert.equal(at("email marketing about growth"), null);
+});
+
+test("intent: calendar requests go to the Google Calendar connector, with the day read from the words", () => {
+  assert.deepEqual(at("put a meeting with Sam on Friday"), { type: "event", title: "Meeting with Sam", with: "Sam", date: "2026-10-16", words: "on Friday" });
+  assert.deepEqual(at("schedule a call with Priya tomorrow at 3pm for 45 minutes"), { type: "event", title: "Call with Priya", with: "Priya", date: "2026-10-16", time: "15:00", minutes: 45, words: "tomorrow at 3pm for 45 minutes" });
+  assert.deepEqual(at("add Mo's birthday dinner to my calendar on Oct 23 at 7pm"), { type: "event", title: "Mo's birthday dinner", date: "2026-10-23", time: "19:00", words: "Oct 23 at 7pm" });
+  assert.deepEqual(at("set up a coffee with Jo next tuesday at 10:30 about the launch"), { type: "event", title: "Coffee with Jo: the launch", with: "Jo", date: "2026-10-20", time: "10:30", words: "next tuesday at 10:30" });
+  assert.deepEqual(at("/event lunch with Sam Friday at 1pm"), { type: "event", title: "Lunch with Sam", with: "Sam", date: "2026-10-16", time: "13:00", words: "Friday at 1pm" });
+  assert.equal(intentLabel({ type: "event", title: "x" }), "Calendar");
+  // A table or a hotel is still an errand.
+  assert.equal(at("book a table for two at 8pm")?.type, "errand");
+  assert.equal(at("what meetings do I have on Friday?"), null);
+});
+
+test("intent: video goes to Higgsfield, Roblox games to Space Studio", () => {
+  assert.deepEqual(at("make a video of a fox running through snow"), { type: "video", prompt: "a fox running through snow" });
+  assert.deepEqual(at("generate a 5-second clip of waves at sunset"), { type: "video", prompt: "waves at sunset" });
+  assert.deepEqual(at("/video a cat surfing"), { type: "video", prompt: "a cat surfing" });
+  assert.deepEqual(at("make a Roblox game"), { type: "roblox", brief: "make a Roblox game" });
+  assert.deepEqual(at("build an obby in Roblox"), { type: "roblox", brief: "build an obby in Roblox" });
+  assert.equal(at("create a Roblox tycoon where you run a bakery")?.type, "roblox");
+  assert.equal(intentLabel({ type: "video", prompt: "x" }), "Video");
+  assert.equal(intentLabel({ type: "roblox", brief: "x" }), "Space Studio");
+  // A video game is an app; a question about Roblox is a question.
+  assert.equal(at("make a video game")?.type, "create.new");
+  assert.equal(at("how do I make a Roblox game?"), null);
+  assert.equal(at("make a website for my bakery")?.type, "create.new");
 });

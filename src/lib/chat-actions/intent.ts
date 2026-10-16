@@ -14,6 +14,7 @@
 import { examDateFrom, localDay } from "@/lib/study/exam-date";
 import { cronFromWords } from "@/lib/business/cron-form";
 import type { DeckTheme } from "@/lib/slides/types";
+import { whenFrom, withoutWhen } from "./when";
 
 export type WorkspaceKind = "apps" | "approvals" | "crm" | "leads" | "dashboard" | "orders" | "agents" | "projects" | "deployments" | "history";
 export type StudyFocus = "overview" | "cards" | "quiz" | "plan" | "placement";
@@ -56,6 +57,14 @@ export type Intent =
   | { type: "workspace"; card: WorkspaceKind; query?: string; act?: WorkspaceAct }
   | { type: "agent.new" }
   | { type: "errand"; goal: string; kind: ErrandKind }
+  /** An email from the person's Gmail (Gmail connector): drafted in the chat, sent only when they press Send. */
+  | { type: "email"; to: string; about: string }
+  /** An event on the person's Google Calendar (Calendar connector): shown in the chat, created only when they press Add. */
+  | { type: "event"; title: string; with?: string; date?: string; time?: string; minutes?: number; words?: string }
+  /** A video clip (Higgsfield, in Create > Video), with the prompt carried over. */
+  | { type: "video"; prompt: string }
+  /** A Roblox game: Space Studio, the desktop app that builds in Roblox Studio. */
+  | { type: "roblox"; brief: string }
   | { type: "choose"; topic: string; choices: Choice[] };
 
 /** A real-world errand Keplar Browser can work through on the public web ("order", "book", "buy", "sign me up", "fill out"). */
@@ -93,6 +102,9 @@ export const CHAT_COMMANDS: readonly ChatCommand[] = [
   { id: "deployments", slash: "/deployments", label: "Deployments", summary: "What is live, and where", takesText: false },
   { id: "history", slash: "/history", label: "History", summary: "Find a chat (/history taxes), /history rename, /history delete", takesText: true },
   { id: "do", slash: "/do", label: "Do it for me", summary: "Keplar works on the web for you, and stops before paying or sending", takesText: true },
+  { id: "email", slash: "/email", label: "Email", summary: "/email Sam about Friday: a Gmail draft you send yourself", takesText: true },
+  { id: "event", slash: "/event", label: "Calendar event", summary: "/event lunch with Sam Friday at 1pm: you add it", takesText: true },
+  { id: "video", slash: "/video", label: "Video", summary: "A video clip from a prompt, in Create > Video", takesText: true },
 ];
 
 const COMMAND_BY_ID = new Map(CHAT_COMMANDS.map((c) => [c.id, c]));
@@ -465,6 +477,78 @@ function followUp(body: string, last: LastCard, today: string): Intent | null {
   return null;
 }
 
+/* ───────────── connectors and studios (Gmail, Google Calendar, Higgsfield video, Space Studio) ───────────── */
+
+/** A person to write to: an email address, or a name of one to three words ("Sam", "Dr. Lee", "the landlord"). */
+const RECIPIENT = String.raw`([^\s@]+@[^\s@]+\.[a-z]{2,}|(?:the\s+|my\s+|our\s+)?[\p{L}][\p{L}.'-]*(?:\s+[\p{L}][\p{L}.'-]*){0,2})`;
+const EMAIL_RE = new RegExp(String.raw`^(?:e-?mail|(?:send|write|draft|shoot)\s+(?:an?\s+)?e-?mail\s+to|write\s+to)\s+${RECIPIENT}\s+(?:an?\s+e-?mail\s+)?(about|regarding|re:?|to\s+(?:say|tell|ask|let|remind|confirm|thank|invite)|saying|asking|that)\s+(.{2,})$`, "iu");
+/** Not people: "email marketing about", "write to the file". */
+const NOT_PERSON = /^(?:marketing|newsletter|list|it|this|that|them all|everyone|the (?:file|disk|database|log|team list))$/i;
+
+/** "email Sam about Friday", "write an email to sam@acme.com to say thanks", "send Priya an email about the invoice". */
+function emailIntent(body: string): Intent | null {
+  const t = stripEnd(body);
+  if (t.length > 400) return null;
+  // "send Priya an email about the invoice"
+  const swap = /^(?:send|write|shoot|draft)\s+(.+?)\s+an?\s+e-?mail\s+(about|regarding|to\s+(?:say|tell|ask|let|remind|confirm|thank|invite)|saying|asking|that)\s+(.{2,})$/iu.exec(t);
+  const m = swap ?? EMAIL_RE.exec(t);
+  if (!m) return null;
+  const to = m[1].trim();
+  if (NOT_PERSON.test(to) || to.split(/\s+/).length > 3) return null;
+  const lead = m[2].toLowerCase();
+  const about = /^(?:about|regarding|re:?)$/.test(lead) ? m[3].trim() : `${lead} ${m[3].trim()}`;
+  return { type: "email", to, about };
+}
+
+const EVENT_NOUN = String.raw`(?:meeting|call|video call|zoom|event|lunch|dinner|breakfast|coffee|drinks|catch-?up|sync|1:1|one-on-one|appointment|interview|stand-?up|review|session|reminder)`;
+
+/** "put a meeting with Sam on Friday", "schedule a call with Priya tomorrow at 3pm", "add lunch with Mo on Oct 23 to my calendar". */
+function eventIntent(body: string, today: string): Intent | null {
+  const t = stripEnd(body);
+  if (t.length > 300) return null;
+  const cal = /\s+(?:on|to|in|into)\s+(?:my|our|the)\s+(?:google\s+)?calendar\b/i;
+  const onCalendar = cal.test(t);
+  let m = new RegExp(String.raw`^(?:put|add|schedule|set up|setup|book|create|make|arrange|plan|organi[sz]e|block(?: out)?)\s+(?:a|an|the|my|our)?\s*(?:quick\s+|short\s+|\d+[- ]?min(?:ute)?\s+)?(${EVENT_NOUN})\b(.*)$`, "i").exec(t.replace(cal, " ").replace(/\s+/g, " ").trim());
+  let noun: string;
+  let rest: string;
+  if (m) {
+    noun = m[1];
+    rest = m[2];
+  } else {
+    // "add Mo's birthday dinner to my calendar on Friday": anything someone puts on their calendar.
+    const c = /^(?:add|put|pop)\s+(.{2,80}?)\s+(?:on|to|in|into)\s+(?:my|our|the)\s+(?:google\s+)?calendar\b(.*)$/i.exec(t);
+    if (!c) return null;
+    noun = c[1];
+    rest = c[2];
+  }
+  if (!onCalendar && /^(?:a|an)\s+(?:table|room|hotel|flight|ticket)/i.test(noun)) return null;
+  const when = whenFrom(rest, today);
+  const bare = withoutWhen(rest);
+  const who = /\bwith\s+(.+?)(?=\s+(?:on|at|for|from|about|to discuss|re)\b|$)/i.exec(bare);
+  const people = who ? who[1].replace(/[,.]+$/, "").trim() : undefined;
+  const topic = /\b(?:about|to discuss|re:?)\s+(.{2,80})$/i.exec(bare);
+  const label = noun.replace(/^(?:a|an|the|my|our)\s+/i, "");
+  const title = `${label.charAt(0).toUpperCase()}${label.slice(1)}${people ? ` with ${people}` : ""}${topic ? `: ${topic[1].trim()}` : ""}`;
+  return { type: "event", title: title.slice(0, 120), ...(people ? { with: people.slice(0, 80) } : {}), ...(when?.date ? { date: when.date } : {}), ...(when?.time ? { time: when.time } : {}), ...(when?.minutes ? { minutes: when.minutes } : {}), ...(when ? { words: when.words } : {}) };
+}
+
+/** "make a video of a fox running through snow", "generate a 5-second clip of waves". Not "video game", not a question. */
+function videoIntent(body: string): Intent | null {
+  const t = stripEnd(body);
+  if (t.length > 1000 || /\bvideo ?games?\b/i.test(t)) return null;
+  const m = /^(?:make|create|generate|render|produce|animate|film|shoot)\s+(?:me\s+|us\s+)?(?:a|an|some)?\s*(?:(?:short|quick|cinematic|ai|slow[- ]motion|\d+[- ]?(?:second|sec|s))\s+)*(?:video|clip|animation|film|movie|footage)(?:\s+clip)?\b(?:\s*(?:of|about|showing|where|with|in which|that shows|:)\s*(.{3,}))?$/i.exec(t);
+  if (!m) return null;
+  return { type: "video", prompt: (m[1] ?? "").trim() };
+}
+
+/** "make a Roblox game", "build an obby in Roblox", "create a Roblox tycoon where you run a bakery". */
+function robloxIntent(body: string): Intent | null {
+  const t = stripEnd(body);
+  if (t.length > 600 || !/\broblox\b/i.test(t)) return null;
+  const m = /^(?:make|build|create|design|code|develop|start)\s+(?:me\s+|us\s+)?(?:a|an|my|our|the)?\s*(.{0,}?\b(?:game|obby|tycoon|simulator|experience|map|world|place|level|roleplay|rpg|shooter|horror|racing)\b.*)$/i.exec(t);
+  return m ? { type: "roblox", brief: t } : null;
+}
+
 /* ───────────── errands (Keplar Browser) ───────────── */
 
 /** Things handled elsewhere (a calendar invite, an email, an app build, an image), not by browsing for the person. */
@@ -569,6 +653,22 @@ function fromSlash(text: string, ctx: RouteContext): Intent | null {
       return { type: "agent.new" };
     case "do":
       return rest.length >= 4 ? { type: "errand", goal: rest, kind: errandKindOf(rest) } : null;
+    case "email": {
+      const e = emailIntent(`email ${rest}`) ?? emailIntent(rest);
+      if (e) return e;
+      const to = /^([^\s@]+@[^\s@]+\.[a-z]{2,})\s*(.*)$/i.exec(rest);
+      return { type: "email", to: to ? to[1] : "", about: (to ? to[2] : rest).trim() };
+    }
+    case "event": {
+      if (!rest) return { type: "event", title: "" };
+      const today = ctx.today ?? localDay();
+      const e = eventIntent(`add ${rest} to my calendar`, today);
+      if (e) return e;
+      const when = whenFrom(rest, today);
+      return { type: "event", title: withoutWhen(rest).slice(0, 120) || rest.slice(0, 120), ...(when?.date ? { date: when.date } : {}), ...(when?.time ? { time: when.time } : {}), ...(when?.minutes ? { minutes: when.minutes } : {}), ...(when ? { words: when.words } : {}) };
+    }
+    case "video":
+      return { type: "video", prompt: rest };
     case "agents": {
       const m = /^(run|pause|resume)\s+(.+)$/i.exec(rest);
       return m ? { type: "workspace", card: "agents", act: { type: m[1].toLowerCase() as "run" | "pause" | "resume", name: m[2].replace(/\s+agent$/i, "").trim() } } : { type: "workspace", card: "agents" };
@@ -616,7 +716,7 @@ export function routeChat(text: string, ctx: RouteContext = {}): Routed | null {
     const w = (/\b(?:my|our|i|me)\b/i.test(t) || /^what(?:'s| is) live\b/i.test(t)) ? workspaceIntent(body) : null;
     return w ? { intent: w, via: "language" } : null;
   }
-  const hit = workspaceIntent(body) ?? studyIntent(body) ?? slidesIntent(t, body) ?? createIntent(t, body, ctx.last) ?? errandIntent(t, body);
+  const hit = workspaceIntent(body) ?? studyIntent(body) ?? slidesIntent(t, body) ?? emailIntent(body) ?? eventIntent(body, ctx.today ?? localDay()) ?? robloxIntent(body) ?? videoIntent(body) ?? createIntent(t, body, ctx.last) ?? errandIntent(t, body);
   if (hit) return { intent: hit, via: "language" };
   const choice = choiceFor(t, body);
   return choice ? { intent: choice, via: "language" } : null;
@@ -630,6 +730,10 @@ export function intentLabel(i: Intent): string {
     case "create.new": case "create.edit": case "create.theme": case "create.publish": case "create.unpublish": case "create.show": case "create.domain": return "Create";
     case "agent.new": return "Agent";
     case "errand": return "Errand";
+    case "email": return "Gmail";
+    case "event": return "Calendar";
+    case "video": return "Video";
+    case "roblox": return "Space Studio";
     case "choose": return "";
     case "workspace": return { apps: "Apps", approvals: "Approvals", crm: "CRM", leads: "Leads", dashboard: "Dashboard", orders: "Orders", agents: "Agents", projects: "Projects", deployments: "Deployments", history: "History" }[i.card];
   }

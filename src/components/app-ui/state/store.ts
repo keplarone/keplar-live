@@ -1,6 +1,6 @@
 import { applyCore } from "./core";
 import type { KeplarEvent } from "@/lib/orchestration/types";
-import type { AccountInfo, AppState, ChatImage, KeplarMessage, Ledger, Message, Project, Settings, StudioTurn, AgentFlow, ChatCreate, WorkspaceCard, ErrandCard, Thread, UserMessage, View } from "./types";
+import type { AccountInfo, AppState, ChatImage, KeplarMessage, Ledger, Message, Project, Settings, StudioTurn, AgentFlow, ChatCreate, WorkspaceCard, ErrandCard, OutboundCard, Thread, UserMessage, View } from "./types";
 
 import { topicTitle } from "@/lib/chat-title";
 import { readSaved, storageKey, writeSaved, type Scope } from "./scope";
@@ -57,10 +57,16 @@ export const settleErrand = (m: Message): Message =>
     ? { ...m, errand: { ...m.errand, phase: "failed", error: "The page reloaded while this was starting. Check Keplar Browser before trying again, so it doesn't run twice." } }
     : m;
 
+/** Send was pressed when the page went away: say so. Pressing it again is safe (same key), and reports what really happened. */
+export const settleOutbound = (m: Message): Message =>
+  m.role === "keplar" && (m.outbound?.phase === "sending" || m.outbound?.phase === "drafting")
+    ? { ...m, outbound: { ...m.outbound, phase: m.outbound.phase === "drafting" ? "ready" : "failed", ...(m.outbound.phase === "sending" ? { error: "The page reloaded while this was sending. Press it again to check: it won't go out twice." } : {}) } }
+    : m;
+
 /** A run can't survive a reload (or a move to another store): mark it so the user can retry. */
 export const settle = (t: Thread): Thread => ({
   ...t,
-  messages: t.messages.map(settleImage).map(settleStudio).map(settleAgentFlow).map(settleErrand).map((m) =>
+  messages: t.messages.map(settleImage).map(settleStudio).map(settleAgentFlow).map(settleErrand).map(settleOutbound).map((m) =>
     m.role === "keplar" && m.status === "running"
       ? ({ ...m, status: "error", error: { kind: "network", message: "Interrupted before the answer finished.", retryable: true } } as KeplarMessage)
       : m,
@@ -139,6 +145,7 @@ export type Action =
   | { type: "create"; threadId: string; keplarId: string; patch: Partial<ChatCreate> }
   | { type: "workspace"; threadId: string; keplarId: string; patch: Partial<WorkspaceCard> }
   | { type: "errand"; threadId: string; keplarId: string; patch: Partial<ErrandCard> }
+  | { type: "outbound"; threadId: string; keplarId: string; patch: Partial<OutboundCard> }
   | { type: "private-next"; on: boolean }
   | { type: "set-specialist"; id: string | null };
 
@@ -364,6 +371,8 @@ export function reducer(state: AppState, a: Action): AppState {
       return patchKeplar(state, a.threadId, a.keplarId, (m) => (m.workspace ? { ...m, workspace: { ...m.workspace, ...a.patch } } : m));
     case "errand":
       return patchKeplar(state, a.threadId, a.keplarId, (m) => (m.errand ? { ...m, errand: { ...m.errand, ...a.patch } } : m));
+    case "outbound":
+      return patchKeplar(state, a.threadId, a.keplarId, (m) => (m.outbound ? { ...m, outbound: { ...m.outbound, ...a.patch } } : m));
     case "upsell":
       return patchKeplar(state, a.threadId, a.keplarId, (m) => ({ ...m, upsell: a.reason ?? undefined }));
     case "agentFlow":

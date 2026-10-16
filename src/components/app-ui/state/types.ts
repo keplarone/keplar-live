@@ -172,6 +172,45 @@ export type ErrandCard = {
   signin?: boolean;
 };
 
+/** Whether Gmail or Google Calendar can take the action (src/lib/business/chat-outbound.ts). */
+export type OutboundState = "ready" | "not_connected" | "tool_off" | "not_configured";
+
+/**
+ * An email (Gmail) or calendar event (Google Calendar) asked for in the chat. The card shows all of it, editable, and nothing
+ * leaves Keplar until the person presses Send or Add.
+ *   drafting -> ready -> sending -> sent (the provider confirmed it) | failed (shown as it is) ; ready -> canceled
+ * `key` makes Send idempotent: a retry or a reload never queues the same email twice.
+ */
+export type OutboundCard = {
+  kind: "email" | "event";
+  phase: "drafting" | "ready" | "sending" | "sent" | "failed" | "canceled";
+  key: string;
+  state?: OutboundState;
+  // email
+  to?: string;
+  about?: string;
+  subject?: string;
+  body?: string;
+  /** Who wrote the starting draft: a model ("keplar") or Keplar's plain template. */
+  by?: "keplar" | "template";
+  // event
+  title?: string;
+  with?: string;
+  date?: string;
+  time?: string;
+  minutes?: number;
+  /** The words the day and time were read from ("Friday at 3pm"). */
+  words?: string;
+  description?: string;
+  approvalId?: string;
+  /** The provider's confirmation ("Email sent to sam@acme.com", "Calendar event created: https://..."). */
+  result?: string;
+  error?: string;
+};
+
+/** A request that belongs in another Keplar studio: video (Higgsfield, Create > Video) or a Roblox game (Space Studio). */
+export type HandoffCard = { kind: "video" | "roblox"; prompt: string };
+
 export type KeplarMessage = {
   id: string;
   role: "keplar";
@@ -225,6 +264,10 @@ export type KeplarMessage = {
   workspace?: WorkspaceCard;
   /** An errand Keplar Browser works through for the person. */
   errand?: ErrandCard;
+  /** A Gmail draft or Google Calendar event waiting for the person's Send / Add. */
+  outbound?: OutboundCard;
+  /** Video or Roblox: where in Keplar to do it. */
+  handoff?: HandoffCard;
   limit?: { required: number; remaining: number; window?: { id: "fiveHour" | "weekly"; label: string; resetsAt: string; message: string }; daily?: { limit: number; resetsAt: string }; budget?: "day"; resetsAt?: string };
   startedAt: number;
   finishedAt?: number;

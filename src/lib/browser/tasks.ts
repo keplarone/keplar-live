@@ -11,6 +11,7 @@ import { id as newId, now } from "@/lib/create/platform/ids";
 import { memoryModelDeps } from "@/lib/memory/extract";
 import type { Classification } from "@/lib/orchestration/types";
 import { SYSTEM } from "./policy";
+import type { ErrandResult } from "./errand-result";
 import type { Decide, Outcome, Step } from "./run";
 import type { Browser } from "playwright-core";
 
@@ -26,6 +27,8 @@ export type BrowserTaskRow = {
   status: TaskStatus;
   steps: Step[];
   answer?: string;
+  /** The order summary or options the task read off the pages, when it found any (errand-result.ts). */
+  result?: ErrandResult;
   reason?: string;
   stopRequested?: boolean;
   leaseUntil?: string;
@@ -39,7 +42,7 @@ export const taskRows = () => collection<BrowserTaskRow>("browser_tasks");
 /** What the person sees: a running task whose server invocation ended without finishing reads as interrupted. */
 export function taskView(t: BrowserTaskRow, at = Date.now()): TaskView {
   const lost = t.status === "running" && (!t.leaseUntil || Date.parse(t.leaseUntil) < at);
-  return { id: t.id, goal: t.goal, ...(t.url ? { url: t.url } : {}), steps: t.steps, ...(t.answer ? { answer: t.answer } : {}), ...(t.reason ? { reason: t.reason } : {}), createdAt: t.createdAt, updatedAt: t.updatedAt, status: lost ? "interrupted" : t.status, ...(lost ? { reason: "The task was interrupted on Keplar's servers before it finished. Start it again to retry." } : {}) };
+  return { id: t.id, goal: t.goal, ...(t.url ? { url: t.url } : {}), steps: t.steps, ...(t.answer ? { answer: t.answer } : {}), ...(t.result ? { result: t.result } : {}), ...(t.reason ? { reason: t.reason } : {}), createdAt: t.createdAt, updatedAt: t.updatedAt, status: lost ? "interrupted" : t.status, ...(lost ? { reason: "The task was interrupted on Keplar's servers before it finished. Start it again to retry." } : {}) };
 }
 
 export async function listTasks(workspaceId: string): Promise<BrowserTaskRow[]> {
@@ -121,6 +124,7 @@ export async function runStoredTask(task: BrowserTaskRow, deps: RunDeps): Promis
     status: stopped ? "stopped" : outcome.status,
     steps,
     ...(outcome.answer ? { answer: outcome.answer } : {}),
+    ...(outcome.result ? { result: outcome.result } : {}),
     reason: stopped ? "You stopped the task. The browser was closed." : outcome.reason,
     leaseUntil: undefined,
   }).catch(() => undefined);

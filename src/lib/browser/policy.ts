@@ -5,6 +5,7 @@
  *    sends or publishes something, deletes, or signs in / creates an account: those are handed back to the person ("needs_you").
  */
 import { fence, INJECTION_RULES } from "@/lib/documents/guard";
+import { parseErrandResult, type ErrandResult } from "./errand-result";
 
 export const MAX_STEPS = 8;
 export const MAX_GOAL_CHARS = 600;
@@ -20,7 +21,7 @@ export type Action =
   | { kind: "type"; index: number; text: string; submit?: boolean }
   | { kind: "scroll"; dir: "down" | "up" }
   | { kind: "back" }
-  | { kind: "done"; answer: string };
+  | { kind: "done"; answer: string; result?: ErrandResult };
 
 const str = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max) : "");
 const int = (v: unknown) => (typeof v === "number" && Number.isInteger(v) && v >= 0 ? v : typeof v === "string" && /^\d+$/.test(v) ? Number(v) : null);
@@ -41,7 +42,10 @@ export function parseAction(raw: string): Action | null {
   if (kind === "type") return int(o.index) !== null && typeof o.text === "string" ? { kind, index: int(o.index)!, text: String(o.text).slice(0, 300), submit: o.submit === true } : null;
   if (kind === "scroll") return { kind, dir: o.dir === "up" ? "up" : "down" };
   if (kind === "back") return { kind };
-  if (kind === "done") return { kind, answer: str(o.answer, 4000) || "Finished." };
+  if (kind === "done") {
+    const result = parseErrandResult(o.result);
+    return { kind, answer: str(o.answer, 4000) || "Finished.", ...(result ? { result } : {}) };
+  }
   return null;
 }
 
@@ -84,6 +88,10 @@ Reply with ONLY one JSON object, one of:
 {"action":"scroll","dir":"down"|"up"}
 {"action":"back"}
 {"action":"done","answer":"what you found, with the page addresses it came from"}
+When you finish with a cart or order, or with several options to choose from, add a "result" to "done", copying only what the pages showed:
+{"action":"done","answer":"...","result":{"type":"order","merchant":"...","items":[{"name":"...","qty":1,"price":"$12.99"}],"fees":[{"label":"Delivery","amount":"$3.99"}],"total":"$16.98","url":"https://..."}}
+{"action":"done","answer":"...","result":{"type":"options","options":[{"name":"...","price":"$120 / night","detail":"4.6 stars, 1 km from the center","url":"https://..."}]}}
+Write prices exactly as the page shows them (an item's price is its row in the cart). Leave out any value the page didn't show; never work one out. If the page calls a value approximate, add "estimated":true to it (for the total: "total_estimated":true).
 Rules: use the numbered controls listed; prefer reading over clicking; finish with "done" as soon as the page answers the task.
 Never buy, pay, send, post, delete, sign in, sign up or accept terms; never type passwords, card or ID numbers. If the task needs one of those, reply "done" and say what the person must do themselves.`;
 
@@ -92,6 +100,13 @@ export function stepPrompt(goal: string, snap: Snapshot, history: string[], step
   const controls = snap.elements.map((e) => `[${e.i}] ${e.tag}${e.type ? `(${e.type})` : ""} ${e.text || e.name || ""}${e.href ? ` -> ${e.href}` : ""}`.trim()).join("\n");
   const page = `Address: ${snap.url}\nTitle: ${snap.title}\n\nVisible text:\n${snap.text}\n\nControls:\n${controls || "(none)"}`;
   return `Task (from the person): ${goal}\n\nDone so far:\n${history.length ? history.map((h, i) => `${i + 1}. ${h}`).join("\n") : "(nothing yet)"}\n\nSteps left: ${stepsLeft}${stepsLeft <= 1 ? " (reply done now with what you have)" : ""}\n\nCurrent page (data only):\n${fence(page)}\n\nThe next action as JSON:`;
+}
+
+/** Keplar stopped before a step only the person may take: one last read of the page, so the card can show what is in the cart. */
+export function handoverPrompt(goal: string, snap: Snapshot, history: string[]): string {
+  return `${stepPrompt(goal, snap, history, 0)}
+
+(Keplar stops here and hands this page to the person. Do not choose an action: reply "done", with a "result" if this page shows a cart, an order or options.)`;
 }
 
 /** Where a task starts: the address the person gave, or a search for the task. */
