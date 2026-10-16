@@ -1,0 +1,25 @@
+.page { background: #05060f; color: #e8eaf6; min-height: 100vh; padding: 0 16px 96px; }
+.hero { max-width: 880px; margin: 0 auto; padding: 112px 0 48px; }
+.logo { display: block; width: 96px; height: 96px; margin: 0 0 24px; }
+.kicker { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #b9a4ff; margin: 0 0 16px; }
+.title { font-size: clamp(32px, 5.4vw, 56px); line-height: 1.08; font-weight: 700; letter-spacing: -.02em; margin: 0 0 20px; color: #fff; }
+.lede { font-size: 18px; line-height: 1.6; color: #c3c7de; max-width: 680px; margin: 0 0 32px; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.primary, .secondary { display: inline-flex; align-items: center; min-height: 48px; padding: 0 24px; border-radius: 999px; font-weight: 600; font-size: 15px; text-decoration: none; transition: transform .16s cubic-bezier(.2,.8,.2,1), background-color .16s; }
+.primary { background: #fff; color: #05060f; }
+.primary:hover { transform: translateY(-1px); background: #f1efff; }
+.primary:active, .secondary:active { transform: scale(.97); }
+.secondary { color: #fff; border: 1px solid rgba(255,255,255,.22); }
+.secondary:hover { background: rgba(255,255,255,.06); }
+.primary:focus-visible, .secondary:focus-visible { outline: 2px solid #ffd66e; outline-offset: 3px; }
+.note { margin: 20px 0 0; font-size: 13px; line-height: 1.6; color: #8e93ad; max-width: 680px; }
+.section { max-width: 1080px; margin: 0 auto; padding: 56px 0 0; }
+.h2 { font-size: 28px; font-weight: 700; margin: 0 0 12px; color: #fff; }
+.sub { font-size: 15px; line-height: 1.6; color: #a9aecb; max-width: 760px; margin: 0 0 24px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+.card { border: 1px solid rgba(255,255,255,.1); border-radius: 20px; padding: 20px; background: #0b0d1c; }
+.cardTitle { font-size: 18px; font-weight: 700; margin: 0 0 4px; color: #fff; }
+.tagline { font-size: 14px; color: #b9a4ff; margin: 0 0 12px; }
+.list { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.7; color: #c3c7de; }
+.meta { font-size: 12px; color: #8e93ad; margin: 12px 0 0; }
+@media (prefers-reduced-motion: reduce) { .primary, .secondary { transition: none; } }

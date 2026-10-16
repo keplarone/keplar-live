@@ -13,6 +13,8 @@ import { withCostTag } from "@/lib/cost/context";
 import { assertCanSpend, chargeUnits, CreditLimitError, USD_PER_UNIT } from "@/lib/create/platform/compute";
 import { workspaceById, type Workspace } from "@/lib/create/platform/workspace";
 import { STUDIO_PLANS } from "@/lib/desktop/studio-bridge";
+import { SPACE_CLOUD_ENDED, SPACE_PRODUCT, spaceJobMayRun } from "@/lib/space-studio/cloud";
+import { addCloudMinutes } from "@/lib/space-studio/store";
 import { workerBase } from "@/lib/roblox-cloud/worker";
 import { encodeScript, killScript, parsePoll, pollScript, readLog, renderScript, sandboxMachines, type Machine, type Machines, type Poll } from "./machine";
 import { frameList, frameOf, isActive, jobs, logEntry, machineSpec, RENDER_CREDIT_RATE, RENDER_LIMITS, SYSTEM_WS, system, usdPerMachineMinute, type OutputFile, type RenderJob, type RenderStatus } from "./model";
@@ -124,6 +126,18 @@ const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
 /** Runs one slice of a job. Safe to call twice: the lease makes sure only one slice watches a job at a time. */
 export async function runSlice(workspaceId: string, jobId: string, deps: WorkerDeps = {}): Promise<{ status: RenderStatus | "missing" | "busy" }> {
   const clock = deps.now ?? Date.now;
+  const t0 = clock();
+  const before = await jobs().get(workspaceId, jobId);
+  const out = await runSliceInner(workspaceId, jobId, deps);
+  // Space Studio jobs: machine time watched by this slice counts toward the plan's monthly cloud minutes (src/lib/space-studio/cloud.ts).
+  if (before?.product === SPACE_PRODUCT && (before.status === "queued" || before.status === "rendering") && out.status !== "missing" && out.status !== "busy") {
+    await addCloudMinutes(workspaceId, (clock() - t0) / 60_000, clock()).catch(() => undefined);
+  }
+  return out;
+}
+
+async function runSliceInner(workspaceId: string, jobId: string, deps: WorkerDeps): Promise<{ status: RenderStatus | "missing" | "busy" }> {
+  const clock = deps.now ?? Date.now;
   const sleep = deps.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
   const machines = deps.machines ?? sandboxMachines;
   const sliceStart = clock();
@@ -135,7 +149,13 @@ export async function runSlice(workspaceId: string, jobId: string, deps: WorkerD
   job = (await jobs().get(workspaceId, jobId))!;
 
   const ws = await workspaceById(workspaceId);
-  if (!ws || !STUDIO_PLANS.has(ws.plan)) {
+  if (job.product === SPACE_PRODUCT) {
+    // Space Studio jobs are gated by the Space Studio plan, checked again every time a slice picks the job up.
+    if (!ws || !(await spaceJobMayRun(workspaceId, jobId, sliceStart))) {
+      await finish(job, job.machine ? await machines.get(job.machine.name, false).catch(() => null) : null, "stopped", `${SPACE_CLOUD_ENDED}. ${plural(job.done.length, "frame")} rendered; they're ready to download.`, clock());
+      return { status: "stopped" };
+    }
+  } else if (!ws || !STUDIO_PLANS.has(ws.plan)) {
     await finish(job, job.machine ? await machines.get(job.machine.name, false).catch(() => null) : null, "stopped", "Blender Cloud needs Keplar Lite, Plus or Pro, and this account's plan does not include it now.", clock());
     return { status: "stopped" };
   }

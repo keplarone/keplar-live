@@ -14,6 +14,8 @@ import { HttpError } from "@/lib/create/platform/http";
 import { EntitlementError } from "@/lib/create/platform/plans";
 import { workspaceById, type Workspace } from "@/lib/create/platform/workspace";
 import { STUDIO_PLANS } from "@/lib/desktop/studio-bridge";
+import { SPACE_CLOUD_ENDED, SPACE_PRODUCT, spaceJobMayRun } from "@/lib/space-studio/cloud";
+import { addCloudMinutes } from "@/lib/space-studio/store";
 import { site } from "@/lib/site";
 import { lineDiff } from "@/lib/site-builder/diff";
 import { buildTools, runStudioTurn } from "@/lib/studio/agent";
@@ -162,6 +164,18 @@ async function takeLease(job: CloudJob, now: number): Promise<string | null> {
 /** Runs one slice of a job. Safe to call twice: the lease makes sure only one slice works on a job at a time. */
 export async function runSlice(workspaceId: string, jobId: string, deps: WorkerDeps = {}): Promise<{ status: JobStatus | "missing" | "busy"; turns: number }> {
   const clock = deps.now ?? Date.now;
+  const t0 = clock();
+  const out = await runSliceInner(workspaceId, jobId, deps);
+  // Space Studio jobs: the slice's wall time counts toward the plan's monthly cloud minutes (src/lib/space-studio/cloud.ts).
+  if (out.status !== "missing" && out.status !== "busy" && (out.turns > 0 || out.status === "running")) {
+    const j = await jobs().get(workspaceId, jobId);
+    if (j?.product === SPACE_PRODUCT) await addCloudMinutes(workspaceId, (clock() - t0) / 60_000, clock()).catch(() => undefined);
+  }
+  return out;
+}
+
+async function runSliceInner(workspaceId: string, jobId: string, deps: WorkerDeps): Promise<{ status: JobStatus | "missing" | "busy"; turns: number }> {
+  const clock = deps.now ?? Date.now;
   const sliceStart = clock();
   let job = await jobs().get(workspaceId, jobId);
   if (!job) return { status: "missing", turns: 0 };
@@ -172,7 +186,13 @@ export async function runSlice(workspaceId: string, jobId: string, deps: WorkerD
   const map = await loadFiles(job);
 
   const ws: Workspace | null = await workspaceById(workspaceId);
-  if (!ws || !STUDIO_PLANS.has(ws.plan)) {
+  if (job.product === SPACE_PRODUCT) {
+    // Space Studio jobs are gated by the Space Studio plan, checked again every time a slice picks the job up.
+    if (!ws || !(await spaceJobMayRun(workspaceId, jobId, sliceStart))) {
+      await finishJob(job, map, "stopped", SPACE_CLOUD_ENDED, undefined, clock());
+      return { status: "stopped", turns: 0 };
+    }
+  } else if (!ws || !STUDIO_PLANS.has(ws.plan)) {
     await finishJob(job, map, "blocked", "Roblox Cloud needs Keplar Lite, Plus or Pro, and this account's plan does not include it now.", undefined, clock());
     return { status: "blocked", turns: 0 };
   }

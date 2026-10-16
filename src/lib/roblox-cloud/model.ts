@@ -70,6 +70,8 @@ export type CloudJob = {
   status: JobStatus;
   /** Why it stopped (budget, time, finished, stalled, cancelled, out of credits, model unavailable…), in plain words. */
   stopReason?: string;
+  /** Set when the job was created from Space Studio: its Space Studio plan (src/lib/space-studio/cloud.ts) gates it instead of the Keplar plan. */
+  product?: "space-studio";
   /** The person asked it to pause or stop: honored at the next turn boundary. */
   control?: "pause" | "stop";
   tree: string;
