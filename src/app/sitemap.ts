@@ -8,6 +8,7 @@ import { kbPaths } from "@/lib/kb/paths";
 import { SHOWCASE } from "@/lib/create/showcase/data";
 import { comparePages, hub as compareHub } from "@/lib/compare";
 import { localizedSitemapAlternates, localizedSitemapEntries } from "@/lib/i18n/sitemap";
+import { toolPaths } from "@/lib/seo/tools";
 
 /**
  * Canonical, indexable, 200 public URLs only. /app, /api, auth, checkout and account are excluded (private or transactional);
@@ -49,6 +50,7 @@ export const sitemapPaths: string[] = [
   ...kbPaths().map((p) => p.path), // docs, blog, glossary, prompts, use cases, approved comparisons
   compareHub.path,
   ...comparePages.map((p) => p.path),
+  ...toolPaths(),
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
