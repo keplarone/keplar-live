@@ -1,5 +1,5 @@
 /**
- * Space UI effects bus (the web twin of Space Studio's lib/fx.ts). Components fire; the cloud sky (components/ui/space/CloudSky)
+ * Space UI effects bus (the web twin of Space Studio's lib/fx.ts). Components fire; the weather sky (components/ui/space/WeatherSky)
  * listens. Nothing happens when nobody listens, so firing is always safe (server-side it is a no-op).
  *
  *  - warp(strength, seconds): a gust; the clouds' drift speeds up and eases back. Small ones (0.3) for navigation, 1 for a sent

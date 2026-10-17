@@ -8,7 +8,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   min-height: 100svh;
-  background: transparent; /* the shared cloud sky (CloudSky) shows through; the form card stays a solid raised surface */
+  background: transparent; /* the shared weather sky (WeatherSky) shows through; the form card stays a solid raised surface */
   color: var(--c-ink);
 }
 .formSide {

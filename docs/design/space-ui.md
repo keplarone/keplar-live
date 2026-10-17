@@ -1,6 +1,6 @@
 # Space UI: the Space Studio design language on keplar.one
 
-Status: Phase A (foundation) landed on `space-ui`, then the background became the cloud sky (section 2.1). Every page already picks up the new tokens, font, focus, buttons and chrome;
+Status: Phase A (foundation) landed on `space-ui`, then the background became the weather sky (section 2.1). Every page already picks up the new tokens, font, focus, buttons and chrome;
 Phases B-E restyle each area on top of it (split at the end of this file).
 
 The owner asked for "the Space Studio buttons and all of the animation styles in keplar live" and for "every single UI part of
@@ -15,9 +15,9 @@ product promise, routes and the accessibility tree stay as they are. Restyle mar
 
 ## 1. The language in eight rules
 
-1. **A sky, not a void.** Light is the default for everyone without a saved choice: a bright day sky with realistic clouds drifting
-   behind every marketing page (`CloudSky`, section 2.1), frosted white cards, ink primary. Dark is the same system at dusk: a
-   deep blue sky with small stars and faint clouds; app surfaces stay `#0a0a0c` / `#141417` / `#1e1e23` on a `#000` canvas.
+1. **A sky, not a void.** Light is the default for everyone without a saved choice: a realistic day sky showing the visitor's
+   current weather behind every marketing page (`WeatherSky`, section 2.1), frosted white cards, ink primary. Dark is the same
+   weather as a dimmed bluish almost-night sky with small stars; app surfaces stay `#0a0a0c` / `#141417` / `#1e1e23` on a `#000` canvas.
    Auto follows the OS. The theme switch is unchanged (`src/lib/theme.ts`).
 2. **No outlines.** Surfaces separate by depth and light: a fill step, a 1px inner top highlight
    (`inset 0 1px 0 rgb(255 255 255 / .06)`), a soft drop, a violet glow. Never a 1px border around a card, button or field.
@@ -34,7 +34,7 @@ product promise, routes and the accessibility tree stay as they are. Restyle mar
 7. **Focus is the violet glow** (`--space-focus-glow`) on keyboard focus only (`:focus-visible`). No browser outline, never
    invisible; a mouse press draws nothing (e2e/no-focus-box). Windows High Contrast keeps the system outline (mobile.css).
 8. **Calm on phones, still for reduced motion.** At 640px and narrower: no entrance animation, no blur filters, no infinite
-   gradient drift, still clouds. `prefers-reduced-motion`: every animation lands on its final frame.
+   gradient drift, a still sky. `prefers-reduced-motion`: every animation lands on its final frame.
 
 ---
 
@@ -50,41 +50,57 @@ product promise, routes and the accessibility tree stay as they are. Restyle mar
 | Phone / lite detection | `src/lib/fx/lite.ts` (`isPhone`, `liteFx`) |
 | Font | `src/app/layout.tsx` (`Montserrat` via `next/font/google`), `src/lib/i18n/fonts.ts` (localized pages) |
 | Motion-blur SVG filters | `<SpaceMotionFilters />`, rendered once by the root layout |
-| The sky | `<CloudSky />` (CSS + pre-rendered cloud tiles in `public/sky`), mounted by `src/components/sky/SkyBackdrop.tsx` on every marketing page (auth pages included) and the 404; styles in `space.css` ("the sky"); tiles from `scripts/sky/render-clouds.py` |
+| The sky | `<WeatherSky />` (pre-rendered stills in `public/sky` + the live WebGL2 renderer in `src/lib/sky/`), mounted by `src/components/sky/SkyBackdrop.tsx` on every marketing page (auth pages included) and the 404; styles in `space.css` ("the sky"); weather from `GET /api/sky`; stills from `scripts/sky/render-stills.mts` |
 | The kit (Studio design system used across /app) | `src/components/kit/*` reads `--ks-*`; `src/styles/kit.css` maps them onto Space |
 | Page CTAs (`Button` / `ButtonLink`) | `src/components/ui/Button.tsx` (restyled in place: 3D) |
 
-### 2.1 The background: the cloud sky
+### 2.1 The background: the weather sky
 
-One sky system for the whole site (it replaced the home page's auras, liquid layer and dot ribbons and Phase A's star field).
+One sky system for the whole site (it replaced the home page's auras, liquid layer and dot ribbons, Phase A's star field and the
+first CSS cloud tiles). **The sky matches the visitor's current local weather**; time of day never matters, the theme picks the
+look: Light = the daytime version of the weather, Dark = a dimmed, bluish almost-night version, moonlit, with small scattered
+stars through the gaps (none under overcast, rain, snow or fog).
 
-| | Light (default) | Dark |
-|---|---|---|
-| Sky | gradient `#4f93de` (zenith) to `#e9f2fb` (horizon) + a warm sun glow top right | late dusk: `#0a1230` to `#22315b` + a faint afterglow low left |
-| Clouds | three parallax layers of sunlit cumulus: far (small, flat, hazy, 420 s per tile), mid (250 s), near (big, crisp, 160 s) | far + mid only, dim near-silhouettes at 55% opacity |
-| Extra | | small scattered stars (`stars.webp`), a sparse second set twinkles (opacity only) |
+| Variant | Look |
+|---|---|
+| `clear` | open sky, Rayleigh-like gradient and horizon haze, a few small fair-weather cumulus far off |
+| `partly-cloudy` (default / fallback) | sunlit cumulus with silver edges and blue-grey bases, clear behind the headline, denser toward the horizon and the edges |
+| `cloudy` | bigger, closer cumulus, greyer sky |
+| `overcast` | flat grey stratus, low contrast, soft thickness variation |
+| `fog` | haze, low visibility, washed contrast |
+| `drizzle` / `rain` | low grey cloud deck; fine short streaks / longer streaks and darker cloud |
+| `thunderstorm` | dark heavy cloud, rain, a rare soft lightning glow inside the clouds |
+| `snow` | pale sky, soft falling flakes |
 
-- **Realism comes from offline rendering**, not runtime work. `scripts/sky/render-clouds.py` (numpy + Pillow, deterministic)
-  builds each cumulus from billows (a dome of spheres over a flat base, crowned with small puffs), warps the outline with
-  band-limited noise, then lights the resulting height field: wrapped diffuse from the sun, ray-marched self-shadowing (sunlit
-  tops, blue-grey bases), crevice occlusion, translucent rims and aerial perspective for the far layer. Output: seamless WebP
-  masks in `public/sky` (~155 KB for the day sky on desktop, ~64 KB `-sm` on phones). Re-run it to change the clouds (it
-  prints the `--c0` / `--c1` colours to paste into space.css); never fetch anything at runtime.
-- **Clouds are CSS masks, not background images**, so they are never the LCP element (a background image is an LCP candidate;
-  a mask is not; the first build with background images made a cloud layer the LCP on `/`). Each layer paints its shadow
-  colour `--c0` through the cloud's alpha mask (`-a.webp`) and its lit colour `--c1` through a light mask (`-t.webp`, half
-  size) on `::before`; composited, that is the shaded cloud (the renderer fits each layer to that ramp, ~2/255 error). Stars
-  are a mask too.
-- **First frame is pure CSS** (gradient + clouds at rest): no flash, nothing waits on JavaScript, never the LCP element.
-- **Motion is compositor-only**: each layer is `translate3d` by exactly one tile per cycle (seamless). `CloudSky` switches it on
-  when the page is idle (`data-drift`), pauses it while the tab is hidden (`data-paused`), and `spaceFx.warp()` sends a gust
-  (the drift speeds up and eases back, via the Web Animations playback rate).
-- **Phones (640px and narrower) and reduced motion**: clouds are visible but still; phones load the `-sm` tiles.
-- **Readability**: on pages that carry the sky, `--c-ink-2` / `--c-ink-3` step darker in Light and lighter at dusk (space.css,
-  `body:has(.sp-cloudsky)`), so quiet text over the sky keeps AA. Put dense content on `--space-glass` cards (frosted white in
-  Light, deep translucent in Dark). /app, Business and admin have no sky behind them (solid panels).
+- **Renderer** (`src/lib/sky/renderer.ts`, GLSL in `src/lib/sky/shaders.ts`, looks in `src/lib/sky/variants.ts`): WebGL2. Bakes
+  tileable 3D noise once (Perlin-Worley shape volume 128^3 + Worley detail volume 32^3, a few slices per frame), then raymarches a
+  cloud shell over a curved Earth: weather-map coverage, a height profile per cloud type (cumulus to stratus), detail erosion,
+  Beer-Lambert extinction, dual-lobe Henyey-Greenstein phase with multiple-scattering octaves (silver lining toward the sun),
+  powder term, height-graded ambient light, a 6-step light march toward the sun, aerial perspective. 40 view steps at a third
+  of the CSS resolution with interleaved-gradient-noise jitter and frame history, upscaled; a full-resolution composite adds the
+  stars, the precipitation particle layer (procedural streaks / flakes on the GPU) and the lightning glow.
+- **First paint = a still of that same renderer** (`public/sky/<variant>-<day|night>[-sm].{avif,webp}`, 1600x1000 and an
+  800x1000 portrait crop for phones, a few KB each), rendered offline in headless Chromium with SwiftShader by
+  `node --import tsx scripts/sky/render-stills.mts` (re-run it after changing the shaders or a look). CSS picks the still for the
+  current variant (`.sp-sky[data-sky]`) and theme, so only one image is fetched; the gradient under it matches its sky.
+- **Weather lookup**: `GET /api/sky` (src/lib/sky/weather.ts) reads Vercel's `x-vercel-ip-latitude/-longitude`, rounds them to
+  one decimal (~11 km), asks Open-Meteo for the current `weather_code`, `cloud_cover`, `wind_speed_10m` (3 s timeout, cached per
+  cell for 15 minutes: Next fetch cache + an in-memory LRU), maps them to a variant (wind speed nudges the drift) and answers
+  `{ sky, wind }` with `Cache-Control: private, max-age=900`. No permission prompt, no client geolocation, nothing stored or logged;
+  the privacy policy says so. No headers, timeout, error or local dev: `partly-cloudy`. The pages stay static: WeatherSky fetches
+  it after hydration (no cookies) and cross-fades to the right still; a tab remembers its answer for 15 minutes (sessionStorage,
+  restored before paint). Testing: `?sky=<variant>` on any page, honoured only outside production or with `KEPLAR_DEV_TOOLS=1`.
+- **Live**: desktop only, after idle, the renderer is imported on demand and cross-fades over the still (same camera, so the
+  fade is near invisible); up to 30 fps, paused while the tab is hidden or the sky is off screen; stops for good (back to the
+  still) on a software GPU (SwiftShader, llvmpipe), `failIfMajorPerformanceCaveat`, a slow GPU (median frame gap over 60 ms),
+  Save-Data or a battery under 20% and discharging. `spaceFx.warp()` sends a gust. Lightning: at most two soft pulses per strike,
+  then 6-15 s of calm (WCAG 2.3.1).
+- **Phones (640px and narrower) and reduced motion**: the still only; the renderer is never downloaded.
+- **Readability**: on pages that carry the sky, `--c-ink-2` / `--c-ink-3` step darker in Light (darker again under rain, drizzle
+  and storm skies) and lighter in Dark (space.css, `body:has(.sp-sky)`). Put dense content on `--space-glass` cards (frosted
+  white in Light, deep translucent in Dark). /app, Business and admin have no sky behind them (solid panels).
 - Don't add other backdrops (no star fields, auras or canvases behind pages); a page that needs a different mood adjusts the
-  sky's tokens, not a new layer.
+  sky's look (`variants.ts`), not a new layer.
 
 ---
 
@@ -167,7 +183,7 @@ All are typed, keyboard operable, reduced-motion aware, and render the `.sp-*` c
 | `Skeleton`, `LoadingBlock` | `width`, `height`, `lines` | pills that breathe |
 | `RollingNumber`, `useGlide` | `value`, `format`, `durationMs` | odometer with vertical motion blur; SR gets the plain number |
 | `RotatingHeadline` | `lines: [verb, rest][]`, `label`, `as`, `cycleMs`, `warp` | Space Studio's cycling headline: gradient verb, glyphs rise out of a motion blur; line 1 paints immediately (LCP); still on phones |
-| `CloudSky` (alias `SpaceSky`) | `className` | the cloud sky (section 2.1); already on every marketing page, the auth pages and the 404 |
+| `WeatherSky` | `className` | the weather sky (section 2.1); already on every marketing page, the auth pages and the 404 |
 | `SpaceMotionFilters` | | already in the root layout |
 | `spaceFx` | `warp(strength, seconds)`, `prompt()`, `aura()`, `onWarp`, `onAura` | fire a warp on big actions (send, publish, arrive) |
 
@@ -236,20 +252,21 @@ no animation that holds content invisible on phones, no new font families.
 
 ## 7. Phase A decisions (and why)
 
-- **Light is the default theme again (cloud sky update).** Phase A made Dark the default over a star field; the owner then asked
+- **Light is the default theme again (sky update).** Phase A made Dark the default over a star field; the owner then asked
   for "a sky with clouds", "moving clouds", realistic. `DEFAULT_THEME_PREF = "light"`; the server renders `data-theme="light"`.
   The storage key stays `keplar-theme-v2`, so anyone who explicitly chose Dark (or Auto) keeps it.
-- **The background is the cloud sky** (section 2.1): pre-rendered, realistic cumulus drifting with CSS transforms, a bright day
-  in Light and a dim dusk with stars in Dark. Chosen over a WebGL shader because it costs no JavaScript or GPU shader time, paints
-  on the first frame, and looks the same on every device; the realism is paid for once, offline.
+- **The background is the weather sky** (section 2.1). The first CSS cloud tiles were judged "pretty unrealistic" (grey clay-like
+  blobs, too dense behind the headline); they were replaced by a real volumetric renderer that shows the visitor's own weather.
+  The cost stays off the critical path: a few-KB still of the same renderer paints first, the live canvas only runs on desktop
+  after idle and gives up on weak GPUs.
 - **Montserrat replaces Google Sans** sitewide (Space Studio's face). Business keeps Geist (its own brand, Phase D decides),
   OG/share images still render with the bundled Google Sans files (`src/lib/og.tsx`, open item).
 - **Light accent moved from teal to violet** (`#7d3bc4`) so focus, selection and links match Space in both themes. The light
   semantic colours (reasoning teal etc.) are unchanged: they carry meaning in answers.
 - **Focus**: Space Studio's glow replaces the old brightness+underline+bar cue on controls; inline links keep an underline (a
   glow around wrapped text would read as a box).
-- **No star field anywhere but the Space site.** Phase A's 2D-canvas star field (`SpaceSky`) was removed with the cloud sky
-  (`SpaceSky` is now an alias of `CloudSky`). The Space site (`/space-studio`, space.keplar.one) keeps its own three.js journey.
+- **No star field anywhere but the Space site.** Phase A's 2D-canvas star field (`SpaceSky`) was removed; the only stars left
+  are the few the weather sky shows through clear gaps in Dark. The Space site (`/space-studio`, space.keplar.one) keeps its own three.js journey.
 - **No sky behind dense app UI** (/app, Business workspace, admin): the app sits on its canvas with solid panels.
 - **Kit**: restyled through tokens (`--ks-*-face`, `--ks-*-depth`, `--ks-seg-*`, `--ks-switch-*`, `--ks-control-radius`), so the
   ~115 files that import `@/components/kit` changed without edits. The kit CSS files themselves still contain no literal
@@ -326,6 +343,6 @@ header) is done in Phase A; agents should not restyle it again, only adjust wher
 ## 9. Tests that encode the look
 
 Phase A updated the tests that pinned the old visual design (Google Sans, teal accent, 14px control radius, flat kit
-buttons...). They now pin the Space decisions above. The cloud-sky update moved the default back to Light in
+buttons...). They now pin the Space decisions above. The sky update moved the default back to Light in
 `tests/theme.test.ts`, `tests/glass-typing.test.ts`, `tests/light-aura.test.ts` and `tests/docs-host.test.ts`. If a later phase changes one of these decisions, update the
 same tests and say why.

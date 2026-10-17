@@ -1,11 +1,11 @@
-import { CloudSky } from "@/components/ui/space/CloudSky";
+import { WeatherSky } from "@/components/ui/space/WeatherSky";
 
 /**
- * The backdrop behind every marketing page (and the 404): the site's one sky, CloudSky (src/components/ui/space/CloudSky.tsx).
- * Light: a bright day with realistic clouds drifting in three parallax layers. Dark: late dusk, a deep blue with small stars and
- * faint clouds. Static CSS on the first paint; drift starts when the page is idle; still on phones and under reduced motion.
- * (It replaced the light theme's auras, liquid layer and dot ribbons and the dark theme's star field.)
+ * The backdrop behind every marketing page (auth pages included) and the 404: the site's one sky, WeatherSky
+ * (src/components/ui/space/WeatherSky.tsx), which shows the visitor's current local weather as a realistic sky (Light: by day,
+ * Dark: a dimmed bluish almost-night with small stars). A pre-rendered still paints first; desktop cross-fades to the live
+ * volumetric renderer after idle; phones and reduced motion keep the still.
  */
 export function SkyBackdrop() {
-  return <CloudSky />;
+  return <WeatherSky />;
 }

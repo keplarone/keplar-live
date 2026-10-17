@@ -1,6 +1,6 @@
 /*
  * The home (canvas design "Landing", Oct 2026): floating white cards and two-tone light-weight headlines over the shared cloud sky
- * (CloudSky). Colours come from the theme tokens so Dark still reads.
+ * (WeatherSky). Colours come from the theme tokens so Dark still reads.
  */
 .home {
   position: relative;
@@ -9,7 +9,7 @@
   overflow-x: clip;
 }
 
-/* ---- backdrop: the shared sky (CloudSky, src/styles/space.css); nothing home-specific left here ---- */
+/* ---- backdrop: the shared weather sky (WeatherSky, src/styles/space.css); nothing home-specific left here ---- */
 
 /* ---- hero ---- */
 .hero {

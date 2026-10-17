@@ -76,7 +76,7 @@ No hex or rgb literals in component CSS. A colour that is not a token is a new t
 
 ## What is gone (do not reintroduce)
 
-- **Backdrops:** `SkyBackdrop` (now the shared cloud sky, `CloudSky`; see docs/design/space-ui.md).
+- **Backdrops:** `SkyBackdrop` (now the shared weather sky, `WeatherSky`; see docs/design/space-ui.md).
 - **Glass:** glass surfaces on content (`.lg`, `--lg-fill` used as a background outside the app).
 - **Legacy button effects:** `lit.css` proximity light, `Magnetic`, `ButtonFx`, and the swell/squash transforms.
 - **Global rewrites:** the class-name button rule in `redesign.css` (anything containing btn/chip/pill/cta got a drop shadow)
