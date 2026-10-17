@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+  <!-- Original procedural clouds for the static sky. Not a stock photograph. -->
+  <defs>
+    <filter id="c" x="-25%" y="-25%" width="150%" height="150%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.007 0.012" numOctaves="5" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="90" xChannelSelector="R" yChannelSelector="G"/>
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
+    <linearGradient id="lit" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.55" stop-color="#f4f7fb"/>
+      <stop offset="1" stop-color="#b4c0ce"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#c)" opacity="0.95">
+    <ellipse cx="150" cy="640" rx="320" ry="150" fill="url(#lit)"/>
+    <ellipse cx="40" cy="760" rx="240" ry="110" fill="#ffffff" opacity="0.75"/>
+    <ellipse cx="1320" cy="610" rx="340" ry="160" fill="url(#lit)"/>
+    <ellipse cx="1410" cy="760" rx="250" ry="120" fill="#ffffff" opacity="0.7"/>
+    <ellipse cx="220" cy="500" rx="180" ry="70" fill="#ffffff" opacity="0.45"/>
+    <ellipse cx="1240" cy="470" rx="190" ry="64" fill="#ffffff" opacity="0.4"/>
+  </g>
+</svg>

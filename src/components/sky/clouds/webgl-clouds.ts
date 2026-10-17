@@ -1,17 +1,16 @@
 /**
- * WebGL2 cloud fallbacks for the landing sky.
+ * WebGL2 landing sky.
  *
- * Density shapes and the mesh-cluster / billboard split follow procedural-clouds-threejs
- * (Teaching Three.js series), MIT License. Silver linings, god rays, bloom and additive
- * glow are not used. Each puff is shaded with a Beer-Lambert absorption proxy and a wrap
- * diffuse term so the body self-shadows and the rim stays dark.
+ * Clouds are a short vertical ray march through FBM density (domain-warped, so the edge is
+ * fractal rather than a ball). A few steps toward the light give sunlit tops and darker bases.
+ * The march is original; Beer-Lambert absorption follows the same lighting idea as
+ * procedural-clouds-threejs (Teaching Three.js series), MIT License. No sphere primitives,
+ * no bloom, no halo. The sun and moon are hard discs in pixel space.
  */
 import {
-  CanvasTexture,
   DoubleSide,
   InstancedBufferAttribute,
   InstancedMesh,
-  LinearFilter,
   Mesh,
   NormalBlending,
   Object3D,
@@ -19,7 +18,6 @@ import {
   PlaneGeometry,
   Scene,
   ShaderMaterial,
-  SphereGeometry,
   Vector2,
   Vector3,
   WebGLRenderer,
@@ -65,24 +63,131 @@ uniform vec3 uZenith;
 uniform vec3 uHorizon;
 uniform vec3 uHaze;
 uniform vec3 uBody;
+uniform vec3 uLit;
+uniform vec3 uShadow;
+uniform vec2 uRes;
 uniform float uHazeAmt;
 uniform float uFlash;
 uniform float uAltitude;
 uniform float uJourney;
 uniform float uGround;
+uniform float uTime;
+uniform float uCover;
+uniform float uDark;
 varying vec2 vUv;
+
+float hash(vec2 p) {
+  p = fract(p * vec2(123.34, 345.45));
+  p += dot(p, p + 34.345);
+  return fract(p.x * p.y);
+}
+float noise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  float a = hash(i);
+  float b = hash(i + vec2(1.0, 0.0));
+  float c = hash(i + vec2(0.0, 1.0));
+  float d = hash(i + vec2(1.0, 1.0));
+  return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+float fbm(vec2 p) {
+  float v = 0.0;
+  float a = 0.5;
+  for (int i = 0; i < 4; i++) {
+    v += a * noise(p);
+    p = p * 2.02 + vec2(1.7, 9.2);
+    a *= 0.5;
+  }
+  return v;
+}
+/* Loose window only. The silhouette is the warped noise, not the ellipse. */
+float bank(vec2 p, vec2 c, vec2 r, float n) {
+  vec2 q = (p - c) / r;
+  float edge = 0.55 + (n - 0.5) * 1.45;
+  return smoothstep(edge + 0.5, edge - 0.55, dot(q, q));
+}
+float density(vec3 p, float lite) {
+  float drift = uTime * 0.012 * (0.55 + p.z * 0.28);
+  vec2 xz = p.xz + vec2(drift, drift * 0.12);
+  vec2 warp = vec2(fbm(xz * 0.85 + vec2(0.0, 2.0)), fbm(xz * 0.85 + vec2(4.2, 1.1)));
+  vec2 q = xz + warp * (lite > 0.5 ? 0.35 : 0.95);
+  float base = fbm(q * 0.72);
+  float detail = lite > 0.5 ? 0.0 : fbm(q * 2.15 + vec2(3.0, 7.0));
+  float n = base * 0.68 + detail * 0.32;
+  float edgeN = fbm(xz * 0.62 + vec2(8.0, 1.4));
+  float yh = clamp((p.y - 0.12) / 1.15, 0.0, 1.0);
+  float profile = smoothstep(0.0, 0.18, yh) * smoothstep(1.0, 0.38, yh);
+  float banks = 0.0;
+  banks = max(banks, bank(xz, vec2(-2.15, 2.55), vec2(1.85, 1.05), edgeN));
+  banks = max(banks, bank(xz, vec2(2.25, 2.35), vec2(1.9, 1.0), edgeN + 0.17));
+  banks = max(banks, bank(xz, vec2(-2.7, 4.15), vec2(1.7, 0.85), edgeN + 0.31));
+  banks = max(banks, bank(xz, vec2(2.85, 4.05), vec2(1.65, 0.8), edgeN + 0.08));
+  float extra = smoothstep(0.1, 0.48, uCover);
+  banks = max(banks, bank(xz, vec2(-1.2, 3.3), vec2(1.35, 0.7), edgeN) * extra);
+  banks = max(banks, bank(xz, vec2(1.35, 3.15), vec2(1.3, 0.65), edgeN + 0.2) * extra);
+  float mid = smoothstep(1.45, 0.28, abs(p.x)) * smoothstep(0.7, 1.7, p.z) * smoothstep(3.5, 2.3, p.z);
+  banks *= 1.0 - mid * 0.96;
+  banks *= smoothstep(0.15, 1.05, p.z);
+  float thresh = mix(0.5, 0.38, uCover);
+  return smoothstep(thresh, thresh + 0.3, n) * profile * banks;
+}
 void main() {
   float h = smoothstep(0.0, 0.85, vUv.y);
   vec3 sky = mix(uHorizon, uZenith, h);
   sky = mix(sky, uHaze, clamp(uHazeAmt, 0.0, 0.72));
   sky = mix(sky, vec3(0.78), clamp(uFlash, 0.0, 0.08));
-  // Sun or moon: a small hard disc. A soft edge is a glow and it blows out the headline.
-  vec2 p = vUv - vec2(0.86, 0.9);
-  float d = length(p * vec2(1.15, 1.35));
-  float disc = smoothstep(0.016, 0.011, d);
-  float vis = uJourney * (1.0 - smoothstep(0.02, 0.42, uAltitude));
-  sky = mix(sky, uBody, disc * vis);
-  // The meadow only appears at the bottom of the landing descent.
+
+  vec3 ro = vec3((vUv.x - 0.5) * 6.2, 0.12, (0.92 - vUv.y) * 5.4);
+  ro.z += uAltitude * 1.6;
+  vec3 rd = vec3(0.0, 1.0, 0.0);
+  float steps = 10.0;
+  float dt = 0.11;
+  float jitter = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
+  float t = jitter * dt;
+  float transmittance = 1.0;
+  vec3 col = vec3(0.0);
+  vec3 sun = normalize(vec3(-0.45, 0.85, 0.18));
+  for (int i = 0; i < 10; i++) {
+    if (transmittance < 0.04) break;
+    vec3 p = ro + rd * t;
+    float den = density(p, 0.0);
+    if (den > 0.012) {
+      float lightAcc = 0.0;
+      vec3 lp = p;
+      for (int j = 0; j < 3; j++) {
+        lp += sun * 0.22;
+        lightAcc += density(lp, 1.0);
+      }
+      float beer = exp(-lightAcc * 1.55);
+      float heightLit = smoothstep(0.15, 0.9, clamp((p.y - 0.12) / 1.15, 0.0, 1.0));
+      float shade = clamp(beer * 0.72 + heightLit * 0.38, 0.0, 1.0);
+      float absorb = den * mix(1.35, 0.85, uDark) * dt * 8.0;
+      float contrib = (1.0 - exp(-absorb)) * mix(0.55, 1.0, shade);
+      col += transmittance * contrib * mix(uShadow, uLit, shade);
+      transmittance *= exp(-absorb);
+    }
+    t += dt;
+  }
+  col += sky * transmittance;
+  float hx = abs(vUv.x - 0.5);
+  float hero = smoothstep(0.36, 0.12, hx) * smoothstep(0.4, 0.58, vUv.y) * smoothstep(0.98, 0.74, vUv.y);
+  float nav = smoothstep(0.9, 0.97, vUv.y);
+  col = mix(col, sky, hero * 0.92 * (1.0 - nav));
+
+  /* 20% from the right, 18% from the top. Length is in pixels, so the disc stays round. */
+  vec2 center = vec2(0.80, 0.82);
+  vec2 px = (vUv - center) * uRes;
+  float rad = min(uRes.x, uRes.y) * 0.016;
+  float disc = 1.0 - smoothstep(rad - 0.6, rad + 0.45, length(px));
+  float crater = 0.0;
+  if (uDark > 0.5) {
+    crater = smoothstep(rad * 0.22, rad * 0.05, length(px - vec2(rad * 0.28, rad * 0.12))) * 0.16;
+    crater += smoothstep(rad * 0.16, rad * 0.04, length(px - vec2(-rad * 0.22, -rad * 0.18))) * 0.1;
+  }
+  float vis = 1.0 - smoothstep(0.02, 0.42, uAltitude);
+  col = mix(col, uBody * (1.0 - crater), disc * vis);
+
   float band = uJourney * smoothstep(0.62, 1.0, uAltitude) * smoothstep(0.48, 0.02, vUv.y);
   vec3 grass = vec3(0.33, 0.5, 0.27);
   if (uGround > 2.5) grass = vec3(0.9, 0.93, 0.95);
@@ -90,97 +195,8 @@ void main() {
   else if (uGround > 0.5) grass = vec3(0.07, 0.11, 0.08);
   float sheen = 0.0;
   if (uGround > 1.5 && uGround < 2.5) sheen = smoothstep(0.16, 0.26, vUv.y) * smoothstep(0.34, 0.24, vUv.y) * 0.18;
-  sky = mix(sky, grass + vec3(sheen), band);
-  gl_FragColor = vec4(sky, 1.0);
-}`;
-
-const MESH_VERT = /* glsl */ `
-attribute float aKind;
-uniform float uTime;
-varying vec3 vNormal;
-varying float vKind;
-void main() {
-  vKind = aKind;
-  mat4 m = instanceMatrix;
-  float drift = uTime * 0.035;
-  m[3][0] += drift;
-  m[3][0] = mod(m[3][0] + 8.0, 16.0) - 8.0;
-  vec4 world = modelMatrix * m * vec4(position, 1.0);
-  vNormal = normalize(mat3(modelMatrix * m) * normal);
-  gl_Position = projectionMatrix * viewMatrix * world;
-}`;
-
-const MESH_FRAG = /* glsl */ `
-varying vec3 vNormal;
-varying float vKind;
-uniform vec3 uLit;
-uniform vec3 uShadow;
-uniform vec2 uRes;
-uniform float uClearing;
-void main() {
-  vec3 n = normalize(vNormal);
-  vec3 light = normalize(vec3(0.42, 0.84, 0.32));
-  float ndl = dot(n, light);
-  float wrap = clamp(ndl * 0.45 + 0.55, 0.0, 1.0);
-  // Back faces and the core absorb more. No bright rim.
-  float optical = mix(0.45, 2.2, 1.0 - wrap);
-  if (vKind > 1.5) optical *= 0.32;
-  float beer = exp(-optical);
-  // Tops stay lit. The underside picks up the grey so a cumulus reads as a volume, not a flat blob.
-  float shade = mix(0.42, 1.0, smoothstep(0.12, 0.9, beer));
-  vec3 col = mix(uShadow, uLit, shade);
-  float facing = clamp(dot(n, normalize(vec3(0.15, 0.25, 1.0))), 0.0, 1.0);
-  float alpha = 0.96 * smoothstep(0.0, 0.1, facing);
-  vec2 uvh = gl_FragCoord.xy / max(uRes, vec2(1.0));
-  float hero = smoothstep(0.36, 0.12, abs(uvh.x - 0.5)) * smoothstep(0.42, 0.58, uvh.y) * smoothstep(0.98, 0.74, uvh.y);
-  // The top bar keeps its clouds. The clearing is for the headline, not the glass.
-  float nav = smoothstep(0.86, 0.94, uvh.y);
-  alpha *= 1.0 - hero * uClearing * (1.0 - nav);
-  if (alpha < 0.02) discard;
-  gl_FragColor = vec4(col, alpha);
-}`;
-
-const BILL_VERT = /* glsl */ `
-attribute float aKind;
-uniform float uTime;
-varying vec2 vUv;
-varying float vKind;
-void main() {
-  vUv = uv;
-  vKind = aKind;
-  vec3 center = instanceMatrix[3].xyz;
-  center.x += uTime * 0.028;
-  center.x = mod(center.x + 8.0, 16.0) - 8.0;
-  vec2 scale = vec2(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz));
-  vec3 right = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
-  vec3 up = vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]);
-  vec3 p = center + right * (position.x * scale.x) + up * (position.y * scale.y);
-  gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(p, 1.0);
-}`;
-
-const BILL_FRAG = /* glsl */ `
-uniform sampler2D uMap;
-uniform vec3 uLit;
-uniform vec3 uShadow;
-uniform vec2 uRes;
-uniform float uClearing;
-varying vec2 vUv;
-varying float vKind;
-void main() {
-  float dens = texture2D(uMap, vUv).a;
-  if (dens < 0.03) discard;
-  float up = smoothstep(0.15, 0.8, vUv.y);
-  float optical = dens * (vKind > 1.5 ? 0.4 : 1.8) * mix(1.15, 0.55, up);
-  float beer = exp(-optical);
-  float shade = mix(0.42, 1.0, smoothstep(0.12, 0.9, beer));
-  vec3 col = mix(uShadow, uLit, shade);
-  float alpha = smoothstep(0.12, 0.34, dens) * 0.96;
-  vec2 uvh = gl_FragCoord.xy / max(uRes, vec2(1.0));
-  float hero = smoothstep(0.36, 0.12, abs(uvh.x - 0.5)) * smoothstep(0.42, 0.58, uvh.y) * smoothstep(0.98, 0.74, uvh.y);
-  float nav = smoothstep(0.86, 0.94, uvh.y);
-  alpha *= 1.0 - hero * uClearing * (1.0 - nav);
-  if (alpha < 0.02) discard;
-  gl_FragColor = vec4(col, alpha);
+  col = mix(col, grass + vec3(sheen), band);
+  gl_FragColor = vec4(col, 1.0);
 }`;
 
 const PRECIP_VERT = /* glsl */ `
@@ -251,131 +267,10 @@ void main() {
   gl_FragColor = vec4(uColor, a);
 }`;
 
-type Puff = { x: number; y: number; z: number; sx: number; sy: number; sz: number; kind: number };
-
-/** One cumulus: a wide base and a few domes, so the silhouette is fluffy rather than one ball. */
-function cumulus(out: Puff[], cx: number, cy: number, cz: number, scale: number, kind: number) {
-  const lobes: [number, number, number, number, number, number][] = [
-    [0, -0.2, 0.02, 0.92, 0.36, 0.68],
-    [-0.7, 0.16, 0.08, 0.56, 0.5, 0.48],
-    [0.66, 0.12, 0.04, 0.5, 0.46, 0.44],
-    [0.02, 0.46, 0.14, 0.48, 0.5, 0.42],
-    [-0.18, 0.08, -0.2, 0.42, 0.38, 0.36],
-    [0.28, 0.22, -0.12, 0.36, 0.34, 0.32],
-  ];
-  for (const [ox, oy, oz, sx, sy, sz] of lobes) {
-    out.push({
-      x: cx + ox * scale,
-      y: cy + oy * scale,
-      z: cz + oz * scale,
-      sx: sx * scale,
-      sy: sy * scale,
-      sz: sz * scale,
-      kind,
-    });
-  }
-}
-
-/** Four cumulus at the sides and lower frame. Greyer weather adds four more, still off the headline. */
-function layout(mode: WebglCloudMode): Puff[] {
-  const out: Puff[] = [];
-  if (mode === "billboard") {
-    const spots = [
-      [-4.5, 0.2, -2.75, 3.4, 1.5, 0],
-      [4.75, -0.2, -3, 3.6, 1.55, 0],
-      [-6.25, 1.2, -5.5, 4.2, 1.35, 0],
-      [5.75, 1.2, -4.25, 4.0, 1.3, 0],
-      [-3.75, -0.8, -2.25, 3.2, 1.2, 1],
-      [3.75, -0.8, -2, 3.2, 1.15, 1],
-    ] as const;
-    for (const [x, y, z, sx, sy, kind] of spots) out.push({ x, y, z, sx, sy, sz: 1, kind });
-    return out;
-  }
-  cumulus(out, -4.5, 0.2, -2.75, 1.55, 0);
-  cumulus(out, 4.75, -0.2, -3, 1.65, 0);
-  cumulus(out, -6.25, 1.2, -5.5, 2.05, 0);
-  cumulus(out, 5.75, 1.2, -4.25, 1.9, 0);
-  cumulus(out, -3.75, -0.8, -2.25, 1.45, 1);
-  cumulus(out, 3.75, -0.8, -2, 1.4, 1);
-  cumulus(out, -5.75, 2.5, -5.75, 1.7, 1);
-  cumulus(out, 3.75, 3.75, -1.5, 1.35, 1);
-  return out;
-}
-
 /** sRGB 0–1. ShaderMaterial writes gl_FragColor as stored, so Color()'s linear values would crush the dark sky. */
 function srgb(hex: string): Vector3 {
   const n = Number.parseInt(hex.slice(1), 16);
   return new Vector3(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255);
-}
-
-function hash2(x: number, y: number) {
-  const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
-  return s - Math.floor(s);
-}
-
-function valueNoise(x: number, y: number) {
-  const xi = Math.floor(x);
-  const yi = Math.floor(y);
-  const xf = x - xi;
-  const yf = y - yi;
-  const u = xf * xf * (3 - 2 * xf);
-  const v = yf * yf * (3 - 2 * yf);
-  const a = hash2(xi, yi);
-  const b = hash2(xi + 1, yi);
-  const c = hash2(xi, yi + 1);
-  const d = hash2(xi + 1, yi + 1);
-  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
-}
-
-function fbm(x: number, y: number) {
-  let v = 0;
-  let a = 0.5;
-  let f = 1;
-  for (let i = 0; i < 5; i++) {
-    v += a * valueNoise(x * f, y * f);
-    f *= 2.05;
-    a *= 0.5;
-  }
-  return v;
-}
-
-/** One lumpy cloud plate: flat base, soft body, neutral grey. Alpha is optical density. */
-function cloudTexture(): CanvasTexture {
-  const size = 256;
-  const canvas = document.createElement("canvas");
-  canvas.width = canvas.height = size;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("2d");
-  const img = ctx.createImageData(size, size);
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const nx = x / size;
-      const ny = y / size;
-      const shape = fbm(nx * 3.2 + 2.0, ny * 3.2);
-      const detail = fbm(nx * 7.0, ny * 7.0 + 4.0);
-      const base = ny < 0.34 ? (ny - 0.12) / 0.22 : 1;
-      const body = shape * 0.72 + detail * 0.28 - (1 - Math.max(0, Math.min(1, base))) * 0.55;
-      const dx = nx - 0.5;
-      const dy = (ny - 0.52) * 1.15;
-      const rad = Math.sqrt(dx * dx + dy * dy);
-      const mask = rad < 0.22 ? 1 : rad > 0.5 ? 0 : 1 - (rad - 0.22) / 0.28;
-      let dens = Math.max(0, Math.min(1, (body - 0.38) / 0.28)) * mask;
-      dens *= dens * (3 - 2 * dens);
-      const i = (y * size + x) * 4;
-      const g = 214 + dens * 30;
-      img.data[i] = g;
-      img.data[i + 1] = g;
-      img.data[i + 2] = g + 1;
-      img.data[i + 3] = Math.round(dens * 255);
-    }
-  }
-  ctx.putImageData(img, 0, 0);
-  const tex = new CanvasTexture(canvas);
-  tex.generateMipmaps = false;
-  tex.minFilter = LinearFilter;
-  tex.magFilter = LinearFilter;
-  tex.needsUpdate = true;
-  return tex;
 }
 
 function mixHex(a: Vector3, b: Vector3, t: number): Vector3 {
@@ -446,11 +341,17 @@ export function createWebglClouds(
     uHorizon: { value: srgb(pal0.horizon) },
     uHaze: { value: srgb(pal0.shadow) },
     uBody: { value: srgb(pal0.body) },
+    uLit: { value: srgb(pal0.lit) },
+    uShadow: { value: srgb(pal0.shadow) },
+    uRes: { value: new Vector2(1, 1) },
     uHazeAmt: { value: 0 },
     uFlash: { value: 0 },
     uAltitude: { value: 0 },
     uJourney: { value: 0 },
     uGround: { value: 0 },
+    uTime: { value: 0 },
+    uCover: { value: 0 },
+    uDark: { value: opts.dark ? 1 : 0 },
   };
   const skyMat = new ShaderMaterial({
     vertexShader: SKY_VERT,
@@ -494,54 +395,6 @@ void main() {
   grass.renderOrder = 4;
   scene.add(grass);
 
-  const puffs = layout(opts.mode);
-  const kinds = new Float32Array(puffs.map((p) => p.kind));
-  const cloudUniforms = {
-    uTime: { value: 0 },
-    uLit: { value: srgb(pal0.lit) },
-    uShadow: { value: srgb(pal0.shadow) },
-    uRes: { value: new Vector2(1, 1) },
-    uClearing: { value: 0.55 },
-  };
-  let tex: CanvasTexture | null = null;
-  let geo: SphereGeometry | PlaneGeometry;
-  let mat: ShaderMaterial;
-  if (opts.mode === "billboard") {
-    tex = cloudTexture();
-    geo = new PlaneGeometry(1, 1);
-    mat = new ShaderMaterial({
-      vertexShader: BILL_VERT,
-      fragmentShader: BILL_FRAG,
-      uniforms: { ...cloudUniforms, uMap: { value: tex } },
-      transparent: true,
-      depthWrite: false,
-      blending: NormalBlending,
-      side: DoubleSide,
-    });
-  } else {
-    geo = new SphereGeometry(1, 18, 14);
-    mat = new ShaderMaterial({
-      vertexShader: MESH_VERT,
-      fragmentShader: MESH_FRAG,
-      uniforms: cloudUniforms,
-      transparent: true,
-      depthWrite: false,
-      blending: NormalBlending,
-    });
-  }
-  geo.setAttribute("aKind", new InstancedBufferAttribute(kinds, 1));
-  const mesh = new InstancedMesh(geo, mat, puffs.length);
-  const dummy = new Object3D();
-  puffs.forEach((p, i) => {
-    dummy.position.set(p.x, p.y, p.z);
-    dummy.scale.set(p.sx, p.sy, p.sz);
-    dummy.updateMatrix();
-    mesh.setMatrixAt(i, dummy.matrix);
-  });
-  mesh.instanceMatrix.needsUpdate = true;
-  mesh.frustumCulled = false;
-  scene.add(mesh);
-
   const precipMax = Math.max(1, Math.min(48, opts.precipMax ?? 48));
   const rain = makePrecip(precipMax, true, srgb(pal0.shadow));
   const snow = makePrecip(precipMax, false, srgb(pal0.lit));
@@ -577,19 +430,6 @@ void main() {
   let dark = opts.dark;
   let draw = opts.draw ?? fallbackProfile();
 
-  const placeClouds = () => {
-    puffs.forEach((p, i) => {
-      // Kind 0 is the handful, always drawn. Greyer weather (overcast, rain) adds the rest.
-      const show = p.kind < 0.5 || draw.gray >= 0.16;
-      const s = show ? draw.bulk : 0.0001;
-      dummy.position.set(p.x, p.y - draw.drop, p.z);
-      dummy.scale.set(p.sx * s, p.sy * s * draw.flat, p.sz * s);
-      dummy.updateMatrix();
-      mesh.setMatrixAt(i, dummy.matrix);
-    });
-    mesh.instanceMatrix.needsUpdate = true;
-  };
-
   const paintLook = () => {
     const pal = cloudPalette(dark);
     const zenith = srgb(pal.zenith);
@@ -604,11 +444,12 @@ void main() {
     skyUniforms.uHaze.value.copy(mixHex(horizon, shadow, 0.45));
     skyUniforms.uHazeAmt.value = draw.haze;
     skyUniforms.uBody.value.copy(srgb(pal.body));
-    cloudUniforms.uLit.value.copy(mixHex(lit, shadow, draw.gray * (dark ? 0.42 : 0.22)));
-    cloudUniforms.uShadow.value.copy(mixHex(shadow, zenith, draw.gray * 0.08));
-    cloudUniforms.uClearing.value = draw.clearing;
+    skyUniforms.uLit.value.copy(mixHex(lit, shadow, draw.gray * (dark ? 0.42 : 0.22)));
+    skyUniforms.uShadow.value.copy(mixHex(shadow, zenith, draw.gray * 0.08));
+    skyUniforms.uCover.value = draw.gray;
+    skyUniforms.uDark.value = dark ? 1 : 0;
     rain.uniforms.uColor.value.copy(dark ? mixHex(lit, shadow, 0.25) : srgb("#5e6d7c"));
-    snow.uniforms.uColor.value.copy(dark ? cloudUniforms.uLit.value : srgb("#f4f7fb"));
+    snow.uniforms.uColor.value.copy(dark ? skyUniforms.uLit.value : srgb("#f4f7fb"));
     birdUniforms.uInk.value.copy(srgb(dark ? "#d5dbe6" : "#2c3340"));
   };
 
@@ -618,21 +459,22 @@ void main() {
     rain.mesh.count = profile.precip === "rain" ? Math.min(n, 18) : 0;
     snow.mesh.count = profile.precip === "snow" ? Math.min(n, 36) : 0;
     paintLook();
-    placeClouds();
   };
   applyWeather(draw, 0);
 
   const resize = () => {
     const w = Math.max(1, canvas.clientWidth);
     const h = Math.max(1, canvas.clientHeight);
-    const cap = opts.mode === "billboard" ? 1 : 1.25;
+    const cap = opts.mode === "billboard" ? 1 : 1;
     const dpr = Math.min(window.devicePixelRatio || 1, cap);
-    renderer.setPixelRatio(dpr);
+    const longest = Math.max(w, h) * dpr;
+    const scale = longest > 1280 ? 1280 / longest : 1;
+    renderer.setPixelRatio(dpr * scale);
     renderer.setSize(w, h, false);
     const px = new Vector2(2 / Math.max(1, w), 2 / Math.max(1, h));
     rain.uniforms.uPx.value.copy(px);
     snow.uniforms.uPx.value.copy(px);
-    cloudUniforms.uRes.value.set(w * dpr, h * dpr);
+    skyUniforms.uRes.value.set(w * dpr * scale, h * dpr * scale);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
   };
@@ -680,7 +522,7 @@ void main() {
     resize,
     frame: (seconds) => {
       if (disposed) return;
-      cloudUniforms.uTime.value = seconds;
+      skyUniforms.uTime.value = seconds;
       rain.uniforms.uTime.value = seconds;
       snow.uniforms.uTime.value = seconds;
       placeBirds(seconds);
@@ -690,8 +532,6 @@ void main() {
     },
     dispose: () => {
       disposed = true;
-      geo.dispose();
-      mat.dispose();
       sky.geometry.dispose();
       skyMat.dispose();
       grass.geometry.dispose();
@@ -702,7 +542,6 @@ void main() {
       snow.mat.dispose();
       birdGeo.dispose();
       birdMat.dispose();
-      tex?.dispose();
       renderer.dispose();
       renderer.forceContextLoss();
     },

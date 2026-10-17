@@ -16,30 +16,22 @@
   z-index: -1;
   pointer-events: none;
   overflow: hidden;
-  /* A handful of cumulus, sides and lower frame, plus a hard sun. Shown when the canvas is still or missing. */
-  background:
-    radial-gradient(ellipse 12% 9% at 12% 74%, #ffffff 0%, #ffffff 34%, #d5dee8 56%, transparent 74%),
-    radial-gradient(ellipse 8% 7% at 18% 68%, #ffffff 0%, #f7f9fb 40%, #c5d0dc 62%, transparent 78%),
-    radial-gradient(ellipse 7% 6% at 7% 66%, #f7f9fb 0%, #ffffff 36%, #d5dee8 60%, transparent 76%),
-    radial-gradient(ellipse 13% 9% at 88% 72%, #ffffff 0%, #ffffff 32%, #d5dee8 54%, transparent 72%),
-    radial-gradient(ellipse 8% 7% at 94% 64%, #ffffff 0%, #f7f9fb 38%, #c5d0dc 60%, transparent 76%),
-    radial-gradient(ellipse 9% 7% at 80% 80%, #f7f9fb 0%, #ffffff 36%, #d5dee8 58%, transparent 74%),
-    radial-gradient(ellipse 8% 6% at 6% 46%, #ffffff 0%, #f7f9fb 34%, #d5dee8 56%, transparent 72%),
-    radial-gradient(ellipse 8% 6% at 96% 50%, #ffffff 0%, #f7f9fb 34%, #c5d0dc 58%, transparent 74%),
-    radial-gradient(circle at 86% 10%, #fff6e4 0 7px, transparent 8px),
+  /* Painted sky for phones, low-power devices and reduced motion. The SVG is original
+     fractal noise (no stock photo). The disc is the sun, 20% from the right and 18% from the top. */
+  background-color: #5d9be8;
+  background-image:
+    radial-gradient(circle at 80% 18%, #fff6e4 0 11px, transparent 12px),
+    url("./static-day.svg"),
     linear-gradient(180deg, #5d9be8 0%, #b9d8f5 80%);
+  background-repeat: no-repeat;
+  background-size: auto, cover, auto;
+  background-position: center;
 }
 :global(:root[data-theme="dark"]) .siteSky {
-  background:
-    radial-gradient(ellipse 12% 9% at 12% 74%, #65707e 0%, #65707e 34%, #3a4658 56%, transparent 74%),
-    radial-gradient(ellipse 8% 7% at 18% 68%, #65707e 0%, #5c6778 40%, #3a4658 62%, transparent 78%),
-    radial-gradient(ellipse 7% 6% at 7% 66%, #6a7484 0%, #65707e 36%, #3a4658 60%, transparent 76%),
-    radial-gradient(ellipse 13% 9% at 88% 72%, #65707e 0%, #65707e 32%, #3a4658 54%, transparent 72%),
-    radial-gradient(ellipse 8% 7% at 94% 64%, #65707e 0%, #5c6778 38%, #3a4658 60%, transparent 76%),
-    radial-gradient(ellipse 9% 7% at 80% 80%, #6a7484 0%, #65707e 36%, #3a4658 58%, transparent 74%),
-    radial-gradient(ellipse 8% 6% at 6% 46%, #65707e 0%, #5c6778 34%, #3a4658 56%, transparent 72%),
-    radial-gradient(ellipse 8% 6% at 96% 50%, #65707e 0%, #5c6778 34%, #3a4658 58%, transparent 74%),
-    radial-gradient(circle at 86% 10%, #d5def2 0 6px, transparent 7px),
+  background-color: #161e2c;
+  background-image:
+    radial-gradient(circle at 80% 18%, #e4eaf6 0 11px, transparent 12px),
+    url("./static-night.svg"),
     linear-gradient(180deg, #161e2c 0%, #2a3848 80%);
 }
 .landingClouds { display: block; width: 100%; height: 100%; pointer-events: none; }
