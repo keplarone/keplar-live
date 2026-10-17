@@ -467,7 +467,7 @@ export function createWebglClouds(
     preserveDrawingBuffer: true,
     powerPreference: opts.mode === "billboard" ? "low-power" : "default",
   });
-  renderer.setClearColor(0x000000, 1);
+  renderer.setClearColor(opts.dark ? 0x2a4068 : 0x4f86c8, 1);
   const scene = new Scene();
   const camera = new PerspectiveCamera(40, 1, 0.1, 40);
   camera.position.set(0, 0.35, 6.2);
@@ -630,8 +630,8 @@ void main() {
     const lit = srgb(pal.lit);
     const shadow = srgb(pal.shadow);
     // Rain greys the sky. Day stays a blue-grey, not a black crush, so the sunlit edge still reads.
-    const zenithCrush = dark ? srgb("#07080c") : srgb("#8ea4b8");
-    skyUniforms.uZenith.value.copy(mixHex(zenith, zenithCrush, draw.gray * (dark ? 0.4 : 0.55)));
+    const zenithCrush = dark ? srgb("#243656") : srgb("#8ea4b8");
+    skyUniforms.uZenith.value.copy(mixHex(zenith, zenithCrush, draw.gray * (dark ? 0.18 : 0.55)));
     skyUniforms.uHorizon.value.copy(mixHex(horizon, shadow, draw.gray * 0.12));
     skyUniforms.uHaze.value.copy(mixHex(horizon, shadow, 0.45));
     skyUniforms.uHazeAmt.value = draw.haze;

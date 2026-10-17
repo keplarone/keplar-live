@@ -133,7 +133,12 @@
 }
 
 .cta {
+  position: static;
   margin-top: var(--s-8);
+}
+.cta :is(a, button) {
+  position: relative;
+  top: auto;
 }
 
 .fine {

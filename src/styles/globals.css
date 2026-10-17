@@ -202,12 +202,11 @@ canvas { outline: none; }
   font-family: var(--f-mono);
 }
 
-/* Scroll reveal: [data-reveal] blocks fade and rise as they enter the viewport. A scroll-driven animation tied to the block's own
+/* Scroll reveal: [data-reveal] blocks rise as they enter the viewport. A scroll-driven animation tied to the block's own
    position, so content is visible by default and is never left hidden: browsers without scroll timelines, reduced motion, print,
-   find-in-page and full-page captures all just show it. Opacity and translate only: no layout shift. */
+   find-in-page and full-page captures all just show it. Translate only: text stays at full contrast the whole way through. */
 @keyframes kp-reveal {
   from {
-    opacity: 0;
     translate: 0 16px;
   }
 }

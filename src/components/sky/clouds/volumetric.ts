@@ -200,6 +200,7 @@ export async function createVolumetric(canvas: HTMLCanvasElement, opts: { dark: 
   const renderer = new WebGPURenderer({ canvas, antialias: false, alpha: false, depth: false });
   renderer.toneMapping = NoToneMapping;
   await renderer.init();
+  renderer.setClearColor(new Color(opts.dark ? 0x2a4068 : 0x4f86c8), 1);
   const scene = new Scene();
   const camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
   const pal = cloudPalette(opts.dark);
