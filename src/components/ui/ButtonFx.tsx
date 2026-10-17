@@ -22,6 +22,7 @@ export function ButtonFx() {
     const target = (n: EventTarget | null) => {
       const el = n instanceof Element ? n.closest<HTMLElement>("[data-lit]") : null;
       if (!el || el.matches(":disabled,[aria-disabled='true'],[aria-busy='true']") || el.parentElement?.hasAttribute("data-magnetic")) return null;
+      if (el.closest("[data-glass-pill], [data-glass-chip], [data-composer]")) return null;
       return el;
     };
     const frame = () => {

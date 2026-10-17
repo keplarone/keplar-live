@@ -148,6 +148,7 @@
 .signIn {
   position: relative;
   isolation: isolate;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   height: 44px;

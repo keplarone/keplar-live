@@ -565,8 +565,10 @@
 
 .dockNote {
   text-align: center;
-  font-size: var(--t-label);
-  color: var(--c-ink-3);
+  font-size: var(--t-small);
+  font-weight: var(--w-medium);
+  /* --c-ink-3 is AA as a token, but at label size the thin face never reaches that colour, so the line reads as dark-on-dark. */
+  color: var(--c-ink-2);
 }
 
 .jump {
@@ -1776,7 +1778,9 @@ a.sideItem {
   color: var(--c-ink-2);
   font-size: 13.5px;
   font-weight: var(--w-medium);
-  transition: color 0.3s ease, translate 0.45s var(--space-spring-snappy);
+  /* Clip the lens. Its filter must not paint a second copy of the placeholder outside the pill. */
+  overflow: hidden;
+  transition: color 0.3s ease;
 }
 /* Empty layer behind the label. The displacement filter stays off the words. */
 .chipLens {
@@ -1785,14 +1789,14 @@ a.sideItem {
   z-index: 0;
   border-radius: inherit;
   pointer-events: none;
+  overflow: hidden;
 }
 .chipLabel, .homeChipIcon { position: relative; z-index: 1; }
 :global(:root[data-theme]) .homeChip:hover {
   color: var(--c-ink);
   background: transparent;
-  translate: 0 -2px;
 }
-:global(:root[data-theme]) .homeChip:active { translate: 0 1px; transition-duration: 0.1s; }
+:global(:root[data-theme]) .homeChip:active { transition-duration: 0.1s; }
 :global(:root[data-theme]) .homeChip:focus-visible { box-shadow: var(--space-focus-glow); }
 .homeChipIcon { color: var(--c-ink-3); transition: color 0.3s ease; }
 .homeChip:hover .homeChipIcon { color: var(--c-accent); }
