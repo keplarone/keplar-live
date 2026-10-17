@@ -11,8 +11,8 @@ const K = brand.name;
 export const developersPage: LandingPage = {
   slug: "for-developers",
   path: "/for-developers",
-  metaTitle: "A second opinion on technical decisions, from several AI models",
-  metaDescription: `Ask once and see where several AI models agree and where they split on a stack, architecture or security decision. ${K} writes one answer and shows the disagreement. Free to try, no signup.`,
+  metaTitle: "Second opinions on technical decisions",
+  metaDescription: `Ask once and see where several models agree and split on a stack, architecture, or security decision. ${K} writes one answer and shows the disagreement.`,
   ogTitle: "A second opinion for technical decisions",
   label: "For developers and solo founders",
   h1: "Get a second opinion before you commit to the technical decision.",

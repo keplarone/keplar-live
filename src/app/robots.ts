@@ -1,9 +1,11 @@
 import type { MetadataRoute } from "next";
-import { isIndexable, site } from "@/lib/site";
+import { robotsSitemapUrls } from "@/lib/seo/sitemaps";
+import { isIndexable } from "@/lib/site";
 
 /**
- * Crawling is open for every page. Keplar's own pages carry no noindex; only private share links (/r, /c, /sp, /i) and preview
- * hosts do, and a crawler can only obey that if it may fetch the page. The private app pages sit behind real auth.
+ * Crawling is open for every page. Keplar's own pages carry no noindex, except an unapproved comparison
+ * (src/lib/kb/vs.ts). Private share links (/r, /c, /sp, /i) and preview hosts are noindex too, and a crawler can only
+ * obey that if it may fetch the page. The private app pages sit behind real auth.
  * Only API routes and the dev outbox are disallowed: they are not pages.
  */
 /** Search and AI-answer crawlers published by their operators: allowed, with the same API/dev exclusions as everyone else. */
@@ -22,6 +24,6 @@ export default function robots(): MetadataRoute.Robots {
     // Named groups repeat the disallow list (a crawler obeys only its most specific group). These are the documented user agents of
     // the major search and AI-answer crawlers; naming them makes the policy explicit. Any other crawler falls under "*".
     rules: [{ userAgent: "*", ...open }, { userAgent: [...REPUTABLE_CRAWLERS], ...open }],
-    sitemap: [`${site.url}/sitemap.xml`, `${site.url}/answers-sitemap.xml`, `${site.url}/templates-sitemap.xml`, `${site.url}/topics-sitemap.xml`],
+    sitemap: robotsSitemapUrls(),
   };
 }
