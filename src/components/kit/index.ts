@@ -1,5 +1,5 @@
 /**
- * Keplar Studio design system. Import from "@/components/kit".
+ * Keplar design system. Import from "@/components/kit".
  * Docs: ./README.md. Every Studio screen renders inside <StudioRoot>.
  */
 export { StudioRoot, studioRootClass, srOnly, type StudioRootProps, type StudioTheme } from "./StudioRoot";

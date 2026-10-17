@@ -10,7 +10,7 @@
 .grow { flex: 1; }
 .dim { color: var(--c-ink-3); }
 
-/* ── Create's kind switch (App, Images, Video, Mobile, Keplar Studio): the kit's Tabs, an underline that slides ──
+/* ── Create's kind switch (App, Images, Video, Mobile): the kit's Tabs, an underline that slides ──
    No fill: the page sky shows through. A canvas fill was a solid black bar (dark --c-canvas is #000). */
 .kindBar { display: flex; align-items: flex-end; min-width: 0; max-width: 100%; padding: 0 var(--s-6); background: transparent; }
 .kindTabs { flex: 1; min-width: 0; }

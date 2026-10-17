@@ -28,7 +28,7 @@ export function SpaceUiShowcase() {
       <header className="sp-rise" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <span className="sp-eyebrow">Space UI · dev showcase</span>
         <RotatingHeadline className="sp-hero-title" lines={LINES} label="Space UI showcase" warp />
-        <p className="sp-lede">Space Studio&apos;s design language on keplar.one. Guide: docs/design/space-ui.md.</p>
+        <p className="sp-lede">The Space UI design language on keplar.one. Guide: docs/design/space-ui.md.</p>
       </header>
 
       <Card style={{ display: "flex", flexDirection: "column", gap: 20 }}>

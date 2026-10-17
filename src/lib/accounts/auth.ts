@@ -31,7 +31,6 @@ import { passkeyAuth } from "./passkeys/auth-plugin";
 import { statelessMagicLink } from "./stateless-magic-link";
 import { passwordAuth } from "./password-auth";
 import { desktopAuth } from "./desktop-auth";
-import { spaceRobloxAuth } from "./space-roblox-auth";
 import { businessAuth } from "./business-auth";
 import { BUSINESS_URL } from "@/lib/business-site";
 import { userIdForEmail } from "./magic-token";
@@ -152,7 +151,6 @@ export const auth = betterAuth({
     passkeyAuth(),
     desktopAuth({ secret: authSecret, origin: () => new URL(process.env.BETTER_AUTH_URL || siteUrl).origin }),
     businessAuth({ secret: authSecret }),
-    spaceRobloxAuth({ secret: authSecret }),
     nextCookies(),
   ],
 });

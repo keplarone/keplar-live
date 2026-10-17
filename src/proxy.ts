@@ -93,27 +93,17 @@ export function docsHost(req: NextRequest) {
 
 
 /**
- * space.keplar.one is Space Studio's site: / → /space-studio and /app → /space-studio/app (rewrite, the URL stays clean);
- * /space-studio/... is served as-is. Static files, /_next, /api and /og pass through (the desktop app itself talks to keplar.one).
- * Any other path is the main site's: 308 to keplar.one.
+ * space.keplar.one used to be Space Studio. The product is gone: its old paths go to the keplar.one home page, and every
+ * other page path goes to the same path on keplar.one. Static files, /_next and /api pass through.
  */
 export function spaceHost(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
-  if (pathname === "/favicon.ico") {
-    const url = req.nextUrl.clone();
-    url.pathname = "/icons/space-studio-favicon.ico";
-    return NextResponse.rewrite(url);
-  }
   const last = pathname.slice(pathname.lastIndexOf("/") + 1);
   if (pathname.startsWith("/_next/") || pathname.startsWith("/api/") || pathname.startsWith("/og/") || pathname.startsWith("/icons/") || pathname.startsWith("/fonts/") || last.includes(".")) {
     return NextResponse.next();
   }
-  if (pathname === "/space-studio" || pathname.startsWith("/space-studio/")) return NextResponse.next();
-  if (pathname === "/" || pathname === "/app") {
-    const url = req.nextUrl.clone();
-    url.pathname = pathname === "/" ? "/space-studio" : "/space-studio/app";
-    url.search = search;
-    return NextResponse.rewrite(url);
+  if (pathname === "/" || pathname === "/app" || pathname === "/space-studio" || pathname.startsWith("/space-studio/")) {
+    return NextResponse.redirect(`${PRODUCTION_URL}/${search}`, 308);
   }
   return NextResponse.redirect(`${PRODUCTION_URL}${pathname}${search}`, 308);
 }

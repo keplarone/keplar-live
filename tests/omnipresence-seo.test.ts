@@ -7,8 +7,7 @@ import { businessHost } from "@/proxy";
 import { BUSINESS_ORIGIN, businessGraph, businessLlms, businessRobots, businessSitemap } from "@/lib/business/seo";
 import { BUSINESS_TIERS } from "@/lib/business/tiers";
 import { CAPABILITY_MATRIX, capabilitiesManifest, FACT_SECTIONS, MATRIX_COLUMNS } from "@/lib/content/product-facts";
-import { landingBySlug, landingPages } from "@/lib/content/landing";
-import { lastmodFor } from "@/lib/content/lastmod";
+import { landingPages } from "@/lib/content/landing";
 
 const req = (url: string) => new NextRequest(url, { headers: { host: new URL(url).host } });
 
@@ -53,8 +52,8 @@ test("capability matrix: one cell per column, Business-only features never shown
   for (const r of CAPABILITY_MATRIX) assert.equal(r.cells.length, MATRIX_COLUMNS.length, r.feature);
   const agents = CAPABILITY_MATRIX.find((r) => r.feature.startsWith("Scheduled agents"))!;
   assert.deepEqual(agents.cells.slice(0, 2), ["no", "no"]);
-  const studio = CAPABILITY_MATRIX.find((r) => r.feature === "Roblox Studio co-builder")!;
-  assert.equal(studio.cells[0], "no", "Studio needs the desktop app");
+  const create = CAPABILITY_MATRIX.find((r) => r.feature === "Create websites and apps")!;
+  assert.deepEqual(create.cells.slice(0, 2), ["yes", "yes"]);
 });
 
 test("capabilities.json lists every fact, with absolute URLs and a status", () => {
@@ -67,16 +66,6 @@ test("capabilities.json lists every fact, with absolute URLs and a status", () =
   }
 });
 
-test("Roblox fact says the user play-tests; Studio and Blender landing pages exist with honest limits", () => {
-  const roblox = FACT_SECTIONS.find((s) => s.id === "roblox")!;
-  assert.ok(roblox.facts.some((f) => f.name === "You play-test it"));
-  assert.ok(!roblox.facts.some((f) => /checks its own work/i.test(f.name)));
-  for (const slug of ["roblox-studio-ai", "blender-ai"]) {
-    const p = landingBySlug(slug)!;
-    assert.ok(p, slug);
-    assert.ok(p.sections.some((s) => s.h2 === "Honest about limits"), slug);
-    assert.ok(lastmodFor(p.path), `${slug} has a real lastmod`);
-    assert.ok(p.metaDescription.length <= 170, `${slug} description length ${p.metaDescription.length}`);
-  }
+test("landing paths are unique", () => {
   assert.equal(new Set(landingPages.map((p) => p.path)).size, landingPages.length);
 });

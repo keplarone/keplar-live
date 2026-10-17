@@ -68,7 +68,6 @@ function tabClick(e: MouseEvent, go: () => void) {
 export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteChat, onClose, businessProminent = false, account = null, importOffer = null, modeView = null, id }: Props) {
   void businessProminent;
   const rows = primary;
-  // Keplar Studio (Roblox Studio | Blender) lives in Create (one tab, desktop app only), not in the sidebar.
   const more = secondary;
   const moreViews = new Set<View>(more.map((n) => n.view));
   // Open More by choice, or whenever the current view lives in it.

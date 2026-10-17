@@ -205,26 +205,6 @@ const m: MarketingCatalog = {
         "name": "Verwijsprogramma",
         "line": "Nodig iemand uit; jullie krijgen allebei extra verbruik, nooit geld."
       },
-      "roblox-studio": {
-        "name": "Roblox Studio-modus",
-        "line": "Een medebouwer in Roblox Studio: maps, UI, flipbook-effecten en Luau-scripts, met Claude Opus 5.5.",
-        "note": "Desktopapp, vanaf Lite."
-      },
-      "roblox-cloud": {
-        "name": "Roblox Cloud",
-        "line": "Nachtelijke taken aan de scripts van je game, elke wijziging gecontroleerd door de Luau-analyzer en in Studio toegepast wanneer jij dat wilt.",
-        "note": "Alleen scripts; het kan niet playtesten."
-      },
-      "blender": {
-        "name": "Blender-modus",
-        "line": "Modelleer, textureer met PBR-sets van Poly Haven, belicht en exporteer in Blender 4.2 of nieuwer.",
-        "note": "Desktopapp 0.1.8 of nieuwer."
-      },
-      "blender-cloud": {
-        "name": "Blender Cloud-rendering",
-        "line": "Render een scène op de servers van Keplar terwijl je computer uit staat, en download daarna de frames en een MP4.",
-        "note": "Desktopapp 0.1.10 of nieuwer."
-      },
       "extension": {
         "name": "Browserextensie Keplar One",
         "line": "Stel vanuit Chrome of Edge een vraag over een selectie of een pagina, met je API-sleutel.",

@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { JsonLd } from "@/components/seo/JsonLd";
 import s from "@/components/landing/Features.module.css";
-import { Fragment } from "react";
-import { CHAPTERS, PRODUCTS, featureCounts } from "@/lib/features";
+import { CHAPTERS, featureCounts } from "@/lib/features";
 import { breadcrumbs } from "@/lib/seo-graph";
 import { getMessages } from "@/lib/i18n/server";
 import { localizedPath } from "@/lib/i18n/routing";
@@ -33,26 +32,14 @@ export async function FeaturesView({ locale = "en" }: { locale?: string }) {
           <table className={s.table}>
             <thead className="visually-hidden"><tr><th>{p.thFeature}</th><th>{p.thWhat}</th><th>{p.thStatus}</th></tr></thead>
             <tbody>
-              {c.features.map((f, i) => {
+              {c.features.map((f) => {
                 const t = m.chapters.items[f.id] ?? f;
-                // A product (Keplar Studio) heads its features once: its brand name and the apps it works in, both proper nouns.
-                const product = f.product && c.features[i - 1]?.product !== f.product ? PRODUCTS[f.product] : null;
                 return (
-                  <Fragment key={f.id}>
-                  {product ? (
-                    <tr id={product.id} data-product={product.id}>
-                      <th colSpan={3}>
-                        {product.name}
-                        <span className={s.note}> {product.environments.map((e, j) => <Fragment key={e.id}>{j ? " · " : ""}<Link href={L(e.href)}>{e.name}</Link></Fragment>)}</span>
-                      </th>
-                    </tr>
-                  ) : null}
-                  <tr data-s={f.status} data-product={f.product}>
+                  <tr key={f.id} data-s={f.status}>
                     <th scope="row">{f.status === "soon" ? t.name : <Link href={L(f.href)}>{t.name}</Link>}</th>
                     <td>{t.line}{f.note ? <span className={s.note}> {t.note ?? f.note}</span> : null}</td>
                     <td className={s.status} data-s={f.status}>{m.status[f.status]}</td>
                   </tr>
-                  </Fragment>
                 );
               })}
             </tbody>

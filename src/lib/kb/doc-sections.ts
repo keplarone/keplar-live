@@ -12,7 +12,6 @@ export const docSections: DocSection[] = [
   { id: "connectors-agents", title: "Connectors and agents", blurb: "Connect outside apps with the Model Context Protocol, control what they may do, and run agents that work under spend caps and approvals." },
   { id: "billing-plans", title: "Plans, credits and limits", blurb: "Free, Lite, Plus, Pro and Business; how credits are counted; the rolling limits; and what to do when you reach one." },
   { id: "desktop", title: "Desktop app", blurb: "Install the Keplar desktop app, sign in, and fix the common problems." },
-  { id: "studio", title: "Roblox Studio and Blender", blurb: "Build Roblox games and 3D models with Keplar in the desktop app: Roblox Studio mode, Roblox Cloud for overnight work, effects and textures, Blender mode and Blender Cloud rendering." },
   { id: "extension", title: "Browser extension", blurb: "Keplar One for Chrome and Edge: ask about a selection or a page, and use Search with Keplar One to search anything on a page by dragging over it." },
   { id: "privacy-security", title: "Privacy and security", blurb: "What happens to your questions, files and memory; how to export or delete them; and the protections around accounts, connected apps and published sites." },
   { id: "reference", title: "Reference", blurb: "Lookup pages: the roster and its roles, answer sections, limits at a glance, the developer story, status messages and a glossary pointer." },

@@ -1,7 +1,6 @@
 /**
- * Static Studio icon set. Same grid and stroke as MorphIcon (24 x 24, live area 2..22, 1.5px round stroke, no fill), so a
- * static icon and a morphing one can sit side by side. Drawn for Keplar; the Roblox Studio and Blender marks are generic
- * pictograms (a studded building block, a wireframe sphere), not copies of either trademark.
+ * Static icon set. Same grid and stroke as MorphIcon (24 x 24, live area 2..22, 1.5px round stroke, no fill), so a
+ * static icon and a morphing one can sit side by side.
  */
 
 /** Circle as two arcs (stroke-only, so dots are small circles that read as solid at 1.5px). */
@@ -53,13 +52,6 @@ export const GLYPHS = {
   ],
   more: [circle(6, 12, 0.9), circle(12, 12, 0.9), circle(18, 12, 0.9)],
   "drag-handle": [circle(9, 6.5, 0.7), circle(15, 6.5, 0.7), circle(9, 12, 0.7), circle(15, 12, 0.7), circle(9, 17.5, 0.7), circle(15, 17.5, 0.7)],
-  "roblox-studio": [
-    "M12 3 L20 7.5 L20 16.5 L12 21 L4 16.5 L4 7.5 Z",
-    "M4 7.5 L12 12 L20 7.5",
-    "M12 12 L12 21",
-    "M9.8 7.4 A2.2 1.2 0 1 0 14.2 7.4 A2.2 1.2 0 1 0 9.8 7.4",
-  ],
-  blender: [circle(12, 12, 8.5), "M3.5 12 A8.5 3.2 0 1 0 20.5 12 A8.5 3.2 0 1 0 3.5 12", "M12 3.5 A3.2 8.5 0 1 0 12 20.5 A3.2 8.5 0 1 0 12 3.5"],
   close: ["M6 6 L18 18", "M18 6 L6 18"],
   plus: ["M12 5 L12 19", "M5 12 L19 12"],
   minus: ["M5 12 L19 12"],

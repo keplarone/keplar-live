@@ -29,7 +29,7 @@ import {
   type Status,
 } from "./core";
 import type { DesktopAuthStore, Finished, Row, Who } from "./store";
-import { recentlyAuthenticated } from "@/lib/space-studio/core/identities";
+import { recentlyAuthenticated } from "@/lib/accounts/reauth";
 
 export type Clock = () => number;
 export type Deps = { store: DesktopAuthStore; key: string; now?: Clock };

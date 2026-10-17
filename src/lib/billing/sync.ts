@@ -18,7 +18,7 @@ import { isPaidPlan, planForWhopPlanId, type GrantablePlan, type PaidPlan } from
 import { EMBED_SOURCE, verifyEmbedRef } from "./embed";
 import { extensionValidDays, packForWhopPlanId, type Pack } from "./extensions";
 import { extensionForPayment, grantExtension, revokeExtensionByPayment } from "@/lib/create/platform/extensions";
-import { revokeStudioTopUp, syncStudioTopUp } from "./studio-topup";
+import { isRetiredStudioTopUp, revokeRetiredStudioTopUp } from "./retired-studio-topup";
 
 type EventRow = { id: string; workspaceId: string; type: string; at: string; result: string };
 const events = () => collection<EventRow>("billing_events");
@@ -152,7 +152,7 @@ async function applyWhopEvent(event: WhopEvent, webhookId: string): Promise<stri
   const ids = extract(data);
   let result = "ignored";
 
-  if (event.type.startsWith("payment.") && await syncStudioTopUp(data)) return "studio_topup_synced";
+  if (event.type.startsWith("payment.") && isRetiredStudioTopUp(data)) return "studio_topup_retired";
 
   // A one-time limit-extension purchase is never a plan change: it must not touch the subscription period, tier or status.
   const pack = packForWhopPlanId(ids.planId);
@@ -222,7 +222,7 @@ async function applyWhopEvent(event: WhopEvent, webhookId: string): Promise<stri
     case "dispute.created": {
       const payment = obj(data.payment);
       const paymentId = str(data.payment_id) ?? str(payment?.id);
-      if (paymentId && await revokeStudioTopUp(paymentId, event.type)) return "studio_topup_revoked";
+      if (paymentId && await revokeRetiredStudioTopUp(paymentId, event.type)) return "studio_topup_revoked";
       const membershipId = str(obj(payment?.membership)?.id) ?? str(payment?.membership_id) ?? ids.membershipId;
       // A refund of a limit-extension payment takes back only the unspent extension credits; the subscription is untouched.
       const paymentPlanId = str(payment?.plan_id) ?? str(obj(payment?.plan)?.id);

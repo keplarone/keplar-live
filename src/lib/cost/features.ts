@@ -46,8 +46,6 @@ export const ROUTE_FEATURES: Record<string, FeatureId> = {
   "/api/images": "images",
   "/api/collab": "collab",
   "/api/business/agents": "agents",
-  "/api/roblox-cloud": "agents",
-  "/api/blender-cloud": "agents",
   "/api/cron/agents": "agents",
   "/api/inngest": "agents",
   "/api/business": "agents",

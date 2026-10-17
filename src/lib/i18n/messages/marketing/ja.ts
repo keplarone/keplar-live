@@ -205,26 +205,6 @@ const m: MarketingCatalog = {
         "name": "紹介プログラム",
         "line": "友だちを招待すると、2 人とも使用量が増えます。現金ではありません。"
       },
-      "roblox-studio": {
-        "name": "Roblox Studio モード",
-        "line": "Roblox Studio の中の共同ビルダー。マップ、UI、フリップブック効果、Luau スクリプトを Claude Opus 5.5 で。",
-        "note": "デスクトップアプリ、Lite 以上。"
-      },
-      "roblox-cloud": {
-        "name": "Roblox Cloud",
-        "line": "ゲームのスクリプトに夜通し取り組み、すべての変更を Luau のアナライザーで確認。適用はあなたの指示で Studio に。",
-        "note": "スクリプトのみ。テストプレイはできません。"
-      },
-      "blender": {
-        "name": "Blender モード",
-        "line": "Blender 4.2 以降で、モデリング、Poly Haven の PBR セットでのテクスチャ、ライティング、書き出し。",
-        "note": "デスクトップアプリ 0.1.8 以降。"
-      },
-      "blender-cloud": {
-        "name": "Blender Cloud レンダリング",
-        "line": "パソコンの電源を切ったまま Keplar のサーバーでシーンをレンダリングし、フレームと MP4 をダウンロード。",
-        "note": "デスクトップアプリ 0.1.10 以降。"
-      },
       "extension": {
         "name": "Keplar One ブラウザー拡張機能",
         "line": "Chrome や Edge から、選択したテキストやページについて質問。API キーを使います。",

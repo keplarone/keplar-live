@@ -263,8 +263,8 @@ no animation that holds content invisible on phones, no new font families.
 - **Light accent is graphite** (`#17171a`) and the dark accent is near-white (`#f4f4f6`), so focus, selection and links stay neutral in both themes. The light
   semantic colours (reasoning teal etc.) are unchanged: they carry meaning in answers.
 - **Focus**: a solid 2px ring in the accent colour on controls (`:focus-visible` only). Inline links keep an underline.
-- **No star field anywhere but the Space site.** Phase A's 2D-canvas star field (`SpaceSky`) was removed; the only stars left
-  are the few the weather sky shows through clear gaps in Dark. The Space site (`/space-studio`, space.keplar.one) keeps its own three.js journey.
+- **No star field.** Phase A's 2D-canvas star field (`SpaceSky`) was removed; the only stars left
+  are the few the weather sky shows through clear gaps in Dark.
 - **No sky behind dense app UI** (/app, Business workspace, admin): the app sits on its canvas with solid panels.
 - **Kit**: restyled through tokens (`--ks-*-face`, `--ks-*-depth`, `--ks-seg-*`, `--ks-switch-*`, `--ks-control-radius`), so the
   ~115 files that import `@/components/kit` changed without edits. The kit CSS files themselves still contain no literal
@@ -282,20 +282,19 @@ header) is done in Phase A; agents should not restyle it again, only adjust wher
   `/desktop`, `/about`, `/how-it-works`, `/compare*`, `/vs`, `/for-*`, `/use-cases`, `/showcase`, `/templates`, `/models`,
   `/agents`, `/specialists`, `/developers`, `/enterprise`, `/team`, `/roadmap`, `/changelog`, `/status`, `/security`, `/help`,
   `/contact`, `/inquire`, `/feedback`, `/blogs`, `/guides`, `/glossary`, `/answers`, `/topics`, `/prompts`, all SEO landers
-  (`/ai-*`, `/chatgpt-alternative`, `/multi-model-ai`, `/superintelligence`, `/what-is-keplar`, `/si-vs-ai`, `/blender-ai`,
-  `/roblox-studio-ai`, ...), localized homes `src/app/(i18n)/[locale]`, docs (`src/app/(marketing)/docs`, docs.keplar.one),
-  `src/app/changelog`, the Space site `src/app/(space)/space-studio` (space.keplar.one).
+  (`/ai-*`, `/chatgpt-alternative`, `/multi-model-ai`, `/superintelligence`, `/what-is-keplar`, `/si-vs-ai`, ...),
+  localized homes `src/app/(i18n)/[locale]`, docs (`src/app/(marketing)/docs`, docs.keplar.one),
+  `src/app/changelog`. space.keplar.one redirects to keplar.one.
 - Components: `src/components/sky/*` (home: `SkyHome.tsx`, `Sky.module.css`, `DemoWindow`, `FeatureList`, `MiniDemos`,
   `ModelStack`, `ScrollZoom`, `ParticleStory`), `src/components/sections/*` (Pricing, Creation...), `src/components/home/*`,
   `src/components/landing/*`, `src/components/page/*` (TwoTone, RoutePlaceholder), `src/components/compare`, `how`,
   `editorial`, `kb` (blogs/guides/glossary), `templates`, `developers`, `download`, `desktop`, `status`, `support`, `inquire`,
-  `feedback`, `growth`, `monolith`, `spatial`, `simulation`, `seo`, `i18n`, `src/styles/docs-theme.css` (docs skin),
-  `src/components/space/*` (Space site: already Space; align its tokens with `--space-*` and Montserrat is now real).
+  `feedback`, `growth`, `monolith`, `spatial`, `simulation`, `seo`, `i18n`, `src/styles/docs-theme.css` (docs skin).
 - Suggested: hero headlines with `RotatingHeadline` / `.sp-grad`, pricing plan cards as `Card`, plan prices with
   `RollingNumber` on the period toggle (`SegmentedControl`).
 
 ### (b) Keplar One app (`/app/*`)
-- Routes: `src/app/app/*`: `ask` (chat), `create` (+ `create/live`), `studio` (+ `studio/overlay`), `slides`, `study`, `browser`,
+- Routes: `src/app/app/*`: `ask` (chat), `create` (+ `create/live`), `slides`, `study`, `browser`,
   `wants`, `apps`, `deployments`, `history`, `projects`, `agents`, `approvals`, `business` (in-app), settings modal `@modal/(..)account`.
 - Shell (done): `src/components/app-ui/KeplarApp.tsx`, `Sidebar.tsx`, `App.module.css` (shell, sidebar, top bar).
 - Ask / chat: `app-ui/HomeStart.tsx`, `Composer.tsx` + `.module.css`, `KeplarTurn.tsx`, `Markdown.tsx`, `AnswerExtras`,
@@ -304,8 +303,7 @@ header) is done in Phase A; agents should not restyle it again, only adjust wher
   Fire `spaceFx.prompt()` on send.
 - Create / builder: `src/components/create/*` (`CreateStudio`, `SiteBuilder`, `ImageStudio`, `advanced/*`, `apps/*`,
   `workspace/*`, `video/*`, `mobile/*`, `builder.module.css`, `create.module.css`), `app-ui/create/*`.
-- Keplar Studio: `app-ui/studio-mode/*`, `app-ui/studio/*`, `src/components/kit/StudioRoot.tsx` + `tokens.module.css` (Studio's
-  own dense tokens: decide how far the 3D look goes at 28px controls).
+- Kit: `src/components/kit/StudioRoot.tsx` + `tokens.module.css` (dense tokens on StudioRoot).
 - Slides `src/components/slides/*`, Study `src/components/study/*`,
   Connected apps `app-ui/ConnectedAppsView.tsx`, Deployments `app-ui/DeploymentsView.tsx`,
   Projects `app-ui/ProjectWorkspace.tsx`, `ProjectTimeline.tsx`, `SiteProjects`, Agents `app-ui/AgentsPanel.tsx`,

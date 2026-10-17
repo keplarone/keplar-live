@@ -71,9 +71,4 @@ const RELATED_LABELS: Record<string, string> = {
   "/blogs/how-to-check-an-ai-answer": "How to check an AI answer",
   "/guides/why-ai-models-disagree": "Why AI models disagree",
   "/download": "Download the desktop app",
-  "/docs/studio/roblox-studio-mode": "Docs: Roblox Studio mode",
-  "/docs/studio/roblox-cloud": "Docs: Roblox Cloud overnight jobs",
-  "/docs/studio/effects-and-textures": "Docs: effects, flipbooks and textures",
-  "/docs/studio/blender-mode": "Docs: Blender mode",
-  "/docs/studio/blender-cloud-rendering": "Docs: Blender Cloud rendering",
 };

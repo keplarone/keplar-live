@@ -1,8 +1,8 @@
 # Keplar One UI v2: the one design system
 
 Every screen on keplar.one (public site, sign-in, the app, Settings) is drawn from this system. If a screen needs something this
-file does not cover, add it to the system, not to the screen. Keplar Business (business.keplar.one) and Space Studio
-(space.keplar.one) are separate products with their own looks and are out of scope.
+file does not cover, add it to the system, not to the screen. Keplar Business (business.keplar.one) is a separate product
+with its own look and is out of scope. space.keplar.one redirects to keplar.one.
 
 ## Principles
 
@@ -63,7 +63,7 @@ No hex or rgb literals in component CSS. A colour that is not a token is a new t
 - **Icons:** `Icon` (`kit/icons/glyphs`).
 - **Densities:** the kit reads `--ks-*` variables.
   - Site-wide values live in `src/styles/kit.css`: Keplar One proportions, 40px controls, colours from the product tokens.
-  - Keplar Studio sets its denser values on `<StudioRoot>`. Do not set `--ks-*` anywhere else.
+  - `StudioRoot` sets its denser values on the element. Do not set `--ks-*` anywhere else.
 
 ### Page building blocks
 

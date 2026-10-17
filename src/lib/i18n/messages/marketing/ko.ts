@@ -205,26 +205,6 @@ const m: MarketingCatalog = {
         "name": "추천 프로그램",
         "line": "친구를 초대하면 둘 다 추가 사용량을 받습니다. 현금은 아닙니다."
       },
-      "roblox-studio": {
-        "name": "Roblox Studio 모드",
-        "line": "Roblox Studio 안의 공동 빌더: 맵, UI, 플립북 이펙트, Luau 스크립트를 Claude Opus 5.5로.",
-        "note": "데스크톱 앱, Lite 이상."
-      },
-      "roblox-cloud": {
-        "name": "Roblox Cloud",
-        "line": "게임 스크립트를 밤새 작업하고, 모든 수정은 Luau 분석기로 확인하며, 원할 때 Studio에 적용합니다.",
-        "note": "스크립트만 다루며 플레이 테스트는 할 수 없습니다."
-      },
-      "blender": {
-        "name": "Blender 모드",
-        "line": "Blender 4.2 이상에서 모델링, Poly Haven PBR 세트로 텍스처, 조명, 내보내기.",
-        "note": "데스크톱 앱 0.1.8 이상."
-      },
-      "blender-cloud": {
-        "name": "Blender Cloud 렌더링",
-        "line": "컴퓨터를 끈 채 Keplar 서버에서 장면을 렌더링하고, 프레임과 MP4를 내려받으세요.",
-        "note": "데스크톱 앱 0.1.10 이상."
-      },
       "extension": {
         "name": "Keplar One 브라우저 확장 프로그램",
         "line": "Chrome이나 Edge에서 선택한 글이나 페이지에 대해 API 키로 질문하세요.",

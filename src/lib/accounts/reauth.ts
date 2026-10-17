@@ -2,14 +2,17 @@
  * "Sign in again to continue" for sensitive account changes: adding a passkey, turning on two-factor sign-in or making
  * new recovery codes, deleting the account immediately, exporting its data and creating an API key.
  *
- * A session counts as recent when it was created in the last 10 minutes (the same window as Space Studio's account
- * linking, REAUTH_MS). A session's createdAt is when the person signed in: Better Auth keeps it across the sliding cookie
+ * A session counts as recent when it was created in the last 10 minutes (REAUTH_MS). A session's createdAt is when the
+ * person signed in: Better Auth keeps it across the sliding cookie
  * refresh, every sign-in mints a new session, and a handoff to Keplar Business or the desktop app carries the original
  * sign-in time over (./session-issue.ts), so a stolen or long-lived cookie can't be refreshed or handed over to pass.
  * The answer is a 403 with code "reauth_required"; the UI links to /signin?reauth=1&next=<where they were>.
  */
 import { HttpError } from "@/lib/create/platform/http";
-import { recentlyAuthenticated, REAUTH_MS } from "@/lib/space-studio/core/identities";
+
+export const REAUTH_MS = 10 * 60_000;
+/** True when `authAt` is a sign-in time within the last REAUTH_MS, and not in the future. */
+export const recentlyAuthenticated = (authAt: number | null, now: number) => typeof authAt === "number" && now - authAt >= 0 && now - authAt <= REAUTH_MS;
 
 export const REAUTH_WINDOW_MS = REAUTH_MS;
 export const REAUTH_CODE = "reauth_required";

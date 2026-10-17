@@ -205,26 +205,6 @@ const m: MarketingCatalog = {
         "name": "תוכנית הפניות",
         "line": "הזמינו חבר; שניכם מקבלים שימוש נוסף, אף פעם לא כסף."
       },
-      "roblox-studio": {
-        "name": "מצב Roblox Studio",
-        "line": "שותף בנייה בתוך Roblox Studio: מפות, ממשק, אפקטי flipbook וסקריפטים ב-Luau, עם Claude Opus 5.5.",
-        "note": "אפליקציית שולחן העבודה, מ-Lite ומעלה."
-      },
-      "roblox-cloud": {
-        "name": "Roblox Cloud",
-        "line": "עבודות לילה על הסקריפטים של המשחק שלכם, כל שינוי נבדק במנתח של Luau ומוחל ב-Studio כשתחליטו.",
-        "note": "סקריפטים בלבד; הוא לא יכול לבדוק במשחק."
-      },
-      "blender": {
-        "name": "מצב Blender",
-        "line": "מידול, טקסטורות עם ערכות PBR של Poly Haven, תאורה וייצוא ב-Blender 4.2 ומעלה.",
-        "note": "אפליקציית שולחן העבודה 0.1.8 ומעלה."
-      },
-      "blender-cloud": {
-        "name": "רינדור ב-Blender Cloud",
-        "line": "רנדרו סצנה בשרתים של Keplar כשהמחשב כבוי, ואז הורידו את הפריימים וסרטון MP4.",
-        "note": "אפליקציית שולחן העבודה 0.1.10 ומעלה."
-      },
       "extension": {
         "name": "תוסף הדפדפן Keplar One",
         "line": "שאלו על טקסט מסומן או על דף מתוך Chrome או Edge, עם מפתח ה-API שלכם.",

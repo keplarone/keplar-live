@@ -222,7 +222,7 @@ function refusal(d: Extract<Decision, { action: "block" }>): Response {
 }
 
 /**
- * A caller that must run on exactly the model it asked for (Roblox Studio mode: Opus 5.5 only) sends this header. The meter
+ * A caller that must run on exactly the model it asked for sends this header. The meter
  * strips it before the request leaves, and for a locked call it never swaps the model: a guardrail that would rewrite it to a
  * cheaper or :free model refuses instead, and an out-of-credit 402 is returned as is rather than retried on a free model.
  */

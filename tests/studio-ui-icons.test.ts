@@ -84,10 +84,10 @@ test("all icon geometry stays on the 24 grid inside a 1px safe margin", () => {
   for (const name of ICON_NAMES) GLYPHS[name].forEach((d, i) => inGrid(d, `${name}[${i}]`));
 });
 
-test("static icon set covers what the Studio needs and every glyph parses", () => {
+test("static icon set covers the interface and every glyph parses", () => {
   const needed = [
     "attach", "image", "file", "folder", "history", "sessions", "settings", "viewport", "changes", "plan", "activity",
-    "terminal", "warning", "error", "check", "credit", "link", "more", "drag-handle", "roblox-studio", "blender",
+    "terminal", "warning", "error", "check", "credit", "link", "more", "drag-handle",
   ];
   for (const n of needed) assert.ok(n in GLYPHS, `missing static icon ${n}`);
   for (const name of ICON_NAMES) {

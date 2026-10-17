@@ -711,10 +711,10 @@
           "item": "Command injection prevention",
           "status": "done",
           "evidence": [
-            "src/lib/blender-cloud/machine.ts",
-            "tests/studio-agent.test.ts"
+            "src/lib/sandbox/runner.ts",
+            "src/lib/app-builder/verify/static.ts"
           ],
-          "note": "No shell receives user or model input: machine scripts are fixed strings; Studio code that spells destructive calls indirectly is detected and held."
+          "note": "User and model input is not passed to a shell. Generated app checks run in the sandbox."
         },
         {
           "item": "Server-side template injection prevention",
@@ -851,9 +851,7 @@
           "status": "done",
           "evidence": [
             "src/lib/billing/sync.ts",
-            "src/lib/billing/studio-topup.ts",
-            "src/lib/mcp/gateway.ts",
-            "tests/studio-topup.test.ts"
+            "src/lib/mcp/gateway.ts"
           ]
         },
         {
@@ -2100,9 +2098,7 @@
           "item": "No trust in frontend-reported payment amounts",
           "status": "done",
           "evidence": [
-            "src/lib/billing/whop.ts",
-            "src/lib/billing/studio-topup.ts",
-            "tests/studio-topup.test.ts"
+            "src/lib/billing/whop.ts"
           ]
         },
         {
@@ -2127,7 +2123,6 @@
           "status": "done",
           "evidence": [
             "src/lib/billing/sync.ts",
-            "src/lib/billing/studio-topup.ts",
             "tests/whop.test.ts"
           ]
         },
@@ -2180,7 +2175,6 @@
           "status": "done",
           "evidence": [
             "src/lib/usage/daily.ts",
-            "src/lib/billing/studio-topup.ts",
             "tests/daily-use-pg.test.ts"
           ]
         },
@@ -2427,16 +2421,15 @@
           "status": "done",
           "evidence": [
             "src/lib/mcp/chat.ts",
-            "src/lib/app-builder/pipeline.ts",
-            "src/lib/roblox-cloud/model.ts"
+            "src/lib/app-builder/pipeline.ts"
           ]
         },
         {
           "item": "Protection against infinite agent loops",
           "status": "done",
           "evidence": [
-            "src/lib/roblox-cloud/worker.ts",
-            "tests/roblox-cloud.test.ts"
+            "src/lib/mcp/chat.ts",
+            "tests/mcp-chat.test.ts"
           ]
         },
         {
@@ -2452,7 +2445,6 @@
           "item": "Verification before executing model-generated commands",
           "status": "done",
           "evidence": [
-            "tests/studio-agent.test.ts",
             "src/lib/business/firewall.ts",
             "src/lib/app-builder/verify/static.ts"
           ]
@@ -2496,7 +2488,6 @@
           "item": "Model output evaluation against malicious inputs",
           "status": "done",
           "evidence": [
-            "tests/studio-agent.test.ts",
             "tests/draft-safety.test.ts",
             "tests/firewall.test.ts",
             "tests/fuzz-parsers.test.ts"
@@ -2582,8 +2573,7 @@
           "item": "Sandboxed code execution with resource limits",
           "status": "done",
           "evidence": [
-            "src/lib/sandbox/runner.ts",
-            "src/lib/blender-cloud/machine.ts"
+            "src/lib/sandbox/runner.ts"
           ]
         },
         {
@@ -2607,8 +2597,7 @@
           "item": "Restriction of arbitrary shell commands",
           "status": "done",
           "evidence": [
-            "src/lib/blender-cloud/machine.ts",
-            "tests/studio-agent.test.ts"
+            "src/lib/sandbox/runner.ts"
           ]
         },
         {
@@ -2640,7 +2629,6 @@
           "item": "Approval gates for destructive operations",
           "status": "done",
           "evidence": [
-            "tests/studio-agent.test.ts",
             "src/lib/business/agents.ts"
           ]
         },
@@ -2745,7 +2733,6 @@
           "status": "done",
           "evidence": [
             "src/lib/mcp/gateway.ts",
-            "src/lib/billing/studio-topup.ts",
             "src/lib/inngest/functions.ts"
           ]
         },
@@ -3531,7 +3518,6 @@
           "status": "done",
           "evidence": [
             "src/lib/usage/daily.ts",
-            "src/lib/billing/studio-topup.ts",
             "tests/daily-use-pg.test.ts"
           ]
         },
@@ -3631,9 +3617,7 @@
           "item": "Fraud monitoring for high-value actions",
           "status": "done",
           "evidence": [
-            "src/lib/billing/studio-topup.ts",
-            "src/lib/security/events.ts",
-            "tests/studio-topup.test.ts"
+            "src/lib/security/events.ts"
           ]
         },
         {

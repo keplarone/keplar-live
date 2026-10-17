@@ -15,7 +15,6 @@ const META: Record<View, { title: string; description: string }> = {
   slides: { title: "Slides", description: "Make a slideshow with Keplar." },
   study: { title: "Study", description: "Study with Keplar: flashcards, quizzes and notes." },
   history: { title: "All chats", description: "Every Keplar chat you have saved." },
-  studio: { title: "Keplar Studio", description: "Build in Roblox Studio or Blender with Keplar from the desktop app." },
   apps: { title: "Connected apps", description: "Connect apps to Keplar, choose what each tool may do, and let Ask use them with your approval." },
 };
 

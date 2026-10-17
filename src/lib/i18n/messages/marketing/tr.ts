@@ -205,26 +205,6 @@ const m: MarketingCatalog = {
         "name": "Davet programı",
         "line": "Bir arkadaşınızı davet edin; ikiniz de ek kullanım kazanırsınız, asla para değil."
       },
-      "roblox-studio": {
-        "name": "Roblox Studio modu",
-        "line": "Roblox Studio içinde bir yardımcı yapımcı: haritalar, arayüz, flipbook efektleri ve Luau betikleri, Claude Opus 5.5 ile.",
-        "note": "Masaüstü uygulaması, Lite ve üzeri."
-      },
-      "roblox-cloud": {
-        "name": "Roblox Cloud",
-        "line": "Oyununuzun betikleri üzerinde gece boyu çalışma; her düzenleme Luau çözümleyicisiyle denetlenir, siz istediğinizde Studio’da uygulanır.",
-        "note": "Yalnızca betikler; oyunu test edemez."
-      },
-      "blender": {
-        "name": "Blender modu",
-        "line": "Blender 4.2 veya üzerinde modelleme, Poly Haven PBR setleriyle doku, ışık ve dışa aktarma.",
-        "note": "Masaüstü uygulaması 0.1.8 veya üzeri."
-      },
-      "blender-cloud": {
-        "name": "Blender Cloud işleme",
-        "line": "Bilgisayarınız kapalıyken bir sahneyi Keplar sunucularında işleyin, sonra kareleri ve bir MP4'ü indirin.",
-        "note": "Masaüstü uygulaması 0.1.10 veya üzeri."
-      },
       "extension": {
         "name": "Keplar One tarayıcı uzantısı",
         "line": "Chrome veya Edge’de seçili metin ya da bir sayfa hakkında API anahtarınızla soru sorun.",

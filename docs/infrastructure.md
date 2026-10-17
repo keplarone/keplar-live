@@ -37,7 +37,7 @@ Last revised Oct 17, 2026.
 - **Keplar admin**: `KEPLAR_ADMIN_EMAILS` plus optional `KEPLAR_ADMIN_REQUIRE_MFA=1`; admin pages are 404 to everyone else; actions
   are written to the audit log and the security event log.
 - **Service-to-service**: Vercel Cron → `CRON_SECRET`; Inngest → signing key; ops checks → `OPS_CHECK_SECRET`; Whop/Stripe/Inngest
-  webhooks → signatures; Space Studio billing → HMAC.
+  webhooks → signatures.
 
 ## Network
 
@@ -46,7 +46,7 @@ Last revised Oct 17, 2026.
   else 404 (`src/proxy.ts`). No app, admin or API route exists on a foreign host.
 - Outbound: provider APIs by fixed hostnames; user-directed fetches (links, product import, MCP servers, connectors) go through the
   SSRF-safe client (`src/lib/mcp/ssrf.ts`: public addresses only, pinned connection, re-validated redirects, size and time caps); the
-  browser sandbox allows no network except the pinned Pyodide CDN; Blender machines reach only what their fixed script needs.
+  browser sandbox allows no network except the pinned Pyodide CDN.
 - Cloud metadata endpoints (169.254.169.254, link-local, loopback, private ranges) are refused by the SSRF client (tested).
 
 ## Platform protections
@@ -62,9 +62,8 @@ Last revised Oct 17, 2026.
 
 ## Containers, Kubernetes and host hardening
 
-Not applicable: Keplar runs no containers or clusters of its own. The only machines Keplar starts are Vercel Sandbox microVMs for Blender
-renders, created per job from `src/lib/blender-cloud/machine.ts`, with a fixed package list, no inbound ports, a timeout, and deletion
-after the job. Firecracker isolation (the sandbox product's own) is the sandbox boundary.
+Not applicable: Keplar runs no containers or clusters of its own. Draft previews can run in Vercel Sandbox
+(`src/lib/create/platform/config.ts`). Firecracker isolation (the sandbox product's own) is that boundary.
 
 ## Logging and audit
 
