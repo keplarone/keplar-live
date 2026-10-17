@@ -19,7 +19,7 @@ declare global {
 }
 
 export type EmbedConfig = { planId: string; metadata: Record<string, string>; returnUrl: string };
-/** `theme` pins the checkout's colour scheme (Keplar Business is always dark); without it the embed follows the site theme. */
+/** `theme` pins the checkout's colour scheme; without it the embed follows the site theme. */
 type Props = { config: EmbedConfig; planName: string; onPaid: () => void; onFallback?: () => void; theme?: "light" | "dark" };
 
 const siteAppearance = (): Appearance => ({ theme: { appearance: currentTheme() === "light" ? "light" : "dark" } });

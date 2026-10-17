@@ -6,7 +6,7 @@ import { BUSINESS_TIERS, listPriceFor, priceFor, usd, type BusinessTier } from "
 import { companySizes, estimatedUsers } from "@/lib/inquire/schema";
 import { BuildDemo } from "./BuildDemo";
 import { ProductDemo, ProductTiles, type DemoKind } from "./ProductTiles";
-import { ScrambleWord } from "./ScrambleWord";
+import { HeroWord } from "./HeroWord";
 import { SignOutButton } from "./SignOutButton";
 import { BusinessMark } from "./BusinessMark";
 import { BusinessFooter } from "./BusinessFooter";
@@ -189,6 +189,8 @@ export function Storefront() {
   const [signinFailed] = useState(() => typeof window !== "undefined" && Boolean(new URLSearchParams(window.location.search).get("signin")));
   const [scrolled, setScrolled] = useState(false);
   const [menu, setMenu] = useState(false);
+  // WCAG 2.2.2: the cycling hero word can be paused (it is still on phones and for reduced motion anyway).
+  const [heroPaused, setHeroPaused] = useState(false);
   const root = useRef<HTMLDivElement | null>(null);
   useReveal(root);
   useSmoothAnchors(root);
@@ -284,7 +286,7 @@ export function Storefront() {
       <section className={s.hero} aria-labelledby="hero-h">
         <a href="#download-app" className={s.chip}><span className={s.chipTag}>Desktop app</span>Windows, macOS and Linux<span aria-hidden="true">→</span></a>
         <h1 id="hero-h" className={s.h1} aria-label="Build anything. Let intelligence handle the complexity.">
-          <span aria-hidden="true">Build <ScrambleWord words={HERO_WORDS} className={s.morph} lineClassName={s.morphLine} />.</span>{" "}
+          <span aria-hidden="true">Build <HeroWord words={HERO_WORDS} className={s.morph} wordClassName={s.morphWord} paused={heroPaused} />.</span>{" "}
           <span className={s.h1Line} aria-hidden="true">Let intelligence handle the complexity.</span>
         </h1>
         <p className={s.lede}>Coding agents that plan, write, test and preview real software across several AI models, with research, design and automation in the same workspace. You review the result before anything ships.</p>
@@ -297,6 +299,10 @@ export function Storefront() {
           <Link href="/chatgpt" className={s.btnGhost}>Connect to ChatGPT</Link>
         </div>
         {start.sub ? <p className={s.heroSub}>{start.sub}</p> : null}
+        <button type="button" className={s.pauseBtn} onClick={() => setHeroPaused((x) => !x)}>
+          <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">{heroPaused ? <path d="M2.5 1.5v7l6-3.5z" fill="currentColor" /> : <path d="M2.5 1.5v7M7.5 1.5v7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />}</svg>
+          {heroPaused ? "Play headline animation" : "Pause headline animation"}
+        </button>
       </section>
 
       <div className={s.tiles}>

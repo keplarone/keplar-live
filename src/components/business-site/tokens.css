@@ -2,38 +2,97 @@
  * Keplar Business design tokens: one system for the site (business.keplar.one) and the workspace (/work and the desktop app).
  * Both surfaces put data-kb on their root and read only these semantic tokens, so the two never drift into separate looks.
  *
- * Near-black foundations, white and soft-grey type, hairline borders made of white at low opacity. Colour is functional only:
- * green for added lines and passing tests, red for removed lines and failures. No gradients, glows or decorative colour.
+ * Space UI (docs/design/space-ui.md): Keplar Business wears Space Studio's language, like the rest of the Keplar family. 3D
+ * primaries and glass secondaries, pill controls, 28px cards that separate by depth and light instead of outlines, Montserrat,
+ * the violet focus glow, Space Studio's curves.
+ *  - The storefront, /account, /chatgpt and the document pages follow the site theme (Light by default, Dark): their pages are
+ *    transparent so the family's shared sky shows through, with readable glass cards on top.
+ *  - The workspace (/work) is always dark (BusinessWorkspace pins the page to dark): solid panels, no sky.
+ * Colour carries meaning only: violet is focus and selection, blue is traffic and people, green is money and passing work,
+ * yellow is waiting for a person, red is failure.
  */
 [data-kb] {
-  /* surfaces */
-  --kb-bg: #0a0a0a;
-  --kb-surface: #121212;
-  --kb-surface-2: #171717;
-  --kb-surface-3: #1f1f1f;
-  --kb-overlay: rgba(10, 10, 10, 0.9);
-  /* hairlines */
-  --kb-border: rgba(255, 255, 255, 0.08);
-  --kb-border-strong: rgba(255, 255, 255, 0.14);
-  /* type: 7.9:1 and 5.9:1 on --kb-bg, both above WCAG AA for body text */
-  --kb-ink: #fafafa;
-  --kb-ink-2: #a1a1a1;
-  --kb-ink-3: #8b8b8b;
-  --kb-ink-inverse: #0a0a0a;
-  /* function, never decoration */
-  --kb-add: #4ade80;
-  --kb-add-bg: rgba(74, 222, 128, 0.08);
-  --kb-del: #f87171;
-  --kb-del-bg: rgba(248, 113, 113, 0.08);
-  --kb-focus: #fafafa;
+  /* ── light (the default) ── */
+  --kb-bg: #f7f8fa;
+  --kb-surface: #ffffff;
+  --kb-surface-2: #f1f3f6;
+  --kb-surface-3: #e6e8ee;
+  --kb-overlay: rgb(14 15 18 / 0.32);
+  /* No outlines: these lines only rule data tables. Surfaces use --kb-glass / --kb-depth. */
+  --kb-border: rgb(14 15 18 / 0.08);
+  --kb-border-strong: rgb(14 15 18 / 0.12);
+  /* type: AA on white and on the light page */
+  --kb-ink: #0e0f12;
+  --kb-ink-2: #4b4f58;
+  --kb-ink-3: #686d78;
+  --kb-ink-inverse: #ffffff;
+  --kb-nav-ink: #2c2f36;
+  /* meaning */
+  --kb-accent: #7d3bc4;
+  --kb-accent-rgb: 125 59 196;
+  --kb-accent-ink: #5f2a9a;
+  --kb-accent-soft: rgb(125 59 196 / 0.1);
+  --kb-blue: #2b6f8a;
+  --kb-blue-deep: #235d74;
+  --kb-green: #13865a;
+  --kb-green-deep: #0e6e49;
+  --kb-add: #13865a;
+  --kb-add-bg: rgb(19 134 90 / 0.1);
+  --kb-del: #c62c3b;
+  --kb-del-bg: rgb(198 44 59 / 0.08);
+  --kb-warn: #8a5a00;
+  --kb-focus: #7d3bc4;
 
-  /* type */
-  /* Google Sans for words, after x.ai's look (self-hosted by next/font); Geist only as a fallback */
-  --kb-sans: var(--biz-brand), "Google Sans", var(--biz-sans), "Geist", ui-sans-serif, system-ui, sans-serif;
-  /* Labels, figures and shortcuts use the same face as words (x.ai's look); only real code is monospace (--kb-code). */
+  /* Space recipes (light): white glass on the sky */
+  --kb-glass: linear-gradient(180deg, rgb(255 255 255 / 0.9), rgb(250 250 252 / 0.86));
+  --kb-glass-solid: linear-gradient(180deg, #ffffff, #fafbfc);
+  --kb-card-deep: linear-gradient(180deg, #ffffff, #f6f7fa);
+  --kb-card-featured: linear-gradient(180deg, #ffffff, #f7f2ff);
+  --kb-depth: inset 0 1px 0 #ffffff, 0 1px 2px rgb(14 15 18 / 0.05), 0 16px 40px -18px rgb(14 15 18 / 0.22);
+  --kb-depth-sm: inset 0 1px 0 #ffffff, 0 1px 2px rgb(14 15 18 / 0.05), 0 10px 26px -14px rgb(14 15 18 / 0.2);
+  --kb-lift: inset 0 1px 0 #ffffff, 0 2px 4px rgb(14 15 18 / 0.06), 0 24px 54px -22px rgb(14 15 18 / 0.3), 0 0 44px rgb(125 59 196 / 0.12);
+  --kb-featured-depth: inset 0 1px 0 #ffffff, 0 2px 4px rgb(14 15 18 / 0.06), 0 24px 54px -22px rgb(14 15 18 / 0.3), 0 0 50px rgb(125 59 196 / 0.16);
+  --kb-pill: rgb(255 255 255 / 0.86);
+  --kb-pill-depth: inset 0 1px 0 #ffffff, 0 1px 2px rgb(14 15 18 / 0.06), 0 12px 30px -12px rgb(14 15 18 / 0.25);
+  --kb-pill-hover: 0 14px 40px -10px rgb(125 59 196 / 0.3);
+  --kb-hover: rgb(14 15 18 / 0.05);
+  --kb-press: rgb(14 15 18 / 0.09);
+  --kb-selected: rgb(14 15 18 / 0.07);
+  --kb-wash: rgb(14 15 18 / 0.04);
+  --kb-field: rgb(14 15 18 / 0.05);
+  --kb-field-hover: rgb(14 15 18 / 0.07);
+  --kb-field-focus: #ffffff;
+  /* the field's edge holds 3:1 (WCAG 1.4.11) without reading as an outline */
+  --kb-field-depth: inset 0 1px 2px rgb(14 15 18 / 0.08), inset 0 0 0 1px rgb(14 15 18 / 0.5);
+  --kb-option-bg: #ffffff;
+  --kb-glow: 0 0 0 3px rgb(125 59 196 / 0.45), 0 0 22px rgb(125 59 196 / 0.28);
+  --kb-invalid: 0 0 0 2px rgb(198 44 59 / 0.5), 0 0 26px rgb(198 44 59 / 0.18);
+  /* 3D buttons: an ink face over a black ledge (primary), a white face over a grey ledge (secondary) */
+  --kb-p-face: linear-gradient(180deg, #3a3a42 0%, #1d1d22 55%, #0e0e12 100%);
+  --kb-p-ink: #ffffff;
+  --kb-p-depth: inset 0 1px 0 rgb(255 255 255 / 0.22), inset 0 -3px 0 rgb(0 0 0 / 0.25), 0 4px 0 #000000, 0 10px 22px rgb(14 15 18 / 0.3);
+  --kb-p-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.26), inset 0 -3px 0 rgb(0 0 0 / 0.25), 0 5px 0 #000000, 0 14px 30px rgb(14 15 18 / 0.34), 0 0 30px rgb(125 59 196 / 0.22);
+  --kb-p-depth-press: inset 0 1px 0 rgb(255 255 255 / 0.2), inset 0 -1px 0 rgb(0 0 0 / 0.25), 0 0 0 #000000, 0 3px 8px rgb(14 15 18 / 0.3);
+  --kb-p-ledge: #000000;
+  --kb-g-face: linear-gradient(180deg, #ffffff 0%, #f6f6f9 60%, #ececf1 100%);
+  --kb-g-depth: inset 0 1px 0 #ffffff, inset 0 -2px 0 rgb(14 15 18 / 0.05), 0 3px 0 #cfcfd8, 0 8px 18px rgb(14 15 18 / 0.12);
+  --kb-g-depth-hover: inset 0 1px 0 #ffffff, inset 0 -2px 0 rgb(14 15 18 / 0.05), 0 4px 0 #cfcfd8, 0 12px 26px rgb(14 15 18 / 0.16), 0 0 28px rgb(125 59 196 / 0.14);
+  --kb-g-depth-press: inset 0 1px 0 #ffffff, 0 0 0 #cfcfd8, 0 2px 6px rgb(14 15 18 / 0.12);
+  --kb-g-ledge: #cfcfd8;
+  --kb-grad: linear-gradient(100deg, #7d3bc4 0%, #b0368f 20%, #2b6f8a 40%, #8a4bc8 60%, #a8357c 80%, #7d3bc4 100%);
+  /* product examples: a dark terminal on both themes (code reads as code), the example window's frame follows the theme */
+  --kb-term: #0b0b10;
+  --kb-term-ink: #e8e8ec;
+  --kb-term-ink-2: #b3b3bb;
+  --kb-term-ink-3: #8a8a94;
+
+  /* ── theme-free ── */
+  /* type: Montserrat (the root layout's --font-sans, self-hosted by next/font), the family's one face; IBM Plex Mono for code */
+  --kb-sans: var(--font-sans), "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  /* Labels, figures and shortcuts use the same face as words; only real code is monospace (--kb-code). */
   --kb-mono: var(--kb-sans);
-  --kb-code: var(--biz-mono), "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  --kb-brand: var(--biz-brand), "Google Sans", var(--biz-sans), system-ui, sans-serif;
+  --kb-code: var(--font-mono), "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --kb-brand: var(--kb-sans);
   --kb-t-xs: 12px;
   --kb-t-sm: 13px;
   --kb-t-md: 14px;
@@ -41,8 +100,8 @@
   --kb-t-lead: 18px;
   --kb-t-h4: 20px;
   --kb-t-h3: 28px;
-  --kb-t-h2: clamp(32px, 4.2vw, 48px);
-  --kb-t-h1: clamp(40px, 6.4vw, 76px);
+  --kb-t-h2: clamp(32px, 4.2vw, 50px);
+  --kb-t-h1: clamp(42px, 6.4vw, 76px);
 
   /* space (4px base) */
   --kb-s-1: 4px;
@@ -56,97 +115,113 @@
   --kb-s-9: 96px;
   --kb-s-10: 144px;
 
-  /* shape: buttons are pills, everything else uses one of three radii */
-  --kb-r-sm: 6px;
-  --kb-r: 10px;
-  --kb-r-lg: 14px;
+  /* shape: every control is a pill; cards are 28px; panels 22px; small insets 14px */
+  --kb-r-sm: 14px;
+  --kb-r: 22px;
+  --kb-r-lg: 28px;
   --kb-r-pill: 999px;
 
-  /* motion */
-  --kb-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  /* motion: Space Studio's curves */
+  --kb-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --kb-ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --kb-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --kb-d-1: 120ms;
+  --kb-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --kb-spring-snappy: cubic-bezier(0.34, 1.36, 0.64, 1);
+  --kb-d-1: 140ms;
   --kb-d-2: 200ms;
-  --kb-d-3: 360ms;
-  --kb-d-4: 560ms;
+  --kb-d-3: 320ms;
+  --kb-d-4: 600ms;
 
   /* layout */
   --kb-max: 1200px;
   --kb-gutter: clamp(16px, 4vw, 32px);
 }
+
+/* ── dark: the site's Dark theme, always in the workspace (which pins the page to dark; the main[data-business-app] selector
+   also covers the first paint, before that pin runs), and on surfaces that are dark in both themes (data-kb-dark: the
+   storefront's example IDE window and terminals) ── */
+:root[data-theme="dark"] [data-kb], main[data-business-app] [data-kb], [data-kb] [data-kb-dark] {
+  --kb-bg: #000000;
+  --kb-surface: #0a0a0c;
+  --kb-surface-2: #141417;
+  --kb-surface-3: #1e1e23;
+  --kb-overlay: rgb(0 0 0 / 0.7);
+  --kb-border: rgb(255 255 255 / 0.05);
+  --kb-border-strong: rgb(255 255 255 / 0.09);
+  /* 19:1, 10:1 and 6.1:1 on black (4.9:1 even on --kb-surface-3) */
+  --kb-ink: #f4f4f6;
+  --kb-ink-2: #b3b3bb;
+  --kb-ink-3: #8a8a94;
+  --kb-ink-inverse: #000000;
+  --kb-nav-ink: #d6d6de;
+  --kb-accent: #c39bff;
+  --kb-accent-rgb: 195 155 255;
+  --kb-accent-ink: #e3cfff;
+  --kb-accent-soft: rgb(195 155 255 / 0.18);
+  --kb-blue: #7cb2ff;
+  --kb-blue-deep: #5a96ff;
+  --kb-green: #45e09a;
+  --kb-green-deep: #19b874;
+  --kb-add: #5fd49a;
+  --kb-add-bg: rgb(95 212 154 / 0.1);
+  --kb-del: #ff7a85;
+  --kb-del-bg: rgb(255 122 133 / 0.1);
+  --kb-warn: #ffd66b;
+  --kb-focus: #c39bff;
+
+  --kb-glass: linear-gradient(180deg, rgb(22 20 30 / 0.84), rgb(10 9 14 / 0.88));
+  --kb-glass-solid: linear-gradient(180deg, #100f16, #07070b);
+  --kb-card-deep: linear-gradient(180deg, #13121a, #0a090e);
+  --kb-card-featured: linear-gradient(180deg, rgb(32 26 46 / 0.97), rgb(12 10 18 / 0.97));
+  --kb-depth: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 24px 60px rgb(0 0 0 / 0.55);
+  --kb-depth-sm: inset 0 1px 0 rgb(255 255 255 / 0.055), 0 14px 36px rgb(0 0 0 / 0.45);
+  --kb-lift: inset 0 1px 0 rgb(255 255 255 / 0.1), 0 28px 70px rgb(0 0 0 / 0.6), 0 0 44px rgb(178 112 255 / 0.2);
+  --kb-featured-depth: inset 0 1px 0 rgb(255 255 255 / 0.1), 0 28px 70px rgb(0 0 0 / 0.6), 0 0 60px rgb(178 112 255 / 0.22);
+  --kb-pill: rgb(14 14 20 / 0.86);
+  --kb-pill-depth: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 16px 40px rgb(0 0 0 / 0.45);
+  --kb-pill-hover: 0 14px 44px rgb(176 104 255 / 0.3);
+  --kb-hover: rgb(255 255 255 / 0.07);
+  --kb-press: rgb(255 255 255 / 0.11);
+  --kb-selected: rgb(255 255 255 / 0.1);
+  --kb-wash: rgb(255 255 255 / 0.04);
+  --kb-field: rgb(255 255 255 / 0.06);
+  --kb-field-hover: rgb(255 255 255 / 0.08);
+  --kb-field-focus: rgb(255 255 255 / 0.09);
+  --kb-field-depth: inset 0 1px 0 rgb(255 255 255 / 0.04), inset 0 -8px 20px rgb(0 0 0 / 0.25), inset 0 0 0 1px rgb(255 255 255 / 0.32);
+  --kb-option-bg: #0e0d13;
+  --kb-glow: 0 0 0 3px rgb(195 155 255 / 0.55), 0 0 24px rgb(176 104 255 / 0.35);
+  --kb-invalid: 0 0 0 2px rgb(255 122 133 / 0.5), 0 0 30px rgb(255 122 133 / 0.2);
+  --kb-p-face: linear-gradient(180deg, #ffffff 0%, #ececf2 55%, #d9d9e2 100%);
+  --kb-p-ink: #000000;
+  --kb-p-depth: inset 0 1px 0 #ffffff, inset 0 -3px 0 rgb(0 0 0 / 0.1), 0 4px 0 #8c8a99, 0 10px 24px rgb(0 0 0 / 0.6);
+  --kb-p-depth-hover: inset 0 1px 0 #ffffff, inset 0 -3px 0 rgb(0 0 0 / 0.1), 0 5px 0 #8c8a99, 0 14px 30px rgb(0 0 0 / 0.6), 0 0 32px rgb(190 150 255 / 0.25);
+  --kb-p-depth-press: inset 0 1px 0 #ffffff, inset 0 -1px 0 rgb(0 0 0 / 0.1), 0 0 0 #8c8a99, 0 4px 10px rgb(0 0 0 / 0.5);
+  --kb-p-ledge: #8c8a99;
+  --kb-g-face: linear-gradient(180deg, rgb(40 38 52 / 0.92), rgb(18 17 24 / 0.94));
+  --kb-g-depth: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 3px 0 rgb(0 0 0 / 0.65), 0 14px 36px rgb(0 0 0 / 0.5);
+  --kb-g-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.12), 0 4px 0 rgb(0 0 0 / 0.65), 0 20px 46px rgb(0 0 0 / 0.55), 0 0 44px rgb(178 112 255 / 0.24);
+  --kb-g-depth-press: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 0 0 rgb(0 0 0 / 0.65), 0 6px 16px rgb(0 0 0 / 0.5);
+  --kb-g-ledge: rgb(0 0 0 / 0.65);
+  --kb-grad: linear-gradient(100deg, #b27cff 0%, #f08bd8 17%, #8ff0ff 34%, #a98cff 51%, #ff8fd0 68%, #c58cff 84%, #8fd8ff 100%);
+  --kb-term: #050507;
+  color-scheme: dark;
+}
+[data-kb] [data-kb-dark] { color: var(--kb-ink); }
 @media (prefers-reduced-motion: reduce) {
   [data-kb] { --kb-d-1: 0ms; --kb-d-2: 0ms; --kb-d-3: 0ms; --kb-d-4: 0ms; }
 }
+[data-kb] ::selection { background: rgb(var(--kb-accent-rgb) / 0.3); }
 
-/* Keplar One's cookie banner (rendered by the root layout, outside the Business page) takes the Business palette on
-   business.keplar.one and in the workspace, instead of Keplar One's light theme. */
-html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] {
-  --c-canvas: #0a0a0a;
-  --rgb-canvas: 18 18 18;
-  --c-surface-1: #171717;
-  --c-ink: #fafafa;
-  --c-ink-2: #a1a1a1;
-  --c-ink-3: #8b8b8b;
-  --c-ink-hover: #e2e2e2;
-  --c-border: rgba(255, 255, 255, 0.14);
-  --c-border-strong: rgba(255, 255, 255, 0.2);
-  --c-focus: #fafafa;
-  --rgb-ink: 250 250 250;
-  --btn-p-bg: #fafafa;
-  --btn-p-ink: #0a0a0a;
-  --btn-p-shadow: none;
-  color: #fafafa;
-  color-scheme: dark;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 24px 64px -16px rgba(0, 0, 0, 0.8);
-}
-
-/* The banner in x.ai's style on Business: a solid near-black card with a hairline and 16px corners, Google Sans, a white title
-   over grey text, a solid white pill (Accept all), a dark grey pill (Reject) and a plain grey text button (Customize).
-   No glass blur and no springy scale. Keplar One keeps its own banner. */
-html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] {
-  font-family: var(--font-sans), "Google Sans", system-ui, sans-serif;
-  background: #111; border: 0; border-radius: 16px; padding: 18px 18px 16px; gap: 6px;
-  -webkit-backdrop-filter: none; backdrop-filter: none;
-}
-html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__title"] { font-size: 15px; font-weight: 500; letter-spacing: -0.01em; color: #fafafa; }
-html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__text"] { font-size: 13px; line-height: 1.5; color: #a1a1a1; }
-html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__link"] { color: #fafafa; text-decoration-color: rgba(255, 255, 255, 0.35); }
-html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__actions"] { gap: 8px; margin-top: 8px; }
-html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] :is([class*="__primary"], [class*="__secondary"], [class*="__tertiary"]) {
-  min-height: 38px; padding: 0 16px; border: 0; border-radius: 999px; font-family: inherit; font-size: 13px; font-weight: 500;
-  box-shadow: none; transform: none; -webkit-backdrop-filter: none; backdrop-filter: none;
-  transition: background-color 120ms ease, color 120ms ease;
-}
-html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__primary"] { background: #fafafa; color: #0a0a0a; }
-html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__primary"]:hover:not(:disabled) { background: #e2e2e2; transform: none; }
-html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__secondary"] { background: #262626; color: #fafafa; }
-html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__secondary"]:hover { background: #303030; }
-html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__tertiary"] { background: transparent; color: #a1a1a1; text-decoration: none; padding: 0 10px; }
-html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__tertiary"]:hover { color: #fafafa; }
-html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__cat"] { font-size: 13px; color: #a1a1a1; }
-html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__cat"] b { color: #fafafa; font-weight: 500; }
-@media (pointer: coarse), (max-width: 640px) {
-  html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] :is([class*="__primary"], [class*="__secondary"], [class*="__tertiary"]) { min-height: 44px; }
-}
-@media (max-width: 640px) {
-  /* all three on one row at 390px */
-  html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] :is([class*="__primary"], [class*="__secondary"]) { padding: 0 13px; }
-  html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__tertiary"] { padding: 0 6px; }
-  html:has([data-kb]) [class*="CookieBanner-module__"][class*="__banner"] [class*="__actions"] { gap: 6px; }
-}
-
-/* Scrollbars on Business pages (site and workspace): dark and slim, a rounded grey thumb on the black page, no arrow buttons.
-   The page behind is Keplar One's html, whose theme may be light, so Business pins the canvas and scrollbar to dark. */
-/* !important: the root layout and the theme script set color-scheme inline on <html> (Keplar One's light/dark). */
-html:has(main[data-kb]) { color-scheme: dark !important; background: #0a0a0a; scrollbar-width: thin; scrollbar-color: #2f2f2f #0a0a0a; }
-[data-kb] * { scrollbar-width: thin; scrollbar-color: #2f2f2f transparent; }
-/* Safari and older Chromium read these instead */
-html:has(main[data-kb])::-webkit-scrollbar, [data-kb] *::-webkit-scrollbar { width: 10px; height: 10px; background: transparent; }
-html:has(main[data-kb])::-webkit-scrollbar { background: #0a0a0a; }
-html:has(main[data-kb])::-webkit-scrollbar-thumb, [data-kb] *::-webkit-scrollbar-thumb { background: #2f2f2f; border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
-html:has(main[data-kb])::-webkit-scrollbar-thumb:hover, [data-kb] *::-webkit-scrollbar-thumb:hover { background: #4a4a4a; background-clip: content-box; }
-html:has(main[data-kb])::-webkit-scrollbar-button, [data-kb] *::-webkit-scrollbar-button { display: none; }
-html:has(main[data-kb])::-webkit-scrollbar-corner, [data-kb] *::-webkit-scrollbar-corner { background: transparent; }
+/* The workspace's scrollbars: dark and slim, a rounded grey thumb, no arrow buttons. The page behind is Keplar One's html, so
+   the workspace pins the canvas and scrollbar to dark (!important: the theme script sets color-scheme inline on <html>). The
+   storefront pages follow the site theme and keep the browser's own scrollbars. */
+html:has(main[data-business-app]) { color-scheme: dark !important; background: #000; scrollbar-width: thin; scrollbar-color: #2a2a31 #000; }
+main[data-business-app] [data-kb] * { scrollbar-width: thin; scrollbar-color: #2a2a31 transparent; }
+main[data-business-app] [data-kb] *::-webkit-scrollbar { width: 10px; height: 10px; background: transparent; }
+main[data-business-app] [data-kb] *::-webkit-scrollbar-thumb { background: #2a2a31; border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
+main[data-business-app] [data-kb] *::-webkit-scrollbar-thumb:hover { background: #45454f; background-clip: content-box; }
+main[data-business-app] [data-kb] *::-webkit-scrollbar-button { display: none; }
+main[data-business-app] [data-kb] *::-webkit-scrollbar-corner { background: transparent; }
 
 /* Phones: every field on a Business page is at least 16px, so iOS Safari never zooms the page on focus. */
 @media (max-width: 640px), (pointer: coarse) {
