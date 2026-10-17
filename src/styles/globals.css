@@ -10,7 +10,6 @@
 @import "./mobile.css";
 @import "./motion.css";
 @import "./light.css";
-@import "./aura.css";
 @import "./prefs.css";
 @import "./space.css"; /* Space UI: tokens, motion, components (docs/design/space-ui.md). Last, so its rules win. */
 

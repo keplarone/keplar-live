@@ -70,6 +70,6 @@
 }
 
 /* Light theme: graphite beats on the warm stage (Dark above unchanged) */
-:global(:root[data-theme="light"]) .beat { color: #2a2b30; text-shadow: 0 0 2px rgb(250 249 247 / 0.9), 0 1px 12px rgb(250 249 247 / 0.7); }
+:global(:root[data-theme="light"]) .beat { color: #2a2b30; text-shadow: none; }
 :global(:root[data-theme="light"]) .mark { background: rgb(17 17 19 / 0.45); }
 :global(:root[data-theme="light"]) .text { color: #2f3035; }

@@ -400,13 +400,11 @@ void main(){
 export const SPARK_FRAG = /* glsl */ `
 precision highp float; uniform vec3 uInk; uniform float uAlpha; varying float vA;
 void main(){
-  vec2 c = gl_PointCoord - 0.5; float r = length(c) * 2.0; if (r > 1.0) discard;
-  float core = exp(-r * r * 30.0), halo = exp(-r * r * 5.0) * 0.32;
-  float spikes = (exp(-abs(c.x) * 70.0) * exp(-abs(c.y) * 7.0) + exp(-abs(c.y) * 70.0) * exp(-abs(c.x) * 7.0)) * 0.4;
-  gl_FragColor = vec4(uInk, clamp(core + halo + spikes, 0.0, 1.0) * vA * uAlpha);
+  vec2 c = gl_PointCoord - 0.5; float r = length(c) * 2.0; if (r > 0.7) discard;
+  gl_FragColor = vec4(uInk, vA * uAlpha);
 }`;
 
-/* the sun just off frame: a warm corona whose outer glow reaches into the picture (a cheap stand-in for bloom) */
+/* the sun just off frame: a small disc, with no corona */
 export const SUN_VERT = /* glsl */ `
 uniform vec3 uSun; uniform float uSize; varying vec2 vUv;
 void main(){ vUv = position.xy; vec4 mv = viewMatrix * vec4(uSun, 1.0); mv.xy += position.xy * uSize; gl_Position = projectionMatrix * mv; }`;
@@ -414,9 +412,6 @@ export const SUN_FRAG = /* glsl */ `
 precision highp float; uniform float uSunOn, uAlpha, uTime; varying vec2 vUv;
 void main(){
   float r = length(vUv);
-  float core = 1.0 - smoothstep(0.045, 0.06, r);
-  float corona = exp(-r * 7.0) * 0.5 + exp(-r * 2.6) * 0.14;
-  float rays = (0.5 + 0.5 * sin(atan(vUv.y, vUv.x) * 14.0 + uTime * 0.04)) * exp(-r * 5.0) * 0.1;
-  float a = (core + corona + rays) * (1.0 - smoothstep(0.8, 1.0, r));
-  gl_FragColor = vec4(vec3(1.0, 0.93, 0.82), clamp(a, 0.0, 1.0) * uSunOn * uAlpha);
+  if (r > 0.06) discard;
+  gl_FragColor = vec4(vec3(0.93, 0.9, 0.84), uSunOn * uAlpha);
 }`;

@@ -54,7 +54,7 @@
   text-decoration: none;
   transition: background-color 0.3s ease, box-shadow 0.5s var(--space-ease-out);
 }
-.brand:hover { box-shadow: var(--nav-shadow), 0 14px 44px rgb(176 104 255 / 0.3); }
+.brand:hover { box-shadow: var(--nav-shadow); }
 .mark { flex: none; transition: transform 0.8s var(--space-ease-out); }
 .brand:hover .mark { transform: rotate(-14deg) scale(0.94); }
 .word { font-size: 16px; font-weight: var(--w-bold); letter-spacing: -0.02em; }
@@ -79,7 +79,7 @@
 .link[aria-current="page"] {
   color: var(--space-p-ink);
   background: var(--space-p-face);
-  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12), 0 6px 20px rgb(var(--ring-rgb) / 0.18);
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12);
   font-weight: var(--w-bold);
 }
 
@@ -95,7 +95,7 @@
   color: var(--nav-link);
   transition: color 0.3s ease, box-shadow 0.5s var(--space-ease-out);
 }
-.icon:hover { color: var(--nav-ink); box-shadow: var(--nav-shadow), 0 10px 32px rgb(176 104 255 / 0.25); }
+.icon:hover { color: var(--nav-ink); box-shadow: var(--nav-shadow); }
 .theme { flex: none; }
 .signIn {
   display: inline-flex;
@@ -110,7 +110,7 @@
   white-space: nowrap;
   transition: box-shadow 0.5s var(--space-ease-out);
 }
-.signIn:hover { box-shadow: var(--nav-shadow), 0 10px 32px rgb(176 104 255 / 0.25); }
+.signIn:hover { box-shadow: var(--nav-shadow); }
 /* the one CTA: Space Studio's 3D white button (ink in light) */
 .cta {
   display: inline-flex;

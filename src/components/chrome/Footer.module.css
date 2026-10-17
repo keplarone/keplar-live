@@ -3,7 +3,6 @@
   position: relative;
   z-index: var(--z-content);
   background:
-    radial-gradient(60% 120px at 50% 0, rgb(var(--ring-rgb) / 0.12), transparent 100%),
     linear-gradient(rgb(var(--rgb-canvas) / 0.6), rgb(var(--rgb-canvas) / 0.96) 160px);
   padding: var(--s-20) var(--l-gutter) var(--s-8);
 }

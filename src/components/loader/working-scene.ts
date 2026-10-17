@@ -1,4 +1,4 @@
-import { AdditiveBlending, BufferAttribute, BufferGeometry, Color, NormalBlending, PerspectiveCamera, Points, Scene, ShaderMaterial, WebGLRenderer } from "three";
+import { BufferAttribute, BufferGeometry, Color, NormalBlending, PerspectiveCamera, Points, Scene, ShaderMaterial, WebGLRenderer } from "three";
 import { swarmSeeds, workingDpr, workingPoints, workingState, type WorkingInput } from "@/lib/working-hard";
 
 /** three.js side of WorkingHard. Loaded lazily (dynamic import) only when the device is allowed to animate. */
@@ -33,9 +33,8 @@ uniform vec3 uColor; uniform float uGlow;
 varying float vK;
 void main() {
   float d = length(gl_PointCoord - 0.5) * 2.0;
-  if (d > 1.0) discard;
-  float a = (1.0 - smoothstep(0.0, 1.0, d)) * vK * uGlow;
-  gl_FragColor = vec4(uColor, a);
+  if (d > 0.7) discard;
+  gl_FragColor = vec4(uColor, vK * uGlow);
 }`;
 
 export function createWorkingScene(canvas: HTMLCanvasElement, hooks: { onError?: () => void } = {}): WorkingScene {
@@ -67,7 +66,7 @@ export function createWorkingScene(canvas: HTMLCanvasElement, hooks: { onError?:
   let t = 0, last = performance.now(), phase = 0, raf = 0, visible = true, disposed = false;
   const applyTheme = () => {
     u.uColor.value.setRGB(dark ? 0.95 : 0.09, dark ? 0.95 : 0.09, dark ? 0.97 : 0.1);
-    mat.blending = dark ? AdditiveBlending : NormalBlending;
+    mat.blending = NormalBlending;
     mat.needsUpdate = true;
   };
   applyTheme();

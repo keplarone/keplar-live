@@ -9,6 +9,7 @@ import { ModelStack } from "./ModelStack";
 import { DemoWindow } from "./DemoWindow";
 import { FeatureList } from "./FeatureList";
 import { ParticleStory } from "./ParticleStory";
+import { LandingClouds } from "./clouds/LandingClouds";
 import { HeroCta } from "@/components/growth/HeroCta";
 import { MoreButton, MoreRoot } from "@/components/ui/MobileMore";
 import s from "./Sky.module.css";
@@ -32,7 +33,7 @@ const STEPS = [
   { title: "You get one answer", body: "Their views are compared claim by claim and combined into one answer, with any disagreement shown." },
 ];
 
-/** The light, Space-inspired home: hero, animated product window that zooms in on scroll, feature list, the particle scroll scene for the steps, use cases and the live demo. */
+/** The home: a calm cloud sky, hero, product window, feature list, the three steps, use cases and the live demo. */
 export function SkyHome({ pricing }: { pricing?: React.ReactNode }) {
   const cases = allUseCases();
   const useCases = USE_CASES.map((u) => ({ ...u, data: cases.find((c) => c.slug === u.slug) })).filter((u) => u.data);
@@ -41,6 +42,7 @@ export function SkyHome({ pricing }: { pricing?: React.ReactNode }) {
 
   return (
     <div className={s.home}>
+      <LandingClouds />
       <section className={s.hero} aria-labelledby="hero-title">
         <p className={s.badge}>
           <ModelStack />

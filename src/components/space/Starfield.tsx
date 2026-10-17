@@ -4,36 +4,30 @@ import { useEffect, useRef } from "react";
 import { isPhone } from "@/lib/fx/lite";
 import { isMotionPaused } from "./motion-pause";
 import {
-  AdditiveBlending,
   BufferAttribute,
   BufferGeometry,
-  CanvasTexture,
   Color,
   Group,
   Mesh,
+  NormalBlending,
   OrthographicCamera,
   PerspectiveCamera,
   PlaneGeometry,
   Points,
   Scene,
   ShaderMaterial,
-  SRGBColorSpace,
-  Sprite,
-  SpriteMaterial,
   WebGLRenderer,
 } from "three";
 
 /**
  * The Space Studio universe. Scrolling the page is a journey: the camera starts in open space, flies forward through a star
- * field, past nebula auras and along the Milky Way, and arrives inside a dense star cluster at the end of the page.
+ * field, along the Milky Way, and arrives inside a dense star cluster at the end of the page. Stars are hard discs.
  *
  * - Stars: one THREE.Points spread along the flight path. Colours follow stellar temperature (blue-white O/B stars are rare,
- *   orange and red K/M stars are common) and brightness follows a power law (many faint stars, a few bright ones with halos and
- *   diffraction spikes). Twinkle is a small scintillation in the shader.
- * - Milky Way: a second, finer Points layer packed around a tilted plane, plus soft dust glows, far behind everything.
- * - Auras: soft procedural nebula sprites (fbm noise drawn once on a canvas) placed along the path in several colours.
+ *   orange and red K/M stars are common) and brightness follows a power law. Each star is a hard disc.
+ * - Milky Way: a second, finer Points layer packed around a tilted plane, far behind everything.
  * - Cluster: a dense globular cluster of stars the camera flies into at the end of the scroll (no planets).
- * - Shooting stars: streak quads in a screen-space overlay with a bright head and a long fading tail.
+ * - Shooting stars: thin streak quads in a screen-space overlay.
  *
  * Budget: DPR capped at 2, ≤ 40 fps, pauses when the tab is hidden or the canvas is off screen. Reduced motion and phones
  * (isPhone, 640px and narrower) draw one still frame (no twinkle, drift, flight or parallax). The canvas is fixed behind the page with pointer-events: none.
@@ -89,14 +83,8 @@ const STAR_FRAGMENT = /* glsl */ `
   varying float vBright;
   void main() {
     vec2 c = gl_PointCoord - 0.5;
-    float d = length(c);
-    float core = exp(-d * d * 60.0);              // tight bright core
-    float halo = exp(-d * 9.0) * 0.35;            // soft halo
-    float big = smoothstep(4.0, 9.0, vBright);    // spikes only on the brightest stars
-    float spikes = (exp(-abs(c.x) * 70.0) * exp(-abs(c.y) * 5.0) + exp(-abs(c.y) * 70.0) * exp(-abs(c.x) * 5.0)) * big * 0.9;
-    float a = (core + halo + spikes) * vTwinkle;
-    if (a < 0.004) discard;
-    gl_FragColor = vec4(vColor * a, a);
+    if (length(c) > 0.42) discard;
+    gl_FragColor = vec4(vColor * vTwinkle, 1.0);
   }
 `;
 
@@ -110,62 +98,13 @@ const STREAK_FRAGMENT = /* glsl */ `
   varying vec2 vUv;
   void main() {
     // uv.x: 0 = tail, 1 = head. uv.y: across the streak.
-    float across = exp(-pow((vUv.y - 0.5) * 6.0, 2.0));
-    float along = pow(vUv.x, 2.6);
-    float head = exp(-pow((1.0 - vUv.x) * 40.0, 2.0)) * 2.2;
-    float a = (along + head) * across * uLife;
-    gl_FragColor = vec4(mix(uColor, vec3(1.0), head * 0.5) * a, a);
+    float across = step(0.38, 1.0 - abs(vUv.y - 0.5) * 2.0);
+    float along = step(0.08, vUv.x);
+    float a = along * across * uLife;
+    if (a < 0.04) discard;
+    gl_FragColor = vec4(uColor, a);
   }
 `;
-
-/** A soft nebula texture: layered value noise masked by a radial falloff, drawn once on a small canvas. */
-function nebulaTexture(seed: number, tint: [number, number, number], tint2: [number, number, number]): CanvasTexture {
-  const size = 256;
-  const cv = document.createElement("canvas");
-  cv.width = cv.height = size;
-  const ctx = cv.getContext("2d")!;
-  const img = ctx.createImageData(size, size);
-  const rnd = (x: number, y: number) => {
-    const s = Math.sin(x * 127.1 + y * 311.7 + seed * 74.7) * 43758.5453;
-    return s - Math.floor(s);
-  };
-  const noise = (x: number, y: number) => {
-    const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
-    const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
-    const a = rnd(xi, yi), b = rnd(xi + 1, yi), c = rnd(xi, yi + 1), d = rnd(xi + 1, yi + 1);
-    return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
-  };
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const nx = x / size, ny = y / size;
-      let f = 0, amp = 0.55, freq = 3;
-      for (let o = 0; o < 6; o++) { f += amp * noise(nx * freq + seed, ny * freq - seed); freq *= 2.1; amp *= 0.5; }
-      const dx = nx - 0.5, dy = ny - 0.5;
-      const fall = Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy) * 2);
-      const v = Math.pow(Math.max(0, f - 0.32), 1.6) * fall * fall * 2.4;
-      const mix = Math.min(1, Math.max(0, (f - 0.4) * 2.5));
-      const i = (y * size + x) * 4;
-      img.data[i] = (tint[0] * (1 - mix) + tint2[0] * mix);
-      img.data[i + 1] = (tint[1] * (1 - mix) + tint2[1] * mix);
-      img.data[i + 2] = (tint[2] * (1 - mix) + tint2[2] * mix);
-      img.data[i + 3] = Math.min(255, v * 255);
-    }
-  }
-  ctx.putImageData(img, 0, 0);
-  const tex = new CanvasTexture(cv);
-  tex.colorSpace = SRGBColorSpace;
-  return tex;
-}
-
-// Auras along the path: [x, y, z, size, colour A, colour B, opacity]. Colours are emission-like: hydrogen red/pink, oxygen teal, dust blue.
-const AURAS: [number, number, number, number, [number, number, number], [number, number, number], number][] = [
-  [-95, 40, -120, 200, [120, 150, 255], [190, 120, 255], 0.95],
-  [110, -50, -260, 230, [255, 110, 150], [255, 170, 110], 0.9],
-  [-80, -35, -430, 260, [70, 210, 220], [110, 140, 255], 0.9],
-  [100, 55, -600, 280, [200, 110, 255], [255, 120, 170], 0.85],
-  [-110, 15, -780, 320, [255, 150, 90], [255, 90, 120], 0.8],
-  [-40, 70, -960, 340, [90, 160, 255], [80, 220, 210], 0.75],
-];
 
 type Streak = { mesh: Mesh; mat: ShaderMaterial; x: number; y: number; vx: number; vy: number; len: number; age: number; max: number };
 
@@ -223,7 +162,7 @@ export default function Starfield() {
     const starMat = new ShaderMaterial({
       vertexShader: STAR_VERTEX, fragmentShader: STAR_FRAGMENT,
       uniforms: { uTime: { value: 0 }, uMotion: { value: reduced ? 0 : 1 }, uPixelRatio: { value: pixelRatio }, uScale: { value: 300 } },
-      transparent: true, depthWrite: false, blending: AdditiveBlending,
+      transparent: true, depthWrite: false, blending: NormalBlending,
     });
     const stars = new Points(starGeo, starMat);
     stars.frustumCulled = false;
@@ -259,32 +198,7 @@ export default function Starfield() {
     bandPoints.frustumCulled = false;
     band.add(bandPoints);
     disposers.push(() => { bandGeo.dispose(); bandMat.dispose(); });
-    // Dust glow along the band.
-    const dustTex = nebulaTexture(11, [255, 214, 170], [150, 170, 255]);
-    for (let i = 0; i < 7; i++) {
-      const mat = new SpriteMaterial({ map: dustTex, color: 0xffffff, transparent: true, opacity: 0.35, blending: AdditiveBlending, depthWrite: false });
-      const sp = new Sprite(mat);
-      sp.position.set((i - 3) * 420 + (Math.random() - 0.5) * 120, (Math.random() - 0.5) * 60, 0);
-      sp.scale.set(900, 520, 1);
-      band.add(sp);
-      disposers.push(() => mat.dispose());
-    }
-    disposers.push(() => dustTex.dispose());
     world.add(band);
-
-    // ---- nebula auras along the path ----
-    const auras: Sprite[] = [];
-    AURAS.forEach(([x, y, z, size, a, b, opacity], i) => {
-      const tex = nebulaTexture(i * 3.7 + 1.3, a, b);
-      const mat = new SpriteMaterial({ map: tex, transparent: true, opacity, blending: AdditiveBlending, depthWrite: false });
-      const sp = new Sprite(mat);
-      sp.position.set(x, y, z);
-      sp.scale.set(size, size * 0.72, 1);
-      sp.material.rotation = Math.random() * Math.PI;
-      world.add(sp);
-      auras.push(sp);
-      disposers.push(() => { tex.dispose(); mat.dispose(); });
-    });
 
     // ---- the cluster at the end of the journey: a dense ball of stars the camera flies into ----
     const clusterCount = mobile ? 2_500 : 6_000;
@@ -326,7 +240,7 @@ export default function Starfield() {
       const mat = new ShaderMaterial({
         vertexShader: STREAK_VERTEX, fragmentShader: STREAK_FRAGMENT,
         uniforms: { uLife: { value: 0 }, uColor: { value: new Color(Math.random() < 0.7 ? "#cfe0ff" : "#ffe6c4") } },
-        transparent: true, depthWrite: false, blending: AdditiveBlending,
+        transparent: true, depthWrite: false, blending: NormalBlending,
       });
       const mesh = new Mesh(streakGeo, mat);
       overlay.add(mesh);
@@ -369,7 +283,6 @@ export default function Starfield() {
       camera.position.set(eased.x * 6, -eased.y * 4, -p * PATH + Math.sin(t * 0.05) * 2);
       camera.lookAt(eased.x * 2, -eased.y * 1.5 - p * 18, camera.position.z - 100);
       camera.rotation.z += Math.sin(t * 0.02) * 0.01;
-      for (let i = 0; i < auras.length; i++) auras[i]!.material.rotation += 0.0006 * (i % 2 ? 1 : -1);
       cluster.rotation.z = t * 0.004;
     };
 

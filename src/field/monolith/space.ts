@@ -1,6 +1,5 @@
 import {
-  AdditiveBlending, BackSide, BufferGeometry, DoubleSide, Float32BufferAttribute, Group, IcosahedronGeometry, LineSegments, Matrix4, Mesh, NormalBlending,
-  PerspectiveCamera, PlaneGeometry, Points, Quaternion, RingGeometry, ShaderMaterial, Vector2, Vector3, Vector4, type Blending, type Object3D, type Scene, type WebGLRenderer,
+  NormalBlending, BackSide, BufferGeometry, DoubleSide, Float32BufferAttribute, Group, IcosahedronGeometry, LineSegments, Matrix4, Mesh, PerspectiveCamera, PlaneGeometry, Points, Quaternion, RingGeometry, ShaderMaterial, Vector2, Vector3, Vector4, type Blending, type Object3D, type Scene, type WebGLRenderer,
 } from "three";
 import {
   ATMO_FRAG, ATMO_VERT, AUR_FRAG, AUR_VERT, GAL_FRAG, GAL_VERT, MIST_FRAG, MIST_VERT, NEB_FRAG, NEB_VERT, PATH_FRAG, PATH_VERT, PLANET_FRAG, PLANET_VERT,
@@ -123,7 +122,7 @@ export class SpaceLayer {
     this.galPts = add(new Points(gg, this.galM), -2) as Points;
     this.galPts.position.set(-9, 17, -84); this.galPts.rotation.set(1.05, 0.25, 0.3); this.galPts.scale.setScalar(36);
 
-    // sun (off-frame warm corona — cheap bloom stand-in)
+    // sun (a small disc, off frame)
     const sug = new PlaneGeometry(2, 2); this.geos.push(sug);
     this.sunM = mat(SUN_VERT, SUN_FRAG, { uSun: { value: this.sunPos }, uSize: { value: 22 }, uSunOn: { value: 0.55 } }, {}, true);
     this.sunMesh = add(new Mesh(sug, this.sunM), -2.5) as Mesh;
@@ -139,7 +138,7 @@ export class SpaceLayer {
       }, { depthTest: true, depthWrite: true, blending: NormalBlending }, true);
       const atmoM = mat(ATMO_VERT, ATMO_FRAG, {
         uPlanet: { value: 0 }, uAtmo: { value: new Vector3(...p.atmo) }, uSunDir: { value: new Vector3() }, uShell: { value: 1.14 },
-      }, { side: BackSide, depthTest: true, depthWrite: false, blending: AdditiveBlending }, true);
+      }, { side: BackSide, depthTest: true, depthWrite: false, blending: NormalBlending }, true);
       this.planetBodyM.push(bodyM); this.planetAtmoM.push(atmoM);
       const group = new Group();
       const body = new Mesh(pgeo, bodyM); body.renderOrder = 0;
@@ -190,7 +189,7 @@ export class SpaceLayer {
     this.pathM = mat(PATH_VERT, PATH_FRAG, {
       uA: { value: this.pathA }, uB: { value: this.pathB }, uC: { value: this.pathC }, uP: { value: pathP },
       uHue: { value: pathHues }, uAspect: { value: 1 }, uWidth: { value: 0.004 }, uFlow: { value: 0 }, uScan: { value: 0 }, uPathOn: { value: 0 },
-    }, { side: DoubleSide, blending: AdditiveBlending, depthTest: false });
+    }, { side: DoubleSide, blending: NormalBlending, depthTest: false });
     this.pathMesh = add(new Mesh(pathG, this.pathM), 5) as Mesh;
 
     // spark (question) + answer point
@@ -201,7 +200,7 @@ export class SpaceLayer {
       uS: { value: new Vector4(0, 0, 0, 0) },
       uQ: { value: new Vector4(0, 0, 0, 0) },
       uSize: { value: 18 },
-    }, { blending: AdditiveBlending, depthTest: false });
+    }, { blending: NormalBlending, depthTest: false });
     this.sparkPts = add(new Points(spkG, this.sparkM), 12) as Points;
 
     // orbit rings around the monolith
@@ -228,7 +227,7 @@ export class SpaceLayer {
   }
 
   setInk(ink: readonly number[], additive: boolean, light: boolean) {
-    const blending: Blending = additive ? AdditiveBlending : NormalBlending;
+    const blending: Blending = additive ? NormalBlending : NormalBlending;
     for (const m of this.mats) {
       if (!this.chromatic.has(m)) {
         (m.uniforms.uInk.value as Vector3).set(ink[0], ink[1], ink[2]);

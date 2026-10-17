@@ -136,14 +136,14 @@
   --ks-danger-depth-press: var(--space-d-depth-press);
   --ks-press-y: var(--space-ledge);
   --ks-switch-on: linear-gradient(90deg, #a467f0, #d76cff);
-  --ks-switch-on-glow: 0 0 18px rgb(176 104 255 / 0.35);
+  --ks-switch-on-glow: none;
   --ks-switch-thumb-on: #ffffff;
   /* segmented control: a glass track and Space Studio's lit thumb (white in dark, ink in light) */
   --ks-seg-pad: 4px;
   --ks-seg-track: var(--nav-fill);
   --ks-seg-track-depth: var(--nav-shadow);
   --ks-seg-thumb: var(--space-p-face);
-  --ks-seg-thumb-depth: inset 0 -2px 0 rgb(0 0 0 / 0.12), 0 6px 20px rgb(var(--ring-rgb) / 0.18);
+  --ks-seg-thumb-depth: inset 0 -2px 0 rgb(0 0 0 / 0.12);
   --ks-seg-thumb-ink: var(--space-p-ink);
   --ks-control-radius: 999px;
   --ks-icon-stroke: 1.6;

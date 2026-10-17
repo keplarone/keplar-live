@@ -39,7 +39,7 @@
 
 .plan[data-plan="plus"],
 .plan[data-plan="plus"]:hover {
-  box-shadow: var(--space-glass-lift), 0 0 56px -10px rgb(var(--ring-rgb) / 0.45);
+  box-shadow: var(--space-glass-lift);
 }
 
 .plan[data-plan="business"] {
@@ -204,7 +204,7 @@
 
 .bars i[data-on] {
   background: linear-gradient(90deg, #a467f0, #d76cff);
-  box-shadow: 0 0 10px rgb(var(--space-aura) / 0.45);
+  box-shadow: none;
 }
 
 @media (max-width: 1080px) {

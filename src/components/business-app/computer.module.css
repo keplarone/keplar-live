@@ -6,13 +6,13 @@
 .card .goal:focus-visible, .card .goal:focus { outline: none; background-color: var(--kb-field-focus); box-shadow: var(--kb-field-depth), var(--kb-glow); }
 .examples { display: flex; flex-wrap: wrap; gap: 6px; }
 .example { height: 34px; padding: 0 16px; border: 0; border-radius: var(--kb-r-pill); background: rgb(18 17 25 / 0.9); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05); color: #c4c4cc; font: inherit; font-size: var(--kb-t-xs); font-weight: 600; cursor: pointer; transition: color 0.3s ease, box-shadow 0.45s var(--kb-ease), translate 0.45s var(--kb-spring-snappy); }
-.example:hover:not(:disabled) { color: #fff; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 10px 30px rgb(176 104 255 / 0.28); translate: 0 -2px; }
+.example:hover:not(:disabled) { color: #fff; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07); translate: 0 -2px; }
 .card .example:focus-visible { outline: none; box-shadow: var(--kb-glow); }
 .controls { display: flex; align-items: center; gap: 10px; }
 .check { display: inline-flex; align-items: center; gap: 8px; font-size: var(--kb-t-sm); font-weight: 600; color: var(--kb-ink-2); cursor: pointer; }
 .check input { accent-color: #b27cff; width: 16px; height: 16px; }
 .grow { flex: 1; }
-.warn { margin: 0; padding: 14px 18px; border-radius: 22px; background: rgb(255 214 107 / 0.08); box-shadow: 0 0 30px rgb(255 214 107 / 0.08); font-size: var(--kb-t-sm); color: var(--kb-ink); line-height: 1.55; }
+.warn { margin: 0; padding: 14px 18px; border-radius: 22px; background: rgb(255 214 107 / 0.08); box-shadow: none; font-size: var(--kb-t-sm); color: var(--kb-ink); line-height: 1.55; }
 .log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; font-size: var(--kb-t-sm); }
 .log li { padding: 8px 14px; border-radius: 16px; color: var(--kb-ink-2); animation: in 0.5s var(--kb-ease-expo) both; }
 .log li:nth-child(odd) { background: rgb(255 255 255 / 0.03); }

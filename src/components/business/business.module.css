@@ -18,11 +18,11 @@
 .tabs { display: flex; gap: 2px; padding: 5px; border-radius: 999px; background: var(--nav-fill); box-shadow: var(--nav-shadow); overflow-x: auto; max-width: 100%; scrollbar-width: none; }
 .tab { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 16px; border: 0; border-radius: 999px; background: transparent; color: var(--c-ink-2); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; transition: color 0.35s ease, background 0.5s var(--space-spring-bouncy), box-shadow 0.5s var(--space-spring-bouncy); }
 .tab:hover { color: var(--c-ink); }
-.tab[aria-selected="true"] { background: var(--space-p-face); color: var(--space-p-ink); box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12), 0 6px 20px rgb(var(--ring-rgb) / 0.18); }
+.tab[aria-selected="true"] { background: var(--space-p-face); color: var(--space-p-ink); box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12); }
 .badge { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: linear-gradient(180deg, #ffe08a, #ffc94a); color: #2a1d00; font-family: var(--f-sans); font-size: 11px; font-weight: 700; display: inline-grid; place-items: center; box-sizing: border-box; }
 .more { position: relative; }
 .more > .tab { height: 46px; background: var(--nav-fill); box-shadow: var(--nav-shadow); }
-.moreMenu { position: absolute; top: calc(100% + 8px); left: 0; z-index: 40; min-width: 220px; padding: 8px; border-radius: 24px; background: var(--space-glass-solid); box-shadow: var(--space-glass-depth), 0 30px 80px rgb(0 0 0 / 0.3), 0 0 60px rgb(176 104 255 / 0.14); display: flex; flex-direction: column; gap: 2px; --m-origin: 0 0; }
+.moreMenu { position: absolute; top: calc(100% + 8px); left: 0; z-index: 40; min-width: 220px; padding: 8px; border-radius: 24px; background: var(--space-glass-solid); box-shadow: var(--space-glass-depth), 0 30px 80px rgb(0 0 0 / 0.3); display: flex; flex-direction: column; gap: 2px; --m-origin: 0 0; }
 .moreItem { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 42px; padding: 0 16px; border: 0; border-radius: 999px; background: transparent; color: var(--c-ink); font: inherit; font-size: 13.5px; font-weight: 600; text-align: left; cursor: pointer; }
 .moreItem:hover, .moreItem:focus-visible { background: var(--space-g-hover); }
 
@@ -81,7 +81,7 @@
 /* traffic bars: blue columns that rise from the baseline */
 .bars { display: flex; align-items: flex-end; gap: 5px; height: 96px; }
 .barCol { flex: 1; align-self: stretch; background: var(--hover-wash); border-radius: 999px; position: relative; min-height: 2px; overflow: hidden; } /* stretch: a column is the chart's full height, so the bar inside can take its share */
-.barCol > span { position: absolute; inset: auto 0 0; border-radius: 999px; background: linear-gradient(180deg, #7cb2ff, #5a96ff); box-shadow: 0 0 14px rgb(124 178 255 / 0.35); transform-origin: bottom; animation: barUp 0.9s var(--space-ease-expo) both; }
+.barCol > span { position: absolute; inset: auto 0 0; border-radius: 999px; background: linear-gradient(180deg, #7cb2ff, #5a96ff); box-shadow: none; transform-origin: bottom; animation: barUp 0.9s var(--space-ease-expo) both; }
 :global(:root[data-theme="light"]) .barCol > span { background: linear-gradient(180deg, #4f9fbf, #2b6f8a); box-shadow: none; }
 @keyframes barUp { from { transform: scaleY(0); } }
 
@@ -100,9 +100,9 @@
 .shell :is(.textarea, .input, .select2, .area, .select):focus-visible, .shell :is(.textarea, .input, .area):focus { outline: none; background-color: var(--space-field-focus); box-shadow: var(--space-field-depth), var(--space-focus-glow); }
 
 /* notices: glass with a coloured glow */
-.notice { display: flex; gap: var(--s-3); align-items: center; flex-wrap: wrap; padding: 14px 16px 14px 22px; border: 0; border-radius: 24px; background: var(--space-glass); box-shadow: var(--space-glass-depth), 0 0 40px rgb(var(--ring-rgb) / 0.12); }
+.notice { display: flex; gap: var(--s-3); align-items: center; flex-wrap: wrap; padding: 14px 16px 14px 22px; border: 0; border-radius: 24px; background: var(--space-glass); box-shadow: var(--space-glass-depth); }
 .error { color: var(--c-destructive); }
-.notice.error, .card.error { box-shadow: var(--space-glass-depth), 0 0 44px rgb(var(--rgb-destructive) / 0.2); }
+.notice.error, .card.error { box-shadow: var(--space-glass-depth); }
 
 /* CRM pipeline: five columns on a quiet wash, deals as small cards */
 .kanban { display: grid; grid-template-columns: repeat(5, minmax(180px, 1fr)); gap: 12px; overflow-x: auto; }
@@ -128,14 +128,14 @@
 .eTabs { display: flex; gap: 2px; width: fit-content; max-width: 100%; padding: 5px; border-radius: 999px; background: var(--nav-fill); box-shadow: var(--nav-shadow); overflow-x: auto; scrollbar-width: none; box-sizing: border-box; }
 .eTab { position: relative; flex: none; display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 16px; border: 0; border-radius: 999px; background: transparent; color: var(--c-ink-2); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: color 0.35s ease, background 0.5s var(--space-spring-bouncy), box-shadow 0.5s var(--space-spring-bouncy); }
 .eTab:hover { color: var(--c-ink); }
-.eTab[aria-selected="true"] { background: var(--space-p-face); color: var(--space-p-ink); box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12), 0 6px 20px rgb(var(--ring-rgb) / 0.18); }
+.eTab[aria-selected="true"] { background: var(--space-p-face); color: var(--space-p-ink); box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12); }
 
 .shell[data-embedded] .card, .shell[data-embedded] .notice, .shell[data-embedded] .col {
   border: 0; border-radius: 26px; padding: 22px 24px; gap: 12px; background: linear-gradient(180deg, #100f16, #07070b); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 24px 60px rgb(0 0 0 / 0.55);
 }
 .shell[data-embedded] .card .card, .shell[data-embedded] .col { padding: 16px 18px; border-radius: 20px; background: rgb(255 255 255 / 0.035); box-shadow: none; }
-.shell[data-embedded] .notice { padding: 14px 16px 14px 22px; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 24px 60px rgb(0 0 0 / 0.55), 0 0 40px rgb(195 155 255 / 0.12); }
-.shell[data-embedded] .error { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 0 44px rgb(255 122 133 / 0.18); }
+.shell[data-embedded] .notice { padding: 14px 16px 14px 22px; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 24px 60px rgb(0 0 0 / 0.55); }
+.shell[data-embedded] .error { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06); }
 .shell[data-embedded] .deal { background: #141417; }
 /* A card title never shrinks under its status pills (narrow cards squeezed "Sheets" to 9px under the pills); the pills wrap below it. */
 .shell[data-embedded] .row > strong.grow { flex: 1 0 auto; }

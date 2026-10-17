@@ -1515,10 +1515,10 @@ a.sideItem {
 :global(:root[data-theme]) .recentAll { border-radius: 999px; }
 /* "New chat": the one lit disc in the sidebar, so the primary action reads first */
 :global(:root[data-theme]) .sideItem[data-nav="new"] { color: var(--c-ink); font-weight: var(--w-semibold); }
-:global(:root[data-theme]) .sideItem[data-nav="new"] > svg:first-child { box-sizing: content-box; padding: 4px; border-radius: 999px; background: var(--space-p-face); color: var(--space-p-ink); box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.12), 0 0 14px rgb(var(--ring-rgb) / 0.35); }
+:global(:root[data-theme]) .sideItem[data-nav="new"] > svg:first-child { box-sizing: content-box; padding: 4px; border-radius: 999px; background: var(--space-p-face); color: var(--space-p-ink); box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.12); }
 :global(:root[data-theme]) .meter { border-top: 0; }
 :global(:root[data-theme]) .meterTrack { height: 5px; background: var(--space-track); box-shadow: none; }
-:global(:root[data-theme]) .meterTrack span { background: linear-gradient(90deg, #a467f0 0%, #b27cff 45%, #f08bd8 100%); box-shadow: 0 0 10px rgb(190 130 255 / 0.5); transition: width 1.2s var(--space-ease-out); }
+:global(:root[data-theme]) .meterTrack span { background: linear-gradient(90deg, #a467f0 0%, #b27cff 45%, #f08bd8 100%); box-shadow: none; transition: width 1.2s var(--space-ease-out); }
 :global(:root[data-theme]) .meterTrack span[data-low] { background: var(--c-dissent); box-shadow: none; }
 :global(:root[data-theme]) .lowUsage { border-radius: 22px; box-shadow: none; background: var(--hover-wash); }
 
@@ -1742,7 +1742,7 @@ a.sideItem {
 :global(:root[data-theme]) .homeChip:hover {
   color: var(--c-ink);
   background: var(--press-wash);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 10px 30px rgb(var(--ring-rgb) / 0.26);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07);
   translate: 0 -2px;
 }
 :global(:root[data-theme]) .homeChip:active { translate: 0 1px; transition-duration: 0.1s; }
@@ -1771,11 +1771,11 @@ a.sideItem {
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
   transition: background-color 0.3s ease, box-shadow 0.45s var(--space-ease-out), translate 0.45s var(--space-spring-snappy);
 }
-:global(:root[data-theme]) .useForOption:hover { background: var(--press-wash); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 12px 32px rgb(var(--ring-rgb) / 0.22); translate: 0 -2px; }
+:global(:root[data-theme]) .useForOption:hover { background: var(--press-wash); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07); translate: 0 -2px; }
 :global(:root[data-theme]) .useForOption:active { translate: 0 1px; transition-duration: 0.1s; }
 :global(:root[data-theme]) .useForOption[aria-pressed="true"] {
   background: rgb(var(--ring-rgb) / 0.14);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 0 0 1.5px rgb(var(--ring-rgb) / 0.6), 0 0 28px rgb(var(--ring-rgb) / 0.28);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 0 0 1.5px rgb(var(--ring-rgb) / 0.6);
 }
 :global(:root[data-theme]) .useForOption:focus-visible { box-shadow: var(--space-focus-glow); }
 .useForLabel { font-weight: var(--w-semibold); letter-spacing: -0.01em; }
@@ -1784,7 +1784,7 @@ a.sideItem {
 :global(:root[data-theme]) .example.example,
 :global(:root[data-theme]) .homeRecentItem.homeRecentItem { border: 0; border-radius: 20px; background: var(--hover-wash); box-shadow: none; }
 :global(:root[data-theme]) .example.example:hover,
-:global(:root[data-theme]) .homeRecentItem.homeRecentItem:hover { background: var(--press-wash); box-shadow: 0 10px 28px rgb(var(--ring-rgb) / 0.16); }
+:global(:root[data-theme]) .homeRecentItem.homeRecentItem:hover { background: var(--press-wash); box-shadow: none; }
 .homeRecentList { display: flex; flex-direction: column; gap: 6px; }
 .homeTile.homeTile { border: 0; }
 
@@ -1805,7 +1805,7 @@ a.sideItem {
 
 /* "Latest" (jump to the end): a lit glass pill. */
 .jump { box-shadow: var(--space-glass-depth); background: var(--space-glass-solid); font-weight: var(--w-semibold); transition: color 0.25s ease, box-shadow 0.4s var(--space-ease-out); }
-.jump:hover { box-shadow: var(--space-glass-depth), 0 0 30px rgb(var(--ring-rgb) / 0.22); }
+.jump:hover { box-shadow: var(--space-glass-depth); }
 
 /* Top bar: the free plan's Upgrade is the lit 3D primary (Space Studio's white face on its ledge; ink in Light). */
 :global(:root[data-theme]) .upgradeTop {
@@ -1836,10 +1836,10 @@ a.sideItem {
 :global(:root[data-theme]) .textInput:hover { background: var(--space-field-hover); }
 :global(:root[data-theme]) .textInput:focus,
 :global(:root[data-theme]) .textInput:focus-visible { background: var(--space-field-focus); box-shadow: var(--space-field-depth), var(--space-focus-glow); border-radius: 999px; }
-:global(:root[data-theme]) .textInput[aria-invalid="true"] { box-shadow: var(--space-field-depth), 0 0 0 2px rgb(var(--rgb-destructive) / 0.5), 0 0 30px rgb(var(--rgb-destructive) / 0.2); }
+:global(:root[data-theme]) .textInput[aria-invalid="true"] { box-shadow: var(--space-field-depth), 0 0 0 2px rgb(var(--rgb-destructive) / 0.5); }
 .rows { border-top: 0; display: flex; flex-direction: column; gap: 6px; }
 .rowItem { border-bottom: 0; padding-right: 8px; border-radius: 22px; background: var(--hover-wash); transition: background-color 0.25s ease, box-shadow 0.4s var(--space-ease-out); }
-.rowItem:hover { background: var(--press-wash); box-shadow: 0 10px 28px rgb(var(--ring-rgb) / 0.14); }
+.rowItem:hover { background: var(--press-wash); box-shadow: none; }
 .rowMain { padding: 14px 18px; border-radius: 22px; }
 .rowMain:hover .rowTitle { text-decoration: none; }
 .rowSelect { border-radius: 999px; background: var(--space-field); box-shadow: var(--space-field-depth); padding: 0 12px; }
@@ -1871,6 +1871,6 @@ a.sideItem {
 /* Deployments: rows are wash pills (no rule lines). */
 .deployList { border-top: 0; display: flex; flex-direction: column; gap: 6px; }
 .deployRow { border-bottom: 0; padding: 14px 20px; border-radius: 22px; background: var(--hover-wash); transition: background-color 0.25s ease, box-shadow 0.4s var(--space-ease-out); }
-.deployRow:hover { background: var(--press-wash); box-shadow: 0 10px 28px rgb(var(--ring-rgb) / 0.14); }
+.deployRow:hover { background: var(--press-wash); box-shadow: none; }
 .deployName { font-weight: var(--w-semibold); }
 @media (prefers-reduced-motion: reduce) { .view[data-connected-apps] button:not([role]):hover:not(:disabled) { transform: none; } }

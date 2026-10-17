@@ -46,7 +46,7 @@ test("no backdrop art, corner glow or animated gradient text in the app", () => 
   const css = strip(read("src/components/app-ui/App.module.css"));
   assert.doesNotMatch(css, /background-clip: text/, "no gradient-filled text");
   assert.doesNotMatch(css, /welcome-flow/);
-  assert.doesNotMatch(strip(read("src/styles/aura.css")), /App-module__|studio-module__/);
+  assert.equal(existsSync("src/styles/aura.css"), false, "the aura stylesheet is gone");
   assert.equal(existsSync("src/components/app-ui/WelcomeBack.tsx"), false, "one home: the welcome-back overlay is gone");
 });
 

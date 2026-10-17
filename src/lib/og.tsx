@@ -37,18 +37,11 @@ function Mark({ size, style }: { size: number; style?: React.CSSProperties }) {
 }
 
 /**
- * Homepage share card: the mark as a mind, with what Keplar can do wired into it, over the light-theme aura
- * (src/styles/aura.css: peach, violet, cyan and gold in the four corners, the middle left clear).
+ * Homepage share card: the mark as a mind, with what Keplar can do wired into it, on the light canvas.
  * Feature chips are live or beta features (src/lib/features.ts and the product pages), positioned by hand in rows
  * ([left, top, label]); each connects to the mark with a dotted stream.
  */
 const MIND = { x: 890, y: 315, mark: 116 };
-const AURA = [
-  { cx: 0, cy: 0, rx: 560, ry: 270, rgb: "255,168,122", a: 0.55 },
-  { cx: 1200, cy: 0, rx: 530, ry: 250, rgb: "168,112,176", a: 0.42 },
-  { cx: 0, cy: 630, rx: 530, ry: 265, rgb: "72,186,196", a: 0.38 },
-  { cx: 1200, cy: 630, rx: 580, ry: 280, rgb: "214,164,72", a: 0.5 },
-];
 const FEATURES: [number, number, string][] = [
   [600, 50, "Several models, one answer"],
   [856, 50, "Deep Research"],
@@ -78,20 +71,8 @@ export async function renderHomeOg({ title, accent, subtitle }: { title: string;
   const chipW = (label: string) => label.length * 7.7 + 40; // Montserrat 14px, 500
   return new ImageResponse(
     (
-      <div style={{ width: "100%", height: "100%", display: "flex", background: "#FFFCF8", position: "relative", fontFamily: "Montserrat" }}>
+      <div style={{ width: "100%", height: "100%", display: "flex", background: "#f7f8fa", position: "relative", fontFamily: "Montserrat" }}>
         <svg width="1200" height="630" viewBox="0 0 1200 630" style={{ position: "absolute", left: 0, top: 0 }}>
-          <defs>
-            {AURA.map((g, i) => (
-              <radialGradient key={i} id={`aura${i}`}>
-                <stop offset="0%" stopColor={`rgb(${g.rgb})`} stopOpacity={g.a} />
-                <stop offset="60%" stopColor={`rgb(${g.rgb})`} stopOpacity={g.a * 0.3} />
-                <stop offset="100%" stopColor={`rgb(${g.rgb})`} stopOpacity="0" />
-              </radialGradient>
-            ))}
-          </defs>
-          {AURA.map((g, i) => (
-            <ellipse key={i} cx={g.cx} cy={g.cy} rx={g.rx} ry={g.ry} fill={`url(#aura${i})`} />
-          ))}
           {[84, 150, 230].map((r) => (
             <circle key={r} cx={MIND.x} cy={MIND.y} r={r} fill="none" stroke="rgba(9,9,11,0.07)" strokeWidth="1" />
           ))}

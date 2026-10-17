@@ -50,8 +50,8 @@ varying float vAlpha;
 varying vec3 vColor;
 void main() {
   float d = length(gl_PointCoord - 0.5);
-  float a = smoothstep(0.5, 0.0, d);
-  gl_FragColor = vec4(vColor * a * a * vAlpha, 1.0);
+  if (d > 0.32) discard;
+  gl_FragColor = vec4(vColor, vAlpha);
 }
 `;
 
@@ -83,12 +83,8 @@ void main() {
   col += vec3(0.5) * 0.04 * smoothstep(px * 2.0, 0.0, abs(r - 0.34));
   col *= smoothstep(1.0, 0.0, r * 0.6);
 
-  // core: a white point with a wide, soft halo that breathes
-  float breathe = 0.85 + 0.15 * sin(uTime * 1.6);
   float d = length(p * vec2(1.0, 1.25));
-  col += vec3(1.0) * smoothstep(0.05, 0.0, d);
-  col += vec3(0.85, 0.88, 1.0) * 0.55 * exp(-d * 9.0) * breathe;
-  col += vec3(0.6, 0.62, 0.8) * 0.18 * exp(-d * 3.0) * breathe;
+  col += vec3(0.92) * step(d, 0.028);
   gl_FragColor = vec4(col, 1.0);
 }
 `;
@@ -123,7 +119,7 @@ export function Converge({ className }: { className?: string }) {
       const shared = { uTime: { value: 20 }, uTilt: { value: new THREE.Vector2(0, 0) } };
 
       const quadUniforms = { ...shared, uRes: { value: new THREE.Vector2(1, 1) } };
-      const quadMaterial = new THREE.ShaderMaterial({ vertexShader: quadVertex, fragmentShader: quadFragment, uniforms: quadUniforms, transparent: true, depthTest: false, blending: THREE.AdditiveBlending });
+      const quadMaterial = new THREE.ShaderMaterial({ vertexShader: quadVertex, fragmentShader: quadFragment, uniforms: quadUniforms, transparent: true, depthTest: false, blending: THREE.NormalBlending });
       const quadGeometry = new THREE.PlaneGeometry(2, 2);
       scene.add(new THREE.Mesh(quadGeometry, quadMaterial));
 
@@ -143,7 +139,7 @@ export function Converge({ className }: { className?: string }) {
       pointsGeometry.setAttribute("aPhase", new THREE.BufferAttribute(phase, 1));
       pointsGeometry.setAttribute("aRand", new THREE.BufferAttribute(rand, 3));
       const pointsUniforms = { ...shared, uAspect: { value: 1 }, uDpr: { value: 1 } };
-      const pointsMaterial = new THREE.ShaderMaterial({ vertexShader: pointsVertex, fragmentShader: pointsFragment, uniforms: pointsUniforms, transparent: true, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending });
+      const pointsMaterial = new THREE.ShaderMaterial({ vertexShader: pointsVertex, fragmentShader: pointsFragment, uniforms: pointsUniforms, transparent: true, depthTest: false, depthWrite: false, blending: THREE.NormalBlending });
       const points = new THREE.Points(pointsGeometry, pointsMaterial);
       points.frustumCulled = false;
       scene.add(points);
