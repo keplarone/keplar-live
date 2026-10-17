@@ -880,20 +880,21 @@
    surfaces for the pop-ups (28px, lit edge, violet halo). Both themes come from tokens; nothing here is glass (opaque surfaces). */
 :global(:root[data-theme]) .composer {
   border-radius: 30px;
-  background: linear-gradient(180deg, var(--surface-raised), var(--surface-panel));
-  box-shadow: var(--space-glass-depth);
+  background: var(--surface-raised);
+  box-shadow: var(--elev-2);
+  filter: none;
   transition: box-shadow 0.6s var(--space-ease-out);
 }
 :global(:root[data-theme]) .composer:has(:is(textarea, input):focus) {
-  box-shadow: var(--space-glass-depth);
+  box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-2);
 }
 :global(:root[data-theme]) .composer[data-dragging] {
-  box-shadow: var(--space-glass-depth), 0 0 0 2px rgb(var(--ring-rgb) / 0.55);
+  box-shadow: var(--elev-2), 0 0 0 2px rgb(var(--ring-rgb) / 0.55);
 }
 .composer[data-pulse="a"] { animation: spPulseA 0.7s var(--space-ease-expo); }
 .composer[data-pulse="b"] { animation: spPulseB 0.7s var(--space-ease-expo); }
-@keyframes spPulseA { 0% { transform: scale(1); } 22% { transform: scale(0.985); box-shadow: var(--space-glass-depth); } 100% { transform: scale(1); } }
-@keyframes spPulseB { 0% { transform: scale(1); } 22% { transform: scale(0.985); box-shadow: var(--space-glass-depth); } 100% { transform: scale(1); } }
+@keyframes spPulseA { 0% { transform: scale(1); } 22% { transform: scale(0.985); box-shadow: var(--elev-2); } 100% { transform: scale(1); } }
+@keyframes spPulseB { 0% { transform: scale(1); } 22% { transform: scale(0.985); box-shadow: var(--elev-2); } 100% { transform: scale(1); } }
 .dropZone { border: 1.5px dashed rgb(var(--ring-rgb) / 0.55); border-radius: 26px; background: var(--surface-overlay); color: var(--c-ink); }
 
 /* Tool and picker pills (Space Studio .picker__btn): a quiet wash; hover lifts the wash and adds a violet glow; press squeezes. */

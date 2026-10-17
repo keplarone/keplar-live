@@ -944,6 +944,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
 
       <form
         className={s.composer}
+        data-composer=""
         onSubmit={(e) => {
           e.preventDefault();
           submit();

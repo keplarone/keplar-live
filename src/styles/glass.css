@@ -5,7 +5,7 @@
  *   .lg          surface: translucent fill + small blur + specular ring + soft shadow
  *   .lg-lens     adds SVG refraction of what is behind (Chromium only; set by <GlassCaps> via html[data-lens])
  *   .lg-solid    same look without any backdrop (lists of many cards; never stacks blur layers)
- *   data-lit     (optional) the existing pointer light moves the specular highlight (src/styles/lit.css)
+ *   data-lit     optional press state only. Glass does not move a highlight with the pointer.
  *
  * Text contrast: glass is clear (light fill, light blur); text-bearing glass sits over a near-white plate or uses
  * .lg-strong / .lg-solid, so ink text holds AA over the pale page (the field is thin grey lines). Fallbacks below make it opaque.
@@ -110,6 +110,12 @@ html[data-lens] [data-glass-pill][data-distort] {
   -webkit-backdrop-filter: url(#liquid-glass);
   backdrop-filter: url(#liquid-glass);
 }
+/* Suggestion chips: the same lens, but the filter region stays inside the pill so it cannot
+   sample the composer placeholder and paint a hollow copy that jitters as the pointer moves. */
+html[data-lens] [data-glass-chip][data-distort] {
+  -webkit-backdrop-filter: url(#liquid-glass-chip);
+  backdrop-filter: url(#liquid-glass-chip);
+}
 /* Cards, settings panels, menus: solid. No frost and no displacement. */
 .lg-panel,
 [data-glass-live],
@@ -130,9 +136,8 @@ html[data-lens] [data-glass-pill][data-distort] {
   .lg-morph:hover { transform: scale(1.012); border-radius: calc(var(--lg-radius) + 4px) calc(var(--lg-radius) - 2px) calc(var(--lg-radius) + 4px) calc(var(--lg-radius) - 2px); }
   .lg-morph:active { transform: scale(0.985, 0.975); transition-duration: 0.12s; }
 }
-/* Pointer light: the existing proximity light, as a specular glint that follows the cursor. */
-.lg[data-lit]::after { background: var(--lg-fill, rgb(255 255 255 / 0.06)); z-index: -1; }
-:root[data-theme="dark"] .lg[data-lit]::after { background: var(--lg-fill, rgb(255 255 255 / 0.06)); }
+/* Glass does not follow the pointer. A specular that tracks the cursor repaints the lens on every move. */
+.lg[data-lit]::after { background: none; opacity: 0; }
 
 /* Focus: a very quiet ink glow, never a heavy ring. */
 .lg:has(:is(textarea, input, select):focus) { box-shadow: inset 1.5px 1.5px 0 0 var(--lg-edge-hi), inset -1px -1px 0 0 var(--lg-edge-lo), inset 0 0 0 1px rgb(var(--ring-rgb, 23 23 26) / 0.35), 0 0 0 4px rgb(var(--ring-rgb, 23 23 26) / 0.1), var(--lg-shadow); }

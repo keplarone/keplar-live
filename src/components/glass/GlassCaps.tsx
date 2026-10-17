@@ -70,6 +70,8 @@ export function GlassDefs() {
     <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true" focusable="false">
       <filter id="liquid-glass" x="-50%" y="-120%" width="200%" height="340%" colorInterpolationFilters="sRGB" primitiveUnits="userSpaceOnUse">{lens(180, 142, 104)}</filter>
       <filter id="lg-refract" x="-50%" y="-120%" width="200%" height="340%" colorInterpolationFilters="sRGB" primitiveUnits="userSpaceOnUse">{lens(180, 142, 104)}</filter>
+      {/* Chips sit under the composer. A region that reaches past the pill samples the placeholder and paints a second, offset copy. This one stays inside the pill. */}
+      <filter id="liquid-glass-chip" x="0%" y="0%" width="100%" height="100%" colorInterpolationFilters="sRGB" primitiveUnits="userSpaceOnUse">{lens(180, 142, 104)}</filter>
     </svg>
   );
 }
