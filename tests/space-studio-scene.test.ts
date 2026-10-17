@@ -2,7 +2,7 @@ import "./setup";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { isSpaceStudioSurface, SPACE_SKY_SCRIPT } from "@/components/space/surface";
+import { hideSharedSky, isSpaceStudioSurface, SPACE_HOST_FLAG, SPACE_SKY_SCRIPT } from "@/components/space/surface";
 import { SPACE_HOST } from "@/lib/site";
 
 const read = (f: string) => readFileSync(f, "utf8");
@@ -20,13 +20,30 @@ test("Space Studio is the space host or the /space-studio routes, and nothing el
   assert.equal(isSpaceStudioSurface("", "/space-studio"), true);
 });
 
+test("the space host and the rewritten path hide the shared sky on the same render", () => {
+  // Server render of space.keplar.one "/": the rewrite already renamed the path, and the flag is browser-only.
+  assert.equal(hideSharedSky("/space-studio", false), true);
+  assert.equal(hideSharedSky("/space-studio/app", false), true);
+  // First browser render of that same visit: the address bar is still "/", and the head script set the flag.
+  assert.equal(hideSharedSky("/", true), true);
+  assert.equal(hideSharedSky("/app", true), true);
+  // keplar.one keeps the sky, including after a client navigation away from /space-studio.
+  assert.equal(hideSharedSky("/", false), false);
+  assert.equal(hideSharedSky("/pricing", false), false);
+  assert.equal(hideSharedSky("/space-studio", false), true);
+});
+
 test("the root layout skips the shared sky on Space Studio before paint, and the page keeps its star field", () => {
   const root = read("src/app/layout.tsx");
   assert.match(root, /SPACE_SKY_SCRIPT/);
   assert.match(root, /data-site-sky/);
   assert.match(root, /<SpaceSkyExempt>\s*<SiteClouds \/>/);
   assert.match(SPACE_SKY_SCRIPT, new RegExp(SPACE_HOST.replace(".", "\\.")));
-  assert.match(SPACE_SKY_SCRIPT, /\/space-studio\//);
+  assert.match(SPACE_SKY_SCRIPT, new RegExp(`window\\.${SPACE_HOST_FLAG}=1`));
+  assert.doesNotMatch(SPACE_SKY_SCRIPT, /setAttribute|appendChild|createElement|document\.documentElement/);
+  const gate = read("src/components/space/SpaceSkyExempt.tsx");
+  assert.match(gate, /hideSharedSky\(path\)/);
+  assert.doesNotMatch(gate, /useState/);
   const space = read("src/app/(space)/layout.tsx");
   assert.match(space, /SpaceBackground/);
   assert.match(space, /SpaceAura/);
@@ -41,7 +58,7 @@ test("the root layout skips the shared sky on Space Studio before paint, and the
   assert.match(css, /backdrop-filter: none !important/);
   assert.doesNotMatch(read("src/components/sky/clouds/LandingClouds.tsx"), /space-studio|SPACE_HOST/);
   // The site-wide filter kill skips the space root so Studio's own surfaces keep their filters.
-  // data-space-studio stays out of this file; the before-paint script and SpaceSkyExempt own that mark.
+  // data-space-studio stays out of this file; SpaceSkyExempt sets that mark after hydration.
   const glass = read("src/styles/glass.css");
   assert.match(glass, /:not\(\[data-space-root\], \[data-space-root\] \*, \[data-glass-pill\]\)/);
   assert.doesNotMatch(glass, /data-space-studio/);
