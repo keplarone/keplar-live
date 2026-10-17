@@ -562,8 +562,16 @@
   position: absolute; inset: 0; display: block; width: 100%; height: 100%;
   background-position: center; background-size: cover; background-repeat: no-repeat;
 }
+/* The still glides slowly sideways so the clouds always move, on phones too (it is a little wider than the screen so its edges
+   never show). Compositor-only (translate). Reduced motion: no glide. The live canvas, when on, covers it with real drift. */
+.sp-sky__still { inset: 0 -6%; width: auto; animation: sp-sky-drift 70s ease-in-out infinite alternate; }
 .sp-sky__still[data-state="loading"] { opacity: 0; }
-.sp-sky__still[data-state="in"] { animation: sp-sky-in 1.4s var(--space-ease-out) both; }
+.sp-sky__still[data-state="in"] { animation: sp-sky-in 1.4s var(--space-ease-out) both, sp-sky-drift 70s ease-in-out infinite alternate; }
+@keyframes sp-sky-drift { from { translate: -4.5% 0; } to { translate: 4.5% 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .sp-sky__still { animation: none; }
+  .sp-sky__still[data-state="in"] { animation: sp-sky-in 1.4s var(--space-ease-out) both; }
+}
 .sp-sky__live { opacity: 0; transition: opacity 1.4s var(--space-ease-out); }
 .sp-sky__live[data-on] { opacity: 1; }
 @keyframes sp-sky-in { from { opacity: 0; } to { opacity: 1; } }

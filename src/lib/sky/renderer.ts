@@ -224,7 +224,7 @@ export class SkyRenderer {
     gl.uniform1f(this.u(c, "uVis"), L.visibility);
     gl.uniform1f(this.u(c, "uGray"), L.gray);
     gl.uniform1f(this.u(c, "uExposure"), L.exposure);
-    gl.uniform2f(this.u(c, "uWind"), 0.011 * this.wind, 0.003 * this.wind);
+    gl.uniform2f(this.u(c, "uWind"), 0.034 * this.wind, 0.009 * this.wind); // ~3x the first cut: the owner wants the drift visible
     const a = this.frameNo === 0 ? 1 : history;
     if (a < 1) {
       gl.enable(gl.BLEND);
