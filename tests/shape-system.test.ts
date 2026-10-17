@@ -32,7 +32,7 @@ test("pill is an explicit opt-in", () => {
 test("tabs, dropdown triggers, sidebar items and list rows are not pills", () => {
   const css = (f: string) => read(f);
   const rule = (file: string, sel: string) => {
-    const re = new RegExp(`(^|\\n|\\})\\s*${sel.replace(/[.>[\]]/g, "\\$&")}\\s*\\{([^}]*)\\}`, "g");
+    const re = new RegExp(`(^|\\n|\\})\\s*${sel.replace(/[.*+?^${}()|[\]\\>]/g, "\\$&")}\\s*\\{([^}]*)\\}`, "g");
     return [...css(file).matchAll(re)].map((x) => x[2]).join(" ");
   };
   const notPill = [

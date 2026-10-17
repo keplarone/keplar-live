@@ -31,11 +31,16 @@ export function resolveTheme(pref: ThemePref, osDark: boolean): Theme {
   return pref === "auto" ? (osDark ? "dark" : "light") : pref;
 }
 
+/** A JS string literal safe to inline in a <script>: JSON plus escaping of characters that could end the script or a line. */
+const inlineJs = (v: string) => JSON.stringify(v).replace(/[<>&\u2028\u2029]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`);
+/** THEME_KEY as a regex-literal fragment (it is a constant; escape metacharacters anyway). */
+const keyRe = THEME_KEY.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
+
 /**
  * Runs before paint. Keep it tiny, dependency-free and exception-safe. Docs (/docs/... and docs.keplar.one) always paint light with
  * <html data-docs="1"> (src/styles/docs-theme.css); the saved preference is untouched and applies again outside the docs.
  */
-export const THEME_SCRIPT = `(function(){try{var k=${JSON.stringify(THEME_KEY)},p=null;try{p=localStorage.getItem(k)}catch(e){}if(!p){var m=document.cookie.match(/(?:^|; )${THEME_KEY}=(dark|light|auto)/);p=m&&m[1]}if(p!=="dark"&&p!=="light"&&p!=="auto")p=${JSON.stringify(DEFAULT_THEME_PREF)};var d=p==="dark"||(p==="auto"&&window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);var r=document.documentElement,l=document.location,k2=l&&(/^docs\\./.test(l.hostname)||/^\\/docs(\\/|$)/.test(l.pathname));if(k2){d=false;r.setAttribute("data-docs","1")}var t=d?"dark":"light";r.setAttribute("data-theme",t);r.setAttribute("data-theme-pref",p);r.classList.remove(d?"light":"dark");r.classList.add(t);r.style.colorScheme=t}catch(e){}})();`;
+export const THEME_SCRIPT = `(function(){try{var k=${inlineJs(THEME_KEY)},p=null;try{p=localStorage.getItem(k)}catch(e){}if(!p){var m=document.cookie.match(/(?:^|; )${keyRe}=(dark|light|auto)/);p=m&&m[1]}if(p!=="dark"&&p!=="light"&&p!=="auto")p=${inlineJs(DEFAULT_THEME_PREF)};var d=p==="dark"||(p==="auto"&&window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);var r=document.documentElement,l=document.location,k2=l&&(/^docs\\./.test(l.hostname)||/^\\/docs(\\/|$)/.test(l.pathname));if(k2){d=false;r.setAttribute("data-docs","1")}var t=d?"dark":"light";r.setAttribute("data-theme",t);r.setAttribute("data-theme-pref",p);r.classList.remove(d?"light":"dark");r.classList.add(t);r.style.colorScheme=t}catch(e){}})();`;
 
 /* ── client helpers ── */
 
@@ -58,7 +63,7 @@ export function storedThemePref(): ThemePref | null {
   } catch {
     /* private mode */
   }
-  const m = document.cookie.match(new RegExp(`(?:^|; )${THEME_KEY}=(dark|light|auto)`));
+  const m = document.cookie.match(new RegExp(`(?:^|; )${keyRe}=(dark|light|auto)`));
   return m && isThemePref(m[1]) ? m[1] : null;
 }
 
