@@ -7,6 +7,7 @@ import { join } from "node:path";
  * The accent is one neutral: graphite in light, near-white in dark.
  * Pink, magenta, purple and violet (hue 260–345) and the Tailwind accent utilities must not come back.
  * Detector files list those colours on purpose so they can reject them in generated sites.
+ * Space Studio (space.keplar.one, its routes and components) keeps its own pink and violet.
  */
 const ROOTS = ["src", "extension", "scripts"];
 const SKIP_DIR = new Set(["node_modules", ".next", "dist"]);
@@ -16,6 +17,9 @@ const SKIP_FILE = [
   /src\/lib\/app-builder\/rubric\.ts$/,
   // Space Studio is exempt: its headline words (Mighty, YOU), aura and star field keep their pink and purple.
   /src\/components\/space\//,
+  /src\/app\/\(space\)\//,
+  /src\/lib\/space-studio\//,
+  /src\/app\/api\/space-studio\//,
 ];
 const EXT = /\.(css|ts|tsx|js|mjs|svg|html)$/;
 const TW = /\b(?:purple|violet|fuchsia|pink|indigo)-\d{2,3}\b/;

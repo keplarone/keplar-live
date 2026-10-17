@@ -27,6 +27,7 @@
   --sp-width: 1200px;
   /* Headline words keep Space Studio's pink and purple gradient (Mighty, YOU). Owned here so the shared site accent can stay neutral. */
   --sp-word: linear-gradient(100deg, #b27cff 0%, #f08bd8 17%, #8ff0ff 34%, #a98cff 51%, #ff8fd0 68%, #c58cff 84%, #8fd8ff 100%);
+  --space-grad: var(--sp-word);
   /* Dark glass from before the shared sky: violet lift and focus, only inside this root. */
   --space-void: #000000;
   --space-aura: 176 104 255;
