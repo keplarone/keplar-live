@@ -13,6 +13,22 @@ test("create tabs: labels never wrap and fit 320-440px phones", () => {
   assert.match(css, /@media \(max-width: 440px\)\s*\{\s*\.stageBar \.segBtn\s*\{\s*padding:\s*0 10px/);
 });
 
+test("create tab bars are not a solid canvas (that fill is pure black in dark mode)", () => {
+  const studio = readFileSync("src/components/create/apps/studio.module.css", "utf8");
+  const kind = studio.match(/\.kindBar \{([^}]*)\}/)?.[1] ?? "";
+  assert.match(kind, /background:\s*transparent/);
+  assert.doesNotMatch(kind, /--c-canvas/);
+  const top = studio.match(/\.top \{([^}]*)\}/)?.[1] ?? "";
+  assert.match(top, /background:\s*transparent/);
+  assert.match(studio, /\.top \{[^}]*position:\s*sticky[^}]*background:\s*var\(--nav-fill\)/);
+  assert.doesNotMatch(studio, /\.top \{[^}]*background:\s*var\(--c-canvas\)/);
+  const builder = readFileSync("src/components/create/builder.module.css", "utf8");
+  const stage = builder.match(/\.stageBar \{([^}]*)\}/)?.[1] ?? "";
+  assert.match(stage, /background:\s*transparent/);
+  assert.match(builder, /\.stageBar \{[^}]*position:\s*sticky[^}]*background:\s*var\(--nav-fill\)/);
+  assert.doesNotMatch(builder, /\.stageBar \{[^}]*background:\s*var\(--c-canvas\)/);
+});
+
 test("create tabs: Site is not a Create sub-tab; Site URLs redirect to App", () => {
   const studio = readFileSync("src/components/create/CreateStudio.tsx", "utf8");
   assert.doesNotMatch(studio, /value: "site"/);

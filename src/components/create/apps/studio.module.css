@@ -10,8 +10,9 @@
 .grow { flex: 1; }
 .dim { color: var(--c-ink-3); }
 
-/* ── Create's kind switch (App, Images, Video, Mobile, Keplar Studio): the kit's Tabs, an underline that slides ── */
-.kindBar { display: flex; align-items: flex-end; min-width: 0; max-width: 100%; padding: 0 var(--s-6); background: var(--c-canvas); }
+/* ── Create's kind switch (App, Images, Video, Mobile, Keplar Studio): the kit's Tabs, an underline that slides ──
+   No fill: the page sky shows through. A canvas fill was a solid black bar (dark --c-canvas is #000). */
+.kindBar { display: flex; align-items: flex-end; min-width: 0; max-width: 100%; padding: 0 var(--s-6); background: transparent; }
 .kindTabs { flex: 1; min-width: 0; }
 .kindTabs [role="tab"] { height: 40px; padding: 0 var(--s-3); font-size: var(--t-small); }
 .beta { color: var(--c-ink-3); font-size: 0.85em; font-weight: var(--w-regular); }
@@ -152,7 +153,7 @@
 .badge[data-tone="live"] { color: var(--c-ink); }
 
 /* ── studio ── */
-.top { display: flex; align-items: center; gap: var(--s-3); padding: 8px var(--s-4); border-bottom: var(--b-hairline) solid var(--c-border); background: var(--c-canvas); flex-wrap: wrap; min-height: 52px; }
+.top { display: flex; align-items: center; gap: var(--s-3); padding: 8px var(--s-4); border-bottom: var(--b-hairline) solid var(--c-border); background: transparent; flex-wrap: wrap; min-height: 52px; }
 .title { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .appName { font-size: 17px; font-weight: var(--w-medium); letter-spacing: -0.015em; max-width: 26ch; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--c-creation); }
 .ver { font-size: var(--t-label); color: var(--c-ink-3); font-variant-numeric: tabular-nums; }
@@ -287,7 +288,7 @@
 /* ── layout: tablet and phone ── */
 @media (max-width: 900px) {
   .work { grid-template-columns: minmax(0, 1fr); }
-  .panelSwitch { display: flex; justify-content: center; padding: 8px var(--s-4); border-bottom: var(--b-hairline) solid var(--hairline); background: var(--c-canvas); }
+  .panelSwitch { display: flex; justify-content: center; padding: 8px var(--s-4); border-bottom: var(--b-hairline) solid var(--hairline); background: transparent; }
   .work[data-panel="canvas"] .ledger { display: none; }
   .work[data-panel="log"] .stage { display: none; }
   .ledger { border-right: 0; }
@@ -332,7 +333,8 @@
 }
 @media (max-width: 600px) {
   .ship .cta { width: 100%; }
-  .top { position: sticky; top: 0; z-index: 4; background: var(--c-canvas); }
+  /* Content scrolls under this bar: the nav's glass, never a solid canvas (that was pure black in dark mode). */
+  .top { position: sticky; top: 0; z-index: 4; background: var(--nav-fill); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
   .work { min-height: 0; }
   .refineBox { font-size: 16px; }
 }
