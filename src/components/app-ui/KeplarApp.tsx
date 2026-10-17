@@ -109,14 +109,10 @@ const BusinessOS = business.View;
 const SlidesStudio = slides.View;
 const StudyMode = study.View;
 const appsView = lazyView(() => import("./ConnectedAppsView").then((m) => m.ConnectedAppsView as ComponentType<object>));
-const browserView = lazyView(() => import("@/components/browser/BrowserTask").then((m) => m.BrowserTask as ComponentType<object>));
-const wantsView = lazyView(() => import("@/components/wants/KeplarWantsTab").then((m) => m.KeplarWantsTab as ComponentType<object>));
 const ConnectedAppsView = appsView.View;
-const BrowserTask = browserView.View;
-const KeplarWantsTab = wantsView.View;
 /** Fetch (not run) the studios so opening one is instant: Create once the page is idle, the others when the pointer reaches the sidebar. Skipped on Data Saver. */
 /** Top-bar titles that are not just the capitalised view name. */
-const VIEW_TITLE: Partial<Record<View, string>> = { history: "All chats", apps: "Connected apps", browser: "Keplar Browser", wants: "Keplar Wants" };
+const VIEW_TITLE: Partial<Record<View, string>> = { history: "All chats", apps: "Connected apps" };
 function warmViews(all: boolean) {
   const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
   if (conn?.saveData) return;
@@ -1375,14 +1371,6 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
         ) : state.view === "apps" ? (
           <div className={s.scroll}>
             <ConnectedAppsView />
-          </div>
-        ) : state.view === "browser" ? (
-          <div className={s.createHost}>
-            <BrowserTask />
-          </div>
-        ) : state.view === "wants" ? (
-          <div className={s.createHost}>
-            <KeplarWantsTab />
           </div>
         ) : state.view === "deployments" ? (
           <div className={s.scroll}>

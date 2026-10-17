@@ -60,12 +60,12 @@ live data found anywhere).
 
 | ID | Sev | Finding | Where | Status |
 |---|---|---|---|---|
-| IN-1 | Medium | Keplar Browser re-resolves DNS after the address check (DNS rebinding to loopback/private services); page WebSockets bypass the request guard. | `src/lib/browser/run.ts:25,32-46,59` | **Fixed** (667a874) |
+| IN-1 | Medium | Keplar Browser re-resolves DNS after the address check (DNS rebinding to loopback/private services); page WebSockets bypass the request guard. | `src/lib/browser/run.ts:25,32-46,59` | **Fixed** (667a874); the guard now lives in `src/lib/site-builder/qa/guard.ts`. Keplar Browser: Removed by owner decision (2026-10-17) |
 | IN-2 | Medium | Apple in-app purchases from Apple's Sandbox (free) grant real paid plans in production. | `src/lib/billing/apple.ts:54-58,142`, `apple-sync.ts:76` | **Fixed** (667a874) |
 | IN-3 | Low | The API edge guard (rate limit, CSRF backstop) is skipped for `/api` on docs.keplar.one and space.keplar.one. | `src/proxy.ts:78,106` | **Fixed** (667a874) |
 | IN-4 | Low | space.keplar.one pages miss CSP, frame rules and HSTS. | `next.config.ts:7` | **Fixed** (667a874) |
 | IN-5 | Low | App CSP allows `'unsafe-inline'` scripts, and `'self'` includes user-authored app JavaScript under `/s/`. | `src/lib/security/headers.ts:26`, `app-builder/files.ts:150-160` | **Accepted** for `'unsafe-inline'` (Next's per-render inline flight scripts on static pages; a nonce needs every page dynamic; reasons in `headers.ts`). **Fixed** for `'self'` (000ca97: the proxy refuses same-origin script/worker loads of `/s/`, `/sites/`, `/apps/`) |
-| IN-6 | Low | Site QA browser has no network allow-list. | `src/lib/site-builder/qa/run.ts:31-43` | **Fixed** (15bdeb2: Keplar Browser's SSRF guard; own origin passes) |
+| IN-6 | Low | Site QA browser has no network allow-list. | `src/lib/site-builder/qa/run.ts:31-43` | **Fixed** (15bdeb2: SSRF guard, now `src/lib/site-builder/qa/guard.ts`; own origin passes) |
 | IN-7 | Info | Revenue Guard (not wired) would verify sites with an unguarded fetch. | `src/lib/business/guard/core.ts:89-138` | **Fixed** (a54bd31: the unwired module is deleted; owner decided not to build Revenue Guard) |
 | IN-8 | Low | Unbounded body reads before size checks; inbound-email webhook has no replay key; `/api/health/qa-browser` launches Chromium unauthenticated; `wants/browser.ts` accepts any `file:` URL; code-runner CSP lacks `sandbox`; some provider error text reaches clients. | see review | **Fixed** (f6f8b5a: streamed capped reads on 20+ routes and `body()`; inbound-email claim per Message-ID; qa-browser admins/monitoring only; Wants `file:` only its fixtures; runner CSP `sandbox`; mid-stream and `/api/health` error text generic) |
 
@@ -77,7 +77,7 @@ live data found anywhere).
 | AI-2 | Medium | Approving an action isn't atomic: double clicks or retries send twice. | `business/agents.ts:474-506` | **Fixed** (422a95e; a crash between claim and send leaves the approval stuck) |
 | AI-3 | Medium | The firewall's "high risk, never auto-sent" rating is ignored on the MCP auto-run path. | `mcp/chat.ts:235-246`, `mcp/gateway.ts:527-531` | **Fixed** (3aeaf87) |
 | AI-4 | Medium | A tool result can steer later auto-run calls that carry conversation data to another MCP server. | `mcp/chat.ts:187-249` | **Fixed** (9a79020) |
-| AI-5 | Medium | Keplar Browser can submit forms (Enter, neutral-label buttons) despite "never send/post". | `browser/policy.ts:54-64`, `browser/run.ts:165-168` | **Fixed** (cff8f5e) |
+| AI-5 | Medium | Keplar Browser can submit forms (Enter, neutral-label buttons) despite "never send/post". | `browser/policy.ts:54-64`, `browser/run.ts:165-168` | **Fixed** (cff8f5e). Removed by owner decision (2026-10-17) |
 | AI-6 | Medium | Computer-use confirmation trusts the model's own "sensitive" label; vision calls aren't charged. | `business/computer.ts:136-137`, `api/business/computer/step/route.ts:50-64` | **Fixed** (d182a42) |
 | AI-7 | Medium | Blender auto-approve can run Python that evades the text block-list. | `blender/agent.ts:27-38`, `studio-mode/useStudioAgent.ts:437` | **Fixed** (d439c23) |
 | AI-8 | Low | Business Editors can approve irreversible sends (see AZ-2). | `business/team.ts:37-39` | **Fixed** (a1876c6) |
@@ -85,7 +85,7 @@ live data found anywhere).
 | AI-10 | Low | Agent draft model calls have no timeout or output cap; runs can stay "running" forever; retries can re-send. | `business/agents.ts:194-207,400-466` | **Fixed** (422a95e: 45 s timeout, 1,200-token cap) |
 | AI-11 | Low | Core's code checker relies on `node:vm`, which isn't a security boundary. | `core/sandbox.ts:14-31` | Open |
 | AI-12 | Low | Self-learning prompt changes are promoted without human review. | `core/selfdev/pipeline.ts:101` | **Fixed** (069f29d) |
-| AI-13 | Info | Keplar Wants PIN has no lockout and non-atomic confirmation (sandbox-only today). | `wants/pin.ts`, `wants/sandbox.ts:77-96` | **Fixed** (e70f342: PIN tries limited to 10 per 15 min; dbcb47e: confirmation is one `insertIfAbsent` claim) |
+| AI-13 | Info | Keplar Wants PIN has no lockout and non-atomic confirmation (sandbox-only today). | `wants/pin.ts`, `wants/sandbox.ts:77-96` | **Fixed** (e70f342: PIN tries limited to 10 per 15 min; dbcb47e: confirmation is one `insertIfAbsent` claim) Removed by owner decision (2026-10-17). |
 
 ## Performance, reliability and supply chain
 
@@ -113,7 +113,7 @@ live data found anywhere).
 | ID | Sev | Finding | Where | Status |
 |---|---|---|---|---|
 | UX-1 | High | "Manage" connected apps in Keplar One sends people to the Business sales page. | `ChatTools.tsx:58`, `KeplarApp.tsx:837,1320` | **Fixed** (d972c56: Connected apps open in the app at `/app/apps`; MCP sign-ins return there) |
-| UX-2 | High | Keplar Browser and Keplar Wants have no way in (no nav entry) and no way out (no app shell). | `app/app/{browser,wants}/page.tsx`, `Sidebar.tsx:43-53` | **Fixed** (d972c56: app views in the shell, sidebar More and search; neither is flagged) |
+| UX-2 | High | Keplar Browser and Keplar Wants have no way in (no nav entry) and no way out (no app shell). | `app/app/{browser,wants}/page.tsx`, `Sidebar.tsx:43-53` | **Fixed** (d972c56: app views in the shell, sidebar More and search; neither is flagged) Removed by owner decision (2026-10-17). |
 | UX-3 | High | Slides presenter hijacks Enter/Space at window level, so its own buttons can't be pressed by keyboard. | `slides/Present.tsx:33,51-56` | **Fixed** (68fda9e) |
 | UX-4 | High | Lightbox forces every Tab to Close; its other buttons are unreachable by keyboard. | `Lightbox.tsx:37,54-55` | **Fixed** (68fda9e) |
 | UX-5 | High | Revenue Guard is sold as included but isn't built. | `Storefront.tsx:386-389,450,494`, `tiers.ts:43,69` | **Fixed** (a54bd31: owner decided it will not be built; every offer of it removed) |

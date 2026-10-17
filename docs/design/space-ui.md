@@ -254,8 +254,8 @@ header) is done in Phase A; agents should not restyle it again, only adjust wher
   `workspace/*`, `video/*`, `mobile/*`, `builder.module.css`, `create.module.css`), `app-ui/create/*`.
 - Keplar Studio: `app-ui/studio-mode/*`, `app-ui/studio/*`, `src/components/kit/StudioRoot.tsx` + `tokens.module.css` (Studio's
   own dense tokens: decide how far the 3D look goes at 28px controls).
-- Slides `src/components/slides/*`, Study `src/components/study/*`, Browser `src/components/browser/*`, Wants
-  `src/components/wants/*`, Connected apps `app-ui/ConnectedAppsView.tsx`, Deployments `app-ui/DeploymentsView.tsx`,
+- Slides `src/components/slides/*`, Study `src/components/study/*`,
+  Connected apps `app-ui/ConnectedAppsView.tsx`, Deployments `app-ui/DeploymentsView.tsx`,
   Projects `app-ui/ProjectWorkspace.tsx`, `ProjectTimeline.tsx`, `SiteProjects`, Agents `app-ui/AgentsPanel.tsx`,
   usage `src/components/usage/*`, loader `src/components/loader/*`.
 - Settings: `src/components/account/*` (`SettingsDialog`, `account.module.css`) when opened from /app.

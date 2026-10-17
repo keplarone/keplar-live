@@ -72,16 +72,14 @@ export const USER_COLLECTIONS = [
   "space_ccu_min", "space_ccu_hour" /* player-count samples of the tracked experiences from Roblox's public API (numbers only); deleted with the account, otherwise kept 4 days / 120 days */,
   "space_rev_min", "space_rev_hour", "space_sales" /* the tracked experiences' own sales from their beacon (item id, kind, price, time; no player data) and their per-minute/hour totals; deleted with the account */,
   "space_profiles" /* Space Studio onboarding: birth date, age band, answers, consents, parental consent state and the parent's email; deleted with the account */, "space_parent_consents" /* system-scoped parental consent token hashes (7-day expiry), freed explicitly on deletion (freeConsentTokens) */,
-  "browser_tasks" /* Keplar Browser tasks: the task, step notes and addresses, the newest screenshot and the result; the newest 20 are kept, exported and deleted with the account */,
-  // Keplar Wants (src/lib/wants): the pending plan awaiting PIN confirmation (prompt, answers, provider; 10-minute expiry) is exported;
-  // the PIN's scrypt hash, OAuth states and (sandbox) provider tokens are credentials, deleted with the account and never exported.
-  "wants_confirmations", "wants_confirm_claims" /* which confirmations already ran (ids only) */, "wants_pins", "wants_oauth_states", "wants_oauth_tokens",
+  // Keplar Browser and Keplar Wants: feature removed; kept so existing rows are deleted with the account (no longer written or exported).
+  "browser_tasks", "wants_confirmations", "wants_confirm_claims", "wants_pins", "wants_oauth_states", "wants_oauth_tokens",
   "queue_jobs", "queue_claims", // durable background jobs (src/lib/create/platform/queue.ts): the job's input (ids, an event's form fields) while it is pending or failed, and its per-run claims; internal, deleted with the account, pruned after 30 days
 ] as const;
 
 export const isRetained = (name: string) => (RETAINED as readonly string[]).includes(name) || RETAINED_PATTERNS.some((p) => p.test(name));
 /** Not worth exporting: internal telemetry with no user-authored content. */
-const NOT_EXPORTED = new Set(["model_calls", "live_model_spend", "job_slots", "dev_outbox", "seo_events", "growth_events", "sb_fingerprints", "chatgpt_codes", "chatgpt_grants", "wants_pins", "wants_oauth_states", "wants_oauth_tokens", "queue_jobs", "queue_claims"]);
+const NOT_EXPORTED = new Set(["model_calls", "live_model_spend", "job_slots", "dev_outbox", "seo_events", "growth_events", "sb_fingerprints", "chatgpt_codes", "chatgpt_grants", "browser_tasks", "wants_confirmations", "wants_confirm_claims", "wants_pins", "wants_oauth_states", "wants_oauth_tokens" /* removed features (see above) */, "queue_jobs", "queue_claims"]);
 
 const SECRET_KEY = /token|secret|password|passwd|api[-_]?key|authorization|credential|signing|^hash$/i;
 /** Redact secret-looking fields at any depth. */

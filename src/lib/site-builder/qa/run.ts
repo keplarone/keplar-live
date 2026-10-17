@@ -6,7 +6,7 @@
 import sharp from "sharp";
 import type { Browser, BrowserContext, Page } from "playwright-core";
 import { issuesFromConsole, issuesFromProbe, PROBE_JS, VIEWPORTS, type Probe, type QaIssue, type Viewport } from "./probe";
-import { dnsResolve, guardContext, networkTransport, type Resolver, type Transport } from "@/lib/browser/run";
+import { dnsResolve, guardContext, networkTransport, type Resolver, type Transport } from "./guard";
 
 export type QaEvent =
   | { type: "step"; text: string }
@@ -17,13 +17,13 @@ export type QaEvent =
 
 export type QaInput = {
   browser: Browser; baseUrl: string; siteId: string; version: number; token: string; pages: string[]; hasErrorPage: boolean; deadline: number;
-  /** Tests inject these; production resolves DNS and fetches through the pinned SSRF-safe transport (src/lib/browser/run.ts). */
+  /** Tests inject these; production resolves DNS and fetches through the pinned SSRF-safe transport (./guard.ts). */
   resolve?: Resolver; transport?: Transport;
 };
 
 /**
  * The draft is user-authored HTML running in a browser on our servers: its images, scripts and fetches may only reach our own
- * origin (the draft itself) and the public web, never a private, loopback or metadata address (IN-6). Same guard as Keplar Browser.
+ * origin (the draft itself) and the public web, never a private, loopback or metadata address (IN-6). See ./guard.ts.
  */
 export async function guardQaContext(ctx: BrowserContext, i: Pick<QaInput, "baseUrl" | "resolve" | "transport">): Promise<void> {
   await guardContext(ctx, i.resolve ?? dnsResolve, i.transport ?? networkTransport, new Set(), new Set(), { trustedOrigin: new URL(i.baseUrl).origin });

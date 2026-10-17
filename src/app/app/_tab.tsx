@@ -17,8 +17,6 @@ const META: Record<View, { title: string; description: string }> = {
   history: { title: "All chats", description: "Every Keplar chat you have saved." },
   studio: { title: "Keplar Studio", description: "Build in Roblox Studio or Blender with Keplar from the desktop app." },
   apps: { title: "Connected apps", description: "Connect apps to Keplar, choose what each tool may do, and let Ask use them with your approval." },
-  browser: { title: "Keplar Browser", description: "Keplar works in its own private browser while you watch, and stops before buying, sending or signing in." },
-  wants: { title: "Keplar Wants", description: "Tell Keplar what you want. It asks what it needs to know, then helps; anything a connected app would do waits for your approval." },
 };
 
 export function tabMeta(view: View): Metadata {

@@ -2,10 +2,10 @@ import "./setup";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { guardQaContext } from "@/lib/site-builder/qa/run";
-import type { Resolver } from "@/lib/browser/run";
+import type { Resolver } from "@/lib/site-builder/qa/guard";
 
 // IN-6 (docs/rebirth/AUDIT.md): the site QA browser opens user-authored drafts on our servers with no network allow-list, so a
-// draft's <img src> or fetch() could reach a private, loopback or cloud-metadata address. It now uses Keplar Browser's guard:
+// draft's <img src> or fetch() could reach a private, loopback or cloud-metadata address. It now uses the shared guard (site-builder/qa/guard.ts):
 // our own origin (the draft itself, even on localhost in development) passes, the public web is fetched through the pinned
 // transport, anything private is refused.
 const resolve: Resolver = async (host) => (host === "metadata.internal" ? ["169.254.169.254"] : host === "intranet.example" ? ["10.0.0.5"] : host === "localhost" ? ["127.0.0.1"] : ["93.184.215.14"]);
@@ -38,4 +38,30 @@ test("QA browser: own origin passes (form posts too), public web goes through th
   assert.equal(await g.send("http://127.0.0.1:3350/"), "aborted", "nor the same server under another name");
   assert.equal(await g.send("https://evil.example/collect", "POST", "document"), "aborted", "no form posts to other sites");
   assert.equal(g.fetched.length, 1);
+});
+
+test("QA network guard: public web only (every resolved address must be public)", async () => {
+  const { allowedUrl, sendsData } = await import("@/lib/site-builder/qa/guard");
+  const PUBLIC = async () => ["93.184.216.34"];
+  assert.equal(await allowedUrl("https://shop.example.com/", PUBLIC), true);
+  assert.equal(await allowedUrl("http://127.0.0.1:8080/", PUBLIC), false);
+  assert.equal(await allowedUrl("http://169.254.169.254/latest/meta-data/", PUBLIC), false);
+  assert.equal(await allowedUrl("http://localhost:3000/", PUBLIC), false);
+  assert.equal(await allowedUrl("file:///C:/Windows/win.ini", PUBLIC), false);
+  assert.equal(await allowedUrl("https://rebind.example.com/", async () => ["10.0.0.5"]), false);
+  assert.equal(await allowedUrl("https://split.example.com/", async () => ["93.184.216.34", "127.0.0.1"]), false);
+  assert.equal(sendsData({ method: "POST", resourceType: "document" }), true);
+  assert.equal(sendsData({ method: "GET", resourceType: "document" }), false);
+});
+
+test("QA guard fetches through a socket pinned to a checked address: a name that now resolves privately is refused", async () => {
+  const { networkTransport } = await import("@/lib/site-builder/qa/guard");
+  const { setNetworkForTests } = await import("@/lib/mcp/ssrf");
+  setNetworkForTests({ resolver: async () => ["127.0.0.1"] });
+  try {
+    const route = { request: () => ({ headers: () => ({}), method: () => "GET", postData: () => null }) } as never;
+    await assert.rejects(networkTransport(route, "http://rebind.example:9001/2018-06-01/runtime/invocation/next"), /private or internal/);
+  } finally {
+    setNetworkForTests();
+  }
 });
