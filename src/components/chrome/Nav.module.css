@@ -131,12 +131,8 @@
   cursor: pointer;
 }
 .weather button[aria-checked="true"] {
-  background: var(--nav-ink, currentColor);
-  color: var(--c-canvas, #09090b);
-}
-:global(:root[data-theme="dark"]) .weather button[aria-checked="true"] {
-  background: #e4e6ea;
-  color: #12141a;
+  background: var(--nav-ink);
+  color: var(--c-canvas);
 }
 .panelWeather { display: none; }
 .signIn {
