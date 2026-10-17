@@ -66,5 +66,6 @@ export function lastmodFor(path: string): string | undefined {
   const e = [...editorialPages, aboutPage, modelsPage].find((x) => x.path === path);
   if (e) return e.updated;
   if (path.startsWith("/showcase/")) return staticLastmod["/showcase"];
+  if (path === "/tools" || path.startsWith("/tools/")) return "2026-10-17";
   return staticLastmod[path] ?? kbLastmod(path);
 }

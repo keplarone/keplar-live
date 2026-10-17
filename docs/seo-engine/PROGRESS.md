@@ -19,7 +19,7 @@
 - [x] Phase 1 audit verified against this repo (checkpoint findings re-checked). Written to `docs/seo-engine/AUDIT.md`.
 - [x] Phase 1 milestone: audit + H1–H4, M1, M4. Branch `cursor/seo-audit-critical-4cb9`.
 - [x] Phase 2–3 cluster registry (`src/lib/seo/clusters.ts`), quality gate and publish decision (`src/lib/seo/quality.ts`, `src/lib/seo/programmatic.ts`). No new public URLs. `/compare` and `/vs` cross-link inside the comparisons cluster. Branch `cursor/seo-clusters-quality-4cb9` (stacked on the audit branch).
-- [ ] Phase 4 free tools. Deterministic tools need no model. Model tools use only OpenRouter `:free` slugs and a rate limit. Missing key returns unavailable, never a fake answer.
+- [x] Phase 4 free tools at `/tools` (10 tools). Citation formatter and the comparison explorer do not call a model. The other eight call one OpenRouter `:free` slug, 8 runs an hour per IP, discard a reply if the host reports a cost, and return 503 when no key is set. Branch `cursor/seo-free-tools-4cb9`.
 - [ ] Phase 5 AI-search: facts test stays green (done with H1, H3, H4). No extra schema that the page does not show.
 - [ ] Phase 9 SEO unit checks run via existing `npm test` / CI. Live crawl stays manual.
 - [ ] Phase 10 Search Console client degrades when `GSC_CLIENT_EMAIL`, `GSC_PRIVATE_KEY`, or `GSC_SITE_URL` is missing. Admin shows that sentence, not sample metrics.
@@ -51,7 +51,8 @@ Not in this milestone, on purpose: no new landing pages, no Search Console calls
 - `npx eslint` on the files in this milestone — pass (exit 0).
 - `node --import tsx --test` on the SEO files listed above — 66 pass, 0 fail.
 - Audit milestone, full `npm test`: 3034 tests, 3032 pass, 0 fail, 2 skipped.
-- Cluster milestone, full `npm test`: 3038 tests, 3036 pass, 0 fail, 2 skipped. `npx tsc --noEmit` pass.
+- Cluster milestone, full `npm test`: 3038 tests, 3036 pass, 0 fail, 2 skipped.
+- Free-tool milestone, full `npm test`: 3041 tests, 3039 pass, 0 fail, 2 skipped. `npx tsc --noEmit` pass.
 
 ## Blockers for the owner
 
