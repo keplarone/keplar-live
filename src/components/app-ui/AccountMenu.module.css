@@ -4,11 +4,11 @@
 .chip {
   display: flex; align-items: center; gap: var(--s-3); width: 100%; min-height: 44px;
   padding: var(--s-2) var(--s-3); border: 0; border-radius: var(--shape-control); text-align: left;
-  color: var(--c-ink); background: var(--surface-raised); box-shadow: var(--elev-1);
+  color: var(--c-ink); background: transparent; box-shadow: none;
   cursor: pointer;
   transition: background-color var(--d-fast) var(--e-standard), box-shadow var(--d-fast) var(--e-standard);
 }
-.chip:hover, .chip[aria-expanded="true"] { background: var(--c-surface-2); box-shadow: var(--elev-1); }
+.chip:hover, .chip[aria-expanded="true"] { background: var(--hover-wash); box-shadow: none; }
 .chip:active { scale: var(--m-press); }
 
 .avatar {
