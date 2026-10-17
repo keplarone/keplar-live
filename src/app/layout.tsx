@@ -26,6 +26,8 @@ import { LocaleHtml } from "@/components/i18n/LocaleHtml";
 import { KitHosts } from "@/components/kit/Hosts";
 import { SpaceMotionFilters } from "@/components/ui/space/MotionFilters";
 import { SiteClouds } from "@/components/sky/clouds/LandingClouds";
+import { SpaceSkyExempt } from "@/components/space/SpaceSkyExempt";
+import { SPACE_SKY_SCRIPT } from "@/components/space/surface";
 import "@/styles/globals.css";
 import "@/styles/redesign.css";
 
@@ -100,6 +102,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: DESKTOP_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: SIGNED_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: HOME_FX_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: SPACE_SKY_SCRIPT }} />
         <WhopPixel />
       </head>
       <body>
@@ -120,7 +123,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <FitRuntime />
         <SmoothCaret />
         <JsonLd data={siteGraph()} />
-        <SiteClouds />
+        <div data-site-sky="">
+          <SpaceSkyExempt>
+            <SiteClouds />
+          </SpaceSkyExempt>
+        </div>
         <a className="skip-link" href="#main">
           Skip to content
         </a>
