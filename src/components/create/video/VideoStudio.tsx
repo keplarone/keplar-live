@@ -8,7 +8,8 @@
  */
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { CreateIntro } from "../CreateIntro";
+import { CreateOptions } from "../CreateOptions";
+import ci from "../create-intro.module.css";
 import s from "../create.module.css";
 import { ReferencePicker, type RefItem, type RefLimits } from "./ReferencePicker";
 import v from "./video.module.css";
@@ -271,138 +272,141 @@ export function VideoStudio() {
   const label = off ? "Not configured" : "";
   return (
     <div className={v.root} data-testid="video-studio">
-      <CreateIntro title="Create video" badge={label} badgeProps={{ "data-state": off ? "off" : "on", "data-testid": "video-badge" }} lede="Describe a shot. You see the cost before anything is made." />
-      {off ? <p className={v.banner} role="status" data-testid="video-not-configured">Video generation isn&apos;t connected yet (Not configured). Nothing is generated until Higgsfield is connected.</p> : null}
+      {off ? <p className={v.banner} role="status" data-testid="video-not-configured">Video isn&apos;t set up yet, so nothing can be created right now.</p> : null}
       {!config.available ? (
         <div className={v.panel}>
+          <h2 className={ci.studioTitle}>Video</h2>
           <p className={s.muted}>{config.message}</p>
           <Link href="/pricing" className={s.btn}>See plans</Link>
         </div>
       ) : (
         <div className={v.grid}>
           <form className={v.panel} aria-label="New video" onSubmit={(e) => { e.preventDefault(); if (canStart) { keyRef.current ??= newKey(); setConfirm({ total: preview!.totalUnits!, large: preview!.large }); } }}>
+            <h2 className={ci.studioTitle}>Video{label ? <span className={v.badge} data-state={off ? "off" : "on"} data-testid="video-badge">{label}</span> : null}</h2>
             <label className={v.field}>
-              <span>Prompt</span>
+              <span className="visually-hidden">Prompt</span>
               <textarea className={s.textarea} rows={4} maxLength={config.limits?.promptChars} value={prompt} disabled={off} onChange={(e) => { setPrompt(e.target.value); touch(); }} placeholder="A slow push-in on a rainy street at night, neon reflections" />
             </label>
 
-            <div className={v.field}>
-              <span className={v.row} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span id="vid-models">Model</span>
-                <button type="button" className={v.linkBtn} aria-expanded={pickOpen} aria-controls="vid-model-list" onClick={() => setPickOpen((o) => !o)}>{pickOpen ? "Done" : "Change"}</button>
-              </span>
-              {!pickOpen ? <p className={v.chosen}>{chosen.map((m) => m.label).join(", ") || "Pick a model"}</p> : null}
-              <div id="vid-model-list" hidden={!pickOpen}>
-              <span className={v.row} style={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
-                <label style={{ display: "inline-flex", gap: 6, alignItems: "center", textTransform: "none", letterSpacing: 0 }}>
-                  <input type="checkbox" checked={compare} disabled={off || !config.compare} onChange={(e) => { setCompare(e.target.checked); touch(); if (!e.target.checked) { const one = models.slice(0, 1); setModels(one); remember({ compare: false, models: one }); } else remember({ compare: true }); }} />
-                  Compare models
-                </label>
-              </span>
-              <div className={v.models} role="group" aria-labelledby="vid-models">
-                {config.models.map((m) => {
-                  const on = models.includes(m.id);
-                  const takesImg = Boolean(m.refs?.image);
-                  const takesVid = Boolean(m.refs?.video);
-                  const needsImg = (m.refs?.image?.min ?? 0) > 0;
-                  const needsVid = (m.refs?.video?.min ?? 0) > 0;
-                  const hasRef = haveImage || haveVideo;
-                  const use = (haveImage && takesImg) || (haveVideo && takesVid);
-                  const tag = needsVid && !haveVideo ? "needs a source video" : needsImg && !haveImage ? "needs an image" : hasRef ? (use ? "uses your reference" : "ignores your reference") : null;
-                  return (
-                    <label key={m.id} className={v.model} data-on={on}>
-                      <input type={compare ? "checkbox" : "radio"} name="vid-model" checked={on} disabled={off} onChange={() => toggleModel(m.id)} />
-                      <span>
-                        {m.label} <span className={v.tag}>{m.mode.replaceAll("-", " ")}{m.default ? " · default" : ""}</span>
-                        <small>{m.note} {m.price.known ? "" : "Price TBD until quoted."}</small>
-                        {tag ? <small data-testid="ref-tag" data-ignored={tag === "ignores your reference"}>{tag}</small> : null}
-                      </span>
-                    </label>
-                  );
-                })}
+            <CreateOptions summary={[chosen.map((m) => m.label).join(", "), !followsSource && duration ? `${duration}s` : null, ratio || null].filter(Boolean).join(" · ")}>
+              <div className={v.field}>
+                <span className={v.row} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span id="vid-models">Model</span>
+                  <button type="button" className={v.linkBtn} aria-expanded={pickOpen} aria-controls="vid-model-list" onClick={() => setPickOpen((o) => !o)}>{pickOpen ? "Done" : "Change"}</button>
+                </span>
+                {!pickOpen ? <p className={v.chosen}>{chosen.map((m) => m.label).join(", ") || "Pick a model"}</p> : null}
+                <div id="vid-model-list" hidden={!pickOpen}>
+                <span className={v.row} style={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
+                  <label style={{ display: "inline-flex", gap: 6, alignItems: "center", textTransform: "none", letterSpacing: 0 }}>
+                    <input type="checkbox" checked={compare} disabled={off || !config.compare} onChange={(e) => { setCompare(e.target.checked); touch(); if (!e.target.checked) { const one = models.slice(0, 1); setModels(one); remember({ compare: false, models: one }); } else remember({ compare: true }); }} />
+                    Compare models
+                  </label>
+                </span>
+                <div className={v.models} role="group" aria-labelledby="vid-models">
+                  {config.models.map((m) => {
+                    const on = models.includes(m.id);
+                    const takesImg = Boolean(m.refs?.image);
+                    const takesVid = Boolean(m.refs?.video);
+                    const needsImg = (m.refs?.image?.min ?? 0) > 0;
+                    const needsVid = (m.refs?.video?.min ?? 0) > 0;
+                    const hasRef = haveImage || haveVideo;
+                    const use = (haveImage && takesImg) || (haveVideo && takesVid);
+                    const tag = needsVid && !haveVideo ? "needs a source video" : needsImg && !haveImage ? "needs an image" : hasRef ? (use ? "uses your reference" : "ignores your reference") : null;
+                    return (
+                      <label key={m.id} className={v.model} data-on={on}>
+                        <input type={compare ? "checkbox" : "radio"} name="vid-model" checked={on} disabled={off} onChange={() => toggleModel(m.id)} />
+                        <span>
+                          {m.label} <span className={v.tag}>{m.mode.replaceAll("-", " ")}{m.default ? " · default" : ""}</span>
+                          <small>{m.note} {m.price.known ? "" : "Price TBD until quoted."}</small>
+                          {tag ? <small data-testid="ref-tag" data-ignored={tag === "ignores your reference"}>{tag}</small> : null}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+                </div>
               </div>
-              </div>
-            </div>
 
-            <div className={v.row}>
-              {ratios.length ? (
-                <label className={v.field}><span>Shape</span>
-                  <select className={s.select} value={ratio} disabled={off} onChange={(e) => { setRatio(e.target.value); touch(); remember({ ratio: e.target.value }); }}>
-                    {ratios.map((r) => <option key={r}>{r}</option>)}
-                  </select>
+              <div className={v.row}>
+                {ratios.length ? (
+                  <label className={v.field}><span>Shape</span>
+                    <select className={s.select} value={ratio} disabled={off} onChange={(e) => { setRatio(e.target.value); touch(); remember({ ratio: e.target.value }); }}>
+                      {ratios.map((r) => <option key={r}>{r}</option>)}
+                    </select>
+                  </label>
+                ) : null}
+                {!followsSource && durations.length ? (
+                  <label className={v.field}><span>Length</span>
+                    <select className={s.select} value={duration} disabled={off} onChange={(e) => { setDuration(Number(e.target.value)); touch(); remember({ duration: Number(e.target.value) }); }}>
+                      {durations.map((d) => <option key={d} value={d}>{d} seconds</option>)}
+                    </select>
+                  </label>
+                ) : followsSource ? <p className={v.hint}>Length follows your source video (up to {config.maxSeconds} s on your plan).</p> : null}
+                {resolutions.length ? (
+                  <label className={v.field}><span>Resolution</span>
+                    <select className={s.select} value={resolution} disabled={off} onChange={(e) => { setResolution(e.target.value); touch(); remember({ resolution: e.target.value }); }}>
+                      <option value="">Default</option>
+                      {resolutions.map((r) => <option key={r}>{r}</option>)}
+                    </select>
+                  </label>
+                ) : null}
+                {compare ? (
+                  <label className={v.field}><span>Outputs per model</span>
+                    <select className={s.select} value={cmpCount} disabled={off} onChange={(e) => { setCmpCount(Number(e.target.value)); touch(); remember({ cmpCount: Number(e.target.value) }); }}>
+                      {Array.from({ length: config.compare?.perModel ?? 6 }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                  </label>
+                ) : (
+                  <label className={v.field}><span>Outputs</span>
+                    <select className={s.select} value={count} disabled={off || maxOut < 2} onChange={(e) => { setCount(Number(e.target.value)); touch(); remember({ count: Number(e.target.value) }); }}>
+                      {Array.from({ length: maxOut }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                  </label>
+                )}
+              </div>
+              {hasSound ? (
+                <label style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
+                  <input type="checkbox" checked={sound} disabled={off} onChange={(e) => { setSound(e.target.checked); touch(); remember({ sound: e.target.checked }); }} /> Sound
+                  <span className={v.hint}>{chosen.some((m) => !m.options.sound) ? "(applies to models that support it)" : ""}</span>
                 </label>
               ) : null}
-              {!followsSource && durations.length ? (
-                <label className={v.field}><span>Length</span>
-                  <select className={s.select} value={duration} disabled={off} onChange={(e) => { setDuration(Number(e.target.value)); touch(); remember({ duration: Number(e.target.value) }); }}>
-                    {durations.map((d) => <option key={d} value={d}>{d} seconds</option>)}
-                  </select>
-                </label>
-              ) : followsSource ? <p className={v.hint}>Length follows your source video (up to {config.maxSeconds} s on your plan).</p> : null}
-              {resolutions.length ? (
-                <label className={v.field}><span>Resolution</span>
-                  <select className={s.select} value={resolution} disabled={off} onChange={(e) => { setResolution(e.target.value); touch(); remember({ resolution: e.target.value }); }}>
-                    <option value="">Default</option>
-                    {resolutions.map((r) => <option key={r}>{r}</option>)}
-                  </select>
+              {hasNegative ? (
+                <label className={v.field}><span>Avoid (negative prompt) <span className={v.opt}>optional</span></span>
+                  <input className={s.input} value={negative} maxLength={500} disabled={off} onChange={(e) => { setNegative(e.target.value); touch(); }} placeholder="blurry, text overlays" />
                 </label>
               ) : null}
-              {compare ? (
-                <label className={v.field}><span>Outputs per model</span>
-                  <select className={s.select} value={cmpCount} disabled={off} onChange={(e) => { setCmpCount(Number(e.target.value)); touch(); remember({ cmpCount: Number(e.target.value) }); }}>
-                    {Array.from({ length: config.compare?.perModel ?? 6 }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{n}</option>)}
-                  </select>
-                </label>
-              ) : (
-                <label className={v.field}><span>Outputs</span>
-                  <select className={s.select} value={count} disabled={off || maxOut < 2} onChange={(e) => { setCount(Number(e.target.value)); touch(); remember({ count: Number(e.target.value) }); }}>
-                    {Array.from({ length: maxOut }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{n}</option>)}
-                  </select>
-                </label>
-              )}
-            </div>
-            {hasSound ? (
-              <label style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
-                <input type="checkbox" checked={sound} disabled={off} onChange={(e) => { setSound(e.target.checked); touch(); remember({ sound: e.target.checked }); }} /> Sound
-                <span className={v.hint}>{chosen.some((m) => !m.options.sound) ? "(applies to models that support it)" : ""}</span>
-              </label>
-            ) : null}
-            {hasNegative ? (
-              <label className={v.field}><span>Avoid (negative prompt) <span className={v.opt}>optional</span></span>
-                <input className={s.input} value={negative} maxLength={500} disabled={off} onChange={(e) => { setNegative(e.target.value); touch(); }} placeholder="blurry, text overlays" />
-              </label>
-            ) : null}
 
-            {!accepts.image && !accepts.video && refs.length === 0 ? <p className={v.hint}>Add a reference image or video by choosing an image-to-video, reference or motion model above.</p> : null}
-            {(accepts.image || accepts.video || refs.length > 0) ? (
-              <ReferencePicker
-                limits={config.reference}
-                accepts={accepts}
-                maxImages={Math.max(1, ...chosen.map((m) => m.refs?.image?.max ?? 0)) || 1}
-                items={refs}
-                onChange={(x) => { setRefs(x); touch(); }}
-                rights={rights}
-                onRights={(r) => { setRights(r); touch(); }}
-                maxSourceSec={config.maxSeconds}
-                disabled={off}
-                label="Reference image or video"
-              />
-            ) : null}
+              {!accepts.image && !accepts.video && refs.length === 0 ? <p className={v.hint}>Add a reference image or video by choosing an image-to-video, reference or motion model above.</p> : null}
+              {(accepts.image || accepts.video || refs.length > 0) ? (
+                <ReferencePicker
+                  limits={config.reference}
+                  accepts={accepts}
+                  maxImages={Math.max(1, ...chosen.map((m) => m.refs?.image?.max ?? 0)) || 1}
+                  items={refs}
+                  onChange={(x) => { setRefs(x); touch(); }}
+                  rights={rights}
+                  onRights={(r) => { setRights(r); touch(); }}
+                  maxSourceSec={config.maxSeconds}
+                  disabled={off}
+                  label="Reference image or video"
+                />
+              ) : null}
+            </CreateOptions>
 
             <div aria-live="polite" data-testid="video-quote">
               {quoting ? <p className={v.cost}>Getting the exact cost…</p> : null}
               {!quoting && preview ? (
                 <>
-                  <ul className={v.lines}>
+                  {preview.items.length > 1 || preview.items.some((i) => i.problem || i.ignoresRefs || i.ignoredOptions.length) ? <ul className={v.lines}>
                     {preview.items.map((i) => (
                       <li key={i.modelId}>
                         <span>{i.label}{i.count > 1 ? ` × ${i.count}` : ""}{i.durationSec ? ` · ${i.durationSec}s` : ""}{i.ignoresRefs ? <span className={v.mark}> · ignores your reference</span> : null}{i.ignoredOptions.length ? <span className={v.mark}> · {i.ignoredOptions.join(", ")} not supported</span> : null}</span>
                         <span>{i.problem ? <span className={v.err}>{i.problem}</span> : i.units === null ? "Price TBD" : `${i.units.toLocaleString()} credits`}</span>
                       </li>
                     ))}
-                  </ul>
+                  </ul> : null}
                   {compare ? <p className={v.hint}>Compare: {outCount} output{outCount === 1 ? "" : "s"} per model, side by side. You are charged only for clips that are delivered; failed or blocked clips cost nothing.{config.compare?.runsPerDay != null ? ` Up to ${config.compare.runsPerDay} Compare runs a day on your plan.` : ""}</p> : null}
-                  <p className={v.cost}>{preview.priceKnown && preview.totalUnits !== null ? <>Up to <strong>{preview.totalUnits.toLocaleString()} credits</strong>, only if delivered. {preview.items.some((i) => i.source === "list") ? "Based on Higgsfield's published list price." : "Higgsfield's own quote."}</> : <>This price is TBD, so Keplar can&apos;t start it yet.</>}</p>
+                  <p className={v.cost}>{preview.priceKnown && preview.totalUnits !== null ? <>About {preview.totalUnits.toLocaleString()} credits, only if delivered.</> : <>The price isn&apos;t known yet, so this can&apos;t start.</>}</p>
                 </>
               ) : null}
               {!quoting && preview?.blocked ? <p className={v.err} role="alert" data-testid="video-blocked">{preview.blocked} This run needs {preview.totalUnits?.toLocaleString()} credits; try fewer outputs per model or a shorter length.</p> : null}
@@ -430,7 +434,7 @@ export function VideoStudio() {
           </form>
 
           <section aria-label="Your videos">
-            {jobs.length === 0 ? <EmptyState className={v.empty} title="Your videos appear here." hint="Describe a shot, pick a model, then approve the cost." /> : (
+            {jobs.length === 0 ? <EmptyState className={v.empty} title="Your videos appear here." hint="Describe a shot, then approve the cost." /> : (
               <>
                 {groups.map((g) => (
                   <div key={g.id} className={v.cmp} data-testid="compare-grid">

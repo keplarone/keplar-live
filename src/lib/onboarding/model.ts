@@ -57,10 +57,12 @@ export type Progress = {
   checklistDismissed?: string;
   /** Existing accounts: hid the "Take the tour" entry. */
   tourDismissed?: string;
+  /** Closed the "Finish setting up Keplar" card on the app home (setup stays reachable from the welcome link). */
+  resumeDismissed?: string;
   /** Skipped the connect-an-app step (so the checklist doesn't nag). */
   connectSkipped?: string;
 };
-export const PROGRESS_KEYS = ["viewedPlan", "triedCreate", "checklistDismissed", "tourDismissed", "connectSkipped"] as const;
+export const PROGRESS_KEYS = ["viewedPlan", "triedCreate", "checklistDismissed", "tourDismissed", "connectSkipped", "resumeDismissed"] as const;
 export type ProgressKey = (typeof PROGRESS_KEYS)[number];
 
 export type OnboardingStatus = "pending" | "in_progress" | "completed" | "skipped" | "legacy";

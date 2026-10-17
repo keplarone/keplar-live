@@ -15,6 +15,8 @@ type Props = {
   onRefine: (id: string) => void;
   onDuplicate: (id: string) => void;
   onPublish: (id: string) => void;
+  /** Extra class on the section (the full "Recent apps" page lays the cards out as a grid instead of a strip). */
+  className?: string;
 };
 
 const ago = (iso?: string) => {
@@ -41,10 +43,10 @@ function Poster({ app }: { app: AppSummary }) {
   );
 }
 
-export const AppShelf = memo(function AppShelf({ apps, busy, onOpen, onRefine, onDuplicate, onPublish }: Props) {
+export const AppShelf = memo(function AppShelf({ apps, busy, onOpen, onRefine, onDuplicate, onPublish, className }: Props) {
   if (!apps.length) return null;
   return (
-    <section className={s.shelf} aria-labelledby="kc-shelf-h">
+    <section className={className ? `${s.shelf} ${className}` : s.shelf} aria-labelledby="kc-shelf-h">
       <div className={s.shelfHead}>
         <h2 id="kc-shelf-h" className={s.shelfTitle}>Your apps</h2>
         <span className={s.shelfCount}>{apps.length}</span>

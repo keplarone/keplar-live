@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import { api } from "../api";
 import s from "./mobile.module.css";
 import { CreateIntro } from "../CreateIntro";
+import { CreateOptions } from "../CreateOptions";
+import { suggestBundleId } from "./bundle-id";
 import { ActivityIndicator, Button } from "@/components/kit";
 
 type Cred = { kind: "apple" | "google" | "expo"; hint: string; status: "saved" | "verified" | "failed"; detail: string; checkedAt: string | null };
@@ -20,6 +22,8 @@ export function MobileStudio() {
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [app, setApp] = useState({ name: "", bundleId: "", tagline: "" });
+  /** The bundle ID follows the name ("Mill Lane Bakehouse" → com.milllanebakehouse.app) until someone edits it by hand. */
+  const [bundleTouched, setBundleTouched] = useState(false);
   const [screens, setScreens] = useState<Screen[]>([{ title: "Home", body: "" }]);
   const [apple, setApple] = useState({ issuerId: "", keyId: "", privateKey: "" });
   const [google, setGoogle] = useState({ serviceAccountJson: "", packageName: "" });
@@ -93,9 +97,7 @@ export function MobileStudio() {
       <details className={s.card} open>
         <summary><span className={s.n}>1</span> Describe the app</summary>
         <div className={s.body}>
-          <label className={s.field}>App name<input className={s.input} value={app.name} maxLength={30} onChange={(e) => setApp({ ...app, name: e.target.value })} placeholder="Mill Lane Bakehouse" /></label>
-          <label className={s.field}>Bundle ID (also the Android package)<input className={s.input} value={app.bundleId} onChange={(e) => setApp({ ...app, bundleId: e.target.value })} placeholder="com.yourname.appname" /></label>
-          <label className={s.field}>One line about it (optional)<input className={s.input} value={app.tagline} maxLength={80} onChange={(e) => setApp({ ...app, tagline: e.target.value })} /></label>
+          <label className={s.field}>What&apos;s your app called?<input className={s.input} value={app.name} maxLength={30} onChange={(e) => setApp({ ...app, name: e.target.value, bundleId: bundleTouched ? app.bundleId : suggestBundleId(e.target.value) })} placeholder="Mill Lane Bakehouse" /></label>
           <div className={s.screens}>
             {screens.map((x, i) => (
               <div key={i} className={s.row}>
@@ -106,6 +108,10 @@ export function MobileStudio() {
             ))}
             {screens.length < 6 ? <div><Button variant="secondary" size="sm" onClick={() => setScreens([...screens, { title: "", body: "" }])}>Add a screen</Button></div> : null}
           </div>
+          <CreateOptions summary={app.bundleId || undefined}>
+            <label className={s.field}>Bundle ID (also the Android package)<input className={s.input} value={app.bundleId} onChange={(e) => { setBundleTouched(true); setApp({ ...app, bundleId: e.target.value }); }} placeholder="com.yourname.appname" /></label>
+            <label className={s.field}>One line about it (optional)<input className={s.input} value={app.tagline} maxLength={80} onChange={(e) => setApp({ ...app, tagline: e.target.value })} /></label>
+          </CreateOptions>
         </div>
       </details>
 

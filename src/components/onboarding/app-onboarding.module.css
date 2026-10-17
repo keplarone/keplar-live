@@ -58,3 +58,9 @@
   .starter, .btn { transition: none; }
   .starter:active, .btn:active { scale: none; }
 }
+/* "Finish setting up Keplar": a close button in the top-right corner; the server remembers it (progress.resumeDismissed). */
+.dismissible { position: relative; }
+.dismissible .h { padding-right: 36px; }
+.cardX { position: absolute; top: 14px; right: 14px; }
+.cardX:focus-visible { outline: 2px solid var(--c-ink); outline-offset: 2px; }
+@media (pointer: coarse) { .cardX { width: 44px; height: 44px; top: 8px; right: 8px; } }

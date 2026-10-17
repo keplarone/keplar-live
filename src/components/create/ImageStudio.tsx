@@ -16,7 +16,8 @@ import {
   filterSlashCommands,
   type SlashCommand,
 } from "@/lib/images/slash-commands";
-import { TwoTone } from "@/components/page/TwoTone";
+import { CreateOptions } from "./CreateOptions";
+import ci from "./create-intro.module.css";
 import s from "./create.module.css";
 import b from "./images.module.css";
 import { ActivityIndicator, Button, SegmentedControl, confirmAction } from "@/components/kit";
@@ -387,7 +388,7 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
     return (
       <div className={b.root}>
         <div className={`${b.panel} ${b.locked}`}>
-          <h2 className={b.h1}><TwoTone text="Create images" /></h2>
+          <h2 className={ci.studioTitle}>Image</h2>
           <p className={s.muted}>{config.message}</p>
           <Link href="/pricing" className={s.btn}>See plans</Link>
         </div>
@@ -401,11 +402,7 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
 
   return (
     <div className={b.root}>
-      <div className={b.head}>
-        <h2 className={b.h1}><TwoTone text="Create images" /></h2>
-        <p className={s.muted}>Describe an image. You see the cost first, and you are charged only if the image is created.</p>
-      </div>
-      {!config.configured ? <p className={b.banner} role="status">Image generation isn&apos;t connected yet (Not configured).</p> : null}
+      {!config.configured ? <p className={b.banner} role="status">Image creation isn&apos;t set up yet, so nothing can be created right now.</p> : null}
       {config.notice ? <p className={b.banner} role="status">{config.notice}</p> : null}
       {cooldown ? (
         <p className={b.banner} role="status"><strong>Keplar usage cooldown</strong> {cooldown.message} Resumes at {new Date(cooldown.until).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}.</p>
@@ -414,8 +411,9 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
 
       <div className={b.grid}>
         <form ref={formRef} className={b.panel} onSubmit={(e) => { e.preventDefault(); openConfirm(); }} aria-label="New image">
+          <h2 className={ci.studioTitle}>Image</h2>
           <label className={b.field}>
-            <span>{regenOf ? "Regenerate (edit the prompt if you like)" : "Prompt"}</span>
+            <span className="visually-hidden">{regenOf ? "Regenerate (edit the prompt if you like)" : "Prompt"}</span>
             {slashOpen ? (
               <SlashCommandMenu
                 id={slashListId}
@@ -448,62 +446,63 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
               aria-controls={slashOpen ? slashListId : undefined}
               aria-expanded={slashOpen || undefined}
               aria-activedescendant={slashOpen && slashItems[slashActive] ? `${slashListId}-opt-${slashItems[slashActive]!.id}` : undefined}
-              placeholder="A warm, sunlit bakery counter… or type / for commands like /BTS"
+              placeholder="Describe an image… (type / for presets)"
             />
-            <span className={b.hint}>Type / for slash commands (/BTS, /Adcreative, /Explodeview, …).</span>
           </label>
           <div className={b.field}>
             <span id="img-size">Shape</span>
             <SegmentedControl label="Shape" size="sm" className={b.seg} value={size} onValueChange={(v) => { setSize(v); remember({ size: v }); keyRef.current = null; setConfirm(null); }} options={(config.sizes ?? []).map((x) => ({ value: x.id, label: x.label }))} />
           </div>
-          <div className={b.field}>
-            <span id="img-quality">Quality</span>
-            <SegmentedControl label="Quality" size="sm" className={b.seg} value={quality} onValueChange={(v) => { setQuality(v); remember({ quality: v }); keyRef.current = null; setConfirm(null); }} options={(config.qualities ?? []).map((x) => ({ value: x.id, label: x.label }))} />
-            <span className={b.hint}>{config.qualities?.find((x) => x.id === quality)?.note}</span>
-          </div>
-          {config.models && config.models.length > 1 ? (
-            <label className={b.field}>
-              <span>Model</span>
-              <select className={s.select} value={model || modelCfg?.id || ""} disabled={Boolean(readyRefs.length)} onChange={(e) => { setModel(e.target.value); remember({ model: e.target.value }); keyRef.current = null; setConfirm(null); }}>
-                {config.models.map((m) => <option key={m.id} value={m.id} disabled={!m.available}>{m.label}{m.default ? " (default)" : ""}{m.available ? "" : " · not configured"}</option>)}
-              </select>
-              <span className={b.hint}>{readyRefs.length ? `With a reference, Keplar uses ${config.references?.model ?? "an edit model"}.` : modelCfg?.note}</span>
-            </label>
-          ) : null}
-          {modelCfg?.supports.seed && !readyRefs.length ? (
-            <label className={b.field}><span>Seed <em className={b.hint}>optional</em></span>
-              <input className={s.input} inputMode="numeric" value={seed} onChange={(e) => { setSeed(e.target.value.replace(/\D/g, "").slice(0, 10)); keyRef.current = null; setConfirm(null); }} placeholder="Same seed, similar result" />
-            </label>
-          ) : null}
-          {modelCfg?.supports.negativePrompt && !readyRefs.length ? (
-            <label className={b.field}><span>Avoid <em className={b.hint}>optional</em></span>
-              <input className={s.input} maxLength={500} value={negative} onChange={(e) => { setNegative(e.target.value); keyRef.current = null; setConfirm(null); }} placeholder="blurry, text overlays" />
-            </label>
-          ) : null}
-          {maxCount > 1 ? (
-            <label className={b.field}><span>Outputs</span>
-              <select className={s.select} value={count} onChange={(e) => { setCount(Number(e.target.value)); remember({ count: Number(e.target.value) }); keyRef.current = null; setConfirm(null); }}>
-                {Array.from({ length: maxCount }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{n}</option>)}
-              </select>
-            </label>
-          ) : null}
-          {config.references ? (
-            config.references.available ? (
-              <ReferencePicker
-                limits={{ image: { types: config.references.types, maxBytes: config.references.maxBytes, max: config.references.maxImages }, video: { types: [], maxBytes: 0, minSec: 0, maxSec: 0 }, inlineMaxBytes: 3_000_000, rightsNote: config.references.rightsNote } as RefLimits}
-                accepts={{ image: true, video: false }}
-                maxImages={config.references.maxImages}
-                items={refs}
-                onChange={(x) => { setRefs(x); keyRef.current = null; setConfirm(null); }}
-                rights={rights}
-                onRights={(r) => { setRights(r); keyRef.current = null; setConfirm(null); }}
-                label="Reference image"
-              />
-            ) : <p className={b.hint}>Reference images need Higgsfield (Not configured).</p>
-          ) : null}
+          <CreateOptions summary={[config.qualities?.find((x) => x.id === quality)?.label, count > 1 ? `${count} images` : null, readyRefs.length ? "with reference" : null].filter(Boolean).join(" · ")}>
+            <div className={b.field}>
+              <span id="img-quality">Quality</span>
+              <SegmentedControl label="Quality" size="sm" className={b.seg} value={quality} onValueChange={(v) => { setQuality(v); remember({ quality: v }); keyRef.current = null; setConfirm(null); }} options={(config.qualities ?? []).map((x) => ({ value: x.id, label: x.label }))} />
+              <span className={b.hint}>{config.qualities?.find((x) => x.id === quality)?.note}</span>
+            </div>
+            {config.models && config.models.length > 1 ? (
+              <label className={b.field}>
+                <span>Model</span>
+                <select className={s.select} value={model || modelCfg?.id || ""} disabled={Boolean(readyRefs.length)} onChange={(e) => { setModel(e.target.value); remember({ model: e.target.value }); keyRef.current = null; setConfirm(null); }}>
+                  {config.models.map((m) => <option key={m.id} value={m.id} disabled={!m.available}>{m.label}{m.default ? " (default)" : ""}{m.available ? "" : " · not configured"}</option>)}
+                </select>
+                <span className={b.hint}>{readyRefs.length ? `With a reference, Keplar uses ${config.references?.model ?? "an edit model"}.` : modelCfg?.note}</span>
+              </label>
+            ) : null}
+            {modelCfg?.supports.seed && !readyRefs.length ? (
+              <label className={b.field}><span>Seed <em className={b.hint}>optional</em></span>
+                <input className={s.input} inputMode="numeric" value={seed} onChange={(e) => { setSeed(e.target.value.replace(/\D/g, "").slice(0, 10)); keyRef.current = null; setConfirm(null); }} placeholder="Same seed, similar result" />
+              </label>
+            ) : null}
+            {modelCfg?.supports.negativePrompt && !readyRefs.length ? (
+              <label className={b.field}><span>Avoid <em className={b.hint}>optional</em></span>
+                <input className={s.input} maxLength={500} value={negative} onChange={(e) => { setNegative(e.target.value); keyRef.current = null; setConfirm(null); }} placeholder="blurry, text overlays" />
+              </label>
+            ) : null}
+            {maxCount > 1 ? (
+              <label className={b.field}><span>Outputs</span>
+                <select className={s.select} value={count} onChange={(e) => { setCount(Number(e.target.value)); remember({ count: Number(e.target.value) }); keyRef.current = null; setConfirm(null); }}>
+                  {Array.from({ length: maxCount }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </label>
+            ) : null}
+            {config.references ? (
+              config.references.available ? (
+                <ReferencePicker
+                  limits={{ image: { types: config.references.types, maxBytes: config.references.maxBytes, max: config.references.maxImages }, video: { types: [], maxBytes: 0, minSec: 0, maxSec: 0 }, inlineMaxBytes: 3_000_000, rightsNote: config.references.rightsNote } as RefLimits}
+                  accepts={{ image: true, video: false }}
+                  maxImages={config.references.maxImages}
+                  items={refs}
+                  onChange={(x) => { setRefs(x); keyRef.current = null; setConfirm(null); }}
+                  rights={rights}
+                  onRights={(r) => { setRights(r); keyRef.current = null; setConfirm(null); }}
+                  label="Reference image"
+                />
+              ) : <p className={b.hint}>Reference images aren&apos;t available yet.</p>
+            ) : null}
+          </CreateOptions>
           <p className={b.cost}>
-            {estUnits ? <>Up to <strong>{(estUnits * count).toLocaleString()} credits</strong>{count > 1 ? ` for ${count} images` : ""}, only if {count > 1 ? "they are" : "the image is"} created.</> : null}
-            {dayLeft !== null ? <> {dayLeft} of {config.limits?.perDay} images left today{quality === "high" && config.limits?.highPerDay != null ? <> ({Math.max(0, config.limits.highPerDay - (listing?.usage?.highToday ?? 0))} High quality)</> : null}.</> : null}
+            {estUnits ? <>About {(estUnits * count).toLocaleString()} credits, only if created.</> : null}
+            {dayLeft !== null ? <span className={b.hint}> {dayLeft} left today.</span> : null}
           </p>
           {confirm ? (
             <div className={b.confirm} role="alertdialog" aria-label="Confirm cost">
@@ -521,7 +520,7 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
           )}
           {error ? <p className={b.error} role="alert">{error}</p> : null}
           <span className={b.hint}>
-            {listing.usage ? `${listing.usage.stored} of ${config.limits?.storedImages} saved images. ` : ""}No real people, no explicit or violent content, nothing that imitates a brand&apos;s login or payment page.
+No real people, explicit or violent content, or fake login and payment pages.
           </span>
         </form>
 
