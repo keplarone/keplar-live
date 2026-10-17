@@ -36,9 +36,10 @@ function useStep(on: boolean, max: number, every: number) {
   return on ? Math.min(i, max) : max;
 }
 
-function Tile({ title, href, wide, example = true, children }: { title: string; href: string; wide?: boolean; example?: boolean; children: React.ReactNode }) {
+/** `dark`: a tile that stays dark in both themes (light drawn additively needs a dark sky). */
+function Tile({ title, href, wide, dark, example = true, children }: { title: string; href: string; wide?: boolean; dark?: boolean; example?: boolean; children: React.ReactNode }) {
   return (
-    <article className={s.tile} data-wide={wide || undefined}>
+    <article className={s.tile} data-wide={wide || undefined} data-kb-dark={dark ? "" : undefined}>
       {example ? <span className={s.example}>Example</span> : null}
       <div className={s.stage}>{children}</div>
       <a href={href} className={s.foot}>
@@ -84,7 +85,7 @@ const BUILD: { k: "cmd" | "think" | "tool" | "agent" | "done" | "edit"; a: strin
 function BuildTile({ on }: { on: boolean }) {
   const n = useStep(on, BUILD.length, 650);
   return (
-    <div className={s.term}>
+    <div className={s.term} data-kb-dark="">
       <div className={s.termBar}><span>acme/storefront</span><span className={s.termRight}>agent/promo-codes</span></div>
       <div className={s.termBody}>
         {BUILD.map((l, i) => (
@@ -152,7 +153,7 @@ function DesignTile({ on }: { on: boolean }) {
           {mode === "Design" ? <><b className={s.h} data-c="tl" /><b className={s.h} data-c="tr" /><b className={s.h} data-c="bl" /><b className={s.h} data-c="br" /></> : null}
         </div>
         <div className={s.wGrid}><i /><i /><i /></div>
-        {mode === "Code" ? <pre className={s.code}>{`<section class="hero">\n  <h1>Spring menu</h1>\n  <a class="btn">Order</a>\n</section>`}</pre> : null}
+        {mode === "Code" ? <pre className={s.code} data-kb-dark="">{`<section class="hero">\n  <h1>Spring menu</h1>\n  <a class="btn">Order</a>\n</section>`}</pre> : null}
         {mode === "AI" ? <p className={s.ai}>Make the hero warmer and the button larger.</p> : null}
       </div>
     </div>
@@ -168,7 +169,7 @@ export function ProductTiles() {
       <Tile title="Agents" href="#control"><AgentsTile on={on} /></Tile>
       <Tile title="Deep Research" href="#product"><ResearchTile on={on} /></Tile>
       <Tile title="Design Canvas" href="#product"><DesignTile on={on} /></Tile>
-      <Tile title="Several models" href="#product" example={false}><Converge className={s.converge} /></Tile>
+      <Tile title="Several models" href="#product" example={false} dark><Converge className={s.converge} /></Tile>
     </div>
   );
 }

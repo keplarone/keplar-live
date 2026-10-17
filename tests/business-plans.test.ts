@@ -89,7 +89,8 @@ test("Business checkout is embedded like Keplar One: signed email, the tier's ow
   assert.match(route, /embed: \{ planId, metadata, returnUrl: businessUrl\("\/\?purchased=1"\) \}/);
   assert.match(route, /if \(mode !== "hosted"\)/, "embed is the default");
   const setup = readFileSync("src/components/business-site/AccountSetup.tsx", "utf8");
-  assert.match(setup, /<WhopEmbed[\s\S]*?theme="dark"/, "the embed matches the always-dark Business chrome");
+  // Space UI: the storefront follows the site theme, so the embed does too (WhopEmbed's default).
+  assert.doesNotMatch(setup, /<WhopEmbed[^>]*theme=/, "the embed follows the site theme like the Business storefront");
   assert.match(setup, /onFallback=\{embed\.hosted \? \(\) => void checkout\("hosted"\) : undefined\}/);
   const prev = process.env.WHOP_PLAN_BIZ_GROWTH_MONTHLY;
   process.env.WHOP_PLAN_BIZ_GROWTH_MONTHLY = "plan_GrowthMonthly1";
@@ -131,13 +132,15 @@ test("Business account: company profile is validated and the website normalised"
   if (!bad.ok) assert.deepEqual(Object.keys(bad.errors).sort(), ["company", "industry", "role", "size", "website"]);
 });
 
-test("Business site: storefront on business.keplar.one, download only for active plans, dark Geist chrome", () => {
+test("Business site: storefront on business.keplar.one, download only for active plans, dark Space chrome in Montserrat", () => {
   const route = readFileSync("src/app/api/business/account/route.ts", "utf8");
   assert.match(route, /if \(active\) \{\s*(?:\/\/[^\n]*\n\s*)?const r = await getDesktopRelease\(fetch, "business"\)/, "download links (the Business app's own) are computed only for an active Business plan");
   assert.doesNotMatch(route, /access-control-allow-origin/, "same origin now: business.keplar.one serves its own account API");
   const layout = readFileSync("src/app/(business)/layout.tsx", "utf8");
-  assert.match(readFileSync("src/components/business-site/fonts.ts", "utf8"), /Geist\(/);
-  assert.match(layout, /geist\.variable/);
+  // Space UI: Business reads the family's Montserrat (the root layout's --font-sans) instead of loading Geist of its own.
+  assert.ok(!existsSync("src/components/business-site/fonts.ts"), "no separate Business font files");
+  assert.doesNotMatch(layout, /geist/i);
+  assert.match(readFileSync("src/components/business-site/tokens.css", "utf8"), /--kb-sans: var\(--font-sans\), "Montserrat"/);
   const store = readFileSync("src/components/business-site/Storefront.tsx", "utf8");
   assert.doesNotMatch(store, /study|skills/i);
   assert.match(readFileSync("src/proxy.ts", "utf8"), /url\.pathname = pathname === "\/" \? BUSINESS_PREFIX/);

@@ -14,7 +14,7 @@ export function BusinessDoc({ children }: { children: React.ReactNode }) {
         <Link href="/" className={d.home} aria-label="Keplar Business home">
           <BusinessMark size={26} />
         </Link>
-        <Link href="/" className={d.back}>Back to Keplar Business</Link>
+        <Link href="/" className={d.back}><span aria-hidden="true">←</span>Back to Keplar Business</Link>
       </header>
       <div className={d.doc}>{children}</div>
       <BusinessFooter />

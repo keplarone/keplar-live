@@ -130,7 +130,7 @@ function AccountRow({ name, plan, email, settingsOpen, signingOut, onSettings, o
   );
 }
 
-export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
+export function BusinessWorkspace() {
   const { mobile, open: drawerOpen, sideRef, menuRef, close: closeNavigation, toggle: toggleNavigation } = useBusinessNavigation();
   const [acct, setAcct] = useState<Account | null>(null);
   const [view, setView] = useState<View>(readView);
@@ -220,11 +220,11 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
     else go({ at: mode, seed: text, projectId: projectId ?? undefined, key });
   };
 
-  if (!acct) return <div className={`${s.root} ${c.cursor} ${fontClass}`} data-kb=""><div className={s.center}><span className={s.spinner} aria-label="Loading" /></div></div>;
+  if (!acct) return <div className={`${s.root} ${c.cursor}`} data-kb=""><div className={s.center}><span className={s.spinner} aria-label="Loading" /></div></div>;
 
   if (!active) {
     return (
-      <div className={`${s.root} ${c.cursor} ${fontClass}`} data-kb="">
+      <div className={`${s.root} ${c.cursor}`} data-kb="">
         <div className={s.center}>
           <div className={c.gate}>
             <BusinessMark size={36} />
@@ -299,7 +299,7 @@ export function BusinessWorkspace({ fontClass }: { fontClass: string }) {
   const who = acct.account?.company ?? acct.email ?? "Keplar Business";
 
   return (
-    <div className={`${s.root} ${c.cursor} ${fontClass}`} data-kb="">
+    <div className={`${s.root} ${c.cursor}`} data-kb="">
       <div className={c.shell} data-collapsed={collapsed || undefined} data-menu-open={drawerOpen || undefined}>
         {drawerOpen ? <button type="button" className={c.backdrop} onClick={closeNavigation} aria-label="Close navigation" tabIndex={-1} /> : null}
         <aside id="business-navigation" ref={sideRef} className={c.side} aria-label="Business workspace" role={drawerOpen ? "dialog" : undefined} aria-modal={drawerOpen || undefined} tabIndex={-1}>

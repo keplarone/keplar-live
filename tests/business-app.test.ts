@@ -102,11 +102,11 @@ test("business host: the favicon and touch icons are the Keplar Business mark, k
   assert.equal(ico.readUInt16LE(4), 3, "16, 32 and 48 px frames");
 });
 
-test("every workspace tab uses the Business theme: the embedded Keplar One screens read re-pointed tokens and the Business sans (Google Sans)", () => {
+test("every workspace tab uses the Business theme: the embedded Keplar One screens read re-pointed tokens, the 3D Space primary and the Business sans (Montserrat)", () => {
   const ws = readFileSync("src/components/business-app/workspace.module.css", "utf8");
   const root = ws.slice(ws.indexOf(".root {"), ws.indexOf("}", ws.indexOf(".root {")));
   // Create, Agents, Approvals, Operations and Integrations are Keplar One components: their palette, accent, buttons and fonts.
-  for (const token of ["--c-canvas: var(--w-bg)", "--c-surface-1: var(--w-panel)", "--c-ink: var(--w-ink)", "--c-border: var(--w-line)", "--c-accent: var(--w-accent)", "--btn-p-bg: var(--w-ink)", "--font-sans: var(--kb-sans)", "--f-sans: var(--kb-sans)"]) {
+  for (const token of ["--c-canvas: var(--w-bg)", "--c-surface-1: var(--w-panel)", "--c-ink: var(--w-ink)", "--c-border: var(--w-line)", "--c-accent: var(--w-accent)", "--btn-p-bg: var(--kb-p-face)", "--font-sans: var(--kb-sans)", "--f-sans: var(--kb-sans)"]) {
     assert.ok(root.includes(token), `workspace root re-points ${token}`);
   }
   // Create redefines its own palette on its root, so it needs its own Business override (only while the workspace is open).
@@ -121,7 +121,7 @@ test("Agents, Approvals, Operations, Integrations and Create look like the works
   assert.match(os, /<EmbeddedHead tab=\{tab\}/);
   for (const t of ["Operations", "Agents", "Approvals", "Integrations"]) assert.match(os, new RegExp(`title: "${t}"`));
   const osCss = readFileSync("src/components/business/business.module.css", "utf8");
-  assert.match(osCss, /\.shell\[data-embedded\] \.card, \.shell\[data-embedded\] \.notice, \.shell\[data-embedded\] \.col \{\s*border: 0; border-radius: 12px; padding: 16px;/);
+  assert.match(osCss, /\.shell\[data-embedded\] \.card, \.shell\[data-embedded\] \.notice, \.shell\[data-embedded\] \.col \{\s*border: 0; border-radius: 26px; padding: 22px 24px;/);
   // Create: underline tabs and the New chat composer, only while the workspace is open.
   assert.match(readFileSync("src/components/create/apps/studio.module.css", "utf8"), /:global\(html\[data-business-app\]\) \.calm \.calmCard \{/);
   for (const f of ["src/components/create/images.module.css", "src/components/create/video/video.module.css"]) {

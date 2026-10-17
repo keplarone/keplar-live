@@ -12,6 +12,7 @@ import { api } from "@/components/create/api";
 import s from "./business.module.css";
 import { usePresence } from "@/components/motion/usePresence";
 import { UnverifiedNote } from "./UnverifiedNote";
+import { RollIn } from "@/components/business-app/RollIn";
 import { UNVERIFIED_LABEL, isLiveVerified } from "@/lib/business/verification";
 
 type Tab = "overview" | "orders" | "crm" | "inbox" | "agents" | "approvals" | "connectors" | "apps" | "audit";
@@ -214,25 +215,25 @@ function Overview({ dash, go }: { dash: Dash | null; go: (t: Tab) => void }) {
           <span className={s.grow}>
             {dash.approvals.pending} agent action{dash.approvals.pending === 1 ? "" : "s"} waiting for your approval.
           </span>
-          <button className={s.btn} onClick={() => go("approvals")}>Review</button>
+          <button className={`${s.btn} ${s.primary}`} onClick={() => go("approvals")}>Review</button>
         </div>
       ) : null}
       <div className={s.grid}>
         <div className={s.card}>
           <span className={s.label}>Revenue · 30 days</span>
-          <span className={s.stat}>{money(dash.revenue.last30, dash.revenue.currency)}</span>
+          <span className={s.stat}><RollIn value={dash.revenue.last30} format={(v) => money(v, dash.revenue.currency)} /></span>
         </div>
         <div className={s.card}>
           <span className={s.label}>Orders · 30 days</span>
-          <span className={s.stat}>{dash.orders.last30}</span>
+          <span className={s.stat}><RollIn value={dash.orders.last30} /></span>
         </div>
         <div className={s.card}>
           <span className={s.label}>New leads · 30 days</span>
-          <span className={s.stat}>{dash.leads.last30}</span>
+          <span className={s.stat}><RollIn value={dash.leads.last30} /></span>
         </div>
         <div className={s.card}>
           <span className={s.label}>Site views · 14 days</span>
-          <span className={s.stat}>{dash.traffic.last14}</span>
+          <span className={s.stat}><RollIn value={dash.traffic.last14} /></span>
         </div>
         <div className={s.card}>
           <span className={s.label}>Conversion · 14 days</span>
@@ -241,7 +242,7 @@ function Overview({ dash, go }: { dash: Dash | null; go: (t: Tab) => void }) {
         </div>
         <div className={s.card}>
           <span className={s.label}>Pending approvals</span>
-          <span className={s.stat}>{dash.approvals.pending}</span>
+          <span className={s.stat}><RollIn value={dash.approvals.pending} /></span>
         </div>
       </div>
       <div className={s.two}>
@@ -403,7 +404,7 @@ function Orders({ dash, onChange }: { dash: Dash | null; onChange: () => void })
         ) : !p ? (
           <div className={s.row}>
             <p className={s.grow}>Connect a Stripe account to take payments on your sites. Payouts go straight to you; Stripe handles card fees and disputes.{feePct ? ` Keplar adds a ${feePct} platform fee per sale.` : ""}</p>
-            <button className={s.btn} disabled={busy} onClick={() => onboard(true)}>Set up payments</button>
+            <button className={`${s.btn} ${s.primary}`} disabled={busy} onClick={() => onboard(true)}>Set up payments</button>
           </div>
         ) : !p.chargesEnabled ? (
           <div className={s.row}>
@@ -411,7 +412,7 @@ function Orders({ dash, onChange }: { dash: Dash | null; onChange: () => void })
               {p.status === "restricted" ? "Stripe needs more information before you can take payments." : "Finish verification with Stripe to take payments."}
               {p.requirementsDue?.length ? ` Still needed: ${p.requirementsDue.slice(0, 4).join(", ")}.` : ""}
             </p>
-            <button className={s.btn} disabled={busy} onClick={() => onboard(false)}>Continue with Stripe</button>
+            <button className={`${s.btn} ${s.primary}`} disabled={busy} onClick={() => onboard(false)}>Continue with Stripe</button>
             <button className={s.btn} disabled={busy} onClick={() => refresh()}>Check status</button>
           </div>
         ) : (
@@ -739,7 +740,7 @@ function Approvals({ onChange }: { onChange: () => void }) {
               )}
               {a.action.type === "social.schedule" && a.action.at ? <span className={s.muted}>Scheduled for {when(a.action.at)}</span> : null}
               <div className={s.row}>
-                <button className={s.btn} onClick={() => decide(a, "approve")}>{a.action.type === "mcp.call" ? "Approve and run" : "Approve and send"}</button>
+                <button className={`${s.btn} ${s.primary}`} onClick={() => decide(a, "approve")}>{a.action.type === "mcp.call" ? "Approve and run" : "Approve and send"}</button>
                 <button className={`${s.btn} ${s.ghost}`} onClick={() => decide(a, "reject")}>Reject</button>
               </div>
             </div>

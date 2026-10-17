@@ -132,7 +132,6 @@ export function AccountSetup() {
                 <WhopEmbed
                   config={embed.config}
                   planName={BUSINESS_TIERS[embed.tier].name}
-                  theme="dark"
                   // The webhook grants the plan; the storefront then shows it as active with the download.
                   onPaid={() => window.location.assign("/?purchased=1")}
                   onFallback={embed.hosted ? () => void checkout("hosted") : undefined}
