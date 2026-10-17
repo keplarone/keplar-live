@@ -1,0 +1,24 @@
+# Software composition analysis on every pull request: a dependency change that introduces a known vulnerability (high or
+# worse), or a license the project does not accept, fails the check before it can be merged. Complements `npm audit` in CI
+# (which checks what is already installed) by looking at what the PR adds.
+name: Dependency review
+on:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: on-failure
+          deny-licenses: AGPL-1.0-only, AGPL-1.0-or-later, AGPL-3.0-only, AGPL-3.0-or-later, SSPL-1.0

@@ -64,7 +64,7 @@ export type Site = {
 
 export type SiteDesign = { direction: DirectionId; accent: string | null; mode: "auto" | "light" | "dark"; /** Per-project font loading (from the structure recipe); absent = swap. */ fontDisplay?: "swap" | "optional" | "fallback" };
 
-export type LintSummary = { errors: number; warnings: number; fixed: string[]; repaired: boolean; remaining: { code: string; message: string; file: string; severity: "error" | "warn" }[]; placeholders: number };
+export type LintSummary = { errors: number; warnings: number; fixed: string[]; repaired: boolean; remaining: { code: string; message: string; file: string; severity: "error" | "warn" }[]; placeholders: number; /** Security and mobile checklist (src/lib/create/output-checklist.ts). */ checklist?: { passed: number; total: number; failed: { id: string; label: string; detail: string }[] } };
 
 export type VersionKind = "template" | "ai" | "restore" | "edit";
 

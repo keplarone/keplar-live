@@ -9,6 +9,7 @@
  *     pending approvals.
  *   - Every step and decision lands in the audit log.
  */
+import { securityEvent } from "@/lib/security/events";
 import { inCurrentMode } from "./stripe";
 import { needMessage, requiredFor, unmetNeeds } from "./oauth-connectors";
 import { id, now } from "@/lib/create/platform/ids";
@@ -449,6 +450,7 @@ export async function runAgent(ws: Workspace, agentId: string, trigger: string, 
       }
       // AI Firewall: block credentials / injection, rate the rest. Blocked actions are never queued or sent.
       const verdict = inspectAction(action, known);
+      securityEvent({ kind: "agent.action", code: verdict.blocked ? "blocked" : `${verdict.risk}:${action.type}`, where: "business/agents/run", accountId: ws.id });
       if (verdict.blocked) {
         await audit(ws.id, `agent:${agent.id}`, "firewall.blocked", run.id, `${action.type}: ${verdict.blocked}`);
         step(`Firewall blocked a ${action.type}: ${verdict.blocked}`);
@@ -500,6 +502,7 @@ export async function decide(ws: Workspace, approvalId: string, decision: "appro
   if (decision === "approve") {
     // Edits are inspected again: the owner can approve a high-risk action they have read, but a blocked one never goes out.
     const v = inspectAction(action, await knownEmails(ws.id));
+    securityEvent({ kind: "agent.action", code: v.blocked ? "blocked" : `approved:${action.type}`, where: "business/agents/approve", accountId: ws.id });
     if (v.blocked) {
       await audit(ws.id, auditActor(ws), "firewall.blocked", a.id, `${action.type}: ${v.blocked}`);
       throw new HttpError(422, v.blocked, "firewall_blocked");

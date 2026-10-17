@@ -6,6 +6,7 @@
  * workspace row: durable with DATABASE_URL (Neon), otherwise per instance, which
  * is why checkout return also sets a signed plan cookie (plan-cookie.ts).
  */
+import { securityEvent } from "@/lib/security/events";
 import { collection } from "@/lib/create/platform/store";
 import { now } from "@/lib/create/platform/ids";
 import { alertOwner } from "@/lib/accounts/alerts";
@@ -98,6 +99,7 @@ async function workspaceFor(ids: Pick<Ids, "email" | "membershipId" | "paymentId
 }
 
 async function grant(ws: WorkspaceRow, plan: GrantablePlan, ids: Ids, paidAt: string | null) {
+  securityEvent({ kind: "billing.change", code: `grant:${plan}`, where: "webhook/whop", accountId: ws.id });
   const start = paidAt ?? now();
   const end = ids.periodEnd ?? addDays(start, 31);
   await updateWorkspace(ws.id, {
@@ -118,6 +120,7 @@ async function grant(ws: WorkspaceRow, plan: GrantablePlan, ids: Ids, paidAt: st
 }
 
 async function revoke(ws: WorkspaceRow, status: "canceled" | "unpaid") {
+  securityEvent({ kind: "billing.change", code: `revoke:${status}`, where: "webhook/whop", accountId: ws.id });
   await updateWorkspace(ws.id, { plan: "free", billing: { status, subscriptionId: null, cancelAtPeriodEnd: false, periodStart: null, periodEnd: null } });
 }
 

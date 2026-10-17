@@ -4,6 +4,7 @@
  * Needs a sign-in from the last 10 minutes: 403 reauth_required otherwise (src/lib/accounts/reauth.ts).
  * GET ?check=1 answers { ok: true } (or that 403) without exporting, so the page can ask before it starts a download.
  */
+import { securityEvent } from "@/lib/security/events";
 import { requireAccount } from "@/lib/create/platform/workspace";
 import { errorResponse, json } from "@/lib/create/platform/http";
 import { getSession } from "@/lib/accounts/auth";
@@ -26,6 +27,7 @@ export async function GET(req: Request) {
     const row = await getWorkspace(ws.id);
     const gen = exportChunks(ws.id, { id: ws.userId ?? ws.id, email: ws.email ?? "", name: row?.name ?? ws.name, createdAt: row?.createdAt });
     logEvent("info", "account.export", { ws: ws.id }, req);
+    securityEvent({ kind: "export.data", code: "account_export", req, accountId: ws.id });
     const enc = new TextEncoder();
     const stream = new ReadableStream<Uint8Array>({
       async pull(ctrl) {

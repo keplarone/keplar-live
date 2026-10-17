@@ -1,0 +1,30 @@
+# Review ownership. The main-branch ruleset requires a code-owner review for changes under these paths (see
+# docs/security-policy.md, "Sensitive changes"). Everything else needs the usual CI pass only.
+# One owner today (the founder account). Add people here as the team grows; never a bot.
+
+# Security-sensitive code
+/src/lib/security/            @keplarone
+/src/lib/accounts/            @keplarone
+/src/lib/ops/admin-auth.ts    @keplarone
+/src/lib/billing/             @keplarone
+/src/lib/business/firewall.ts @keplarone
+/src/lib/mcp/crypto.ts        @keplarone
+/src/lib/mcp/ssrf.ts          @keplarone
+/src/proxy.ts                 @keplarone
+/next.config.ts               @keplarone
+/vercel.json                  @keplarone
+
+# Delivery pipeline and its gates
+/.github/                     @keplarone
+/scripts/verify.mjs           @keplarone
+/scripts/deploy*.mjs          @keplarone
+/scripts/build-guard.mjs      @keplarone
+/scripts/secret-scan.mjs      @keplarone
+/scripts/security-checklist.mjs @keplarone
+/security/                    @keplarone
+
+# Policy
+/SECURITY.md                  @keplarone
+/docs/security*.md            @keplarone
+/docs/threat-model.md         @keplarone
+/docs/privacy-inventory.md    @keplarone

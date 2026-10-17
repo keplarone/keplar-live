@@ -5,12 +5,13 @@
  * files that are not ignored, because a Vercel folder deploy uploads those too.
  *
  *   node scripts/secret-scan.mjs        exits 1 and prints file:line (never the value) for every hit
+ *   node scripts/secret-scan.mjs --dir .next/static     scans every file under a directory instead (build output, in CI)
  *
  * A match is ignored only when its value is an obvious fixture (example, test, fake, dummy, placeholder, xxxx, or the
  * 0123456789 / abcdef runs used in tests). Real keys never look like that. Values are never printed, only where they are.
  */
 import { execFileSync } from "node:child_process";
-import { readFileSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
 export const PATTERNS = [
@@ -48,6 +49,13 @@ export function scanText(text) {
 }
 
 function files() {
+  const i = process.argv.indexOf("--dir");
+  if (i >= 0 && process.argv[i + 1]) {
+    const out = [];
+    const walk = (d) => { for (const e of readdirSync(d, { withFileTypes: true })) { const p = `${d}/${e.name}`; if (e.isDirectory()) walk(p); else out.push(p); } };
+    walk(process.argv[i + 1].replace(/\\/g, "/").replace(/\/$/, ""));
+    return out;
+  }
   const run = (args) => execFileSync("git", args, { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }).split("\0").filter(Boolean);
   return [...new Set([...run(["ls-files", "-z"]), ...run(["ls-files", "-z", "--others", "--exclude-standard"])])];
 }
