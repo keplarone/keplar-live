@@ -10,7 +10,7 @@ type Tone = "reasoning" | "research" | "creation" | "memory" | "attention";
  */
 export function SignInGate({ title, body, next, tone = "creation" }: { title: string; body: string; next: string; tone?: Tone }) {
   return (
-    <section className={s.gate} data-glass-live="" data-tone={tone} aria-labelledby="gate-title" role="status">
+    <section className={s.gate} data-tone={tone} aria-labelledby="gate-title" role="status">
       <h2 id="gate-title" className={s.title}>{title}</h2>
       <p className={s.body}>{body}</p>
       <div className={s.actions}>

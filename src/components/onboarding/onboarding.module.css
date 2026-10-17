@@ -137,8 +137,7 @@
 .top, .card { position: relative; z-index: 1; }
 .brand { font-weight: var(--w-bold); letter-spacing: -0.02em; min-height: 44px; padding: 0 var(--s-4) 0 var(--s-3); border-radius: var(--r-pill); background: var(--space-glass); box-shadow: var(--space-glass-depth); }
 .seg { height: 6px; background: var(--space-track); }
-.card { border-radius: var(--space-r-card); background: var(--sky-glass); -webkit-backdrop-filter: blur(6px) saturate(1.12); backdrop-filter: blur(6px) saturate(1.12); box-shadow: var(--glass-depth); }
-@media (min-width: 768px) and (pointer: fine) { .card { -webkit-backdrop-filter: blur(6px) saturate(1.12); backdrop-filter: blur(6px) saturate(1.12); } }
+.card { border-radius: var(--space-r-card); background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: 0 1px 2px rgb(0 0 0 / 0.08); }
 @media (min-width: 641px) and (prefers-reduced-motion: no-preference) {
   .card { animation: sp-rise var(--space-dur-entry) var(--space-ease-expo) 80ms both; }
   .stepBody { animation: ob-slide 0.85s var(--space-ease-expo) 70ms both, sp-mb-x 0.6s linear 70ms both; }

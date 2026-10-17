@@ -28,7 +28,7 @@ test("the app layout and the composer are one block for both themes (no hex-copi
   }
 });
 
-test("menus and the composer stay opaque; the shell and sidebar are liquid glass over the cloud sky", () => {
+test("menus, the composer and the sidebar stay opaque", () => {
   // The composer's Attach, Modes and routing pop-ups stay on the opaque overlay surface.
   const composer = strip(read("src/components/app-ui/Composer.module.css"));
   assert.match(composer, /\.panel\.panel, \.moreMenu\.moreMenu, \.attachMenu\.attachMenu \{[^}]*background: var\(--surface-overlay\)/);
@@ -37,7 +37,8 @@ test("menus and the composer stay opaque; the shell and sidebar are liquid glass
   assert.equal((tsx.match(/<Popover /g) ?? []).length, 3, "Attach, Modes and routing are kit Popovers");
   const app = strip(read("src/components/app-ui/App.module.css"));
   assert.match(app, /\.app \{[^}]*--lg-fill: var\(--surface-overlay\)[^}]*--lg-bf: none/, "menus that read the glass tokens stay opaque");
-  assert.match(app, /\.sidebar \{[^}]*background: var\(--sky-glass\)[^}]*backdrop-filter: blur\(6px\)/);
+  assert.match(app, /\.sidebar \{[^}]*background: var\(--lg-solid\)/);
+  assert.doesNotMatch(app, /\.sidebar \{[^}]*backdrop-filter: blur/);
   assert.match(app, /\.app \{[^}]*background: transparent/);
   assert.doesNotMatch(app, /isolation:\s*isolate/);
 });

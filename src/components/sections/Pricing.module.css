@@ -24,18 +24,11 @@
   flex-direction: column;
   padding: var(--s-8) var(--s-6) var(--s-6);
   border-radius: var(--r-card);
-  background: var(--sky-glass);
-  -webkit-backdrop-filter: blur(6px) saturate(1.12);
-  backdrop-filter: blur(6px) saturate(1.12);
-  box-shadow: var(--glass-depth);
+  background: var(--lg-solid);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
   transition: box-shadow var(--space-dur-slow) var(--space-ease-out), transform var(--space-dur-slow) var(--space-ease-expo);
-}
-:global(html[data-lens]) .plan[data-distort] {
-  -webkit-backdrop-filter: blur(6px) saturate(1.12) url(#liquid-glass-card);
-  backdrop-filter: blur(6px) saturate(1.12) url(#liquid-glass-card);
-}
-@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  .plan { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
 
 @media (hover: hover) {
@@ -161,10 +154,10 @@
   align-items: start;
   padding: var(--s-10);
   border-radius: var(--r-card);
-  background: var(--sky-glass);
-  -webkit-backdrop-filter: blur(6px) saturate(1.12);
-  backdrop-filter: blur(6px) saturate(1.12);
-  box-shadow: var(--glass-depth);
+  background: var(--lg-solid);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
 }
 
 .computeTitle {

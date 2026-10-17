@@ -132,7 +132,7 @@ export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteC
   );
 
   return (
-    <nav className={s.sidebar} data-distort="" aria-label="Keplar" id={id}>
+    <nav className={s.sidebar} aria-label="Keplar" id={id}>
       <div className={s.sideTop} data-keplar-drag>
         <Link href="/" className={s.sideBrand} aria-label="Keplar home">
           <KeplarLogo height={18} />
