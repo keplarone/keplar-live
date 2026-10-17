@@ -3,6 +3,10 @@
  * Pure rules plus the shared text moderation (OpenAI omni-moderation when configured, keyword rules otherwise).
  * The sanitizer already removed scripts, password/file inputs, event handlers and external form actions;
  * these checks catch what is left: look-alike login pages, card/ID collection, malware downloads, scams.
+ *
+ * Prompt rules judge intent. Ordinary apps may mention prices, collections, record labels, wishlists,
+ * accounts, and a sign-in for the app itself. A negated phrase ("no fake testimonials") is an instruction
+ * to leave the thing out, not a request to build it. There is no separate LLM classifier on this gate.
  */
 import { moderateText } from "@/lib/create/platform/moderation";
 
@@ -20,16 +24,54 @@ const MINER = /coinhive|cryptonight|webminer|miner\.start|stratum\+tcp/i;
 
 export const PROMPT_REFUSAL = "Keplar can't build that. Sites that imitate other companies, collect passwords or payment details, or distribute malware aren't allowed.";
 
-const PROMPT_BLOCKS: RegExp[] = [
-  /\b(phishing|credential harvest(?:er|ing)?|keylogger|ransomware|malware|spyware|infostealer|stealer|card skimmer|skimmer|botnet|ddos)\b/i,
-  /\b(clone|copy|fake|replica|spoof|look-?alike|imitat\w+|pretend to be|impersonat\w+)\b[\s\S]{0,60}\b(log ?in|sign ?in|bank|paypal|apple|microsoft|facebook|instagram|amazon|coinbase|metamask|binance|netflix|irs|dhl|fedex|usps|government|police)\b/i,
-  /\b(collect|steal|capture|harvest|grab|ask(?:s)? for|request|get)\w*\b[\s\S]{0,40}\b(passwords?|credit card|card numbers?|cvv|ssn|social security|seed phrase|recovery phrase|private keys?|bank (?:login|details|account))\b/i,
-  /\b(fake|counterfeit)\b[\s\S]{0,30}\b(id|passport|diploma|invoice|receipt|reviews?|testimonials?|giveaway|lottery|casino|investment)\b/i,
-  /\b(wallet drainer|connect wallet to claim|crypto drainer)\b/i,
+/** Credentials someone is trying to harvest. Not prices, labels, or the app's own account. */
+const CREDENTIAL = "passwords?|credit cards?|debit cards?|card numbers?|cvv|cvc|ssn|social security(?: numbers?)?|seed phrases?|recovery phrases?|private keys?|bank (?:login|details|accounts?)";
+/** Harvest verbs, conjugated. Not prefixes: "collection" and "collectors" are not "collect". */
+const HARVEST_VERB = "collect(?:s|ed|ing)?|steal(?:s|ing)?|stolen|capture[sd]?|capturing|harvest(?:s|ed|ing)?|grab(?:s|bed|bing)?|skim(?:s|med|ming)?|exfiltrat(?:e|es|ed|ing)";
+const DECEPTION_VERB = "clone[ds]?|cloning|fake|replica|spoof(?:ed|ing)?|look-?alike|imitat(?:e|es|ed|ing|ion)";
+const STRONG_VERB = "impersonat(?:e|es|ed|ing|ion)|pretend to be";
+const LOGINISH = "log ?in|sign ?in|checkout|passwords?";
+/** Brand, bank, or a name that is only suspicious next to a login or checkout ("apple", "google"). */
+const LOGIN_TARGET = `${BRANDS}|apple|google|bank`;
+
+const PROMPT_RULES: RegExp[] = [
+  // "anti-phishing" / "anti-malware" is guidance about the threat, not a request to ship it.
+  /(?<!anti-)\b(?:phishing|credential harvest(?:er|ing)?|keylogger|ransomware|malware|spyware|infostealer|stealer|card ?skimmer|skimmer|botnet|ddos)\b/i,
+  new RegExp(`\\b(?:${DECEPTION_VERB})\\b[\\s\\S]{0,80}\\b(?:${BRANDS})\\b`, "i"),
+  new RegExp(`\\b(?:${DECEPTION_VERB}|${STRONG_VERB})\\b[\\s\\S]{0,70}\\b(?:${LOGIN_TARGET})\\b[\\s\\S]{0,40}\\b(?:${LOGINISH})\\b`, "i"),
+  new RegExp(`\\b(?:${DECEPTION_VERB}|${STRONG_VERB})\\b[\\s\\S]{0,50}\\b(?:${LOGINISH})\\b[\\s\\S]{0,40}\\b(?:${LOGIN_TARGET})\\b`, "i"),
+  new RegExp(`\\b(?:${STRONG_VERB})\\b[\\s\\S]{0,60}\\b(?:${LOGIN_TARGET}|police|government)\\b`, "i"),
+  // "copy" is also marketing copy ("real copy for this audience"). It only counts when it duplicates a company's login or checkout.
+  new RegExp(`\\bcopy\\b[\\s\\S]{0,40}\\b(?:${LOGIN_TARGET})\\b[\\s\\S]{0,30}\\b(?:${LOGINISH})\\b`, "i"),
+  new RegExp(`\\b(?:${HARVEST_VERB})\\b[\\s\\S]{0,60}\\b(?:${CREDENTIAL})\\b|\\b(?:${CREDENTIAL})\\b[\\s\\S]{0,40}\\b(?:${HARVEST_VERB})\\b`, "i"),
+  new RegExp(`\\b(?:asks?|asking) for\\b[\\s\\S]{0,40}\\b(?:${CREDENTIAL})\\b`, "i"),
+  /\b(?:fake|counterfeit|forged)\b[\s\S]{0,40}\b(?:id|passport|diploma|invoice|receipt|reviews?|testimonials?|giveaway|lottery|casino|investment)\b/i,
+  /\b(?:wallet drainer|connect wallet to claim|crypto drainer)\b/i,
 ];
 
+/** The harmful phrase is an instruction to leave it out ("no fake testimonials", "don't collect passwords").
+ * The negation has to be the one governing the phrase. A second negation in the gap ("not not a fake…") cancels it. */
+const NEGATION_BEFORE = /\b(?:do not|don['’]?t|without|avoid(?:ing)?|excluding|instead of|no|not|never)\b(?:\s+(?!not\b|no\b|never\b|don['’]?t\b)[a-z0-9][\w'-]*){0,4}\s*$/i;
+const NEGATION_CANCEL = /\b(?:not|no|never|don['’]?t|do not)\b\s*$/i;
+
+function negatedAt(prompt: string, index: number): boolean {
+  const clause = prompt.slice(Math.max(0, index - 80), index).split(/[.!?\n]/).pop() ?? "";
+  const m = NEGATION_BEFORE.exec(clause);
+  if (!m) return false;
+  // "not not a fake …" is still a request. A single negation directly in front is not.
+  return !NEGATION_CANCEL.test(clause.slice(0, m.index));
+}
+
+function hitsHarm(prompt: string, pattern: RegExp): boolean {
+  const re = new RegExp(pattern.source, pattern.flags.includes("g") ? pattern.flags : `${pattern.flags}g`);
+  for (const match of prompt.matchAll(re)) {
+    if (!negatedAt(prompt, match.index ?? 0)) return true;
+  }
+  return false;
+}
+
 export async function checkPrompt(prompt: string): Promise<string | null> {
-  if (PROMPT_BLOCKS.some((r) => r.test(prompt))) return PROMPT_REFUSAL;
+  if (PROMPT_RULES.some((rule) => hitsHarm(prompt, rule))) return PROMPT_REFUSAL;
   const v = await moderateText(prompt);
   return v.allowed ? null : (v.reason ?? "That request isn't allowed under the content policy.");
 }
