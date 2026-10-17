@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { approvedVs, VS_ACCESSED } from "@/lib/kb/vs";
+import { clusterAlso } from "@/lib/seo/clusters";
 import { abs, pageMeta } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/seo-graph";
 import s from "@/components/kb/kb.module.css";
@@ -38,6 +39,7 @@ export default function VsHub() {
             <li>If something here is out of date or wrong, tell us through <Link href="/feedback">feedback</Link> and we will correct it.</li>
           </ul>
           <p>For a vendor-neutral way to choose, read <Link href="/blogs/chatgpt-vs-claude-vs-gemini-vs-perplexity">how to choose between ChatGPT, Claude, Gemini and Perplexity</Link>. For how Keplar produces an answer, see <Link href="/docs/how-it-works/pipeline-overview">the pipeline overview</Link>.</p>
+          <p>More in this subject: {clusterAlso("/vs").map((p, i) => <span key={p.path}>{i ? ", " : ""}<Link href={p.path}>{p.label}</Link></span>)}.</p>
         </div>
       </div>
       <JsonLd data={{ "@context": "https://schema.org", "@type": "CollectionPage", name: "Keplar compared with other AI assistants", url: abs("/vs"), hasPart: list.map((v) => ({ "@type": "WebPage", name: `Keplar vs ${v.name}`, url: abs(`/vs/${v.slug}`) })) }} />

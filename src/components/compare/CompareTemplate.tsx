@@ -91,7 +91,7 @@ function renderBlock(b: Block, i: number) {
 }
 
 /** Shared, typographic comparison template: table, disclosure-row FAQ, dated sources. */
-export function CompareTemplate({ page, related }: { page: ComparePage; related?: ComparePage[] }) {
+export function CompareTemplate({ page, related, also = [] }: { page: ComparePage; related?: ComparePage[]; also?: { path: string; label: string }[] }) {
   return (
     <article className={s.page}>
       <header className={s.header}>
@@ -127,10 +127,13 @@ export function CompareTemplate({ page, related }: { page: ComparePage; related?
         </ul>
       </section>
 
-      {related?.length ? (
+      {related?.length || also.length ? (
         <nav className={s.related} aria-label="Other comparisons">
-          {related.map((r) => (
+          {related?.map((r) => (
             <Link key={r.path} href={r.path}>{r.h1} →</Link>
+          ))}
+          {also.map((r) => (
+            <Link key={r.path} href={r.path}>{r.label} →</Link>
           ))}
         </nav>
       ) : null}
