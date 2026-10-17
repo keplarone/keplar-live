@@ -1509,8 +1509,8 @@ a.sideItem {
   box-shadow: var(--glass-depth);
 }
 :global(html[data-lens][data-theme]) .sidebar[data-distort] {
-  -webkit-backdrop-filter: url(#liquid-glass-card) blur(6px) saturate(1.12);
-  backdrop-filter: url(#liquid-glass-card) blur(6px) saturate(1.12);
+  -webkit-backdrop-filter: blur(6px) saturate(1.12) url(#liquid-glass-card);
+  backdrop-filter: blur(6px) saturate(1.12) url(#liquid-glass-card);
 }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
   :global(:root[data-theme]) .sidebar { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }

@@ -93,11 +93,13 @@ void main() {
   float optical = mix(0.45, 2.2, 1.0 - wrap);
   if (vKind > 1.5) optical *= 0.32;
   float beer = exp(-optical);
-  vec3 col = mix(uShadow, uLit, beer);
+  vec3 col = mix(uShadow, uLit, smoothstep(0.18, 0.84, beer));
   float alpha = vKind > 1.5 ? 0.48 : 0.92;
   vec2 uvh = gl_FragCoord.xy / max(uRes, vec2(1.0));
   float hero = smoothstep(0.36, 0.12, abs(uvh.x - 0.5)) * smoothstep(0.42, 0.58, uvh.y) * smoothstep(0.98, 0.74, uvh.y);
-  alpha *= 1.0 - hero * uClearing;
+  // The top bar keeps its clouds. The clearing is for the headline, not the glass.
+  float nav = smoothstep(0.86, 0.94, uvh.y);
+  alpha *= 1.0 - hero * uClearing * (1.0 - nav);
   if (alpha < 0.02) discard;
   gl_FragColor = vec4(col, alpha);
 }`;
@@ -134,11 +136,12 @@ void main() {
   float up = smoothstep(0.15, 0.8, vUv.y);
   float optical = dens * (vKind > 1.5 ? 0.4 : 1.8) * mix(1.15, 0.55, up);
   float beer = exp(-optical);
-  vec3 col = mix(uShadow, uLit, beer);
-  float alpha = smoothstep(0.04, 0.45, dens) * (vKind > 1.5 ? 0.5 : 0.94);
+  vec3 col = mix(uShadow, uLit, smoothstep(0.18, 0.84, beer));
+  float alpha = smoothstep(0.1, 0.32, dens) * (vKind > 1.5 ? 0.55 : 0.96);
   vec2 uvh = gl_FragCoord.xy / max(uRes, vec2(1.0));
   float hero = smoothstep(0.36, 0.12, abs(uvh.x - 0.5)) * smoothstep(0.42, 0.58, uvh.y) * smoothstep(0.98, 0.74, uvh.y);
-  alpha *= 1.0 - hero * uClearing;
+  float nav = smoothstep(0.86, 0.94, uvh.y);
+  alpha *= 1.0 - hero * uClearing * (1.0 - nav);
   if (alpha < 0.02) discard;
   gl_FragColor = vec4(col, alpha);
 }`;
@@ -166,7 +169,7 @@ const RAIN_FRAG = /* glsl */ `
 varying vec2 vUv;
 uniform vec3 uColor;
 void main() {
-  float a = smoothstep(0.0, 0.2, vUv.y) * smoothstep(1.0, 0.45, vUv.y) * 0.5;
+  float a = smoothstep(0.0, 0.2, vUv.y) * smoothstep(1.0, 0.45, vUv.y) * 0.72;
   if (a < 0.03) discard;
   gl_FragColor = vec4(uColor, a);
 }`;
@@ -209,6 +212,10 @@ function layout(mode: WebglCloudMode): Puff[] {
       [0.2, 4.0, -10, 6.2, 0.3, 2],
       [-2.8, 1.7, -1.6, 2.8, 1.25, 0],
       [2.6, 1.8, -1.8, 2.6, 1.15, 0],
+      // A wide puff whose edge crosses the top glass, including the centre links.
+      [-0.15, 2.2, -1.3, 5.2, 0.95, 0],
+      // A wide low puff. Its top edge crosses the lower half of the view, where a card sits, so the lens has a boundary to bend.
+      [-1.4, -1.45, -1.25, 6.6, 1.45, 0],
     ] as const;
     for (const [x, y, z, sx, sy, kind] of spots) {
       out.push({ x, y, z, sx, sy, sz: 1, kind });
@@ -259,6 +266,10 @@ function layout(mode: WebglCloudMode): Puff[] {
       kind: 2,
     });
   }
+  // One wide puff in front of the deck so the top glass has a cloud edge to bend.
+  out.push({ x: 0.1, y: 2.25, z: -1.35, sx: 2.4, sy: 0.55, sz: 0.9, kind: 0 });
+  // And one low, so a card in the lower half of the view has an edge too.
+  out.push({ x: -1.1, y: -1.3, z: -1.3, sx: 3.2, sy: 0.75, sz: 1.1, kind: 0 });
   return out.map((p) => ({ ...p, y: p.y + 1.15 }));
 }
 
@@ -493,14 +504,16 @@ export function createWebglClouds(
     const horizon = srgb(pal.horizon);
     const lit = srgb(pal.lit);
     const shadow = srgb(pal.shadow);
-    skyUniforms.uZenith.value.copy(mixHex(zenith, shadow, draw.gray * 0.34));
-    skyUniforms.uHorizon.value.copy(mixHex(horizon, shadow, draw.gray * 0.22));
+    // Rain and overcast go greyer, but the zenith stays dark and the lit edge does not
+    // collapse into the shadow, so a cloud boundary still reads through the glass.
+    skyUniforms.uZenith.value.copy(mixHex(zenith, srgb("#07080c"), draw.gray * 0.4));
+    skyUniforms.uHorizon.value.copy(mixHex(horizon, shadow, draw.gray * 0.12));
     skyUniforms.uHaze.value.copy(mixHex(horizon, shadow, 0.45));
     skyUniforms.uHazeAmt.value = draw.haze;
-    cloudUniforms.uLit.value.copy(mixHex(lit, shadow, draw.gray));
+    cloudUniforms.uLit.value.copy(mixHex(lit, shadow, draw.gray * 0.42));
     cloudUniforms.uShadow.value.copy(mixHex(shadow, zenith, draw.gray * 0.08));
     cloudUniforms.uClearing.value = draw.clearing;
-    rain.uniforms.uColor.value.copy(cloudUniforms.uShadow.value);
+    rain.uniforms.uColor.value.copy(mixHex(lit, shadow, 0.25));
     snow.uniforms.uColor.value.copy(cloudUniforms.uLit.value);
   };
 

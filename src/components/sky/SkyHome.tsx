@@ -81,8 +81,8 @@ export function SkyHome({ pricing }: { pricing?: React.ReactNode }) {
         <MoreRoot className={s.casesWrap}>
           <ul className={s.cards3} data-reveal-stagger>
             {useCases.map((u, i) => (
-              <li key={u.slug} data-reveal data-more-rest={i >= PHONE_CASES ? "" : undefined}>
-                <Link href={u.data!.path} className={`${s.card} ${s.cardLink}`} data-glass-live="">
+              <li key={u.slug} data-more-rest={i >= PHONE_CASES ? "" : undefined}>
+                <Link href={u.data!.path} className={`${s.card} ${s.cardLink}`} data-glass-live="" data-reveal="">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={u.color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{u.icon}</svg>
                   <h3>{u.data!.title}</h3>
                   <p>{u.data!.description}</p>

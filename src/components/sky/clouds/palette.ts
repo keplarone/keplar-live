@@ -1,4 +1,6 @@
-/** Neutral skies. Light is a pale grey day; dark is graphite. Dark cloud highlights stay dim so light ink still clears WCAG AA. */
+/** Neutral skies. Light is a pale grey day; dark is graphite.
+ * Dark highlights stay under the AA ceiling for light nav ink (#e4e6ea on #5c6066 is about 5:1).
+ * The zenith is darker and the shadow is deeper so a cloud edge behind the glass is a real step. */
 export type CloudPalette = {
   zenith: string;
   horizon: string;
@@ -8,7 +10,7 @@ export type CloudPalette = {
 
 export function cloudPalette(dark: boolean): CloudPalette {
   if (dark) {
-    return { zenith: "#121316", horizon: "#2a2c31", lit: "#5a5e66", shadow: "#34373d" };
+    return { zenith: "#090b10", horizon: "#2c3038", lit: "#5c6066", shadow: "#1a1d24" };
   }
-  return { zenith: "#e4e7eb", horizon: "#f7f8fa", lit: "#f4f6f8", shadow: "#9aa3af" };
+  return { zenith: "#d5dae2", horizon: "#eef1f4", lit: "#fbfcfd", shadow: "#727a82" };
 }
