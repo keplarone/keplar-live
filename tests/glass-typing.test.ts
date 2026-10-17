@@ -18,9 +18,9 @@ test("liquid glass: every glass surface has fallbacks (no backdrop-filter, reduc
   assert.match(caps, /id="lg-refract"/);
 });
 
-test("dark (the Space theme) is the default and Light / Auto stay selectable", () => {
-  // Space UI decision (docs/design/space-ui.md): black space is the default look; Light is the same system on paper.
-  assert.match(read("src/lib/theme.ts"), /DEFAULT_THEME_PREF: ThemePref = "dark"/);
+test("light (the day sky) is the default and Dark / Auto stay selectable", () => {
+  // Space UI decision (docs/design/space-ui.md): a bright cloud sky is the default look; Dark is the same system at dusk.
+  assert.match(read("src/lib/theme.ts"), /DEFAULT_THEME_PREF: ThemePref = "light"/);
   const ctl = read("src/components/theme/ThemeControl.tsx");
   for (const id of ["dark", "light", "auto"]) assert.match(ctl, new RegExp(`id: "${id}"`));
 });

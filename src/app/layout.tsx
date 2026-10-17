@@ -79,8 +79,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // Dark first (the Space theme); the head script / ThemeWatcher update it for Light or Auto.
-  themeColor: THEME_COLORS.dark,
+  // Light first (the day sky); the head script / ThemeWatcher update it for Dark or Auto.
+  themeColor: THEME_COLORS.light,
   colorScheme: "light dark",
   width: "device-width",
   initialScale: 1,
@@ -89,10 +89,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    // data-theme is the server default (dark, the Space theme); THEME_SCRIPT corrects it before
+    // data-theme is the server default (light, the day sky); THEME_SCRIPT corrects it before
     // paint from localStorage / the keplar-theme-v2 cookie, hence suppressHydrationWarning.
     // LocaleHtml renders <html> with lang and dir from the URL (/ar → ar, rtl; English at the root → en, ltr). src/components/i18n/LocaleHtml.tsx
-    <LocaleHtml className={`${sans.variable} ${mono.variable} dark`} data-theme="dark" data-theme-pref="dark" style={{ colorScheme: "dark" }}>
+    <LocaleHtml className={`${sans.variable} ${mono.variable} light`} data-theme="light" data-theme-pref="light" style={{ colorScheme: "light" }}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: PREFS_SCRIPT }} />

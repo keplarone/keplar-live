@@ -12,7 +12,7 @@ export const privacy: LegalDoc = {
   slug: "privacy",
   title: "Privacy at Keplar",
   subline: "What Keplar collects, where it goes, and how to see or delete it.",
-  lastUpdated: "October 12, 2026",
+  lastUpdated: "October 17, 2026",
   intro: [
     "Keplar sends your question to more than one AI model, compares what they say, and gives you one answer. That means your data moves through more systems than a single chatbot. This page explains which data is involved, where it goes, and the choices you have.",
     "It describes how Keplar works today. If that changes in a way that matters, we update this page and its date.",
@@ -150,6 +150,7 @@ export const privacy: LegalDoc = {
       title: "Device and connection information",
       blocks: [
         { type: "p", text: "Like any website, our servers and hosting provider receive your IP address, browser type and the pages you request. We use this to deliver the site, apply rate limits (including per-IP limits for signed-out Free use) and protect against abuse." },
+        { type: "p", text: "The site uses the approximate location of your connection, once, to show your local weather in the background, and doesn't store it." },
       ],
     },
     {

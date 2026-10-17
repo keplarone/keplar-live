@@ -18,17 +18,17 @@ function runScript({ stored, cookie = "", osDark = false }: { stored?: string | 
   return { theme: attrs["data-theme"], pref: attrs["data-theme-pref"], classes: [...classes], scheme: root.style.colorScheme };
 }
 
-test("theme: Dark (the Space theme) by default for everyone (even on a light device); Light and Auto are opt-in; bad values fall back to Dark", () => {
-  // Space UI decision (docs/design/space-ui.md). A saved choice still wins, so people who picked Light keep it.
-  assert.equal(DEFAULT_THEME_PREF, "dark");
-  assert.deepEqual(runScript({}), { theme: "dark", pref: "dark", classes: ["dark"], scheme: "dark" });
-  assert.equal(runScript({ osDark: false }).theme, "dark", "a light device still gets dark until the user chooses Light or Auto");
+test("theme: Light (the day sky) by default for everyone (even on a dark device); Dark and Auto are opt-in; bad values fall back to Light", () => {
+  // Space UI decision (docs/design/space-ui.md, cloud sky). A saved choice still wins, so people who picked Dark keep it.
+  assert.equal(DEFAULT_THEME_PREF, "light");
+  assert.deepEqual(runScript({}), { theme: "light", pref: "light", classes: ["light"], scheme: "light" });
+  assert.equal(runScript({ osDark: true }).theme, "light", "a dark device still gets light until the user chooses Dark or Auto");
   assert.equal(runScript({ stored: "dark" }).theme, "dark");
   assert.equal(runScript({ stored: "light" }).theme, "light");
   assert.equal(runScript({ stored: "auto", osDark: false }).theme, "light");
   assert.equal(runScript({ stored: "auto", osDark: true }).theme, "dark");
   assert.equal(runScript({ stored: null, cookie: "a=1; keplar-theme-v2=light" }).theme, "light", "cookie used when storage is empty");
-  assert.equal(runScript({ stored: "neon" }).pref, "dark");
+  assert.equal(runScript({ stored: "neon" }).pref, "light");
   assert.equal(resolveTheme("auto", true), "dark");
   assert.equal(resolveTheme("light", true), "light");
   assert.equal(isThemePref("auto"), true);

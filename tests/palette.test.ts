@@ -68,6 +68,9 @@ test("no electric blue-dominant spam (teal OK: green channel stays close to blue
     "src/components/kb/blogCovers.ts": ["91,116,201", "66,133,244", "77,107,254"],
     "src/components/sky/MiniDemos.module.css": ["74,99,184"],
     "src/components/sky/SkyHome.tsx": ["74,99,184"],
+    // the weather sky: natural daylight sky blues (zenith / gradient), not UI accents (docs/design/space-ui.md 2.1)
+    "src/lib/sky/variants.ts": ["63,134,216", "60,130,212"],
+    "src/styles/space.css": ["61,132,213"],
   };
   const hits: string[] = [];
   for (const f of files) {

@@ -36,6 +36,7 @@ const PUBLIC_OK = new Set(["GET compute", "GET v1/openapi.json" /* public API de
 PUBLIC_OK.add("GET business/account"); // Storefront status: signed-out callers get only { signedIn: false }.
 PUBLIC_OK.add("GET business/handoff"); // Redirects to sign-in; a ticket requires an authenticated session.
 PUBLIC_OK.add("GET studio/modes"); // Solar mode table: budgets, prices and the provider disclosure; no account data, read-only.
+PUBLIC_OK.add("GET sky"); // The weather sky behind the marketing pages: public, read-only, cheap ({ sky, wind } only; the rounded location is used once for a cached Open-Meteo lookup and never stored or returned).
 // The browser extension connecting to an account (src/lib/api/extension.ts): starting only creates a sign-in request (400 for a bad
 // PKCE challenge, 20 per 10 minutes per IP); the poll answers {status} and hands a key only to the verifier holder after the person approved.
 PUBLIC_OK.add("POST extension/connect");

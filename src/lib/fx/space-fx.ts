@@ -1,11 +1,12 @@
 /**
- * Space UI effects bus (the web twin of Space Studio's lib/fx.ts). Components fire; the star field (components/ui/space/SpaceSky)
- * and the aura listen. Nothing happens when nobody listens, so firing is always safe (server-side it is a no-op).
+ * Space UI effects bus (the web twin of Space Studio's lib/fx.ts). Components fire; the weather sky (components/ui/space/WeatherSky)
+ * listens. Nothing happens when nobody listens, so firing is always safe (server-side it is a no-op).
  *
- *  - warp(strength, seconds): the star field jumps to warp. Small ones (0.3) for navigation, 1 for a sent prompt, 1.5 for an arrival.
- *  - aura(): the aura behind the stars eases to its next hue.
+ *  - warp(strength, seconds): a gust; the clouds' drift speeds up and eases back. Small ones (0.3) for navigation, 1 for a sent
+ *    prompt, 1.5 for an arrival. (The Space site has its own three.js journey and does not use this.)
+ *  - aura(): reserved for an ambient colour shift; nothing listens today.
  *
- * Reduced motion: listeners ignore warps (one still frame); phones draw a still sky and ignore them too.
+ * Reduced motion and phones: the sky is still, so warps do nothing.
  */
 export const WARP_EVENT = "space:warp";
 export const AURA_EVENT = "space:aura";
