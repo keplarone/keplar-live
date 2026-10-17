@@ -19,11 +19,10 @@ export const metadata: Metadata = {
  */
 export default function BusinessLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <main id="main" className={s.root} data-business="" data-kb="">
+      {/* Inside the isolated main, like the marketing layout: a z-index:-1 sky directly under <body> would paint below body's own background. */}
       <SkyBackdrop />
-      <main id="main" className={s.root} data-business="" data-kb="">
-        {children}
-      </main>
-    </>
+      {children}
+    </main>
   );
 }

@@ -9,8 +9,10 @@
  */
 .root {
   min-height: 100vh;
-  /* transparent: the html behind is pinned black (tokens.css) and the storefront's star field sits between the two */
+  /* transparent and isolated: the shared weather sky (SkyBackdrop, inside this main) shows through, above body's background */
   background: transparent;
+  position: relative;
+  isolation: isolate;
   color: var(--kb-ink);
   font-family: var(--kb-sans);
   font-size: var(--kb-t-body);
