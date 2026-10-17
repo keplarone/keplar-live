@@ -65,5 +65,5 @@ test("light palette: cool off-white canvas and AA inks", () => {
     }
   }
   assert.doesNotMatch(light, /data-theme="dark"/);
-  assert.match(read("src/lib/theme.ts"), /DEFAULT_THEME_PREF: ThemePref = "light"/);
+  assert.match(read("src/lib/theme.ts"), /DEFAULT_THEME_PREF: ThemePref = "dark"/);
 });

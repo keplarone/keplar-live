@@ -27,12 +27,12 @@ html {
   font-size: calc(16px * var(--ui-scale));
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  /* Wash behind the cloud sky, the same pale / graphite the canvas paints, so a late canvas never flashes white or navy. */
-  background: #e4e7eb;
+  /* Wash behind the cloud sky. Dark is the first paint; light replaces it only when that theme is on. */
+  background: #121316;
   color: var(--c-ink);
   scroll-behavior: auto;
 }
-:root[data-theme="dark"] { background: #121316; }
+:root[data-theme="light"] { background: #e4e7eb; }
 
 body {
   position: relative;

@@ -1,7 +1,8 @@
 import "./setup";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { DEFAULT_THEME_PREF, isThemePref, resolveTheme, THEME_SCRIPT } from "@/lib/theme";
+import { readFileSync } from "node:fs";
+import { DEFAULT_THEME_PREF, isThemePref, resolveTheme, THEME_KEY, THEME_SCRIPT } from "@/lib/theme";
 
 /** Runs the real pre-paint script against a minimal fake DOM. */
 function runScript({ stored, cookie = "", osDark = false }: { stored?: string | null; cookie?: string; osDark?: boolean }) {
@@ -18,21 +19,28 @@ function runScript({ stored, cookie = "", osDark = false }: { stored?: string | 
   return { theme: attrs["data-theme"], pref: attrs["data-theme-pref"], classes: [...classes], scheme: root.style.colorScheme };
 }
 
-test("theme: Light (the day sky) by default for everyone (even on a dark device); Dark and Auto are opt-in; bad values fall back to Light", () => {
-  // Space UI decision (docs/design/space-ui.md, cloud sky). A saved choice still wins, so people who picked Dark keep it.
-  assert.equal(DEFAULT_THEME_PREF, "light");
-  assert.deepEqual(runScript({}), { theme: "light", pref: "light", classes: ["light"], scheme: "light" });
-  assert.equal(runScript({ osDark: true }).theme, "light", "a dark device still gets light until the user chooses Dark or Auto");
+test("theme: Dark by default for everyone, ignoring the OS and the old key; Light and Auto persist once chosen", () => {
+  assert.equal(THEME_KEY, "keplar-theme-v3");
+  assert.equal(DEFAULT_THEME_PREF, "dark");
+  assert.doesNotMatch(THEME_SCRIPT, /keplar-theme-v2/);
+  assert.deepEqual(runScript({}), { theme: "dark", pref: "dark", classes: ["dark"], scheme: "dark" });
+  assert.equal(runScript({ osDark: false }).theme, "dark", "a light device still gets dark until the user chooses Light or Auto");
   assert.equal(runScript({ stored: "dark" }).theme, "dark");
   assert.equal(runScript({ stored: "light" }).theme, "light");
   assert.equal(runScript({ stored: "auto", osDark: false }).theme, "light");
   assert.equal(runScript({ stored: "auto", osDark: true }).theme, "dark");
-  assert.equal(runScript({ stored: null, cookie: "a=1; keplar-theme-v2=light" }).theme, "light", "cookie used when storage is empty");
-  assert.equal(runScript({ stored: "neon" }).pref, "light");
+  assert.equal(runScript({ stored: null, cookie: "a=1; keplar-theme-v2=light" }).theme, "dark", "the old key is ignored");
+  assert.equal(runScript({ stored: null, cookie: "a=1; keplar-theme-v3=light" }).theme, "light", "the new cookie is used when storage is empty");
+  assert.equal(runScript({ stored: "neon" }).pref, "dark");
   assert.equal(resolveTheme("auto", true), "dark");
   assert.equal(resolveTheme("light", true), "light");
   assert.equal(isThemePref("auto"), true);
   assert.equal(isThemePref("system"), false);
+  const html = readFileSync("src/app/layout.tsx", "utf8");
+  assert.match(html, /data-theme="dark"/);
+  assert.match(html, /data-theme-pref="dark"/);
+  assert.match(html, /colorScheme: "dark"/);
+  assert.match(html, /\$\{mono\.variable\} dark`/);
 });
 
 test("theme: storedThemePref reads the saved choice (storage, then cookie), not the possibly-stale <html data-theme-pref>", async () => {
@@ -46,12 +54,12 @@ test("theme: storedThemePref reads the saved choice (storage, then cookie), not 
     g.localStorage = { getItem: () => stored };
     assert.equal(storedThemePref(), "light");
     stored = null;
-    (g.document as { cookie: string }).cookie = "x=1; keplar-theme-v2=auto";
-    assert.equal(storedThemePref(), "auto", "cookie when storage is empty");
-    (g.document as { cookie: string }).cookie = "keplar-theme-v2=neon";
+    (g.document as { cookie: string }).cookie = "x=1; keplar-theme-v2=light; keplar-theme-v3=auto";
+    assert.equal(storedThemePref(), "auto", "the v3 cookie is used when storage is empty; v2 is ignored");
+    (g.document as { cookie: string }).cookie = "keplar-theme-v3=neon";
     assert.equal(storedThemePref(), null, "no valid saved choice");
     g.localStorage = { getItem: () => { throw new Error("blocked"); } };
-    (g.document as { cookie: string }).cookie = "keplar-theme-v2=light";
+    (g.document as { cookie: string }).cookie = "keplar-theme-v3=light";
     assert.equal(storedThemePref(), "light", "storage blocked falls back to the cookie");
   } finally {
     g.document = prev.document;

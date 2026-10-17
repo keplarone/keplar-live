@@ -1,6 +1,6 @@
 /*
  * Liquid glass: clear, see-through surfaces with LIGHT blur only, a specular edge, soft depth and a gentle
- * liquid response on hover / press. Light-mode first; primary buttons stay graphite; focus glows use --ring-rgb (teal).
+ * liquid response on hover / press. Dark is the default glass; light overrides it. Focus glows use --ring-rgb.
  *
  *   .lg          surface: translucent fill + small blur + specular ring + soft shadow
  *   .lg-lens     adds SVG refraction of what is behind (Chromium only; set by <GlassCaps> via html[data-lens])
@@ -12,28 +12,7 @@
  * Mobile: one blur layer per surface, smaller radius of blur, no lens, no hover morph.
  */
 :root {
-  /* Cards keep a light body. Pills stay nearly clear so the sky is sharp through them. */
-  --sky-glass: rgb(255 255 255 / 0.22);
-  --glass-clear: rgb(255 255 255 / 0.06);
-  --glass-depth:
-    inset 0 1px 0 rgb(255 255 255 / 0.72),
-    inset 0 0 0 1px rgb(255 255 255 / 0.36),
-    inset 0 -12px 18px rgb(14 15 18 / 0.07),
-    0 1px 1px rgb(14 15 18 / 0.05),
-    0 10px 22px rgb(14 15 18 / 0.12);
-  --sky-edge: var(--glass-depth);
-  --lg-fill: rgb(255 255 255 / 0.42);
-  --lg-fill-strong: rgb(255 255 255 / 0.62);
-  --lg-blur: 8px;
-  --lg-sat: 1.5;
-  --lg-edge-hi: rgb(255 255 255 / 0.95);
-  --lg-edge-lo: rgb(255 255 255 / 0.35);
-  --lg-rim: rgb(0 0 0 / 0.09);
-  --lg-shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 10px 30px -10px rgb(0 0 0 / 0.16); /* neutral depth only, no tinted glow */
-  --lg-radius: 22px;
-  --lg-solid: #ffffff;
-}
-:root[data-theme="dark"] {
+  /* Dark is the primary glass: a dim body, a clear pill, depth from the shadow. */
   --sky-glass: rgb(22 22 26 / 0.3);
   --glass-clear: rgb(12 12 14 / 0.16);
   --glass-depth:
@@ -45,12 +24,33 @@
   --sky-edge: var(--glass-depth);
   --lg-fill: rgb(30 30 30 / 0.58);
   --lg-fill-strong: rgb(30 30 30 / 0.78);
-  /* Dark glass has no white edges (Oct 2026): no highlight, no rim; depth comes from the drop shadow alone. */
+  --lg-blur: 8px;
+  --lg-sat: 1.5;
+  /* No white edges: depth comes from the drop shadow alone. */
   --lg-edge-hi: transparent;
   --lg-edge-lo: transparent;
   --lg-rim: transparent;
   --lg-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 34px -12px rgb(0 0 0 / 0.6);
+  --lg-radius: 22px;
   --lg-solid: #171717;
+}
+:root[data-theme="light"] {
+  --sky-glass: rgb(255 255 255 / 0.22);
+  --glass-clear: rgb(255 255 255 / 0.06);
+  --glass-depth:
+    inset 0 1px 0 rgb(255 255 255 / 0.72),
+    inset 0 0 0 1px rgb(255 255 255 / 0.36),
+    inset 0 -12px 18px rgb(14 15 18 / 0.07),
+    0 1px 1px rgb(14 15 18 / 0.05),
+    0 10px 22px rgb(14 15 18 / 0.12);
+  --sky-edge: var(--glass-depth);
+  --lg-fill: rgb(255 255 255 / 0.42);
+  --lg-fill-strong: rgb(255 255 255 / 0.62);
+  --lg-edge-hi: rgb(255 255 255 / 0.95);
+  --lg-edge-lo: rgb(255 255 255 / 0.35);
+  --lg-rim: rgb(0 0 0 / 0.09);
+  --lg-shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 10px 30px -10px rgb(0 0 0 / 0.16);
+  --lg-solid: #ffffff;
 }
 
 .lg {
