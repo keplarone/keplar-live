@@ -11,7 +11,7 @@ export default function NotFound() {
   return (
     <>
       <Nav />
-      <main id="main" style={{ position: "relative", zIndex: 0, overflowX: "clip" }}>
+      <main id="main" style={{ position: "relative", zIndex: 1, isolation: "isolate", overflowX: "clip" }}>
         <section className={s.wrap} aria-labelledby="nf-title">
           <div className={s.card}>
             <p className={s.code} aria-hidden="true">404</p>

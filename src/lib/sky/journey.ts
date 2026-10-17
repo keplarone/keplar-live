@@ -61,11 +61,14 @@ export function altitudeFromScroll(scrollY: number, scrollHeight: number, innerH
 
 /**
  * How much faster precipitation falls while the page is moving.
- * `velocity` is a smoothed px/s. Still air is 1. A fast scroll tops out at 4, then eases back as velocity decays.
+ * `velocity` is a smoothed px/s. Still air is 1. A fast scroll eases up to 1.5 and no further.
+ * The boost is only a fall-speed scale. It never moves particles with the page.
  */
 export function fallMultiplier(velocity: number): number {
   const v = Number.isFinite(velocity) ? Math.max(0, velocity) : 0;
-  return 1 + Math.min(3, v / 900);
+  const t = Math.min(1, v / 1400);
+  const eased = t * t * (3 - 2 * t);
+  return 1 + 0.5 * eased;
 }
 
 /** Meadow at the bottom of the landing descent. */
