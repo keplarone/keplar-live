@@ -3,7 +3,8 @@
  * resolves to light. Every rule here is under :root[data-theme="light"].
  *
  * Cool off-white base (#f7f8fa), white cards that lift off it with soft neutral shadows,
- * near-black ink. Contrast: ink #0e0f12 on canvas 18.9:1 · ink-2 #4b4f58 8.1:1 · ink-3 #686d78 5.1:1 on canvas, 4.8:1 on surface-2.
+ * near-black ink. The day sky is #5d9be8 behind the hero, so secondary ink stays near-black too:
+ * #0e0f12, #171a20 and #26282e each clear 4.5:1 on that blue and on the canvas.
  * The docs keep their own flat white-and-blue skin (docs-theme.css outranks this block).
  */
 :root[data-theme="light"] {
@@ -11,8 +12,8 @@
   --c-surface-1: #ffffff;
   --c-surface-2: #f1f3f6;
   --c-ink: #0e0f12;
-  --c-ink-2: #4b4f58;
-  --c-ink-3: #686d78;
+  --c-ink-2: #171a20;
+  --c-ink-3: #26282e;
   --c-border: rgb(14 15 18 / 0.07);
   --c-border-strong: rgb(14 15 18 / 0.12);
   --c-glass: rgb(255 255 255 / 0.62);

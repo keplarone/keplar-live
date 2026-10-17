@@ -28,11 +28,11 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   /* Wash behind the cloud sky. Dark is the first paint; light replaces it only when that theme is on. */
-  background: #070b16;
+  background: #161e2c;
   color: var(--c-ink);
   scroll-behavior: auto;
 }
-:root[data-theme="light"] { background: #c5daf0; }
+:root[data-theme="light"] { background: #5d9be8; }
 
 body {
   position: relative;

@@ -16,21 +16,31 @@
   z-index: -1;
   pointer-events: none;
   overflow: hidden;
-  /* Painted clouds, so the sky is still there when the canvas has no WebGL context. */
+  /* A handful of cumulus, sides and lower frame, plus a hard sun. Shown when the canvas is still or missing. */
   background:
-    radial-gradient(ellipse 38% 18% at 16% 36%, rgb(247 249 251 / 0.72) 0%, rgb(247 249 251 / 0) 70%),
-    radial-gradient(ellipse 32% 16% at 78% 22%, rgb(226 234 242 / 0.7) 0%, rgb(226 234 242 / 0) 72%),
-    radial-gradient(ellipse 44% 20% at 88% 48%, rgb(247 249 251 / 0.55) 0%, rgb(247 249 251 / 0) 68%),
-    radial-gradient(ellipse 28% 14% at 8% 62%, rgb(186 204 220 / 0.65) 0%, rgb(186 204 220 / 0) 70%),
-    linear-gradient(180deg, #b7d4ec 0%, #6ea0d4 80%);
+    radial-gradient(ellipse 12% 9% at 12% 74%, #ffffff 0%, #ffffff 34%, #d5dee8 56%, transparent 74%),
+    radial-gradient(ellipse 8% 7% at 18% 68%, #ffffff 0%, #f7f9fb 40%, #c5d0dc 62%, transparent 78%),
+    radial-gradient(ellipse 7% 6% at 7% 66%, #f7f9fb 0%, #ffffff 36%, #d5dee8 60%, transparent 76%),
+    radial-gradient(ellipse 13% 9% at 88% 72%, #ffffff 0%, #ffffff 32%, #d5dee8 54%, transparent 72%),
+    radial-gradient(ellipse 8% 7% at 94% 64%, #ffffff 0%, #f7f9fb 38%, #c5d0dc 60%, transparent 76%),
+    radial-gradient(ellipse 9% 7% at 80% 80%, #f7f9fb 0%, #ffffff 36%, #d5dee8 58%, transparent 74%),
+    radial-gradient(ellipse 8% 6% at 6% 46%, #ffffff 0%, #f7f9fb 34%, #d5dee8 56%, transparent 72%),
+    radial-gradient(ellipse 8% 6% at 96% 50%, #ffffff 0%, #f7f9fb 34%, #c5d0dc 58%, transparent 74%),
+    radial-gradient(circle at 86% 10%, #fff6e4 0 7px, transparent 8px),
+    linear-gradient(180deg, #5d9be8 0%, #b9d8f5 80%);
 }
 :global(:root[data-theme="dark"]) .siteSky {
   background:
-    radial-gradient(ellipse 40% 20% at 14% 34%, rgb(104 112 126 / 0.95) 0%, rgb(104 112 126 / 0) 70%),
-    radial-gradient(ellipse 34% 16% at 46% 24%, rgb(80 96 122 / 0.9) 0%, rgb(80 96 122 / 0) 72%),
-    radial-gradient(ellipse 46% 22% at 82% 40%, rgb(114 122 136 / 0.92) 0%, rgb(114 122 136 / 0) 68%),
-    radial-gradient(ellipse 30% 14% at 62% 62%, rgb(61 80 112 / 0.85) 0%, rgb(61 80 112 / 0) 70%),
-    linear-gradient(180deg, #2a4068 0%, #3d5a8a 80%);
+    radial-gradient(ellipse 12% 9% at 12% 74%, #65707e 0%, #65707e 34%, #3a4658 56%, transparent 74%),
+    radial-gradient(ellipse 8% 7% at 18% 68%, #65707e 0%, #5c6778 40%, #3a4658 62%, transparent 78%),
+    radial-gradient(ellipse 7% 6% at 7% 66%, #6a7484 0%, #65707e 36%, #3a4658 60%, transparent 76%),
+    radial-gradient(ellipse 13% 9% at 88% 72%, #65707e 0%, #65707e 32%, #3a4658 54%, transparent 72%),
+    radial-gradient(ellipse 8% 7% at 94% 64%, #65707e 0%, #5c6778 38%, #3a4658 60%, transparent 76%),
+    radial-gradient(ellipse 9% 7% at 80% 80%, #6a7484 0%, #65707e 36%, #3a4658 58%, transparent 74%),
+    radial-gradient(ellipse 8% 6% at 6% 46%, #65707e 0%, #5c6778 34%, #3a4658 56%, transparent 72%),
+    radial-gradient(ellipse 8% 6% at 96% 50%, #65707e 0%, #5c6778 34%, #3a4658 58%, transparent 74%),
+    radial-gradient(circle at 86% 10%, #d5def2 0 6px, transparent 7px),
+    linear-gradient(180deg, #161e2c 0%, #2a3848 80%);
 }
 .landingClouds { display: block; width: 100%; height: 100%; pointer-events: none; }
 /* A failed context leaves an opaque black canvas. Hide it so the painted clouds stay. */

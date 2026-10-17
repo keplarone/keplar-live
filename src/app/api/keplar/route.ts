@@ -577,7 +577,20 @@ export async function POST(request: Request) {
           onClientGone(); // the stream closed under us: same as a disconnect
         }
       };
-      const closeStream = () => { try { controller.close(); } catch { /* the browser already closed it */ } };
+      // Save the turn before the stream closes. Otherwise a retry that arrives the moment the body ends still sees the turn as
+      // running and is refused, instead of replaying the answer that was just sent.
+      let turnSaved = false;
+      const saveTurn = async () => {
+        if (!turn || turnSaved) return;
+        turnSaved = true;
+        const ended = answeredOk && turnAnswer !== undefined ? "done" : abort.signal.aborted ? "cancelled" : "failed";
+        if (clientGone && ended === "done") flightPush(costScope.flight, { k: "note", code: "finished_headless" });
+        await finishTurn(turn.owner, turn.key, { status: ended, answer: turnAnswer, error: ended === "failed" ? (turnError ?? { code: "internal", message: "Something went wrong. Please try again." }) : undefined, headless: clientGone }).catch(() => undefined);
+      };
+      const closeStream = async () => {
+        await saveTurn();
+        try { controller.close(); } catch { /* the browser already closed it */ }
+      };
       // Free: a question only keeps its count if an answer reached the screen. Failures, "no reliable answer", no model
       // responding and stops all give it back, and the meter is re-sent so the UI shows the true number.
       let answered = false;
@@ -661,32 +674,28 @@ export async function POST(request: Request) {
         // Stopped by the user after paid calls went out: still billed at the planned (margin-included) cost.
         if (abort.signal.aborted && run.started && !run.settled && !smallTalk) await settle(run.plannedUnits).catch(() => undefined);
         await finishDaily(!abort.signal.aborted);
-        closeStream();
+        await closeStream();
       } catch (err) {
         // Stopped or crashed after the panel was called: charge the planned (margin-included) cost.
         if (run.started && !run.settled && !smallTalk) await settle(run.plannedUnits).catch(() => undefined);
         if (abort.signal.aborted) {
           await finishDaily(false);
-          closeStream();
+          await closeStream();
           return;
         }
         console.error("[keplar] run failed:", err instanceof Error ? err.name : "error");
         if (run.noResponse) send(noResponseEvent(ws.plan));
         else send({ type: "error", code: "internal", message: "Something went wrong. Please try again.", retryable: true });
         await finishDaily(true);
-        closeStream();
+        await closeStream();
       } finally {
         await finishDaily(false);
         releaseReserved?.();
         gate?.release();
         endRun();
         if (cancelWatch) clearInterval(cancelWatch);
-        // Answer recovery: save how the turn ended (the answer exactly as sent, or why it didn't come) for a retry or a reconnect.
-        if (turn) {
-          const ended = answeredOk && turnAnswer !== undefined ? "done" : abort.signal.aborted ? "cancelled" : "failed";
-          if (clientGone && ended === "done") flightPush(costScope.flight, { k: "note", code: "finished_headless" });
-          await finishTurn(turn.owner, turn.key, { status: ended, answer: turnAnswer, error: ended === "failed" ? (turnError ?? { code: "internal", message: "Something went wrong. Please try again." }) : undefined, headless: clientGone }).catch(() => undefined);
-        }
+        // The stream already saved the turn before it closed. This covers a run the browser left before closeStream.
+        await saveTurn();
         finishRun();
         if (!creator) recordFlight(flightRow(costScope.flight!, { reqId: reqIdForCost, plan: ws.plan, feature: costScope.tag?.feature, kind: smallTalk ? "instant" : "answer", answered: answeredOk, aborted: abort.signal.aborted, errorCode: flightError, limited: flightLimited, usd: costScope.usd }));
         if (!creator) recordRequestCost(costScope, { reqId: reqIdForCost, plan: ws.plan, accountId: ws.anonymous ? null : ws.id, kind: smallTalk ? "instant" : "answer", units: billedUnits, durationMs: Date.now() - startedAt, answered: answeredOk, degraded: degradedBy, maxModels: fanoutCap });

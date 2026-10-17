@@ -37,26 +37,44 @@ test("dark sky is navy with clouds that stay visible and keep light ink at AA", 
   assert.ok(ratio("#f4f4f6", night.lit) >= 4.5, "light ink on a night cloud is AA");
   assert.ok(ratio("#f4f4f6", night.horizon) >= 4.5, "light ink on the night horizon is AA");
   const sky = read("src/components/sky/Sky.module.css");
-  assert.match(sky, /radial-gradient\(ellipse[\s\S]*#2a4068 0%, #3d5a8a 80%\)/);
+  assert.match(sky, /linear-gradient\(180deg, #161e2c 0%, #2a3848 80%\)/);
   assert.match(sky, /\.landingClouds\[data-sky="css"\] \{ display: none; \}/);
   const scene = read("src/components/sky/clouds/cloud-scene.ts");
   assert.match(scene, /canvas\.dataset\.sky = "css"/);
   assert.match(scene, /canvas\.dataset\.sky = "live"/);
+  assert.match(scene, /mode === "still"/);
   const vol = read("src/components/sky/clouds/volumetric.ts");
   assert.doesNotMatch(vol, /#07080c/);
-  assert.match(vol, /#243656/);
-  assert.match(vol, /smoothstep\(0\.62, 0\.16, left\)/);
-  assert.match(vol, /cover\.value = Math\.max\(0\.55/);
+  assert.match(vol, /#243044/);
+  assert.match(vol, /fn puff/);
+  assert.doesNotMatch(vol, /smoothstep\(0\.62, 0\.16, left\)/);
+  assert.match(vol, /cover\.value = Math\.min\(1, Math\.max\(0, profile\.gray\)\)/);
+  assert.match(vol, /time \* 0\.02/);
   const webgl = read("src/components/sky/clouds/webgl-clouds.ts");
-  assert.match(webgl, /p\.z > -3\.3/);
-  assert.match(webgl, /float shade = mix\(0\.72, 1\.0, smoothstep\(0\.12, 0\.9, beer\)\);/);
+  assert.match(webgl, /p\.kind < 0\.5 \|\| draw\.gray >= 0\.16/);
+  assert.doesNotMatch(webgl, /p\.z > -3\.3/);
+  assert.match(webgl, /float shade = mix\(0\.42, 1\.0, smoothstep\(0\.12, 0\.9, beer\)\);/);
+  assert.match(webgl, /float drift = uTime \* 0\.035;/);
   assert.match(webgl, /sky = mix\(sky, uBody, disc \* vis\)/);
   assert.doesNotMatch(webgl, /edge \* \(1\.0 - disc\)/);
   assert.match(webgl, /gl_Position = vec4\(p, 0\.0, 1\.0\)/);
   assert.doesNotMatch(vol, /edge \* \(1\.0 - disc\)/);
   assert.match(read("src/styles/globals.css"), /#main \{ position: relative; z-index: 1; isolation: isolate; \}/);
   assert.match(read("src/components/sky/Sky.module.css"), /pointer-events: none/);
-  assert.match(read("src/components/sky/Sky.module.css"), /#b7d4ec 0%, #6ea0d4 80%/);
+  assert.match(read("src/components/sky/Sky.module.css"), /#5d9be8 0%, #b9d8f5 80%/);
+});
+
+test("day sky is blue at the top and light ink stays AA on it", () => {
+  const light = read("src/styles/light.css");
+  const block = light.match(/:root\[data-theme="light"\]\s*\{([^}]*)\}/)?.[1] ?? "";
+  for (const name of ["--c-ink", "--c-ink-2", "--c-ink-3"]) {
+    const hex = block.match(new RegExp(`${name}:\\s*(#[0-9a-f]{6})`))?.[1];
+    assert.ok(hex, name);
+    assert.ok(ratio(hex, "#5d9be8") >= 4.5, `${name} on the day zenith`);
+    assert.ok(ratio(hex, "#b9d8f5") >= 4.5, `${name} on the day horizon`);
+  }
+  const day = read("src/components/sky/clouds/palette.ts");
+  assert.match(day, /zenith: "#5d9be8", horizon: "#b9d8f5"/);
 });
 
 test("route snapshots do not crossfade the old page over the new one", () => {
