@@ -3,7 +3,7 @@
 **Updated:** 2026-10-17
 **Repo:** keplar-live (`/workspace`)
 **Author of commits:** `Keplar <team@keplar.one>`
-**Do not deploy.** Do not run `vercel --prod`. Do not merge these PRs from the agent.
+**Owner approved merge and auto-deploy on 2026-10-17.** Do not run `vercel` or `vercel --prod`. Merging to `main` is the deploy. #22 `8be1ce5`. #23 `953630b`. #24 `e2ebe63`.
 
 ## How to resume
 
@@ -26,7 +26,7 @@
 - [x] Phase 6 report gate (`src/lib/seo/reports.ts`) requires methodology, data, limitations, and how to reproduce, each at least 80 characters, plus a repo source path. `CORE_EVAL_NOTE` is unpublished and does not repeat scores. `publishedReports()` is empty. `/reports` is not in the sitemap.
 - [x] Phase 7 public sharing stays private by default. `PATCH /api/share` still requires `consent: true` and a verified email. `publishShare` stores `consentAt`. A row with `publicAt` and no `consentAt` is not opened, listed, or sitemapped. Unpublish and takedown clear `consentAt`.
 - [x] Phase 8 tool pages already link to the matching product with `TrackedLink` and reuse the existing marketing styles. No new visual language and no site-wide restyle.
-- [ ] Phase 11 left to the owner: merge, then production deploy per `CLAUDE.md`. Do not deploy from this agent.
+- [ ] Phase 11: #22, #23, and #24 are on main. This branch is the measurement merge. Vercel deploys main by itself. Do not run `vercel`.
 
 ## This milestone (audit + critical fixes)
 
@@ -50,7 +50,7 @@ Not in this milestone, on purpose: no new landing pages, no Search Console calls
 - `npx tsc --noEmit` — pass (exit 0).
 - `npx eslint` on the files in this milestone — pass (exit 0).
 - `node --import tsx --test` on the SEO files listed above — 66 pass, 0 fail.
-- Audit milestone, full `npm test`: 3034 tests, 3032 pass, 0 fail, 2 skipped.
+- Audit milestone, full `npm test`: 3034 tests, 3032 pass, 0 fail, 2 skipped. CI then failed once in `tests/presence.test.ts` because an empty flush purged rows against the wall clock. That flush now skips the purge unless it has a logical clock. Merged as `8be1ce5`.
 - Cluster milestone, full `npm test`: 3038 tests, 3036 pass, 0 fail, 2 skipped.
 - Free-tool milestone, full `npm test`: 3041 tests, 3039 pass, 0 fail, 2 skipped. `npx tsc --noEmit` pass.
 - Measurement milestone: `npx eslint` on the touched files and `npx tsc --noEmit` — pass. Full `npm test`: 3045 tests, 3043 pass, 0 fail, 2 skipped.

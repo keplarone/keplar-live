@@ -1,6 +1,7 @@
 "use client";
 /** The build as it happens: plan -> files -> tests -> requested vs built -> design review. */
 import s from "./apps.module.css";
+import { planPlaceholder, timelineStage } from "./code-nav";
 import type { Check, PublicSpec, Report, Verdict, Visual } from "./types";
 
 export type Live = {
@@ -37,7 +38,7 @@ export function BuildTimeline({ live, report, running }: { live: Live; report: R
   const checks = live.checks.length ? live.checks : report?.checks ?? [];
   const verdicts = live.verdicts.length ? live.verdicts : report?.verdicts ?? [];
   const visual = live.visual ?? report?.visual ?? null;
-  const st = running ? live.stage : "done";
+  const st = timelineStage(running, live.stage, Boolean(spec));
   const built = verdicts.filter((v) => v.status === "built").length;
   return (
     <div className={s.timeline} aria-live="polite">
@@ -59,7 +60,7 @@ export function BuildTimeline({ live, report, running }: { live: Live; report: R
             <span className={s.muted}>Screens: {spec.pages.map((p) => p.route).join("  ")}</span>
             {spec.notBuilt.length ? <span className={s.muted}>Not in this build: {spec.notBuilt.join(" · ")}</span> : null}
           </div>
-        ) : <span className={s.muted}>Reading your idea…</span>}
+        ) : <span className={s.muted}>{planPlaceholder(running, false)}</span>}
       </section>
 
       {live.files.length || Object.keys(live.writing).length ? (

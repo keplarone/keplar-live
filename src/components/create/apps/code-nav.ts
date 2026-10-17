@@ -35,6 +35,23 @@ export function rankPaths(paths: string[], query: string, limit = 50): string[] 
 export const BUILD_ORDER = ["plan", "generate", "verify", "visual", "fix", "save", "done"] as const;
 export type StepState = "done" | "active" | "todo";
 
+/** Stage the build timeline should paint. A running build with no stage yet is still planning (the dot pulses).
+ * A build that stopped before it produced a plan is idle: not spinning, and not marked done. */
+export function timelineStage(running: boolean, stage: string, hasSpec: boolean): string {
+  if (running) return stage || "plan";
+  if (hasSpec) return "done";
+  return "";
+}
+
+export const PLAN_READING = "Reading your idea…";
+export const PLAN_STOPPED = "Stopped before a plan";
+
+/** Copy under Plan. The in-progress line only shows while a build is actually running. */
+export function planPlaceholder(running: boolean, hasSpec: boolean): string | null {
+  if (hasSpec) return null;
+  return running ? PLAN_READING : PLAN_STOPPED;
+}
+
 /** Where a step stands for the stage the build is in. A finished build (or one shown after the fact) has every step done. */
 export function stepState(step: string, stage: string, running: boolean): StepState {
   const cur = BUILD_ORDER.indexOf(stage as (typeof BUILD_ORDER)[number]);
