@@ -42,6 +42,14 @@ test("dark sky is navy with clouds that stay visible and keep light ink at AA", 
   const scene = read("src/components/sky/clouds/cloud-scene.ts");
   assert.match(scene, /canvas\.dataset\.sky = "css"/);
   assert.match(scene, /canvas\.dataset\.sky = "live"/);
+  const vol = read("src/components/sky/clouds/volumetric.ts");
+  assert.doesNotMatch(vol, /#07080c/);
+  assert.match(vol, /#243656/);
+  assert.match(vol, /smoothstep\(0\.62, 0\.16, left\)/);
+  assert.match(vol, /cover\.value = Math\.max\(0\.55/);
+  const webgl = read("src/components/sky/clouds/webgl-clouds.ts");
+  assert.match(webgl, /p\.z > -3\.3/);
+  assert.match(webgl, /float shade = mix\(0\.72, 1\.0, smoothstep\(0\.12, 0\.9, beer\)\);/);
 });
 
 test("route snapshots do not crossfade the old page over the new one", () => {

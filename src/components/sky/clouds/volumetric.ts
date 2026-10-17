@@ -96,7 +96,7 @@ fn density(p: vec3<f32>, time: f32, lite: f32) -> f32 {
   return d + wisp * high * 0.22;
 }`, [asInclude(fbm), asInclude(worley)]);
   const shade = wgslFn(`
-fn cloudShade(uv: vec2<f32>, time: f32, aspect: f32, zenith: vec3<f32>, horizon: vec3<f32>, lit: vec3<f32>, shadow: vec3<f32>, altitude: f32, journey: f32, ground: f32, dark: f32, fall: f32) -> vec4<f32> {
+fn cloudShade(uv: vec2<f32>, time: f32, aspect: f32, zenith: vec3<f32>, horizon: vec3<f32>, lit: vec3<f32>, shadow: vec3<f32>, altitude: f32, journey: f32, ground: f32, dark: f32, fall: f32, cover: f32) -> vec4<f32> {
   let uvn = uv * 2.0 - vec2<f32>(1.0, 1.0);
   let rd = normalize(vec3<f32>(uvn.x * aspect * 0.7, uvn.y * 0.46 + 0.36, 1.15));
   let ro = vec3<f32>(sin(time * 0.05) * 0.15, -0.02, -0.15);
@@ -156,6 +156,14 @@ fn cloudShade(uv: vec2<f32>, time: f32, aspect: f32, zenith: vec3<f32>, horizon:
   let hero = smoothstep(0.34, 0.1, hx) * smoothstep(0.4, 0.6, uv.y) * smoothstep(0.98, 0.76, uv.y);
   let nav = smoothstep(0.84, 0.94, uv.y);
   col = mix(col, sky, hero * 0.9 * (1.0 - nav));
+  // The march accumulates low in the frame, so a clear night reads as an empty field behind the headline.
+  // These banks sit at the sides and under the top bar. The hero mix above keeps the title on the sky.
+  let left = length((uv - vec2<f32>(0.14, 0.78)) * vec2<f32>(1.2, 2.6));
+  let right = length((uv - vec2<f32>(0.86, 0.7)) * vec2<f32>(1.05, 2.3));
+  let top = length((uv - vec2<f32>(0.5, 0.93)) * vec2<f32>(1.8, 4.0));
+  let banks = smoothstep(0.62, 0.16, left) + smoothstep(0.58, 0.14, right) + smoothstep(0.5, 0.1, top) * 0.7;
+  let deck = clamp(cover, 0.55, 1.0);
+  col = mix(col, mix(shadow, lit, 0.78), clamp(banks, 0.0, 1.0) * deck * (1.0 - hero));
   let bodyP = uv - vec2<f32>(0.72, 0.8);
   let bodyD = length(bodyP * vec2<f32>(1.0, 1.35));
   let disc = smoothstep(0.046, 0.018, bodyD);
@@ -215,6 +223,7 @@ export async function createVolumetric(canvas: HTMLCanvasElement, opts: { dark: 
   const ground = tsl.uniform(0);
   const darkU = tsl.uniform(opts.dark ? 1 : 0);
   const fall = tsl.uniform(0);
+  const cover = tsl.uniform(0.7);
   const shade = buildShade(tsl);
   const material = new MeshBasicNodeMaterial();
   material.toneMapped = false;
@@ -232,6 +241,7 @@ export async function createVolumetric(canvas: HTMLCanvasElement, opts: { dark: 
     ground,
     dark: darkU,
     fall,
+    cover,
   });
   const mesh = new Mesh(new PlaneGeometry(2, 2), material);
   mesh.frustumCulled = false;
@@ -258,10 +268,11 @@ export async function createVolumetric(canvas: HTMLCanvasElement, opts: { dark: 
     const h = new Color(next.horizon);
     const l = new Color(next.lit);
     const s = new Color(next.shadow);
-    const crush = new Color(themeDark ? "#07080c" : "#8ea4b8");
-    (zenith.value as Color).copy(z).lerp(crush, gray * (themeDark ? 0.4 : 0.55));
+    // Rain greys the night sky toward a darker navy, not toward black.
+    const crush = new Color(themeDark ? "#243656" : "#8ea4b8");
+    (zenith.value as Color).copy(z).lerp(crush, gray * (themeDark ? 0.18 : 0.55));
     (horizon.value as Color).copy(h).lerp(s, gray * 0.12);
-    (lit.value as Color).copy(l).lerp(s, gray * (themeDark ? 0.42 : 0.22));
+    (lit.value as Color).copy(l).lerp(s, gray * (themeDark ? 0.22 : 0.22));
     (shadow.value as Color).copy(s);
   };
   return {
@@ -274,6 +285,8 @@ export async function createVolumetric(canvas: HTMLCanvasElement, opts: { dark: 
       lastProfile = profile;
       const wet = profile.precip === "rain";
       fall.value = wet ? 2.4 : profile.precip === "snow" ? 0.7 : 0;
+      // Clear still keeps the side banks. Coverage only fills the deck in from there.
+      cover.value = Math.max(0.55, Math.min(1, profile.coverage));
       paintLook(profile);
     },
     setJourney: (state) => {

@@ -126,7 +126,9 @@ void main() {
   float optical = mix(0.45, 2.2, 1.0 - wrap);
   if (vKind > 1.5) optical *= 0.32;
   float beer = exp(-optical);
-  vec3 col = mix(uShadow, uLit, smoothstep(0.18, 0.84, beer));
+  // The shadow colour is as dark as the night sky, so a low mix disappears. The body stays towards lit.
+  float shade = mix(0.72, 1.0, smoothstep(0.12, 0.9, beer));
+  vec3 col = mix(uShadow, uLit, shade);
   float alpha = vKind > 1.5 ? 0.48 : 0.92;
   vec2 uvh = gl_FragCoord.xy / max(uRes, vec2(1.0));
   float hero = smoothstep(0.36, 0.12, abs(uvh.x - 0.5)) * smoothstep(0.42, 0.58, uvh.y) * smoothstep(0.98, 0.74, uvh.y);
@@ -169,7 +171,8 @@ void main() {
   float up = smoothstep(0.15, 0.8, vUv.y);
   float optical = dens * (vKind > 1.5 ? 0.4 : 1.8) * mix(1.15, 0.55, up);
   float beer = exp(-optical);
-  vec3 col = mix(uShadow, uLit, smoothstep(0.18, 0.84, beer));
+  float shade = mix(0.72, 1.0, smoothstep(0.12, 0.9, beer));
+  vec3 col = mix(uShadow, uLit, shade);
   float alpha = smoothstep(0.1, 0.32, dens) * (vKind > 1.5 ? 0.55 : 0.96);
   vec2 uvh = gl_FragCoord.xy / max(uRes, vec2(1.0));
   float hero = smoothstep(0.36, 0.12, abs(uvh.x - 0.5)) * smoothstep(0.42, 0.58, uvh.y) * smoothstep(0.98, 0.74, uvh.y);
@@ -613,7 +616,9 @@ void main() {
   const placeClouds = () => {
     puffs.forEach((p, i) => {
       const slot = (i + 0.5) / puffs.length;
-      const show = draw.coverage >= 0.95 || p.kind >= 2 || slot > 1 - draw.coverage;
+      // Low coverage used to hide every near puff, and the opaque canvas then covered the CSS clouds.
+      // Banks in front of the camera stay up even on a clear night. Coverage only thins the far deck.
+      const show = draw.coverage >= 0.95 || p.kind >= 2 || p.z > -3.3 || slot > 1 - draw.coverage;
       const s = show ? draw.bulk : 0.0001;
       dummy.position.set(p.x, p.y - draw.drop, p.z);
       dummy.scale.set(p.sx * s, p.sy * s * draw.flat, p.sz * s);
