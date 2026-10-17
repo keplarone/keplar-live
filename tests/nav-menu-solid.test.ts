@@ -12,7 +12,7 @@ test("nav words are never the element a displacement filter runs on", () => {
   assert.doesNotMatch(nav, /\.signIn\[data-distort\]/);
   assert.doesNotMatch(nav, /:is\(\.theme, \.signIn/);
   // The Sign in / Account label is a sibling of the lens, not a child of the filtered node.
-  assert.match(tsx, /className=\{s\.lens\} data-glass-pill="" data-distort="" aria-hidden="true" \/>\s*<span className=\{s\.lensLabel\}>/);
+  assert.match(tsx, /className=\{s\.lens\} data-glass-pill="" data-distort="" data-glass-chip="" aria-hidden="true" \/>\s*<span className=\{s\.lensLabel\}>/);
   assert.doesNotMatch(tsx, /className=\{s\.signIn\} data-glass-pill/);
   const chips = read("src/components/app-ui/HomeStart.tsx");
   assert.match(chips, /className=\{s\.chipLens\} data-glass-pill="" data-distort="" aria-hidden="true"/);

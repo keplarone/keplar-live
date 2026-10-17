@@ -3,7 +3,7 @@
   width: 260px;
   border-radius: 20px;
   background: var(--space-glass-solid);
-  box-shadow: var(--space-glass-depth);
+  box-shadow: 0 8px 18px rgb(0 0 0 / 0.28);
   overflow: hidden;
   color: var(--c-ink);
   font-size: 11px;

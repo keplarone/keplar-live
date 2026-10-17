@@ -53,7 +53,7 @@ export function WeatherToggle({ className }: { className?: string }) {
     }
   };
   return (
-    <div className={className} role="radiogroup" aria-label="Weather" onKeyDown={onKey} data-glass-pill="" data-distort="" data-picked={picked ? "" : undefined}>
+    <div className={className} role="radiogroup" aria-label="Weather" onKeyDown={onKey} data-glass-pill="" data-distort="" data-glass-chip="" data-picked={picked ? "" : undefined}>
       {PRECIP_MODES.map((id) => (
         <button
           key={id}

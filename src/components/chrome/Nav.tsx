@@ -118,7 +118,7 @@ export function Nav() {
           <WeatherToggle className={`${s.weather}`} />
           <ThemeToggle className={`${s.icon} ${s.theme}`} />
           <Link href={me.signedIn ? "/account" : href(signInHref)} className={s.signIn}>
-            <span className={s.lens} data-glass-pill="" data-distort="" aria-hidden="true" />
+            <span className={s.lens} data-glass-pill="" data-distort="" data-glass-chip="" aria-hidden="true" />
             <span className={s.lensLabel}>{me.signedIn ? t.account : t.signIn}</span>
           </Link>
           {/* "Try Keplar" signed out, "Open Keplar" signed in (CtaLabel: both in the HTML, CSS shows one from <html data-signed>). */}

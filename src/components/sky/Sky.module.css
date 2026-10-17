@@ -16,12 +16,25 @@
   z-index: -1;
   pointer-events: none;
   overflow: hidden;
-  background: linear-gradient(180deg, #4f86c8 0%, #d5e6f5 78%);
+  /* Painted clouds, so the sky is still there when the canvas has no WebGL context. */
+  background:
+    radial-gradient(ellipse 38% 18% at 16% 36%, rgb(247 249 251 / 0.95) 0%, rgb(247 249 251 / 0) 70%),
+    radial-gradient(ellipse 32% 16% at 48% 26%, rgb(226 234 242 / 0.9) 0%, rgb(226 234 242 / 0) 72%),
+    radial-gradient(ellipse 44% 20% at 78% 40%, rgb(255 255 255 / 0.92) 0%, rgb(255 255 255 / 0) 68%),
+    radial-gradient(ellipse 28% 14% at 60% 58%, rgb(186 204 220 / 0.75) 0%, rgb(186 204 220 / 0) 70%),
+    linear-gradient(180deg, #4f86c8 0%, #d5e6f5 78%);
 }
 :global(:root[data-theme="dark"]) .siteSky {
-  background: linear-gradient(180deg, #070b16 0%, #1c2a44 80%);
+  background:
+    radial-gradient(ellipse 40% 20% at 14% 34%, rgb(104 112 126 / 0.95) 0%, rgb(104 112 126 / 0) 70%),
+    radial-gradient(ellipse 34% 16% at 46% 24%, rgb(80 96 122 / 0.9) 0%, rgb(80 96 122 / 0) 72%),
+    radial-gradient(ellipse 46% 22% at 82% 40%, rgb(114 122 136 / 0.92) 0%, rgb(114 122 136 / 0) 68%),
+    radial-gradient(ellipse 30% 14% at 62% 62%, rgb(61 80 112 / 0.85) 0%, rgb(61 80 112 / 0) 70%),
+    linear-gradient(180deg, #2a4068 0%, #3d5a8a 80%);
 }
 .landingClouds { display: block; width: 100%; height: 100%; }
+/* A failed context leaves an opaque black canvas. Hide it so the painted clouds stay. */
+.landingClouds[data-sky="css"] { display: none; }
 
 /* ---- hero ---- */
 .hero {
@@ -275,7 +288,7 @@
 .floatCard[data-shown] { opacity: 1; scale: 1; }
 .floatScene { display: none; }
 .floatScene[data-on] { display: block; animation: sky-swap 0.3s var(--e-standard) both; }
-@keyframes sky-swap { from { opacity: 0; filter: blur(4px); } to { opacity: 1; filter: none; } }
+@keyframes sky-swap { from { opacity: 0; } to { opacity: 1; } }
 
 /* ---- "How Keplar works": an in-flow list on the page background ---- */
 .story {

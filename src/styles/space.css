@@ -239,16 +239,14 @@
 @keyframes sp-hl-fade-out { 0% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes sp-hl-mb-out { 0%, 18% { filter: none; } 40% { filter: url(#sp-mb-y); } 65% { filter: url(#sp-mb-y2); } 100% { filter: url(#sp-mb-y3); } }
 
-/* Page warp: every route change on the marketing site arrives through a short warp (View Transitions, motion.css runs the
-   route boundary); /app view switches use a softer one. Wider than a phone only: phones keep the plain crossfade. */
+/* Route changes do not crossfade. The old snapshot is removed before the new page paints
+   (a fade left the previous heading sitting on the next page). */
 @media (min-width: 641px) and (prefers-reduced-motion: no-preference) {
-  ::view-transition-old(.kp-route-out) { animation: sp-vt-out 200ms var(--space-ease-in-expo) both; }
-  ::view-transition-new(.kp-route-in) { animation: sp-vt-in var(--space-dur-page) var(--space-ease-expo) both; }
-  :root[data-vt="view"]::view-transition-new(root) { animation: sp-vt-in 360ms var(--space-ease-expo) both; }
-  :root[data-vt="view"]::view-transition-old(root) { animation: sp-vt-out 160ms var(--space-ease-in-expo) both; }
+  ::view-transition-old(.kp-route-out),
+  :root[data-vt="view"]::view-transition-old(root) { animation: none; display: none; }
+  ::view-transition-new(.kp-route-in),
+  :root[data-vt="view"]::view-transition-new(root) { animation: none; }
 }
-@keyframes sp-vt-in { 0% { opacity: 0; transform: scale(1.035); filter: blur(10px) brightness(1.25); } 100% { opacity: 1; transform: none; filter: none; } }
-@keyframes sp-vt-out { to { opacity: 0; transform: scale(0.97); filter: blur(6px); } }
 
 /* ───────────────────────── surfaces ───────────────────────── */
 /* Glass card: the one card. No border; depth from the inner highlight and the drop. Add data-interactive for the hover lift. */

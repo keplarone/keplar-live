@@ -86,8 +86,10 @@ export async function mountClouds(canvas: HTMLCanvasElement): Promise<() => void
   }
   if (!handle || disposed) {
     handle?.dispose();
+    if (!disposed) canvas.dataset.sky = "css";
     return () => {};
   }
+  canvas.dataset.sky = "live";
 
   const clouds = handle;
   let liveProfile = initial.profile;

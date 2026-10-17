@@ -1,5 +1,6 @@
-/** Day is a soft blue sky with white sunlit clouds. Night is a deep blue-black.
- * Dark highlights stay under the AA ceiling for light nav ink (#e4e6ea on #5c6066 is about 5:1). */
+/** Day is a soft blue sky with white sunlit clouds. Night is a navy sky with grey clouds
+ * that stay readable against the page: light ink (#f4f4f6) on the brightest night cloud
+ * (#68707e) is about 4.5:1, and on the horizon (#3d5a8a) about 6:1. */
 export type CloudPalette = {
   zenith: string;
   horizon: string;
@@ -11,7 +12,7 @@ export type CloudPalette = {
 
 export function cloudPalette(dark: boolean): CloudPalette {
   if (dark) {
-    return { zenith: "#070b16", horizon: "#1c2a44", lit: "#5c6066", shadow: "#141820", body: "#d5def2" };
+    return { zenith: "#2a4068", horizon: "#3d5a8a", lit: "#68707e", shadow: "#31425c", body: "#d5def2" };
   }
   return { zenith: "#4f86c8", horizon: "#d5e6f5", lit: "#f7f9fb", shadow: "#7e8c9c", body: "#fff6e4" };
 }
