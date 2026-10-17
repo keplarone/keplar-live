@@ -29,7 +29,7 @@
 .notice { padding: var(--s-2) var(--s-5); background: var(--c-surface-2); color: var(--c-ink-2); font-size: var(--t-small); }
 
 .stage { display: flex; flex-direction: column; min-height: 0; min-width: 0; background: var(--c-surface-1); }
-.stageBar { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-2) var(--s-4); border-bottom: var(--b-hairline) solid var(--c-border); background: var(--c-canvas); flex-wrap: wrap; }
+.stageBar { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-2) var(--s-4); border-bottom: var(--b-hairline) solid var(--c-border); background: transparent; flex-wrap: wrap; }
 .seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: var(--r-pill); background: var(--c-surface-2); }
 .segBtn { height: 28px; padding: 0 var(--s-3); border: 0; border-radius: var(--r-pill); background: transparent; color: var(--c-ink-2); font: inherit; font-size: var(--t-small); cursor: pointer; white-space: nowrap; }
 .segBtn:hover { color: var(--c-ink); }
@@ -87,7 +87,7 @@
 /* Create mobile stageBar / kind tabs */
 @media (max-width: 900px) {
   .root { min-width: 0; max-width: 100%; overflow-x: hidden; }
-  .stageBar { position: sticky; top: 0; z-index: 5; background: var(--c-canvas); gap: 8px; padding: 6px 12px; max-width: 100%; }
+  .stageBar { position: sticky; top: 0; z-index: 5; background: var(--nav-fill); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); gap: 8px; padding: 6px 12px; max-width: 100%; }
   .stageBar > .seg { flex: 1; min-width: 0; }
   .segBtn { min-height: 44px; }
 }
