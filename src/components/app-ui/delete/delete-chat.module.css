@@ -95,7 +95,7 @@
   background: var(--surface-overlay);
   color: var(--c-ink);
   font-size: var(--t-small);
-  box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-3);
+  box-shadow: var(--elev-3);
   overflow: hidden;
 }
 

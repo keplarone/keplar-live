@@ -185,3 +185,9 @@
   /* keep a 1ms exit so animationend still fires and the leaving toast is removed from the DOM */
   .toast[data-leaving] { animation: toastOut 1ms linear both; }
 }
+
+/* Space UI (docs/design/space-ui.md, phase B): menus, popovers, toasts and dialogs drop their outline; they separate from the page by
+   depth and light (a lit top edge over the elevation), as Space Studio's surfaces do. */
+.float, .toast, .dialog { border-color: transparent; }
+.float { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), var(--ks-elev-1); }
+.toast { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), var(--ks-elev-2); }

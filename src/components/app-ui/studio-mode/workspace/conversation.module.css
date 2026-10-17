@@ -61,7 +61,7 @@
 .idea {
   height: var(--ks-control-md);
   padding: 0 var(--ks-space-3);
-  border: 1px solid var(--ks-border);
+  border: 1px solid transparent;
   border-radius: var(--ks-radius-pill);
   background: var(--ks-surface-1);
   color: var(--ks-text-2);
@@ -69,8 +69,9 @@
   font-size: var(--ks-text-sm);
   cursor: pointer;
   transition: background-color var(--ks-dur-instant) var(--ks-ease-standard), color var(--ks-dur-instant) var(--ks-ease-standard), border-color var(--ks-dur-instant) var(--ks-ease-standard);
+  box-shadow: var(--ks-elev-1);
 }
-.idea:hover { background: var(--ks-fill-hover); color: var(--ks-text-1); border-color: var(--ks-border-strong); }
+.idea:hover { background: var(--ks-fill-hover); color: var(--ks-text-1); border-color: transparent; }
 .idea:focus-visible { outline: none; box-shadow: var(--ks-focus-ring); }
 
 /* Messages */
@@ -81,21 +82,23 @@
   flex-direction: column;
   gap: var(--ks-space-1-5);
   padding: var(--ks-space-2) var(--ks-space-3);
-  border: 1px solid var(--ks-border);
+  border: 1px solid transparent;
   border-radius: var(--ks-radius-md);
   background: var(--ks-surface-3);
+  box-shadow: var(--ks-elev-1);
 }
 .refs { display: flex; flex-wrap: wrap; gap: var(--ks-space-1); }
-.refs img { width: 48px; height: 48px; object-fit: cover; border-radius: var(--ks-radius-xs); border: 1px solid var(--ks-border); }
+.refs img { width: 48px; height: 48px; object-fit: cover; border-radius: var(--ks-radius-xs); border: 1px solid transparent; box-shadow: var(--ks-elev-1); background-color: var(--ks-fill-hover); }
 
 .keplar { display: flex; flex-direction: column; gap: var(--ks-space-2); max-width: 100%; }
 
 /* The numbered plan in a reply, with live step states when it is the run's plan. */
 .plan {
-  border: 1px solid var(--ks-border);
+  border: 1px solid transparent;
   border-radius: var(--ks-radius-sm);
   background: var(--ks-surface-1);
   padding: var(--ks-space-2) var(--ks-space-3);
+  box-shadow: var(--ks-elev-1);
 }
 .planHead {
   display: flex;
@@ -116,12 +119,14 @@
   width: 18px;
   height: 18px;
   margin-top: 1px;
-  border: 1px solid var(--ks-border-strong);
+  border: 1px solid transparent;
   border-radius: var(--ks-radius-pill);
   color: var(--ks-text-3);
   font-size: var(--ks-text-xs);
   font-variant-numeric: tabular-nums;
   transition: background-color var(--ks-dur-base) var(--ks-ease-standard), border-color var(--ks-dur-base) var(--ks-ease-standard), color var(--ks-dur-base) var(--ks-ease-standard);
+  box-shadow: var(--ks-elev-1);
+  background-color: var(--ks-fill-hover);
 }
 .planText { overflow-wrap: anywhere; color: var(--ks-text-2); }
 .planSteps li[data-state="done"] .planMark { background: var(--ks-text-1); border-color: var(--ks-text-1); color: var(--ks-bg); }
@@ -132,8 +137,8 @@
 
 /* The look Keplar takes before a request. */
 .look { display: flex; align-items: center; gap: var(--ks-space-2-5); color: var(--ks-text-2); font-size: var(--ks-text-base); line-height: var(--ks-leading-base); }
-.lookShot { flex: none; width: 72px; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--ks-radius-xs); border: 1px solid var(--ks-border); }
-.lookIcon { flex: none; display: inline-grid; place-items: center; width: 24px; height: 24px; border: 1px solid var(--ks-border); border-radius: var(--ks-radius-sm); color: var(--ks-text-3); }
+.lookShot { flex: none; width: 72px; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--ks-radius-xs); border: 1px solid transparent; box-shadow: var(--ks-elev-1); background-color: var(--ks-fill-hover); }
+.lookIcon { flex: none; display: inline-grid; place-items: center; width: 24px; height: 24px; border: 1px solid transparent; border-radius: var(--ks-radius-sm); color: var(--ks-text-3); box-shadow: var(--ks-elev-1); background-color: var(--ks-fill-hover); }
 .lookText { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
 .lookText strong { color: var(--ks-text-1); font-weight: var(--ks-weight-medium); }
 
@@ -149,7 +154,7 @@
 .note > svg { flex: none; margin-top: 3px; color: var(--ks-text-3); }
 .note[data-tone="warn"] { padding: var(--ks-space-2) var(--ks-space-2-5); border-radius: var(--ks-radius-sm); background: var(--ks-warning-subtle); color: var(--ks-text-1); }
 .note[data-tone="warn"] > svg { color: var(--ks-warning); }
-.note[data-tone="turn"] { padding: var(--ks-space-2) var(--ks-space-2-5); border: 1px solid var(--ks-border); border-radius: var(--ks-radius-sm); color: var(--ks-text-1); }
+.note[data-tone="turn"] { padding: var(--ks-space-2) var(--ks-space-2-5); border: 1px solid transparent; border-radius: var(--ks-radius-sm); color: var(--ks-text-1); box-shadow: var(--ks-elev-1); background-color: var(--ks-fill-hover); }
 .note[data-tone="turn"] > svg { color: var(--ks-accent-text); }
 
 /* The thinking line: only while the model is really working. */
@@ -167,7 +172,7 @@
   background: transparent;
   transition: border-color var(--ks-dur-fast) var(--ks-ease-standard), background-color var(--ks-dur-fast) var(--ks-ease-standard);
 }
-.action[data-status="waiting"] { padding-block: var(--ks-space-2); border-color: var(--ks-border-strong); background: var(--ks-surface-1); }
+.action[data-status="waiting"] { padding-block: var(--ks-space-2); border-color: transparent; background: var(--ks-surface-1); }
 .action[data-status="waiting"][data-risk="destructive"] { border-color: var(--ks-danger); background: var(--ks-danger-subtle); }
 .action[data-status="skipped"] .actionTitle { color: var(--ks-text-3); }
 .actionLine {
@@ -209,15 +214,16 @@
   max-height: 240px;
   overflow: auto;
   padding: var(--ks-space-2) var(--ks-space-2-5);
-  border: 1px solid var(--ks-border);
+  border: 1px solid transparent;
   border-radius: var(--ks-radius-sm);
   background: var(--ks-surface-inset);
   font-family: var(--ks-font-mono);
   font-size: var(--ks-text-sm);
   line-height: var(--ks-leading-code);
   white-space: pre;
+  box-shadow: var(--ks-elev-1);
 }
-.shot { max-width: 100%; max-height: 160px; align-self: flex-start; border-radius: var(--ks-radius-xs); border: 1px solid var(--ks-border); }
+.shot { max-width: 100%; max-height: 160px; align-self: flex-start; border-radius: var(--ks-radius-xs); border: 1px solid transparent; box-shadow: var(--ks-elev-1); background-color: var(--ks-fill-hover); }
 .decide { display: flex; align-items: center; flex-wrap: wrap; gap: var(--ks-space-1-5); padding-left: calc(8px + var(--ks-space-2)); }
 .decideHint { color: var(--ks-danger); font-size: var(--ks-text-xs); }
 
@@ -241,10 +247,11 @@
   gap: var(--ks-space-1-5);
   margin: 0;
   padding: var(--ks-space-2) var(--ks-space-2-5) var(--ks-space-2);
-  border: 1px solid var(--ks-border-strong);
+  border: 1px solid transparent;
   border-radius: var(--ks-radius-md);
   background: var(--ks-surface-1);
   transition: border-color var(--ks-dur-fast) var(--ks-ease-standard);
+  box-shadow: var(--ks-elev-1);
 }
 .composer:focus-within { border-color: var(--ks-text-3); }
 /* Keyboard or pointer focus in the text box: the field itself shows the focus ring (globals.css removes outlines). */
@@ -285,11 +292,12 @@
   width: 44px;
   height: 44px;
   padding: 0;
-  border: 1px solid var(--ks-border);
+  border: 1px solid transparent;
   border-radius: var(--ks-radius-xs);
   background: var(--ks-surface-inset);
   overflow: hidden;
   cursor: pointer;
+  box-shadow: var(--ks-elev-1);
 }
 .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .thumbX {

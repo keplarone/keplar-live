@@ -9,7 +9,7 @@
   gap: 2px;
   max-height: min(280px, 40vh);
   overflow: auto;
-  border: var(--b-hairline) solid var(--hairline-strong);
+  border: 1px solid transparent;
   border-radius: var(--r-md);
   background: var(--surface-overlay);
   box-shadow: var(--elev-3);
@@ -72,13 +72,22 @@
   letter-spacing: 0;
   text-transform: none;
   color: var(--c-ink-3);
-  border: var(--b-hairline) solid var(--hairline-strong);
+  border: 1px solid transparent;
   border-radius: var(--r-pill);
   padding: 2px 6px;
   white-space: nowrap;
+  box-shadow: var(--elev-1);
+  background-color: var(--hover-wash);
 }
 
 @media (max-width: 520px) {
   .summary { display: none; }
   .menu { max-height: min(220px, 36vh); }
 }
+
+/* Space UI (phase B): Space Studio's picker surface (22px, lit edge, violet halo) and pill rows. */
+.menu { border-radius: 22px; padding: 6px; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), var(--elev-3), 0 0 50px rgb(var(--ring-rgb) / 0.14); }
+.item { border-radius: 16px; transition: background-color 0.2s ease; }
+.item[data-active] { background: var(--press-wash); }
+.slash { color: var(--c-accent); font-weight: var(--w-bold); }
+.badge { box-shadow: none; background: rgb(var(--ring-rgb) / 0.14); color: var(--c-ink-2); font-weight: var(--w-semibold); }

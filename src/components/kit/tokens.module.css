@@ -70,6 +70,17 @@
   --ks-elev-1: 0 1px 2px rgb(14 15 18 / 0.05), 0 4px 12px -6px rgb(14 15 18 / 0.12);
   --ks-elev-2: 0 1px 2px rgb(14 15 18 / 0.06), 0 16px 36px -14px rgb(14 15 18 / 0.22);
   --ks-scrim: rgb(14 15 18 / 0.28);
+  /* Space UI 3D controls at Studio density (28px): the same lit face as keplar.one (--space-*-face, inherited) on a 2px ledge with
+     a tight drop, so a 28px button reads as pressable without the 4px ledge and 24px shadow of a 44px one. */
+  --ks-primary-depth: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 2px 0 #000000, 0 4px 10px rgb(14 15 18 / 0.22);
+  --ks-primary-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 3px 0 #000000, 0 6px 14px rgb(14 15 18 / 0.26), 0 0 16px rgb(125 59 196 / 0.18);
+  --ks-primary-depth-press: inset 0 1px 0 rgb(255 255 255 / 0.16), 0 0 0 #000000, 0 1px 3px rgb(14 15 18 / 0.25);
+  --ks-secondary-depth: inset 0 1px 0 #ffffff, 0 2px 0 #cfcfd8, 0 3px 8px rgb(14 15 18 / 0.1);
+  --ks-secondary-depth-hover: inset 0 1px 0 #ffffff, 0 3px 0 #cfcfd8, 0 5px 12px rgb(14 15 18 / 0.14), 0 0 14px rgb(125 59 196 / 0.12);
+  --ks-secondary-depth-press: inset 0 1px 0 #ffffff, 0 0 0 #cfcfd8, 0 1px 3px rgb(14 15 18 / 0.12);
+  --ks-danger-depth: inset 0 1px 0 rgb(255 255 255 / 0.25), 0 2px 0 #6e140d, 0 4px 10px rgb(180 35 24 / 0.24);
+  --ks-danger-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.28), 0 3px 0 #6e140d, 0 6px 14px rgb(180 35 24 / 0.28);
+  --ks-danger-depth-press: inset 0 1px 0 rgb(255 255 255 / 0.2), 0 0 0 #6e140d, 0 1px 3px rgb(180 35 24 / 0.26);
   color-scheme: light;
 
   /* ── Theme-independent scales ──────────────────────────────────────────────────────────── */
@@ -143,7 +154,9 @@
   --ks-ease-spring: linear(0, 0.0571, 0.1793, 0.3192, 0.4533, 0.571, 0.6691, 0.7483, 0.8106, 0.8587, 0.8954, 0.9231, 0.9437, 0.959, 0.9703, 0.9785, 0.9845, 0.9889, 0.992, 0.9943, 0.9959, 0.9971, 0.9979, 0.9985, 1);
 
   /* focus: a 2px accent ring offset by the surface colour (keyboard focus only, :focus-visible) */
-  --ks-focus-ring: 0 0 0 1px var(--ks-surface-1), 0 0 0 3px var(--ks-focus);
+  --ks-focus-ring: 0 0 0 1px var(--ks-surface-1), 0 0 0 3px var(--ks-focus), 0 0 14px var(--ks-focus);
+  /* Space UI: a 28px control sinks 2px into its ledge (keplar.one's 44px controls sink 4px) */
+  --ks-press-y: 2px;
   --ks-focus-ring-inset: inset 0 0 0 2px var(--ks-focus);
 
   /* icon stroke: one style everywhere (24 grid) */
@@ -167,11 +180,11 @@
 /* ── Dark palette: layered graphite neutrals (not solid black), site ink #ededf0, site accent #c39bff ─────────────────── */
 :global(:root[data-theme="dark"]) .root,
 :global(:root) .root[data-ks-theme="dark"] {
-  --ks-bg: #0f0f11;
-  --ks-surface-1: #151518;
-  --ks-surface-2: #1c1c20;
-  --ks-surface-3: #25252a;
-  --ks-surface-inset: #121214;
+  --ks-bg: #0b0b0d;
+  --ks-surface-1: #131316;
+  --ks-surface-2: #1a1a1e;
+  --ks-surface-3: #232328;
+  --ks-surface-inset: #0f0f12;
   --ks-fill-hover: rgb(237 237 240 / 0.05);
   --ks-fill-active: rgb(237 237 240 / 0.09);
   --ks-fill-selected: rgb(94 202 216 / 0.13);
@@ -208,6 +221,15 @@
   --ks-elev-1: 0 1px 2px rgb(0 0 0 / 0.35), 0 4px 12px -6px rgb(0 0 0 / 0.5);
   --ks-elev-2: 0 1px 2px rgb(0 0 0 / 0.4), 0 18px 40px -14px rgb(0 0 0 / 0.65);
   --ks-scrim: rgb(0 0 0 / 0.55);
+  --ks-primary-depth: inset 0 1px 0 #ffffff, inset 0 -2px 0 rgb(0 0 0 / 0.1), 0 2px 0 #8c8a99, 0 4px 12px rgb(0 0 0 / 0.5);
+  --ks-primary-depth-hover: inset 0 1px 0 #ffffff, inset 0 -2px 0 rgb(0 0 0 / 0.1), 0 3px 0 #8c8a99, 0 6px 16px rgb(0 0 0 / 0.55), 0 0 18px rgb(190 150 255 / 0.25);
+  --ks-primary-depth-press: inset 0 1px 0 #ffffff, 0 0 0 #8c8a99, 0 2px 6px rgb(0 0 0 / 0.5);
+  --ks-secondary-depth: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 2px 0 rgb(0 0 0 / 0.65), 0 4px 12px rgb(0 0 0 / 0.45);
+  --ks-secondary-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.12), 0 3px 0 rgb(0 0 0 / 0.65), 0 6px 16px rgb(0 0 0 / 0.5), 0 0 18px rgb(178 112 255 / 0.2);
+  --ks-secondary-depth-press: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 0 0 rgb(0 0 0 / 0.65), 0 2px 6px rgb(0 0 0 / 0.45);
+  --ks-danger-depth: inset 0 1px 0 rgb(255 255 255 / 0.45), 0 2px 0 #8f3a44, 0 4px 12px rgb(0 0 0 / 0.5);
+  --ks-danger-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.5), 0 3px 0 #8f3a44, 0 6px 16px rgb(0 0 0 / 0.55), 0 0 18px rgb(255 122 133 / 0.22);
+  --ks-danger-depth-press: inset 0 1px 0 rgb(255 255 255 / 0.4), 0 0 0 #8f3a44, 0 2px 6px rgb(0 0 0 / 0.5);
   color-scheme: dark;
 }
 
@@ -254,6 +276,15 @@
   --ks-elev-1: 0 1px 2px rgb(14 15 18 / 0.05), 0 4px 12px -6px rgb(14 15 18 / 0.12);
   --ks-elev-2: 0 1px 2px rgb(14 15 18 / 0.06), 0 16px 36px -14px rgb(14 15 18 / 0.22);
   --ks-scrim: rgb(14 15 18 / 0.28);
+  --ks-primary-depth: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 2px 0 #000000, 0 4px 10px rgb(14 15 18 / 0.22);
+  --ks-primary-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 3px 0 #000000, 0 6px 14px rgb(14 15 18 / 0.26), 0 0 16px rgb(125 59 196 / 0.18);
+  --ks-primary-depth-press: inset 0 1px 0 rgb(255 255 255 / 0.16), 0 0 0 #000000, 0 1px 3px rgb(14 15 18 / 0.25);
+  --ks-secondary-depth: inset 0 1px 0 #ffffff, 0 2px 0 #cfcfd8, 0 3px 8px rgb(14 15 18 / 0.1);
+  --ks-secondary-depth-hover: inset 0 1px 0 #ffffff, 0 3px 0 #cfcfd8, 0 5px 12px rgb(14 15 18 / 0.14), 0 0 14px rgb(125 59 196 / 0.12);
+  --ks-secondary-depth-press: inset 0 1px 0 #ffffff, 0 0 0 #cfcfd8, 0 1px 3px rgb(14 15 18 / 0.12);
+  --ks-danger-depth: inset 0 1px 0 rgb(255 255 255 / 0.25), 0 2px 0 #6e140d, 0 4px 10px rgb(180 35 24 / 0.24);
+  --ks-danger-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.28), 0 3px 0 #6e140d, 0 6px 14px rgb(180 35 24 / 0.28);
+  --ks-danger-depth-press: inset 0 1px 0 rgb(255 255 255 / 0.2), 0 0 0 #6e140d, 0 1px 3px rgb(180 35 24 / 0.26);
   color-scheme: light;
 }
 

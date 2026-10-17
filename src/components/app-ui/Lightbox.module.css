@@ -38,3 +38,13 @@
   .bar { flex-wrap: wrap; }
   .actions { flex-wrap: wrap; }
 }
+
+/* Space UI (phase B): the viewer rises out of a blur onto the void; the bar has no rule line; the picture sits in a soft 18px frame. */
+.bar { border-bottom: 0; }
+.img { border-radius: 18px; box-shadow: 0 30px 80px rgb(0 0 0 / 0.5); }
+@media (min-width: 641px) and (prefers-reduced-motion: no-preference) {
+  .scrim { animation: spLightIn 0.42s var(--space-ease-expo) both; }
+  .img { animation: spLightImg 0.6s var(--space-ease-expo) both; }
+}
+@keyframes spLightIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes spLightImg { from { opacity: 0; transform: scale(0.96); filter: blur(10px); } to { opacity: 1; transform: none; filter: blur(0); } }

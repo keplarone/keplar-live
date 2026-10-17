@@ -10,7 +10,7 @@
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* Actions are kit Buttons. Links that act as buttons (Full screen, Back to Create) are drawn like the kit's secondary pill. */
-.linkBtn { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 14px; border-radius: var(--r-pill); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline-strong); color: var(--c-ink); font-size: var(--t-label); font-weight: var(--w-medium); text-decoration: none; white-space: nowrap; transition: background-color var(--m-dur-1) var(--m-ease-out); }
+.linkBtn { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 14px; border-radius: var(--r-pill); background: var(--surface-raised); box-shadow: var(--elev-1); color: var(--c-ink); font-size: var(--t-label); font-weight: var(--w-medium); text-decoration: none; white-space: nowrap; transition: background-color var(--m-dur-1) var(--m-ease-out); }
 .linkBtn:hover { background: var(--hover-wash); }
 .linkBtn:active { scale: var(--m-press); }
 .note { font-size: var(--t-label); }
@@ -89,7 +89,7 @@
 .editor :global(.cm-critic-mark[data-sev="major"]) { background: var(--c-attention); }
 .editor :global(.cm-critic-mark[data-sev="minor"]), .editor :global(.cm-critic-mark[data-sev="info"]) { background: var(--c-ink-3); }
 .editor :global(.cm-panels) { background: var(--c-surface-1); color: var(--c-ink); border-color: var(--c-border); }
-.editor :global(.cm-tooltip) { background: var(--surface-overlay); color: var(--c-ink); border: var(--b-hairline) solid var(--hairline-strong); border-radius: 8px; box-shadow: var(--elev-3); }
+.editor :global(.cm-tooltip) { background: var(--surface-overlay); color: var(--c-ink); border: 1px solid transparent; border-radius: 8px; box-shadow: var(--elev-3); }
 
 .previewCol { display: flex; flex-direction: column; border-left: var(--b-hairline) solid var(--c-border); min-height: 0; background: var(--c-surface-1); }
 /* The user's site: a website assumes a white page until it paints its own (user content, not product chrome). */
@@ -122,7 +122,7 @@
 .field { display: flex; flex-direction: column; gap: 6px; font-size: var(--t-label); color: var(--c-ink-3); }
 .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .select { height: 30px; border-radius: 8px; border: var(--b-hairline) solid var(--c-border-strong); background: var(--c-canvas); color: var(--c-ink); font: inherit; font-size: var(--t-label); padding: 0 8px; }
-.copyBox { display: flex; align-items: center; gap: 8px; border-radius: var(--r-sm); background: var(--c-surface-1); box-shadow: inset 0 0 0 1px var(--hairline-strong); padding: 6px 6px 6px 12px; }
+.copyBox { display: flex; align-items: center; gap: 8px; border-radius: var(--r-sm); background: var(--c-surface-1); box-shadow: var(--elev-1); padding: 6px 6px 6px 12px; }
 .copyBox code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
 .list { display: flex; flex-direction: column; border-top: var(--b-hairline) solid var(--c-border); }
 .li { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: var(--b-hairline) solid var(--c-border); font-size: var(--t-small); }
@@ -142,7 +142,7 @@
 .ringNum span { display: block; font-size: 10.5px; color: var(--c-ink-3); margin-top: 3px; letter-spacing: 0; text-transform: none; }
 .grade { margin: 0; font-size: 22px; font-weight: var(--w-medium); letter-spacing: -0.02em; }
 .summary { margin: 4px 0 0; color: var(--c-ink-2); font-size: var(--t-small); line-height: 1.55; max-width: 64ch; }
-.cats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; border-radius: var(--r-md); overflow: hidden; background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1); }
+.cats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; border-radius: var(--r-md); overflow: hidden; background: var(--surface-raised); box-shadow: var(--elev-1); }
 .cat { padding: 12px 14px; border-right: var(--b-hairline) solid var(--c-border); display: flex; flex-direction: column; gap: 6px; background: transparent; border-top: 0; border-bottom: 0; border-left: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .cat:last-child { border-right: 0; }
 .cat:hover { background: var(--c-surface-1); }
@@ -188,7 +188,7 @@
 .empty h3 { margin: 0 0 6px; color: var(--c-ink); font-size: 18px; font-weight: var(--w-medium); }
 
 /* ── Deploy ── */
-.liveCard { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; align-items: center; border-radius: var(--r-card); padding: 18px 20px; background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1); }
+.liveCard { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; align-items: center; border-radius: var(--r-card); padding: 18px 20px; background: var(--surface-raised); box-shadow: var(--elev-1); }
 .liveState { display: inline-flex; align-items: center; gap: 8px; font-size: var(--t-label); color: var(--c-ink-2); }
 .liveState::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c-ink-3); }
 .liveState[data-s="live"]::before { background: var(--c-verified); }
@@ -200,7 +200,7 @@
 .facts b { color: var(--c-ink-2); font-weight: var(--w-regular); }
 .lock { color: var(--c-verified); }
 .cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 380px); gap: 22px; align-items: start; }
-.steps { display: flex; flex-direction: column; border-radius: var(--r-md); overflow: hidden; background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline); }
+.steps { display: flex; flex-direction: column; border-radius: var(--r-md); overflow: hidden; background: var(--surface-raised); box-shadow: var(--elev-1); }
 .stepRow { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 9px 14px; border-bottom: var(--b-hairline) solid var(--c-border); font-size: var(--t-small); background: transparent; border-left: 0; border-right: 0; border-top: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; width: 100%; }
 .stepRow:last-of-type { border-bottom: 0; }
 .stepRow:hover { background: var(--c-surface-1); }
@@ -304,3 +304,22 @@
   .hRow { grid-template-columns: 14px 48px minmax(0, 1fr) auto; }
 }
 @media (prefers-reduced-motion: reduce) { .root * { animation: none !important; transition: none !important; } }
+
+/* ── Space UI (docs/design/space-ui.md, phase B): this view's buttons draw Space Studio's 3D faces (space.css --space-p-* for the
+   one primary, --space-s-* for secondaries): a lit face over a ledge, a 1px lift and violet glow on hover, a press that sinks into
+   the ledge, the violet focus glow. Reduced motion keeps the faces and drops the lift. ── */
+:global(:root[data-theme]:not([data-business-app])) .linkBtn {
+  background: var(--space-s-face);
+  color: var(--space-s-ink);
+  box-shadow: var(--space-s-depth);
+  border-color: transparent;
+  font-weight: var(--w-bold);
+  transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out), opacity 0.2s ease;
+}
+:global(:root[data-theme]:not([data-business-app])) .linkBtn:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-s-face); transform: translateY(-1px); box-shadow: var(--space-s-depth-hover); }
+:global(:root[data-theme]:not([data-business-app])) .linkBtn:active:not(:disabled, [aria-disabled="true"]) { transform: translateY(var(--space-ledge)); scale: none; box-shadow: var(--space-s-depth-press); transition-duration: 0.06s; }
+:global(:root[data-theme]:not([data-business-app])) .linkBtn:focus-visible { box-shadow: var(--space-s-depth), var(--space-focus-glow); filter: none; text-decoration: none; }
+:global(:root[data-theme]:not([data-business-app])) .linkBtn:disabled { transform: none; box-shadow: none; }
+@media (prefers-reduced-motion: reduce) {
+  :global(:root[data-theme]:not([data-business-app])) .linkBtn:hover:not(:disabled) { transform: none; }
+}

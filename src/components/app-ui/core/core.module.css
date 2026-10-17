@@ -7,7 +7,7 @@
   padding: var(--s-3) var(--s-4);
   border-radius: var(--shape-card);
   background: var(--hover-wash);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline);
+  box-shadow: var(--elev-1);
 }
 .head { display: flex; align-items: center; gap: var(--s-2); font-size: var(--t-small); color: var(--c-ink); }
 .headLabel { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -19,7 +19,7 @@
   border-radius: var(--shape-pill);
   font-size: var(--t-label);
   color: var(--c-ink-2);
-  box-shadow: inset 0 0 0 1px var(--hairline-strong);
+  box-shadow: var(--elev-1);
 }
 .reason { margin: 0; font-size: var(--t-small); color: var(--c-ink-2); }
 .steps { display: flex; flex-direction: column; gap: var(--s-2); margin: 0; padding: 0; list-style: none; }
@@ -35,7 +35,7 @@
   height: 14px;
   margin-top: 2px;
   border-radius: var(--shape-pill);
-  box-shadow: inset 0 0 0 1px var(--hairline-strong);
+  box-shadow: var(--elev-1);
   color: var(--c-canvas);
 }
 .step[data-state="done"] .dot, .step[data-state="revised"] .dot { background: var(--c-ink); box-shadow: none; }
@@ -64,7 +64,7 @@
   gap: var(--s-3);
   padding: var(--s-3) var(--s-4);
   border-radius: var(--shape-card);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline);
+  box-shadow: var(--elev-1);
 }
 .details[hidden] { display: none; }
 .checks { display: flex; flex-direction: column; gap: var(--s-1); margin: 0; padding: 0; list-style: none; font-size: var(--t-small); color: var(--c-ink-2); }
@@ -92,7 +92,7 @@
   background: var(--hover-wash);
 }
 .nextAct > span { white-space: normal; overflow: visible; }
-.job { display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-3) var(--s-4); border-radius: var(--shape-card); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline); }
+.job { display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-3) var(--s-4); border-radius: var(--shape-card); box-shadow: var(--elev-1); }
 .jobHead { margin: 0; font-size: var(--t-small); color: var(--c-ink); font-weight: 500; }
 .jobAct { align-self: flex-start; }
 .jobErr { margin: 0; font-size: var(--t-small); color: var(--c-ink); }

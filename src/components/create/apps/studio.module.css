@@ -71,7 +71,7 @@
 .cta { flex-shrink: 0; }
 /* Links that act as buttons (Open ↗, Live ↗, Open live app): drawn like the kit's secondary and primary pills. */
 .linkBtn, .linkPrimary { display: inline-flex; align-items: center; justify-content: center; gap: 4px; height: 32px; padding: 0 14px; border-radius: var(--r-pill); font-size: var(--t-small); font-weight: var(--w-medium); text-decoration: none; white-space: nowrap; transition: background-color var(--m-dur-1) var(--m-ease-out), box-shadow var(--m-dur-1) var(--m-ease-out); }
-.linkBtn { color: var(--c-ink); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline-strong); }
+.linkBtn { color: var(--c-ink); background: var(--surface-raised); box-shadow: var(--elev-1); }
 .linkBtn:hover { background: var(--hover-wash); }
 .linkPrimary { color: var(--c-canvas); background: var(--c-ink); }
 .linkPrimary:hover { background: var(--c-ink-hover); }
@@ -386,7 +386,7 @@
   .calmBar .kbd { display: none; }
 }
 
-.briefPanel { display: flex; flex-direction: column; gap: var(--s-4); padding: 16px; border-radius: var(--r-card); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1); }
+.briefPanel { display: flex; flex-direction: column; gap: var(--s-4); padding: 16px; border-radius: var(--r-card); background: var(--surface-raised); box-shadow: var(--elev-1); }
 .briefHead { display: flex; justify-content: space-between; gap: var(--s-3); align-items: flex-start; }
 .briefTitle { margin: 0; font-size: 18px; letter-spacing: -0.02em; color: var(--c-ink); font-weight: var(--w-regular); }
 .briefLede { margin: 4px 0 0; color: var(--c-ink-2); font-size: var(--t-small); line-height: 1.5; max-width: 62ch; }
@@ -397,7 +397,7 @@
 .briefInput:focus { outline: none; border-bottom-color: var(--c-ink); }
 .briefDirs { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin-top: 8px; }
 .briefDir { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px; border-radius: 12px; border: var(--b-hairline) solid var(--c-border); background: var(--c-surface-1); color: var(--c-ink); font: inherit; text-align: left; cursor: pointer; }
-.briefDir:hover { border-color: var(--hairline-strong); }
+.briefDir:hover { border-color: transparent; }
 .briefDir[aria-selected="true"] { border-color: var(--c-ink); box-shadow: inset 0 0 0 1px var(--c-ink); }
 .briefSwatch { display: flex; width: 100%; height: 10px; border-radius: 6px; overflow: hidden; }
 .briefSwatch i { flex: 1; display: block; }
@@ -407,7 +407,7 @@
 .briefNote { margin: 0; font-size: var(--t-label); color: var(--c-ink-3); max-width: 62ch; }
 .versionNote { margin: 0 0 8px; font-size: var(--t-label); color: var(--c-ink-3); }
 .versionBanner { margin: 0 0 10px; padding: 8px 10px; border-radius: 10px; background: rgb(var(--rgb-attention) / 0.1); color: var(--c-ink); font-size: var(--t-small); }
-.shipped { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: var(--r-sm); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline); }
+.shipped { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: var(--r-sm); background: var(--surface-raised); box-shadow: var(--elev-1); }
 .shipped strong { color: var(--c-verified); font-weight: var(--w-medium); }
 .shipped p { margin: 0; color: var(--c-ink-2); font-size: var(--t-small); }
 .codeEdit { flex: 1; min-height: 320px; width: 100%; margin: 0; padding: 12px; border: 0; resize: vertical; background: var(--c-surface-1); color: var(--c-ink); font-family: var(--f-mono); font-size: 12.5px; line-height: 1.55; }
@@ -421,13 +421,13 @@
 .calmIntro { gap: 12px; }
 .calmTitle { font-size: clamp(32px, 3.4vw, 44px); line-height: 1.08; letter-spacing: -0.035em; font-weight: var(--w-regular); color: var(--c-ink); text-wrap: balance; }
 .calmLede { font-size: 17px; line-height: 1.55; color: var(--c-ink-3); max-width: 46ch; }
-.calmCard { gap: 10px; padding: 18px 18px 12px 22px; border: 0; border-radius: 26px; background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-2); }
+.calmCard { gap: 10px; padding: 18px 18px 12px 22px; border: 0; border-radius: 26px; background: var(--surface-raised); box-shadow: var(--elev-2); }
 .calmCard:focus-within { box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-2); }
 .calmCard .prompt { font-size: 17px; }
 .calmBar .textBtn { height: 34px; padding: 0 14px; border-radius: 999px; background: var(--hover-wash); color: var(--c-ink); font-size: 13px; text-decoration: none; }
 .calmBar .textBtn:hover { background: var(--press-wash); }
 .calmChips { gap: 8px; }
-.calmChip { height: 38px; padding: 0 16px; border: 1px solid var(--hairline-strong); background: transparent; color: var(--c-ink-2); font-size: 14px; box-shadow: none; }
+.calmChip { height: 38px; padding: 0 16px; border: 1px solid transparent; background: var(--hover-wash); color: var(--c-ink-2); font-size: 14px; box-shadow: none; }
 .calmChip:hover { background: var(--surface-raised); color: var(--c-ink); }
 
 .shelf { max-width: 1240px; width: 100%; box-sizing: border-box; }
@@ -435,8 +435,8 @@
 .shelfTitle { font-size: 24px; font-weight: var(--w-regular); letter-spacing: -0.03em; }
 .shelfCount { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; background: var(--hover-wash); font-size: 12px; color: var(--c-ink-2); }
 .shelfGrid { gap: 16px; }
-.card { border: 0; border-radius: 24px; background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1); transition: box-shadow var(--m-dur-2) var(--m-ease-out); }
-.card:hover { box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-2); }
+.card { border: 0; border-radius: 24px; background: var(--surface-raised); box-shadow: var(--elev-1); transition: box-shadow var(--m-dur-2) var(--m-ease-out); }
+.card:hover { box-shadow: var(--elev-2); }
 .thumb { margin: 8px 8px 0; border-radius: 18px; }
 .poster { background: var(--c-surface-2); }
 .posterName { font-weight: var(--w-regular); letter-spacing: -0.03em; }
@@ -493,7 +493,7 @@
 
 /* Go to file (FileFinder.tsx): a command-palette style overlay at the top of a code view. */
 .code { position: relative; }
-.finder { position: absolute; z-index: 5; top: 10px; left: 50%; translate: -50% 0; width: min(520px, calc(100% - 24px)); border-radius: var(--r-sm); background: var(--surface-overlay); box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-3); overflow: hidden; }
+.finder { position: absolute; z-index: 5; top: 10px; left: 50%; translate: -50% 0; width: min(520px, calc(100% - 24px)); border-radius: var(--r-sm); background: var(--surface-overlay); box-shadow: var(--elev-3); overflow: hidden; }
 .finderInput { width: 100%; box-sizing: border-box; height: 38px; padding: 0 12px; border: 0; border-bottom: 1px solid var(--c-border); outline: 0; background: transparent; color: var(--c-ink); font: inherit; font-size: 13px; }
 .finderList { list-style: none; margin: 0; padding: 4px; max-height: 300px; overflow-y: auto; }
 .finderItem { display: flex; align-items: baseline; gap: 10px; padding: 6px 8px; border-radius: 6px; font-family: var(--f-mono); font-size: 12px; color: var(--c-ink); cursor: pointer; }
@@ -650,3 +650,35 @@
 .intakeQuestion button[aria-pressed="true"] { background:var(--c-ink); color:var(--c-canvas); border-color:var(--c-ink); }
 .intakeQuestion button:focus-visible { outline:2px solid var(--c-ink); outline-offset:3px; }
 @media(pointer:coarse) { .intakeQuestion button { min-height:44px; } }
+
+/* ── Space UI (docs/design/space-ui.md, phase B): this view's buttons draw Space Studio's 3D faces (space.css --space-p-* for the
+   one primary, --space-s-* for secondaries): a lit face over a ledge, a 1px lift and violet glow on hover, a press that sinks into
+   the ledge, the violet focus glow. Reduced motion keeps the faces and drops the lift. ── */
+:global(:root[data-theme]:not([data-business-app])) .linkPrimary {
+  background: var(--space-p-face);
+  color: var(--space-p-ink);
+  box-shadow: var(--space-p-depth);
+  border-color: transparent;
+  font-weight: var(--w-bold);
+  transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out), opacity 0.2s ease;
+}
+:global(:root[data-theme]:not([data-business-app])) .linkPrimary:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-p-face); transform: translateY(-1px); box-shadow: var(--space-p-depth-hover); }
+:global(:root[data-theme]:not([data-business-app])) .linkPrimary:active:not(:disabled, [aria-disabled="true"]) { transform: translateY(var(--space-ledge)); scale: none; box-shadow: var(--space-p-depth-press); transition-duration: 0.06s; }
+:global(:root[data-theme]:not([data-business-app])) .linkPrimary:focus-visible { box-shadow: var(--space-p-depth), var(--space-focus-glow); filter: none; text-decoration: none; }
+:global(:root[data-theme]:not([data-business-app])) .linkPrimary:disabled { transform: none; box-shadow: none; }
+:global(:root[data-theme]:not([data-business-app])) .linkBtn {
+  background: var(--space-s-face);
+  color: var(--space-s-ink);
+  box-shadow: var(--space-s-depth);
+  border-color: transparent;
+  font-weight: var(--w-bold);
+  transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out), opacity 0.2s ease;
+}
+:global(:root[data-theme]:not([data-business-app])) .linkBtn:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-s-face); transform: translateY(-1px); box-shadow: var(--space-s-depth-hover); }
+:global(:root[data-theme]:not([data-business-app])) .linkBtn:active:not(:disabled, [aria-disabled="true"]) { transform: translateY(var(--space-ledge)); scale: none; box-shadow: var(--space-s-depth-press); transition-duration: 0.06s; }
+:global(:root[data-theme]:not([data-business-app])) .linkBtn:focus-visible { box-shadow: var(--space-s-depth), var(--space-focus-glow); filter: none; text-decoration: none; }
+:global(:root[data-theme]:not([data-business-app])) .linkBtn:disabled { transform: none; box-shadow: none; }
+@media (prefers-reduced-motion: reduce) {
+  :global(:root[data-theme]:not([data-business-app])) .linkPrimary:hover:not(:disabled),
+  :global(:root[data-theme]:not([data-business-app])) .linkBtn:hover:not(:disabled) { transform: none; }
+}
