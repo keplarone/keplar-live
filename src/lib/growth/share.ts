@@ -44,6 +44,8 @@ export type ShareRow = {
   cta?: number;
   /** Public/indexable opt-in (src/lib/growth/share-public.ts). Empty string = private. Stays unset until the owner turns it on. */
   publicAt?: string;
+  /** When the owner last confirmed the page may be public and indexable. Unset while the link is only private. */
+  consentAt?: string;
   /** Stable public URL part (/answers/<publicSlug>). Kept when switched off so a later re-publish keeps the same URL. */
   publicSlug?: string;
   /** Set by an admin to take a public page down; the owner cannot undo it. */

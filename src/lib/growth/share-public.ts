@@ -92,14 +92,14 @@ export async function publishShare(workspaceId: string, token: string, at = Date
   const already = mine.filter((x) => x.publicAt && !x.revokedAt && !x.hiddenAt).length;
   if (!r.publicAt && already >= PUBLIC_LIMITS.maxPerAccount) return { ok: false, code: "limit", message: `You can have ${PUBLIC_LIMITS.maxPerAccount} public pages at a time. Turn one off to publish another.` };
   const slug = r.publicSlug ?? `${slugify(q)}-${randomBytes(6).toString("base64url").toLowerCase().replace(/[^a-z0-9]/g, "x").slice(0, 6)}`;
-  const row = (await rows().update(workspaceId, token, { publicSlug: slug, publicAt: r.publicAt || new Date(at).toISOString() })) ?? r;
+  const row = (await rows().update(workspaceId, token, { publicSlug: slug, publicAt: r.publicAt || new Date(at).toISOString(), consentAt: new Date(at).toISOString() })) ?? r;
   return { ok: true, slug, row };
 }
 
 export async function unpublishShare(workspaceId: string, token: string): Promise<boolean> {
   const r = await rows().get(workspaceId, token);
   if (!r || !r.publicAt) return false;
-  await rows().update(workspaceId, token, { publicAt: "" });
+  await rows().update(workspaceId, token, { publicAt: "", consentAt: "" });
   return true;
 }
 
@@ -108,11 +108,12 @@ export async function takeDownPublic(slug: string, at = Date.now()): Promise<boo
   if (!validPublicSlug(slug)) return false;
   const r = await rows().findSystemBy("publicSlug", slug);
   if (!r) return false;
-  await rows().update(r.workspaceId, r.id, { hiddenAt: new Date(at).toISOString(), publicAt: "" });
+  await rows().update(r.workspaceId, r.id, { hiddenAt: new Date(at).toISOString(), publicAt: "", consentAt: "" });
   return true;
 }
 
-const isPublic = (r: ShareRow) => Boolean(r.publicAt) && !r.hiddenAt && !r.revokedAt;
+/** Indexable only after the owner stored an explicit consent time. A public flag without that time stays private. */
+const isPublic = (r: ShareRow) => Boolean(r.publicAt) && Boolean(r.consentAt) && !r.hiddenAt && !r.revokedAt;
 
 /** Public lookup. A page stays up while public (it does not expire after 90 days like a private link). */
 export async function openPublic(slug: string, opts: { count?: boolean } = {}): Promise<ShareRow | null> {

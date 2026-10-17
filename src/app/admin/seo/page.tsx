@@ -4,6 +4,7 @@ import { adminFromHeaders } from "@/lib/ops/admin-auth";
 import { funnel, seoRows, seoSnapshot, type FunnelRow } from "@/lib/seo/events";
 import { sitemapPaths } from "@/app/sitemap";
 import { lastmodFor } from "@/lib/content/lastmod";
+import { fetchSearchAnalytics } from "@/lib/seo/search-console";
 import s from "@/components/admin/Admin.module.css";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +23,7 @@ export default async function AdminSeoPage() {
     return { path: p, lastmod: lm ?? "—", age };
   });
   const stale = pages.filter((p) => p.age !== null && p.age > STALE_DAYS);
+  const gsc = await fetchSearchAnalytics();
   const pct = (a: number, b: number) => (b ? `${Math.round((a / b) * 100)}%` : "—");
   const step = (r: FunnelRow) => (r.previous === null ? "—" : pct(r.browsers, r.previous));
   return (
@@ -30,7 +32,7 @@ export default async function AdminSeoPage() {
         <p className={s.eyebrow}>Admin · SEO · last 28 days</p>
         <h1>Search to activation</h1>
         <p className={s.sub}>
-          Counts come from visitors who allowed Analytics (and send no Global Privacy Control or Do Not Track signal), so they are a floor, not a total. Impressions, clicks, queries and rankings live in Google Search Console and Bing Webmaster Tools; Keplar cannot see them.
+          Counts come from visitors who allowed Analytics (and send no Global Privacy Control or Do Not Track signal), so they are a floor, not a total. Search Console impressions and clicks appear in the section below only when that API returns them. Bing Webmaster Tools is not read here.
         </p>
       </header>
 
@@ -109,6 +111,35 @@ export default async function AdminSeoPage() {
           </div>
         )}
         <p className={s.sub}>“(unknown)” means the visitor allowed Analytics after landing, or cleared storage, so the first page was not recorded. Small numbers are noise: do not compare pages until each has a few hundred visits.</p>
+      </section>
+
+      <section className={s.panel} aria-labelledby="gsc-h">
+        <h2 id="gsc-h">Search Console</h2>
+        {!gsc.ok ? (
+          <p className={s.empty}>{gsc.reason}</p>
+        ) : gsc.rows.length === 0 ? (
+          <p className={s.empty}>The API returned no query rows for the last 28 days.</p>
+        ) : (
+          <div className={s.scroll}>
+            <table className={s.table}>
+              <thead>
+                <tr>{["Query", "Clicks", "Impressions", "CTR", "Position"].map((h) => <th key={h} scope="col">{h}</th>)}</tr>
+              </thead>
+              <tbody>
+                {gsc.rows.map((r) => (
+                  <tr key={r.keys.join("\n") || "query"}>
+                    <td>{r.keys.join(" ") || "(not provided)"}</td>
+                    <td>{r.clicks}</td>
+                    <td>{r.impressions}</td>
+                    <td>{r.ctr}</td>
+                    <td>{r.position}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <p className={s.sub}>Rows appear only after a successful Search Console call. A missing credential or a failed call leaves this section empty of numbers.</p>
       </section>
 
       <section className={s.panel} aria-labelledby="fresh-h">
