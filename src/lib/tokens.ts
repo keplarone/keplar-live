@@ -112,7 +112,8 @@ export type Tokens = typeof tokens;
  */
 export const semantic = {
   light: { reasoning: "#0a6f7c", research: "#0b5f70", creation: "#8a4f24", verified: "#1f7a4a", attention: "#8a5a00", disagree: "#a94f36", destructive: "#b42318", canvas: "#ffffff" },
-  dark: { reasoning: "#5ecad8", research: "#7ab8c8", creation: "#e0a86a", verified: "#6fd3a0", attention: "#f0c060", disagree: "#f0a88f", destructive: "#ff8c7e", canvas: "#0b0b0d" },
+  // dark = the Space theme (Space Studio's palette on black; src/styles/tokens.css)
+  dark: { reasoning: "#6ea8ff", research: "#8fd8ff", creation: "#ffb37a", verified: "#5fd49a", attention: "#ffd66b", disagree: "#ffa58f", destructive: "#ff7a85", canvas: "#000000" },
 } as const;
 
 /** Vivid hues for fills, strokes, glows and WebGL. `on` is the ink for text on that fill (>= 4.5:1). Teal/cyan + warm earth; no purple. Primary buttons stay graphite. */
@@ -122,14 +123,14 @@ export const vivid = {
     disagree: { v: "#e0715a", on: "#09090b" }, attention: { v: "#e2a73b", on: "#09090b" }, verified: { v: "#34a56f", on: "#09090b" }, destructive: { v: "#d92d20", on: "#ffffff" },
   },
   dark: {
-    reasoning: { v: "#5ecad8", on: "#09090b" }, research: { v: "#7ab8c8", on: "#09090b" }, creation: { v: "#e0a86a", on: "#09090b" }, memory: { v: "#e09aa4", on: "#09090b" },
-    disagree: { v: "#e5805e", on: "#09090b" }, attention: { v: "#e2a73b", on: "#09090b" }, verified: { v: "#34a56f", on: "#09090b" }, destructive: { v: "#ff6b5c", on: "#09090b" },
+    reasoning: { v: "#6ea8ff", on: "#000000" }, research: { v: "#8fd8ff", on: "#000000" }, creation: { v: "#ffb37a", on: "#000000" }, memory: { v: "#f08bd8", on: "#000000" },
+    disagree: { v: "#ff8f78", on: "#000000" }, attention: { v: "#ffd66b", on: "#000000" }, verified: { v: "#5fd49a", on: "#000000" }, destructive: { v: "#ff7a85", on: "#000000" },
   },
 } as const;
 
 /** What each semantic colour means. Never use one for a different meaning. */
 export const semanticMeaning = {
-  reasoning: "Keplar's own work: teal/cyan accent, links, highlights (primary buttons stay graphite)",
+  reasoning: "Keplar's own work: teal (light) / Space blue (dark) accent, links, highlights (primary buttons stay ink / white)",
   research: "looking things up: deeper ocean teal",
   creation: "making things: warm earth / terracotta",
   verified: "checked, confirmed, healthy, live",

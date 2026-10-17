@@ -3,6 +3,8 @@
 import { useEffect, useRef } from "react";
 import { LiquidLayer } from "./LiquidLayer";
 import { frameGap, isPhone, liteFx } from "@/lib/fx/lite";
+import { runWhileTheme } from "@/lib/fx/theme-gate";
+import { SpaceSky } from "@/components/ui/space/SpaceSky";
 import s from "./Sky.module.css";
 
 /**
@@ -13,6 +15,10 @@ import s from "./Sky.module.css";
  * third of the dots at 1x pixel density and about 30 fps. Dark theme dims the auras and uses deeper liquid colours (Sky.module.css).
  * Phones (isPhone, 640px and narrower) draw nothing: the canvases are hidden and the auras become one still CSS glow behind the
  * hero (Sky.module.css), so no frame loop competes with the page on a phone's main thread.
+ *
+ * Space UI: all of the above is the LIGHT theme's backdrop. In the dark (Space) theme the page sits in Space Studio's star field
+ * instead (SpaceSky: a 2D canvas started when the page is idle); the blue auras, liquid layer and dots are hidden and their loops
+ * do not run (runWhileTheme), so only the visible backdrop costs frames.
  */
 export function SkyBackdrop() {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -20,6 +26,25 @@ export function SkyBackdrop() {
   useEffect(() => {
     const canvas = ref.current;
     if (!canvas || isPhone()) return;
+    return runWhileTheme("light", () => dots(canvas));
+  }, []);
+
+  return (
+    <div className={s.backdrop} aria-hidden="true">
+      <i className={s.auraSky} />
+      <i className={s.auraLilac} />
+      <i className={s.auraIce} />
+      <i className={s.auraPeach} />
+      <i className={s.auraMint} />
+      <LiquidLayer />
+      <canvas ref={ref} className={s.dust} />
+      <SpaceSky />
+    </div>
+  );
+}
+
+function dots(canvas: HTMLCanvasElement): (() => void) | undefined {
+  {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -93,17 +118,5 @@ export function SkyBackdrop() {
       window.removeEventListener("resize", resize);
       document.removeEventListener("visibilitychange", onVis);
     };
-  }, []);
-
-  return (
-    <div className={s.backdrop} aria-hidden="true">
-      <i className={s.auraSky} />
-      <i className={s.auraLilac} />
-      <i className={s.auraIce} />
-      <i className={s.auraPeach} />
-      <i className={s.auraMint} />
-      <LiquidLayer />
-      <canvas ref={ref} className={s.dust} />
-    </div>
-  );
+  }
 }

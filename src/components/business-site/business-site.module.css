@@ -406,3 +406,48 @@
   .menuBtn { width: 44px; height: 44px; }
   .chip { min-height: 40px; }
 }
+
+/* ── Space UI (docs/design/space-ui.md): Keplar Business wears Space Studio's buttons and floating header. The storefront is
+   always dark, so the dark recipe is written here directly (the site theme can be Light). Primary = the 3D white face on a grey
+   ledge; ghost / dark = glass pills; the header is three floating glass groups with a soft fade behind them once scrolled. ── */
+.root {
+  --kb-p-face: linear-gradient(180deg, #ffffff 0%, #ececf2 55%, #d9d9e2 100%);
+  --kb-p-depth: inset 0 1px 0 #ffffff, inset 0 -3px 0 rgb(0 0 0 / 0.1), 0 4px 0 #8c8a99, 0 10px 24px rgb(0 0 0 / 0.6);
+  --kb-p-depth-hover: inset 0 1px 0 #ffffff, inset 0 -3px 0 rgb(0 0 0 / 0.1), 0 5px 0 #8c8a99, 0 14px 30px rgb(0 0 0 / 0.6), 0 0 32px rgb(190 150 255 / 0.25);
+  --kb-p-depth-press: inset 0 1px 0 #ffffff, inset 0 -1px 0 rgb(0 0 0 / 0.1), 0 0 0 #8c8a99, 0 4px 10px rgb(0 0 0 / 0.5);
+  --kb-g-face: linear-gradient(180deg, rgb(40 38 52 / 0.92), rgb(18 17 24 / 0.94));
+  --kb-g-depth: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 3px 0 rgb(0 0 0 / 0.65), 0 14px 36px rgb(0 0 0 / 0.5);
+  --kb-g-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.12), 0 4px 0 rgb(0 0 0 / 0.65), 0 20px 46px rgb(0 0 0 / 0.55), 0 0 44px rgb(178 112 255 / 0.24);
+  --kb-pill: rgb(14 14 20 / 0.86);
+  --kb-pill-depth: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 16px 40px rgb(0 0 0 / 0.45);
+  --kb-glow: 0 0 0 3px rgb(195 155 255 / 0.55), 0 0 24px rgb(176 104 255 / 0.35);
+}
+.btnPrimary, .btnPrimarySm { background: var(--kb-p-face); color: #000; box-shadow: var(--kb-p-depth); font-weight: 700; transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.2s ease; }
+.btnPrimary:hover:not(:disabled), .btnPrimarySm:hover:not(:disabled) { background: var(--kb-p-face); transform: translateY(-1px); filter: brightness(1.03); box-shadow: var(--kb-p-depth-hover); }
+.btnPrimary:active:not(:disabled), .btnPrimarySm:active:not(:disabled) { transform: translateY(4px); box-shadow: var(--kb-p-depth-press); transition-duration: 0.06s; }
+.btnGhost, .btnGhostSm, .btnDarkSm { background: var(--kb-g-face); color: #fff; box-shadow: var(--kb-g-depth); font-weight: 600; transition: transform 0.45s var(--space-spring-bouncy, ease), box-shadow 0.35s ease; }
+.btnGhost:hover:not(:disabled), .btnGhostSm:hover:not(:disabled), .btnDarkSm:hover { background: var(--kb-g-face); transform: translateY(-1px); box-shadow: var(--kb-g-depth-hover); }
+.btnGhost:active:not(:disabled), .btnGhostSm:active:not(:disabled), .btnDarkSm:active { transform: translateY(2px); transition-duration: 0.08s; }
+.btnPrimary, .btnGhost { min-height: 48px; padding: 0 24px; }
+.btnPrimarySm, .btnGhostSm, .btnDarkSm { min-height: 40px; padding: 0 18px; }
+.btnPrimary:focus-visible, .btnPrimarySm:focus-visible { outline: none; box-shadow: var(--kb-p-depth), var(--kb-glow); }
+.btnGhost:focus-visible, .btnGhostSm:focus-visible, .btnDarkSm:focus-visible { outline: none; box-shadow: var(--kb-g-depth), var(--kb-glow); }
+.btnPrimary, .btnGhost, .btnPrimarySm, .btnGhostSm, .btnDarkSm { font-weight: 650; }
+
+.nav { position: sticky; top: 0; padding-top: 10px; background: transparent; }
+.nav::after { content: ""; position: absolute; inset: 0 0 -24px; z-index: -1; pointer-events: none; background: linear-gradient(rgb(0 0 0 / 0.9), rgb(0 0 0 / 0.7) 55%, transparent); opacity: 0; transition: opacity 0.32s cubic-bezier(0.22, 1, 0.36, 1); }
+.nav[data-scrolled] { background: transparent; box-shadow: none; }
+.nav[data-scrolled]::after { opacity: 1; }
+.navInner { height: 64px; gap: var(--kb-s-3); }
+.brand { height: 48px; padding: 0 14px; border-radius: 999px; background: var(--kb-pill); box-shadow: var(--kb-pill-depth); transition: box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+.brand:hover { box-shadow: var(--kb-pill-depth), 0 14px 44px rgb(176 104 255 / 0.3); }
+.navLinks { gap: 2px; padding: 5px; border-radius: 999px; background: var(--kb-pill); box-shadow: var(--kb-pill-depth); }
+.navLinks a, .navLink { display: inline-flex; align-items: center; height: 38px; padding: 0 16px; border-radius: 999px; font-size: 13.5px; font-weight: 600; color: #d6d6de; transition: background-color 0.3s ease, color 0.3s ease; }
+.navLinks a:hover, .navLink:hover { opacity: 1; color: #fff; background: rgb(255 255 255 / 0.07); }
+.menuBtn { width: 44px; height: 44px; background: var(--kb-pill); box-shadow: var(--kb-pill-depth); }
+.textLink:focus-visible, .navLinks a:focus-visible, .navLink:focus-visible, .footCols a:focus-visible, .brand:focus-visible, .chip:focus-visible, .menuBtn:focus-visible, .signOut:focus-visible { outline: none; box-shadow: var(--kb-glow); border-radius: 999px; }
+.sheet { margin: 8px var(--kb-gutter) 0; padding: 10px 18px; border: 0; border-radius: 28px; background: rgb(14 13 20 / 0.97); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 24px 60px rgb(0 0 0 / 0.55); }
+.sheet a { border-bottom-color: rgb(255 255 255 / 0.05); }
+@media (prefers-reduced-motion: reduce) {
+  .btnPrimary, .btnPrimarySm, .btnGhost, .btnGhostSm, .btnDarkSm, .brand, .nav::after { transition: none; }
+}

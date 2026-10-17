@@ -18,8 +18,9 @@ test("liquid glass: every glass surface has fallbacks (no backdrop-filter, reduc
   assert.match(caps, /id="lg-refract"/);
 });
 
-test("light is the default and Dark / Auto stay selectable", () => {
-  assert.match(read("src/lib/theme.ts"), /DEFAULT_THEME_PREF: ThemePref = "light"/);
+test("dark (the Space theme) is the default and Light / Auto stay selectable", () => {
+  // Space UI decision (docs/design/space-ui.md): black space is the default look; Light is the same system on paper.
+  assert.match(read("src/lib/theme.ts"), /DEFAULT_THEME_PREF: ThemePref = "dark"/);
   const ctl = read("src/components/theme/ThemeControl.tsx");
   for (const id of ["dark", "light", "auto"]) assert.match(ctl, new RegExp(`id: "${id}"`));
 });
@@ -50,10 +51,15 @@ const ratio = (x: string, y: string) => { const [a, b] = [lum(x), lum(y)].sort((
 
 test("glass buttons: primary is graphite (light) / white (dark), AA+ text, never SaaS blue", () => {
   const css = read("src/styles/glass.css");
-  assert.match(css, /--btn-p-bg:\s*#17171a/);
+  // Space UI: the glass-button tokens are Space Studio's 3D faces (space.css): an ink face in light, the white face in dark.
+  assert.match(css, /--btn-p-bg:\s*var\(--space-p-face\)/);
   assert.match(css, /--btn-p-solid:\s*#17171a/);
   assert.ok(ratio("#ffffff", "#17171a") >= 7, `light primary = ${ratio("#ffffff", "#17171a").toFixed(2)}`);
-  assert.match(css, /:root\[data-theme="dark"\] \{[^}]*--btn-p-bg:\s*#ffffff/);
+  const space = read("src/styles/space.css");
+  assert.match(space, /:root \{[\s\S]*?--space-p-face: linear-gradient\(180deg, #3a3a42 0%, #1d1d22 55%, #0e0e12 100%\);[\s\S]*?--space-p-ink: #ffffff;/);
+  assert.match(space, /:root\[data-theme="dark"\] \{[\s\S]*?--space-p-face: linear-gradient\(180deg, #ffffff 0%, #ececf2 55%, #d9d9e2 100%\);[\s\S]*?--space-p-ink: #000000;/);
+  for (const face of ["#3a3a42", "#1d1d22", "#0e0e12"]) assert.ok(ratio("#ffffff", face) >= 7, `light 3D face ${face}`);
+  for (const face of ["#ffffff", "#ececf2", "#d9d9e2"]) assert.ok(ratio("#000000", face) >= 12, `dark 3D face ${face}`);
   assert.ok(ratio("#09090b", "#ffffff") >= 12);
   assert.ok(ratio("#09090b", "#f4f4f5") >= 12);
   // secondary glass: ink text on the clear fill over white and over a pale page wash

@@ -33,10 +33,12 @@
   background-repeat: repeat-y;
 }
 .dust { position: absolute; left: 0; top: 0; width: 100%; height: 100vh; min-height: 720px; }
-/* Dark: the same glows, deeper and dimmer, so the page reads as night sky rather than a flat graphite slab */
-:global(:root[data-theme="dark"]) .backdrop i { opacity: 0.16 !important; filter: blur(120px); }
-:global(:root[data-theme="dark"]) .auraChain { opacity: 0.14; }
-:global(:root[data-theme="dark"]) .dust { opacity: 0.7; }
+/* Dark (the Space theme): the page sits in Space Studio's star field (SpaceSky, rendered by SkyBackdrop); the light theme's blue
+   auras, liquid layer and dots step aside (their loops stop too: runWhileTheme). */
+:global(:root[data-theme="dark"]) .backdrop i,
+:global(:root[data-theme="dark"]) .auraChain,
+:global(:root[data-theme="dark"]) .dust,
+:global(:root[data-theme="dark"]) .liquid { display: none !important; }
 
 /* ---- hero ---- */
 .hero {
@@ -137,7 +139,9 @@
   overflow: hidden;
   transform: perspective(1400px) translateY(calc((1 - var(--p)) * 60px)) scale(calc(0.9 + var(--p) * 0.1)) rotateX(calc((1 - var(--p)) * 8deg));
   filter: blur(calc((1 - var(--p)) * 6px));
-  opacity: calc(0.35 + var(--p) * 0.65);
+  /* Fully opaque at every scroll position: the text inside must hold AA wherever it is measured (it used to start at 35%, which
+     dropped the verdict chips to ~3.6:1 on the black Space canvas). The arrival is the scale, tilt and blur. */
+  opacity: 1;
   will-change: transform, filter;
 }
 :global(:root[data-theme="dark"]) .window { background: var(--c-surface-1); }
@@ -402,7 +406,7 @@
   /* One still glow behind the hero instead of the blurred auras, the liquid layer and the drifting dots (no canvas runs: SkyBackdrop, LiquidLayer). */
   .backdrop i, .liquid, .dust { display: none; }
   .backdrop { background: radial-gradient(130% 560px at 50% 0, rgb(169 216 245 / 0.5), rgb(196 226 251 / 0.22) 55%, transparent 100%) no-repeat; }
-  :global(:root[data-theme="dark"]) .backdrop { background: radial-gradient(130% 560px at 50% 0, rgb(40 110 140 / 0.22), transparent 100%) no-repeat; }
+  :global(:root[data-theme="dark"]) .backdrop { background: radial-gradient(130% 560px at 50% 0, rgb(150 70 230 / 0.2), transparent 100%) no-repeat; } /* a still violet glow over the still star field */
 
   /* Hero: painted at once (the rise-in delayed the largest paint), a little tighter. */
   .hero { animation: none; padding: 112px 16px 32px; gap: 20px; }

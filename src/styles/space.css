@@ -1,0 +1,578 @@
+/*
+ * Space UI: the Space Studio design language on keplar.one (docs/design/space-ui.md is the guide; this file is the engine).
+ *
+ * Source: the Space Studio desktop app (src/renderer/styles/tokens.css, shell.css, entry.css). Rules carried over:
+ *  - Black space, white primary. Dark ("Space") is the default theme; Light is the same system on a light palette.
+ *  - No outlines: surfaces separate by depth and light (fill steps, a 1px inner top highlight, soft drops, violet glow), never
+ *    by borders. Every control is a pill. Cards are 28px glass.
+ *  - Primary buttons are 3D: a lit face, a hard ledge underneath, a lift on hover and a press that sinks into the ledge.
+ *  - Motion animates transform, opacity and filter only: rise out of a blur, warp between major views, directional motion blur
+ *    on fast movement (SVG filters from <SpaceMotionFilters>), odometer numbers, a moving gradient on the headline verb.
+ *  - Keyboard focus is Space Studio's violet glow (never a browser outline, never invisible). Pointer presses draw nothing.
+ *  - Reduced motion: everything lands on its final frame. Phones (640px and narrower): calm, no entrance animation, no blur
+ *    filters, static star field (src/lib/fx/lite.ts isPhone, mobile.css).
+ *
+ * Token prefix: --space-* (the Space site's own module, components/space/space.module.css, keeps its --sp-* names).
+ * Class prefix: .sp-* (global; the React components in src/components/ui/space render them).
+ */
+
+/* ───────────────────────── tokens ───────────────────────── */
+:root {
+  /* motion: Space Studio durations and curves */
+  --space-dur-instant: 90ms;
+  --space-dur-fast: 140ms;
+  --space-dur-base: 200ms;
+  --space-dur-slow: 320ms;
+  --space-dur-page: 420ms;
+  --space-dur-entry: 1100ms;
+  --space-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --space-ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --space-ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+  --space-ease-in-expo: cubic-bezier(0.7, 0, 0.84, 0);
+  --space-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --space-spring-snappy: cubic-bezier(0.34, 1.36, 0.64, 1);
+  --space-spring-gentle: cubic-bezier(0.25, 1.1, 0.5, 1);
+  --space-spring-bouncy: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* shape */
+  --space-r-card: 28px;
+  --space-r-panel: 22px;
+  --space-r-field: 999px;
+  --space-r-area: 22px; /* textareas: a pill would clip multi-line text */
+  --space-hit: 44px;
+  --space-hit-sm: 36px;
+  --space-hit-lg: 54px;
+
+  /* the moving gradient (headline verbs, highlights) and the aura hues */
+  --space-grad: linear-gradient(100deg, #b27cff 0%, #f08bd8 17%, #8ff0ff 34%, #a98cff 51%, #ff8fd0 68%, #c58cff 84%, #8fd8ff 100%);
+  --space-grad-ink: #b27cff;
+  --space-aura: 176 104 255;
+
+  /* Light palette (the Space system on paper). Dark overrides below. */
+  --space-void: #f7f8fa;
+  --space-glass: linear-gradient(180deg, rgb(255 255 255 / 0.9), rgb(250 250 252 / 0.86));
+  --space-glass-solid: #ffffff;
+  --space-glass-depth: inset 0 1px 0 #ffffff, 0 1px 2px rgb(14 15 18 / 0.05), 0 16px 40px -18px rgb(14 15 18 / 0.22);
+  --space-glass-lift: inset 0 1px 0 #ffffff, 0 2px 4px rgb(14 15 18 / 0.06), 0 24px 54px -22px rgb(14 15 18 / 0.3), 0 0 44px rgb(var(--ring-rgb) / 0.12);
+  --space-field: rgb(14 15 18 / 0.05);
+  --space-field-hover: rgb(14 15 18 / 0.07);
+  --space-field-focus: #ffffff;
+  --space-field-depth: inset 0 1px 2px rgb(14 15 18 / 0.08), inset 0 0 0 1px rgb(14 15 18 / 0.5); /* the edge holds 3:1 (WCAG 1.4.11) */
+  --space-focus-glow: 0 0 0 3px rgb(125 59 196 / 0.45), 0 0 22px rgb(125 59 196 / 0.28);
+  --space-track: rgb(14 15 18 / 0.08);
+  --space-scrim: rgb(14 15 18 / 0.32);
+
+  /* 3D buttons. face = background, depth = box-shadow (ledge + drop), ink = text. */
+  --space-p-face: linear-gradient(180deg, #3a3a42 0%, #1d1d22 55%, #0e0e12 100%);
+  --space-p-ink: #ffffff;
+  --space-p-depth: inset 0 1px 0 rgb(255 255 255 / 0.22), inset 0 -3px 0 rgb(0 0 0 / 0.25), 0 4px 0 #000000, 0 10px 22px rgb(14 15 18 / 0.3);
+  --space-p-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.26), inset 0 -3px 0 rgb(0 0 0 / 0.25), 0 5px 0 #000000, 0 14px 30px rgb(14 15 18 / 0.34), 0 0 30px rgb(var(--ring-rgb) / 0.22);
+  --space-p-depth-press: inset 0 1px 0 rgb(255 255 255 / 0.2), inset 0 -1px 0 rgb(0 0 0 / 0.25), 0 0 0 #000000, 0 3px 8px rgb(14 15 18 / 0.3);
+  --space-s-face: linear-gradient(180deg, #ffffff 0%, #f6f6f9 60%, #ececf1 100%);
+  --space-s-ink: #0e0f12;
+  --space-s-depth: inset 0 1px 0 #ffffff, inset 0 -2px 0 rgb(14 15 18 / 0.05), 0 3px 0 #cfcfd8, 0 8px 18px rgb(14 15 18 / 0.12);
+  --space-s-depth-hover: inset 0 1px 0 #ffffff, inset 0 -2px 0 rgb(14 15 18 / 0.05), 0 4px 0 #cfcfd8, 0 12px 26px rgb(14 15 18 / 0.16), 0 0 28px rgb(var(--ring-rgb) / 0.14);
+  --space-s-depth-press: inset 0 1px 0 #ffffff, 0 0 0 #cfcfd8, 0 2px 6px rgb(14 15 18 / 0.12);
+  --space-d-face: linear-gradient(180deg, #d0384a 0%, #bf2b33 55%, #b42318 100%);
+  --space-d-ink: #ffffff;
+  --space-d-depth: inset 0 1px 0 rgb(255 255 255 / 0.25), inset 0 -3px 0 rgb(0 0 0 / 0.15), 0 4px 0 #6e140d, 0 10px 22px rgb(180 35 24 / 0.28);
+  --space-d-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.28), inset 0 -3px 0 rgb(0 0 0 / 0.15), 0 5px 0 #6e140d, 0 14px 30px rgb(180 35 24 / 0.32);
+  --space-d-depth-press: inset 0 1px 0 rgb(255 255 255 / 0.2), 0 0 0 #6e140d, 0 3px 8px rgb(180 35 24 / 0.3);
+  --space-g-ink: var(--c-ink-2);
+  --space-g-hover: rgb(14 15 18 / 0.06);
+  --space-ledge: 4px; /* how far the face sinks on press */
+}
+:root[data-theme="dark"] {
+  --space-void: #000000;
+  --space-glass: linear-gradient(180deg, rgb(22 20 30 / 0.78), rgb(10 9 14 / 0.82));
+  --space-glass-solid: #0e0d13;
+  --space-glass-depth: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 24px 60px rgb(0 0 0 / 0.55);
+  --space-glass-lift: inset 0 1px 0 rgb(255 255 255 / 0.1), 0 28px 70px rgb(0 0 0 / 0.6), 0 0 44px rgb(178 112 255 / 0.2);
+  --space-field: rgb(255 255 255 / 0.06);
+  --space-field-hover: rgb(255 255 255 / 0.08);
+  --space-field-focus: rgb(255 255 255 / 0.09);
+  --space-field-depth: inset 0 1px 0 rgb(255 255 255 / 0.04), inset 0 -8px 20px rgb(0 0 0 / 0.25), inset 0 0 0 1px rgb(255 255 255 / 0.32);
+  --space-focus-glow: 0 0 0 3px rgb(195 155 255 / 0.55), 0 0 24px rgb(176 104 255 / 0.35);
+  --space-track: rgb(255 255 255 / 0.08);
+  --space-scrim: rgb(0 0 0 / 0.7);
+
+  --space-p-face: linear-gradient(180deg, #ffffff 0%, #ececf2 55%, #d9d9e2 100%);
+  --space-p-ink: #000000;
+  --space-p-depth: inset 0 1px 0 #ffffff, inset 0 -3px 0 rgb(0 0 0 / 0.1), 0 4px 0 #8c8a99, 0 10px 24px rgb(0 0 0 / 0.6);
+  --space-p-depth-hover: inset 0 1px 0 #ffffff, inset 0 -3px 0 rgb(0 0 0 / 0.1), 0 5px 0 #8c8a99, 0 14px 30px rgb(0 0 0 / 0.6), 0 0 32px rgb(190 150 255 / 0.25);
+  --space-p-depth-press: inset 0 1px 0 #ffffff, inset 0 -1px 0 rgb(0 0 0 / 0.1), 0 0 0 #8c8a99, 0 4px 10px rgb(0 0 0 / 0.5);
+  --space-s-face: linear-gradient(180deg, rgb(40 38 52 / 0.92), rgb(18 17 24 / 0.94));
+  --space-s-ink: #f4f4f6;
+  --space-s-depth: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 3px 0 rgb(0 0 0 / 0.65), 0 14px 36px rgb(0 0 0 / 0.5);
+  --space-s-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.12), 0 4px 0 rgb(0 0 0 / 0.65), 0 20px 46px rgb(0 0 0 / 0.55), 0 0 44px rgb(178 112 255 / 0.24);
+  --space-s-depth-press: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 0 0 rgb(0 0 0 / 0.65), 0 6px 16px rgb(0 0 0 / 0.5);
+  --space-d-face: linear-gradient(180deg, #ff9aa3 0%, #ff7a85 60%, #f2636f 100%);
+  --space-d-ink: #1a0004;
+  --space-d-depth: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 -3px 0 rgb(0 0 0 / 0.1), 0 4px 0 #8f3a44, 0 10px 24px rgb(0 0 0 / 0.6);
+  --space-d-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.5), inset 0 -3px 0 rgb(0 0 0 / 0.1), 0 5px 0 #8f3a44, 0 14px 30px rgb(0 0 0 / 0.6), 0 0 30px rgb(255 122 133 / 0.25);
+  --space-d-depth-press: inset 0 1px 0 rgb(255 255 255 / 0.4), 0 0 0 #8f3a44, 0 4px 10px rgb(0 0 0 / 0.5);
+  --space-g-ink: var(--c-ink-2);
+  --space-g-hover: rgb(255 255 255 / 0.07);
+}
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --space-dur-instant: 1ms;
+    --space-dur-fast: 1ms;
+    --space-dur-base: 1ms;
+    --space-dur-slow: 1ms;
+    --space-dur-page: 1ms;
+    --space-dur-entry: 1ms;
+    --space-ledge: 2px;
+  }
+}
+
+/* The Space void behind every page in the dark theme (the html element paints --c-canvas; this covers overscroll too). */
+:root[data-theme="dark"], :root[data-theme="dark"] body { background-color: #000; }
+:root[data-theme="dark"] ::selection { background: rgb(195 155 255 / 0.3); }
+
+/* ───────────────────────── focus ─────────────────────────
+ * Keyboard only (:focus-visible): the violet glow around the control. The browser outline stays off (globals.css). Inline text
+ * links keep a violet underline and a soft text glow instead of a box. Text fields glow while they are typed in. */
+@media not (forced-colors: active) {
+  :is(a[href], button, summary, select, input:is([type="checkbox"], [type="radio"], [type="range"], [type="button"], [type="submit"]), [role="button"], [role="tab"], [role="menuitem"], [role="menuitemradio"], [role="menuitemcheckbox"], [role="option"], [role="switch"], [role="radio"], [role="checkbox"], [role="slider"], [tabindex="0"]):focus-visible {
+    box-shadow: var(--space-focus-glow);
+    text-decoration-line: none;
+  }
+  /* Links inside running text: a violet underline and a soft text glow (a glow box around wrapped words would read as a box). */
+  :is(p, dd, td, th, blockquote, figcaption, small, label, h1, h2, h3, h4, h5, h6) a[href]:not([data-sp-btn]):focus-visible {
+    box-shadow: none;
+    text-decoration-line: underline;
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--c-focus);
+    text-underline-offset: 4px;
+    text-shadow: 0 0 14px rgb(var(--ring-rgb) / 0.55);
+  }
+}
+
+/* ───────────────────────── motion: keyframes + utilities ───────────────────────── */
+@property --space-flow { syntax: "<number>"; inherits: true; initial-value: 0; }
+
+/* Rise out of a blur (Space Studio entry-rise). Stagger with style="--d: 80ms". */
+@keyframes sp-rise {
+  0% { opacity: 0; transform: translateY(26px) scale(0.985); filter: blur(14px); }
+  60% { filter: blur(0.6px); }
+  100% { opacity: 1; transform: none; filter: blur(0); }
+}
+/* Warp: a major view arrives out of a forward rush (scale down from 1.08, blur and brightness fall away) / leaves into it. */
+@keyframes sp-warp-in {
+  0% { opacity: 0; transform: scale(1.08); filter: blur(18px) brightness(1.6); }
+  55% { opacity: 1; filter: blur(3px) brightness(1.12); }
+  100% { opacity: 1; transform: none; filter: blur(0) brightness(1); }
+}
+@keyframes sp-warp-out {
+  0% { opacity: 1; transform: none; filter: blur(0); }
+  100% { opacity: 0; transform: scale(0.94); filter: blur(12px) brightness(1.3); }
+}
+/* Directional motion blur (url(#sp-mb-*) from <SpaceMotionFilters>): strong at the start of a fast move, gone when it lands. */
+@keyframes sp-mb-x { 0% { filter: url(#sp-mb-x); } 45% { filter: url(#sp-mb-x-soft); } 100% { filter: none; } }
+@keyframes sp-mb-y { 0%, 60% { filter: url(#sp-mb-y); } 100% { filter: none; } }
+@keyframes sp-swap { 0% { opacity: 0; transform: translateY(10px); filter: blur(8px); } 100% { opacity: 1; transform: none; filter: blur(0); } }
+@keyframes sp-pop-in { from { opacity: 0; transform: translateY(-6px) scale(0.96); filter: blur(6px); } }
+@keyframes sp-pop-out { to { opacity: 0; transform: translateY(-4px) scale(0.97); filter: blur(4px); } }
+@keyframes sp-grad-shift { 0% { background-position: 0% 50%; } 33% { background-position: 60% 50%; } 66% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes sp-flow { from { --space-flow: 0; } to { --space-flow: 1; } }
+@keyframes sp-spin { to { transform: rotate(360deg); } }
+@keyframes sp-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+@keyframes sp-shimmer { 0% { transform: translateX(-130%); } 100% { transform: translateX(130%); } }
+@keyframes sp-shake { 0% { transform: translateX(-8px); } 30% { transform: translateX(6px); } 55% { transform: translateX(-3px); } 100% { transform: none; } }
+
+.sp-rise { animation: sp-rise var(--space-dur-entry) var(--space-ease-expo) var(--d, 0ms) both; }
+.sp-warp-in { animation: sp-warp-in 0.9s var(--space-ease-expo) var(--d, 0ms) both; }
+.sp-warp-out { animation: sp-warp-out 0.45s var(--space-ease-in-expo) both; pointer-events: none; }
+.sp-swap { animation: sp-swap 0.6s var(--space-ease-expo) both; }
+.sp-blur-x { animation: sp-mb-x 0.5s ease-out; }
+.sp-blur-y { animation: sp-mb-y 0.6s ease-out; }
+
+/* The moving gradient on a word (Space Studio .grad-text / the headline verb). */
+.sp-grad {
+  background-image: var(--space-grad);
+  background-size: 400% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: sp-grad-shift 9s ease-in-out infinite;
+}
+:root[data-theme="light"] .sp-grad { --space-grad: linear-gradient(100deg, #7d3bc4 0%, #b0368f 20%, #2b6f8a 40%, #8a4bc8 60%, #a8357c 80%, #7d3bc4 100%); }
+
+/* Rotating headline (components/ui/space/RotatingHeadline.tsx): the verb is swapped character by character. Each character
+   rises out of a stretch with vertical motion blur; the outgoing word lifts away. The verb's gradient flows across all its
+   characters as one (--cx = character offset, --ww = word width). */
+.sp-hl { animation: sp-flow 7s ease-in-out infinite alternate; }
+.sp-hl__stage { display: grid; }
+.sp-hl__sizer, .sp-hl__line { grid-area: 1 / 1; align-self: start; }
+.sp-hl__sizer { visibility: hidden; }
+.sp-hl__word { display: inline-block; white-space: nowrap; }
+.sp-hl__verb { position: relative; padding-bottom: 0.08em; margin-bottom: -0.08em; filter: drop-shadow(0 0 28px rgb(178 124 255 / 0.45)); }
+.sp-hl__ch { display: inline-block; transform-origin: 50% 90%; backface-visibility: hidden; }
+.sp-hl__verb .sp-hl__ch {
+  background-image: var(--space-grad);
+  background-size: calc(var(--ww, 3em) * 3) 100%;
+  background-position: calc(var(--space-flow) * var(--ww, 3em) * -2 - var(--cx, 0em)) 0;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+:root[data-theme="light"] .sp-hl__verb .sp-hl__ch { --space-grad: linear-gradient(100deg, #7d3bc4 0%, #b0368f 20%, #2b6f8a 40%, #8a4bc8 60%, #a8357c 80%, #7d3bc4 100%); }
+:root[data-theme="light"] .sp-hl__verb { filter: none; }
+.sp-hl__line[data-phase="in"] .sp-hl__ch {
+  animation:
+    sp-hl-rise 1.05s var(--space-spring-gentle) calc(var(--d, 300ms) + var(--i) * 26ms) both,
+    sp-hl-fade 0.42s ease-out calc(var(--d, 300ms) + var(--i) * 26ms) both,
+    sp-hl-mb-in 0.8s linear calc(var(--d, 300ms) + var(--i) * 26ms) both;
+}
+.sp-hl__line[data-phase="out"] .sp-hl__ch {
+  animation:
+    sp-hl-lift 0.5s var(--space-ease-in-expo) calc(var(--i) * 9ms) both,
+    sp-hl-fade-out 0.36s ease-in calc(90ms + var(--i) * 9ms) both,
+    sp-hl-mb-out 0.45s linear calc(var(--i) * 9ms) both;
+}
+@keyframes sp-hl-rise { 0% { transform: translateY(0.7em) scaleY(1.9) scaleX(0.94); } 100% { transform: none; } }
+@keyframes sp-hl-fade { 0% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes sp-hl-mb-in { 0% { filter: url(#sp-mb-y3); } 28% { filter: url(#sp-mb-y2); } 52% { filter: url(#sp-mb-y); } 72%, 100% { filter: none; } }
+@keyframes sp-hl-lift { 0% { transform: none; } 100% { transform: translateY(-0.55em) scaleY(1.6) scaleX(0.96); } }
+@keyframes sp-hl-fade-out { 0% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes sp-hl-mb-out { 0%, 18% { filter: none; } 40% { filter: url(#sp-mb-y); } 65% { filter: url(#sp-mb-y2); } 100% { filter: url(#sp-mb-y3); } }
+
+/* Page warp: every route change on the marketing site arrives through a short warp (View Transitions, motion.css runs the
+   route boundary); /app view switches use a softer one. Wider than a phone only: phones keep the plain crossfade. */
+@media (min-width: 641px) and (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(.kp-route-out) { animation: sp-vt-out 200ms var(--space-ease-in-expo) both; }
+  ::view-transition-new(.kp-route-in) { animation: sp-vt-in var(--space-dur-page) var(--space-ease-expo) both; }
+  :root[data-vt="view"]::view-transition-new(root) { animation: sp-vt-in 360ms var(--space-ease-expo) both; }
+  :root[data-vt="view"]::view-transition-old(root) { animation: sp-vt-out 160ms var(--space-ease-in-expo) both; }
+}
+@keyframes sp-vt-in { 0% { opacity: 0; transform: scale(1.035); filter: blur(10px) brightness(1.25); } 100% { opacity: 1; transform: none; filter: none; } }
+@keyframes sp-vt-out { to { opacity: 0; transform: scale(0.97); filter: blur(6px); } }
+
+/* ───────────────────────── surfaces ───────────────────────── */
+/* Glass card: the one card. No border; depth from the inner highlight and the drop. Add data-interactive for the hover lift. */
+.sp-card {
+  position: relative;
+  border-radius: var(--space-r-card);
+  background: var(--space-glass);
+  -webkit-backdrop-filter: blur(22px) saturate(1.4);
+  backdrop-filter: blur(22px) saturate(1.4);
+  box-shadow: var(--space-glass-depth);
+  color: var(--c-ink);
+}
+.sp-card[data-pad="md"], .sp-card:not([data-pad]) { padding: var(--s-6); }
+.sp-card[data-pad="lg"] { padding: var(--s-8); }
+.sp-card[data-pad="none"] { padding: 0; }
+.sp-card[data-interactive] {
+  transition: transform 0.55s var(--space-spring-bouncy), box-shadow 0.45s var(--space-ease-out);
+}
+@media (hover: hover) {
+  .sp-card[data-interactive]:hover { transform: translateY(-2px); box-shadow: var(--space-glass-lift); }
+}
+.sp-card[data-interactive]:active { transform: translateY(1px) scale(0.995); transition-duration: 0.12s; }
+/* Solid panel: for dense app UI (no backdrop blur, never stacks blur layers). */
+.sp-panel {
+  border-radius: var(--space-r-panel);
+  background: var(--surface-raised);
+  box-shadow: var(--elev-2);
+  color: var(--c-ink);
+}
+.sp-panel:not([data-pad]) { padding: var(--s-5); }
+.sp-panel[data-pad="none"] { padding: 0; }
+/* Glass pill (brand pill, chips, the nav's link group). */
+.sp-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: var(--nav-fill);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--nav-shadow);
+  color: var(--c-ink);
+}
+.sp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgb(var(--ring-rgb) / 0.16);
+  color: var(--c-ink);
+  font-size: 12px;
+  font-weight: var(--w-semibold);
+}
+.sp-eyebrow { font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--c-ink-3); font-weight: var(--w-semibold); }
+.sp-hero-title { margin: 0; font-size: clamp(42px, 3.8vw + 12px, 76px); line-height: 1.02; font-weight: var(--w-semibold); letter-spacing: -0.05em; text-wrap: balance; }
+.sp-lede { font-size: 16px; line-height: 1.6; color: var(--c-ink-2); max-width: 46ch; }
+
+/* Notices */
+.sp-notice {
+  display: flex; flex-direction: column; gap: 4px; padding: 16px 22px; border-radius: 24px; font-size: 14px; line-height: 1.55; color: var(--c-ink-2);
+  background: var(--space-glass); box-shadow: var(--space-glass-depth), 0 0 40px rgb(var(--ring-rgb) / 0.12);
+}
+.sp-notice b, .sp-notice strong { color: var(--c-ink); font-weight: var(--w-bold); }
+.sp-notice[data-tone="warn"] { box-shadow: var(--space-glass-depth), 0 0 44px rgb(var(--rgb-attention) / 0.18); }
+.sp-notice[data-tone="error"] { box-shadow: var(--space-glass-depth), 0 0 44px rgb(var(--rgb-destructive) / 0.2); }
+.sp-notice[data-tone="error"] b { color: var(--c-destructive); }
+.sp-notice[data-tone="success"] { box-shadow: var(--space-glass-depth), 0 0 44px rgb(var(--rgb-verified) / 0.18); }
+.sp-notice[data-shake] { animation: sp-shake 0.5s var(--space-ease-out) both; }
+
+/* ───────────────────────── buttons ─────────────────────────
+ * <Button> / <ButtonLink> (components/ui/space) render .sp-btn with data-variant (primary | secondary | ghost | danger) and
+ * data-size (sm | md | lg). data-status: loading (spinner ring, ignores clicks) | success | error. Works on <button> and <a>. */
+.sp-btn {
+  --b-face: var(--space-s-face);
+  --b-ink: var(--space-s-ink);
+  --b-depth: var(--space-s-depth);
+  --b-depth-hover: var(--space-s-depth-hover);
+  --b-depth-press: var(--space-s-depth-press);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  min-height: var(--space-hit);
+  padding: 0 22px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--b-face);
+  color: var(--b-ink);
+  box-shadow: var(--b-depth);
+  font-family: var(--f-sans);
+  font-size: 14px;
+  font-weight: var(--w-bold);
+  letter-spacing: -0.005em;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  transform: translateY(0);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.2s ease, color var(--space-dur-fast) var(--space-ease-out), background-color var(--space-dur-fast) var(--space-ease-out);
+}
+.sp-btn[data-variant="primary"] { --b-face: var(--space-p-face); --b-ink: var(--space-p-ink); --b-depth: var(--space-p-depth); --b-depth-hover: var(--space-p-depth-hover); --b-depth-press: var(--space-p-depth-press); }
+.sp-btn[data-variant="danger"] { --b-face: var(--space-d-face); --b-ink: var(--space-d-ink); --b-depth: var(--space-d-depth); --b-depth-hover: var(--space-d-depth-hover); --b-depth-press: var(--space-d-depth-press); }
+.sp-btn[data-variant="ghost"] { --b-face: transparent; --b-ink: var(--space-g-ink); --b-depth: none; --b-depth-hover: none; --b-depth-press: none; font-weight: var(--w-semibold); }
+.sp-btn[data-variant="ghost"]:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-g-hover); color: var(--c-ink); }
+.sp-btn[data-size="sm"] { min-height: var(--space-hit-sm); padding: 0 16px; font-size: 13px; }
+.sp-btn[data-size="lg"] { min-height: var(--space-hit-lg); padding: 0 30px; font-size: 15px; }
+.sp-btn[data-full] { width: 100%; }
+.sp-btn[data-icon] { padding: 0; width: var(--space-hit); }
+.sp-btn[data-icon][data-size="sm"] { width: var(--space-hit-sm); }
+@media (hover: hover) {
+  .sp-btn:hover:not(:disabled, [aria-disabled="true"], [data-variant="ghost"]) { transform: translateY(-1px); filter: brightness(1.03); box-shadow: var(--b-depth-hover); }
+}
+.sp-btn:active:not(:disabled, [aria-disabled="true"], [data-variant="ghost"]) { transform: translateY(var(--space-ledge)); box-shadow: var(--b-depth-press); transition-duration: 0.06s; }
+.sp-btn[data-variant="ghost"]:active:not(:disabled, [aria-disabled="true"]) { transform: scale(0.97); }
+.sp-btn:focus-visible { box-shadow: var(--b-depth), var(--space-focus-glow) !important; }
+.sp-btn[data-variant="ghost"]:focus-visible { box-shadow: var(--space-focus-glow) !important; }
+.sp-btn:disabled, .sp-btn[aria-disabled="true"]:not([data-status="loading"]) { transform: none; box-shadow: none; opacity: 0.45; cursor: not-allowed; }
+/* Loading: a light band sweeps across, a spinner ring leads the label; the button keeps its depth and stays focusable. */
+.sp-btn[data-status="loading"] { cursor: progress; }
+.sp-btn[data-status="loading"]::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(105deg, transparent 30%, rgb(176 104 255 / 0.22) 50%, transparent 70%);
+  animation: sp-shimmer 1.3s var(--space-ease-in-out) infinite;
+}
+.sp-btn[data-status="success"] { --b-ink: var(--c-verified); }
+.sp-btn[data-variant="primary"][data-status="success"], .sp-btn[data-variant="danger"][data-status="success"] { --b-ink: var(--space-p-ink); }
+.sp-btn[data-status="error"]:not([data-variant="primary"], [data-variant="danger"]) { --b-ink: var(--c-destructive); }
+.sp-btn[data-status="error"] { animation: sp-shake 0.45s var(--space-ease-out); }
+.sp-btn__spinner { width: 13px; height: 13px; flex-shrink: 0; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: sp-spin 0.8s linear infinite; }
+.sp-btn__label { display: inline-flex; align-items: center; gap: var(--s-2); min-width: 0; }
+.sp-btn__label[data-roll] { animation: sp-swap 0.5s var(--space-ease-expo) both; }
+.sp-btn__arrow { display: inline-block; transition: transform 0.4s var(--space-spring-bouncy); }
+.sp-btn:hover .sp-btn__arrow { transform: translateX(3px); }
+@media (pointer: coarse) { .sp-btn[data-size="sm"] { min-height: 44px; } }
+
+/* ───────────────────────── fields ───────────────────────── */
+.sp-field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.sp-field__label { padding-left: 18px; font-size: 12.5px; font-weight: var(--w-semibold); color: var(--c-ink-2); }
+.sp-field__hint { padding-left: 18px; font-size: 12.5px; color: var(--c-ink-3); }
+.sp-field__error { padding-left: 18px; font-size: 12.5px; color: var(--c-destructive); }
+.sp-input, .sp-textarea, .sp-select {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: var(--space-r-field);
+  background: var(--space-field);
+  box-shadow: var(--space-field-depth);
+  color: var(--c-ink);
+  font: inherit;
+  font-size: 15px;
+  font-weight: var(--w-medium);
+  transition: background-color 0.25s ease, box-shadow 0.35s var(--space-ease-out);
+}
+.sp-input::placeholder, .sp-textarea::placeholder { color: var(--c-ink-3); font-weight: var(--w-regular); }
+.sp-input:hover, .sp-textarea:hover, .sp-select:hover { background: var(--space-field-hover); }
+.sp-input:focus, .sp-textarea:focus, .sp-select:focus,
+.sp-input:focus-visible, .sp-textarea:focus-visible, .sp-select:focus-visible { outline: none; background: var(--space-field-focus); box-shadow: var(--space-field-depth), var(--space-focus-glow); }
+.sp-input[aria-invalid="true"], .sp-textarea[aria-invalid="true"], .sp-select[aria-invalid="true"] { box-shadow: var(--space-field-depth), 0 0 0 2px rgb(var(--rgb-destructive) / 0.5), 0 0 30px rgb(var(--rgb-destructive) / 0.2); }
+.sp-input:disabled, .sp-textarea:disabled, .sp-select:disabled { opacity: 0.5; cursor: not-allowed; }
+.sp-input[data-size="sm"], .sp-select[data-size="sm"] { min-height: 40px; padding: 0 16px; font-size: 14px; }
+.sp-textarea { min-height: 120px; padding: 16px 22px; border-radius: var(--space-r-area); resize: vertical; line-height: 1.55; }
+.sp-select {
+  appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 48px;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 28px) 50%, calc(100% - 22px) 50%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+.sp-select option { background: var(--space-glass-solid); color: var(--c-ink); }
+
+/* ───────────────────────── segmented control ─────────────────────────
+ * A glass track with a white (dark) / ink (light) 3D thumb that springs between options and motion-blurs while it moves. */
+.sp-seg {
+  position: relative;
+  display: inline-flex;
+  gap: 2px;
+  padding: 5px;
+  border-radius: 999px;
+  background: var(--nav-fill);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--nav-shadow);
+}
+.sp-seg:not([data-full]) { align-self: flex-start; }
+.sp-seg[data-full] { display: flex; }
+.sp-seg[data-full] .sp-seg__opt { flex: 1; }
+.sp-seg__ind {
+  position: absolute; left: 0; top: 5px; bottom: 5px; border-radius: 999px;
+  background: var(--space-p-face);
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12), 0 6px 20px rgb(var(--ring-rgb) / 0.18);
+  transition: transform 0.6s var(--space-spring-bouncy), width 0.6s var(--space-spring-bouncy);
+  pointer-events: none;
+}
+.sp-seg__ind[data-moving] { animation: sp-mb-x 0.5s ease-out; }
+.sp-seg__ind[data-placing] { transition: none; }
+.sp-seg__opt {
+  position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 38px; padding: 0 20px; border: 0; border-radius: 999px; background: transparent;
+  color: var(--c-ink-2); font-size: 13px; font-weight: var(--w-bold); white-space: nowrap; cursor: pointer;
+  transition: color 0.35s ease;
+}
+.sp-seg__opt:hover { color: var(--c-ink); }
+.sp-seg__opt[aria-checked="true"], .sp-seg__opt[aria-selected="true"] { color: var(--space-p-ink); }
+.sp-seg__opt:disabled { opacity: 0.45; cursor: not-allowed; }
+.sp-seg[data-size="sm"] { padding: 4px; }
+.sp-seg[data-size="sm"] .sp-seg__ind { top: 4px; bottom: 4px; }
+.sp-seg[data-size="sm"] .sp-seg__opt { height: 30px; padding: 0 14px; font-size: 12.5px; }
+/* Without a measured thumb yet (first paint, no JS), the selected option carries the face itself. */
+.sp-seg:not([data-ready]) .sp-seg__opt:is([aria-checked="true"], [aria-selected="true"]) { background: var(--space-p-face); }
+
+/* ───────────────────────── toggle ───────────────────────── */
+.sp-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); }
+.sp-toggle-row__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sp-toggle-row__label { font-weight: var(--w-semibold); color: var(--c-ink); }
+.sp-toggle-row__desc { font-size: 13px; color: var(--c-ink-3); }
+.sp-toggle {
+  position: relative; flex-shrink: 0; width: 44px; height: 26px; padding: 0; border: 0; border-radius: 999px;
+  background: var(--space-track); box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.25), inset 0 0 0 1px rgb(var(--rgb-ink) / 0.28);
+  cursor: pointer; transition: background-color var(--space-dur-fast) var(--space-ease-out), box-shadow var(--space-dur-base) var(--space-ease-out);
+}
+.sp-toggle::after { content: ""; position: absolute; inset: -9px -2px; } /* 44px hit target */
+.sp-toggle[aria-checked="true"] { background: linear-gradient(90deg, #a467f0, #d76cff); box-shadow: 0 0 18px rgb(176 104 255 / 0.35); }
+.sp-toggle__thumb { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / 0.35); transition: transform 0.45s var(--space-spring-bouncy); }
+.sp-toggle[aria-checked="true"] .sp-toggle__thumb { transform: translateX(18px); }
+.sp-toggle:active .sp-toggle__thumb { width: 24px; }
+.sp-toggle[aria-checked="true"]:active .sp-toggle__thumb { transform: translateX(14px); }
+.sp-toggle:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ───────────────────────── skeleton ───────────────────────── */
+.sp-skel-group { display: flex; flex-direction: column; gap: 8px; }
+.sp-skel { display: block; border-radius: 999px; background: rgb(var(--rgb-ink) / 0.08); animation: sp-pulse 1.6s var(--space-ease-in-out) infinite; }
+
+/* ───────────────────────── rolling number ───────────────────────── */
+.sp-roll { display: inline-flex; font-variant-numeric: tabular-nums; }
+.sp-roll__digits { display: inline-flex; }
+.sp-roll__col { display: inline-block; height: 1.15em; line-height: 1.15em; overflow: hidden; }
+.sp-roll__strip { display: flex; flex-direction: column; transition: transform var(--roll-ms, 900ms) var(--space-ease-expo); }
+.sp-roll__strip > span { height: 1.15em; }
+.sp-roll[data-rolling] .sp-roll__strip { animation: sp-mb-y var(--roll-ms, 900ms) ease-out; }
+.sp-roll__sep { display: inline-block; }
+
+/* ───────────────────────── disclosure ───────────────────────── */
+.sp-caret { display: inline-block; width: 0; height: 0; flex-shrink: 0; border-left: 4px solid currentColor; border-top: 4px solid transparent; border-bottom: 4px solid transparent; transition: transform var(--space-dur-fast) var(--space-ease-out); }
+.sp-caret[data-open="true"] { transform: rotate(90deg); }
+.sp-disc__trigger { display: inline-flex; align-items: center; gap: var(--s-2); min-height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: var(--c-ink-2); font-size: 13px; font-weight: var(--w-semibold); cursor: pointer; }
+.sp-disc__trigger:hover { color: var(--c-ink); background: var(--space-g-hover); }
+.sp-disc__panel { padding: var(--s-2) var(--s-4) var(--s-1); }
+.sp-disc__panel:not([hidden]) { animation: sp-swap 0.45s var(--space-ease-expo) both; }
+
+/* ───────────────────────── overlays: dialog, popover, tooltip ───────────────────────── */
+.sp-dialog {
+  max-width: min(520px, calc(100vw - 32px));
+  width: 100%;
+  padding: 28px;
+  border: 0;
+  border-radius: var(--space-r-card);
+  background: var(--space-glass-solid);
+  color: var(--c-ink);
+  box-shadow: var(--space-glass-depth), 0 0 90px rgb(176 104 255 / 0.12);
+}
+.sp-dialog[open] { display: flex; flex-direction: column; gap: var(--s-4); animation: sp-dialog-in 0.6s var(--space-ease-expo) both; }
+.sp-dialog::backdrop { background: var(--space-scrim); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.sp-dialog__title { margin: 0; font-size: 22px; line-height: 1.2; font-weight: var(--w-semibold); letter-spacing: -0.02em; }
+.sp-dialog__body { color: var(--c-ink-2); line-height: 1.6; }
+.sp-dialog__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: var(--s-2); }
+@keyframes sp-dialog-in { 0% { opacity: 0; transform: translateY(24px) scale(0.96); filter: blur(14px); } 100% { opacity: 1; transform: none; filter: blur(0); } }
+
+.sp-pop {
+  position: fixed; z-index: var(--z-overlay, 200); overflow-y: auto; padding: 8px;
+  border-radius: 24px; background: var(--space-glass-solid);
+  box-shadow: var(--space-glass-depth), 0 30px 80px rgb(0 0 0 / 0.35), 0 0 60px rgb(176 104 255 / 0.14);
+  animation: sp-pop-in 0.32s var(--space-ease-expo) both;
+}
+.sp-pop[data-state="closing"] { animation: sp-pop-out 150ms var(--space-ease-in) forwards; pointer-events: none; }
+.sp-menu-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 42px; padding: 0 16px;
+  border: 0; border-radius: 999px; background: transparent; color: var(--c-ink); font-size: 13.5px; font-weight: var(--w-semibold); text-align: left; text-decoration: none; cursor: pointer;
+}
+.sp-menu-item:hover, .sp-menu-item[data-active] { background: var(--space-g-hover); }
+.sp-menu-item > small { color: var(--c-ink-3); font-weight: var(--w-medium); }
+
+.sp-tip {
+  position: fixed; z-index: calc(var(--z-overlay, 200) + 10); max-width: 260px; padding: 7px 12px; border-radius: 12px;
+  background: var(--space-glass-solid); color: var(--c-ink); font-size: 12.5px; font-weight: var(--w-semibold); line-height: 1.35;
+  box-shadow: var(--space-glass-depth); pointer-events: none;
+  animation: sp-pop-in 0.22s var(--space-ease-expo) both;
+}
+
+/* ───────────────────────── star field host ───────────────────────── */
+.sp-sky { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.sp-sky canvas { display: block; width: 100%; height: 100%; }
+.sp-sky__aura {
+  position: absolute; inset: 0; opacity: 0.22; pointer-events: none;
+  background-color: rgb(var(--space-aura));
+  transition: background-color 2.2s var(--space-ease-out);
+  -webkit-mask-image: radial-gradient(60% 55% at 8% 100%, #000 0%, transparent 70%), radial-gradient(55% 50% at 94% 0%, #000 0%, transparent 70%);
+  mask-image: radial-gradient(60% 55% at 8% 100%, #000 0%, transparent 70%), radial-gradient(55% 50% at 94% 0%, #000 0%, transparent 70%);
+}
+:root[data-theme="light"] .sp-sky { display: none; }
+
+/* ───────────────────────── reduced motion, phones ───────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .sp-rise, .sp-warp-in, .sp-swap, .sp-blur-x, .sp-blur-y, .sp-grad, .sp-hl, .sp-hl__ch, .sp-roll__strip, .sp-btn, .sp-seg__ind, .sp-dialog[open], .sp-pop, .sp-tip, .sp-notice, .sp-disc__panel { animation: none !important; }
+  .sp-skel { animation: none; }
+  .sp-btn[data-status="loading"]::after { animation: none; opacity: 0.6; }
+}
+/* Phones: content is simply there (an entrance from opacity 0 delays LCP behind hydration), no SVG blur filters, no backdrop blur
+   on in-page surfaces (redesign.css), no infinite gradient drift. */
+@media (max-width: 640px) {
+  .sp-rise, .sp-warp-in, .sp-swap { animation: none; }
+  .sp-grad { animation: none; background-position: 30% 50%; }
+  .sp-hl { animation: none; }
+  .sp-roll[data-rolling] .sp-roll__strip, .sp-seg__ind[data-moving] { animation: none; }
+}
+@media print {
+  .sp-sky { display: none !important; }
+  .sp-btn { box-shadow: none; }
+}

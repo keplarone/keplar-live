@@ -112,23 +112,20 @@ html[data-glass="lite"] .lg, html[data-glass="lite"] .lg-strong { background: va
  * Primary = glossy black in light mode and glowy white in dark mode (no blue anywhere; text >= 7:1).
  * Secondary = clear glass (light fill, light blur, specular rim). Hover swells, press squashes and springs back.
  * Modules adopt these through the --btn-* custom properties (see "glass buttons" blocks) or the .lgb-* classes. */
+/* Space UI: modules that adopted these tokens (background: var(--btn-p-bg); box-shadow: var(--btn-p-shadow)) now draw Space
+   Studio's 3D button: the face and the ledge come from src/styles/space.css. --btn-p-solid is the flat fallback colour. */
 :root {
   --btn-p-solid: #17171a;
-  --btn-p-bg: #17171a;
-  --btn-p-ink: #ffffff;
-  --btn-p-shadow: 0 1px 2px rgb(0 0 0 / 0.18), 0 10px 22px -10px rgb(0 0 0 / 0.4); /* plain drop shadow: no highlight, ring or tinted glow */
-  --btn-s-bg: var(--lg-fill);
-  --btn-s-ink: var(--c-ink);
-  --btn-s-shadow: inset 1.5px 1.5px 0 0 var(--lg-edge-hi), inset -1px -1px 0 0 var(--lg-edge-lo), inset 0 0 0 1px var(--lg-rim), 0 6px 18px -8px rgb(0 0 0 / 0.2);
-  --btn-spring: transform 0.45s cubic-bezier(0.34, 1.5, 0.64, 1), box-shadow 0.25s var(--e-standard, ease), background-color 0.2s var(--e-standard, ease);
+  --btn-p-bg: var(--space-p-face);
+  --btn-p-ink: var(--space-p-ink);
+  --btn-p-shadow: var(--space-p-depth);
+  --btn-s-bg: var(--space-s-face);
+  --btn-s-ink: var(--space-s-ink);
+  --btn-s-shadow: var(--space-s-depth);
+  --btn-spring: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.2s var(--e-standard, ease);
 }
 :root[data-theme="dark"] {
   --btn-p-solid: #f4f4f5;
-  --btn-p-bg: #ffffff;
-  --btn-p-ink: #09090b;
-  /* no white ring, top highlight or white glow on dark buttons (Oct 2026) */
-  --btn-p-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 10px 22px -10px rgb(0 0 0 / 0.7);
-  --btn-s-shadow: 0 6px 18px -8px rgb(0 0 0 / 0.6);
 }
 .lgb-s {
   -webkit-backdrop-filter: blur(6px) saturate(1.4);

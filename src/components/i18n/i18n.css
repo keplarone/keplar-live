@@ -3,9 +3,10 @@
  * every rule here is scoped to html:not(:lang(en)) or to a specific language.
  */
 
-/* Non-English: the multi-script Google Sans instance first, then the same fallbacks English uses. */
+/* Non-English: Montserrat with its extended subsets (Latin Extended, Cyrillic, Vietnamese) first, the multi-script Google Sans
+   instance for every other script, then the same fallbacks English uses. */
 html:not(:lang(en)) {
-  --f-sans: var(--font-sans-intl), var(--font-sans), "Keplar Sans Fallback", ui-sans-serif, system-ui, sans-serif;
+  --f-sans: var(--font-sans-intl-latin), var(--font-sans-intl), var(--font-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
 /* Scripts Google Sans does not draw: system and Noto families, by language. Nothing is downloaded for these. */

@@ -35,8 +35,9 @@ test("primary buttons stay graphite (ink) / white; semantic accents may be colou
   const light = css.match(/--btn-p-solid: (#[0-9a-f]{6});/i)?.[1] ?? "";
   assert.equal(light.toLowerCase(), "#17171a");
   const tokens = readFileSync("src/styles/tokens.css", "utf8");
-  // Accent is teal, not ink
-  assert.match(tokens, /--c-accent: #0a7a8a;/);
+  // Accent is the Space violet (Space UI, docs/design/space-ui.md), not ink; light #7d3bc4, dark #c39bff
+  assert.match(tokens, /--c-accent: #7d3bc4;/);
+  assert.match(tokens, /:root\[data-theme="dark"\] \{[\s\S]*?--c-accent: #c39bff;/);
   assert.match(tokens, /--v-reasoning: #00c0e0;/);
   assert.match(tokens, /--v-creation: #d4894a;/);
 });

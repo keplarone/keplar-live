@@ -9,7 +9,7 @@ import { usePathname } from "next/navigation";
 import type { CSSProperties, ReactNode } from "react";
 import { localeInfo } from "@/lib/i18n/locales";
 import { splitLocale } from "@/lib/i18n/routing";
-import { intlSans } from "@/lib/i18n/fonts";
+import { intlMontserrat, intlSans } from "@/lib/i18n/fonts";
 import "./i18n.css";
 
 type Props = { className: string; style?: CSSProperties; children: ReactNode } & Record<`data-${string}`, string>;
@@ -17,7 +17,7 @@ type Props = { className: string; style?: CSSProperties; children: ReactNode } &
 export function LocaleHtml({ className, children, ...rest }: Props) {
   const info = localeInfo(splitLocale(usePathname() ?? "/").locale);
   return (
-    <html lang={info.lang} dir={info.dir} className={`${className} ${intlSans.variable}`} {...rest} suppressHydrationWarning>
+    <html lang={info.lang} dir={info.dir} className={`${className} ${intlMontserrat.variable} ${intlSans.variable}`} {...rest} suppressHydrationWarning>
       {children}
     </html>
   );

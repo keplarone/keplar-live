@@ -1497,17 +1497,27 @@ a.sideItem {
  * it, a raised composer and outlined starter chips. Replaces a light block plus a hex-copied dark twin of it. */
 :global(:root[data-theme]) .app { isolation: isolate; background: var(--c-canvas); }
 :global(:root[data-theme]) .sideWrap { padding: 12px 0 12px 12px; background: transparent; opacity: 1; }
+/* Space UI (docs/design/space-ui.md): the sidebar is a Space Studio glass card (no edge line: depth from the inner highlight and
+   the drop), rows are pills, the current row is a raised pill, and New chat leads with the lit 3D disc. */
 :global(:root[data-theme]) .sidebar {
-  border-radius: 24px;
-  background: var(--surface-panel);
-  box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1);
+  border-radius: var(--space-r-card);
+  background: var(--space-glass);
+  box-shadow: var(--space-glass-depth);
 }
-:global(:root[data-theme]) .sideItem { border-radius: 999px; }
+:global(:root[data-theme]) .sideItem { border-radius: 999px; font-weight: var(--w-medium); transition: color var(--space-dur-fast) var(--space-ease-out), background-color var(--space-dur-fast) var(--space-ease-out), transform 0.45s var(--space-ease-out); }
 :global(:root[data-theme]) .sideItem:hover { background: var(--hover-wash); }
-:global(:root[data-theme]) .sideItem[aria-current="page"] { background: var(--hover-wash); box-shadow: none; color: var(--c-ink); }
-/* "New chat": the one filled disc in the sidebar, so the primary action reads first */
-:global(:root[data-theme]) .sideItem[data-nav="new"] { color: var(--c-ink); font-weight: var(--w-medium); }
-:global(:root[data-theme]) .sideItem[data-nav="new"] > svg:first-child { box-sizing: content-box; padding: 4px; border-radius: 999px; background: var(--c-ink); color: var(--c-canvas); }
+:global(:root[data-theme]) .sideItem[aria-current="page"] { background: var(--press-wash); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06); color: var(--c-ink); font-weight: var(--w-semibold); }
+:global(:root[data-theme]) .threadLink { border-radius: 999px; }
+:global(:root[data-theme]) .threadLink[aria-current="page"] { background: var(--press-wash); }
+:global(:root[data-theme]) .recentAll { border-radius: 999px; }
+/* "New chat": the one lit disc in the sidebar, so the primary action reads first */
+:global(:root[data-theme]) .sideItem[data-nav="new"] { color: var(--c-ink); font-weight: var(--w-semibold); }
+:global(:root[data-theme]) .sideItem[data-nav="new"] > svg:first-child { box-sizing: content-box; padding: 4px; border-radius: 999px; background: var(--space-p-face); color: var(--space-p-ink); box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.12), 0 0 14px rgb(var(--ring-rgb) / 0.35); }
+:global(:root[data-theme]) .meter { border-top: 0; }
+:global(:root[data-theme]) .meterTrack { height: 5px; background: var(--space-track); box-shadow: none; }
+:global(:root[data-theme]) .meterTrack span { background: linear-gradient(90deg, #a467f0 0%, #b27cff 45%, #f08bd8 100%); box-shadow: 0 0 10px rgb(190 130 255 / 0.5); transition: width 1.2s var(--space-ease-out); }
+:global(:root[data-theme]) .meterTrack span[data-low] { background: var(--c-dissent); box-shadow: none; }
+:global(:root[data-theme]) .lowUsage { border-radius: 22px; box-shadow: none; background: var(--hover-wash); }
 
 /* Top bar: the chat title as plain text on the left; quiet round icon actions and (when free usage is low) one Upgrade pill on the right */
 :global(:root[data-theme]) .topbar { height: 72px; padding: 16px 24px 0; align-items: flex-start; gap: 4px; background: transparent; opacity: 1; }

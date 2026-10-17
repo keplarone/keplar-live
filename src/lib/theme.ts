@@ -13,12 +13,16 @@ export type Theme = "dark" | "light";
 
 /**
  * Where the visitor's choice is kept (localStorage, plus a cookie of the same name). "-v2" since the Oct 2026 light redesign:
- * choices saved before it are ignored once, so everyone starts in light; a choice made after it sticks as usual.
+ * choices saved before it were ignored once. A choice saved since (Light, Dark or Auto) still sticks: the Space UI only changes the
+ * default for people who never chose.
  */
 export const THEME_KEY = "keplar-theme-v2";
-/** Light is the default for everyone (first visit, no stored choice). Dark and Auto stay available in the theme control and Settings. */
-export const DEFAULT_THEME_PREF: ThemePref = "light";
-export const THEME_COLORS: Record<Theme, string> = { dark: "#0b0b0d", light: "#f7f8fa" }; // light = the cool off-white canvas (src/styles/light.css)
+/**
+ * Dark, the Space theme (black space, white primary: docs/design/space-ui.md), is the default for everyone with no stored choice.
+ * Light (the same Space system on a light palette) and Auto (follows the OS) stay available in the theme control and Settings.
+ */
+export const DEFAULT_THEME_PREF: ThemePref = "dark";
+export const THEME_COLORS: Record<Theme, string> = { dark: "#000000", light: "#f7f8fa" }; // dark = the Space void; light = the cool off-white canvas (src/styles/light.css)
 
 export const isThemePref = (v: unknown): v is ThemePref => v === "dark" || v === "light" || v === "auto";
 

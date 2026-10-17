@@ -58,8 +58,10 @@ export function DemoWindow() {
     let prev = 0;
     let raf = onScreen ? 0 : requestAnimationFrame(() => setT(0));
     let last = 0;
+    // On screen at load: the finished answer stays put for a first read (6s on top of the usual hold) before the loop fades it out.
+    const readUntil = onScreen ? performance.now() + 6000 : 0;
     const tick = (now: number) => {
-      if (prev) elapsed += Math.min(now - prev, 100);
+      if (prev && now > readUntil) elapsed += Math.min(now - prev, 100);
       prev = now;
       if (now - last > 30) {
         last = now;

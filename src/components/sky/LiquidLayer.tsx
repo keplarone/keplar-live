@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { frameGap, isPhone, liteFx } from "@/lib/fx/lite";
+import { runWhileTheme } from "@/lib/fx/theme-gate";
 import s from "./Sky.module.css";
 
 type Blob = { x: number; y: number; r: number; depth: number; phase: number; color: [number, number, number] };
@@ -21,10 +22,19 @@ export function LiquidLayer() {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const canvas = ref.current;
-    if (isPhone()) return;
-    const ctx = canvas?.getContext("2d", { alpha: true });
-    if (!canvas || !ctx) return;
+    const el = ref.current;
+    if (isPhone() || !el) return;
+    // Light theme only: the dark (Space) theme shows the star field instead (SkyBackdrop), so this loop does not run there.
+    return runWhileTheme("light", () => liquid(el));
+  }, []);
+
+  return <canvas ref={ref} className={s.liquid} aria-hidden="true" />;
+}
+
+function liquid(canvas: HTMLCanvasElement): (() => void) | undefined {
+  {
+    const ctx = canvas.getContext("2d", { alpha: true });
+    if (!ctx) return;
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const lite = liteFx();
     const W = lite ? 80 : 160;
@@ -108,7 +118,5 @@ export function LiquidLayer() {
       mo.disconnect();
       document.removeEventListener("visibilitychange", onVis);
     };
-  }, []);
-
-  return <canvas ref={ref} className={s.liquid} aria-hidden="true" />;
+  }
 }
