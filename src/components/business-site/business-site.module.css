@@ -364,3 +364,8 @@ a.brand:hover { box-shadow: var(--kb-pill-depth), var(--kb-pill-hover); }
   .btnPrimary, .btnPrimarySm, .btnGhost, .btnGhostSm, .btnDarkSm, .brand, .nav::after, .choice { transition: none; }
   .btnPrimary:active, .btnPrimarySm:active, .btnGhost:active, .btnDarkSm:active, .choice:hover { transform: none; }
 }
+/* Phones skip rendering off-screen sections (redesign.css: content-visibility with a 720px placeholder). The contact form is
+   taller than that, so its placeholder says so; otherwise the not-yet-rendered form would overlap the footer in snapshots. */
+@media (pointer: coarse), (max-width: 767px) {
+  :global(#main) section.section[id="contact"][aria-labelledby] { contain-intrinsic-size: auto 1180px; }
+}
