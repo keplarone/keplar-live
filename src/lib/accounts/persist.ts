@@ -28,10 +28,14 @@ export const SESSION_TTL_SECONDS = 60 * 24 * 60 * 60;
 export const SHORT_SESSION_TTL_SECONDS = 24 * 60 * 60;
 /** last_seen is written at most this often per session. */
 export const TOUCH_EVERY_SECONDS = 5 * 60;
+/** A remembered session unused for this long ends, even though the sliding window would have kept it (KEPLAR_SESSION_IDLE_DAYS, default 30). */
+export const SESSION_IDLE_SECONDS = (Number(process.env.KEPLAR_SESSION_IDLE_DAYS) >= 1 ? Math.floor(Number(process.env.KEPLAR_SESSION_IDLE_DAYS)) : 30) * 86_400;
+/** No session lives longer than this from sign-in, however active (KEPLAR_SESSION_MAX_DAYS, default 180): the person signs in again. */
+export const SESSION_ABSOLUTE_SECONDS = (Number(process.env.KEPLAR_SESSION_MAX_DAYS) >= 1 ? Math.floor(Number(process.env.KEPLAR_SESSION_MAX_DAYS)) : 180) * 86_400;
 
 export const persistenceEnabled = () => neonConfigured();
 
-export type Validation = { ok: true; userId: string } | { ok: false; reason: "revoked" | "expired" | "signed_out_everywhere" | "mfa_required" | "unknown" | "deleted" };
+export type Validation = { ok: true; userId: string } | { ok: false; reason: "revoked" | "expired" | "idle" | "signed_out_everywhere" | "mfa_required" | "unknown" | "deleted" };
 
 /**
  * keplar_sessions went live with the 2026-10-01 release ("sign-in lasts 60 days, see your devices"). Every session issued
@@ -196,14 +200,16 @@ export async function tombstoneLogin(email: string): Promise<void> {
  */
 export async function validateSession(cookie: { id: string; userId: string; email: string; name?: string | null; createdAt: Date; expiresAt: Date; userAgent?: string | null; ip?: string | null }): Promise<Validation> {
   const rows = await q(
-    `SELECT s.user_id, s.revoked_at, s.remember, s.mfa_pending, (s.expires_at <= now()) AS expired, (s.last_seen < now() - make_interval(secs => $2::double precision)) AS stale
+    `SELECT s.user_id, s.revoked_at, s.remember, s.mfa_pending, (s.expires_at <= now()) AS expired, (s.last_seen < now() - make_interval(secs => $2::double precision)) AS stale,
+            (s.last_seen < now() - make_interval(secs => $3::double precision)) AS idle, (s.created_at < now() - make_interval(secs => $4::double precision)) AS too_old
        FROM keplar_sessions s WHERE s.id = $1`,
-    [cookie.id, secs(TOUCH_EVERY_SECONDS)],
+    [cookie.id, secs(TOUCH_EVERY_SECONDS), secs(SESSION_IDLE_SECONDS), secs(SESSION_ABSOLUTE_SECONDS)],
   );
   const r = rows[0];
   if (r) {
     if (r.revoked_at) return { ok: false, reason: "revoked" };
-    if (bool(r.expired)) return { ok: false, reason: "expired" };
+    if (bool(r.expired) || bool(r.too_old)) return { ok: false, reason: "expired" };
+    if (bool(r.idle)) return { ok: false, reason: "idle" };
     if (bool(r.mfa_pending)) return { ok: false, reason: "mfa_required" };
     if (bool(r.stale)) {
       const remember = bool(r.remember);

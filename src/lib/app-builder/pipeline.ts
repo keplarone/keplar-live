@@ -28,6 +28,7 @@ import { styleById } from "./design/presets";
 import { surpriseFor } from "./design/surprise";
 import { finishFiles, planWaves, runWave } from "./generate";
 import { fixProblems, type Problem } from "./fix";
+import { checkOutput } from "@/lib/create/output-checklist";
 import { generateSlotImages } from "./images";
 import { LlmError } from "./llm";
 import { APP_BUILD_LIMITS, chainFor } from "./models";
@@ -324,6 +325,11 @@ export async function* runBuild(ws: Workspace, site: Site, buildId: string, opts
         addCheck({ id: "static", label: "Code checks (syntax, imports, data names)", ok: st.issues.length === 0, detail: st.issues.length ? `${st.issues.length} problem${st.issues.length === 1 ? "" : "s"}: ${st.issues[0].message}` : `${Object.keys(b.files).length} files parse and link` });
         const rubricErrors = rubric.filter((f) => f.severity === "error");
         addCheck({ id: "rubric", label: "Anti-generic rubric", ok: rubricErrors.length === 0, detail: rubric.length ? rubric.slice(0, 3).map((f) => f.message).join(" ") : "No template tells, stock images or invented proof" });
+        // Security and mobile checklist (src/lib/create/output-checklist.ts): the deterministic repairs already ran in finishFiles;
+        // this is the report, and the required items still failing go to the fix loop below.
+        const checklist = checkOutput(b.files, "app");
+        const checklistFailed = checklist.items.filter((i) => i.required && !i.ok);
+        addCheck({ id: "security-mobile", label: "Security and mobile checklist", ok: checklistFailed.length === 0, detail: checklistFailed.length ? `${checklistFailed.length} of ${checklist.required.total} required checks failing: ${checklistFailed.slice(0, 3).map((i) => i.label.toLowerCase()).join(", ")}` : `All ${checklist.total} checks pass (${checklist.required.total} required): no inline or third-party script, HTTPS only, zoomable viewport, fluid images, reduced motion respected` });
         yield* flush();
         const meta = metaFor(ws, site, spec, b.design, b.images);
         const quick = b.quick === "on";
@@ -352,6 +358,7 @@ export async function* runBuild(ws: Workspace, site: Site, buildId: string, opts
           ...smoke.issues.map((i) => ({ file: i.file, message: `[screen ${i.route}] ${i.message}${i.line ? ` (line ${i.line})` : ""}`, source: "browser" as const, severity: "high" as const })),
           ...checks.filter((c) => !c.ok && c.id.startsWith("flow:")).map((c) => ({ message: `${c.label} failed in the browser test: ${c.detail}`, source: "browser" as const, severity: "high" as const })),
           ...rubric.filter((f) => f.severity === "error" || (b.attempts === 0 && !quick)).map((f) => ({ file: f.file, message: f.message, source: "rubric" as const, severity: f.severity === "error" ? ("high" as const) : ("low" as const) })),
+          ...checklistFailed.map((i) => ({ file: i.files[0], message: `Security/mobile checklist [${i.id}]: ${i.label}. ${i.detail}`, source: "rubric" as const, severity: "high" as const })),
           ...fixes.filter((f) => f.severity !== "low" || (visual?.score ?? 10) < 7),
           // Design-review findings the reviewer did not turn into a file fix still get one pass (broken layouts, cramped columns).
           ...(fixes.length ? [] : (visual?.issues ?? []).slice(0, 4).map((m) => ({ message: `Design review (screenshots): ${m}`, source: "review" as const, severity: "medium" as const }))),

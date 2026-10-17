@@ -4,6 +4,7 @@
  *   wave 2: the entry (app.js) and the screens (pages/*, extra .html pages) - written in parallel groups that see wave 1's code.
  * Each group may also add a stylesheet for its own markup (styles/<group>.css), which index.html links automatically.
  */
+import { fixOutput } from "@/lib/create/output-checklist";
 import { llm, type Msg } from "./llm";
 import { SDK_DOC, CODE_RULES } from "./sdk-doc";
 import { RUBRIC } from "./rubric";
@@ -187,7 +188,10 @@ export async function runWave(o: {
 
 /** Adds Keplar-owned files (index.html for single-page apps) to a generated set. */
 export function finishFiles(spec: AppSpec, files: Record<string, string>): Record<string, string> {
-  if (isSite(spec)) return files;
-  const css = ["styles.css", ...Object.keys(files).filter((p) => p.startsWith("styles/") && p.endsWith(".css")).sort()].filter((p) => files[p] !== undefined);
-  return { ...files, "index.html": appIndexHtml(spec, css) };
+  // Security and mobile checklist repairs that need no model (viewport, zoom, charset, lang, noopener, alt, lazy and fluid
+  // images, reduced motion): src/lib/create/output-checklist.ts. Idempotent, so every pass through here is safe.
+  const fixed = fixOutput(files, "app").files;
+  if (isSite(spec)) return fixed;
+  const css = ["styles.css", ...Object.keys(fixed).filter((p) => p.startsWith("styles/") && p.endsWith(".css")).sort()].filter((p) => fixed[p] !== undefined);
+  return { ...fixed, "index.html": appIndexHtml(spec, css) };
 }

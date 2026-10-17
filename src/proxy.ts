@@ -8,7 +8,7 @@
  */
 import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
 import { clientIpOf, rateLimit, RateLimitError } from "@/lib/create/platform/ratelimit";
-import { newRequestId, requestIdOf } from "@/lib/ops/log";
+import { logEvent, newRequestId, requestIdOf } from "@/lib/ops/log";
 import { hostOf, isAppHost, resolveCustomHost } from "@/lib/domains/routing";
 import { DOCS_HOST, PRODUCTION_URL, SPACE_HOST } from "@/lib/site";
 import { BUSINESS_ICON_PATHS, BUSINESS_MANIFEST_PATH, BUSINESS_PREFIX, businessUrl, isBusinessHost } from "@/lib/business-site";
@@ -19,6 +19,8 @@ import { shareViewLimited } from "@/lib/growth/share-guard";
 import { applyLocaleHint } from "@/lib/i18n/proxy-hint";
 
 const API_PER_IP_PER_MIN = 240;
+/** Largest body any /api route accepts (Business plan attachments are 50 MB); every route applies its own, smaller cap on top. */
+const API_MAX_BODY_BYTES = 64 * 1024 * 1024;
 /** CSP for the framed widget page (next.config.ts sets the same with frame-ancestors * for widgets without an allowlist). */
 const EMBED_CSP_BASE = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'";
 
@@ -266,6 +268,10 @@ export async function proxy(req: NextRequest, event?: NextFetchEvent) {
     return r;
   };
 
+  const declared = req.headers.get("content-length");
+  if (declared && /^\d+$/.test(declared) && Number(declared) > API_MAX_BODY_BYTES) {
+    return withId(NextResponse.json({ error: "That request is too large.", code: "too_large" }, { status: 413 }));
+  }
   const webhook = pathname.startsWith("/api/webhooks/") || pathname.startsWith("/api/business/stripe/webhook") || pathname.startsWith("/api/inngest");
   // Live collaboration streams keystrokes and presence; its routes enforce their own per-user limits.
   const collab = pathname.startsWith("/api/collab/");
@@ -278,6 +284,8 @@ export async function proxy(req: NextRequest, event?: NextFetchEvent) {
     }
   }
   if (!SAFE_METHODS.has(req.method) && !isOriginExempt(pathname) && !isSameOrigin(req)) {
+    // Security event (edge: log line only; the store-backed log lives in src/lib/security/events.ts for node routes).
+    logEvent("warn", "security.authz.denied", { code: "bad_origin", where: pathname.slice(0, 120), status: 403 }, req);
     return withId(NextResponse.json({ error: "Request blocked: cross-site request.", code: "bad_origin" }, { status: 403 }));
   }
   return next();

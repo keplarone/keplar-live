@@ -27,6 +27,7 @@
  * - A pending sign-up can't log in, is replaced by a newer sign-up for the same address, and is deleted when the
  *   address is proven another way, so nobody can pre-register someone else's address and keep a password on it.
  */
+import { securityEvent } from "@/lib/security/events";
 import type { BetterAuthPlugin } from "better-auth";
 import { APIError, createAuthEndpoint, formCsrfMiddleware } from "better-auth/api";
 import { hashPassword, verifyPassword } from "better-auth/crypto";
@@ -62,11 +63,15 @@ const tooMany = (message = "Too many attempts. Wait a few minutes and try again,
 /** Password sign-in attempts for one address per 15 minutes from all networks together (see passwordSignIn). */
 const PW_EMAIL_CEILING = 60;
 
-async function limits(rules: [key: string, max: number, windowSec: number][]) {
+async function limits(rules: [key: string, max: number, windowSec: number][], ctx?: { headers?: Headers | null }) {
   try {
     for (const [key, max, windowSec] of rules) await rateLimit(key, max, windowSec, { shared: true });
   } catch (e) {
-    if (e instanceof RateLimitError) throw tooMany();
+    if (e instanceof RateLimitError) {
+      // Credential stuffing / brute force signal: the limiter already refuses; this makes the pattern visible and alertable.
+      securityEvent({ kind: "auth.throttled", code: rules[0]?.[0]?.split(":").slice(0, 2).join(":") ?? "password", where: "auth/password", ip: ctx ? ipOf(ctx) : null });
+      throw tooMany();
+    }
     throw e;
   }
 }
@@ -143,7 +148,7 @@ export const passwordAuth = (opts: PasswordAuthOptions) => {
         if (!check.ok) throw new APIError("BAD_REQUEST", { message: check.problem ?? "Choose a stronger password.", code: "WEAK_PASSWORD" });
         if (body.confirm !== undefined && body.confirm !== password) throw new APIError("BAD_REQUEST", { message: "The two passwords don't match.", code: "PASSWORD_MISMATCH" });
         if (body.acceptTerms !== true) throw new APIError("BAD_REQUEST", { message: "Accept the Terms and Privacy Policy to create an account.", code: "TERMS_REQUIRED" });
-        await limits([[`pw:signup:ip:${ipOf(ctx)}`, 8, 600], [`pw:signup:email:${email}`, 3, 600]]);
+        await limits([[`pw:signup:ip:${ipOf(ctx)}`, 8, 600], [`pw:signup:email:${email}`, 3, 600]], ctx);
         await needMailDomain(email);
         const hash = await hashPassword(password); // same work whether or not the address is taken
         const callbackURL = authRedirectPath(typeof body.callbackURL === "string" ? body.callbackURL : undefined, "/app?welcome=1");
@@ -172,7 +177,7 @@ export const passwordAuth = (opts: PasswordAuthOptions) => {
         // budget, not the owner's, so they can't lock the owner out with a dozen tries. A much higher per-address ceiling still caps
         // a guess spread over many networks.
         const net = networkPrefix(ip) ?? ip;
-        await limits([[`pw:in:ip:${ip}`, 40, 600], [`pw:in:ipemail:${ip}:${email}`, 6, 300], [`pw:in:netemail:${net}:${email}`, 12, 900], [`pw:in:email:${email}`, PW_EMAIL_CEILING, 900]]);
+        await limits([[`pw:in:ip:${ip}`, 40, 600], [`pw:in:ipemail:${ip}:${email}`, 6, 300], [`pw:in:netemail:${net}:${email}`, 12, 900], [`pw:in:email:${email}`, PW_EMAIL_CEILING, 900]], ctx);
         const cred = await getCredential(email);
         const valid = await verifyPassword({ hash: cred?.hash ?? (await dummy()), password }).catch(() => false);
         if (!cred || !valid) throw new APIError("UNAUTHORIZED", { message: GENERIC_CREDENTIALS, code: "INVALID_CREDENTIALS" });
@@ -188,7 +193,7 @@ export const passwordAuth = (opts: PasswordAuthOptions) => {
         needEmail();
         const body = (ctx.body ?? {}) as Record<string, unknown>;
         const email = readEmail(body);
-        await limits([[`pw:resend:ip:${ipOf(ctx)}`, 8, 600], [`pw:resend:email:${email}`, 3, 600]]);
+        await limits([[`pw:resend:ip:${ipOf(ctx)}`, 8, 600], [`pw:resend:email:${email}`, 3, 600]], ctx);
         await needMailDomain(email);
         const callbackURL = authRedirectPath(typeof body.callbackURL === "string" ? body.callbackURL : undefined, "/app?welcome=1");
         const cred = await getCredential(email);
@@ -200,7 +205,7 @@ export const passwordAuth = (opts: PasswordAuthOptions) => {
       passwordVerifyEmail: createAuthEndpoint("/password/verify-email", { method: "POST", requireHeaders: true, use: [formCsrfMiddleware] }, async (ctx) => {
         sameOrigin(ctx);
         needPasswords();
-        await limits([[`pw:verify:ip:${ipOf(ctx)}`, 20, 600]]);
+        await limits([[`pw:verify:ip:${ipOf(ctx)}`, 20, 600]], ctx);
         const res = verifyActionToken(opts.secret, "verify", (ctx.body as { token?: unknown } | undefined)?.token);
         if (!res.ok) throw new APIError("BAD_REQUEST", { message: res.reason === "expired" ? "This verification link has expired. Sign up again to get a new one." : "This verification link isn't valid.", code: `LINK_${res.reason.toUpperCase()}` });
         const { e: email, f, cb } = res.payload;
@@ -224,7 +229,7 @@ export const passwordAuth = (opts: PasswordAuthOptions) => {
         needEmail();
         const body = (ctx.body ?? {}) as Record<string, unknown>;
         const email = readEmail(body);
-        await limits([[`pw:forgot:ip:${ipOf(ctx)}`, 8, 600], [`pw:forgot:email:${email}`, 3, 600]]);
+        await limits([[`pw:forgot:ip:${ipOf(ctx)}`, 8, 600], [`pw:forgot:email:${email}`, 3, 600]], ctx);
         await needMailDomain(email); // depends only on the domain, so it says nothing about whether an account exists
         const callbackURL = authRedirectPath(typeof body.callbackURL === "string" ? body.callbackURL : undefined, "/account");
         // Only addresses that already have an account get mail (no spam to strangers); the answer and its
@@ -243,7 +248,7 @@ export const passwordAuth = (opts: PasswordAuthOptions) => {
         sameOrigin(ctx);
         needPasswords();
         const body = (ctx.body ?? {}) as Record<string, unknown>;
-        await limits([[`pw:reset:ip:${ipOf(ctx)}`, 20, 600]]);
+        await limits([[`pw:reset:ip:${ipOf(ctx)}`, 20, 600]], ctx);
         const res = verifyActionToken(opts.secret, "reset", body.token);
         if (!res.ok) throw new APIError("BAD_REQUEST", { message: res.reason === "expired" ? "This reset link has expired. Request a new one." : "This reset link isn't valid.", code: `LINK_${res.reason.toUpperCase()}` });
         const { e: email, f, cb } = res.payload;

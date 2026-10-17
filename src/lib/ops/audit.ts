@@ -2,6 +2,7 @@
  * Admin audit log: every kill-switch change and admin-side action is recorded (who, what, when, why).
  * Stored in the shared store (Neon in production) under the system tenant. Emails are masked on display.
  */
+import { securityEvent } from "@/lib/security/events";
 import { collection } from "@/lib/create/platform/store";
 import { id, now } from "@/lib/create/platform/ids";
 
@@ -12,6 +13,8 @@ const SYSTEM = "system";
 export async function writeAudit(actor: string, action: string, detail = ""): Promise<AuditRow> {
   const row: AuditRow = { id: id("aud"), workspaceId: SYSTEM, at: now(), actor: actor.slice(0, 120), action: action.slice(0, 80), detail: detail.slice(0, 500) };
   await rows().insert(row);
+  // Mirrored into the security event log (src/lib/security/events.ts): admin and kill-switch actions are security events too.
+  securityEvent({ kind: action.startsWith("controls.") || action.startsWith("config.") ? "config.change" : "admin.action", code: action, where: "admin", accountId: actor });
   return row;
 }
 

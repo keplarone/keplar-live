@@ -36,6 +36,13 @@ export function cleanAppHtml(html: string): { html: string; removed: string[] } 
     const isModule = /type\s*=\s*["']module["']/i.test(attrs);
     return `<script${isModule ? ' type="module"' : " defer"} src="${src.replace(/^\.\//, "").replace(/"/g, "")}"></script>`;
   });
+  // An opening <script> with no closing tag (truncated model output, or a deliberate attempt to swallow the rest of the page as
+  // script text): drop the orphan tag so the document renders as markup. The CSP would refuse the inline script anyway.
+  for (let pass = 0; pass < 10; pass++) {
+    const next = out.replace(/<script\b[^>]*>(?![\s\S]*?<\/script\s*>)/gi, () => (removed.push("unclosed script tag"), ""));
+    if (next === out) break;
+    out = next;
+  }
   out = out.replace(/<(iframe|object|embed|base|frame|frameset|applet)\b[^>]*>(?:[\s\S]*?<\/\1\s*>)?/gi, (m, tag) => {
     removed.push(`<${String(tag).toLowerCase()}>`);
     return "";

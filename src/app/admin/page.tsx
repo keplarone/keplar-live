@@ -64,7 +64,7 @@ export default async function AdminPage() {
       <header className={s.head}>
         <p className={s.eyebrow}>Admin · real data only · {o.generatedAt.replace("T", " ").slice(0, 16)} UTC</p>
         <h1>Operations</h1>
-        <p className={s.sub}>Signed in as {admin.email.replace(/^(.).*@/, "$1***@")}. Figures come from the live database; anything that is not recorded says so. <Link href="/admin/inbox">Inbox</Link> · <Link href="/admin/costs">Costs</Link> · <Link href="/admin/errors">Errors</Link> · <Link href="/admin/growth">Growth</Link> · <Link href="/admin/learning">Learning</Link> · <Link href="/admin/core">Core</Link> · <Link href="/admin/seo">SEO</Link> · <Link href="/admin/experiments">Experiments</Link> · <Link href="/admin/referrals">Referrals</Link> · <Link href="/admin/trends">Trend pages</Link></p>
+        <p className={s.sub}>Signed in as {admin.email.replace(/^(.).*@/, "$1***@")}. Figures come from the live database; anything that is not recorded says so. <Link href="/admin/inbox">Inbox</Link> · <Link href="/admin/costs">Costs</Link> · <Link href="/admin/errors">Errors</Link> · <Link href="/admin/security">Security</Link> · <Link href="/admin/growth">Growth</Link> · <Link href="/admin/learning">Learning</Link> · <Link href="/admin/core">Core</Link> · <Link href="/admin/seo">SEO</Link> · <Link href="/admin/experiments">Experiments</Link> · <Link href="/admin/referrals">Referrals</Link> · <Link href="/admin/trends">Trend pages</Link></p>
       </header>
 
       {c?.globalStop ? <p className={s.alertBad} role="alert">GLOBAL STOP IS ON — nothing that costs money runs. {c.reason}</p> : null}

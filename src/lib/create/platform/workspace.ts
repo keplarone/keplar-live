@@ -9,6 +9,7 @@
  * `ADMIN_EMAILS` (default team@keplar.one) get unlimited access. Credits and
  * auto top-up still apply to Roblox Studio on other accounts.
  */
+import { securityEvent } from "@/lib/security/events";
 import { getSession } from "@/lib/accounts/auth";
 import { currentPeriod, emptyBilling, ensureWorkspaceForUser, getWorkspace, planLapsed, type WorkspaceRow } from "@/lib/accounts/workspaces";
 import { planFromCookie } from "@/lib/billing/plan-cookie";
@@ -136,8 +137,14 @@ async function resolveWorkspace(req: Request | undefined, opts: { allowAnonymous
 /** Signed-in, verified user only (billing, account). */
 export async function requireAccount(req: Request): Promise<Workspace> {
   const session = await getSession(req.headers);
-  if (!session) throw new HttpError(401, "Sign in to continue.", "unauthenticated");
-  if (!session.user.emailVerified) throw new HttpError(403, "Verify your email address first.", "unverified");
+  if (!session) {
+    securityEvent({ kind: "authz.denied", code: "unauthenticated", req, status: 401 });
+    throw new HttpError(401, "Sign in to continue.", "unauthenticated");
+  }
+  if (!session.user.emailVerified) {
+    securityEvent({ kind: "authz.denied", code: "unverified", req, status: 403, accountId: session.user.id });
+    throw new HttpError(403, "Verify your email address first.", "unverified");
+  }
   return currentWorkspace(req);
 }
 

@@ -17,6 +17,12 @@ Status: **BETA**. Public docs: `/developers`; spec: `/api/v1/openapi.json` (buil
 ## Extension (`extension/`)
 MV3, Chrome/Edge. Permissions `activeTab, contextMenus, scripting, storage`; no host permissions, no content scripts, CSP `script-src 'self'`, `connect-src https://keplar.one`. Auth = an `ask`-scoped API key in `chrome.storage.local` (a session cookie would hand an extension the whole account). Reads the page only on a click; labels pages by host only; stores nothing but the key. Build: `npm run build:extension` → `extension/dist/keplar-extension-0.1.0-beta.zip` (validated first: permission allow-list, CSP, no eval/innerHTML/remote URLs; dist is git-ignored). Store text: `extension/STORE_LISTING.md` — **drafted, not submitted**.
 
+## Versioning and deprecation
+Public routes live under `/api/v1`. A breaking change ships as a new version (`/api/v2`); the old one keeps answering for at least six months and
+sends `Deprecation: true` and `Sunset: <date>` headers plus a notice on `/developers` and in the OpenAPI document (`info.description`). Removal happens
+only after the sunset date, and only when the key owners still calling it have been emailed (keys carry an owner). Non-breaking additions (new optional
+fields, new tools) land in place. Internal `/api/*` routes are not versioned and change with the app. Policy: `docs/security-policy.md` §8.
+
 ## Not verified / pending
 - No live-model run of `/api/v1/ask` against real providers here (tests use the creator reply and the local fake model); extension not loaded in a real browser or reviewed by any store.
 - COMING SOON: device-flow pairing (no pasted key), Firefox/Safari builds, team-level keys, per-key credit caps, SDK, webhooks.
