@@ -26,7 +26,7 @@
 }
 
 .toggle:hover {
-  background: rgb(var(--rgb-ink) / 0.04);
+  background: var(--hover-wash);
 }
 
 .chev {
