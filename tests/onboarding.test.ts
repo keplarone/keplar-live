@@ -79,7 +79,7 @@ test("checklist ticks come from real facts and actions, and Free says what it ta
   assert.equal(list.find((i) => i.id === "connect")?.note, "Needs a paid plan");
   list = checklist({ ...f, chats: 2, plan: "plus" }, { viewedPlan: "t" });
   assert.deepEqual(list.map((i) => [i.id, i.done]), [["ask", true], ["create", false], ["connect", false], ["plan", true]]);
-  assert.equal(list.find((i) => i.id === "connect")?.note, "Beta");
+  assert.equal(list.find((i) => i.id === "connect")?.note, undefined, "no Beta label once connecting is available");
   assert.equal(checklist({ ...f, sites: 1 }, {}).find((i) => i.id === "create")?.done, true);
   assert.equal(checklist({ ...f }, { triedCreate: "t" }).find((i) => i.id === "create")?.done, true);
   assert.equal(checklist({ ...f, connectors: 1, plan: "plus" }, {}).find((i) => i.id === "connect")?.done, true);

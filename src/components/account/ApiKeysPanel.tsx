@@ -52,7 +52,7 @@ export function ApiKeysPanel() {
 
   return (
     <div data-api-panel="">
-      <p className={s.note}><span className={s.badge}>Beta</span> Ask Keplar from your own code. {me.statement} <Link className={s.link} href="/developers">API docs</Link></p>
+      <p className={s.note}>Ask Keplar from your own code. {me.statement} <Link className={s.link} href="/developers">API docs</Link></p>
       {!me.available ? (
         <p className={s.note} data-api-unavailable="">API keys aren&apos;t available on the {me.plan} plan.</p>
       ) : (

@@ -20,7 +20,7 @@ export function SourceChecks({ sourcing, shared = false }: { sourcing: Sourcing;
   if (!ran) {
     return (
       <p className={s.quiet} data-source-checks={sourcing.state} role="note">
-        <span className={s.beta}>BETA</span> <strong>Source check:</strong> {sourcing.note}
+        <strong>Source check:</strong> {sourcing.note}
         {sourcing.state === "free_plan" && !shared ? <> <Link href="/pricing">See plans</Link></> : null}
       </p>
     );
@@ -28,7 +28,7 @@ export function SourceChecks({ sourcing, shared = false }: { sourcing: Sourcing;
   return (
     <section className={s.root} aria-label="Source check" data-source-checks={sourcing.state}>
       <h4 className={s.head}>
-        <span>Source check</span> <span className={s.beta}>BETA</span>
+        <span>Source check</span>
       </h4>
       <p className={s.note}>{sourcing.note}</p>
       {sourcing.claims.length ? (

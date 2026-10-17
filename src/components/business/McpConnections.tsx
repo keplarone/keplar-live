@@ -181,7 +181,7 @@ export function McpConnections({ go, onChange }: { go: (tab: "approvals") => voi
               <option value="none">None</option>
               <option value="bearer">Bearer token</option>
               <option value="header">API key in a header</option>
-              <option value="oauth">OAuth (BETA)</option>
+              <option value="oauth">OAuth</option>
             </select>
           </div>
           {draft.authType === "header" ? (
@@ -198,7 +198,7 @@ export function McpConnections({ go, onChange }: { go: (tab: "approvals") => voi
           ) : null}
         </div>
         <p className={m.hint}>
-          {data.httpsOnly ? "Only https:// addresses on the public internet are allowed." : "Public addresses only."} Keplar never connects to private or internal networks. OAuth (BETA) is for servers that only offer sign-in with an account: Keplar registers itself with the server, you approve access on the server&apos;s own page, and only encrypted tokens are kept. It&apos;s new and not yet proven with every provider; use a token or API key if the server offers one.
+          {data.httpsOnly ? "Only https:// addresses on the public internet are allowed." : "Public addresses only."} Keplar never connects to private or internal networks. OAuth is for servers that only offer sign-in with an account: Keplar registers itself with the server, you approve access on the server&apos;s own page, and only encrypted tokens are kept. It&apos;s new and not yet proven with every provider; use a token or API key if the server offers one.
         </p>
         {needsSecret && !data.secretsReady ? <p className={m.reason} role="alert">Saving credentials isn&apos;t set up on this server yet, so only connections without sign-in can be added.</p> : null}
         <div className={s.row}>
@@ -275,11 +275,11 @@ function ServerCard({ server: sv, open, onToggle, onChanged, go }: { server: Ser
         {local.rejectedTools ? ` · ${local.rejectedTools} invalid definition${local.rejectedTools === 1 ? "" : "s"} ignored` : ""}
         {local.truncatedTools ? " · list cut at 100" : ""}
         {local.lastCheckedAt ? ` · checked ${when(local.lastCheckedAt)}` : ""}
-        {local.authType === "none" ? " · no sign-in" : local.authType === "oauth" ? " · OAuth (BETA)" : local.authType === "bearer" ? " · bearer token saved" : ` · ${local.headerName ?? "API key"} saved`}
+        {local.authType === "none" ? " · no sign-in" : local.authType === "oauth" ? " · OAuth" : local.authType === "bearer" ? " · bearer token saved" : ` · ${local.headerName ?? "API key"} saved`}
       </p>
       {err ? <p className={m.reason} role="alert">{err}</p> : null}
       <div className={m.btnRow}>
-        {oauthNeeded ? <button className={s.btn} disabled={busy !== null} onClick={signIn}>{busy === "oauth" ? "Opening…" : local.statusKind === "oauth_pending" ? "Finish signing in" : local.statusKind === "oauth_required" || !local.statusKind ? "Sign in with OAuth (BETA)" : "Sign in again"}</button> : null}
+        {oauthNeeded ? <button className={s.btn} disabled={busy !== null} onClick={signIn}>{busy === "oauth" ? "Opening…" : local.statusKind === "oauth_pending" ? "Finish signing in" : local.statusKind === "oauth_required" || !local.statusKind ? "Sign in with OAuth" : "Sign in again"}</button> : null}
         <button className={oauthNeeded ? `${s.btn} ${s.ghost}` : s.btn} disabled={busy !== null} onClick={test}>{busy === "test" ? "Testing…" : "Test connection"}</button>
         <button className={`${s.btn} ${s.ghost}`} onClick={onToggle} aria-expanded={open}>{open ? "Hide tools" : "Tools & permissions"}</button>
         {local.hasSecret ? <button className={`${s.btn} ${s.ghost}`} onClick={() => setNewSecret(newSecret === null ? "" : null)}>Replace {local.authType === "bearer" ? "token" : "key"}</button> : null}

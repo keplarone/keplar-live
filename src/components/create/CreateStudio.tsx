@@ -168,8 +168,8 @@ export function CreateStudio({ initialTab, initialEnv, signedIn, plan = "free" }
   const kinds: TabItem<View>[] = [
     { value: "app", label: "App" },
     { value: "images", label: "Images" },
-    { value: "video", label: <>Video <span className={st.beta} aria-hidden="true">(Beta)</span></> },
-    { value: "mobile", label: <>Mobile <span className={st.beta} aria-hidden="true">(Beta)</span></> },
+    { value: "video", label: <>Video</> },
+    { value: "mobile", label: <>Mobile</> },
     ...(desktop ? [{ value: "studio" as const, label: "Keplar Studio" }] : []),
   ];
   const warmFrom = (e: PointerEvent<HTMLElement> | FocusEvent<HTMLElement>) => {

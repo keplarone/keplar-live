@@ -8,7 +8,7 @@
  */
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { TwoTone } from "@/components/page/TwoTone";
+import { CreateIntro } from "../CreateIntro";
 import s from "../create.module.css";
 import { ReferencePicker, type RefItem, type RefLimits } from "./ReferencePicker";
 import v from "./video.module.css";
@@ -57,6 +57,8 @@ export function VideoStudio() {
   const [prompt, setPrompt] = useState("");
   const [models, setModels] = useState<string[]>([]);
   const [compare, setCompare] = useState(false);
+  /** The model list stays folded: most people keep the default, so they see one line ("Seedance 2.0") and a Change link. */
+  const [pickOpen, setPickOpen] = useState(false);
   const [ratio0, setRatio] = useState("16:9");
   const [duration0, setDuration] = useState(5);
   const [resolution0, setResolution] = useState("");
@@ -266,13 +268,10 @@ export function VideoStudio() {
   if (!data || !config) return <div className={v.root}><p className={s.muted}><ActivityIndicator label="Loading your videos" showLabel /></p></div>;
 
   const off = !config.configured;
-  const label = off ? "Not configured" : "Beta";
+  const label = off ? "Not configured" : "";
   return (
     <div className={v.root} data-testid="video-studio">
-      <div className={v.head}>
-        <h2 className={s.panelTitle}><TwoTone text="Create video" /> <span className={v.badge} data-state={off ? "off" : "on"} data-testid="video-badge">{label}</span></h2>
-        <p className={s.muted}>Powered by Higgsfield. You see the cost first and are charged only for videos that are delivered.</p>
-      </div>
+      <CreateIntro title="Create video" badge={label} badgeProps={{ "data-state": off ? "off" : "on", "data-testid": "video-badge" }} lede="Describe a shot. You see the cost before anything is made." />
       {off ? <p className={v.banner} role="status" data-testid="video-not-configured">Video generation isn&apos;t connected yet (Not configured). Nothing is generated until Higgsfield is connected.</p> : null}
       {!config.available ? (
         <div className={v.panel}>
@@ -290,6 +289,11 @@ export function VideoStudio() {
             <div className={v.field}>
               <span className={v.row} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span id="vid-models">Model</span>
+                <button type="button" className={v.linkBtn} aria-expanded={pickOpen} aria-controls="vid-model-list" onClick={() => setPickOpen((o) => !o)}>{pickOpen ? "Done" : "Change"}</button>
+              </span>
+              {!pickOpen ? <p className={v.chosen}>{chosen.map((m) => m.label).join(", ") || "Pick a model"}</p> : null}
+              <div id="vid-model-list" hidden={!pickOpen}>
+              <span className={v.row} style={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
                 <label style={{ display: "inline-flex", gap: 6, alignItems: "center", textTransform: "none", letterSpacing: 0 }}>
                   <input type="checkbox" checked={compare} disabled={off || !config.compare} onChange={(e) => { setCompare(e.target.checked); touch(); if (!e.target.checked) { const one = models.slice(0, 1); setModels(one); remember({ compare: false, models: one }); } else remember({ compare: true }); }} />
                   Compare models
@@ -316,6 +320,7 @@ export function VideoStudio() {
                     </label>
                   );
                 })}
+              </div>
               </div>
             </div>
 
@@ -396,7 +401,7 @@ export function VideoStudio() {
                       </li>
                     ))}
                   </ul>
-                  {compare ? <p className={v.hint}>Compare is Beta: {outCount} output{outCount === 1 ? "" : "s"} per model, side by side. You are charged only for clips that are delivered; failed or blocked clips cost nothing.{config.compare?.runsPerDay != null ? ` Up to ${config.compare.runsPerDay} Compare runs a day on your plan.` : ""}</p> : null}
+                  {compare ? <p className={v.hint}>Compare: {outCount} output{outCount === 1 ? "" : "s"} per model, side by side. You are charged only for clips that are delivered; failed or blocked clips cost nothing.{config.compare?.runsPerDay != null ? ` Up to ${config.compare.runsPerDay} Compare runs a day on your plan.` : ""}</p> : null}
                   <p className={v.cost}>{preview.priceKnown && preview.totalUnits !== null ? <>Up to <strong>{preview.totalUnits.toLocaleString()} credits</strong>, only if delivered. {preview.items.some((i) => i.source === "list") ? "Based on Higgsfield's published list price." : "Higgsfield's own quote."}</> : <>This price is TBD, so Keplar can&apos;t start it yet.</>}</p>
                 </>
               ) : null}

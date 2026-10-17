@@ -6,6 +6,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import s from "./mobile.module.css";
+import { CreateIntro } from "../CreateIntro";
 import { ActivityIndicator, Button } from "@/components/kit";
 
 type Cred = { kind: "apple" | "google" | "expo"; hint: string; status: "saved" | "verified" | "failed"; detail: string; checkedAt: string | null };
@@ -86,10 +87,7 @@ export function MobileStudio() {
 
   return (
     <div className={s.root} data-testid="mobile-studio">
-      <div className={s.head}>
-        <h2>Mobile app <span className={s.tag}>BETA</span></h2>
-        <p className={s.muted}>{facts?.honesty ?? "Generate an Expo project and check your store keys."}</p>
-      </div>
+      <CreateIntro title="Create a mobile app" lede="Describe your app, then download a project ready for the App Store and Google Play." />
       {err ? <p className={s.err} role="alert">{err}</p> : null}
 
       <details className={s.card} open>
@@ -112,7 +110,7 @@ export function MobileStudio() {
       </details>
 
       <details className={s.card}>
-        <summary><span className={s.n}>2</span> Store accounts and keys (optional until you publish)</summary>
+        <summary><span className={s.n}>2</span> Store accounts <span className={s.opt}>optional until you publish</span></summary>
         <div className={s.body}>
           {facts ? (
             <>
@@ -141,7 +139,7 @@ export function MobileStudio() {
       <details className={s.card}>
         <summary><span className={s.n}>3</span> Get the project</summary>
         <div className={s.body}>
-          <p className={s.muted}>You get a ZIP: an Expo / React Native app with your screens, an EAS config and a GitHub Actions workflow you run by hand (BETA). Keplar has not built it on EAS or submitted it for you; the README lists the steps. Both stores review every submission.</p>
+          <p className={s.muted}>You get a ZIP: an Expo / React Native app with your screens, an EAS config and a GitHub Actions workflow you run by hand. Keplar has not built it on EAS or submitted it for you; the README lists the steps. Both stores review every submission.</p>
           <div><Button variant="primary" size="sm" onClick={download} disabled={busy === "zip" || app.name.trim().length < 2 || !app.bundleId.trim()}>{busy === "zip" ? "Preparing…" : "Download the Expo project"}</Button></div>
         </div>
       </details>

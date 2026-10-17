@@ -30,7 +30,7 @@
 .screens { display: flex; flex-direction: column; gap: 8px; }
 
 /* Create MobileStudio phone */
-.root { min-width: 0; max-width: 100%; overflow-x: hidden; }
+.root { min-width: 0; max-width: min(760px, 100%); overflow-x: hidden; }
 .input, .area { font-size: 16px; min-height: 44px; }
 .area { min-height: 96px; }
 .btn, .ghost { min-height: 44px; }
@@ -41,6 +41,5 @@
   .btn, .ghost { flex: 1; min-width: 0; }
 }
 
-/* Inside the Keplar Business workspace: the same page width, padding and 24px title as the other Create tabs. */
-:global(html[data-business-app]) .root.root { max-width: 1240px; margin: 0 auto; padding: 24px 32px 48px; }
-:global(html[data-business-app]) .root .head h2 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+
+.opt { margin-left: 6px; font-weight: 400; font-size: 0.8rem; color: var(--c-ink-3); }

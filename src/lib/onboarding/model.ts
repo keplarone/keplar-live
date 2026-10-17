@@ -290,7 +290,7 @@ export function checklist(f: Facts, p: Progress): ChecklistItem[] {
   return [
     { id: "ask", label: "Ask your first question", done: f.chats > 0, href: null },
     { id: "create", label: "Try Create", done: f.sites + f.images > 0 || Boolean(p.triedCreate), href: null, note: "Opens Create. Describe a site or an image." },
-    { id: "connect", label: "Connect an app", done: f.connectors > 0, href: null, note: canConnect ? "Beta" : "Needs a paid plan" },
+    { id: "connect", label: "Connect an app", done: f.connectors > 0, href: null, note: canConnect ? undefined : "Needs a paid plan" },
     { id: "plan", label: "See your plan and usage", done: Boolean(p.viewedPlan), href: "/account", note: f.plan === "free" ? "Free runs on free models" : undefined },
   ];
 }

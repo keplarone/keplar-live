@@ -886,11 +886,10 @@ function Connectors({ go }: { go: (t: Tab) => void }) {
             </div>
           );
         })}
-        {[["Notion", "Read and write pages. Connects as a connected app over OAuth (BETA)."], ["Linear", "Read and create issues. Connects as a connected app over OAuth (BETA)."]].map(([name, what]) => (
+        {[["Notion", "Read and write pages. Connects as a connected app over OAuth."], ["Linear", "Read and create issues. Connects as a connected app over OAuth."]].map(([name, what]) => (
           <div key={name} className={s.card} data-connector={name.toLowerCase()}>
             <div className={s.row}>
               <strong style={{ fontWeight: 500 }} className={s.grow}>{name}</strong>
-              <Pill tone="warn">BETA</Pill>
               {!isLiveVerified(name.toLowerCase()) ? <Pill tone="warn">{UNVERIFIED_LABEL}</Pill> : null}
             </div>
             <span className={s.muted}>{what}</span>
@@ -1054,7 +1053,6 @@ function Banks({ back, onState }: { back: boolean; onState: (v: { shown: boolean
     <div className={s.card} data-connector="bank" style={{ marginTop: 12 }}>
       <div className={s.row}>
         <strong style={{ fontWeight: 500 }} className={s.grow}>Bank accounts</strong>
-        <Pill tone="warn">BETA</Pill>
         {!isLiveVerified("stripe-fc") ? <Pill tone="warn">{UNVERIFIED_LABEL}</Pill> : null}
         {d.stripe ? <Pill tone="on">{d.stripeEnv === "live" ? "Stripe live" : "Stripe test"}</Pill> : null}
         {d.plaid ? <Pill tone="on">{d.env === "sandbox" ? "Plaid sandbox" : "Plaid live"}</Pill> : null}

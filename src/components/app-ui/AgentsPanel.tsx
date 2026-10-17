@@ -42,7 +42,6 @@ async function api<T>(url: string, method = "GET", body?: unknown): Promise<T> {
 
 /** Templates that make sense on a schedule, in the order they are offered. */
 const SCHEDULED = ["daily-brief", "scheduled-question", "event-reply", "monitor", "lead-sweep", "invoice-reminder", "weekly-report"] as const;
-const BETA = new Set(["monitor"]);
 const when = (iso: string | null) => (iso ? new Date(iso).toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—");
 
 const ZONES: string[] = (() => { try { return (Intl as unknown as { supportedValuesOf?: (k: string) => string[] }).supportedValuesOf?.("timeZone") ?? []; } catch { return []; } })();
@@ -180,7 +179,7 @@ export function AgentsPanel({ signedIn, onOpenApprovals }: { signedIn: boolean; 
               <h3 className={s.h3}>
                 {a.name}
                 <span className={`${s.badge} ${a.status === "active" ? s.badgeOn : ""}`}>{a.status}</span>
-                {BETA.has(a.template) ? <span className={s.badge}>Beta</span> : null}
+                
               </h3>
               <p className={s.help}>{d.templates[a.template]?.description}</p>
               <p className={s.muted}>
