@@ -67,10 +67,16 @@ test("chat: a heading structure (h1 title, h2 per question; answers' own heading
   assert.equal((turn.match(/const titleId = useId\(\)/g) ?? []).length, 4);
 });
 
-test("focus: controls with no label to underline get a visible bar, still never an outline or a box", () => {
+test("focus: every keyboard-focused control gets the Space violet glow (never an outline, never invisible); text links an underline", () => {
+  // Space UI (docs/design/space-ui.md): Space Studio's focus glow replaced the bar/underline cue on controls. :focus-visible only, so
+  // a pointer press still draws nothing (e2e/no-focus-box).
   const g = read("src/styles/globals.css");
-  assert.match(g, /:is\(select, input:is\(\[type="checkbox"\], \[type="radio"\], \[type="range"\]\)\):focus-visible \{\s*box-shadow: 0 3px 0 -1px var\(--c-focus\);/);
-  assert.match(g, /\[role="switch"\], \[role="checkbox"\], \[role="radio"\], \[role="slider"\], \[tabindex="0"\]\)[^{]*:focus-visible \{\s*background-image: linear-gradient\(var\(--c-focus\)/);
+  const sp = read("src/styles/space.css");
+  assert.match(g, /:focus, :focus-visible \{ outline: none !important; \}/);
+  assert.match(sp, /:is\(a\[href\], button, summary, select, input:is\(\[type="checkbox"\], \[type="radio"\], \[type="range"\][^)]*\)[^{]*\[role="switch"\][^{]*\[tabindex="0"\]\):focus-visible \{\s*box-shadow: var\(--space-focus-glow\);/);
+  assert.match(sp, /:root \{[\s\S]*?--space-focus-glow: 0 0 0 3px rgb\(125 59 196 \/ 0\.45\)/);
+  assert.match(sp, /:root\[data-theme="dark"\] \{[\s\S]*?--space-focus-glow: 0 0 0 3px rgb\(195 155 255 \/ 0\.55\)/);
+  assert.match(sp, /h6\) a\[href\]:not\(\[data-sp-btn\]\):focus-visible \{\s*box-shadow: none;\s*text-decoration-line: underline;/);
 });
 
 test("no window.confirm left in components: the kit dialog (confirmAction / confirmQuestion) asks instead", () => {

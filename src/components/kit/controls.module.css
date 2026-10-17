@@ -43,20 +43,29 @@
 .act[data-size="lg"] { --act-h: var(--ks-control-lg); --act-px: var(--ks-space-4); font-size: var(--ks-text-md); gap: var(--ks-space-2); }
 .act[data-full] { width: 100%; }
 
-.act[data-variant="primary"] { background: var(--ks-primary-bg); color: var(--ks-primary-text); }
-.act[data-variant="primary"]:hover:not([aria-disabled="true"]) { background: var(--ks-primary-bg-hover); }
+/* Space UI: primary / secondary / danger are 3D (a face over a ledge, from the --ks-*-face / -depth tokens: kit.css maps them to
+   space.css). Without those tokens (a host that does not define them) they fall back to the flat fills. */
+.act[data-variant="primary"] { background: var(--ks-primary-face, var(--ks-primary-bg)); color: var(--ks-primary-text); box-shadow: var(--ks-primary-depth, none); }
+.act[data-variant="primary"]:hover:not([aria-disabled="true"]) { background: var(--ks-primary-face, var(--ks-primary-bg-hover)); box-shadow: var(--ks-primary-depth-hover, none); transform: translateY(-1px); }
+.act[data-variant="primary"]:active:not([aria-disabled="true"]) { box-shadow: var(--ks-primary-depth-press, none); transform: translateY(var(--ks-press-y, 0)); transition-duration: 60ms; }
 
-.act[data-variant="secondary"] { border-color: var(--ks-border-strong); background: var(--ks-surface-1); }
-.act[data-variant="secondary"]:hover:not([aria-disabled="true"]) { background: var(--ks-surface-3); }
+.act[data-variant="secondary"] { border-color: transparent; background: var(--ks-secondary-face, var(--ks-surface-1)); box-shadow: var(--ks-secondary-depth, none); }
+.act[data-variant="secondary"]:hover:not([aria-disabled="true"]) { background: var(--ks-secondary-face, var(--ks-surface-3)); box-shadow: var(--ks-secondary-depth-hover, none); transform: translateY(-1px); }
+.act[data-variant="secondary"]:active:not([aria-disabled="true"]) { box-shadow: var(--ks-secondary-depth-press, none); transform: translateY(var(--ks-press-y, 0)); transition-duration: 60ms; }
 
-.act[data-variant="ghost"] { border-radius: var(--ks-radius-sm); color: var(--ks-text-2); }
+.act[data-variant="ghost"] { border-radius: var(--ks-control-radius, var(--ks-radius-sm)); color: var(--ks-text-2); }
 .act[data-variant="ghost"]:hover:not([aria-disabled="true"]) { background: var(--ks-fill-hover); color: var(--ks-text-1); }
 
-.act[data-variant="danger"] { background: var(--ks-danger-solid); color: var(--ks-danger-ink); }
-.act[data-variant="danger"]:hover:not([aria-disabled="true"]) { background: var(--ks-danger-solid-hover); }
+.act[data-variant="danger"] { background: var(--ks-danger-face, var(--ks-danger-solid)); color: var(--ks-danger-ink); box-shadow: var(--ks-danger-depth, none); }
+.act[data-variant="danger"]:hover:not([aria-disabled="true"]) { background: var(--ks-danger-face, var(--ks-danger-solid-hover)); box-shadow: var(--ks-danger-depth-hover, none); transform: translateY(-1px); }
+.act[data-variant="danger"]:active:not([aria-disabled="true"]) { box-shadow: var(--ks-danger-depth-press, none); transform: translateY(var(--ks-press-y, 0)); transition-duration: 60ms; }
 
-.act:active:not([aria-disabled="true"]) { transform: scale(0.97); }
+.act:active:not([aria-disabled="true"]) { transform: translateY(var(--ks-press-y, 0)) scale(0.99); transition-duration: 60ms; }
+.act[data-variant="ghost"]:active:not([aria-disabled="true"]) { transform: scale(0.97); }
 .act:focus-visible { box-shadow: var(--ks-focus-ring); }
+.act:is([data-variant="primary"], [data-variant="secondary"], [data-variant="danger"]):focus-visible { box-shadow: var(--ks-primary-depth, none), var(--ks-focus-ring); }
+.act[data-variant="secondary"]:focus-visible { box-shadow: var(--ks-secondary-depth, none), var(--ks-focus-ring); }
+.act[data-variant="danger"]:focus-visible { box-shadow: var(--ks-danger-depth, none), var(--ks-focus-ring); }
 .act[aria-disabled="true"] { cursor: default; }
 .act[aria-disabled="true"]:not([aria-busy="true"]) { opacity: 0.42; }
 .act[aria-busy="true"] { opacity: 1; cursor: default; }
@@ -75,7 +84,7 @@
   height: var(--size);
   padding: 0;
   border: 1px solid transparent;
-  border-radius: var(--ks-radius-sm);
+  border-radius: var(--ks-control-radius, var(--ks-radius-sm));
   color: var(--ks-text-2);
   background: transparent;
   cursor: pointer;
@@ -89,10 +98,11 @@
 .glyphAct[data-size="lg"] { --size: var(--ks-control-lg); }
 .glyphAct[data-shape="circle"] { border-radius: var(--ks-radius-pill); }
 .glyphAct:hover:not([aria-disabled="true"]) { background: var(--ks-fill-hover); color: var(--ks-text-1); }
-.glyphAct[data-variant="secondary"] { border-color: var(--ks-border-strong); background: var(--ks-surface-1); }
-.glyphAct[data-variant="secondary"]:hover:not([aria-disabled="true"]) { background: var(--ks-surface-3); }
-.glyphAct[data-variant="primary"] { background: var(--ks-primary-bg); color: var(--ks-primary-text); }
-.glyphAct[data-variant="primary"]:hover:not([aria-disabled="true"]) { background: var(--ks-primary-bg-hover); color: var(--ks-primary-text); }
+.glyphAct[data-variant="secondary"] { border-color: transparent; background: var(--ks-secondary-face, var(--ks-surface-1)); box-shadow: var(--ks-secondary-depth, none); }
+.glyphAct[data-variant="secondary"]:hover:not([aria-disabled="true"]) { background: var(--ks-secondary-face, var(--ks-surface-3)); box-shadow: var(--ks-secondary-depth-hover, none); }
+.glyphAct[data-variant="primary"] { background: var(--ks-primary-face, var(--ks-primary-bg)); color: var(--ks-primary-text); box-shadow: var(--ks-primary-depth, none); }
+.glyphAct[data-variant="primary"]:hover:not([aria-disabled="true"]) { background: var(--ks-primary-face, var(--ks-primary-bg-hover)); color: var(--ks-primary-text); box-shadow: var(--ks-primary-depth-hover, none); }
+.glyphAct[data-variant="primary"]:active:not([aria-disabled="true"]) { box-shadow: var(--ks-primary-depth-press, none); transform: translateY(var(--ks-press-y, 0)); }
 .glyphAct[aria-pressed="true"],
 .glyphAct[aria-expanded="true"] { background: var(--ks-fill-active); color: var(--ks-text-1); }
 .glyphAct:active:not([aria-disabled="true"]) { transform: scale(0.94); }
@@ -123,7 +133,7 @@
   transition: background-color var(--ks-dur-fast) var(--ks-ease-standard);
 }
 .switch:focus-visible { box-shadow: var(--ks-focus-ring); }
-.switch[aria-checked="true"] { background: var(--ks-primary-bg); }
+.switch[aria-checked="true"] { background: var(--ks-switch-on, var(--ks-primary-bg)); box-shadow: var(--ks-switch-on-glow, none); }
 .thumb {
   position: absolute;
   top: 2px;
@@ -135,7 +145,7 @@
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.18);
   transition: transform var(--ks-dur-base) var(--ks-ease-spring);
 }
-.switch[aria-checked="true"] .thumb { transform: translateX(calc(var(--ks-switch-w) - var(--ks-switch-h))); background: var(--ks-primary-text); }
+.switch[aria-checked="true"] .thumb { transform: translateX(calc(var(--ks-switch-w) - var(--ks-switch-h))); background: var(--ks-switch-thumb-on, var(--ks-primary-text)); }
 
 /* ── Checkbox ─────────────────────────────────────────────────────────────── */
 .checkRow {

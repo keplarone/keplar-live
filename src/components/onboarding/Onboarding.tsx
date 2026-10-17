@@ -12,6 +12,7 @@ import { writeUseFor } from "@/components/app-ui/use-for";
 import type { SceneId } from "@/field/scenes";
 import { AuthLost, finishOnboarding, saveStep, type Payload } from "./api";
 import { boomFrom, fieldPersonalize, fieldScene, reducedMotion } from "./field-bus";
+import { WeatherSky } from "@/components/ui/space/WeatherSky";
 import s from "./onboarding.module.css";
 
 const SCENES: SceneId[] = ["onb-welcome", "onb-purpose", "onb-prefs", "onb-connect", "onb-ready"];
@@ -177,6 +178,7 @@ export function Onboarding({ initial, next, accountName }: { initial: Payload; n
 
   return (
     <div className={s.root} data-step={step} data-pers={pers || undefined}>
+      <WeatherSky className={s.sky} />
       <header className={s.top}>
         <span className={s.brand}><KeplarSymbol size={22} /> <span>Keplar One</span></span>
         <ol className={s.progress} aria-label="Setup progress">

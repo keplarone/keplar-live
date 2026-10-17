@@ -2,7 +2,7 @@
    the canvas, product tokens only (both themes), the kit's Buttons in the header. Code colours are the semantic text tokens. */
 .wrap {
   display: flex; flex-direction: column; gap: 10px; min-height: 0;
-  border-radius: var(--r-md); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1);
+  border-radius: var(--r-md); box-shadow: var(--elev-1);
   background: var(--surface-raised); color: var(--c-ink); overflow: hidden;
 }
 .head {

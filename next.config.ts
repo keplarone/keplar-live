@@ -19,11 +19,6 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["@sparticuz/chromium", "playwright-core"],
   outputFileTracingIncludes: {
     "/api/sites/[id]/qa": ["./node_modules/@sparticuz/chromium/bin/**", "./node_modules/playwright-core/**"],
-    // Keplar Browser drives the same serverless Chromium for a person's task.
-    "/api/browser/tasks": ["./node_modules/@sparticuz/chromium/bin/**", "./node_modules/playwright-core/**"],
-    // Keplar Wants Track B fills a local fixture in headless Chromium (dry-run unless a PIN confirmed a submit).
-    // The swarm catalog is seeded by `npm run build` into data/wants/swarm.db and opened read-only.
-    "/api/keplar/wants/orchestrate": ["./node_modules/@sparticuz/chromium/bin/**", "./node_modules/playwright-core/**", "./data/wants/swarm.db"],
     "/api/health/qa-browser": ["./node_modules/@sparticuz/chromium/bin/**", "./node_modules/playwright-core/**"],
     // The app builder tests generated apps in a real browser, serving the runtime scripts from public/fx in-process.
     "/api/apps/[id]/build": ["./node_modules/@sparticuz/chromium/bin/**", "./node_modules/playwright-core/**", "./public/fx/**"],
@@ -51,6 +46,9 @@ const nextConfig: NextConfig = {
       // Each /app tab has its own subfolder; bare /app is Ask.
       { source: "/app", destination: "/app/ask", permanent: true },
       { source: "/app/", destination: "/app/ask", permanent: true },
+      // Keplar Wants and Keplar Browser were removed by owner decision: old links land in Ask instead of a 404.
+      { source: "/app/wants", destination: "/app/ask", permanent: true },
+      { source: "/app/browser", destination: "/app/ask", permanent: true },
       // Business, Agents and Approvals moved to business.keplar.one for now (src/lib/business.ts).
       ...["/app/business", "/app/agents", "/app/approvals", "/enterprise", "/agents"].map((source) => ({ source, destination: "https://business.keplar.one", permanent: false })),
       // Common account URLs people type or other sites link to (/login answered 404 on the live site).
@@ -92,6 +90,8 @@ const nextConfig: NextConfig = {
       { source: "/fonts/:path*", headers: [{ key: "Cache-Control", value: YEAR }, { key: "X-Content-Type-Options", value: "nosniff" }] },
       // Runtime scripts for generated apps, loaded from sandboxed (opaque-origin) previews: cross-origin readable (FX_HEADERS).
       { source: "/fx/:path*", headers: [{ key: "Cache-Control", value: YEAR }, { key: "X-Content-Type-Options", value: "nosniff" }, ...FX_HEADERS] },
+      // The weather sky's stills (public/sky): re-rendered rarely and under the same names, so a day (not a year).
+      { source: "/sky/:path*", headers: [{ key: "Cache-Control", value: DAY }, { key: "X-Content-Type-Options", value: "nosniff" }] },
       { source: "/manifest.webmanifest", headers: [{ key: "Cache-Control", value: DAY }] },
       { source: "/sw.js", headers: [{ key: "Cache-Control", value: "public, max-age=0, must-revalidate" }, { key: "Service-Worker-Allowed", value: "/" }] },
       { source: "/:path*", headers: BASE_HEADERS.filter((h) => h.key !== HSTS) },

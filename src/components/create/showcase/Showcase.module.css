@@ -30,7 +30,7 @@
 .facts { display: flex; gap: var(--s-4); flex-wrap: wrap; font-size: var(--t-small); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); }
 
 /* Poster: a drawn miniature of the page composition in the demo's own palette. */
-.poster { position: relative; aspect-ratio: 16 / 10; overflow: hidden; border-radius: var(--r-card); background: var(--p-bg); color: var(--p-ink); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1); transition: box-shadow var(--m-dur-2) var(--m-ease-out); }
+.poster { position: relative; aspect-ratio: 16 / 10; overflow: hidden; border-radius: var(--r-card); background: var(--p-bg); color: var(--p-ink); box-shadow: var(--elev-1); transition: box-shadow var(--m-dur-2) var(--m-ease-out); }
 .item:hover .poster, .item:focus-within .poster { box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), var(--elev-1); }
 @media (prefers-reduced-motion: reduce) { .poster, .item h2 a, .item h3 a { transition: none; } }
 .pBar { position: absolute; left: 6%; right: 6%; top: 7%; display: flex; justify-content: space-between; align-items: center; font: 600 clamp(10px, 1.1vw, 13px)/1 var(--p-fd); letter-spacing: -0.01em; padding-bottom: 4%; border-bottom: 1px solid var(--p-line); }
@@ -79,18 +79,18 @@
 /* Detail */
 .detail { margin-top: var(--s-10); display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); gap: var(--s-10); align-items: start; }
 @media (max-width: 960px) { .detail { grid-template-columns: minmax(0, 1fr); } }
-.frameWrap { border-radius: var(--r-card); overflow: hidden; box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1); background: var(--surface-raised); }
+.frameWrap { border-radius: var(--r-card); overflow: hidden; box-shadow: var(--elev-1); background: var(--surface-raised); }
 .frameBar { display: flex; justify-content: space-between; gap: var(--s-3); padding: var(--s-2) var(--s-4); font-size: var(--t-small); color: var(--c-ink-3); border-bottom: var(--b-hairline) solid var(--hairline); }
 .frameBar a { color: var(--c-ink-2); text-underline-offset: 3px; }
 .frame { display: block; width: 100%; height: min(78vh, 760px); min-height: 420px; border: 0; color-scheme: light; background: Canvas; } /* the demo page paints itself; until it loads, the browser's light page colour */
 .aside { display: grid; gap: var(--s-8); position: sticky; top: calc(var(--l-nav-h) + var(--s-8)); }
 .aside h2 { font-size: var(--t-small); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); font-weight: var(--w-regular); margin-bottom: var(--s-3); }
-.prompt { font-size: var(--t-body); line-height: 1.55; padding: var(--s-4) var(--s-5); background: var(--surface-raised); border-radius: var(--r-md); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1); margin: 0; }
+.prompt { font-size: var(--t-body); line-height: 1.55; padding: var(--s-4) var(--s-5); background: var(--surface-raised); border-radius: var(--r-md); box-shadow: var(--elev-1); margin: 0; }
 .craft { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--s-3); counter-reset: c; }
 .craft li { counter-increment: c; display: grid; grid-template-columns: 2.2em 1fr; color: var(--c-ink-2); font-size: var(--t-small); }
 .craft li::before { content: counter(c, decimal-leading-zero); font-variant-numeric: tabular-nums; color: var(--c-ink-3); }
 .swatches { display: flex; gap: 6px; }
-.swatches span { width: 28px; height: 28px; border-radius: var(--r-xs); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong); }
+.swatches span { width: 28px; height: 28px; border-radius: var(--r-xs); box-shadow: var(--elev-1); }
 .actions { display: flex; gap: var(--s-3); flex-wrap: wrap; align-items: center; }
 /* The one ink action on the detail page ("Build something like this"): the site's primary pill. */
 .btn.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 var(--s-5); border-radius: var(--r-pill); background: var(--c-ink); color: var(--c-canvas); box-shadow: var(--elev-1); font: inherit; font-size: var(--t-small); font-weight: var(--w-medium); border: 0; text-decoration: none; cursor: pointer; transition: background-color var(--m-dur-1) var(--m-ease-out), scale var(--m-dur-1) var(--m-ease-out); }
@@ -119,4 +119,23 @@
 @media (pointer: coarse) {
   .frameBar { align-items: center; padding-top: 0; padding-bottom: 0; }
   .frameBar a { display: inline-flex; align-items: center; min-height: 44px; } /* "Open full page" above each demo */
+}
+
+/* ── Space UI (docs/design/space-ui.md, phase B): this view's buttons draw Space Studio's 3D faces (space.css --space-p-* for the
+   one primary, --space-s-* for secondaries): a lit face over a ledge, a 1px lift and violet glow on hover, a press that sinks into
+   the ledge, the violet focus glow. Reduced motion keeps the faces and drops the lift. ── */
+:global(:root[data-theme]:not([data-business-app])) .btn.btn {
+  background: var(--space-p-face);
+  color: var(--space-p-ink);
+  box-shadow: var(--space-p-depth);
+  border-color: transparent;
+  font-weight: var(--w-bold);
+  transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out), opacity 0.2s ease;
+}
+:global(:root[data-theme]:not([data-business-app])) .btn.btn:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-p-face); transform: translateY(-1px); box-shadow: var(--space-p-depth-hover); }
+:global(:root[data-theme]:not([data-business-app])) .btn.btn:active:not(:disabled, [aria-disabled="true"]) { transform: translateY(var(--space-ledge)); scale: none; box-shadow: var(--space-p-depth-press); transition-duration: 0.06s; }
+:global(:root[data-theme]:not([data-business-app])) .btn.btn:focus-visible { box-shadow: var(--space-p-depth), var(--space-focus-glow); filter: none; text-decoration: none; }
+:global(:root[data-theme]:not([data-business-app])) .btn.btn:disabled { transform: none; box-shadow: none; }
+@media (prefers-reduced-motion: reduce) {
+  :global(:root[data-theme]:not([data-business-app])) .btn.btn:hover:not(:disabled) { transform: none; }
 }

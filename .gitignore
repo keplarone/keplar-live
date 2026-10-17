@@ -6,7 +6,7 @@ node_modules/
 .next/
 *.tsbuildinfo
 .data/
-# Built by scripts/seed-wants-swarm.ts during `npm run build`. Not source.
+# Built by the removed Keplar Wants seed script (older checkouts). Not source.
 data/wants/swarm.db
 data/wants/swarm.db-wal
 data/wants/swarm.db-shm

@@ -134,6 +134,7 @@ export function BuildDemo() {
     <div
       ref={root}
       className={s.demo}
+      data-kb-dark=""
       role="group"
       aria-roledescription="product demo"
       aria-label="Demo: an example coding session in Keplar Business"

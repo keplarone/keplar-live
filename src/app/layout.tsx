@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Google_Sans, IBM_Plex_Mono } from "next/font/google";
+import { Montserrat, IBM_Plex_Mono } from "next/font/google";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { brand, isIndexable, site, siteVerification } from "@/lib/site";
 import { siteGraph } from "@/lib/structuredData";
@@ -24,14 +24,15 @@ import { StaticAssetSw } from "@/components/perf/StaticAssetSw";
 import { CommandPalette } from "@/components/nav/CommandPalette";
 import { LocaleHtml } from "@/components/i18n/LocaleHtml";
 import { KitHosts } from "@/components/kit/Hosts";
+import { SpaceMotionFilters } from "@/components/ui/space/MotionFilters";
 import "@/styles/globals.css";
 import "@/styles/redesign.css";
 
-// Google Sans (the current open-source family, SIL OFL 1.1, published on Google Fonts as "Google Sans"; NOT the legacy proprietary
-// Google Sans / Product Sans) is the one sitewide UI font: body, headings, buttons, inputs. next/font fetches it at build time and
-// self-hosts it from our own origin as one variable file (wght 400-700), latin subset, display swap, preloaded, with a metrics-matched
-// fallback so the swap does not shift layout. The CSS variable is --font-sans (tokens.css --f-sans). IBM Plex Mono stays for code.
-const sans = Google_Sans({
+// Montserrat (SIL OFL 1.1) is the one sitewide UI font, the Space Studio face: body, headings, buttons, inputs. next/font fetches it at
+// build time and self-hosts it from our own origin as one variable file (wght 400-700), latin subset, display swap, preloaded, with
+// next/font's metric-matched fallback (adjustFontFallback) so the swap does not shift layout. The CSS variable is --font-sans
+// (tokens.css --f-sans). IBM Plex Mono stays for code. docs/design/space-ui.md
+const sans = Montserrat({
   subsets: ["latin"],
   variable: "--font-sans",
   display: "swap",
@@ -78,7 +79,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // Light first (white-first); the head script / ThemeWatcher update it for Dark or Auto.
+  // Light first (the day sky); the head script / ThemeWatcher update it for Dark or Auto.
   themeColor: THEME_COLORS.light,
   colorScheme: "light dark",
   width: "device-width",
@@ -88,7 +89,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    // data-theme is the server default (light); THEME_SCRIPT corrects it before
+    // data-theme is the server default (light, the day sky); THEME_SCRIPT corrects it before
     // paint from localStorage / the keplar-theme-v2 cookie, hence suppressHydrationWarning.
     // LocaleHtml renders <html> with lang and dir from the URL (/ar → ar, rtl; English at the root → en, ltr). src/components/i18n/LocaleHtml.tsx
     <LocaleHtml className={`${sans.variable} ${mono.variable} light`} data-theme="light" data-theme-pref="light" style={{ colorScheme: "light" }}>
@@ -109,6 +110,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <StaticAssetSw />
         <CommandPalette />
         <GlassDefs />
+        <SpaceMotionFilters />
         <CookieBanner />
         <PresenceBeacon />
         <ProximityLight />

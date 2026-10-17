@@ -23,3 +23,13 @@
 .pre { font-family: var(--f-mono, var(--font-mono)), ui-monospace, monospace; font-size: 12px; white-space: pre-wrap; word-break: break-word; background: var(--c-surface-1); border: var(--b-hairline) solid var(--c-border); border-radius: var(--r-sm); padding: var(--s-3); max-height: 420px; overflow: auto; }
 .select, .num { font: inherit; font-size: var(--t-small); color: var(--c-ink); background: var(--c-canvas); border: var(--b-hairline) solid var(--c-border-strong); border-radius: var(--r-xs); padding: var(--s-1) var(--s-2); min-height: 32px; }
 .num { width: 90px; }
+
+/* Space UI (area d): pill range links and tags, no outlines; the plot keeps its baseline (a chart axis, not a border). */
+.range a { border: 0; border-radius: var(--r-pill); background: var(--space-track); font-weight: var(--w-semibold); }
+.range a[aria-current="page"] { background: var(--space-p-face); color: var(--space-p-ink); }
+.bar { background: linear-gradient(180deg, #d76cff, #a467f0); border-radius: 3px 3px 0 0; }
+.tag { border: 0; border-radius: var(--r-pill); background: var(--space-track); }
+.tagBad { background: rgb(var(--rgb-destructive) / 0.14); }
+.meter { background: var(--space-track); border-radius: 999px; }
+.pre { border: 0; border-radius: var(--space-r-panel); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04); }
+.select, .num { border: 0; border-radius: var(--r-pill); background: var(--space-field); box-shadow: var(--space-field-depth); padding-inline: var(--s-3); }

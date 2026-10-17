@@ -74,14 +74,14 @@
   padding: 0 var(--s-3);
   border-radius: var(--r-sm);
   background: var(--c-canvas);
-  box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1);
+  box-shadow: var(--elev-1);
   color: var(--c-ink);
   font-weight: var(--w-medium);
   transition: box-shadow var(--d-fast) var(--e-standard);
 }
 
 .newThread:hover {
-  box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-1);
+  box-shadow: var(--elev-1);
 }
 
 .newThread svg {
@@ -258,7 +258,7 @@
   height: 3px;
   border-radius: var(--r-pill);
   background: var(--c-surface-2);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline);
+  box-shadow: var(--elev-1);
   overflow: hidden;
 }
 
@@ -392,7 +392,7 @@
   border-radius: var(--r-pill);
   font-size: var(--t-small);
   color: var(--c-ink-3);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline);
+  box-shadow: var(--elev-1);
   white-space: nowrap;
   text-decoration: none;
 }
@@ -408,7 +408,7 @@
   font-size: var(--t-small);
   font-weight: var(--w-medium);
   color: var(--c-ink);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong);
+  box-shadow: var(--elev-1);
   background: var(--c-canvas);
   white-space: nowrap;
 }
@@ -583,7 +583,7 @@
   padding: 0 var(--s-4);
   border-radius: var(--r-pill);
   background: var(--c-canvas);
-  box-shadow: var(--sh-hairline), var(--sh-float);
+  box-shadow: var(--sh-float);
   font-size: var(--t-small);
   color: var(--c-ink-2);
 }
@@ -641,7 +641,7 @@
   border: 0;
   border-radius: var(--r-sm);
   background: var(--c-canvas);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong);
+  box-shadow: var(--elev-1);
   font: inherit;
   font-size: var(--t-small);
   color: var(--c-ink);
@@ -653,7 +653,7 @@
 }
 
 .textInput:focus-visible {
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), inset 0 -2px 0 var(--c-focus);
+  box-shadow: var(--space-focus-glow);
   border-radius: var(--r-sm);
 }
 
@@ -740,7 +740,7 @@
   border: 0;
   border-radius: var(--r-xs);
   background: transparent;
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline);
+  box-shadow: var(--elev-1);
   font: inherit;
   font-size: var(--t-label);
   color: var(--c-ink-2);
@@ -974,7 +974,7 @@
   margin-top: var(--s-10);
   padding: var(--s-6);
   border-radius: var(--r-card);
-  border: var(--b-hairline) solid var(--hairline);
+  border: 1px solid transparent;
   background:
     var(--c-canvas);
   box-shadow: var(--sh-float);
@@ -1030,10 +1030,11 @@
   gap: var(--s-1);
   padding: var(--s-4);
   border-radius: var(--r-md);
-  border: var(--b-hairline) solid var(--hairline-strong);
+  border: 1px solid transparent;
   background: var(--c-canvas);
   text-align: left;
   transition: border-color var(--d-fast) var(--e-standard), background-color var(--d-fast) var(--e-standard);
+  box-shadow: var(--elev-1);
 }
 
 .useForOption:hover {
@@ -1115,7 +1116,7 @@
 .usageNotice p { margin: 0; }
 .usageNotice b { color: var(--c-ink); font-weight: var(--w-medium); }
 .usageClock { font-variant-numeric: tabular-nums; color: var(--c-ink); font-weight: var(--w-medium); }
-.usageNotice[data-kind="breaker"] { border-color: var(--hairline); background: var(--c-surface-1); }
+.usageNotice[data-kind="breaker"] { border-color: transparent; background: var(--c-surface-1); }
 
 /* ── nav: secondary group ──────────────────────────── */
 .sideMore {
@@ -1192,12 +1193,13 @@ a.sideItem {
   text-align: left;
   color: var(--c-ink);
   background: var(--c-surface-1);
-  border: var(--b-hairline) solid var(--hairline);
+  border: 1px solid transparent;
   border-radius: var(--r-md, 16px);
   transition: border-color var(--d-fast) var(--e-standard), background-color var(--d-fast) var(--e-standard);
+  box-shadow: var(--elev-1);
 }
 .homeTile:hover {
-  border-color: var(--hairline-strong);
+  border-color: transparent;
   background: var(--c-surface-2);
 }
 .homeTileDot {
@@ -1299,14 +1301,14 @@ a.sideItem {
   padding: var(--s-4) var(--s-3);
   border-radius: 26px;
   background: var(--surface-panel);
-  box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1);
+  box-shadow: var(--elev-1);
 }
 .newThread { border-radius: var(--shape-control); }
 .sideItem { border-radius: var(--shape-control); }
 .sideItem:hover { background: var(--hover-wash); }
 .sideItem[aria-current="page"] { background: var(--hover-wash); }
 /* Study / Slides chip on (or this thread's latest turn is a study set / deck): that item takes the highlight from Ask, as in the product videos. */
-.sideItem[data-mode-on] { color: var(--c-ink); background: var(--hover-wash); box-shadow: inset 0 0 0 1px var(--hairline); transition: background-color var(--d-base) var(--e-standard), box-shadow var(--d-base) var(--e-standard); }
+.sideItem[data-mode-on] { color: var(--c-ink); background: var(--hover-wash); box-shadow: var(--elev-1); transition: background-color var(--d-base) var(--e-standard), box-shadow var(--d-base) var(--e-standard); }
 .sideNav:has([data-mode-on]) .sideItem[data-nav="thread"][aria-current="page"] { background: transparent; box-shadow: none; }
 @media (prefers-reduced-motion: reduce) { .sideItem[data-mode-on] { transition: none; } }
 .sideBrand { border-radius: var(--r-pill); }
@@ -1317,22 +1319,22 @@ a.sideItem {
 .homeTile, .useForOption {
   background: var(--surface-raised);
   border-color: transparent;
-  box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1);
+  box-shadow: var(--elev-1);
   transition: box-shadow var(--d-fast) var(--e-standard), background-color var(--d-fast) var(--e-standard);
 }
-.homeTile:hover, .useForOption:hover { background: var(--surface-raised); border-color: transparent; box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-1); }
+.homeTile:hover, .useForOption:hover { background: var(--surface-raised); border-color: transparent; box-shadow: var(--elev-1); }
 .useForOption[aria-pressed="true"] { background: var(--surface-raised); box-shadow: inset 0 0 0 2px var(--c-ink); } /* selected: a plain ink edge, no glow */
 
 @media (max-width: 899px) {
   .sideWrap { padding: var(--s-2); box-shadow: none; }
-  .sidebar { box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-3); }
+  .sidebar { box-shadow: var(--elev-3); }
   .drawerScrim { background: var(--ks-scrim); }
 }
 
 /* Card-like buttons keep a soft card radius. */
 .homeTile.homeTile, .useForOption.useForOption { border-radius: 22px; }
-.example.example { border-radius: 22px; padding: var(--s-3) var(--s-4); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline); }
-.example.example:hover { padding-left: var(--s-4); box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-1); }
+.example.example { border-radius: 22px; padding: var(--s-3) var(--s-4); background: var(--surface-raised); box-shadow: var(--elev-1); }
+.example.example:hover { padding-left: var(--s-4); box-shadow: var(--elev-1); }
 
 /* ── page-wide particle layer (CP-6d) ──
  * The app is a fixed overlay; when the layer is drawing, let it show through the shell. While a question is running the
@@ -1386,14 +1388,14 @@ a.sideItem {
 .emptyTitle { font-size: clamp(36px, 4.8vw, 92px); line-height: 0.98; letter-spacing: -0.05em; text-wrap: balance; }
 .emptyLede { margin-top: var(--s-5); max-width: 46ch; text-wrap: balance; }
 .homeTiles { grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); margin-top: var(--s-10); counter-reset: tile; }
-.homeTile.homeTile { counter-increment: tile; position: relative; min-height: 132px; align-content: start; gap: var(--s-2); padding: var(--s-5); border-radius: 24px; border: var(--b-hairline) solid var(--hairline-strong); background: var(--surface-raised); box-shadow: var(--elev-1); }
+.homeTile.homeTile { counter-increment: tile; position: relative; min-height: 132px; align-content: start; gap: var(--s-2); padding: var(--s-5); border-radius: 24px; border: 1px solid transparent; background: var(--surface-raised); box-shadow: var(--elev-1); }
 .homeTile.homeTile:hover { background: var(--surface-raised); border-color: var(--c-ink-3); }
 .homeTile.homeTile .homeTileDot { width: auto; height: auto; border-radius: 0; background: none; box-shadow: none; }
 .homeTile.homeTile .homeTileDot::before { content: counter(tile, decimal-leading-zero); font-size: var(--t-label); letter-spacing: 0.16em; color: var(--c-ink-3); font-variant-numeric: tabular-nums; }
 .homeTileTitle { font-size: calc(var(--t-body) * 1.12); letter-spacing: -0.02em; }
 .homeRecent .sideLabel { letter-spacing: 0.16em; }
 .homeRecentItem.homeRecentItem { border: var(--b-hairline) solid transparent; border-bottom-color: var(--hairline); border-radius: 14px; }
-.homeRecentItem.homeRecentItem:hover { background: var(--hover-wash); border-color: var(--hairline); color: var(--c-ink); }
+.homeRecentItem.homeRecentItem:hover { background: var(--hover-wash); border-color: transparent; color: var(--c-ink); }
 @media (max-width: 640px) { .emptyHead { align-items: flex-start; text-align: left; } .homeTile.homeTile { min-height: 0; } }
 
 /* Phones (<= 520px): the top bar has menu + title + Memory + "N of N left" + Upgrade + New. At 360px that left the title one letter wide
@@ -1420,11 +1422,12 @@ a.sideItem {
 .homeChips { display: flex; flex-wrap: wrap; gap: var(--s-2); margin: var(--s-8) 0 0; padding: 0; list-style: none; }
 .homeChip {
   display: inline-flex; align-items: center; min-height: 36px; padding: 0 var(--s-4);
-  border: var(--b-hairline) solid var(--hairline); border-radius: var(--r-pill); background: transparent;
+  border: 1px solid transparent; border-radius: var(--r-pill); background: var(--hover-wash);
   color: var(--c-ink-2); font: inherit; font-size: var(--t-small); white-space: nowrap; cursor: pointer;
   transition: background-color var(--d-fast) var(--e-standard), color var(--d-fast) var(--e-standard), border-color var(--d-fast) var(--e-standard);
+  box-shadow: var(--elev-1);
 }
-.homeChip:hover { background: var(--hover-wash); border-color: var(--hairline-strong); color: var(--c-ink); }
+.homeChip:hover { background: var(--hover-wash); border-color: transparent; color: var(--c-ink); }
 .homeMore { margin-top: var(--s-10); }
 .homeMoreSummary { display: inline-flex; align-items: center; gap: var(--s-2); min-height: 32px; color: var(--c-ink-3); font-size: var(--t-small); cursor: pointer; list-style: none; }
 .homeMoreSummary::-webkit-details-marker { display: none; }
@@ -1479,7 +1482,7 @@ a.sideItem {
 .grow { flex: 1; }
 .signedOutRow { display: flex; flex-direction: column; gap: var(--s-2); padding: 0 var(--s-1); }
 .usageBlock { display: flex; flex-direction: column; gap: var(--s-2); }
-.lowUsage { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--s-2) var(--s-3); padding: var(--s-3); border-radius: var(--shape-control); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline); }
+.lowUsage { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--s-2) var(--s-3); padding: var(--s-3); border-radius: var(--shape-control); box-shadow: var(--elev-1); }
 .lowUsage .meterNote { color: var(--c-ink); }
 .lowUsage .meterTrack { grid-column: 1 / -1; grid-row: 2; }
 .lowUsageCta { grid-column: 2; grid-row: 1; font-size: var(--t-small); font-weight: var(--w-medium); color: var(--c-ink); text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
@@ -1497,17 +1500,27 @@ a.sideItem {
  * it, a raised composer and outlined starter chips. Replaces a light block plus a hex-copied dark twin of it. */
 :global(:root[data-theme]) .app { isolation: isolate; background: var(--c-canvas); }
 :global(:root[data-theme]) .sideWrap { padding: 12px 0 12px 12px; background: transparent; opacity: 1; }
+/* Space UI (docs/design/space-ui.md): the sidebar is a Space Studio glass card (no edge line: depth from the inner highlight and
+   the drop), rows are pills, the current row is a raised pill, and New chat leads with the lit 3D disc. */
 :global(:root[data-theme]) .sidebar {
-  border-radius: 24px;
-  background: var(--surface-panel);
-  box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1);
+  border-radius: var(--space-r-card);
+  background: var(--space-glass);
+  box-shadow: var(--space-glass-depth);
 }
-:global(:root[data-theme]) .sideItem { border-radius: 999px; }
+:global(:root[data-theme]) .sideItem { border-radius: 999px; font-weight: var(--w-medium); transition: color var(--space-dur-fast) var(--space-ease-out), background-color var(--space-dur-fast) var(--space-ease-out), transform 0.45s var(--space-ease-out); }
 :global(:root[data-theme]) .sideItem:hover { background: var(--hover-wash); }
-:global(:root[data-theme]) .sideItem[aria-current="page"] { background: var(--hover-wash); box-shadow: none; color: var(--c-ink); }
-/* "New chat": the one filled disc in the sidebar, so the primary action reads first */
-:global(:root[data-theme]) .sideItem[data-nav="new"] { color: var(--c-ink); font-weight: var(--w-medium); }
-:global(:root[data-theme]) .sideItem[data-nav="new"] > svg:first-child { box-sizing: content-box; padding: 4px; border-radius: 999px; background: var(--c-ink); color: var(--c-canvas); }
+:global(:root[data-theme]) .sideItem[aria-current="page"] { background: var(--press-wash); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06); color: var(--c-ink); font-weight: var(--w-semibold); }
+:global(:root[data-theme]) .threadLink { border-radius: 999px; }
+:global(:root[data-theme]) .threadLink[aria-current="page"] { background: var(--press-wash); }
+:global(:root[data-theme]) .recentAll { border-radius: 999px; }
+/* "New chat": the one lit disc in the sidebar, so the primary action reads first */
+:global(:root[data-theme]) .sideItem[data-nav="new"] { color: var(--c-ink); font-weight: var(--w-semibold); }
+:global(:root[data-theme]) .sideItem[data-nav="new"] > svg:first-child { box-sizing: content-box; padding: 4px; border-radius: 999px; background: var(--space-p-face); color: var(--space-p-ink); box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.12), 0 0 14px rgb(var(--ring-rgb) / 0.35); }
+:global(:root[data-theme]) .meter { border-top: 0; }
+:global(:root[data-theme]) .meterTrack { height: 5px; background: var(--space-track); box-shadow: none; }
+:global(:root[data-theme]) .meterTrack span { background: linear-gradient(90deg, #a467f0 0%, #b27cff 45%, #f08bd8 100%); box-shadow: 0 0 10px rgb(190 130 255 / 0.5); transition: width 1.2s var(--space-ease-out); }
+:global(:root[data-theme]) .meterTrack span[data-low] { background: var(--c-dissent); box-shadow: none; }
+:global(:root[data-theme]) .lowUsage { border-radius: 22px; box-shadow: none; background: var(--hover-wash); }
 
 /* Top bar: the chat title as plain text on the left; quiet round icon actions and (when free usage is low) one Upgrade pill on the right */
 :global(:root[data-theme]) .topbar { height: 72px; padding: 16px 24px 0; align-items: flex-start; gap: 4px; background: transparent; opacity: 1; }
@@ -1567,7 +1580,7 @@ a.sideItem {
   padding: 12px 18px;
   border-radius: 22px 22px 6px 22px;
   background: var(--surface-raised);
-  border: 1px solid var(--hairline);
+  border: 1px solid transparent;
   box-shadow: none;
   font-size: 16px;
   line-height: 1.55;
@@ -1600,22 +1613,22 @@ a.sideItem {
   min-height: 40px;
   padding: 0 16px;
   border-radius: 999px;
-  background: transparent;
-  border: 1px solid var(--hairline-strong);
+  background: var(--hover-wash);
+  border: 1px solid transparent;
   box-shadow: none;
   color: var(--c-ink-2);
   font-size: 14px;
   transition: background-color var(--m-dur-1) var(--m-ease-out), color var(--m-dur-1) var(--m-ease-out), border-color var(--m-dur-1) var(--m-ease-out);
 }
-:global(:root[data-theme]) .homeChip:hover { background: var(--surface-raised); border-color: var(--hairline-strong); color: var(--c-ink); }
+:global(:root[data-theme]) .homeChip:hover { background: var(--surface-raised); border-color: transparent; color: var(--c-ink); }
 :global(:root[data-theme]) .homeTile,
 :global(:root[data-theme]) .useForOption,
-:global(:root[data-theme]) .example.example { background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1); }
+:global(:root[data-theme]) .example.example { background: var(--surface-raised); box-shadow: var(--elev-1); }
 
 /* under 900px the sidebar is the slide-in drawer: the same opaque card, so the page behind never reads through it */
 @media (max-width: 899px) {
   :global(:root[data-theme]) .sideWrap { padding: 12px; }
-  :global(:root[data-theme]) .sidebar { box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-3); }
+  :global(:root[data-theme]) .sidebar { box-shadow: var(--elev-3); }
   :global(:root[data-theme]) .topbar { padding: 12px 12px 0; height: 64px; }
   :global(:root[data-theme]) .topTitle { max-width: none; margin-right: 0; flex: 1 1 auto; text-align: center; }
   :global(:root[data-theme]) .menuBtn { background: transparent; box-shadow: none; }
@@ -1705,5 +1718,159 @@ a.sideItem {
 }
 
 /* Offline (OfflineNotice): one quiet line above the composer while the browser reports no connection. */
-.offline { display: flex; align-items: center; gap: 8px; width: fit-content; max-width: 100%; margin: 0 auto 8px; padding: 6px 14px; border-radius: 999px; background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline); font-size: 13px; line-height: 1.4; color: var(--c-ink-2); }
+.offline { display: flex; align-items: center; gap: 8px; width: fit-content; max-width: 100%; margin: 0 auto 8px; padding: 6px 14px; border-radius: 999px; background: var(--surface-raised); box-shadow: var(--elev-1); font-size: 13px; line-height: 1.4; color: var(--c-ink-2); }
 .offlineDot { flex: none; width: 8px; height: 8px; border-radius: 999px; background: var(--v-attention); }
+
+/* ── Space UI (docs/design/space-ui.md, phase B): the Ask home, the thread and the app views ──
+   Space Studio's chat: a semibold greeting with tight tracking, starter chips as frosted-looking pills that lift and glow, the
+   "use Keplar for" card as a 28px Space card with lit tiles, the question as Space Studio's violet-tinted bubble that rises in,
+   pill fields with the violet glow, list rows as quiet pills, and the one Upgrade call as the lit 3D primary. Opaque surfaces
+   only (no glass, no star field behind dense content); both themes from tokens. */
+:global(:root[data-theme]) .welcomeTitle { font-weight: var(--w-semibold); letter-spacing: -0.045em; }
+:global(:root[data-theme]) .homeChips { gap: 8px; }
+:global(:root[data-theme]) .homeChip {
+  min-height: 40px;
+  padding: 0 18px;
+  border: 0;
+  background: var(--hover-wash);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
+  color: var(--c-ink-2);
+  font-size: 13.5px;
+  font-weight: var(--w-medium);
+  transition: color 0.3s ease, background-color 0.3s ease, box-shadow 0.45s var(--space-ease-out), translate 0.45s var(--space-spring-snappy);
+}
+:global(:root[data-theme]) .homeChip:hover {
+  color: var(--c-ink);
+  background: var(--press-wash);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 10px 30px rgb(var(--ring-rgb) / 0.26);
+  translate: 0 -2px;
+}
+:global(:root[data-theme]) .homeChip:active { translate: 0 1px; transition-duration: 0.1s; }
+:global(:root[data-theme]) .homeChip:focus-visible { box-shadow: var(--space-focus-glow); }
+.homeChipIcon { color: var(--c-ink-3); transition: color 0.3s ease; }
+.homeChip:hover .homeChipIcon { color: var(--c-accent); }
+.homeMoreSummary { border-radius: 999px; padding: 0 12px; }
+.homeMoreSummary:hover { background: var(--hover-wash); }
+
+/* "What will you use Keplar for?": a 28px Space card; the three choices are lit tiles (lift and glow; the chosen one glows violet). */
+:global(:root[data-theme]) .useFor {
+  padding: 24px 26px 26px;
+  border: 0;
+  border-radius: var(--space-r-card);
+  background: var(--space-glass);
+  box-shadow: var(--space-glass-depth);
+}
+:global(:root[data-theme]) .useForTitle { font-size: 17px; font-weight: var(--w-semibold); letter-spacing: -0.02em; }
+:global(:root[data-theme]) .useForSkip, :global(:root[data-theme]) .useForChange { min-height: 32px; padding: 0 14px; border-radius: 999px; text-decoration: none; font-weight: var(--w-semibold); color: var(--c-ink-2); }
+:global(:root[data-theme]) .useForSkip:hover, :global(:root[data-theme]) .useForChange:hover { background: var(--hover-wash); color: var(--c-ink); }
+:global(:root[data-theme]) .useForOption,
+:global(:root[data-theme]) .useForOption.useForOption {
+  border: 0;
+  border-radius: 22px;
+  background: var(--hover-wash);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
+  transition: background-color 0.3s ease, box-shadow 0.45s var(--space-ease-out), translate 0.45s var(--space-spring-snappy);
+}
+:global(:root[data-theme]) .useForOption:hover { background: var(--press-wash); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 12px 32px rgb(var(--ring-rgb) / 0.22); translate: 0 -2px; }
+:global(:root[data-theme]) .useForOption:active { translate: 0 1px; transition-duration: 0.1s; }
+:global(:root[data-theme]) .useForOption[aria-pressed="true"] {
+  background: rgb(var(--ring-rgb) / 0.14);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 0 0 1.5px rgb(var(--ring-rgb) / 0.6), 0 0 28px rgb(var(--ring-rgb) / 0.28);
+}
+:global(:root[data-theme]) .useForOption:focus-visible { box-shadow: var(--space-focus-glow); }
+.useForLabel { font-weight: var(--w-semibold); letter-spacing: -0.01em; }
+
+/* "More ideas" lists: quiet pill rows (no rule lines) that fill on hover. */
+:global(:root[data-theme]) .example.example,
+:global(:root[data-theme]) .homeRecentItem.homeRecentItem { border: 0; border-radius: 20px; background: var(--hover-wash); box-shadow: none; }
+:global(:root[data-theme]) .example.example:hover,
+:global(:root[data-theme]) .homeRecentItem.homeRecentItem:hover { background: var(--press-wash); box-shadow: 0 10px 28px rgb(var(--ring-rgb) / 0.16); }
+.homeRecentList { display: flex; flex-direction: column; gap: 6px; }
+.homeTile.homeTile { border: 0; }
+
+/* The question: Space Studio's user bubble (violet-tinted, a lit top edge and a soft drop) rising in out of a blur. */
+:global(:root[data-theme]) .userMsg {
+  padding: 13px 19px;
+  border: 0;
+  border-radius: 24px 24px 8px 24px;
+  background: linear-gradient(180deg, rgb(var(--ring-rgb) / 0.1), rgb(var(--ring-rgb) / 0.04)), var(--surface-raised);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 14px 34px rgb(0 0 0 / 0.28);
+  font-weight: var(--w-medium);
+}
+@media (min-width: 641px) and (prefers-reduced-motion: no-preference) {
+  .thread > .userTurn:nth-last-child(-n + 3) .userMsg { animation: spBubbleIn 0.6s var(--space-ease-expo) both; }
+}
+@keyframes spBubbleIn { 0% { opacity: 0; transform: translateY(14px) scale(0.98); filter: blur(8px); } 100% { opacity: 1; transform: none; filter: blur(0); } }
+.userMeta { padding-right: 8px; }
+
+/* "Latest" (jump to the end): a lit glass pill. */
+.jump { box-shadow: var(--space-glass-depth); background: var(--space-glass-solid); font-weight: var(--w-semibold); transition: color 0.25s ease, box-shadow 0.4s var(--space-ease-out); }
+.jump:hover { box-shadow: var(--space-glass-depth), 0 0 30px rgb(var(--ring-rgb) / 0.22); }
+
+/* Top bar: the free plan's Upgrade is the lit 3D primary (Space Studio's white face on its ledge; ink in Light). */
+:global(:root[data-theme]) .upgradeTop {
+  height: 36px;
+  font-weight: var(--w-bold);
+  background: var(--space-p-face);
+  color: var(--space-p-ink);
+  box-shadow: var(--space-p-depth);
+  transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out);
+}
+:global(:root[data-theme]) .upgradeTop:hover { transform: translateY(-1px); box-shadow: var(--space-p-depth-hover); }
+:global(:root[data-theme]) .upgradeTop:active { transform: translateY(var(--space-ledge)); box-shadow: var(--space-p-depth-press); transition-duration: 0.06s; }
+:global(:root[data-theme]) .upgradeTop:focus-visible { box-shadow: var(--space-p-depth), var(--space-focus-glow); }
+.dailyLeft { font-weight: var(--w-semibold); }
+
+/* App views (All chats, Projects, Connected apps, Deployments, Agents): Space headings, pill fields, pill rows. */
+.viewTitle { font-weight: var(--w-semibold); letter-spacing: -0.045em; }
+.viewTitle.viewTitle { font-weight: var(--w-semibold); }
+:global(:root[data-theme]) .textInput {
+  height: 48px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: var(--space-field);
+  box-shadow: var(--space-field-depth);
+  font-weight: var(--w-medium);
+  transition: background-color 0.25s ease, box-shadow 0.3s var(--space-ease-out);
+}
+:global(:root[data-theme]) .textInput:hover { background: var(--space-field-hover); }
+:global(:root[data-theme]) .textInput:focus,
+:global(:root[data-theme]) .textInput:focus-visible { background: var(--space-field-focus); box-shadow: var(--space-field-depth), var(--space-focus-glow); border-radius: 999px; }
+:global(:root[data-theme]) .textInput[aria-invalid="true"] { box-shadow: var(--space-field-depth), 0 0 0 2px rgb(var(--rgb-destructive) / 0.5), 0 0 30px rgb(var(--rgb-destructive) / 0.2); }
+.rows { border-top: 0; display: flex; flex-direction: column; gap: 6px; }
+.rowItem { border-bottom: 0; padding-right: 8px; border-radius: 22px; background: var(--hover-wash); transition: background-color 0.25s ease, box-shadow 0.4s var(--space-ease-out); }
+.rowItem:hover { background: var(--press-wash); box-shadow: 0 10px 28px rgb(var(--ring-rgb) / 0.14); }
+.rowMain { padding: 14px 18px; border-radius: 22px; }
+.rowMain:hover .rowTitle { text-decoration: none; }
+.rowSelect { border-radius: 999px; background: var(--space-field); box-shadow: var(--space-field-depth); padding: 0 12px; }
+.viewEmpty { border-top: 0; padding: 28px; border-radius: var(--space-r-card); background: var(--hover-wash); text-align: center; }
+.resumeList > li + li { border-top: 0; }
+.resumeList { gap: 4px; }
+.resumeItem { border-radius: 999px; }
+.offline { box-shadow: var(--space-glass-depth); }
+@media (max-width: 640px) {
+  :global(:root[data-theme]) .homeChip:hover, :global(:root[data-theme]) .useForOption:hover { translate: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :global(:root[data-theme]) .homeChip, :global(:root[data-theme]) .useForOption { transition: none; }
+  :global(:root[data-theme]) .homeChip:hover, :global(:root[data-theme]) .useForOption:hover, :global(:root[data-theme]) .upgradeTop:hover { translate: none; transform: none; }
+}
+
+/* Connected apps (/app/apps): the connections list is Keplar Business's shared component (business/McpConnections, styled by area
+   Business), so inside the app it is restyled here by element only: Space fields with the violet glow and 3D secondary buttons. */
+.view[data-connected-apps] :is(input:not([type="checkbox"], [type="radio"], [type="range"]), select) { border: 0; border-radius: 999px; background: var(--space-field); box-shadow: var(--space-field-depth); }
+.view[data-connected-apps] textarea { border: 0; border-radius: var(--space-r-area); background: var(--space-field); box-shadow: var(--space-field-depth); }
+.view[data-connected-apps] :is(input, select, textarea):focus-visible { background: var(--space-field-focus); box-shadow: var(--space-field-depth), var(--space-focus-glow); }
+.view[data-connected-apps] button:not([role]) { border: 0; border-radius: 999px; background: var(--space-s-face); color: var(--space-s-ink); box-shadow: var(--space-s-depth); font-weight: var(--w-bold); transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out); }
+.view[data-connected-apps] button:not([role]):hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--space-s-depth-hover); }
+.view[data-connected-apps] button:not([role]):active:not(:disabled) { transform: translateY(var(--space-ledge)); box-shadow: var(--space-s-depth-press); }
+.view[data-connected-apps] button:not([role]):focus-visible { box-shadow: var(--space-s-depth), var(--space-focus-glow); }
+.view[data-connected-apps] input[type="checkbox"] { accent-color: var(--c-accent); }
+.view[data-connected-apps] h2 { font-weight: var(--w-semibold); letter-spacing: -0.02em; }
+
+/* Deployments: rows are wash pills (no rule lines). */
+.deployList { border-top: 0; display: flex; flex-direction: column; gap: 6px; }
+.deployRow { border-bottom: 0; padding: 14px 20px; border-radius: 22px; background: var(--hover-wash); transition: background-color 0.25s ease, box-shadow 0.4s var(--space-ease-out); }
+.deployRow:hover { background: var(--press-wash); box-shadow: 0 10px 28px rgb(var(--ring-rgb) / 0.14); }
+.deployName { font-weight: var(--w-semibold); }
+@media (prefers-reduced-motion: reduce) { .view[data-connected-apps] button:not([role]):hover:not(:disabled) { transform: none; } }

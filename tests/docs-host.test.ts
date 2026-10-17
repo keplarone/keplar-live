@@ -84,7 +84,7 @@ function paint(url: string, stored: string | null) {
   return attrs;
 }
 
-test("docs paint light with data-docs before first paint; the stored preference is kept and the main site uses the default (light)", () => {
+test("docs paint light with data-docs before first paint; the stored preference is kept and the main site uses the default (light: the day sky)", () => {
   for (const url of ["https://keplar.one/docs", "https://keplar.one/docs/get-started/quickstart", "https://docs.keplar.one/", "https://docs.keplar.one/reference"]) {
     const a = paint(url, "dark");
     assert.equal(a["data-theme"], "light", url);
@@ -93,7 +93,7 @@ test("docs paint light with data-docs before first paint; the stored preference 
   }
   for (const url of ["https://keplar.one/", "https://keplar.one/docsy", "https://keplar.one/pricing"]) {
     const a = paint(url, null);
-    assert.equal(a["data-theme"], "light", url);
+    assert.equal(a["data-theme"], "light", url); // Space UI: light (the cloud sky) is the default (docs/design/space-ui.md)
     assert.equal(a["data-docs"], undefined, url);
   }
 });

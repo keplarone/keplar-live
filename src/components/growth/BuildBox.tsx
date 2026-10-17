@@ -51,7 +51,7 @@ export function BuildBox({ examples, where }: { examples: readonly string[]; whe
             }
           }}
         />
-        <button type="submit" className={s.tryGo} disabled={!text.trim()}>Start building →</button>
+        <button type="submit" className={`sp-btn ${s.tryGo}`} data-sp-btn="" data-variant="primary" data-size="md" disabled={!text.trim()}>Start building →</button>
       </form>
       <ul className={s.chips} aria-label="Example builds">
         {examples.map((ex) => (

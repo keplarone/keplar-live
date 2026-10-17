@@ -22,12 +22,13 @@
   gap: var(--s-16);
 }
 
-/* Kicker: plain small text, sentence case. Not a pill, not mono all-caps. */
+/* Kicker: Space Studio's eyebrow (12px, 0.18em tracked, uppercase, quiet ink). Plain text, not a pill. */
 .label {
-  font-size: var(--t-small);
+  font-size: 12px;
+  font-weight: var(--w-semibold);
   line-height: var(--lh-small);
-  letter-spacing: 0;
-  text-transform: none;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   color: var(--c-ink-3);
   margin-bottom: var(--s-4);
 }
@@ -36,8 +37,8 @@
 .headline {
   font-size: var(--t-title);
   line-height: 1.08;
-  letter-spacing: -0.04em;
-  font-weight: var(--w-regular);
+  letter-spacing: -0.045em;
+  font-weight: var(--w-semibold);
   text-wrap: balance;
   max-width: 22ch;
 }
@@ -46,8 +47,8 @@
 .display {
   font-size: var(--t-headline);
   line-height: var(--lh-headline);
-  letter-spacing: -0.04em;
-  font-weight: var(--w-regular);
+  letter-spacing: -0.045em;
+  font-weight: var(--w-semibold);
   text-wrap: balance;
   max-width: 18ch;
 }
@@ -75,8 +76,8 @@
   margin-top: var(--s-12);
   font-size: var(--t-title);
   line-height: 1.08;
-  letter-spacing: -0.04em;
-  font-weight: var(--w-regular);
+  letter-spacing: -0.045em;
+  font-weight: var(--w-semibold);
   color: var(--c-ink);
   text-wrap: balance;
 }
@@ -87,7 +88,7 @@
 
 .prose strong {
   color: var(--c-ink);
-  font-weight: var(--w-medium);
+  font-weight: var(--w-semibold);
 }
 
 .prose a {
@@ -99,7 +100,7 @@
 }
 
 .prose a:hover {
-  text-decoration-color: var(--c-ink);
+  text-decoration-color: var(--c-accent);
 }
 
 .prose ol,
@@ -109,9 +110,12 @@
   gap: var(--s-3);
 }
 
+/* Numbered steps: glass rows separated by space (no rules), the number on a small lit disc. */
 .steps {
   counter-reset: step;
-  border-top: var(--b-hairline) solid var(--hairline-strong);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
 }
 
 .steps li {
@@ -119,21 +123,24 @@
   display: grid;
   grid-template-columns: var(--s-12) minmax(0, 12rem) minmax(0, 1fr);
   gap: var(--s-4);
-  padding: var(--s-5) 0;
-  border-bottom: var(--b-hairline) solid var(--hairline);
+  padding: var(--s-5) var(--s-5);
+  border-radius: var(--space-r-panel);
+  background: var(--space-glass);
+  box-shadow: var(--space-glass-depth);
   align-items: baseline;
 }
 
 .steps li::before {
   content: counter(step, decimal-leading-zero);
   font-size: var(--t-small);
+  font-weight: var(--w-semibold);
   font-variant-numeric: tabular-nums;
-  color: var(--c-ink-3);
+  color: var(--c-accent);
 }
 
 .stepName {
   color: var(--c-ink);
-  font-weight: var(--w-medium);
+  font-weight: var(--w-semibold);
 }
 
 @media (max-width: 899px) {

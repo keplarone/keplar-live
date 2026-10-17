@@ -5,21 +5,22 @@
   position: relative;
   display: inline-flex;
   align-items: stretch;
-  padding: 2px;
+  padding: var(--ks-seg-pad, 2px);
   border-radius: var(--ks-radius-pill);
-  background: var(--ks-fill-active);
+  background: var(--ks-seg-track, var(--ks-fill-active));
+  box-shadow: var(--ks-seg-track-depth, none);
   isolation: isolate;
 }
 .seg[data-full] { display: flex; width: 100%; }
 .segThumb {
   position: absolute;
-  top: 2px;
-  bottom: 2px;
+  top: var(--ks-seg-pad, 2px);
+  bottom: var(--ks-seg-pad, 2px);
   left: 0;
   z-index: -1;
   border-radius: var(--ks-radius-pill);
-  background: var(--ks-surface-1);
-  box-shadow: 0 0 0 1px var(--ks-border), 0 1px 2px rgb(0 0 0 / 0.08);
+  background: var(--ks-seg-thumb, var(--ks-surface-1));
+  box-shadow: var(--ks-seg-thumb-depth, 0 0 0 1px var(--ks-border), 0 1px 2px rgb(0 0 0 / 0.08));
   pointer-events: none;
 }
 .segThumb[data-ready] {
@@ -50,7 +51,7 @@
 }
 .seg[data-size="sm"] .segOption { height: calc(var(--ks-control-sm) - 4px); padding: 0 var(--ks-space-2-5); font-size: var(--ks-text-sm); }
 .segOption:hover:not([aria-disabled="true"]) { color: var(--ks-text-1); }
-.segOption[aria-checked="true"] { color: var(--ks-text-1); }
+.segOption[aria-checked="true"] { color: var(--ks-seg-thumb-ink, var(--ks-text-1)); }
 .segOption[aria-disabled="true"] { color: var(--ks-text-disabled); cursor: default; }
 .segOption:focus-visible { box-shadow: var(--ks-focus-ring); }
 

@@ -10,8 +10,8 @@
 .defs dt { font-weight: var(--w-medium); }
 .defs dd { color: var(--c-ink-2); margin: 0; line-height: 1.5; }
 .pages { color: var(--c-ink-3); font-size: var(--t-label); font-weight: var(--w-regular); white-space: nowrap; }
-.note { padding: var(--s-3) var(--s-4); border-radius: var(--r-sm); background: var(--c-surface-1); color: var(--c-ink-2); box-shadow: var(--sh-hairline); font-size: var(--t-small); }
-.streak { display: flex; flex-direction: column; align-items: center; padding: var(--s-3) var(--s-5); border-radius: var(--r-md); background: var(--c-surface-1); box-shadow: var(--sh-hairline); }
+.note { padding: var(--s-3) var(--s-4); border-radius: var(--r-sm); background: var(--c-surface-1); color: var(--c-ink-2); box-shadow: var(--elev-1); font-size: var(--t-small); }
+.streak { display: flex; flex-direction: column; align-items: center; padding: var(--s-3) var(--s-5); border-radius: var(--r-md); background: var(--c-surface-1); box-shadow: var(--elev-1); }
 .streak strong { font-size: var(--t-title); line-height: 1; font-weight: var(--w-medium); }
 .streak span { color: var(--c-ink-3); font-size: var(--t-label); }
 .cardWrap { display: flex; flex-direction: column; align-items: center; gap: var(--s-4); }
@@ -19,7 +19,7 @@
 .flash { display: block; position: relative; width: min(100%, 640px); min-height: 260px; padding: 0; border-radius: var(--r-card); cursor: pointer; color: var(--c-ink); perspective: 1600px; text-align: left; }
 .flashInner { position: relative; display: grid; min-height: inherit; transform-style: preserve-3d; transition: transform 0.45s cubic-bezier(.65, 0, .35, 1); }
 .flash[data-flipped] .flashInner { transform: rotateY(180deg); }
-.face { position: relative; grid-area: 1 / 1; display: flex; flex-direction: column; justify-content: space-between; gap: var(--s-4); padding: var(--s-6); border-radius: var(--r-card); background: var(--c-surface-1); box-shadow: var(--sh-hairline), var(--sh-float); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.face { position: relative; grid-area: 1 / 1; display: flex; flex-direction: column; justify-content: space-between; gap: var(--s-4); padding: var(--s-6); border-radius: var(--r-card); background: var(--c-surface-1); box-shadow: var(--sh-float); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 .face[data-face="back"] { transform: rotateY(180deg); background: var(--c-ink); color: var(--c-canvas); }
 .face[data-face="back"] .flashSide, .face[data-face="back"] .pages { color: inherit; opacity: 0.65; }
 .flashSide { color: var(--c-ink-3); font-size: var(--t-label); letter-spacing: 0; text-transform: none; }
@@ -67,5 +67,35 @@
 @media (prefers-reduced-motion: reduce) { .track span { transition: none; } .flashInner { transition: none; } }
 
 /* UI v2: the sections are the kit's Tabs; notes and the streak are raised panels with a hairline (no frost). */
-.note, .streak { background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1); border-radius: var(--r-md); }
+.note, .streak { background: var(--surface-raised); box-shadow: var(--elev-1); border-radius: var(--r-md); }
 .count, .flashSide { text-transform: none; letter-spacing: 0; font-size: 13px; }
+
+/* ── Space UI (docs/design/space-ui.md, phase B): Study ──
+   Flashcards are 28px Space cards (the back is the lit face), quiz options and starters are wash pills/tiles that glow instead of
+   outlines (chosen = violet, right = green, wrong = red), the primary tile is the lit 3D face, tracks fill with the violet gradient,
+   and keyboard focus is the violet glow. */
+.option:focus-visible, .flash:focus-visible, .quizBtn:focus-visible { text-decoration: none; box-shadow: var(--space-focus-glow); }
+.face { border-radius: var(--space-r-card); background: linear-gradient(180deg, rgb(var(--ring-rgb) / 0.06), rgb(var(--ring-rgb) / 0) 50%), var(--surface-panel); box-shadow: var(--space-glass-depth); }
+.face[data-face="back"] { background: var(--space-p-face); color: var(--space-p-ink); box-shadow: var(--space-p-depth); }
+.flash:hover .face[data-face="front"] { box-shadow: var(--space-glass-lift); }
+.flashText { font-weight: var(--w-semibold); letter-spacing: -0.02em; }
+.quizBtn { border-radius: 22px; background: var(--hover-wash); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05); transition: background-color 0.3s ease, box-shadow 0.45s var(--space-ease-out), translate 0.45s var(--space-spring-snappy); }
+.quizBtn:hover:not(:disabled) { background: var(--press-wash); box-shadow: 0 12px 30px rgb(var(--ring-rgb) / 0.2); translate: 0 -2px; }
+.quizBtn[data-primary] { background: var(--space-p-face); color: var(--space-p-ink); box-shadow: var(--space-p-depth); }
+.quizBtn[data-primary]:hover:not(:disabled) { background: var(--space-p-face); box-shadow: var(--space-p-depth-hover); translate: 0 -1px; }
+.quizBtn[data-primary]:active:not(:disabled) { translate: 0 var(--space-ledge); box-shadow: var(--space-p-depth-press); transition-duration: 0.06s; }
+.question { font-weight: var(--w-semibold); letter-spacing: -0.02em; }
+.option { border-radius: 20px; background: var(--hover-wash); box-shadow: none; transition: background-color 0.25s ease, box-shadow 0.35s var(--space-ease-out); }
+.option:hover:not(:disabled) { background: var(--press-wash); }
+.option[aria-checked="true"] { background: rgb(var(--ring-rgb) / 0.14); box-shadow: 0 0 0 1.5px rgb(var(--ring-rgb) / 0.6), 0 0 24px rgb(var(--ring-rgb) / 0.22); }
+.option[data-state="right"] { background: rgb(var(--rgb-verified) / 0.12); box-shadow: 0 0 0 1.5px rgb(var(--rgb-verified) / 0.6), 0 0 24px rgb(var(--rgb-verified) / 0.2); }
+.option[data-state="wrong"] { background: rgb(var(--rgb-destructive) / 0.1); box-shadow: 0 0 0 1.5px rgb(var(--rgb-destructive) / 0.55), 0 0 24px rgb(var(--rgb-destructive) / 0.16); }
+.optLetter { border-radius: 999px; font-weight: var(--w-bold); }
+.note, .streak, .feedback { border-radius: 22px; background: var(--hover-wash); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05); }
+.streak strong, .stats strong { font-weight: var(--w-semibold); letter-spacing: -0.03em; }
+.msg { border-radius: 22px; background: var(--surface-panel); box-shadow: var(--space-glass-depth); }
+.msg[data-role="me"] { border-radius: 22px 22px 8px 22px; background: linear-gradient(180deg, rgb(var(--ring-rgb) / 0.1), rgb(var(--ring-rgb) / 0.04)), var(--surface-raised); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 10px 26px rgb(0 0 0 / 0.24); }
+.track { height: 6px; border-radius: 999px; background: var(--space-track); }
+.track span { border-radius: 999px; background: linear-gradient(90deg, #a467f0, #f08bd8); box-shadow: 0 0 8px rgb(var(--ring-rgb) / 0.45); }
+.list li::marker { color: var(--c-accent); }
+@media (max-width: 640px), (prefers-reduced-motion: reduce) { .quizBtn:hover:not(:disabled) { translate: none; } }

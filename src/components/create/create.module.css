@@ -16,10 +16,11 @@
   font: inherit;
   color: var(--c-ink);
   background: var(--surface-raised);
-  border: var(--b-hairline) solid var(--hairline-strong);
+  border: 1px solid transparent;
   border-radius: var(--r-input);
   padding: 0 var(--s-3);
   height: 36px;
+  box-shadow: var(--elev-1);
 }
 
 .textarea {
@@ -71,14 +72,14 @@
 .btnGhost {
   background: var(--surface-raised);
   color: var(--c-ink);
-  border-color: var(--hairline-strong);
+  border-color: transparent;
 }
 .btnGhost:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--hover-wash); }
 
 .btnDanger {
   background: var(--surface-raised);
   color: var(--c-destructive);
-  border-color: var(--hairline-strong);
+  border-color: transparent;
 }
 .btnDanger:hover:not(:disabled):not([aria-disabled="true"]) { background: rgb(var(--rgb-destructive) / 0.08); }
 
@@ -88,13 +89,14 @@
   gap: 6px;
   height: 26px;
   padding: 0 var(--s-2);
-  border: var(--b-hairline) solid var(--hairline-strong);
+  border: 1px solid transparent;
   border-radius: var(--r-sm);
   background: var(--surface-raised);
   color: var(--c-ink-2);
   font: inherit;
   font-size: var(--t-label);
   cursor: pointer;
+  box-shadow: var(--elev-1);
 }
 
 .iconBtn:hover {
@@ -142,4 +144,23 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* ── Space UI (docs/design/space-ui.md, phase B): this view's buttons draw Space Studio's 3D faces (space.css --space-p-* for the
+   one primary, --space-s-* for secondaries): a lit face over a ledge, a 1px lift and violet glow on hover, a press that sinks into
+   the ledge, the violet focus glow. Reduced motion keeps the faces and drops the lift. ── */
+:global(:root[data-theme]:not([data-business-app])) .btn {
+  background: var(--space-p-face);
+  color: var(--space-p-ink);
+  box-shadow: var(--space-p-depth);
+  border-color: transparent;
+  font-weight: var(--w-bold);
+  transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out), opacity 0.2s ease;
+}
+:global(:root[data-theme]:not([data-business-app])) .btn:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-p-face); transform: translateY(-1px); box-shadow: var(--space-p-depth-hover); }
+:global(:root[data-theme]:not([data-business-app])) .btn:active:not(:disabled, [aria-disabled="true"]) { transform: translateY(var(--space-ledge)); scale: none; box-shadow: var(--space-p-depth-press); transition-duration: 0.06s; }
+:global(:root[data-theme]:not([data-business-app])) .btn:focus-visible { box-shadow: var(--space-p-depth), var(--space-focus-glow); filter: none; text-decoration: none; }
+:global(:root[data-theme]:not([data-business-app])) .btn:disabled { transform: none; box-shadow: none; }
+@media (prefers-reduced-motion: reduce) {
+  :global(:root[data-theme]:not([data-business-app])) .btn:hover:not(:disabled) { transform: none; }
 }

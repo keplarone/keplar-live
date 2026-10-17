@@ -1,5 +1,6 @@
-/* The one page hero (UI v2, docs/ui-v2.md "Page hero"): a plain kicker, a regular-weight headline with tight tracking, a lead in
-   --c-ink-2, then at most one primary and one secondary CTA. It sits on the plain canvas: no pill, no glowing dot, no seam of light.
+/* The one page hero (Space UI, docs/design/space-ui.md): Space Studio's eyebrow (12px, tracked, uppercase, plain text), a semibold
+   headline with Space tracking, a lead in --c-ink-2, then at most one 3D primary and one secondary CTA. The block rises out of a
+   blur on wider screens (never on phones, never under reduced motion: it is the page's largest paint there).
    Used by PageHero, RoutePlaceholder, the editorial and landing templates and the Help page. */
 .page {
   position: relative;
@@ -21,6 +22,13 @@
 .header {
   max-width: clamp(720px, 62vw, 2000px);
 }
+@media (min-width: 641px) and (prefers-reduced-motion: no-preference) {
+  .header > * { animation: hero-rise var(--space-dur-entry) var(--space-ease-expo) both; }
+  .header > :nth-child(2) { animation-delay: 60ms; }
+  .header > :nth-child(3) { animation-delay: 120ms; }
+  .header > :nth-child(n + 4) { animation-delay: 180ms; }
+}
+@keyframes hero-rise { from { opacity: 0; transform: translateY(16px); filter: blur(10px); } to { opacity: 1; transform: none; filter: none; } }
 
 /* Kicker: plain small text in the quiet ink, sentence case. */
 .label {
@@ -28,11 +36,11 @@
   margin: 0 0 var(--s-5);
   padding: 0;
   font-family: var(--f-sans);
-  font-size: var(--t-small);
-  font-weight: var(--w-medium);
+  font-size: 12px;
+  font-weight: var(--w-semibold);
   line-height: var(--lh-small);
-  letter-spacing: 0;
-  text-transform: none;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   color: var(--c-ink-3);
 }
 
@@ -53,8 +61,8 @@
      in one piece (at a fixed 42-44px it split "superintelligenc / e?", QA 2026-10-05). */
   font-size: min(var(--t-headline), 11vw);
   line-height: 1.04;
-  letter-spacing: -0.04em;
-  font-weight: var(--w-regular);
+  letter-spacing: -0.045em;
+  font-weight: var(--w-semibold);
   color: var(--c-ink);
   text-wrap: balance;
   max-width: 18ch;

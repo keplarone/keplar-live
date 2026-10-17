@@ -1,6 +1,6 @@
 /*
  * The popup in keplar.one's theme (src/styles/tokens.css, light.css): light by default with an off-white canvas, white cards,
- * near-black ink, graphite pill buttons and soft cool shadows; the site's dark tokens when the browser is in dark mode.
+ * near-black ink, graphite pill buttons and soft cool shadows; the site's dark (Space) tokens when the browser is in dark mode.
  * Google Sans when installed (the site's font; extensions can't load web fonts under this CSP), else the system UI font.
  */
 :root {
@@ -16,25 +16,25 @@
   --btn: #0e0f12;
   --btn-ink: #ffffff;
   --btn-hover: #26262b;
-  --focus: #0a7a8a;
+  --focus: #7d3bc4;
   --err: #b42318;
   --shadow: 0 1px 2px rgb(14 15 18 / 0.05), 0 10px 28px -14px rgb(14 15 18 / 0.16);
 }
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-    --bg: #0b0b0d;
-    --panel: #141417;
-    --panel-2: #1c1c20;
+    --bg: #000000;
+    --panel: #0a0a0c;
+    --panel-2: #141417;
     --line: rgb(255 255 255 / 0.09);
     --line-strong: rgb(255 255 255 / 0.17);
-    --ink: #ededf0;
-    --ink2: #a4a6ad;
-    --ink3: #8b8d94;
-    --btn: #ededf0;
-    --btn-ink: #0b0b0d;
+    --ink: #f4f4f6;
+    --ink2: #b3b3bb;
+    --ink3: #8a8a94;
+    --btn: #f4f4f6;
+    --btn-ink: #000000;
     --btn-hover: #ffffff;
-    --focus: #5ecad8;
+    --focus: #c39bff;
     --err: #ff9a8f;
     --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 30px -16px rgb(0 0 0 / 0.7);
   }

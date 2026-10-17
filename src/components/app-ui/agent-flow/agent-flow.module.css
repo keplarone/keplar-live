@@ -9,7 +9,7 @@
   padding: var(--s-5);
   border-radius: var(--shape-card);
   background: var(--surface-raised);
-  box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1);
+  box-shadow: var(--elev-1);
   color: var(--c-ink);
   font-size: var(--t-small);
   min-width: 0;
@@ -25,7 +25,7 @@
 }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
 @media (prefers-reduced-motion: reduce) { .label[data-busy] { animation-duration: 2.4s; } }
-.chip { padding: 2px 10px; border-radius: var(--shape-pill); box-shadow: inset 0 0 0 1px var(--hairline-strong); font-size: var(--t-label); color: var(--c-ink-2); }
+.chip { padding: 2px 10px; border-radius: var(--shape-pill); box-shadow: var(--elev-1); font-size: var(--t-label); color: var(--c-ink-2); }
 .note { margin: 0; color: var(--c-ink-2); line-height: 1.5; max-width: 72ch; overflow-wrap: anywhere; }
 .inline { color: var(--c-ink); text-decoration: underline; text-underline-offset: 2px; }
 /* "Try again" inside a sentence: a kit ghost Button that sits on the text line */
@@ -42,12 +42,12 @@
   padding: var(--s-3) var(--s-4) var(--s-4);
   border-radius: var(--shape-card);
   background: var(--c-canvas);
-  box-shadow: inset 0 0 0 1px var(--hairline);
+  box-shadow: var(--elev-1);
   transition: box-shadow var(--d-base) var(--e-standard), opacity var(--d-base) var(--e-standard);
 }
 .node[data-state="pending"] { opacity: 0.72; }
 .node[data-state="skipped"] { opacity: 0.55; }
-.node[data-state="active"] { box-shadow: inset 0 0 0 1px var(--hairline-strong); }
+.node[data-state="active"] { box-shadow: var(--elev-1); }
 .node[data-state="waiting"] { box-shadow: inset 0 0 0 1px rgb(var(--rgb-attention) / 0.55); }
 .node[data-kind="approval"][data-state="done"] { box-shadow: inset 0 0 0 1px rgb(var(--rgb-verified) / 0.55); }
 .node[data-state="failed"] { box-shadow: inset 0 0 0 1px rgb(var(--rgb-destructive) / 0.5); }
@@ -72,27 +72,27 @@
 .fine { display: inline-flex; align-items: center; gap: 6px; margin-right: auto; color: var(--c-ink-3); font-size: var(--t-label); }
 
 .choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: var(--s-2); }
-.choice { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: var(--s-3); border: 0; border-radius: var(--shape-control); background: var(--c-canvas); box-shadow: inset 0 0 0 1px var(--hairline); color: var(--c-ink); font: inherit; text-align: left; cursor: pointer; }
-.choice:hover:not(:disabled) { box-shadow: inset 0 0 0 1px var(--hairline-strong); }
+.choice { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: var(--s-3); border: 0; border-radius: var(--shape-control); background: var(--c-canvas); box-shadow: var(--elev-1); color: var(--c-ink); font: inherit; text-align: left; cursor: pointer; }
+.choice:hover:not(:disabled) { box-shadow: var(--elev-1); }
 .choice:disabled { opacity: 0.6; cursor: default; }
 .choiceName { font-weight: 500; }
 .choiceSub { color: var(--c-ink-3); font-size: var(--t-label); }
 
-.approvals { position: relative; display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-4); border-radius: var(--shape-card); background: var(--c-canvas); box-shadow: inset 0 0 0 1px var(--hairline); }
+.approvals { position: relative; display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-4); border-radius: var(--shape-card); background: var(--c-canvas); box-shadow: var(--elev-1); }
 .apHead { display: flex; align-items: center; gap: var(--s-2); color: var(--c-ink-2); font-size: var(--t-label); }
-.count { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--shape-pill); box-shadow: inset 0 0 0 1px var(--hairline-strong); font-variant-numeric: tabular-nums; }
+.count { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--shape-pill); box-shadow: var(--elev-1); font-variant-numeric: tabular-nums; }
 .approvals[data-pending] .count { color: var(--c-attention); box-shadow: inset 0 0 0 1px rgb(var(--rgb-attention) / 0.55); }
 .apTitle { margin: 0; font-size: 20px; font-weight: 500; letter-spacing: -0.01em; }
 .apMeta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); color: var(--c-ink-3); font-size: var(--t-label); }
 .risk { padding: 1px 8px; border-radius: var(--shape-pill); font-size: var(--t-label); }
-.risk[data-risk="low"] { color: var(--c-ink-2); box-shadow: inset 0 0 0 1px var(--hairline-strong); }
+.risk[data-risk="low"] { color: var(--c-ink-2); box-shadow: var(--elev-1); }
 .risk[data-risk="medium"] { color: var(--c-attention); background: rgb(var(--rgb-attention) / 0.1); box-shadow: inset 0 0 0 1px rgb(var(--rgb-attention) / 0.45); }
 .risk[data-risk="high"] { color: var(--c-destructive); background: rgb(var(--rgb-destructive) / 0.08); box-shadow: inset 0 0 0 1px rgb(var(--rgb-destructive) / 0.45); }
-.preview { display: flex; flex-direction: column; gap: 4px; margin-top: var(--s-1); padding: var(--s-3); border-radius: var(--shape-control); background: var(--hover-wash); box-shadow: inset 0 0 0 1px var(--hairline); }
+.preview { display: flex; flex-direction: column; gap: 4px; margin-top: var(--s-1); padding: var(--s-3); border-radius: var(--shape-control); background: var(--hover-wash); box-shadow: var(--elev-1); }
 .previewHead { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .previewTitle { font-weight: 600; }
 .previewOf { color: var(--c-ink-3); font-size: var(--t-label); font-variant-numeric: tabular-nums; }
-.previewStatus { padding: 0 8px; border-radius: var(--shape-pill); font-size: var(--t-label); box-shadow: inset 0 0 0 1px var(--hairline-strong); color: var(--c-ink-2); }
+.previewStatus { padding: 0 8px; border-radius: var(--shape-pill); font-size: var(--t-label); box-shadow: var(--elev-1); color: var(--c-ink-2); }
 .previewStatus[data-status="sent"] { color: var(--c-verified); box-shadow: inset 0 0 0 1px rgb(var(--rgb-verified) / 0.45); }
 .previewStatus[data-status="failed"] { color: var(--c-destructive); box-shadow: inset 0 0 0 1px rgb(var(--rgb-destructive) / 0.45); }
 .pager { display: inline-flex; gap: 4px; margin-left: auto; }

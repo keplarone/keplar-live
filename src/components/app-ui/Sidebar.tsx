@@ -7,7 +7,7 @@ import { formatResetAt, PLAN_ALLOWANCES, WINDOW_WARN_AT, windowResetText } from 
 import { brand } from "@/lib/site";
 import { dailyLeftText, formatDailyReset } from "@/lib/usage/format";
 import { extensionNote, usageMeter } from "@/lib/usage/meter";
-import { IconAgents, IconApps, IconClose, IconCreate, IconDeploy, IconHistory, IconMore, IconPlus, IconProjects, IconSearch, IconSettings, IconSlides, IconStudy, IconWeb } from "./icons";
+import { IconApps, IconClose, IconCreate, IconDeploy, IconHistory, IconMore, IconPlus, IconProjects, IconSearch, IconSettings, IconSlides, IconStudy } from "./icons";
 import { pathForView } from "./app-paths";
 import type { AccountInfo, AppState, View } from "./state/types";
 import { AccountMenu, ImportPrompt, type ImportOffer } from "./AccountMenu";
@@ -49,8 +49,6 @@ const secondary: NavRow[] = [
   { view: "slides", label: "Slides", Icon: IconSlides },
   { view: "study", label: "Study", Icon: IconStudy },
   { view: "deployments", label: "Deployments", Icon: IconDeploy },
-  { view: "browser", label: "Keplar Browser", Icon: IconWeb },
-  { view: "wants", label: "Keplar Wants", Icon: IconAgents },
   { view: "apps", label: "Connected apps", Icon: IconApps },
   { view: "history", label: "All chats", Icon: IconHistory },
 ];

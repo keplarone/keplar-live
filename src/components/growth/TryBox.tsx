@@ -48,7 +48,7 @@ export function TryBox({ examples, where, heading = "Try it now. No signup." }: 
             }
           }}
         />
-        <button type="submit" className={s.tryGo} disabled={!text.trim()}>Ask Keplar →</button>
+        <button type="submit" className={`sp-btn ${s.tryGo}`} data-sp-btn="" data-variant="primary" data-size="md" disabled={!text.trim()}>Ask Keplar →</button>
       </form>
       <ul className={s.chips} aria-label="Example questions">
         {examples.map((ex) => (

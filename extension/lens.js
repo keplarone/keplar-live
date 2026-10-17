@@ -30,8 +30,8 @@
   // keplar.one's theme tokens (src/styles/tokens.css dark, light.css light) and its aura colours for the Lens glow.
   const style = document.createElement("style");
   style.textContent = [
-    ":host,:host([data-keplar='light']){--bg:#f7f8fa;--panel:#ffffff;--panel2:#f1f3f6;--ink:#0e0f12;--muted:#4b4f58;--faint:#686d78;--line:rgb(14 15 18 / .09);--strong:rgb(14 15 18 / .15);--btn:#0e0f12;--btnInk:#ffffff;--focus:#0a7a8a;--veil:rgb(14 15 18 / .38);--err:#b42318;--sh:0 1px 2px rgb(14 15 18 / .05),0 18px 48px -18px rgb(14 15 18 / .28)}",
-    ":host([data-keplar='dark']){--bg:#0b0b0d;--panel:#141417;--panel2:#1c1c20;--ink:#ededf0;--muted:#a4a6ad;--faint:#8b8d94;--line:rgb(255 255 255 / .09);--strong:rgb(255 255 255 / .17);--btn:#ededf0;--btnInk:#0b0b0d;--focus:#5ecad8;--veil:rgb(11 11 13 / .55);--err:#ff9a8f;--sh:0 1px 2px rgb(0 0 0 / .4),0 20px 50px -20px rgb(0 0 0 / .75)}",
+    ":host,:host([data-keplar='light']){--bg:#f7f8fa;--panel:#ffffff;--panel2:#f1f3f6;--ink:#0e0f12;--muted:#4b4f58;--faint:#686d78;--line:rgb(14 15 18 / .09);--strong:rgb(14 15 18 / .15);--btn:#0e0f12;--btnInk:#ffffff;--focus:#7d3bc4;--veil:rgb(14 15 18 / .38);--err:#b42318;--sh:0 1px 2px rgb(14 15 18 / .05),0 18px 48px -18px rgb(14 15 18 / .28)}",
+    ":host([data-keplar='dark']){--bg:#000000;--panel:#0a0a0c;--panel2:#141417;--ink:#f4f4f6;--muted:#b3b3bb;--faint:#8a8a94;--line:rgb(255 255 255 / .09);--strong:rgb(255 255 255 / .17);--btn:#f4f4f6;--btnInk:#000000;--focus:#c39bff;--veil:rgb(11 11 13 / .55);--err:#ff9a8f;--sh:0 1px 2px rgb(0 0 0 / .4),0 20px 50px -20px rgb(0 0 0 / .75)}",
     ":host{all:initial;--g1:#6d8dff;--g2:#b48cff;--g3:#ff9f7a;--g4:#5fd3b5}",
     "*{box-sizing:border-box;font:14px/1.5 \"Google Sans\",\"Product Sans\",system-ui,-apple-system,\"Segoe UI\",sans-serif;-webkit-font-smoothing:antialiased}",
     // The colour sweep when Lens opens, then a soft veil over the page.

@@ -24,10 +24,10 @@
   --c-agree: var(--c-reasoning);
   --c-dissent: #c9664a;
   --c-dissent-text: var(--c-disagree);
-  --c-focus: #0a7a8a;
-  --focus-filter: brightness(0.85); /* keyboard focus cue: no outline or box anywhere (globals.css) */
-  --c-accent: #0a7a8a; /* teal accent for links/highlights; primary buttons stay graphite */
-  --ring-rgb: 10 122 138; /* teal focus rings / soft glows */
+  --c-focus: #7d3bc4; /* Space violet, deepened for the light canvas (6.4:1 on white) */
+  --focus-filter: brightness(0.94); /* keyboard focus: the Space glow (space.css) plus this slight shift; never a browser outline */
+  --c-accent: #7d3bc4; /* Space violet accent for links/highlights/selection; primary buttons stay ink (light) / white (dark) */
+  --ring-rgb: 125 59 196; /* violet focus glows */
   --c-ink-hover: #1d1d22; /* hover for ink-filled (primary) controls */
   --c-ok: var(--c-verified); /* alias: one meaning, one color */
   --c-err: var(--c-destructive);
@@ -70,7 +70,7 @@
   --ui-scale: 1;
 
   /* type families + weights */
-  --f-sans: var(--font-sans), "Keplar Sans Fallback", ui-sans-serif, system-ui, sans-serif;
+  --f-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif; /* Montserrat (next/font: self-hosted, with its own metric-matched fallback in --font-sans) */
   --f-mono: var(--font-mono), ui-monospace, "SFMono-Regular", monospace;
   --w-light: 300;
   --w-regular: 400;
@@ -79,7 +79,7 @@
   --w-bold: 700;
 
   /* fluid type scale */
-  /* Display sizes were tuned for a wide face (Lexend Deca); Google Sans is narrower, so these stay as they were (never larger) and the fit audit decides. */
+  /* Display sizes: Montserrat is a wide face, so headings set it with Space Studio's tight tracking (-0.045em, redesign.css / space.css); the fit audit (FitRuntime) shrinks any line that would still overflow. */
   /* All sizes are rem-based so the browser's own text-size setting (and OS text scaling) scales them; at the default 16px they equal the old px values.
      Past ~1500px wide the body sizes keep growing smoothly with the window (linear in vw, capped), so there are no stepped jumps between 1800 / 2400 / 3200px. */
   --t-display: clamp(3.125rem, 7.6vw, 12.5rem);
@@ -125,15 +125,15 @@
   --r-xs: calc(10px * var(--ui-scale));
   --r-sm: calc(14px * var(--ui-scale));
   --r-md: calc(18px * var(--ui-scale));
-  --r-card: calc(24px * var(--ui-scale));
-  --r-card-lg: calc(28px * var(--ui-scale));
+  --r-card: calc(28px * var(--ui-scale)); /* Space Studio glass card */
+  --r-card-lg: calc(36px * var(--ui-scale));
   --r-input: calc(22px * var(--ui-scale));
   --r-pill: 999px;
   /* shape roles (glass.css "Shape system"): pill = CTAs, chips, badges, switches, round icon buttons; control = every other
      button (a rounded rectangle); card = cards, tiles, thumbnails, list rows */
   --shape-pill: 9999px;
-  --shape-control: 14px;
-  --shape-card: 22px;
+  --shape-control: 9999px; /* Space Studio: every control is a pill */
+  --shape-card: 28px;
 
   /* border */
   --b-hairline: 1px;
@@ -180,59 +180,61 @@
 }
 
 /*
- * Dark theme (the default). <html data-theme> is set before paint by the
- * inline script in the root layout (src/lib/theme.ts). Contrast: ink-2 on
- * canvas ≈ 7.9:1, ink-3 ≈ 5.6:1, dissent text ≈ 7:1.
+ * Dark theme = the Space theme (the default since the Space UI, docs/design/space-ui.md): the Space Studio palette. A black void
+ * (#000) with surfaces raised by light, not lines: #0a0a0c panels, #141417 raised, #1e1e23 pressed. White primary on black, a
+ * violet focus glow (#c39bff), Space Studio's semantic hues. <html data-theme> is set before paint by the inline script in the root
+ * layout (src/lib/theme.ts). Contrast on black: ink 19:1, ink-2 10:1, ink-3 6.1:1 (5.4:1 on #141417, 4.9:1 on #1e1e23).
  */
 :root[data-theme="dark"] {
-  --c-canvas: #0b0b0d;
-  --c-surface-1: #141417;
-  --c-surface-2: #1c1c20;
-  --c-ink: #ededf0;
-  --c-ink-2: #a4a6ad;
-  --c-ink-3: #8b8d94;
-  --c-border: rgb(255 255 255 / 0.07);
-  --c-border-strong: rgb(255 255 255 / 0.13);
-  --c-glass: rgba(22, 22, 26, 0.6);
-  --c-glass-strong: rgba(26, 26, 30, 0.82);
-  --c-glass-border: rgba(255, 255, 255, 0.08);
+  --c-canvas: #000000;
+  --c-surface-1: #0a0a0c;
+  --c-surface-2: #141417;
+  --c-ink: #f4f4f6;
+  --c-ink-2: #b3b3bb;
+  --c-ink-3: #8a8a94;
+  /* No outlines (Space Studio): lines are nearly invisible; depth and light separate surfaces. Data tables still get a faint rule. */
+  --c-border: rgb(255 255 255 / 0.05);
+  --c-border-strong: rgb(255 255 255 / 0.09);
+  --c-glass: rgba(16, 15, 22, 0.78);
+  --c-glass-strong: rgba(14, 13, 20, 0.9);
+  --c-glass-border: transparent;
   --c-agree: var(--c-reasoning);
-  --c-dissent: #e08466;
+  --c-dissent: #ff9f8a;
   --c-dissent-text: var(--c-disagree);
-  --c-focus: #5ecad8;
-  --focus-filter: brightness(1.45);
-  --c-accent: #5ecad8;
-  --ring-rgb: 94 202 216;
+  --c-focus: #c39bff;
+  --focus-filter: brightness(1.12);
+  --c-accent: #c39bff;
+  --ring-rgb: 195 155 255;
   --c-ink-hover: #ffffff;
   --c-ok: var(--c-verified); /* alias: one meaning, one color */
   --c-err: var(--c-destructive);
-  --c-reasoning: #5ecad8; --rgb-reasoning: 94 202 216;
-  --c-research: #7ab8c8; --rgb-research: 122 184 200;
-  --c-creation: #e0a86a; --rgb-creation: 224 168 106;
-  --c-verified: #6fd3a0; --rgb-verified: 111 211 160;
-  --c-attention: #f0c060; --rgb-attention: 240 192 96;
-  --c-disagree: #f0a88f; --rgb-disagree: 240 168 143;
-  --c-destructive: #ff8c7e; --rgb-destructive: 255 140 126;
-  --v-reasoning: #5ecad8; --on-reasoning: #09090b;
-  --v-research: #7ab8c8; --on-research: #09090b;
-  --v-creation: #e0a86a; --on-creation: #09090b;
-  --v-memory: #e09aa4; --on-memory: #09090b;
-  --v-disagree: #e5805e; --on-disagree: #09090b;
-  --v-attention: #e2a73b; --on-attention: #09090b;
-  --v-verified: #34a56f; --on-verified: #09090b;
-  --v-destructive: #ff6b5c; --on-destructive: #09090b;
-  --c-memory: #e09aa4; --rgb-memory: 224 154 164;
-  --n-paper: #121214; --n-silver: #34363c; --n-graphite: #1c1d21; --n-black: #050506;
-  --n-mark: #b4b6bd;
-  --n-line: #5b5d65;
-  --c-night: #16161a;
-  --c-night-ink: #ededf0;
-  --rgb-ink: 237 237 240;
-  --rgb-canvas: 11 11 13;
-  --rgb-surface: 20 20 23;
-  --sh-hairline: 0 0 0 1px rgba(255, 255, 255, 0.07);
-  --sh-float: 0 1px 1px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
-  --sh-window: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 30px 80px -40px rgba(0, 0, 0, 0.8), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --c-reasoning: #6ea8ff; --rgb-reasoning: 110 168 255;
+  --c-research: #8fd8ff; --rgb-research: 143 216 255;
+  --c-creation: #ffb37a; --rgb-creation: 255 179 122;
+  --c-verified: #5fd49a; --rgb-verified: 95 212 154;
+  --c-attention: #ffd66b; --rgb-attention: 255 214 107;
+  --c-disagree: #ffa58f; --rgb-disagree: 255 165 143;
+  --c-destructive: #ff7a85; --rgb-destructive: 255 122 133;
+  --v-reasoning: #6ea8ff; --on-reasoning: #000000;
+  --v-research: #8fd8ff; --on-research: #000000;
+  --v-creation: #ffb37a; --on-creation: #000000;
+  --v-memory: #f08bd8; --on-memory: #000000;
+  --v-disagree: #ff8f78; --on-disagree: #000000;
+  --v-attention: #ffd66b; --on-attention: #000000;
+  --v-verified: #5fd49a; --on-verified: #000000;
+  --v-destructive: #ff7a85; --on-destructive: #000000;
+  --c-memory: #f08bd8; --rgb-memory: 240 139 216;
+  --n-paper: #0a0a0c; --n-silver: #2a2a31; --n-graphite: #141417; --n-black: #000000;
+  --n-mark: #b3b3bb;
+  --n-line: #4a4a52;
+  --c-night: #0a0a0c;
+  --c-night-ink: #f4f4f6;
+  --rgb-ink: 244 244 246;
+  --rgb-canvas: 0 0 0;
+  --rgb-surface: 10 10 12;
+  --sh-hairline: inset 0 1px 0 rgb(255 255 255 / 0.05);
+  --sh-float: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 18px 48px rgb(0 0 0 / 0.5);
+  --sh-window: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 30px 80px -30px rgb(0 0 0 / 0.85), 0 0 90px rgb(176 104 255 / 0.08);
   color-scheme: dark;
 }
 
@@ -262,17 +264,17 @@
   --elev-3: 0 2px 6px rgb(14 15 18 / 0.06), 0 20px 48px -18px rgb(14 15 18 / 0.3);
 }
 :root[data-theme="dark"] {
-  --surface-panel: #141417;
-  --surface-raised: #1c1c20;
-  --surface-overlay: #1c1c20;
-  --hairline: rgb(255 255 255 / 0.07);
-  --hairline-strong: rgb(255 255 255 / 0.13);
-  --hover-wash: rgb(255 255 255 / 0.06);
-  --press-wash: rgb(255 255 255 / 0.1);
+  --surface-panel: #0a0a0c;
+  --surface-raised: #141417;
+  --surface-overlay: #111114;
+  --hairline: rgb(255 255 255 / 0.05);
+  --hairline-strong: rgb(255 255 255 / 0.09);
+  --hover-wash: rgb(255 255 255 / 0.07);
+  --press-wash: rgb(255 255 255 / 0.11);
   --field-border: rgb(255 255 255 / 0.4);
-  --elev-1: 0 1px 2px rgb(0 0 0 / 0.4);
-  --elev-2: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -14px rgb(0 0 0 / 0.7);
-  --elev-3: 0 2px 6px rgb(0 0 0 / 0.45), 0 20px 48px -18px rgb(0 0 0 / 0.8);
+  --elev-1: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 1px 2px rgb(0 0 0 / 0.5);
+  --elev-2: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 14px 36px rgb(0 0 0 / 0.5);
+  --elev-3: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 18px 48px rgb(0 0 0 / 0.55), 0 2px 8px rgb(0 0 0 / 0.35);
 }
 
 /* Phones: labels (footer headings, status tags, table headers, kickers) come out at 11px from the fluid scale above. 12px is the
@@ -313,13 +315,13 @@
   --nav-ink: #09090b;
   --nav-link: #34363c;
   --nav-link-2: #4a4c53;
-  --nav-hover-bg: rgb(10 122 138 / 0.10);
-  --nav-active-bg: rgb(10 122 138 / 0.14);
+  --nav-hover-bg: rgb(14 15 18 / 0.05);
+  --nav-active-bg: rgb(14 15 18 / 0.08);
   --nav-edge-hi: rgb(255 255 255 / 0.95);
   --nav-edge-lo: rgb(255 255 255 / 0.5);
   --nav-rim: rgb(9 9 11 / 0.14);
   --nav-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 10px 30px -10px rgb(0 0 0 / 0.28);
-  --nav-focus: #0a7a8a;
+  --nav-focus: #7d3bc4;
   --nav-menu-fill: rgb(255 255 255 / 0.97);
   --nav-sheet: rgb(255 255 255 / 0.97);
   --nav-cta-bg: #17171a;
@@ -328,23 +330,23 @@
   --nav-cta-shadow: 0 1px 2px rgb(0 0 0 / 0.25), 0 8px 18px -8px rgb(0 0 0 / 0.55);
 }
 :root[data-theme="dark"] {
-  --nav-fill: rgb(20 20 23 / 0.92);
-  --nav-fill-scrolled: rgb(16 16 19 / 0.95);
-  --nav-solid: #141417;
+  --nav-fill: rgb(14 14 20 / 0.86);
+  --nav-fill-scrolled: rgb(12 12 17 / 0.92);
+  --nav-solid: #0e0e14;
   --nav-ink: #ffffff;
   --nav-link: #e4e6ea;
   --nav-link-2: #d6d8de;
-  --nav-hover-bg: rgb(94 202 216 / 0.12);
-  --nav-active-bg: rgb(94 202 216 / 0.18);
-  --nav-edge-hi: rgb(255 255 255 / 0.26);
-  --nav-edge-lo: rgb(255 255 255 / 0.05);
-  --nav-rim: rgb(255 255 255 / 0.16);
-  --nav-shadow: 0 1px 2px rgb(0 0 0 / 0.45), 0 12px 34px -12px rgb(0 0 0 / 0.7);
-  --nav-focus: #5ecad8;
-  --nav-menu-fill: rgb(20 20 23 / 0.97);
-  --nav-sheet: rgb(11 11 13 / 0.97);
+  --nav-hover-bg: rgb(255 255 255 / 0.07);
+  --nav-active-bg: rgb(255 255 255 / 0.11);
+  --nav-edge-hi: rgb(255 255 255 / 0.06);
+  --nav-edge-lo: transparent;
+  --nav-rim: transparent;
+  --nav-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 16px 40px rgb(0 0 0 / 0.45);
+  --nav-focus: #c39bff;
+  --nav-menu-fill: rgb(16 14 22 / 0.97);
+  --nav-sheet: rgb(10 9 14 / 0.97);
   --nav-cta-bg: #ffffff;
   --nav-cta-solid: #f4f4f5;
-  --nav-cta-ink: #09090b;
-  --nav-cta-shadow: 0 8px 18px -8px rgb(0 0 0 / 0.7);
+  --nav-cta-ink: #000000;
+  --nav-cta-shadow: inset 0 1px 0 #fff, inset 0 -3px 0 rgb(0 0 0 / 0.1), 0 4px 0 #8c8a99, 0 10px 24px rgb(0 0 0 / 0.6);
 }

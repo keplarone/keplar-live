@@ -21,8 +21,9 @@
   top: 5px;
   left: 12px;
   right: calc(-1 * var(--s-2));
-  height: 1px;
-  background: var(--c-border-strong);
+  height: 2px;
+  border-radius: 2px;
+  background: var(--hover-wash);
 }
 .step:last-child::before { display: none; }
 .step[data-reached]::before { background: var(--tone, var(--c-ink-3)); }
@@ -33,10 +34,11 @@
   width: 11px;
   height: 11px;
   border-radius: 50%;
-  border: 1.5px solid var(--c-border-strong);
-  background: var(--c-canvas);
+  border: 0;
+  background: var(--hover-wash);
+  box-shadow: inset 0 0 0 1.5px rgb(var(--rgb-ink) / 0.3);
 }
-.step[data-reached] .node { background: var(--tone, var(--c-ink-3)); border-color: var(--tone, var(--c-ink-3)); }
+.step[data-reached] .node { background: var(--tone, var(--c-ink-3)); box-shadow: 0 0 10px var(--tone, transparent); }
 .step[data-tone="verified"] { --tone: var(--c-verified); }
 .step[data-tone="attention"] { --tone: var(--c-attention); }
 .step[data-tone="destructive"] { --tone: var(--c-destructive); }

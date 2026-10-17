@@ -42,8 +42,8 @@ Disposition: **Keep** (meets the bar; covered by tests), **Improve** (keep, fix 
 | Business | Agents and approvals | `AgentsPanel`, `api/business/{agents,approvals}` | Real | AI-1, AI-2, AI-9, AI-10, AZ-2 | agents-*, scheduler | Improve (security) |
 | Business | Teams | `api/team`, TeamPanel | Beta | AZ-2 | team, business-team, e2e | Improve |
 | Business | MCP / connectors | `McpConnections.tsx`, `api/mcp`, `api/business/connectors` | Real, not tried with live accounts | Reachable in Keplar One at `/app/apps` (d972c56) and in Business | mcp-*, connectors-*, app-reach | Improve; Blocked for live verification |
-| Agents | Keplar Browser | `/app/browser`, `lib/browser/*` | Built, never run live | UX-2 fixed (d972c56: app shell, sidebar); IN-1 (fixed); AI-5 | browser-agent, app-reach | Improve (run live) |
-| Agents | Keplar Wants | `/app/wants`, `lib/wants/*` | Real (production uses existing pipeline) | UX-2 and page description fixed (d972c56); AI-13 | wants-* (7), app-reach | Improve |
+| Agents | Keplar Browser | (removed; `/app/browser` redirects to Ask) | Removed by owner decision (2026-10-17) | n/a | n/a | Removed by owner decision (2026-10-17) |
+| Agents | Keplar Wants | (removed; `/app/wants` redirects to Ask) | Removed by owner decision (2026-10-17) | n/a | n/a | Removed by owner decision (2026-10-17) |
 | Agents | `/app/agents`, `/approvals`, `/business` in Keplar One | `KeplarApp.tsx:1352-1388` | Unwired (redirected to Business) | MCP OAuth return opens an embedded Business view | app-tabs e2e (stale) | Consolidate |
 | Developers | Public API, extension, embed | `/developers`, `api/v1`, `extension/`, `/embed` | Beta | Store-submission status contradicts docs | api-keys, extension, embed, api e2e | Improve (docs) |
 | Admin | Admin console | `/admin/*` | Real | AZ-6; kit confirm dialogs (4b40ad2) | admin-mfa, ops | Improve |

@@ -78,7 +78,7 @@
   color: var(--n-graphite);
 }
 .seat[data-state="responded"] .disc {
-  box-shadow: inset 0 0 0 1px var(--hairline-strong), 0 0 0 2px rgb(var(--rgb-reasoning) / 0.4), var(--elev-1);
+  box-shadow: 0 0 0 2px rgb(var(--rgb-reasoning) / 0.4), var(--elev-1);
 }
 .seat[data-state="failed"] .disc,
 .seat[data-state="refused"] .disc {
@@ -89,7 +89,7 @@
 .seat[data-state="pending"] .disc {
   opacity: 0.4;
   background: var(--c-surface-2);
-  box-shadow: inset 0 0 0 1px var(--hairline-strong);
+  box-shadow: var(--elev-1);
   animation: seatIn var(--d-slow) var(--e-emphasized) both, wait 1.4s var(--e-glide) infinite alternate;
 }
 

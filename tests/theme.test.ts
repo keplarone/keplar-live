@@ -18,7 +18,8 @@ function runScript({ stored, cookie = "", osDark = false }: { stored?: string | 
   return { theme: attrs["data-theme"], pref: attrs["data-theme-pref"], classes: [...classes], scheme: root.style.colorScheme };
 }
 
-test("theme: Light by default for everyone (even on a dark device); Dark and Auto are opt-in; bad values fall back to Light", () => {
+test("theme: Light (the day sky) by default for everyone (even on a dark device); Dark and Auto are opt-in; bad values fall back to Light", () => {
+  // Space UI decision (docs/design/space-ui.md, cloud sky). A saved choice still wins, so people who picked Dark keep it.
   assert.equal(DEFAULT_THEME_PREF, "light");
   assert.deepEqual(runScript({}), { theme: "light", pref: "light", classes: ["light"], scheme: "light" });
   assert.equal(runScript({ osDark: true }).theme, "light", "a dark device still gets light until the user chooses Dark or Auto");

@@ -7,17 +7,17 @@ const read = (p: string) => readFileSync(path.join(process.cwd(), p), "utf8");
 const glass = read("src/styles/glass.css");
 const tokens = read("src/styles/tokens.css");
 
-test("shape tokens exist once, in tokens.css: pill, control (rounded rectangle) and card", () => {
+test("shape tokens exist once, in tokens.css: pill, control and card (Space UI: every control is a pill, cards are 28px glass)", () => {
   assert.match(tokens, /--shape-pill:\s*9999px/);
-  assert.match(tokens, /--shape-control:\s*14px/);
-  assert.match(tokens, /--shape-card:\s*22px/);
+  assert.match(tokens, /--shape-control:\s*9999px/);
+  assert.match(tokens, /--shape-card:\s*28px/);
   for (const f of ["src/styles/glass.css", "src/styles/redesign.css", "src/styles/light.css"]) {
     const css = read(f).replace(/\/\*[\s\S]*?\*\//g, "");
     assert.doesNotMatch(css, /--(shape-(pill|control|card)|r-(xs|sm|md|card|card-lg)):/, `${f} re-declares a radius token`);
   }
 });
 
-test("buttons default to a rounded rectangle at zero specificity, so a component's own class decides its shape", () => {
+test("buttons default to the control shape (a pill in the Space UI) at zero specificity, so a component's own class decides its shape", () => {
   const m = /:where\(button,[^)]*\)\s*\{([^}]*)\}/.exec(glass);
   assert.ok(m, "default rule uses :where()");
   assert.match(m![1], /border-radius:\s*var\(--shape-control\)/);
@@ -32,7 +32,7 @@ test("pill is an explicit opt-in", () => {
 test("tabs, dropdown triggers, sidebar items and list rows are not pills", () => {
   const css = (f: string) => read(f);
   const rule = (file: string, sel: string) => {
-    const re = new RegExp(`(^|\\n|\\})\\s*${sel.replace(/[.>[\]]/g, "\\$&")}\\s*\\{([^}]*)\\}`, "g");
+    const re = new RegExp(`(^|\\n|\\})\\s*${sel.replace(/[.*+?^${}()|[\]\\>]/g, "\\$&")}\\s*\\{([^}]*)\\}`, "g");
     return [...css(file).matchAll(re)].map((x) => x[2]).join(" ");
   };
   const notPill = [

@@ -1,42 +1,63 @@
-/* Page and marketing CTAs (docs/ui-v2.md): pills. primary = ink, secondary = raised surface with a hairline, quiet = text.
-   Hover changes colour or edge; press is the site's var(--m-press) dip. No glass, no swell, no pointer light. */
+/* Page and marketing CTAs, in the Space UI (docs/design/space-ui.md): Space Studio's 3D pill. primary = the lit white face on a
+   grey ledge (dark) / ink face on a black ledge (light); secondary = glass; quiet = text. Hover lifts 1px; a press sinks the face
+   into its ledge. The recipe tokens (--space-*-face / -depth) live in src/styles/space.css. */
 .button {
+  --b-face: var(--space-p-face);
+  --b-ink: var(--space-p-ink);
+  --b-depth: var(--space-p-depth);
+  --b-depth-hover: var(--space-p-depth-hover);
+  --b-depth-press: var(--space-p-depth-press);
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--s-2);
-  height: 44px;
-  padding: 0 var(--s-5);
+  height: 48px;
+  padding: 0 26px;
   border: 0;
   border-radius: var(--r-pill);
-  font-size: var(--t-small);
-  font-weight: var(--w-medium);
-  letter-spacing: var(--tr-body);
+  background: var(--b-face);
+  color: var(--b-ink);
+  box-shadow: var(--b-depth);
+  font-size: 15px;
+  font-weight: var(--w-bold);
+  letter-spacing: -0.01em;
   white-space: nowrap;
   text-decoration: none;
   cursor: pointer;
-  transition: background-color var(--m-dur-1) var(--m-ease-out), color var(--m-dur-1) var(--m-ease-out), box-shadow var(--m-dur-2) var(--m-ease-out), scale var(--m-dur-1) var(--m-ease-out);
+  transform: translateY(0);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.2s ease, color var(--m-dur-1) var(--m-ease-out);
 }
-.button:active:not(:disabled):not([aria-disabled="true"]) { scale: var(--m-press); }
-.button:disabled, .button[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
+@media (hover: hover) {
+  .button:hover:not(:disabled):not([aria-disabled="true"]):not(.quiet) { transform: translateY(-1px); filter: brightness(1.03); box-shadow: var(--b-depth-hover); }
+}
+.button:active:not(:disabled):not([aria-disabled="true"]):not(.quiet) { transform: translateY(var(--space-ledge, 4px)); box-shadow: var(--b-depth-press); scale: none; transition-duration: 0.06s; }
+.button:focus-visible { box-shadow: var(--b-depth), var(--space-focus-glow) !important; }
+.button:disabled, .button[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; box-shadow: none; transform: none; }
+.button[aria-busy="true"] { cursor: progress; }
 
 /* The label and any icon sit on one line ("[download icon] Download for desktop" wrapped the icon above the text). */
 .button > span[data-fit] { display: inline-flex; align-items: center; gap: var(--s-2); }
 
-.sm { height: 36px; padding: 0 var(--s-4); }
-.lg { height: 52px; padding: 0 var(--s-6); font-size: var(--t-body); }
+.sm { height: 38px; padding: 0 18px; font-size: 13.5px; }
+.lg { height: 56px; padding: 0 32px; font-size: 16px; }
 
-.primary { background: var(--c-ink); color: var(--c-canvas); box-shadow: var(--elev-1); }
-.primary:hover { background: var(--c-ink-hover); }
+.primary { --b-variant: primary; } /* the default recipe above */
 
-.secondary { background: var(--surface-raised); color: var(--c-ink); box-shadow: inset 0 0 0 1px var(--hairline-strong); }
-.secondary:hover { box-shadow: inset 0 0 0 1px rgb(var(--rgb-ink) / 0.28); }
+.secondary {
+  --b-face: var(--space-s-face);
+  --b-ink: var(--space-s-ink);
+  --b-depth: var(--space-s-depth);
+  --b-depth-hover: var(--space-s-depth-hover);
+  --b-depth-press: var(--space-s-depth-press);
+}
 
-.quiet { padding: 0 var(--s-3); color: var(--c-ink-2); background: transparent; }
+.quiet { padding: 0 var(--s-3); color: var(--c-ink-2); background: transparent; box-shadow: none; font-weight: var(--w-semibold); }
 .quiet:hover { color: var(--c-ink); background: var(--hover-wash); }
+.quiet:active { scale: var(--m-press); }
+.quiet:focus-visible { box-shadow: var(--space-focus-glow) !important; }
 
-.arrow { display: inline-block; transition: translate var(--m-dur-2) var(--m-ease-out); }
+.arrow { display: inline-block; transition: translate 0.4s var(--space-spring-bouncy, var(--m-ease-out)); }
 .button:hover .arrow { translate: 3px 0; }
 
 /* Touch: the small button is still a full 44px target. */

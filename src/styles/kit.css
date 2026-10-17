@@ -32,7 +32,7 @@
   --ks-focus: var(--c-focus);
   --ks-primary-bg: var(--c-ink);
   --ks-primary-bg-hover: var(--c-ink-hover);
-  --ks-primary-text: var(--c-canvas);
+  --ks-primary-text: var(--space-p-ink);
   /* status */
   --ks-success: var(--c-verified);
   --ks-warning: var(--c-attention);
@@ -44,7 +44,7 @@
   --ks-info-subtle: rgb(var(--rgb-research) / 0.1);
   --ks-danger-solid: var(--c-destructive);
   --ks-danger-solid-hover: var(--v-destructive);
-  --ks-danger-ink: var(--c-canvas);
+  --ks-danger-ink: var(--space-d-ink);
   --ks-diff-add-bg: rgb(var(--rgb-verified) / 0.1);
   --ks-diff-add-emph: rgb(var(--rgb-verified) / 0.22);
   --ks-diff-del-bg: rgb(var(--rgb-destructive) / 0.08);
@@ -72,8 +72,8 @@
   /* shape and size: Keplar One's rounder, roomier controls */
   --ks-radius-xs: 6px;
   --ks-radius-sm: 10px;
-  --ks-radius-md: 14px;
-  --ks-radius-lg: 22px;
+  --ks-radius-md: 20px; /* Space UI: popovers and menus are soft glass (Space Studio's profile card is 26px) */
+  --ks-radius-lg: 28px; /* dialogs: the 28px Space card */
   --ks-radius-pill: 999px;
   --ks-control-sm: 32px;
   --ks-control-md: 40px;
@@ -116,10 +116,36 @@
   --ks-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
   --ks-ease-exit: cubic-bezier(0.4, 0, 1, 1);
   --ks-ease-spring: cubic-bezier(0.34, 1.2, 0.64, 1);
-  /* Focus is never a box on keplar.one (globals.css, e2e/no-focus-box): the kit draws no ring here; the site-wide keyboard cue
-     (a brightness shift plus an underline or bar) applies instead. Keplar Studio keeps its ring inside <StudioRoot>. */
-  --ks-focus-ring: 0 0 0 0 transparent;
-  --ks-focus-ring-inset: 0 0 0 0 transparent;
+  /* Keyboard focus is Space Studio's violet glow (space.css --space-focus-glow); a pointer press still draws nothing
+     (:focus-visible only, e2e/no-focus-box). Keplar Studio keeps its own ring inside <StudioRoot>. */
+  --ks-focus-ring: var(--space-focus-glow);
+  --ks-focus-ring-inset: inset 0 0 0 2px rgb(var(--ring-rgb) / 0.6);
+  /* Space UI 3D controls (docs/design/space-ui.md): the kit's Button / IconButton / link-action read these. face = background,
+     depth = box-shadow (ledge + drop), press-y = how far the face sinks into its ledge. */
+  --ks-primary-face: var(--space-p-face);
+  --ks-primary-depth: var(--space-p-depth);
+  --ks-primary-depth-hover: var(--space-p-depth-hover);
+  --ks-primary-depth-press: var(--space-p-depth-press);
+  --ks-secondary-face: var(--space-s-face);
+  --ks-secondary-depth: var(--space-s-depth);
+  --ks-secondary-depth-hover: var(--space-s-depth-hover);
+  --ks-secondary-depth-press: var(--space-s-depth-press);
+  --ks-danger-face: var(--space-d-face);
+  --ks-danger-depth: var(--space-d-depth);
+  --ks-danger-depth-hover: var(--space-d-depth-hover);
+  --ks-danger-depth-press: var(--space-d-depth-press);
+  --ks-press-y: var(--space-ledge);
+  --ks-switch-on: linear-gradient(90deg, #a467f0, #d76cff);
+  --ks-switch-on-glow: 0 0 18px rgb(176 104 255 / 0.35);
+  --ks-switch-thumb-on: #ffffff;
+  /* segmented control: a glass track and Space Studio's lit thumb (white in dark, ink in light) */
+  --ks-seg-pad: 4px;
+  --ks-seg-track: var(--nav-fill);
+  --ks-seg-track-depth: var(--nav-shadow);
+  --ks-seg-thumb: var(--space-p-face);
+  --ks-seg-thumb-depth: inset 0 -2px 0 rgb(0 0 0 / 0.12), 0 6px 20px rgb(var(--ring-rgb) / 0.18);
+  --ks-seg-thumb-ink: var(--space-p-ink);
+  --ks-control-radius: 999px;
   --ks-icon-stroke: 1.6;
   --ks-z-sticky: 10;
   --ks-z-overlay: 400;

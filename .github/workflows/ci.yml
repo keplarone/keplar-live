@@ -40,7 +40,7 @@ jobs:
         run: npx tsc --noEmit
       - name: Lint
         run: npx eslint . --quiet
-      # Headless Chromium for the tests that drive a real browser (Keplar Browser acceptance, layout probe). Without it they skip.
+      # Headless Chromium for the tests that drive a real browser (site QA browser, layout probe). Without it they skip.
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Unit tests

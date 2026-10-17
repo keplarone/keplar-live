@@ -1,8 +1,10 @@
+/* Space UI footer: no rule lines. The page fades into the canvas (a soft violet horizon glows at the top edge), then the columns. */
 .footer {
   position: relative;
   z-index: var(--z-content);
-  background: var(--c-canvas);
-  border-top: var(--b-hairline) solid var(--hairline);
+  background:
+    radial-gradient(60% 120px at 50% 0, rgb(var(--ring-rgb) / 0.12), transparent 100%),
+    linear-gradient(rgb(var(--rgb-canvas) / 0.6), rgb(var(--rgb-canvas) / 0.96) 160px);
   padding: var(--s-20) var(--l-gutter) var(--s-8);
 }
 
@@ -90,29 +92,32 @@
 
 .heading {
   font-family: var(--f-sans);
-  font-size: var(--t-small);
-  font-weight: var(--w-medium);
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--c-ink);
+  font-size: 11.5px;
+  font-weight: var(--w-semibold);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--c-ink-3);
   margin-bottom: var(--s-4);
 }
 
 .link {
+  display: inline-block;
   font-size: var(--t-small);
+  font-weight: var(--w-medium);
   color: var(--c-ink-2);
-  transition: color var(--d-fast) var(--e-standard);
+  transition: color var(--space-dur-base) var(--space-ease-out), transform 0.45s var(--space-ease-out);
 }
 
 .link:hover {
   color: var(--c-ink);
+  transform: translateX(3px);
 }
+@media (prefers-reduced-motion: reduce) { .link:hover { transform: none; } }
 
 .base {
   max-width: var(--l-max);
   margin: var(--s-20) auto 0;
   padding-top: var(--s-6);
-  border-top: var(--b-hairline) solid var(--hairline);
   font-size: var(--t-small);
   color: var(--c-ink-3);
   display: flex;

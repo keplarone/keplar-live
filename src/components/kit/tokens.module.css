@@ -11,7 +11,7 @@
  * <StudioRoot theme="dark|light"> (data-ks-theme), e.g. a capture or a surface that must stay dark.
  *
  * The palette is derived from the site's genuine theme tokens (src/styles/tokens.css + light.css): the same graphite ink
- * (#0e0f12 / #ededf0), the same teal accent (--c-accent #0a7a8a light, #5ecad8 dark) and the same text-safe semantic hues
+ * (#0e0f12 / #ededf0), the same Space violet accent (--c-accent #7d3bc4 light, #c39bff dark) and the same text-safe semantic hues
  * (--c-verified, --c-attention, --c-destructive, --c-research). tests/studio-ui-tokens.test.ts parses this file and checks that
  * both themes define the same tokens and that every text level holds WCAG AA (4.5:1) on every surface it can sit on.
  *
@@ -39,12 +39,12 @@
   --ks-border: rgb(14 15 18 / 0.1);
   --ks-border-strong: rgb(14 15 18 / 0.17);
   --ks-divider: rgb(14 15 18 / 0.07);
-  /* accent: one restrained teal (site --c-accent), used only for selection, focus, progress */
-  --ks-accent: #0a7a8a;
-  --ks-accent-text: #0a6f7c;
+  /* accent: the Space violet (site --c-accent), used only for selection, focus, progress */
+  --ks-accent: #7d3bc4;
+  --ks-accent-text: #7d3bc4;
   --ks-accent-ink: #ffffff;
-  --ks-accent-subtle: rgb(10 122 138 / 0.1);
-  --ks-focus: #0a7a8a;
+  --ks-accent-subtle: rgb(125 59 196 / 0.1);
+  --ks-focus: #7d3bc4;
   /* primary (monochrome inverse pill) */
   --ks-primary-bg: #0e0f12;
   --ks-primary-bg-hover: #26272c;
@@ -70,6 +70,17 @@
   --ks-elev-1: 0 1px 2px rgb(14 15 18 / 0.05), 0 4px 12px -6px rgb(14 15 18 / 0.12);
   --ks-elev-2: 0 1px 2px rgb(14 15 18 / 0.06), 0 16px 36px -14px rgb(14 15 18 / 0.22);
   --ks-scrim: rgb(14 15 18 / 0.28);
+  /* Space UI 3D controls at Studio density (28px): the same lit face as keplar.one (--space-*-face, inherited) on a 2px ledge with
+     a tight drop, so a 28px button reads as pressable without the 4px ledge and 24px shadow of a 44px one. */
+  --ks-primary-depth: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 2px 0 #000000, 0 4px 10px rgb(14 15 18 / 0.22);
+  --ks-primary-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 3px 0 #000000, 0 6px 14px rgb(14 15 18 / 0.26), 0 0 16px rgb(125 59 196 / 0.18);
+  --ks-primary-depth-press: inset 0 1px 0 rgb(255 255 255 / 0.16), 0 0 0 #000000, 0 1px 3px rgb(14 15 18 / 0.25);
+  --ks-secondary-depth: inset 0 1px 0 #ffffff, 0 2px 0 #cfcfd8, 0 3px 8px rgb(14 15 18 / 0.1);
+  --ks-secondary-depth-hover: inset 0 1px 0 #ffffff, 0 3px 0 #cfcfd8, 0 5px 12px rgb(14 15 18 / 0.14), 0 0 14px rgb(125 59 196 / 0.12);
+  --ks-secondary-depth-press: inset 0 1px 0 #ffffff, 0 0 0 #cfcfd8, 0 1px 3px rgb(14 15 18 / 0.12);
+  --ks-danger-depth: inset 0 1px 0 rgb(255 255 255 / 0.25), 0 2px 0 #6e140d, 0 4px 10px rgb(180 35 24 / 0.24);
+  --ks-danger-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.28), 0 3px 0 #6e140d, 0 6px 14px rgb(180 35 24 / 0.28);
+  --ks-danger-depth-press: inset 0 1px 0 rgb(255 255 255 / 0.2), 0 0 0 #6e140d, 0 1px 3px rgb(180 35 24 / 0.26);
   color-scheme: light;
 
   /* ── Theme-independent scales ──────────────────────────────────────────────────────────── */
@@ -105,8 +116,8 @@
   --ks-switch-w: 28px;
   --ks-switch-h: 16px;
 
-  /* type: the site UI font (Google Sans via next/font, --f-sans) and IBM Plex Mono for code (--f-mono) */
-  --ks-font-sans: var(--f-sans, "Google Sans", "Keplar Sans Fallback", ui-sans-serif, system-ui, sans-serif);
+  /* type: the site UI font (Montserrat via next/font, --f-sans) and IBM Plex Mono for code (--f-mono) */
+  --ks-font-sans: var(--f-sans, ui-sans-serif, system-ui, sans-serif);
   --ks-font-mono: var(--f-mono, "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace);
   --ks-text-xs: 0.6875rem; /* 11px: meta, kbd, badges */
   --ks-text-sm: 0.75rem; /* 12px: secondary UI, code */
@@ -143,7 +154,9 @@
   --ks-ease-spring: linear(0, 0.0571, 0.1793, 0.3192, 0.4533, 0.571, 0.6691, 0.7483, 0.8106, 0.8587, 0.8954, 0.9231, 0.9437, 0.959, 0.9703, 0.9785, 0.9845, 0.9889, 0.992, 0.9943, 0.9959, 0.9971, 0.9979, 0.9985, 1);
 
   /* focus: a 2px accent ring offset by the surface colour (keyboard focus only, :focus-visible) */
-  --ks-focus-ring: 0 0 0 1px var(--ks-surface-1), 0 0 0 3px var(--ks-focus);
+  --ks-focus-ring: 0 0 0 1px var(--ks-surface-1), 0 0 0 3px var(--ks-focus), 0 0 14px var(--ks-focus);
+  /* Space UI: a 28px control sinks 2px into its ledge (keplar.one's 44px controls sink 4px) */
+  --ks-press-y: 2px;
   --ks-focus-ring-inset: inset 0 0 0 2px var(--ks-focus);
 
   /* icon stroke: one style everywhere (24 grid) */
@@ -164,14 +177,14 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Dark palette: layered graphite neutrals (not solid black), site ink #ededf0, site accent #5ecad8 ─────────────────── */
+/* ── Dark palette: layered graphite neutrals (not solid black), site ink #ededf0, site accent #c39bff ─────────────────── */
 :global(:root[data-theme="dark"]) .root,
 :global(:root) .root[data-ks-theme="dark"] {
-  --ks-bg: #0f0f11;
-  --ks-surface-1: #151518;
-  --ks-surface-2: #1c1c20;
-  --ks-surface-3: #25252a;
-  --ks-surface-inset: #121214;
+  --ks-bg: #0b0b0d;
+  --ks-surface-1: #131316;
+  --ks-surface-2: #1a1a1e;
+  --ks-surface-3: #232328;
+  --ks-surface-inset: #0f0f12;
   --ks-fill-hover: rgb(237 237 240 / 0.05);
   --ks-fill-active: rgb(237 237 240 / 0.09);
   --ks-fill-selected: rgb(94 202 216 / 0.13);
@@ -182,11 +195,11 @@
   --ks-border: rgb(237 237 240 / 0.09);
   --ks-border-strong: rgb(237 237 240 / 0.16);
   --ks-divider: rgb(237 237 240 / 0.06);
-  --ks-accent: #5ecad8;
-  --ks-accent-text: #5ecad8;
-  --ks-accent-ink: #09090b;
-  --ks-accent-subtle: rgb(94 202 216 / 0.13);
-  --ks-focus: #5ecad8;
+  --ks-accent: #c39bff;
+  --ks-accent-text: #c39bff;
+  --ks-accent-ink: #000000;
+  --ks-accent-subtle: rgb(195 155 255 / 0.13);
+  --ks-focus: #c39bff;
   --ks-primary-bg: #ededf0;
   --ks-primary-bg-hover: #ffffff;
   --ks-primary-text: #0f0f11;
@@ -208,6 +221,15 @@
   --ks-elev-1: 0 1px 2px rgb(0 0 0 / 0.35), 0 4px 12px -6px rgb(0 0 0 / 0.5);
   --ks-elev-2: 0 1px 2px rgb(0 0 0 / 0.4), 0 18px 40px -14px rgb(0 0 0 / 0.65);
   --ks-scrim: rgb(0 0 0 / 0.55);
+  --ks-primary-depth: inset 0 1px 0 #ffffff, inset 0 -2px 0 rgb(0 0 0 / 0.1), 0 2px 0 #8c8a99, 0 4px 12px rgb(0 0 0 / 0.5);
+  --ks-primary-depth-hover: inset 0 1px 0 #ffffff, inset 0 -2px 0 rgb(0 0 0 / 0.1), 0 3px 0 #8c8a99, 0 6px 16px rgb(0 0 0 / 0.55), 0 0 18px rgb(190 150 255 / 0.25);
+  --ks-primary-depth-press: inset 0 1px 0 #ffffff, 0 0 0 #8c8a99, 0 2px 6px rgb(0 0 0 / 0.5);
+  --ks-secondary-depth: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 2px 0 rgb(0 0 0 / 0.65), 0 4px 12px rgb(0 0 0 / 0.45);
+  --ks-secondary-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.12), 0 3px 0 rgb(0 0 0 / 0.65), 0 6px 16px rgb(0 0 0 / 0.5), 0 0 18px rgb(178 112 255 / 0.2);
+  --ks-secondary-depth-press: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 0 0 rgb(0 0 0 / 0.65), 0 2px 6px rgb(0 0 0 / 0.45);
+  --ks-danger-depth: inset 0 1px 0 rgb(255 255 255 / 0.45), 0 2px 0 #8f3a44, 0 4px 12px rgb(0 0 0 / 0.5);
+  --ks-danger-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.5), 0 3px 0 #8f3a44, 0 6px 16px rgb(0 0 0 / 0.55), 0 0 18px rgb(255 122 133 / 0.22);
+  --ks-danger-depth-press: inset 0 1px 0 rgb(255 255 255 / 0.4), 0 0 0 #8f3a44, 0 2px 6px rgb(0 0 0 / 0.5);
   color-scheme: dark;
 }
 
@@ -228,11 +250,11 @@
   --ks-border: rgb(14 15 18 / 0.1);
   --ks-border-strong: rgb(14 15 18 / 0.17);
   --ks-divider: rgb(14 15 18 / 0.07);
-  --ks-accent: #0a7a8a;
-  --ks-accent-text: #0a6f7c;
+  --ks-accent: #7d3bc4;
+  --ks-accent-text: #7d3bc4;
   --ks-accent-ink: #ffffff;
-  --ks-accent-subtle: rgb(10 122 138 / 0.1);
-  --ks-focus: #0a7a8a;
+  --ks-accent-subtle: rgb(125 59 196 / 0.1);
+  --ks-focus: #7d3bc4;
   --ks-primary-bg: #0e0f12;
   --ks-primary-bg-hover: #26272c;
   --ks-primary-text: #ffffff;
@@ -254,6 +276,15 @@
   --ks-elev-1: 0 1px 2px rgb(14 15 18 / 0.05), 0 4px 12px -6px rgb(14 15 18 / 0.12);
   --ks-elev-2: 0 1px 2px rgb(14 15 18 / 0.06), 0 16px 36px -14px rgb(14 15 18 / 0.22);
   --ks-scrim: rgb(14 15 18 / 0.28);
+  --ks-primary-depth: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 2px 0 #000000, 0 4px 10px rgb(14 15 18 / 0.22);
+  --ks-primary-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 3px 0 #000000, 0 6px 14px rgb(14 15 18 / 0.26), 0 0 16px rgb(125 59 196 / 0.18);
+  --ks-primary-depth-press: inset 0 1px 0 rgb(255 255 255 / 0.16), 0 0 0 #000000, 0 1px 3px rgb(14 15 18 / 0.25);
+  --ks-secondary-depth: inset 0 1px 0 #ffffff, 0 2px 0 #cfcfd8, 0 3px 8px rgb(14 15 18 / 0.1);
+  --ks-secondary-depth-hover: inset 0 1px 0 #ffffff, 0 3px 0 #cfcfd8, 0 5px 12px rgb(14 15 18 / 0.14), 0 0 14px rgb(125 59 196 / 0.12);
+  --ks-secondary-depth-press: inset 0 1px 0 #ffffff, 0 0 0 #cfcfd8, 0 1px 3px rgb(14 15 18 / 0.12);
+  --ks-danger-depth: inset 0 1px 0 rgb(255 255 255 / 0.25), 0 2px 0 #6e140d, 0 4px 10px rgb(180 35 24 / 0.24);
+  --ks-danger-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.28), 0 3px 0 #6e140d, 0 6px 14px rgb(180 35 24 / 0.28);
+  --ks-danger-depth-press: inset 0 1px 0 rgb(255 255 255 / 0.2), 0 0 0 #6e140d, 0 1px 3px rgb(180 35 24 / 0.26);
   color-scheme: light;
 }
 

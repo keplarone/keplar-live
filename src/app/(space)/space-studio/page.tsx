@@ -1,6 +1,6 @@
 import { MODELS, PLANS, PRICING_NOTE, publicView } from "@/lib/space-studio/core";
 import { DownloadButton } from "@/components/space/DownloadButton";
-import { RotatingWord } from "@/components/space/SpaceChrome";
+import { MotionToggle, RotatingWord } from "@/components/space/SpaceChrome";
 import { pageMeta } from "@/lib/seo";
 import s from "@/components/space/space.module.css";
 
@@ -29,12 +29,13 @@ export default function SpaceStudioPage() {
         </p>
         <div className={`${s.actions} ${s.rise}`}>
           <DownloadButton className={s.btn} />
-          <a className={s.btnGhost} href="#models">See the models</a>
+          <a className={`sp-btn ${s.btnGhost}`} data-sp-btn="" data-variant="secondary" data-size="lg" href="#models">See the models</a>
         </div>
         <p className={`${s.note} ${s.rise}`}>
           Version 0.2 is an early release. Installers are not code-signed yet, so Windows SmartScreen and macOS Gatekeeper will warn (on macOS: right-click the app, then Open). Each release lists SHA-256 checksums.
         </p>
         <span className={s.scrollCue} aria-hidden="true" />
+        <MotionToggle className={s.pause} />
       </section>
 
       <section id="models" className={s.section} aria-labelledby="models-title">

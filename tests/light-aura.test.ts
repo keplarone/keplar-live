@@ -5,7 +5,7 @@ import { join } from "node:path";
 
 /**
  * Light-mode polish + Lovable-style aura (src/styles/light.css, src/styles/aura.css and the light blocks in the home / app modules).
- *  - Every aura rule is scoped to the light theme; Dark (flat graphite #0b0b0d) never defines or paints an aura.
+ *  - Every aura rule is scoped to the light theme; Dark (the Space theme, a black void #000) never defines or paints an aura.
  *  - The glow is static: no full-page animation, no viewport blur, no background-attachment. Colour is removed under increased contrast.
  *  - The warm light palette keeps WCAG AA for body inks.
  */
@@ -90,8 +90,8 @@ test("dark theme defines and paints no aura", () => {
       assert.doesNotMatch(r.body, /--aura-|var\(--aura-/, `${f}: dark rule "${r.selector}" touches the aura`);
     }
   }
-  // and the dark canvas stays flat graphite
-  assert.match(read("src/styles/tokens.css"), /:root\[data-theme="dark"\]\s*\{[^}]*--c-canvas:\s*#0b0b0d/);
+  // and the dark canvas is the Space void (Space UI, docs/design/space-ui.md: the dusk sky, not an aura, sits behind marketing pages)
+  assert.match(read("src/styles/tokens.css"), /:root\[data-theme="dark"\]\s*\{[^}]*--c-canvas:\s*#000000/);
   // the home scene stays the opaque night sky in dark; it is only transparent (over the aura) in light
   const home = read("src/components/home/MonolithHome.tsx");
   assert.match(home, /opaque:\s*sceneTheme === "dark"/);
@@ -134,7 +134,7 @@ test("light palette: cool off-white canvas and AA inks", () => {
       assert.ok(r >= 4.5, `${ink} on ${bg} = ${r.toFixed(2)}:1 (needs 4.5)`);
     }
   }
-  // the light block never redefines dark tokens, and light is the default theme
+  // the light block never redefines dark tokens, and light (the day sky) is the default theme
   assert.doesNotMatch(light, /data-theme="dark"/);
   assert.match(read("src/lib/theme.ts"), /DEFAULT_THEME_PREF: ThemePref = "light"/);
 });

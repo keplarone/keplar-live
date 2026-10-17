@@ -129,7 +129,7 @@
   font-size: var(--t-label);
   color: var(--c-ink-2);
   background: var(--c-canvas);
-  box-shadow: var(--sh-hairline);
+  box-shadow: var(--elev-1);
   animation: stepIn var(--d-slow) var(--e-emphasized) both;
 }
 
@@ -184,7 +184,7 @@
   padding: var(--s-6) var(--s-6) var(--s-4);
   border-radius: var(--r-card);
   background: var(--c-canvas);
-  box-shadow: var(--sh-hairline), var(--sh-float);
+  box-shadow: var(--sh-float);
   animation: answerIn var(--d-slow) var(--e-emphasized) both;
 }
 
@@ -657,7 +657,7 @@
   padding: var(--s-6);
   border-radius: var(--r-card);
   background: var(--c-canvas);
-  box-shadow: var(--sh-hairline), var(--sh-float);
+  box-shadow: var(--sh-float);
   max-width: clamp(620px, 40vw, 1040px);
 }
 
@@ -673,7 +673,7 @@
   height: 4px;
   border-radius: var(--r-pill);
   background: var(--c-surface-2);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline);
+  box-shadow: var(--elev-1);
   overflow: hidden;
 }
 
@@ -720,7 +720,7 @@
   padding: var(--s-3) var(--s-4);
   border-radius: var(--r-md);
   background: rgb(var(--rgb-canvas) / 0.7);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline);
+  box-shadow: var(--elev-1);
   font-size: var(--t-small);
   font-weight: var(--w-medium);
 }
@@ -825,7 +825,7 @@
   font-family: var(--f-sans);
   font-size: 11px;
   color: var(--c-ink-2);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong);
+  box-shadow: var(--elev-1);
 }
 
 /* Verification checks */
@@ -843,7 +843,7 @@
   padding: var(--s-3) var(--s-4);
   border-radius: var(--r-md);
   background: rgb(var(--rgb-canvas) / 0.6);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline);
+  box-shadow: var(--elev-1);
 }
 
 .checkHead {
@@ -867,7 +867,7 @@
   border-radius: var(--r-pill);
   font-size: var(--t-label);
   color: var(--c-ink-2);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong);
+  box-shadow: var(--elev-1);
 }
 
 .checkOutcome[data-outcome="held"],
@@ -961,9 +961,9 @@
 /* ── cards (UI v2): raised surface, hairline edge, resting depth; no glass ── */
 .answer, .limit {
   background: var(--surface-raised);
-  box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1);
+  box-shadow: var(--elev-1);
 }
-.notice, .upsell { border-radius: 20px; background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline); }
+.notice, .upsell { border-radius: 20px; background: var(--surface-raised); box-shadow: var(--elev-1); }
 .notice[data-kind="error"] { box-shadow: inset 0 0 0 1px rgb(var(--rgb-destructive) / 0.4); }
 
 
@@ -1016,5 +1016,94 @@
   padding: 16px 20px;
   background: var(--surface-raised);
   border-radius: 22px;
-  box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-2);
+  box-shadow: var(--elev-2);
 }
+
+/* ── Space UI (docs/design/space-ui.md, phase B): Space Studio's answer ──
+   The answer is Space Studio's assistant card (26px, a faint violet lift at the top, a lit edge and a deep drop) that sharpens out
+   of a blur as it arrives; the agreement badge and capability chips are Space chips; progress dots glow violet; notices and limit
+   cards are Space Studio's error / limit cards (glass depth, a coloured halo, a violet meter); detail rows are quiet pills
+   instead of rule lines. Opaque surfaces only; both themes from tokens. Phones: no entrance blur, smaller card padding. */
+:global(:root[data-theme]) .answer {
+  padding: 20px 24px 14px;
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgb(var(--ring-rgb) / 0.045), rgb(var(--ring-rgb) / 0) 120px), var(--surface-panel);
+  box-shadow: var(--space-glass-depth);
+}
+@media (min-width: 641px) and (prefers-reduced-motion: no-preference) {
+  .answer { animation: spAnswerIn 0.75s var(--space-ease-expo) both; }
+  .answer[data-continued] { animation: none; }
+}
+@keyframes spAnswerIn {
+  0% { opacity: 0; transform: translateY(16px) scale(0.985); filter: blur(12px); }
+  100% { opacity: 1; transform: none; filter: blur(0); }
+}
+@media (max-width: 640px) {
+  :global(:root[data-theme]) .answer { padding: 16px 16px 10px; border-radius: 22px; }
+}
+.answerTitle { font-weight: var(--w-semibold); }
+.answerTitle > svg { filter: drop-shadow(0 0 8px rgb(var(--ring-rgb) / 0.55)); }
+
+/* Agreement badge: a Space chip (wash pill) with the ring lit violet when models agree. */
+.consensus { gap: 10px; padding: 4px 14px 4px 5px; border-radius: 999px; background: var(--hover-wash); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05); }
+.ring { width: 30px; height: 30px; }
+.ringTrack { stroke: var(--space-track); }
+.consensus[data-level="consensus"] .ringValue { stroke: var(--c-accent); filter: drop-shadow(0 0 4px rgb(var(--ring-rgb) / 0.7)); }
+.consensusPct { font-weight: var(--w-bold); letter-spacing: -0.01em; }
+.consensusSplit { border-left: 0; padding-left: 4px; }
+.badgeQuiet { display: inline-flex; align-items: center; height: 26px; padding: 0 12px; border-radius: 999px; background: var(--hover-wash); font-weight: var(--w-semibold); color: var(--c-ink-2); }
+
+/* Progress: violet dots that glow while a step runs; capability chips are Space chips; model ticks fill violet. */
+.processSummary { font-weight: var(--w-medium); }
+.step[data-state="active"] .stepDot { background: var(--c-accent); box-shadow: 0 0 10px rgb(var(--ring-rgb) / 0.8); }
+.dotDone { background: var(--c-accent); }
+.chip { height: 26px; padding: 0 12px; background: var(--hover-wash); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05); font-weight: var(--w-semibold); color: var(--c-ink-2); }
+.bar { height: 4px; background: var(--space-track); }
+.bar[data-state="responded"] { background: linear-gradient(90deg, #a467f0, #f08bd8); opacity: 1; box-shadow: 0 0 8px rgb(var(--ring-rgb) / 0.5); }
+
+/* "How Keplar answered" and its sections: pills on a wash, no rule lines. */
+.how { border-top: 0; border-bottom: 0; }
+.howBtn { padding: var(--s-2) var(--s-4); border-radius: 999px; background: var(--hover-wash); font-weight: var(--w-semibold); transition: background-color 0.25s ease, box-shadow 0.4s var(--space-ease-out), color 0.25s ease; }
+.howBtn:hover { background: var(--press-wash); box-shadow: 0 8px 26px rgb(var(--ring-rgb) / 0.16); }
+.how > .sections { margin: var(--s-2) 0 0; border-left: 0; padding-left: 0; gap: 2px; }
+.section { border-bottom: 0; }
+.sectionBtn { padding: var(--s-2) var(--s-4); border-radius: 18px; }
+.sectionBtn:hover, .howBtn:hover { background: var(--press-wash); }
+.sectionTitle { font-weight: var(--w-semibold); }
+.sectionPanel { padding: var(--s-1) var(--s-4) var(--s-5); }
+.modelRow { border-top: 0; padding: 10px 14px; border-radius: 16px; }
+.modelRow:nth-child(odd) { background: var(--hover-wash); }
+.positions li { border-left-width: 3px; border-radius: 2px; }
+.missingNote { border-left: 0; border-radius: 16px; background: rgb(var(--rgb-attention) / 0.1); padding: 10px 14px; }
+.check { border-radius: 18px; background: var(--hover-wash); box-shadow: none; }
+.checkOutcome { padding: 2px 10px; background: var(--hover-wash); box-shadow: none; font-weight: var(--w-semibold); }
+.checkOutcome[data-outcome="held"], .checkOutcome[data-outcome="supported"] { background: rgb(var(--rgb-verified) / 0.14); box-shadow: none; }
+.checkOutcome[data-outcome="removed"], .checkOutcome[data-outcome="contradicted"] { background: rgb(var(--rgb-destructive) / 0.14); box-shadow: none; }
+.sourceTag { padding: 2px 10px; background: var(--hover-wash); box-shadow: none; font-weight: var(--w-semibold); }
+
+/* Notices, limits and upsells: Space Studio's error and limit cards. */
+:global(:root[data-theme]) .notice,
+:global(:root[data-theme]) .limit,
+:global(:root[data-theme]) .upsell {
+  padding: 20px 22px;
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgb(var(--ring-rgb) / 0.05), rgb(var(--ring-rgb) / 0) 140px), var(--surface-panel);
+  box-shadow: var(--space-glass-depth);
+}
+:global(:root[data-theme]) .limit { box-shadow: var(--space-glass-depth), 0 0 70px rgb(var(--ring-rgb) / 0.2); }
+:global(:root[data-theme]) .notice[data-kind="error"] {
+  background: linear-gradient(180deg, rgb(var(--rgb-destructive) / 0.08), rgb(var(--rgb-destructive) / 0) 140px), var(--surface-panel);
+  box-shadow: var(--space-glass-depth), 0 0 60px rgb(var(--rgb-destructive) / 0.14);
+}
+:global(:root[data-theme]) .answer .notice,
+:global(:root[data-theme]) .answer .notice[data-kind="error"] { padding: 0; background: transparent; box-shadow: none; }
+@media (min-width: 641px) and (prefers-reduced-motion: no-preference) {
+  :global(:root[data-theme]) .limit { animation: spAnswerIn 0.7s var(--space-ease-expo) both; }
+}
+.noticeTitle, .limitTitle { font-weight: var(--w-semibold); letter-spacing: -0.02em; }
+.limitTitle { font-size: 18px; }
+.limitMeter { height: 6px; background: var(--space-track); box-shadow: none; }
+.limitMeter span { background: linear-gradient(90deg, #a467f0 0%, #b27cff 45%, #f08bd8 100%); box-shadow: 0 0 10px rgb(190 130 255 / 0.5); }
+.limitMeterText { font-weight: var(--w-semibold); }
+.limitPlans li { border-radius: 20px; background: var(--hover-wash); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05); }
+.limitPrice { font-weight: var(--w-semibold); color: var(--c-ink); }

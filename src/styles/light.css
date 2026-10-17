@@ -1,5 +1,6 @@
 /*
- * Light theme (the default since Oct 2026; also Auto when it resolves to light). Dark is untouched: every rule here is under :root[data-theme="light"].
+ * Light theme: the Space UI on a light palette (docs/design/space-ui.md; Dark, the Space theme, is the default). Also Auto when it
+ * resolves to light. Every rule here is under :root[data-theme="light"].
  *
  * Cool off-white base (#f7f8fa) with soft blue/lilac/peach/mint auras behind the page, white cards that lift off it with soft cool shadows,
  * near-black ink. Contrast: ink #0e0f12 on canvas 18.9:1 · ink-2 #4b4f58 8.1:1 · ink-3 #686d78 5.1:1 on canvas, 4.8:1 on surface-2.
@@ -38,12 +39,8 @@
   --lg-card: rgb(255 255 255 / 0.8);
   --lg-card-hover: #ffffff;
 
-  /* buttons: graphite primary with a neutral drop (no teal glow under it), crisp white secondary */
+  /* buttons: the Space 3D recipe (space.css --space-p-* / --space-s-*: an ink face on a black ledge, a white face on a grey ledge) */
   --btn-p-solid: #0e0f12;
-  --btn-p-bg: #0e0f12;
-  --btn-p-shadow: 0 1px 2px rgb(14 15 18 / 0.2), 0 8px 20px -10px rgb(14 15 18 / 0.45);
-  --btn-s-bg: rgb(255 255 255 / 0.86);
-  --btn-s-shadow: inset 0 0 0 1px rgb(14 15 18 / 0.1), 0 1px 2px rgb(14 15 18 / 0.05), 0 6px 16px -10px rgb(14 15 18 / 0.16);
 
   /* marketing nav pill: cool white glass, a lighter cool drop (the old 0.28 black + white halo looked smudgy on white) */
   --nav-fill: rgb(255 255 255 / 0.88);

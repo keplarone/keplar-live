@@ -105,7 +105,7 @@ export function LiveDemo() {
         <label htmlFor="demo-q" className={s.label}>{t.label}</label>
         <textarea ref={field} id="demo-q" className={`${s.input} type-input`} rows={3} maxLength={DEMO_MAX_PROMPT_CHARS} value={q} onChange={(e) => setQ(e.target.value)} placeholder={t.placeholder} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void ask(q); } }} />
         <div className={s.row}>
-          <button type="submit" className={s.go} disabled={running || !q.trim()}>{running ? t.asking : t.ask}</button>
+          <button type="submit" className={`sp-btn ${s.go}`} data-sp-btn="" data-variant="primary" data-size="md" disabled={running || !q.trim()}>{running ? t.asking : t.ask}</button>
           <span className={s.meta}>{left === null ? "" : fmt(t.left, { left, n: DEMO_DAILY_LIMIT })} · {t.metaTail}</span>
         </div>
         <ul className={s.samples} aria-label={t.examples}>
@@ -134,7 +134,7 @@ export function LiveDemo() {
             {msg ? <p className={s.msg}>{msg}</p> : null}
             {answer || msg ? (
               <div className={s.next}>
-                <a className={s.more} href={`/app/ask#q=${encodeURIComponent(asked)}`}>{t.fullCard}</a>
+                <a className={`sp-btn ${s.more}`} data-sp-btn="" data-variant="secondary" data-size="md" href={`/app/ask#q=${encodeURIComponent(asked)}`}>{t.fullCard}</a>
                 <Link className={s.link} href={localizedPath("/signup?utm_source=home_demo", locale)}>{t.signup}</Link>
               </div>
             ) : null}

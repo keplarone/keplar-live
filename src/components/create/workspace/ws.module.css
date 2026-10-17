@@ -329,3 +329,47 @@
   .shell { min-width: 0; }
   .input, .textarea, .select, .prompt { font-size: 16px; }
 }
+
+/* ── Space UI (docs/design/space-ui.md, phase B): this view's buttons draw Space Studio's 3D faces (space.css --space-p-* for the
+   one primary, --space-s-* for secondaries): a lit face over a ledge, a 1px lift and violet glow on hover, a press that sinks into
+   the ledge, the violet focus glow. Reduced motion keeps the faces and drops the lift. ── */
+:global(:root[data-theme]:not([data-business-app])) .btn,
+:global(:root[data-theme]:not([data-business-app])) .newChat {
+  background: var(--space-p-face);
+  color: var(--space-p-ink);
+  box-shadow: var(--space-p-depth);
+  border-color: transparent;
+  font-weight: var(--w-bold);
+  transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out), opacity 0.2s ease;
+}
+:global(:root[data-theme]:not([data-business-app])) .btn:hover:not(:disabled, [aria-disabled="true"]),
+:global(:root[data-theme]:not([data-business-app])) .newChat:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-p-face); transform: translateY(-1px); box-shadow: var(--space-p-depth-hover); }
+:global(:root[data-theme]:not([data-business-app])) .btn:active:not(:disabled, [aria-disabled="true"]),
+:global(:root[data-theme]:not([data-business-app])) .newChat:active:not(:disabled, [aria-disabled="true"]) { transform: translateY(var(--space-ledge)); scale: none; box-shadow: var(--space-p-depth-press); transition-duration: 0.06s; }
+:global(:root[data-theme]:not([data-business-app])) .btn:focus-visible,
+:global(:root[data-theme]:not([data-business-app])) .newChat:focus-visible { box-shadow: var(--space-p-depth), var(--space-focus-glow); filter: none; text-decoration: none; }
+:global(:root[data-theme]:not([data-business-app])) .btn:disabled,
+:global(:root[data-theme]:not([data-business-app])) .newChat:disabled { transform: none; box-shadow: none; }
+:global(:root[data-theme]:not([data-business-app])) .btnGhost,
+:global(:root[data-theme]:not([data-business-app])) .linkBtn {
+  background: var(--space-s-face);
+  color: var(--space-s-ink);
+  box-shadow: var(--space-s-depth);
+  border-color: transparent;
+  font-weight: var(--w-bold);
+  transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out), opacity 0.2s ease;
+}
+:global(:root[data-theme]:not([data-business-app])) .btnGhost:hover:not(:disabled, [aria-disabled="true"]),
+:global(:root[data-theme]:not([data-business-app])) .linkBtn:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-s-face); transform: translateY(-1px); box-shadow: var(--space-s-depth-hover); }
+:global(:root[data-theme]:not([data-business-app])) .btnGhost:active:not(:disabled, [aria-disabled="true"]),
+:global(:root[data-theme]:not([data-business-app])) .linkBtn:active:not(:disabled, [aria-disabled="true"]) { transform: translateY(var(--space-ledge)); scale: none; box-shadow: var(--space-s-depth-press); transition-duration: 0.06s; }
+:global(:root[data-theme]:not([data-business-app])) .btnGhost:focus-visible,
+:global(:root[data-theme]:not([data-business-app])) .linkBtn:focus-visible { box-shadow: var(--space-s-depth), var(--space-focus-glow); filter: none; text-decoration: none; }
+:global(:root[data-theme]:not([data-business-app])) .btnGhost:disabled,
+:global(:root[data-theme]:not([data-business-app])) .linkBtn:disabled { transform: none; box-shadow: none; }
+@media (prefers-reduced-motion: reduce) {
+  :global(:root[data-theme]:not([data-business-app])) .btn:hover:not(:disabled),
+  :global(:root[data-theme]:not([data-business-app])) .newChat:hover:not(:disabled),
+  :global(:root[data-theme]:not([data-business-app])) .btnGhost:hover:not(:disabled),
+  :global(:root[data-theme]:not([data-business-app])) .linkBtn:hover:not(:disabled) { transform: none; }
+}

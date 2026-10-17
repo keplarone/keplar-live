@@ -1,11 +1,11 @@
 /**
- * Theme: Dark (default) / Light / Auto (follows the OS).
+ * Theme: Light (default) / Dark / Auto (follows the OS).
  *
  * The preference lives in localStorage and a cookie (`keplar-theme`). An inline
  * script in <head> (THEME_SCRIPT, rendered by the root layout) resolves it and
  * sets <html data-theme="dark|light" class="dark|light"> before first paint, so
  * there is no flash. Pages stay statically rendered: the server always emits
- * the default (dark) and the script corrects it before paint; the cookie is
+ * the default (light) and the script corrects it before paint; the cookie is
  * also readable server-side for any dynamic route that wants it.
  */
 export type ThemePref = "dark" | "light" | "auto";
@@ -13,12 +13,17 @@ export type Theme = "dark" | "light";
 
 /**
  * Where the visitor's choice is kept (localStorage, plus a cookie of the same name). "-v2" since the Oct 2026 light redesign:
- * choices saved before it are ignored once, so everyone starts in light; a choice made after it sticks as usual.
+ * choices saved before it were ignored once. A choice saved since (Light, Dark or Auto) still sticks: the Space UI only changes the
+ * default for people who never chose.
  */
 export const THEME_KEY = "keplar-theme-v2";
-/** Light is the default for everyone (first visit, no stored choice). Dark and Auto stay available in the theme control and Settings. */
+/**
+ * Light (the Space system under a bright day sky with drifting clouds: docs/design/space-ui.md) is the default for everyone with no
+ * stored choice. Dark (the same system at dusk: a deep blue sky with stars) and Auto (follows the OS) stay available in the theme
+ * control and Settings.
+ */
 export const DEFAULT_THEME_PREF: ThemePref = "light";
-export const THEME_COLORS: Record<Theme, string> = { dark: "#0b0b0d", light: "#f7f8fa" }; // light = the cool off-white canvas (src/styles/light.css)
+export const THEME_COLORS: Record<Theme, string> = { dark: "#000000", light: "#f7f8fa" }; // dark = the Space void; light = the cool off-white canvas (src/styles/light.css)
 
 export const isThemePref = (v: unknown): v is ThemePref => v === "dark" || v === "light" || v === "auto";
 
@@ -26,11 +31,16 @@ export function resolveTheme(pref: ThemePref, osDark: boolean): Theme {
   return pref === "auto" ? (osDark ? "dark" : "light") : pref;
 }
 
+/** A JS string literal safe to inline in a <script>: JSON plus escaping of characters that could end the script or a line. */
+const inlineJs = (v: string) => JSON.stringify(v).replace(/[<>&\u2028\u2029]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`);
+/** THEME_KEY as a regex-literal fragment (it is a constant; escape metacharacters anyway). */
+const keyRe = THEME_KEY.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
+
 /**
  * Runs before paint. Keep it tiny, dependency-free and exception-safe. Docs (/docs/... and docs.keplar.one) always paint light with
  * <html data-docs="1"> (src/styles/docs-theme.css); the saved preference is untouched and applies again outside the docs.
  */
-export const THEME_SCRIPT = `(function(){try{var k=${JSON.stringify(THEME_KEY)},p=null;try{p=localStorage.getItem(k)}catch(e){}if(!p){var m=document.cookie.match(/(?:^|; )${THEME_KEY}=(dark|light|auto)/);p=m&&m[1]}if(p!=="dark"&&p!=="light"&&p!=="auto")p=${JSON.stringify(DEFAULT_THEME_PREF)};var d=p==="dark"||(p==="auto"&&window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);var r=document.documentElement,l=document.location,k2=l&&(/^docs\\./.test(l.hostname)||/^\\/docs(\\/|$)/.test(l.pathname));if(k2){d=false;r.setAttribute("data-docs","1")}var t=d?"dark":"light";r.setAttribute("data-theme",t);r.setAttribute("data-theme-pref",p);r.classList.remove(d?"light":"dark");r.classList.add(t);r.style.colorScheme=t}catch(e){}})();`;
+export const THEME_SCRIPT = `(function(){try{var k=${inlineJs(THEME_KEY)},p=null;try{p=localStorage.getItem(k)}catch(e){}if(!p){var m=document.cookie.match(/(?:^|; )${keyRe}=(dark|light|auto)/);p=m&&m[1]}if(p!=="dark"&&p!=="light"&&p!=="auto")p=${inlineJs(DEFAULT_THEME_PREF)};var d=p==="dark"||(p==="auto"&&window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);var r=document.documentElement,l=document.location,k2=l&&(/^docs\\./.test(l.hostname)||/^\\/docs(\\/|$)/.test(l.pathname));if(k2){d=false;r.setAttribute("data-docs","1")}var t=d?"dark":"light";r.setAttribute("data-theme",t);r.setAttribute("data-theme-pref",p);r.classList.remove(d?"light":"dark");r.classList.add(t);r.style.colorScheme=t}catch(e){}})();`;
 
 /* ── client helpers ── */
 
@@ -53,7 +63,7 @@ export function storedThemePref(): ThemePref | null {
   } catch {
     /* private mode */
   }
-  const m = document.cookie.match(new RegExp(`(?:^|; )${THEME_KEY}=(dark|light|auto)`));
+  const m = document.cookie.match(new RegExp(`(?:^|; )${keyRe}=(dark|light|auto)`));
   return m && isThemePref(m[1]) ? m[1] : null;
 }
 

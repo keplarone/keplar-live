@@ -8,7 +8,7 @@
   padding: var(--s-5);
   border-radius: var(--shape-card, 16px);
   background: var(--c-surface-1);
-  box-shadow: var(--sh-hairline);
+  box-shadow: var(--elev-1);
   color: var(--c-ink);
   font-size: var(--t-small);
   min-width: 0;

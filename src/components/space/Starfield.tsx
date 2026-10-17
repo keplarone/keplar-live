@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { isPhone } from "@/lib/fx/lite";
+import { isMotionPaused } from "./motion-pause";
 import {
   AdditiveBlending,
   BufferAttribute,
@@ -415,7 +416,7 @@ export default function Starfield() {
       draw();
     };
     const start = () => {
-      if (running || reduced || document.hidden || !visible) return;
+      if (running || reduced || document.hidden || !visible || isMotionPaused()) return;
       running = true;
       last = 0;
       raf = requestAnimationFrame(frame);
@@ -424,6 +425,9 @@ export default function Starfield() {
 
     const onResize = () => { resize(); if (!running) { place(starMat.uniforms.uTime!.value); draw(); } };
     const onVisibility = () => (document.hidden ? stop() : start());
+    // The site's pause control (MotionToggle): the flight holds its current frame, and picks up again on play.
+    const onMotion = () => (isMotionPaused() ? stop() : start());
+    window.addEventListener("space:motion", onMotion);
     const io = new IntersectionObserver(([e]) => { visible = !!e?.isIntersecting; if (visible) start(); else stop(); });
     io.observe(canvas);
     window.addEventListener("resize", onResize);
@@ -439,6 +443,7 @@ export default function Starfield() {
       io.disconnect();
       window.removeEventListener("resize", onResize);
       document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("space:motion", onMotion);
       window.removeEventListener("pointermove", onPointer);
       for (const d of disposers) d();
       renderer.dispose();
