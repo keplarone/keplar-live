@@ -2419,7 +2419,6 @@
           "status": "done",
           "evidence": [
             "src/lib/mcp/chat.ts",
-            "src/lib/browser/policy.ts",
             "tests/mcp-chat.test.ts"
           ]
         },
@@ -2436,9 +2435,8 @@
           "item": "Protection against infinite agent loops",
           "status": "done",
           "evidence": [
-            "src/lib/browser/run.ts",
             "src/lib/roblox-cloud/worker.ts",
-            "tests/browser-agent.test.ts"
+            "tests/roblox-cloud.test.ts"
           ]
         },
         {
@@ -2773,8 +2771,7 @@
           "status": "done",
           "evidence": [
             "src/lib/app-builder/verify/smoke.ts",
-            "src/lib/app-builder/verify/review.ts",
-            "src/lib/browser/run.ts"
+            "src/lib/app-builder/verify/review.ts"
           ]
         },
         {
