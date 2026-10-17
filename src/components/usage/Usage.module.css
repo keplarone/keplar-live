@@ -1,6 +1,6 @@
 /* Account -> Usage (docs/ui-v2.md): calm section cards (--surface-raised + hairline) with quiet meters: a wash track and an ink
    fill; an exhausted allowance says so in words ("0 of 3 left") as well as in --c-destructive. Tokens only. */
-.card { display: grid; gap: var(--s-3); padding: var(--s-5); border-radius: var(--r-md); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1); }
+.card { display: grid; gap: var(--s-3); padding: var(--s-5); border-radius: var(--r-md); background: var(--surface-raised); box-shadow: var(--elev-1); }
 .card h2 { margin: 0; font-size: var(--t-body); font-weight: var(--w-medium); }
 .sub { margin: 0; font-size: var(--t-small); line-height: var(--lh-small); color: var(--c-ink-2); }
 .rows { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
@@ -11,12 +11,12 @@
 .meter > span { display: block; height: 100%; border-radius: var(--r-pill); background: var(--c-ink); }
 .left { font-variant-numeric: tabular-nums; color: var(--c-ink-2); white-space: nowrap; }
 .out { color: var(--c-destructive); }
-.cta { justify-self: start; display: inline-flex; align-items: center; min-height: 40px; padding: 0 var(--s-5); border-radius: var(--r-pill); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline-strong); color: var(--c-ink); font-size: var(--t-small); font-weight: var(--w-medium); text-decoration: none; transition: background-color var(--m-dur-1) var(--m-ease-out); }
+.cta { justify-self: start; display: inline-flex; align-items: center; min-height: 40px; padding: 0 var(--s-5); border-radius: var(--r-pill); background: var(--surface-raised); box-shadow: var(--elev-1); color: var(--c-ink); font-size: var(--t-small); font-weight: var(--w-medium); text-decoration: none; transition: background-color var(--m-dur-1) var(--m-ease-out); }
 .cta:hover { background: var(--hover-wash); }
 .field { display: flex; gap: var(--s-2); align-items: center; flex-wrap: wrap; font-size: var(--t-small); color: var(--c-ink-2); }
 .field input[type="number"] { width: 120px; min-height: 44px; padding: 0 var(--s-3); border-radius: var(--r-sm); border: 1px solid var(--field-border); background: var(--c-canvas); color: var(--c-ink); font: inherit; font-size: var(--t-body); }
 .field input[type="number"]:focus-visible { outline: none; border-color: var(--c-ink); }
-.btn { min-height: 40px; padding: 0 var(--s-5); border: 0; border-radius: var(--r-pill); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline-strong); color: var(--c-ink); font: inherit; font-size: var(--t-small); font-weight: var(--w-medium); cursor: pointer; transition: background-color var(--m-dur-1) var(--m-ease-out); }
+.btn { min-height: 40px; padding: 0 var(--s-5); border: 0; border-radius: var(--r-pill); background: var(--surface-raised); box-shadow: var(--elev-1); color: var(--c-ink); font: inherit; font-size: var(--t-small); font-weight: var(--w-medium); cursor: pointer; transition: background-color var(--m-dur-1) var(--m-ease-out); }
 .btn:hover:not(:disabled) { background: var(--hover-wash); }
 .btn:active:not(:disabled) { scale: var(--m-press); }
 .btn:disabled { opacity: 0.55; cursor: progress; }
@@ -26,3 +26,28 @@
 .msg { min-height: 1.2em; margin: 0; font-size: var(--t-small); color: var(--c-ink-2); }
 @media (pointer: coarse) { .cta, .btn { min-height: 44px; } .optIn [role="switch"]::before { inset: -14px -8px; } }
 @media (prefers-reduced-motion: reduce) { .cta, .btn { transition: none; } .btn:active:not(:disabled) { scale: none; } }
+
+/* ── Space UI (docs/design/space-ui.md, phase B): this view's buttons draw Space Studio's 3D faces (space.css --space-p-* for the
+   one primary, --space-s-* for secondaries): a lit face over a ledge, a 1px lift and violet glow on hover, a press that sinks into
+   the ledge, the violet focus glow. Reduced motion keeps the faces and drops the lift. ── */
+:global(:root[data-theme]:not([data-business-app])) .btn,
+:global(:root[data-theme]:not([data-business-app])) .cta {
+  background: var(--space-s-face);
+  color: var(--space-s-ink);
+  box-shadow: var(--space-s-depth);
+  border-color: transparent;
+  font-weight: var(--w-bold);
+  transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out), opacity 0.2s ease;
+}
+:global(:root[data-theme]:not([data-business-app])) .btn:hover:not(:disabled, [aria-disabled="true"]),
+:global(:root[data-theme]:not([data-business-app])) .cta:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-s-face); transform: translateY(-1px); box-shadow: var(--space-s-depth-hover); }
+:global(:root[data-theme]:not([data-business-app])) .btn:active:not(:disabled, [aria-disabled="true"]),
+:global(:root[data-theme]:not([data-business-app])) .cta:active:not(:disabled, [aria-disabled="true"]) { transform: translateY(var(--space-ledge)); scale: none; box-shadow: var(--space-s-depth-press); transition-duration: 0.06s; }
+:global(:root[data-theme]:not([data-business-app])) .btn:focus-visible,
+:global(:root[data-theme]:not([data-business-app])) .cta:focus-visible { box-shadow: var(--space-s-depth), var(--space-focus-glow); filter: none; text-decoration: none; }
+:global(:root[data-theme]:not([data-business-app])) .btn:disabled,
+:global(:root[data-theme]:not([data-business-app])) .cta:disabled { transform: none; box-shadow: none; }
+@media (prefers-reduced-motion: reduce) {
+  :global(:root[data-theme]:not([data-business-app])) .btn:hover:not(:disabled),
+  :global(:root[data-theme]:not([data-business-app])) .cta:hover:not(:disabled) { transform: none; }
+}

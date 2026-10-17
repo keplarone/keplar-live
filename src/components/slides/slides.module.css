@@ -5,7 +5,7 @@
 .lede { margin-top: var(--s-2); color: var(--c-ink-2); max-width: 60ch; font-size: var(--t-body); }
 .error { padding: var(--s-3) var(--s-4); border-radius: var(--r-sm); background: var(--c-surface-1); box-shadow: inset 0 0 0 1px var(--c-border-strong); color: var(--c-err); }
 .grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: var(--s-6); align-items: start; }
-.card { display: flex; flex-direction: column; gap: var(--s-4); padding: var(--s-6); border-radius: var(--r-card); background: var(--c-surface-1); box-shadow: var(--sh-hairline); min-width: 0; }
+.card { display: flex; flex-direction: column; gap: var(--s-4); padding: var(--s-6); border-radius: var(--r-card); background: var(--c-surface-1); box-shadow: var(--elev-1); min-width: 0; }
 .cardTitle { font-size: var(--t-body); font-weight: var(--w-medium); }
 .field { display: flex; flex-direction: column; gap: var(--s-2); min-width: 0; }
 .label { font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); }
@@ -22,7 +22,7 @@
 .primary, .ghost { display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2); height: 40px; padding: 0 var(--s-5); border-radius: var(--r-pill); font: inherit; font-weight: var(--w-medium); text-decoration: none; cursor: pointer; white-space: nowrap; }
 .primary { background: var(--c-ink); color: var(--c-canvas); }
 .primary:hover:not(:disabled) { background: var(--c-ink-hover); }
-.ghost { color: var(--c-ink); box-shadow: inset 0 0 0 1px var(--hairline-strong); background: var(--surface-raised); }
+.ghost { color: var(--c-ink); box-shadow: var(--elev-1); background: var(--surface-raised); }
 .ghost:hover:not(:disabled) { background: var(--hover-wash); }
 .primary:active:not(:disabled), .ghost:active:not(:disabled) { scale: var(--m-press); }
 .primary:disabled, .ghost:disabled { opacity: 0.45; cursor: default; }
@@ -86,8 +86,8 @@
 .pBtn[aria-pressed="true"] { background: color-mix(in srgb, var(--c-night-ink) 18%, transparent); }
 .pCount { min-width: 5ch; text-align: center; font-variant-numeric: tabular-nums; }
 /* locked */
-.locked { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--s-4); max-width: 560px; margin: var(--s-16) auto; padding: var(--s-10) var(--s-8); border-radius: var(--r-card); background: var(--c-surface-1); box-shadow: var(--sh-hairline); }
-.lockIcon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: var(--r-pill); background: var(--c-canvas); color: var(--c-ink-2); box-shadow: var(--sh-hairline); }
+.locked { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--s-4); max-width: 560px; margin: var(--s-16) auto; padding: var(--s-10) var(--s-8); border-radius: var(--r-card); background: var(--c-surface-1); box-shadow: var(--elev-1); }
+.lockIcon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: var(--r-pill); background: var(--c-canvas); color: var(--c-ink-2); box-shadow: var(--elev-1); }
 .lockedTitle { font-size: var(--t-title); letter-spacing: var(--tr-title); line-height: var(--lh-title); font-weight: var(--w-medium); }
 .lockedBody { color: var(--c-ink-2); font-size: var(--t-body); line-height: var(--lh-body); }
 .lockedActions { display: flex; gap: var(--s-3); flex-wrap: wrap; justify-content: center; margin-top: var(--s-2); }
@@ -116,5 +116,62 @@
 
 /* UI v2: a light title, raised cards with a hairline (no frost), sentence-case labels */
 .title { font-weight: var(--w-regular); letter-spacing: -0.035em; }
-.card { background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1); border-radius: var(--r-card); }
+.card { background: var(--surface-raised); box-shadow: var(--elev-1); border-radius: var(--r-card); }
 .label { text-transform: none; letter-spacing: 0; font-size: 13px; }
+
+/* ── Space UI (docs/design/space-ui.md, phase B): this view's buttons draw Space Studio's 3D faces (space.css --space-p-* for the
+   one primary, --space-s-* for secondaries): a lit face over a ledge, a 1px lift and violet glow on hover, a press that sinks into
+   the ledge, the violet focus glow. Reduced motion keeps the faces and drops the lift. ── */
+:global(:root[data-theme]:not([data-business-app])) .primary {
+  background: var(--space-p-face);
+  color: var(--space-p-ink);
+  box-shadow: var(--space-p-depth);
+  border-color: transparent;
+  font-weight: var(--w-bold);
+  transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out), opacity 0.2s ease;
+}
+:global(:root[data-theme]:not([data-business-app])) .primary:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-p-face); transform: translateY(-1px); box-shadow: var(--space-p-depth-hover); }
+:global(:root[data-theme]:not([data-business-app])) .primary:active:not(:disabled, [aria-disabled="true"]) { transform: translateY(var(--space-ledge)); scale: none; box-shadow: var(--space-p-depth-press); transition-duration: 0.06s; }
+:global(:root[data-theme]:not([data-business-app])) .primary:focus-visible { box-shadow: var(--space-p-depth), var(--space-focus-glow); filter: none; text-decoration: none; }
+:global(:root[data-theme]:not([data-business-app])) .primary:disabled { transform: none; box-shadow: none; }
+:global(:root[data-theme]:not([data-business-app])) .ghost {
+  background: var(--space-s-face);
+  color: var(--space-s-ink);
+  box-shadow: var(--space-s-depth);
+  border-color: transparent;
+  font-weight: var(--w-bold);
+  transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out), opacity 0.2s ease;
+}
+:global(:root[data-theme]:not([data-business-app])) .ghost:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-s-face); transform: translateY(-1px); box-shadow: var(--space-s-depth-hover); }
+:global(:root[data-theme]:not([data-business-app])) .ghost:active:not(:disabled, [aria-disabled="true"]) { transform: translateY(var(--space-ledge)); scale: none; box-shadow: var(--space-s-depth-press); transition-duration: 0.06s; }
+:global(:root[data-theme]:not([data-business-app])) .ghost:focus-visible { box-shadow: var(--space-s-depth), var(--space-focus-glow); filter: none; text-decoration: none; }
+:global(:root[data-theme]:not([data-business-app])) .ghost:disabled { transform: none; box-shadow: none; }
+@media (prefers-reduced-motion: reduce) {
+  :global(:root[data-theme]:not([data-business-app])) .primary:hover:not(:disabled),
+  :global(:root[data-theme]:not([data-business-app])) .ghost:hover:not(:disabled) { transform: none; }
+}
+
+/* ── Space UI (phase B): Slides (and Study, which builds on these) ──
+   28px Space cards, Space fields with the violet glow, a semibold tight title, deck rows as wash pills, the active thumbnail glows
+   violet, the presenter bar is a glass pill, keyboard focus is the violet glow (no underline cue). The slide frames themselves are the
+   user's content and keep their own palette. */
+.title, .lockedTitle { font-weight: var(--w-semibold); letter-spacing: -0.045em; }
+.card, .locked { border-radius: var(--space-r-card); background: var(--surface-panel); box-shadow: var(--space-glass-depth); }
+.cardTitle { font-weight: var(--w-semibold); }
+.input { border-radius: 999px; padding: 0 20px; min-height: 46px; background: var(--space-field); box-shadow: var(--space-field-depth); transition: background-color 0.25s ease, box-shadow 0.3s var(--space-ease-out); }
+textarea.input { border-radius: var(--space-r-area); padding: 14px 20px; }
+.input:hover { background: var(--space-field-hover); }
+.input:focus, .input:focus-visible { background: var(--space-field-focus); box-shadow: var(--space-field-depth), var(--space-focus-glow); }
+.range { accent-color: var(--c-accent); }
+.error { border-radius: 20px; background: rgb(var(--rgb-destructive) / 0.1); box-shadow: 0 0 40px rgb(var(--rgb-destructive) / 0.12); }
+.primary:focus-visible, .ghost:focus-visible, .linkBtn:focus-visible, .tiny:focus-visible, .thumb:focus-visible, .deckOpen:focus-visible, .pBtn:focus-visible, .fileInput:focus-visible + label { text-decoration: none; box-shadow: var(--space-focus-glow); }
+.deckList { gap: 6px; }
+.deckRow { border-bottom: 0; padding: 10px 14px; border-radius: 20px; background: var(--hover-wash); }
+.deckRow:last-child { border-bottom: 0; }
+.thumb { border-radius: 10px; box-shadow: 0 6px 16px rgb(0 0 0 / 0.25); }
+.thumbItem[data-active] .thumb { box-shadow: 0 0 0 2px rgb(var(--ring-rgb) / 0.8), 0 0 22px rgb(var(--ring-rgb) / 0.35); }
+.tiny { border-radius: 999px; box-shadow: none; background: var(--hover-wash); }
+.tiny:hover:not(:disabled) { background: var(--press-wash); }
+.frame { border-radius: 12px; }
+.lockIcon { background: var(--space-p-face); color: var(--space-p-ink); box-shadow: 0 0 22px rgb(var(--ring-rgb) / 0.35); }
+.presentBar { border-radius: 999px; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 18px 48px rgb(0 0 0 / 0.55); }

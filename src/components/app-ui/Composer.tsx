@@ -1,6 +1,7 @@
 "use client";
 
 import { SEND_EVENT } from "@/lib/spatial/events";
+import { spaceFx } from "@/lib/fx/space-fx";
 import { forwardRef, useCallback, useDeferredValue, useEffect, useId, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { hasResearchBridge, noSubscribe, researchCapabilities } from "@/lib/desktop/research-bridge";
 import { wantsLiveResearch } from "./state/live-run";
@@ -156,6 +157,8 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
   const taRef = useRef<HTMLTextAreaElement>(null);
   const prefs = usePrefs();
   const [text, setTextState] = useState("");
+  /** Space UI: the composer gives a short squeeze-and-glow as a question leaves it (alternates a/b so each send restarts it). */
+  const [pulse, setPulse] = useState<"a" | "b" | undefined>(undefined);
   // The latest text, updated synchronously (typing and dictation both write here), so dictation never mistakes its own write for an edit.
   const textRef = useRef("");
   // The textarea is UNCONTROLLED: the DOM owns the value, so native undo/redo, IME composition and the caret are never
@@ -490,6 +493,8 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
     // Spatial layer: the prompt leaves the composer (decorative; the visible result is the thread itself).
     const box = taRef.current?.closest("form")?.getBoundingClientRect();
     if (box) window.dispatchEvent(new CustomEvent(SEND_EVENT, { detail: { rect: { x: box.left, y: box.top, w: box.width, h: box.height }, chars: prompt.length } }));
+    setPulse((p) => (p === "a" ? "b" : "a"));
+    spaceFx.prompt();
     onSend(prompt, [...readyDocs.map((d) => d.attachment ?? { name: d.name, size: d.size, type: d.type }), ...readyLinks.map((l) => l.attachment!), ...heard], modes, sent.length ? sent : undefined);
     setText("");
     setMedia([]);
@@ -967,6 +972,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
           addFiles(Array.from(e.dataTransfer.files));
         }}
         data-dragging={dragging || undefined}
+        data-pulse={pulse}
         data-voice={voice.state !== "idle" ? voice.state : undefined}
         aria-label="Ask Keplar"
       >

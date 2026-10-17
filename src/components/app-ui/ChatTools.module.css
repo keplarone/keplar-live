@@ -3,7 +3,7 @@
 /* the invisible placeholder that holds the bar's row until the first answer (same height as the toggle) */
 .switch { display: inline-flex; align-items: center; min-height: 32px; padding: 0 var(--s-3); }
 /* the Tools toggle: a kit ghost Button with a state pip and a hairline */
-.toggle { color: var(--c-ink-2); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong); }
+.toggle { color: var(--c-ink-2); box-shadow: var(--elev-1); }
 .toggle[aria-pressed="true"] { color: var(--c-ink); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-ink); }
 .pip { width: 8px; height: 8px; border-radius: 50%; background: var(--c-ink-3); flex: none; }
 .toggle[aria-pressed="true"] .pip { background: var(--c-ink); }
@@ -11,7 +11,7 @@
 @media (pointer: coarse) { .switch, .toggle { min-height: 44px; } }
 
 .list { list-style: none; margin: 0 0 var(--s-3); padding: 0; display: flex; flex-direction: column; gap: var(--s-2); min-width: 0; }
-.use { display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-3) var(--s-4); border-radius: var(--r-md); background: var(--surface-raised); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline); font-size: var(--t-small); min-width: 0; }
+.use { display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-3) var(--s-4); border-radius: var(--r-md); background: var(--surface-raised); box-shadow: var(--elev-1); font-size: var(--t-small); min-width: 0; }
 .use[data-status="awaiting_approval"] { box-shadow: inset 0 0 0 var(--b-hairline) var(--c-ink); background: var(--c-canvas); }
 .use[data-status="error"], .use[data-status="blocked"] { box-shadow: inset 0 0 0 var(--b-hairline) var(--c-dissent); }
 .head { display: flex; align-items: center; gap: var(--s-2); color: var(--c-ink); font-weight: var(--w-medium); overflow-wrap: anywhere; min-width: 0; }
@@ -25,3 +25,15 @@
 .meta { margin: 0; color: var(--c-ink-3); font-size: 12px; overflow-wrap: anywhere; }
 .args { margin: 0; padding: var(--s-2) var(--s-3); border-radius: var(--r-md); background: var(--c-surface-2); font-family: var(--f-sans); font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 160px; overflow: auto; }
 .row { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+
+/* Space UI (phase B): the Tools toggle is lit when on (violet wash and halo), tool-use cards are quiet Space panels with a tinted
+   state instead of an edge line, and running dots glow. */
+.toggle { box-shadow: none; background: var(--hover-wash); }
+.toggle[aria-pressed="true"] { background: rgb(var(--ring-rgb) / 0.16); box-shadow: 0 0 20px rgb(var(--ring-rgb) / 0.22); }
+.toggle[aria-pressed="true"] .pip { background: var(--c-accent); box-shadow: 0 0 8px rgb(var(--ring-rgb) / 0.8); }
+.use { border-radius: 22px; background: var(--surface-panel); box-shadow: var(--space-glass-depth); }
+.use[data-status="awaiting_approval"] { background: linear-gradient(180deg, rgb(var(--ring-rgb) / 0.1), rgb(var(--ring-rgb) / 0.02)), var(--surface-panel); box-shadow: var(--space-glass-depth), 0 0 40px rgb(var(--ring-rgb) / 0.16); }
+.use[data-status="error"], .use[data-status="blocked"] { background: linear-gradient(180deg, rgb(var(--rgb-destructive) / 0.08), rgb(var(--rgb-destructive) / 0)), var(--surface-panel); box-shadow: var(--space-glass-depth); }
+.use[data-status="running"] .dot { background: var(--c-accent); box-shadow: 0 0 8px rgb(var(--ring-rgb) / 0.8); }
+.use[data-status="done"] .dot { background: var(--c-verified); }
+.args { border-radius: 16px; }

@@ -10,7 +10,7 @@
   border: 0;
   border-radius: var(--shape-card);
   background: var(--surface-raised);
-  box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1);
+  box-shadow: var(--elev-1);
 }
 
 .head,
@@ -53,11 +53,13 @@
   height: 20px;
   padding: 0 8px;
   border-radius: var(--shape-pill);
-  border: 1px solid var(--hairline-strong);
+  border: 1px solid transparent;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--c-ink-2);
+  box-shadow: var(--elev-1);
+  background-color: var(--hover-wash);
 }
 
 .status { color: var(--c-ink-2); font-variant-numeric: tabular-nums; }
@@ -82,11 +84,12 @@
   gap: 6px;
   min-width: 0;
   padding: var(--s-3);
-  border: 1px solid var(--hairline);
+  border: 1px solid transparent;
   border-left: 3px solid var(--seat);
   border-radius: var(--shape-control);
   background: var(--c-canvas);
   animation: turnIn 220ms var(--e-standard, ease-out) both;
+  box-shadow: var(--elev-1);
 }
 
 /* Seats are greys, not hues (brand: no blue/purple; the product videos use grey models): four steps of the ink ladder, each with
@@ -128,8 +131,8 @@
 }
 /* "Changed position" is the one tag that matters: amber, as in the product videos. Refined is ink, held stays quiet. */
 .tag[data-update="changed"] { background: rgb(var(--rgb-attention) / 0.12); color: var(--c-attention); box-shadow: inset 0 0 0 1px rgb(var(--rgb-attention) / 0.45); }
-.tag[data-update="refined"] { color: var(--c-ink); box-shadow: inset 0 0 0 1px var(--hairline-strong); background: transparent; }
-.tag[data-update="held"] { box-shadow: inset 0 0 0 1px var(--hairline); background: transparent; }
+.tag[data-update="refined"] { color: var(--c-ink); box-shadow: var(--elev-1); background: transparent; }
+.tag[data-update="held"] { box-shadow: var(--elev-1); background: transparent; }
 /* collapsed record: each model's final move as a tag ("A refined · B changed · C held") */
 .summaryTags { display: inline-flex; flex-wrap: wrap; gap: 6px; }
 

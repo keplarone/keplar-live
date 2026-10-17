@@ -2,7 +2,7 @@
 .head h2 { margin: 0 0 4px; font-size: 1.25rem; font-weight: 500; display: flex; align-items: center; gap: 10px; }
 .tag { font-size: 0.68rem; letter-spacing: 0.08em; padding: 2px 8px; border: 1px solid var(--c-border-strong); border-radius: 6px; color: var(--c-ink-2); }
 .muted { color: var(--c-ink-3); font-size: 0.85rem; line-height: 1.5; margin: 0; }
-.card { border: 0; border-radius: var(--r-card); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1); }
+.card { border: 0; border-radius: var(--r-card); background: var(--surface-raised); box-shadow: var(--elev-1); }
 .card > summary { cursor: pointer; padding: 14px 16px; display: flex; align-items: center; gap: 10px; list-style: none; font-weight: 500; }
 .card > summary::-webkit-details-marker { display: none; }
 .card > summary .n { width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--c-border-strong); display: inline-grid; place-items: center; font-size: 0.75rem; }
@@ -17,7 +17,7 @@
 .btn, .ghost { display: inline-flex; align-items: center; justify-content: center; height: 36px; padding: 0 16px; border-radius: 999px; font: inherit; font-size: 0.875rem; cursor: pointer; border: 0; }
 .btn { background: var(--c-ink); color: var(--c-canvas); font-weight: 500; }
 .btn:hover:not(:disabled) { background: var(--c-ink-hover); }
-.ghost { background: var(--surface-raised); color: var(--c-ink); box-shadow: inset 0 0 0 1px var(--hairline-strong); }
+.ghost { background: var(--surface-raised); color: var(--c-ink); box-shadow: var(--elev-1); }
 .ghost:hover:not(:disabled) { background: var(--hover-wash); }
 .btn:disabled, .ghost:disabled { opacity: 0.45; cursor: not-allowed; }
 .btn:focus-visible, .ghost:focus-visible { outline: none; text-decoration: underline; text-underline-offset: 3px; }
@@ -44,3 +44,35 @@
 /* Inside the Keplar Business workspace: the same page width, padding and 24px title as the other Create tabs. */
 :global(html[data-business-app]) .root.root { max-width: 1240px; margin: 0 auto; padding: 24px 32px 48px; }
 :global(html[data-business-app]) .root .head h2 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+
+/* ── Space UI (docs/design/space-ui.md, phase B): this view's buttons draw Space Studio's 3D faces (space.css --space-p-* for the
+   one primary, --space-s-* for secondaries): a lit face over a ledge, a 1px lift and violet glow on hover, a press that sinks into
+   the ledge, the violet focus glow. Reduced motion keeps the faces and drops the lift. ── */
+:global(:root[data-theme]:not([data-business-app])) .btn {
+  background: var(--space-p-face);
+  color: var(--space-p-ink);
+  box-shadow: var(--space-p-depth);
+  border-color: transparent;
+  font-weight: var(--w-bold);
+  transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out), opacity 0.2s ease;
+}
+:global(:root[data-theme]:not([data-business-app])) .btn:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-p-face); transform: translateY(-1px); box-shadow: var(--space-p-depth-hover); }
+:global(:root[data-theme]:not([data-business-app])) .btn:active:not(:disabled, [aria-disabled="true"]) { transform: translateY(var(--space-ledge)); scale: none; box-shadow: var(--space-p-depth-press); transition-duration: 0.06s; }
+:global(:root[data-theme]:not([data-business-app])) .btn:focus-visible { box-shadow: var(--space-p-depth), var(--space-focus-glow); filter: none; text-decoration: none; }
+:global(:root[data-theme]:not([data-business-app])) .btn:disabled { transform: none; box-shadow: none; }
+:global(:root[data-theme]:not([data-business-app])) .ghost {
+  background: var(--space-s-face);
+  color: var(--space-s-ink);
+  box-shadow: var(--space-s-depth);
+  border-color: transparent;
+  font-weight: var(--w-bold);
+  transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out), opacity 0.2s ease;
+}
+:global(:root[data-theme]:not([data-business-app])) .ghost:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-s-face); transform: translateY(-1px); box-shadow: var(--space-s-depth-hover); }
+:global(:root[data-theme]:not([data-business-app])) .ghost:active:not(:disabled, [aria-disabled="true"]) { transform: translateY(var(--space-ledge)); scale: none; box-shadow: var(--space-s-depth-press); transition-duration: 0.06s; }
+:global(:root[data-theme]:not([data-business-app])) .ghost:focus-visible { box-shadow: var(--space-s-depth), var(--space-focus-glow); filter: none; text-decoration: none; }
+:global(:root[data-theme]:not([data-business-app])) .ghost:disabled { transform: none; box-shadow: none; }
+@media (prefers-reduced-motion: reduce) {
+  :global(:root[data-theme]:not([data-business-app])) .btn:hover:not(:disabled),
+  :global(:root[data-theme]:not([data-business-app])) .ghost:hover:not(:disabled) { transform: none; }
+}

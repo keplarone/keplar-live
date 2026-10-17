@@ -3,7 +3,7 @@
 .form { display: flex; gap: var(--s-2); flex-wrap: wrap; align-items: center; }
 .form > input { flex: 1 1 240px; min-width: 0; }
 .usage { color: var(--c-ink-3); font-size: var(--t-label); }
-.domain { border-radius: var(--r-md); padding: var(--s-3) var(--s-4); display: flex; flex-direction: column; gap: var(--s-3); min-width: 0; background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1); }
+.domain { border-radius: var(--r-md); padding: var(--s-3) var(--s-4); display: flex; flex-direction: column; gap: var(--s-3); min-width: 0; background: var(--surface-raised); box-shadow: var(--elev-1); }
 .head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); flex-wrap: wrap; }
 .name { font-family: var(--font-mono, ui-monospace, monospace); font-size: var(--t-small); overflow-wrap: anywhere; color: var(--c-ink); }
 .pill { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 var(--s-2); border-radius: var(--r-pill); font-size: var(--t-label); border: var(--b-hairline) solid var(--c-border); color: var(--c-ink-2); background: var(--c-canvas); }
@@ -38,6 +38,25 @@
 .fix { display: block; margin-top: 4px; color: var(--c-ink); }
 
 /* "Open site": a link drawn like the kit's secondary pill. */
-.linkBtn { display: inline-flex; align-items: center; height: 32px; padding: 0 14px; border-radius: var(--r-pill); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--hairline-strong); color: var(--c-ink); font-size: var(--t-small); font-weight: var(--w-medium); text-decoration: none; white-space: nowrap; }
+.linkBtn { display: inline-flex; align-items: center; height: 32px; padding: 0 14px; border-radius: var(--r-pill); background: var(--surface-raised); box-shadow: var(--elev-1); color: var(--c-ink); font-size: var(--t-small); font-weight: var(--w-medium); text-decoration: none; white-space: nowrap; }
 .linkBtn:hover { background: var(--hover-wash); }
 .linkBtn:focus-visible { outline: none; text-decoration: underline; text-underline-offset: 4px; }
+
+/* ── Space UI (docs/design/space-ui.md, phase B): this view's buttons draw Space Studio's 3D faces (space.css --space-p-* for the
+   one primary, --space-s-* for secondaries): a lit face over a ledge, a 1px lift and violet glow on hover, a press that sinks into
+   the ledge, the violet focus glow. Reduced motion keeps the faces and drops the lift. ── */
+:global(:root[data-theme]:not([data-business-app])) .linkBtn {
+  background: var(--space-s-face);
+  color: var(--space-s-ink);
+  box-shadow: var(--space-s-depth);
+  border-color: transparent;
+  font-weight: var(--w-bold);
+  transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out), opacity 0.2s ease;
+}
+:global(:root[data-theme]:not([data-business-app])) .linkBtn:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-s-face); transform: translateY(-1px); box-shadow: var(--space-s-depth-hover); }
+:global(:root[data-theme]:not([data-business-app])) .linkBtn:active:not(:disabled, [aria-disabled="true"]) { transform: translateY(var(--space-ledge)); scale: none; box-shadow: var(--space-s-depth-press); transition-duration: 0.06s; }
+:global(:root[data-theme]:not([data-business-app])) .linkBtn:focus-visible { box-shadow: var(--space-s-depth), var(--space-focus-glow); filter: none; text-decoration: none; }
+:global(:root[data-theme]:not([data-business-app])) .linkBtn:disabled { transform: none; box-shadow: none; }
+@media (prefers-reduced-motion: reduce) {
+  :global(:root[data-theme]:not([data-business-app])) .linkBtn:hover:not(:disabled) { transform: none; }
+}

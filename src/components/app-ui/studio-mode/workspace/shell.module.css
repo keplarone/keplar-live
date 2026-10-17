@@ -23,11 +23,12 @@
   grid-template-columns: 232px minmax(0, 1fr);
   flex: 1;
   min-height: 0;
-  border: 1px solid var(--ks-border);
+  border: 1px solid transparent;
   border-radius: var(--ks-radius-sm);
   background: var(--ks-bg);
   overflow: hidden;
   transition: grid-template-columns var(--ks-dur-base) var(--ks-ease-standard);
+  box-shadow: var(--ks-elev-1);
 }
 .workspace[data-nav="rail"] { grid-template-columns: 48px minmax(0, 1fr); }
 
@@ -127,12 +128,13 @@
   max-width: 260px;
   height: var(--ks-control-sm);
   padding: 0 var(--ks-space-2);
-  border: 1px solid var(--ks-border-strong);
+  border: 1px solid transparent;
   border-radius: var(--ks-radius-sm);
   background: var(--ks-surface-1);
   color: var(--ks-text-1);
   font: inherit;
   font-size: var(--ks-text-base);
+  box-shadow: var(--ks-elev-1);
 }
 .placeSelect:focus-visible { outline: none; box-shadow: var(--ks-focus-ring); }
 .headTools { display: flex; align-items: center; gap: var(--ks-space-2); margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
@@ -192,11 +194,12 @@
   align-items: center;
   gap: var(--ks-space-3);
   padding: var(--ks-space-2) var(--ks-space-2) var(--ks-space-2) var(--ks-space-4);
-  border: 1px solid var(--ks-border);
+  border: 1px solid transparent;
   border-radius: var(--ks-radius-pill);
   background: var(--ks-surface-1);
   color: var(--ks-text-1);
   font-size: var(--ks-text-base);
+  box-shadow: var(--ks-elev-1);
 }
 
 .bottom {
@@ -267,11 +270,13 @@
   justify-content: center;
   width: 18px;
   height: 18px;
-  border: 1px solid var(--ks-border-strong);
+  border: 1px solid transparent;
   border-radius: var(--ks-radius-pill);
   font-size: var(--ks-text-xs);
   font-variant-numeric: tabular-nums;
   color: var(--ks-text-3);
+  box-shadow: var(--ks-elev-1);
+  background-color: var(--ks-fill-hover);
 }
 .planList li[data-state="doing"] .planMark { border-color: var(--ks-accent); color: var(--ks-accent-text); }
 .planList li[data-state="done"] .planMark { border-color: transparent; background: var(--ks-fill-active); color: var(--ks-success); }
@@ -282,10 +287,11 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1px;
   margin: 0;
-  border: 1px solid var(--ks-border);
+  border: 1px solid transparent;
   border-radius: var(--ks-radius-sm);
   background: var(--ks-border);
   overflow: hidden;
+  box-shadow: var(--ks-elev-1);
 }
 .statGrid > div { padding: var(--ks-space-2) var(--ks-space-3); background: var(--ks-surface-1); }
 .statGrid dt { font-size: var(--ks-text-xs); color: var(--ks-text-3); }
@@ -297,15 +303,16 @@
 .shot {
   position: relative;
   margin: 0;
-  border: 1px solid var(--ks-border);
+  border: 1px solid transparent;
   border-radius: var(--ks-radius-sm);
   background: var(--ks-surface-inset);
   overflow: hidden;
+  box-shadow: var(--ks-elev-1);
 }
 .shot img { display: block; width: 100%; height: auto; }
 .shot[data-looking] img { opacity: 0.6; transition: opacity var(--ks-dur-base) var(--ks-ease-standard); }
 .thumbs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--ks-space-2); margin: 0; padding: 0; list-style: none; }
-.thumbs img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border: 1px solid var(--ks-border); border-radius: var(--ks-radius-xs); }
+.thumbs img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border: 1px solid transparent; border-radius: var(--ks-radius-xs); box-shadow: var(--ks-elev-1); background-color: var(--ks-fill-hover); }
 .muted { margin: 0; font-size: var(--ks-text-sm); color: var(--ks-text-3); }
 .restored h3 { margin: 0 0 var(--ks-space-1); font-size: var(--ks-text-sm); font-weight: var(--ks-weight-medium); color: var(--ks-text-2); }
 .restored ul { margin: 0; padding: 0 0 0 var(--ks-space-4); font-size: var(--ks-text-sm); color: var(--ks-text-2); }
@@ -345,10 +352,11 @@
   gap: var(--ks-space-3);
   margin-top: var(--ks-space-2);
   padding: var(--ks-space-3);
-  border: 1px solid var(--ks-border);
+  border: 1px solid transparent;
   border-radius: var(--ks-radius-sm);
   background: var(--ks-surface-inset);
   animation: ks-shell-in var(--ks-dur-fast) var(--ks-ease-enter) both;
+  box-shadow: var(--ks-elev-1);
 }
 .controlGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--ks-space-2) var(--ks-space-4); margin: 0; }
 .controlGrid dt { font-size: var(--ks-text-xs); color: var(--ks-text-3); }
@@ -365,7 +373,7 @@
 }
 .controlActions { display: flex; gap: var(--ks-space-2); flex-wrap: wrap; }
 .controlShot { margin: 0; }
-.controlShot img { display: block; width: 100%; border: 1px solid var(--ks-border); border-radius: var(--ks-radius-xs); }
+.controlShot img { display: block; width: 100%; border: 1px solid transparent; border-radius: var(--ks-radius-xs); box-shadow: var(--ks-elev-1); background-color: var(--ks-fill-hover); }
 .control[data-compact] .controlGrid { grid-template-columns: minmax(0, 1fr); gap: var(--ks-space-1-5); }
 .control[data-compact] .controlGrid > div { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: var(--ks-space-2); align-items: baseline; }
 .control[data-compact] .controlDetails { max-height: 320px; overflow: auto; }
@@ -380,7 +388,7 @@
   gap: var(--ks-space-1-5);
   height: var(--ks-control-sm);
   padding: 0 var(--ks-space-2-5);
-  border: 1px solid var(--ks-border-strong);
+  border: 1px solid transparent;
   border-radius: var(--ks-radius-pill);
   background: var(--ks-surface-1);
   color: var(--ks-text-1);
@@ -389,6 +397,7 @@
   white-space: nowrap;
   cursor: pointer;
   transition: background-color var(--ks-dur-fast) var(--ks-ease-standard), border-color var(--ks-dur-fast) var(--ks-ease-standard);
+  box-shadow: var(--ks-elev-1);
 }
 .solarTrigger:hover:not(:disabled) { background: var(--ks-fill-hover); }
 .solarTrigger[aria-expanded="true"] { border-color: var(--ks-text-3); }
@@ -482,11 +491,12 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  border: 1px solid var(--ks-border-strong);
+  border: 1px solid transparent;
   border-radius: var(--ks-radius-lg);
   background: var(--ks-surface-1);
   color: var(--ks-text-1);
   overflow: hidden;
+  box-shadow: var(--ks-elev-1);
 }
 
 /* The drag handle. Region mode: the desktop window drags by app-region (older apps, Linux Wayland). Spring mode: the page
@@ -514,7 +524,7 @@
 .overlayComposer { flex: none; padding: var(--ks-space-2); border-top: 1px solid var(--ks-border); }
 .overlayGate { flex: 1; min-height: 0; overflow: auto; display: flex; align-items: center; justify-content: center; padding: var(--ks-space-4); }
 
-.overlay[data-see-through] { border-color: var(--ks-border); }
+.overlay[data-see-through] { border-color: transparent; }
 
 /* Collapsed: a pill window. */
 .overlayRoot[data-collapsed] { display: flex; align-items: stretch; }
@@ -526,10 +536,11 @@
   height: 100%;
   min-height: 40px;
   padding: 0 var(--ks-space-1) 0 var(--ks-space-2-5);
-  border: 1px solid var(--ks-border-strong);
+  border: 1px solid transparent;
   border-radius: var(--ks-radius-pill);
   background: var(--ks-surface-1);
   color: var(--ks-text-1);
+  box-shadow: var(--ks-elev-1);
 }
 .capsuleDrag { display: flex; align-items: center; gap: var(--ks-space-2); flex: 1; min-width: 0; height: 100%; color: var(--ks-text-3); user-select: none; }
 .capsuleText { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--ks-text-sm); font-weight: var(--ks-weight-medium); color: var(--ks-text-1); }
