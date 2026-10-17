@@ -643,10 +643,13 @@
 
 
 /* Optional, keyboard-accessible brief choices before a new build. */
-.intake { display:grid; gap:14px; padding:18px 0; }
-.intakeHint { margin:0; color:var(--c-ink-3); font-size:13px; line-height:1.5; }
-.intakeQuestion { border:0; padding:0; margin:0; min-width:0; }
-.intakeQuestion legend { margin-bottom:8px; font-size:13px; font-weight:500; }
+.intakeQuestion { border:0; padding:0; margin:0; min-width:0; display:flex; flex-direction:column; align-items:center; text-align:center; animation: intake-in .2s ease-out; }
+.intakeQuestion legend { margin-bottom:10px; font-size:14px; font-weight:500; }
+.intakeQuestion .briefChips { justify-content:center; align-items:center; margin:0; }
+.intakeStep { margin-left:6px; font-weight:400; color:var(--c-ink-3); font-size:12px; }
+.intakeDone { display:flex; justify-content:center; align-items:center; gap:10px; font-size:13px; color:var(--c-ink-2); }
+@keyframes intake-in { from { opacity:0; transform:translateY(4px); } }
+@media (prefers-reduced-motion: reduce) { .intakeQuestion { animation:none; } }
 .intakeQuestion button[aria-pressed="true"] { background:var(--c-ink); color:var(--c-canvas); border-color:var(--c-ink); }
 .intakeQuestion button:focus-visible { outline:2px solid var(--c-ink); outline-offset:3px; }
 @media(pointer:coarse) { .intakeQuestion button { min-height:44px; } }
@@ -682,3 +685,13 @@
   :global(:root[data-theme]:not([data-business-app])) .linkPrimary:hover:not(:disabled),
   :global(:root[data-theme]:not([data-business-app])) .linkBtn:hover:not(:disabled) { transform: none; }
 }
+/* App start: the prompt sits in the middle of the screen; past apps have their own page behind "View recent apps". */
+.recentBar { display: flex; justify-content: flex-end; padding: 12px clamp(16px, 2.4vw, 36px) 0; }
+.recentBar .textBtn { gap: 6px; font-size: 14px; height: 36px; }
+.calm { min-height: calc(100dvh - 230px); justify-content: center; box-sizing: border-box; }
+.recentPage { display: flex; flex-direction: column; }
+.recentEmpty { margin: 48px auto; color: var(--c-ink-3); font-size: 15px; text-align: center; }
+/* On the Recent apps page the cards are a wrapping grid, not the one-row strip. */
+.shelfPage .shelfGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); overflow: visible; scroll-snap-type: none; padding-bottom: 0; }
+.shelfPage .shelfGrid > li { flex: none; }
+@media (max-width: 600px) { .calm { min-height: 0; } .shelfPage .shelfGrid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } }

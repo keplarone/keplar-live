@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const list = await listPublic(1).catch(() => []);
-  // An empty index would be a thin page: keep it out of search until there is something on it.
+  // An empty index would be a thin page, so answers-sitemap.xml lists /answers only once there is something on it (Keplar pages carry no noindex).
   return pageMeta("/answers", "Shared answers from Keplar users", "Answers that Keplar users chose to publish: one question, several AI models, with how many agreed and where they differed.");
 }
 

@@ -38,6 +38,7 @@ import { UserMedia } from "./UserMedia";
 import { RESUME_KEY } from "./SiteProjects";
 import { AgentsView, HistoryView, ProjectsView } from "./Views";
 import { ReferralClaim } from "./ReferralClaim";
+import { ReferralNudge } from "./ReferralNudge";
 import { useChatSync } from "./useChatSync";
 import { useTopicTitles } from "./useTopicTitles";
 import { DeleteChatAction } from "./delete/DeleteChat";
@@ -1040,6 +1041,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     <div ref={rootRef} className={s.app} data-product="" data-own-search="" data-drawer={drawerOpen || undefined} data-app-ready={state.scope === "pending" ? undefined : ""}>
       <ExtensionReturn onChanged={() => void syncMeter()} />
       <ReferralClaim signedIn={state.ledger.signedIn} onChanged={() => void syncMeter()} />
+      <ReferralNudge signedIn={state.ledger.signedIn} />
       <div ref={drawerRef} className={s.sideWrap} data-open={drawerOpen || undefined} onPointerEnter={() => warmViews(true)} onFocus={() => warmViews(true)}>
         <Sidebar
           state={listedState}

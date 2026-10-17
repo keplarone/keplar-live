@@ -3,6 +3,7 @@ import { LiveDemo } from "@/components/landing/LiveDemo";
 import { CHAPTERS } from "@/lib/features";
 import { allUseCases } from "@/lib/kb/usecases";
 import { brand, tryHref } from "@/lib/site";
+import { referralConfig } from "@/lib/referrals/config";
 import { ScrollZoom } from "./ScrollZoom";
 import { ModelStack } from "./ModelStack";
 import { DemoWindow } from "./DemoWindow";
@@ -36,6 +37,7 @@ export function SkyHome({ pricing }: { pricing?: React.ReactNode }) {
   const cases = allUseCases();
   const useCases = USE_CASES.map((u) => ({ ...u, data: cases.find((c) => c.slug === u.slug) })).filter((u) => u.data);
   const [, ...chapters] = CHAPTERS;
+  const ref = referralConfig();
 
   return (
     <div className={s.home}>
@@ -98,6 +100,22 @@ export function SkyHome({ pricing }: { pricing?: React.ReactNode }) {
           <LiveDemo />
         </div>
       </section>
+
+      {ref.enabled ? (
+        <section className={s.section} aria-labelledby="invite-title">
+          <div className={s.invite} data-reveal>
+            <h2 id="invite-title" className={s.h2}><span>Invite a friend.</span> <span className={s.muted}>You both get extra credit.</span></h2>
+            <p className={s.lede}>
+              Share your link. When a friend creates a new account with it and verifies their email, you get {ref.referrerCredits.toLocaleString("en-US")} and they get {ref.friendCredits.toLocaleString("en-US")} extra usage credits on Lite, Plus or Pro.
+            </p>
+            <div className={s.ctas}>
+              <Link href="/account#invite" className={s.btnPrimary}>Get your invite link</Link>
+              <Link href="/referral-terms" className={s.btnSecondary}>Referral terms</Link>
+            </div>
+            <p className={s.note}>Usage credit only, never cash. Up to {ref.perMonth} rewarded friends a month.</p>
+          </div>
+        </section>
+      ) : null}
 
       {pricing}
     </div>

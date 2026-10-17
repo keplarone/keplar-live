@@ -26,7 +26,7 @@ import { createPromptStore, PromptField, usePromptReady, usePromptSettled, type 
 import { STARTERS } from "./starters";
 import { ReferenceTray, withReferences } from "./ReferenceTray";
 import { BuildIntake } from "./BuildIntake";
-import { EMPTY_INTAKE, withBuildIntake } from "./build-intake";
+import { EMPTY_INTAKE, withBuildIntake, type BuildIntake as BuildIntakeValue } from "./build-intake";
 import { BriefPanel } from "./BriefPanel";
 import { surpriseBrief } from "@/lib/create/surprise-brief";
 import { clearResume, isBusyError, loadResume, resumeAction, saveResume } from "./resume";
@@ -439,6 +439,24 @@ export function AppBuilder() {
   }, [auto, cfg, current, design, running]);
 
   const free = cfg?.plan === "free";
+  /** "Recent apps" is its own page at /app/create?apps=recent, so Back and shared links work; the prompt keeps its text meanwhile. */
+  const [recent, setRecent] = useState(false);
+  useEffect(() => {
+    const sync = () => setRecent(new URLSearchParams(window.location.search).get("apps") === "recent");
+    sync();
+    window.addEventListener("popstate", sync);
+    return () => window.removeEventListener("popstate", sync);
+  }, []);
+  const showRecent = useCallback((open: boolean) => {
+    try {
+      const url = new URL(window.location.href);
+      if (open) url.searchParams.set("apps", "recent");
+      else url.searchParams.delete("apps");
+      window.history[open ? "pushState" : "replaceState"](null, "", `${url.pathname}${url.search}${url.hash}`);
+    } catch { /* ignore */ }
+    setRecent(open);
+    window.scrollTo?.({ top: 0 });
+  }, []);
   /** Each Options section is the panel of its kit tab. */
   const optPanel = (v: typeof optTab) => ({ id: tabPanelId("kc-opt", v), role: "tabpanel", "aria-labelledby": tabId("kc-opt", v), hidden: optTab !== v });
 
@@ -448,14 +466,21 @@ export function AppBuilder() {
       <div className={s.root}>
         <div className={s.start}>
           <IdeFrame enabled={biz} cfg={cfg} apps={apps} starters={STARTERS} running={running} onStarter={(t) => promptRef.current?.set(t)} onOpenApp={(id) => openApp(id)} getBrief={() => store.text()} auto={auto} design={design} log={live.log}>
-          {/* Minimal pass: one prompt, like Ask. Surprise me, Voice, References, Look and the screen preview sit behind Options. */}
-          <div className={s.calm}>
+          {/* Minimal pass: one prompt, like Ask. Surprise me, Voice, References, Look and the screen preview sit behind Options.
+              Past apps live on their own page (?apps=recent), reached from "View recent apps" at the top right. */}
+          {!recent && apps.length ? (
+            <div className={s.recentBar}>
+              <button type="button" className={s.textBtn} onClick={() => showRecent(true)}>
+                View recent apps
+                <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </button>
+            </div>
+          ) : null}
+          <div className={s.calm} style={recent ? { display: "none" } : undefined}>
             <header className={s.calmIntro}>
               <h2 className={s.calmTitle}><TwoTone text="What do you want to build?" /></h2>
               <p className={s.calmLede}>Describe it or say it. Keplar designs it, writes the code and tests every screen.</p>
             </header>
-
-            <BuildIntake value={intake} onChange={setIntake} />
 
             <section className={s.calmCard} aria-label="Describe your app or website">
               <PromptField ref={promptRef} store={store} id="kc-prompt" className={s.prompt} draftKey={DRAFT_KEY} autoFocus label="Describe your app or website" placeholder="A place where film photographers post scans, follow each other and vote on a weekly darkroom challenge…" onSubmit={() => { const t = store.text().trim(); if (t.length >= 8) void build(t); }} />
@@ -468,6 +493,38 @@ export function AppBuilder() {
                 <ShipRow store={store} cfg={cfg} onBuild={() => { const t = store.text().trim(); if (t.length >= 8) void build(t); }} />
               </div>
             </section>
+
+            <IntakeWhenTyping store={store} value={intake} onChange={setIntake} idle={
+            <ul className={s.calmChips} aria-label="Start from an idea">
+                {STARTERS.slice(0, 4).map((st) => (
+                  <li key={st.id}>
+                    <button type="button" className={s.calmChip} onClick={() => promptRef.current?.set(st.prompt)}>{st.label}</button>
+                  </li>
+                ))}
+                <li>
+                  <button
+                    type="button"
+                    className={s.calmChip}
+                    disabled={running}
+                    title="Zero input: Keplar picks an industry, audience, style and scope, then builds it."
+                    onClick={() => {
+                      const b = surpriseBrief();
+                      promptRef.current?.set(b.prompt);
+                      if (cfg) {
+                        const st = cfg.styles.find((x) => x.id === b.style) ?? cfg.styles[0];
+                        setAuto(false);
+                        setDesign((d) => ({ ...d, style: st.id, mode: b.mode, fonts: st.fonts, shape: st.shape, density: st.density, motion: st.motion, palette: null, paletteSource: "style", direction: undefined }));
+                      }
+                      say(`Surprise: ${b.label}. Building…`);
+                      pendingBuild.current = b.prompt;
+                      setSurpriseTick((n) => n + 1);
+                    }}
+                  >
+                    Surprise me
+                  </button>
+                </li>
+              </ul>
+            } />
 
             {briefOpen ? (
               <BriefPanel
@@ -490,38 +547,9 @@ export function AppBuilder() {
               />
             ) : null}
 
-            <ul className={s.calmChips} aria-label="Start from an idea">
-              {STARTERS.slice(0, 4).map((st) => (
-                <li key={st.id}>
-                  <button type="button" className={s.calmChip} onClick={() => promptRef.current?.set(st.prompt)}>{st.label}</button>
-                </li>
-              ))}
-              <li>
-                <button
-                  type="button"
-                  className={s.calmChip}
-                  disabled={running}
-                  title="Zero input: Keplar picks an industry, audience, style and scope, then builds it."
-                  onClick={() => {
-                    const b = surpriseBrief();
-                    promptRef.current?.set(b.prompt);
-                    if (cfg) {
-                      const st = cfg.styles.find((x) => x.id === b.style) ?? cfg.styles[0];
-                      setAuto(false);
-                      setDesign((d) => ({ ...d, style: st.id, mode: b.mode, fonts: st.fonts, shape: st.shape, density: st.density, motion: st.motion, palette: null, paletteSource: "style", direction: undefined }));
-                    }
-                    say(`Surprise: ${b.label}. Building…`);
-                    pendingBuild.current = b.prompt;
-                    setSurpriseTick((n) => n + 1);
-                  }}
-                >
-                  Surprise me
-                </button>
-              </li>
-            </ul>
 
             {cfg && (free || !cfg.limits.ai) ? (
-              <p className={s.upsell}>{free ? "Free builds are front-end apps made with free models (data stays in each visitor's browser). Accounts, shared data, uploads, AI features and generated imagery come with paid plans." : "Your plan includes a real backend. AI features inside your apps come with Plus and higher."} <Link href="/pricing">See plans</Link></p>
+              <p className={s.upsell}>{free ? "Free builds run in the browser. Accounts, data and AI features come with paid plans." : "AI features inside your apps come with Plus and higher."} <Link href="/pricing">See plans</Link></p>
             ) : null}
             {loadErr ? <p className={s.inlineErr} role="alert">{loadErr} <Button variant="ghost" size="sm" onClick={() => { setLoadErr(""); load().catch((e) => setLoadErr((e as Error).message)); }}>Try again</Button></p> : null}
 
@@ -563,9 +591,19 @@ export function AppBuilder() {
             </div>
           </div>
 
-          <AppShelf apps={apps} busy={busy} onOpen={(id) => openApp(id)} onRefine={(id) => openApp(id, true)} onDuplicate={duplicate} onPublish={publish} />
-
-          <p className={s.calmShowcase}>Need ideas? <Link href="/showcase">Browse the showcase</Link></p>
+          {recent ? (
+            <div className={s.recentPage}>
+              <div className={s.recentBar}>
+                <button type="button" className={s.textBtn} onClick={() => showRecent(false)}>
+                  <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8H3M7 4L3 8l4 4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  Back to Create
+                </button>
+              </div>
+              {apps.length ? (
+                <AppShelf className={s.shelfPage} apps={apps} busy={busy} onOpen={(id) => { showRecent(false); openApp(id); }} onRefine={(id) => { showRecent(false); openApp(id, true); }} onDuplicate={duplicate} onPublish={publish} />
+              ) : <p className={s.recentEmpty}>No apps yet. Describe one and Keplar builds it.</p>}
+            </div>
+          ) : null}
           </IdeFrame>
         </div>
         <Dialog open={tuneOpen && Boolean(cfg)} onOpenChange={setTuneOpen} title="Fine-tune the look" className={s.tuneDialog} footer={<Button variant="primary" onClick={() => setTuneOpen(false)}>Done</Button>}>
@@ -682,7 +720,6 @@ export function AppBuilder() {
                   {current.spec.pages.map((p) => <option key={p.route} value={`${p.title} (${p.route})`}>{p.title}</option>)}
                 </select>
                 <span className={s.grow} />
-                <span className={s.kbd} aria-hidden="true">{KEY_MOD}↵</span>
                 <RefineButton store={refineStore} onApply={() => { const p = refineStore.text().trim(); refineRef.current?.clear(); void build(p, true); }} />
               </div>
             </div>
@@ -796,7 +833,6 @@ function IssueBar({ open, errors, onFix }: { open: string[]; errors: { message: 
 /** Stages in which the build's code is complete enough to run (testing, review, fixing, saving). */
 const LIVE_STAGES = ["verify", "visual", "fix", "save"];
 
-const KEY_MOD = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent) ? "⌘" : "Ctrl ";
 
 /** The blueprint for the start screen: re-renders only when the typed text settles, never per keystroke. */
 function LiveBlueprint({ store, look, auto }: { store: PromptStore; look: BlueprintLook; auto: boolean }) {
@@ -805,16 +841,22 @@ function LiveBlueprint({ store, look, auto }: { store: PromptStore; look: Bluepr
   return <Blueprint bp={bp} look={look} caption={!text.trim() ? "Start typing — a preview of the screens appears here." : auto ? "Keplar picks the look while it plans. Choose a direction to preview it." : undefined} />;
 }
 
+/** Prompt first (Base44-style): idea chips while the box is empty, then the optional quick questions, one at a time, once the person has started describing their app. */
+function IntakeWhenTyping({ store, value, onChange, idle }: { store: PromptStore; value: BuildIntakeValue; onChange: (v: BuildIntakeValue) => void; idle: React.ReactNode }) {
+  const ready = usePromptReady(store);
+  return ready ? <BuildIntake value={value} onChange={onChange} /> : idle;
+}
+
 function ShipRow({ store, cfg, onBuild }: { store: PromptStore; cfg: Config | null; onBuild: () => void }) {
   const ready = usePromptReady(store);
   return (
     <div className={s.ship}>
-      <span className={s.shipMeta}>
-        {cfg ? (cfg.estimateUnits ? `About ${cfg.estimateUnits.toLocaleString()} credits, at most ${cfg.maxUnits.toLocaleString()}` : "Free build") : "\u00a0"}
-        {cfg ? <span className={s.dim}> · up to {cfg.limits.pages} screens{cfg.limits.backend ? `, ${cfg.limits.collections} data collections, accounts` : ""}{cfg.limits.ai ? ", AI features" : ""} · {cfg.model}</span> : null}
-      </span>
       <span className={s.grow} />
-      <span className={s.kbd} aria-hidden="true">{KEY_MOD}↵</span>
+      {cfg ? (
+        <span className={s.shipMeta} title={`At most ${cfg.maxUnits.toLocaleString()} credits · up to ${cfg.limits.pages} screens`}>
+          {cfg.estimateUnits ? `About ${cfg.estimateUnits.toLocaleString()} credits` : "Free build"}
+        </span>
+      ) : null}
       <Button variant="primary" className={s.cta} disabled={!ready || !cfg} onClick={onBuild} aria-keyshortcuts="Control+Enter Meta+Enter" trailingIcon={<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>}>
         Build the app
       </Button>

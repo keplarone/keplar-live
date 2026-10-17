@@ -77,7 +77,7 @@ export function AppOnboarding({ onAsk, onView, refresh, onSettled }: Props) {
   const { state } = data;
   const finished = state.status === "completed" || state.status === "skipped";
 
-  const mark = async (key: "checklistDismissed" | "tourDismissed" | "triedCreate") => {
+  const mark = async (key: "checklistDismissed" | "tourDismissed" | "triedCreate" | "resumeDismissed") => {
     try { setData(await markProgress(key)); } catch { /* the choice just isn't remembered */ }
   };
   const tour = async () => {
@@ -91,8 +91,10 @@ export function AppOnboarding({ onAsk, onView, refresh, onSettled }: Props) {
 
   // Not finished yet but already started: a link back in, never a gate.
   if (state.required && !finished) {
+    if (state.progress.resumeDismissed) return null;
     return (
-      <section className={s.card} aria-labelledby="ob-resume-h">
+      <section className={`${s.card} ${s.dismissible}`} aria-labelledby="ob-resume-h">
+        <button type="button" className={`${s.x} ${s.cardX}`} onClick={() => void mark("resumeDismissed")} aria-label="Close setup reminder">×</button>
         <h2 id="ob-resume-h" className={s.h}>Finish setting up Keplar</h2>
         <p className={s.p}>You&apos;re on step {Math.min(5, state.step + 1)} of 5. It takes under a minute, and you can keep using Keplar meanwhile.</p>
         <div className={s.actions}><Link href={welcomePath("/app")} className={`${s.btn} ${s.primary}`}>Continue setup</Link></div>

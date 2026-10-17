@@ -1,0 +1,20 @@
+/* Same type as the App tab's start screen (apps/studio.module.css .calmIntro), so switching tabs never changes the header. */
+.intro { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding-top: clamp(16px, 5vh, 56px); }
+.title { margin: 0; display: inline-flex; align-items: center; gap: 10px; font-size: clamp(32px, 3.4vw, 44px); line-height: 1.08; letter-spacing: -0.035em; font-weight: var(--w-regular); color: var(--c-ink); text-wrap: balance; }
+.lede { margin: 0; max-width: 46ch; font-size: 17px; line-height: 1.55; color: var(--c-ink-3); }
+.badge { padding: 2px 10px; border-radius: 999px; background: var(--hover-wash); font-size: 12px; font-weight: var(--w-medium); letter-spacing: 0; color: var(--c-ink-2); }
+@media (max-width: 600px) { .title { font-size: clamp(24px, 7vw, 30px); } .lede { font-size: 15px; } }
+
+/* CreateOptions: one quiet disclosure for advanced settings, the same on every tab. */
+.options { border-top: 1px solid var(--c-border); padding-top: 4px; }
+.optionsSummary { display: flex; align-items: center; gap: 8px; min-height: 40px; list-style: none; cursor: pointer; font-size: 14px; color: var(--c-ink-2); }
+.optionsSummary::-webkit-details-marker { display: none; }
+.optionsSummary:hover { color: var(--c-ink); }
+.optionsSummary:focus-visible { outline: 2px solid var(--c-ink); outline-offset: 2px; border-radius: 6px; }
+.optionsMeta { color: var(--c-ink-3); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.optionsChev { margin-left: auto; flex: none; transition: transform 0.15s ease; }
+.options[open] .optionsChev { transform: rotate(180deg); }
+.optionsBody { display: flex; flex-direction: column; gap: 16px; padding: 8px 0 4px; }
+@media (prefers-reduced-motion: reduce) { .optionsChev { transition: none; } }
+/* Higgsfield-style studio (Images, Video): the prompt panel pinned to the left edge, the results filling the rest. */
+.studioTitle { margin: 0; display: flex; align-items: center; gap: 8px; font-size: 20px; line-height: 1.2; font-weight: var(--w-medium); letter-spacing: -0.02em; color: var(--c-ink); }

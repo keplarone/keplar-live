@@ -208,6 +208,10 @@
 
 .demo { display: flex; flex-direction: column; gap: 32px; padding: clamp(28px, 5vw, 56px); background: var(--space-glass); border-radius: var(--space-r-card); box-shadow: var(--space-glass-depth), 0 40px 100px -50px rgb(var(--space-aura) / 0.4); }
 
+.invite { display: flex; flex-direction: column; align-items: center; gap: 24px; text-align: center; padding: clamp(28px, 5vw, 56px); background: rgb(255 255 255 / 0.75); border: 1px solid var(--c-border); border-radius: 32px; box-shadow: 0 40px 100px -50px rgb(14 15 18 / 0.35); }
+.invite .note { margin: 0; }
+:global(:root[data-theme="dark"]) .invite { background: var(--c-surface-1); }
+
 /* Space Studio's entry: rise out of a blur. */
 @keyframes sky-rise {
   from { opacity: 0; transform: translateY(18px) scale(0.985); filter: blur(10px); }

@@ -31,6 +31,8 @@
 .segOption {
   display: inline-flex;
   flex: 1 1 0;
+  /* Equal widths, but never narrower than the label: a long option ("Ctrl/⌘ + Enter") must not spill out of its pill. */
+  min-width: max-content;
   align-items: center;
   justify-content: center;
   gap: var(--ks-space-1-5);
