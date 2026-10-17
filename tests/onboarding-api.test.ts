@@ -140,6 +140,8 @@ test("API: auth, same-origin, validation, resume, skip, complete, replay", async
   const first = j.state.progress.viewedPlan;
   j = await body(await POST(jsonReq(cookie, "/api/onboarding", "POST", { action: "progress", key: "viewedPlan" })));
   assert.equal(j.state.progress.viewedPlan, first, "the first timestamp is kept");
+  j = await body(await POST(jsonReq(cookie, "/api/onboarding", "POST", { action: "progress", key: "resumeDismissed" })));
+  assert.ok(j.state.progress.resumeDismissed, "closing the setup reminder is remembered");
   assert.equal(j.checklist.find((c: { id: string }) => c.id === "plan").done, true);
   assert.equal(j.checklist.find((c: { id: string }) => c.id === "ask").done, false, "no chat yet: not ticked");
 
