@@ -8,9 +8,11 @@
  * screen, the tab is hidden, or the visitor is typing.
  */
 import { frameGap, isPhone, liteFx } from "@/lib/fx/lite";
+import { altitudeFromScroll, meadowIndex, meadowKind, profileForChoice } from "@/lib/sky/journey";
 import { FALLBACK_WEATHER } from "@/lib/sky/weather";
 import { precipCount, skyFromQuery, skyProfile, type SkyProfile } from "@/lib/sky/profile";
-import { isSkyVariant } from "@/lib/sky/variants";
+import { isSkyVariant, type SkyVariant } from "@/lib/sky/variants";
+import { setLiveVariant, shownPrecip, subscribeWeather, weatherChoice } from "@/lib/sky/weather-mode";
 import type { CloudHandle } from "./webgl-clouds";
 
 export type CloudMode = "volumetric" | "mesh" | "billboard";
@@ -35,16 +37,16 @@ function settle(profile: SkyProfile, reduce: boolean, phone: boolean): { profile
   return { profile: { ...profile, precip: "none", precipAmount: 0, flash: false }, count: 0 };
 }
 
-async function fetchWeather(signal: AbortSignal): Promise<{ sky: SkyProfile; wind: number }> {
+async function fetchWeather(signal: AbortSignal): Promise<{ sky: SkyProfile; name: SkyVariant; wind: number }> {
   try {
     const res = await fetch("/api/sky/weather", { signal, headers: { accept: "application/json" } });
-    if (!res.ok) return { sky: skyProfile(FALLBACK_WEATHER.sky), wind: 1 };
+    if (!res.ok) return { sky: skyProfile(FALLBACK_WEATHER.sky), name: FALLBACK_WEATHER.sky, wind: 1 };
     const body = (await res.json()) as { sky?: unknown; wind?: unknown };
-    const sky = isSkyVariant(body.sky) ? body.sky : FALLBACK_WEATHER.sky;
+    const name = isSkyVariant(body.sky) ? body.sky : FALLBACK_WEATHER.sky;
     const wind = typeof body.wind === "number" && Number.isFinite(body.wind) ? body.wind : 1;
-    return { sky: skyProfile(sky), wind };
+    return { sky: skyProfile(name), name, wind };
   } catch {
-    return { sky: skyProfile(FALLBACK_WEATHER.sky), wind: 1 };
+    return { sky: skyProfile(FALLBACK_WEATHER.sky), name: FALLBACK_WEATHER.sky, wind: 1 };
   }
 }
 
@@ -88,7 +90,15 @@ export async function mountClouds(canvas: HTMLCanvasElement): Promise<() => void
   }
 
   const clouds = handle;
-  clouds.setWeather(initial.profile, initial.count);
+  let liveProfile = initial.profile;
+  let liveName: SkyVariant = forced ?? FALLBACK_WEATHER.sky;
+  setLiveVariant(liveName);
+  const applyShown = () => {
+    const next = settle(profileForChoice(liveProfile, liveName, weatherChoice()), reduce, phone);
+    clouds.setWeather(next.profile, next.count);
+  };
+  applyShown();
+  const unsubWeather = subscribeWeather(applyShown);
   let raf = 0;
   let running = false;
   let onScreen = true;
@@ -97,8 +107,35 @@ export async function mountClouds(canvas: HTMLCanvasElement): Promise<() => void
   const gap = reduce ? 1e9 : nearStatic ? 1000 / 12 : Math.max(frameGap(false), 1000 / 24);
   const speed = reduce ? 0 : nearStatic ? 0.15 : 1;
 
+  let scrollV = 0;
+  let lastY = 0;
+  let lastScrollAt = 0;
+  const pushJourney = () => {
+    const journey = location.pathname === "/";
+    const altitude = journey ? altitudeFromScroll(window.scrollY, document.documentElement.scrollHeight, window.innerHeight) : 0;
+    clouds.setJourney({
+      altitude,
+      scroll: scrollV,
+      journey,
+      meadow: meadowIndex(meadowKind(shownPrecip(), dark())),
+      reduce,
+    });
+  };
   const paint = (now: number) => {
+    if (lastScrollAt && now - lastScrollAt > 90) scrollV *= 0.9;
+    pushJourney();
     clouds.frame(reduce ? 0 : (now / 1000) * speed * windMul);
+  };
+  const onScroll = () => {
+    const now = performance.now();
+    const y = window.scrollY;
+    const dt = Math.max(16, lastScrollAt ? now - lastScrollAt : 16);
+    const inst = lastScrollAt ? (Math.abs(y - lastY) / dt) * 1000 : 0;
+    scrollV = scrollV * 0.72 + inst * 0.28;
+    lastY = y;
+    lastScrollAt = now;
+    pushJourney();
+    if (!running) paint(now);
   };
   const weatherAbort = new AbortController();
   if (!forced) {
@@ -106,9 +143,11 @@ export async function mountClouds(canvas: HTMLCanvasElement): Promise<() => void
     void fetchWeather(weatherAbort.signal).then((got) => {
       clearTimeout(timer);
       if (disposed) return;
-      const next = settle(got.sky, reduce, phone);
+      liveProfile = got.sky;
+      liveName = got.name;
+      setLiveVariant(got.name);
       windMul = got.wind;
-      clouds.setWeather(next.profile, next.count);
+      applyShown();
       paint(performance.now());
     });
   }
@@ -167,6 +206,7 @@ export async function mountClouds(canvas: HTMLCanvasElement): Promise<() => void
     paint(performance.now());
   });
   mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  window.addEventListener("scroll", onScroll, { passive: true });
   const onFocus = () => {
     if (isTyping()) stop();
     else start();
@@ -180,7 +220,9 @@ export async function mountClouds(canvas: HTMLCanvasElement): Promise<() => void
 
   return () => {
     disposed = true;
+    unsubWeather();
     weatherAbort.abort();
+    window.removeEventListener("scroll", onScroll);
     stop();
     io.disconnect();
     mo.disconnect();

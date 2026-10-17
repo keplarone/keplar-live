@@ -40,5 +40,9 @@ test("the root layout skips the shared sky on Space Studio before paint, and the
   assert.match(css, /data-glass-pill/);
   assert.match(css, /backdrop-filter: none !important/);
   assert.doesNotMatch(read("src/components/sky/clouds/LandingClouds.tsx"), /space-studio|SPACE_HOST/);
-  assert.doesNotMatch(read("src/styles/glass.css"), /data-space-root|data-space-studio/);
+  // The site-wide filter kill skips the space root so Studio's own surfaces keep their filters.
+  // data-space-studio stays out of this file; the before-paint script and SpaceSkyExempt own that mark.
+  const glass = read("src/styles/glass.css");
+  assert.match(glass, /:not\(\[data-space-root\], \[data-space-root\] \*, \[data-glass-pill\]\)/);
+  assert.doesNotMatch(glass, /data-space-studio/);
 });

@@ -6,6 +6,10 @@
     linear-gradient(rgb(var(--rgb-canvas) / 0.6), rgb(var(--rgb-canvas) / 0.96) 160px);
   padding: var(--s-20) var(--l-gutter) var(--s-8);
 }
+/* On the landing descent the meadow is the ground. The footer stays readable and lets that ground show through. */
+:global(body:has([data-sky-home])) .footer {
+  background: linear-gradient(transparent, rgb(var(--rgb-canvas) / 0.72) 280px);
+}
 
 .inner {
   max-width: var(--l-max);

@@ -40,7 +40,7 @@ export function SkyHome({ pricing }: { pricing?: React.ReactNode }) {
   const ref = referralConfig();
 
   return (
-    <div className={s.home}>
+    <div className={s.home} data-sky-home="">
       <section className={s.hero} aria-labelledby="hero-title">
         <p className={s.badge}>
           <ModelStack />

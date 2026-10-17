@@ -96,7 +96,7 @@ fn density(p: vec3<f32>, time: f32, lite: f32) -> f32 {
   return d + wisp * high * 0.22;
 }`, [asInclude(fbm), asInclude(worley)]);
   const shade = wgslFn(`
-fn cloudShade(uv: vec2<f32>, time: f32, aspect: f32, zenith: vec3<f32>, horizon: vec3<f32>, lit: vec3<f32>, shadow: vec3<f32>) -> vec4<f32> {
+fn cloudShade(uv: vec2<f32>, time: f32, aspect: f32, zenith: vec3<f32>, horizon: vec3<f32>, lit: vec3<f32>, shadow: vec3<f32>, altitude: f32, journey: f32, ground: f32, dark: f32, fall: f32) -> vec4<f32> {
   let uvn = uv * 2.0 - vec2<f32>(1.0, 1.0);
   let rd = normalize(vec3<f32>(uvn.x * aspect * 0.7, uvn.y * 0.46 + 0.36, 1.15));
   let ro = vec3<f32>(sin(time * 0.05) * 0.15, -0.02, -0.15);
@@ -111,8 +111,9 @@ fn cloudShade(uv: vec2<f32>, time: f32, aspect: f32, zenith: vec3<f32>, horizon:
   let tf = min(min(tbg.x, tbg.y), tbg.z);
   let skyT = clamp(rd.y * 0.9 + 0.25, 0.0, 1.0);
   let sky = mix(horizon, zenith, skyT);
+  var missed = 0.0;
   if (tf < tn || tf < 0.0) {
-    return vec4<f32>(sky, 1.0);
+    missed = 1.0;
   }
   let tNear = max(tn, 0.0);
   let steps = 22.0;
@@ -122,7 +123,13 @@ fn cloudShade(uv: vec2<f32>, time: f32, aspect: f32, zenith: vec3<f32>, horizon:
   var transmittance = 1.0;
   var col = vec3<f32>(0.0);
   let sun = normalize(vec3<f32>(0.4, 0.86, 0.26));
+  if (missed > 0.5) {
+    col = sky;
+  }
   for (var i = 0; i < 22; i++) {
+    if (missed > 0.5) {
+      break;
+    }
     if (transmittance < 0.03) {
       break;
     }
@@ -149,6 +156,40 @@ fn cloudShade(uv: vec2<f32>, time: f32, aspect: f32, zenith: vec3<f32>, horizon:
   let hero = smoothstep(0.34, 0.1, hx) * smoothstep(0.4, 0.6, uv.y) * smoothstep(0.98, 0.76, uv.y);
   let nav = smoothstep(0.84, 0.94, uv.y);
   col = mix(col, sky, hero * 0.9 * (1.0 - nav));
+  let bodyP = uv - vec2<f32>(0.72, 0.8);
+  let bodyD = length(bodyP * vec2<f32>(1.0, 1.35));
+  let disc = smoothstep(0.046, 0.018, bodyD);
+  let edge = smoothstep(0.085, 0.04, bodyD) * 0.4;
+  let bodyVis = journey * (1.0 - smoothstep(0.02, 0.42, altitude));
+  let bodyCol = mix(vec3<f32>(1.0, 0.96, 0.89), vec3<f32>(0.84, 0.87, 0.95), step(0.5, dark));
+  col = mix(col, bodyCol, (disc + edge * (1.0 - disc)) * bodyVis);
+  let band = journey * smoothstep(0.5, 0.85, altitude) * smoothstep(0.82, 0.5, uv.y);
+  var grass = vec3<f32>(0.33, 0.5, 0.27);
+  if (ground > 2.5) { grass = vec3<f32>(0.9, 0.93, 0.95); }
+  else if (ground > 1.5) { grass = vec3<f32>(0.16, 0.26, 0.16); }
+  else if (ground > 0.5) { grass = vec3<f32>(0.07, 0.11, 0.08); }
+  col = mix(col, grass, band);
+  let fly = clamp((altitude - 0.12) / 0.62, 0.0, 1.0);
+  if (journey > 0.5 && altitude > 0.08 && altitude < 0.82) {
+    for (var b = 0; b < 4; b++) {
+      let seed = (f32(b) + 0.5) / 4.0;
+      let away = fly * (0.55 + seed * 0.45);
+      let bx = 0.5 + (seed - 0.5) * 0.46;
+      let by = 0.62 + seed * 0.08 - away * 0.12;
+      let bs = 0.02 * (1.0 - away * 0.72);
+      let flap = sin(time * 14.0 + f32(b)) * bs * 0.4;
+      let bd = length((uv - vec2<f32>(bx, by + flap)) / vec2<f32>(bs * 2.2, bs));
+      col = mix(col, vec3<f32>(0.16, 0.18, 0.22), smoothstep(1.0, 0.45, bd));
+    }
+  }
+  let streak = fract(uv.x * 22.0 + uv.y * 1.6 + time * fall);
+  let rainA = smoothstep(0.04, 0.0, abs(streak - 0.5)) * smoothstep(0.0, 0.2, uv.y) * 0.35;
+  if (fall > 1.2) { col = mix(col, vec3<f32>(0.55, 0.62, 0.7), rainA); }
+  else if (fall > 0.2) {
+    let flake = fract(uv.x * 14.0 + sin(uv.y * 9.0 + time * fall));
+    let snowA = smoothstep(0.06, 0.0, length(vec2<f32>(flake - 0.5, fract(uv.y * 11.0 - time * fall * 0.2) - 0.5))) * 0.55;
+    col = mix(col, vec3<f32>(0.94, 0.96, 0.98), snowA);
+  }
   return vec4<f32>(col, 1.0);
 }`, [asInclude(density)]);
   return shade;
@@ -168,6 +209,11 @@ export async function createVolumetric(canvas: HTMLCanvasElement, opts: { dark: 
   const horizon = tsl.uniform(new Color(pal.horizon));
   const lit = tsl.uniform(new Color(pal.lit));
   const shadow = tsl.uniform(new Color(pal.shadow));
+  const altitude = tsl.uniform(0);
+  const journey = tsl.uniform(0);
+  const ground = tsl.uniform(0);
+  const darkU = tsl.uniform(opts.dark ? 1 : 0);
+  const fall = tsl.uniform(0);
   const shade = buildShade(tsl);
   const material = new MeshBasicNodeMaterial();
   material.toneMapped = false;
@@ -180,6 +226,11 @@ export async function createVolumetric(canvas: HTMLCanvasElement, opts: { dark: 
     horizon,
     lit,
     shadow,
+    altitude,
+    journey,
+    ground,
+    dark: darkU,
+    fall,
   });
   const mesh = new Mesh(new PlaneGeometry(2, 2), material);
   mesh.frustumCulled = false;
@@ -206,19 +257,33 @@ export async function createVolumetric(canvas: HTMLCanvasElement, opts: { dark: 
     const h = new Color(next.horizon);
     const l = new Color(next.lit);
     const s = new Color(next.shadow);
-    (zenith.value as Color).copy(z).lerp(new Color("#07080c"), gray * 0.4);
+    const crush = new Color(themeDark ? "#07080c" : "#8ea4b8");
+    (zenith.value as Color).copy(z).lerp(crush, gray * (themeDark ? 0.4 : 0.55));
     (horizon.value as Color).copy(h).lerp(s, gray * 0.12);
-    (lit.value as Color).copy(l).lerp(s, gray * 0.42);
+    (lit.value as Color).copy(l).lerp(s, gray * (themeDark ? 0.42 : 0.22));
     (shadow.value as Color).copy(s);
   };
   return {
     setDark: (dark) => {
       themeDark = dark;
+      darkU.value = dark ? 1 : 0;
       paintLook(lastProfile);
     },
     setWeather: (profile) => {
       lastProfile = profile;
+      const wet = profile.precip === "rain";
+      fall.value = wet ? 2.4 : profile.precip === "snow" ? 0.7 : 0;
       paintLook(profile);
+    },
+    setJourney: (state) => {
+      altitude.value = state.journey ? state.altitude : 0;
+      journey.value = state.journey ? 1 : 0;
+      ground.value = state.meadow;
+      darkU.value = state.meadow === 1 ? 1 : themeDark ? 1 : 0;
+      if (state.journey && !state.reduce) {
+        const mul = 1 + Math.min(3, Math.max(0, state.scroll) / 900);
+        if (fall.value > 0) fall.value = (lastProfile?.precip === "snow" ? 0.7 : 2.4) * mul;
+      }
     },
     resize,
     frame: (seconds) => {

@@ -35,24 +35,24 @@
   margin: 0 auto;
 }
 
-/* The bar is solid. The theme switch and Sign in are the only lenses. */
+/* The bar is solid. Weather, the theme switch and Sign in are the only lenses. */
 .brand, .links ul, .icon, .signIn {
   background: var(--lg-solid);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.12);
 }
-.theme, .signIn {
+.theme, .signIn, .weather {
   isolation: isolate;
   background: var(--glass-clear);
   box-shadow: var(--glass-depth);
 }
-:global(html[data-lens]) :is(.theme, .signIn)[data-distort] {
+:global(html[data-lens]) :is(.theme, .signIn, .weather)[data-distort] {
   -webkit-backdrop-filter: url(#liquid-glass);
   backdrop-filter: url(#liquid-glass);
 }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  .brand, .links ul, .icon, .signIn, .theme { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .brand, .links ul, .icon, .signIn, .theme, .weather { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
 
 /* brand: Space Studio's logo pill; the mark turns a little on hover */
@@ -110,6 +110,31 @@
 }
 .icon:hover { color: var(--nav-ink); box-shadow: var(--nav-shadow); }
 .theme { flex: none; }
+/* Snow, rain, clear: one glass pill, the same height as the other top buttons. */
+.weather {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 4px;
+  border-radius: var(--r-pill);
+  gap: 0;
+}
+.weather button {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 36px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--nav-link);
+  cursor: pointer;
+}
+.weather button[aria-checked="true"] {
+  background: var(--nav-ink);
+  color: var(--c-canvas);
+}
+.panelWeather { display: none; }
 .signIn {
   display: inline-flex;
   align-items: center;
@@ -226,8 +251,9 @@
   .cta { padding: 0 18px; font-size: 13.5px; }
 }
 @media (max-width: 400px) {
-  .actions .theme { display: none; }
+  .actions .theme, .actions .weather { display: none; }
   .panelTheme { display: inline-grid; }
+  .panelWeather { display: inline-flex; }
 }
 
 /* Desktop app (Keplar One for Windows/macOS/Linux): html[data-desktop] (set before paint by src/lib/desktop.ts) or

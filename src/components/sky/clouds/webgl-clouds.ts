@@ -29,10 +29,23 @@ import { fallbackProfile, type SkyProfile } from "@/lib/sky/profile";
 
 export type WebglCloudMode = "mesh" | "billboard";
 
+export type JourneyFrame = {
+  /** 0 high in the sky, 1 at the meadow. Other pages pass 0. */
+  altitude: number;
+  /** Smoothed scroll speed, px/s. */
+  scroll: number;
+  /** Landing page only. */
+  journey: boolean;
+  /** 0 day, 1 night, 2 wet grass, 3 snow. */
+  meadow: number;
+  reduce: boolean;
+};
+
 export type CloudHandle = {
   setDark: (dark: boolean) => void;
   /** Coverage, greyness, haze and precipitation for the current weather. */
   setWeather: (profile: SkyProfile, precipCount: number) => void;
+  setJourney: (state: JourneyFrame) => void;
   resize: () => void;
   /** `seconds` is the drift clock. Pass the same value again to hold a still frame. */
   frame: (seconds: number) => void;
@@ -50,14 +63,34 @@ const SKY_FRAG = /* glsl */ `
 uniform vec3 uZenith;
 uniform vec3 uHorizon;
 uniform vec3 uHaze;
+uniform vec3 uBody;
 uniform float uHazeAmt;
 uniform float uFlash;
+uniform float uAltitude;
+uniform float uJourney;
+uniform float uGround;
 varying vec2 vUv;
 void main() {
   float h = smoothstep(0.0, 0.85, vUv.y);
   vec3 sky = mix(uHorizon, uZenith, h);
   sky = mix(sky, uHaze, clamp(uHazeAmt, 0.0, 0.72));
   sky = mix(sky, vec3(0.78), clamp(uFlash, 0.0, 0.08));
+  // Sun or moon, high above the clouds. A short soft edge, not a bloom.
+  vec2 p = vUv - vec2(0.72, 0.8);
+  float d = length(p * vec2(1.0, 1.35));
+  float disc = smoothstep(0.046, 0.018, d);
+  float edge = smoothstep(0.085, 0.04, d) * 0.4;
+  float vis = uJourney * (1.0 - smoothstep(0.02, 0.42, uAltitude));
+  sky = mix(sky, uBody, (disc + edge * (1.0 - disc)) * vis);
+  // The meadow only appears at the bottom of the landing descent.
+  float band = uJourney * smoothstep(0.62, 1.0, uAltitude) * smoothstep(0.48, 0.02, vUv.y);
+  vec3 grass = vec3(0.33, 0.5, 0.27);
+  if (uGround > 2.5) grass = vec3(0.9, 0.93, 0.95);
+  else if (uGround > 1.5) grass = vec3(0.16, 0.26, 0.16);
+  else if (uGround > 0.5) grass = vec3(0.07, 0.11, 0.08);
+  float sheen = 0.0;
+  if (uGround > 1.5 && uGround < 2.5) sheen = smoothstep(0.16, 0.26, vUv.y) * smoothstep(0.34, 0.24, vUv.y) * 0.18;
+  sky = mix(sky, grass + vec3(sheen), band);
   gl_FragColor = vec4(sky, 1.0);
 }`;
 
@@ -151,22 +184,28 @@ attribute float aSeed;
 uniform float uTime;
 uniform float uFall;
 uniform float uSway;
+uniform float uShear;
 varying vec2 vUv;
+varying float vSeed;
 void main() {
   vUv = uv;
+  vSeed = aSeed;
   vec3 center = instanceMatrix[3].xyz;
   float span = 8.0;
-  center.y = mod(aSeed * span - uTime * uFall, span) - 1.6;
-  center.x += sin(uTime * 0.35 + aSeed * 6.283) * uSway;
+  float pace = mix(0.62, 1.4, aSeed);
+  center.y = mod(aSeed * span - uTime * uFall * pace, span) - 1.6;
+  center.x += sin(uTime * 0.35 + aSeed * 6.283) * uSway + center.y * uShear * 0.08;
   vec2 scale = vec2(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz));
   vec3 right = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
   vec3 up = vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]);
-  vec3 p = center + right * (position.x * scale.x) + up * (position.y * scale.y);
+  vec3 angled = up + right * uShear;
+  vec3 p = center + right * (position.x * scale.x) + angled * (position.y * scale.y);
   gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(p, 1.0);
 }`;
 
 const RAIN_FRAG = /* glsl */ `
 varying vec2 vUv;
+varying float vSeed;
 uniform vec3 uColor;
 void main() {
   float a = smoothstep(0.0, 0.2, vUv.y) * smoothstep(1.0, 0.45, vUv.y) * 0.72;
@@ -174,12 +213,36 @@ void main() {
   gl_FragColor = vec4(uColor, a);
 }`;
 
+const BIRD_VERT = /* glsl */ `
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = projectionMatrix * viewMatrix * modelMatrix * instanceMatrix * vec4(position, 1.0);
+}`;
+
+const BIRD_FRAG = /* glsl */ `
+varying vec2 vUv;
+uniform float uFlap;
+uniform vec3 uInk;
+void main() {
+  vec2 p = vUv - 0.5;
+  float wing = sin(uFlap) * 0.07;
+  float body = smoothstep(0.09, 0.02, length(p * vec2(2.4, 5.2)));
+  vec2 w = vec2(p.x, p.y - wing);
+  float wings = smoothstep(0.15, 0.03, length(w * vec2(0.65, 2.6)));
+  float a = max(body, wings);
+  if (a < 0.06) discard;
+  gl_FragColor = vec4(uInk, a);
+}`;
+
 const SNOW_FRAG = /* glsl */ `
 varying vec2 vUv;
+varying float vSeed;
 uniform vec3 uColor;
 void main() {
   float d = length(vUv - 0.5);
-  float a = smoothstep(0.5, 0.12, d) * 0.72;
+  float soft = mix(0.08, 0.42, vSeed);
+  float a = smoothstep(0.5, soft, d) * mix(0.45, 0.85, vSeed);
   if (a < 0.03) discard;
   gl_FragColor = vec4(uColor, a);
 }`;
@@ -361,7 +424,8 @@ function makePrecip(max: number, rain: boolean, color: Vector3) {
   const uniforms = {
     uTime: { value: 0 },
     uFall: { value: rain ? 3.1 : 0.55 },
-    uSway: { value: rain ? 0.02 : 0.28 },
+    uSway: { value: rain ? 0.08 : 0.42 },
+    uShear: { value: rain ? 0.85 : 0.12 },
     uColor: { value: color },
   };
   const mat = new ShaderMaterial({
@@ -379,7 +443,8 @@ function makePrecip(max: number, rain: boolean, color: Vector3) {
     const x = (Math.random() - 0.5) * 16;
     const z = -1.2 - Math.random() * 5;
     dummy.position.set(x, Math.random() * 6, z);
-    dummy.scale.set(rain ? 0.018 : 0.11, rain ? 0.7 : 0.11, 1);
+    const flake = 0.045 + Math.random() * 0.16;
+    dummy.scale.set(rain ? 0.012 + Math.random() * 0.012 : flake, rain ? 0.45 + Math.random() * 0.55 : flake, 1);
     dummy.updateMatrix();
     mesh.setMatrixAt(i, dummy.matrix);
   }
@@ -413,8 +478,12 @@ export function createWebglClouds(
     uZenith: { value: srgb(pal0.zenith) },
     uHorizon: { value: srgb(pal0.horizon) },
     uHaze: { value: srgb(pal0.shadow) },
+    uBody: { value: srgb(pal0.body) },
     uHazeAmt: { value: 0 },
     uFlash: { value: 0 },
+    uAltitude: { value: 0 },
+    uJourney: { value: 0 },
+    uGround: { value: 0 },
   };
   const skyMat = new ShaderMaterial({
     vertexShader: SKY_VERT,
@@ -427,6 +496,36 @@ export function createWebglClouds(
   sky.frustumCulled = false;
   sky.renderOrder = -1;
   scene.add(sky);
+  const grassMat = new ShaderMaterial({
+    vertexShader: SKY_VERT,
+    fragmentShader: /* glsl */ `
+uniform float uAltitude;
+uniform float uJourney;
+uniform float uGround;
+varying vec2 vUv;
+void main() {
+  float band = uJourney * smoothstep(0.5, 0.85, uAltitude) * smoothstep(0.82, 0.5, vUv.y);
+  if (band < 0.02) discard;
+  vec3 grass = vec3(0.29, 0.5, 0.22);
+  float sheen = 0.0;
+  if (uGround > 2.5) grass = vec3(0.92, 0.95, 0.97);
+  else if (uGround > 1.5) {
+    grass = vec3(0.11, 0.2, 0.11);
+    sheen = smoothstep(0.16, 0.27, vUv.y) * smoothstep(0.36, 0.24, vUv.y) * 0.2;
+  } else if (uGround > 0.5) grass = vec3(0.04, 0.13, 0.06);
+  float horizon = smoothstep(0.5, 0.34, vUv.y);
+  gl_FragColor = vec4(grass + vec3(sheen * horizon), band);
+}`,
+    uniforms: skyUniforms,
+    transparent: true,
+    depthWrite: false,
+    depthTest: false,
+    blending: NormalBlending,
+  });
+  const grass = new Mesh(new PlaneGeometry(2, 2), grassMat);
+  grass.frustumCulled = false;
+  grass.renderOrder = 4;
+  scene.add(grass);
 
   const puffs = layout(opts.mode);
   const kinds = new Float32Array(puffs.map((p) => p.kind));
@@ -482,6 +581,32 @@ export function createWebglClouds(
   scene.add(rain.mesh);
   scene.add(snow.mesh);
 
+  const birdCount = opts.mode === "billboard" ? 4 : 6;
+  const birdUniforms = { uFlap: { value: 0 }, uInk: { value: srgb(opts.dark ? "#c5cad6" : "#2a3038") } };
+  const birdGeo = new PlaneGeometry(1, 1);
+  const birdMat = new ShaderMaterial({
+    vertexShader: BIRD_VERT,
+    fragmentShader: BIRD_FRAG,
+    uniforms: birdUniforms,
+    transparent: true,
+    depthWrite: false,
+    blending: NormalBlending,
+    side: DoubleSide,
+  });
+  const birds = new InstancedMesh(birdGeo, birdMat, birdCount);
+  birds.frustumCulled = false;
+  birds.renderOrder = 3;
+  birds.count = 0;
+  scene.add(birds);
+  const birdDummy = new Object3D();
+
+  let altitude = 0;
+  let journeyOn = false;
+  let reduceMotion = false;
+  let scrollMul = 1;
+  const rainBase = 3.1;
+  const snowBase = 0.42;
+
   let dark = opts.dark;
   let draw = opts.draw ?? fallbackProfile();
 
@@ -504,17 +629,19 @@ export function createWebglClouds(
     const horizon = srgb(pal.horizon);
     const lit = srgb(pal.lit);
     const shadow = srgb(pal.shadow);
-    // Rain and overcast go greyer, but the zenith stays dark and the lit edge does not
-    // collapse into the shadow, so a cloud boundary still reads through the glass.
-    skyUniforms.uZenith.value.copy(mixHex(zenith, srgb("#07080c"), draw.gray * 0.4));
+    // Rain greys the sky. Day stays a blue-grey, not a black crush, so the sunlit edge still reads.
+    const zenithCrush = dark ? srgb("#07080c") : srgb("#8ea4b8");
+    skyUniforms.uZenith.value.copy(mixHex(zenith, zenithCrush, draw.gray * (dark ? 0.4 : 0.55)));
     skyUniforms.uHorizon.value.copy(mixHex(horizon, shadow, draw.gray * 0.12));
     skyUniforms.uHaze.value.copy(mixHex(horizon, shadow, 0.45));
     skyUniforms.uHazeAmt.value = draw.haze;
-    cloudUniforms.uLit.value.copy(mixHex(lit, shadow, draw.gray * 0.42));
+    skyUniforms.uBody.value.copy(srgb(pal.body));
+    cloudUniforms.uLit.value.copy(mixHex(lit, shadow, draw.gray * (dark ? 0.42 : 0.22)));
     cloudUniforms.uShadow.value.copy(mixHex(shadow, zenith, draw.gray * 0.08));
     cloudUniforms.uClearing.value = draw.clearing;
-    rain.uniforms.uColor.value.copy(mixHex(lit, shadow, 0.25));
-    snow.uniforms.uColor.value.copy(cloudUniforms.uLit.value);
+    rain.uniforms.uColor.value.copy(dark ? mixHex(lit, shadow, 0.25) : srgb("#5e6d7c"));
+    snow.uniforms.uColor.value.copy(dark ? cloudUniforms.uLit.value : srgb("#f4f7fb"));
+    birdUniforms.uInk.value.copy(srgb(dark ? "#d5dbe6" : "#2c3340"));
   };
 
   const applyWeather = (profile: SkyProfile, precipCount: number) => {
@@ -539,6 +666,25 @@ export function createWebglClouds(
     camera.updateProjectionMatrix();
   };
 
+  const placeBirds = (seconds: number) => {
+    const show = journeyOn && !reduceMotion && altitude > 0.08 && altitude < 0.82;
+    birds.count = show ? birdCount : 0;
+    if (!show) return;
+    const fly = Math.min(1, Math.max(0, (altitude - 0.16) / 0.58));
+    birdUniforms.uFlap.value = seconds * 14;
+    for (let i = 0; i < birdCount; i++) {
+      const seed = (i + 0.5) / birdCount;
+      const away = fly * (0.45 + seed * 0.55);
+      const dist = 3.2 + away * 14;
+      birdDummy.position.set((seed - 0.5) * (4.2 + away * 2.2) + Math.sin(seconds * 0.6 + i) * 0.12, camera.position.y - 1.45 + (seed - 0.5) * 0.9, camera.position.z - dist);
+      const s = 0.85 * (1 - away * 0.78);
+      birdDummy.scale.set(s * 1.7, s, 1);
+      birdDummy.updateMatrix();
+      birds.setMatrixAt(i, birdDummy.matrix);
+    }
+    birds.instanceMatrix.needsUpdate = true;
+  };
+
   let disposed = false;
   return {
     setDark: (next) => {
@@ -546,12 +692,27 @@ export function createWebglClouds(
       paintLook();
     },
     setWeather: applyWeather,
+    setJourney: (state) => {
+      altitude = state.altitude;
+      journeyOn = state.journey;
+      reduceMotion = state.reduce;
+      scrollMul = state.reduce ? 1 : 1 + Math.min(3, Math.max(0, state.scroll) / 900);
+      skyUniforms.uAltitude.value = state.journey ? state.altitude : 0;
+      skyUniforms.uJourney.value = state.journey ? 1 : 0;
+      skyUniforms.uGround.value = state.meadow;
+      rain.uniforms.uFall.value = rainBase * scrollMul;
+      snow.uniforms.uFall.value = snowBase * scrollMul;
+      const a = state.journey ? state.altitude : 0;
+      camera.position.set(0, 6.4 - a * 6.1, 6.2);
+      camera.lookAt(0, 3.2 - a * 2.8, 0);
+    },
     resize,
     frame: (seconds) => {
       if (disposed) return;
       cloudUniforms.uTime.value = seconds;
       rain.uniforms.uTime.value = seconds;
       snow.uniforms.uTime.value = seconds;
+      placeBirds(seconds);
       const phase = seconds % 10;
       skyUniforms.uFlash.value = draw.flash && phase > 0.04 && phase < 0.12 ? 0.06 : 0;
       renderer.render(scene, camera);
@@ -562,10 +723,14 @@ export function createWebglClouds(
       mat.dispose();
       sky.geometry.dispose();
       skyMat.dispose();
+      grass.geometry.dispose();
+      grassMat.dispose();
       rain.geo.dispose();
       rain.mat.dispose();
       snow.geo.dispose();
       snow.mat.dispose();
+      birdGeo.dispose();
+      birdMat.dispose();
       tex?.dispose();
       renderer.dispose();
       renderer.forceContextLoss();
