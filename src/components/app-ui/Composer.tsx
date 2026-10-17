@@ -13,8 +13,8 @@ import { DEEP_RESEARCH_UNITS, deepResearchRunsLeft, formatResetAt } from "@/lib/
 import { brand } from "@/lib/site";
 import Link from "next/link";
 import { providerFamilies } from "@/lib/orchestration/catalog";
-import type { Depth } from "@/lib/core/types";
-import type { Attachment, ComposerModes, RoutingPreferences, RoutingStrategy } from "@/lib/orchestration/types";
+import type { Attachment, ComposerModes, RoutingPreferences } from "@/lib/orchestration/types";
+import { DEFAULT_EFFORT, EFFORT_INFO, EFFORTS, isEffort, routingForEffort, type Effort } from "@/lib/orchestration/effort";
 import { MEDIA_LIMITS, type MediaInput } from "@/lib/orchestration/media";
 import { IconMic, IconPlus, IconDebate, IconDeep, IconCreate, IconImage, IconMore, IconReason, IconRouting, IconSlides, IconStop, IconStudy, IconWeb } from "./icons";
 import { toggleMode, type ModeKey } from "@/lib/composer/modes";
@@ -129,20 +129,39 @@ const BLURB: Partial<Record<ModeKey, string>> = {
 
 const OVERFLOW_ORDER: ModeKey[] = ["image", "web", "reason", "debate", "create", "deepResearch", "slides", "study"];
 
-/** Keplar Core depth (src/lib/core). Auto decides per question and escalates when the models disagree. */
-const DEPTH_OPTIONS: { id: Depth; label: string; hint: string }[] = [
-  { id: "auto", label: "Auto", hint: "Keplar decides: clear questions get a direct answer; hard ones get a plan, checked steps and a final review." },
-  { id: "quick", label: "Quick", hint: "One direct pass. Fastest." },
-  { id: "thorough", label: "Thorough", hint: "Plans the work, checks each step (running the math or code when it can) and reviews the answer before showing it." },
-  { id: "exhaustive", label: "Exhaustive", hint: "Keeps planning, checking and revising until the answer passes, within your plan's limits. Can keep working in the background." },
-];
+/** A typical question, used to size the "N× or more usage" notes before anything is typed. */
+const EFFORT_SAMPLE_PROMPT = "Compare the two most common options for this decision, explain the trade-offs and recommend one.";
 
-const strategies: { id: RoutingStrategy; label: string; hint: string }[] = [
-  { id: "auto", label: "Automatic", hint: `${brand.engineName} decides per question` },
-  { id: "fast", label: "Fastest", hint: "Fewer models, no judge" },
-  { id: "balanced", label: "Balanced", hint: "Standard panel sizes" },
-  { id: "thorough", label: "Most thorough", hint: "One more model; simple questions get a panel too" },
-];
+/**
+ * "N× or more usage" on High and Max: each effort's routed estimate for this draft (or a typical question) relative to Medium.
+ * It is a floor ("or more"): planned checking and revising at those depths adds passes the estimate can't see.
+ */
+function effortUsageFor(prompt: string, modes: ComposerModes, routing: RoutingPreferences, media: ReturnType<typeof toMediaInput>): Partial<Record<Effort, string>> {
+  const out: Partial<Record<Effort, string>> = {};
+  try {
+    const unitsFor = (e: Effort) => {
+      const req = { prompt, modes, routing: routingForEffort(e, routing), media };
+      return router.route(classifier.classify(req), req).estimate.units;
+    };
+    const base = Math.max(1, unitsFor("medium"));
+    for (const e of ["high", "max"] as const) {
+      const x = Math.max(e === "high" ? 1.5 : 2, Math.round((unitsFor(e) / base) * 2) / 2);
+      out[e] = Number.isInteger(x) ? String(x) : x.toFixed(1);
+    }
+  } catch { /* the note falls back to "More usage" */ }
+  return out;
+}
+
+/** The small warning triangle beside High and Max. */
+function IconWarn() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M8 1.8 15 14H1L8 1.8z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M8 6.2v3.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="8" cy="11.9" r="0.9" fill="currentColor" />
+    </svg>
+  );
+}
 
 const classifier = new HeuristicClassifier();
 const router = new CostAwareRouter();
@@ -174,6 +193,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
     if (draftFor.current && draftFor.current !== draftKey) writeDraft(draftFor.current, textRef.current);
     draftFor.current = draftKey;
     if (draftKey === null) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loads the stored draft (localStorage) when the chat changes
     setText(readDraft(draftKey) ?? "");
   }, [draftKey, setText]);
   useEffect(() => {
@@ -233,6 +253,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
   const slashItems = useMemo<(SlashCommand | ChatCommand)[]>(() => (!slashOpen ? [] : slashKind === "chat" ? filterChatCommands(slashQuery) : filterSlashCommands(slashQuery)), [slashOpen, slashQuery, slashKind]);
   const slashListId = `${uid}-slash`;
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- closes the slash menu when Create image is toggled from outside the composer
     if (slashOpen && (slashKind === "image") !== Boolean(modes.image)) setSlashOpen(false);
   }, [modes.image, slashOpen, slashKind]);
   const [routingOpen, setRoutingOpen] = useState(false);
@@ -299,6 +320,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
     return () => ro.disconnect();
   }, [pressedKeys, voice.state, voice.supported]);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the overflow comes from measuring the toolbar; an empty one closes its menu
     if (!overflow.length) setMoreOpen(false);
   }, [overflow.length]);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -333,7 +355,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
   const closeOnOutside = (set: (v: boolean) => void) => (open: boolean) => { if (!open) { popClosedAt.current = performance.now(); set(false); } };
   const toggleFrom = (set: (f: (v: boolean) => boolean) => void) => () => { if (performance.now() - popClosedAt.current > 300) set((v) => !v); };
   /** Keys inside a composer pop-up: Escape back to its button; arrows between `items` (the link field counts as an item). */
-  const popKeys = (close: () => void, button: React.RefObject<HTMLButtonElement | null>, items: string) => (e: React.KeyboardEvent<HTMLDivElement>) => {
+  const popKeys = (e: React.KeyboardEvent<HTMLDivElement>, close: () => void, button: React.RefObject<HTMLButtonElement | null>, items: string) => {
     if (e.key === "Escape") {
       e.preventDefault();
       e.stopPropagation();
@@ -446,6 +468,8 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
     }
   }, [previewText, modes, routing, readyMedia]);
 
+  const effortUsage = useMemo(() => effortUsageFor(previewText.trim() || EFFORT_SAMPLE_PROMPT, modes, routing, readyMedia), [previewText, modes, routing, readyMedia]);
+
   // Deep Research budget hint: remaining units ÷ typical-run estimate (plans.ts).
   const drRuns = deepResearchRunsLeft(computeRemaining);
   const formatReset = () => formatResetAt(resetsAt);
@@ -455,19 +479,6 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
   const tooLarge = mediaChars(media) > MEDIA_LIMITS.maxTotalDataUrlChars;
   const hasReady = media.some((m) => m.status === "ready") || docs.some((d) => d.status === "ready") || links.some((l) => l.status === "ready" && l.attachment);
   const canSend = (text.trim().length > 0 || hasReady) && !running && !drBlocked && !processing && !tooLarge;
-  // Voice mode hand-off: runs once per finished talk session. `latest` holds this render's submit so the effect never uses a stale one.
-  const latest = useRef({ canSend, running, submit: () => {} });
-  useEffect(() => {
-    latest.current = { canSend, running, submit };
-  });
-  useEffect(() => {
-    if (!voiceAsk) return;
-    const L = latest.current;
-    if (!textRef.current.trim()) { setVoiceNote("I didn't catch a question. Hold the Talk button, speak, and release."); return; }
-    if (L.canSend) { askedByVoice.current = true; L.submit(); return; }
-    setVoiceNote(L.running ? "Your words are in the box. Send them when the current answer finishes." : "Your words are in the box. Check the attachments, then press Send.");
-  }, [voiceAsk]);
-
   const submit = () => {
     if (!canSend) return;
     voice.abort(); // sending ends dictation immediately
@@ -500,41 +511,20 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
     setMediaError(null);
   };
 
+  // Voice mode hand-off: runs once per finished talk session. `latest` holds this render's submit so the effect never uses a stale one.
+  const latest = useRef({ canSend, running, submit: () => {} });
+  useEffect(() => {
+    latest.current = { canSend, running, submit };
+  });
+  useEffect(() => {
+    if (!voiceAsk) return;
+    const L = latest.current;
+    if (!textRef.current.trim()) { setVoiceNote("I didn't catch a question. Hold the Talk button, speak, and release."); return; }
+    if (L.canSend) { askedByVoice.current = true; L.submit(); return; }
+    setVoiceNote(L.running ? "Your words are in the box. Send them when the current answer finishes." : "Your words are in the box. Check the attachments, then press Send.");
+  }, [voiceAsk]);
+
   /* media: validate limits up front, then compress / sample in the browser (nothing uploads until Send) */
-  const addFiles = (all: File[]) => {
-    const errs: string[] = [];
-    const list = all.filter((f) => { const k = kindOfFile(f); return k === "image" || k === "video"; });
-    const docFiles = all.filter((f) => isDocKind(kindOfFile(f)));
-    const audioFiles = all.filter((f) => kindOfFile(f) === "audio");
-    for (const f of all) if (!kindOfFile(f)) errs.push(`${f.name} isn't a type Keplar reads yet. Try a PDF, Office file, CSV, JSON, code, image, video or audio file.`);
-    if (docFiles.length || audioFiles.length) addDocs([...docFiles, ...audioFiles]);
-    if (!list.length) { if (errs.length) setMediaError(errs.join(" ")); return; }
-    let images = mediaRef.current.filter((m) => m.kind === "image").length;
-    let videos = mediaRef.current.filter((m) => m.kind === "video").length;
-    const accepted: { file: File; kind: MediaKind; id: string }[] = [];
-    for (const f of list) {
-      const kind = kindOfFile(f) as MediaKind;
-      if (kind === "image") {
-        if (images >= MEDIA_LIMITS.maxImages) { errs.push(`Up to ${MEDIA_LIMITS.maxImages} images per message, so ${f.name} wasn't added.`); continue; }
-        if (f.size > MEDIA_LIMITS.maxImageBytes) { errs.push(`${f.name} is ${fmtSize(f.size)}. Images can be up to ${MEDIA_LIMITS.maxImageBytes / MB} MB.`); continue; }
-        images++;
-      } else {
-        if (videos >= MEDIA_LIMITS.maxVideos) { errs.push(`One video per message, so ${f.name} wasn't added.`); continue; }
-        if (f.size > MEDIA_LIMITS.maxVideoBytes) { errs.push(`${f.name} is ${fmtSize(f.size)}. Videos can be up to ${MEDIA_LIMITS.maxVideoBytes / MB} MB.`); continue; }
-        videos++;
-      }
-      accepted.push({ file: f, kind, id: newId() });
-    }
-    setMediaError(errs.length ? errs.join(" ") : null);
-    if (!accepted.length) return;
-    setMedia((prev) => [...prev, ...accepted.map(({ file, kind, id }): ComposerMedia => ({ id, kind, name: file.name, bytes: file.size, status: "processing", images: [] }))]);
-    setAnnounce(accepted.length === 1 ? `Preparing ${accepted[0].file.name}.` : `Preparing ${accepted.length} files.`);
-    for (const a of accepted) void prepare(a);
-  };
-
-  // Keplar Vision: frames from a screen the person chose to share become ordinary image attachments (screen-share.ts).
-  const share = useScreenShare((f) => addFiles([f]), (m) => setMediaError(m));
-
   const addDocs = (files: File[]) => {
     const room = MAX_FILES - docs.length;
     const take = files.slice(0, Math.max(0, room));
@@ -613,6 +603,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
     // Still typing at the end of an address: wait longer before reading it.
     const typingUrl = /https?:\/\/\S+$/.test(linkText);
     const t = setTimeout(() => { for (const u of found) addLink(u); }, typingUrl ? 1400 : 400);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- drops link cards whose address was deleted from the text
     setLinks((prev) => {
       const next = prev.filter((l) => l.pinned || found.includes(l.url));
       return next.length === prev.length ? prev : next;
@@ -676,6 +667,40 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
     return Math.max(300_000, Math.floor((IMAGE_BUDGET_TOTAL - videoChars) / stills));
   };
 
+  const addFiles = (all: File[]) => {
+    const errs: string[] = [];
+    const list = all.filter((f) => { const k = kindOfFile(f); return k === "image" || k === "video"; });
+    const docFiles = all.filter((f) => isDocKind(kindOfFile(f)));
+    const audioFiles = all.filter((f) => kindOfFile(f) === "audio");
+    for (const f of all) if (!kindOfFile(f)) errs.push(`${f.name} isn't a type Keplar reads yet. Try a PDF, Office file, CSV, JSON, code, image, video or audio file.`);
+    if (docFiles.length || audioFiles.length) addDocs([...docFiles, ...audioFiles]);
+    if (!list.length) { if (errs.length) setMediaError(errs.join(" ")); return; }
+    let images = mediaRef.current.filter((m) => m.kind === "image").length;
+    let videos = mediaRef.current.filter((m) => m.kind === "video").length;
+    const accepted: { file: File; kind: MediaKind; id: string }[] = [];
+    for (const f of list) {
+      const kind = kindOfFile(f) as MediaKind;
+      if (kind === "image") {
+        if (images >= MEDIA_LIMITS.maxImages) { errs.push(`Up to ${MEDIA_LIMITS.maxImages} images per message, so ${f.name} wasn't added.`); continue; }
+        if (f.size > MEDIA_LIMITS.maxImageBytes) { errs.push(`${f.name} is ${fmtSize(f.size)}. Images can be up to ${MEDIA_LIMITS.maxImageBytes / MB} MB.`); continue; }
+        images++;
+      } else {
+        if (videos >= MEDIA_LIMITS.maxVideos) { errs.push(`One video per message, so ${f.name} wasn't added.`); continue; }
+        if (f.size > MEDIA_LIMITS.maxVideoBytes) { errs.push(`${f.name} is ${fmtSize(f.size)}. Videos can be up to ${MEDIA_LIMITS.maxVideoBytes / MB} MB.`); continue; }
+        videos++;
+      }
+      accepted.push({ file: f, kind, id: newId() });
+    }
+    setMediaError(errs.length ? errs.join(" ") : null);
+    if (!accepted.length) return;
+    setMedia((prev) => [...prev, ...accepted.map(({ file, kind, id }): ComposerMedia => ({ id, kind, name: file.name, bytes: file.size, status: "processing", images: [] }))]);
+    setAnnounce(accepted.length === 1 ? `Preparing ${accepted[0].file.name}.` : `Preparing ${accepted.length} files.`);
+    for (const a of accepted) void prepare(a);
+  };
+
+  // Keplar Vision: frames from a screen the person chose to share become ordinary image attachments (screen-share.ts).
+  const share = useScreenShare((f) => addFiles([f]), (m) => setMediaError(m));
+
   /* If the images together no longer fit one request, re-fit the largest from their originals (resolution first, then quality). */
   useEffect(() => {
     if (media.some((m) => m.status === "processing")) return;
@@ -686,6 +711,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
     const share = Math.max(300_000, Math.floor((IMAGE_BUDGET_TOTAL - videoChars) / stills.length));
     const big = stills.filter((m) => m.images.reduce((a, i) => a + i.dataUrl.length, 0) > share);
     if (!big.length) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- marks over-budget images as processing while they are re-fitted from their originals
     setMedia((prev) => prev.map((m) => (big.some((b) => b.id === m.id) ? { ...m, status: "processing", progress: undefined } : m)));
     for (const b of big) {
       void prepareImage(b.file!, share).then(
@@ -842,52 +868,45 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
     }
   };
 
-  const depth = routing.depth ?? "auto";
-  const strategyLabel = depth !== "auto" ? (DEPTH_OPTIONS.find((d) => d.id === depth)?.label ?? "Automatic") : strategies.find((x) => x.id === (routing.strategy ?? "auto"))?.label ?? "Automatic";
-  const customised = depth !== "auto" || (routing.strategy ?? "auto") !== "auto" || routing.tier === "sensitive" || (routing.excludeProviders?.length ?? 0) > 0 || routing.preferOpenWeights || (routing.maxModels ?? 6) < 6;
+  const effort: Effort = isEffort(routing.effort) ? routing.effort : DEFAULT_EFFORT;
+  const strategyLabel = EFFORT_INFO[effort].label;
+  const customised = effort !== DEFAULT_EFFORT || routing.tier === "sensitive" || (routing.excludeProviders?.length ?? 0) > 0 || !!routing.preferOpenWeights;
 
   return (
     <div ref={wrapRef} className={s.wrap} data-pop={pop.side} style={{ ["--pop-room" as string]: `${pop.room}px` }}>
       <span ref={popAnchorRef} className={s.popAnchor} aria-hidden="true" />
-      <Popover open={routingOpen} onOpenChange={closeOnOutside(setRoutingOpen)} anchorRef={popAnchorRef} side={popSide} align="end" label="Advanced routing" id={`${uid}-routing`} className={s.panel} onKeyDown={popKeys(() => setRoutingOpen(false), routingBtnRef, "")}>
+      <Popover open={routingOpen} onOpenChange={closeOnOutside(setRoutingOpen)} anchorRef={popAnchorRef} side={popSide} align="end" label="Effort" id={`${uid}-routing`} className={s.panel} onKeyDown={(e) => popKeys(e, () => setRoutingOpen(false), routingBtnRef, "")}>
           <div className={s.panelHead}>
-            <p className={s.panelTitle}>Advanced routing</p>
-            <p className={s.panelLede}>{brand.engineName} chooses models for you. These settings constrain it; they don&rsquo;t pick models directly.</p>
+            <p className={s.panelTitle}>Effort</p>
+            <p className={s.panelLede}>How much work {brand.engineName} puts into each answer. More effort uses more credits.</p>
           </div>
 
           <fieldset className={s.field}>
-            <legend className={s.legend}>Depth</legend>
-            <div className={s.segmented}>
-              {DEPTH_OPTIONS.map((d) => (
-                <label key={d.id} className={s.segment} title={d.hint}>
-                  <input type="radio" name={`${uid}-depth`} value={d.id} checked={depth === d.id} onChange={() => onRouting({ ...routing, depth: d.id })} />
-                  <span>{d.label}</span>
-                </label>
-              ))}
-            </div>
-            <p className={s.panelLede}>{DEPTH_OPTIONS.find((d) => d.id === depth)?.hint}</p>
-          </fieldset>
-
-          <fieldset className={s.field}>
-            <legend className={s.legend}>Strategy</legend>
+            <legend className="visually-hidden">Effort</legend>
             <div className={s.choices}>
-              {strategies.map((st) => (
-                <label key={st.id} className={s.choice}>
-                  <input type="radio" name={`${uid}-strategy`} value={st.id} checked={(routing.strategy ?? "auto") === st.id} onChange={() => onRouting({ ...routing, strategy: st.id })} />
-                  <span className={s.choiceText}><span className={s.choiceLabel}>{st.label}</span><span className={s.choiceHint}>{st.hint}</span></span>
+              {EFFORTS.map((e) => (
+                <label key={e} className={s.choice}>
+                  <input type="radio" name={`${uid}-effort`} value={e} checked={effort === e} onChange={() => onRouting(routingForEffort(e, routing))} />
+                  <span className={s.choiceText}>
+                    <span className={s.choiceLabel}>
+                      {EFFORT_INFO[e].label}
+                      {e === "low" ? <span className={s.effortNote}>Fewest credits</span> : null}
+                      {EFFORT_INFO[e].warn ? (
+                        <span className={s.effortWarn}>
+                          <IconWarn />
+                          {effortUsage[e] ? `${effortUsage[e]}× or more usage` : "More usage"}
+                        </span>
+                      ) : null}
+                    </span>
+                    <span className={s.choiceHint}>{EFFORT_INFO[e].hint}</span>
+                  </span>
                 </label>
               ))}
             </div>
           </fieldset>
 
-          <div className={s.fieldRow}>
-            <label className={s.legend} htmlFor={`${uid}-max`}>Most models per question</label>
-            <div className={s.rangeRow}>
-              <input id={`${uid}-max`} type="range" min={1} max={6} step={1} value={routing.maxModels ?? 6} onChange={(e) => onRouting({ ...routing, maxModels: Number(e.target.value) })} className={s.range} />
-              <output className={s.rangeValue} htmlFor={`${uid}-max`}>{routing.maxModels ?? 6}</output>
-            </div>
-          </div>
-
+          <details className={s.moreSettings}>
+            <summary className={s.moreSummary}>More settings</summary>
           <fieldset className={s.field}>
             <legend className={s.legend}>Data handling</legend>
             <div className={s.segmented}>
@@ -928,6 +947,8 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
               })}
             </div>
           </fieldset>
+
+          </details>
 
           {preview?.plan ? (
             <p className={s.previewLine}>
@@ -1247,7 +1268,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
               <span className={s.toolLabel}>Modes</span>
             </button>
           </div>
-          <Popover open={attachOpen} onOpenChange={closeOnOutside(setAttachOpen)} anchorRef={popAnchorRef} side={popSide} align="start" label="Attach" role="menu" id={`${uid}-attach`} className={s.attachMenu} onKeyDown={popKeys(() => setAttachOpen(false), attachBtnRef, '[role="menuitem"], input')}>
+          <Popover open={attachOpen} onOpenChange={closeOnOutside(setAttachOpen)} anchorRef={popAnchorRef} side={popSide} align="start" label="Attach" role="menu" id={`${uid}-attach`} className={s.attachMenu} onKeyDown={(e) => popKeys(e, () => setAttachOpen(false), attachBtnRef, '[role="menuitem"], input')}>
               <button type="button" role="menuitem" className={s.attachItem} data-attach-item="files" onClick={() => { setAttachOpen(false); fileRef.current?.click(); }}>
                 <GlyphUpload size={16} />
                 <span className={s.attachText}><span>Upload files</span><span className={s.attachSub}>Docs, slides, sheets, data, code, .zip, audio</span></span>
@@ -1279,7 +1300,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
                 </ul>
               </div>
           </Popover>
-          <Popover open={moreOpen && overflow.length > 0} onOpenChange={closeOnOutside(setMoreOpen)} anchorRef={popAnchorRef} side={popSide} align="start" label="More modes" role="menu" id={`${uid}-more`} className={s.moreMenu} onKeyDown={popKeys(() => setMoreOpen(false), moreBtnRef, '[role="menuitemcheckbox"]')}>
+          <Popover open={moreOpen && overflow.length > 0} onOpenChange={closeOnOutside(setMoreOpen)} anchorRef={popAnchorRef} side={popSide} align="start" label="More modes" role="menu" id={`${uid}-more`} className={s.moreMenu} onKeyDown={(e) => popKeys(e, () => setMoreOpen(false), moreBtnRef, '[role="menuitemcheckbox"]')}>
               {overflow.map((k) => {
                 const t = tools.find((x) => x.key === k)!;
                 return (
@@ -1316,7 +1337,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
             >
               <IconRouting size={15} />
               <span className={s.routingLabel}>{strategyLabel}</span>
-              <span className="visually-hidden">. Advanced routing</span>
+              <span className="visually-hidden">. Effort and settings</span>
             </button>
             {running ? (
               <Button variant="secondary" className={s.stop} onClick={onStop} aria-label="Stop generating (Esc)" leadingIcon={<IconStop size={14} />}>

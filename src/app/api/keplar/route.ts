@@ -87,6 +87,8 @@ import { projectItemCount } from "@/lib/projects/context";
 import { personalContext } from "@/lib/personalize/turn";
 import { validSpecialistId } from "@/lib/personalize/specialists";
 import { answerLanguageNote } from "@/lib/i18n/answer-language";
+import { isEffort, routingForEffort } from "@/lib/orchestration/effort";
+import type { RoutingPreferences } from "@/lib/orchestration/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -137,15 +139,20 @@ function parse(body: unknown): KeplarRequest | string {
     // The person's modes as sent. With Live Research the route switches them to liveModes() once it keeps the brief, so a brief it drops
     // (kill switch, plan clamp) leaves the question exactly as asked.
     modes: { web: modes.web === true, deepResearch: modes.deepResearch === true, create: modes.create === true, agent: modes.agent === true, ...(modes.debate === true ? { debate: true } : {}), ...(modes.reason === true ? { reason: true } : {}) },
-    routing: {
+    routing: withEffort({
       strategy: STRATEGIES.includes(routing.strategy as RoutingStrategy) ? (routing.strategy as RoutingStrategy) : "auto",
       maxModels: typeof routing.maxModels === "number" ? Math.min(6, Math.max(1, Math.round(routing.maxModels))) : undefined,
       excludeProviders: Array.isArray(routing.excludeProviders) ? routing.excludeProviders.filter((x): x is string => typeof x === "string").slice(0, 20) : [],
       preferOpenWeights: routing.preferOpenWeights === true,
       excludeProviderRetention: routing.excludeProviderRetention === true,
       depth: depthOf(routing.depth),
-    },
+    }, routing.effort),
   };
+}
+
+/** A valid Effort replaces depth, strategy and the model cap with its preset; no Effort keeps the older fields as sent. */
+function withEffort(r: RoutingPreferences, effort: unknown): RoutingPreferences {
+  return isEffort(effort) ? routingForEffort(effort, r) : r;
 }
 
 const TOO_LARGE = "The attachments are too large to send. Remove one, or use a smaller image or a shorter video.";

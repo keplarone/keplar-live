@@ -871,3 +871,16 @@
   .wrap .tools { gap: 0; }
   .wrap .tools .tool:not([aria-pressed="true"]):not([data-mode]) { width: 40px; min-width: 40px; height: 40px; min-height: 40px; padding: 0; justify-content: center; }
 }
+
+/* Effort: four levels; High and Max carry a warning about how many more credits they use. */
+.effortNote { margin-left: 8px; font-size: 12px; font-weight: 400; color: var(--c-ink-3); }
+.effortWarn { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; font-size: 12px; font-weight: 500; color: var(--c-warning, #b45309); }
+:global(:root[data-theme="dark"]) .effortWarn { color: var(--c-warning, #f5b041); }
+.moreSettings { border-top: 1px solid var(--c-border); padding-top: 4px; }
+.moreSummary { display: flex; align-items: center; min-height: 36px; cursor: pointer; font-size: 13px; color: var(--c-ink-2); list-style: none; }
+.moreSummary::-webkit-details-marker { display: none; }
+.moreSummary::after { content: ""; margin-left: auto; width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); transition: transform 0.15s ease; }
+.moreSettings[open] > .moreSummary::after { transform: rotate(-135deg); }
+.moreSummary:hover { color: var(--c-ink); }
+.moreSettings > :not(summary) { margin-top: 12px; }
+@media (prefers-reduced-motion: reduce) { .moreSummary::after { transition: none; } }

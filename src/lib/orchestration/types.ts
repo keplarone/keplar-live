@@ -253,6 +253,8 @@ export type RoutingPreferences = {
   strategy?: RoutingStrategy;
   /** Upper bound on independent panel models (1–6). */
   maxModels?: number;
+  /** The composer's single Effort choice (effort.ts); when present it sets depth, strategy and maxModels. */
+  effort?: import("./effort").Effort;
   excludeProviders?: string[];
   preferOpenWeights?: boolean;
   excludeProviderRetention?: boolean;
