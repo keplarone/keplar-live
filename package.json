@@ -44,7 +44,7 @@
     "@simplewebauthn/server": "^14.0.3",
     "@sparticuz/chromium": "^153.0.0",
     "@vercel/analytics": "^2.0.1",
-    "@vercel/sandbox": "^3.5.1",
+    "@vercel/sandbox": "^3.8.0",
     "@vercel/speed-insights": "^2.0.0",
     "acorn": "^8.18.0",
     "axe-core": "^4.14.0",
