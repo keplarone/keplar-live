@@ -36,7 +36,7 @@
 .card[data-tone="green"]::before { background: none; opacity: 1; }
 .card[data-tone="violet"]::before { background: none; opacity: 1; }
 .card > * { position: relative; }
-.grid[data-editing] .card { cursor: grab; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 0 0 1.5px rgb(195 155 255 / 0.35), 0 24px 60px rgb(0 0 0 / 0.55); }
+.grid[data-editing] .card { cursor: grab; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 0 0 1.5px rgb(var(--kb-accent-rgb) / 0.35), 0 24px 60px rgb(0 0 0 / 0.55); }
 .grid[data-editing] .card:hover { transform: translateY(-2px); }
 .card[data-dragging] { opacity: 0.4; transform: scale(0.98); }
 .cardHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; min-height: 30px; }
@@ -64,7 +64,7 @@
 .muted { margin: 0; color: var(--kb-ink-3); font-size: 12.5px; line-height: 1.55; }
 .warn { margin: 0; color: var(--kb-warn); font-size: 13px; font-weight: 600; }
 .meter { height: 8px; border-radius: 999px; background: rgb(255 255 255 / 0.06); overflow: hidden; }
-.meter i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #a467f0, #d76cff); box-shadow: none; transition: width 1.2s var(--kb-ease); }
+.meter i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(0deg, var(--kb-accent), var(--kb-accent)); box-shadow: none; transition: width 1.2s var(--kb-ease); }
 .split { display: flex; flex-direction: column; gap: 10px; margin-top: auto; padding-top: 8px; }
 .splitBar { height: 10px; border-radius: 999px; background: rgb(255 255 255 / 0.05); overflow: hidden; }
 .splitBar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--green-deep), var(--green)); box-shadow: none; transition: width 1s var(--kb-ease); }

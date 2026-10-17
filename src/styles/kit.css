@@ -116,7 +116,7 @@
   --ks-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
   --ks-ease-exit: cubic-bezier(0.4, 0, 1, 1);
   --ks-ease-spring: cubic-bezier(0.34, 1.2, 0.64, 1);
-  /* Keyboard focus is Space Studio's violet glow (space.css --space-focus-glow); a pointer press still draws nothing
+  /* Keyboard focus is the solid accent ring (space.css --space-focus-glow); a pointer press still draws nothing
      (:focus-visible only, e2e/no-focus-box). Keplar Studio keeps its own ring inside <StudioRoot>. */
   --ks-focus-ring: var(--space-focus-glow);
   --ks-focus-ring-inset: inset 0 0 0 2px rgb(var(--ring-rgb) / 0.6);
@@ -135,9 +135,9 @@
   --ks-danger-depth-hover: var(--space-d-depth-hover);
   --ks-danger-depth-press: var(--space-d-depth-press);
   --ks-press-y: var(--space-ledge);
-  --ks-switch-on: linear-gradient(90deg, #a467f0, #d76cff);
+  --ks-switch-on: var(--c-accent);
   --ks-switch-on-glow: none;
-  --ks-switch-thumb-on: #ffffff;
+  --ks-switch-thumb-on: var(--c-on-accent);
   /* segmented control: a glass track and Space Studio's lit thumb (white in dark, ink in light) */
   --ks-seg-pad: 4px;
   --ks-seg-track: var(--nav-fill);

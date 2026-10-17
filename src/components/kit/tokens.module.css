@@ -11,7 +11,7 @@
  * <StudioRoot theme="dark|light"> (data-ks-theme), e.g. a capture or a surface that must stay dark.
  *
  * The palette is derived from the site's genuine theme tokens (src/styles/tokens.css + light.css): the same graphite ink
- * (#0e0f12 / #ededf0), the same Space violet accent (--c-accent #7d3bc4 light, #c39bff dark) and the same text-safe semantic hues
+ * (#0e0f12 / #ededf0), the same neutral accent (--c-accent #17171a light, #f4f4f6 dark) and the same text-safe semantic hues
  * (--c-verified, --c-attention, --c-destructive, --c-research). tests/studio-ui-tokens.test.ts parses this file and checks that
  * both themes define the same tokens and that every text level holds WCAG AA (4.5:1) on every surface it can sit on.
  *
@@ -39,12 +39,12 @@
   --ks-border: rgb(14 15 18 / 0.1);
   --ks-border-strong: rgb(14 15 18 / 0.17);
   --ks-divider: rgb(14 15 18 / 0.07);
-  /* accent: the Space violet (site --c-accent), used only for selection, focus, progress */
-  --ks-accent: #7d3bc4;
-  --ks-accent-text: #7d3bc4;
+  /* accent: the site's neutral accent (--c-accent), used only for selection, focus, progress */
+  --ks-accent: #17171a;
+  --ks-accent-text: #17171a;
   --ks-accent-ink: #ffffff;
-  --ks-accent-subtle: rgb(125 59 196 / 0.1);
-  --ks-focus: #7d3bc4;
+  --ks-accent-subtle: rgb(23 23 26 / 0.1);
+  --ks-focus: #17171a;
   /* primary (monochrome inverse pill) */
   --ks-primary-bg: #0e0f12;
   --ks-primary-bg-hover: #26272c;
@@ -177,7 +177,7 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Dark palette: layered graphite neutrals (not solid black), site ink #ededf0, site accent #c39bff ─────────────────── */
+/* ── Dark palette: layered graphite neutrals (not solid black), site ink #ededf0, site accent #f4f4f6 ─────────────────── */
 :global(:root[data-theme="dark"]) .root,
 :global(:root) .root[data-ks-theme="dark"] {
   --ks-bg: #0b0b0d;
@@ -195,11 +195,11 @@
   --ks-border: rgb(237 237 240 / 0.09);
   --ks-border-strong: rgb(237 237 240 / 0.16);
   --ks-divider: rgb(237 237 240 / 0.06);
-  --ks-accent: #c39bff;
-  --ks-accent-text: #c39bff;
-  --ks-accent-ink: #000000;
-  --ks-accent-subtle: rgb(195 155 255 / 0.13);
-  --ks-focus: #c39bff;
+  --ks-accent: #f4f4f6;
+  --ks-accent-text: #f4f4f6;
+  --ks-accent-ink: #17171a;
+  --ks-accent-subtle: rgb(244 244 246 / 0.13);
+  --ks-focus: #f4f4f6;
   --ks-primary-bg: #ededf0;
   --ks-primary-bg-hover: #ffffff;
   --ks-primary-text: #0f0f11;
@@ -250,11 +250,11 @@
   --ks-border: rgb(14 15 18 / 0.1);
   --ks-border-strong: rgb(14 15 18 / 0.17);
   --ks-divider: rgb(14 15 18 / 0.07);
-  --ks-accent: #7d3bc4;
-  --ks-accent-text: #7d3bc4;
+  --ks-accent: #17171a;
+  --ks-accent-text: #17171a;
   --ks-accent-ink: #ffffff;
-  --ks-accent-subtle: rgb(125 59 196 / 0.1);
-  --ks-focus: #7d3bc4;
+  --ks-accent-subtle: rgb(23 23 26 / 0.1);
+  --ks-focus: #17171a;
   --ks-primary-bg: #0e0f12;
   --ks-primary-bg-hover: #26272c;
   --ks-primary-text: #ffffff;

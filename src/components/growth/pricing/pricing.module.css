@@ -151,7 +151,7 @@
   border-bottom-color: var(--hairline-strong);
 }
 
-/* Plus: a violet glow line under its column head and a faint violet wash down the column. */
+/* Plus: a graphite (light) or near-white (dark) rule under its column head, and a faint neutral wash down the column. */
 .table thead th[data-plan="plus"] {
   color: var(--c-accent);
   box-shadow: inset 0 -2px 0 rgb(var(--ring-rgb) / 0.7);

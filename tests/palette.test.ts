@@ -34,9 +34,9 @@ test("primary buttons stay graphite (ink) / white; semantic accents may be colou
   const light = css.match(/--btn-p-solid: (#[0-9a-f]{6});/i)?.[1] ?? "";
   assert.equal(light.toLowerCase(), "#17171a");
   const tokens = readFileSync("src/styles/tokens.css", "utf8");
-  // Accent is the Space violet (Space UI, docs/design/space-ui.md), not ink; light #7d3bc4, dark #c39bff
-  assert.match(tokens, /--c-accent: #7d3bc4;/);
-  assert.match(tokens, /:root\[data-theme="dark"\] \{[\s\S]*?--c-accent: #c39bff;/);
+  // One neutral accent: dark graphite in light, near-white in dark (src/styles/tokens.css).
+  assert.match(tokens, /--c-accent: #17171a;/);
+  assert.match(tokens, /:root\[data-theme="dark"\] \{[\s\S]*?--c-accent: #f4f4f6;/);
   assert.match(tokens, /--v-reasoning: #00c0e0;/);
   assert.match(tokens, /--v-creation: #d4894a;/);
 });
@@ -60,8 +60,6 @@ test("no electric blue-dominant spam (teal OK: green channel stays close to blue
   // Keep this exact per-file list so new blue or purple colors still fail the guard.
   const sceneColors: Record<string, string[]> = {
     "src/components/app-ui/App.module.css": ["74,99,184"],
-    "src/components/business-app/BusinessWorkspace.tsx": ["167,139,250"],
-    "src/components/business-app/cursor.module.css": ["167,139,250"],
     "src/components/create/images.module.css": ["38,92,140"],
     "src/components/create/video/video.module.css": ["38,92,140"],
     "src/components/kb/blogCovers.ts": ["91,116,201", "66,133,244", "77,107,254"],

@@ -1059,7 +1059,7 @@
 .dotDone { background: var(--c-accent); }
 .chip { height: 26px; padding: 0 12px; background: var(--hover-wash); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05); font-weight: var(--w-semibold); color: var(--c-ink-2); }
 .bar { height: 4px; background: var(--space-track); }
-.bar[data-state="responded"] { background: linear-gradient(90deg, #a467f0, #f08bd8); opacity: 1; box-shadow: none; }
+.bar[data-state="responded"] { background: linear-gradient(0deg, var(--c-accent), var(--c-accent)); opacity: 1; box-shadow: none; }
 
 /* "How Keplar answered" and its sections: pills on a wash, no rule lines. */
 .how { border-top: 0; border-bottom: 0; }
@@ -1103,7 +1103,7 @@
 .noticeTitle, .limitTitle { font-weight: var(--w-semibold); letter-spacing: -0.02em; }
 .limitTitle { font-size: 18px; }
 .limitMeter { height: 6px; background: var(--space-track); box-shadow: none; }
-.limitMeter span { background: linear-gradient(90deg, #a467f0 0%, #b27cff 45%, #f08bd8 100%); box-shadow: none; }
+.limitMeter span { background: linear-gradient(0deg, var(--c-accent), var(--c-accent)); box-shadow: none; }
 .limitMeterText { font-weight: var(--w-semibold); }
 .limitPlans li { border-radius: 20px; background: var(--hover-wash); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05); }
 .limitPrice { font-weight: var(--w-semibold); color: var(--c-ink); }
