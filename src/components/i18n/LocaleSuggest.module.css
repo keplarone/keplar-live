@@ -12,13 +12,17 @@
   gap: var(--s-2) var(--s-3);
   padding-block: var(--s-2);
   padding-inline: var(--s-4);
-  background: var(--c-canvas, #0b0b0d);
-  color: var(--c-ink, #f4f4f5);
-  border: 1px solid var(--c-border-strong, rgb(255 255 255 / 0.14));
-  border-radius: 14px;
-  box-shadow: 0 12px 32px rgb(0 0 0 / 0.35);
+  background: var(--space-glass-solid);
+  color: var(--c-ink);
+  border-radius: 999px;
+  box-shadow: var(--space-glass-lift);
   font-size: var(--t-small);
+  font-weight: var(--w-medium);
+  animation: ls-in 0.6s var(--space-ease-expo) both;
 }
+@keyframes ls-in { from { opacity: 0; transform: translateY(-10px) scale(0.97); filter: blur(8px); } }
+@media (prefers-reduced-motion: reduce), (max-width: 640px) { .bar { animation: none; } }
+@media (max-width: 640px) { .bar { border-radius: 22px; } }
 .text { margin: 0; }
 .go, .no {
   min-height: 32px;
@@ -27,17 +31,26 @@
   font: inherit;
   cursor: pointer;
 }
+/* "Switch": the 3D primary; "No thanks": a quiet ghost pill. */
 .go {
   border: 0;
-  background: var(--c-ink, #f4f4f5);
-  color: var(--c-canvas, #0b0b0d);
-  font-weight: var(--w-medium);
+  margin-bottom: 3px;
+  background: var(--space-p-face);
+  color: var(--space-p-ink);
+  box-shadow: var(--space-p-depth);
+  font-weight: var(--w-bold);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
+.go:hover { transform: translateY(-1px); box-shadow: var(--space-p-depth-hover); }
+.go:active { transform: translateY(var(--space-ledge)); box-shadow: var(--space-p-depth-press); }
+.go:focus-visible { box-shadow: var(--space-p-depth), var(--space-focus-glow); }
 .no {
-  border: 1px solid rgb(var(--rgb-ink) / 0.18);
+  border: 0;
   background: transparent;
-  color: inherit;
+  color: var(--space-g-ink);
+  font-weight: var(--w-semibold);
 }
+.no:hover { background: var(--space-g-hover); color: var(--c-ink); }
 
 /* Touch: "Switch to <language>" and "No thanks" were 32px tall. */
 @media (pointer: coarse) {

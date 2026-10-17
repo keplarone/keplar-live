@@ -1,5 +1,5 @@
-/* Try box, build box and the small-screen sticky bar (UI v2, docs/ui-v2.md). The box is a composer: --surface-raised with a hairline
-   and --elev-1; its send button is the one ink pill; example chips are hairline pills. No glass, no blur. */
+/* Try box, build box and the small-screen sticky bar (Space UI). The box is a composer on 28px glass (a violet glow while typing);
+   its send button is the one 3D primary (.sp-btn); example chips are quiet pills on the track fill. */
 .try {
   position: relative;
   z-index: var(--z-content);
@@ -13,8 +13,8 @@
 .tryTitle {
   font-size: var(--t-title);
   line-height: 1.08;
-  letter-spacing: -0.04em;
-  font-weight: var(--w-regular);
+  letter-spacing: -0.045em;
+  font-weight: var(--w-semibold);
 }
 
 .tryForm {
@@ -24,14 +24,14 @@
   margin-top: var(--s-5);
   padding: var(--s-3);
   border-radius: var(--r-card);
-  background: var(--surface-raised);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), var(--elev-1);
-  transition: box-shadow var(--m-dur-2) var(--m-ease-out);
+  background: var(--space-glass);
+  box-shadow: var(--space-glass-depth);
+  transition: box-shadow var(--space-dur-base) var(--space-ease-out);
 }
 
-/* Focus: the edge darkens to ink (a brightness shift), never an outline box. */
+/* Focus: Space Studio's violet glow around the whole composer, never an outline box. */
 .tryForm:focus-within {
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-ink), var(--elev-1);
+  box-shadow: var(--space-glass-depth), var(--space-focus-glow);
 }
 
 .tryInput {
@@ -54,40 +54,11 @@
   outline: none;
 }
 
+/* The send button: .sp-btn primary (face, ledge, lift, press and focus glow come from space.css). */
 .tryGo {
   flex: none;
   align-self: flex-end;
-  height: 44px;
-  padding: 0 var(--s-5);
-  border: 0;
-  border-radius: var(--r-pill);
-  background: var(--c-ink);
-  color: var(--c-canvas);
-  box-shadow: var(--elev-1);
-  font: inherit;
-  font-size: var(--t-small);
-  font-weight: var(--w-medium);
-  cursor: pointer;
-  transition: background-color var(--m-dur-1) var(--m-ease-out), scale var(--m-dur-1) var(--m-ease-out);
-}
-
-.tryGo:hover:not(:disabled) {
-  background: var(--c-ink-hover);
-}
-
-.tryGo:active:not(:disabled) {
-  scale: var(--m-press);
-}
-
-.tryGo:focus-visible {
-  outline: none;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.tryGo:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
+  margin-bottom: 4px; /* room for the ledge inside the composer */
 }
 
 .chips {
@@ -106,26 +77,29 @@
   min-height: 32px;
   text-wrap: balance;
   padding: var(--s-2) var(--s-4);
-  background: var(--surface-raised);
+  background: var(--space-track);
   color: var(--c-ink-2);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong);
   font: inherit;
   font-size: var(--t-small);
+  font-weight: var(--w-medium);
   text-align: left;
   cursor: pointer;
-  transition: color var(--m-dur-1) var(--m-ease-out), box-shadow var(--m-dur-1) var(--m-ease-out);
+  transition: color var(--space-dur-fast) var(--space-ease-out), background-color var(--space-dur-fast) var(--space-ease-out), transform var(--space-dur-base) var(--space-spring-bouncy);
 }
 
 .chip.chip:hover {
   color: var(--c-ink);
-  box-shadow: inset 0 0 0 var(--b-hairline) color-mix(in srgb, var(--c-ink) 28%, transparent);
+  background: var(--space-g-hover);
+}
+
+.chip.chip:active {
+  transform: scale(0.97);
 }
 
 .chip.chip:focus-visible {
   outline: none;
   color: var(--c-ink);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  box-shadow: var(--space-focus-glow);
 }
 
 .tryNote {
@@ -145,8 +119,7 @@
   justify-content: center;
   padding: var(--s-3) var(--l-gutter) calc(var(--s-3) + env(safe-area-inset-bottom, 0px));
   background: var(--surface-overlay);
-  border-top: var(--b-hairline) solid var(--hairline);
-  box-shadow: var(--elev-3);
+  box-shadow: inset 0 1px 0 rgb(var(--rgb-ink) / 0.06), 0 -18px 40px rgb(0 0 0 / 0.2);
   transform: translateY(110%);
   transition: transform var(--m-dur-3) var(--m-ease-out);
   visibility: hidden;
@@ -179,7 +152,6 @@
 @media (prefers-reduced-motion: reduce) {
   .sticky,
   .tryForm,
-  .tryGo,
   .chip.chip {
     transition: none;
   }

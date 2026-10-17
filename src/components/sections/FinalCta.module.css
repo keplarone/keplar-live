@@ -19,8 +19,8 @@
   margin-top: var(--s-8);
   font-size: var(--t-headline);
   line-height: var(--lh-headline);
-  letter-spacing: -0.04em;
-  font-weight: var(--w-regular);
+  letter-spacing: -0.045em;
+  font-weight: var(--w-semibold);
   max-width: 16ch;
   text-wrap: balance;
 }

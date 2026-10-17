@@ -1,5 +1,5 @@
-/* Plans (UI v2, docs/ui-v2.md): calm, scannable cards on the plain canvas. A card is --surface-raised with a 1px hairline,
-   --r-card and --elev-1; hover strengthens the edge (no lift). The recommended plan (Plus) is marked by an ink edge, never a glow. */
+/* Plans (Space UI, docs/design/space-ui.md): calm, scannable 28px glass cards, no outlines. Hover lifts a card with a violet glow;
+   the recommended plan (Plus) stands lifted with a stronger glow and carries the one 3D primary button. */
 .section {
   position: relative;
   z-index: var(--z-content);
@@ -24,18 +24,22 @@
   flex-direction: column;
   padding: var(--s-8) var(--s-6) var(--s-6);
   border-radius: var(--r-card);
-  background: var(--surface-raised);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1);
-  transition: box-shadow var(--m-dur-2) var(--m-ease-out);
+  background: var(--space-glass);
+  box-shadow: var(--space-glass-depth);
+  transition: box-shadow var(--space-dur-slow) var(--space-ease-out), transform var(--space-dur-slow) var(--space-ease-expo);
+}
+
+@media (hover: hover) {
+  .plan:hover { transform: translateY(-3px); }
 }
 
 .plan:hover {
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), var(--elev-1);
+  box-shadow: var(--space-glass-lift);
 }
 
 .plan[data-plan="plus"],
 .plan[data-plan="plus"]:hover {
-  box-shadow: inset 0 0 0 1.5px var(--c-ink), var(--elev-1);
+  box-shadow: var(--space-glass-lift), 0 0 56px -10px rgb(var(--ring-rgb) / 0.45);
 }
 
 .plan[data-plan="business"] {
@@ -57,8 +61,8 @@
 .name {
   font-size: var(--t-lead);
   line-height: 1.2;
-  font-weight: var(--w-medium);
-  letter-spacing: -0.01em;
+  font-weight: var(--w-semibold);
+  letter-spacing: -0.02em;
   text-transform: none;
   color: var(--c-ink);
 }
@@ -73,8 +77,8 @@
 .amount {
   font-size: clamp(40px, 3.8vw, 80px);
   line-height: 0.95;
-  letter-spacing: -0.04em;
-  font-weight: var(--w-regular);
+  letter-spacing: -0.045em;
+  font-weight: var(--w-semibold);
   font-variant-numeric: tabular-nums;
   color: var(--c-ink);
 }
@@ -101,7 +105,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--s-3);
-  border-top: var(--b-hairline) solid var(--hairline);
+  box-shadow: inset 0 1px 0 var(--hairline);
   flex: 1;
 }
 
@@ -121,7 +125,7 @@
   top: 0.18em;
   width: 16px;
   height: 16px;
-  background: var(--c-ink-2);
+  background: var(--c-accent);
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / contain no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / contain no-repeat;
 }
@@ -147,15 +151,15 @@
   align-items: start;
   padding: var(--s-10);
   border-radius: var(--r-card);
-  background: var(--surface-raised);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1);
+  background: var(--space-glass);
+  box-shadow: var(--space-glass-depth);
 }
 
 .computeTitle {
   font-size: var(--t-title);
   line-height: 1.08;
-  letter-spacing: -0.04em;
-  font-weight: var(--w-regular);
+  letter-spacing: -0.045em;
+  font-weight: var(--w-semibold);
 }
 
 .computeLede {
@@ -194,13 +198,12 @@
   width: 22px;
   height: 5px;
   border-radius: var(--r-pill);
-  background: var(--c-surface-2);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline);
+  background: var(--space-track);
 }
 
 .bars i[data-on] {
-  background: var(--c-ink);
-  box-shadow: none;
+  background: linear-gradient(90deg, #a467f0, #d76cff);
+  box-shadow: 0 0 10px rgb(var(--space-aura) / 0.45);
 }
 
 @media (max-width: 1080px) {
@@ -243,6 +246,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .plan { transition: none; }
+  .plan:hover { transform: none; }
 }
 
 /* "See everything in <plan>" (phones only: the button is hidden on wider screens, src/styles/mobile.css). */

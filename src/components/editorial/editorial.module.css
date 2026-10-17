@@ -6,7 +6,7 @@
 
 /* Reading column */
 .col { max-width: 68ch; display: flex; flex-direction: column; gap: var(--s-5); color: var(--c-ink-2); font-size: var(--t-body); line-height: 1.7; letter-spacing: var(--tr-body); }
-.col h2 { margin-top: var(--s-12); font-size: var(--t-title); line-height: var(--lh-title); letter-spacing: -0.035em; font-weight: var(--w-regular); color: var(--c-ink); text-wrap: balance; scroll-margin-top: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-8)); }
+.col h2 { margin-top: var(--s-12); font-size: var(--t-title); line-height: var(--lh-title); letter-spacing: -0.035em; font-weight: var(--w-semibold); color: var(--c-ink); text-wrap: balance; scroll-margin-top: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-8)); }
 .col h2:first-child { margin-top: 0; }
 .col strong { color: var(--c-ink); font-weight: var(--w-medium); }
 .col a, .answer a, .meta a, .keplar a { color: var(--c-ink); text-decoration: underline; text-decoration-color: var(--hairline-strong); text-underline-offset: 3px; }
@@ -15,7 +15,7 @@
 .col li::marker { color: var(--c-ink-3); }
 
 /* Short answer: a plain card */
-.answer { max-width: 68ch; padding: var(--s-8); border-radius: var(--r-card); background: var(--surface-raised); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1); color: var(--c-ink); font-size: var(--t-lead); line-height: var(--lh-lead); letter-spacing: var(--tr-lead); }
+.answer { max-width: 68ch; padding: var(--s-8); border-radius: var(--r-card); background: var(--space-glass); box-shadow: var(--space-glass-depth); color: var(--c-ink); font-size: var(--t-lead); line-height: var(--lh-lead); letter-spacing: var(--tr-lead); }
 .answerLabel { display: block; margin-bottom: var(--s-3); font-size: var(--t-small); font-weight: var(--w-medium); line-height: var(--lh-small); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); }
 
 .meta { max-width: 68ch; color: var(--c-ink-3); font-size: var(--t-small); line-height: var(--lh-small); display: grid; gap: var(--s-2); }
@@ -23,13 +23,13 @@
 /* On this page: a calm list of links with a hairline at its side (no numbers, no pills) */
 .toc { max-width: 68ch; }
 .toc h2 { margin-bottom: var(--s-3); font-size: var(--t-small); font-weight: var(--w-medium); line-height: var(--lh-small); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); }
-.toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border-left: var(--b-hairline) solid var(--hairline-strong); }
-.toc a { display: block; margin-left: -1px; padding: var(--s-1) var(--s-4); min-height: 24px; border-left: var(--b-hairline) solid transparent; color: var(--c-ink-2); font-size: var(--t-small); line-height: 1.4; text-decoration: none; transition: color var(--m-dur-1) var(--m-ease-out), border-color var(--m-dur-1) var(--m-ease-out); }
-.toc a:hover { color: var(--c-ink); border-left-color: var(--c-ink); }
+.toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; box-shadow: inset 1px 0 0 var(--hairline-strong); }
+.toc a { display: block; padding: var(--s-1) var(--s-4); min-height: 24px; color: var(--c-ink-2); font-size: var(--t-small); line-height: 1.4; text-decoration: none; transition: color var(--space-dur-fast) var(--space-ease-out), box-shadow var(--space-dur-fast) var(--space-ease-out); }
+.toc a:hover { color: var(--c-ink); box-shadow: inset 2px 0 0 var(--c-accent); }
 
 /* Tables: a hairline frame, hairline rows, a quiet header */
 .tableBlock { display: grid; gap: var(--s-3); max-width: 100%; }
-.tableScroll { overflow-x: auto; border-radius: var(--r-card); background: var(--surface-raised); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline); }
+.tableScroll { overflow-x: auto; border-radius: var(--r-card); background: var(--space-glass); box-shadow: var(--space-glass-depth); }
 .table { width: 100%; min-width: 34rem; border-collapse: collapse; font-size: var(--t-small); line-height: 1.5; color: var(--c-ink-2); }
 .table caption { text-align: left; padding: var(--s-4) var(--s-4) var(--s-2); color: var(--c-ink-3); font-size: var(--t-small); caption-side: top; }
 .table th, .table td { text-align: left; vertical-align: top; padding: var(--s-3) var(--s-4); border-bottom: var(--b-hairline) solid var(--hairline); }
@@ -44,12 +44,12 @@
 .cite a:where(td *) { margin: 0; } /* inside tables there is room, and a tight row would overlap the next one */
 
 /* "How Keplar handles this": a plain card */
-.keplar { max-width: 68ch; padding: var(--s-8); border-radius: var(--r-card); background: var(--surface-raised); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1); display: grid; gap: var(--s-4); color: var(--c-ink-2); line-height: 1.65; }
-.keplar h2 { font-size: var(--t-title); line-height: var(--lh-title); letter-spacing: -0.035em; font-weight: var(--w-regular); color: var(--c-ink); text-wrap: balance; }
+.keplar { max-width: 68ch; padding: var(--s-8); border-radius: var(--r-card); background: var(--space-glass); box-shadow: var(--space-glass-depth); display: grid; gap: var(--s-4); color: var(--c-ink-2); line-height: 1.65; }
+.keplar h2 { font-size: var(--t-title); line-height: var(--lh-title); letter-spacing: -0.035em; font-weight: var(--w-semibold); color: var(--c-ink); text-wrap: balance; }
 
 /* Sources and related reading */
 .sources { max-width: 68ch; color: var(--c-ink-2); font-size: var(--t-small); line-height: 1.55; }
-.sources h2, .related h2 { margin-bottom: var(--s-4); font-size: var(--t-title); line-height: var(--lh-title); letter-spacing: -0.035em; font-weight: var(--w-regular); color: var(--c-ink); }
+.sources h2, .related h2 { margin-bottom: var(--s-4); font-size: var(--t-title); line-height: var(--lh-title); letter-spacing: -0.035em; font-weight: var(--w-semibold); color: var(--c-ink); }
 .sources ol { display: grid; gap: var(--s-3); padding-left: 1.6em; }
 .sources li { scroll-margin-top: calc(var(--l-nav-h) + var(--s-8)); overflow-wrap: anywhere; }
 .sources li::marker { color: var(--c-ink-3); }

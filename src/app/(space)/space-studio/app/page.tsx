@@ -20,7 +20,7 @@ export default async function SpaceStudioReturn({ searchParams }: { searchParams
     <section className={s.center}>
       <h1 className={`${s.title} ${s.rise}`}>{linked ? "Roblox is connected." : err ? "Roblox wasn't connected." : "Space Studio"}</h1>
       <p className={`${s.lede} ${s.rise}`}>{err ? (ERRORS[err] ?? "The Roblox sign-in didn't complete. Try again from Space Studio.") : "You can go back to the Space Studio app."}</p>
-      <div className={`${s.actions} ${s.rise}`}><Link className={s.btnGhost} href="/space-studio">About Space Studio</Link></div>
+      <div className={`${s.actions} ${s.rise}`}><Link className={`sp-btn ${s.btnGhost}`} data-sp-btn="" data-variant="secondary" data-size="lg" href="/space-studio">About Space Studio</Link></div>
     </section>
   );
 }

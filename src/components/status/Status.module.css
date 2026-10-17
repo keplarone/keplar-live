@@ -1,13 +1,13 @@
 .page { position: relative; z-index: var(--z-content); max-width: 760px; margin: 0 auto; padding: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-16)) var(--l-gutter) var(--s-24); }
-.eyebrow { font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-2); margin-bottom: var(--s-4); }
-.title { font-size: var(--t-headline); line-height: var(--lh-headline); letter-spacing: var(--tr-headline); font-weight: var(--w-medium); text-wrap: balance; }
+.eyebrow { font-size: 12px; font-weight: var(--w-semibold); letter-spacing: 0.18em; text-transform: uppercase; color: var(--c-ink-2); margin-bottom: var(--s-4); }
+.title { font-size: var(--t-headline); line-height: var(--lh-headline); letter-spacing: -0.045em; font-weight: var(--w-semibold); text-wrap: balance; }
 .lede { margin-top: var(--s-4); color: var(--c-ink-2); font-size: var(--t-lead); line-height: var(--lh-lead); max-width: 60ch; }
-.list { margin-top: var(--s-10); display: grid; gap: var(--s-3); padding: 0; list-style: none; }
+.list { margin-top: var(--s-10); display: grid; gap: var(--s-2); padding: 0; list-style: none; }
 /* Three columns, so every status word lines up down the list (with flex they sat wherever each row's text left room). */
-.row { display: grid; grid-template-columns: minmax(0, 15rem) max-content minmax(0, 1fr); column-gap: var(--s-4); row-gap: var(--s-1); align-items: baseline; padding: var(--s-4) var(--s-5); border-radius: var(--r-card); background: var(--c-glass-strong); box-shadow: inset 0 0 0 var(--b-hairline) var(--c-border-strong); }
-.name { font-weight: var(--w-medium); }
+.row { display: grid; grid-template-columns: minmax(0, 15rem) max-content minmax(0, 1fr); column-gap: var(--s-4); row-gap: var(--s-1); align-items: baseline; padding: var(--s-5) var(--s-6); border-radius: var(--space-r-panel); background: var(--space-glass); box-shadow: var(--space-glass-depth); }
+.name { font-weight: var(--w-semibold); }
 .detail { color: var(--c-ink-2); font-size: var(--t-small); text-align: right; }
-.badge { font-size: var(--t-small); font-weight: var(--w-medium); }
+.badge { font-size: var(--t-small); font-weight: var(--w-semibold); }
 .note { margin-top: var(--s-6); color: var(--c-ink-2); font-size: var(--t-small); max-width: 62ch; }
 
 /* Narrow screens: the name and its status on one line, the detail under them. */

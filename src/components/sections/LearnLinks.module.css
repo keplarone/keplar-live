@@ -1,11 +1,11 @@
 /* "Go deeper": link cards (UI v2 card: raised surface, hairline, --r-card, --elev-1; hover strengthens the edge, no lift). */
 .section { position: relative; z-index: var(--z-content); padding: var(--s-24) var(--l-gutter); }
 .inner { max-width: var(--l-max); margin: 0 auto; }
-.h { font-size: var(--t-title); line-height: 1.08; letter-spacing: -0.04em; font-weight: var(--w-regular); color: var(--c-ink); }
+.h { font-size: var(--t-title); line-height: 1.08; letter-spacing: -0.045em; font-weight: var(--w-semibold); color: var(--c-ink); }
 .list { margin-top: var(--s-8); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: var(--s-4); list-style: none; padding: 0; }
-.card { display: grid; gap: var(--s-2); height: 100%; padding: var(--s-6); border-radius: var(--r-card); background: var(--surface-raised); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1); color: var(--c-ink-2); text-decoration: none; transition: box-shadow var(--m-dur-2) var(--m-ease-out); }
-.card:hover { box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), var(--elev-1); }
-.card:focus-visible { outline: none; box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), var(--elev-1); }
+.card { display: grid; gap: var(--s-2); height: 100%; padding: var(--s-6); border-radius: var(--r-card); background: var(--space-glass); box-shadow: var(--space-glass-depth); color: var(--c-ink-2); text-decoration: none; transition: box-shadow var(--m-dur-2) var(--m-ease-out); }
+.card:hover { box-shadow: var(--space-glass-lift); }
+.card:focus-visible { outline: none; box-shadow: var(--space-glass-depth), var(--space-focus-glow); }
 .card:focus-visible .title { text-decoration: underline; text-underline-offset: 3px; }
 .title { color: var(--c-ink); font-weight: var(--w-medium); }
 .text { font-size: var(--t-small); line-height: var(--lh-small); }

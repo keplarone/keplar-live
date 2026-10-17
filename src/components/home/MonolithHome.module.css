@@ -42,7 +42,7 @@
 .content[data-away] { pointer-events: none; }
 
 .top { display: flex; flex-direction: column; align-items: center; gap: clamp(8px, 1.5vh, 16px); }
-.pill { margin: 0; padding: calc(7 * var(--u)) calc(16 * var(--u)); border-radius: 999px; border: 1px solid rgb(255 255 255 / 0.28); background: #0b0b0d; color: var(--on-black); font-size: clamp(12px, 1.05vw, calc(14.5 * var(--u))); letter-spacing: 0.01em; max-width: 100%; text-wrap: balance; box-shadow: none; }
+.pill { margin: 0; padding: calc(7 * var(--u)) calc(16 * var(--u)); border-radius: 999px; border: 0; background: var(--nav-fill); color: var(--on-black); font-size: clamp(12px, 1.05vw, calc(14.5 * var(--u))); letter-spacing: 0.01em; max-width: 100%; text-wrap: balance; box-shadow: var(--nav-shadow); font-weight: 600; }
 .h1 { margin: 0; font-size: clamp(20.4px, min(3.808vw, 5.44vh), 62.56px); line-height: 1.03; letter-spacing: -0.045em; font-weight: 700; color: var(--on-black); text-shadow: none; display: flex; flex-direction: column; align-items: center; max-width: 100%; }
 .line { position: relative; display: block; max-width: 100%; }
 .line[data-n="1"] { color: rgb(255 255 255 / 0.62); }
@@ -58,18 +58,20 @@
 .hero[data-live] .logo { opacity: 0.92; }
 
 .bottom { width: min(calc(760 * var(--u)), 100%); display: flex; flex-direction: column; align-items: center; gap: clamp(8px, 1.5vh, 16px); }
-.composer { width: 100%; display: flex; align-items: center; gap: var(--s-3); padding: 7px 7px 7px clamp(16px, 2vw, 26px); border-radius: 999px; border: 1px solid rgb(255 255 255 / 0.35); background: #0b0b0d; backdrop-filter: none; box-shadow: none; transition: border-color 0.3s; }
-.composer:has(:is(textarea, input):focus) { border-color: #fff; box-shadow: none; }
+/* The composer: a Space pill field (inner depth that holds a 3:1 edge, no border) that glows violet while it is typed in. */
+.composer { width: 100%; display: flex; align-items: center; gap: var(--s-3); padding: 7px 7px 7px clamp(16px, 2vw, 26px); border-radius: 999px; border: 0; background: #0e0d13; backdrop-filter: none; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), inset 0 0 0 1px rgb(255 255 255 / 0.32), 0 24px 60px rgb(0 0 0 / 0.55); transition: box-shadow var(--space-dur-base) var(--space-ease-out); }
+.composer:has(:is(textarea, input):focus-visible) { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), inset 0 0 0 1px rgb(255 255 255 / 0.32), 0 0 0 3px rgb(195 155 255 / 0.55), 0 0 24px rgb(176 104 255 / 0.35); }
 .input { flex: 1 1 auto; min-width: 0; min-height: 26px; max-height: 120px; resize: none; border: 0; outline: 0; background: transparent; color: #fff; font: inherit; font-size: clamp(10.2px, 0.85vw, calc(18 * var(--u))); line-height: 1.5; letter-spacing: 0; field-sizing: content; padding: 12px 0; text-align: left; caret-color: #fff; }
 .input::placeholder { color: rgb(255 255 255 / 0.5); }
-.go { flex: none; width: calc(48 * var(--u)); height: calc(48 * var(--u)); border-radius: 999px; border: 0; cursor: pointer; display: grid; place-items: center; background: #fff; color: var(--mono-bg); box-shadow: none; transition: transform 0.4s cubic-bezier(0.34, 1.4, 0.64, 1); }
-.go:hover { transform: scale(1.07); }
-.go:active { transform: scale(0.93); }
-.go:focus-visible { outline: none; text-decoration: underline; text-underline-offset: 3px; }
+/* Send: Space Studio's 3D primary (white face over the #8c8a99 ledge; the stage is always dark). */
+.go { flex: none; width: calc(48 * var(--u)); height: calc(48 * var(--u)); margin-bottom: 4px; border-radius: 999px; border: 0; cursor: pointer; display: grid; place-items: center; background: linear-gradient(180deg, #ffffff 0%, #ececf2 55%, #d9d9e2 100%); color: #000; box-shadow: inset 0 1px 0 #fff, inset 0 -3px 0 rgb(0 0 0 / 0.1), 0 4px 0 #8c8a99, 0 10px 24px rgb(0 0 0 / 0.6); transition: transform 0.12s ease, box-shadow 0.12s ease; }
+.go:hover { transform: translateY(-1px); box-shadow: inset 0 1px 0 #fff, inset 0 -3px 0 rgb(0 0 0 / 0.1), 0 5px 0 #8c8a99, 0 14px 30px rgb(0 0 0 / 0.6), 0 0 32px rgb(190 150 255 / 0.25); }
+.go:active { transform: translateY(4px); box-shadow: inset 0 1px 0 #fff, inset 0 -1px 0 rgb(0 0 0 / 0.1), 0 0 0 #8c8a99, 0 4px 10px rgb(0 0 0 / 0.5); }
+.go:focus-visible { outline: none; box-shadow: inset 0 1px 0 #fff, 0 4px 0 #8c8a99, 0 0 0 3px rgb(195 155 255 / 0.55), 0 0 24px rgb(176 104 255 / 0.35); }
 .go:disabled { opacity: 0.6; cursor: progress; }
 
 .chips { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%; max-width: 100%; background: none; border: 0; border-radius: 0; box-shadow: none; }
-.chipItem { display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 999px; border: 1px solid rgb(255 255 255 / 0.18); background: #141417; color: var(--on-black); font-size: clamp(12px, 1vw, calc(13.5 * var(--u))); white-space: nowrap; box-shadow: none; }
+.chipItem { display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 999px; border: 0; background: #141417; font-weight: 600; color: var(--on-black); font-size: clamp(12px, 1vw, calc(13.5 * var(--u))); white-space: nowrap; box-shadow: none; }
 .chipItem svg { flex: none; opacity: 0.85; }
 .note { margin: 0; font-size: clamp(7.48px, 0.544vw, calc(12 * var(--u))); line-height: 1.45; color: var(--on-black-3); max-width: 70ch; text-wrap: balance; }
 @media (max-height: 760px) { .note { display: none; } }
@@ -141,7 +143,7 @@
 
 /* respond: three answers as abstract text blocks */
 .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 150px)); gap: 14px; margin-top: 6px; }
-.card { display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 18px; border: 1px solid var(--sc-line); background: rgb(255 255 255 / 0.04); box-shadow: none; transform: translateY(calc(var(--k) * 6px - 6px)); }
+.card { display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 22px; border: 0; background: linear-gradient(180deg, rgb(22 20 30 / 0.78), rgb(10 9 14 / 0.82)); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 24px 60px rgb(0 0 0 / 0.55); transform: translateY(calc(var(--k) * 6px - 6px)); }
 .card span { display: block; height: 6px; border-radius: 999px; background: rgb(255 255 255 / 0.28); }
 .card span:nth-child(2) { width: 82%; }
 .card span:nth-child(3) { width: 56%; background: rgb(255 255 255 / 0.5); }
@@ -155,7 +157,7 @@
 
 /* verify */
 .steps { list-style: none; counter-reset: st; margin: 6px 0 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
-.steps li { counter-increment: st; padding: 9px 18px; border-radius: 999px; border: 1px solid var(--sc-line); background: rgb(255 255 255 / 0.04); font-size: 8.84px; color: var(--sc-ink); }
+.steps li { counter-increment: st; padding: 9px 18px; border-radius: 999px; border: 0; background: rgb(255 255 255 / 0.07); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06); font-size: 8.84px; color: var(--sc-ink); }
 .steps li::before { content: counter(st) "  "; color: var(--sc-ink-3); }
 
 /* answer */
@@ -198,8 +200,8 @@
 
 /* One bold CTA in the composer ("Ask Keplar anything"), a plain proof line instead of feature chips. */
 .go { width: auto; min-width: calc(48 * var(--u)); padding: 0 calc(16 * var(--u)) 0 calc(20 * var(--u)); gap: 8px; display: inline-flex; align-items: center; justify-content: center; font: inherit; font-weight: 650; font-size: clamp(9.52px, 0.714vw, calc(16 * var(--u))); letter-spacing: -0.01em; white-space: nowrap; }
-.go:hover { transform: none; background: #ececea; }
-.go:active { transform: translateY(1px); }
+.go:hover { transform: translateY(-1px); }
+.go:active { transform: translateY(4px); }
 .goText + :global(.visually-hidden) { display: none; }
 .proof { margin: 0; font-size: clamp(8.16px, 0.646vw, calc(13.5 * var(--u))); line-height: 1.5; color: var(--on-black-2); text-align: center; text-wrap: balance; }
 .proof a { color: var(--on-black); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-color: rgb(255 255 255 / 0.55); }
@@ -241,25 +243,23 @@
 /* composer: a crisp white card floating on the aura */
 :global(:root[data-theme="light"]) .composer {
   background: #fff;
-  border-color: rgb(28 24 18 / 0.12);
-  box-shadow: 0 1px 2px rgb(28 24 18 / 0.05), 0 18px 44px -20px rgb(150 70 40 / 0.28);
-  transition: border-color var(--m-dur-2) var(--m-ease-out), box-shadow var(--m-dur-2) var(--m-ease-out);
+  box-shadow: inset 0 1px 2px rgb(14 15 18 / 0.08), inset 0 0 0 1px rgb(14 15 18 / 0.5), 0 18px 44px -20px rgb(125 59 196 / 0.28);
 }
-:global(:root[data-theme="light"]) .composer:has(:is(textarea, input):focus) {
-  border-color: rgb(28 24 18 / 0.28);
-  box-shadow: 0 1px 2px rgb(28 24 18 / 0.06), 0 20px 48px -20px rgb(150 70 40 / 0.34);
+:global(:root[data-theme="light"]) .composer:has(:is(textarea, input):focus-visible) {
+  box-shadow: inset 0 1px 2px rgb(14 15 18 / 0.08), inset 0 0 0 1px rgb(14 15 18 / 0.5), 0 0 0 3px rgb(125 59 196 / 0.45), 0 0 22px rgb(125 59 196 / 0.28);
 }
 :global(:root[data-theme="light"]) .input { color: var(--c-ink); caret-color: var(--c-ink); }
 :global(:root[data-theme="light"]) .input::placeholder { color: #6b6c72; }
-:global(:root[data-theme="light"]) .go { background: #17171a; color: #fff; }
-:global(:root[data-theme="light"]) .go:hover { background: #2a2a2f; }
+:global(:root[data-theme="light"]) .go { background: linear-gradient(180deg, #3a3a42 0%, #1d1d22 55%, #0e0e12 100%); color: #fff; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), inset 0 -3px 0 rgb(0 0 0 / 0.25), 0 4px 0 #000, 0 10px 22px rgb(14 15 18 / 0.3); }
+:global(:root[data-theme="light"]) .go:hover { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.26), inset 0 -3px 0 rgb(0 0 0 / 0.25), 0 5px 0 #000, 0 14px 30px rgb(14 15 18 / 0.34), 0 0 30px rgb(125 59 196 / 0.22); }
+:global(:root[data-theme="light"]) .go:active { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2), 0 0 0 #000, 0 3px 8px rgb(14 15 18 / 0.3); }
 :global(:root[data-theme="light"]) .proof a { text-decoration-color: rgb(17 17 19 / 0.3); }
 /* the six scenes */
-:global(:root[data-theme="light"]) .card { background: rgb(255 255 255 / 0.78); box-shadow: 0 1px 2px rgb(28 24 18 / 0.04), 0 12px 28px -18px rgb(28 24 18 / 0.2); }
+:global(:root[data-theme="light"]) .card { background: rgb(255 255 255 / 0.86); box-shadow: inset 0 1px 0 #fff, 0 1px 2px rgb(14 15 18 / 0.05), 0 16px 40px -18px rgb(14 15 18 / 0.22); }
 :global(:root[data-theme="light"]) .card span { background: rgb(17 17 19 / 0.14); }
 :global(:root[data-theme="light"]) .card span:nth-child(3) { background: rgb(17 17 19 / 0.32); }
-:global(:root[data-theme="light"]) .nodes i { box-shadow: 0 0 0 3px rgb(255 170 128 / 0.35); }
-:global(:root[data-theme="light"]) .dots i { box-shadow: 0 0 0 3px rgb(255 170 128 / 0.3); }
+:global(:root[data-theme="light"]) .nodes i { box-shadow: 0 0 0 3px rgb(178 124 255 / 0.35); }
+:global(:root[data-theme="light"]) .dots i { box-shadow: 0 0 0 3px rgb(178 124 255 / 0.3); }
 :global(:root[data-theme="light"]) .dots i[data-odd] { box-shadow: none; }
 :global(:root[data-theme="light"]) .caret { box-shadow: none; }
 :global(:root[data-theme="light"]) .steps li { background: rgb(255 255 255 / 0.8); }

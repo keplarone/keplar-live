@@ -15,8 +15,8 @@
   margin-top: var(--s-12);
   padding: var(--s-10) var(--s-10) var(--s-8);
   border-radius: var(--r-card);
-  background: var(--surface-raised);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1);
+  background: var(--space-glass);
+  box-shadow: var(--space-glass-depth);
 }
 
 .timeline {
@@ -111,8 +111,8 @@
 .controlsTitle {
   font-size: var(--t-title);
   line-height: 1.08;
-  letter-spacing: -0.04em;
-  font-weight: var(--w-regular);
+  letter-spacing: -0.045em;
+  font-weight: var(--w-semibold);
 }
 
 .controlsLede {
@@ -137,8 +137,8 @@
 .panel {
   margin: 0;
   border-radius: var(--r-card);
-  background: var(--surface-raised);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1);
+  background: var(--space-glass);
+  box-shadow: var(--space-glass-depth);
   overflow: hidden;
 }
 
@@ -253,7 +253,7 @@
 }
 
 .stop {
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong);
+  box-shadow: var(--space-glass-depth);
   color: var(--c-ink-2);
 }
 
