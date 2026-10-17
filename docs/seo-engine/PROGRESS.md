@@ -26,7 +26,8 @@
 - [x] Phase 6 report gate (`src/lib/seo/reports.ts`) requires methodology, data, limitations, and how to reproduce, each at least 80 characters, plus a repo source path. `CORE_EVAL_NOTE` is unpublished and does not repeat scores. `publishedReports()` is empty. `/reports` is not in the sitemap.
 - [x] Phase 7 public sharing stays private by default. `PATCH /api/share` still requires `consent: true` and a verified email. `publishShare` stores `consentAt`. A row with `publicAt` and no `consentAt` is not opened, listed, or sitemapped. Unpublish and takedown clear `consentAt`.
 - [x] Phase 8 tool pages already link to the matching product with `TrackedLink` and reuse the existing marketing styles. No new visual language and no site-wide restyle.
-- [ ] Phase 11: #22, #23, and #24 are on main. This branch is the measurement merge. Vercel deploys main by itself. Do not run `vercel`.
+- [x] Phase 11 stack: #22 `8be1ce5`, #23 `953630b`, #24 `e2ebe63`, #25 `240521c` are on main. Production stamp `240521c7c8dc` served `/sitemap-index.xml`, `/tools`, `/tools/citation-formatter`, `/llms.txt`, `/robots.txt`, and `/` with status 200.
+- [x] Programmatic pages: `/guides/citation-styles` and `/guides/free-tool-limits` are built from `formatCitation`, `TOOLS`, and `TOOL_LIMITS`. Both pass `decidePublish` and are in the sitemap.
 
 ## This milestone (audit + critical fixes)
 
