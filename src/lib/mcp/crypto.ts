@@ -6,6 +6,7 @@
  * logged, put in an error message or written to an audit entry.
  * Production without a configured BETTER_AUTH_SECRET: refuse to store secrets (a random per-process key would make them unreadable).
  */
+import { securityEvent } from "@/lib/security/events";
 import { createCipheriv, createDecipheriv, hkdfSync, randomBytes } from "node:crypto";
 import { authSecret } from "@/lib/accounts/secret";
 
@@ -32,6 +33,8 @@ export function sealSecret(plain: string, workspaceId: string, rowId: string): s
 /** Returns null when the blob can't be opened (wrong key, tampered, copied from another row). Never throws details. */
 export function openSecret(blob: string | null | undefined, workspaceId: string, rowId: string): string | null {
   if (!blob) return null;
+  // Auditable secret access: one security event per unseal (hashed workspace id only), alert past 200 per 10 minutes per workspace.
+  securityEvent({ kind: "secret.access", code: "open", where: "mcp/crypto", accountId: workspaceId });
   try {
     const [v, iv, tag, data] = blob.split(".");
     if (v !== "m1") return null;

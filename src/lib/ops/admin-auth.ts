@@ -8,6 +8,7 @@
  * email-link sign-in to a passkey-only account is a single factor. Fails closed: if the 2FA setting can't be read, no admin.
  * Off by default so turning it on can't lock the founder out: set up the authenticator first (Account > Two-factor), then set it.
  */
+import { securityEvent } from "@/lib/security/events";
 import { getSession } from "@/lib/accounts/auth";
 import { mfaEnabled } from "@/lib/accounts/mfa/store";
 import { isAdminEmail } from "@/lib/billing/admin";
@@ -28,6 +29,9 @@ export async function adminFromHeaders(headers: Headers): Promise<{ email: strin
 /** API routes: non-admins get a plain 404 (the surface is not advertised). */
 export async function requireAdmin(req: Request): Promise<{ email: string }> {
   const a = await adminFromHeaders(req.headers);
-  if (!a) throw new HttpError(404, "Not found.", "not_found");
+  if (!a) {
+    securityEvent({ kind: "authz.denied", code: "admin_refused", req, status: 404 });
+    throw new HttpError(404, "Not found.", "not_found");
+  }
   return a;
 }

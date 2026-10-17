@@ -22,7 +22,7 @@ export function SecurityContent({ accountOrigin = "" }: { accountOrigin?: string
         <ul className={s.list}>
           <li>What you found, where (URL or API route), and the steps to reproduce it.</li>
           <li>The impact as you understand it. A short proof of concept is plenty.</li>
-          <li>How to reach you if you want a reply. We read every report by hand and will answer as soon as we can, but we cannot promise a response time.</li>
+          <li>How to reach you if you want a reply. We read every report by hand. We aim to acknowledge within 3 business days, assess within 7, and fix critical problems within 7 days of confirming them and high ones within 30. These are the commitments of a small team, not a contract.</li>
         </ul>
       </section>
 
@@ -62,6 +62,13 @@ export function SecurityContent({ accountOrigin = "" }: { accountOrigin?: string
           <li>Optional passkeys (fingerprint, face or device PIN) as an extra way to sign in; a passkey sign-in counts as two factors. Add one in <Link href={`${accountOrigin}/account#passkeys`}>Account</Link>. Two-factor sign-in and passkeys are both optional, so accounts that have turned on neither are protected only by their password, email link or Google/Microsoft sign-in.</li>
         </ul>
         <p className={s.note}>We will update this page when that changes, and not before.</p>
+      </section>
+
+      <section className={s.section} aria-labelledby="register-h">
+        <h2 id="register-h" className={s.h2}>The full list</h2>
+        <p className={s.note}>
+          Every control we hold ourselves to, with its status and the code or document that proves it, is public: the <a href="https://github.com/keplarone/keplar-live/blob/main/docs/security-checklist.md">security checklist</a> (444 items across authentication, authorization, sessions, APIs, the browser, data, uploads, infrastructure, secrets, payments, AI and agents, delivery, logging, privacy, abuse and governance), the <a href="https://github.com/keplarone/keplar-live/blob/main/docs/threat-model.md">threat model</a>, and the <a href="https://github.com/keplarone/keplar-live/blob/main/docs/security-policy.md">policy</a> with its accepted-risk register. Items that are written procedures or accepted risks are marked as such; nothing on that list is dressed up.
+        </p>
       </section>
     </div>
   );

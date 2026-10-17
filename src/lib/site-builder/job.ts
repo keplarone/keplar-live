@@ -22,6 +22,7 @@ import { ensureProduct } from "./product/ensure";
 import { productFacts } from "./product/types";
 import { GenError, generateSite, type GenEvent } from "./generate";
 import { findingsForPrompt, fixSite, lintSite, type LintReport } from "./lint";
+import { checkOutput, checklistSentence, fixOutput, summarizeChecklist, type ChecklistSummary } from "@/lib/create/output-checklist";
 import { BUILDER_LIMITS, confirmUnits, estimateJob, type Estimate } from "./limits";
 import { checkPrompt } from "./safety";
 import { addVersion, FilesError, getVersion, headFiles, normalizeFiles, saveBrief } from "./store";
@@ -101,13 +102,14 @@ export async function verifyProduct(ws: Workspace, site: Site, brief: SiteBrief)
 
 export type JobEvent = GenEvent | { type: "saving" } | { type: "done"; version: number; units: number; summary: string; removed: string[]; lint?: LintSummary } | { type: "error"; error: string; code: string };
 
-const summarize = (r: LintReport, fixed: string[], repaired: boolean): LintSummary => ({
+const summarize = (r: LintReport, fixed: string[], repaired: boolean, checklist?: ChecklistSummary): LintSummary => ({
   errors: r.errors,
   warnings: r.warnings,
   fixed,
   repaired,
   placeholders: r.placeholders,
   remaining: r.findings.slice(0, 12).map((f) => ({ code: f.code, message: f.message.slice(0, 200), file: f.file, severity: f.severity })),
+  ...(checklist ? { checklist } : {}),
 });
 
 export async function* runJob(ws: Workspace, site: Site, prep: Prepared): AsyncGenerator<JobEvent> {
@@ -160,8 +162,20 @@ export async function* runJob(ws: Workspace, site: Site, prep: Prepared): AsyncG
       if (!legacy && !prep.current && brief?.product) assembled = ensureProduct(assembled, brief.product).files;
       const norm0 = normalizeFiles(assembled, ws.plan);
       const fx = fixSite(norm0.files, { ...lintCtx, description, final });
-      const norm = fx.fixed.length ? normalizeFiles(fx.files, ws.plan) : norm0;
-      return { norm, fixed: fx.fixed, report: lintSite(norm.files, lintCtx) };
+      // Security and mobile checklist (src/lib/create/output-checklist.ts): deterministic repairs first; whatever required item
+      // still fails is an error for the model repair pass, like any other lint error.
+      const cl = fixOutput(fx.files, "site");
+      const fixed = [...fx.fixed, ...cl.fixed];
+      const norm = fixed.length ? normalizeFiles(cl.files, ws.plan) : norm0;
+      const report = lintSite(norm.files, lintCtx);
+      const check = checkOutput(norm.files, "site");
+      for (const i of check.items) {
+        if (i.required && !i.ok) {
+          report.findings.push({ code: `checklist:${i.id}`, severity: "error", file: i.files[0] ?? "index.html", message: `${i.label}. ${i.detail}` });
+          report.errors += 1;
+        }
+      }
+      return { norm, fixed, report, checklist: summarizeChecklist(check) };
     };
 
     yield { type: "status", text: "Checking the design" };
@@ -223,10 +237,10 @@ export async function* runJob(ws: Workspace, site: Site, prep: Prepared): AsyncG
       res = last;
     }
     yield { type: "saving" };
-    const lint = summarize(res.report, [...new Set(fixedAll)], repaired);
+    const lint = summarize(res.report, [...new Set(fixedAll)], repaired, res.checklist);
     const units = await charge(ws, kind, { usd: meteredUsd(usd), ref });
     const baseSummary = out.summary || "Updated the site.";
-    const extra = !legacy ? ` Quality check: ${lint.errors ? `${lint.errors} issue${lint.errors === 1 ? "" : "s"} left to review` : "no blocking issues"}${lint.fixed.length ? `, ${lint.fixed.length} fixed automatically` : ""}${repaired ? " (one repair pass)" : ""}${lint.placeholders ? `; ${lint.placeholders} placeholder${lint.placeholders === 1 ? "" : "s"} to fill in` : ""}.` : "";
+    const extra = !legacy ? ` Quality check: ${lint.errors ? `${lint.errors} issue${lint.errors === 1 ? "" : "s"} left to review` : "no blocking issues"}${lint.fixed.length ? `, ${lint.fixed.length} fixed automatically` : ""}${repaired ? " (one repair pass)" : ""}${lint.placeholders ? `; ${lint.placeholders} placeholder${lint.placeholders === 1 ? "" : "s"} to fill in` : ""}. ${checklistSentence(res.checklist)}` : "";
     const summary = baseSummary + extra;
     const chat = (n: number): ChatMsg[] => [
       { id: newId("msg"), role: "user", text: prep.prompt.slice(0, 2000), at: t },

@@ -29,6 +29,7 @@ export const RETAINED = [
   "usage_cooldown",
   "job_slots",
   "model_calls",
+  "security_events", // security event log (src/lib/security/events.ts): kind, code, route, hashed address and hashed account, request id; workspace "system"; pruned after 90 days. Kept for incident response; hashes only, never exported
   "live_model_spend",
   "create_abuse_reports",
   "trend_pages", // SEO trend tracker pages and settings: public site content built from the glossary, no personal data

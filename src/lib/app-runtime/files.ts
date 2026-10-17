@@ -4,6 +4,8 @@
  * client): PNG, JPEG, WebP, GIF, PDF, and UTF-8 text (txt, md, csv). Uploading needs a signed-in end user.
  */
 import { randomBytes } from "node:crypto";
+import { scanUpload } from "@/lib/security/upload-scan";
+import { securityEvent } from "@/lib/security/events";
 import { appSql, ensureAppSchema } from "./db";
 import type { AppCtx } from "./context";
 import type { AppUser } from "./auth";
@@ -41,6 +43,12 @@ export async function putFile(ctx: AppCtx, user: AppUser | null, bytes: Buffer, 
   const name = nameRaw.replace(/[^\w .()-]/g, "_").slice(0, 120) || "file";
   const mime = sniff(bytes, name);
   if (!mime) throw new DataError("That file type isn't supported. Use an image (PNG, JPEG, WebP, GIF), a PDF or a text file.", 415, "type");
+  // Active PDFs, polyglots, executables behind an image type, decompression bombs, and the external scanner when one is configured.
+  const scan = await scanUpload(bytes, mime);
+  if (!scan.ok) {
+    securityEvent({ kind: "upload.rejected", code: scan.code, where: "apps/_api/files", accountId: user.id });
+    throw new DataError(scan.reason, scan.code === "scanner_unavailable" ? 503 : 415, scan.code);
+  }
   await ensureAppSchema();
   if ((await storedBytes(ctx)) + bytes.length > ctx.limits.fileBytes) throw new DataError("This app has used all its file storage.", 403, "limit");
   const id = `f_${randomBytes(15).toString("base64url")}`;

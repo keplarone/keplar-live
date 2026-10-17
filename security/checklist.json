@@ -1,0 +1,4001 @@
+{
+  "updated": "2026-10-17",
+  "about": "The Keplar security checklist, item by item, with status and evidence. Source of truth for docs/security-checklist.md (render: node scripts/security-checklist.mjs). Statuses: done (in code, evidence listed), policy (a written procedure the operator follows), accepted (dated risk acceptance in docs/security-policy.md), n/a (does not apply, with the reason), todo (fails CI).",
+  "sections": [
+    {
+      "id": "auth",
+      "title": "1. Authentication and account security",
+      "summary": "Email links, passwords (scrypt), Google and Microsoft, TOTP, passkeys. Sessions are server-checked rows; sensitive changes need a recent sign-in.",
+      "items": [
+        {
+          "item": "Secure password hashing using Argon2id or an appropriate modern alternative",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/credentials.ts",
+            "tests/password-auth.test.ts"
+          ],
+          "note": "scrypt (Better Auth's hashPassword), an OWASP-listed alternative; Argon2id would add a native dependency to the serverless bundle."
+        },
+        {
+          "item": "Unique salts and properly configured hashing parameters",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/credentials.ts",
+            "tests/password-auth.test.ts"
+          ],
+          "note": "Random 16-byte salt per hash, scrypt N=16384, r=16, p=1, 64-byte key."
+        },
+        {
+          "item": "No plaintext passwords in databases, logs, or analytics",
+          "status": "done",
+          "evidence": [
+            "tests/secrets-audit.test.ts",
+            "src/lib/ops/errors.ts"
+          ]
+        },
+        {
+          "item": "Passkey/WebAuthn authentication",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/passkeys/webauthn.ts",
+            "tests/passkeys.test.ts",
+            "tests/passkeys-signin.test.ts"
+          ]
+        },
+        {
+          "item": "Multifactor authentication",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/mfa/totp.ts",
+            "src/lib/accounts/mfa/store.ts",
+            "tests/mfa-signin.test.ts",
+            "tests/totp.test.ts"
+          ]
+        },
+        {
+          "item": "MFA enforcement for administrators",
+          "status": "done",
+          "evidence": [
+            "src/lib/ops/admin-auth.ts",
+            "tests/admin-mfa.test.ts",
+            "docs/security.md"
+          ],
+          "note": "Enforced when KEPLAR_ADMIN_REQUIRE_MFA=1 is set in Vercel Production (fails closed). Turn it on after enrolling the admin authenticator; the variable is not set yet so the founder is not locked out."
+        },
+        {
+          "item": "MFA recovery with secure, limited-use recovery codes",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/mfa/store.ts",
+            "tests/mfa-store.test.ts"
+          ],
+          "note": "10 codes, hashed, each usable once; regenerating needs a current code."
+        },
+        {
+          "item": "Protection against MFA fatigue and repeated challenges",
+          "status": "done",
+          "evidence": [
+            "src/app/api/account/mfa/route.ts",
+            "src/lib/accounts/security-notice.ts",
+            "tests/mfa-signin.test.ts"
+          ],
+          "note": "TOTP has no push prompts to fatigue; wrong codes are limited per IP, per session (the fifth ends the session) and per account, and the owner is emailed when codes are locked."
+        },
+        {
+          "item": "Email verification",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/password-auth.ts",
+            "src/lib/accounts/action-token.ts",
+            "tests/password-auth.test.ts"
+          ]
+        },
+        {
+          "item": "Secure password-reset tokens",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/action-token.ts",
+            "tests/password-auth.test.ts"
+          ],
+          "note": "HMAC-SHA256 under a purpose-bound derived key; a reset token can never pass as a verification token."
+        },
+        {
+          "item": "Short-lived, single-use password-reset links",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/action-token.ts"
+          ],
+          "note": "30 minutes; single use through a fingerprint of the password hash current when issued."
+        },
+        {
+          "item": "Reset token invalidation after use",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/action-token.ts",
+            "tests/password-auth.test.ts"
+          ]
+        },
+        {
+          "item": "Session invalidation after sensitive account changes",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/password-auth.ts",
+            "src/lib/accounts/persist.ts",
+            "tests/password-auth.test.ts"
+          ],
+          "note": "A password reset signs out every other device (sessions_valid_after); the secure link in notices signs out everywhere."
+        },
+        {
+          "item": "Login rate limiting",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/password-auth.ts",
+            "src/lib/accounts/auth.ts",
+            "tests/magic-link.test.ts",
+            "tests/password-auth.test.ts"
+          ]
+        },
+        {
+          "item": "Credential-stuffing detection",
+          "status": "done",
+          "evidence": [
+            "src/lib/security/events.ts",
+            "src/lib/accounts/password-auth.ts",
+            "tests/security-events.test.ts"
+          ],
+          "note": "Per IP, IP+email and network+email limits; each trip is an auth.throttled security event, and three in ten minutes from one source email the owner."
+        },
+        {
+          "item": "Brute-force protection without easy account-lockout denial of service",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/password-auth.ts",
+            "tests/password-auth.test.ts"
+          ],
+          "note": "Limits are keyed on the attacker (IP, network) with a high per-email ceiling instead of a hard lockout; email links and passkeys keep working for the real owner."
+        },
+        {
+          "item": "Protection against account enumeration",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/password-auth.ts",
+            "tests/password-auth.test.ts"
+          ],
+          "note": "Identical answers and a dummy scrypt hash for unknown addresses (no timing tell)."
+        },
+        {
+          "item": "Secure OAuth/OpenID Connect implementation",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/oauth.ts",
+            "src/lib/accounts/auth.ts",
+            "tests/oauth.test.ts"
+          ]
+        },
+        {
+          "item": "OAuth `state` validation",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/oauth.ts",
+            "src/lib/mcp/oauth.ts",
+            "tests/mcp-oauth.test.ts"
+          ],
+          "note": "Better Auth binds state to an encrypted cookie for Google/Microsoft; the MCP and connector flows store state per workspace and check it on callback."
+        },
+        {
+          "item": "PKCE for applicable OAuth flows",
+          "status": "done",
+          "evidence": [
+            "src/lib/desktop-auth/core.ts",
+            "src/lib/mcp/oauth.ts",
+            "tests/desktop-auth.test.ts",
+            "tests/mcp-oauth.test.ts"
+          ]
+        },
+        {
+          "item": "OIDC nonce, issuer, audience, and signature validation",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/oauth.ts",
+            "tests/oauth.test.ts"
+          ],
+          "note": "ID tokens are validated by Better Auth's provider implementations; Keplar additionally requires a provider-verified email claim."
+        },
+        {
+          "item": "OAuth redirect URI allowlisting",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/oauth.ts",
+            "src/lib/accounts/magic-token.ts",
+            "tests/security.test.ts"
+          ],
+          "note": "Fixed callback URLs registered per provider; every post-login redirect goes through safeCallbackPath (same-origin paths only)."
+        },
+        {
+          "item": "Secure account linking and unlinking",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/auth.ts",
+            "src/lib/business/oauth-connectors.ts",
+            "tests/connectors-oauth.test.ts"
+          ],
+          "note": "Sign-in linking only for Google and Microsoft with verified emails; connectors disconnect by deleting the sealed token."
+        },
+        {
+          "item": "Reauthentication for sensitive actions",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/reauth.ts",
+            "src/app/api/account/passkeys/route.ts",
+            "src/app/api/account/export/route.ts",
+            "src/app/api/account/mfa/route.ts"
+          ],
+          "note": "Sign-in within 10 minutes for adding a passkey, enabling 2FA or new recovery codes, exporting data, creating API keys, immediate deletion; disabling 2FA needs a current code."
+        },
+        {
+          "item": "Session management across devices",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/persist.ts",
+            "src/app/api/account/sessions/route.ts",
+            "tests/persistent-sessions.test.ts"
+          ]
+        },
+        {
+          "item": "Ability to revoke active sessions",
+          "status": "done",
+          "evidence": [
+            "src/app/api/account/sessions/route.ts",
+            "tests/persistent-sessions.test.ts"
+          ]
+        },
+        {
+          "item": "Secure logout that invalidates server-side sessions",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/persist.ts",
+            "src/lib/accounts/session-guard.ts",
+            "tests/persistent-sessions.test.ts"
+          ],
+          "note": "Sign-out writes revoked_at; every request checks the row, so a revoked cookie stops working everywhere within 15 seconds."
+        },
+        {
+          "item": "No authentication secrets in browser storage when avoidable",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/session-cookies.ts",
+            "docs/security-policy.md"
+          ],
+          "note": "HttpOnly cookies only. The one exception, the browser extension's scoped API key, is accepted risk AR-10."
+        }
+      ]
+    },
+    {
+      "id": "authz",
+      "title": "2. Authorization and permissions",
+      "summary": "Every route checks the session and the workspace it acts on; the store scopes every query to a tenant; tests walk every route anonymously and as another user.",
+      "items": [
+        {
+          "item": "Server-side authorization on every protected operation",
+          "status": "done",
+          "evidence": [
+            "tests/authz.test.ts",
+            "src/lib/create/platform/workspace.ts"
+          ]
+        },
+        {
+          "item": "Deny-by-default access policies",
+          "status": "done",
+          "evidence": [
+            "tests/authz.test.ts"
+          ],
+          "note": "A new route that answers an anonymous caller fails the test until it is reviewed and listed with a reason."
+        },
+        {
+          "item": "Least-privilege permissions",
+          "status": "done",
+          "evidence": [
+            "src/lib/api/policy.ts",
+            "src/lib/team/policy.ts",
+            "src/lib/ops/admin-auth.ts"
+          ]
+        },
+        {
+          "item": "Role-based access control (RBAC)",
+          "status": "done",
+          "evidence": [
+            "src/lib/team/policy.ts",
+            "tests/team.test.ts"
+          ],
+          "note": "Team roles (owner, member) decide billing, deletion and invitations; admin is a separate allow-list."
+        },
+        {
+          "item": "Attribute-based or policy-based access control where appropriate",
+          "status": "done",
+          "evidence": [
+            "src/lib/business/firewall.ts",
+            "src/lib/mcp/gateway.ts",
+            "tests/firewall.test.ts"
+          ],
+          "note": "Agent actions are decided by attributes of the action (risk, recipient known, links) and owner-set tool policy rows."
+        },
+        {
+          "item": "Object-level authorization checks",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/store.ts",
+            "tests/account-scope.test.ts",
+            "tests/authz.test.ts"
+          ]
+        },
+        {
+          "item": "Field-level authorization checks",
+          "status": "done",
+          "evidence": [
+            "src/lib/api/keys.ts",
+            "src/lib/privacy/account-data.ts",
+            "src/lib/app-builder/public.ts"
+          ],
+          "note": "Public views redact hashes, tokens and internal fields (publicKey, publicSpec, export redaction)."
+        },
+        {
+          "item": "Function-level authorization checks",
+          "status": "done",
+          "evidence": [
+            "src/lib/ops/admin-auth.ts",
+            "src/lib/create/platform/workspace.ts",
+            "tests/authz.test.ts"
+          ]
+        },
+        {
+          "item": "Protection against IDOR/BOLA vulnerabilities",
+          "status": "done",
+          "evidence": [
+            "tests/authz.test.ts",
+            "tests/share-isolation.test.ts",
+            "tests/account-scope.test.ts"
+          ]
+        },
+        {
+          "item": "Prevention of horizontal privilege escalation",
+          "status": "done",
+          "evidence": [
+            "tests/authz.test.ts",
+            "tests/account-scope.test.ts"
+          ]
+        },
+        {
+          "item": "Prevention of vertical privilege escalation",
+          "status": "done",
+          "evidence": [
+            "src/lib/ops/admin-auth.ts",
+            "tests/authz.test.ts",
+            "tests/admin-mfa.test.ts"
+          ]
+        },
+        {
+          "item": "Workspace and organization membership validation",
+          "status": "done",
+          "evidence": [
+            "src/lib/team/resolve.ts",
+            "src/lib/team/store.ts",
+            "tests/team.test.ts"
+          ]
+        },
+        {
+          "item": "Tenant isolation across every database query",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/store.ts",
+            "tests/account-scope.test.ts",
+            "tests/neon-store.test.ts"
+          ],
+          "note": "Every collection operation takes the workspace id; cross-tenant reads exist only for system jobs on the system tenant."
+        },
+        {
+          "item": "Authorization checks in background jobs and queues",
+          "status": "done",
+          "evidence": [
+            "src/app/api/cron/core/route.ts",
+            "src/lib/inngest/functions.ts",
+            "src/lib/create/platform/jobs.ts"
+          ],
+          "note": "Jobs reload the workspace row and re-check plan, budget and kill switches before each slice."
+        },
+        {
+          "item": "Authorization checks for WebSocket subscriptions",
+          "status": "done",
+          "evidence": [
+            "src/lib/collab/transport.ts",
+            "tests/collab-crdt.test.ts"
+          ],
+          "note": "Live collaboration streams need a signed room token bound to the user, room and role (viewer tokens are read-only)."
+        },
+        {
+          "item": "Authorization checks for file downloads and exports",
+          "status": "done",
+          "evidence": [
+            "src/app/api/account/export/route.ts",
+            "src/lib/app-runtime/files.ts",
+            "docs/security.md"
+          ],
+          "note": "Exports need the account plus a recent sign-in; generated images are owner-only until used in a site; app files are keyed by app and environment."
+        },
+        {
+          "item": "Ownership checks before updates or deletions",
+          "status": "done",
+          "evidence": [
+            "tests/authz.test.ts",
+            "tests/chat-delete.test.ts",
+            "tests/site-delete.test.ts"
+          ]
+        },
+        {
+          "item": "Privilege checks for administrative APIs",
+          "status": "done",
+          "evidence": [
+            "src/lib/ops/admin-auth.ts",
+            "tests/authz.test.ts"
+          ]
+        },
+        {
+          "item": "Explicit authorization for impersonation or support access",
+          "status": "n/a",
+          "evidence": [
+            "docs/privacy-inventory.md"
+          ],
+          "note": "No impersonation or log-in-as feature exists. Support works from the admin inbox; any look at content on request is written to the admin audit log (inventory section 9)."
+        },
+        {
+          "item": "Separation of administrative and ordinary user capabilities",
+          "status": "done",
+          "evidence": [
+            "src/lib/ops/admin-auth.ts",
+            "src/app/admin/layout.tsx"
+          ]
+        },
+        {
+          "item": "No reliance on hidden buttons or frontend route guards for security",
+          "status": "done",
+          "evidence": [
+            "tests/authz.test.ts",
+            "src/lib/ops/admin-auth.ts"
+          ]
+        },
+        {
+          "item": "Automated tests for cross-tenant access attempts",
+          "status": "done",
+          "evidence": [
+            "tests/account-scope.test.ts",
+            "tests/share-isolation.test.ts",
+            "tests/authz.test.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "session",
+      "title": "3. Session, cookie, and token protection",
+      "summary": "HttpOnly, Secure, SameSite=Lax, host-only cookies backed by server rows with idle and absolute expiry; HMAC tokens with purpose-bound keys; CSRF by Origin.",
+      "items": [
+        {
+          "item": "`HttpOnly` cookies for sensitive sessions",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/session-cookies.ts",
+            "tests/security.test.ts"
+          ]
+        },
+        {
+          "item": "`Secure` cookies over HTTPS",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/auth.ts",
+            "tests/security.test.ts"
+          ]
+        },
+        {
+          "item": "Appropriate `SameSite` cookie policies",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/session-cookies.ts",
+            "tests/security.test.ts"
+          ],
+          "note": "Lax: the app is a first-party site with OAuth returns."
+        },
+        {
+          "item": "Narrow cookie domains and paths",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/session-cookies.ts",
+            "src/lib/business/handoff.ts"
+          ],
+          "note": "Host-only cookies (no Domain attribute); business.keplar.one has its own session cookie and handoff."
+        },
+        {
+          "item": "Session ID rotation after login and privilege changes",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/reauth.ts",
+            "src/lib/accounts/persist.ts",
+            "src/lib/accounts/mfa/gate.ts"
+          ],
+          "note": "Every sign-in mints a new session; a session waiting for its second factor is unusable until the code is given."
+        },
+        {
+          "item": "Session fixation prevention",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/persist.ts",
+            "tests/persistent-sessions.test.ts"
+          ],
+          "note": "Session ids are server-minted on sign-in and never accepted from a URL or request body."
+        },
+        {
+          "item": "Idle session expiration",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/persist.ts",
+            "tests/persistent-sessions.test.ts"
+          ],
+          "note": "30 days unused (KEPLAR_SESSION_IDLE_DAYS); non-remembered sessions last one day."
+        },
+        {
+          "item": "Absolute session expiration",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/persist.ts"
+          ],
+          "note": "180 days from sign-in regardless of activity (KEPLAR_SESSION_MAX_DAYS)."
+        },
+        {
+          "item": "Refresh token rotation where applicable",
+          "status": "n/a",
+          "evidence": [
+            "src/lib/accounts/auth.ts",
+            "src/lib/mcp/oauth.ts"
+          ],
+          "note": "Browser sessions are server-checked cookies, not refresh tokens. Connector refresh tokens are provider-issued, stored sealed and exchanged server-side."
+        },
+        {
+          "item": "Refresh token reuse detection",
+          "status": "n/a",
+          "evidence": [
+            "src/lib/accounts/auth.ts"
+          ],
+          "note": "No refresh tokens are issued by Keplar (see above)."
+        },
+        {
+          "item": "Secure refresh token revocation",
+          "status": "done",
+          "evidence": [
+            "src/lib/business/oauth-connectors.ts",
+            "src/lib/mcp/gateway.ts",
+            "tests/connectors-oauth.test.ts"
+          ],
+          "note": "Disconnecting deletes the sealed token row; account deletion removes every connector."
+        },
+        {
+          "item": "JWT signature verification",
+          "status": "done",
+          "evidence": [
+            "src/lib/collab/transport.ts",
+            "tests/collab-crdt.test.ts",
+            "src/lib/accounts/auth.ts"
+          ],
+          "note": "Room tokens are HMAC-verified in constant time; Better Auth's session cache is an encrypted JWE."
+        },
+        {
+          "item": "JWT algorithm allowlisting",
+          "status": "done",
+          "evidence": [
+            "src/lib/collab/transport.ts"
+          ],
+          "note": "One symmetric algorithm (HS256) is accepted; the header is not consulted to choose a key."
+        },
+        {
+          "item": "JWT issuer and audience validation",
+          "status": "done",
+          "evidence": [
+            "src/lib/collab/transport.ts",
+            "src/lib/accounts/action-token.ts"
+          ],
+          "note": "Tokens are bound to the room or purpose and the subject; a token for one purpose fails for another."
+        },
+        {
+          "item": "JWT expiration and not-before validation",
+          "status": "done",
+          "evidence": [
+            "src/lib/collab/transport.ts",
+            "src/lib/accounts/action-token.ts",
+            "tests/magic-link.test.ts"
+          ]
+        },
+        {
+          "item": "Protection against JWT algorithm confusion",
+          "status": "done",
+          "evidence": [
+            "src/lib/collab/transport.ts"
+          ],
+          "note": "No asymmetric path exists, so an attacker cannot swap RS256 for HS256."
+        },
+        {
+          "item": "Key rotation for token signing",
+          "status": "policy",
+          "evidence": [
+            "docs/security-policy.md",
+            "docs/runbooks/security-incident.md"
+          ],
+          "note": "BETTER_AUTH_SECRET signs sessions, plan cookies, action links and seals connector tokens; rotation signs everyone out, so it is a documented procedure run on compromise, not a timer."
+        },
+        {
+          "item": "Token revocation strategy",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/persist.ts",
+            "src/lib/api/keys.ts",
+            "src/lib/accounts/action-token.ts"
+          ],
+          "note": "Sessions: revoked_at row; API keys: revokedAt looked up per request; action links: fingerprint changes on use; desktop codes: single use."
+        },
+        {
+          "item": "CSRF protection for cookie-authenticated state-changing requests",
+          "status": "done",
+          "evidence": [
+            "src/lib/security/origin.ts",
+            "src/proxy.ts",
+            "tests/security.test.ts"
+          ]
+        },
+        {
+          "item": "No session tokens in URL query strings",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/session-cookies.ts",
+            "tests/magic-link.test.ts"
+          ],
+          "note": "Sessions travel in cookies or the Authorization header only. Emailed links carry a one-time, short-lived token that the landing page only checks; the button's POST consumes it."
+        }
+      ]
+    },
+    {
+      "id": "api",
+      "title": "4. API and backend security",
+      "summary": "Parameterized SQL, validated and bounded bodies, SSRF-safe outbound fetches, per-route limits, signed webhooks, generic errors.",
+      "items": [
+        {
+          "item": "Request schema validation",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/http.ts",
+            "src/lib/mcp/schema.ts",
+            "tests/security.test.ts"
+          ]
+        },
+        {
+          "item": "Server-side input validation",
+          "status": "done",
+          "evidence": [
+            "src/lib/orchestration/media.ts",
+            "src/lib/accounts/password-policy.ts",
+            "tests/security.test.ts"
+          ]
+        },
+        {
+          "item": "Output encoding for the destination context",
+          "status": "done",
+          "evidence": [
+            "src/lib/site-builder/sanitize.ts",
+            "tests/site-sanitize.test.ts"
+          ],
+          "note": "React escapes app output; generated sites are re-escaped from decoded values by the sanitizer."
+        },
+        {
+          "item": "SQL injection prevention using parameterized queries",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/neon.ts",
+            "src/lib/create/platform/store.ts",
+            "tests/neon-store.test.ts"
+          ]
+        },
+        {
+          "item": "NoSQL injection prevention",
+          "status": "n/a",
+          "evidence": [
+            "src/lib/create/platform/neon.ts"
+          ],
+          "note": "Postgres only; JSON document queries are parameterized SQL."
+        },
+        {
+          "item": "Command injection prevention",
+          "status": "done",
+          "evidence": [
+            "src/lib/blender-cloud/machine.ts",
+            "tests/studio-agent.test.ts"
+          ],
+          "note": "No shell receives user or model input: machine scripts are fixed strings; Studio code that spells destructive calls indirectly is detected and held."
+        },
+        {
+          "item": "Server-side template injection prevention",
+          "status": "n/a",
+          "evidence": [
+            "src/lib/site-builder/sanitize.ts"
+          ],
+          "note": "No server-side template engine renders user input; prompts are string-built with fences and never evaluated."
+        },
+        {
+          "item": "Path traversal prevention",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/blob.ts",
+            "src/lib/app-builder/files.ts",
+            "src/lib/site-builder/store.ts",
+            "tests/blob.test.ts"
+          ]
+        },
+        {
+          "item": "XML external entity protections",
+          "status": "done",
+          "evidence": [
+            "src/lib/attachments/xml.ts",
+            "tests/attachments-parsers.test.ts"
+          ],
+          "note": "A hand-written scanner that never resolves entities or DTDs; office documents are read as zipped XML with the same scanner."
+        },
+        {
+          "item": "Server-side request forgery (SSRF) prevention",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/ssrf.ts",
+            "tests/mcp-ssrf.test.ts",
+            "tests/link-ssrf.test.ts",
+            "tests/product-import.test.ts"
+          ]
+        },
+        {
+          "item": "Safe URL parsing and redirect validation",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/magic-token.ts",
+            "src/lib/safe-href.ts",
+            "tests/safe-href.test.ts",
+            "tests/redirect-aliases.test.ts"
+          ]
+        },
+        {
+          "item": "Strict CORS configuration",
+          "status": "done",
+          "evidence": [
+            "src/lib/security/headers.ts",
+            "src/app/api/v1/openapi.json/route.ts",
+            "tests/fx-frame-headers.test.ts"
+          ],
+          "note": "No CORS on cookie routes; wildcard only on the bearer-only public API, the public runtime scripts and the embed loader."
+        },
+        {
+          "item": "No wildcard CORS with credentials",
+          "status": "done",
+          "evidence": [
+            "src/lib/security/headers.ts",
+            "docs/api.md"
+          ]
+        },
+        {
+          "item": "Request body size limits",
+          "status": "done",
+          "evidence": [
+            "src/proxy.ts",
+            "src/lib/create/platform/http.ts",
+            "tests/security.test.ts"
+          ],
+          "note": "64 MB edge cap on every /api request, then per-route caps (JSON 5 MB, forms 24 KB, webhooks 256 KB)."
+        },
+        {
+          "item": "Query complexity and pagination limits",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/store.ts",
+            "src/lib/accounts/persist.ts"
+          ],
+          "note": "Every list is bounded (20,000 rows max, 50 sessions, paged chats); no client-controlled unbounded scan."
+        },
+        {
+          "item": "API rate limiting by user, tenant, endpoint, and resource",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/ratelimit.ts",
+            "tests/rate-limit-audit.test.ts"
+          ]
+        },
+        {
+          "item": "Resource quotas to prevent abuse",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/plans.ts",
+            "src/lib/orchestration/limits.ts",
+            "tests/limits.test.ts"
+          ]
+        },
+        {
+          "item": "Timeouts for external requests",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/neon.ts",
+            "src/lib/billing/whop.ts",
+            "src/lib/mcp/ssrf.ts",
+            "tests/product-import.test.ts"
+          ]
+        },
+        {
+          "item": "Bounded retries with exponential backoff",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/neon.ts",
+            "src/lib/inngest/functions.ts",
+            "src/lib/orchestration/http.ts"
+          ],
+          "note": "One delayed retry for the database, bounded provider retries with backoff, Inngest step retries."
+        },
+        {
+          "item": "Circuit breakers for unreliable dependencies",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/breaker.ts",
+            "src/lib/orchestration/breaker-routing.ts",
+            "src/lib/orchestration/model-status.ts"
+          ]
+        },
+        {
+          "item": "Idempotency keys for sensitive operations",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/sync.ts",
+            "src/lib/billing/studio-topup.ts",
+            "src/lib/mcp/gateway.ts",
+            "tests/studio-topup.test.ts"
+          ]
+        },
+        {
+          "item": "Replay attack protection",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/whop.ts",
+            "src/lib/accounts/action-token.ts",
+            "src/lib/desktop-auth/core.ts",
+            "tests/whop.test.ts"
+          ]
+        },
+        {
+          "item": "Protection against mass assignment",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/workspaces.ts",
+            "src/app/api/preferences/route.ts",
+            "tests/projects-api.test.ts"
+          ],
+          "note": "Routes copy named fields into typed patches; request bodies are never spread into a row."
+        },
+        {
+          "item": "Explicit allowlists for writable fields",
+          "status": "done",
+          "evidence": [
+            "src/app/api/preferences/route.ts",
+            "src/lib/accounts/workspaces.ts"
+          ]
+        },
+        {
+          "item": "Safe error handling without stack traces exposed to users",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/http.ts",
+            "src/lib/ops/errors.ts",
+            "tests/error-tracking.test.ts"
+          ]
+        },
+        {
+          "item": "API versioning and deprecation controls",
+          "status": "done",
+          "evidence": [
+            "src/app/api/v1/openapi.json/route.ts",
+            "docs/api.md",
+            "docs/security-policy.md"
+          ]
+        },
+        {
+          "item": "GraphQL depth and complexity limits, if applicable",
+          "status": "n/a",
+          "evidence": [
+            "docs/api.md"
+          ],
+          "note": "No GraphQL endpoint."
+        },
+        {
+          "item": "WebSocket origin and authorization validation",
+          "status": "done",
+          "evidence": [
+            "src/lib/collab/transport.ts",
+            "src/lib/security/origin.ts",
+            "tests/collab-crdt.test.ts"
+          ]
+        },
+        {
+          "item": "Secure webhook signature verification",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/whop.ts",
+            "src/app/api/business/stripe/webhook/route.ts",
+            "src/lib/business/connect-webhook.ts",
+            "tests/whop.test.ts",
+            "tests/connect-webhook.test.ts"
+          ]
+        },
+        {
+          "item": "Webhook timestamp and replay validation",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/whop.ts",
+            "src/lib/billing/sync.ts",
+            "tests/whop.test.ts"
+          ],
+          "note": "Five-minute timestamp window and idempotency by webhook id; Stripe's SDK applies its own tolerance."
+        }
+      ]
+    },
+    {
+      "id": "frontend",
+      "title": "5. Frontend and browser security",
+      "summary": "A strict CSP with exact vendor origins, HSTS preload, framing denied, sanitizer and link guards for user content, no secrets or source maps in the bundle.",
+      "items": [
+        {
+          "item": "Content Security Policy (CSP)",
+          "status": "done",
+          "evidence": [
+            "src/lib/security/headers.ts",
+            "tests/security.test.ts"
+          ]
+        },
+        {
+          "item": "Nonce- or hash-based script restrictions where appropriate",
+          "status": "accepted",
+          "evidence": [
+            "docs/security-policy.md",
+            "src/lib/security/headers.ts"
+          ],
+          "note": "AR-1: per-render inline flight data makes nonces force dynamic rendering; review Jan 2027."
+        },
+        {
+          "item": "Trusted Types where supported and useful",
+          "status": "accepted",
+          "evidence": [
+            "docs/security-policy.md"
+          ],
+          "note": "AR-2: three.js, CodeMirror and KaTeX use DOM sinks internally; compensated by escaping, the sanitizer and the generated-app innerHTML rule."
+        },
+        {
+          "item": "Cross-site scripting (XSS) prevention",
+          "status": "done",
+          "evidence": [
+            "src/lib/site-builder/sanitize.ts",
+            "src/lib/safe-href.ts",
+            "tests/site-sanitize.test.ts",
+            "tests/fuzz-parsers.test.ts"
+          ]
+        },
+        {
+          "item": "Safe HTML sanitization when rendering user-provided markup",
+          "status": "done",
+          "evidence": [
+            "src/lib/site-builder/sanitize.ts",
+            "tests/site-sanitize.test.ts"
+          ]
+        },
+        {
+          "item": "Avoidance of unsafe `innerHTML` patterns",
+          "status": "done",
+          "evidence": [
+            "src/components/seo/JsonLd.tsx",
+            "src/lib/create/output-checklist.ts",
+            "docs/security-policy.md"
+          ],
+          "note": "dangerouslySetInnerHTML only for constants (JSON-LD, theme script); generated apps fail the no-unsafe-innerhtml check when markup is built from data."
+        },
+        {
+          "item": "Secure Markdown rendering",
+          "status": "done",
+          "evidence": [
+            "src/lib/md-lines.ts",
+            "src/lib/safe-href.ts",
+            "tests/md-lines.test.ts",
+            "tests/safe-href.test.ts"
+          ]
+        },
+        {
+          "item": "Safe handling of rich-text editors",
+          "status": "done",
+          "evidence": [
+            "src/lib/collab/transport.ts",
+            "tests/collab-crdt.test.ts"
+          ],
+          "note": "No HTML rich-text editor: CodeMirror edits plain text and the CRDT carries text, rendered through the markdown renderer."
+        },
+        {
+          "item": "Protection against DOM-based XSS",
+          "status": "done",
+          "evidence": [
+            "src/lib/safe-href.ts",
+            "tests/safe-href.test.ts",
+            "tests/fuzz-parsers.test.ts"
+          ]
+        },
+        {
+          "item": "Clickjacking protection using `frame-ancestors`",
+          "status": "done",
+          "evidence": [
+            "src/lib/security/headers.ts",
+            "tests/security.test.ts"
+          ]
+        },
+        {
+          "item": "HTTPS enforcement",
+          "status": "done",
+          "evidence": [
+            "src/lib/security/headers.ts",
+            "docs/infrastructure.md"
+          ],
+          "note": "Vercel serves HTTPS only; CSP upgrade-insecure-requests; HSTS."
+        },
+        {
+          "item": "HTTP Strict Transport Security (HSTS)",
+          "status": "done",
+          "evidence": [
+            "src/lib/security/headers.ts",
+            "next.config.ts",
+            "tests/security.test.ts"
+          ]
+        },
+        {
+          "item": "`X-Content-Type-Options: nosniff`",
+          "status": "done",
+          "evidence": [
+            "src/lib/security/headers.ts",
+            "tests/security.test.ts"
+          ]
+        },
+        {
+          "item": "Appropriate `Referrer-Policy`",
+          "status": "done",
+          "evidence": [
+            "src/lib/security/headers.ts"
+          ]
+        },
+        {
+          "item": "Appropriate `Permissions-Policy`",
+          "status": "done",
+          "evidence": [
+            "src/lib/security/headers.ts"
+          ]
+        },
+        {
+          "item": "Safe `postMessage` origin checks",
+          "status": "done",
+          "evidence": [
+            "src/lib/sandbox/runner.ts",
+            "src/lib/create/output-checklist.ts"
+          ],
+          "note": "Runner messages are parsed against a strict shape from a frame Keplar created; generated apps hold no postMessage listeners by construction."
+        },
+        {
+          "item": "Safe iframe sandboxing",
+          "status": "done",
+          "evidence": [
+            "src/lib/sandbox/runner.ts",
+            "src/lib/app-builder/files.ts",
+            "src/app/s/[slug]/[[...path]]/route.ts"
+          ]
+        },
+        {
+          "item": "External links protected against unsafe opener access",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/output-checklist.ts",
+            "src/lib/app-builder/files.ts",
+            "tests/output-checklist.test.ts"
+          ]
+        },
+        {
+          "item": "Sensitive data excluded from browser caches",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/http.ts",
+            "src/proxy.ts"
+          ],
+          "note": "Every /api response is no-store; shared answer pages and account pages are dynamic and no-store."
+        },
+        {
+          "item": "No API secrets embedded in frontend bundles",
+          "status": "done",
+          "evidence": [
+            "tests/infra-config.test.ts",
+            ".github/workflows/ci.yml"
+          ],
+          "note": "NEXT_PUBLIC names are checked, and CI scans .next/static for credential patterns."
+        },
+        {
+          "item": "Source map publication policy",
+          "status": "done",
+          "evidence": [
+            "next.config.ts",
+            "docs/security-policy.md"
+          ]
+        },
+        {
+          "item": "Third-party script inventory and review",
+          "status": "done",
+          "evidence": [
+            "docs/security-policy.md",
+            "src/lib/security/headers.ts"
+          ]
+        },
+        {
+          "item": "Subresource Integrity where practical",
+          "status": "accepted",
+          "evidence": [
+            "docs/security-policy.md"
+          ],
+          "note": "AR-3: vendor scripts are versionless; own scripts are same-origin content-hashed chunks."
+        },
+        {
+          "item": "Dependency security checks for frontend packages",
+          "status": "done",
+          "evidence": [
+            ".github/workflows/ci.yml",
+            ".github/workflows/dependency-review.yml",
+            ".github/dependabot.yml"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "database",
+      "title": "6. Database and data protection",
+      "summary": "Neon Postgres over HTTPS, tenant-scoped rows, sealed secrets, scripted encrypted exports plus point-in-time restore, enforced retention and deletion.",
+      "items": [
+        {
+          "item": "Database encryption at rest",
+          "status": "done",
+          "evidence": [
+            "docs/infrastructure.md",
+            "docs/security.md"
+          ],
+          "note": "Provider-managed (Neon); not independently verified, and the summary says so."
+        },
+        {
+          "item": "TLS for database connections",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/neon.ts"
+          ]
+        },
+        {
+          "item": "Database credentials stored in a secret manager",
+          "status": "done",
+          "evidence": [
+            "docs/infrastructure.md",
+            "src/lib/create/platform/neon.ts"
+          ],
+          "note": "Vercel encrypted environment variables marked Sensitive."
+        },
+        {
+          "item": "Separate database roles for application, migrations, and administration",
+          "status": "accepted",
+          "evidence": [
+            "docs/security-policy.md",
+            "scripts/backup-db.mjs"
+          ],
+          "note": "AR-5: backups use a separate read-only role; the app creates its own tables, so one app role today."
+        },
+        {
+          "item": "Row-level security where appropriate",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/store.ts",
+            "docs/runbooks/backup-restore.md"
+          ],
+          "note": "Tenant scoping is enforced by the store on every query; the document table carries RLS for the backup role boundary."
+        },
+        {
+          "item": "Tests verifying row-level security policies",
+          "status": "done",
+          "evidence": [
+            "tests/account-scope.test.ts",
+            "tests/neon-store.test.ts",
+            "tests/daily-use-pg.test.ts"
+          ],
+          "note": "Isolation is tested against an in-process Postgres (pglite) and the file store."
+        },
+        {
+          "item": "Database query tenant scoping",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/store.ts",
+            "tests/account-scope.test.ts"
+          ]
+        },
+        {
+          "item": "Protection against cross-tenant joins and searches",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/store.ts",
+            "tests/share-isolation.test.ts"
+          ]
+        },
+        {
+          "item": "Encrypted backups",
+          "status": "done",
+          "evidence": [
+            "scripts/backup-db.mjs",
+            "tests/backup-script.test.ts"
+          ],
+          "note": "AES-256-GCM with a scrypt-derived key when BACKUP_PASSPHRASE is set; the runbook requires it."
+        },
+        {
+          "item": "Backup access restrictions",
+          "status": "policy",
+          "evidence": [
+            "docs/runbooks/backup-restore.md"
+          ],
+          "note": "Off-site, passphrase kept apart from the file, never on Vercel or in git."
+        },
+        {
+          "item": "Tested backup restoration",
+          "status": "policy",
+          "evidence": [
+            "docs/runbooks/backup-restore.md",
+            "tests/backup-script.test.ts"
+          ],
+          "note": "The restore path is tested against a fake database; the quarterly drill into a scratch Neon branch is an owner task whose date is recorded in the runbook (not yet held)."
+        },
+        {
+          "item": "Point-in-time recovery",
+          "status": "done",
+          "evidence": [
+            "docs/runbooks/backup-restore.md"
+          ],
+          "note": "Neon point-in-time restore and branching."
+        },
+        {
+          "item": "Data retention policies",
+          "status": "done",
+          "evidence": [
+            "docs/privacy-inventory.md",
+            "src/lib/ops/retention.ts"
+          ]
+        },
+        {
+          "item": "Automated deletion of expired data",
+          "status": "done",
+          "evidence": [
+            "src/lib/ops/retention.ts",
+            "src/lib/privacy/deletion.ts",
+            "tests/retention.test.ts",
+            "tests/deletion-grace.test.ts"
+          ]
+        },
+        {
+          "item": "Secure account and workspace deletion",
+          "status": "done",
+          "evidence": [
+            "src/lib/privacy/account-data.ts",
+            "src/lib/team/store.ts",
+            "tests/privacy.test.ts",
+            "tests/site-delete.test.ts"
+          ]
+        },
+        {
+          "item": "Sensitive field encryption where needed",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/crypto.ts",
+            "tests/secrets-audit.test.ts"
+          ]
+        },
+        {
+          "item": "Encryption key separation from encrypted data",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/crypto.ts",
+            "docs/infrastructure.md"
+          ],
+          "note": "Key material lives in Vercel's env; ciphertext lives in Neon; AAD binds each blob to its workspace and row."
+        },
+        {
+          "item": "Key management through a KMS or equivalent",
+          "status": "accepted",
+          "evidence": [
+            "docs/security-policy.md"
+          ],
+          "note": "AR-6: HKDF-derived keys from a Sensitive env secret instead of a KMS; review Jul 2027."
+        },
+        {
+          "item": "Encryption key rotation procedures",
+          "status": "policy",
+          "evidence": [
+            "docs/security-policy.md",
+            "docs/runbooks/security-incident.md"
+          ],
+          "note": "Rotation order and blast radius are written down (BETTER_AUTH_SECRET rotation signs everyone out and needs connector re-authorization); a software rotation would have to re-seal every token, which is scheduled with the KMS review (AR-6)."
+        },
+        {
+          "item": "Data classification by sensitivity",
+          "status": "done",
+          "evidence": [
+            "docs/security-policy.md",
+            "docs/privacy-inventory.md"
+          ]
+        },
+        {
+          "item": "Data minimization",
+          "status": "done",
+          "evidence": [
+            "docs/privacy-inventory.md",
+            "src/lib/traffic/visits.ts",
+            "tests/privacy.test.ts"
+          ],
+          "note": "No raw IPs stored, cookie-free visit counts, content-free analytics, attachments never stored for Ask."
+        },
+        {
+          "item": "No production customer data in development environments without appropriate safeguards",
+          "status": "done",
+          "evidence": [
+            "docs/security-policy.md",
+            "tests/setup.ts"
+          ],
+          "note": "Development uses the file store and dev tools; preview deployments have their own variables."
+        },
+        {
+          "item": "Database migration rollback plans",
+          "status": "policy",
+          "evidence": [
+            "docs/runbooks/rollback.md",
+            "docs/runbooks/backup-restore.md"
+          ],
+          "note": "Schema changes are additive (CREATE IF NOT EXISTS); a Neon branch is taken before any risky change."
+        },
+        {
+          "item": "Protection against unbounded database queries",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/store.ts"
+          ]
+        },
+        {
+          "item": "Monitoring for unusual data access",
+          "status": "done",
+          "evidence": [
+            "src/lib/security/events.ts",
+            "src/app/admin/security/page.tsx",
+            "tests/security-events.test.ts"
+          ],
+          "note": "Export, secret-access and authorization-failure counts alert the owner past thresholds."
+        },
+        {
+          "item": "Prevention of accidental public database exposure",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/neon.ts",
+            "src/lib/ops/health.ts",
+            "docs/infrastructure.md"
+          ],
+          "note": "No public listener; credentials over TLS only; health reports booleans, never connection details."
+        }
+      ]
+    },
+    {
+      "id": "uploads",
+      "title": "7. File upload and storage security",
+      "summary": "Types decided by bytes, structural malware checks and an optional scanner, unguessable ids, sandboxed serving, no uploads in code paths.",
+      "items": [
+        {
+          "item": "Maximum upload size limits",
+          "status": "done",
+          "evidence": [
+            "src/lib/app-runtime/files.ts",
+            "src/lib/orchestration/media.ts",
+            "tests/app-runtime.test.ts"
+          ]
+        },
+        {
+          "item": "Allowed file-type policies",
+          "status": "done",
+          "evidence": [
+            "src/lib/app-runtime/files.ts",
+            "src/lib/orchestration/media.ts"
+          ]
+        },
+        {
+          "item": "Actual file content validation, not just extensions",
+          "status": "done",
+          "evidence": [
+            "src/lib/app-runtime/files.ts",
+            "src/lib/orchestration/media.ts",
+            "tests/app-runtime.test.ts"
+          ]
+        },
+        {
+          "item": "Malicious file scanning",
+          "status": "done",
+          "evidence": [
+            "src/lib/security/upload-scan.ts",
+            "tests/upload-scan.test.ts"
+          ],
+          "note": "Structural checks always; an external scanner when KEPLAR_MALWARE_SCAN_URL is set (fail-closed with KEPLAR_MALWARE_SCAN_REQUIRED)."
+        },
+        {
+          "item": "Safe file naming",
+          "status": "done",
+          "evidence": [
+            "src/lib/app-runtime/files.ts"
+          ]
+        },
+        {
+          "item": "Randomized storage identifiers",
+          "status": "done",
+          "evidence": [
+            "src/lib/app-runtime/files.ts",
+            "docs/security.md"
+          ]
+        },
+        {
+          "item": "Prevention of directory traversal",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/blob.ts",
+            "src/lib/app-runtime/files.ts",
+            "tests/blob.test.ts"
+          ]
+        },
+        {
+          "item": "Protection against decompression bombs",
+          "status": "done",
+          "evidence": [
+            "src/lib/security/upload-scan.ts",
+            "src/lib/attachments/zip.ts",
+            "docs/security.md"
+          ]
+        },
+        {
+          "item": "Archive extraction limits",
+          "status": "done",
+          "evidence": [
+            "src/lib/attachments/zip.ts",
+            "tests/attachments-parsers.test.ts"
+          ]
+        },
+        {
+          "item": "File count and nesting-depth limits",
+          "status": "done",
+          "evidence": [
+            "src/lib/attachments/zip.ts",
+            "src/lib/orchestration/limits.ts"
+          ]
+        },
+        {
+          "item": "Private storage buckets by default",
+          "status": "done",
+          "evidence": [
+            "src/lib/app-runtime/files.ts",
+            "docs/infrastructure.md"
+          ],
+          "note": "Bytes live in Postgres per app and environment, never in a public bucket; served only through the app."
+        },
+        {
+          "item": "Server-side authorization for file access",
+          "status": "done",
+          "evidence": [
+            "src/lib/app-runtime/router.ts",
+            "docs/security.md"
+          ]
+        },
+        {
+          "item": "Short-lived signed download URLs",
+          "status": "accepted",
+          "evidence": [
+            "docs/security-policy.md",
+            "src/lib/app-runtime/files.ts"
+          ],
+          "note": "Files are served through the app by 120-bit random ids under a sandbox CSP; drafts use per-build tokens. Signed URLs are not needed while no object store is public."
+        },
+        {
+          "item": "Signed URL scope and expiration controls",
+          "status": "accepted",
+          "evidence": [
+            "docs/security-policy.md"
+          ],
+          "note": "See above; revisit when R2 is wired."
+        },
+        {
+          "item": "Prevention of public file enumeration",
+          "status": "done",
+          "evidence": [
+            "src/lib/app-runtime/files.ts",
+            "src/lib/app-runtime/router.ts"
+          ],
+          "note": "No listing endpoint; ids are unguessable."
+        },
+        {
+          "item": "Safe handling of SVG uploads",
+          "status": "done",
+          "evidence": [
+            "src/lib/app-runtime/files.ts",
+            "src/lib/security/upload-scan.ts"
+          ],
+          "note": "SVG and any XML/HTML text are refused as uploads; generated SVG files are served sandboxed."
+        },
+        {
+          "item": "Isolation of user-generated HTML and active content",
+          "status": "done",
+          "evidence": [
+            "src/lib/app-builder/files.ts",
+            "src/app/s/[slug]/[[...path]]/route.ts",
+            "src/proxy.ts"
+          ]
+        },
+        {
+          "item": "Appropriate `Content-Disposition` headers",
+          "status": "done",
+          "evidence": [
+            "src/lib/app-runtime/router.ts"
+          ]
+        },
+        {
+          "item": "Secure deletion and lifecycle policies",
+          "status": "done",
+          "evidence": [
+            "src/lib/site-builder/deletion.ts",
+            "src/lib/privacy/account-data.ts",
+            "tests/site-delete.test.ts"
+          ]
+        },
+        {
+          "item": "File metadata sanitization where necessary",
+          "status": "done",
+          "evidence": [
+            "docs/security.md",
+            "src/lib/site-builder/product/image.ts"
+          ],
+          "note": "JPEG GPS data is stripped from imported product photos; uploads are served under a sandbox CSP with nosniff."
+        },
+        {
+          "item": "No executable uploads in application code directories",
+          "status": "done",
+          "evidence": [
+            "src/lib/app-builder/files.ts",
+            "src/lib/app-runtime/files.ts"
+          ],
+          "note": "Uploads are data rows; app code files are model output limited to html, css, js, json and svg under APP_FILE."
+        },
+        {
+          "item": "Malware quarantine and review procedures",
+          "status": "policy",
+          "evidence": [
+            "docs/runbooks/security-incident.md",
+            "src/lib/security/events.ts"
+          ],
+          "note": "Refused files are never stored; each refusal is an upload.rejected event and bursts alert the owner."
+        }
+      ]
+    },
+    {
+      "id": "cloud",
+      "title": "8. Cloud and infrastructure security",
+      "summary": "Serverless on Vercel with Neon; configuration is code and is tested; no containers or clusters of Keplar's own.",
+      "items": [
+        {
+          "item": "Infrastructure as code",
+          "status": "done",
+          "evidence": [
+            "vercel.json",
+            "next.config.ts",
+            ".github/workflows/ci.yml",
+            "tests/infra-config.test.ts"
+          ]
+        },
+        {
+          "item": "Infrastructure security scanning",
+          "status": "done",
+          "evidence": [
+            "tests/infra-config.test.ts",
+            ".github/workflows/ci.yml"
+          ]
+        },
+        {
+          "item": "Least-privilege cloud IAM",
+          "status": "policy",
+          "evidence": [
+            "docs/infrastructure.md",
+            "docs/security-policy.md"
+          ],
+          "note": "Per-purpose tokens, quarterly permission review."
+        },
+        {
+          "item": "Separate development, staging, and production environments",
+          "status": "done",
+          "evidence": [
+            "docs/infrastructure.md",
+            "scripts/build-guard.mjs",
+            "next.config.ts"
+          ],
+          "note": "Vercel Production, Preview (noindex, own variables) and local development."
+        },
+        {
+          "item": "No public administrative dashboards",
+          "status": "done",
+          "evidence": [
+            "src/lib/ops/admin-auth.ts",
+            "tests/authz.test.ts"
+          ]
+        },
+        {
+          "item": "Private networking for internal services",
+          "status": "n/a",
+          "evidence": [
+            "docs/infrastructure.md"
+          ],
+          "note": "Serverless: no internal network exists; the database is reached only with a credential over TLS."
+        },
+        {
+          "item": "Firewall and security group restrictions",
+          "status": "done",
+          "evidence": [
+            "src/proxy.ts",
+            "docs/infrastructure.md"
+          ],
+          "note": "Vercel's platform layer plus strict host handling in the edge proxy."
+        },
+        {
+          "item": "Network segmentation",
+          "status": "n/a",
+          "evidence": [
+            "docs/infrastructure.md"
+          ],
+          "note": "No network of Keplar's own; sandboxes are isolated per job by the platform."
+        },
+        {
+          "item": "DDoS protection",
+          "status": "done",
+          "evidence": [
+            "docs/infrastructure.md",
+            "src/proxy.ts",
+            "src/lib/create/platform/breaker.ts"
+          ]
+        },
+        {
+          "item": "Web application firewall where appropriate",
+          "status": "accepted",
+          "evidence": [
+            "docs/security-policy.md",
+            "docs/infrastructure.md"
+          ],
+          "note": "AR-7: no custom WAF rules on the current plan; Attack Challenge Mode is available during an attack."
+        },
+        {
+          "item": "Secure DNS configuration",
+          "status": "policy",
+          "evidence": [
+            "docs/infrastructure.md"
+          ],
+          "note": "Vercel-managed records; SPF, DKIM, DMARC for mail; CAA is a quarterly owner check."
+        },
+        {
+          "item": "TLS certificate management and renewal",
+          "status": "done",
+          "evidence": [
+            "docs/infrastructure.md",
+            "src/lib/domains/routing.ts",
+            "tests/domains.test.ts"
+          ]
+        },
+        {
+          "item": "Container image scanning",
+          "status": "n/a",
+          "evidence": [
+            "docs/infrastructure.md"
+          ],
+          "note": "No containers."
+        },
+        {
+          "item": "Non-root containers",
+          "status": "n/a",
+          "evidence": [
+            "docs/infrastructure.md"
+          ],
+          "note": "No containers."
+        },
+        {
+          "item": "Read-only container filesystems where feasible",
+          "status": "n/a",
+          "evidence": [
+            "docs/infrastructure.md"
+          ],
+          "note": "No containers."
+        },
+        {
+          "item": "Linux capability restrictions",
+          "status": "n/a",
+          "evidence": [
+            "docs/infrastructure.md"
+          ],
+          "note": "No containers; sandbox machines are platform-isolated microVMs."
+        },
+        {
+          "item": "Seccomp/AppArmor or equivalent sandboxing",
+          "status": "n/a",
+          "evidence": [
+            "docs/infrastructure.md"
+          ],
+          "note": "Firecracker microVM isolation is the sandbox boundary (Vercel Sandbox)."
+        },
+        {
+          "item": "No privileged containers without exceptional justification",
+          "status": "n/a",
+          "evidence": [
+            "docs/infrastructure.md"
+          ],
+          "note": "No containers."
+        },
+        {
+          "item": "Cloud metadata endpoint protections",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/ssrf.ts",
+            "tests/mcp-ssrf.test.ts"
+          ]
+        },
+        {
+          "item": "Workload identity instead of long-lived cloud credentials",
+          "status": "accepted",
+          "evidence": [
+            "docs/security-policy.md"
+          ],
+          "note": "AR-8: providers in use offer no OIDC federation for Vercel functions."
+        },
+        {
+          "item": "Secure service-to-service authentication",
+          "status": "done",
+          "evidence": [
+            "src/app/api/cron/core/route.ts",
+            "tests/infra-config.test.ts",
+            "src/lib/billing/whop.ts"
+          ]
+        },
+        {
+          "item": "Kubernetes RBAC and admission policies if applicable",
+          "status": "n/a",
+          "evidence": [
+            "docs/infrastructure.md"
+          ],
+          "note": "No Kubernetes."
+        },
+        {
+          "item": "Restriction of unnecessary outbound network traffic",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/ssrf.ts",
+            "src/lib/sandbox/runner.ts",
+            "docs/infrastructure.md"
+          ]
+        },
+        {
+          "item": "Security patch management",
+          "status": "done",
+          "evidence": [
+            ".github/dependabot.yml",
+            ".github/workflows/ci.yml",
+            "docs/security-policy.md"
+          ]
+        },
+        {
+          "item": "Infrastructure configuration drift detection",
+          "status": "done",
+          "evidence": [
+            "scripts/build-guard.mjs",
+            "tests/deploy-guard.test.ts",
+            "tests/infra-config.test.ts",
+            "scripts/smoke-prod.mjs"
+          ]
+        },
+        {
+          "item": "Secure infrastructure teardown",
+          "status": "policy",
+          "evidence": [
+            "docs/infrastructure.md"
+          ],
+          "note": "A documented sequence (revoke tokens, delete sandboxes and snapshots, export and delete the database, remove DNS and the project) that a person runs; nothing is automated because teardown is rare and irreversible."
+        },
+        {
+          "item": "Cloud audit logging",
+          "status": "done",
+          "evidence": [
+            "src/lib/ops/audit.ts",
+            "src/lib/security/events.ts",
+            "docs/infrastructure.md"
+          ],
+          "note": "Keplar's own audit and security logs plus Vercel's and GitHub's activity logs."
+        }
+      ]
+    },
+    {
+      "id": "secrets",
+      "title": "9. Secrets and API key management",
+      "summary": "Everything in Vercel's encrypted env; scanned in source, CI and build output; sealed at rest; never logged, never prompted.",
+      "items": [
+        {
+          "item": "Centralized secrets manager",
+          "status": "done",
+          "evidence": [
+            "docs/infrastructure.md",
+            "docs/security-policy.md"
+          ]
+        },
+        {
+          "item": "No hardcoded production credentials",
+          "status": "done",
+          "evidence": [
+            "scripts/secret-scan.mjs",
+            "tests/secret-scan.test.ts"
+          ]
+        },
+        {
+          "item": "Secret scanning in source control",
+          "status": "done",
+          "evidence": [
+            "scripts/secret-scan.mjs",
+            "github:secret_scanning=enabled",
+            "github:push_protection=enabled"
+          ]
+        },
+        {
+          "item": "Secret scanning in CI/CD",
+          "status": "done",
+          "evidence": [
+            ".github/workflows/ci.yml",
+            "scripts/verify.mjs"
+          ]
+        },
+        {
+          "item": "Secret scanning in build artifacts",
+          "status": "done",
+          "evidence": [
+            ".github/workflows/ci.yml",
+            "scripts/secret-scan.mjs"
+          ]
+        },
+        {
+          "item": "Secret rotation",
+          "status": "policy",
+          "evidence": [
+            "docs/security-policy.md"
+          ],
+          "note": "Yearly or on suspicion for provider and webhook secrets, on compromise for the auth secret; the calendar and the order of operations are written down. Providers offer no rotation API Keplar could drive safely."
+        },
+        {
+          "item": "Immediate credential revocation procedures",
+          "status": "policy",
+          "evidence": [
+            "docs/runbooks/security-incident.md"
+          ],
+          "note": "The runbook lists every credential, where to rotate it and in which order (provider first, then Vercel, then redeploy)."
+        },
+        {
+          "item": "Separate credentials per environment",
+          "status": "done",
+          "evidence": [
+            "docs/infrastructure.md"
+          ],
+          "note": "Production, Preview and Development variable sets in Vercel."
+        },
+        {
+          "item": "Separate credentials per integration where feasible",
+          "status": "done",
+          "evidence": [
+            "docs/infrastructure.md",
+            "src/lib/accounts/oauth.ts"
+          ]
+        },
+        {
+          "item": "Least-privilege API scopes",
+          "status": "done",
+          "evidence": [
+            "src/lib/api/policy.ts",
+            "docs/connectors.md"
+          ]
+        },
+        {
+          "item": "Short-lived credentials where supported",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/action-token.ts",
+            "src/lib/business/handoff.ts",
+            "src/lib/desktop-auth/core.ts"
+          ]
+        },
+        {
+          "item": "Secure credential injection at runtime",
+          "status": "done",
+          "evidence": [
+            "docs/infrastructure.md",
+            "src/lib/create/platform/neon.ts"
+          ]
+        },
+        {
+          "item": "Protection against secrets leaking into logs",
+          "status": "done",
+          "evidence": [
+            "tests/secrets-audit.test.ts",
+            "src/lib/ops/log.ts"
+          ]
+        },
+        {
+          "item": "Protection against secrets leaking into AI prompts",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/sanitize.ts",
+            "src/lib/business/firewall.ts",
+            "tests/draft-safety.test.ts"
+          ]
+        },
+        {
+          "item": "Protection against secrets leaking into crash reports",
+          "status": "done",
+          "evidence": [
+            "src/lib/ops/errors.ts",
+            "tests/error-tracking.test.ts"
+          ]
+        },
+        {
+          "item": "No secrets in client-side JavaScript",
+          "status": "done",
+          "evidence": [
+            "tests/infra-config.test.ts",
+            ".github/workflows/ci.yml"
+          ]
+        },
+        {
+          "item": "No secrets in public environment variables",
+          "status": "done",
+          "evidence": [
+            "tests/infra-config.test.ts",
+            "docs/security.md"
+          ]
+        },
+        {
+          "item": "Secure handling of OAuth refresh tokens",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/crypto.ts",
+            "tests/secrets-audit.test.ts"
+          ]
+        },
+        {
+          "item": "User-facing integration disconnect and revocation",
+          "status": "done",
+          "evidence": [
+            "src/lib/business/oauth-connectors.ts",
+            "src/lib/mcp/gateway.ts",
+            "tests/connectors-oauth.test.ts"
+          ]
+        },
+        {
+          "item": "Auditable secret access",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/crypto.ts",
+            "src/lib/security/events.ts",
+            "src/app/admin/security/page.tsx"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "payments",
+      "title": "10. Payments and subscription security",
+      "summary": "Whop-hosted checkout for Keplar One plans and Stripe for Business sellers; signed, idempotent webhooks; server-side entitlements and atomic credits.",
+      "items": [
+        {
+          "item": "Payment provider-hosted checkout or other appropriately compliant payment flow",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/whop.ts",
+            "src/lib/billing/embed.ts",
+            "src/lib/billing/stripe.ts"
+          ]
+        },
+        {
+          "item": "No unnecessary storage of card information",
+          "status": "done",
+          "evidence": [
+            "docs/privacy-inventory.md",
+            "src/lib/billing/sync.ts"
+          ]
+        },
+        {
+          "item": "PCI DSS scope assessment",
+          "status": "policy",
+          "evidence": [
+            "docs/privacy-inventory.md",
+            "docs/security-policy.md"
+          ],
+          "note": "Card data never touches Keplar (hosted checkout and Stripe-hosted bank linking): SAQ A scope."
+        },
+        {
+          "item": "Verified payment webhook signatures",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/whop.ts",
+            "src/app/api/business/stripe/webhook/route.ts",
+            "tests/whop.test.ts"
+          ]
+        },
+        {
+          "item": "Webhook replay protection",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/whop.ts",
+            "tests/whop.test.ts"
+          ]
+        },
+        {
+          "item": "Idempotent payment event processing",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/sync.ts",
+            "tests/whop.test.ts"
+          ]
+        },
+        {
+          "item": "Duplicate webhook handling",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/sync.ts",
+            "tests/billing-lifecycle.test.ts"
+          ]
+        },
+        {
+          "item": "Out-of-order webhook handling",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/sync.ts",
+            "tests/billing-lifecycle.test.ts"
+          ],
+          "note": "Each event is applied against the stored billing state; a late activation never resurrects a cancelled membership."
+        },
+        {
+          "item": "Subscription status verified server-side",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/sync.ts",
+            "src/lib/accounts/workspaces.ts"
+          ]
+        },
+        {
+          "item": "Entitlements managed server-side",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/plans.ts",
+            "src/lib/orchestration/plans.ts",
+            "tests/limits.test.ts"
+          ]
+        },
+        {
+          "item": "No trust in frontend subscription flags",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/plan-cookie.ts",
+            "tests/whop.test.ts"
+          ],
+          "note": "The plan cookie is HMAC-signed, bound to the email and expires with the period; the database row is authoritative."
+        },
+        {
+          "item": "No trust in frontend-reported payment amounts",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/whop.ts",
+            "src/lib/billing/studio-topup.ts",
+            "tests/studio-topup.test.ts"
+          ]
+        },
+        {
+          "item": "Price and plan IDs validated against server-side configuration",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/plans.ts",
+            "src/lib/billing/sync.ts",
+            "tests/whop.test.ts"
+          ]
+        },
+        {
+          "item": "Subscription cancellation enforcement",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/sync.ts",
+            "tests/billing-lifecycle.test.ts"
+          ]
+        },
+        {
+          "item": "Refund and chargeback handling",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/sync.ts",
+            "src/lib/billing/studio-topup.ts",
+            "tests/whop.test.ts"
+          ]
+        },
+        {
+          "item": "Failed-payment grace period rules",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/sync.ts",
+            "tests/billing-lifecycle.test.ts"
+          ]
+        },
+        {
+          "item": "Prevention of repeated free-trial abuse",
+          "status": "done",
+          "evidence": [
+            "src/lib/privacy/free-gate.ts",
+            "src/lib/accounts/persist.ts",
+            "tests/free-plan.test.ts"
+          ],
+          "note": "Per-IP and per-browser daily caps, deleted-login tombstones, verified email required for anything beyond Free."
+        },
+        {
+          "item": "Prevention of credit balance manipulation",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/usage.ts",
+            "src/lib/usage/daily.ts",
+            "tests/usage-windows.test.ts"
+          ]
+        },
+        {
+          "item": "Atomic credit deductions",
+          "status": "done",
+          "evidence": [
+            "src/lib/usage/daily.ts",
+            "tests/daily-use-pg.test.ts"
+          ]
+        },
+        {
+          "item": "Transactional credit ledger",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/usage.ts",
+            "src/lib/ops/retention.ts",
+            "tests/usage-windows.test.ts"
+          ]
+        },
+        {
+          "item": "Protection against concurrent double spending",
+          "status": "done",
+          "evidence": [
+            "src/lib/usage/daily.ts",
+            "src/lib/billing/studio-topup.ts",
+            "tests/daily-use-pg.test.ts"
+          ]
+        },
+        {
+          "item": "Usage reconciliation",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/admin.ts",
+            "tests/billing-audit.test.ts",
+            "tests/cost-meter.test.ts"
+          ]
+        },
+        {
+          "item": "Spending limits",
+          "status": "done",
+          "evidence": [
+            "src/lib/orchestration/limits.ts",
+            "src/lib/create/platform/spend.ts",
+            "tests/rate-limit-audit.test.ts"
+          ]
+        },
+        {
+          "item": "Billing administrator permissions",
+          "status": "done",
+          "evidence": [
+            "src/lib/team/policy.ts",
+            "src/lib/ops/admin-auth.ts",
+            "tests/team.test.ts"
+          ]
+        },
+        {
+          "item": "Invoice and billing record access controls",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/sync.ts",
+            "tests/authz.test.ts"
+          ],
+          "note": "The manage URL and billing status belong to the workspace; Whop hosts invoices behind the customer's own login."
+        },
+        {
+          "item": "Payment event audit logs",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/sync.ts",
+            "src/lib/security/events.ts",
+            "tests/billing-audit.test.ts"
+          ]
+        },
+        {
+          "item": "Periodic reconciliation with the payment provider",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/sync.ts",
+            "src/app/api/billing/sync/route.ts",
+            "docs/security-policy.md"
+          ],
+          "note": "On-demand sync against Whop plus the monthly review in the policy calendar."
+        }
+      ]
+    },
+    {
+      "id": "ai",
+      "title": "11. AI and LLM security",
+      "summary": "Untrusted text fenced and sanitized; models never hold credentials; actions pass a deterministic firewall and approvals; budgets and step caps bound every run.",
+      "items": [
+        {
+          "item": "Prompt injection defenses",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/sanitize.ts",
+            "src/lib/documents/guard.ts",
+            "docs/agent-security.md"
+          ]
+        },
+        {
+          "item": "Clear separation of trusted instructions and untrusted content",
+          "status": "done",
+          "evidence": [
+            "src/lib/documents/guard.ts",
+            "src/lib/mcp/sanitize.ts",
+            "src/lib/business/draft-safety.ts"
+          ]
+        },
+        {
+          "item": "Untrusted webpage content treated as data, not authority",
+          "status": "done",
+          "evidence": [
+            "src/lib/attachments/link.ts",
+            "src/lib/business/firewall.ts",
+            "docs/agent-security.md"
+          ],
+          "note": "Read pages inform answers only; any proposed action still passes the Firewall and approvals."
+        },
+        {
+          "item": "Untrusted repository instructions treated as data unless explicitly authorized",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/sanitize.ts",
+            "docs/agent-security.md"
+          ]
+        },
+        {
+          "item": "Tool output validation",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/schema.ts",
+            "src/lib/mcp/sanitize.ts",
+            "tests/mcp-gateway.test.ts"
+          ]
+        },
+        {
+          "item": "Protection against indirect prompt injection",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/sanitize.ts",
+            "src/lib/business/draft-safety.ts",
+            "tests/draft-safety.test.ts"
+          ]
+        },
+        {
+          "item": "Protection against malicious retrieved documents",
+          "status": "done",
+          "evidence": [
+            "src/lib/documents/guard.ts",
+            "tests/chat-docs.test.ts"
+          ]
+        },
+        {
+          "item": "Prevention of system prompt and secret leakage",
+          "status": "done",
+          "evidence": [
+            "src/lib/business/firewall.ts",
+            "tests/secrets-audit.test.ts",
+            "tests/draft-safety.test.ts"
+          ]
+        },
+        {
+          "item": "No API credentials exposed to models unless strictly necessary",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/crypto.ts",
+            "src/lib/mcp/gateway.ts"
+          ],
+          "note": "Tokens are opened inside the request builder only; prompts never contain them."
+        },
+        {
+          "item": "AI tool allowlists",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/gateway.ts",
+            "src/lib/api/tools.ts",
+            "tests/mcp-gateway.test.ts"
+          ]
+        },
+        {
+          "item": "Tool-specific authorization checks",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/gateway.ts",
+            "src/lib/business/firewall.ts",
+            "tests/firewall.test.ts"
+          ]
+        },
+        {
+          "item": "Human approval for high-impact actions",
+          "status": "done",
+          "evidence": [
+            "src/lib/business/agents.ts",
+            "src/lib/mcp/chat.ts",
+            "tests/agent-chat-flow.test.ts"
+          ]
+        },
+        {
+          "item": "Restricted agent permissions",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/gateway.ts",
+            "src/lib/business/agents.ts",
+            "docs/agent-security.md"
+          ]
+        },
+        {
+          "item": "Sandboxed AI-generated code execution",
+          "status": "done",
+          "evidence": [
+            "src/lib/sandbox/runner.ts",
+            "src/lib/core/sandbox.ts",
+            "src/lib/app-builder/files.ts"
+          ]
+        },
+        {
+          "item": "Network egress controls for agents",
+          "status": "done",
+          "evidence": [
+            "src/lib/sandbox/runner.ts",
+            "src/lib/mcp/ssrf.ts"
+          ]
+        },
+        {
+          "item": "Filesystem access restrictions for agents",
+          "status": "done",
+          "evidence": [
+            "docs/agent-security.md",
+            "src/lib/sandbox/runner.ts"
+          ],
+          "note": "No agent has filesystem or shell access on Keplar's servers."
+        },
+        {
+          "item": "Maximum execution duration",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/chat.ts",
+            "src/lib/business/computer.ts",
+            "src/lib/app-builder/pipeline.ts"
+          ]
+        },
+        {
+          "item": "Maximum model token consumption",
+          "status": "done",
+          "evidence": [
+            "src/lib/orchestration/limits.ts",
+            "src/lib/orchestration/live-budget.ts"
+          ]
+        },
+        {
+          "item": "Maximum spending per task",
+          "status": "done",
+          "evidence": [
+            "src/lib/orchestration/limits.ts",
+            "src/lib/create/platform/spend.ts",
+            "tests/rate-limit-audit.test.ts"
+          ]
+        },
+        {
+          "item": "Maximum number of tool calls",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/chat.ts",
+            "src/lib/browser/policy.ts",
+            "tests/mcp-chat.test.ts"
+          ]
+        },
+        {
+          "item": "Maximum retry and recursion depth",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/chat.ts",
+            "src/lib/app-builder/pipeline.ts",
+            "src/lib/roblox-cloud/model.ts"
+          ]
+        },
+        {
+          "item": "Protection against infinite agent loops",
+          "status": "done",
+          "evidence": [
+            "src/lib/browser/run.ts",
+            "src/lib/roblox-cloud/worker.ts",
+            "tests/browser-agent.test.ts"
+          ]
+        },
+        {
+          "item": "Model output schema validation",
+          "status": "done",
+          "evidence": [
+            "src/lib/app-builder/verify/review.ts",
+            "src/lib/mcp/schema.ts",
+            "tests/app-builder.test.ts"
+          ]
+        },
+        {
+          "item": "Verification before executing model-generated commands",
+          "status": "done",
+          "evidence": [
+            "tests/studio-agent.test.ts",
+            "src/lib/business/firewall.ts",
+            "src/lib/app-builder/verify/static.ts"
+          ]
+        },
+        {
+          "item": "Sensitive data redaction before model calls",
+          "status": "done",
+          "evidence": [
+            "src/lib/business/draft-safety.ts",
+            "src/lib/mcp/sanitize.ts",
+            "tests/draft-safety.test.ts"
+          ]
+        },
+        {
+          "item": "Explicit controls for sending data to third-party models",
+          "status": "done",
+          "evidence": [
+            "src/lib/privacy/training-statement.ts",
+            "tests/free-privacy.test.ts",
+            "tests/training-statement.test.ts"
+          ]
+        },
+        {
+          "item": "Model provider retention and training policy review",
+          "status": "done",
+          "evidence": [
+            "docs/privacy-inventory.md",
+            "src/lib/privacy/training-statement.ts"
+          ]
+        },
+        {
+          "item": "AI-generated code security testing",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/output-checklist.ts",
+            "src/lib/app-builder/verify/static.ts",
+            "tests/output-checklist.test.ts"
+          ]
+        },
+        {
+          "item": "Model output evaluation against malicious inputs",
+          "status": "done",
+          "evidence": [
+            "tests/studio-agent.test.ts",
+            "tests/draft-safety.test.ts",
+            "tests/firewall.test.ts",
+            "tests/fuzz-parsers.test.ts"
+          ]
+        },
+        {
+          "item": "Monitoring for abnormal agent behavior",
+          "status": "done",
+          "evidence": [
+            "src/lib/security/events.ts",
+            "src/lib/ops/telemetry.ts",
+            "src/app/admin/security/page.tsx"
+          ]
+        },
+        {
+          "item": "AI action audit trails",
+          "status": "done",
+          "evidence": [
+            "src/lib/business/repo.ts",
+            "src/lib/mcp/gateway.ts",
+            "src/lib/security/events.ts"
+          ]
+        },
+        {
+          "item": "Emergency agent shutdown",
+          "status": "done",
+          "evidence": [
+            "src/lib/ops/controls.ts",
+            "tests/controls.test.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "agents",
+      "title": "12. Autonomous agent security",
+      "summary": "Every action is tied to a workspace and a user, checked per tool, bounded by budgets, approved for anything that reaches the world, logged, and stoppable.",
+      "items": [
+        {
+          "item": "Every agent action tied to an authenticated user or authorized service identity",
+          "status": "done",
+          "evidence": [
+            "src/lib/business/agents.ts",
+            "src/lib/create/platform/workspace.ts",
+            "tests/authz.test.ts"
+          ]
+        },
+        {
+          "item": "Explicit user authorization for the requested outcome",
+          "status": "done",
+          "evidence": [
+            "src/lib/business/agents.ts",
+            "src/lib/mcp/chat.ts",
+            "tests/agent-chat-flow.test.ts"
+          ]
+        },
+        {
+          "item": "Separate permission checks for individual tools",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/gateway.ts",
+            "tests/mcp-gateway.test.ts"
+          ]
+        },
+        {
+          "item": "Scoped, expiring execution credentials",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/crypto.ts",
+            "src/lib/business/handoff.ts",
+            "src/lib/api/keys.ts"
+          ]
+        },
+        {
+          "item": "No unrestricted access to the host operating system",
+          "status": "done",
+          "evidence": [
+            "docs/agent-security.md",
+            "src/lib/sandbox/runner.ts"
+          ]
+        },
+        {
+          "item": "Sandboxed code execution with resource limits",
+          "status": "done",
+          "evidence": [
+            "src/lib/sandbox/runner.ts",
+            "src/lib/blender-cloud/machine.ts"
+          ]
+        },
+        {
+          "item": "Isolated execution environments per user or task",
+          "status": "done",
+          "evidence": [
+            "src/lib/sandbox/runner.ts",
+            "docs/architecture-cloud.md"
+          ]
+        },
+        {
+          "item": "Isolation between customer projects",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/store.ts",
+            "src/lib/app-runtime/files.ts",
+            "tests/account-scope.test.ts"
+          ]
+        },
+        {
+          "item": "Restriction of arbitrary shell commands",
+          "status": "done",
+          "evidence": [
+            "src/lib/blender-cloud/machine.ts",
+            "tests/studio-agent.test.ts"
+          ]
+        },
+        {
+          "item": "Restriction of arbitrary outbound requests",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/ssrf.ts",
+            "src/lib/sandbox/runner.ts"
+          ]
+        },
+        {
+          "item": "Protection against agent-initiated SSRF",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/ssrf.ts",
+            "tests/mcp-ssrf.test.ts"
+          ]
+        },
+        {
+          "item": "Approval gates for purchases, payments, and transfers",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/whop.ts",
+            "docs/agent-security.md"
+          ],
+          "note": "No agent can pay: checkout is provider-hosted and user-driven; Business orders are placed by buyers on the seller's site."
+        },
+        {
+          "item": "Approval gates for destructive operations",
+          "status": "done",
+          "evidence": [
+            "tests/studio-agent.test.ts",
+            "src/lib/business/agents.ts"
+          ]
+        },
+        {
+          "item": "Approval gates for external publication",
+          "status": "done",
+          "evidence": [
+            "src/lib/site-builder/store.ts",
+            "src/app/api/deploy/[id]/route.ts"
+          ],
+          "note": "Sites and apps go live only on the owner's explicit publish."
+        },
+        {
+          "item": "Approval gates for sending messages on a user's behalf",
+          "status": "done",
+          "evidence": [
+            "src/lib/business/firewall.ts",
+            "src/lib/business/agents.ts",
+            "tests/firewall.test.ts"
+          ]
+        },
+        {
+          "item": "Approval gates for production deployment",
+          "status": "done",
+          "evidence": [
+            "scripts/build-guard.mjs",
+            "docs/security-policy.md"
+          ],
+          "note": "Keplar's own production changes come from merged pull requests and stamped deploys; no agent has deploy credentials."
+        },
+        {
+          "item": "Approval gates for permission changes",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/gateway.ts",
+            "docs/agent-security.md"
+          ],
+          "note": "Tool classes, auto-run flags and budgets are owner-edited rows with no tool API."
+        },
+        {
+          "item": "Maximum monetary spending per execution",
+          "status": "done",
+          "evidence": [
+            "src/lib/orchestration/limits.ts",
+            "src/lib/mcp/limits.ts"
+          ]
+        },
+        {
+          "item": "Per-user and per-organization spending budgets",
+          "status": "done",
+          "evidence": [
+            "src/lib/orchestration/limits.ts",
+            "src/lib/orchestration/plans.ts",
+            "tests/rate-limit-audit.test.ts"
+          ]
+        },
+        {
+          "item": "Tool call logging",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/gateway.ts",
+            "src/lib/business/repo.ts",
+            "src/lib/security/events.ts"
+          ]
+        },
+        {
+          "item": "Durable execution state",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/jobs.ts",
+            "src/lib/core/jobs.ts",
+            "src/lib/inngest/functions.ts"
+          ]
+        },
+        {
+          "item": "Cancellation support",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/jobs.ts",
+            "src/lib/ops/controls.ts"
+          ]
+        },
+        {
+          "item": "Emergency stop controls",
+          "status": "done",
+          "evidence": [
+            "src/lib/ops/controls.ts",
+            "tests/controls.test.ts"
+          ]
+        },
+        {
+          "item": "Checkpointing and safe resumption",
+          "status": "done",
+          "evidence": [
+            "src/lib/core/jobs.ts",
+            "src/lib/inngest/functions.ts",
+            "src/app/api/cron/core/route.ts"
+          ]
+        },
+        {
+          "item": "Prevention of duplicated side effects after retries",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/gateway.ts",
+            "src/lib/billing/studio-topup.ts",
+            "src/lib/inngest/functions.ts"
+          ]
+        },
+        {
+          "item": "Idempotency for real-world actions where supported",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/gateway.ts",
+            "src/lib/billing/sync.ts"
+          ]
+        },
+        {
+          "item": "Verification of external action results",
+          "status": "done",
+          "evidence": [
+            "src/lib/business/connectors.ts",
+            "docs/security.md"
+          ],
+          "note": "A provider reply that is not a confirmed success is reported as an error."
+        },
+        {
+          "item": "Evidence-backed completion reports",
+          "status": "done",
+          "evidence": [
+            "src/lib/app-builder/verify/smoke.ts",
+            "src/lib/app-builder/verify/review.ts",
+            "src/lib/browser/run.ts"
+          ]
+        },
+        {
+          "item": "No fabricated execution success",
+          "status": "done",
+          "evidence": [
+            "src/lib/business/connectors.ts",
+            "tests/connectors-honesty.test.ts"
+          ]
+        },
+        {
+          "item": "Protection against agents modifying their own authorization policies",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/gateway.ts",
+            "docs/agent-security.md",
+            "tests/firewall.test.ts"
+          ]
+        },
+        {
+          "item": "Prevention of agents bypassing approval gates",
+          "status": "done",
+          "evidence": [
+            "src/lib/business/agents.ts",
+            "tests/agent-chat-flow.test.ts"
+          ],
+          "note": "Approved edits are inspected again at execution; a blocked action never goes out."
+        },
+        {
+          "item": "Agent-to-agent trust boundaries",
+          "status": "done",
+          "evidence": [
+            "src/lib/business/event-agents.ts",
+            "docs/agent-security.md"
+          ]
+        },
+        {
+          "item": "Restricted delegation between agents",
+          "status": "done",
+          "evidence": [
+            "docs/agent-security.md",
+            "src/lib/business/event-agents.ts"
+          ],
+          "note": "No delegation API exists; each agent runs with the owner's rows and budgets."
+        },
+        {
+          "item": "No privilege amplification through subagents",
+          "status": "done",
+          "evidence": [
+            "docs/agent-security.md",
+            "src/lib/business/agents.ts"
+          ]
+        },
+        {
+          "item": "Revocation of permissions during running tasks",
+          "status": "done",
+          "evidence": [
+            "src/lib/ops/controls.ts",
+            "src/lib/mcp/gateway.ts"
+          ]
+        },
+        {
+          "item": "Reviewable history of autonomous actions",
+          "status": "done",
+          "evidence": [
+            "src/lib/business/repo.ts",
+            "src/app/admin/security/page.tsx",
+            "src/app/api/business/approvals/route.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "github",
+      "title": "13. GitHub and app-builder security",
+      "summary": "A ruleset on main, CI as the gate, CodeQL, dependency review, pinned actions, no secrets in CI, SBOM, stamped deploys.",
+      "items": [
+        {
+          "item": "GitHub App permissions restricted to necessary repositories",
+          "status": "n/a",
+          "evidence": [
+            "docs/connectors.md"
+          ],
+          "note": "Keplar has no GitHub App; the GitHub connector is user OAuth with minimal scopes."
+        },
+        {
+          "item": "GitHub installation token handling",
+          "status": "n/a",
+          "evidence": [
+            "docs/connectors.md"
+          ],
+          "note": "No GitHub App installation tokens."
+        },
+        {
+          "item": "GitHub webhook verification",
+          "status": "n/a",
+          "evidence": [
+            "docs/connectors.md"
+          ],
+          "note": "Keplar receives no GitHub webhooks."
+        },
+        {
+          "item": "Branch protection rules",
+          "status": "done",
+          "evidence": [
+            "github:ruleset=main",
+            "docs/security-policy.md"
+          ],
+          "note": "Ruleset on main: pull requests only, required CI check, no force pushes, no deletion."
+        },
+        {
+          "item": "Required code reviews for sensitive changes",
+          "status": "policy",
+          "evidence": [
+            ".github/CODEOWNERS",
+            "docs/security-policy.md"
+          ],
+          "note": "CODEOWNERS names the sensitive paths; with one maintainer the review is the PR checklist plus CI, and code-owner review becomes required the day a second maintainer joins."
+        },
+        {
+          "item": "Required CI checks",
+          "status": "done",
+          "evidence": [
+            "github:ruleset=main",
+            ".github/workflows/ci.yml"
+          ]
+        },
+        {
+          "item": "Secret scanning",
+          "status": "done",
+          "evidence": [
+            "github:secret_scanning=enabled",
+            "scripts/secret-scan.mjs"
+          ]
+        },
+        {
+          "item": "Dependency scanning",
+          "status": "done",
+          "evidence": [
+            ".github/dependabot.yml",
+            ".github/workflows/ci.yml"
+          ]
+        },
+        {
+          "item": "Static application security testing (SAST)",
+          "status": "done",
+          "evidence": [
+            ".github/workflows/codeql.yml"
+          ]
+        },
+        {
+          "item": "Dynamic application security testing (DAST)",
+          "status": "done",
+          "evidence": [
+            "scripts/smoke-prod.mjs",
+            "tests/security.test.ts",
+            "tests/authz.test.ts"
+          ],
+          "note": "In-house probes of the running app (headers, anonymous and cross-user requests on every route); no commercial scanner."
+        },
+        {
+          "item": "Software composition analysis (SCA)",
+          "status": "done",
+          "evidence": [
+            ".github/workflows/dependency-review.yml",
+            ".github/workflows/ci.yml"
+          ]
+        },
+        {
+          "item": "Infrastructure-as-code scanning",
+          "status": "done",
+          "evidence": [
+            "tests/infra-config.test.ts"
+          ]
+        },
+        {
+          "item": "Container vulnerability scanning",
+          "status": "n/a",
+          "evidence": [
+            "docs/infrastructure.md"
+          ],
+          "note": "No containers."
+        },
+        {
+          "item": "Automated security regression tests",
+          "status": "done",
+          "evidence": [
+            "tests/security.test.ts",
+            "tests/authz.test.ts",
+            "tests/security-checklist.test.ts"
+          ]
+        },
+        {
+          "item": "Prevention of malicious dependency installation",
+          "status": "done",
+          "evidence": [
+            "scripts/lockfile-check.mjs",
+            ".github/workflows/ci.yml",
+            ".github/workflows/dependency-review.yml"
+          ]
+        },
+        {
+          "item": "Lockfile integrity",
+          "status": "done",
+          "evidence": [
+            "scripts/lockfile-check.mjs",
+            ".github/workflows/ci.yml"
+          ]
+        },
+        {
+          "item": "Dependency update review",
+          "status": "done",
+          "evidence": [
+            ".github/dependabot.yml",
+            "docs/security-policy.md"
+          ]
+        },
+        {
+          "item": "Supply-chain provenance",
+          "status": "done",
+          "evidence": [
+            "scripts/lockfile-check.mjs",
+            ".github/workflows/ci.yml"
+          ],
+          "note": "Registry and sha512 pinned for every package; third-party actions pinned to commits."
+        },
+        {
+          "item": "Software bill of materials (SBOM)",
+          "status": "done",
+          "evidence": [
+            ".github/workflows/ci.yml"
+          ]
+        },
+        {
+          "item": "Signed or verifiable release artifacts",
+          "status": "done",
+          "evidence": [
+            "docs/download.md",
+            "scripts/build-guard.mjs"
+          ],
+          "note": "SHA-256 checksums for desktop releases; stamped web deployments. Code signing of installers is accepted risk AR-11."
+        },
+        {
+          "item": "Protected deployment credentials",
+          "status": "done",
+          "evidence": [
+            "docs/deploy.md",
+            "docs/infrastructure.md"
+          ],
+          "note": "CI holds no deploy credentials; Vercel's Git integration or the operator's stamped deploy ship code."
+        },
+        {
+          "item": "CI/CD environment isolation",
+          "status": "done",
+          "evidence": [
+            ".github/workflows/ci.yml",
+            "tests/infra-config.test.ts"
+          ]
+        },
+        {
+          "item": "Protection against untrusted pull-request workflow execution",
+          "status": "done",
+          "evidence": [
+            "tests/infra-config.test.ts"
+          ]
+        },
+        {
+          "item": "No privileged CI secrets available to untrusted code",
+          "status": "done",
+          "evidence": [
+            ".github/workflows/ci.yml",
+            "tests/infra-config.test.ts"
+          ]
+        },
+        {
+          "item": "Deployment approval controls",
+          "status": "done",
+          "evidence": [
+            "scripts/build-guard.mjs",
+            "scripts/deploy-prod.mjs",
+            "tests/deploy-guard.test.ts"
+          ]
+        },
+        {
+          "item": "Secure rollback procedures",
+          "status": "done",
+          "evidence": [
+            "docs/runbooks/rollback.md",
+            "docs/deploy.md"
+          ]
+        },
+        {
+          "item": "Prevention of unauthorized production changes",
+          "status": "done",
+          "evidence": [
+            "github:ruleset=main",
+            "scripts/build-guard.mjs",
+            "tests/deploy-guard.test.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "logging",
+      "title": "14. Logging, monitoring, and incident response",
+      "summary": "Structured logs with request ids, a security event log with thresholds that email the owner, an audit log, retention, and a runbook with severities and drills.",
+      "items": [
+        {
+          "item": "Centralized security logs",
+          "status": "done",
+          "evidence": [
+            "src/lib/security/events.ts",
+            "src/app/admin/security/page.tsx"
+          ]
+        },
+        {
+          "item": "Authentication event logging",
+          "status": "done",
+          "evidence": [
+            "src/lib/security/events.ts",
+            "src/lib/accounts/password-auth.ts",
+            "src/lib/accounts/new-device.ts"
+          ]
+        },
+        {
+          "item": "Authorization failure logging",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/workspace.ts",
+            "src/lib/security/origin.ts",
+            "tests/security-events.test.ts"
+          ]
+        },
+        {
+          "item": "Administrative action logging",
+          "status": "done",
+          "evidence": [
+            "src/lib/ops/audit.ts"
+          ]
+        },
+        {
+          "item": "Billing change logging",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/sync.ts",
+            "tests/billing-audit.test.ts"
+          ]
+        },
+        {
+          "item": "Agent action logging",
+          "status": "done",
+          "evidence": [
+            "src/lib/business/agents.ts",
+            "src/lib/business/repo.ts"
+          ]
+        },
+        {
+          "item": "Security configuration change logging",
+          "status": "done",
+          "evidence": [
+            "src/lib/ops/controls.ts",
+            "src/lib/ops/audit.ts"
+          ]
+        },
+        {
+          "item": "Secret access logging",
+          "status": "done",
+          "evidence": [
+            "src/lib/mcp/crypto.ts",
+            "src/lib/security/events.ts"
+          ]
+        },
+        {
+          "item": "Sensitive data redaction in logs",
+          "status": "done",
+          "evidence": [
+            "src/lib/ops/log.ts",
+            "src/lib/ops/errors.ts",
+            "tests/secrets-audit.test.ts"
+          ]
+        },
+        {
+          "item": "Log access restrictions",
+          "status": "done",
+          "evidence": [
+            "src/lib/ops/admin-auth.ts",
+            "docs/infrastructure.md"
+          ]
+        },
+        {
+          "item": "Log integrity protection",
+          "status": "policy",
+          "evidence": [
+            "docs/infrastructure.md",
+            "docs/runbooks/security-incident.md"
+          ],
+          "note": "Append-only rows under the system tenant with no delete route; Vercel logs are immutable on the platform; the runbook says never to delete during an incident."
+        },
+        {
+          "item": "Log retention policies",
+          "status": "done",
+          "evidence": [
+            "src/lib/security/events.ts",
+            "src/lib/ops/retention.ts",
+            "docs/privacy-inventory.md"
+          ]
+        },
+        {
+          "item": "Consistent timestamps and correlation IDs",
+          "status": "done",
+          "evidence": [
+            "src/lib/ops/log.ts",
+            "src/proxy.ts"
+          ]
+        },
+        {
+          "item": "Alerts for suspicious login activity",
+          "status": "done",
+          "evidence": [
+            "src/lib/security/events.ts",
+            "src/lib/accounts/new-device.ts",
+            "tests/security-events.test.ts"
+          ]
+        },
+        {
+          "item": "Alerts for privilege escalation attempts",
+          "status": "done",
+          "evidence": [
+            "src/lib/security/events.ts",
+            "src/lib/ops/admin-auth.ts"
+          ]
+        },
+        {
+          "item": "Alerts for unexpected spending spikes",
+          "status": "done",
+          "evidence": [
+            "src/lib/ops/telemetry.ts",
+            "src/lib/create/platform/spend.ts",
+            "tests/cost-guard.test.ts"
+          ]
+        },
+        {
+          "item": "Alerts for unusual data exports",
+          "status": "done",
+          "evidence": [
+            "src/lib/security/events.ts",
+            "src/app/api/account/export/route.ts"
+          ]
+        },
+        {
+          "item": "Alerts for abnormal API traffic",
+          "status": "done",
+          "evidence": [
+            "src/lib/ops/telemetry.ts",
+            "src/lib/security/events.ts"
+          ]
+        },
+        {
+          "item": "Alerts for excessive failed authorization checks",
+          "status": "done",
+          "evidence": [
+            "src/lib/security/events.ts",
+            "tests/security-events.test.ts"
+          ]
+        },
+        {
+          "item": "Alerts for production configuration changes",
+          "status": "done",
+          "evidence": [
+            "src/lib/ops/audit.ts",
+            "src/lib/security/events.ts"
+          ],
+          "note": "Kill-switch and limit changes are config.change events; Vercel emails the team on environment changes."
+        },
+        {
+          "item": "Incident response runbooks",
+          "status": "done",
+          "evidence": [
+            "docs/runbooks/security-incident.md",
+            "docs/runbooks/README.md"
+          ]
+        },
+        {
+          "item": "Defined incident severity levels",
+          "status": "done",
+          "evidence": [
+            "docs/security-policy.md",
+            "docs/runbooks/security-incident.md"
+          ]
+        },
+        {
+          "item": "Emergency credential revocation",
+          "status": "policy",
+          "evidence": [
+            "docs/runbooks/security-incident.md"
+          ],
+          "note": "Same procedure as above, exercised in the quarterly tabletop."
+        },
+        {
+          "item": "Emergency deployment rollback",
+          "status": "done",
+          "evidence": [
+            "docs/runbooks/rollback.md",
+            "scripts/deploy-prod.mjs"
+          ]
+        },
+        {
+          "item": "Customer notification procedures",
+          "status": "policy",
+          "evidence": [
+            "docs/runbooks/security-incident.md",
+            "docs/privacy-inventory.md"
+          ],
+          "note": "Who is told, when (72 hours, sooner if they must act), what the notice contains and that legal reviews it first; sending needs a person and a lawyer, not code."
+        },
+        {
+          "item": "Post-incident review process",
+          "status": "policy",
+          "evidence": [
+            "docs/runbooks/security-incident.md",
+            "docs/security-progress.md"
+          ],
+          "note": "A dated, blameless review in the findings log within a week, with a regression test and threat-model update; a people process by nature."
+        },
+        {
+          "item": "Periodic incident response exercises",
+          "status": "policy",
+          "evidence": [
+            "docs/runbooks/security-incident.md",
+            "docs/security-policy.md"
+          ],
+          "note": "Quarterly tabletop; the runbook records the last date (none yet)."
+        }
+      ]
+    },
+    {
+      "id": "privacy",
+      "title": "15. Privacy and compliance",
+      "summary": "A privacy policy written from the code, an inventory of data and processors, export and deletion in the product, consent-gated analytics.",
+      "items": [
+        {
+          "item": "Privacy policy matching actual data practices",
+          "status": "done",
+          "evidence": [
+            "src/components/legal/content/privacy.ts",
+            "tests/legal.test.ts",
+            "tests/training-statement.test.ts"
+          ]
+        },
+        {
+          "item": "Data processing inventory",
+          "status": "done",
+          "evidence": [
+            "docs/privacy-inventory.md"
+          ]
+        },
+        {
+          "item": "Data retention schedule",
+          "status": "done",
+          "evidence": [
+            "docs/privacy-inventory.md",
+            "src/lib/ops/retention.ts"
+          ]
+        },
+        {
+          "item": "User data export",
+          "status": "done",
+          "evidence": [
+            "src/app/api/account/export/route.ts",
+            "tests/privacy.test.ts"
+          ]
+        },
+        {
+          "item": "User data deletion",
+          "status": "done",
+          "evidence": [
+            "src/app/api/account/delete/route.ts",
+            "tests/deletion-grace.test.ts",
+            "tests/privacy.test.ts"
+          ]
+        },
+        {
+          "item": "Workspace deletion procedures",
+          "status": "done",
+          "evidence": [
+            "src/lib/team/store.ts",
+            "tests/team.test.ts",
+            "docs/teams.md"
+          ]
+        },
+        {
+          "item": "Third-party processor inventory",
+          "status": "done",
+          "evidence": [
+            "docs/privacy-inventory.md"
+          ]
+        },
+        {
+          "item": "Data processing agreements where required",
+          "status": "policy",
+          "evidence": [
+            "docs/privacy-inventory.md"
+          ],
+          "note": "Each processor's DPA is listed; accepting them in the provider dashboards and recording the date is an owner action."
+        },
+        {
+          "item": "International data transfer assessment where applicable",
+          "status": "policy",
+          "evidence": [
+            "docs/privacy-inventory.md",
+            "src/components/legal/content/privacy.ts"
+          ],
+          "note": "Processing is in the US under each processor DPA and SCCs; the privacy policy discloses it; an EU representative is an open legal decision."
+        },
+        {
+          "item": "Consent management where required",
+          "status": "done",
+          "evidence": [
+            "src/lib/consent.ts",
+            "src/components/consent/CookieBanner.tsx",
+            "tests/consent.test.ts"
+          ]
+        },
+        {
+          "item": "Cookie disclosure and controls where required",
+          "status": "done",
+          "evidence": [
+            "src/components/legal/content/privacy.ts",
+            "src/components/consent/CookieSettingsButton.tsx",
+            "tests/cookie-banner-narrow.test.ts"
+          ]
+        },
+        {
+          "item": "Appropriate age-related protections",
+          "status": "policy",
+          "evidence": [
+            "docs/privacy-inventory.md",
+            "src/lib/safety/screen.ts",
+            "docs/legal-open-decisions.md"
+          ],
+          "note": "13+ terms, teen defaults and Family mode in code; purchases by minors remain a legal decision."
+        },
+        {
+          "item": "Access request handling procedures",
+          "status": "policy",
+          "evidence": [
+            "docs/privacy-inventory.md"
+          ],
+          "note": "Export and deletion are self-serve in the product; other rights are handled by email with identity verified through a signed link to the account address, within 30 days."
+        },
+        {
+          "item": "Data breach notification procedures",
+          "status": "policy",
+          "evidence": [
+            "docs/runbooks/security-incident.md",
+            "docs/privacy-inventory.md"
+          ],
+          "note": "Thresholds (72 hours to the authority, without undue delay to people at high risk), contents of the notice and legal review are written down; the decision is a human one."
+        },
+        {
+          "item": "Privacy impact assessments for high-risk processing",
+          "status": "policy",
+          "evidence": [
+            "docs/privacy-inventory.md"
+          ],
+          "note": "Required triggers and the assessment template are defined; each is a section in the feature design doc linked from the PR."
+        },
+        {
+          "item": "Restrictions on internal employee access to customer data",
+          "status": "policy",
+          "evidence": [
+            "docs/privacy-inventory.md",
+            "src/lib/ops/admin-auth.ts"
+          ],
+          "note": "One operator today; access is through MFA-protected consoles and audited admin pages with no impersonation feature; the rule is written for the first hire."
+        },
+        {
+          "item": "Support access auditing",
+          "status": "done",
+          "evidence": [
+            "src/lib/ops/audit.ts",
+            "src/lib/security/events.ts",
+            "docs/privacy-inventory.md"
+          ]
+        },
+        {
+          "item": "Secure handling of analytics data",
+          "status": "done",
+          "evidence": [
+            "src/lib/seo/events.ts",
+            "src/lib/consent.ts",
+            "tests/growth-events.test.ts"
+          ]
+        },
+        {
+          "item": "Separation of customer content from product analytics",
+          "status": "done",
+          "evidence": [
+            "src/lib/traffic/visits.ts",
+            "tests/growth-events.test.ts",
+            "docs/privacy-inventory.md"
+          ]
+        },
+        {
+          "item": "Contractual controls for AI providers and subprocessors",
+          "status": "policy",
+          "evidence": [
+            "docs/privacy-inventory.md",
+            "src/lib/privacy/training-statement.ts"
+          ],
+          "note": "Provider terms and no-training settings are listed per processor; signing DPAs is an owner action recorded with a date in the inventory."
+        }
+      ]
+    },
+    {
+      "id": "abuse",
+      "title": "16. Business logic and abuse prevention",
+      "summary": "Server-side prices and limits, atomic counters, honeypots and verification against bots, cooldowns and takedowns for abusive workloads.",
+      "items": [
+        {
+          "item": "Protection against free-trial farming",
+          "status": "done",
+          "evidence": [
+            "src/lib/privacy/free-gate.ts",
+            "src/lib/orchestration/limits.ts",
+            "tests/free-plan.test.ts"
+          ]
+        },
+        {
+          "item": "Prevention of referral reward abuse",
+          "status": "done",
+          "evidence": [
+            "src/lib/referrals/abuse.ts",
+            "tests/referrals.test.ts",
+            "docs/referrals.md"
+          ]
+        },
+        {
+          "item": "Coupon and discount validation",
+          "status": "n/a",
+          "evidence": [
+            "src/lib/billing/whop.ts"
+          ],
+          "note": "Keplar issues no coupons; promotions live in Whop, which validates them at its checkout."
+        },
+        {
+          "item": "Prevention of negative-price or negative-credit exploits",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/plans.ts",
+            "src/lib/billing/extensions.ts",
+            "tests/limit-extensions.test.ts"
+          ]
+        },
+        {
+          "item": "Protection against race conditions",
+          "status": "done",
+          "evidence": [
+            "src/lib/usage/daily.ts",
+            "src/lib/billing/studio-topup.ts",
+            "tests/daily-use-pg.test.ts"
+          ]
+        },
+        {
+          "item": "Transaction state-machine validation",
+          "status": "done",
+          "evidence": [
+            "src/lib/desktop-auth/core.ts",
+            "src/lib/billing/sync.ts",
+            "tests/desktop-auth.test.ts",
+            "tests/billing-lifecycle.test.ts"
+          ]
+        },
+        {
+          "item": "Prevention of skipped workflow steps",
+          "status": "done",
+          "evidence": [
+            "src/lib/desktop-auth/core.ts",
+            "src/lib/accounts/mfa/gate.ts",
+            "tests/mfa-signin.test.ts"
+          ]
+        },
+        {
+          "item": "Server-side enforcement of plan limits",
+          "status": "done",
+          "evidence": [
+            "src/lib/orchestration/limits.ts",
+            "src/lib/create/platform/plans.ts",
+            "tests/limits.test.ts"
+          ]
+        },
+        {
+          "item": "Prevention of resource exhaustion",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/cooldown.ts",
+            "src/lib/create/platform/queue.ts",
+            "tests/cooldown.test.ts"
+          ]
+        },
+        {
+          "item": "Protection against automated account creation abuse",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/password-auth.ts",
+            "src/lib/accounts/email-domain.ts",
+            "tests/email-domain.test.ts"
+          ]
+        },
+        {
+          "item": "Bot mitigation where appropriate",
+          "status": "done",
+          "evidence": [
+            "src/lib/site-builder/features/spam.ts",
+            "src/app/api/feedback/route.ts",
+            "src/proxy.ts"
+          ],
+          "note": "Honeypots, MX checks and rate limits; no CAPTCHA by design (accessibility), which the policy records."
+        },
+        {
+          "item": "Email and notification sending limits",
+          "status": "done",
+          "evidence": [
+            "src/lib/accounts/password-auth.ts",
+            "src/lib/accounts/outbox.ts",
+            "tests/magic-link.test.ts"
+          ]
+        },
+        {
+          "item": "Prevention of unrestricted expensive API calls",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/spend.ts",
+            "src/lib/orchestration/limits.ts",
+            "tests/rate-limit-audit.test.ts"
+          ]
+        },
+        {
+          "item": "Protection against fraudulent usage reporting",
+          "status": "done",
+          "evidence": [
+            "src/lib/ops/request-cost.ts",
+            "tests/cost-meter.test.ts"
+          ],
+          "note": "Usage is metered server-side from provider responses; nothing client-reported is billed."
+        },
+        {
+          "item": "Abuse detection for account sharing",
+          "status": "done",
+          "evidence": [
+            "src/lib/orchestration/limits.ts",
+            "src/lib/accounts/new-device.ts"
+          ],
+          "note": "Concurrency caps, per-IP daily caps and new-device notices; a dedicated sharing detector is not built."
+        },
+        {
+          "item": "Fraud monitoring for high-value actions",
+          "status": "done",
+          "evidence": [
+            "src/lib/billing/studio-topup.ts",
+            "src/lib/security/events.ts",
+            "tests/studio-topup.test.ts"
+          ]
+        },
+        {
+          "item": "Tenant-specific resource budgets",
+          "status": "done",
+          "evidence": [
+            "src/lib/orchestration/limits.ts",
+            "src/lib/business/tiers.ts",
+            "tests/rate-limit-audit.test.ts"
+          ]
+        },
+        {
+          "item": "Automatic suspension of clearly abusive workloads with appropriate review",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/platform/cooldown.ts",
+            "src/lib/safety/store.ts",
+            "src/app/api/create/abuse/route.ts",
+            "tests/safety-reports.test.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "governance",
+      "title": "17. Security verification and governance",
+      "summary": "A threat model, a written lifecycle with gates and reviews, an accepted-risk register, disclosure with response targets, and evidence kept in the repository.",
+      "items": [
+        {
+          "item": "Documented threat model",
+          "status": "done",
+          "evidence": [
+            "docs/threat-model.md"
+          ]
+        },
+        {
+          "item": "Security requirements defined before implementation",
+          "status": "policy",
+          "evidence": [
+            "docs/security-policy.md",
+            ".github/pull_request_template.md"
+          ],
+          "note": "The PR template asks the security questions on every change and the policy requires a threat-model row before a new surface; a process, enforced by review rather than code."
+        },
+        {
+          "item": "Security architecture review",
+          "status": "policy",
+          "evidence": [
+            "docs/security-policy.md",
+            "docs/threat-model.md"
+          ],
+          "note": "Any change that crosses a trust boundary gets a design doc linked from the PR; with one maintainer this is a self-review against the threat model."
+        },
+        {
+          "item": "Secure coding standards",
+          "status": "done",
+          "evidence": [
+            "docs/security-policy.md",
+            "tests/secrets-audit.test.ts",
+            "tests/authz.test.ts"
+          ]
+        },
+        {
+          "item": "Automated unit security tests",
+          "status": "done",
+          "evidence": [
+            "tests/security.test.ts",
+            "tests/output-checklist.test.ts",
+            "tests/upload-scan.test.ts"
+          ]
+        },
+        {
+          "item": "Integration security tests",
+          "status": "done",
+          "evidence": [
+            "tests/mfa-signin.test.ts",
+            "tests/admin-mfa.test.ts",
+            "tests/security-events.test.ts"
+          ]
+        },
+        {
+          "item": "Authorization matrix tests",
+          "status": "done",
+          "evidence": [
+            "tests/authz.test.ts"
+          ]
+        },
+        {
+          "item": "Cross-tenant isolation tests",
+          "status": "done",
+          "evidence": [
+            "tests/account-scope.test.ts",
+            "tests/share-isolation.test.ts"
+          ]
+        },
+        {
+          "item": "Fuzz testing for critical parsers and inputs",
+          "status": "done",
+          "evidence": [
+            "tests/fuzz-parsers.test.ts"
+          ]
+        },
+        {
+          "item": "Penetration testing",
+          "status": "policy",
+          "evidence": [
+            "docs/security-policy.md",
+            "docs/known-gaps.md"
+          ],
+          "note": "Yearly external test is an owner purchase in the policy calendar; none has been done, and /security says so."
+        },
+        {
+          "item": "Independent security review for high-risk releases",
+          "status": "policy",
+          "evidence": [
+            "docs/security-policy.md"
+          ],
+          "note": "Yearly external review is budgeted in the policy calendar as an owner purchase; none has happened yet."
+        },
+        {
+          "item": "Vulnerability disclosure process",
+          "status": "done",
+          "evidence": [
+            "SECURITY.md",
+            "src/app/(marketing)/security/page.tsx",
+            "tests/security-page.test.ts"
+          ]
+        },
+        {
+          "item": "Security contact",
+          "status": "done",
+          "evidence": [
+            "SECURITY.md",
+            "tests/security.test.ts"
+          ]
+        },
+        {
+          "item": "Vulnerability remediation deadlines based on severity",
+          "status": "done",
+          "evidence": [
+            "SECURITY.md",
+            "docs/security-policy.md"
+          ]
+        },
+        {
+          "item": "Tracking of accepted security risks",
+          "status": "done",
+          "evidence": [
+            "docs/security-policy.md"
+          ]
+        },
+        {
+          "item": "Security regression testing",
+          "status": "done",
+          "evidence": [
+            "tests/security-checklist.test.ts",
+            "tests/security.test.ts",
+            "docs/security-progress.md"
+          ]
+        },
+        {
+          "item": "Disaster recovery testing",
+          "status": "policy",
+          "evidence": [
+            "docs/security-policy.md",
+            "docs/runbooks/backup-restore.md"
+          ],
+          "note": "Quarterly restore drill into a scratch Neon branch and a yearly full rehearsal; dates are recorded in the backup runbook (none held yet)."
+        },
+        {
+          "item": "Business continuity planning",
+          "status": "done",
+          "evidence": [
+            "docs/security-policy.md"
+          ]
+        },
+        {
+          "item": "Secure software development lifecycle",
+          "status": "done",
+          "evidence": [
+            "docs/security-policy.md",
+            ".github/workflows/ci.yml",
+            ".github/pull_request_template.md"
+          ]
+        },
+        {
+          "item": "Periodic dependency review",
+          "status": "done",
+          "evidence": [
+            ".github/dependabot.yml",
+            "docs/security-policy.md"
+          ]
+        },
+        {
+          "item": "Periodic permission review",
+          "status": "policy",
+          "evidence": [
+            "docs/security-policy.md"
+          ],
+          "note": "Quarterly review of GitHub collaborators, Vercel team, admin emails, OAuth scopes and API keys, recorded in the findings log."
+        },
+        {
+          "item": "Periodic secrets review",
+          "status": "policy",
+          "evidence": [
+            "docs/security-policy.md"
+          ],
+          "note": "Quarterly inventory of every environment variable, rotation of anything older than a year, deletion of unused ones; recorded in the findings log."
+        },
+        {
+          "item": "Security release gates",
+          "status": "done",
+          "evidence": [
+            "scripts/verify.mjs",
+            ".github/workflows/ci.yml",
+            "scripts/build-guard.mjs"
+          ]
+        },
+        {
+          "item": "Evidence retained for security verification",
+          "status": "done",
+          "evidence": [
+            "security/checklist.json",
+            ".github/workflows/ci.yml",
+            "docs/security-progress.md"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "generated-output",
+      "title": "18. Websites and apps Keplar generates",
+      "summary": "What every generated site and app gets automatically: the security and mobile checklist on each build (31 checks, deterministic repairs applied, the rest sent to the repair pass), plus the platform's own serving guarantees.",
+      "items": [
+        {
+          "item": "Security and mobile checklist runs on every build and is stored with the version",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/output-checklist.ts",
+            "src/lib/site-builder/job.ts",
+            "src/lib/app-builder/pipeline.ts",
+            "tests/output-checklist.test.ts"
+          ]
+        },
+        {
+          "item": "No inline, third-party or dynamic script; no inline handlers; no javascript: URLs; no frames, base or meta refresh",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/output-checklist.ts",
+            "src/lib/site-builder/sanitize.ts",
+            "src/lib/app-builder/files.ts"
+          ]
+        },
+        {
+          "item": "Every resource over HTTPS; new-tab links carry noopener; forms post to Keplar only; no password fields on static sites",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/output-checklist.ts",
+            "tests/output-checklist.test.ts"
+          ]
+        },
+        {
+          "item": "No credentials in generated files; no HTML built from data with innerHTML; no remote module imports",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/output-checklist.ts",
+            "tests/output-checklist.test.ts"
+          ]
+        },
+        {
+          "item": "Mobile viewport declared with zoom allowed; UTF-8 and language declared; every page titled",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/output-checklist.ts",
+            "tests/output-checklist.test.ts"
+          ],
+          "note": "Repaired automatically when the model forgets."
+        },
+        {
+          "item": "Images scale to the screen, carry alt text, and load lazily below the first",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/output-checklist.ts",
+            "tests/output-checklist.test.ts"
+          ],
+          "note": "Repaired automatically."
+        },
+        {
+          "item": "Layout adapts to width (media or container queries, clamp, minmax); no fixed page width; overflow fixed rather than hidden",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/output-checklist.ts",
+            "src/lib/app-builder/rubric.ts",
+            "src/lib/site-builder/qa/run.ts"
+          ],
+          "note": "Checked statically on every build and in a real browser at phone, tablet and desktop widths in the site QA run."
+        },
+        {
+          "item": "Readable text (12 px minimum) and 44 px tap targets",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/output-checklist.ts",
+            "src/lib/app-builder/rubric.ts"
+          ]
+        },
+        {
+          "item": "Reduced-motion preference respected",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/output-checklist.ts",
+            "tests/output-checklist.test.ts"
+          ],
+          "note": "Repaired automatically."
+        },
+        {
+          "item": "Main landmark, one h1, labelled form fields",
+          "status": "done",
+          "evidence": [
+            "src/lib/create/output-checklist.ts",
+            "src/lib/site-builder/finalize.ts"
+          ]
+        },
+        {
+          "item": "Served under a sandbox CSP with an opaque origin, nosniff, no framing by third parties, HSTS on custom domains",
+          "status": "done",
+          "evidence": [
+            "src/app/s/[slug]/[[...path]]/route.ts",
+            "src/lib/app-builder/files.ts",
+            "src/proxy.ts",
+            "tests/fx-frame-headers.test.ts"
+          ]
+        },
+        {
+          "item": "Forms and app APIs rate limited with honeypots; uploads scanned; app data isolated per app and environment",
+          "status": "done",
+          "evidence": [
+            "src/app/s/[slug]/[[...path]]/route.ts",
+            "src/lib/app-runtime/router.ts",
+            "src/lib/app-runtime/files.ts"
+          ]
+        },
+        {
+          "item": "Drafts are noindex and token-protected; publishing is the owner's explicit action; abuse reports and takedown on every published page",
+          "status": "done",
+          "evidence": [
+            "src/app/apps/draft/[siteId]/[version]/[token]/[[...path]]/route.ts",
+            "src/app/api/create/abuse/route.ts",
+            "docs/security.md"
+          ]
+        },
+        {
+          "item": "Failed required checks block a quiet ship: they go to the model repair pass and into the build report",
+          "status": "done",
+          "evidence": [
+            "src/lib/site-builder/job.ts",
+            "src/lib/app-builder/pipeline.ts"
+          ]
+        }
+      ]
+    }
+  ]
+}

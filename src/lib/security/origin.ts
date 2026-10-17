@@ -5,6 +5,7 @@
  * (curl, server-to-server) and are not CSRF-able, so they pass here and are
  * still subject to auth and rate limits.
  */
+import { securityEvent } from "./events";
 import { HttpError } from "@/lib/create/platform/http";
 import { hostOf, isAppHost } from "@/lib/domains/routing";
 import { siteUrl } from "@/lib/site";
@@ -60,7 +61,10 @@ export function isSameOrigin(req: Request): boolean {
 }
 
 export function assertSameOrigin(req: Request) {
-  if (!isSameOrigin(req)) throw new HttpError(403, "Request blocked: cross-site request.", "bad_origin");
+  if (!isSameOrigin(req)) {
+    securityEvent({ kind: "authz.denied", code: "bad_origin", req, status: 403 });
+    throw new HttpError(403, "Request blocked: cross-site request.", "bad_origin");
+  }
 }
 
 /** Paths under /api that legitimately receive cross-site or server-to-server POSTs. */

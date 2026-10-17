@@ -13,6 +13,7 @@
  * "setup", "enable" and "regenerate" need a sign-in from the last 10 minutes: 403 reauth_required otherwise
  * (src/lib/accounts/reauth.ts). The owner is emailed when 2FA is turned on or off and when recovery codes are replaced.
  */
+import { securityEvent } from "@/lib/security/events";
 import { getSession } from "@/lib/accounts/auth";
 import { completeMfa, persistenceEnabled, revokeSession } from "@/lib/accounts/persist";
 import { forgetSession } from "@/lib/accounts/session-guard";
@@ -104,6 +105,7 @@ export async function POST(req: Request) {
         return json({ ok: true, recoveryCodes: done.recoveryCodes });
       }
       const check = await verifySecondFactor(uid, code);
+      if (!check.ok) securityEvent({ kind: "auth.mfa_failed", code: `wrong_code:${action}`, req, accountId: uid, status: 400 });
       if (!check.ok) await wrongCode(uid, session.user.email, req.headers);
       if (!check.ok) throw new HttpError(400, "That code isn't right. Use a current code from your authenticator app, or a recovery code.", "wrong_code");
       if (action === "disable") {

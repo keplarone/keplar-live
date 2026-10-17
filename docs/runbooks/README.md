@@ -15,3 +15,8 @@ First move in any incident: **decide whether money or data is at risk.** If mone
 | Suspected breach, leaked key, abuse | [security-incident.md](security-incident.md) |
 | Bad deploy | [failed-deploy.md](failed-deploy.md) |
 | Backups, restore, rollback | [backup-restore.md](backup-restore.md), [rollback.md](rollback.md) |
+
+Policy and reference: severity levels and response targets in [../security-policy.md](../security-policy.md) §2; the threat model in
+[../threat-model.md](../threat-model.md); data, processors and breach-notification rules in [../privacy-inventory.md](../privacy-inventory.md);
+the control register in [../security-checklist.md](../security-checklist.md). Security events (sign-in bursts, authorization failures,
+admin actions, secret access, agent actions) are on `/admin/security`.

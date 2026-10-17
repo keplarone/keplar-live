@@ -30,6 +30,12 @@ jobs:
         run: node scripts/secret-scan.mjs
       - name: Production dependency audit
         run: npm audit --omit=dev --audit-level=high
+      - name: Lockfile integrity
+        # npm ci above already refuses a package.json / package-lock.json mismatch; this makes a lockfile that points at a
+        # registry other than npmjs.org (dependency confusion, a swapped tarball) fail loudly too.
+        run: node scripts/lockfile-check.mjs
+      - name: Security checklist evidence
+        run: node scripts/security-checklist.mjs --check
       - name: Typecheck
         run: npx tsc --noEmit
       - name: Lint
@@ -48,3 +54,13 @@ jobs:
           KEPLAR_DEV_TOOLS: '1'
           KEPLAR_MX_CHECK: 'off'
           RESEND_API_KEY: ''
+      - name: Secret scan of the build output
+        # Nothing under .next/static (what browsers download) may contain a credential pattern.
+        run: node scripts/secret-scan.mjs --dir .next/static
+      - name: Software bill of materials (CycloneDX, production dependencies)
+        run: npm sbom --sbom-format cyclonedx --omit dev --package-lock-only > sbom.cdx.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: sbom-${{ github.sha }}
+          path: sbom.cdx.json
+          retention-days: 90

@@ -13,6 +13,7 @@
  */
 import { collection } from "@/lib/create/platform/store";
 import { pruneSeoEvents } from "@/lib/seo/events";
+import { pruneSecurityEvents } from "@/lib/security/events";
 import { keepAlive } from "@/lib/create/platform/after";
 import { maybePruneViews } from "@/lib/business/traffic";
 
@@ -96,6 +97,7 @@ export function maybePrune(at = Date.now()): void {
   keepAlive(() => pruneTelemetry(at), "retention: telemetry");
   keepAlive(() => pruneOperational(at), "retention: operational");
   keepAlive(() => pruneSeoEvents(at), "retention: seo events"); // search-to-activation events: 180 days (KEPLAR_RETAIN_SEO_EVENTS_DAYS)
+  keepAlive(() => pruneSecurityEvents(at), "retention: security events"); // 90 days (KEPLAR_RETAIN_SECURITY_EVENTS_DAYS), src/lib/security/events.ts
   keepAlive(() => maybePruneViews(at), "retention: page views"); // site page views (counters and legacy rows): 90 days, one bulk delete each
 }
 export const resetPruneClock = () => {

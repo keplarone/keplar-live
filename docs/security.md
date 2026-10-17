@@ -1,6 +1,32 @@
 # Security summary
 
-Report issues to team@keplar.one (`/.well-known/security.txt`).
+Report issues to team@keplar.one (`/.well-known/security.txt`). The full control register (every item of the Keplar security checklist, with
+status and evidence) is `docs/security-checklist.md`, rendered from `security/checklist.json`; the policy, severity levels and accepted-risk
+register are `docs/security-policy.md`; the threat model `docs/threat-model.md`; data and processors `docs/privacy-inventory.md`; cloud and
+delivery `docs/infrastructure.md`; agents `docs/agent-security.md`.
+
+## Oct 17, 2026: checklist pass (what was added)
+- **Security event log and alerts** (`src/lib/security/events.ts`): authorization failures (anonymous or cross-site calls, refused admin calls),
+  sign-in limiter trips, wrong second factors, admin and kill-switch actions, billing grants and revocations, secret unseals, agent actions,
+  rejected uploads and data exports are structured log lines and `security_events` rows (hashed IP and account, request id, 90-day retention,
+  `/admin/security`). Thresholds per kind email the owner once per hour. Tests: `tests/security-events.test.ts`.
+- **Sessions**: idle expiry (30 days unused) and absolute expiry (180 days from sign-in) on top of the 60-day sliding window
+  (`src/lib/accounts/persist.ts`, `KEPLAR_SESSION_IDLE_DAYS`, `KEPLAR_SESSION_MAX_DAYS`).
+- **Uploads**: structural malware checks (PDFs with JavaScript, launch or open actions, embedded files; executables or archives behind an image
+  type; image/HTML polyglots; decompression bombs by declared size) and an optional external scanner (`KEPLAR_MALWARE_SCAN_URL`, fail-closed with
+  `KEPLAR_MALWARE_SCAN_REQUIRED=1`): `src/lib/security/upload-scan.ts`, wired into generated-app uploads. Tests: `tests/upload-scan.test.ts`.
+- **Edge**: one 64 MB body cap on every `/api` request before any route runs (`src/proxy.ts`); routes keep their smaller caps.
+- **Generated sites and apps**: the security and mobile checklist (`src/lib/create/output-checklist.ts`): 31 checks run on every build, the
+  deterministic ones repaired automatically (viewport, zoom allowed, charset, lang, title, noopener, alt, lazy and fluid images, reduced motion)
+  and the rest handed to the repair pass; the result is stored with the version and shown in the build report. Tests: `tests/output-checklist.test.ts`,
+  `tests/fuzz-parsers.test.ts`.
+- **Delivery**: CodeQL (SAST), dependency review (SCA) on pull requests, lockfile integrity (`scripts/lockfile-check.mjs`), a secret scan of the
+  build output, a CycloneDX SBOM artifact, CODEOWNERS, a PR security checklist, `SECURITY.md`; GitHub secret scanning with push protection and
+  Dependabot security updates turned on; a ruleset on `main` (pull requests only, CI required, no force pushes or deletion).
+  `tests/infra-config.test.ts` scans the configuration itself.
+- **Browser source maps** are explicitly off (`productionBrowserSourceMaps: false`).
+- **Runbooks and policy**: severity levels, revocation order, notification rules and quarterly exercises in `docs/runbooks/security-incident.md`;
+  SDLC, accepted-risk register, review calendar, key rotation, third-party script inventory, API deprecation and continuity in `docs/security-policy.md`.
 
 ## Headers (`next.config.ts`, `src/lib/security/headers.ts`)
 - `Content-Security-Policy`: `default-src 'self'`; scripts `'self' 'unsafe-inline'` (the inline before-paint theme script and

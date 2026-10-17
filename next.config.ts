@@ -13,6 +13,8 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   agentRules: false,
   poweredByHeader: false,
+  // Source map policy: browser source maps are never published (server maps stay inside the build; docs/security-policy.md).
+  productionBrowserSourceMaps: false,
   // The site test browser (Chromium) is a binary package: keep it out of the bundle and make sure its files ship with the route.
   serverExternalPackages: ["@sparticuz/chromium", "playwright-core"],
   outputFileTracingIncludes: {
