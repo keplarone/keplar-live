@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { CARD_LENS_MAP, PILL_LENS_MAP } from "./lens-maps";
 
 /**
  * Glass capability flags on <html>:
@@ -85,24 +84,35 @@ export function GlassBudget() {
 }
 
 /**
- * A thick-glass lens. The map is the slope of a blurred rounded plate (strongest on the rim, still in
- * the middle). Red, green and blue are displaced at different scales and added back, so a colour fringe
- * appears only where the sky bends. The map is a PNG: an in-document SVG feImage stays blank when the
- * backdrop is the WebGL cloud canvas.
- * `liquid-glass` / `lg-refract` are the pill. `liquid-glass-card` is the squarer card.
+ * A thick-glass lens. The slope is a blurred plate (flat in the middle, steep at the rim),
+ * built from filter primitives so it does not depend on an feImage map.
+ * Red, green and blue are displaced at different scales and added back, which leaves a
+ * thin colour fringe where a cloud edge bends. Scale is in CSS pixels (userSpaceOnUse).
+ * The filter region extends well past a short pill so the rim can sample the sky outside it.
+ * `liquid-glass` / `lg-refract` are the pill. `liquid-glass-card` is the card.
  */
-function lens(map: string, red: number, green: number, blue: number) {
+function lens(red: number, green: number, blue: number) {
   return (
     <>
-      <feImage href={map} x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="map" />
+      <feFlood floodColor="#ffffff" floodOpacity="1" x="6%" y="8%" width="88%" height="84%" result="plate" />
+      <feGaussianBlur in="plate" stdDeviation="9" result="h" />
+      <feOffset in="h" dx="2" dy="0" result="hR" />
+      <feOffset in="h" dx="-2" dy="0" result="hL" />
+      <feComposite in="hR" in2="hL" operator="arithmetic" k2="14" k3="-14" k4="0.5" result="dx" />
+      <feOffset in="h" dx="0" dy="2" result="hD" />
+      <feOffset in="h" dx="0" dy="-2" result="hU" />
+      <feComposite in="hD" in2="hU" operator="arithmetic" k2="14" k3="-14" k4="0.5" result="dy" />
+      <feColorMatrix in="dx" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="rx" />
+      <feColorMatrix in="dy" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="gy" />
+      <feComposite in="rx" in2="gy" operator="arithmetic" k2="1" k3="1" result="map" />
       <feDisplacementMap in="SourceGraphic" in2="map" scale={red} xChannelSelector="R" yChannelSelector="G" result="dr" />
       <feDisplacementMap in="SourceGraphic" in2="map" scale={green} xChannelSelector="R" yChannelSelector="G" result="dg" />
       <feDisplacementMap in="SourceGraphic" in2="map" scale={blue} xChannelSelector="R" yChannelSelector="G" result="db" />
       <feColorMatrix in="dr" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="rch" />
       <feColorMatrix in="dg" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="gch" />
       <feColorMatrix in="db" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="bch" />
-      <feComposite in="rch" in2="gch" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="rg" />
-      <feComposite in="rg" in2="bch" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" />
+      <feComposite in="rch" in2="gch" operator="arithmetic" k2="1" k3="1" result="rg" />
+      <feComposite in="rg" in2="bch" operator="arithmetic" k2="1" k3="1" />
     </>
   );
 }
@@ -110,9 +120,9 @@ function lens(map: string, red: number, green: number, blue: number) {
 export function GlassDefs() {
   return (
     <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true" focusable="false">
-      <filter id="liquid-glass" x="-25%" y="-25%" width="150%" height="150%" colorInterpolationFilters="sRGB">{lens(PILL_LENS_MAP, 90, 58, 32)}</filter>
-      <filter id="lg-refract" x="-25%" y="-25%" width="150%" height="150%" colorInterpolationFilters="sRGB">{lens(PILL_LENS_MAP, 90, 58, 32)}</filter>
-      <filter id="liquid-glass-card" x="-25%" y="-25%" width="150%" height="150%" colorInterpolationFilters="sRGB">{lens(CARD_LENS_MAP, 80, 52, 30)}</filter>
+      <filter id="liquid-glass" x="-50%" y="-120%" width="200%" height="340%" colorInterpolationFilters="sRGB" primitiveUnits="userSpaceOnUse">{lens(180, 142, 104)}</filter>
+      <filter id="lg-refract" x="-50%" y="-120%" width="200%" height="340%" colorInterpolationFilters="sRGB" primitiveUnits="userSpaceOnUse">{lens(180, 142, 104)}</filter>
+      <filter id="liquid-glass-card" x="-50%" y="-120%" width="200%" height="340%" colorInterpolationFilters="sRGB" primitiveUnits="userSpaceOnUse">{lens(170, 136, 102)}</filter>
     </svg>
   );
 }

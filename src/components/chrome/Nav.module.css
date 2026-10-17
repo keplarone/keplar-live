@@ -37,6 +37,7 @@
 
 /* Clear pills: no frost. Chromium bends the sharp sky; other browsers keep the tint and the slab edge. */
 .brand, .links ul, .icon, .signIn {
+  isolation: isolate;
   background: var(--glass-clear);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;

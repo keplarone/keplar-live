@@ -16,11 +16,14 @@
   --sky-glass: rgb(22 22 26 / 0.3);
   --glass-clear: rgb(12 12 14 / 0.16);
   --glass-depth:
-    inset 0 1px 0 rgb(255 255 255 / 0.26),
-    inset 0 0 0 1px rgb(255 255 255 / 0.12),
-    inset 0 -14px 20px rgb(0 0 0 / 0.34),
-    0 1px 1px rgb(0 0 0 / 0.25),
-    0 12px 26px rgb(0 0 0 / 0.38);
+    inset 0 2px 0 rgb(255 255 255 / 0.42),
+    inset 0 -3px 0 rgb(0 0 0 / 0.62),
+    inset 2px 0 0 rgb(255 255 255 / 0.14),
+    inset -2px 0 0 rgb(0 0 0 / 0.32),
+    inset 0 0 0 1.5px rgb(255 255 255 / 0.16),
+    inset 0 -18px 22px rgb(0 0 0 / 0.46),
+    0 1px 1px rgb(0 0 0 / 0.28),
+    0 10px 22px rgb(0 0 0 / 0.36);
   --sky-edge: var(--glass-depth);
   --lg-fill: rgb(30 30 30 / 0.58);
   --lg-fill-strong: rgb(30 30 30 / 0.78);
@@ -38,10 +41,13 @@
   --sky-glass: rgb(255 255 255 / 0.22);
   --glass-clear: rgb(255 255 255 / 0.06);
   --glass-depth:
-    inset 0 1px 0 rgb(255 255 255 / 0.72),
-    inset 0 0 0 1px rgb(255 255 255 / 0.36),
-    inset 0 -12px 18px rgb(14 15 18 / 0.07),
-    0 1px 1px rgb(14 15 18 / 0.05),
+    inset 0 2px 0 rgb(255 255 255 / 0.92),
+    inset 0 -3px 0 rgb(14 15 18 / 0.18),
+    inset 2px 0 0 rgb(255 255 255 / 0.55),
+    inset -2px 0 0 rgb(14 15 18 / 0.08),
+    inset 0 0 0 1.5px rgb(255 255 255 / 0.5),
+    inset 0 -16px 20px rgb(14 15 18 / 0.1),
+    0 1px 1px rgb(14 15 18 / 0.06),
     0 10px 22px rgb(14 15 18 / 0.12);
   --sky-edge: var(--glass-depth);
   --lg-fill: rgb(255 255 255 / 0.42);
@@ -84,14 +90,17 @@
 }
 .lg-strong { background: var(--lg-fill-strong); }
 
-/* Refraction (Chromium: SVG displacement of the backdrop). Subtle on purpose. */
+/* Refraction (Chromium: SVG displacement of the backdrop). The rim bends; the fringe stays thin. */
 html[data-lens] .lg-lens {
+  isolation: isolate;
   -webkit-backdrop-filter: url(#lg-refract);
   backdrop-filter: url(#lg-refract);
 }
 
-/* Pills and other non-card glass: clear, no frost. Chromium refracts the sharp sky. */
+/* Pills and other non-card glass: clear, no frost. Chromium refracts the sharp sky.
+   isolation gives the backdrop-filter a stacking context, which Chromium needs before url() runs. */
 [data-glass-pill] {
+  isolation: isolate;
   background: var(--glass-clear);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
@@ -101,18 +110,19 @@ html[data-lens] [data-glass-pill][data-distort] {
   -webkit-backdrop-filter: url(#liquid-glass);
   backdrop-filter: url(#liquid-glass);
 }
-/* Cards: the same lens, then a light frost. */
+/* Cards: a light frost, then the lens so the colour fringe is not blurred away. */
 .lg-panel,
 [data-glass-live],
 [data-glass-scope] [class*="panel"] {
+  isolation: isolate;
   background: var(--sky-glass);
   -webkit-backdrop-filter: blur(6px) saturate(1.12);
   backdrop-filter: blur(6px) saturate(1.12);
   box-shadow: var(--glass-depth);
 }
 html[data-lens] [data-distort]:not([data-glass-pill]) {
-  -webkit-backdrop-filter: url(#liquid-glass-card) blur(6px) saturate(1.12);
-  backdrop-filter: url(#liquid-glass-card) blur(6px) saturate(1.12);
+  -webkit-backdrop-filter: blur(6px) saturate(1.12) url(#liquid-glass-card);
+  backdrop-filter: blur(6px) saturate(1.12) url(#liquid-glass-card);
 }
 @media (prefers-reduced-motion: reduce) {
   :root { --lg-fill: var(--lg-fill-strong); --sky-glass: var(--lg-fill-strong); --glass-clear: rgb(255 255 255 / 0.78); }

@@ -147,7 +147,8 @@ fn cloudShade(uv: vec2<f32>, time: f32, aspect: f32, zenith: vec3<f32>, horizon:
   col = col + sky * transmittance;
   let hx = abs(uv.x - 0.5);
   let hero = smoothstep(0.34, 0.1, hx) * smoothstep(0.4, 0.6, uv.y) * smoothstep(0.98, 0.76, uv.y);
-  col = mix(col, sky, hero * 0.9);
+  let nav = smoothstep(0.84, 0.94, uv.y);
+  col = mix(col, sky, hero * 0.9 * (1.0 - nav));
   return vec4<f32>(col, 1.0);
 }`, [asInclude(density)]);
   return shade;
@@ -205,9 +206,9 @@ export async function createVolumetric(canvas: HTMLCanvasElement, opts: { dark: 
     const h = new Color(next.horizon);
     const l = new Color(next.lit);
     const s = new Color(next.shadow);
-    (zenith.value as Color).copy(z).lerp(s, gray * 0.34);
-    (horizon.value as Color).copy(h).lerp(s, gray * 0.22);
-    (lit.value as Color).copy(l).lerp(s, gray);
+    (zenith.value as Color).copy(z).lerp(new Color("#07080c"), gray * 0.4);
+    (horizon.value as Color).copy(h).lerp(s, gray * 0.12);
+    (lit.value as Color).copy(l).lerp(s, gray * 0.42);
     (shadow.value as Color).copy(s);
   };
   return {

@@ -36,7 +36,7 @@ const PROFILES: Record<SkyVariant, SkyProfile> = {
   overcast: { coverage: 1, gray: 0.58, drop: 0.85, haze: 0.2, bulk: 1.4, flat: 0.7, clearing: 0.08, precip: "none", precipAmount: 0, flash: false },
   fog: { coverage: 0.85, gray: 0.28, drop: 1.05, haze: 0.62, bulk: 1.2, flat: 0.45, clearing: 0, precip: "none", precipAmount: 0, flash: false },
   drizzle: { coverage: 1, gray: 0.42, drop: 0.65, haze: 0.24, bulk: 1.25, flat: 0.62, clearing: 0.08, precip: "rain", precipAmount: 0.4, flash: false },
-  rain: { coverage: 1, gray: 0.64, drop: 0.75, haze: 0.14, bulk: 1.32, flat: 0.72, clearing: 0.06, precip: "rain", precipAmount: 0.85, flash: false },
+  rain: { coverage: 1, gray: 0.4, drop: 0.35, haze: 0.1, bulk: 1.2, flat: 0.78, clearing: 0.2, precip: "rain", precipAmount: 0.85, flash: false },
   thunderstorm: { coverage: 1, gray: 0.74, drop: 0.9, haze: 0.1, bulk: 1.45, flat: 0.78, clearing: 0.02, precip: "rain", precipAmount: 1, flash: true },
   snow: { coverage: 0.95, gray: 0.16, drop: 0.4, haze: 0.22, bulk: 1.15, flat: 0.8, clearing: 0.12, precip: "snow", precipAmount: 0.8, flash: false },
 };

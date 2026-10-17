@@ -87,8 +87,10 @@
      within one beat; anything after the third block simply arrives with it. Not the Keplar Business workspace: it is an app window,
      and sliding its shell in pushed the bottom 18px off-screen while it ran. */
   @keyframes kp-page-in { from { opacity: 0; translate: 0 10px; } }
+  /* backwards, not both. Chromium keeps a finished opacity/translate animation as a backdrop root when
+     fill-mode is both, and an SVG backdrop-filter inside that root never samples the sky. */
   #main:not([data-kb]) > :not([class*="workspace-module__"]) > :is(header, section, div, article, nav, form):nth-child(-n + 6) {
-    animation: kp-page-in 360ms var(--m-ease-out) both;
+    animation: kp-page-in 360ms var(--m-ease-out) backwards;
   }
   #main > * > :nth-child(2) { animation-delay: 40ms; }
   #main > * > :nth-child(n + 3) { animation-delay: 80ms; }
@@ -103,7 +105,7 @@
   #main > [data-ks-root] > * { animation: none !important; } /* outranks the page-entry selector above */
 
   /* App: each view's header and content ease in together when the view opens */
-  [class*="App-module__"][class$="__view"] > * { animation: kp-page-in 280ms var(--m-ease-out) both; }
+  [class*="App-module__"][class$="__view"] > * { animation: kp-page-in 280ms var(--m-ease-out) backwards; }
   [class*="App-module__"][class$="__view"] > :nth-child(n + 2) { animation-delay: 40ms; }
 }
 

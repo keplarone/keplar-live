@@ -18,6 +18,14 @@ test("liquid glass: every glass surface has fallbacks (no backdrop-filter, reduc
   assert.match(caps, /id="lg-refract"/);
   assert.match(caps, /id="liquid-glass-card"/);
   assert.match(caps, /feDisplacementMap/);
+  assert.match(caps, /colorInterpolationFilters="sRGB"/);
+  assert.match(caps, /primitiveUnits="userSpaceOnUse"/);
+  assert.match(caps, /y="-120%"/, "the pill filter region reaches past the rim so the lens can sample the sky");
+  assert.doesNotMatch(caps, /<feImage/, "the lens is primitives, not an feImage map");
+  assert.match(css, /\[data-glass-pill\] \{[^}]*isolation: isolate/s);
+  const entry = read("src/styles/redesign.css");
+  assert.match(entry, /animation: kp-page-in 360ms var\(--m-ease-out\) backwards/, "page entry must not keep a backdrop root after it finishes");
+  assert.doesNotMatch(entry, /kp-page-in[^;\n]*\bboth\b/);
   const nav = read("src/components/chrome/Nav.module.css");
   const pills = nav.slice(nav.indexOf(".brand, .links ul"), nav.indexOf(".brand {"));
   assert.match(pills, /backdrop-filter: none/, "nav pills have no frost");

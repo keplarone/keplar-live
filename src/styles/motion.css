@@ -145,7 +145,10 @@
 ::view-transition-old(.kp-route-out) { animation: m-fade-out var(--m-dur-1) var(--m-ease-in) both; }
 ::view-transition-new(.kp-route-in) { animation: m-rise-in var(--m-dur-3) var(--m-ease-out) both; --m-rise: var(--m-dist-2); }
 /* The floating nav is an anchor: it never moves or fades between pages. */
-.m-vt-nav { view-transition-name: kp-nav; }
+/* The nav is not a named view-transition snapshot. Chromium refuses to run an SVG
+   backdrop-filter on anything inside an element that has view-transition-name, so the
+   liquid-glass lens would never bend the sky. The group rules stay for anything that opts in. */
+.m-vt-nav { view-transition-name: none; }
 ::view-transition-group(kp-nav) { animation: none; z-index: 100; }
 ::view-transition-old(kp-nav) { display: none; }
 ::view-transition-new(kp-nav) { animation: none; }
