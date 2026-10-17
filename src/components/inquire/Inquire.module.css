@@ -338,7 +338,7 @@
 }
 
 .pill input:checked + span::before {
-  background: #b27cff;
+  background: var(--c-accent);
   box-shadow: none;
 }
 

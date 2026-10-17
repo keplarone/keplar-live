@@ -82,7 +82,7 @@ select.input {
   background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
   background-position: calc(100% - 24px) 50%, calc(100% - 18px) 50%; background-size: 6px 6px, 6px 6px; background-repeat: no-repeat;
 }
-select.input option { background: #0e0d13; color: var(--w-ink); }
+select.input option { background: #101012; color: var(--w-ink); }
 .textarea { width: 100%; padding: 12px 18px; border-radius: 20px; resize: vertical; line-height: 1.55; }
 .input:hover, .textarea:hover { background-color: var(--kb-field-hover); }
 .root :is(.input, .textarea):focus-visible, .root :is(.input, .textarea):focus { outline: none; background-color: var(--kb-field-focus); box-shadow: var(--kb-field-depth), var(--kb-glow); }

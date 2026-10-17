@@ -28,7 +28,7 @@
 .stages li { display: flex; gap: var(--s-3); align-items: center; transition: color var(--m-dur-2) var(--m-ease-out); }
 .stages i { width: 8px; height: 8px; border-radius: 50%; border: 1px solid currentColor; flex: none; }
 .stages li[data-s="active"] { color: var(--c-ink); }
-.stages li[data-s="active"] i { background: #c39bff; border-color: #c39bff; box-shadow: none; animation: pulse 1.1s ease-in-out infinite; }
+.stages li[data-s="active"] i { background: var(--c-accent); border-color: var(--c-accent); box-shadow: none; animation: pulse 1.1s ease-in-out infinite; }
 .stages li[data-s="done"] { color: var(--c-ink-2); }
 .stages li[data-s="done"] i { background: var(--c-ink-2); border-color: var(--c-ink-2); }
 @keyframes pulse { 50% { opacity: 0.35; } }

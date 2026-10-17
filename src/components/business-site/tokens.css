@@ -4,11 +4,11 @@
  *
  * Space UI (docs/design/space-ui.md): Keplar Business wears Space Studio's language, like the rest of the Keplar family. 3D
  * primaries and glass secondaries, pill controls, 28px cards that separate by depth and light instead of outlines, Montserrat,
- * the violet focus glow, Space Studio's curves.
+ * the solid focus ring, Space Studio's curves.
  *  - The storefront, /account, /chatgpt and the document pages follow the site theme (Light by default, Dark): their pages are
  *    transparent so the family's shared sky shows through, with readable glass cards on top.
  *  - The workspace (/work) is always dark (BusinessWorkspace pins the page to dark): solid panels, no sky.
- * Colour carries meaning only: violet is focus and selection, blue is traffic and people, green is money and passing work,
+ * Colour carries meaning only: graphite is focus and selection, blue is traffic and people, green is money and passing work,
  * yellow is waiting for a person, red is failure.
  */
 [data-kb] {
@@ -28,10 +28,10 @@
   --kb-ink-inverse: #ffffff;
   --kb-nav-ink: #2c2f36;
   /* meaning */
-  --kb-accent: #7d3bc4;
-  --kb-accent-rgb: 125 59 196;
-  --kb-accent-ink: #5f2a9a;
-  --kb-accent-soft: rgb(125 59 196 / 0.1);
+  --kb-accent: #17171a;
+  --kb-accent-rgb: 23 23 26;
+  --kb-accent-ink: #17171a;
+  --kb-accent-soft: rgb(var(--kb-accent-rgb) / 0.1);
   --kb-blue: #2b6f8a;
   --kb-blue-deep: #235d74;
   --kb-green: #13865a;
@@ -41,20 +41,20 @@
   --kb-del: #c62c3b;
   --kb-del-bg: rgb(198 44 59 / 0.08);
   --kb-warn: #8a5a00;
-  --kb-focus: #7d3bc4;
+  --kb-focus: var(--kb-accent);
 
   /* Space recipes (light): white glass on the sky */
   --kb-glass: linear-gradient(180deg, rgb(255 255 255 / 0.9), rgb(250 250 252 / 0.86));
   --kb-glass-solid: linear-gradient(180deg, #ffffff, #fafbfc);
   --kb-card-deep: linear-gradient(180deg, #ffffff, #f6f7fa);
-  --kb-card-featured: linear-gradient(180deg, #ffffff, #f7f2ff);
+  --kb-card-featured: linear-gradient(180deg, #ffffff, #f6f7fa);
   --kb-depth: inset 0 1px 0 #ffffff, 0 1px 2px rgb(14 15 18 / 0.05), 0 16px 40px -18px rgb(14 15 18 / 0.22);
   --kb-depth-sm: inset 0 1px 0 #ffffff, 0 1px 2px rgb(14 15 18 / 0.05), 0 10px 26px -14px rgb(14 15 18 / 0.2);
   --kb-lift: inset 0 1px 0 #ffffff, 0 2px 4px rgb(14 15 18 / 0.06), 0 24px 54px -22px rgb(14 15 18 / 0.3);
   --kb-featured-depth: inset 0 1px 0 #ffffff, 0 2px 4px rgb(14 15 18 / 0.06), 0 24px 54px -22px rgb(14 15 18 / 0.3);
   --kb-pill: rgb(255 255 255 / 0.86);
   --kb-pill-depth: inset 0 1px 0 #ffffff, 0 1px 2px rgb(14 15 18 / 0.06), 0 12px 30px -12px rgb(14 15 18 / 0.25);
-  --kb-pill-hover: 0 14px 40px -10px rgb(125 59 196 / 0.3);
+  --kb-pill-hover: 0 14px 40px -10px rgb(var(--kb-accent-rgb) / 0.3);
   --kb-hover: rgb(14 15 18 / 0.05);
   --kb-press: rgb(14 15 18 / 0.09);
   --kb-selected: rgb(14 15 18 / 0.07);
@@ -65,7 +65,7 @@
   /* the field's edge holds 3:1 (WCAG 1.4.11) without reading as an outline */
   --kb-field-depth: inset 0 1px 2px rgb(14 15 18 / 0.08), inset 0 0 0 1px rgb(14 15 18 / 0.5);
   --kb-option-bg: #ffffff;
-  --kb-glow: 0 0 0 2px #ffffff, 0 0 0 4px #7d3bc4;
+  --kb-glow: 0 0 0 2px #ffffff, 0 0 0 4px var(--kb-accent);
   --kb-invalid: 0 0 0 2px rgb(198 44 59 / 0.9);
   /* 3D buttons: an ink face over a black ledge (primary), a white face over a grey ledge (secondary) */
   --kb-p-face: linear-gradient(180deg, #3a3a42 0%, #1d1d22 55%, #0e0e12 100%);
@@ -79,7 +79,7 @@
   --kb-g-depth-hover: inset 0 1px 0 #ffffff, inset 0 -2px 0 rgb(14 15 18 / 0.05), 0 4px 0 #cfcfd8, 0 12px 26px rgb(14 15 18 / 0.16);
   --kb-g-depth-press: inset 0 1px 0 #ffffff, 0 0 0 #cfcfd8, 0 2px 6px rgb(14 15 18 / 0.12);
   --kb-g-ledge: #cfcfd8;
-  --kb-grad: linear-gradient(100deg, #7d3bc4 0%, #b0368f 20%, #2b6f8a 40%, #8a4bc8 60%, #a8357c 80%, #7d3bc4 100%);
+  --kb-grad: linear-gradient(0deg, var(--kb-accent), var(--kb-accent));
   /* product examples: a dark terminal on both themes (code reads as code), the example window's frame follows the theme */
   --kb-term: #0b0b10;
   --kb-term-ink: #e8e8ec;
@@ -154,10 +154,10 @@
   --kb-ink-3: #8a8a94;
   --kb-ink-inverse: #000000;
   --kb-nav-ink: #d6d6de;
-  --kb-accent: #c39bff;
-  --kb-accent-rgb: 195 155 255;
-  --kb-accent-ink: #e3cfff;
-  --kb-accent-soft: rgb(195 155 255 / 0.18);
+  --kb-accent: #f4f4f6;
+  --kb-accent-rgb: 244 244 246;
+  --kb-accent-ink: #f4f4f6;
+  --kb-accent-soft: rgb(var(--kb-accent-rgb) / 0.18);
   --kb-blue: #7cb2ff;
   --kb-blue-deep: #5a96ff;
   --kb-green: #45e09a;
@@ -167,12 +167,12 @@
   --kb-del: #ff7a85;
   --kb-del-bg: rgb(255 122 133 / 0.1);
   --kb-warn: #ffd66b;
-  --kb-focus: #c39bff;
+  --kb-focus: var(--kb-accent);
 
-  --kb-glass: linear-gradient(180deg, rgb(22 20 30 / 0.84), rgb(10 9 14 / 0.88));
-  --kb-glass-solid: linear-gradient(180deg, #100f16, #07070b);
-  --kb-card-deep: linear-gradient(180deg, #13121a, #0a090e);
-  --kb-card-featured: linear-gradient(180deg, rgb(32 26 46 / 0.97), rgb(12 10 18 / 0.97));
+  --kb-glass: linear-gradient(180deg, rgb(22 22 24 / 0.84), rgb(10 10 12 / 0.88));
+  --kb-glass-solid: linear-gradient(180deg, #101014, #07070b);
+  --kb-card-deep: linear-gradient(180deg, #131316, #0a0a0c);
+  --kb-card-featured: linear-gradient(180deg, rgb(30 30 34 / 0.97), rgb(12 12 14 / 0.97));
   --kb-depth: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 24px 60px rgb(0 0 0 / 0.55);
   --kb-depth-sm: inset 0 1px 0 rgb(255 255 255 / 0.055), 0 14px 36px rgb(0 0 0 / 0.45);
   --kb-lift: inset 0 1px 0 rgb(255 255 255 / 0.1), 0 28px 70px rgb(0 0 0 / 0.6);
@@ -188,8 +188,8 @@
   --kb-field-hover: rgb(255 255 255 / 0.08);
   --kb-field-focus: rgb(255 255 255 / 0.09);
   --kb-field-depth: inset 0 1px 0 rgb(255 255 255 / 0.04), inset 0 -8px 20px rgb(0 0 0 / 0.25), inset 0 0 0 1px rgb(255 255 255 / 0.32);
-  --kb-option-bg: #0e0d13;
-  --kb-glow: 0 0 0 2px #000000, 0 0 0 4px #c39bff;
+  --kb-option-bg: #101012;
+  --kb-glow: 0 0 0 2px #000000, 0 0 0 4px var(--kb-accent);
   --kb-invalid: 0 0 0 2px rgb(255 122 133 / 0.95);
   --kb-p-face: linear-gradient(180deg, #ffffff 0%, #ececf2 55%, #d9d9e2 100%);
   --kb-p-ink: #000000;
@@ -197,12 +197,12 @@
   --kb-p-depth-hover: inset 0 1px 0 #ffffff, inset 0 -3px 0 rgb(0 0 0 / 0.1), 0 5px 0 #8c8a99, 0 14px 30px rgb(0 0 0 / 0.6);
   --kb-p-depth-press: inset 0 1px 0 #ffffff, inset 0 -1px 0 rgb(0 0 0 / 0.1), 0 0 0 #8c8a99, 0 4px 10px rgb(0 0 0 / 0.5);
   --kb-p-ledge: #8c8a99;
-  --kb-g-face: linear-gradient(180deg, rgb(40 38 52 / 0.92), rgb(18 17 24 / 0.94));
+  --kb-g-face: linear-gradient(180deg, rgb(40 40 44 / 0.92), rgb(18 18 20 / 0.94));
   --kb-g-depth: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 3px 0 rgb(0 0 0 / 0.65), 0 14px 36px rgb(0 0 0 / 0.5);
   --kb-g-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.12), 0 4px 0 rgb(0 0 0 / 0.65), 0 20px 46px rgb(0 0 0 / 0.55);
   --kb-g-depth-press: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 0 0 rgb(0 0 0 / 0.65), 0 6px 16px rgb(0 0 0 / 0.5);
   --kb-g-ledge: rgb(0 0 0 / 0.65);
-  --kb-grad: linear-gradient(100deg, #b27cff 0%, #f08bd8 17%, #8ff0ff 34%, #a98cff 51%, #ff8fd0 68%, #c58cff 84%, #8fd8ff 100%);
+  --kb-grad: linear-gradient(0deg, var(--kb-accent), var(--kb-accent));
   --kb-term: #050507;
   color-scheme: dark;
 }

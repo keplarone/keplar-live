@@ -121,7 +121,7 @@
 @keyframes swapBlurOut { 0%, 18% { filter: none; } 40% { filter: url(#sp-mb-y); } 65% { filter: url(#sp-mb-y2); } 100% { filter: url(#sp-mb-y3); } }
 .you {
   font-style: normal; font-weight: 700;
-  background: linear-gradient(100deg, #c58cff 0%, #f08bd8 18%, #a98cff 36%, #d76cff 54%, #b36bff 72%, #f0a0ff 90%, #c58cff 100%);
+  background: linear-gradient(0deg, var(--c-accent), var(--c-accent));
   background-size: 400% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
   animation: youShift 14s ease-in-out infinite;
 }
@@ -145,7 +145,7 @@
 .journey { position: fixed; left: var(--sp-5); bottom: var(--sp-5); z-index: 30; display: flex; flex-direction: column; gap: var(--sp-2); pointer-events: none; font-size: var(--sp-t-xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--sp-ink-2); }
 .journey > span:first-child { animation: rise 0.7s var(--sp-ease) both; }
 .journeyLine { display: block; width: 140px; height: 2px; border-radius: 999px; background: var(--space-track); overflow: hidden; }
-.journeyFill { display: block; height: 100%; background: linear-gradient(90deg, #a467f0, #d76cff); box-shadow: none; transform-origin: left; transition: transform 0.2s linear; }
+.journeyFill { display: block; height: 100%; background: linear-gradient(0deg, var(--c-accent), var(--c-accent)); box-shadow: none; transform-origin: left; transition: transform 0.2s linear; }
 .lede { margin: var(--sp-6) auto 0; max-width: 56ch; font-size: clamp(16px, 1.3vw, 19px); line-height: 1.65; color: var(--sp-ink-2); }
 .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-3); margin-top: var(--sp-7); }
 .note { margin: var(--sp-5) auto 0; max-width: 64ch; font-size: var(--sp-t-xs); line-height: 1.7; color: var(--sp-ink-3); }
@@ -185,7 +185,7 @@
 .cellTag { margin: 0; font-size: var(--sp-t-sm); line-height: 1.5; color: var(--sp-ink); }
 .plain { list-style: none; margin: var(--sp-2) 0 0; padding: 0; display: grid; gap: var(--sp-2); font-size: var(--sp-t-sm); line-height: 1.5; color: var(--sp-ink-2); }
 .plain li { padding-left: 14px; position: relative; }
-.plain li::before { content: ""; position: absolute; left: 0; top: 0.6em; width: 5px; height: 5px; border-radius: 999px; background: #c39bff; box-shadow: none; }
+.plain li::before { content: ""; position: absolute; left: 0; top: 0.6em; width: 5px; height: 5px; border-radius: 999px; background: var(--c-accent); box-shadow: none; }
 .cellMeta { margin: auto 0 0; padding: 10px 14px; border-radius: var(--sp-r-sm); background: var(--space-track); font-size: var(--sp-t-xs); line-height: 1.6; color: var(--sp-ink-2); }
 
 /* plans: a stack of glass panels, one per plan */

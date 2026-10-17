@@ -29,7 +29,7 @@
 .create { display: flex; flex-direction: column; gap: 7px; height: 100%; }
 .create i, .blockRow i { display: block; border-radius: 6px; background: rgb(127 127 127 / 0.16); opacity: 0; animation: mini-build 6s var(--e-standard) infinite; }
 .blockNav { height: 10px; }
-.blockHero { height: 42px; animation-delay: 0.4s !important; background: linear-gradient(120deg, #c39bff, #f08bd8) !important; }
+.blockHero { height: 42px; animation-delay: 0.4s !important; background: linear-gradient(0deg, var(--c-accent), var(--c-accent)) !important; }
 .blockRow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .blockRow i { height: 30px; }
 .blockRow i:nth-child(1) { animation-delay: 0.8s; }

@@ -3,12 +3,12 @@
  *
  * Source: the Space Studio desktop app (src/renderer/styles/tokens.css, shell.css, entry.css). Rules carried over:
  *  - White primary over a sky. Light (the day version of the visitor's weather sky) is the default theme; Dark is the same sky at night.
- *  - No outlines: surfaces separate by depth and light (fill steps, a 1px inner top highlight, soft drops, violet glow), never
+ *  - No outlines: surfaces separate by depth and light (fill steps, a 1px inner top highlight, soft drops), never
  *    by borders. Every control is a pill. Cards are 28px glass.
  *  - Primary buttons are 3D: a lit face, a hard ledge underneath, a lift on hover and a press that sinks into the ledge.
  *  - Motion animates transform, opacity and filter only: rise out of a blur, warp between major views, directional motion blur
  *    on fast movement (SVG filters from <SpaceMotionFilters>), odometer numbers, a moving gradient on the headline verb.
- *  - Keyboard focus is Space Studio's violet glow (never a browser outline, never invisible). Pointer presses draw nothing.
+ *  - Keyboard focus is a solid graphite / near-white ring (never a browser outline, never invisible, never a glow). Pointer presses draw nothing.
  *  - Reduced motion: everything lands on its final frame. Phones (640px and narrower): calm, no entrance animation, no blur
  *    filters, a still sky (src/lib/fx/lite.ts isPhone, mobile.css).
  *
@@ -44,9 +44,9 @@
   --space-hit-lg: 54px;
 
   /* the moving gradient (headline verbs, highlights) and the aura hues */
-  --space-grad: linear-gradient(100deg, #b27cff 0%, #f08bd8 17%, #8ff0ff 34%, #a98cff 51%, #ff8fd0 68%, #c58cff 84%, #8fd8ff 100%);
-  --space-grad-ink: #b27cff;
-  --space-aura: 176 104 255;
+  --space-grad: linear-gradient(0deg, var(--c-accent), var(--c-accent));
+  --space-grad-ink: var(--c-accent);
+  --space-aura: var(--ring-rgb);
 
   /* Light palette (the Space system on paper). Dark overrides below. */
   --space-void: #f7f8fa;
@@ -84,8 +84,8 @@
 }
 :root[data-theme="dark"] {
   --space-void: #000000;
-  --space-glass: linear-gradient(180deg, rgb(22 20 30 / 0.78), rgb(10 9 14 / 0.82));
-  --space-glass-solid: #0e0d13;
+  --space-glass: linear-gradient(180deg, rgb(22 22 24 / 0.78), rgb(10 10 12 / 0.82));
+  --space-glass-solid: #101012;
   --space-glass-depth: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 24px 60px rgb(0 0 0 / 0.55);
   --space-glass-lift: inset 0 1px 0 rgb(255 255 255 / 0.1), 0 28px 70px rgb(0 0 0 / 0.6);
   --space-field: rgb(255 255 255 / 0.06);
@@ -101,7 +101,7 @@
   --space-p-depth: inset 0 1px 0 #ffffff, inset 0 -3px 0 rgb(0 0 0 / 0.1), 0 4px 0 #8c8a99, 0 10px 24px rgb(0 0 0 / 0.6);
   --space-p-depth-hover: inset 0 1px 0 #ffffff, inset 0 -3px 0 rgb(0 0 0 / 0.1), 0 5px 0 #8c8a99, 0 14px 30px rgb(0 0 0 / 0.6);
   --space-p-depth-press: inset 0 1px 0 #ffffff, inset 0 -1px 0 rgb(0 0 0 / 0.1), 0 0 0 #8c8a99, 0 4px 10px rgb(0 0 0 / 0.5);
-  --space-s-face: linear-gradient(180deg, rgb(40 38 52 / 0.92), rgb(18 17 24 / 0.94));
+  --space-s-face: linear-gradient(180deg, rgb(40 40 44 / 0.92), rgb(18 18 20 / 0.94));
   --space-s-ink: #f4f4f6;
   --space-s-depth: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 3px 0 rgb(0 0 0 / 0.65), 0 14px 36px rgb(0 0 0 / 0.5);
   --space-s-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.12), 0 4px 0 rgb(0 0 0 / 0.65), 0 20px 46px rgb(0 0 0 / 0.55);
@@ -128,7 +128,7 @@
 
 /* The Space void behind every page in the dark theme (the html element paints --c-canvas; this covers overscroll too). */
 :root[data-theme="dark"], :root[data-theme="dark"] body { background-color: #000; }
-:root[data-theme="dark"] ::selection { background: rgb(195 155 255 / 0.3); }
+:root[data-theme="dark"] ::selection { background: rgb(var(--ring-rgb) / 0.3); }
 
 /* ───────────────────────── focus ─────────────────────────
  * Keyboard only (:focus-visible): a solid 2px ring in the focus colour, separated from the control by the canvas colour.
@@ -197,7 +197,7 @@
   color: transparent;
   animation: sp-grad-shift 9s ease-in-out infinite;
 }
-:root[data-theme="light"] .sp-grad { --space-grad: linear-gradient(100deg, #7d3bc4 0%, #b0368f 20%, #2b6f8a 40%, #8a4bc8 60%, #a8357c 80%, #7d3bc4 100%); }
+:root[data-theme="light"] .sp-grad { --space-grad: linear-gradient(0deg, var(--c-accent), var(--c-accent)); }
 
 /* Rotating headline (components/ui/space/RotatingHeadline.tsx): the verb is swapped character by character. Each character
    rises out of a stretch with vertical motion blur; the outgoing word lifts away. The verb's gradient flows across all its
@@ -218,7 +218,7 @@
   background-clip: text;
   color: transparent;
 }
-:root[data-theme="light"] .sp-hl__verb .sp-hl__ch { --space-grad: linear-gradient(100deg, #7d3bc4 0%, #b0368f 20%, #2b6f8a 40%, #8a4bc8 60%, #a8357c 80%, #7d3bc4 100%); }
+:root[data-theme="light"] .sp-hl__verb .sp-hl__ch { --space-grad: linear-gradient(0deg, var(--c-accent), var(--c-accent)); }
 :root[data-theme="light"] .sp-hl__verb { filter: none; }
 .sp-hl__line[data-phase="in"] .sp-hl__ch {
   animation:
@@ -378,7 +378,7 @@
 .sp-btn[data-status="loading"] { cursor: progress; }
 .sp-btn[data-status="loading"]::after {
   content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-  background: linear-gradient(105deg, transparent 30%, rgb(176 104 255 / 0.22) 50%, transparent 70%);
+  background: linear-gradient(105deg, transparent 30%, rgb(var(--ring-rgb) / 0.18) 50%, transparent 70%);
   animation: sp-shimmer 1.3s var(--space-ease-in-out) infinite;
 }
 .sp-btn[data-status="success"] { --b-ink: var(--c-verified); }
@@ -479,9 +479,9 @@
   cursor: pointer; transition: background-color var(--space-dur-fast) var(--space-ease-out), box-shadow var(--space-dur-base) var(--space-ease-out);
 }
 .sp-toggle::after { content: ""; position: absolute; inset: -9px -2px; } /* 44px hit target */
-.sp-toggle[aria-checked="true"] { background: linear-gradient(90deg, #a467f0, #d76cff); box-shadow: none; }
+.sp-toggle[aria-checked="true"] { background: var(--c-accent); box-shadow: none; }
 .sp-toggle__thumb { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / 0.35); transition: transform 0.45s var(--space-spring-bouncy); }
-.sp-toggle[aria-checked="true"] .sp-toggle__thumb { transform: translateX(18px); }
+.sp-toggle[aria-checked="true"] .sp-toggle__thumb { transform: translateX(18px); background: var(--c-on-accent); }
 .sp-toggle:active .sp-toggle__thumb { width: 24px; }
 .sp-toggle[aria-checked="true"]:active .sp-toggle__thumb { transform: translateX(14px); }
 .sp-toggle:disabled { opacity: 0.45; cursor: not-allowed; }

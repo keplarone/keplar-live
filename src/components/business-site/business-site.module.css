@@ -159,7 +159,7 @@ a.brand:hover { box-shadow: var(--kb-pill-depth), var(--kb-pill-hover); }
 .trust { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .columns li, .trust li { padding: 24px 26px; border-radius: 26px; background: var(--kb-glass-solid); box-shadow: var(--kb-depth-sm); }
 .columns p, .trust p { margin: 8px 0 0; max-width: 56ch; font-size: var(--kb-t-md); line-height: 1.6; color: var(--kb-ink-2); }
-.columns li::before { content: ""; display: block; width: 28px; height: 3px; margin-bottom: 18px; border-radius: 3px; background: linear-gradient(90deg, #a467f0, #d76cff); box-shadow: none; }
+.columns li::before { content: ""; display: block; width: 28px; height: 3px; margin-bottom: 18px; border-radius: 3px; background: linear-gradient(0deg, var(--kb-accent), var(--kb-accent)); box-shadow: none; }
 
 /* ── pricing: four glass cards; the most popular one lifts and glows ── */
 .plans { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
@@ -237,7 +237,7 @@ a.brand:hover { box-shadow: var(--kb-pill-depth), var(--kb-pill-hover); }
 .stepper li[aria-current="step"] { color: var(--kb-p-ink); background: var(--kb-p-face); box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12); }
 .stepper li[aria-current="step"]::before { background: rgb(128 128 140 / 0.3); color: inherit; }
 .stepper li[data-done] { color: var(--kb-ink); }
-.stepper li[data-done]::before { content: ""; background: linear-gradient(90deg, #a467f0, #d76cff) center / 100% 100%; box-shadow: none; }
+.stepper li[data-done]::before { content: ""; background: linear-gradient(0deg, var(--kb-accent), var(--kb-accent)) center / 100% 100%; box-shadow: none; }
 .setup { display: flex; flex-direction: column; gap: var(--kb-s-5); width: 100%; max-width: 760px; margin: 0 auto; padding: var(--kb-s-8) 0; animation: kbRise 0.9s var(--kb-ease-expo) both; }
 .setup .heroActions { justify-content: flex-start; }
 .setup .h2 { font-size: clamp(28px, 3.4vw, 40px); }

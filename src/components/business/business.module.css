@@ -110,7 +110,7 @@
 .col > .label { padding: 4px 6px; text-transform: capitalize; }
 .deal { display: flex; flex-direction: column; gap: var(--s-2); padding: 14px; border: 0; border-radius: 18px; background: var(--surface-raised); box-shadow: var(--elev-2); }
 .switch { display: inline-flex; align-items: center; gap: var(--s-2); font-weight: 600; cursor: pointer; }
-.switch input { accent-color: #b27cff; width: 16px; height: 16px; }
+.switch input { accent-color: var(--kb-accent); width: 16px; height: 16px; }
 
 @media (pointer: coarse) { .tab { min-height: 44px; } .btn { min-height: 44px; } }
 @media (max-width: 640px) { .body { padding: var(--s-4); } .bar { padding: var(--s-4); } .card { padding: 18px; border-radius: 22px; } .barCol > span { animation: none; } }
@@ -131,7 +131,7 @@
 .eTab[aria-selected="true"] { background: var(--space-p-face); color: var(--space-p-ink); box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12); }
 
 .shell[data-embedded] .card, .shell[data-embedded] .notice, .shell[data-embedded] .col {
-  border: 0; border-radius: 26px; padding: 22px 24px; gap: 12px; background: linear-gradient(180deg, #100f16, #07070b); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 24px 60px rgb(0 0 0 / 0.55);
+  border: 0; border-radius: 26px; padding: 22px 24px; gap: 12px; background: linear-gradient(180deg, #101014, #07070b); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 24px 60px rgb(0 0 0 / 0.55);
 }
 .shell[data-embedded] .card .card, .shell[data-embedded] .col { padding: 16px 18px; border-radius: 20px; background: rgb(255 255 255 / 0.035); box-shadow: none; }
 .shell[data-embedded] .notice { padding: 14px 16px 14px 22px; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 24px 60px rgb(0 0 0 / 0.55); }

@@ -1,5 +1,5 @@
-/* Plans (Space UI, docs/design/space-ui.md): calm, scannable 28px glass cards, no outlines. Hover lifts a card with a violet glow;
-   the recommended plan (Plus) stands lifted with a stronger glow and carries the one 3D primary button. */
+/* Plans (Space UI, docs/design/space-ui.md): calm, scannable 28px glass cards, no outlines. Hover lifts a card;
+   the recommended plan (Plus) stands lifted and carries the one 3D primary button. */
 .section {
   position: relative;
   z-index: var(--z-content);
@@ -214,7 +214,7 @@
 }
 
 .bars i[data-on] {
-  background: linear-gradient(90deg, #a467f0, #d76cff);
+  background: var(--c-accent);
   box-shadow: none;
 }
 

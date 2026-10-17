@@ -116,14 +116,14 @@ export const semantic = {
   dark: { reasoning: "#6ea8ff", research: "#8fd8ff", creation: "#ffb37a", verified: "#5fd49a", attention: "#ffd66b", disagree: "#ffa58f", destructive: "#ff7a85", canvas: "#000000" },
 } as const;
 
-/** Vivid hues for fills, strokes, glows and WebGL. `on` is the ink for text on that fill (>= 4.5:1). Teal/cyan + warm earth; no purple. Primary buttons stay graphite. */
+/** Vivid hues for fills, strokes and WebGL. `on` is the ink for text on that fill (>= 4.5:1). Teal/cyan + warm earth; no pink or purple. Primary buttons stay graphite. */
 export const vivid = {
   light: {
-    reasoning: { v: "#00c0e0", on: "#09090b" }, research: { v: "#12a3b5", on: "#09090b" }, creation: { v: "#d4894a", on: "#09090b" }, memory: { v: "#d4848e", on: "#09090b" },
+    reasoning: { v: "#00c0e0", on: "#09090b" }, research: { v: "#12a3b5", on: "#09090b" }, creation: { v: "#d4894a", on: "#09090b" }, memory: { v: "#c9b7a4", on: "#17171a" },
     disagree: { v: "#e0715a", on: "#09090b" }, attention: { v: "#e2a73b", on: "#09090b" }, verified: { v: "#34a56f", on: "#09090b" }, destructive: { v: "#d92d20", on: "#ffffff" },
   },
   dark: {
-    reasoning: { v: "#6ea8ff", on: "#000000" }, research: { v: "#8fd8ff", on: "#000000" }, creation: { v: "#ffb37a", on: "#000000" }, memory: { v: "#f08bd8", on: "#000000" },
+    reasoning: { v: "#6ea8ff", on: "#000000" }, research: { v: "#8fd8ff", on: "#000000" }, creation: { v: "#ffb37a", on: "#000000" }, memory: { v: "#e6ddd4", on: "#17171a" },
     disagree: { v: "#ff8f78", on: "#000000" }, attention: { v: "#ffd66b", on: "#000000" }, verified: { v: "#5fd49a", on: "#000000" }, destructive: { v: "#ff7a85", on: "#000000" },
   },
 } as const;
@@ -137,5 +137,5 @@ export const semanticMeaning = {
   attention: "needs a decision or a look, warnings, unpublished changes",
   disagree: "models disagree, dissent",
   destructive: "delete, revoke, stop, irreversible",
-  memory: "personal / remembered: dusty rose (never purple)",
+  memory: "personal / remembered: warm stone",
 } as const;

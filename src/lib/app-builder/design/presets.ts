@@ -35,8 +35,8 @@ export const STYLES: StylePreset[] = [
   },
   {
     id: "playful", name: "Playful", line: "Bouncy shapes, chunky type, confident color.", fonts: "bricolage-nunito", shape: "round", density: "balanced", motion: "expressive",
-    light: { bg: "#FFF7EC", surface: "#FFFFFF", ink: "#1F1A3A", muted: "#5D5878", accent: "#FF5C8A", accent2: "#2EC4A6" },
-    dark: { bg: "#1A1630", surface: "#241F42", ink: "#FFF4E6", muted: "#BDB6DA", accent: "#FF7AA2", accent2: "#5FE3C6" },
+    light: { bg: "#FFF7EC", surface: "#FFFFFF", ink: "#1F1A16", muted: "#6B645C", accent: "#E25D33", accent2: "#2EC4A6" },
+    dark: { bg: "#1A1614", surface: "#241F1C", ink: "#FFF4E6", muted: "#C4B8AE", accent: "#FF8A5C", accent2: "#5FE3C6" },
     character: "Chunky rounded display type, sticker-like badges with slight rotation, blob or squircle masks on images, springy hover/press feedback, two strong accent colors used in turns, friendly micro-copy, illustrations made from simple SVG shapes. Joyful but organized.",
   },
   {
@@ -59,8 +59,8 @@ export const STYLES: StylePreset[] = [
   },
   {
     id: "glassy", name: "Glassy", line: "Translucent layers, depth, light through frosted glass.", fonts: "manrope-mono", shape: "round", density: "balanced", motion: "subtle",
-    light: { bg: "#EEF1F5", surface: "#FFFFFF", ink: "#0D1117", muted: "#5B6472", accent: "#6D5DFC", accent2: "#00A3A3" },
-    dark: { bg: "#07090D", surface: "#10141B", ink: "#E8EDF5", muted: "#8D98A8", accent: "#8F83FF", accent2: "#3DD6D0" },
+    light: { bg: "#EEF1F5", surface: "#FFFFFF", ink: "#0D1117", muted: "#5B6472", accent: "#17171A", accent2: "#0F766E" },
+    dark: { bg: "#07090D", surface: "#10141B", ink: "#E8EDF5", muted: "#8D98A8", accent: "#F4F4F6", accent2: "#5EEAD4" },
     character: "Layered translucent panels (backdrop-filter blur 20px, 1px light borders) over a rich photographic or colored backdrop, soft inner highlights, floating navigation capsule, depth through layering and parallax. Glass only where it creates hierarchy, never everywhere.",
   },
   {
@@ -89,8 +89,8 @@ export const STYLES: StylePreset[] = [
   },
   {
     id: "y2k", name: "Y2K", line: "Chrome, pixels and loud optimism.", fonts: "syne-space", shape: "pill", density: "balanced", motion: "expressive",
-    light: { bg: "#EDEFFF", surface: "#FFFFFF", ink: "#0E0B2A", muted: "#57527A", accent: "#FF2BD6", accent2: "#00C2FF" },
-    dark: { bg: "#0B0A1F", surface: "#15133A", ink: "#F3F0FF", muted: "#A6A0D6", accent: "#FF4FDD", accent2: "#39D7FF" },
+    light: { bg: "#F4F4F6", surface: "#FFFFFF", ink: "#12141A", muted: "#5C6070", accent: "#E3B23C", accent2: "#17171A" },
+    dark: { bg: "#0C0D12", surface: "#16181F", ink: "#F4F4F6", muted: "#A8AAB4", accent: "#F0C85A", accent2: "#E8E8EC" },
     character: "Chrome-like metallic gradients on type or buttons (used once), pixel and star glyphs, pill-shaped controls, bold wide display type, marquee strips, sticker energy. Loud but legible; still one clear hierarchy per screen.",
   },
 ];
