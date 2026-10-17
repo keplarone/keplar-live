@@ -1,22 +1,20 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { usePathname } from "next/navigation";
 import { afterPaint } from "@/lib/perf/after-paint";
 import s from "../Sky.module.css";
 
 /**
  * One cloud sky for the whole site. The root layout mounts it once, fixed behind every page.
+ * Space Studio never mounts this: SpaceSkyExempt leaves the slot empty on that host and those routes.
  * The canvas is fetched after first paint so the first screen and the composer stay responsive.
  */
 export function SiteClouds() {
   const ref = useRef<HTMLCanvasElement>(null);
-  const path = usePathname() || "/";
-  const space = path === "/space-studio" || path.startsWith("/space-studio/");
 
   useEffect(() => {
     const canvas = ref.current;
-    if (!canvas || space) return;
+    if (!canvas) return;
     let dead = false;
     let stop = () => {};
     const cancel = afterPaint(() => {
@@ -37,9 +35,7 @@ export function SiteClouds() {
       cancel();
       stop();
     };
-  }, [space]);
-
-  if (space) return null;
+  }, []);
 
   return (
     <div className={s.siteSky} aria-hidden="true">
