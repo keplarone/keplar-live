@@ -77,25 +77,37 @@ fn worley(p: vec3<f32>) -> f32 {
   }
   return clamp(sqrt(m), 0.0, 1.0);
 }`, [asInclude(hash33)]);
+  const puff = wgslFn(`
+fn puff(p: vec3<f32>, c: vec3<f32>, r: vec3<f32>) -> f32 {
+  let q = (p - c) / r;
+  return 1.0 - dot(q, q);
+}`);
   const density = wgslFn(`
-fn density(p: vec3<f32>, time: f32, lite: f32) -> f32 {
-  let w = p + vec3<f32>(time * 0.11, 0.0, time * 0.025);
-  let base = smoothstep(0.2, 0.62, p.y) * smoothstep(1.65, 0.95, p.y);
-  let shape = fbm(w * 0.72);
-  var detail = 0.0;
+fn density(p: vec3<f32>, time: f32, lite: f32, cover: f32) -> f32 {
+  let w = p + vec3<f32>(time * 0.02, 0.0, time * 0.004);
+  let n = fbm(w * 1.15);
+  var edge = 1.0;
   if (lite < 0.5) {
-    detail = fbm(w * 2.1 + vec3<f32>(5.1, 1.4, 2.2));
+    edge = worley(w * 1.45);
   }
-  let erode = worley(w * 1.35);
-  var d = smoothstep(0.46, 0.7, shape * 0.7 + detail * 0.3 - (1.0 - erode) * 0.22);
-  d = d * base;
-  let sheet = smoothstep(0.4, 0.75, p.y) * smoothstep(1.2, 0.8, p.y);
-  let sheetN = smoothstep(0.5, 0.66, fbm(w * vec3<f32>(0.42, 1.3, 0.42)));
-  d = max(d, sheetN * sheet * 0.55);
-  let high = smoothstep(1.75, 1.95, p.y) * smoothstep(2.4, 2.1, p.y);
-  let wisp = smoothstep(0.6, 0.8, fbm(vec3<f32>(w.x * 0.32, w.y * 1.8, w.z * 0.32)));
-  return d + wisp * high * 0.22;
-}`, [asInclude(fbm), asInclude(worley)]);
+  // A handful of cumulus on the sides and in the lower volume. The middle stays empty.
+  var field = 0.0;
+  field = max(field, puff(w, vec3<f32>(-2.3, 0.72, 2.1), vec3<f32>(1.15, 0.46, 0.82)));
+  field = max(field, puff(w, vec3<f32>(-2.75, 1.05, 2.4), vec3<f32>(0.62, 0.4, 0.5)));
+  field = max(field, puff(w, vec3<f32>(-1.9, 0.98, 2.55), vec3<f32>(0.5, 0.34, 0.42)));
+  field = max(field, puff(w, vec3<f32>(2.4, 0.78, 2.25), vec3<f32>(1.2, 0.48, 0.86)));
+  field = max(field, puff(w, vec3<f32>(2.0, 1.12, 2.6), vec3<f32>(0.58, 0.38, 0.48)));
+  field = max(field, puff(w, vec3<f32>(2.85, 1.0, 2.9), vec3<f32>(0.48, 0.32, 0.42)));
+  field = max(field, puff(w, vec3<f32>(-2.7, 1.2, 5.2), vec3<f32>(1.35, 0.4, 0.95)));
+  field = max(field, puff(w, vec3<f32>(2.8, 1.1, 5.5), vec3<f32>(1.3, 0.38, 0.9)));
+  field = field + (n - 0.45) * 0.5 - (1.0 - edge) * 0.18;
+  var d = smoothstep(0.2, 0.58, field);
+  let extra = smoothstep(0.12, 0.5, cover);
+  let sheetN = smoothstep(0.52, 0.7, fbm(w * vec3<f32>(0.32, 1.15, 0.32)));
+  let sheet = smoothstep(0.4, 0.8, p.y) * smoothstep(1.5, 1.05, p.y);
+  d = max(d, sheetN * sheet * extra);
+  return d;
+}`, [asInclude(puff), asInclude(fbm), asInclude(worley)]);
   const shade = wgslFn(`
 fn cloudShade(uv: vec2<f32>, time: f32, aspect: f32, zenith: vec3<f32>, horizon: vec3<f32>, lit: vec3<f32>, shadow: vec3<f32>, altitude: f32, journey: f32, ground: f32, dark: f32, fall: f32, cover: f32) -> vec4<f32> {
   let uvn = uv * 2.0 - vec2<f32>(1.0, 1.0);
@@ -135,14 +147,14 @@ fn cloudShade(uv: vec2<f32>, time: f32, aspect: f32, zenith: vec3<f32>, horizon:
       break;
     }
     let p = ro + rd * t;
-    let den = density(p, time, 0.0);
+    let den = density(p, time, 0.0, cover);
     if (den > 0.015) {
       var lightAcc = 0.0;
       var lp = p;
       let ldt = 0.22;
       for (var j = 0; j < 4; j++) {
         lp = lp + sun * ldt;
-        lightAcc = lightAcc + density(lp, time, 1.0) * ldt;
+        lightAcc = lightAcc + density(lp, time, 1.0, cover) * ldt;
       }
       let beer = exp(-lightAcc * 1.7);
       let absorb = den * 1.25 * dt;
@@ -157,14 +169,6 @@ fn cloudShade(uv: vec2<f32>, time: f32, aspect: f32, zenith: vec3<f32>, horizon:
   let hero = smoothstep(0.34, 0.1, hx) * smoothstep(0.4, 0.6, uv.y) * smoothstep(0.98, 0.76, uv.y);
   let nav = smoothstep(0.84, 0.94, uv.y);
   col = mix(col, sky, hero * 0.9 * (1.0 - nav));
-  // The march accumulates low in the frame, so a clear night reads as an empty field behind the headline.
-  // These banks sit at the sides and under the top bar. The hero mix above keeps the title on the sky.
-  let left = length((uv - vec2<f32>(0.14, 0.78)) * vec2<f32>(1.2, 2.6));
-  let right = length((uv - vec2<f32>(0.86, 0.7)) * vec2<f32>(1.05, 2.3));
-  let top = length((uv - vec2<f32>(0.5, 0.93)) * vec2<f32>(1.8, 4.0));
-  let banks = smoothstep(0.62, 0.16, left) + smoothstep(0.58, 0.14, right) + smoothstep(0.5, 0.1, top) * 0.7;
-  let deck = clamp(cover, 0.55, 1.0);
-  col = mix(col, mix(shadow, lit, 0.78), clamp(banks, 0.0, 1.0) * deck * (1.0 - hero));
   let bodyP = uv - vec2<f32>(0.86, 0.9);
   let bodyD = length(bodyP * vec2<f32>(1.15, 1.35));
   let disc = smoothstep(0.016, 0.011, bodyD);
@@ -226,7 +230,7 @@ export async function createVolumetric(canvas: HTMLCanvasElement, opts: { dark: 
   const renderer = new WebGPURenderer({ canvas, antialias: false, alpha: false, depth: false });
   renderer.toneMapping = NoToneMapping;
   await renderer.init();
-  renderer.setClearColor(new Color(opts.dark ? 0x2a4068 : 0xb7d4ec), 1);
+  renderer.setClearColor(new Color(opts.dark ? 0x161e2c : 0x5d9be8), 1);
   const scene = new Scene();
   const camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
   const pal = cloudPalette(opts.dark);
@@ -287,7 +291,8 @@ export async function createVolumetric(canvas: HTMLCanvasElement, opts: { dark: 
     const l = new Color(next.lit);
     const s = new Color(next.shadow);
     // Rain greys the night sky toward a darker navy, not toward black.
-    const crush = new Color(themeDark ? "#243656" : "#8ea4b8");
+    const crush = new Color(themeDark ? "#243044" : "#8ea4b8");
+    renderer.setClearColor(themeDark ? 0x161e2c : 0x5d9be8, 1);
     (zenith.value as Color).copy(z).lerp(crush, gray * (themeDark ? 0.18 : 0.55));
     (horizon.value as Color).copy(h).lerp(s, gray * 0.12);
     (lit.value as Color).copy(l).lerp(s, gray * (themeDark ? 0.22 : 0.22));
@@ -303,8 +308,8 @@ export async function createVolumetric(canvas: HTMLCanvasElement, opts: { dark: 
       lastProfile = profile;
       const wet = profile.precip === "rain";
       fall.value = wet ? 2.4 : profile.precip === "snow" ? 0.7 : 0;
-      // Clear still keeps the side banks. Coverage only fills the deck in from there.
-      cover.value = Math.max(0.55, Math.min(1, profile.coverage));
+      // Grey weather (overcast, rain) adds the higher sheet. Clear keeps the handful only.
+      cover.value = Math.min(1, Math.max(0, profile.gray));
       paintLook(profile);
     },
     setJourney: (state) => {

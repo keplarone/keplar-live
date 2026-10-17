@@ -5,7 +5,8 @@
  * docs.keplar.one, and DocsSkin sets on client-side navigation.
  *
  * The --docs-blue* names are kept for compatibility; they now hold the teal accent.
- * Contrast: ink #0e0f12 on #f7f8fa 18.9:1, ink-2 8.1:1, ink-3 5.1:1; teal #0a7a8a 4.9:1 on white, 4.6:1 on its #e8f4f6 tint.
+ * Contrast: ink #0e0f12, ink-2 #171a20 and ink-3 #26282e each clear 4.5:1 on #f7f8fa and on the day sky #5d9be8.
+ * Teal #0a7a8a is 4.9:1 on white, 4.6:1 on its #e8f4f6 tint.
  *
  * The paper tokens apply only in light. Their selector weight beats the site dark tokens when that theme is on.
  */
@@ -28,8 +29,8 @@
   --c-surface-1: #ffffff;
   --c-surface-2: #f1f3f6;
   --c-ink: #0e0f12;
-  --c-ink-2: #4b4f58;
-  --c-ink-3: #686d78;
+  --c-ink-2: #171a20;
+  --c-ink-3: #26282e;
   --c-border: var(--docs-line);
   --c-border-strong: var(--docs-line-strong);
   --c-glass: #ffffff;

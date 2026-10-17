@@ -102,7 +102,7 @@ varying float vKind;
 void main() {
   vKind = aKind;
   mat4 m = instanceMatrix;
-  float drift = uTime * (aKind > 1.5 ? 0.08 : 0.22);
+  float drift = uTime * 0.035;
   m[3][0] += drift;
   m[3][0] = mod(m[3][0] + 8.0, 16.0) - 8.0;
   vec4 world = modelMatrix * m * vec4(position, 1.0);
@@ -126,10 +126,11 @@ void main() {
   float optical = mix(0.45, 2.2, 1.0 - wrap);
   if (vKind > 1.5) optical *= 0.32;
   float beer = exp(-optical);
-  // The shadow colour is as dark as the night sky, so a low mix disappears. The body stays towards lit.
-  float shade = mix(0.72, 1.0, smoothstep(0.12, 0.9, beer));
+  // Tops stay lit. The underside picks up the grey so a cumulus reads as a volume, not a flat blob.
+  float shade = mix(0.42, 1.0, smoothstep(0.12, 0.9, beer));
   vec3 col = mix(uShadow, uLit, shade);
-  float alpha = vKind > 1.5 ? 0.48 : 0.92;
+  float facing = clamp(dot(n, normalize(vec3(0.15, 0.25, 1.0))), 0.0, 1.0);
+  float alpha = 0.96 * smoothstep(0.0, 0.1, facing);
   vec2 uvh = gl_FragCoord.xy / max(uRes, vec2(1.0));
   float hero = smoothstep(0.36, 0.12, abs(uvh.x - 0.5)) * smoothstep(0.42, 0.58, uvh.y) * smoothstep(0.98, 0.74, uvh.y);
   // The top bar keeps its clouds. The clearing is for the headline, not the glass.
@@ -148,7 +149,7 @@ void main() {
   vUv = uv;
   vKind = aKind;
   vec3 center = instanceMatrix[3].xyz;
-  center.x += uTime * (aKind > 1.5 ? 0.06 : 0.16);
+  center.x += uTime * 0.028;
   center.x = mod(center.x + 8.0, 16.0) - 8.0;
   vec2 scale = vec2(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz));
   vec3 right = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
@@ -171,9 +172,9 @@ void main() {
   float up = smoothstep(0.15, 0.8, vUv.y);
   float optical = dens * (vKind > 1.5 ? 0.4 : 1.8) * mix(1.15, 0.55, up);
   float beer = exp(-optical);
-  float shade = mix(0.72, 1.0, smoothstep(0.12, 0.9, beer));
+  float shade = mix(0.42, 1.0, smoothstep(0.12, 0.9, beer));
   vec3 col = mix(uShadow, uLit, shade);
-  float alpha = smoothstep(0.1, 0.32, dens) * (vKind > 1.5 ? 0.55 : 0.96);
+  float alpha = smoothstep(0.12, 0.34, dens) * 0.96;
   vec2 uvh = gl_FragCoord.xy / max(uRes, vec2(1.0));
   float hero = smoothstep(0.36, 0.12, abs(uvh.x - 0.5)) * smoothstep(0.42, 0.58, uvh.y) * smoothstep(0.98, 0.74, uvh.y);
   float nav = smoothstep(0.86, 0.94, uvh.y);
@@ -252,91 +253,53 @@ void main() {
 
 type Puff = { x: number; y: number; z: number; sx: number; sy: number; sz: number; kind: number };
 
-function mulberry32(seed: number) {
-  let a = seed >>> 0;
-  return () => {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+/** One cumulus: a wide base and a few domes, so the silhouette is fluffy rather than one ball. */
+function cumulus(out: Puff[], cx: number, cy: number, cz: number, scale: number, kind: number) {
+  const lobes: [number, number, number, number, number, number][] = [
+    [0, -0.2, 0.02, 0.92, 0.36, 0.68],
+    [-0.7, 0.16, 0.08, 0.56, 0.5, 0.48],
+    [0.66, 0.12, 0.04, 0.5, 0.46, 0.44],
+    [0.02, 0.46, 0.14, 0.48, 0.5, 0.42],
+    [-0.18, 0.08, -0.2, 0.42, 0.38, 0.36],
+    [0.28, 0.22, -0.12, 0.36, 0.34, 0.32],
+  ];
+  for (const [ox, oy, oz, sx, sy, sz] of lobes) {
+    out.push({
+      x: cx + ox * scale,
+      y: cy + oy * scale,
+      z: cz + oz * scale,
+      sx: sx * scale,
+      sy: sy * scale,
+      sz: sz * scale,
+      kind,
+    });
+  }
 }
 
-/** Cumulus domes, a stratocumulus sheet, and a few high cirrus wisps. Kept off the view centre. */
+/** Four cumulus at the sides and lower frame. Greyer weather adds four more, still off the headline. */
 function layout(mode: WebglCloudMode): Puff[] {
-  const rand = mulberry32(11);
   const out: Puff[] = [];
   if (mode === "billboard") {
     const spots = [
-      [-4.8, 2.2, -2.5, 3.8, 1.6, 0],
-      [4.6, 2.4, -3.2, 4.0, 1.55, 0],
-      [-1.5, 2.8, -6.5, 4.6, 1.25, 1],
-      [2.2, 2.7, -7.2, 4.2, 1.1, 1],
-      [-5.5, 3.6, -8.5, 5.4, 0.42, 2],
-      [5.2, 3.8, -8.0, 5.0, 0.38, 2],
-      [0.2, 4.0, -10, 6.2, 0.3, 2],
-      [-2.8, 1.7, -1.6, 2.8, 1.25, 0],
-      [2.6, 1.8, -1.8, 2.6, 1.15, 0],
-      // A wide puff whose edge crosses the top glass, including the centre links.
-      [-0.15, 2.2, -1.3, 5.2, 0.95, 0],
-      // A wide low puff. Its top edge crosses the lower half of the view, where a card sits, so the lens has a boundary to bend.
-      [-1.4, -1.45, -1.25, 6.6, 1.45, 0],
+      [-4.5, 0.2, -2.75, 3.4, 1.5, 0],
+      [4.75, -0.2, -3, 3.6, 1.55, 0],
+      [-6.25, 1.2, -5.5, 4.2, 1.35, 0],
+      [5.75, 1.2, -4.25, 4.0, 1.3, 0],
+      [-3.75, -0.8, -2.25, 3.2, 1.2, 1],
+      [3.75, -0.8, -2, 3.2, 1.15, 1],
     ] as const;
-    for (const [x, y, z, sx, sy, kind] of spots) {
-      out.push({ x, y, z, sx, sy, sz: 1, kind });
-    }
-    // The deck sits high enough that the top glass (nav pills) has cloud edges behind it.
-    return out.map((p) => ({ ...p, y: p.y + 1.15 }));
+    for (const [x, y, z, sx, sy, kind] of spots) out.push({ x, y, z, sx, sy, sz: 1, kind });
+    return out;
   }
-  const clusters = [
-    { x: -3.3, y: 1.7, z: -1.5 },
-    { x: 3.0, y: 1.9, z: -2.6 },
-    { x: -0.4, y: 2.6, z: -5.2 },
-  ];
-  for (const c of clusters) {
-    for (let i = 0; i < 8; i++) {
-      const a = rand() * Math.PI * 2;
-      const r = Math.sqrt(rand()) * 1.05;
-      const base = i < 3;
-      out.push({
-        x: c.x + Math.cos(a) * r,
-        y: c.y + (base ? -0.22 : rand() * 0.65),
-        z: c.z + Math.sin(a) * r * 0.65,
-        sx: 0.5 + rand() * 0.42,
-        sy: base ? 0.24 : 0.36 + rand() * 0.32,
-        sz: 0.46 + rand() * 0.36,
-        kind: 0,
-      });
-    }
-  }
-  for (let i = 0; i < 14; i++) {
-    out.push({
-      x: -6 + rand() * 12,
-      y: 2.15 + rand() * 0.28,
-      z: -3.2 - rand() * 3.6,
-      sx: 1.05 + rand() * 0.7,
-      sy: 0.18 + rand() * 0.12,
-      sz: 0.7 + rand() * 0.45,
-      kind: 1,
-    });
-  }
-  for (let i = 0; i < 5; i++) {
-    out.push({
-      x: -5.2 + i * 2.4 + rand() * 0.4,
-      y: 3.45 + rand() * 0.25,
-      z: -6.5 - rand(),
-      sx: 2.2 + rand() * 0.6,
-      sy: 0.07,
-      sz: 0.28,
-      kind: 2,
-    });
-  }
-  // One wide puff in front of the deck so the top glass has a cloud edge to bend.
-  out.push({ x: 0.1, y: 2.25, z: -1.35, sx: 2.4, sy: 0.55, sz: 0.9, kind: 0 });
-  // And one low, so a card in the lower half of the view has an edge too.
-  out.push({ x: -1.1, y: -1.3, z: -1.3, sx: 3.2, sy: 0.75, sz: 1.1, kind: 0 });
-  return out.map((p) => ({ ...p, y: p.y + 1.15 }));
+  cumulus(out, -4.5, 0.2, -2.75, 1.55, 0);
+  cumulus(out, 4.75, -0.2, -3, 1.65, 0);
+  cumulus(out, -6.25, 1.2, -5.5, 2.05, 0);
+  cumulus(out, 5.75, 1.2, -4.25, 1.9, 0);
+  cumulus(out, -3.75, -0.8, -2.25, 1.45, 1);
+  cumulus(out, 3.75, -0.8, -2, 1.4, 1);
+  cumulus(out, -5.75, 2.5, -5.75, 1.7, 1);
+  cumulus(out, 3.75, 3.75, -1.5, 1.35, 1);
+  return out;
 }
 
 /** sRGB 0–1. ShaderMaterial writes gl_FragColor as stored, so Color()'s linear values would crush the dark sky. */
@@ -471,7 +434,7 @@ export function createWebglClouds(
     preserveDrawingBuffer: true,
     powerPreference: opts.mode === "billboard" ? "low-power" : "default",
   });
-  renderer.setClearColor(opts.dark ? 0x2a4068 : 0xb7d4ec, 1);
+  renderer.setClearColor(opts.dark ? 0x161e2c : 0x5d9be8, 1);
   const scene = new Scene();
   const camera = new PerspectiveCamera(40, 1, 0.1, 40);
   camera.position.set(0, 0.35, 6.2);
@@ -556,7 +519,7 @@ void main() {
       side: DoubleSide,
     });
   } else {
-    geo = new SphereGeometry(1, 12, 9);
+    geo = new SphereGeometry(1, 18, 14);
     mat = new ShaderMaterial({
       vertexShader: MESH_VERT,
       fragmentShader: MESH_FRAG,
@@ -616,10 +579,8 @@ void main() {
 
   const placeClouds = () => {
     puffs.forEach((p, i) => {
-      const slot = (i + 0.5) / puffs.length;
-      // Low coverage used to hide every near puff, and the opaque canvas then covered the CSS clouds.
-      // Banks in front of the camera stay up even on a clear night. Coverage only thins the far deck.
-      const show = draw.coverage >= 0.95 || p.kind >= 2 || p.z > -3.3 || slot > 1 - draw.coverage;
+      // Kind 0 is the handful, always drawn. Greyer weather (overcast, rain) adds the rest.
+      const show = p.kind < 0.5 || draw.gray >= 0.16;
       const s = show ? draw.bulk : 0.0001;
       dummy.position.set(p.x, p.y - draw.drop, p.z);
       dummy.scale.set(p.sx * s, p.sy * s * draw.flat, p.sz * s);
@@ -636,7 +597,8 @@ void main() {
     const lit = srgb(pal.lit);
     const shadow = srgb(pal.shadow);
     // Rain greys the sky. Day stays a blue-grey, not a black crush, so the sunlit edge still reads.
-    const zenithCrush = dark ? srgb("#243656") : srgb("#8ea4b8");
+    const zenithCrush = dark ? srgb("#243044") : srgb("#8ea4b8");
+    renderer.setClearColor(dark ? 0x161e2c : 0x5d9be8, 1);
     skyUniforms.uZenith.value.copy(mixHex(zenith, zenithCrush, draw.gray * (dark ? 0.18 : 0.55)));
     skyUniforms.uHorizon.value.copy(mixHex(horizon, shadow, draw.gray * 0.12));
     skyUniforms.uHaze.value.copy(mixHex(horizon, shadow, 0.45));

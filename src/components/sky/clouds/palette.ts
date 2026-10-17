@@ -1,6 +1,7 @@
-/** Day is a soft blue sky with white sunlit clouds. Night is a navy sky with grey clouds
- * that stay readable against the page: light ink (#f4f4f6) on the brightest night cloud
- * (#68707e) is about 4.5:1, and on the horizon (#3d5a8a) about 6:1. */
+/** Day is a blue sky, darker at the top (#5d9be8) and paler toward the horizon (#b9d8f5),
+ * with white cumulus and light-grey undersides. Night is the same composition in graphite-navy.
+ * Light ink (#f4f4f6) on the brightest night cloud (#65707e) is about 4.6:1, and on the
+ * horizon (#2a3848) about 12:1. Near-black light ink is what keeps the headline AA on #5d9be8. */
 export type CloudPalette = {
   zenith: string;
   horizon: string;
@@ -12,9 +13,7 @@ export type CloudPalette = {
 
 export function cloudPalette(dark: boolean): CloudPalette {
   if (dark) {
-    return { zenith: "#2a4068", horizon: "#3d5a8a", lit: "#68707e", shadow: "#31425c", body: "#d5def2" };
+    return { zenith: "#161e2c", horizon: "#2a3848", lit: "#65707e", shadow: "#3a4658", body: "#d5def2" };
   }
-  // Top is the colour behind the headline, so it stays a light blue that clears AA for the lede.
-  // The lower sky is a deeper blue. Neither is a white wash.
-  return { zenith: "#b7d4ec", horizon: "#6ea0d4", lit: "#f7f9fb", shadow: "#7e8c9c", body: "#fff6e4" };
+  return { zenith: "#5d9be8", horizon: "#b9d8f5", lit: "#ffffff", shadow: "#b4c0ce", body: "#fff6e4" };
 }

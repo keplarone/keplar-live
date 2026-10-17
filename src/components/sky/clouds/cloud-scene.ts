@@ -3,9 +3,9 @@
  * (Teaching Three.js series), MIT License.
  *
  * Desktop with a WebGPU adapter draws the volumetric march. Other WebGL2 desktops draw a mesh
- * cluster. Phones, low-power devices and reduced motion draw a few billboards, held still or
- * nearly still. The chunk loads after first paint and the loop stops when the canvas is off
- * screen, the tab is hidden, or the visitor is typing.
+ * cluster. Phones, low-power devices and reduced motion skip the canvas and keep the painted
+ * sky (a static image). The chunk loads after first paint and the loop stops when the canvas
+ * is off screen, the tab is hidden, or the visitor is typing.
  */
 import { frameGap, isPhone, liteFx } from "@/lib/fx/lite";
 import { altitudeFromScroll, meadowIndex, meadowKind, profileForChoice } from "@/lib/sky/journey";
@@ -15,14 +15,29 @@ import { isSkyVariant, type SkyVariant } from "@/lib/sky/variants";
 import { setLiveVariant, shownPrecip, subscribeWeather, weatherChoice } from "@/lib/sky/weather-mode";
 import type { CloudHandle } from "./webgl-clouds";
 
-export type CloudMode = "volumetric" | "mesh" | "billboard";
+export type CloudMode = "volumetric" | "mesh" | "still";
 
 export function chooseCloudMode(): CloudMode {
-  if (typeof window === "undefined") return "billboard";
+  if (typeof window === "undefined") return "still";
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (isPhone() || liteFx() || reduce) return "billboard";
+  if (isPhone() || liteFx() || reduce) return "still";
   if ("gpu" in navigator) return "volumetric";
   return "mesh";
+}
+
+/** A `navigator.gpu` entry is not an adapter. The WebGL2 fallback cannot compile this march. */
+async function webgpuAdapter(): Promise<boolean> {
+  const gpu = (navigator as Navigator & { gpu?: { requestAdapter?: () => Promise<unknown> } }).gpu;
+  if (!gpu?.requestAdapter) return false;
+  try {
+    const adapter = await Promise.race([
+      gpu.requestAdapter(),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 700)),
+    ]);
+    return Boolean(adapter);
+  } catch {
+    return false;
+  }
 }
 
 function isTyping(): boolean {
@@ -52,6 +67,10 @@ async function fetchWeather(signal: AbortSignal): Promise<{ sky: SkyProfile; nam
 
 export async function mountClouds(canvas: HTMLCanvasElement): Promise<() => void> {
   const mode = chooseCloudMode();
+  if (mode === "still") {
+    canvas.dataset.sky = "css";
+    return () => {};
+  }
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const phone = isPhone();
   const forced = skyFromQuery(location.search);
@@ -61,7 +80,7 @@ export async function mountClouds(canvas: HTMLCanvasElement): Promise<() => void
   let windMul = 1;
   const initial = settle(skyProfile(forced ?? FALLBACK_WEATHER.sky), reduce, phone);
 
-  if (mode === "volumetric") {
+  if (mode === "volumetric" && (await webgpuAdapter())) {
     try {
       const vol = await import("./volumetric");
       if (!disposed) handle = await vol.createVolumetric(canvas, { dark: dark() });
@@ -74,7 +93,7 @@ export async function mountClouds(canvas: HTMLCanvasElement): Promise<() => void
     try {
       const webgl = await import("./webgl-clouds");
       handle = webgl.createWebglClouds(canvas, {
-        mode: mode === "billboard" ? "billboard" : "mesh",
+        mode: "mesh",
         dark: dark(),
         draw: initial.profile,
         precipMax: phone ? 16 : 48,
@@ -105,9 +124,8 @@ export async function mountClouds(canvas: HTMLCanvasElement): Promise<() => void
   let running = false;
   let onScreen = true;
   let last = 0;
-  const nearStatic = mode === "billboard";
-  const gap = reduce ? 1e9 : nearStatic ? 1000 / 12 : Math.max(frameGap(false), 1000 / 24);
-  const speed = reduce ? 0 : nearStatic ? 0.15 : 1;
+  const gap = reduce ? 1e9 : Math.max(frameGap(false), 1000 / 24);
+  const speed = reduce ? 0 : 1;
 
   let scrollV = 0;
   let lastY = 0;
