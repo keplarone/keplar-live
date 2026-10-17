@@ -12,6 +12,7 @@ import { promptCategories } from "@/lib/kb/prompts";
 import { approvedVs } from "@/lib/kb/vs";
 import { glossary } from "@/lib/kb/glossary";
 import { factsText } from "@/lib/content/product-facts";
+import { TOOLS } from "@/lib/seo/tools";
 
 export const dynamic = "force-static";
 
@@ -74,6 +75,10 @@ export function GET() {
     ...promptCategories.map((c) => line(`/prompts/${c.slug}`, `${c.name} prompts`, c.blurb)),
     line("/vs", "Keplar compared with other assistants", "dated, sourced comparisons; no accuracy claims"),
     ...approvedVs().map((v) => line(`/vs/${v.slug}`, `Keplar vs ${v.name}`, v.description)),
+    "",
+    "## Free tools",
+    line("/tools", "Free tools", "small utilities on their own pages. The citation formatter and the comparison explorer do not call a model. The others call one free model, are rate limited, and say they are unavailable when no key is set."),
+    ...TOOLS.map((t) => line(`/tools/${t.slug}`, t.title, t.description)),
     "",
     "## Optional",
     line("/llms-full.txt", "Docs and glossary, full text", "every docs page and glossary entry as one plain-text file"),

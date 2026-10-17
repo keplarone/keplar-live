@@ -20,13 +20,13 @@
 - [x] Phase 1 milestone: audit + H1–H4, M1, M4. Branch `cursor/seo-audit-critical-4cb9`.
 - [x] Phase 2–3 cluster registry (`src/lib/seo/clusters.ts`), quality gate and publish decision (`src/lib/seo/quality.ts`, `src/lib/seo/programmatic.ts`). No new public URLs. `/compare` and `/vs` cross-link inside the comparisons cluster. Branch `cursor/seo-clusters-quality-4cb9` (stacked on the audit branch).
 - [x] Phase 4 free tools at `/tools` (10 tools). Citation formatter and the comparison explorer do not call a model. The other eight call one OpenRouter `:free` slug, 8 runs an hour per IP, discard a reply if the host reports a cost, and return 503 when no key is set. Branch `cursor/seo-free-tools-4cb9`.
-- [ ] Phase 5 AI-search: facts test stays green (done with H1, H3, H4). No extra schema that the page does not show.
-- [ ] Phase 9 SEO unit checks run via existing `npm test` / CI. Live crawl stays manual.
-- [ ] Phase 10 Search Console client degrades when `GSC_CLIENT_EMAIL`, `GSC_PRIVATE_KEY`, or `GSC_SITE_URL` is missing. Admin shows that sentence, not sample metrics.
-- [ ] Phase 6 report publisher requires Methodology, Data, Limitations, Reproduce. No fabricated results.
-- [ ] Phase 7 public sharing stays private by default; indexing requires a stored consent flag.
-- [ ] Phase 8 conversion copy on new hubs/tools only, reusing `LandingTemplate` / `kb.module.css`. No new visual language.
-- [ ] Phase 11 left to the owner: merge, then production deploy per `CLAUDE.md`.
+- [x] Phase 5 AI-search: product facts, FAQ, and glossary match the product (H1, H3, H4). `/llms.txt` lists `/tools` and each tool. No schema was added for content the page does not show.
+- [x] Phase 9 SEO unit checks run via existing `npm test` (`tests/*.test.ts`), which is the CI gate. Live crawl, Lighthouse, and axe stay manual because they need a running server.
+- [x] Phase 10 Search Console client (`src/lib/seo/search-console.ts`) returns a reason and no rows when `GSC_CLIENT_EMAIL`, `GSC_PRIVATE_KEY`, or `GSC_SITE_URL` is missing, or when the token or query call fails. `/admin/seo` renders that reason or the API rows. It does not invent metrics.
+- [x] Phase 6 report gate (`src/lib/seo/reports.ts`) requires methodology, data, limitations, and how to reproduce, each at least 80 characters, plus a repo source path. `CORE_EVAL_NOTE` is unpublished and does not repeat scores. `publishedReports()` is empty. `/reports` is not in the sitemap.
+- [x] Phase 7 public sharing stays private by default. `PATCH /api/share` still requires `consent: true` and a verified email. `publishShare` stores `consentAt`. A row with `publicAt` and no `consentAt` is not opened, listed, or sitemapped. Unpublish and takedown clear `consentAt`.
+- [x] Phase 8 tool pages already link to the matching product with `TrackedLink` and reuse the existing marketing styles. No new visual language and no site-wide restyle.
+- [ ] Phase 11 left to the owner: merge, then production deploy per `CLAUDE.md`. Do not deploy from this agent.
 
 ## This milestone (audit + critical fixes)
 
@@ -53,6 +53,18 @@ Not in this milestone, on purpose: no new landing pages, no Search Console calls
 - Audit milestone, full `npm test`: 3034 tests, 3032 pass, 0 fail, 2 skipped.
 - Cluster milestone, full `npm test`: 3038 tests, 3036 pass, 0 fail, 2 skipped.
 - Free-tool milestone, full `npm test`: 3041 tests, 3039 pass, 0 fail, 2 skipped. `npx tsc --noEmit` pass.
+- Measurement milestone: `npx eslint` on the touched files and `npx tsc --noEmit` — pass. Full `npm test`: 3045 tests, 3043 pass, 0 fail, 2 skipped.
+
+## This milestone (measurement, reports, consent)
+
+Verified on 2026-10-17, branch `cursor/seo-measure-reports-4cb9` (stacked on `cursor/seo-free-tools-4cb9`):
+
+- `/admin/seo` calls `fetchSearchAnalytics`. Missing credentials, a refused token, a failed query, or a thrown request produce a sentence and no numbers. A successful response shows the API's query rows for the last 28 days.
+- The 6 October 2026 Core eval stays an unpublished note. Its writeup says one answer key was wrong and multi-step was not a Thorough measurement, so the note does not quote scores and is not indexable.
+- Public answer pages require a stored `consentAt`. Pages that were public before this field existed drop out of `/answers` and `/answers-sitemap.xml` until the owner publishes them again (the dialog still requires consent).
+- `/llms.txt` lists the free tools from `TOOLS`.
+
+Not in this milestone: no public `/reports` page, no fabricated research, no Bing API client, no live crawl in CI, no deploy.
 
 ## Blockers for the owner
 
@@ -60,7 +72,8 @@ Not in this milestone, on purpose: no new landing pages, no Search Console calls
 - Bing verification token (`BING_SITE_VERIFICATION` or `NEXT_PUBLIC_BING_SITE_VERIFICATION`) if the meta tag should render. Same for Google (`GOOGLE_SITE_VERIFICATION`).
 - Owner review before `/vs/perplexity` can be indexed (`approved: true` in `src/lib/kb/vs.ts`).
 - OpenRouter key on the server for any free tool that calls a model. Tools must keep working as "unavailable" when the key is absent.
-- Do not publish a research report until a real run file is chosen. `docs/core-eval-results.json` may be used only if its fields are quoted with the file's own limitations.
+- Do not publish a research report until a real run file is chosen and `assessReport` passes with `published: true`. `docs/core-eval-results.json` is not a benchmark: the writeup says item s2 had a wrong answer key and the multi-step items were not a Thorough measurement. Leave `CORE_EVAL_NOTE.published` false.
+- Any public answer created before `consentAt` existed needs the owner to publish it again if it should stay in the sitemap.
 
 ## Files touched in the audit milestone
 
@@ -83,3 +96,16 @@ Not in this milestone, on purpose: no new landing pages, no Search Console calls
 - `tests/robots.test.ts`
 - `tests/share-public.test.ts`
 - `tests/templates.test.ts`
+
+## Files touched in the measurement milestone
+
+- `docs/seo-engine/PROGRESS.md`
+- `src/lib/seo/search-console.ts`
+- `src/lib/seo/reports.ts`
+- `src/app/admin/seo/page.tsx`
+- `src/app/llms.txt/route.ts`
+- `src/lib/growth/share.ts`
+- `src/lib/growth/share-public.ts`
+- `tests/seo-measure.test.ts`
+- `tests/share-public.test.ts`
+- `tests/seo-indexable.test.ts`
