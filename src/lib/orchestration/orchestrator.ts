@@ -2,6 +2,7 @@
  * Keplar-One pipeline. Wires the interfaces together and emits stage events
  * as an async stream. Every dependency is an interface; tests inject mocks.
  */
+import { panelParamsForEffort } from "./effort";
 import { HeuristicClassifier } from "./classifier";
 import { EvidenceWeightedComparator } from "./comparator";
 import { computeLevel, toUnits, USD_PER_UNIT } from "./compute";
@@ -516,7 +517,7 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
     const origCtl = new AbortController();
     const finish = (r: ProviderResult) => { if (!done) { done = true; resolve(r); } };
     registry
-      .generate({ model: p.model, prompt: panelPrompt, system: panelSystem, classification, params: sanitizeParams(p.model, live ? livePanelParams(classification, req.modes?.reason, guide) : paramsFor("panel", i)), tier, slot: "panel", signal: AbortSignal.any([panelSignal ?? origCtl.signal, origCtl.signal]), avoid: seatModels, onToken: early.tokens(i), ...vision })
+      .generate({ model: p.model, prompt: panelPrompt, system: panelSystem, classification, params: sanitizeParams(p.model, live ? panelParamsForEffort(livePanelParams(classification, req.modes?.reason, guide), req.routing?.effort) : paramsFor("panel", i)), tier, slot: "panel", signal: AbortSignal.any([panelSignal ?? origCtl.signal, origCtl.signal]), avoid: seatModels, onToken: early.tokens(i), ...vision })
       .then((r): ProviderResult => {
         // A substitute answered (the planned model was busy or missing): show the model that actually answered.
         if (r.ok && r.fellBackFrom && r.model.id !== p.model.id && !done) {

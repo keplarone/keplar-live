@@ -6,13 +6,15 @@ import { topicTitle } from "@/lib/chat-title";
 import { readSaved, storageKey, writeSaved, type Scope } from "./scope";
 import { applyDebate } from "./debate";
 import { applyResearch } from "./research";
+import { DEFAULT_EFFORT, isEffort, routingForEffort } from "@/lib/orchestration/effort";
 
 const MAX_THREADS = 200;
 
 export const uid = (p: string) => `${p}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
 export const today = () => new Date().toLocaleDateString("en-CA");
 
-const defaultSettings: Settings = { routing: { strategy: "auto", maxModels: 6, tier: "standard", preferOpenWeights: false, excludeProviders: [] } };
+// The composer's Effort (src/lib/orchestration/effort.ts) sets depth, strategy and the model cap; Medium is the default.
+const defaultSettings: Settings = { routing: routingForEffort(DEFAULT_EFFORT, { tier: "standard", preferOpenWeights: false, excludeProviders: [] }) };
 
 /**
  * Starts empty with scope "pending": which account (or the anonymous device) owns the chats is only known once the server
@@ -73,7 +75,8 @@ export function loadScope(scope: Scope): Loaded {
     threads,
     projects: saved.projects ?? [],
     activeThreadId: saved.activeThreadId && threads.some((t) => t.id === saved.activeThreadId) ? saved.activeThreadId : null,
-    settings: { ...defaultSettings, ...s, routing: { ...defaultSettings.routing, ...s.routing } },
+    // Settings saved before Effort existed have none: they start on Medium, keeping the person's data and provider choices.
+    settings: { ...defaultSettings, ...s, routing: routingForEffort(isEffort(s.routing?.effort) ? s.routing.effort : DEFAULT_EFFORT, { ...defaultSettings.routing, ...s.routing }) },
   };
 }
 
