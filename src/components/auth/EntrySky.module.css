@@ -1,0 +1,134 @@
+/* The entry sky (EntrySky.tsx). Day: a blue sky, a warm sun haze, soft white clouds that drift. Night (dark theme): a deep blue
+ * night, a moon glow, slate clouds lit from above by the moon. No star field. Transform and opacity only; still on phones and under
+ * reduced motion. The sky colours keep the text set on them readable: the day sky is pale where the headline sits (ink on it,
+ * >= 7:1) and the night sky is dark everywhere (white on it). Colours are literal on purpose: a sky, not UI chrome. */
+
+.sky {
+  /* day */
+  --sky-top: #4f92dc;
+  --sky-mid: #8fc0ef;
+  --sky-low: #cfe5f9;
+  --sky-floor: #eef6fd;
+  --sky-light: rgb(255 246 220 / 0.85); /* the sun haze */
+  --cloud: rgb(255 255 255 / 0.96);
+  --cloud-soft: rgb(255 255 255 / 0.7);
+  --cloud-shade: rgb(196 214 236 / 0.85);
+  --cloud-blur: 7px;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+:root[data-theme="dark"] .sky {
+  /* night */
+  --sky-top: #03050d;
+  --sky-mid: #0a1228;
+  --sky-low: #141f3d;
+  --sky-floor: #1b2647;
+  --sky-light: rgb(214 226 255 / 0.5); /* the moon glow */
+  --cloud: rgb(150 164 204 / 0.34);
+  --cloud-soft: rgb(120 134 178 / 0.24);
+  --cloud-shade: rgb(40 50 86 / 0.5);
+  --cloud-blur: 9px;
+}
+
+.base {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 34%, var(--sky-low) 68%, var(--sky-floor) 100%);
+}
+/* Sun (day) or moon (night): a soft disc of light high on the left, where the headline sits under it. */
+.light {
+  position: absolute;
+  left: -8%;
+  top: -22%;
+  width: 70%;
+  height: 80%;
+  background: radial-gradient(closest-side, var(--sky-light) 0%, rgb(255 255 255 / 0) 100%);
+  opacity: 0.9;
+}
+:root[data-theme="dark"] .light::after {
+  /* the moon itself, small and soft */
+  content: "";
+  position: absolute;
+  left: 46%;
+  top: 44%;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 36%, #f7f8ff 0%, #dfe5f6 55%, #c3cbe4 100%);
+  box-shadow: 0 0 40px rgb(220 230 255 / 0.55), 0 0 120px rgb(190 205 255 / 0.3);
+}
+
+/* A cloud: overlapping soft puffs on a flat base, shaded underneath, blurred a little so the edges stay soft. */
+.cloud {
+  position: absolute;
+  width: var(--w, 460px);
+  height: calc(var(--w, 460px) * 0.34);
+  background:
+    radial-gradient(34% 62% at 30% 60%, var(--cloud) 0 52%, transparent 72%),
+    radial-gradient(30% 78% at 52% 44%, var(--cloud) 0 50%, transparent 71%),
+    radial-gradient(26% 58% at 72% 60%, var(--cloud) 0 50%, transparent 72%),
+    radial-gradient(22% 44% at 14% 72%, var(--cloud-soft) 0 50%, transparent 74%),
+    radial-gradient(22% 44% at 88% 72%, var(--cloud-soft) 0 50%, transparent 74%),
+    radial-gradient(56% 30% at 50% 86%, var(--cloud-shade) 0 55%, transparent 76%);
+  filter: blur(var(--cloud-blur));
+  opacity: var(--o, 1);
+  will-change: transform;
+}
+:root[data-theme="dark"] .cloud {
+  /* moonlit: a pale rim on top of each cloud */
+  background:
+    radial-gradient(30% 50% at 50% 30%, rgb(214 224 255 / 0.22) 0 45%, transparent 70%),
+    radial-gradient(34% 62% at 30% 60%, var(--cloud) 0 52%, transparent 72%),
+    radial-gradient(30% 78% at 52% 44%, var(--cloud) 0 50%, transparent 71%),
+    radial-gradient(26% 58% at 72% 60%, var(--cloud) 0 50%, transparent 72%),
+    radial-gradient(22% 44% at 14% 72%, var(--cloud-soft) 0 50%, transparent 74%),
+    radial-gradient(22% 44% at 88% 72%, var(--cloud-soft) 0 50%, transparent 74%),
+    radial-gradient(56% 30% at 50% 86%, var(--cloud-shade) 0 55%, transparent 76%);
+}
+.c1 { --w: 520px; left: 4%; top: 58%; --o: 0.95; }
+.c2 { --w: 380px; left: 36%; top: 14%; --o: 0.8; }
+.c3 { --w: 640px; left: 58%; top: 70%; --o: 0.9; }
+.c4 { --w: 300px; left: 72%; top: 24%; --o: 0.7; }
+.c5 { --w: 420px; left: -10%; top: 30%; --o: 0.6; }
+.c6 { --w: 760px; left: 18%; top: 84%; --o: 1; }
+
+/* A low haze so the bottom of the sky settles into the page under it. */
+.haze {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 24%;
+  background: linear-gradient(180deg, transparent, var(--c-canvas));
+  opacity: 0.85;
+}
+
+/* Drift: each cloud slides slowly sideways and back (no loop seam), at its own pace. Wider than a phone, motion allowed. */
+@media (min-width: 641px) and (prefers-reduced-motion: no-preference) {
+  .cloud { animation: drift var(--t, 60s) ease-in-out var(--dl, 0s) infinite alternate; }
+  .c1 { --t: 70s; --dx: 9vw; }
+  .c2 { --t: 54s; --dx: -7vw; --dl: -12s; }
+  .c3 { --t: 84s; --dx: -10vw; --dl: -30s; }
+  .c4 { --t: 48s; --dx: 8vw; --dl: -6s; }
+  .c5 { --t: 66s; --dx: 12vw; --dl: -20s; }
+  .c6 { --t: 96s; --dx: -6vw; --dl: -40s; }
+  .light { animation: breathe 14s ease-in-out infinite alternate; }
+  .sky { animation: sky-in 1.6s var(--space-ease-expo) both; }
+}
+@keyframes drift { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(var(--dx, 8vw), -1.5vh, 0); } }
+@keyframes breathe { from { opacity: 0.75; transform: scale(1); } to { opacity: 1; transform: scale(1.06); } }
+@keyframes sky-in { from { opacity: 0; transform: scale(1.04); } to { opacity: 1; transform: none; } }
+
+/* Phones: fewer, smaller clouds and no blur filter (calm and cheap to paint). */
+@media (max-width: 640px) {
+  .cloud { filter: none; }
+  .c2, .c4, .c5 { display: none; }
+  .c1 { --w: 300px; left: -20%; top: 64%; }
+  .c3 { --w: 360px; left: 46%; top: 76%; }
+  .c6 { --w: 460px; left: -6%; top: 88%; }
+}
+@media (forced-colors: active) {
+  .sky { display: none; }
+}
