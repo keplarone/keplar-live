@@ -59,7 +59,7 @@
     "pptxgenjs": "^4.0.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "stripe": "^22.6.2",
+    "stripe": "^23.0.0",
     "three": "^0.186.1",
     "unpdf": "^1.8.1",
     "y-codemirror.next": "^0.3.6",
