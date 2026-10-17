@@ -1,8 +1,7 @@
 /*
- * Site nav in the Space UI (docs/design/space-ui.md): Space Studio's floating top bar. Three glass pills over the page (the brand,
- * the primary links, the actions) and the 3D white CTA; no bar, no hairline. Once the page scrolls, a soft fade of the canvas
- * colour rises behind the pills so text never runs under them. The current link wears the lit face (white in dark, ink in
- * light), like Space Studio's tab indicator. Colours come from the --nav-* and --space-* tokens, so the theme swaps them.
+ * Site nav: solid brand and link pills, glass only on the theme and weather icons and on an empty
+ * layer behind the Sign in label. The displacement filter never has text as a child. The menu is an
+ * opaque sheet over a dimmed page. Colours come from the tokens, so the theme swaps them.
  */
 .wrap {
   position: fixed;
@@ -26,6 +25,8 @@
 .wrap[data-open]::after { opacity: 0; }
 
 .bar {
+  position: relative;
+  z-index: 3;
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
@@ -35,24 +36,33 @@
   margin: 0 auto;
 }
 
-/* The bar is solid. Weather, the theme switch and Sign in are the only lenses. */
-.brand, .links ul, .icon, .signIn {
+/* Text links stay solid. A displacement filter on the glyphs paints an upside-down
+   green/red copy outside the pill, so nothing that contains text is a lens. */
+.brand, .links ul, .icon {
   background: var(--lg-solid);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
+  filter: none;
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.12);
 }
-.theme, .signIn, .weather {
+.link, .word, .signIn, .lensLabel {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  filter: none;
+}
+/* Theme and weather are icon pills. Clip the filter region so it cannot spill a copy of nearby type. */
+.theme, .weather {
   isolation: isolate;
+  overflow: hidden;
   background: var(--glass-clear);
   box-shadow: var(--glass-depth);
 }
-:global(html[data-lens]) :is(.theme, .signIn, .weather)[data-distort] {
+:global(html[data-lens]) :is(.theme, .weather)[data-distort] {
   -webkit-backdrop-filter: url(#liquid-glass);
   backdrop-filter: url(#liquid-glass);
 }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  .brand, .links ul, .icon, .signIn, .theme, .weather { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .brand, .links ul, .icon, .signIn, .theme, .weather { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; filter: none; }
 }
 
 /* brand: Space Studio's logo pill; the mark turns a little on hover */
@@ -136,11 +146,14 @@
 }
 .panelWeather { display: none; }
 .signIn {
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   height: 44px;
   padding: 0 20px;
   border-radius: var(--r-pill);
+  background: transparent;
   color: var(--nav-ink);
   font-size: 13.5px;
   font-weight: var(--w-semibold);
@@ -148,6 +161,15 @@
   white-space: nowrap;
   transition: box-shadow 0.5s var(--space-ease-out);
 }
+/* The lens is an empty layer behind the label. The filter never has the glyphs as children. */
+.lens {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.lensLabel { position: relative; z-index: 1; }
 .signIn:hover { box-shadow: var(--nav-shadow); }
 /* the one CTA: Space Studio's 3D white button (ink in light) */
 .cta {
@@ -179,20 +201,34 @@
 .wrap[data-open] .toggleIcon i:first-child { translate: 0 3.2px; rotate: 45deg; }
 .wrap[data-open] .toggleIcon i:last-child { translate: 0 -3.2px; rotate: -45deg; }
 
-/* the sheet under the bar: a glass card that unfolds from the Menu pill */
+/* Dims the page, including the hero, while the menu is open. The bar stays above it. */
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--space-scrim);
+  cursor: pointer;
+}
+/* Solid menu. No glass: the hero must not read through the links. */
 .sheet {
   position: absolute;
+  z-index: 2;
   top: calc(env(safe-area-inset-top, 0px) + 72px);
   right: var(--l-gutter);
   width: min(720px, calc(100vw - 2 * var(--l-gutter)));
   max-height: calc(100dvh - 96px);
   overflow-y: auto;
   padding: var(--s-6);
+  border: 1px solid var(--hairline-strong);
   border-radius: var(--space-r-card);
   background: var(--lg-solid);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
-  box-shadow: 0 12px 40px rgb(0 0 0 / 0.18);
+  filter: none;
+  box-shadow: 0 24px 60px rgb(0 0 0 / 0.45);
   --m-origin: 100% 0;
 }
 .sheet[hidden] { display: none; }

@@ -117,8 +117,9 @@ export function Nav() {
           </button>
           <WeatherToggle className={`${s.weather}`} />
           <ThemeToggle className={`${s.icon} ${s.theme}`} />
-          <Link href={me.signedIn ? "/account" : href(signInHref)} className={s.signIn} data-glass-pill="" data-distort="">
-            {me.signedIn ? t.account : t.signIn}
+          <Link href={me.signedIn ? "/account" : href(signInHref)} className={s.signIn}>
+            <span className={s.lens} data-glass-pill="" data-distort="" aria-hidden="true" />
+            <span className={s.lensLabel}>{me.signedIn ? t.account : t.signIn}</span>
           </Link>
           {/* "Try Keplar" signed out, "Open Keplar" signed in (CtaLabel: both in the HTML, CSS shows one from <html data-signed>). */}
           <Link href={tryHref} className={s.cta}>
@@ -138,6 +139,9 @@ export function Nav() {
         </div>
       </div>
 
+      {panel.mounted ? (
+        <button type="button" className={s.scrim} aria-label={t.closeMenu} tabIndex={-1} onClick={() => setOpen(false)} {...panel.motion("fade", false)} />
+      ) : null}
       <nav ref={sheetRef} id="site-menu" className={s.sheet} aria-label={t.siteMenu} hidden={!panel.mounted} {...panel.motion("drop")}>
         <div className={s.cols}>
           <div className={s.col}>

@@ -1498,7 +1498,10 @@ a.sideItem {
  * 900px), a quiet top bar (the chat title as plain text, icon actions that only fill on hover), the greeting with the mark beside
  * it, a raised composer and outlined starter chips. Replaces a light block plus a hex-copied dark twin of it. */
 :global(:root[data-theme]) .app { background: transparent; }
-:global(:root[data-theme]) .sideWrap { padding: 12px 0 12px 12px; background: transparent; opacity: 1; }
+/* The gutter around the sidebar was the bare night sky, a murky grey. The column is one solid surface. */
+:global(:root[data-theme]) .sideWrap { padding: 12px 0 12px 12px; background: var(--lg-solid); opacity: 1; }
+/* Chat sits on the canvas. A raw sky behind the thread goes muddy and fails contrast when the clouds brighten. */
+:global(:root[data-theme]) .main { background: var(--c-canvas); }
 /* Space UI (docs/design/space-ui.md): the sidebar is a Space Studio glass card (no edge line: depth from the inner highlight and
    the drop), rows are pills, the current row is a raised pill, and New chat leads with the lit 3D disc. */
 :global(:root[data-theme]) .sidebar {
@@ -1623,22 +1626,24 @@ a.sideItem {
 :global(:root[data-theme]) .welcomeLede { display: none; }
 :global(:root[data-theme]) .homeChips { justify-content: center; }
 :global(:root[data-theme]) .homeChip {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   min-height: 40px;
   padding: 0 16px;
   border-radius: 999px;
-  background: var(--glass-clear);
+  background: transparent;
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
+  filter: none;
   border: 1px solid transparent;
-  box-shadow: var(--glass-depth);
+  box-shadow: none;
   color: var(--c-ink-2);
   font-size: 14px;
-  transition: background-color var(--m-dur-1) var(--m-ease-out), color var(--m-dur-1) var(--m-ease-out), border-color var(--m-dur-1) var(--m-ease-out);
+  transition: color var(--m-dur-1) var(--m-ease-out);
 }
-:global(:root[data-theme]) .homeChip:hover { background: var(--surface-raised); border-color: transparent; color: var(--c-ink); }
+:global(:root[data-theme]) .homeChip:hover { background: transparent; border-color: transparent; color: var(--c-ink); }
 :global(:root[data-theme]) .homeTile,
 :global(:root[data-theme]) .useForOption,
 :global(:root[data-theme]) .example.example {
@@ -1763,21 +1768,28 @@ a.sideItem {
   min-height: 40px;
   padding: 0 18px;
   border: 0;
-  background: var(--glass-clear);
-  box-shadow: var(--glass-depth);
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  filter: none;
+  box-shadow: none;
   color: var(--c-ink-2);
   font-size: 13.5px;
   font-weight: var(--w-medium);
-  transition: color 0.3s ease, background-color 0.3s ease, box-shadow 0.45s var(--space-ease-out), translate 0.45s var(--space-spring-snappy);
+  transition: color 0.3s ease, translate 0.45s var(--space-spring-snappy);
 }
-:global(html[data-lens][data-theme]) .homeChip[data-distort] {
-  -webkit-backdrop-filter: url(#liquid-glass);
-  backdrop-filter: url(#liquid-glass);
+/* Empty layer behind the label. The displacement filter stays off the words. */
+.chipLens {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
 }
+.chipLabel, .homeChipIcon { position: relative; z-index: 1; }
 :global(:root[data-theme]) .homeChip:hover {
   color: var(--c-ink);
-  background: var(--glass-clear);
-  box-shadow: var(--glass-depth);
+  background: transparent;
   translate: 0 -2px;
 }
 :global(:root[data-theme]) .homeChip:active { translate: 0 1px; transition-duration: 0.1s; }
