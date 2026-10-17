@@ -27,7 +27,8 @@ test("the note carries the real fact sheet: every feature with its status, and t
   for (const s of FACT_SECTIONS) for (const f of s.facts) assert.ok(note.includes(f.name), `index lists ${f.name}`);
   assert.match(note, /Roblox Studio co-builder\. /, "Roblox section in full");
   assert.match(note, /Solar 5\.8 modes \[beta; Desktop app\]/);
-  assert.match(note, /Web lookups \(coming soon, not available yet/, "unavailable features are marked as such");
+  assert.match(note, /Web lookups \(beta; Desktop app 0\.2\.0 or newer\)/, "Live Research is the desktop beta, not an unshipped browser search");
+  assert.match(readFileSync("src/lib/orchestration/self-knowledge.ts", "utf8"), /soon: "coming soon, not available yet"/, "a future soon feature is still labeled unavailable");
   assert.match(note, /do not invent features, plans, prices/);
   assert.ok(note.length < 16_000, `bounded (${note.length} chars)`);
   assert.equal(selfKnowledgeNote("Explain photosynthesis"), "");

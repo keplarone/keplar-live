@@ -13,7 +13,7 @@ Rules for everything below: no invented numbers, testimonials, ratings, customer
 | Redirect and 404 hygiene (live) | `http` and `www` 308 to `https://keplar.one`; trailing slash 308 to the clean URL; unknown URLs return a real 404. |
 | Structured data | Organization (`sameAs` = `https://github.com/keplarone`, the only profile we confirmed exists), WebSite, SoftwareApplication, BreadcrumbList, FAQPage (visible FAQ only), Article/BlogPosting/TechArticle, DefinedTermSet, HowTo, QAPage (public shared answers), CollectionPage. |
 | Content library | 69 docs pages (help center), 24 blog posts, glossary (66 terms), prompt library, 10 use-case pages, `/for-students`, `/for-developers`, `/for-small-business`, `/for-founders`, `/for-researchers`, guides, dated `/vs` comparisons (feature facts only), and (new) `/changelog` release notes with an Atom feed. |
-| Developer docs | `/docs/reference/developers-and-api` says plainly that **there is no public API, SDK, CLI or webhooks**; what exists is outbound MCP connections and the desktop app. We did not invent an API page. If a real API ships, document it there first. |
+| Developer docs | `/docs/reference/developers-and-api` documents a **beta public API** (`POST /api/v1/ask`, keys, OpenAPI on `/developers`). There is still no SDK and no webhook API. This row used to say there was no public API; that sentence was stale after the API shipped. |
 | Share cards | Per-page OG images for guides, docs, blog, prompts, use cases, landing pages, and (new) each public shared answer. |
 | Language | English only. `hreflang` is not needed and would be wrong to add; add it only when a translated page exists. |
 | llms.txt | `/llms.txt`, generated from the content files. A proposal; no search engine has said it uses it. |

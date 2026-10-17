@@ -3,7 +3,7 @@
  *  - A competitor fact appears only if it was read on that vendor's own public page on the access date, and the page is cited.
  *  - No claim about quality, accuracy, safety, privacy or speed superiority in either direction.
  *  - Where the other product does something Keplar does not (or does it first), the page says so.
- *  - `approved: false` pages are left out of the sitemap and unlinked from the hub until the owner signs off (they are still indexable).
+ *  - `approved: false` pages are noindex, left out of the sitemap, and unlinked from the hub until the owner signs off.
  */
 import { PLAN_ALLOWANCES } from "@/lib/orchestration/plans";
 import { tiers } from "@/lib/tiers";

@@ -89,7 +89,7 @@ const steps: { n: 1 | 2 | 3 | 4 | 5 | 6; title: string; lead: string; body: Reac
       <>
         <p>Every synthesized answer is attributed to {O}. Below it, you can expand:</p>
         <dl className={s.defs}>
-          <div><dt>Consensus</dt><dd>the agreement percentage, and how many models agreed and disagreed</dd></div>
+          <div><dt>Consensus</dt><dd>how many models agreed, as counts such as &quot;4 of 5&quot;, never a percentage of correctness</dd></div>
           <div><dt>Models consulted</dt><dd>which models {O} asked</dd></div>
           <div><dt>Sources</dt><dd>the sources the models cite ({K} hasn&apos;t checked them)</dd></div>
           <div><dt>Disagreements</dt><dd>which model or models disagreed, and a summary of what they concluded differently</dd></div>

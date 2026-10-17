@@ -116,6 +116,9 @@ test("per-account cap of public pages; admin takedown is final and admin-only", 
 
 test("robots lists both sitemaps", async () => {
   const src = await (await import("node:fs/promises")).readFile(new URL("../src/app/robots.ts", import.meta.url), "utf8");
-  assert.ok(src.includes("/answers-sitemap.xml") && src.includes("/sitemap.xml"));
+  const { SITEMAP_FILES } = await import("../src/lib/seo/sitemaps");
+  assert.ok(src.includes("robotsSitemapUrls"));
+  const paths = SITEMAP_FILES.map((f) => f.path).join(" ");
+  assert.ok(paths.includes("/answers-sitemap.xml") && paths.includes("/sitemap.xml"));
   assert.equal(src.includes('"/answers'), false); // public answers are never disallowed
 });
