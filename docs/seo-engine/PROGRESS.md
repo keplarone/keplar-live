@@ -3,7 +3,7 @@
 **Updated:** 2026-10-17
 **Repo:** keplar-live (`/workspace`)
 **Author of commits:** `Keplar <team@keplar.one>`
-**Do not deploy.** Do not run `vercel --prod`. Do not merge these PRs from the agent.
+**Owner approved merge and auto-deploy on 2026-10-17.** Do not run `vercel` or `vercel --prod`. Merging to `main` is the deploy. #22 merged as `8be1ce5`.
 
 ## How to resume
 
@@ -18,7 +18,7 @@
 
 - [x] Phase 1 audit verified against this repo (checkpoint findings re-checked). Written to `docs/seo-engine/AUDIT.md`.
 - [x] Phase 1 milestone: audit + H1–H4, M1, M4. Branch `cursor/seo-audit-critical-4cb9`.
-- [x] Phase 2–3 cluster registry (`src/lib/seo/clusters.ts`), quality gate and publish decision (`src/lib/seo/quality.ts`, `src/lib/seo/programmatic.ts`). No new public URLs. `/compare` and `/vs` cross-link inside the comparisons cluster. Branch `cursor/seo-clusters-quality-4cb9` (stacked on the audit branch).
+- [x] Phase 2–3 cluster registry (`src/lib/seo/clusters.ts`), quality gate and publish decision (`src/lib/seo/quality.ts`, `src/lib/seo/programmatic.ts`). No new public URLs. `/compare` and `/vs` cross-link inside the comparisons cluster. Branch `cursor/seo-clusters-quality-4cb9`.
 - [ ] Phase 4 free tools. Deterministic tools need no model. Model tools use only OpenRouter `:free` slugs and a rate limit. Missing key returns unavailable, never a fake answer.
 - [ ] Phase 5 AI-search: facts test stays green (done with H1, H3, H4). No extra schema that the page does not show.
 - [ ] Phase 9 SEO unit checks run via existing `npm test` / CI. Live crawl stays manual.
@@ -50,7 +50,7 @@ Not in this milestone, on purpose: no new landing pages, no Search Console calls
 - `npx tsc --noEmit` — pass (exit 0).
 - `npx eslint` on the files in this milestone — pass (exit 0).
 - `node --import tsx --test` on the SEO files listed above — 66 pass, 0 fail.
-- Audit milestone, full `npm test`: 3034 tests, 3032 pass, 0 fail, 2 skipped.
+- Audit milestone, full `npm test`: 3034 tests, 3032 pass, 0 fail, 2 skipped. CI on #22 then failed once in `tests/presence.test.ts` because an empty flush purged rows against the wall clock. That flush now skips the purge unless it has a logical clock. CI verify passed after that fix.
 - Cluster milestone, full `npm test`: 3038 tests, 3036 pass, 0 fail, 2 skipped. `npx tsc --noEmit` pass.
 
 ## Blockers for the owner
