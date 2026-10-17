@@ -1,6 +1,5 @@
 "use client";
 
-import { DisagreementView } from "@/components/answer/DisagreementView";
 import { SourceChecks } from "@/components/answer/SourceChecks";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
@@ -9,7 +8,7 @@ import { brand } from "@/lib/site";
 import { tiers } from "@/lib/tiers";
 import { formatResetAt, upgradesFrom, WINDOW_WARN_AT, windowResetText } from "@/lib/orchestration/plans";
 import { computeLevelLabel } from "@/lib/orchestration/compute";
-import { modelStatusSentence, summarizeModels } from "@/lib/orchestration/model-status";
+import { summarizeModels } from "@/lib/orchestration/model-status";
 import type { KeplarAnswer, VerificationCheck } from "@/lib/orchestration/types";
 import { IconCheck, IconChevron, IconCopy, IconRetry, IconSave, IconThumb, IconWeb } from "./icons";
 import { ListenButton } from "./ListenButton";
@@ -688,16 +687,6 @@ function AnswerFooter({ answer: a, meta, onRetry, onRefreshResearch, onSignal, i
   );
 }
 
-/** Where the models disagree: side by side right under the answer (not behind a click). See src/components/answer/DisagreementView.tsx. */
-function SplitView({ a, onMore }: { a: KeplarAnswer; onMore: () => void }) {
-  return (
-    <DisagreementView
-      data={{ consensus: a.consensus, models: a.models, disagreements: a.disagreements, checks: a.verification.checks, reviewer: a.verification.mode === "cross-model" ? a.verification.reviewer : undefined }}
-      footer={<button type="button" className={s.splitLink} onClick={onMore}>Open the full comparison</button>}
-    />
-  );
-}
-
 const slotLabel = { panel: "Panel", verifier: "Verifier", judge: "Judge" } as const;
 const statusLabel = { responded: "Responded", failed: "No response", refused: "Declined", "not-needed": "Not needed" } as const;
 
@@ -727,9 +716,7 @@ function Answer({ answer: a, onRetry, onRefreshResearch, onSignal, isLast, conti
     setOpen(next);
     if (next && (id === "consensus" || id === "models" || id === "disagreements" || id === "verification" || id === "reasoning")) growthTrack("answer_action", { action: `open_${id}` as AnswerAction });
   };
-  const hasSplit = a.disagreements.length > 0 && c.level !== "single";
   const modelStatus = summarizeModels(a.models);
-  const modelsNote = c.level === "single" ? "" : modelStatusSentence(modelStatus);
 
   const sections: { id: string; title: string; meta: string; body: ReactNode }[] = [
     {
@@ -847,22 +834,16 @@ function Answer({ answer: a, onRetry, onRefreshResearch, onSignal, isLast, conti
       {a.research ? <ResearchHead research={a.research} /> : null}
       <Markdown source={a.markdown} cite={citeRenderer(a.research?.sources)} />
 
-      {modelsNote ? (
-        <p className={s.missingNote} role="note" data-missing-models={modelStatus.missing.length || undefined}>
-          {modelsNote}
-          {modelStatus.missing.length && isLast ? (
+      {modelStatus.missing.length && c.level !== "single" ? (
+        <p className={s.missingNote} role="note" data-missing-models={modelStatus.missing.length}>
+          {modelStatus.missing.length === 1 ? "One model didn't answer." : `${modelStatus.missing.length} models didn't answer.`}
+          {isLast ? (
             <>
               {" "}
-              <button type="button" className={s.splitLink} onClick={onRetry}>Retry with all models</button>
+              <button type="button" className={s.splitLink} onClick={onRetry}>Retry</button>
             </>
           ) : null}
         </p>
-      ) : null}
-
-      {hasSplit ? (
-        <SplitView a={a} onMore={() => { setHowOpen(true); setOpen("disagreements"); growthTrack("answer_action", { action: "open_disagreements" }); }} />
-      ) : c.level === "consensus" && c.consulted > 1 ? (
-        <p className={s.agreeNote}>The models that responded took the same position. That is a good sign, not proof: they can share the same mistake{checkedOnWeb ? ", so the key claims were searched on the web (below)" : ", and this answer was not looked up on the web"}.</p>
       ) : null}
 
       {a.research ? <ResearchSources research={a.research} /> : null}
