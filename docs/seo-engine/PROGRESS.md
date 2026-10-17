@@ -18,7 +18,7 @@
 
 - [x] Phase 1 audit verified against this repo (checkpoint findings re-checked). Written to `docs/seo-engine/AUDIT.md`.
 - [x] Phase 1 milestone: audit + H1–H4, M1, M4. Branch `cursor/seo-audit-critical-4cb9`.
-- [ ] Phase 2–3 cluster registry, quality gate, programmatic noindex rule, schema-vs-content check. No thin pages.
+- [x] Phase 2–3 cluster registry (`src/lib/seo/clusters.ts`), quality gate and publish decision (`src/lib/seo/quality.ts`, `src/lib/seo/programmatic.ts`). No new public URLs. `/compare` and `/vs` cross-link inside the comparisons cluster. Branch `cursor/seo-clusters-quality-4cb9` (stacked on the audit branch).
 - [ ] Phase 4 free tools. Deterministic tools need no model. Model tools use only OpenRouter `:free` slugs and a rate limit. Missing key returns unavailable, never a fake answer.
 - [ ] Phase 5 AI-search: facts test stays green (done with H1, H3, H4). No extra schema that the page does not show.
 - [ ] Phase 9 SEO unit checks run via existing `npm test` / CI. Live crawl stays manual.
@@ -50,7 +50,8 @@ Not in this milestone, on purpose: no new landing pages, no Search Console calls
 - `npx tsc --noEmit` — pass (exit 0).
 - `npx eslint` on the files in this milestone — pass (exit 0).
 - `node --import tsx --test` on the SEO files listed above — 66 pass, 0 fail.
-- Full `npm test` (`node --import tsx --test tests/*.test.ts`), after the two test updates below: 3034 tests, 3032 pass, 0 fail, 2 skipped. The first run failed `launch-readiness` (it forbade any `noindex` on `vs/[slug]`) and `self-knowledge` (it still expected Web lookups to say "coming soon"). Those two assertions now match the corrected facts.
+- Audit milestone, full `npm test`: 3034 tests, 3032 pass, 0 fail, 2 skipped.
+- Cluster milestone, full `npm test`: 3038 tests, 3036 pass, 0 fail, 2 skipped. `npx tsc --noEmit` pass.
 
 ## Blockers for the owner
 
