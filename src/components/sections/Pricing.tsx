@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ButtonLink } from "@/components/ui/Button";
 import { PlanCta } from "@/components/billing/PlanCta";
 import { computeAllowance, computeScale, formatPrice, SHOW_COMPUTE_ALLOWANCES, tiers } from "@/lib/tiers";
@@ -5,6 +6,7 @@ import { pricingCopy } from "@/lib/sections";
 import { getMessages } from "@/lib/i18n/server";
 import { fmt } from "@/lib/i18n/format";
 import { MoreButton, MoreRoot } from "@/components/ui/MobileMore";
+import { referralConfig } from "@/lib/referrals/config";
 import { SectionHeader } from "./SectionHeader";
 import s from "./Pricing.module.css";
 
@@ -16,6 +18,7 @@ export async function Pricing({ headingLevel = "h2", showCompute = true, locale 
   const Sub = headingLevel === "h1" ? "h2" : "h3";
   // Plan names and USD prices are never translated; summaries, features and labels are (English: src/lib/tiers.ts, src/lib/sections.ts).
   const p = (await getMessages(locale, "marketing")).pricing;
+  const ref = referralConfig();
   return (
     <section className={s.section} aria-labelledby="pricing-title">
       <div className={s.inner}>
@@ -57,6 +60,12 @@ export async function Pricing({ headingLevel = "h2", showCompute = true, locale 
         </ul>
 
         <p className={s.fine}>{p.fine}</p>
+        {/* English only: the other locales have no translated copy for it yet. */}
+        {locale === "en" && ref.enabled ? (
+          <p className={s.fine}>
+            Invite a friend: when they sign up with your link, you get {ref.referrerCredits.toLocaleString("en-US")} and they get {ref.friendCredits.toLocaleString("en-US")} extra usage credits. <Link href="/account#invite">Get your link</Link> · <Link href="/referral-terms">Terms</Link>
+          </p>
+        ) : null}
 
         {showCompute ? (
           <div className={s.compute}>

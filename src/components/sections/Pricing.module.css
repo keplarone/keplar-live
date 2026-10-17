@@ -137,6 +137,7 @@
   font-size: var(--t-small);
   line-height: var(--lh-small);
 }
+.fine a { color: var(--c-ink); text-decoration: underline; text-underline-offset: 2px; }
 
 /* What things cost: a plain card with a hairline table inside. */
 .compute {
