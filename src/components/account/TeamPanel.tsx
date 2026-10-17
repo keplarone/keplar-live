@@ -72,7 +72,7 @@ export function TeamPanel() {
 
   return (
     <div data-team-panel="">
-      <p className={s.note}><span className={s.badge}>Beta</span> Share projects, chats and sites with teammates. {me.statement}</p>
+      <p className={s.note}>Share projects, chats and sites with teammates. {me.statement}</p>
       <div className={s.panel}>
         <div className={s.row}><span className={s.k}>Shared in a team</span><span className={s.v}>{me.scope.shared.join(" · ")}</span></div>
         <div className={s.row}><span className={s.k}>Never shared</span><span className={s.v}>{me.scope.notShared.join(" · ")}</span></div>

@@ -272,7 +272,7 @@ export function Onboarding({ initial, next, accountName }: { initial: Payload; n
                   {POPULAR_CONNECTORS.slice(0, 5).map((c) => (
                     <li key={c.id} className={s.app}>
                       <span className={s.appName}>{c.name.replace(" (BETA)", "")}</span>
-                      <span className={s.badge} data-kind={c.auth === "oauth" ? "beta" : undefined}>{c.auth === "oauth" ? "Beta · OAuth" : c.auth === "bearer" ? "Needs a token" : "No sign-in"}</span>
+                      <span className={s.badge} data-kind={c.auth === "oauth" ? "beta" : undefined}>{c.auth === "oauth" ? "OAuth" : c.auth === "bearer" ? "Needs a token" : "No sign-in"}</span>
                       <span className={s.appWhat}>{c.what.replace(/ Signs in with your .*$/, "")}</span>
                     </li>
                   ))}

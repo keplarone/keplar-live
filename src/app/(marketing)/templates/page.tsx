@@ -46,7 +46,7 @@ export default async function Templates() {
       <p className={s.notice}>Complete multi-page sites made by Keplar&apos;s template builder, not by the AI model: instant and free, and checked to build, lint and pass Keplar&apos;s safety scan. The text in them is placeholder copy for you to replace.</p>
       <ul className={s.grid}>{starters.map((t) => <Card key={t.slug} t={t} />)}</ul>
 
-      <h2 className={s.h2}>Community gallery <span className={s.beta}>Beta</span></h2>
+      <h2 className={s.h2}>Community gallery</h2>
       <p className={s.notice}>Sites whose owners chose to share them. Each is a snapshot the owner approved, checked for contact details and unsafe content, and the owner can withdraw it at any time. Keplar reviews reports by hand.</p>
       {community.length ? (
         <ul className={s.grid}>{community.map((t) => <Card key={t.slug} t={t} />)}</ul>

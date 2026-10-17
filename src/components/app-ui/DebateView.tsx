@@ -73,7 +73,7 @@ export function DebateLive({ d, running }: { d: LiveDebate; running: boolean }) 
   if (d.skipped) {
     return (
       <p className={s.skipped} role="status" data-debate-skipped="">
-        <span className={s.beta}>Debate · Beta</span> {d.skipped}
+        <span className={s.beta}>Debate</span> {d.skipped}
       </p>
     );
   }
@@ -85,7 +85,6 @@ export function DebateLive({ d, running }: { d: LiveDebate; running: boolean }) 
     <section className={s.debate} aria-label="Live debate" data-debate-live="" data-running={running || undefined}>
       <header className={s.head}>
         <span className={s.title}>Debate</span>
-        <span className={s.beta}>Beta</span>
         <span className={s.status}>{status}</span>
       </header>
       <p className={s.cast}>
@@ -123,7 +122,6 @@ export function DebateTranscript({ debate }: { debate: DebateSummaryData }) {
     <section className={s.record} data-debate-record="">
       <button type="button" className={s.recordToggle} aria-expanded={open} aria-controls={`${id}-debate`} onClick={() => setOpen((v) => !v)}>
         <span className={s.title}>How the debate went</span>
-        <span className={s.beta}>Beta</span>
         <span className={s.status}>{summary}</span>
         {finalMoves.length ? (
           <span className={s.summaryTags} aria-hidden="true">

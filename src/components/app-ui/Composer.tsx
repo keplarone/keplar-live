@@ -106,7 +106,7 @@ const tools: { key: ModeKey; label: string; Icon: typeof IconWeb; hint: string }
   { key: "slides", label: "Slides", Icon: IconSlides, hint: "Make a deck: Keplar writes the slides from your message, then you edit, present and export them (Plus and Pro)" },
   { key: "reason", label: "Reason", Icon: IconReason, hint: "Work it through step by step and show how the answer was checked. Paid plans also add a model to the panel" },
   { key: "deepResearch", label: "Deep Research", Icon: IconDeep, hint: "Longer, multi-step research. Uses more usage" },
-  { key: "debate", label: "Debate", Icon: IconDebate, hint: "Beta: the models argue in rounds and read each other's points, then Keplar writes one answer. Uses more usage" },
+  { key: "debate", label: "Debate", Icon: IconDebate, hint: "The models argue in rounds and read each other's points, then Keplar writes one answer. Uses more usage" },
   { key: "create", label: "Create", Icon: IconCreate, hint: "Build an app, image, video or document" },
   { key: "image", label: "Create image", Icon: IconImage, hint: "Make a picture from this message (Plus and Pro). Attach an image to use it as a reference" },
 ];
@@ -1085,7 +1085,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
         {modes.debate ? (
           <div className={s.budget} role="status" data-debate-note="">
             <span>
-              <strong>Debate · Beta.</strong>{" "}
+              <strong>Debate.</strong>{" "}
               {plan === "free"
                 ? `${DEBATE_POLICY.free.models} free models argue for ${DEBATE_POLICY.free.rounds} rounds, reading each other's points, then ${brand.engineName} writes one answer. Counts as ${DEBATE_POLICY.free.freeQuestions} of today's questions.`
                 : `Up to ${DEBATE_POLICY.paid.models} models argue for up to ${DEBATE_POLICY.paid.rounds} rounds, reading each other's points, then ${brand.engineName} writes one answer. Uses about ${debateCostFactor(DEBATE_POLICY.paid.rounds)}× the ${brand.usage} of a normal answer.`}
@@ -1224,7 +1224,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
               >
                 <Icon size={15} />
                 <span className={s.toolLabel}>{label}</span>
-                {key === "debate" ? <span className={s.toolBeta}>Beta</span> : null}
+                
               </button>
             ))}
             <button
@@ -1295,7 +1295,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
                   >
                     <span className={s.moreIcon}><t.Icon size={16} /></span>
                     <span className={s.moreText}>
-                      <span className={s.moreLabel}>{t.label}{k === "debate" ? <span className={s.toolBeta} data-in-menu="">Beta</span> : null}</span>
+                      <span className={s.moreLabel}>{t.label}</span>
                       <span className={s.moreBlurb}>{BLURB[k]}</span>
                     </span>
                   </button>

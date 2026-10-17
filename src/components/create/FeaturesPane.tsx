@@ -74,7 +74,7 @@ export function FeaturesPane({ siteId, version, disabled, onAdd }: { siteId: str
       </section>
       {v.catalog.some((f) => f.id === "checkout" && f.placed) ? (
         <section className={b.card} aria-label="Payments" data-testid="payments-card">
-          <strong>Payments <span className={`${b.chip} ${b.chipStatic}`}>BETA</span></strong>
+          <strong>Payments</strong>
           <p className={b.hint}>{v.payments.ready ? `Ready. Stripe ${v.payments.mode} mode${v.payments.mode === "test" ? ": no real money moves." : "."} Orders are confirmed by Stripe, then appear here and in Business > Orders.` : `Buy buttons are shown as "Not available yet" to visitors. ${v.payments.reason ?? ""}`}</p>
           {v.payments.orders.length ? (
             <ul className={b.list}>{v.payments.orders.map((o) => (
@@ -94,7 +94,7 @@ export function FeaturesPane({ siteId, version, disabled, onAdd }: { siteId: str
       ) : null}
       {v.members.length ? (
         <section className={b.card} aria-label="Members" data-testid="members">
-          <strong>Members ({v.members.length}) <span className={`${b.chip} ${b.chipStatic}`}>BETA</span></strong>
+          <strong>Members ({v.members.length})</strong>
           <ul className={b.list}>{v.members.map((x) => (
             <li key={x.id} className={b.item}><div className={b.itemMain}><strong style={{ overflowWrap: "anywhere" }}>{x.email}</strong><small>Joined {new Date(x.at).toLocaleDateString()}</small></div><Button variant="ghost" size="sm" onClick={() => void act(() => api(`/api/sites/${siteId}/features`, { method: "DELETE", body: JSON.stringify({ id: x.id }) }))}>Remove</Button></li>
           ))}</ul>

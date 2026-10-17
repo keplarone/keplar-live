@@ -63,7 +63,7 @@ export function EmbedPanel() {
 
   return (
     <div data-embed-panel="">
-      <p className={s.note}><span className={s.badge}>Beta</span> {me.statement} Docs: <Link className={s.link} href="/developers#embed">/developers</Link></p>
+      <p className={s.note}>{me.statement} Docs: <Link className={s.link} href="/developers#embed">/developers</Link></p>
       {!me.available ? (
         <p className={s.note}>Embed widgets aren&apos;t available on the {me.plan} plan.</p>
       ) : (
