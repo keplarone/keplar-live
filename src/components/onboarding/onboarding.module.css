@@ -128,3 +128,45 @@
   .seg::after, .chip, .btn, .radio, .switch, .input { transition: none; }
   .chip:active, .btn:active:not(:disabled) { scale: none; }
 }
+
+/* ── Space UI (docs/design/space-ui.md, area d; reference: Space Studio entry.css .ob-*). The entry sky behind the setup card;
+ *    the card is 28px glass that rises out of a blur, steps slide in with a little horizontal motion blur, chips and the
+ *    three-way choice are Space pills, 3D buttons. No outlines. Declared last so it wins at equal specificity. ── */
+.root { isolation: isolate; }
+.root .sky { position: fixed; }
+.top, .card { position: relative; z-index: 1; }
+.brand { font-weight: var(--w-bold); letter-spacing: -0.02em; min-height: 44px; padding: 0 var(--s-4) 0 var(--s-3); border-radius: var(--r-pill); background: var(--space-glass); box-shadow: var(--space-glass-depth); }
+.seg { height: 6px; background: var(--space-track); }
+.card { border-radius: var(--space-r-card); background: var(--space-glass); box-shadow: var(--space-glass-depth); }
+:root[data-theme="light"] .card { box-shadow: inset 0 1px 0 #ffffff, 0 2px 4px rgb(14 15 18 / 0.05), 0 30px 70px -26px rgb(20 50 90 / 0.4); }
+@media (min-width: 768px) and (pointer: fine) { .card { -webkit-backdrop-filter: blur(24px) saturate(1.3); backdrop-filter: blur(24px) saturate(1.3); } }
+@media (min-width: 641px) and (prefers-reduced-motion: no-preference) {
+  .card { animation: sp-rise var(--space-dur-entry) var(--space-ease-expo) 80ms both; }
+  .stepBody { animation: ob-slide 0.85s var(--space-ease-expo) 70ms both, sp-mb-x 0.6s linear 70ms both; }
+}
+@keyframes ob-slide { 0% { opacity: 0; transform: translateX(80px); } 30% { opacity: 1; } 100% { opacity: 1; transform: none; } }
+.eyebrow { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: var(--w-semibold); }
+.title { font-weight: var(--w-semibold); letter-spacing: -0.045em; }
+.chip { border-radius: var(--space-r-panel); background: var(--space-s-face); box-shadow: var(--space-s-depth); transition: transform var(--space-dur-slow) var(--space-spring-bouncy), box-shadow var(--space-dur-slow) var(--space-ease-out); }
+.chip:hover { transform: translateY(-2px); box-shadow: var(--space-s-depth-hover); }
+.chip[aria-pressed="true"], .chip[aria-checked="true"], .chip[data-on] { box-shadow: var(--space-s-depth), 0 0 0 2px rgb(var(--ring-rgb) / 0.7), 0 0 30px rgb(var(--ring-rgb) / 0.3); }
+.label { padding-left: 18px; font-size: 13px; font-weight: var(--w-semibold); color: var(--c-ink-2); }
+.input { height: 48px; padding: 0 20px; border: 0; border-radius: var(--space-r-field); background: var(--space-field); box-shadow: var(--space-field-depth); }
+.input:hover { background: var(--space-field-hover); }
+.input:focus, .input:focus-visible { outline: none; background: var(--space-field-focus); box-shadow: var(--space-field-depth), var(--space-focus-glow); }
+.seg3 { padding: 5px; background: var(--space-track); }
+.radio[data-on] { background: var(--space-p-face); color: var(--space-p-ink); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25), 0 6px 18px rgb(0 0 0 / 0.18); }
+.knob { background: #ffffff; box-shadow: 0 1px 3px rgb(0 0 0 / 0.35); }
+.app, .callout { border-radius: var(--space-r-panel); background: var(--space-field); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05); }
+.badge { box-shadow: none; background: var(--space-track); font-weight: var(--w-semibold); }
+.badge[data-kind="beta"] { box-shadow: none; background: rgb(var(--rgb-reasoning) / 0.14); }
+.divider { background: linear-gradient(90deg, transparent, rgb(var(--rgb-ink) / 0.12), transparent); }
+.btn { min-height: 48px; font-weight: var(--w-bold); transition: transform var(--space-dur-slow) var(--space-spring-bouncy), box-shadow var(--space-dur-slow) var(--space-ease-out); }
+.primary { background: var(--space-p-face); color: var(--space-p-ink); box-shadow: var(--space-p-depth); }
+.primary:hover:not(:disabled) { background: var(--space-p-face); transform: translateY(-1px); box-shadow: var(--space-p-depth-hover); }
+.primary:active:not(:disabled) { scale: none; transform: translateY(var(--space-ledge)); box-shadow: var(--space-p-depth-press); }
+.secondary { background: var(--space-s-face); color: var(--space-s-ink); box-shadow: var(--space-s-depth); }
+.secondary:hover:not(:disabled) { background: var(--space-s-face); transform: translateY(-1px); box-shadow: var(--space-s-depth-hover); }
+.secondary:active:not(:disabled) { scale: none; transform: translateY(var(--space-ledge)); box-shadow: var(--space-s-depth-press); }
+.ghost:hover:not(:disabled) { background: var(--space-g-hover); }
+@media (prefers-reduced-motion: reduce) { .chip, .btn { transition: none; } .chip:hover, .btn:hover { transform: none; } }

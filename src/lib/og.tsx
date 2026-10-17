@@ -7,15 +7,22 @@ import { color } from "./tokens";
 export const ogSize = { width: 1200, height: 630 };
 export const ogContentType = "image/png";
 
+/**
+ * Share images use Montserrat, the site's face (Space UI, docs/design/space-ui.md), from the bundled OFL files in assets/fonts
+ * (@fontsource/montserrat 5, latin + latin-ext, WOFF: Satori reads TTF/OTF/WOFF, not WOFF2). Read from disk, so rendering never
+ * needs the network. Satori falls back across every loaded font, so latin-ext covers accented titles.
+ */
 async function loadFonts() {
-  const [regular, medium] = await Promise.all([
-    readFile(join(process.cwd(), "assets/fonts/GoogleSans-400.ttf")),
-    readFile(join(process.cwd(), "assets/fonts/GoogleSans-500.ttf")),
+  const files = await Promise.all([
+    readFile(join(process.cwd(), "assets/fonts/Montserrat-latin-400.woff")),
+    readFile(join(process.cwd(), "assets/fonts/Montserrat-latin-500.woff")),
+    readFile(join(process.cwd(), "assets/fonts/Montserrat-latin-600.woff")),
+    readFile(join(process.cwd(), "assets/fonts/Montserrat-latin-ext-400.woff")),
+    readFile(join(process.cwd(), "assets/fonts/Montserrat-latin-ext-500.woff")),
+    readFile(join(process.cwd(), "assets/fonts/Montserrat-latin-ext-600.woff")),
   ]);
-  return [
-    { name: "Google Sans", data: regular, weight: 400 as const, style: "normal" as const },
-    { name: "Google Sans", data: medium, weight: 500 as const, style: "normal" as const },
-  ];
+  const weights = [400, 500, 600, 400, 500, 600] as const;
+  return files.map((data, i) => ({ name: "Montserrat", data, weight: weights[i]!, style: "normal" as const }));
 }
 
 function Mark({ size, style }: { size: number; style?: React.CSSProperties }) {
@@ -68,10 +75,10 @@ const FEATURES: [number, number, string][] = [
 
 export async function renderHomeOg({ title, accent, subtitle }: { title: string; accent: string; subtitle: string }) {
   const chipH = 36;
-  const chipW = (label: string) => label.length * 7.6 + 42;
+  const chipW = (label: string) => label.length * 7.7 + 40; // Montserrat 14px, 500
   return new ImageResponse(
     (
-      <div style={{ width: "100%", height: "100%", display: "flex", background: "#FFFCF8", position: "relative", fontFamily: "Google Sans" }}>
+      <div style={{ width: "100%", height: "100%", display: "flex", background: "#FFFCF8", position: "relative", fontFamily: "Montserrat" }}>
         <svg width="1200" height="630" viewBox="0 0 1200 630" style={{ position: "absolute", left: 0, top: 0 }}>
           <defs>
             {AURA.map((g, i) => (
@@ -121,9 +128,10 @@ export async function renderHomeOg({ title, accent, subtitle }: { title: string;
               padding: "0 15px 0 12px",
               borderRadius: 999,
               background: "rgba(255,255,255,0.88)",
-              border: "1px solid rgba(9,9,11,0.1)",
-              boxShadow: "0 6px 16px -10px rgba(9,9,11,0.3)",
-              fontSize: 15,
+              // Space UI: no outlines; the chip separates by light and a soft drop
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9), 0 8px 18px -10px rgba(9,9,11,0.35)",
+              fontSize: 14,
+              fontWeight: 500,
               color: color.ink,
               letterSpacing: "-0.01em",
             }}
@@ -136,12 +144,12 @@ export async function renderHomeOg({ title, accent, subtitle }: { title: string;
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "60px 0 68px 72px", width: 580, height: "100%" }}>
           <div style={{ display: "flex", alignItems: "center" }}>
             <Mark size={30} />
-            <div style={{ fontSize: 28, fontWeight: 500, color: color.ink, letterSpacing: "-0.03em", marginLeft: 12 }}>Keplar</div>
+            <div style={{ fontSize: 28, fontWeight: 600, color: color.ink, letterSpacing: "-0.03em", marginLeft: 12 }}>Keplar</div>
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={{ fontSize: 66, fontWeight: 500, color: color.ink, letterSpacing: "-0.045em", lineHeight: 1, maxWidth: 500 }}>{title}</div>
-            <div style={{ fontSize: 66, fontWeight: 500, color: color.inkSecondary, letterSpacing: "-0.045em", lineHeight: 1, marginTop: 4 }}>{accent}</div>
-            <div style={{ fontSize: 24, color: color.inkSecondary, letterSpacing: "-0.015em", marginTop: 26, lineHeight: 1.32, maxWidth: 480 }}>{subtitle}</div>
+            <div style={{ fontSize: 60, fontWeight: 600, color: color.ink, letterSpacing: "-0.05em", lineHeight: 1, maxWidth: 500 }}>{title}</div>
+            <div style={{ fontSize: 60, fontWeight: 600, color: color.inkSecondary, letterSpacing: "-0.05em", lineHeight: 1, marginTop: 4 }}>{accent}</div>
+            <div style={{ fontSize: 22, fontWeight: 500, color: color.inkSecondary, letterSpacing: "-0.01em", marginTop: 26, lineHeight: 1.32, maxWidth: 480 }}>{subtitle}</div>
           </div>
         </div>
       </div>
@@ -162,7 +170,7 @@ export async function renderOg({ title, subtitle, label }: { title: string; subt
   ];
   return new ImageResponse(
     (
-      <div style={{ width: "100%", height: "100%", display: "flex", background: color.canvas, position: "relative", fontFamily: "Google Sans" }}>
+      <div style={{ width: "100%", height: "100%", display: "flex", background: color.canvas, position: "relative", fontFamily: "Montserrat" }}>
         <svg width="1200" height="630" viewBox="0 0 1200 630" style={{ position: "absolute", left: 0, top: 0 }}>
           {streams.map((d, i) => (
             <path key={d} d={d} stroke={color.streams[i]} strokeWidth="2" strokeDasharray="1.5 7" strokeLinecap="round" fill="none" opacity="0.55" />
@@ -171,10 +179,10 @@ export async function renderOg({ title, subtitle, label }: { title: string; subt
         <Mark size={210} style={{ position: "absolute", left: 895, top: 195 }} />
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "0 72px 80px", width: 860, height: "100%" }}>
           {label ? (
-            <div style={{ fontSize: 20, color: color.inkSecondary, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 24 }}>{label}</div>
+            <div style={{ fontSize: 18, fontWeight: 600, color: color.inkSecondary, letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: 24 }}>{label}</div>
           ) : null}
-          <div style={{ fontSize: 84, fontWeight: 500, color: color.ink, letterSpacing: "-0.045em", lineHeight: 0.98, maxWidth: 640 }}>{title}</div>
-          <div style={{ fontSize: 30, color: color.inkSecondary, letterSpacing: "-0.015em", marginTop: 28, lineHeight: 1.25, maxWidth: 780 }}>{subtitle}</div>
+          <div style={{ fontSize: 76, fontWeight: 600, color: color.ink, letterSpacing: "-0.05em", lineHeight: 1.02, maxWidth: 640 }}>{title}</div>
+          <div style={{ fontSize: 27, fontWeight: 500, color: color.inkSecondary, letterSpacing: "-0.01em", marginTop: 28, lineHeight: 1.25, maxWidth: 780 }}>{subtitle}</div>
         </div>
       </div>
     ),

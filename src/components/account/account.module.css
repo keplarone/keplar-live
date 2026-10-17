@@ -208,3 +208,59 @@ button.link { background: none; border: 0; padding: 0; font: inherit; cursor: po
   .panel { padding: var(--s-4); }
   .prefRow { flex-wrap: wrap; }
 }
+
+/* ── Space UI (docs/design/space-ui.md, area d): the same structure, drawn in the Space language. Declared last so it wins over
+ *    the rules above at equal specificity. No outlines: rows split by a soft fade, panels separate by depth; pill fields with the
+ *    violet glow; 3D buttons (.btn = primary face on its ledge, .btnGhost = the raised secondary face). ── */
+.eyebrow { font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; font-weight: var(--w-semibold); }
+.title { font-weight: var(--w-semibold); letter-spacing: -0.045em; }
+.wide > .title { letter-spacing: -0.05em; }
+.fieldLabel { padding-left: 18px; font-size: 13px; font-weight: var(--w-semibold); color: var(--c-ink-2); }
+.input {
+  height: 46px; padding: 0 20px; border: 0; border-radius: var(--space-r-field);
+  background: var(--space-field); box-shadow: var(--space-field-depth); font-weight: var(--w-medium);
+  transition: background-color var(--space-dur-base) var(--space-ease-out), box-shadow var(--space-dur-slow) var(--space-ease-out);
+}
+.input:hover { background: var(--space-field-hover); }
+.input:focus, .input:focus-visible { outline: none; background: var(--space-field-focus); box-shadow: var(--space-field-depth), var(--space-focus-glow); }
+.input[aria-invalid="true"] { box-shadow: var(--space-field-depth), 0 0 0 2px rgb(var(--rgb-destructive) / 0.55), 0 0 30px rgb(var(--rgb-destructive) / 0.2); }
+textarea.input { padding: var(--s-3) 20px; border-radius: var(--space-r-area); }
+.check input { accent-color: var(--c-accent); }
+.check input:focus-visible { box-shadow: var(--space-focus-glow); }
+.btn {
+  min-height: 42px; padding: 6px var(--s-5); font-weight: var(--w-bold);
+  background: var(--space-p-face); color: var(--space-p-ink); box-shadow: var(--space-p-depth);
+  transition: transform var(--space-dur-slow) var(--space-spring-bouncy), box-shadow var(--space-dur-slow) var(--space-ease-out);
+}
+.btn:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--space-p-face); transform: translateY(-1px); box-shadow: var(--space-p-depth-hover); }
+.btn:active:not(:disabled) { scale: none; transform: translateY(var(--space-ledge)); box-shadow: var(--space-p-depth-press); transition-duration: 0.06s; }
+.btn:focus-visible { box-shadow: var(--space-p-depth), var(--space-focus-glow); }
+.btn:disabled { transform: none; box-shadow: none; opacity: 0.45; }
+.btn.btnGhost { background: var(--space-s-face); color: var(--space-s-ink); box-shadow: var(--space-s-depth); }
+.btn.btnGhost:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--space-s-face); box-shadow: var(--space-s-depth-hover); }
+.btn.btnGhost:active:not(:disabled) { box-shadow: var(--space-s-depth-press); }
+.btn.btnGhost:focus-visible { box-shadow: var(--space-s-depth), var(--space-focus-glow); }
+.btn.btnSm { min-height: 34px; font-size: 13px; }
+.link { text-decoration-color: rgb(var(--ring-rgb) / 0.45); font-weight: var(--w-semibold); }
+.badge { box-shadow: none; background: var(--space-track); font-weight: var(--w-semibold); }
+.divider::before, .divider::after { background: linear-gradient(90deg, transparent, rgb(var(--rgb-ink) / 0.14), transparent); }
+.mail, .row + .row, .prefRow + .prefRow, .session, .keyRow + .keyRow { border-top: 0; background-image: linear-gradient(90deg, transparent, rgb(var(--rgb-ink) / 0.08) 12%, rgb(var(--rgb-ink) / 0.08) 88%, transparent); background-size: 100% 1px; background-repeat: no-repeat; background-position: top; }
+.session:first-child { background-image: none; }
+.panel { border-radius: var(--space-r-panel); background: var(--surface-raised); box-shadow: var(--elev-2); }
+.dlg .panel { box-shadow: var(--elev-1); }
+.cardTitle { font-weight: var(--w-semibold); letter-spacing: -0.01em; }
+.track { background: var(--space-track); }
+.fill { background: var(--c-accent); box-shadow: 0 0 12px rgb(var(--ring-rgb) / 0.45); }
+.kbd { box-shadow: inset 0 -2px 0 rgb(var(--rgb-ink) / 0.12), var(--elev-1); background: var(--space-field); border-radius: 8px; }
+.dlg { border-radius: var(--space-r-card); box-shadow: var(--space-glass-depth), var(--elev-3); }
+.dlg[data-mode="page"] { box-shadow: var(--space-glass-depth); }
+.dlgHead { border-bottom: 0; }
+.rail { border-right: 0; background: rgb(var(--rgb-ink) / 0.025); }
+.navItem.navItem { border-radius: var(--r-pill); }
+.searchInput.searchInput { border-radius: var(--r-pill); }
+@media (min-width: 641px) and (prefers-reduced-motion: no-preference) {
+  .page > .card { animation: sp-rise var(--space-dur-entry) var(--space-ease-expo) 80ms both; }
+}
+@media (max-width: 720px) { .rail { border-bottom: 0; background: none; } }
+@media (prefers-contrast: more) { .input { box-shadow: inset 0 0 0 1px var(--c-ink-2); } }
+@media (prefers-reduced-motion: reduce) { .btn, .input { transition: none; } .btn:hover:not(:disabled), .btn:active:not(:disabled) { transform: none; } }

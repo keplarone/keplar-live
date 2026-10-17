@@ -21,9 +21,12 @@ test("font: Montserrat (Space UI, OFL, variable, swap) via next/font/google in t
   assert.match(layout, /import \{ Montserrat, IBM_Plex_Mono \} from "next\/font\/google"/);
   assert.match(layout, /Montserrat\(\{[\s\S]*display: "swap"[\s\S]*adjustFontFallback: true/);
   assert.ok(!/Lexend|Google_Sans/.test(layout), "neither Lexend Deca nor Google Sans is the UI font any more");
-  // Share images still render with the bundled OFL Google Sans files (src/lib/og.tsx); Lexend stays gone.
-  assert.match(read("assets/fonts/OFL-GoogleSans.txt"), /SIL OPEN FONT LICENSE Version 1\.1/);
-  assert.ok(existsSync("assets/fonts/GoogleSans-400.ttf") && !existsSync("assets/fonts/LexendDeca-400.ttf"));
+  // Share images render in Montserrat too, from the bundled OFL files (src/lib/og.tsx reads them from disk: no network); Lexend stays gone.
+  assert.match(read("assets/fonts/OFL-Montserrat.txt"), /SIL OPEN FONT LICENSE Version 1\.1/);
+  for (const w of [400, 500, 600]) assert.ok(existsSync(`assets/fonts/Montserrat-latin-${w}.woff`) && existsSync(`assets/fonts/Montserrat-latin-ext-${w}.woff`));
+  assert.ok(!existsSync("assets/fonts/LexendDeca-400.ttf"));
+  assert.match(read("src/lib/og.tsx"), /fontFamily: "Montserrat"/);
+  assert.ok(!/Google Sans/.test(read("src/lib/og.tsx")), "share images no longer use Google Sans");
   assert.ok(!/Lexend/i.test(read("src/lib/og.tsx")) && !/Lexend/i.test(read("src/lib/slides/export.ts")));
   assert.match(layout, /variable: "--font-sans"/);
   assert.match(read("src/styles/globals.css"), /body \{[^}]*font-family: var\(--f-sans\)/);

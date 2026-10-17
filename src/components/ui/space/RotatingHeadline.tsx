@@ -47,15 +47,16 @@ function Line({ verb, rest, phase, delay }: { verb: string; rest: string; phase:
  *
  * The first line paints at once, without animation (it is usually the page's largest paint). Reduced motion swaps lines with
  * no movement; phones (640px and narrower) keep the first line still. `warp` fires a small star-field warp on each change.
- * Needs <SpaceMotionFilters> (the root layout renders it) for the blur filters.
+ * Needs <SpaceMotionFilters> (the root layout renders it) for the blur filters. `paused` holds the current line and the gradient
+ * drift (give a continuously rotating headline a pause control, WCAG 2.2.2).
  */
-export function RotatingHeadline({ lines, label, as = "h1", className, cycleMs = 3200, warp = false, id }: { lines: readonly (readonly [verb: string, rest: string])[]; label: ReactNode; as?: ElementType; className?: string; cycleMs?: number; warp?: boolean; id?: string }) {
+export function RotatingHeadline({ lines, label, as = "h1", className, cycleMs = 3200, warp = false, id, paused = false }: { lines: readonly (readonly [verb: string, rest: string])[]; label: ReactNode; as?: ElementType; className?: string; cycleMs?: number; warp?: boolean; id?: string; paused?: boolean }) {
   // still = reduced motion: lines swap without movement (set together with the cycle, from the interval)
   const [{ cycle, still }, setState] = useState({ cycle: 0, still: false });
   const Tag = as;
 
   useEffect(() => {
-    if (lines.length < 2 || isPhone()) return;
+    if (lines.length < 2 || paused || isPhone()) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const t = window.setInterval(() => {
       if (document.hidden) return;
@@ -63,12 +64,12 @@ export function RotatingHeadline({ lines, label, as = "h1", className, cycleMs =
       if (warp && !reduce) spaceFx.warp(0.25, 0.9);
     }, reduce ? cycleMs * 1.6 : cycleMs);
     return () => window.clearInterval(t);
-  }, [lines.length, cycleMs, warp]);
+  }, [lines.length, cycleMs, warp, paused]);
 
   const at = (c: number) => lines[((c % lines.length) + lines.length) % lines.length]!;
   const shown = cycle === 0 || still ? [cycle] : [cycle - 1, cycle];
   return (
-    <Tag className={className ? `sp-hl ${className}` : "sp-hl"} id={id}>
+    <Tag className={className ? `sp-hl ${className}` : "sp-hl"} id={id} data-paused={paused || undefined}>
       <span className="visually-hidden">{label}</span>
       <span className="sp-hl__stage" aria-hidden="true">
         {lines.map(([v, r]) => (
