@@ -1,11 +1,11 @@
 /**
- * Theme: Dark (default) / Light / Auto (follows the OS).
+ * Theme: Light (default) / Dark / Auto (follows the OS).
  *
  * The preference lives in localStorage and a cookie (`keplar-theme`). An inline
  * script in <head> (THEME_SCRIPT, rendered by the root layout) resolves it and
  * sets <html data-theme="dark|light" class="dark|light"> before first paint, so
  * there is no flash. Pages stay statically rendered: the server always emits
- * the default (dark) and the script corrects it before paint; the cookie is
+ * the default (light) and the script corrects it before paint; the cookie is
  * also readable server-side for any dynamic route that wants it.
  */
 export type ThemePref = "dark" | "light" | "auto";
@@ -18,10 +18,11 @@ export type Theme = "dark" | "light";
  */
 export const THEME_KEY = "keplar-theme-v2";
 /**
- * Dark, the Space theme (black space, white primary: docs/design/space-ui.md), is the default for everyone with no stored choice.
- * Light (the same Space system on a light palette) and Auto (follows the OS) stay available in the theme control and Settings.
+ * Light (the Space system under a bright day sky with drifting clouds: docs/design/space-ui.md) is the default for everyone with no
+ * stored choice. Dark (the same system at dusk: a deep blue sky with stars) and Auto (follows the OS) stay available in the theme
+ * control and Settings.
  */
-export const DEFAULT_THEME_PREF: ThemePref = "dark";
+export const DEFAULT_THEME_PREF: ThemePref = "light";
 export const THEME_COLORS: Record<Theme, string> = { dark: "#000000", light: "#f7f8fa" }; // dark = the Space void; light = the cool off-white canvas (src/styles/light.css)
 
 export const isThemePref = (v: unknown): v is ThemePref => v === "dark" || v === "light" || v === "auto";

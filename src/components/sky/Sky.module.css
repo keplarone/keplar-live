@@ -1,6 +1,6 @@
 /*
- * The light home (canvas design "Landing", Oct 2026): off-white ground, colour auras, drifting dots, floating white cards,
- * two-tone light-weight headlines. Colours come from the theme tokens so Dark still reads; the auras and dots are light-only.
+ * The home (canvas design "Landing", Oct 2026): floating white cards and two-tone light-weight headlines over the shared cloud sky
+ * (CloudSky). Colours come from the theme tokens so Dark still reads.
  */
 .home {
   position: relative;
@@ -9,36 +9,7 @@
   overflow-x: clip;
 }
 
-/* ---- backdrop ---- */
-.backdrop { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
-.backdrop i { position: absolute; border-radius: 999px; filter: blur(100px); }
-/* Light-blue auras only: two big ones behind the hero, then a chain that zig-zags down the whole page. Each 1400px tile holds one
-   glow on the left at its middle and half-glows on the right at its top and bottom edge, so neighbouring tiles join into one
-   continuous ribbon of blue, however long the page is. Plain radial gradients, so no blur filter on the tall layer. */
-.auraSky { background: #a9d8f5; width: 50%; height: 900px; left: -12%; top: -260px; opacity: 0.8; }
-.auraIce { background: #c4e2fb; width: 44%; height: 860px; right: -12%; top: -140px; opacity: 0.75; }
-.auraChain {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 420px;
-  bottom: 0;
-  background-image:
-    radial-gradient(ellipse 46% 700px at 14% 700px, rgb(169 216 245 / 0.62), rgb(169 216 245 / 0.22) 55%, transparent 100%),
-    radial-gradient(ellipse 42% 700px at 88% 0, rgb(186 222 252 / 0.6), rgb(186 222 252 / 0.2) 55%, transparent 100%),
-    radial-gradient(ellipse 42% 700px at 88% 1400px, rgb(186 222 252 / 0.6), rgb(186 222 252 / 0.2) 55%, transparent 100%),
-    radial-gradient(ellipse 60% 520px at 50% 350px, rgb(205 230 255 / 0.4), transparent 100%),
-    radial-gradient(ellipse 60% 520px at 50% 1050px, rgb(205 230 255 / 0.4), transparent 100%);
-  background-size: 100% 1400px;
-  background-repeat: repeat-y;
-}
-.dust { position: absolute; left: 0; top: 0; width: 100%; height: 100vh; min-height: 720px; }
-/* Dark (the Space theme): the page sits in Space Studio's star field (SpaceSky, rendered by SkyBackdrop); the light theme's blue
-   auras, liquid layer and dots step aside (their loops stop too: runWhileTheme). */
-:global(:root[data-theme="dark"]) .backdrop i,
-:global(:root[data-theme="dark"]) .auraChain,
-:global(:root[data-theme="dark"]) .dust,
-:global(:root[data-theme="dark"]) .liquid { display: none !important; }
+/* ---- backdrop: the shared sky (CloudSky, src/styles/space.css); nothing home-specific left here ---- */
 
 /* ---- hero ---- */
 .hero {
@@ -297,19 +268,6 @@
 .floatScene[data-on] { display: block; animation: sky-swap 0.3s var(--e-standard) both; }
 @keyframes sky-swap { from { opacity: 0; filter: blur(4px); } to { opacity: 1; filter: none; } }
 
-/* Liquid layer (LiquidLayer.tsx): a small canvas stretched to the viewport and softened, fixed so it animates with scrolling. */
-.liquid {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  filter: blur(5px) saturate(1.1);
-  opacity: 0.85;
-  pointer-events: none;
-}
-/* Dark: much more see-through, a faint tint over the night ground rather than solid colour blobs */
-:global(:root[data-theme="dark"]) .liquid { opacity: 0.35; filter: blur(6px); }
-
 /* ---- "How Keplar works" particle scene (ParticleStory.tsx): a stage that sticks for about three screens while the cloud morphs ---- */
 .story { position: relative; height: 320vh; height: 320svh; }
 .storyStage {
@@ -403,11 +361,6 @@
 /* ---- Phones (640px and narrower): calm and static. Nothing on the page moves on its own, nothing is pinned, and text is never
    mid-fade. Same content and order as the wide layout; only the decoration and the spacing change. ---- */
 @media (max-width: 640px) {
-  /* One still glow behind the hero instead of the blurred auras, the liquid layer and the drifting dots (no canvas runs: SkyBackdrop, LiquidLayer). */
-  .backdrop i, .liquid, .dust { display: none; }
-  .backdrop { background: radial-gradient(130% 560px at 50% 0, rgb(169 216 245 / 0.5), rgb(196 226 251 / 0.22) 55%, transparent 100%) no-repeat; }
-  :global(:root[data-theme="dark"]) .backdrop { background: radial-gradient(130% 560px at 50% 0, rgb(150 70 230 / 0.2), transparent 100%) no-repeat; } /* a still violet glow over the still star field */
-
   /* Hero: painted at once (the rise-in delayed the largest paint), a little tighter. */
   .hero { animation: none; padding: 112px 16px 32px; gap: 20px; }
   .h1 { font-size: 40px; }

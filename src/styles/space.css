@@ -2,7 +2,7 @@
  * Space UI: the Space Studio design language on keplar.one (docs/design/space-ui.md is the guide; this file is the engine).
  *
  * Source: the Space Studio desktop app (src/renderer/styles/tokens.css, shell.css, entry.css). Rules carried over:
- *  - Black space, white primary. Dark ("Space") is the default theme; Light is the same system on a light palette.
+ *  - White primary over a sky. Light (a bright day sky with drifting clouds) is the default theme; Dark is the same system at dusk.
  *  - No outlines: surfaces separate by depth and light (fill steps, a 1px inner top highlight, soft drops, violet glow), never
  *    by borders. Every control is a pill. Cards are 28px glass.
  *  - Primary buttons are 3D: a lit face, a hard ledge underneath, a lift on hover and a press that sinks into the ledge.
@@ -10,7 +10,7 @@
  *    on fast movement (SVG filters from <SpaceMotionFilters>), odometer numbers, a moving gradient on the headline verb.
  *  - Keyboard focus is Space Studio's violet glow (never a browser outline, never invisible). Pointer presses draw nothing.
  *  - Reduced motion: everything lands on its final frame. Phones (640px and narrower): calm, no entrance animation, no blur
- *    filters, static star field (src/lib/fx/lite.ts isPhone, mobile.css).
+ *    filters, still clouds (src/lib/fx/lite.ts isPhone, mobile.css).
  *
  * Token prefix: --space-* (the Space site's own module, components/space/space.module.css, keeps its --sp-* names).
  * Class prefix: .sp-* (global; the React components in src/components/ui/space render them).
@@ -546,21 +546,83 @@
   animation: sp-pop-in 0.22s var(--space-ease-expo) both;
 }
 
-/* ───────────────────────── star field host ───────────────────────── */
-.sp-sky { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
-.sp-sky canvas { display: block; width: 100%; height: 100%; }
-.sp-sky__aura {
-  position: absolute; inset: 0; opacity: 0.22; pointer-events: none;
-  background-color: rgb(var(--space-aura));
-  transition: background-color 2.2s var(--space-ease-out);
-  -webkit-mask-image: radial-gradient(60% 55% at 8% 100%, #000 0%, transparent 70%), radial-gradient(55% 50% at 94% 0%, #000 0%, transparent 70%);
-  mask-image: radial-gradient(60% 55% at 8% 100%, #000 0%, transparent 70%), radial-gradient(55% 50% at 94% 0%, #000 0%, transparent 70%);
+/* ───────────────────────── the sky (CloudSky) ─────────────────────────
+ * One sky behind the marketing pages (src/components/ui/space/CloudSky.tsx). Light: a bright day with realistic cumulus in three
+ * parallax layers. Dark: late dusk, a dimmed deep blue with small scattered stars and two faint cloud layers. The first frame is
+ * all CSS (gradient + clouds at rest); drift is a transform-only animation that JS switches on when idle ([data-drift]), paused
+ * while hidden ([data-paused]), never on phones or under reduced motion. Tiles: public/sky (scripts/sky/render-clouds.py).
+ * Each layer: --y top, --h height, --tw tile width (= height x the tile's aspect), --dur seconds per tile. */
+.sp-cloudsky {
+  position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden;
+  background:
+    radial-gradient(70% 60% at 84% -8%, rgb(255 247 226 / 0.75), rgb(255 247 226 / 0) 70%),
+    linear-gradient(180deg, #4f93de 0%, #7db4ec 20%, #a8cef3 46%, #cde3f8 72%, #e9f2fb 100%);
 }
-:root[data-theme="light"] .sp-sky { display: none; }
+.sp-cloudsky > i { position: absolute; display: block; }
+/* Each cloud layer is two CSS masks, never a background image (a background image is an LCP candidate; a mask is not): the
+   layer paints its shadow colour --c0 through the cloud's alpha (-a), and ::before paints the lit colour --c1 through where the
+   sun reaches it (-t, a 0..1 ramp). Composited, that rebuilds the shaded cloud (mean error ~2/255, render-clouds.py ramp()). */
+.sp-cloudsky__layer, .sp-cloudsky__layer::before {
+  -webkit-mask: var(--a) repeat-x 0 0 / var(--tw) 100%;
+  mask: var(--a) repeat-x 0 0 / var(--tw) 100%;
+}
+.sp-cloudsky__layer { left: 0; top: var(--y); height: var(--h); width: calc(100% + var(--tw)); background: var(--c0); }
+.sp-cloudsky__layer::before { content: ""; position: absolute; inset: 0; background: var(--c1); --a: var(--t); }
+.sp-cloudsky__layer[data-layer="far"] { --y: 58%; --h: clamp(130px, 34vh, 24vw); --tw: calc(var(--h) * 7.5); --dur: 420s; --c0: #a9b7ca; --c1: #ebf4fc; --a: url("/sky/day-far-a.webp"); --t: url("/sky/day-far-t.webp"); }
+.sp-cloudsky__layer[data-layer="mid"] { --y: 30%; --h: clamp(170px, 52vh, 36vw); --tw: calc(var(--h) * 5); --dur: 250s; --c0: #8596af; --c1: #f3faff; --a: url("/sky/day-mid-a.webp"); --t: url("/sky/day-mid-t.webp"); }
+.sp-cloudsky__layer[data-layer="near"] { --y: -5%; --h: clamp(220px, 64vh, 46vw); --tw: calc(var(--h) * 3.5294); --dur: 160s; --c0: #7b8da6; --c1: #faffff; --a: url("/sky/day-near-a.webp"); --t: url("/sky/day-near-t.webp"); }
+.sp-cloudsky__stars, .sp-cloudsky__twinkle { display: none !important; }
+
+:root[data-theme="dark"] .sp-cloudsky {
+  background:
+    radial-gradient(90% 45% at 30% 108%, rgb(118 112 196 / 0.22), transparent 70%),
+    linear-gradient(180deg, #0a1230 0%, #101b3e 40%, #18264d 75%, #22315b 100%);
+}
+/* stars: a mask too (white through a tile of tiny points), fading out toward the horizon */
+:root[data-theme="dark"] .sp-cloudsky__stars,
+:root[data-theme="dark"] .sp-cloudsky__twinkle {
+  display: block !important; inset: 0; background: linear-gradient(180deg, #f4f6ff 0%, #f4f6ff 40%, transparent 88%);
+  -webkit-mask: url("/sky/stars.webp") repeat 0 0 / 600px 400px;
+  mask: url("/sky/stars.webp") repeat 0 0 / 600px 400px;
+}
+:root[data-theme="dark"] .sp-cloudsky__twinkle {
+  -webkit-mask: url("/sky/stars-twinkle.webp") repeat 170px 90px / 600px 400px;
+  mask: url("/sky/stars-twinkle.webp") repeat 170px 90px / 600px 400px;
+}
+:root[data-theme="dark"] .sp-cloudsky__layer { opacity: 0.55; }
+:root[data-theme="dark"] .sp-cloudsky__layer[data-layer="far"] { --c0: #23315d; --c1: #303f72; --a: url("/sky/night-far-a.webp"); --t: url("/sky/night-far-t.webp"); }
+:root[data-theme="dark"] .sp-cloudsky__layer[data-layer="mid"] { --c0: #1d2b53; --c1: #324175; --a: url("/sky/night-mid-a.webp"); --t: url("/sky/night-mid-t.webp"); }
+:root[data-theme="dark"] .sp-cloudsky__layer[data-layer="near"] { display: none; }
+
+/* Text over the sky keeps WCAG AA: on pages that carry it (and only there), the quieter inks step darker in Light (the sky is a
+   mid-to-pale blue, not paper) and lighter at dusk. Panels and cards keep their own frosted / deep surfaces (--space-glass). */
+:root[data-theme="light"] body:has(.sp-cloudsky) { --c-ink-2: #2f3440; --c-ink-3: #3b414c; }
+:root[data-theme="dark"] body:has(.sp-cloudsky) { --c-ink-2: #c9ccd8; --c-ink-3: #aeb2c2; }
+
+@keyframes sp-cloud-drift { to { transform: translate3d(calc(-1 * var(--tw)), 0, 0); } }
+@keyframes sp-twinkle { from { opacity: 0.25; } to { opacity: 1; } }
+@media (min-width: 641px) and (prefers-reduced-motion: no-preference) {
+  .sp-cloudsky[data-drift] .sp-cloudsky__layer { will-change: transform; animation: sp-cloud-drift var(--dur) linear infinite; }
+  .sp-cloudsky[data-drift] .sp-cloudsky__twinkle { animation: sp-twinkle 3.6s ease-in-out infinite alternate; }
+  .sp-cloudsky[data-paused] > i { animation-play-state: paused !important; }
+}
+/* Phones: the same sky, still, from half-size tiles, faded in once the page is idle (CloudSky sets [data-ready]; until then the
+   layers are display: none, so their masks are not even fetched while the page loads). */
+@keyframes sp-cloud-in { from { opacity: 0; } }
+@media (max-width: 640px) {
+  .sp-cloudsky:not([data-ready]) > .sp-cloudsky__layer { display: none; }
+  .sp-cloudsky[data-ready] > .sp-cloudsky__layer { animation: sp-cloud-in 0.9s var(--space-ease-out) both; }
+  .sp-cloudsky__layer[data-layer="far"] { --a: url("/sky/day-far-a-sm.webp"); --t: url("/sky/day-far-t-sm.webp"); }
+  .sp-cloudsky__layer[data-layer="mid"] { --a: url("/sky/day-mid-a-sm.webp"); --t: url("/sky/day-mid-t-sm.webp"); }
+  .sp-cloudsky__layer[data-layer="near"] { --a: url("/sky/day-near-a-sm.webp"); --t: url("/sky/day-near-t-sm.webp"); }
+  :root[data-theme="dark"] .sp-cloudsky__layer[data-layer="far"] { --a: url("/sky/night-far-a-sm.webp"); --t: url("/sky/night-far-t-sm.webp"); }
+  :root[data-theme="dark"] .sp-cloudsky__layer[data-layer="mid"] { --a: url("/sky/night-mid-a-sm.webp"); --t: url("/sky/night-mid-t-sm.webp"); }
+}
+@media (forced-colors: active) { .sp-cloudsky { display: none; } }
 
 /* ───────────────────────── reduced motion, phones ───────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .sp-rise, .sp-warp-in, .sp-swap, .sp-blur-x, .sp-blur-y, .sp-grad, .sp-hl, .sp-hl__ch, .sp-roll__strip, .sp-btn, .sp-seg__ind, .sp-dialog[open], .sp-pop, .sp-tip, .sp-notice, .sp-disc__panel { animation: none !important; }
+  .sp-cloudsky__layer, .sp-rise, .sp-warp-in, .sp-swap, .sp-blur-x, .sp-blur-y, .sp-grad, .sp-hl, .sp-hl__ch, .sp-roll__strip, .sp-btn, .sp-seg__ind, .sp-dialog[open], .sp-pop, .sp-tip, .sp-notice, .sp-disc__panel { animation: none !important; }
   .sp-skel { animation: none; }
   .sp-btn[data-status="loading"]::after { animation: none; opacity: 0.6; }
 }
@@ -573,6 +635,6 @@
   .sp-roll[data-rolling] .sp-roll__strip, .sp-seg__ind[data-moving] { animation: none; }
 }
 @media print {
-  .sp-sky { display: none !important; }
+  .sp-cloudsky { display: none !important; }
   .sp-btn { box-shadow: none; }
 }

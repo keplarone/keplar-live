@@ -39,7 +39,7 @@ export function SpaceUiShowcase() {
           <Button variant="ghost">Ghost</Button>
           <Button variant="danger">Delete</Button>
           <Button variant="primary" size="sm">Small</Button>
-          <Button variant="primary" size="lg" onClick={() => spaceFx.prompt()}>Warp the stars</Button>
+          <Button variant="primary" size="lg" onClick={() => spaceFx.prompt()}>Send a gust</Button>
           <ButtonLink href="/pricing" variant="secondary">ButtonLink</ButtonLink>
           <Tooltip content="Search everything"><Button iconOnly label="Search" variant="secondary">⌕</Button></Tooltip>
           <Button variant="primary" disabled>Disabled</Button>
