@@ -6,7 +6,6 @@ import s from "../Sky.module.css";
 
 /**
  * One cloud sky for the whole site. The root layout mounts it once, fixed behind every page.
- * Space Studio never mounts this: SpaceSkyExempt leaves the slot empty on that host and those routes.
  * The canvas is fetched after first paint so the first screen and the composer stay responsive.
  */
 export function SiteClouds() {

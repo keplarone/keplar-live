@@ -42,11 +42,7 @@ test("localized plan cards carry the same web-search line, not the old 'no web s
   assert.doesNotMatch(read(`${dir}/de.ts`), /"Keine Websuche"/);
 });
 
-test("stale copy: Space Studio status names the shipped version; Help no longer promises 'Coming soon' provider buttons; Wants has no PIN step", () => {
-  const space = read("src/app/(space)/space-studio/page.tsx");
-  assert.doesNotMatch(space, /What 0\.1 does today/);
-  assert.match(space, /Space Studio 0\.2 for Windows/);
-  assert.match(space, /What 0\.2 does today/);
+test("stale copy: Help no longer promises 'Coming soon' provider buttons; Wants has no PIN step", () => {
   const signin = allHelpItems().find((i) => i.id === "signin")!;
   assert.doesNotMatch(signin.a.join(" "), /Coming soon/);
   assert.match(read("src/components/auth/ProviderButtons.tsx"), /\.filter\(\(p\) => providers\[p\.id\]\)/, "unconfigured providers are not rendered");

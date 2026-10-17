@@ -205,26 +205,6 @@ const m: MarketingCatalog = {
         "name": "Empfehlungsprogramm",
         "line": "Lade jemanden ein; ihr bekommt beide zusätzliche Nutzung, nie Geld."
       },
-      "roblox-studio": {
-        "name": "Roblox-Studio-Modus",
-        "line": "Ein Co-Builder in Roblox Studio: Maps, UI, Flipbook-Effekte und Luau-Skripte, mit Claude Opus 5.5.",
-        "note": "Desktop-App, ab Lite."
-      },
-      "roblox-cloud": {
-        "name": "Roblox Cloud",
-        "line": "Nächtliche Jobs an den Skripten deines Spiels, jede Änderung vom Luau-Analyzer geprüft, in Studio übernommen, wenn du willst.",
-        "note": "Nur Skripte; kann nicht testspielen."
-      },
-      "blender": {
-        "name": "Blender-Modus",
-        "line": "Modellieren, mit PBR-Sets von Poly Haven texturieren, beleuchten und exportieren in Blender 4.2 oder neuer.",
-        "note": "Desktop-App 0.1.8 oder neuer."
-      },
-      "blender-cloud": {
-        "name": "Blender-Cloud-Rendering",
-        "line": "Rendere eine Szene auf Keplars Servern, während dein Computer aus ist, und lade dann die Frames und ein MP4 herunter.",
-        "note": "Desktop-App 0.1.10 oder neuer."
-      },
       "extension": {
         "name": "Browsererweiterung Keplar One",
         "line": "Frag in Chrome oder Edge nach einer Markierung oder einer Seite, mit deinem API-Schlüssel.",

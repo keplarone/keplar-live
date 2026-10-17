@@ -147,6 +147,14 @@ export async function* exportChunks(wsId: string, account: ExportAccount, at = n
 
 export type DeleteResult = { deleted: number; retained: string[] };
 
+/** System-scoped rows (workspace id is a shared bucket) whose `owner` is this account. */
+async function freeOwnedSystemRows(name: string, systemWs: string, wsId: string): Promise<number> {
+  const col = collection<{ id: string; workspaceId: string; owner?: string }>(name);
+  let n = 0;
+  for (const row of await col.list(systemWs, (r) => r.owner === wsId)) if (await col.remove(systemWs, row.id)) n++;
+  return n;
+}
+
 /** Deletes every user-owned row. Never touches the retained collections. */
 export async function deleteWorkspaceData(wsId: string): Promise<DeleteResult> {
   let deleted = 0;
@@ -164,18 +172,13 @@ export async function deleteWorkspaceData(wsId: string): Promise<DeleteResult> {
   } catch {
     /* best effort: no app tables yet */
   }
-  // Space Studio: identity claims live in system rows keyed by provider id, not by workspace; free them before the workspace rows go.
+  // Removed Space Studio: identity, beacon and consent claims live in system rows, not under the workspace, so free them here.
   try {
-    const { freeIdentityClaims } = await import("@/lib/space-studio/store");
-    deleted += await freeIdentityClaims(wsId);
+    deleted += await freeOwnedSystemRows("space_identity_index", "space_identity", wsId);
+    deleted += await freeOwnedSystemRows("space_beacons", "space_beacon", wsId);
+    deleted += await freeOwnedSystemRows("space_parent_consents", "space_parent_consent", wsId);
   } catch {
     /* best effort: nothing linked */
-  }
-  try {
-    const [{ freeBeaconClaims }, { freeConsentTokens }] = await Promise.all([import("@/lib/space-studio/experiences"), import("@/lib/space-studio/profile")]);
-    deleted += (await freeBeaconClaims(wsId)) + (await freeConsentTokens(wsId));
-  } catch {
-    /* best effort: no beacons or consent requests */
   }
   const kept: string[] = [];
   for (const name of await collectionNames(wsId)) {

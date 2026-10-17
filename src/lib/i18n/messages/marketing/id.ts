@@ -205,26 +205,6 @@ const m: MarketingCatalog = {
         "name": "Program referensi",
         "line": "Undang teman; Anda berdua mendapat pemakaian ekstra, bukan uang tunai."
       },
-      "roblox-studio": {
-        "name": "Mode Roblox Studio",
-        "line": "Rekan pembangun di dalam Roblox Studio: peta, UI, efek flipbook, dan skrip Luau, dengan Claude Opus 5.5.",
-        "note": "Aplikasi desktop, Lite ke atas."
-      },
-      "roblox-cloud": {
-        "name": "Roblox Cloud",
-        "line": "Pekerjaan semalaman pada skrip game Anda, setiap perubahan diperiksa penganalisis Luau, diterapkan di Studio saat Anda mau.",
-        "note": "Hanya skrip; tidak bisa menguji permainan."
-      },
-      "blender": {
-        "name": "Mode Blender",
-        "line": "Modelkan, beri tekstur dengan set PBR Poly Haven, atur cahaya, dan ekspor di Blender 4.2 atau lebih baru.",
-        "note": "Aplikasi desktop 0.1.8 atau lebih baru."
-      },
-      "blender-cloud": {
-        "name": "Rendering Blender Cloud",
-        "line": "Render adegan di server Keplar saat komputer Anda mati, lalu unduh frame-nya dan sebuah MP4.",
-        "note": "Aplikasi desktop 0.1.10 atau lebih baru."
-      },
       "extension": {
         "name": "Ekstensi browser Keplar One",
         "line": "Tanyakan tentang teks yang dipilih atau sebuah halaman dari Chrome atau Edge, dengan kunci API Anda.",

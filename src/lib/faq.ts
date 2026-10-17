@@ -7,7 +7,7 @@ import { brand } from "./site";
 export const faq: { q: string; a: string }[] = [
   {
     q: `What is ${brand.companyName}?`,
-    a: `${brand.companyName} is an AI company, and ${brand.name} is its AI workspace. Its engine sends your question to multiple AI models, finds where they agree, investigates where they don't, and gives you one synthesized answer with the agreement and disagreements shown. The same account also does Study mode (flashcards, quizzes and study plans from your notes), Deep Research, slideshows, image and video generation, building and publishing websites and apps, and building Roblox games in Roblox Studio from the desktop app. Keplar Business is a separate app for companies, with scheduled agents and approvals.`,
+    a: `${brand.companyName} is an AI company, and ${brand.name} is its AI workspace. Its engine sends your question to multiple AI models, finds where they agree, investigates where they don't, and gives you one synthesized answer with the agreement and disagreements shown. The same account also does Study mode (flashcards, quizzes and study plans from your notes), Deep Research, slideshows, image and video generation, and building and publishing websites and apps. Keplar Business is a separate app for companies, with scheduled agents and approvals.`,
   },
   {
     q: "Who created Keplar?",

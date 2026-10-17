@@ -205,26 +205,6 @@ const m: MarketingCatalog = {
         "name": "Chương trình giới thiệu",
         "line": "Mời bạn bè; cả hai đều được thêm mức sử dụng, không bao giờ là tiền mặt."
       },
-      "roblox-studio": {
-        "name": "Chế độ Roblox Studio",
-        "line": "Người cùng xây dựng ngay trong Roblox Studio: bản đồ, UI, hiệu ứng flipbook và script Luau, với Claude Opus 5.5.",
-        "note": "Ứng dụng máy tính, từ gói Lite trở lên."
-      },
-      "roblox-cloud": {
-        "name": "Roblox Cloud",
-        "line": "Làm việc qua đêm trên script của game, mỗi chỉnh sửa được bộ phân tích Luau kiểm tra, áp dụng vào Studio khi bạn đồng ý.",
-        "note": "Chỉ script; không thể chơi thử."
-      },
-      "blender": {
-        "name": "Chế độ Blender",
-        "line": "Dựng mô hình, phủ texture bằng bộ PBR của Poly Haven, chiếu sáng và xuất trong Blender 4.2 trở lên.",
-        "note": "Ứng dụng máy tính 0.1.8 trở lên."
-      },
-      "blender-cloud": {
-        "name": "Render bằng Blender Cloud",
-        "line": "Render cảnh trên máy chủ của Keplar khi máy tính đã tắt, rồi tải các khung hình và một video MP4.",
-        "note": "Ứng dụng máy tính 0.1.10 trở lên."
-      },
       "extension": {
         "name": "Tiện ích trình duyệt Keplar One",
         "line": "Hỏi về đoạn chữ đã chọn hoặc cả trang từ Chrome hay Edge, bằng khóa API của bạn.",

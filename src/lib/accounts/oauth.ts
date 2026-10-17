@@ -98,9 +98,6 @@ export function oauthErrorMessage(code: string | undefined): string | null {
   if (!code) return null;
   if (code === "link") return "That link expired or was already used. Request a new one.";
   if (code === "desktop_link_used") return "That desktop sign-in link expired or was already used. Click Sign in in the Keplar One app to start again.";
-  if (code === "roblox_not_linked") return "That Roblox account isn't linked to a Keplar account yet. Sign in with your email or Google first, then link Roblox in Space Studio (Account). After that, Sign in with Roblox works.";
-  if (code === "roblox_not_configured") return "Sign in with Roblox isn't available right now. Sign in with your email or Google.";
-  if (code === "roblox_account_unavailable") return "We couldn't sign you in with that Roblox account. Sign in with your email or Google.";
   if (code === "access_denied") return "Sign-in was canceled. Try again, or use an email link.";
   if (code === "unable_to_create_user" || code === "email_not_verified" || code === "email_not_found")
     return "We couldn't confirm a verified email address from that account. Try another account, or use an email link.";

@@ -26,10 +26,10 @@ const statusOf = (f: Fact): FeatureStatus => (f.feature ? ALL_FEATURES.find((x) 
 export const factStatus = statusOf;
 
 /** One paragraph: the short answer. */
-export const WHAT_IS_KEPLAR = `${brand.companyName} (keplar.one) is an AI workspace for everyday questions, studying, research and making things. Its engine, ${brand.engineName}, sends a question to the AI models it needs, compares their answers claim by claim, investigates where they disagree and writes one answer with the agreement and disagreements shown. Around that engine, ${brand.name} is a full set of tools: Reason, Deep Research and Debate modes; Study mode with flashcards, quizzes and study plans; a slideshow maker; image and video generation; Create, which builds and publishes real websites and apps; Roblox Studio and Blender co-builders in the desktop app; projects, memory, specialists and connected apps; and a public API and embeddable widget. Keplar Business (business.keplar.one) is a separate desktop app for companies, with scheduled agents, approvals, team workspaces and a business dashboard.`;
+export const WHAT_IS_KEPLAR = `${brand.companyName} (keplar.one) is an AI workspace for everyday questions, studying, research and making things. Its engine, ${brand.engineName}, sends a question to the AI models it needs, compares their answers claim by claim, investigates where they disagree and writes one answer with the agreement and disagreements shown. Around that engine, ${brand.name} is a full set of tools: Reason, Deep Research and Debate modes; Study mode with flashcards, quizzes and study plans; a slideshow maker; image and video generation; Create, which builds and publishes real websites and apps; projects, memory, specialists and connected apps; and a public API and embeddable widget. Keplar Business (business.keplar.one) is a separate desktop app for companies, with scheduled agents, approvals, team workspaces and a business dashboard.`;
 
 /** A few sentences that correct the narrow reading ("it just asks several models"). */
-export const NOT_JUST_MULTI_MODEL = `Asking several models at once is how ${brand.name} answers, not all it does. The same account also studies with you, researches, writes and presents slides, makes images and video, builds and hosts websites and apps, builds Roblox games inside Roblox Studio, and models and textures 3D assets in Blender, all from one account. Companies that want agents running on a schedule, with approvals before anything goes out, use Keplar Business.`;
+export const NOT_JUST_MULTI_MODEL = `Asking several models at once is how ${brand.name} answers, not all it does. The same account also studies with you, researches, writes and presents slides, makes images and video, and builds and hosts websites and apps, all from one account. Companies that want agents running on a schedule, with approvals before anything goes out, use Keplar Business.`;
 
 export const FACT_SECTIONS: FactSection[] = [
   {
@@ -71,7 +71,7 @@ export const FACT_SECTIONS: FactSection[] = [
     ],
   },
   {
-    id: "create", title: "Create: websites, apps, images, video and games",
+    id: "create", title: "Create: websites, apps, images and video",
     intro: "Describe what you want, or say it out loud, and Create builds it: it plans a design for the brief, writes the code, tests every screen and publishes it.",
     facts: [
       { name: "Websites and web apps", what: "Builds full sites and apps from a brief, with a code editor, terminal and live preview side by side. A written design rubric and a lint pass reject the generic AI look (purple glows, gradient blobs, three-card grids) before you see it.", plans: "Lite (one small personal site), Plus and Pro", feature: "anti-vibe", href: "/ai-app-builder" },
@@ -81,40 +81,10 @@ export const FACT_SECTIONS: FactSection[] = [
       { name: "Watch the code being written", what: "While Create builds an app, the files appear as they are written, with a Tasks checklist of the plan and Ctrl+P to jump to any file.", status: "live" },
       { name: "Templates and community gallery", what: "Start from a real site and describe what to change. Sites people chose to share can be liked, remixed and reported.", feature: "community", href: "/templates" },
       { name: "Showcase", what: "Demo sites and apps by the Keplar team that set the bar Create is held to.", feature: "showcase", href: "/showcase" },
-      { name: "Image generation", what: "Make pictures from a message or in the Images studio; attach an image to use as a reference.", plans: "Plus and Pro" },
+      { name: "Image generation", what: "Make pictures from a message or in the Images tab; attach an image to use as a reference.", plans: "Plus and Pro" },
       { name: "Video generation", what: "Generate short videos in Create's Video tab.", plans: "Pro", status: "beta" },
       { name: "Mobile apps", what: "Build mobile app projects in Create's Mobile tab.", status: "beta" },
       { name: "Product import", what: "Paste a product page link and Keplar's fetcher (KeplarBot, which obeys robots.txt) brings in the product details for a page about it.", plans: "Signed-in users" },
-    ],
-  },
-  {
-    id: "roblox", title: "Roblox Studio co-builder",
-    intro: `In the ${brand.companyName} desktop app, Keplar connects to Roblox Studio through Studio's own tools and builds games with you.`,
-    facts: [
-      { name: "Builds inside Studio", what: "Looks at your place first (a screenshot and the Explorer tree), writes a numbered plan, then builds it step by step: maps, buildings, lighting, UI, effects and working Luau scripts, organized in named folders.", plans: "Desktop app, signed in", status: "beta", href: "/roblox-studio-ai" },
-      { name: "You play-test it", what: "Keplar reads the output log for script errors and fixes them, then ends with a short \"How to test it\" list. A Play test button starts and stops play mode in Studio directly, so testing costs no AI usage; you say what to change.", plans: "Desktop app", status: "beta" },
-      { name: "A saved chat per game", what: "Each game's conversation, plan and progress are saved on the device and synced to your Keplar account, so you can close Studio and Keplar and pick up where you left off, even on another computer.", plans: "Desktop app, signed in", status: "beta", href: "/roblox-studio-ai" },
-      { name: "Matches references", what: "Attach screenshots or a clip of a UI, effect or game to match. For effects and UI it reuses Zonito's free particle pack, or makes its own textures in Studio.", plans: "Desktop app", status: "beta" },
-      { name: "Effects that look right", what: "Flipbook particles from valid 1024 by 1024 sheets in the grid their creator states, self-lit glows with bright cores, scene-lit smoke behind them, and layered effects kept light on performance.", plans: "Desktop app", status: "beta", href: "/docs/studio/effects-and-textures" },
-      { name: "You stay in control", what: "Reads run on their own; changes wait for approval unless you turn on auto-approve for safe changes; deleting, publishing, data stores and uploading images to your Roblox account always ask first.", plans: "Desktop app", status: "beta" },
-      { name: "Roblox Cloud overnight jobs", what: "Give it a goal, a credit budget and a time limit, then close your computer: it works on your game's scripts on Keplar's servers, checks every edit with Luau's own analyzer, and leaves changes you review and apply in Studio. Scripts only; it can't play-test.", plans: "Desktop app, Lite and up", status: "beta", href: "/docs/studio/roblox-cloud" },
-      { name: "Always Claude Opus 5.5", what: "Studio mode and Roblox Cloud run on Claude Opus 5.5 only. If it can't be used, the build pauses instead of switching to another model.", plans: "Desktop app", status: "beta" },
-      { name: "Solar 5.8 modes", what: "Pick how hard Keplar thinks on each build step: Light, Medium (the default), High, Max or Ultimate+. They are settings of the same model (how much it may think and write per step), not different models; deeper modes can use more credits per step, and the selector shows the most a step can cost.", plans: "Desktop app", status: "beta" },
-      { name: "Live code and changes", what: "A Code panel shows the real Luau or Python of each step as it arrives and whether it was approved, applied or failed; script edits show a before-and-after diff read from Studio, and an edit can be reverted through the same approval.", plans: "Desktop app", status: "beta" },
-      { name: "Floating overlay", what: "A movable, always-on-top panel keeps the build chat next to Studio or Blender, with a switch between the two.", plans: "Desktop app", status: "beta" },
-    ],
-  },
-  {
-    id: "blender", title: "Blender co-builder",
-    intro: `In the ${brand.companyName} desktop app (0.1.8 or newer), Keplar connects to Blender 4.2 or newer through a small Keplar add-on and models and textures with you.`,
-    facts: [
-      { name: "Models from a description", what: "Reads the scene as compact text, plans, then builds with clean topology and modifiers at real-world scale, every object named and grouped in a collection.", plans: "Desktop app, Lite and up", status: "beta", href: "/blender-ai" },
-      { name: "Real PBR textures", what: "Searches Poly Haven (free, CC0) and applies a full material set: color, roughness, normal, ambient occlusion and displacement, unwrapping meshes that have no UVs.", plans: "Desktop app, Lite and up", status: "beta" },
-      { name: "Procedural materials, lighting and props", what: "Node-based materials for stylized looks, HDRI lighting and Poly Haven model import.", plans: "Desktop app, Lite and up", status: "beta" },
-      { name: "Export for games", what: "Exports to FBX (imports into Roblox Studio), GLB or OBJ in Documents/Keplar exports.", plans: "Desktop app, Lite and up", status: "beta" },
-      { name: "Safe by default", what: "The add-on only listens on this computer behind a secret key. Keplar's Python may not touch files, the network or other apps, or save or close Blender; deleting always asks, and every change waits for approval unless you turn on auto-approve.", plans: "Desktop app", status: "beta" },
-      { name: "Cheap to run", what: "A short cached prompt, text scene summaries instead of screenshots, and small thinking budgets keep each step's AI usage low. Each .blend file's chat is saved and synced to your account.", plans: "Desktop app", status: "beta" },
-      { name: "Blender Cloud rendering", what: "Renders the open scene on Keplar's servers with Blender 5.2 (Cycles, EEVEE or Workbench, on CPUs), so you can close Blender or turn your computer off; the scene is packed with its textures, the machine has no internet access, and the frames and an optional MP4 download to Documents/Keplar renders. Charged by machine time, with a budget and a time limit; renders are kept three days.", plans: "Desktop app 0.1.10+, Lite and up", status: "beta", href: "/docs/studio/blender-cloud-rendering" },
     ],
   },
   {
@@ -143,7 +113,7 @@ export const FACT_SECTIONS: FactSection[] = [
     id: "platform", title: "Use it from anywhere",
     intro: "The same engine in a desktop app, behind an API and inside a widget on your site.",
     facts: [
-      { name: "Desktop app", what: "For Windows, macOS and Linux. Keeps the app in its own window and adds the Roblox Studio and Blender co-builders; your account and data stay in the cloud.", plans: "Every plan", href: "/download" },
+      { name: "Desktop app", what: "For Windows, macOS and Linux. Keeps the app in its own window; your account and data stay in the cloud.", plans: "Every plan", href: "/download" },
       { name: "Browser extension", what: "Keplar One for Chrome and Edge: ask about a selection or a page from the toolbar or right-click menu, or use Search with Keplar One to drag over any text or picture on a page and get the answer in a side panel. Uses a Keplar API key; submitted to the Chrome Web Store.", plans: "Every plan (API key; Free keys use free models)", status: "beta", href: "/docs/extension/search-with-keplar-one" },
       { name: "Public API", what: "Ask Keplar from your own code with Bearer keys, streaming, an OpenAPI spec and per-plan limits. Free keys use free models only.", feature: "api", href: "/developers" },
       { name: "Embeddable widget", what: "One script tag puts Keplar Ask on your site, limited to the origins you allow.", feature: "embed", href: "/developers#embed" },
@@ -212,9 +182,6 @@ export const CAPABILITY_MATRIX: MatrixRow[] = [
   { feature: "Image generation", cells: ["yes", "yes", "yes", "yes"], note: "Keplar One: Plus and Pro." },
   { feature: "Video generation", cells: ["beta", "beta", "beta", "beta"], note: "Keplar One: Pro." },
   { feature: "Create websites and apps", cells: ["yes", "yes", "yes", "yes"] },
-  { feature: "Roblox Studio co-builder", cells: ["no", "beta", "no", "no"], note: "Needs Roblox Studio on the same computer." },
-  { feature: "Blender co-builder", cells: ["no", "beta", "no", "no"], note: "Desktop app 0.1.8+, Blender 4.2+." },
-  { feature: "Floating overlay over Studio or Blender", cells: ["no", "beta", "no", "no"] },
   { feature: "Scheduled agents and Approvals", cells: ["no", "no", "beta", "beta"] },
   { feature: "Operations: orders, CRM, inbox, audit log", cells: ["no", "no", "beta", "beta"] },
   { feature: "AI Design Canvas", cells: ["no", "no", "beta", "beta"], note: "Design, code and AI edits to a website project in one draft, saved only when you approve." },

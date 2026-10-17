@@ -10,7 +10,7 @@ import { faq } from "../src/lib/faq";
 
 test("product facts: every product area is described, not only the multi-model answer", () => {
   const all = [WHAT_IS_KEPLAR, NOT_JUST_MULTI_MODEL, ...factLines()].join("\n");
-  for (const area of ["Study mode", "Deep Research", "Debate", "slideshow", "Image generation", "Video generation", "websites", "Roblox Studio", "Approvals", "Projects", "memory", "Specialists", "MCP", "Desktop app", "Public API", "Embeddable widget", "Keplar Business"]) {
+  for (const area of ["Study mode", "Deep Research", "Debate", "slideshow", "Image generation", "Video generation", "websites", "Browser extension", "Approvals", "Projects", "memory", "Specialists", "MCP", "Desktop app", "Public API", "Embeddable widget", "Keplar Business"]) {
     assert.match(all, new RegExp(area, "i"), area);
   }
   assert.ok(factLines().length >= 40, `${factLines().length} facts`);
@@ -31,7 +31,7 @@ test("structured data, home FAQ and sitemap carry the full picture", () => {
   assert.equal(app.description, WHAT_IS_KEPLAR);
   assert.deepEqual(app.featureList, factLines());
   assert.match(app.operatingSystem, /Windows/);
-  assert.match(organizationNode().description, /Roblox Studio/);
+  assert.match(organizationNode().description, /public API/);
   assert.match(faq[0]!.a, /Study mode/);
   assert.ok(sitemapPaths.includes("/what-is-keplar"));
   assert.ok(staticLastmod["/what-is-keplar"]);

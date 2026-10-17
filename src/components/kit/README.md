@@ -1,4 +1,4 @@
-# Keplar Studio design system
+# Keplar kit
 
 `src/components/kit/`. Import everything from the barrel:
 
@@ -126,8 +126,7 @@ Activation is automatic. Left/Right and Home/End move between tabs, and the unde
 ## 4. Icons
 
 **Icon** `<Icon name="attach" size={16} label?="…" />`. It's drawn on a 24-unit grid with a 1.5 stroke, round caps and no fill. It's decorative unless you pass `label`.
-Names (`ICON_NAMES`): attach, image, file, folder, history, sessions, settings, viewport, changes, plan, activity, terminal, warning, error, info, check, credit, link, more, drag-handle, roblox-studio, blender, close, plus, minus, arrow-up, arrow-right, chevron-down, chevron-right, external, copy, trash, undo, stop, play, search, code, diff, eye, cube, refresh.
-The Roblox Studio and Blender marks are generic pictograms (a studded block and a wireframe sphere), not copies of either logo.
+Names (`ICON_NAMES`): attach, image, file, folder, history, sessions, settings, viewport, changes, plan, activity, terminal, warning, error, info, check, credit, link, more, drag-handle, close, plus, minus, arrow-up, arrow-right, chevron-down, chevron-right, external, copy, trash, undo, stop, play, search, code, diff, eye, cube, refresh.
 
 **MorphIcon** `<MorphIcon icon="menu" state={open ? "close" : "menu"} size={16} />`. `state` is type-checked per icon (`MorphIconState<"menu">`), and it must reflect a real state.
 - How the morph works: the browser interpolates the SVG geometry with CSS `d` transitions, over paths that share the same command structure (a test proves this for every icon). If the state changes mid-flight, the icon reverses from its current geometry. The morph takes 220ms, with standard easing and no overshoot.

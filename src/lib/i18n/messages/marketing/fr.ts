@@ -205,26 +205,6 @@ const m: MarketingCatalog = {
         "name": "Programme de parrainage",
         "line": "Invitez un ami : vous recevez tous les deux de l’usage en plus, jamais d’argent."
       },
-      "roblox-studio": {
-        "name": "Mode Roblox Studio",
-        "line": "Un co-constructeur dans Roblox Studio : cartes, interface, effets flipbook et scripts Luau, avec Claude Opus 5.5.",
-        "note": "Application de bureau, à partir de Lite."
-      },
-      "roblox-cloud": {
-        "name": "Roblox Cloud",
-        "line": "Des tâches de nuit sur les scripts de votre jeu, chaque modification vérifiée par l’analyseur Luau, appliquée dans Studio quand vous le décidez.",
-        "note": "Scripts uniquement ; il ne peut pas tester en jeu."
-      },
-      "blender": {
-        "name": "Mode Blender",
-        "line": "Modéliser, texturer avec des jeux PBR de Poly Haven, éclairer et exporter dans Blender 4.2 ou plus récent.",
-        "note": "Application de bureau 0.1.8 ou plus récente."
-      },
-      "blender-cloud": {
-        "name": "Rendu Blender Cloud",
-        "line": "Rendez une scène sur les serveurs de Keplar, ordinateur éteint, puis téléchargez les images et une vidéo MP4.",
-        "note": "Application de bureau 0.1.10 ou plus récente."
-      },
       "extension": {
         "name": "Extension de navigateur Keplar One",
         "line": "Posez une question sur une sélection ou une page depuis Chrome ou Edge, avec votre clé d’API.",

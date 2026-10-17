@@ -31,9 +31,7 @@ Disposition: **Keep** (meets the bar; covered by tests), **Improve** (keep, fix 
 | Create | Study | `/app/study` | Real | — | study | Keep |
 | Create | Mobile app builder | `create/mobile/*` | Beta | — | mobile-creator | Keep |
 | Create | Domains, deployments | `DomainPanel.tsx`, `/app/deployments` | Beta / Real | PERF-6; no tests for DeploymentsView | domains* | Improve |
-| Studio | Keplar Studio (Roblox, Blender) | `/app/studio`, `app-ui/studio-mode/*` | Beta (desktop app required) | AI-7 (Blender auto-approve) | studio-* (22 files) | Improve |
-| Studio | Roblox Cloud, Blender Cloud | `api/roblox-cloud`, `api/blender-cloud` | Beta | Stuck-job recovery daily only (REL-3) | roblox-cloud, blender-cloud | Improve |
-| Space Studio | Site, download, backend | `/space-studio`, `api/space-studio/*` | Real | Headline rotation never pauses (WCAG 2.2.2); "0.1" copy fixed (4b40ad2) | space-studio, space-host | Improve |
+| Studio | Keplar Studio (Roblox, Blender), Roblox Cloud, Blender Cloud, Space Studio | removed; old URLs redirect | Removed | — | — | Removed |
 | Business | Storefront, account, ChatGPT app | `/biz`, `business-site/*` | Real | Revenue Guard removed by owner decision (UX-5, a54bd31: storefront, plans, footer, contact form, unwired module); example tile shows invented citations | business-plans, chatgpt* | Improve (example tile) |
 | Business | Workspace, dashboard, projects, canvas, computer, analyst | `/biz/work`, `business-app/*` | Real | PERF-3; canvas keyboard path and kit confirm dialogs (4b40ad2); AI-6 | business-workspace* | Improve |
 | Business | CRM, orders, inbox, audit | `api/business/*` | Real | PERF-5; AZ-7 | business-* | Improve |

@@ -35,24 +35,12 @@ const PUBLIC_OK = new Set(["GET compute", "GET v1/openapi.json" /* public API de
 
 PUBLIC_OK.add("GET business/account"); // Storefront status: signed-out callers get only { signedIn: false }.
 PUBLIC_OK.add("GET business/handoff"); // Redirects to sign-in; a ticket requires an authenticated session.
-PUBLIC_OK.add("GET studio/modes"); // Solar mode table: budgets, prices and the provider disclosure; no account data, read-only.
 PUBLIC_OK.add("GET sky"); // The weather sky behind the marketing pages: public, read-only, cheap ({ sky, wind } only; the rounded location is used once for a cached Open-Meteo lookup and never stored or returned).
 PUBLIC_OK.add("GET sky/weather"); // Same lookup at the path the cloud sky fetches. { sky, wind } only; coordinates are never stored or returned.
 // The browser extension connecting to an account (src/lib/api/extension.ts): starting only creates a sign-in request (400 for a bad
 // PKCE challenge, 20 per 10 minutes per IP); the poll answers {status} and hands a key only to the verifier holder after the person approved.
 PUBLIC_OK.add("POST extension/connect");
 PUBLIC_OK.add("POST extension/token");
-// Space Studio (src/lib/space-studio): the account summary answers signed-out callers with { signedIn: false }, Free defaults and the
-// public model list (no account data); the billing webhook's HMAC signature is its credential (503 until its secret is set, 401 for a bad
-// signature); the Roblox link callback always redirects back to the app and changes nothing without the signed-in account's sealed state.
-PUBLIC_OK.add("GET space-studio/me");
-PUBLIC_OK.add("POST space-studio/billing/webhook");
-PUBLIC_OK.add("GET space-studio/identities/roblox/callback");
-// Sign-in starts for the Space Studio desktop app: signed-out by design, they only redirect (to Google / Roblox OAuth or /signin).
-PUBLIC_OK.add("GET space-studio/auth/google/start");
-PUBLIC_OK.add("GET space-studio/auth/roblox/start");
-// The installer download is public: it only redirects to the latest GitHub release asset (src/lib/space-studio/download.ts).
-PUBLIC_OK.add("GET space-studio/download");
 // Keplar Business for ChatGPT (src/lib/chatgpt): OAuth 2.1 + MCP endpoints that ChatGPT's servers call without a Keplar cookie, by design.
 PUBLIC_OK.add("GET chatgpt/mcp"); // Always 405 (POST only); no body.
 PUBLIC_OK.add("POST chatgpt/mcp"); // initialize / ping / tools/list are static protocol metadata; tools/call authenticates the bearer grant (hash, expiry, resource, client, scope, plan) before any workspace read.

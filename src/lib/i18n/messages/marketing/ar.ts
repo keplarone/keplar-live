@@ -205,26 +205,6 @@ const m: MarketingCatalog = {
         "name": "برنامج الإحالة",
         "line": "ادعُ صديقًا، فيحصل كلاكما على استخدام إضافي، لا على مال أبدًا."
       },
-      "roblox-studio": {
-        "name": "وضع Roblox Studio",
-        "line": "شريك بناء داخل Roblox Studio: خرائط وواجهات وتأثيرات flipbook وسكربتات Luau، باستخدام Claude Opus 5.5.",
-        "note": "تطبيق سطح المكتب، من Lite فما فوق."
-      },
-      "roblox-cloud": {
-        "name": "Roblox Cloud",
-        "line": "مهام ليلية على سكربتات لعبتك، وكل تعديل يفحصه محلل Luau، وتُطبَّق في Studio عندما تقرر.",
-        "note": "السكربتات فقط؛ لا يمكنه اختبار اللعب."
-      },
-      "blender": {
-        "name": "وضع Blender",
-        "line": "نمذجة وإكساء بمجموعات PBR من Poly Haven وإضاءة وتصدير في Blender 4.2 أو أحدث.",
-        "note": "تطبيق سطح المكتب 0.1.8 أو أحدث."
-      },
-      "blender-cloud": {
-        "name": "العرض السحابي Blender Cloud",
-        "line": "اعرض مشهدًا على خوادم Keplar وحاسوبك مطفأ، ثم نزّل الإطارات وفيديو MP4.",
-        "note": "تطبيق سطح المكتب 0.1.10 أو أحدث."
-      },
       "extension": {
         "name": "إضافة المتصفح Keplar One",
         "line": "اسأل عن نص محدد أو صفحة من Chrome أو Edge باستخدام مفتاح API الخاص بك.",

@@ -205,26 +205,6 @@ const m: MarketingCatalog = {
         "name": "推荐计划",
         "line": "邀请好友，你们都能获得额外用量，绝不是现金。"
       },
-      "roblox-studio": {
-        "name": "Roblox Studio 模式",
-        "line": "Roblox Studio 里的共同搭建者：地图、界面、序列帧特效和 Luau 脚本，由 Claude Opus 5.5 驱动。",
-        "note": "桌面应用，Lite 及以上。"
-      },
-      "roblox-cloud": {
-        "name": "Roblox Cloud",
-        "line": "通宵处理你游戏的脚本，每处修改都经 Luau 分析器检查，由你决定何时在 Studio 中应用。",
-        "note": "只处理脚本；无法试玩测试。"
-      },
-      "blender": {
-        "name": "Blender 模式",
-        "line": "在 Blender 4.2 或更高版本中建模、用 Poly Haven 的 PBR 材质贴图、布光并导出。",
-        "note": "桌面应用 0.1.8 或更高版本。"
-      },
-      "blender-cloud": {
-        "name": "Blender Cloud 云渲染",
-        "line": "关掉电脑也能在 Keplar 的服务器上渲染场景，之后下载各帧和一个 MP4 视频。",
-        "note": "桌面应用 0.1.10 或更高版本。"
-      },
       "extension": {
         "name": "Keplar One 浏览器扩展",
         "line": "在 Chrome 或 Edge 中，用你的 API 密钥询问选中的文字或整个页面。",

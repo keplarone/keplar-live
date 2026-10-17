@@ -1,5 +1,5 @@
 /**
- * Keplar Studio motion tokens (TypeScript twin of the --ks-dur-* / --ks-ease-* custom properties in tokens.module.css).
+ * Keplar motion tokens (TypeScript twin of the --ks-dur-* / --ks-ease-* custom properties in tokens.module.css).
  *
  * Use the CSS tokens in stylesheets; use these constants only where motion has to be driven from script (Web Animations,
  * timers that must outlast a CSS transition). Both sides are checked against each other in tests/studio-ui-tokens.test.ts.

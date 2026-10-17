@@ -409,7 +409,7 @@ export function BusinessWorkspace() {
               : view.at === "ask" ? <Ask key={view.key} chatId={view.chatId} resume={view.resume} first={view.q} firstMedia={sentMedia?.key === view.key ? sentMedia.media : undefined} projectId={view.projectId} onSaved={loadSide} />
               : view.at === "dashboard" ? <Dashboard onOpenProject={(id) => go({ at: "projects", projectId: id })} />
               : view.at === "projects" ? <Projects projectId={view.projectId} onOpen={(id) => { go({ at: "projects", projectId: id }); loadSide(); }} />
-              : view.at === "create" ? <div className={s.module}><CreateStudio signedIn plan="business" /></div>
+              : view.at === "create" ? <div className={s.module}><CreateStudio signedIn /></div>
               : view.at === "canvas" ? <div className={s.module}><DesignCanvas /></div>
               : view.at === "computer" ? <Computer onOpenSettings={() => openSettings("computer")} />
               : view.at === "os" ? <div className={s.module}><BusinessOS key={view.tab} initialTab={view.tab} embedded /></div>

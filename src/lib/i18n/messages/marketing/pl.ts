@@ -205,26 +205,6 @@ const m: MarketingCatalog = {
         "name": "Program poleceń",
         "line": "Zaproś znajomego; oboje dostajecie dodatkowe zużycie, nigdy pieniądze."
       },
-      "roblox-studio": {
-        "name": "Tryb Roblox Studio",
-        "line": "Współtwórca w Roblox Studio: mapy, UI, efekty flipbook i skrypty Luau, z Claude Opus 5.5.",
-        "note": "Aplikacja desktopowa, od planu Lite."
-      },
-      "roblox-cloud": {
-        "name": "Roblox Cloud",
-        "line": "Nocne zadania na skryptach Twojej gry, każda zmiana sprawdzona analizatorem Luau i zastosowana w Studio, gdy zdecydujesz.",
-        "note": "Tylko skrypty; nie może testować rozgrywki."
-      },
-      "blender": {
-        "name": "Tryb Blender",
-        "line": "Modelowanie, teksturowanie zestawami PBR z Poly Haven, oświetlenie i eksport w Blenderze 4.2 lub nowszym.",
-        "note": "Aplikacja desktopowa 0.1.8 lub nowsza."
-      },
-      "blender-cloud": {
-        "name": "Renderowanie w Blender Cloud",
-        "line": "Renderuj scenę na serwerach Keplar przy wyłączonym komputerze, a potem pobierz klatki i plik MP4.",
-        "note": "Aplikacja desktopowa 0.1.10 lub nowsza."
-      },
       "extension": {
         "name": "Rozszerzenie przeglądarki Keplar One",
         "line": "Pytaj o zaznaczenie lub stronę w Chrome albo Edge, używając swojego klucza API.",

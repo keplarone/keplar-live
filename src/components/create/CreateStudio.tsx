@@ -10,21 +10,14 @@
  * Only the App studio ships with the Create chunk; Images, Video and Mobile are separate chunks fetched the first
  * time their tab is opened (and warmed when the pointer reaches the tab), so opening Create costs only what the
  * App studio needs.
- *
- * Keplar Studio (desktop app only) is one tab with an environment switch, Roblox Studio | Blender, and mounts the Keplar
- * Studio Workspace for the chosen one (each environment's stays mounted once opened). Links: ?tab=studio&env=roblox|blender is canonical; ?tab=roblox and ?tab=blender still
- * work; ?tab=studio alone opens the environment used last. Outside the desktop app these links land on App with a note
- * pointing to the download page (see ./studio/keplar-studio-nav.ts).
  */
-import { lazy, Suspense, useEffect, useRef, useState, useSyncExternalStore, type FocusEvent, type PointerEvent } from "react";
-import { studioBridge } from "@/lib/desktop/studio-bridge";
+import { lazy, Suspense, useEffect, useState, type FocusEvent, type PointerEvent } from "react";
 import { ActivityIndicator, Button, Tabs, tabId, tabPanelId, type TabItem } from "@/components/kit";
 import { SignInGate } from "@/components/app-ui/SignInGate";
 import { AppBuilder } from "./apps/AppBuilder";
 import b from "./builder.module.css";
 import st from "./apps/studio.module.css";
-import { KeplarStudioElsewhere, KeplarStudioPane } from "./studio/KeplarStudioPane";
-import { createSearch, locationFromUrl, pickEnv, readRememberedEnv, rememberEnv, resolveCreateLocation, studioRequested, type CreateLocation, type CreateView, type StudioEnv } from "./studio/keplar-studio-nav";
+import { createSearch, resolveCreateView, viewFromUrl, type CreateView } from "./create-nav";
 
 const loadImages = () => import("./ImageStudio");
 const loadVideo = () => import("./video/VideoStudio");
@@ -34,37 +27,28 @@ const ImageStudio = lazy(() => loadImages().then((m) => ({ default: m.ImageStudi
 const VideoStudio = lazy(() => loadVideo().then((m) => ({ default: m.VideoStudio })));
 const MobileStudio = lazy(() => loadMobile().then((m) => ({ default: m.MobileStudio })));
 const SiteBuilder = lazy(() => loadSite().then((m) => ({ default: m.SiteBuilder })));
-// One chunk serves both environments (Roblox Studio and Blender share the Keplar Studio Workspace).
-const loadWorkspace = () => import("@/components/app-ui/studio-mode/workspace/Workspace");
-const StudioWorkspace = lazy(() => loadWorkspace().then((m) => ({ default: m.Workspace })));
-const noSubscribe = () => () => {};
-const WARM: Record<string, () => Promise<unknown>> = { images: loadImages, video: loadVideo, mobile: loadMobile, roblox: loadWorkspace, blender: loadWorkspace };
+const WARM: Record<string, () => Promise<unknown>> = { images: loadImages, video: loadVideo, mobile: loadMobile };
 
-/** "studio" is Keplar Studio: desktop app only, so its tab appears only when the desktop bridge is there. */
 type View = CreateView;
 type Auth = "loading" | "in" | "out";
 
 type Props = {
   embedded?: boolean;
-  /** A `?tab=` value (see ./studio/keplar-studio-nav.ts); falls back to the page URL. */
+  /** A `?tab=` value (see ./create-nav.ts); falls back to the page URL. */
   initialTab?: string;
-  /** A `?env=` value for Keplar Studio ("roblox" | "blender"); falls back to the page URL. */
-  initialEnv?: string;
   /** null while the app shell is still resolving the account. undefined when Create is mounted on its own. */
   signedIn?: boolean | null;
-  /** The plan, for Keplar Studio (Lite and up). */
-  plan?: string;
 };
 
 const SITE_HANDOFF_KEY = "keplar:create-site";
 /** The kit Tabs id of the kind switch (tab and panel ids derive from it). */
 const KIND_TABS = "create-kind";
+const RETIRED_TABS = new Set(["site", "studio", "roblox", "blender"]);
 
-function initialLocation(initialTab?: string, initialEnv?: string): CreateLocation {
-  const fromUrl = typeof window === "undefined" ? { view: "app" as const, env: null } : locationFromUrl(window.location.href);
+function initialView(initialTab?: string): View {
+  const fromUrl = typeof window === "undefined" ? "app" : viewFromUrl(window.location.href);
   if (initialTab === undefined) return fromUrl;
-  const given = resolveCreateLocation(initialTab, initialEnv ?? null);
-  return given.view === "studio" && !given.env && fromUrl.view === "studio" ? { ...given, env: fromUrl.env } : given;
+  return resolveCreateView(initialTab);
 }
 
 function peekSiteHandoff(): boolean {
@@ -76,68 +60,41 @@ function peekSiteHandoff(): boolean {
   }
 }
 
-function setCreateQuery(v: View, env: StudioEnv) {
+function setCreateQuery(v: View) {
   try {
     const url = new URL(window.location.href);
-    window.history.replaceState(null, "", `${url.pathname}${createSearch(url.search, v, env)}${url.hash}`);
+    window.history.replaceState(null, "", `${url.pathname}${createSearch(url.search, v)}${url.hash}`);
   } catch {
     /* ignore */
   }
 }
 
-export function CreateStudio({ initialTab, initialEnv, signedIn, plan = "free" }: Props) {
-  // Keplar Studio needs the desktop app; the server render and the first client render see no bridge.
-  const desktop = useSyncExternalStore(noSubscribe, () => Boolean(studioBridge()), () => false);
-  const [start] = useState(() => initialLocation(initialTab, initialEnv));
-  const [view, setView] = useState<View>(start.view);
-  const [env, setEnv] = useState<StudioEnv>(() => pickEnv(start.env, readRememberedEnv()));
-  const [imagesSeen, setImagesSeen] = useState(start.view === "images");
-  const [videoSeen, setVideoSeen] = useState(start.view === "video");
-  const [mobileSeen, setMobileSeen] = useState(start.view === "mobile");
-  // Which environments have been opened (each stays mounted after that, so switching keeps its work).
-  const [envSeen, setEnvSeen] = useState<Record<StudioEnv, boolean>>(() => ({ roblox: start.view === "studio" && env === "roblox", blender: start.view === "studio" && env === "blender" }));
-  const [elsewhereDismissed, setElsewhereDismissed] = useState(false);
+export function CreateStudio({ initialTab, signedIn }: Props) {
+  const [start] = useState(() => initialView(initialTab));
+  const [view, setView] = useState<View>(start);
+  const [imagesSeen, setImagesSeen] = useState(start === "images");
+  const [videoSeen, setVideoSeen] = useState(start === "video");
+  const [mobileSeen, setMobileSeen] = useState(start === "mobile");
   const [siteHandoff, setSiteHandoff] = useState(() => peekSiteHandoff());
   const [auth, setAuth] = useState<Auth>(signedIn === true ? "in" : signedIn === false ? "out" : "loading");
   const shown: Auth = signedIn === true ? "in" : signedIn === false ? "out" : auth;
 
   const pick = (v: View) => {
     setView(v);
-    setCreateQuery(v, env);
+    setCreateQuery(v);
     if (v === "images") setImagesSeen(true);
     if (v === "video") setVideoSeen(true);
     if (v === "mobile") setMobileSeen(true);
-    if (v === "studio") setEnvSeen((s) => (s[env] ? s : { ...s, [env]: true }));
   };
-  const pickEnvironment = (next: StudioEnv) => {
-    setEnv(next);
-    rememberEnv(next);
-    setEnvSeen((s) => (s[next] ? s : { ...s, [next]: true }));
-    setCreateQuery("studio", next);
-  };
-  // Outside the desktop app a Keplar Studio link lands on App (with a note saying where it runs).
-  const current: View = view === "studio" && !desktop ? "app" : view;
-  const showElsewhere = studioRequested(view, desktop) && !elsewhereDismissed;
 
-  // A deep link that named an environment is remembered like a pick, so the next plain Keplar Studio visit opens it.
-  useEffect(() => {
-    if (start.view === "studio" && start.env) rememberEnv(start.env);
-  }, [start]);
-  // Inside the desktop app a Studio link in an older form (?tab=roblox, ?tab=blender, ?tab=studio) is rewritten to the
-  // canonical ?tab=studio&env=…, once, when the bridge is first seen. Later switches write the URL themselves.
-  const canonical = useRef(false);
-  useEffect(() => {
-    if (!desktop || canonical.current || start.view !== "studio") return;
-    canonical.current = true;
-    setCreateQuery("studio", env);
-  }, [desktop, start, env]);
-
-  // Strip ?tab=site from the URL after mount (redirects cover full navigations; this covers client deep links).
+  // Strip retired tabs from the URL after mount (redirects cover full navigations; this covers client deep links).
   useEffect(() => {
     try {
       const url = new URL(window.location.href);
-      if (url.searchParams.get("tab") === "site") {
+      const tab = url.searchParams.get("tab");
+      if (tab && RETIRED_TABS.has(tab)) {
         url.searchParams.delete("tab");
+        url.searchParams.delete("env");
         window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
       }
     } catch {
@@ -163,23 +120,22 @@ export function CreateStudio({ initialTab, initialEnv, signedIn, plan = "free" }
     };
   }, [signedIn]);
 
-  // The kind switch is the kit's Tabs (UI v2): an underline that slides between App, Images, Video, Mobile and (desktop app)
-  // Keplar Studio. Pointing at or focusing a tab that is not open fetches its chunk early.
+  // The kind switch is the kit's Tabs (UI v2): an underline that slides between App, Images, Video and Mobile.
+  // Pointing at or focusing a tab that is not open fetches its chunk early.
   const kinds: TabItem<View>[] = [
     { value: "app", label: "App" },
     { value: "images", label: "Images" },
     { value: "video", label: <>Video</> },
     { value: "mobile", label: <>Mobile</> },
-    ...(desktop ? [{ value: "studio" as const, label: "Keplar Studio" }] : []),
   ];
   const warmFrom = (e: PointerEvent<HTMLElement> | FocusEvent<HTMLElement>) => {
     const t = (e.target as HTMLElement).closest<HTMLElement>('[role="tab"]');
     const v = t?.id.slice(`${KIND_TABS}-tab-`.length);
-    if (!v || v === "app" || v === current) return;
-    void WARM[v === "studio" ? env : v]?.().catch(() => undefined);
+    if (!v || v === "app" || v === view) return;
+    void WARM[v]?.().catch(() => undefined);
   };
   /** The panel each kind tab controls (the views stay mounted; only the open one shows). */
-  const panel = (v: View) => ({ id: tabPanelId(KIND_TABS, v), role: "tabpanel", "aria-labelledby": tabId(KIND_TABS, v), hidden: current !== v });
+  const panel = (v: View) => ({ id: tabPanelId(KIND_TABS, v), role: "tabpanel", "aria-labelledby": tabId(KIND_TABS, v), hidden: view !== v });
   const loading = <div className={st.paneMsg}><ActivityIndicator label="Loading" showLabel /></div>;
 
   if (shown === "loading") {
@@ -225,9 +181,8 @@ export function CreateStudio({ initialTab, initialEnv, signedIn, plan = "free" }
     <div className={b.root}>
       <h1 className="visually-hidden">Create</h1>
       <div className={st.kindBar} onPointerOver={warmFrom} onFocus={warmFrom}>
-        <Tabs id={KIND_TABS} label="Create" value={current} onValueChange={pick} items={kinds} className={st.kindTabs} />
+        <Tabs id={KIND_TABS} label="Create" value={view} onValueChange={pick} items={kinds} className={st.kindTabs} />
       </div>
-      {showElsewhere && current === "app" ? <KeplarStudioElsewhere onDismiss={() => setElsewhereDismissed(true)} /> : null}
       <div {...panel("app")} className={`${b.root} ${st.kindPanel}`}>
         <AppBuilder />
       </div>
@@ -244,20 +199,6 @@ export function CreateStudio({ initialTab, initialEnv, signedIn, plan = "free" }
       {mobileSeen ? (
         <div {...panel("mobile")} className={st.kindPanel} data-scroll="">
           <Suspense fallback={loading}><MobileStudio /></Suspense>
-        </div>
-      ) : null}
-      {desktop && (envSeen.roblox || envSeen.blender) ? (
-        <div {...panel("studio")} className={`${b.root} ${st.kindPanel}`}>
-        <KeplarStudioPane
-          env={env}
-          onEnvChange={pickEnvironment}
-          onWarm={(e) => void WARM[e]?.().catch(() => undefined)}
-          hidden={current !== "studio"}
-          views={{
-            roblox: envSeen.roblox ? <Suspense fallback={loading}><StudioWorkspace env="roblox" plan={plan} signedIn={shown === "in"} onEnvChange={pickEnvironment} /></Suspense> : null,
-            blender: envSeen.blender ? <Suspense fallback={loading}><StudioWorkspace env="blender" plan={plan} signedIn={shown === "in"} onEnvChange={pickEnvironment} /></Suspense> : null,
-          }}
-        />
         </div>
       ) : null}
     </div>

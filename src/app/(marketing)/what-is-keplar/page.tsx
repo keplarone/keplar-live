@@ -13,7 +13,7 @@ import kb from "@/components/kb/kb.module.css";
 
 const PATH = "/what-is-keplar";
 const TITLE = `What is ${brand.companyName}? Everything Keplar does`;
-const DESCRIPTION = "Keplar is an AI workspace: a multi-model answer engine plus Study mode, Deep Research, slides, image and video generation, website and app building, Roblox Studio and Blender co-builders, an API, and Keplar Business for companies.";
+const DESCRIPTION = "Keplar is an AI workspace: a multi-model answer engine plus Study mode, Deep Research, slides, image and video generation, website and app building, an API, and Keplar Business for companies.";
 
 export const metadata = pageMeta(PATH, TITLE, DESCRIPTION);
 
@@ -25,7 +25,7 @@ const paid = tiers.filter((t) => t.price && t.price > 0).map((t) => `${t.name} $
 const QA = [
   { q: `What is ${brand.companyName}?`, a: WHAT_IS_KEPLAR },
   { q: "Is Keplar just a tool that asks several AI models?", a: NOT_JUST_MULTI_MODEL },
-  { q: "What can Keplar make?", a: "Websites and web apps it builds, tests and publishes (with custom domains), mobile app projects (beta), images, short videos (beta, Pro), slide decks you can export to PowerPoint or PDF, study sets with flashcards and quizzes, research reports, Roblox games built inside Roblox Studio, and 3D models with real textures in Blender, both from the desktop app (beta)." },
+  { q: "What can Keplar make?", a: "Websites and web apps it builds, tests and publishes (with custom domains), mobile app projects (beta), images, short videos (beta, Pro), slide decks you can export to PowerPoint or PDF, study sets with flashcards and quizzes, and research reports." },
   { q: "Is there a free plan?", a: `Yes. Free is $0 and runs on free open models with up to 50 questions a day (fair use), image and video questions, Study mode, saved chats and optional memory. Paid plans: ${paid} a month, adding premium models, more usage, Deep Research, slides, image and video generation, and Create.` },
   { q: "What is Keplar Business?", a: `${BUSINESS_FACTS.intro} Plans: ${BUSINESS_FACTS.plans.map((p) => `${p.name} (${p.price})`).join(", ")}.` },
   { q: "Is Keplar AGI or superintelligence?", a: "No. Keplar is a practical multi-model workspace. Agreement between models does not prove an answer is correct, which is why Keplar shows the disagreements and the reasoning, and why health, legal and money answers are general information, not professional advice." },
@@ -49,7 +49,7 @@ export default function WhatIsKeplarPage() {
       <PageHero
         label="What is Keplar?"
         title="Much more than one answer from many models."
-        lede="An answer engine that asks several AI models and shows where they disagree, inside a workspace that also studies, researches, presents, creates and builds games."
+        lede="An answer engine that asks several AI models and shows where they disagree, inside a workspace that also studies, researches, presents, creates and publishes."
         ctas={[{ href: "/app", label: `Try ${brand.name} free` }, { href: "/features", label: "Every feature and its status", variant: "secondary" }]}
       />
       <section className={s.section} style={{ paddingTop: "var(--s-12)" }}>

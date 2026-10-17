@@ -19,7 +19,6 @@ export const VIEW_PATH: Record<View, string> = {
   slides: "/app/slides",
   study: "/app/study",
   history: "/app/history",
-  studio: "/app/studio",
   apps: "/app/apps",
 };
 

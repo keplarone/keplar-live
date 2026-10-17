@@ -22,27 +22,31 @@ const nextConfig: NextConfig = {
     "/api/health/qa-browser": ["./node_modules/@sparticuz/chromium/bin/**", "./node_modules/playwright-core/**"],
     // The app builder tests generated apps in a real browser, serving the runtime scripts from public/fx in-process.
     "/api/apps/[id]/build": ["./node_modules/@sparticuz/chromium/bin/**", "./node_modules/playwright-core/**", "./public/fx/**"],
-    // Roblox Cloud checks scripts with the official Luau analyzer (WebAssembly), loaded from vendor/luau at run time.
-    // Its roblox_docs tool searches the Roblox Creator Docs index in vendor/roblox-docs (the worker runs the model turns).
-    "/api/roblox-cloud/worker": ["./vendor/luau/**", "./vendor/roblox-docs/**"],
-    "/api/roblox-cloud/jobs/[id]/start": ["./vendor/luau/**"],
-    "/api/health": ["./vendor/luau/**"],
-    // Studio mode's roblox_docs tool searches the Roblox Creator Docs index, read from vendor/roblox-docs at run time.
-    "/api/studio/docs": ["./vendor/roblox-docs/**"],
-    // Blender Cloud copies its machine scripts (agent, render setup, video step) onto each new render machine.
-    "/api/blender-cloud/jobs": ["./vendor/blender-cloud/**"],
   },
   async redirects() {
     return [
       // Create lives inside the app (same pattern as /app/slides and /app/study). Keep the short URL working.
       // Site Create UI removed: deep links land on the App tab.
-      // ?tab=site must be matched before the bare /create permanent redirect (query is otherwise preserved into a second hop).
+      // ?tab=site and the retired Studio tabs must be matched before the bare /create permanent redirect (query is otherwise preserved).
       { source: "/create", has: [{ type: "query", key: "tab", value: "site" }], destination: "/app/create?tab=app", permanent: false },
+      ...["studio", "roblox", "blender"].map((tab) => ({ source: "/create", has: [{ type: "query", key: "tab", value: tab }], destination: "/app/create?tab=app", permanent: false })),
       { source: "/create", destination: "/app/create", permanent: true },
       { source: "/create/site", destination: "/app/create", permanent: true },
       { source: "/app/create/site", destination: "/app/create", permanent: true },
       // Explicit ?tab=app so the query is not preserved (same-path redirects keep unmatched query otherwise → loop).
       { source: "/app/create", has: [{ type: "query", key: "tab", value: "site" }], destination: "/app/create?tab=app", permanent: false },
+      // Keplar Studio (Roblox Studio and Blender, including Space Studio) was removed. Old links land on a page that still exists.
+      ...["studio", "roblox", "blender"].map((tab) => ({ source: "/app/create", has: [{ type: "query", key: "tab", value: tab }], destination: "/app/create?tab=app", permanent: false })),
+      { source: "/roblox-studio-ai", destination: "/", permanent: true },
+      { source: "/blender-ai", destination: "/", permanent: true },
+      { source: "/docs/studio", destination: "/docs", permanent: true },
+      { source: "/docs/studio/:path*", destination: "/docs", permanent: true },
+      { source: "/studio", destination: "/docs", permanent: true },
+      { source: "/studio/:path*", destination: "/docs", permanent: true },
+      { source: "/space-studio", destination: "/", permanent: true },
+      { source: "/space-studio/:path*", destination: "/", permanent: true },
+      { source: "/app/studio", destination: "/app/create", permanent: true },
+      { source: "/app/studio/:path*", destination: "/app/create", permanent: true },
       // Each /app tab has its own subfolder; bare /app is Ask.
       { source: "/app", destination: "/app/ask", permanent: true },
       { source: "/app/", destination: "/app/ask", permanent: true },

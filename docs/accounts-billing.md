@@ -144,7 +144,7 @@ Flows:
 | Free | $0 | No credits; ~50 questions/day (fair use) | Free `:free` open models only, plus burst/IP limits and the daily Free spend cap |
 | Plus | $45 | 6,000 | All |
 | Pro | $99 | 13,500 | All |
-| Admin (`team@keplar.one`, `KEPLAR_ADMIN_EMAILS`) | n/a | Unlimited | All, with a daily safety cap of `KEPLAR_ADMIN_DAILY_USD_CAP` (default $25). Roblox Studio is not stopped by that cap; it still uses credits and auto top-up. |
+| Admin (`team@keplar.one`, `KEPLAR_ADMIN_EMAILS`) | n/a | Unlimited | All, with a daily safety cap of `KEPLAR_ADMIN_DAILY_USD_CAP` (default $25). |
 
 Small talk ("hi", "thanks", "who are you") is answered by one free model on every
 plan and never uses credits (`src/lib/orchestration/smalltalk.ts`).

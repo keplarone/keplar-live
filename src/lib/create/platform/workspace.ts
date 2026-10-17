@@ -6,8 +6,7 @@
  * 2. No session → an anonymous Free context, only for routes that opt in
  *    (`allowAnonymous`): Keplar answers on free open models. It owns no data.
  * 3. Otherwise 401.
- * `ADMIN_EMAILS` (default team@keplar.one) get unlimited access. Credits and
- * auto top-up still apply to Roblox Studio on other accounts.
+ * `ADMIN_EMAILS` (default team@keplar.one) get unlimited access.
  */
 import { securityEvent } from "@/lib/security/events";
 import { getSession } from "@/lib/accounts/auth";
