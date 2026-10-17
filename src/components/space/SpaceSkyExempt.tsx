@@ -1,26 +1,25 @@
 "use client";
 
-import { useLayoutEffect, useState, type ReactNode } from "react";
+import { useLayoutEffect, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { isSpaceStudioSurface } from "./surface";
+import { hideSharedSky, isSpaceStudioSurface } from "./surface";
 
 /**
- * The root layout mounts one cloud sky for the rest of the site. Space Studio opts out: the host
- * (space.keplar.one) and any /space-studio route leave this empty, so the sky never starts and never asks for weather.
- * The path is known during server render. The host is applied in useLayoutEffect, before the sky's effect can fetch.
+ * The root layout mounts one cloud sky for the rest of the site. Space Studio leaves it unmounted, so the sky
+ * never starts and never asks for weather.
+ *
+ * The rewritten space host disagrees with the address bar on the first render ("/space-studio" on the server,
+ * "/" in the browser). hideSharedSky treats those as the same page: the path, or the flag the head script sets
+ * for space.keplar.one. The attribute below is applied after hydration and only feeds CSS.
  */
 export function SpaceSkyExempt({ children }: { children: ReactNode }) {
   const path = usePathname() ?? "";
-  const [host, setHost] = useState("");
+  const exempt = hideSharedSky(path);
   useLayoutEffect(() => {
-    const next = window.location.hostname;
-    // Hostname is only on the window. Apply it before paint so the sky unmounts before it can ask for weather.
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- host is external (location); the route is already known from usePathname
-    setHost(next);
     const root = document.documentElement;
-    if (isSpaceStudioSurface(next, path)) root.setAttribute("data-space-studio", "");
+    if (exempt || isSpaceStudioSurface(window.location.hostname, path)) root.setAttribute("data-space-studio", "");
     else root.removeAttribute("data-space-studio");
-  }, [path]);
-  if (isSpaceStudioSurface(host, path)) return null;
+  }, [exempt, path]);
+  if (exempt) return null;
   return children;
 }

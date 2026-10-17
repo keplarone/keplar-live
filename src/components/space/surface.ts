@@ -11,7 +11,20 @@ export function isSpaceStudioSurface(host: string, pathname: string): boolean {
 }
 
 /**
- * Runs from the root layout before first paint. Marks the document when the visitor is already on Space Studio
- * so the shared sky node stays hidden even if this document was served for "/".
+ * Set on window before hydration, and only for the space host. space.keplar.one rewrites "/" to "/space-studio",
+ * so the server render sees "/space-studio" while the browser's first render sees "/". A DOM write here would
+ * itself mismatch hydration. The flag lets both renders skip the sky; route changes on keplar.one use the path.
  */
-export const SPACE_SKY_SCRIPT = `(function(){var h=location.hostname,p=location.pathname;if(h==="${SPACE_HOST}"||p==="/space-studio"||p.indexOf("/space-studio/")===0){document.documentElement.setAttribute("data-space-studio","");var s=document.createElement("style");s.textContent="html[data-space-studio] [data-site-sky]{display:none!important}";document.head.appendChild(s);}})();`;
+export const SPACE_HOST_FLAG = "__KEPLAR_SPACE";
+
+export const SPACE_SKY_SCRIPT = `(function(){if(location.hostname==="${SPACE_HOST}")window.${SPACE_HOST_FLAG}=1})();`;
+
+export function spaceHostFlag(): boolean {
+  if (typeof window === "undefined") return false;
+  return (window as Window & { [SPACE_HOST_FLAG]?: number })[SPACE_HOST_FLAG] === 1;
+}
+
+/** True when this render should leave the shared cloud sky unmounted. */
+export function hideSharedSky(pathname: string, hostFlag = spaceHostFlag()): boolean {
+  return hostFlag || isSpaceStudioSurface("", pathname);
+}
