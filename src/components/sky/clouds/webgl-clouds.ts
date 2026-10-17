@@ -101,36 +101,28 @@ float fbm(vec2 p) {
   }
   return v;
 }
-/* Loose window only. The silhouette is the warped noise, not the ellipse. */
+/* A puff with a short, lumpy rim. The noise moves the radius, it does not dissolve the body. */
 float bank(vec2 p, vec2 c, vec2 r, float n) {
   vec2 q = (p - c) / r;
-  float edge = 0.55 + (n - 0.5) * 1.45;
-  return smoothstep(edge + 0.5, edge - 0.55, dot(q, q));
+  float rad = 0.84 + (n - 0.5) * 0.32;
+  return smoothstep(0.0, 0.13, rad - length(q));
 }
 float density(vec3 p, float lite) {
-  float drift = uTime * 0.012 * (0.55 + p.z * 0.28);
-  vec2 xz = p.xz + vec2(drift, drift * 0.12);
-  vec2 warp = vec2(fbm(xz * 0.85 + vec2(0.0, 2.0)), fbm(xz * 0.85 + vec2(4.2, 1.1)));
-  vec2 q = xz + warp * (lite > 0.5 ? 0.35 : 0.95);
-  float base = fbm(q * 0.72);
-  float detail = lite > 0.5 ? 0.0 : fbm(q * 2.15 + vec2(3.0, 7.0));
-  float n = base * 0.68 + detail * 0.32;
-  float edgeN = fbm(xz * 0.62 + vec2(8.0, 1.4));
-  float yh = clamp((p.y - 0.12) / 1.15, 0.0, 1.0);
-  float profile = smoothstep(0.0, 0.18, yh) * smoothstep(1.0, 0.38, yh);
+  float drift = uTime * 0.012 * (0.65 + p.z * 0.06);
+  vec2 xz = p.xz + vec2(drift, drift * 0.08);
+  float edgeN = fbm(xz * 1.25 + vec2(1.7, 4.2));
+  float detail = lite > 0.5 ? 0.55 : fbm(xz * 2.35 + vec2(8.0, 2.0));
   float banks = 0.0;
-  banks = max(banks, bank(xz, vec2(-2.15, 2.55), vec2(1.85, 1.05), edgeN));
-  banks = max(banks, bank(xz, vec2(2.25, 2.35), vec2(1.9, 1.0), edgeN + 0.17));
-  banks = max(banks, bank(xz, vec2(-2.7, 4.15), vec2(1.7, 0.85), edgeN + 0.31));
-  banks = max(banks, bank(xz, vec2(2.85, 4.05), vec2(1.65, 0.8), edgeN + 0.08));
-  float extra = smoothstep(0.1, 0.48, uCover);
-  banks = max(banks, bank(xz, vec2(-1.2, 3.3), vec2(1.35, 0.7), edgeN) * extra);
-  banks = max(banks, bank(xz, vec2(1.35, 3.15), vec2(1.3, 0.65), edgeN + 0.2) * extra);
-  float mid = smoothstep(1.45, 0.28, abs(p.x)) * smoothstep(0.7, 1.7, p.z) * smoothstep(3.5, 2.3, p.z);
-  banks *= 1.0 - mid * 0.96;
-  banks *= smoothstep(0.15, 1.05, p.z);
-  float thresh = mix(0.5, 0.38, uCover);
-  return smoothstep(thresh, thresh + 0.3, n) * profile * banks;
+  banks = max(banks, bank(xz, vec2(-2.7, 2.35), vec2(1.4, 1.05), edgeN));
+  banks = max(banks, bank(xz, vec2(2.8, 3.45), vec2(1.5, 1.15), edgeN + 0.22));
+  banks = max(banks, bank(xz, vec2(-2.9, 4.3), vec2(1.2, 0.9), edgeN + 0.38));
+  float extra = smoothstep(0.18, 0.55, uCover);
+  banks = max(banks, bank(xz, vec2(2.95, 1.7), vec2(1.05, 0.72), edgeN + 0.12) * extra);
+  /* Centre column stays sky, and the hole does not drift with the clouds. */
+  banks *= smoothstep(0.95, 1.7, abs(p.x));
+  float yh = clamp((p.y - 0.1) / 1.05, 0.0, 1.0);
+  float profile = smoothstep(0.0, 0.07, yh) * smoothstep(1.0, 0.58, yh);
+  return clamp(banks * profile * mix(0.86, 1.0, detail) * 1.4, 0.0, 1.0);
 }
 void main() {
   float h = smoothstep(0.0, 0.85, vUv.y);
@@ -141,7 +133,6 @@ void main() {
   vec3 ro = vec3((vUv.x - 0.5) * 6.2, 0.12, (0.92 - vUv.y) * 5.4);
   ro.z += uAltitude * 1.6;
   vec3 rd = vec3(0.0, 1.0, 0.0);
-  float steps = 10.0;
   float dt = 0.11;
   float jitter = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
   float t = jitter * dt;
@@ -159,21 +150,20 @@ void main() {
         lp += sun * 0.22;
         lightAcc += density(lp, 1.0);
       }
-      float beer = exp(-lightAcc * 1.55);
-      float heightLit = smoothstep(0.15, 0.9, clamp((p.y - 0.12) / 1.15, 0.0, 1.0));
-      float shade = clamp(beer * 0.72 + heightLit * 0.38, 0.0, 1.0);
-      float absorb = den * mix(1.35, 0.85, uDark) * dt * 8.0;
-      float contrib = (1.0 - exp(-absorb)) * mix(0.55, 1.0, shade);
+      float beer = exp(-lightAcc * 0.85);
+      float heightLit = smoothstep(0.05, 0.72, clamp((p.y - 0.1) / 1.05, 0.0, 1.0));
+      float shade = clamp(beer * 0.62 + heightLit * 0.55, 0.08, 1.0);
+      float absorb = den * mix(2.8, 1.85, uDark);
+      float contrib = 1.0 - exp(-absorb);
       col += transmittance * contrib * mix(uShadow, uLit, shade);
       transmittance *= exp(-absorb);
     }
     t += dt;
   }
   col += sky * transmittance;
-  float hx = abs(vUv.x - 0.5);
-  float hero = smoothstep(0.36, 0.12, hx) * smoothstep(0.4, 0.58, vUv.y) * smoothstep(0.98, 0.74, vUv.y);
-  float nav = smoothstep(0.9, 0.97, vUv.y);
-  col = mix(col, sky, hero * 0.92 * (1.0 - nav));
+  float column = smoothstep(0.32, 0.16, abs(vUv.x - 0.5));
+  float heroRows = smoothstep(0.2, 0.42, vUv.y);
+  col = mix(col, sky, column * heroRows);
 
   /* 20% from the right, 18% from the top. Length is in pixels, so the disc stays round. */
   vec2 center = vec2(0.80, 0.82);
