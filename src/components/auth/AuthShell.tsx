@@ -33,7 +33,7 @@ export function AuthShell({ variant, nextQs = "", title, lead, notice, children,
   return (
     <div className={s.shell} data-variant={variant}>
       <div className={s.formSide}>
-        <div className={s.card}>
+        <div className={s.card} data-glass-live="">
           {variant !== "recover" ? (
             <nav className={s.toggle} aria-label={copy?.toggle ?? "Sign up or sign in"}>
               <Link href={`${prefix}/signup${nextQs}`} aria-current={variant === "signup" ? "page" : undefined} className={s.toggleItem}>

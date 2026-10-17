@@ -1,28 +1,25 @@
 /**
- * Theme: Light (default) / Dark / Auto (follows the OS).
+ * Theme: Dark (default) / Light / Auto (follows the OS only when chosen).
  *
- * The preference lives in localStorage and a cookie (`keplar-theme`). An inline
+ * The preference lives in localStorage and a cookie (`keplar-theme-v3`). An inline
  * script in <head> (THEME_SCRIPT, rendered by the root layout) resolves it and
  * sets <html data-theme="dark|light" class="dark|light"> before first paint, so
  * there is no flash. Pages stay statically rendered: the server always emits
- * the default (light) and the script corrects it before paint; the cookie is
- * also readable server-side for any dynamic route that wants it.
+ * dark and the script corrects it before paint when a visitor has chosen otherwise.
+ * The previous key (`keplar-theme-v2`) is ignored, so everyone starts dark once.
  */
 export type ThemePref = "dark" | "light" | "auto";
 export type Theme = "dark" | "light";
 
 /**
- * Where the visitor's choice is kept (localStorage, plus a cookie of the same name). "-v2" since the Oct 2026 light redesign:
- * choices saved before it were ignored once. A choice saved since (Light, Dark or Auto) still sticks: the Space UI only changes the
- * default for people who never chose.
+ * Where the visitor's choice is kept (localStorage, plus a cookie of the same name). "-v3" ignores choices saved under
+ * keplar-theme-v2, so existing visitors start dark once. A choice saved after that (Dark, Light or Auto) sticks.
  */
-export const THEME_KEY = "keplar-theme-v2";
+export const THEME_KEY = "keplar-theme-v3";
 /**
- * Light (the Space system under a bright day sky with drifting clouds: docs/design/space-ui.md) is the default for everyone with no
- * stored choice. Dark (the same system at dusk: a deep blue sky with stars) and Auto (follows the OS) stay available in the theme
- * control and Settings.
+ * Dark is the default on every surface, including when the OS prefers light. Light and Auto stay in the theme control.
  */
-export const DEFAULT_THEME_PREF: ThemePref = "light";
+export const DEFAULT_THEME_PREF: ThemePref = "dark";
 export const THEME_COLORS: Record<Theme, string> = { dark: "#000000", light: "#f7f8fa" }; // dark = the Space void; light = the cool off-white canvas (src/styles/light.css)
 
 export const isThemePref = (v: unknown): v is ThemePref => v === "dark" || v === "light" || v === "auto";
@@ -37,10 +34,10 @@ const inlineJs = (v: string) => JSON.stringify(v).replace(/[<>&\u2028\u2029]/g, 
 const keyRe = THEME_KEY.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
 
 /**
- * Runs before paint. Keep it tiny, dependency-free and exception-safe. Docs (/docs/... and docs.keplar.one) always paint light with
- * <html data-docs="1"> (src/styles/docs-theme.css); the saved preference is untouched and applies again outside the docs.
+ * Runs before paint. Keep it tiny, dependency-free and exception-safe. Docs (/docs/... and docs.keplar.one) get
+ * <html data-docs="1"> (src/styles/docs-theme.css) and the same theme as the rest of the site.
  */
-export const THEME_SCRIPT = `(function(){try{var k=${inlineJs(THEME_KEY)},p=null;try{p=localStorage.getItem(k)}catch(e){}if(!p){var m=document.cookie.match(/(?:^|; )${keyRe}=(dark|light|auto)/);p=m&&m[1]}if(p!=="dark"&&p!=="light"&&p!=="auto")p=${inlineJs(DEFAULT_THEME_PREF)};var d=p==="dark"||(p==="auto"&&window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);var r=document.documentElement,l=document.location,k2=l&&(/^docs\\./.test(l.hostname)||/^\\/docs(\\/|$)/.test(l.pathname));if(k2){d=false;r.setAttribute("data-docs","1")}var t=d?"dark":"light";r.setAttribute("data-theme",t);r.setAttribute("data-theme-pref",p);r.classList.remove(d?"light":"dark");r.classList.add(t);r.style.colorScheme=t}catch(e){}})();`;
+export const THEME_SCRIPT = `(function(){try{var k=${inlineJs(THEME_KEY)},p=null;try{p=localStorage.getItem(k)}catch(e){}if(!p){var m=document.cookie.match(/(?:^|; )${keyRe}=(dark|light|auto)/);p=m&&m[1]}if(p!=="dark"&&p!=="light"&&p!=="auto")p=${inlineJs(DEFAULT_THEME_PREF)};var d=p==="dark"||(p==="auto"&&window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);var r=document.documentElement,l=document.location,k2=l&&(/^docs\\./.test(l.hostname)||/^\\/docs(\\/|$)/.test(l.pathname));if(k2)r.setAttribute("data-docs","1");var t=d?"dark":"light";r.setAttribute("data-theme",t);r.setAttribute("data-theme-pref",p);r.classList.remove(d?"light":"dark");r.classList.add(t);r.style.colorScheme=t}catch(e){}})();`;
 
 /* ── client helpers ── */
 
@@ -76,7 +73,7 @@ export function applyTheme(pref: ThemePref) {
   const osDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
   const r = document.documentElement;
   // The docs are always light (white-and-blue); the preference is still recorded and applies again when the visitor leaves them.
-  const theme = r.getAttribute("data-docs") === "1" ? "light" : resolveTheme(pref, osDark);
+  const theme = resolveTheme(pref, osDark);
   r.setAttribute("data-theme", theme);
   r.setAttribute("data-theme-pref", pref);
   r.classList.remove(theme === "dark" ? "light" : "dark");

@@ -12,7 +12,6 @@ import { writeUseFor } from "@/components/app-ui/use-for";
 import type { SceneId } from "@/field/scenes";
 import { AuthLost, finishOnboarding, saveStep, type Payload } from "./api";
 import { boomFrom, fieldPersonalize, fieldScene, reducedMotion } from "./field-bus";
-import { WeatherSky } from "@/components/ui/space/WeatherSky";
 import s from "./onboarding.module.css";
 
 const SCENES: SceneId[] = ["onb-welcome", "onb-purpose", "onb-prefs", "onb-connect", "onb-ready"];
@@ -178,7 +177,6 @@ export function Onboarding({ initial, next, accountName }: { initial: Payload; n
 
   return (
     <div className={s.root} data-step={step} data-pers={pers || undefined}>
-      <WeatherSky className={s.sky} />
       <header className={s.top}>
         <span className={s.brand}><KeplarSymbol size={22} /> <span>Keplar One</span></span>
         <ol className={s.progress} aria-label="Setup progress">
@@ -191,7 +189,7 @@ export function Onboarding({ initial, next, accountName }: { initial: Payload; n
         <button type="button" className={s.skipAll} onClick={() => void finish("skip")} disabled={leaving}>Skip setup</button>
       </header>
 
-      <section className={s.card} aria-labelledby="ob-h" aria-busy={busy || undefined}>
+      <section className={s.card} data-glass-live="" aria-labelledby="ob-h" aria-busy={busy || undefined}>
         <div key={step} className={s.stepBody}>
           <p className={s.eyebrow}>Step {step + 1} of {STEPS.length}</p>
           <h1 id="ob-h" ref={heading} tabIndex={-1} className={s.title}>

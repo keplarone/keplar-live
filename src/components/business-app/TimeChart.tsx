@@ -71,7 +71,6 @@ export function TimeChart({ points, tone, label, describe, seriesKey, delay = 0 
 
   /* ---------- imperative drawing ---------- */
   const lineRef = useRef<SVGPathElement>(null);
-  const glowRef = useRef<SVGPathElement>(null);
   const areaRef = useRef<SVGPathElement>(null);
   const dotsRef = useRef<SVGPathElement>(null);
   const lastRef = useRef<SVGGElement>(null);
@@ -84,7 +83,6 @@ export function TimeChart({ points, tone, label, describe, seriesKey, delay = 0 
   const paint = useCallback((px: XY[], base: number) => {
     const { line, area, dots } = buildPaths(px, base);
     lineRef.current?.setAttribute("d", line);
-    glowRef.current?.setAttribute("d", line);
     areaRef.current?.setAttribute("d", area);
     dotsRef.current?.setAttribute("d", dots);
     const last = px[px.length - 1];
@@ -104,12 +102,9 @@ export function TimeChart({ points, tone, label, describe, seriesKey, delay = 0 
       if (!line || typeof line.animate !== "function") return;
       const L = Math.ceil(line.getTotalLength()) + 2;
       const opts: KeyframeAnimationOptions = { duration: 1500, delay, easing: "cubic-bezier(0.65, 0, 0.25, 1)", fill: "backwards" };
-      for (const p of [line, glowRef.current]) {
-        if (!p) continue;
-        p.style.strokeDasharray = `${L} ${L}`;
-        const a = p.animate([{ strokeDashoffset: L, filter: "url(#sp-mb-x-soft)" }, { strokeDashoffset: L * 0.08, filter: "url(#sp-mb-x-soft)", offset: 0.85 }, { strokeDashoffset: 0, filter: "none" }], opts);
-        a.onfinish = () => { p.style.strokeDasharray = ""; };
-      }
+      line.style.strokeDasharray = `${L} ${L}`;
+      const a = line.animate([{ strokeDashoffset: L }, { strokeDashoffset: L * 0.08, offset: 0.85 }, { strokeDashoffset: 0 }], opts);
+      a.onfinish = () => { line.style.strokeDasharray = ""; };
       clipRef.current?.animate([{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], opts);
       lastRef.current?.firstElementChild?.animate([{ opacity: 0, transform: "scale(0)" }, { opacity: 1, transform: "scale(1)" }], { duration: 520, delay: delay + 1350, easing: "cubic-bezier(0.34, 1.56, 0.64, 1)", fill: "backwards" });
     };
@@ -197,7 +192,6 @@ export function TimeChart({ points, tone, label, describe, seriesKey, delay = 0 
               <stop offset="0%" className={d.stopA} />
               <stop offset="100%" className={d.stopB} />
             </linearGradient>
-            <filter id={`${uid}glow`} x="-10%" y="-40%" width="120%" height="180%"><feGaussianBlur stdDeviation="5" /></filter>
             <clipPath id={`${uid}clip`}>
               <rect ref={clipRef} className={d.cliprect} x={padL - 6} y={0} width={geo.plotW + 12} height={size.h} />
             </clipPath>
@@ -219,13 +213,11 @@ export function TimeChart({ points, tone, label, describe, seriesKey, delay = 0 
           </g>
           <g ref={plotRef} clipPath={`url(#${uid}clip)`}>
             <path ref={areaRef} className={d.area} fill={`url(#${uid}fill)`} />
-            <path ref={glowRef} className={d.glow} filter={`url(#${uid}glow)`} />
             <path ref={lineRef} className={d.line} />
             <path ref={dotsRef} className={d.dots} />
           </g>
           <g ref={lastRef} className={d.last}>
             <g>
-              <circle className={d.lastRing} r={5} />
               <circle className={d.lastDot} r={4.5} />
             </g>
           </g>

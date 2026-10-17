@@ -1,5 +1,5 @@
 /**
- * The visitor's current local weather, for the sky behind the marketing pages (docs/design/space-ui.md, "The weather sky").
+ * The visitor's current local weather, for the cloud sky behind every page.
  *
  * Server side only, no permission prompt and no client geolocation: Vercel's edge adds the approximate location of the
  * connection as request headers (`x-vercel-ip-latitude` / `-longitude`). We round it to one decimal (a cell about 11 km
@@ -11,7 +11,7 @@
 import { DEFAULT_SKY, isSkyVariant, windFactor, type SkyVariant } from "@/lib/sky/variants";
 
 export const SKY_TTL_SECONDS = 900;
-export const WEATHER_TIMEOUT_MS = 3000;
+export const WEATHER_TIMEOUT_MS = 2000;
 const LRU_MAX = 512;
 
 export interface SkyWeather {

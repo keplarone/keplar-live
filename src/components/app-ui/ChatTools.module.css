@@ -29,11 +29,11 @@
 /* Space UI (phase B): the Tools toggle is lit when on (violet wash and halo), tool-use cards are quiet Space panels with a tinted
    state instead of an edge line, and running dots glow. */
 .toggle { box-shadow: none; background: var(--hover-wash); }
-.toggle[aria-pressed="true"] { background: rgb(var(--ring-rgb) / 0.16); box-shadow: 0 0 20px rgb(var(--ring-rgb) / 0.22); }
-.toggle[aria-pressed="true"] .pip { background: var(--c-accent); box-shadow: 0 0 8px rgb(var(--ring-rgb) / 0.8); }
+.toggle[aria-pressed="true"] { background: rgb(var(--ring-rgb) / 0.16); box-shadow: none; }
+.toggle[aria-pressed="true"] .pip { background: var(--c-accent); box-shadow: none; }
 .use { border-radius: 22px; background: var(--surface-panel); box-shadow: var(--space-glass-depth); }
-.use[data-status="awaiting_approval"] { background: linear-gradient(180deg, rgb(var(--ring-rgb) / 0.1), rgb(var(--ring-rgb) / 0.02)), var(--surface-panel); box-shadow: var(--space-glass-depth), 0 0 40px rgb(var(--ring-rgb) / 0.16); }
+.use[data-status="awaiting_approval"] { background: linear-gradient(180deg, rgb(var(--ring-rgb) / 0.1), rgb(var(--ring-rgb) / 0.02)), var(--surface-panel); box-shadow: var(--space-glass-depth); }
 .use[data-status="error"], .use[data-status="blocked"] { background: linear-gradient(180deg, rgb(var(--rgb-destructive) / 0.08), rgb(var(--rgb-destructive) / 0)), var(--surface-panel); box-shadow: var(--space-glass-depth); }
-.use[data-status="running"] .dot { background: var(--c-accent); box-shadow: 0 0 8px rgb(var(--ring-rgb) / 0.8); }
+.use[data-status="running"] .dot { background: var(--c-accent); box-shadow: none; }
 .use[data-status="done"] .dot { background: var(--c-verified); }
 .args { border-radius: 16px; }

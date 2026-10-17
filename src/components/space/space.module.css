@@ -27,7 +27,6 @@
   --sp-width: 1200px;
 
   position: relative;
-  isolation: isolate;
   min-height: 100vh;
   background: transparent;
   color: var(--sp-ink);
@@ -36,8 +35,8 @@
   -webkit-font-smoothing: antialiased;
   overflow-x: clip;
 }
-/* The page behind the canvas (overscroll, before WebGL starts) is black too, whatever the site theme is. */
-:global(html:has([data-space-root])), :global(html:has([data-space-root]) body) { background: #000 !important; color-scheme: dark; }
+/* Space Studio stays on the dark cloud sky. The wash matches that sky before the canvas paints. */
+:global(html:has([data-space-root])), :global(html:has([data-space-root]) body) { background: #121316 !important; color-scheme: dark; }
 
 .root a:not([data-sp-btn]) { color: inherit; }
 /* The site's global heading and body fonts must not leak in: every Space element uses Montserrat. */
@@ -68,7 +67,7 @@
   font-size: 17px; font-weight: 600; letter-spacing: -0.02em; transform: translateX(-6px);
   transition: max-width 0.42s var(--sp-ease), opacity 0.28s var(--sp-ease), transform 0.42s var(--sp-ease), margin 0.42s var(--sp-ease);
 }
-.brand:hover { padding-right: 20px; box-shadow: var(--nav-shadow), 0 0 30px rgb(var(--space-aura) / 0.22); }
+.brand:hover { padding-right: 20px; box-shadow: var(--nav-shadow); }
 .brand:focus-visible { padding-right: 20px; box-shadow: var(--nav-shadow), var(--space-focus-glow); }
 .brand:hover .word, .brand:focus-visible .word { max-width: 90px; opacity: 1; margin-left: 10px; transform: none; }
 .brand:hover .mark, .brand:focus-visible .mark { transform: rotate(-14deg) scale(0.94); }
@@ -84,13 +83,6 @@
 .root .navCta { justify-self: end; min-height: 48px; padding: 0 24px; }
 
 .main { position: relative; }
-/* Purple aura over the stars: the element's colour eases between hues (SpaceAura); the mask shapes it into two soft glows. */
-.aura {
-  position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0.22;
-  transition: background-color 2.2s cubic-bezier(0.22, 1, 0.36, 1);
-  -webkit-mask-image: radial-gradient(60% 55% at 12% 100%, #000 0%, transparent 70%), radial-gradient(55% 50% at 92% 0%, #000 0%, transparent 70%);
-  mask-image: radial-gradient(60% 55% at 12% 100%, #000 0%, transparent 70%), radial-gradient(55% 50% at 92% 0%, #000 0%, transparent 70%);
-}
 
 /* ---- shared layout ---- */
 .wrap { width: min(var(--sp-width), 100% - 2 * var(--sp-5)); margin-inline: auto; }
@@ -106,11 +98,6 @@
 .hero {
   position: relative; min-height: 100svh; display: flex; flex-direction: column; justify-content: center; align-items: center;
   text-align: center; padding: calc(var(--sp-10) + 20px) var(--sp-5) var(--sp-9);
-}
-/* A soft dark pool behind the hero copy keeps it readable over bright stars. */
-.hero::before {
-  content: ""; position: absolute; inset: 10% 0 0; z-index: -1; pointer-events: none;
-  background: radial-gradient(ellipse 52% 46% at 50% 50%, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0) 70%);
 }
 .heroLabel { margin-bottom: var(--sp-5); }
 .title { margin: 0; max-width: 16ch; font-size: var(--sp-t-hero); line-height: 1.02; font-weight: 600; letter-spacing: -0.05em; text-wrap: balance; }
@@ -158,7 +145,7 @@
 .journey { position: fixed; left: var(--sp-5); bottom: var(--sp-5); z-index: 30; display: flex; flex-direction: column; gap: var(--sp-2); pointer-events: none; font-size: var(--sp-t-xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--sp-ink-2); }
 .journey > span:first-child { animation: rise 0.7s var(--sp-ease) both; }
 .journeyLine { display: block; width: 140px; height: 2px; border-radius: 999px; background: var(--space-track); overflow: hidden; }
-.journeyFill { display: block; height: 100%; background: linear-gradient(90deg, #a467f0, #d76cff); box-shadow: 0 0 12px rgb(var(--space-aura) / 0.6); transform-origin: left; transition: transform 0.2s linear; }
+.journeyFill { display: block; height: 100%; background: linear-gradient(90deg, #a467f0, #d76cff); box-shadow: none; transform-origin: left; transition: transform 0.2s linear; }
 .lede { margin: var(--sp-6) auto 0; max-width: 56ch; font-size: clamp(16px, 1.3vw, 19px); line-height: 1.65; color: var(--sp-ink-2); }
 .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-3); margin-top: var(--sp-7); }
 .note { margin: var(--sp-5) auto 0; max-width: 64ch; font-size: var(--sp-t-xs); line-height: 1.7; color: var(--sp-ink-3); }
@@ -198,7 +185,7 @@
 .cellTag { margin: 0; font-size: var(--sp-t-sm); line-height: 1.5; color: var(--sp-ink); }
 .plain { list-style: none; margin: var(--sp-2) 0 0; padding: 0; display: grid; gap: var(--sp-2); font-size: var(--sp-t-sm); line-height: 1.5; color: var(--sp-ink-2); }
 .plain li { padding-left: 14px; position: relative; }
-.plain li::before { content: ""; position: absolute; left: 0; top: 0.6em; width: 5px; height: 5px; border-radius: 999px; background: #c39bff; box-shadow: 0 0 8px rgb(var(--space-aura) / 0.6); }
+.plain li::before { content: ""; position: absolute; left: 0; top: 0.6em; width: 5px; height: 5px; border-radius: 999px; background: #c39bff; box-shadow: none; }
 .cellMeta { margin: auto 0 0; padding: 10px 14px; border-radius: var(--sp-r-sm); background: var(--space-track); font-size: var(--sp-t-xs); line-height: 1.6; color: var(--sp-ink-2); }
 
 /* plans: a stack of glass panels, one per plan */
@@ -270,7 +257,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .rise, .scrollCue::after, .journey > span:first-child, .you, .swapWord, .swapWord[data-state="in"], .swapWord[data-state="out"] { animation: none; }
-  .swap, .swapWord, .swapWord[data-state="out"], .aura { transition: none; }
+  .swap, .swapWord, .swapWord[data-state="out"] { transition: none; }
   .brand, .word, .mark, .cell, .row { transition: none; }
 }
 

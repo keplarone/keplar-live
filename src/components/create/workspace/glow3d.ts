@@ -20,15 +20,15 @@ attribute float aSize; attribute float aAlpha; varying float vA;
 void main(){ vA = aAlpha; vec4 mv = modelViewMatrix * vec4(position,1.0); gl_PointSize = aSize * (300.0 / -mv.z); gl_Position = projectionMatrix * mv; }`;
 export const dotFragment = `
 uniform vec3 uInk; varying float vA;
-void main(){ vec2 c = gl_PointCoord - 0.5; float d = length(c); float a = smoothstep(0.5, 0.0, d); a *= a; gl_FragColor = vec4(uInk, a * vA); }`;
+void main(){ vec2 c = gl_PointCoord - 0.5; if (length(c) > 0.42) discard; gl_FragColor = vec4(uInk, vA); }`;
 
 /** Theme of the page right now. Dark is the default, same as the root layout. */
 export const isDark = () => document.documentElement.getAttribute("data-theme") !== "light";
-/** Light-on-dark is white and additive; dark-on-light is graphite and normal-blended (additive dark would vanish). */
+/** Light-on-dark is white; dark-on-light is graphite. Both blend normally. */
 export const inkHex = (dark = isDark()) => (dark ? 0xffffff : 0x0b0b0d);
 
 export function dotMaterial() {
-  return new THREE.ShaderMaterial({ vertexShader: dotVertex, fragmentShader: dotFragment, uniforms: { uInk: { value: new THREE.Color(inkHex()) } }, transparent: true, depthWrite: false, blending: isDark() ? THREE.AdditiveBlending : THREE.NormalBlending });
+  return new THREE.ShaderMaterial({ vertexShader: dotVertex, fragmentShader: dotFragment, uniforms: { uInk: { value: new THREE.Color(inkHex()) } }, transparent: true, depthWrite: false, blending: THREE.NormalBlending });
 }
 
 /** Recolors every material in the scene for the given theme (lines, meshes, dots). Opacity is left to the animation. */
@@ -38,7 +38,7 @@ export function recolor(scene: THREE.Scene, dark: boolean) {
     for (const m of Array.isArray(mat) ? mat : mat ? [mat] : []) {
       if (m instanceof THREE.ShaderMaterial) {
         (m.uniforms.uInk?.value as THREE.Color | undefined)?.set(inkHex(dark));
-        m.blending = dark ? THREE.AdditiveBlending : THREE.NormalBlending;
+        m.blending = THREE.NormalBlending;
         m.needsUpdate = true;
       } else if ((m as THREE.MeshBasicMaterial).color) {
         (m as THREE.MeshBasicMaterial).color.set(inkHex(dark));

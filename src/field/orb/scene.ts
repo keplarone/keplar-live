@@ -1,6 +1,6 @@
 import {
-  AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, CubicBezierCurve3, DoubleSide, EdgesGeometry, Group, IcosahedronGeometry, LineBasicMaterial,
-  LineSegments, Mesh, MeshBasicMaterial, NormalBlending, PerspectiveCamera, PlaneGeometry, Points, Scene, ShaderMaterial, TubeGeometry, Vector3,
+  NormalBlending, BoxGeometry, BufferAttribute, BufferGeometry, CubicBezierCurve3, DoubleSide, EdgesGeometry, Group, IcosahedronGeometry, LineBasicMaterial,
+  LineSegments, Mesh, MeshBasicMaterial, PerspectiveCamera, PlaneGeometry, Points, Scene, ShaderMaterial, TubeGeometry, Vector3,
   WebGLRenderer, WebGLRenderTarget, Float32BufferAttribute,
 } from "three";
 import {
@@ -167,7 +167,7 @@ export class OrbScene {
       const m = new ShaderMaterial({
         vertexShader: DUST_VERT, fragmentShader: POINT_FRAG.replace("vA;", "vA;").replace("edge * vA", "edge * vA"),
         uniforms: { uTime: this.uTime, uDpr: this.uDpr, uScale: { value: 20 }, uHeight: { value: 22 }, uFlood: { value: 0 } },
-        transparent: true, depthWrite: false, blending: AdditiveBlending,
+        transparent: true, depthWrite: false, blending: NormalBlending,
       });
       this.dust = new Points(g, m);
       this.dust.frustumCulled = false;
@@ -189,7 +189,7 @@ export class OrbScene {
       this.ribbonMat = new ShaderMaterial({
         vertexShader: RIBBON_VERT, fragmentShader: RIBBON_FRAG,
         uniforms: { uTime: this.uTime, uWidth: { value: 30 }, uHeight: { value: 20 }, uSweepX: { value: 0 }, uFade: this.uFade },
-        transparent: true, depthWrite: false, blending: AdditiveBlending,
+        transparent: true, depthWrite: false, blending: NormalBlending,
       });
       this.ribbons = new LineSegments(g, this.ribbonMat);
       this.ribbons.frustumCulled = false;
@@ -202,7 +202,7 @@ export class OrbScene {
       this.floorMat = new ShaderMaterial({
         vertexShader: FLOOR_VERT, fragmentShader: FLOOR_FRAG,
         uniforms: { uTime: this.uTime, uHorizon: { value: 0 }, uOx: { value: 0 }, uR: { value: 1 }, uStrength: { value: 1 }, uFlash: this.uFlash },
-        transparent: true, depthWrite: false, blending: AdditiveBlending,
+        transparent: true, depthWrite: false, blending: NormalBlending,
       });
       this.floor = new Mesh(new PlaneGeometry(1, 1), this.floorMat);
       this.floor.position.z = -1.2;
@@ -213,7 +213,7 @@ export class OrbScene {
       this.haloMat = new ShaderMaterial({
         vertexShader: HALO_VERT, fragmentShader: HALO_FRAG,
         uniforms: { uStrength: { value: 1 }, uStreak: { value: 0.6 }, uFlash: this.uFlash, uTime: this.uTime },
-        transparent: true, depthWrite: false, blending: AdditiveBlending,
+        transparent: true, depthWrite: false, blending: NormalBlending,
       });
       this.halo = new Mesh(new PlaneGeometry(1, 1), this.haloMat);
       this.halo.position.z = -0.6;
@@ -229,8 +229,8 @@ export class OrbScene {
     {
       this.cube = new Group();
       const box = new BoxGeometry(1, 1, 1);
-      this.cube.add(new LineSegments(new EdgesGeometry(box), new LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55, blending: AdditiveBlending, depthWrite: false })));
-      this.cube.add(new Mesh(box, new MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.035, side: DoubleSide, blending: AdditiveBlending, depthWrite: false })));
+      this.cube.add(new LineSegments(new EdgesGeometry(box), new LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55, blending: NormalBlending, depthWrite: false })));
+      this.cube.add(new Mesh(box, new MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.035, side: DoubleSide, blending: NormalBlending, depthWrite: false })));
       sc.add(this.cube);
     }
     // orbiting sharp points
@@ -254,7 +254,7 @@ export class OrbScene {
         new ShaderMaterial({
           vertexShader: ORBIT_VERT, fragmentShader: POINT_FRAG,
           uniforms: { uTime: this.uTime, uAgit: this.uAgit, uConv: this.uConv, uDpr: this.uDpr, uScale: { value: 20 }, uR: { value: 1 } },
-          transparent: true, depthWrite: false, blending: AdditiveBlending,
+          transparent: true, depthWrite: false, blending: NormalBlending,
         }),
       );
       this.orbit.frustumCulled = false;
@@ -269,7 +269,7 @@ export class OrbScene {
         const m = new ShaderMaterial({
           vertexShader: TILE_VERT, fragmentShader: TILE_FRAG,
           uniforms: { uTime: this.uTime, uLayer: { value: layer }, uGlyph: { value: i }, uHover: { value: 0 }, uGlow: { value: 0 }, uFade: this.uFade, uSeed: { value: i }, uTilt: { value: [0, 0] } },
-          transparent: true, depthWrite: false, blending: layer === 0 ? NormalBlending : AdditiveBlending, side: DoubleSide,
+          transparent: true, depthWrite: false, blending: layer === 0 ? NormalBlending : NormalBlending, side: DoubleSide,
         });
         mats.push(m);
         const pl = new Mesh(new PlaneGeometry(layer === 2 ? 2.6 : 1, layer === 2 ? 2.6 : 1), m);
@@ -356,7 +356,7 @@ export class OrbScene {
       const { lg, fg } = ridgeGeometry(halfW, horizon, R * l.peak * (this.o.mobile ? 0.75 : 1), l.z, l.step * R * 0.55, 7 + i * 13);
       const fill = new Mesh(fg, new MeshBasicMaterial({ color: 0x000000 }));
       fill.renderOrder = -5 + i;
-      const line = new LineSegments(lg, new LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: l.a, blending: AdditiveBlending, depthWrite: false }));
+      const line = new LineSegments(lg, new LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: l.a, blending: NormalBlending, depthWrite: false }));
       line.renderOrder = -4 + i;
       this.ridges.add(fill, line);
     });
@@ -385,7 +385,7 @@ export class OrbScene {
             uTime: this.uTime, uAgit: this.uAgit, uConv: this.uConv, uSeed: { value: i * 0.17 + 0.05 }, uFade: this.uFade, uGlow: { value: glow }, uSpeed: { value: 0.16 + (i % 3) * 0.03 },
             uOrb: this.uOrb, uFocus: this.uFocus,
           },
-          transparent: true, depthWrite: false, blending: AdditiveBlending, side: DoubleSide,
+          transparent: true, depthWrite: false, blending: NormalBlending, side: DoubleSide,
         });
         this.lineMats.push(mat);
         const geo = new TubeGeometry(curve, this.b.segs, glow ? ts * 0.16 : ts * 0.022, glow ? 5 : this.b.radial, false);

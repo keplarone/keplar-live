@@ -189,11 +189,11 @@
 }
 
 .input[aria-invalid="true"] {
-  box-shadow: var(--space-field-depth), 0 0 0 2px rgb(var(--rgb-destructive) / 0.5), 0 0 30px rgb(var(--rgb-destructive) / 0.2);
+  box-shadow: var(--space-field-depth), 0 0 0 2px rgb(var(--rgb-destructive) / 0.5);
 }
 
 .input[aria-invalid="true"]:focus-visible {
-  box-shadow: var(--space-field-depth), 0 0 0 3px rgb(var(--rgb-destructive) / 0.6), 0 0 30px rgb(var(--rgb-destructive) / 0.25);
+  box-shadow: var(--space-field-depth), 0 0 0 3px rgb(var(--rgb-destructive) / 0.6);
 }
 
 .textarea,
@@ -339,7 +339,7 @@
 
 .pill input:checked + span::before {
   background: #b27cff;
-  box-shadow: 0 0 8px rgb(var(--space-aura) / 0.8);
+  box-shadow: none;
 }
 
 /* business reveal */
@@ -391,7 +391,7 @@
   padding: var(--s-4) var(--s-6);
   border-radius: 24px;
   background: var(--space-glass);
-  box-shadow: var(--space-glass-depth), 0 0 44px rgb(var(--rgb-destructive) / 0.2);
+  box-shadow: var(--space-glass-depth);
   font-size: var(--t-small);
   animation: inq-shake 0.5s var(--space-ease-out) both;
 }

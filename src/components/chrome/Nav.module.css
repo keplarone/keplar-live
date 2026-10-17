@@ -21,8 +21,9 @@
   opacity: 0;
   transition: opacity var(--space-dur-slow) var(--space-ease-out);
 }
+/* The pills are the glass. A canvas wash behind them would hide the sky. */
 .wrap[data-scrolled]::after,
-.wrap[data-open]::after { opacity: 1; }
+.wrap[data-open]::after { opacity: 0; }
 
 .bar {
   display: grid;
@@ -34,12 +35,19 @@
   margin: 0 auto;
 }
 
-/* glass pill surface shared by the brand, the link group and the icon buttons */
+/* Clear pills: no frost. Chromium bends the sharp sky; other browsers keep the tint and the slab edge. */
 .brand, .links ul, .icon, .signIn {
-  background: var(--nav-fill);
-  -webkit-backdrop-filter: blur(18px);
-  backdrop-filter: blur(18px);
-  box-shadow: var(--nav-shadow);
+  background: var(--glass-clear);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: var(--glass-depth);
+}
+:global(html[data-lens]) :is(.brand, .links ul, .icon, .signIn)[data-distort] {
+  -webkit-backdrop-filter: url(#liquid-glass);
+  backdrop-filter: url(#liquid-glass);
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .brand, .links ul, .icon, .signIn { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
 
 /* brand: Space Studio's logo pill; the mark turns a little on hover */
@@ -54,7 +62,7 @@
   text-decoration: none;
   transition: background-color 0.3s ease, box-shadow 0.5s var(--space-ease-out);
 }
-.brand:hover { box-shadow: var(--nav-shadow), 0 14px 44px rgb(176 104 255 / 0.3); }
+.brand:hover { box-shadow: var(--nav-shadow); }
 .mark { flex: none; transition: transform 0.8s var(--space-ease-out); }
 .brand:hover .mark { transform: rotate(-14deg) scale(0.94); }
 .word { font-size: 16px; font-weight: var(--w-bold); letter-spacing: -0.02em; }
@@ -79,7 +87,7 @@
 .link[aria-current="page"] {
   color: var(--space-p-ink);
   background: var(--space-p-face);
-  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12), 0 6px 20px rgb(var(--ring-rgb) / 0.18);
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12);
   font-weight: var(--w-bold);
 }
 
@@ -95,7 +103,7 @@
   color: var(--nav-link);
   transition: color 0.3s ease, box-shadow 0.5s var(--space-ease-out);
 }
-.icon:hover { color: var(--nav-ink); box-shadow: var(--nav-shadow), 0 10px 32px rgb(176 104 255 / 0.25); }
+.icon:hover { color: var(--nav-ink); box-shadow: var(--nav-shadow); }
 .theme { flex: none; }
 .signIn {
   display: inline-flex;
@@ -110,7 +118,7 @@
   white-space: nowrap;
   transition: box-shadow 0.5s var(--space-ease-out);
 }
-.signIn:hover { box-shadow: var(--nav-shadow), 0 10px 32px rgb(176 104 255 / 0.25); }
+.signIn:hover { box-shadow: var(--nav-shadow); }
 /* the one CTA: Space Studio's 3D white button (ink in light) */
 .cta {
   display: inline-flex;
@@ -151,10 +159,10 @@
   overflow-y: auto;
   padding: var(--s-6);
   border-radius: var(--space-r-card);
-  background: var(--nav-menu-fill);
-  -webkit-backdrop-filter: blur(26px) saturate(1.3);
-  backdrop-filter: blur(26px) saturate(1.3);
-  box-shadow: var(--space-glass-depth), 0 30px 80px rgb(0 0 0 / 0.35), 0 0 60px rgb(176 104 255 / 0.12);
+  background: var(--sky-glass);
+  -webkit-backdrop-filter: blur(6px) saturate(1.12);
+  backdrop-filter: blur(6px) saturate(1.12);
+  box-shadow: var(--glass-depth);
   --m-origin: 100% 0;
 }
 .sheet[hidden] { display: none; }
@@ -211,8 +219,6 @@
   .sheet { top: calc(env(safe-area-inset-top, 0px) + 62px); right: 12px; width: calc(100vw - 24px); padding: var(--s-5); }
   .cols { grid-template-columns: 1fr; gap: var(--s-5); }
   .cta { padding: 0 18px; font-size: 13.5px; }
-  /* phones: no live blur on the pills (redesign.css drops backdrop-filter); the fill is near-opaque so it stays readable */
-  .brand, .links ul, .icon, .signIn { background: var(--nav-fill-scrolled); }
 }
 @media (max-width: 400px) {
   .actions .theme { display: none; }

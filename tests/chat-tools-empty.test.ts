@@ -9,8 +9,8 @@ test("ChatTools: never shows an empty-state 'connect apps' nudge when none are c
   assert.doesNotMatch(src, /Connect (an |your )?app|No connected apps|connect apps to use Tools/i);
 });
 
-test("composer focus glow is ink/white, never described as a blue accent", () => {
+test("composer focus ring is ink/white, never described as a blue accent", () => {
   const css = readFileSync("src/components/app-ui/Composer.module.css", "utf8");
   assert.doesNotMatch(css, /quiet blue focus/i);
-  assert.match(css, /ink focus glow/);
+  assert.match(css, /solid ink focus ring/);
 });

@@ -4,7 +4,7 @@
  * toggles; the .btn classes below are the pills for everything else. Focus is the site's keyboard cue (globals.css). */
 
 /* ── Plain account pages (/checkout, /team/join, /dev/outbox) ── */
-.page { min-height: 70vh; display: flex; justify-content: center; padding: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-16)) var(--s-6) var(--s-24); background: var(--c-canvas); }
+.page { min-height: 70vh; display: flex; justify-content: center; padding: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-16)) var(--s-6) var(--s-24); background: transparent; }
 .card { width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: var(--s-5); }
 .wide { max-width: 1000px; gap: var(--s-6); }
 .eyebrow { margin: 0; font-size: var(--t-small); color: var(--c-ink-3); }
@@ -114,17 +114,17 @@ button.link { background: none; border: 0; padding: 0; font: inherit; cursor: po
 
 /* ── The Settings window: a dialog over the app, or the same window alone at /account ──
  * Header (title + close) on top; below it the category rail and the chosen category, each scrolling on its own. Under 720px the
- * window fills the screen and the rail becomes one swipeable row above the content. Opaque overlay surface in both themes. */
+ * window fills the screen and the rail becomes one swipeable row above the content. The window is clear so the cloud sky shows through the glass panels. */
 .dlgLayer { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: var(--s-6); }
 .dlgBackdrop { position: absolute; inset: 0; background: var(--ks-scrim); animation: dlgFade var(--m-dur-2) var(--m-ease-out) both; }
-.dlgPage { display: flex; justify-content: center; min-height: 70vh; padding: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-8)) var(--s-6) var(--s-16); background: var(--c-canvas); }
+.dlgPage { display: flex; justify-content: center; min-height: 70vh; padding: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-8)) var(--s-6) var(--s-16); background: transparent; }
 .dlg {
   position: relative; display: flex; flex-direction: column; width: min(1040px, 100%); height: min(780px, calc(100dvh - 48px));
   overflow: hidden; border-radius: var(--r-card); color: var(--c-ink);
-  background: var(--surface-overlay); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-3);
+  background: transparent; box-shadow: none;
 }
 .dlg[data-mode="modal"] { animation: dlgIn var(--m-dur-2) var(--m-ease-out) both; }
-.dlg[data-mode="page"] { height: min(820px, calc(100dvh - var(--l-nav-h) - 96px)); min-height: 560px; background: var(--surface-panel); box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1); }
+.dlg[data-mode="page"] { height: min(820px, calc(100dvh - var(--l-nav-h) - 96px)); min-height: 560px; background: transparent; box-shadow: none; }
 @keyframes dlgIn { from { opacity: 0; translate: 0 8px; } }
 @keyframes dlgFade { from { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .dlg[data-mode="modal"], .dlgBackdrop { animation: none; } }
@@ -223,7 +223,7 @@ button.link { background: none; border: 0; padding: 0; font: inherit; cursor: po
 }
 .input:hover { background: var(--space-field-hover); }
 .input:focus, .input:focus-visible { outline: none; background: var(--space-field-focus); box-shadow: var(--space-field-depth), var(--space-focus-glow); }
-.input[aria-invalid="true"] { box-shadow: var(--space-field-depth), 0 0 0 2px rgb(var(--rgb-destructive) / 0.55), 0 0 30px rgb(var(--rgb-destructive) / 0.2); }
+.input[aria-invalid="true"] { box-shadow: var(--space-field-depth), 0 0 0 2px rgb(var(--rgb-destructive) / 0.55); }
 textarea.input { padding: var(--s-3) 20px; border-radius: var(--space-r-area); }
 .check input { accent-color: var(--c-accent); }
 .check input:focus-visible { box-shadow: var(--space-focus-glow); }
@@ -246,13 +246,13 @@ textarea.input { padding: var(--s-3) 20px; border-radius: var(--space-r-area); }
 .divider::before, .divider::after { background: linear-gradient(90deg, transparent, rgb(var(--rgb-ink) / 0.14), transparent); }
 .mail, .row + .row, .prefRow + .prefRow, .session, .keyRow + .keyRow { border-top: 0; background-image: linear-gradient(90deg, transparent, rgb(var(--rgb-ink) / 0.08) 12%, rgb(var(--rgb-ink) / 0.08) 88%, transparent); background-size: 100% 1px; background-repeat: no-repeat; background-position: top; }
 .session:first-child { background-image: none; }
-.panel { border-radius: var(--space-r-panel); background: var(--surface-raised); box-shadow: var(--elev-2); }
+.panel { border-radius: var(--space-r-panel); background: var(--lg-fill); box-shadow: var(--elev-2); }
 .dlg .panel { box-shadow: var(--elev-1); }
 .cardTitle { font-weight: var(--w-semibold); letter-spacing: -0.01em; }
 .track { background: var(--space-track); }
-.fill { background: var(--c-accent); box-shadow: 0 0 12px rgb(var(--ring-rgb) / 0.45); }
+.fill { background: var(--c-accent); box-shadow: none; }
 .kbd { box-shadow: inset 0 -2px 0 rgb(var(--rgb-ink) / 0.12), var(--elev-1); background: var(--space-field); border-radius: 8px; }
-.dlg { border-radius: var(--space-r-card); box-shadow: var(--space-glass-depth), var(--elev-3); }
+.dlg { border-radius: var(--space-r-card); background: transparent; box-shadow: none; }
 .dlg[data-mode="page"] { box-shadow: var(--space-glass-depth); }
 .dlgHead { border-bottom: 0; }
 .rail { border-right: 0; background: rgb(var(--rgb-ink) / 0.025); }

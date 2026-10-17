@@ -1,4 +1,4 @@
-import { AdditiveBlending, BufferAttribute, BufferGeometry, NormalBlending, PerspectiveCamera, Points, Scene, ShaderMaterial, WebGLRenderer } from "three";
+import { NormalBlending, BufferAttribute, BufferGeometry, PerspectiveCamera, Points, Scene, ShaderMaterial, WebGLRenderer } from "three";
 import { PHRASES } from "./glyphs";
 import { WORD_FRAG, WORD_VERT } from "./glsl";
 
@@ -99,7 +99,7 @@ export class WordScene {
       fragmentShader: WORD_FRAG,
       transparent: true,
       depthWrite: false,
-      blending: light ? NormalBlending : AdditiveBlending,
+      blending: light ? NormalBlending : NormalBlending,
       uniforms: { uTime: { value: 0 } },
     });
     this.points = new Points(this.geo, this.mat);

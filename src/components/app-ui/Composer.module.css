@@ -772,7 +772,7 @@
 }
 
 /* Composer (both themes, from the product surface tokens): a raised card with a hairline edge, round tool pills on a quiet wash
-   and a round send button in ink. The edge strengthens while the field has focus (an ink focus glow, never a blue accent). */
+   and a round send button in ink. The edge strengthens while the field has focus (a solid ink focus ring, never a blue accent). */
 :global(:root[data-theme]) .composer {
   padding: 16px 16px 12px 18px;
   border-radius: 26px;
@@ -885,15 +885,15 @@
   transition: box-shadow 0.6s var(--space-ease-out);
 }
 :global(:root[data-theme]) .composer:has(:is(textarea, input):focus) {
-  box-shadow: var(--space-glass-depth), 0 0 46px rgb(var(--ring-rgb) / 0.16);
+  box-shadow: var(--space-glass-depth);
 }
 :global(:root[data-theme]) .composer[data-dragging] {
-  box-shadow: var(--space-glass-depth), 0 0 0 2px rgb(var(--ring-rgb) / 0.55), 0 0 44px rgb(var(--ring-rgb) / 0.28);
+  box-shadow: var(--space-glass-depth), 0 0 0 2px rgb(var(--ring-rgb) / 0.55);
 }
 .composer[data-pulse="a"] { animation: spPulseA 0.7s var(--space-ease-expo); }
 .composer[data-pulse="b"] { animation: spPulseB 0.7s var(--space-ease-expo); }
-@keyframes spPulseA { 0% { transform: scale(1); } 22% { transform: scale(0.985); box-shadow: var(--space-glass-depth), 0 0 80px rgb(var(--ring-rgb) / 0.45); } 100% { transform: scale(1); } }
-@keyframes spPulseB { 0% { transform: scale(1); } 22% { transform: scale(0.985); box-shadow: var(--space-glass-depth), 0 0 80px rgb(var(--ring-rgb) / 0.45); } 100% { transform: scale(1); } }
+@keyframes spPulseA { 0% { transform: scale(1); } 22% { transform: scale(0.985); box-shadow: var(--space-glass-depth); } 100% { transform: scale(1); } }
+@keyframes spPulseB { 0% { transform: scale(1); } 22% { transform: scale(0.985); box-shadow: var(--space-glass-depth); } 100% { transform: scale(1); } }
 .dropZone { border: 1.5px dashed rgb(var(--ring-rgb) / 0.55); border-radius: 26px; background: var(--surface-overlay); color: var(--c-ink); }
 
 /* Tool and picker pills (Space Studio .picker__btn): a quiet wash; hover lifts the wash and adds a violet glow; press squeezes. */
@@ -910,7 +910,7 @@
 :global(:root[data-theme]) .more[aria-expanded="true"] {
   color: var(--c-ink);
   background: var(--press-wash);
-  box-shadow: 0 8px 26px rgb(var(--ring-rgb) / 0.22);
+  box-shadow: none;
 }
 .tool:active, .routingBtn:active { scale: 0.97; }
 /* A mode that is on is lit: a violet wash, a soft halo and the icon in the accent. */
@@ -918,12 +918,12 @@
 :global(:root[data-theme]) .more[data-active] {
   color: var(--c-ink);
   background: rgb(var(--ring-rgb) / 0.16);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 0 20px rgb(var(--ring-rgb) / 0.22);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
 }
 :global(:root[data-theme]) .tool[aria-pressed="true"] svg,
 :global(:root[data-theme]) .more[data-active] svg { color: var(--c-accent); }
 :global(:root[data-theme]) .tool:focus-visible, :global(:root[data-theme]) .routingBtn:focus-visible { box-shadow: var(--space-focus-glow); }
-.routingBtn[data-custom]::after { background: var(--c-accent); box-shadow: 0 0 8px rgb(var(--ring-rgb) / 0.8); }
+.routingBtn[data-custom]::after { background: var(--c-accent); box-shadow: none; }
 .toolBeta { border: 0; background: rgb(var(--ring-rgb) / 0.16); color: var(--c-ink); font-weight: var(--w-bold); letter-spacing: 0.06em; text-transform: uppercase; font-size: 9.5px; }
 .input::placeholder { color: var(--c-ink-3); }
 
@@ -932,14 +932,14 @@
 :global(:root[data-theme]) .panel.panel,
 :global(:root[data-theme]) .moreMenu.moreMenu,
 :global(:root[data-theme]) .attachMenu.attachMenu {
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), var(--elev-3), 0 0 70px rgb(var(--ring-rgb) / 0.14);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), var(--elev-3);
 }
 .attachMenu.attachMenu, .moreMenu.moreMenu { padding: 10px; }
 .attachItem, .moreItem { border-radius: 20px; transition: background-color 0.25s var(--space-ease-out), box-shadow 0.4s var(--space-ease-out); }
 .attachItem:hover, .moreItem:hover { background: var(--hover-wash); }
 .attachItem:focus-visible, .moreItem:focus-visible { background: var(--hover-wash); box-shadow: var(--space-focus-glow); }
 .moreItem[aria-checked="true"] { background: var(--press-wash); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05); }
-.moreItem[aria-checked="true"] .moreIcon { background: var(--space-p-face); color: var(--space-p-ink); box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.12), 0 0 14px rgb(var(--ring-rgb) / 0.35); }
+.moreItem[aria-checked="true"] .moreIcon { background: var(--space-p-face); color: var(--space-p-ink); box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.12); }
 .linkForm { border-radius: 999px; background: var(--space-field); box-shadow: var(--space-field-depth); }
 .attachReads { border-top: 0; }
 /* Rows rise out of a blur, one after another (Space Studio .mopt); desktop only, still under reduced motion. */
@@ -957,13 +957,13 @@
 
 /* Advanced routing: the glass track with Space Studio's lit thumb; violet radios, switch and range; the focus glow. */
 .segmented { background: var(--space-track); }
-.segment input:checked + span { background: var(--space-p-face); color: var(--space-p-ink); font-weight: var(--w-semibold); box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12), 0 6px 18px rgb(var(--ring-rgb) / 0.2); }
+.segment input:checked + span { background: var(--space-p-face); color: var(--space-p-ink); font-weight: var(--w-semibold); box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12); }
 .segment input:focus-visible + span,
 .family input:focus-visible + span,
 .check input:focus-visible + span,
 .choice input:focus-visible + .choiceText { box-shadow: var(--space-focus-glow); }
 .choiceText { border-radius: 20px; }
-.choice input:checked + .choiceText::before { box-shadow: inset 0 0 0 4.5px var(--c-accent), 0 0 10px rgb(var(--ring-rgb) / 0.45); }
+.choice input:checked + .choiceText::before { box-shadow: inset 0 0 0 4.5px var(--c-accent); }
 .check span::before { background: var(--space-track); box-shadow: none; }
 .check input:checked + span::before { background: var(--ks-switch-on); box-shadow: var(--ks-switch-on-glow); }
 .check span::after { background: #ffffff; box-shadow: 0 1px 3px rgb(0 0 0 / 0.35); }

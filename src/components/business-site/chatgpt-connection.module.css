@@ -37,7 +37,7 @@
 .caption { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--kb-ink-3); max-width: 420px; }
 
 /* the example brief: a 28px glass card with a violet glow */
-.briefPreview { min-width: 0; border-radius: var(--kb-r-lg); background: var(--kb-glass); box-shadow: var(--kb-depth), 0 0 90px rgb(var(--kb-accent-rgb) / 0.14); overflow: hidden; }
+.briefPreview { min-width: 0; border-radius: var(--kb-r-lg); background: var(--kb-glass); box-shadow: var(--kb-depth); overflow: hidden; }
 .previewTop { display: flex; align-items: center; gap: 12px; padding: 16px 22px; background: var(--kb-wash); font-size: 12px; font-weight: 600; color: var(--kb-ink-2); }
 .previewTop > span:last-child { margin-left: auto; }
 .previewBody { padding: 30px; }
@@ -47,7 +47,7 @@
 .typeChoices { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 5px; border-radius: 999px; background: var(--kb-pill); box-shadow: var(--kb-pill-depth); }
 .typeChoices button { height: 36px; padding: 0 16px; border: 0; border-radius: 999px; background: transparent; color: var(--kb-ink-2); font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: color 0.35s ease, background 0.5s var(--kb-spring), box-shadow 0.5s var(--kb-spring); }
 .typeChoices button:hover { color: var(--kb-ink); }
-.typeChoices button[aria-pressed="true"] { background: var(--kb-p-face); color: var(--kb-p-ink); box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12), 0 6px 20px rgb(var(--kb-accent-rgb) / 0.18); }
+.typeChoices button[aria-pressed="true"] { background: var(--kb-p-face); color: var(--kb-p-ink); box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12); }
 .examplePrompt { min-height: 100px; margin: 24px 0 20px; font-size: 16px; line-height: 1.65; color: var(--kb-ink); }
 .previewFoot { padding-top: 16px; }
 
@@ -59,7 +59,7 @@
 .statusActions { min-width: 200px; display: flex; flex-direction: column; align-items: stretch; gap: 12px; justify-content: center; }
 .manage { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 0 16px; border-radius: 999px; font-size: 12.5px; font-weight: 600; color: var(--kb-ink-2); text-decoration: none; transition: color 0.2s ease, background-color 0.2s ease; }
 .manage:hover { color: var(--kb-ink); background: var(--kb-hover); }
-.notice { padding: 14px 18px; border-radius: 20px; background: rgb(255 196 60 / 0.12); box-shadow: 0 0 30px rgb(255 214 107 / 0.08); color: var(--kb-ink); font-size: 14px; }
+.notice { padding: 14px 18px; border-radius: 20px; background: rgb(255 196 60 / 0.12); box-shadow: none; color: var(--kb-ink); font-size: 14px; }
 
 /* steps: three numbered cards */
 .setup { padding: 96px 0 56px; scroll-margin-top: 24px; }
@@ -67,7 +67,7 @@
 .setup > h2, .permissions h2 { margin: 0 0 32px; max-width: 600px; font-size: clamp(30px, 4vw, 46px); letter-spacing: -0.045em; }
 .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .steps li { display: flex; flex-direction: column; gap: 18px; padding: 26px; border-radius: 26px; background: var(--kb-glass-solid); box-shadow: var(--kb-depth-sm); }
-.steps li > span { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: var(--kb-accent-soft); color: var(--kb-accent-ink); font-size: 12.5px; font-weight: 700; box-shadow: 0 0 20px rgb(176 104 255 / 0.2); }
+.steps li > span { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: var(--kb-accent-soft); color: var(--kb-accent-ink); font-size: 12.5px; font-weight: 700; box-shadow: none; }
 .steps h3 { margin: 0 0 8px; font-size: 18px; font-weight: 600; letter-spacing: -0.02em; }
 .steps p { margin: 0; color: var(--kb-ink-2); font-size: 14px; line-height: 1.7; }
 

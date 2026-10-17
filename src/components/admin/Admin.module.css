@@ -42,8 +42,8 @@
 .table th, .table td { border-bottom-color: var(--hairline); }
 .spark span { background: linear-gradient(180deg, #d76cff, #a467f0); opacity: 0.85; border-radius: 3px 3px 0 0; }
 .alertBad, .alertWarn { border: 0; border-radius: var(--space-r-panel); }
-.alertBad { box-shadow: 0 0 0 1px rgb(var(--rgb-destructive) / 0.4), 0 0 30px rgb(var(--rgb-destructive) / 0.14); }
-.alertWarn { box-shadow: 0 0 0 1px rgb(var(--rgb-attention) / 0.45), 0 0 30px rgb(var(--rgb-attention) / 0.14); }
+.alertBad { box-shadow: 0 0 0 1px rgb(var(--rgb-destructive) / 0.4); }
+.alertWarn { box-shadow: 0 0 0 1px rgb(var(--rgb-attention) / 0.45); }
 .field input { border: 0; border-radius: var(--space-r-field); padding: var(--s-2) var(--s-4); background: var(--space-field); box-shadow: var(--space-field-depth); }
 .field input:focus-visible { outline: none; box-shadow: var(--space-field-depth), var(--space-focus-glow); }
 .btn, .warn, .danger { border: 0; border-radius: var(--r-pill); font-weight: var(--w-bold); background: var(--space-s-face); color: var(--space-s-ink); box-shadow: var(--space-s-depth); transition: transform var(--space-dur-slow) var(--space-spring-bouncy), box-shadow var(--space-dur-slow) var(--space-ease-out); }

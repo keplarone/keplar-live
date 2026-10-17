@@ -463,7 +463,7 @@ export function AppBuilder() {
   // ───────────────────────── start: Prompt · Look · Build ─────────────────────────
   if (!studio) {
     return (
-      <div className={s.root}>
+      <div className={s.root} data-glass-scope="">
         <div className={s.start}>
           <IdeFrame enabled={biz} cfg={cfg} apps={apps} starters={STARTERS} running={running} onStarter={(t) => promptRef.current?.set(t)} onOpenApp={(id) => openApp(id)} getBrief={() => store.text()} auto={auto} design={design} log={live.log}>
           {/* Minimal pass: one prompt, like Ask. Surprise me, Voice, References, Look and the screen preview sit behind Options.
@@ -482,7 +482,7 @@ export function AppBuilder() {
               <p className={s.calmLede}>Describe it or say it. Keplar designs it, writes the code and tests every screen.</p>
             </header>
 
-            <section className={s.calmCard} aria-label="Describe your app or website">
+            <section className={s.calmCard} data-glass-live="" aria-label="Describe your app or website">
               <PromptField ref={promptRef} store={store} id="kc-prompt" className={s.prompt} draftKey={DRAFT_KEY} autoFocus label="Describe your app or website" placeholder="A place where film photographers post scans, follow each other and vote on a weekly darkroom challenge…" onSubmit={() => { const t = store.text().trim(); if (t.length >= 8) void build(t); }} />
               <div className={s.calmBar}>
                 <button type="button" className={s.textBtn} onClick={() => { if (store.text().trim().length < 8) { say("Write a sentence about what you want, then shape the brief."); return; } setBriefOpen(true); }}>Shape the brief</button>
@@ -639,7 +639,7 @@ export function AppBuilder() {
   const reopen = () => { if (current) { void open(current.id, { keepTab: true }); void load(); } };
 
   return (
-    <div className={s.root}>
+    <div className={s.root} data-glass-scope="">
       <div className={s.top}>
         <Button variant="ghost" size="sm" onClick={backToStart} disabled={running} aria-label="All apps" leadingIcon={<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>}>
           Apps

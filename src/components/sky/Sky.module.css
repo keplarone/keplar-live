@@ -1,15 +1,27 @@
 /*
- * The home (canvas design "Landing", Oct 2026): floating white cards and two-tone light-weight headlines over the shared cloud sky
- * (WeatherSky). Colours come from the theme tokens so Dark still reads.
+ * The home (canvas design "Landing", Oct 2026): floating white cards and two-tone light-weight headlines over the procedural
+ * cloud sky (LandingClouds). Colours come from the theme tokens so Dark still reads.
  */
 .home {
   position: relative;
-  isolation: isolate;
   color: var(--c-ink);
   overflow-x: clip;
 }
 
-/* ---- backdrop: the shared weather sky (WeatherSky, src/styles/space.css); nothing home-specific left here ---- */
+/* One sky for every page (SiteClouds, mounted by the root layout). Fixed, behind the document, and a
+   gradient until the canvas paints. z-index -1 stays inside body's stacking context, above the html wash. */
+.siteSky {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  background: linear-gradient(180deg, #e4e7eb 0%, #f7f8fa 78%);
+}
+:global(:root[data-theme="dark"]) .siteSky {
+  background: linear-gradient(180deg, #121316 0%, #2a2c31 80%);
+}
+.landingClouds { display: block; width: 100%; height: 100%; }
 
 /* ---- hero ---- */
 .hero {
@@ -90,7 +102,7 @@
 .window {
   background: var(--space-glass-solid);
   border-radius: var(--space-r-card);
-  box-shadow: var(--space-glass-depth), 0 40px 100px -40px rgb(var(--space-aura) / 0.35);
+  box-shadow: var(--space-glass-depth);
   overflow: hidden;
   transform: perspective(1400px) translateY(calc((1 - var(--p)) * 60px)) scale(calc(0.9 + var(--p) * 0.1)) rotateX(calc((1 - var(--p)) * 8deg));
   filter: blur(calc((1 - var(--p)) * 6px));
@@ -111,7 +123,7 @@
 .answer { display: flex; flex-direction: column; gap: 12px; }
 .answer p { margin: 0; max-width: 64ch; font-size: 17px; line-height: 1.65; }
 .answerHead { display: flex; align-items: center; gap: 10px; font-size: 13px !important; font-weight: 500; color: var(--c-ink-3); }
-.dissent { display: flex; gap: 12px; align-items: flex-start; padding: 14px 18px; background: rgb(var(--rgb-disagree) / 0.09); box-shadow: 0 0 40px rgb(var(--rgb-disagree) / 0.08); border-radius: 20px; font-size: 15px !important; color: var(--c-ink-2); }
+.dissent { display: flex; gap: 12px; align-items: flex-start; padding: 14px 18px; background: rgb(var(--rgb-disagree) / 0.09); box-shadow: none; border-radius: 20px; font-size: 15px !important; color: var(--c-ink-2); }
 .dissent svg { flex-shrink: 0; margin-top: 2px; color: var(--c-disagree); }
 .dissent b { font-weight: 500; color: var(--c-ink); }
 /* window buttons: the familiar red / yellow / green */
@@ -183,16 +195,27 @@
 .featureList .featureRow:focus-visible { box-shadow: var(--space-glass-depth), var(--space-focus-glow); }
 
 .cards3 { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; }
-.card {
-  display: flex;
+.card[data-glass-live],
+.storySteps li[data-glass-live],
+.demo {
+  background: var(--sky-glass);
+  -webkit-backdrop-filter: blur(6px) saturate(1.12);
+  backdrop-filter: blur(6px) saturate(1.12);
+  box-shadow: var(--glass-depth);
+}
+:global(html[data-lens]) :is(.card, .storySteps li, .demo)[data-distort] {
+  -webkit-backdrop-filter: url(#liquid-glass-card) blur(6px) saturate(1.12);
+  backdrop-filter: url(#liquid-glass-card) blur(6px) saturate(1.12);
+}
+.card {  display: flex;
   flex-direction: column;
   gap: 12px;
   height: 100%;
   box-sizing: border-box;
   padding: 28px;
-  background: var(--space-glass);
+  background: var(--sky-glass);
   border-radius: var(--space-r-card);
-  box-shadow: var(--space-glass-depth);
+  box-shadow: var(--glass-depth);
   color: var(--c-ink);
   text-decoration: none;
   transition: transform var(--space-dur-slow) var(--space-ease-expo), box-shadow var(--space-dur-slow) var(--space-ease-out);
@@ -206,11 +229,10 @@
 .stepN { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 999px; background: var(--space-p-face); color: var(--space-p-ink); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4), 0 3px 0 var(--step-ledge, #8c8a99); font-size: 15px; font-weight: 700; }
 :global(:root[data-theme="light"]) .stepN { --step-ledge: #000; }
 
-.demo { display: flex; flex-direction: column; gap: 32px; padding: clamp(28px, 5vw, 56px); background: var(--space-glass); border-radius: var(--space-r-card); box-shadow: var(--space-glass-depth), 0 40px 100px -50px rgb(var(--space-aura) / 0.4); }
+.demo { display: flex; flex-direction: column; gap: 32px; padding: clamp(28px, 5vw, 56px); background: var(--sky-glass); border-radius: var(--space-r-card); -webkit-backdrop-filter: blur(6px) saturate(1.12); backdrop-filter: blur(6px) saturate(1.12); box-shadow: var(--glass-depth); }
 
-.invite { display: flex; flex-direction: column; align-items: center; gap: 24px; text-align: center; padding: clamp(28px, 5vw, 56px); background: rgb(255 255 255 / 0.75); border: 1px solid var(--c-border); border-radius: 32px; box-shadow: 0 40px 100px -50px rgb(14 15 18 / 0.35); }
+.invite { display: flex; flex-direction: column; align-items: center; gap: 24px; text-align: center; padding: clamp(28px, 5vw, 56px); background: var(--sky-glass); border: 0; border-radius: 32px; -webkit-backdrop-filter: blur(6px) saturate(1.12); backdrop-filter: blur(6px) saturate(1.12); box-shadow: var(--sky-edge); }
 .invite .note { margin: 0; }
-:global(:root[data-theme="dark"]) .invite { background: var(--c-surface-1); }
 
 /* Space Studio's entry: rise out of a blur. */
 @keyframes sky-rise {
@@ -259,87 +281,41 @@
 .floatScene[data-on] { display: block; animation: sky-swap 0.3s var(--e-standard) both; }
 @keyframes sky-swap { from { opacity: 0; filter: blur(4px); } to { opacity: 1; filter: none; } }
 
-/* ---- "How Keplar works" particle scene (ParticleStory.tsx): a stage that sticks for about three screens while the cloud morphs ---- */
-.story { position: relative; height: 320vh; height: 320svh; }
-.storyStage {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  height: 100svh;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-}
-.storyCanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-/* No GPU (or before three.js arrives): a soft blue glow where the cloud will be */
-.storyGlow {
-  position: absolute;
-  right: 12%;
-  top: 50%;
-  width: min(46vw, 520px);
-  aspect-ratio: 1;
-  translate: 0 -50%;
-  border-radius: 999px;
-  background: radial-gradient(circle, rgb(120 180 245 / 0.55), rgb(169 216 245 / 0.25) 45%, transparent 70%);
-  transition: opacity 0.8s var(--e-standard);
-}
-.storyGlow[data-hidden] { opacity: 0; }
-:global(:root[data-theme="dark"]) .storyGlow { background: radial-gradient(circle, rgb(60 145 225 / 0.5), rgb(40 130 170 / 0.2) 45%, transparent 70%); }
-.storyText {
-  position: relative;
-  width: 100%;
+/* ---- "How Keplar works": an in-flow list on the page background ---- */
+.story {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 0 20px;
-  box-sizing: border-box;
+  padding: 48px 20px 110px;
   display: flex;
   flex-direction: column;
-  gap: 40px;
-  pointer-events: none;
+  gap: 28px;
 }
-.storyTitle { text-align: left; max-width: 18ch; }
+.storyTitle { text-align: center; max-width: 16ch; margin: 0 auto; }
 .storyTitle span { display: block; }
-.storySteps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; max-width: 420px; }
+.storySteps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+@media (min-width: 800px) {
+  .storySteps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 .storySteps li {
   display: flex;
   gap: 16px;
   align-items: flex-start;
   padding: 18px 20px;
-  border-radius: var(--space-r-panel);
-  opacity: 0.4;
-  transition: opacity 0.5s var(--space-ease-out), background-color 0.5s var(--space-ease-out), box-shadow 0.5s var(--space-ease-out), transform 0.6s var(--space-ease-expo);
-}
-.storySteps li[data-active] {
-  opacity: 1;
-  background: var(--space-glass);
-  box-shadow: var(--space-glass-lift);
-  transform: translateX(6px);
-  -webkit-backdrop-filter: blur(18px) saturate(1.4);
-  backdrop-filter: blur(18px) saturate(1.4);
+  border-radius: 20px;
+  background: var(--sky-glass);
+  -webkit-backdrop-filter: blur(6px) saturate(1.12);
+  backdrop-filter: blur(6px) saturate(1.12);
+  box-shadow: var(--glass-depth);
 }
 .storySteps .stepN { flex: none; }
 .storySteps h3 { margin: 0 0 6px; font-size: 20px; font-weight: 600; letter-spacing: -0.03em; }
 .storySteps p { margin: 0; font-size: 15px; line-height: 1.6; color: var(--c-ink-2); }
-
-/* Narrow screens: the cloud fills the upper part of the stage and the steps sit at the bottom, title above the cloud */
-@media (max-width: 900px) {
-  .storyStage { align-items: stretch; }
-  .storyText { justify-content: space-between; padding-block: 96px 28px; gap: 20px; }
-  .storyTitle { text-align: center; max-width: none; margin: 0 auto; font-size: clamp(30px, 8vw, 40px); }
-  .storySteps { max-width: none; gap: 8px; }
-  .storySteps li { padding: 12px 14px; }
-  .storySteps li:not([data-active]) p { display: none; }
-  .storySteps li[data-active] { transform: none; }
-  .storyGlow { right: 50%; top: 42%; translate: 50% -50%; width: 80vw; }
-}
-
-/* Reduced motion: no pinning, the steps read as a plain list beside one still frame of the sphere */
-@media (prefers-reduced-motion: reduce) {
-  .story { height: auto; }
-  .storyStage { position: relative; height: auto; min-height: 640px; padding-block: 48px; }
-  .storySteps li { opacity: 1; transition: none; }
-  .storySteps li p { display: block !important; }
-}
 
 /* Use cases: the wrapper is layout-neutral (the list stays a direct flex child of the section); on phones it folds cases 4-6
    behind a "Show more" button (src/components/ui/MobileMore.tsx). */
@@ -380,27 +356,10 @@
   .card h3 { font-size: 18px; }
   .demo { gap: 20px; padding: 20px 16px; border-radius: 24px; }
 
-  /* How it works: a plain numbered list instead of the pinned three-screen particle scene (ParticleStory never loads three.js here). */
-  .story { height: auto; }
-  .storyStage { position: relative; height: auto; display: block; padding-block: 32px 56px; overflow: visible; }
-  .storyCanvas, .storyGlow { display: none; }
-  .storyText { padding: 0 16px; gap: 20px; justify-content: flex-start; }
+  .story { padding: 32px 16px 56px; gap: 20px; }
   .storyTitle { font-size: 30px; }
-  .storySteps { gap: 0; }
   .storySteps { gap: 8px; }
-  .storySteps li,
-  .storySteps li[data-active] {
-    opacity: 1;
-    padding: 16px;
-    background: var(--space-glass-solid);
-    border-radius: 20px;
-    box-shadow: var(--space-glass-depth);
-    transform: none;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    transition: none;
-  }
-  .storySteps li p { display: block !important; }
+  .storySteps li { padding: 16px; }
   .storySteps .stepN { width: 32px; height: 32px; font-size: 14px; }
   .storySteps h3 { font-size: 18px; margin-bottom: 4px; }
 }

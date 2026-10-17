@@ -9,7 +9,7 @@
  *    (blue-gray bases), a short light march toward the sun, aerial perspective and a Rayleigh-like sky with horizon haze. It runs
  *    at a fraction of the screen resolution with per-pixel jitter (interleaved gradient noise) and is accumulated over frames.
  * 3. COMPOSITE: upscales that (bilinear), adds the small stars through the gaps (dark theme), the precipitation particle layer
- *    (rain / drizzle streaks, snow flakes), the soft lightning glow and a dither, at full resolution.
+ *    (rain / drizzle streaks, snow flakes) and a dither, at full resolution. Lightning does not add a glow.
  *
  * The camera works in the coordinates of the 1600x1000 still (background-size: cover), so a live frame and a still line up.
  */
@@ -363,13 +363,6 @@ void main() {
     float a = flakes(frag, uPrecipAmt * 0.6);
     vec3 tint = uNight > 0.5 ? vec3(0.78, 0.82, 0.92) : vec3(1.0);
     c = mix(c, tint, saturate(a * 0.85));
-  }
-
-  if (uFlash > 0.0) {
-    // soft lightning inside the clouds: lights them from within, mostly where the cloud is
-    float d = length((uv - uFlashPos) * vec2(aspect, 1.0));
-    float glow = exp(-d * d * 2.2) * (0.25 + 0.75 * s.a);
-    c += vec3(0.8, 0.84, 1.0) * uFlash * glow * 0.55;
   }
 
   c += (h21(frag + fract(uTime) * 61.0) - 0.5) / 255.0;

@@ -2,7 +2,7 @@
  * Light theme: the Space UI on a light palette (docs/design/space-ui.md; Dark, the Space theme, is the default). Also Auto when it
  * resolves to light. Every rule here is under :root[data-theme="light"].
  *
- * Cool off-white base (#f7f8fa) with soft blue/lilac/peach/mint auras behind the page, white cards that lift off it with soft cool shadows,
+ * Cool off-white base (#f7f8fa), white cards that lift off it with soft neutral shadows,
  * near-black ink. Contrast: ink #0e0f12 on canvas 18.9:1 · ink-2 #4b4f58 8.1:1 · ink-3 #686d78 5.1:1 on canvas, 4.8:1 on surface-2.
  * The docs keep their own flat white-and-blue skin (docs-theme.css outranks this block).
  */

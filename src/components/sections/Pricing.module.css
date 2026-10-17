@@ -24,9 +24,18 @@
   flex-direction: column;
   padding: var(--s-8) var(--s-6) var(--s-6);
   border-radius: var(--r-card);
-  background: var(--space-glass);
-  box-shadow: var(--space-glass-depth);
+  background: var(--sky-glass);
+  -webkit-backdrop-filter: blur(6px) saturate(1.12);
+  backdrop-filter: blur(6px) saturate(1.12);
+  box-shadow: var(--glass-depth);
   transition: box-shadow var(--space-dur-slow) var(--space-ease-out), transform var(--space-dur-slow) var(--space-ease-expo);
+}
+:global(html[data-lens]) .plan[data-distort] {
+  -webkit-backdrop-filter: url(#liquid-glass-card) blur(6px) saturate(1.12);
+  backdrop-filter: url(#liquid-glass-card) blur(6px) saturate(1.12);
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .plan { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
 
 @media (hover: hover) {
@@ -39,7 +48,7 @@
 
 .plan[data-plan="plus"],
 .plan[data-plan="plus"]:hover {
-  box-shadow: var(--space-glass-lift), 0 0 56px -10px rgb(var(--ring-rgb) / 0.45);
+  box-shadow: var(--space-glass-lift);
 }
 
 .plan[data-plan="business"] {
@@ -152,8 +161,10 @@
   align-items: start;
   padding: var(--s-10);
   border-radius: var(--r-card);
-  background: var(--space-glass);
-  box-shadow: var(--space-glass-depth);
+  background: var(--sky-glass);
+  -webkit-backdrop-filter: blur(6px) saturate(1.12);
+  backdrop-filter: blur(6px) saturate(1.12);
+  box-shadow: var(--glass-depth);
 }
 
 .computeTitle {
@@ -204,7 +215,7 @@
 
 .bars i[data-on] {
   background: linear-gradient(90deg, #a467f0, #d76cff);
-  box-shadow: 0 0 10px rgb(var(--space-aura) / 0.45);
+  box-shadow: none;
 }
 
 @media (max-width: 1080px) {
