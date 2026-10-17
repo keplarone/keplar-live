@@ -62,7 +62,7 @@ export function HomeStart({ showBusiness: _showBusiness, onSeed, onView, onSend,
       <ul className={s.homeChips} aria-label="What you can do">
         {tiles.map((t) => (
           <li key={t.id}>
-            <button type="button" className={s.homeChip} data-tile={t.id} title={t.body} onClick={t.run}>
+            <button type="button" className={s.homeChip} data-glass-live="" data-tile={t.id} title={t.body} onClick={t.run}>
               <svg className={s.homeChipIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{TILE_ICONS[t.id]}</svg>
               {t.title}
             </button>

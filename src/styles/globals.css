@@ -27,12 +27,17 @@ html {
   font-size: calc(16px * var(--ui-scale));
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  background: var(--c-canvas);
+  /* Wash behind the cloud sky, the same pale / graphite the canvas paints, so a late canvas never flashes white or navy. */
+  background: #e4e7eb;
   color: var(--c-ink);
   scroll-behavior: auto;
 }
+:root[data-theme="dark"] { background: #121316; }
 
 body {
+  position: relative;
+  z-index: 0;
+  background: transparent;
   margin: 0;
   font-family: var(--f-sans);
   font-size: var(--t-body);

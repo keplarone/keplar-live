@@ -14,7 +14,7 @@
 @media (max-width: 520px) { .gate { padding: var(--s-6) var(--s-5); } }
 
 /* Space UI (phase B): the gate is a Space card with a semibold, tightly tracked title. */
-.gate { border-radius: var(--space-r-card); background: var(--space-glass); box-shadow: var(--space-glass-depth); }
+.gate { border-radius: var(--space-r-card); background: var(--sky-glass); -webkit-backdrop-filter: blur(16px) saturate(1.45); backdrop-filter: blur(16px) saturate(1.45); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 0 0 1px rgb(255 255 255 / 0.2); }
 .title { font-weight: var(--w-semibold); letter-spacing: -0.045em; }
 @media (min-width: 641px) and (prefers-reduced-motion: no-preference) {
   .gate { animation: spGateIn 0.9s var(--space-ease-expo) both; }

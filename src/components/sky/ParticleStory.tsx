@@ -11,7 +11,7 @@ export function ParticleStory({ title, muted, steps }: { title: string; muted: s
       </h2>
       <ol className={s.storySteps}>
         {steps.map((st, i) => (
-          <li key={st.title}>
+          <li key={st.title} data-glass-live="">
             <span className={s.stepN}>{i + 1}</span>
             <div>
               <h3>{st.title}</h3>

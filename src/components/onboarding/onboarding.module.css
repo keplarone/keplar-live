@@ -132,12 +132,12 @@
 /* ── Space UI (docs/design/space-ui.md, area d; reference: Space Studio entry.css .ob-*). The entry sky behind the setup card;
  *    the card is 28px glass that rises out of a blur, steps slide in with a little horizontal motion blur, chips and the
  *    three-way choice are Space pills, 3D buttons. No outlines. Declared last so it wins at equal specificity. ── */
-.root { isolation: isolate; }
+.root { background: transparent; }
 .root .sky { position: fixed; }
 .top, .card { position: relative; z-index: 1; }
 .brand { font-weight: var(--w-bold); letter-spacing: -0.02em; min-height: 44px; padding: 0 var(--s-4) 0 var(--s-3); border-radius: var(--r-pill); background: var(--space-glass); box-shadow: var(--space-glass-depth); }
 .seg { height: 6px; background: var(--space-track); }
-.card { border-radius: var(--space-r-card); background: var(--space-glass); box-shadow: var(--space-glass-depth); }
+.card { border-radius: var(--space-r-card); background: var(--sky-glass); -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 0 0 1px rgb(255 255 255 / 0.2); }
 :root[data-theme="light"] .card { box-shadow: inset 0 1px 0 #ffffff, 0 2px 4px rgb(14 15 18 / 0.05); }
 @media (min-width: 768px) and (pointer: fine) { .card { -webkit-backdrop-filter: blur(24px) saturate(1.3); backdrop-filter: blur(24px) saturate(1.3); } }
 @media (min-width: 641px) and (prefers-reduced-motion: no-preference) {

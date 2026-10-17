@@ -18,7 +18,9 @@
 /* the sidebar: a fill step darker than nothing, lit by a faint violet aura at the top (no dividing line) */
 .side {
   display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden;
-  background: #050507;
+  background: var(--sky-glass);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  backdrop-filter: blur(16px) saturate(1.4);
   box-shadow: inset -1px 0 0 rgb(255 255 255 / 0.03);
   transition: opacity var(--kb-d-2) var(--kb-ease);
 }

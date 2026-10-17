@@ -1,8 +1,7 @@
 /* ── shell ─────────────────────────────────────────── */
 
-/* Inside the workspace the "liquid glass" tokens resolve to opaque product surfaces (tokens.css). The app has no backdrop art,
-   so translucency only let a menu's or card's background bleed through its text (the Modes menu over the starters, the phone
-   drawer over the greeting). Everything that reads --lg-* inside .app (menus, search, cards, the account menu) inherits this. */
+/* Menus inside the workspace stay opaque: --lg-* resolves to a solid surface so a menu never shows type through type.
+   Cards, the sidebar and the top pills use --sky-glass instead, so the shared cloud sky reads through them. */
 .app {
   --lg-fill: var(--surface-overlay);
   --lg-fill-strong: var(--surface-overlay);
@@ -29,7 +28,7 @@
      bring it back (the shell sat ~70px up with a blank band at the bottom). clip makes the shell never a scroll container; hidden is the fallback. */
   overflow: hidden;
   overflow: clip;
-  background: var(--c-canvas);
+  background: transparent;
   color: var(--c-ink);
 }
 
@@ -356,7 +355,7 @@
   gap: var(--s-3);
   height: 56px;
   padding: 0 var(--s-6);
-  background: var(--c-canvas);
+  background: transparent;
   pointer-events: none;
 }
 
@@ -554,7 +553,7 @@
   gap: var(--s-2);
   /* side inset + safe-area; soft top fade only — no opaque canvas slab stealing chrome */
   padding: var(--s-5) var(--s-6) calc(var(--s-3) + env(safe-area-inset-bottom, 0px));
-  background: var(--c-canvas);
+  background: transparent;
   pointer-events: none;
 }
 
@@ -1498,14 +1497,22 @@ a.sideItem {
  * never does. A calm canvas (no backdrop art behind the work), the sidebar as an opaque card on the left (a slide-in drawer under
  * 900px), a quiet top bar (the chat title as plain text, icon actions that only fill on hover), the greeting with the mark beside
  * it, a raised composer and outlined starter chips. Replaces a light block plus a hex-copied dark twin of it. */
-:global(:root[data-theme]) .app { isolation: isolate; background: var(--c-canvas); }
+:global(:root[data-theme]) .app { background: transparent; }
 :global(:root[data-theme]) .sideWrap { padding: 12px 0 12px 12px; background: transparent; opacity: 1; }
 /* Space UI (docs/design/space-ui.md): the sidebar is a Space Studio glass card (no edge line: depth from the inner highlight and
    the drop), rows are pills, the current row is a raised pill, and New chat leads with the lit 3D disc. */
 :global(:root[data-theme]) .sidebar {
   border-radius: var(--space-r-card);
-  background: var(--space-glass);
-  box-shadow: var(--space-glass-depth);
+  background: var(--sky-glass);
+  -webkit-backdrop-filter: blur(16px) saturate(1.45);
+  backdrop-filter: blur(16px) saturate(1.45);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 0 0 1px rgb(255 255 255 / 0.22);
+}
+:global(html[data-lens][data-theme]) .sidebar[data-distort] {
+  backdrop-filter: url(#liquid-glass) saturate(1.2);
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  :global(:root[data-theme]) .sidebar { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
 :global(:root[data-theme]) .sideItem { border-radius: 999px; font-weight: var(--w-medium); transition: color var(--space-dur-fast) var(--space-ease-out), background-color var(--space-dur-fast) var(--space-ease-out), transform 0.45s var(--space-ease-out); }
 :global(:root[data-theme]) .sideItem:hover { background: var(--hover-wash); }
@@ -1549,10 +1556,12 @@ a.sideItem {
   height: 40px;
   padding: 0;
   border-radius: 999px;
-  background: transparent;
+  background: var(--sky-glass);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  backdrop-filter: blur(12px) saturate(1.4);
   color: var(--c-ink-2);
   opacity: 1;
-  box-shadow: none;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4), inset 0 0 0 1px rgb(255 255 255 / 0.16);
   transition: background-color var(--m-dur-1) var(--m-ease-out), color var(--m-dur-1) var(--m-ease-out);
 }
 :global(:root[data-theme]) .topbar .iconBtn:hover,
@@ -1585,7 +1594,7 @@ a.sideItem {
   font-size: 16px;
   line-height: 1.55;
 }
-:global(:root[data-theme]) .dock { background: linear-gradient(to top, var(--c-canvas) 55%, rgb(var(--rgb-canvas) / 0)); }
+:global(:root[data-theme]) .dock { background: transparent; }
 :global(:root[data-theme]) .dock > * { max-width: 760px; }
 
 /* welcome: the mark beside a plain greeting in ink, the name in a quieter ink; starters as outlined chips */
@@ -1613,9 +1622,11 @@ a.sideItem {
   min-height: 40px;
   padding: 0 16px;
   border-radius: 999px;
-  background: var(--hover-wash);
+  background: var(--sky-glass);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: blur(14px) saturate(1.4);
   border: 1px solid transparent;
-  box-shadow: none;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4), inset 0 0 0 1px rgb(255 255 255 / 0.18);
   color: var(--c-ink-2);
   font-size: 14px;
   transition: background-color var(--m-dur-1) var(--m-ease-out), color var(--m-dur-1) var(--m-ease-out), border-color var(--m-dur-1) var(--m-ease-out);
@@ -1623,7 +1634,12 @@ a.sideItem {
 :global(:root[data-theme]) .homeChip:hover { background: var(--surface-raised); border-color: transparent; color: var(--c-ink); }
 :global(:root[data-theme]) .homeTile,
 :global(:root[data-theme]) .useForOption,
-:global(:root[data-theme]) .example.example { background: var(--surface-raised); box-shadow: var(--elev-1); }
+:global(:root[data-theme]) .example.example {
+  background: var(--sky-glass);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: blur(14px) saturate(1.4);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4), inset 0 0 0 1px rgb(255 255 255 / 0.18);
+}
 
 /* under 900px the sidebar is the slide-in drawer: the same opaque card, so the page behind never reads through it */
 @media (max-width: 899px) {

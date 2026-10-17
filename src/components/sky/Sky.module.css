@@ -4,30 +4,24 @@
  */
 .home {
   position: relative;
-  isolation: isolate;
   color: var(--c-ink);
   overflow-x: clip;
 }
 
-/* Procedural clouds (LandingClouds). Sticky so they stay in the viewport while the page scrolls, and a
-   negative margin so they take no flow space. The gradient is the sky before the canvas paints. */
-.landingSky {
-  position: sticky;
-  top: 0;
-  z-index: 0;
-  height: 100vh;
-  height: 100dvh;
-  margin-bottom: -100vh;
-  margin-bottom: -100dvh;
+/* One sky for every page (SiteClouds, mounted by the root layout). Fixed, behind the document, and a
+   gradient until the canvas paints. z-index -1 stays inside body's stacking context, above the html wash. */
+.siteSky {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
   pointer-events: none;
   overflow: hidden;
   background: linear-gradient(180deg, #e4e7eb 0%, #f7f8fa 78%);
 }
-:global(:root[data-theme="dark"]) .landingSky {
+:global(:root[data-theme="dark"]) .siteSky {
   background: linear-gradient(180deg, #121316 0%, #2a2c31 80%);
 }
 .landingClouds { display: block; width: 100%; height: 100%; }
-.home > :not(.landingSky) { position: relative; z-index: 1; }
 
 /* ---- hero ---- */
 .hero {
@@ -201,16 +195,29 @@
 .featureList .featureRow:focus-visible { box-shadow: var(--space-glass-depth), var(--space-focus-glow); }
 
 .cards3 { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; }
-.card {
-  display: flex;
+.card[data-glass-live],
+.storySteps li[data-glass-live],
+.demo {
+  background: var(--sky-glass);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  backdrop-filter: blur(16px) saturate(1.4);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 0 0 1px rgb(255 255 255 / 0.2);
+}
+:global(html[data-lens]) :is(.card, .storySteps li, .demo)[data-distort] {
+  backdrop-filter: url(#liquid-glass) saturate(1.2);
+}
+:global(:root[data-theme="dark"]) :is(.card[data-glass-live], .storySteps li[data-glass-live], .demo) {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 0 0 1px rgb(255 255 255 / 0.08);
+}
+.card {  display: flex;
   flex-direction: column;
   gap: 12px;
   height: 100%;
   box-sizing: border-box;
   padding: 28px;
-  background: var(--space-glass);
+  background: var(--sky-glass);
   border-radius: var(--space-r-card);
-  box-shadow: var(--space-glass-depth);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 0 0 1px rgb(255 255 255 / 0.2);
   color: var(--c-ink);
   text-decoration: none;
   transition: transform var(--space-dur-slow) var(--space-ease-expo), box-shadow var(--space-dur-slow) var(--space-ease-out);
@@ -224,11 +231,10 @@
 .stepN { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 999px; background: var(--space-p-face); color: var(--space-p-ink); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4), 0 3px 0 var(--step-ledge, #8c8a99); font-size: 15px; font-weight: 700; }
 :global(:root[data-theme="light"]) .stepN { --step-ledge: #000; }
 
-.demo { display: flex; flex-direction: column; gap: 32px; padding: clamp(28px, 5vw, 56px); background: var(--space-glass); border-radius: var(--space-r-card); box-shadow: var(--space-glass-depth); }
+.demo { display: flex; flex-direction: column; gap: 32px; padding: clamp(28px, 5vw, 56px); background: var(--sky-glass); border-radius: var(--space-r-card); -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 0 0 1px rgb(255 255 255 / 0.2); }
 
-.invite { display: flex; flex-direction: column; align-items: center; gap: 24px; text-align: center; padding: clamp(28px, 5vw, 56px); background: rgb(255 255 255 / 0.75); border: 1px solid var(--c-border); border-radius: 32px; box-shadow: 0 40px 100px -50px rgb(14 15 18 / 0.35); }
+.invite { display: flex; flex-direction: column; align-items: center; gap: 24px; text-align: center; padding: clamp(28px, 5vw, 56px); background: var(--sky-glass); border: 0; border-radius: 32px; -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); box-shadow: var(--sky-edge); }
 .invite .note { margin: 0; }
-:global(:root[data-theme="dark"]) .invite { background: var(--c-surface-1); }
 
 /* Space Studio's entry: rise out of a blur. */
 @keyframes sky-rise {
@@ -304,8 +310,10 @@
   align-items: flex-start;
   padding: 18px 20px;
   border-radius: 20px;
-  background: var(--space-glass-solid);
-  box-shadow: var(--space-glass-depth);
+  background: var(--sky-glass);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  backdrop-filter: blur(16px) saturate(1.4);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 0 0 1px rgb(255 255 255 / 0.2);
 }
 .storySteps .stepN { flex: none; }
 .storySteps h3 { margin: 0 0 6px; font-size: 20px; font-weight: 600; letter-spacing: -0.03em; }

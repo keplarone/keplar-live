@@ -28,7 +28,7 @@ export async function Pricing({ headingLevel = "h2", showCompute = true, locale 
           {tiers.map((t) => {
             const x = p.tiers[t.id] ?? { summary: t.summary, features: t.features, cta: t.cta.label };
             return (
-            <MoreRoot as="li" key={t.id} className={s.plan} data-plan={t.id} data-reveal>
+            <MoreRoot as="li" key={t.id} className={s.plan} data-plan={t.id} data-reveal data-glass-live="">
               <Sub className={s.name}>{t.name}</Sub>
               <p className={s.price}>
                 {/* The real price, always: a count-up from $0 read as "$0 per month" to find-in-page, translation and assistive tech. */}

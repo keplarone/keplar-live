@@ -12,6 +12,9 @@
  * Mobile: one blur layer per surface, smaller radius of blur, no lens, no hover morph.
  */
 :root {
+  /* Translucent fill for panels that should show the cloud sky. The app shell remaps --lg-fill to an opaque surface for menus. */
+  --sky-glass: rgb(255 255 255 / 0.34);
+  --sky-edge: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 0 0 1px rgb(255 255 255 / 0.22);
   --lg-fill: rgb(255 255 255 / 0.42);
   --lg-fill-strong: rgb(255 255 255 / 0.62);
   --lg-blur: 8px;
@@ -24,6 +27,8 @@
   --lg-solid: #ffffff;
 }
 :root[data-theme="dark"] {
+  --sky-glass: rgb(22 22 26 / 0.42);
+  --sky-edge: inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 0 0 1px rgb(255 255 255 / 0.08);
   --lg-fill: rgb(30 30 30 / 0.58);
   --lg-fill-strong: rgb(30 30 30 / 0.78);
   /* Dark glass has no white edges (Oct 2026): no highlight, no rim; depth comes from the drop shadow alone. */
@@ -71,6 +76,32 @@ html[data-lens] .lg-lens {
   backdrop-filter: url(#lg-refract) blur(var(--lg-blur)) saturate(var(--lg-sat));
 }
 
+/* Liquid glass panels and nav pills. Blur plus saturation everywhere; the displacement filter (with a
+   one-pixel chromatic split) only on elements that currently hold data-distort, and only in Chromium.
+   A thin neutral highlight is the edge. No bloom. */
+.lg-panel,
+[data-distort],
+[data-glass-live],
+[data-glass-scope] [class*="panel"] {
+  background: var(--sky-glass);
+  -webkit-backdrop-filter: blur(16px) saturate(1.45);
+  backdrop-filter: blur(16px) saturate(1.45);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 0 0 1px rgb(255 255 255 / 0.22);
+}
+:root[data-theme="dark"] .lg-panel,
+:root[data-theme="dark"] [data-distort],
+:root[data-theme="dark"] [data-glass-live],
+:root[data-theme="dark"] [data-glass-scope] [class*="panel"] {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 0 0 1px rgb(255 255 255 / 0.08);
+}
+html[data-lens] [data-distort] {
+  backdrop-filter: url(#liquid-glass) saturate(1.2);
+}
+@media (prefers-reduced-motion: reduce) {
+  :root { --lg-fill: var(--lg-fill-strong); --sky-glass: var(--lg-fill-strong); }
+  html[data-lens] [data-distort] { backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat)); }
+}
+
 /* Liquid response: the surface swells and its corners relax on hover, squashes on press. Fine pointer only. */
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   .lg-morph:hover { transform: scale(1.012); border-radius: calc(var(--lg-radius) + 4px) calc(var(--lg-radius) - 2px) calc(var(--lg-radius) + 4px) calc(var(--lg-radius) - 2px); }
@@ -92,6 +123,11 @@ html[data-lens] .lg-lens {
 @media (max-width: 899px), (pointer: coarse) {
   :root { --lg-blur: 5px; --lg-sat: 1.3; --lg-radius: 20px; }
   html[data-lens] .lg-lens { backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat)); -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat)); }
+  /* redesign.css clears every backdrop-filter on narrow screens. These panels keep a short blur so the sky still reads through. */
+  [data-glass-live], [data-distort], [data-glass-pill], [data-glass-scope] [class*="panel"] {
+    -webkit-backdrop-filter: blur(8px) saturate(1.25) !important;
+    backdrop-filter: blur(8px) saturate(1.25) !important;
+  }
 }
 
 /* Fallbacks: no backdrop-filter, reduced transparency, increased contrast, or flagged low power -> opaque, same shape. */
@@ -99,10 +135,14 @@ html[data-lens] .lg-lens {
   .lg, .lg-strong { background: var(--lg-solid); }
 }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  .lg, .lg-strong, .lg-solid { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .lg, .lg-strong, .lg-solid, .lg-panel, [data-distort], [data-glass-live], [data-glass-scope] [class*="panel"] { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
   .lg::before { display: none; }
 }
-html[data-glass="lite"] .lg, html[data-glass="lite"] .lg-strong { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
+html[data-glass="lite"] .lg,
+html[data-glass="lite"] .lg-strong,
+html[data-glass="lite"] [data-glass-live],
+html[data-glass="lite"] [data-distort],
+html[data-glass="lite"] [data-glass-scope] [class*="panel"] { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
 @media (prefers-reduced-motion: reduce) {
   .lg { transition: background-color 0.1s linear, box-shadow 0.1s linear; }
 }

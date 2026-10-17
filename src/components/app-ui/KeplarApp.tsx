@@ -1147,7 +1147,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                   <ul className={s.examples} aria-label="Example questions">
                     {examplesFor(useFor).map((p) => (
                       <li key={p.label}>
-                        <button type="button" className={s.example} onClick={() => send(p.label, [], { web: false, deepResearch: false, create: false, agent: false })}>
+                        <button type="button" className={s.example} data-glass-live="" onClick={() => send(p.label, [], { web: false, deepResearch: false, create: false, agent: false })}>
                           <span>{p.label}</span>
                           <span className={s.exampleHint}>{p.hint}</span>
                         </button>

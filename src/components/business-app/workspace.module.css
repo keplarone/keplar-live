@@ -8,7 +8,7 @@
   --w-ink: var(--kb-ink); --w-ink-2: var(--kb-ink-2); --w-ink-3: var(--kb-ink-3); --w-accent: var(--kb-accent); --w-ok: var(--kb-add); --w-warn: var(--kb-warn); --w-bad: var(--kb-del);
   --w-mono: var(--kb-mono);
   position: fixed; inset: var(--kp-titlebar, 0px) 0 0 0; z-index: calc(var(--z-overlay) + 1);
-  background: var(--w-bg); color: var(--w-ink); color-scheme: dark;
+  background: transparent; color: var(--w-ink); color-scheme: dark;
   font-family: var(--kb-sans); -webkit-font-smoothing: antialiased; font-size: 14px;
 
   /* The tabs that embed Keplar One screens (Create, Agents, Approvals, Operations, Integrations) read Keplar One's design tokens.

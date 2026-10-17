@@ -421,13 +421,13 @@
 .calmIntro { gap: 12px; }
 .calmTitle { font-size: clamp(32px, 3.4vw, 44px); line-height: 1.08; letter-spacing: -0.035em; font-weight: var(--w-regular); color: var(--c-ink); text-wrap: balance; }
 .calmLede { font-size: 17px; line-height: 1.55; color: var(--c-ink-3); max-width: 46ch; }
-.calmCard { gap: 10px; padding: 18px 18px 12px 22px; border: 0; border-radius: 26px; background: var(--surface-raised); box-shadow: var(--elev-2); }
+.calmCard { gap: 10px; padding: 18px 18px 12px 22px; border: 0; border-radius: 26px; background: var(--sky-glass); -webkit-backdrop-filter: blur(16px) saturate(1.45); backdrop-filter: blur(16px) saturate(1.45); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 0 0 1px rgb(255 255 255 / 0.2); }
 .calmCard:focus-within { box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-2); }
 .calmCard .prompt { font-size: 17px; }
 .calmBar .textBtn { height: 34px; padding: 0 14px; border-radius: 999px; background: var(--hover-wash); color: var(--c-ink); font-size: 13px; text-decoration: none; }
 .calmBar .textBtn:hover { background: var(--press-wash); }
 .calmChips { gap: 8px; }
-.calmChip { height: 38px; padding: 0 16px; border: 1px solid transparent; background: var(--hover-wash); color: var(--c-ink-2); font-size: 14px; box-shadow: none; }
+.calmChip { height: 38px; padding: 0 16px; border: 1px solid transparent; background: var(--sky-glass); -webkit-backdrop-filter: blur(12px) saturate(1.4); backdrop-filter: blur(12px) saturate(1.4); color: var(--c-ink-2); font-size: 14px; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 0 0 1px rgb(255 255 255 / 0.16); }
 .calmChip:hover { background: var(--surface-raised); color: var(--c-ink); }
 
 .shelf { max-width: 1240px; width: 100%; box-sizing: border-box; }

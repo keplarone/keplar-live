@@ -9,10 +9,9 @@
  */
 .root {
   min-height: 100vh;
-  /* transparent and isolated: the shared weather sky (SkyBackdrop, inside this main) shows through, above body's background */
+  /* transparent so the shared cloud sky shows through the glass */
   background: transparent;
   position: relative;
-  isolation: isolate;
   color: var(--kb-ink);
   font-family: var(--kb-sans);
   font-size: var(--kb-t-body);

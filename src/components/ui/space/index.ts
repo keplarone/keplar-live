@@ -15,5 +15,4 @@ export { Input, Textarea, Select, Field } from "./Field";
 export { Tooltip } from "./Tooltip";
 export { RotatingHeadline } from "./RotatingHeadline";
 export { SpaceMotionFilters } from "./MotionFilters";
-export { WeatherSky } from "./WeatherSky";
 export { spaceFx } from "@/lib/fx/space-fx";

@@ -1,5 +1,5 @@
 /* Sign in, sign up and account recovery (Space UI, docs/design/space-ui.md; reference: Space Studio's sign-in, entry.css .si).
- * The site's shared weather sky (SkyBackdrop → WeatherSky, from the marketing layout) fills the screen; the cycling headline sits on it at the left (desktop) and the form is a 28px glass
+ * The shared cloud sky fills the screen; the cycling headline sits on it at the left (desktop) and the form is a 28px glass
  * card on the right. Pill fields with the violet glow while typing, 3D buttons (one primary per form), provider buttons as tall
  * glass pills with the provider's real logo in a chip and a light sweep on hover, the Sign up / Sign in switch as the Space
  * segmented track. No outlines anywhere: depth and light only. Transform, opacity and filter motion; phones stay still. */
@@ -7,12 +7,11 @@
 /* ── Layout ── */
 .shell {
   position: relative;
-  isolation: isolate;
   overflow: clip;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   min-height: 100svh;
-  background: transparent; /* the shared weather sky (WeatherSky) shows through; the form card stays a solid raised surface */
+  background: transparent; /* the shared cloud sky shows through the glass form */
   color: var(--c-ink);
 }
 .formSide {
@@ -36,8 +35,10 @@
   gap: var(--s-6);
   padding: var(--s-8) var(--s-6);
   border-radius: var(--space-r-card);
-  background: var(--space-glass);
-  box-shadow: var(--space-glass-depth);
+  background: var(--sky-glass);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  backdrop-filter: blur(16px) saturate(1.4);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 0 0 1px rgb(255 255 255 / 0.2);
 }
 :root[data-theme="light"] .card { box-shadow: inset 0 1px 0 #ffffff, 0 2px 4px rgb(14 15 18 / 0.05); }
 @media (min-width: 768px) and (pointer: fine) {

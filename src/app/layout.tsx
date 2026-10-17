@@ -16,7 +16,7 @@ import { ButtonFx } from "@/components/ui/ButtonFx";
 import { FitRuntime } from "@/components/ui/FitRuntime";
 import { SmoothCaret } from "@/components/glass/SmoothCaret";
 import { ThemeWatcher } from "@/components/theme/ThemeControl";
-import { GlassCaps, GlassDefs } from "@/components/glass/GlassCaps";
+import { GlassBudget, GlassCaps, GlassDefs } from "@/components/glass/GlassCaps";
 import { TypingFeel } from "@/components/glass/TypingFeel";
 import { InsertMode } from "@/components/glass/InsertMode";
 import { PageMonolith } from "@/components/monolith/PageMonolith";
@@ -25,6 +25,7 @@ import { CommandPalette } from "@/components/nav/CommandPalette";
 import { LocaleHtml } from "@/components/i18n/LocaleHtml";
 import { KitHosts } from "@/components/kit/Hosts";
 import { SpaceMotionFilters } from "@/components/ui/space/MotionFilters";
+import { SiteClouds } from "@/components/sky/clouds/LandingClouds";
 import "@/styles/globals.css";
 import "@/styles/redesign.css";
 
@@ -104,6 +105,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ThemeWatcher />
         <GlassCaps />
+        <GlassBudget />
         <TypingFeel />
         <InsertMode />
         <PageMonolith />
@@ -118,6 +120,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <FitRuntime />
         <SmoothCaret />
         <JsonLd data={siteGraph()} />
+        <SiteClouds />
         <a className="skip-link" href="#main">
           Skip to content
         </a>

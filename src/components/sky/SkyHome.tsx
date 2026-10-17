@@ -9,7 +9,6 @@ import { ModelStack } from "./ModelStack";
 import { DemoWindow } from "./DemoWindow";
 import { FeatureList } from "./FeatureList";
 import { ParticleStory } from "./ParticleStory";
-import { LandingClouds } from "./clouds/LandingClouds";
 import { HeroCta } from "@/components/growth/HeroCta";
 import { MoreButton, MoreRoot } from "@/components/ui/MobileMore";
 import s from "./Sky.module.css";
@@ -42,7 +41,6 @@ export function SkyHome({ pricing }: { pricing?: React.ReactNode }) {
 
   return (
     <div className={s.home}>
-      <LandingClouds />
       <section className={s.hero} aria-labelledby="hero-title">
         <p className={s.badge}>
           <ModelStack />
@@ -84,7 +82,7 @@ export function SkyHome({ pricing }: { pricing?: React.ReactNode }) {
           <ul className={s.cards3} data-reveal-stagger>
             {useCases.map((u, i) => (
               <li key={u.slug} data-reveal data-more-rest={i >= PHONE_CASES ? "" : undefined}>
-                <Link href={u.data!.path} className={`${s.card} ${s.cardLink}`}>
+                <Link href={u.data!.path} className={`${s.card} ${s.cardLink}`} data-glass-live="">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={u.color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{u.icon}</svg>
                   <h3>{u.data!.title}</h3>
                   <p>{u.data!.description}</p>

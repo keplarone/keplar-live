@@ -90,8 +90,6 @@ const nextConfig: NextConfig = {
       { source: "/fonts/:path*", headers: [{ key: "Cache-Control", value: YEAR }, { key: "X-Content-Type-Options", value: "nosniff" }] },
       // Runtime scripts for generated apps, loaded from sandboxed (opaque-origin) previews: cross-origin readable (FX_HEADERS).
       { source: "/fx/:path*", headers: [{ key: "Cache-Control", value: YEAR }, { key: "X-Content-Type-Options", value: "nosniff" }, ...FX_HEADERS] },
-      // The weather sky's stills (public/sky): re-rendered rarely and under the same names, so a day (not a year).
-      { source: "/sky/:path*", headers: [{ key: "Cache-Control", value: DAY }, { key: "X-Content-Type-Options", value: "nosniff" }] },
       { source: "/manifest.webmanifest", headers: [{ key: "Cache-Control", value: DAY }] },
       { source: "/sw.js", headers: [{ key: "Cache-Control", value: "public, max-age=0, must-revalidate" }, { key: "Service-Worker-Allowed", value: "/" }] },
       { source: "/:path*", headers: BASE_HEADERS.filter((h) => h.key !== HSTS) },
