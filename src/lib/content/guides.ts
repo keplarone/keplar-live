@@ -3,6 +3,7 @@
  * Dates are the publication date of the guide as written.
  */
 import { brand } from "@/lib/site";
+import { workedGuides } from "@/lib/seo/worked-guides";
 
 const K = brand.name;
 
@@ -130,6 +131,7 @@ export const guides: Guide[] = [
     ],
     related: ["/ai-slideshow-maker", "/for-founders", "/for-students"],
   },
+  ...workedGuides,
 ];
 
 export const guideBySlug = (slug: string) => guides.find((g) => g.slug === slug);

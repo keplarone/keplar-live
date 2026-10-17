@@ -130,6 +130,7 @@ export const CLUSTERS: Cluster[] = [
       { path: "/use-cases/write-and-edit-with-feedback", role: "support", intent: "Edit a draft with the disagreement shown", label: "Write and edit" },
       { path: "/use-cases/understand-a-document", role: "support", intent: "Understand a long document", label: "Understand a document" },
       { path: "/blogs/best-ai-for-writing", role: "support", intent: "What to look for in an AI writing tool", label: "AI for writing" },
+      { path: "/guides/citation-styles", role: "support", intent: "How APA, MLA, and Chicago lines are arranged from fields you type", label: "Citation styles" },
     ],
   },
   {
@@ -177,6 +178,7 @@ export const CLUSTERS: Cluster[] = [
     productPath: "/docs",
     pages: [
       { path: "/guides", role: "hub", intent: "Short guides for using AI carefully", label: "Guides" },
+      { path: "/guides/free-tool-limits", role: "support", intent: "Which free tools call a model and the caps on those calls", label: "Free tool limits" },
       { path: "/docs", role: "support", intent: "Product documentation", label: "Docs" },
       { path: "/use-cases", role: "support", intent: "Worked tasks", label: "Use cases" },
       { path: "/blogs", role: "support", intent: "Essays on how AI behaves", label: "Blog" },
