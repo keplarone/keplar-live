@@ -9,6 +9,7 @@
  */
 import { Color, Mesh, MeshBasicNodeMaterial, NoToneMapping, OrthographicCamera, PlaneGeometry, Scene, WebGPURenderer } from "three/webgpu";
 import { cloudPalette } from "./palette";
+import type { SkyProfile } from "@/lib/sky/profile";
 import type { CloudHandle } from "./webgl-clouds";
 
 type Tsl = typeof import("three/webgpu").TSL;
@@ -195,13 +196,28 @@ export async function createVolumetric(canvas: HTMLCanvasElement, opts: { dark: 
   };
 
   let disposed = false;
+  let themeDark = opts.dark;
+  let lastProfile: SkyProfile | undefined;
+  const paintLook = (profile?: SkyProfile) => {
+    const next = cloudPalette(themeDark);
+    const gray = profile?.gray ?? 0;
+    const z = new Color(next.zenith);
+    const h = new Color(next.horizon);
+    const l = new Color(next.lit);
+    const s = new Color(next.shadow);
+    (zenith.value as Color).copy(z).lerp(s, gray * 0.34);
+    (horizon.value as Color).copy(h).lerp(s, gray * 0.22);
+    (lit.value as Color).copy(l).lerp(s, gray);
+    (shadow.value as Color).copy(s);
+  };
   return {
     setDark: (dark) => {
-      const next = cloudPalette(dark);
-      (zenith.value as Color).set(next.zenith);
-      (horizon.value as Color).set(next.horizon);
-      (lit.value as Color).set(next.lit);
-      (shadow.value as Color).set(next.shadow);
+      themeDark = dark;
+      paintLook(lastProfile);
+    },
+    setWeather: (profile) => {
+      lastProfile = profile;
+      paintLook(profile);
     },
     resize,
     frame: (seconds) => {

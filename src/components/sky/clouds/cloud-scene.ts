@@ -8,6 +8,9 @@
  * screen, the tab is hidden, or the visitor is typing.
  */
 import { frameGap, isPhone, liteFx } from "@/lib/fx/lite";
+import { FALLBACK_WEATHER } from "@/lib/sky/weather";
+import { precipCount, skyFromQuery, skyProfile, type SkyProfile } from "@/lib/sky/profile";
+import { isSkyVariant } from "@/lib/sky/variants";
 import type { CloudHandle } from "./webgl-clouds";
 
 export type CloudMode = "volumetric" | "mesh" | "billboard";
@@ -27,12 +30,34 @@ function isTyping(): boolean {
   return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || el.isContentEditable;
 }
 
+function settle(profile: SkyProfile, reduce: boolean, phone: boolean): { profile: SkyProfile; count: number } {
+  if (!reduce) return { profile, count: precipCount(profile, { reduce: false, phone }) };
+  return { profile: { ...profile, precip: "none", precipAmount: 0, flash: false }, count: 0 };
+}
+
+async function fetchWeather(signal: AbortSignal): Promise<{ sky: SkyProfile; wind: number }> {
+  try {
+    const res = await fetch("/api/sky/weather", { signal, headers: { accept: "application/json" } });
+    if (!res.ok) return { sky: skyProfile(FALLBACK_WEATHER.sky), wind: 1 };
+    const body = (await res.json()) as { sky?: unknown; wind?: unknown };
+    const sky = isSkyVariant(body.sky) ? body.sky : FALLBACK_WEATHER.sky;
+    const wind = typeof body.wind === "number" && Number.isFinite(body.wind) ? body.wind : 1;
+    return { sky: skyProfile(sky), wind };
+  } catch {
+    return { sky: skyProfile(FALLBACK_WEATHER.sky), wind: 1 };
+  }
+}
+
 export async function mountClouds(canvas: HTMLCanvasElement): Promise<() => void> {
   const mode = chooseCloudMode();
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const phone = isPhone();
+  const forced = skyFromQuery(location.search);
   const dark = () => document.documentElement.getAttribute("data-theme") === "dark";
   let handle: CloudHandle | null = null;
   let disposed = false;
+  let windMul = 1;
+  const initial = settle(skyProfile(forced ?? FALLBACK_WEATHER.sky), reduce, phone);
 
   if (mode === "volumetric") {
     try {
@@ -46,7 +71,12 @@ export async function mountClouds(canvas: HTMLCanvasElement): Promise<() => void
   if (!handle && !disposed) {
     try {
       const webgl = await import("./webgl-clouds");
-      handle = webgl.createWebglClouds(canvas, { mode: mode === "billboard" ? "billboard" : "mesh", dark: dark() });
+      handle = webgl.createWebglClouds(canvas, {
+        mode: mode === "billboard" ? "billboard" : "mesh",
+        dark: dark(),
+        draw: initial.profile,
+        precipMax: phone ? 16 : 48,
+      });
     } catch (err) {
       console.error("landing clouds", err);
       handle = null;
@@ -58,6 +88,7 @@ export async function mountClouds(canvas: HTMLCanvasElement): Promise<() => void
   }
 
   const clouds = handle;
+  clouds.setWeather(initial.profile, initial.count);
   let raf = 0;
   let running = false;
   let onScreen = true;
@@ -67,8 +98,20 @@ export async function mountClouds(canvas: HTMLCanvasElement): Promise<() => void
   const speed = reduce ? 0 : nearStatic ? 0.15 : 1;
 
   const paint = (now: number) => {
-    clouds.frame(reduce ? 0 : (now / 1000) * speed);
+    clouds.frame(reduce ? 0 : (now / 1000) * speed * windMul);
   };
+  const weatherAbort = new AbortController();
+  if (!forced) {
+    const timer = setTimeout(() => weatherAbort.abort(), 2500);
+    void fetchWeather(weatherAbort.signal).then((got) => {
+      clearTimeout(timer);
+      if (disposed) return;
+      const next = settle(got.sky, reduce, phone);
+      windMul = got.wind;
+      clouds.setWeather(next.profile, next.count);
+      paint(performance.now());
+    });
+  }
   const loop = (now: number) => {
     raf = 0;
     if (disposed || !running) return;
@@ -137,6 +180,7 @@ export async function mountClouds(canvas: HTMLCanvasElement): Promise<() => void
 
   return () => {
     disposed = true;
+    weatherAbort.abort();
     stop();
     io.disconnect();
     mo.disconnect();

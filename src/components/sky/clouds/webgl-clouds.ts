@@ -25,11 +25,14 @@ import {
   WebGLRenderer,
 } from "three";
 import { cloudPalette } from "./palette";
+import { fallbackProfile, type SkyProfile } from "@/lib/sky/profile";
 
 export type WebglCloudMode = "mesh" | "billboard";
 
 export type CloudHandle = {
   setDark: (dark: boolean) => void;
+  /** Coverage, greyness, haze and precipitation for the current weather. */
+  setWeather: (profile: SkyProfile, precipCount: number) => void;
   resize: () => void;
   /** `seconds` is the drift clock. Pass the same value again to hold a still frame. */
   frame: (seconds: number) => void;
@@ -46,10 +49,16 @@ void main() {
 const SKY_FRAG = /* glsl */ `
 uniform vec3 uZenith;
 uniform vec3 uHorizon;
+uniform vec3 uHaze;
+uniform float uHazeAmt;
+uniform float uFlash;
 varying vec2 vUv;
 void main() {
   float h = smoothstep(0.0, 0.85, vUv.y);
-  gl_FragColor = vec4(mix(uHorizon, uZenith, h), 1.0);
+  vec3 sky = mix(uHorizon, uZenith, h);
+  sky = mix(sky, uHaze, clamp(uHazeAmt, 0.0, 0.72));
+  sky = mix(sky, vec3(0.78), clamp(uFlash, 0.0, 0.08));
+  gl_FragColor = vec4(sky, 1.0);
 }`;
 
 const MESH_VERT = /* glsl */ `
@@ -74,6 +83,7 @@ varying float vKind;
 uniform vec3 uLit;
 uniform vec3 uShadow;
 uniform vec2 uRes;
+uniform float uClearing;
 void main() {
   vec3 n = normalize(vNormal);
   vec3 light = normalize(vec3(0.42, 0.84, 0.32));
@@ -87,7 +97,7 @@ void main() {
   float alpha = vKind > 1.5 ? 0.48 : 0.92;
   vec2 uvh = gl_FragCoord.xy / max(uRes, vec2(1.0));
   float hero = smoothstep(0.36, 0.12, abs(uvh.x - 0.5)) * smoothstep(0.42, 0.58, uvh.y) * smoothstep(0.98, 0.74, uvh.y);
-  alpha *= 1.0 - hero;
+  alpha *= 1.0 - hero * uClearing;
   if (alpha < 0.02) discard;
   gl_FragColor = vec4(col, alpha);
 }`;
@@ -115,6 +125,7 @@ uniform sampler2D uMap;
 uniform vec3 uLit;
 uniform vec3 uShadow;
 uniform vec2 uRes;
+uniform float uClearing;
 varying vec2 vUv;
 varying float vKind;
 void main() {
@@ -127,9 +138,47 @@ void main() {
   float alpha = smoothstep(0.04, 0.45, dens) * (vKind > 1.5 ? 0.5 : 0.94);
   vec2 uvh = gl_FragCoord.xy / max(uRes, vec2(1.0));
   float hero = smoothstep(0.36, 0.12, abs(uvh.x - 0.5)) * smoothstep(0.42, 0.58, uvh.y) * smoothstep(0.98, 0.74, uvh.y);
-  alpha *= 1.0 - hero;
+  alpha *= 1.0 - hero * uClearing;
   if (alpha < 0.02) discard;
   gl_FragColor = vec4(col, alpha);
+}`;
+
+const PRECIP_VERT = /* glsl */ `
+attribute float aSeed;
+uniform float uTime;
+uniform float uFall;
+uniform float uSway;
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  vec3 center = instanceMatrix[3].xyz;
+  float span = 8.0;
+  center.y = mod(aSeed * span - uTime * uFall, span) - 1.6;
+  center.x += sin(uTime * 0.35 + aSeed * 6.283) * uSway;
+  vec2 scale = vec2(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz));
+  vec3 right = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
+  vec3 up = vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]);
+  vec3 p = center + right * (position.x * scale.x) + up * (position.y * scale.y);
+  gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(p, 1.0);
+}`;
+
+const RAIN_FRAG = /* glsl */ `
+varying vec2 vUv;
+uniform vec3 uColor;
+void main() {
+  float a = smoothstep(0.0, 0.2, vUv.y) * smoothstep(1.0, 0.45, vUv.y) * 0.5;
+  if (a < 0.03) discard;
+  gl_FragColor = vec4(uColor, a);
+}`;
+
+const SNOW_FRAG = /* glsl */ `
+varying vec2 vUv;
+uniform vec3 uColor;
+void main() {
+  float d = length(vUv - 0.5);
+  float a = smoothstep(0.5, 0.12, d) * 0.72;
+  if (a < 0.03) discard;
+  gl_FragColor = vec4(uColor, a);
 }`;
 
 type Puff = { x: number; y: number; z: number; sx: number; sy: number; sz: number; kind: number };
@@ -289,7 +338,50 @@ function cloudTexture(): CanvasTexture {
   return tex;
 }
 
-export function createWebglClouds(canvas: HTMLCanvasElement, opts: { mode: WebglCloudMode; dark: boolean }): CloudHandle {
+function mixHex(a: Vector3, b: Vector3, t: number): Vector3 {
+  return a.clone().lerp(b, Math.min(1, Math.max(0, t)));
+}
+
+function makePrecip(max: number, rain: boolean, color: Vector3) {
+  const seeds = new Float32Array(max);
+  const geo = new PlaneGeometry(1, 1);
+  for (let i = 0; i < max; i++) seeds[i] = Math.random();
+  geo.setAttribute("aSeed", new InstancedBufferAttribute(seeds, 1));
+  const uniforms = {
+    uTime: { value: 0 },
+    uFall: { value: rain ? 3.1 : 0.55 },
+    uSway: { value: rain ? 0.02 : 0.28 },
+    uColor: { value: color },
+  };
+  const mat = new ShaderMaterial({
+    vertexShader: PRECIP_VERT,
+    fragmentShader: rain ? RAIN_FRAG : SNOW_FRAG,
+    uniforms,
+    transparent: true,
+    depthWrite: false,
+    blending: NormalBlending,
+    side: DoubleSide,
+  });
+  const mesh = new InstancedMesh(geo, mat, max);
+  const dummy = new Object3D();
+  for (let i = 0; i < max; i++) {
+    const x = (Math.random() - 0.5) * 16;
+    const z = -1.2 - Math.random() * 5;
+    dummy.position.set(x, Math.random() * 6, z);
+    dummy.scale.set(rain ? 0.018 : 0.11, rain ? 0.7 : 0.11, 1);
+    dummy.updateMatrix();
+    mesh.setMatrixAt(i, dummy.matrix);
+  }
+  mesh.count = 0;
+  mesh.frustumCulled = false;
+  mesh.renderOrder = 2;
+  return { mesh, geo, mat, uniforms };
+}
+
+export function createWebglClouds(
+  canvas: HTMLCanvasElement,
+  opts: { mode: WebglCloudMode; dark: boolean; draw?: SkyProfile; precipMax?: number },
+): CloudHandle {
   // preserveDrawingBuffer: Chromium's backdrop-filter reads this canvas for the liquid-glass lens.
   // With the default discard, that sample is blank and the refraction never bends the sky.
   const renderer = new WebGLRenderer({
@@ -305,8 +397,14 @@ export function createWebglClouds(canvas: HTMLCanvasElement, opts: { mode: Webgl
   camera.position.set(0, 0.35, 6.2);
   camera.lookAt(0, 0.55, 0);
 
-  const pal = cloudPalette(opts.dark);
-  const skyUniforms = { uZenith: { value: srgb(pal.zenith) }, uHorizon: { value: srgb(pal.horizon) } };
+  const pal0 = cloudPalette(opts.dark);
+  const skyUniforms = {
+    uZenith: { value: srgb(pal0.zenith) },
+    uHorizon: { value: srgb(pal0.horizon) },
+    uHaze: { value: srgb(pal0.shadow) },
+    uHazeAmt: { value: 0 },
+    uFlash: { value: 0 },
+  };
   const skyMat = new ShaderMaterial({
     vertexShader: SKY_VERT,
     fragmentShader: SKY_FRAG,
@@ -323,9 +421,10 @@ export function createWebglClouds(canvas: HTMLCanvasElement, opts: { mode: Webgl
   const kinds = new Float32Array(puffs.map((p) => p.kind));
   const cloudUniforms = {
     uTime: { value: 0 },
-    uLit: { value: srgb(pal.lit) },
-    uShadow: { value: srgb(pal.shadow) },
+    uLit: { value: srgb(pal0.lit) },
+    uShadow: { value: srgb(pal0.shadow) },
     uRes: { value: new Vector2(1, 1) },
+    uClearing: { value: 0.55 },
   };
   let tex: CanvasTexture | null = null;
   let geo: SphereGeometry | PlaneGeometry;
@@ -366,6 +465,55 @@ export function createWebglClouds(canvas: HTMLCanvasElement, opts: { mode: Webgl
   mesh.frustumCulled = false;
   scene.add(mesh);
 
+  const precipMax = Math.max(1, Math.min(48, opts.precipMax ?? 48));
+  const rain = makePrecip(precipMax, true, srgb(pal0.shadow));
+  const snow = makePrecip(precipMax, false, srgb(pal0.lit));
+  scene.add(rain.mesh);
+  scene.add(snow.mesh);
+
+  let dark = opts.dark;
+  let draw = opts.draw ?? fallbackProfile();
+
+  const placeClouds = () => {
+    puffs.forEach((p, i) => {
+      const slot = (i + 0.5) / puffs.length;
+      const show = draw.coverage >= 0.95 || p.kind >= 2 || slot > 1 - draw.coverage;
+      const s = show ? draw.bulk : 0.0001;
+      dummy.position.set(p.x, p.y - draw.drop, p.z);
+      dummy.scale.set(p.sx * s, p.sy * s * draw.flat, p.sz * s);
+      dummy.updateMatrix();
+      mesh.setMatrixAt(i, dummy.matrix);
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+  };
+
+  const paintLook = () => {
+    const pal = cloudPalette(dark);
+    const zenith = srgb(pal.zenith);
+    const horizon = srgb(pal.horizon);
+    const lit = srgb(pal.lit);
+    const shadow = srgb(pal.shadow);
+    skyUniforms.uZenith.value.copy(mixHex(zenith, shadow, draw.gray * 0.34));
+    skyUniforms.uHorizon.value.copy(mixHex(horizon, shadow, draw.gray * 0.22));
+    skyUniforms.uHaze.value.copy(mixHex(horizon, shadow, 0.45));
+    skyUniforms.uHazeAmt.value = draw.haze;
+    cloudUniforms.uLit.value.copy(mixHex(lit, shadow, draw.gray));
+    cloudUniforms.uShadow.value.copy(mixHex(shadow, zenith, draw.gray * 0.08));
+    cloudUniforms.uClearing.value = draw.clearing;
+    rain.uniforms.uColor.value.copy(cloudUniforms.uShadow.value);
+    snow.uniforms.uColor.value.copy(cloudUniforms.uLit.value);
+  };
+
+  const applyWeather = (profile: SkyProfile, precipCount: number) => {
+    draw = profile;
+    const n = profile.precip === "none" ? 0 : Math.max(0, Math.min(precipMax, precipCount));
+    rain.mesh.count = profile.precip === "rain" ? n : 0;
+    snow.mesh.count = profile.precip === "snow" ? n : 0;
+    paintLook();
+    placeClouds();
+  };
+  applyWeather(draw, 0);
+
   const resize = () => {
     const w = Math.max(1, canvas.clientWidth);
     const h = Math.max(1, canvas.clientHeight);
@@ -380,17 +528,19 @@ export function createWebglClouds(canvas: HTMLCanvasElement, opts: { mode: Webgl
 
   let disposed = false;
   return {
-    setDark: (dark) => {
-      const next = cloudPalette(dark);
-      skyUniforms.uZenith.value.copy(srgb(next.zenith));
-      skyUniforms.uHorizon.value.copy(srgb(next.horizon));
-      cloudUniforms.uLit.value.copy(srgb(next.lit));
-      cloudUniforms.uShadow.value.copy(srgb(next.shadow));
+    setDark: (next) => {
+      dark = next;
+      paintLook();
     },
+    setWeather: applyWeather,
     resize,
     frame: (seconds) => {
       if (disposed) return;
       cloudUniforms.uTime.value = seconds;
+      rain.uniforms.uTime.value = seconds;
+      snow.uniforms.uTime.value = seconds;
+      const phase = seconds % 10;
+      skyUniforms.uFlash.value = draw.flash && phase > 0.04 && phase < 0.12 ? 0.06 : 0;
       renderer.render(scene, camera);
     },
     dispose: () => {
@@ -399,6 +549,10 @@ export function createWebglClouds(canvas: HTMLCanvasElement, opts: { mode: Webgl
       mat.dispose();
       sky.geometry.dispose();
       skyMat.dispose();
+      rain.geo.dispose();
+      rain.mat.dispose();
+      snow.geo.dispose();
+      snow.mat.dispose();
       tex?.dispose();
       renderer.dispose();
       renderer.forceContextLoss();

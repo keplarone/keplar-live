@@ -149,7 +149,7 @@ export const privacy: LegalDoc = {
       id: "device-information",
       title: "Device and connection information",
       blocks: [
-        { type: "p", text: "Like any website, our servers and hosting provider receive your IP address, browser type and the pages you request. We use this to deliver the site, apply rate limits (including per-IP limits for signed-out Free use) and protect against abuse. The page background does not read your location." },
+        { type: "p", text: "Like any website, our servers and hosting provider receive your IP address, browser type and the pages you request. We use this to deliver the site, apply rate limits (including per-IP limits for signed-out Free use) and protect against abuse. The page background uses the approximate area our host attaches to the request, rounded to about 11 km, only to ask for the current weather. That area is not stored or logged." },
       ],
     },
     {

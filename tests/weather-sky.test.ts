@@ -19,7 +19,9 @@ import {
   SKY_TTL_SECONDS,
 } from "@/lib/sky/weather";
 import { SKY_VARIANTS, skyLook, windFactor } from "@/lib/sky/variants";
+import { precipCount, skyFromQuery, skyProfile } from "@/lib/sky/profile";
 import { GET } from "@/app/api/sky/route";
+import { GET as GET_WEATHER } from "@/app/api/sky/weather/route";
 
 const read = (f: string) => readFileSync(f, "utf8");
 const meteo = (current: Record<string, unknown>, ok = true) => async () => new Response(JSON.stringify({ current }), { status: ok ? 200 : 500 });
@@ -112,7 +114,7 @@ test("fallbacks: no geo headers, timeout or error, bad body all give the neutral
   assert.ok(init.signal instanceof AbortSignal);
   assert.equal(init.next?.revalidate, 900);
   assert.match(read("src/lib/sky/weather.ts"), /AbortSignal\.timeout\(WEATHER_TIMEOUT_MS\)/);
-  assert.match(read("src/lib/sky/weather.ts"), /WEATHER_TIMEOUT_MS = 3000/);
+  assert.match(read("src/lib/sky/weather.ts"), /WEATHER_TIMEOUT_MS = 2000/);
 });
 
 test("?sky=<variant> works only outside production or with KEPLAR_DEV_TOOLS=1", async () => {
@@ -154,7 +156,7 @@ test("GET /api/sky: { sky, wind } only, private 15-minute cache, no cookies", as
   assert.doesNotMatch(JSON.stringify(body), /Paris|lat|lon/i);
 });
 
-test("the weather backdrop is gone: nothing mounts it, and the navy sky gradient is gone", () => {
+test("the old weather backdrop stays unmounted; the cloud sky asks /api/sky/weather", () => {
   assert.equal(existsSync("src/components/ui/space/WeatherSky.tsx"), false);
   assert.equal(existsSync("src/components/sky/SkyBackdrop.tsx"), false);
   assert.equal(existsSync("src/components/space/Starfield.tsx"), false);
@@ -164,9 +166,56 @@ test("the weather backdrop is gone: nothing mounts it, and the navy sky gradient
     assert.doesNotMatch(read(f), /WeatherSky|SkyBackdrop|SpaceBackground|SpaceAura|Starfield/);
   }
   assert.match(read("src/app/layout.tsx"), /<SiteClouds \/>/);
+  const scene = read("src/components/sky/clouds/cloud-scene.ts");
+  assert.match(scene, /\/api\/sky\/weather/);
+  assert.match(scene, /skyFromQuery/);
+  assert.match(scene, /precipCount|settle\(/);
 });
 
-test("privacy policy does not claim the background reads connection location for weather", () => {
-  assert.doesNotMatch(read("src/components/legal/content/privacy.ts"), /local weather/);
-  assert.match(read("src/components/legal/content/privacy.ts"), /page background does not read your location/);
+test("weather states: clear is sparse, overcast is low and grey, rain and snow precipitate, fog hazes", () => {
+  const clear = skyProfile("clear");
+  const part = skyProfile("partly-cloudy");
+  const over = skyProfile("overcast");
+  const fog = skyProfile("fog");
+  const rain = skyProfile("rain");
+  const snow = skyProfile("snow");
+  const storm = skyProfile("thunderstorm");
+  assert.ok(clear.coverage < 0.35 && clear.precip === "none" && clear.bulk < part.bulk);
+  assert.equal(part.precip, "none");
+  assert.equal(part.gray, 0);
+  assert.ok(over.gray > 0.4 && over.drop > part.drop && over.bulk > part.bulk && over.clearing < 0.2);
+  assert.ok(fog.haze > 0.5 && fog.drop > over.drop);
+  assert.equal(rain.precip, "rain");
+  assert.ok(rain.gray > part.gray && rain.precipAmount > 0.5);
+  assert.equal(snow.precip, "snow");
+  assert.equal(storm.precip, "rain");
+  assert.equal(storm.flash, true);
+  assert.ok(storm.gray > rain.gray);
+  assert.equal(precipCount(rain, { reduce: true, phone: false }), 0);
+  assert.equal(precipCount(snow, { reduce: true, phone: true }), 0);
+  assert.equal(precipCount(part, { reduce: false, phone: false }), 0);
+  const phone = precipCount(rain, { reduce: false, phone: true });
+  const desk = precipCount(rain, { reduce: false, phone: false });
+  assert.ok(phone > 0 && phone < desk && phone <= 16 && desk <= 48);
+  assert.equal(skyFromQuery("?sky=rain"), "rain");
+  assert.equal(skyFromQuery("sky=snow"), "snow");
+  assert.equal(skyFromQuery("?sky=tornado"), null);
+  assert.equal(skyFromQuery(""), null);
+});
+
+test("GET /api/sky/weather matches /api/sky: variant and wind only", async () => {
+  const res = await GET_WEATHER(req("https://keplar.one/api/sky/weather"));
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get("cache-control"), "private, max-age=900");
+  const body = (await res.json()) as Record<string, unknown>;
+  assert.deepEqual(Object.keys(body).sort(), ["sky", "wind"]);
+  assert.equal(body.sky, "partly-cloudy");
+});
+
+test("privacy policy says the background weather lookup is rounded and not stored", () => {
+  const privacy = read("src/components/legal/content/privacy.ts");
+  assert.match(privacy, /rounded to about 11 km/);
+  assert.match(privacy, /current weather/);
+  assert.match(privacy, /not stored or logged/);
+  assert.doesNotMatch(privacy, /does not read your location/);
 });
