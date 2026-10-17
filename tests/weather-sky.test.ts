@@ -159,13 +159,20 @@ test("GET /api/sky: { sky, wind } only, private 15-minute cache, no cookies", as
 test("the old weather backdrop stays unmounted; the cloud sky asks /api/sky/weather", () => {
   assert.equal(existsSync("src/components/ui/space/WeatherSky.tsx"), false);
   assert.equal(existsSync("src/components/sky/SkyBackdrop.tsx"), false);
-  assert.equal(existsSync("src/components/space/Starfield.tsx"), false);
+  assert.equal(existsSync("src/components/sky/particle-scene.ts"), false);
+  // Space Studio keeps its own star field. The shared cloud sky is the one that replaced the old weather backdrop.
+  assert.equal(existsSync("src/components/space/Starfield.tsx"), true);
   const css = read("src/styles/space.css");
   assert.doesNotMatch(css, /#0b1531|#3d84d5|\.sp-sky/);
-  for (const f of ["src/app/layout.tsx", "src/app/(marketing)/layout.tsx", "src/app/(business)/layout.tsx", "src/app/not-found.tsx", "src/components/onboarding/Onboarding.tsx", "src/app/(space)/layout.tsx"]) {
+  for (const f of ["src/app/layout.tsx", "src/app/(marketing)/layout.tsx", "src/app/(business)/layout.tsx", "src/app/not-found.tsx", "src/components/onboarding/Onboarding.tsx"]) {
     assert.doesNotMatch(read(f), /WeatherSky|SkyBackdrop|SpaceBackground|SpaceAura|Starfield/);
   }
-  assert.match(read("src/app/layout.tsx"), /<SiteClouds \/>/);
+  const space = read("src/app/(space)/layout.tsx");
+  assert.match(space, /<SpaceBackground \/>/);
+  assert.match(space, /<SpaceAura /);
+  assert.doesNotMatch(space, /WeatherSky|SkyBackdrop/);
+  const root = read("src/app/layout.tsx");
+  assert.match(root, /<SpaceSkyExempt>\s*<SiteClouds \/>\s*<\/SpaceSkyExempt>/);
   const scene = read("src/components/sky/clouds/cloud-scene.ts");
   assert.match(scene, /\/api\/sky\/weather/);
   assert.match(scene, /skyFromQuery/);

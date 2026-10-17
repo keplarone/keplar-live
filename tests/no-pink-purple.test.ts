@@ -15,6 +15,7 @@ const SKIP_FILE = [
   /src\/lib\/critic\//,
   /src\/lib\/site-builder\/lint\.ts$/,
   /src\/lib\/app-builder\/rubric\.ts$/,
+  // Space Studio is exempt: its headline words (Mighty, YOU), aura and star field keep their pink and purple.
   /src\/components\/space\//,
   /src\/app\/\(space\)\//,
   /src\/lib\/space-studio\//,
