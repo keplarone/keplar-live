@@ -16,6 +16,12 @@ test("liquid glass: every glass surface has fallbacks (no backdrop-filter, reduc
   const caps = read("src/components/glass/GlassCaps.tsx");
   assert.match(caps, /prefers-reduced-transparency/);
   assert.match(caps, /id="lg-refract"/);
+  assert.match(caps, /id="liquid-glass-card"/);
+  assert.match(caps, /feDisplacementMap/);
+  const nav = read("src/components/chrome/Nav.module.css");
+  const pills = nav.slice(nav.indexOf(".brand, .links ul"), nav.indexOf(".brand {"));
+  assert.match(pills, /backdrop-filter: none/, "nav pills have no frost");
+  assert.doesNotMatch(pills, /blur\(/);
 });
 
 test("light (the day sky) is the default and Dark / Auto stay selectable", () => {

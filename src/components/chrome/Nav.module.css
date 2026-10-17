@@ -35,15 +35,16 @@
   margin: 0 auto;
 }
 
-/* glass pill surface shared by the brand, the link group and the icon buttons */
+/* Clear pills: no frost. Chromium bends the sharp sky; other browsers keep the tint and the slab edge. */
 .brand, .links ul, .icon, .signIn {
-  background: var(--sky-glass);
-  -webkit-backdrop-filter: blur(16px) saturate(1.45);
-  backdrop-filter: blur(16px) saturate(1.45);
-  box-shadow: var(--sky-edge);
+  background: var(--glass-clear);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: var(--glass-depth);
 }
 :global(html[data-lens]) :is(.brand, .links ul, .icon, .signIn)[data-distort] {
-  backdrop-filter: url(#liquid-glass) saturate(1.2);
+  -webkit-backdrop-filter: url(#liquid-glass);
+  backdrop-filter: url(#liquid-glass);
 }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
   .brand, .links ul, .icon, .signIn { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
@@ -158,10 +159,10 @@
   overflow-y: auto;
   padding: var(--s-6);
   border-radius: var(--space-r-card);
-  background: var(--nav-menu-fill);
-  -webkit-backdrop-filter: blur(26px) saturate(1.3);
-  backdrop-filter: blur(26px) saturate(1.3);
-  box-shadow: var(--space-glass-depth), 0 30px 80px rgb(0 0 0 / 0.35);
+  background: var(--sky-glass);
+  -webkit-backdrop-filter: blur(6px) saturate(1.12);
+  backdrop-filter: blur(6px) saturate(1.12);
+  box-shadow: var(--glass-depth);
   --m-origin: 100% 0;
 }
 .sheet[hidden] { display: none; }

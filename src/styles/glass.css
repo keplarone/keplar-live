@@ -12,9 +12,16 @@
  * Mobile: one blur layer per surface, smaller radius of blur, no lens, no hover morph.
  */
 :root {
-  /* Translucent fill for panels that should show the cloud sky. The app shell remaps --lg-fill to an opaque surface for menus. */
-  --sky-glass: rgb(255 255 255 / 0.34);
-  --sky-edge: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 0 0 1px rgb(255 255 255 / 0.22);
+  /* Cards keep a light body. Pills stay nearly clear so the sky is sharp through them. */
+  --sky-glass: rgb(255 255 255 / 0.22);
+  --glass-clear: rgb(255 255 255 / 0.06);
+  --glass-depth:
+    inset 0 1px 0 rgb(255 255 255 / 0.72),
+    inset 0 0 0 1px rgb(255 255 255 / 0.36),
+    inset 0 -12px 18px rgb(14 15 18 / 0.07),
+    0 1px 1px rgb(14 15 18 / 0.05),
+    0 10px 22px rgb(14 15 18 / 0.12);
+  --sky-edge: var(--glass-depth);
   --lg-fill: rgb(255 255 255 / 0.42);
   --lg-fill-strong: rgb(255 255 255 / 0.62);
   --lg-blur: 8px;
@@ -27,8 +34,15 @@
   --lg-solid: #ffffff;
 }
 :root[data-theme="dark"] {
-  --sky-glass: rgb(22 22 26 / 0.42);
-  --sky-edge: inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 0 0 1px rgb(255 255 255 / 0.08);
+  --sky-glass: rgb(22 22 26 / 0.3);
+  --glass-clear: rgb(12 12 14 / 0.16);
+  --glass-depth:
+    inset 0 1px 0 rgb(255 255 255 / 0.26),
+    inset 0 0 0 1px rgb(255 255 255 / 0.12),
+    inset 0 -14px 20px rgb(0 0 0 / 0.34),
+    0 1px 1px rgb(0 0 0 / 0.25),
+    0 12px 26px rgb(0 0 0 / 0.38);
+  --sky-edge: var(--glass-depth);
   --lg-fill: rgb(30 30 30 / 0.58);
   --lg-fill-strong: rgb(30 30 30 / 0.78);
   /* Dark glass has no white edges (Oct 2026): no highlight, no rim; depth comes from the drop shadow alone. */
@@ -72,34 +86,38 @@
 
 /* Refraction (Chromium: SVG displacement of the backdrop). Subtle on purpose. */
 html[data-lens] .lg-lens {
-  -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
-  backdrop-filter: url(#lg-refract) blur(var(--lg-blur)) saturate(var(--lg-sat));
+  -webkit-backdrop-filter: url(#lg-refract);
+  backdrop-filter: url(#lg-refract);
 }
 
-/* Liquid glass panels and nav pills. Blur plus saturation everywhere; the displacement filter (with a
-   one-pixel chromatic split) only on elements that currently hold data-distort, and only in Chromium.
-   A thin neutral highlight is the edge. No bloom. */
+/* Pills and other non-card glass: clear, no frost. Chromium refracts the sharp sky. */
+[data-glass-pill] {
+  background: var(--glass-clear);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: var(--glass-depth);
+}
+html[data-lens] [data-glass-pill][data-distort] {
+  -webkit-backdrop-filter: url(#liquid-glass);
+  backdrop-filter: url(#liquid-glass);
+}
+/* Cards: the same lens, then a light frost. */
 .lg-panel,
-[data-distort],
 [data-glass-live],
 [data-glass-scope] [class*="panel"] {
   background: var(--sky-glass);
-  -webkit-backdrop-filter: blur(16px) saturate(1.45);
-  backdrop-filter: blur(16px) saturate(1.45);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 0 0 1px rgb(255 255 255 / 0.22);
+  -webkit-backdrop-filter: blur(6px) saturate(1.12);
+  backdrop-filter: blur(6px) saturate(1.12);
+  box-shadow: var(--glass-depth);
 }
-:root[data-theme="dark"] .lg-panel,
-:root[data-theme="dark"] [data-distort],
-:root[data-theme="dark"] [data-glass-live],
-:root[data-theme="dark"] [data-glass-scope] [class*="panel"] {
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 0 0 1px rgb(255 255 255 / 0.08);
-}
-html[data-lens] [data-distort] {
-  backdrop-filter: url(#liquid-glass) saturate(1.2);
+html[data-lens] [data-distort]:not([data-glass-pill]) {
+  -webkit-backdrop-filter: url(#liquid-glass-card) blur(6px) saturate(1.12);
+  backdrop-filter: url(#liquid-glass-card) blur(6px) saturate(1.12);
 }
 @media (prefers-reduced-motion: reduce) {
-  :root { --lg-fill: var(--lg-fill-strong); --sky-glass: var(--lg-fill-strong); }
-  html[data-lens] [data-distort] { backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat)); }
+  :root { --lg-fill: var(--lg-fill-strong); --sky-glass: var(--lg-fill-strong); --glass-clear: rgb(255 255 255 / 0.78); }
+  :root[data-theme="dark"] { --glass-clear: rgb(22 22 26 / 0.82); }
+  [data-glass-pill] { -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
 
 /* Liquid response: the surface swells and its corners relax on hover, squashes on press. Fine pointer only. */
@@ -123,10 +141,14 @@ html[data-lens] [data-distort] {
 @media (max-width: 899px), (pointer: coarse) {
   :root { --lg-blur: 5px; --lg-sat: 1.3; --lg-radius: 20px; }
   html[data-lens] .lg-lens { backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat)); -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat)); }
-  /* redesign.css clears every backdrop-filter on narrow screens. These panels keep a short blur so the sky still reads through. */
-  [data-glass-live], [data-distort], [data-glass-pill], [data-glass-scope] [class*="panel"] {
-    -webkit-backdrop-filter: blur(8px) saturate(1.25) !important;
-    backdrop-filter: blur(8px) saturate(1.25) !important;
+  /* redesign.css clears every backdrop-filter on narrow screens. Cards keep a light frost. Pills stay clear. */
+  [data-glass-live]:not([data-glass-pill]), [data-glass-scope] [class*="panel"] {
+    -webkit-backdrop-filter: blur(6px) saturate(1.12) !important;
+    backdrop-filter: blur(6px) saturate(1.12) !important;
+  }
+  [data-glass-pill] {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
   }
 }
 
@@ -135,12 +157,13 @@ html[data-lens] [data-distort] {
   .lg, .lg-strong { background: var(--lg-solid); }
 }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  .lg, .lg-strong, .lg-solid, .lg-panel, [data-distort], [data-glass-live], [data-glass-scope] [class*="panel"] { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .lg, .lg-strong, .lg-solid, .lg-panel, [data-distort], [data-glass-live], [data-glass-pill], [data-glass-scope] [class*="panel"] { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
   .lg::before { display: none; }
 }
 html[data-glass="lite"] .lg,
 html[data-glass="lite"] .lg-strong,
 html[data-glass="lite"] [data-glass-live],
+html[data-glass="lite"] [data-glass-pill],
 html[data-glass="lite"] [data-distort],
 html[data-glass="lite"] [data-glass-scope] [class*="panel"] { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
 @media (prefers-reduced-motion: reduce) {

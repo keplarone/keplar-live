@@ -95,13 +95,13 @@ export function Nav() {
   return (
     <header className={`${s.wrap} m-vt-nav`} data-keplar-drag data-scrolled={scrolled || undefined} data-open={open || undefined}>
       <div className={s.bar}>
-        <Link href={href("/")} className={s.brand} data-distort="" aria-label={t.home}>
+        <Link href={href("/")} className={s.brand} data-glass-pill="" data-distort="" aria-label={t.home}>
           <KeplarSymbol size={22} className={s.mark} />
           <span className={s.word}>{brand.name}</span>
         </Link>
 
         <nav className={s.links} aria-label={t.siteMenu}>
-          <ul data-distort="">
+          <ul data-glass-pill="" data-distort="">
             {inline.map((l) => (
               <li key={l.href}>
                 <Link href={href(l.href)} className={s.link} aria-current={current(l.href)}>{l.label}</Link>
@@ -111,11 +111,11 @@ export function Nav() {
         </nav>
 
         <div className={s.actions}>
-          <button type="button" className={`${s.icon} ${s.searchBtn}`} data-glass-pill="" onClick={search} aria-label={en ? "Search" : t.search}>
+          <button type="button" className={`${s.icon} ${s.searchBtn}`} data-glass-pill="" data-distort="" onClick={search} aria-label={en ? "Search" : t.search}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></svg>
           </button>
           <ThemeToggle className={`${s.icon} ${s.theme}`} />
-          <Link href={me.signedIn ? "/account" : href(signInHref)} className={s.signIn} data-glass-pill="">
+          <Link href={me.signedIn ? "/account" : href(signInHref)} className={s.signIn} data-glass-pill="" data-distort="">
             {me.signedIn ? t.account : t.signIn}
           </Link>
           {/* "Try Keplar" signed out, "Open Keplar" signed in (CtaLabel: both in the HTML, CSS shows one from <html data-signed>). */}

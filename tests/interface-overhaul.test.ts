@@ -37,7 +37,7 @@ test("menus and the composer stay opaque; the shell and sidebar are liquid glass
   assert.equal((tsx.match(/<Popover /g) ?? []).length, 3, "Attach, Modes and routing are kit Popovers");
   const app = strip(read("src/components/app-ui/App.module.css"));
   assert.match(app, /\.app \{[^}]*--lg-fill: var\(--surface-overlay\)[^}]*--lg-bf: none/, "menus that read the glass tokens stay opaque");
-  assert.match(app, /\.sidebar \{[^}]*background: var\(--sky-glass\)[^}]*backdrop-filter: blur\(16px\)/);
+  assert.match(app, /\.sidebar \{[^}]*background: var\(--sky-glass\)[^}]*backdrop-filter: blur\(6px\)/);
   assert.match(app, /\.app \{[^}]*background: transparent/);
   assert.doesNotMatch(app, /isolation:\s*isolate/);
 });

@@ -164,7 +164,8 @@ function layout(mode: WebglCloudMode): Puff[] {
     for (const [x, y, z, sx, sy, kind] of spots) {
       out.push({ x, y, z, sx, sy, sz: 1, kind });
     }
-    return out;
+    // The deck sits high enough that the top glass (nav pills) has cloud edges behind it.
+    return out.map((p) => ({ ...p, y: p.y + 1.15 }));
   }
   const clusters = [
     { x: -3.3, y: 1.7, z: -1.5 },
@@ -209,7 +210,7 @@ function layout(mode: WebglCloudMode): Puff[] {
       kind: 2,
     });
   }
-  return out;
+  return out.map((p) => ({ ...p, y: p.y + 1.15 }));
 }
 
 /** sRGB 0–1. ShaderMaterial writes gl_FragColor as stored, so Color()'s linear values would crush the dark sky. */
@@ -289,7 +290,15 @@ function cloudTexture(): CanvasTexture {
 }
 
 export function createWebglClouds(canvas: HTMLCanvasElement, opts: { mode: WebglCloudMode; dark: boolean }): CloudHandle {
-  const renderer = new WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: opts.mode === "billboard" ? "low-power" : "default" });
+  // preserveDrawingBuffer: Chromium's backdrop-filter reads this canvas for the liquid-glass lens.
+  // With the default discard, that sample is blank and the refraction never bends the sky.
+  const renderer = new WebGLRenderer({
+    canvas,
+    antialias: false,
+    alpha: false,
+    preserveDrawingBuffer: true,
+    powerPreference: opts.mode === "billboard" ? "low-power" : "default",
+  });
   renderer.setClearColor(0x000000, 1);
   const scene = new Scene();
   const camera = new PerspectiveCamera(40, 1, 0.1, 40);
