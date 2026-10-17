@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { EntryHeadline } from "./EntryHeadline";
-import { EntrySky } from "./EntrySky";
 import s from "./auth.module.css";
 
 type Variant = "signin" | "signup" | "recover";
@@ -33,7 +32,6 @@ export function AuthShell({ variant, nextQs = "", title, lead, notice, children,
   const prefix = copy?.prefix ?? "";
   return (
     <div className={s.shell} data-variant={variant}>
-      <EntrySky />
       <div className={s.formSide}>
         <div className={s.card}>
           {variant !== "recover" ? (

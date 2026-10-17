@@ -1,5 +1,5 @@
 /* Sign in, sign up and account recovery (Space UI, docs/design/space-ui.md; reference: Space Studio's sign-in, entry.css .si).
- * The entry sky (EntrySky) fills the screen; the cycling headline sits on it at the left (desktop) and the form is a 28px glass
+ * The site's shared weather sky (SkyBackdrop → WeatherSky, from the marketing layout) fills the screen; the cycling headline sits on it at the left (desktop) and the form is a 28px glass
  * card on the right. Pill fields with the violet glow while typing, 3D buttons (one primary per form), provider buttons as tall
  * glass pills with the provider's real logo in a chip and a light sweep on hover, the Sign up / Sign in switch as the Space
  * segmented track. No outlines anywhere: depth and light only. Transform, opacity and filter motion; phones stay still. */
