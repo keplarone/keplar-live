@@ -24,62 +24,10 @@ export function GlassCaps() {
 }
 
 /**
- * Distortion is expensive. Nav pills opt in permanently (a handful, always on screen). Cards marked
- * data-glass-live, and settings panels inside data-glass-scope, get the displacement filter only while
- * they are on screen, and at most four of them at once.
+ * The lens is a static attribute on a few pills. Nothing here watches scroll or typing:
+ * restamping data-distort used to flicker cards and rerun filters while the composer was in use.
  */
 export function GlassBudget() {
-  useEffect(() => {
-    const MAX = 4;
-    let frame = 0;
-    const candidates = () => [
-      ...document.querySelectorAll<HTMLElement>("[data-glass-live], [data-glass-scope] [class*='panel']"),
-    ];
-    const pick = () => {
-      frame = 0;
-      const lens = document.documentElement.hasAttribute("data-lens");
-      const list = candidates();
-      if (!lens) {
-        for (const n of list) n.removeAttribute("data-distort");
-        return;
-      }
-      const visible = list.filter((n) => {
-        const r = n.getBoundingClientRect();
-        return r.width > 80 && r.height > 40 && r.bottom > 0 && r.top < window.innerHeight;
-      });
-      visible.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
-      const on = new Set(visible.slice(0, MAX));
-      for (const n of list) {
-        if (on.has(n)) n.setAttribute("data-distort", "");
-        else n.removeAttribute("data-distort");
-      }
-    };
-    const schedule = () => {
-      if (frame) return;
-      frame = requestAnimationFrame(pick);
-    };
-    schedule();
-    const io = new IntersectionObserver(schedule, { rootMargin: "80px" });
-    let observed: HTMLElement[] = [];
-    const watch = () => {
-      for (const n of observed) io.unobserve(n);
-      observed = candidates();
-      for (const n of observed) io.observe(n);
-      schedule();
-    };
-    watch();
-    const mo = new MutationObserver(watch);
-    mo.observe(document.body, { childList: true, subtree: true });
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
-    return () => {
-      if (frame) cancelAnimationFrame(frame);
-      io.disconnect();
-      mo.disconnect();
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
-    };
-  }, []);
   return null;
 }
 
@@ -89,7 +37,7 @@ export function GlassBudget() {
  * Red, green and blue are displaced at different scales and added back, which leaves a
  * thin colour fringe where a cloud edge bends. Scale is in CSS pixels (userSpaceOnUse).
  * The filter region extends well past a short pill so the rim can sample the sky outside it.
- * `liquid-glass` / `lg-refract` are the pill. `liquid-glass-card` is the card.
+ * One pill filter. Cards do not get a displacement map.
  */
 function lens(red: number, green: number, blue: number) {
   return (
@@ -122,7 +70,6 @@ export function GlassDefs() {
     <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true" focusable="false">
       <filter id="liquid-glass" x="-50%" y="-120%" width="200%" height="340%" colorInterpolationFilters="sRGB" primitiveUnits="userSpaceOnUse">{lens(180, 142, 104)}</filter>
       <filter id="lg-refract" x="-50%" y="-120%" width="200%" height="340%" colorInterpolationFilters="sRGB" primitiveUnits="userSpaceOnUse">{lens(180, 142, 104)}</filter>
-      <filter id="liquid-glass-card" x="-50%" y="-120%" width="200%" height="340%" colorInterpolationFilters="sRGB" primitiveUnits="userSpaceOnUse">{lens(170, 136, 102)}</filter>
     </svg>
   );
 }

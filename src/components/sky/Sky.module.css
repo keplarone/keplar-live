@@ -198,14 +198,10 @@
 .card[data-glass-live],
 .storySteps li[data-glass-live],
 .demo {
-  background: var(--sky-glass);
-  -webkit-backdrop-filter: blur(6px) saturate(1.12);
-  backdrop-filter: blur(6px) saturate(1.12);
-  box-shadow: var(--glass-depth);
-}
-:global(html[data-lens]) :is(.card, .storySteps li, .demo)[data-distort] {
-  -webkit-backdrop-filter: blur(6px) saturate(1.12) url(#liquid-glass-card);
-  backdrop-filter: blur(6px) saturate(1.12) url(#liquid-glass-card);
+  background: var(--lg-solid);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
 }
 .card {  display: flex;
   flex-direction: column;
@@ -213,9 +209,9 @@
   height: 100%;
   box-sizing: border-box;
   padding: 28px;
-  background: var(--sky-glass);
+  background: var(--lg-solid);
   border-radius: var(--space-r-card);
-  box-shadow: var(--glass-depth);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
   color: var(--c-ink);
   text-decoration: none;
   transition: transform var(--space-dur-slow) var(--space-ease-expo), box-shadow var(--space-dur-slow) var(--space-ease-out);
@@ -229,9 +225,9 @@
 .stepN { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 999px; background: var(--space-p-face); color: var(--space-p-ink); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4), 0 3px 0 var(--step-ledge, #8c8a99); font-size: 15px; font-weight: 700; }
 :global(:root[data-theme="light"]) .stepN { --step-ledge: #000; }
 
-.demo { display: flex; flex-direction: column; gap: 32px; padding: clamp(28px, 5vw, 56px); background: var(--sky-glass); border-radius: var(--space-r-card); -webkit-backdrop-filter: blur(6px) saturate(1.12); backdrop-filter: blur(6px) saturate(1.12); box-shadow: var(--glass-depth); }
+.demo { display: flex; flex-direction: column; gap: 32px; padding: clamp(28px, 5vw, 56px); background: var(--lg-solid); border-radius: var(--space-r-card); -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: 0 1px 2px rgb(0 0 0 / 0.08); }
 
-.invite { display: flex; flex-direction: column; align-items: center; gap: 24px; text-align: center; padding: clamp(28px, 5vw, 56px); background: var(--sky-glass); border: 0; border-radius: 32px; -webkit-backdrop-filter: blur(6px) saturate(1.12); backdrop-filter: blur(6px) saturate(1.12); box-shadow: var(--sky-edge); }
+.invite { display: flex; flex-direction: column; align-items: center; gap: 24px; text-align: center; padding: clamp(28px, 5vw, 56px); background: var(--lg-solid); border: 0; border-radius: 32px; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: 0 1px 2px rgb(0 0 0 / 0.08); }
 .invite .note { margin: 0; }
 
 /* Space Studio's entry: rise out of a blur. */
@@ -308,10 +304,10 @@
   align-items: flex-start;
   padding: 18px 20px;
   border-radius: 20px;
-  background: var(--sky-glass);
-  -webkit-backdrop-filter: blur(6px) saturate(1.12);
-  backdrop-filter: blur(6px) saturate(1.12);
-  box-shadow: var(--glass-depth);
+  background: var(--lg-solid);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
 }
 .storySteps .stepN { flex: none; }
 .storySteps h3 { margin: 0 0 6px; font-size: 20px; font-weight: 600; letter-spacing: -0.03em; }

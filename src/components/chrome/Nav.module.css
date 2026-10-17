@@ -35,20 +35,24 @@
   margin: 0 auto;
 }
 
-/* Clear pills: no frost. Chromium bends the sharp sky; other browsers keep the tint and the slab edge. */
+/* The bar is solid. The theme switch and Sign in are the only lenses. */
 .brand, .links ul, .icon, .signIn {
-  isolation: isolate;
-  background: var(--glass-clear);
+  background: var(--lg-solid);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.12);
+}
+.theme, .signIn {
+  isolation: isolate;
+  background: var(--glass-clear);
   box-shadow: var(--glass-depth);
 }
-:global(html[data-lens]) :is(.brand, .links ul, .icon, .signIn)[data-distort] {
+:global(html[data-lens]) :is(.theme, .signIn)[data-distort] {
   -webkit-backdrop-filter: url(#liquid-glass);
   backdrop-filter: url(#liquid-glass);
 }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  .brand, .links ul, .icon, .signIn { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .brand, .links ul, .icon, .signIn, .theme { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
 
 /* brand: Space Studio's logo pill; the mark turns a little on hover */
@@ -160,10 +164,10 @@
   overflow-y: auto;
   padding: var(--s-6);
   border-radius: var(--space-r-card);
-  background: var(--sky-glass);
-  -webkit-backdrop-filter: blur(6px) saturate(1.12);
-  backdrop-filter: blur(6px) saturate(1.12);
-  box-shadow: var(--glass-depth);
+  background: var(--lg-solid);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.18);
   --m-origin: 100% 0;
 }
 .sheet[hidden] { display: none; }

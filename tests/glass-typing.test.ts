@@ -16,7 +16,8 @@ test("liquid glass: every glass surface has fallbacks (no backdrop-filter, reduc
   const caps = read("src/components/glass/GlassCaps.tsx");
   assert.match(caps, /prefers-reduced-transparency/);
   assert.match(caps, /id="lg-refract"/);
-  assert.match(caps, /id="liquid-glass-card"/);
+  assert.doesNotMatch(caps, /liquid-glass-card/, "cards do not get a displacement filter");
+  assert.doesNotMatch(caps, /MutationObserver/, "the lens is not restamped while typing or scrolling");
   assert.match(caps, /feDisplacementMap/);
   assert.match(caps, /colorInterpolationFilters="sRGB"/);
   assert.match(caps, /primitiveUnits="userSpaceOnUse"/);

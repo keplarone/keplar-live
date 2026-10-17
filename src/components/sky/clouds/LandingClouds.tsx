@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { afterPaint } from "@/lib/perf/after-paint";
 import s from "../Sky.module.css";
 
@@ -10,10 +11,12 @@ import s from "../Sky.module.css";
  */
 export function SiteClouds() {
   const ref = useRef<HTMLCanvasElement>(null);
+  const path = usePathname() || "/";
+  const space = path === "/space-studio" || path.startsWith("/space-studio/");
 
   useEffect(() => {
     const canvas = ref.current;
-    if (!canvas) return;
+    if (!canvas || space) return;
     let dead = false;
     let stop = () => {};
     const cancel = afterPaint(() => {
@@ -34,7 +37,9 @@ export function SiteClouds() {
       cancel();
       stop();
     };
-  }, []);
+  }, [space]);
+
+  if (space) return null;
 
   return (
     <div className={s.siteSky} aria-hidden="true">
