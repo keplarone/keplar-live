@@ -14,5 +14,7 @@ export function cloudPalette(dark: boolean): CloudPalette {
   if (dark) {
     return { zenith: "#2a4068", horizon: "#3d5a8a", lit: "#68707e", shadow: "#31425c", body: "#d5def2" };
   }
-  return { zenith: "#4f86c8", horizon: "#d5e6f5", lit: "#f7f9fb", shadow: "#7e8c9c", body: "#fff6e4" };
+  // Top is the colour behind the headline, so it stays a light blue that clears AA for the lede.
+  // The lower sky is a deeper blue. Neither is a white wash.
+  return { zenith: "#b7d4ec", horizon: "#6ea0d4", lit: "#f7f9fb", shadow: "#7e8c9c", body: "#fff6e4" };
 }

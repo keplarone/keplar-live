@@ -9,6 +9,7 @@
  */
 import { Color, Mesh, MeshBasicNodeMaterial, NoToneMapping, OrthographicCamera, PlaneGeometry, Scene, WebGPURenderer } from "three/webgpu";
 import { cloudPalette } from "./palette";
+import { fallMultiplier } from "@/lib/sky/journey";
 import type { SkyProfile } from "@/lib/sky/profile";
 import type { CloudHandle } from "./webgl-clouds";
 
@@ -164,13 +165,12 @@ fn cloudShade(uv: vec2<f32>, time: f32, aspect: f32, zenith: vec3<f32>, horizon:
   let banks = smoothstep(0.62, 0.16, left) + smoothstep(0.58, 0.14, right) + smoothstep(0.5, 0.1, top) * 0.7;
   let deck = clamp(cover, 0.55, 1.0);
   col = mix(col, mix(shadow, lit, 0.78), clamp(banks, 0.0, 1.0) * deck * (1.0 - hero));
-  let bodyP = uv - vec2<f32>(0.72, 0.8);
-  let bodyD = length(bodyP * vec2<f32>(1.0, 1.35));
-  let disc = smoothstep(0.046, 0.018, bodyD);
-  let edge = smoothstep(0.085, 0.04, bodyD) * 0.4;
+  let bodyP = uv - vec2<f32>(0.86, 0.9);
+  let bodyD = length(bodyP * vec2<f32>(1.15, 1.35));
+  let disc = smoothstep(0.016, 0.011, bodyD);
   let bodyVis = journey * (1.0 - smoothstep(0.02, 0.42, altitude));
   let bodyCol = mix(vec3<f32>(1.0, 0.96, 0.89), vec3<f32>(0.84, 0.87, 0.95), step(0.5, dark));
-  col = mix(col, bodyCol, (disc + edge * (1.0 - disc)) * bodyVis);
+  col = mix(col, bodyCol, disc * bodyVis);
   let band = journey * smoothstep(0.5, 0.85, altitude) * smoothstep(0.82, 0.5, uv.y);
   var grass = vec3<f32>(0.33, 0.5, 0.27);
   if (ground > 2.5) { grass = vec3<f32>(0.9, 0.93, 0.95); }
@@ -190,13 +190,31 @@ fn cloudShade(uv: vec2<f32>, time: f32, aspect: f32, zenith: vec3<f32>, horizon:
       col = mix(col, vec3<f32>(0.16, 0.18, 0.22), smoothstep(1.0, 0.45, bd));
     }
   }
-  let streak = fract(uv.x * 22.0 + uv.y * 1.6 + time * fall);
-  let rainA = smoothstep(0.04, 0.0, abs(streak - 0.5)) * smoothstep(0.0, 0.2, uv.y) * 0.35;
-  if (fall > 1.2) { col = mix(col, vec3<f32>(0.55, 0.62, 0.7), rainA); }
-  else if (fall > 0.2) {
-    let flake = fract(uv.x * 14.0 + sin(uv.y * 9.0 + time * fall));
-    let snowA = smoothstep(0.06, 0.0, length(vec2<f32>(flake - 0.5, fract(uv.y * 11.0 - time * fall * 0.2) - 0.5))) * 0.55;
-    col = mix(col, vec3<f32>(0.94, 0.96, 0.98), snowA);
+  // Screen-space specks. They fall down only; scroll never shifts them sideways or up.
+  if (fall > 1.2) {
+    for (var r = 0; r < 16; r++) {
+      let s = fract(f32(r) * 0.173 + 0.11);
+      let speed = mix(0.55, 1.25, fract(s * 4.1));
+      let x = fract(s * 7.3);
+      let y = fract(s * 3.7 - time * fall * 0.06 * speed);
+      let len = mix(0.012, 0.026, fract(s * 9.2));
+      let dx = (uv.x - x) * aspect;
+      let dy = uv.y - y;
+      let along = dy * 0.985 + dx * 0.17;
+      let across = abs(dx * 0.985 - dy * 0.17);
+      let drop = smoothstep(len, 0.0, abs(along - len * 0.5)) * smoothstep(0.0014, 0.0003, across);
+      col = mix(col, vec3<f32>(0.62, 0.68, 0.74), drop * mix(0.15, 0.32, s));
+    }
+  } else if (fall > 0.2) {
+    for (var n = 0; n < 22; n++) {
+      let s = fract(f32(n) * 0.217 + 0.3);
+      let x = fract(s * 5.1 + sin(time * 0.35 + s * 6.2) * 0.015);
+      let y = fract(s * 2.7 - time * fall * 0.045);
+      let sz = mix(0.0016, 0.0048, fract(s * 8.0));
+      let d = length((uv - vec2<f32>(x, y)) * vec2<f32>(aspect, 1.0));
+      let flake = smoothstep(sz, sz * 0.4, d);
+      col = mix(col, vec3<f32>(0.94, 0.96, 0.98), flake * mix(0.3, 0.75, s));
+    }
   }
   return vec4<f32>(col, 1.0);
 }`, [asInclude(density)]);
@@ -208,7 +226,7 @@ export async function createVolumetric(canvas: HTMLCanvasElement, opts: { dark: 
   const renderer = new WebGPURenderer({ canvas, antialias: false, alpha: false, depth: false });
   renderer.toneMapping = NoToneMapping;
   await renderer.init();
-  renderer.setClearColor(new Color(opts.dark ? 0x2a4068 : 0x4f86c8), 1);
+  renderer.setClearColor(new Color(opts.dark ? 0x2a4068 : 0xb7d4ec), 1);
   const scene = new Scene();
   const camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
   const pal = cloudPalette(opts.dark);
@@ -294,9 +312,9 @@ export async function createVolumetric(canvas: HTMLCanvasElement, opts: { dark: 
       journey.value = state.journey ? 1 : 0;
       ground.value = state.meadow;
       darkU.value = state.meadow === 1 ? 1 : themeDark ? 1 : 0;
-      if (state.journey && !state.reduce) {
-        const mul = 1 + Math.min(3, Math.max(0, state.scroll) / 900);
-        if (fall.value > 0) fall.value = (lastProfile?.precip === "snow" ? 0.7 : 2.4) * mul;
+      if (fall.value > 0) {
+        const mul = state.reduce ? 1 : fallMultiplier(state.scroll);
+        fall.value = (lastProfile?.precip === "snow" ? 0.7 : 2.4) * mul;
       }
     },
     resize,

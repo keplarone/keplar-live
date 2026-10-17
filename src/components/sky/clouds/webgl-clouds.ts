@@ -25,6 +25,7 @@ import {
   WebGLRenderer,
 } from "three";
 import { cloudPalette } from "./palette";
+import { fallMultiplier } from "@/lib/sky/journey";
 import { fallbackProfile, type SkyProfile } from "@/lib/sky/profile";
 
 export type WebglCloudMode = "mesh" | "billboard";
@@ -75,13 +76,12 @@ void main() {
   vec3 sky = mix(uHorizon, uZenith, h);
   sky = mix(sky, uHaze, clamp(uHazeAmt, 0.0, 0.72));
   sky = mix(sky, vec3(0.78), clamp(uFlash, 0.0, 0.08));
-  // Sun or moon, high above the clouds. A short soft edge, not a bloom.
-  vec2 p = vUv - vec2(0.72, 0.8);
-  float d = length(p * vec2(1.0, 1.35));
-  float disc = smoothstep(0.046, 0.018, d);
-  float edge = smoothstep(0.085, 0.04, d) * 0.4;
+  // Sun or moon: a small hard disc. A soft edge is a glow and it blows out the headline.
+  vec2 p = vUv - vec2(0.86, 0.9);
+  float d = length(p * vec2(1.15, 1.35));
+  float disc = smoothstep(0.016, 0.011, d);
   float vis = uJourney * (1.0 - smoothstep(0.02, 0.42, uAltitude));
-  sky = mix(sky, uBody, (disc + edge * (1.0 - disc)) * vis);
+  sky = mix(sky, uBody, disc * vis);
   // The meadow only appears at the bottom of the landing descent.
   float band = uJourney * smoothstep(0.62, 1.0, uAltitude) * smoothstep(0.48, 0.02, vUv.y);
   vec3 grass = vec3(0.33, 0.5, 0.27);
@@ -188,22 +188,23 @@ uniform float uTime;
 uniform float uFall;
 uniform float uSway;
 uniform float uShear;
+uniform vec2 uPx;
 varying vec2 vUv;
 varying float vSeed;
 void main() {
   vUv = uv;
   vSeed = aSeed;
+  // Clip space, not the camera. Scroll moves the cloud camera; these must not ride with it.
   vec3 center = instanceMatrix[3].xyz;
-  float span = 8.0;
-  float pace = mix(0.62, 1.4, aSeed);
-  center.y = mod(aSeed * span - uTime * uFall * pace, span) - 1.6;
-  center.x += sin(uTime * 0.35 + aSeed * 6.283) * uSway + center.y * uShear * 0.08;
-  vec2 scale = vec2(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz));
-  vec3 right = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
-  vec3 up = vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]);
-  vec3 angled = up + right * uShear;
-  vec3 p = center + right * (position.x * scale.x) + angled * (position.y * scale.y);
-  gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(p, 1.0);
+  float span = 2.4;
+  float pace = mix(0.65, 1.35, aSeed);
+  float y = mod(center.y + 1.2 - uTime * uFall * 0.22 * pace, span) - 1.2;
+  float x = center.x + sin(uTime * 0.45 + aSeed * 6.28318) * uSway;
+  vec2 sizePx = vec2(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz));
+  vec2 side = vec2(cos(uShear), sin(uShear));
+  vec2 dir = vec2(sin(uShear), -cos(uShear));
+  vec2 p = vec2(x, y) + side * (position.x * sizePx.x * uPx.x) + dir * (position.y * sizePx.y * uPx.y);
+  gl_Position = vec4(p, 0.0, 1.0);
 }`;
 
 const RAIN_FRAG = /* glsl */ `
@@ -211,8 +212,8 @@ varying vec2 vUv;
 varying float vSeed;
 uniform vec3 uColor;
 void main() {
-  float a = smoothstep(0.0, 0.2, vUv.y) * smoothstep(1.0, 0.45, vUv.y) * 0.72;
-  if (a < 0.03) discard;
+  float a = smoothstep(0.0, 0.2, vUv.y) * smoothstep(1.0, 0.55, vUv.y) * mix(0.15, 0.35, vSeed);
+  if (a < 0.02) discard;
   gl_FragColor = vec4(uColor, a);
 }`;
 
@@ -244,9 +245,8 @@ varying float vSeed;
 uniform vec3 uColor;
 void main() {
   float d = length(vUv - 0.5);
-  float soft = mix(0.08, 0.42, vSeed);
-  float a = smoothstep(0.5, soft, d) * mix(0.45, 0.85, vSeed);
-  if (a < 0.03) discard;
+  float a = smoothstep(0.5, 0.22, d) * mix(0.3, 0.8, vSeed);
+  if (a < 0.02) discard;
   gl_FragColor = vec4(uColor, a);
 }`;
 
@@ -427,8 +427,9 @@ function makePrecip(max: number, rain: boolean, color: Vector3) {
   const uniforms = {
     uTime: { value: 0 },
     uFall: { value: rain ? 3.1 : 0.55 },
-    uSway: { value: rain ? 0.08 : 0.42 },
-    uShear: { value: rain ? 0.85 : 0.12 },
+    uSway: { value: rain ? 0.012 : 0.04 },
+    uShear: { value: rain ? 0.18 : 0.0 },
+    uPx: { value: new Vector2(2 / 1280, 2 / 800) },
     uColor: { value: color },
   };
   const mat = new ShaderMaterial({
@@ -443,11 +444,11 @@ function makePrecip(max: number, rain: boolean, color: Vector3) {
   const mesh = new InstancedMesh(geo, mat, max);
   const dummy = new Object3D();
   for (let i = 0; i < max; i++) {
-    const x = (Math.random() - 0.5) * 16;
-    const z = -1.2 - Math.random() * 5;
-    dummy.position.set(x, Math.random() * 6, z);
-    const flake = 0.045 + Math.random() * 0.16;
-    dummy.scale.set(rain ? 0.012 + Math.random() * 0.012 : flake, rain ? 0.45 + Math.random() * 0.55 : flake, 1);
+    dummy.position.set((Math.random() - 0.5) * 1.9, (Math.random() - 0.5) * 2.2, 0);
+    const flake = 1 + Math.random() * 3;
+    const rw = 1 + Math.random() * 0.6;
+    const rh = 8 + Math.random() * 10;
+    dummy.scale.set(rain ? rw : flake, rain ? rh : flake, 1);
     dummy.updateMatrix();
     mesh.setMatrixAt(i, dummy.matrix);
   }
@@ -470,7 +471,7 @@ export function createWebglClouds(
     preserveDrawingBuffer: true,
     powerPreference: opts.mode === "billboard" ? "low-power" : "default",
   });
-  renderer.setClearColor(opts.dark ? 0x2a4068 : 0x4f86c8, 1);
+  renderer.setClearColor(opts.dark ? 0x2a4068 : 0xb7d4ec, 1);
   const scene = new Scene();
   const camera = new PerspectiveCamera(40, 1, 0.1, 40);
   camera.position.set(0, 0.35, 6.2);
@@ -652,8 +653,8 @@ void main() {
   const applyWeather = (profile: SkyProfile, precipCount: number) => {
     draw = profile;
     const n = profile.precip === "none" ? 0 : Math.max(0, Math.min(precipMax, precipCount));
-    rain.mesh.count = profile.precip === "rain" ? n : 0;
-    snow.mesh.count = profile.precip === "snow" ? n : 0;
+    rain.mesh.count = profile.precip === "rain" ? Math.min(n, 18) : 0;
+    snow.mesh.count = profile.precip === "snow" ? Math.min(n, 36) : 0;
     paintLook();
     placeClouds();
   };
@@ -666,6 +667,9 @@ void main() {
     const dpr = Math.min(window.devicePixelRatio || 1, cap);
     renderer.setPixelRatio(dpr);
     renderer.setSize(w, h, false);
+    const px = new Vector2(2 / Math.max(1, w), 2 / Math.max(1, h));
+    rain.uniforms.uPx.value.copy(px);
+    snow.uniforms.uPx.value.copy(px);
     cloudUniforms.uRes.value.set(w * dpr, h * dpr);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
@@ -701,7 +705,7 @@ void main() {
       altitude = state.altitude;
       journeyOn = state.journey;
       reduceMotion = state.reduce;
-      scrollMul = state.reduce ? 1 : 1 + Math.min(3, Math.max(0, state.scroll) / 900);
+      scrollMul = state.reduce ? 1 : fallMultiplier(state.scroll);
       skyUniforms.uAltitude.value = state.journey ? state.altitude : 0;
       skyUniforms.uJourney.value = state.journey ? 1 : 0;
       skyUniforms.uGround.value = state.meadow;

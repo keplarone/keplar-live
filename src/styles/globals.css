@@ -53,6 +53,11 @@ body {
 
 /* Shared scroll lock (src/lib/ui/scroll-lock.ts): menus, the palette and the lightbox hold it while open. overscroll-behavior stops
    iOS/Android chaining the overlay's own scroll into the page underneath (no rubber-band bleed). */
+/* The sky canvas is a WebGL layer. Chromium will composite that canvas over text when it sits at
+   z-index -1 alone. Every page root is a stacking context above it, so rain and snow stay behind
+   sections, cards, the nav and the type. */
+#main { position: relative; z-index: 1; isolation: isolate; }
+
 html[data-scroll-lock] { overflow: hidden; overscroll-behavior: none; }
 [role="dialog"][aria-modal="true"] { overscroll-behavior: contain; }
 

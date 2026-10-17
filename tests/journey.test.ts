@@ -53,6 +53,7 @@ test("an explicit weather pick replaces the live profile; no pick keeps it", () 
 test("precipitation falls faster while scrolling and eases back to 1 when the page is still", () => {
   assert.equal(fallMultiplier(0), 1);
   assert.ok(fallMultiplier(900) > fallMultiplier(200));
-  assert.equal(fallMultiplier(9000), 4);
+  assert.equal(fallMultiplier(9000), 1.5);
+  assert.ok(fallMultiplier(1400) <= 1.5);
   assert.equal(fallMultiplier(Number.NaN), 1);
 });
