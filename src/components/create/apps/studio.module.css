@@ -653,3 +653,14 @@
 .intakeQuestion button[aria-pressed="true"] { background:var(--c-ink); color:var(--c-canvas); border-color:var(--c-ink); }
 .intakeQuestion button:focus-visible { outline:2px solid var(--c-ink); outline-offset:3px; }
 @media(pointer:coarse) { .intakeQuestion button { min-height:44px; } }
+
+/* App start: the prompt sits in the middle of the screen; past apps have their own page behind "View recent apps". */
+.recentBar { display: flex; justify-content: flex-end; padding: 12px clamp(16px, 2.4vw, 36px) 0; }
+.recentBar .textBtn { gap: 6px; font-size: 14px; height: 36px; }
+.calm { min-height: calc(100dvh - 230px); justify-content: center; box-sizing: border-box; }
+.recentPage { display: flex; flex-direction: column; }
+.recentEmpty { margin: 48px auto; color: var(--c-ink-3); font-size: 15px; text-align: center; }
+/* On the Recent apps page the cards are a wrapping grid, not the one-row strip. */
+.shelfPage .shelfGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); overflow: visible; scroll-snap-type: none; padding-bottom: 0; }
+.shelfPage .shelfGrid > li { flex: none; }
+@media (max-width: 600px) { .calm { min-height: 0; } .shelfPage .shelfGrid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } }

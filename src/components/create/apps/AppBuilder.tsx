@@ -439,6 +439,24 @@ export function AppBuilder() {
   }, [auto, cfg, current, design, running]);
 
   const free = cfg?.plan === "free";
+  /** "Recent apps" is its own page at /app/create?apps=recent, so Back and shared links work; the prompt keeps its text meanwhile. */
+  const [recent, setRecent] = useState(false);
+  useEffect(() => {
+    const sync = () => setRecent(new URLSearchParams(window.location.search).get("apps") === "recent");
+    sync();
+    window.addEventListener("popstate", sync);
+    return () => window.removeEventListener("popstate", sync);
+  }, []);
+  const showRecent = useCallback((open: boolean) => {
+    try {
+      const url = new URL(window.location.href);
+      if (open) url.searchParams.set("apps", "recent");
+      else url.searchParams.delete("apps");
+      window.history[open ? "pushState" : "replaceState"](null, "", `${url.pathname}${url.search}${url.hash}`);
+    } catch { /* ignore */ }
+    setRecent(open);
+    window.scrollTo?.({ top: 0 });
+  }, []);
   /** Each Options section is the panel of its kit tab. */
   const optPanel = (v: typeof optTab) => ({ id: tabPanelId("kc-opt", v), role: "tabpanel", "aria-labelledby": tabId("kc-opt", v), hidden: optTab !== v });
 
@@ -448,8 +466,17 @@ export function AppBuilder() {
       <div className={s.root}>
         <div className={s.start}>
           <IdeFrame enabled={biz} cfg={cfg} apps={apps} starters={STARTERS} running={running} onStarter={(t) => promptRef.current?.set(t)} onOpenApp={(id) => openApp(id)} getBrief={() => store.text()} auto={auto} design={design} log={live.log}>
-          {/* Minimal pass: one prompt, like Ask. Surprise me, Voice, References, Look and the screen preview sit behind Options. */}
-          <div className={s.calm}>
+          {/* Minimal pass: one prompt, like Ask. Surprise me, Voice, References, Look and the screen preview sit behind Options.
+              Past apps live on their own page (?apps=recent), reached from "View recent apps" at the top right. */}
+          {!recent && apps.length ? (
+            <div className={s.recentBar}>
+              <button type="button" className={s.textBtn} onClick={() => showRecent(true)}>
+                View recent apps
+                <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </button>
+            </div>
+          ) : null}
+          <div className={s.calm} style={recent ? { display: "none" } : undefined}>
             <header className={s.calmIntro}>
               <h2 className={s.calmTitle}><TwoTone text="What do you want to build?" /></h2>
               <p className={s.calmLede}>Describe it or say it. Keplar designs it, writes the code and tests every screen.</p>
@@ -564,9 +591,19 @@ export function AppBuilder() {
             </div>
           </div>
 
-          <AppShelf apps={apps} busy={busy} onOpen={(id) => openApp(id)} onRefine={(id) => openApp(id, true)} onDuplicate={duplicate} onPublish={publish} />
-
-          <p className={s.calmShowcase}>Need ideas? <Link href="/showcase">Browse the showcase</Link></p>
+          {recent ? (
+            <div className={s.recentPage}>
+              <div className={s.recentBar}>
+                <button type="button" className={s.textBtn} onClick={() => showRecent(false)}>
+                  <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8H3M7 4L3 8l4 4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  Back to Create
+                </button>
+              </div>
+              {apps.length ? (
+                <AppShelf className={s.shelfPage} apps={apps} busy={busy} onOpen={(id) => { showRecent(false); openApp(id); }} onRefine={(id) => { showRecent(false); openApp(id, true); }} onDuplicate={duplicate} onPublish={publish} />
+              ) : <p className={s.recentEmpty}>No apps yet. Describe one and Keplar builds it.</p>}
+            </div>
+          ) : null}
           </IdeFrame>
         </div>
         <Dialog open={tuneOpen && Boolean(cfg)} onOpenChange={setTuneOpen} title="Fine-tune the look" className={s.tuneDialog} footer={<Button variant="primary" onClick={() => setTuneOpen(false)}>Done</Button>}>
