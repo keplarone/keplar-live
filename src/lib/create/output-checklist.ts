@@ -78,8 +78,19 @@ function mainCss(files: Record<string, string>): string | null {
   return Object.keys(files).find(isCss) ?? null;
 }
 
+/** Removes every tag, repeating until nothing changes, so a tag split by another tag cannot re-form after one pass. */
+function stripTags(s: string): string {
+  let out = s;
+  for (let i = 0; i < 20; i++) {
+    const next = out.replace(/<[^>]*>?/g, "");
+    if (next === out) return out;
+    out = next;
+  }
+  return out.replace(/</g, "");
+}
+
 function titleFrom(html: string, file: string): string {
-  const h1 = /<h1\b[^>]*>([\s\S]*?)<\/h1>/i.exec(html)?.[1].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+  const h1 = stripTags(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i.exec(html)?.[1] ?? "").replace(/\s+/g, " ").trim();
   if (h1) return h1.slice(0, 80);
   const base = file.replace(/^.*\//, "").replace(/\.html?$/i, "");
   return base === "index" ? "Home" : base.replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());

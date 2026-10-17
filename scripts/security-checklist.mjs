@@ -77,7 +77,7 @@ for (const s of data.sections) {
   lines.push("");
   lines.push("| Control | Status | Evidence | Note |");
   lines.push("|---|---|---|---|");
-  for (const it of s.items) lines.push(`| ${it.item} | ${badge[it.status] ?? it.status} | ${(it.evidence ?? []).map(link).join("<br>")} | ${(it.note ?? "").replace(/\|/g, "\\|")} |`);
+  for (const it of s.items) lines.push(`| ${it.item} | ${badge[it.status] ?? it.status} | ${(it.evidence ?? []).map(link).join("<br>")} | ${(it.note ?? "").replace(/\\/g, "\\\\").replace(/\|/g, "\\|")} |`);
   lines.push("");
 }
 const md = lines.join("\n");
