@@ -51,9 +51,11 @@ export function SkyHome({ pricing }: { pricing?: React.ReactNode }) {
         </h1>
         <p className={s.lede}>{brand.name} uses multiple AI models, compares their perspectives, and gives you one clear, synthesized answer.</p>
         <div className={s.ctas}>
-          <HeroCta href={tryHref} className={s.btnPrimary} />
-          <Link href="/download" className={s.btnSecondary} data-desktop-only="">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
+          <HeroCta href={tryHref} className={`sp-btn ${s.btnPrimary}`} />
+          <Link href="/download" className={`sp-btn ${s.btnSecondary}`} data-sp-btn="" data-variant="secondary" data-size="lg" data-desktop-only="">
+            <span className="sp-btn__label" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
+            </span>
             Download for desktop
           </Link>
         </div>

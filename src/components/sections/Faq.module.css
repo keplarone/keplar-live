@@ -1,4 +1,5 @@
-/* Questions as native <details> rows divided by hairlines (UI v2, docs/ui-v2.md). */
+/* Questions as native <details> (Space UI): each one a glass panel separated by space, never by rules. The plus turns into a
+   minus; the answer resolves in out of a short blur. */
 .section {
   position: relative;
   z-index: var(--z-content);
@@ -16,17 +17,26 @@
 .title {
   font-size: var(--t-title);
   line-height: 1.08;
-  letter-spacing: -0.04em;
-  font-weight: var(--w-regular);
+  letter-spacing: -0.045em;
+  font-weight: var(--w-semibold);
   text-wrap: balance;
 }
 
 .list {
-  border-top: var(--b-hairline) solid var(--hairline-strong);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
 }
 
 .item {
-  border-bottom: var(--b-hairline) solid var(--hairline);
+  border-radius: var(--space-r-panel);
+  background: var(--space-glass);
+  box-shadow: var(--space-glass-depth);
+  transition: box-shadow var(--space-dur-slow) var(--space-ease-out);
+}
+
+.item[open] {
+  box-shadow: var(--space-glass-lift);
 }
 
 .q {
@@ -35,13 +45,14 @@
   align-items: center;
   gap: var(--s-6);
   min-height: 44px;
-  padding: var(--s-5) 0;
+  padding: var(--s-5) var(--s-6);
+  border-radius: var(--space-r-panel);
   cursor: pointer;
   list-style: none;
   font-size: var(--t-body);
-  font-weight: var(--w-medium);
+  font-weight: var(--w-semibold);
   color: var(--c-ink);
-  transition: color var(--m-dur-1) var(--m-ease-out);
+  transition: color var(--space-dur-fast) var(--space-ease-out), background-color var(--space-dur-fast) var(--space-ease-out);
 }
 
 .q::-webkit-details-marker {
@@ -49,13 +60,12 @@
 }
 
 .q:hover {
-  color: var(--c-ink-2);
+  background: var(--hover-wash);
 }
 
 .q:focus-visible {
   outline: none;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  box-shadow: var(--space-focus-glow);
 }
 
 .q i {
@@ -72,9 +82,10 @@
   left: 0;
   right: 0;
   top: 5.5px;
-  height: 1px;
+  height: 1.5px;
+  border-radius: 1px;
   background: var(--c-ink-2);
-  transition: transform var(--m-dur-2) var(--m-ease-out);
+  transition: transform 0.45s var(--space-spring-bouncy);
 }
 
 .q i::after {
@@ -86,10 +97,19 @@
 }
 
 .a {
-  padding: 0 var(--s-12) var(--s-6) 0;
+  padding: 0 var(--s-12) var(--s-6) var(--s-6);
   color: var(--c-ink-2);
   line-height: var(--lh-body);
   max-width: 68ch;
+}
+
+.item[open] .a {
+  animation: faq-in 0.45s var(--space-ease-expo) both;
+}
+
+@keyframes faq-in {
+  from { opacity: 0; transform: translateY(-4px); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: none; }
 }
 
 @media (max-width: 899px) {
@@ -101,14 +121,29 @@
     gap: var(--s-8);
   }
   .a {
-    padding-right: 0;
+    padding-right: var(--s-5);
+    padding-left: var(--s-5);
+  }
+  .q {
+    padding: var(--s-4) var(--s-5);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .q,
   .q i::before,
-  .q i::after {
+  .q i::after,
+  .item {
     transition: none;
+  }
+  .item[open] .a {
+    animation: none;
+  }
+}
+
+/* Phones: calm. The answer simply appears. */
+@media (max-width: 640px) {
+  .item[open] .a {
+    animation: none;
   }
 }

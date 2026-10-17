@@ -1,6 +1,7 @@
 /*
- * Docs-only theme (UI v2, docs/ui-v2.md): the light site look, tuned for reading. A plain cool off-white canvas, white cards with a
- * hairline edge, near-black ink, ink pill buttons, teal (#0a7a8a) for links and the current page. Google Sans throughout.
+ * Docs-only theme: Space UI on paper (docs/design/space-ui.md), tuned for reading. A plain cool off-white canvas, white cards with
+ * depth instead of edges, near-black ink, the Space 3D buttons (ink face on its ledge), pill fields, Montserrat throughout; the docs
+ * keep their own accent, teal (#0a7a8a), for links, the current page and the keyboard glow.
  * Scoped to <html data-docs="1">, which the head script (src/lib/theme.ts THEME_SCRIPT) sets before first paint on /docs/... and on
  * docs.keplar.one, and DocsSkin sets on client-side navigation. The docs are always light.
  *
@@ -33,6 +34,7 @@
   --c-accent: var(--docs-blue);
   --c-cyan: var(--docs-blue);
   --ring-rgb: 10 122 138;
+  --space-focus-glow: 0 0 0 3px rgb(10 122 138 / 0.42), 0 0 22px rgb(10 122 138 / 0.24);
   --c-ink-hover: var(--docs-blue-hover);
   --focus-filter: none;
   --rgb-ink: 14 15 18;
@@ -61,16 +63,9 @@
   --lg-ring: inset 0 0 0 1px var(--docs-line);
   --lg-shadow: 0 0 0 0 transparent;
 
-  /* buttons: solid blue primary, hairline secondary, no shadows */
-  --btn-p-solid: #0e0f12;
-  --btn-p-bg: #0e0f12;
-  --btn-p-ink: #ffffff;
-  --btn-p-shadow: none;
-  --btn-s-bg: #ffffff;
-  --btn-s-ink: var(--c-ink);
-  --btn-s-shadow: inset 0 0 0 1px var(--docs-line-strong);
+  /* buttons: the Space light 3D faces (space.css), unchanged here */
 
-  /* nav: solid white bar, hairline rim, blue CTA */
+  /* nav: solid white bar, depth instead of a rim */
   --blur-nav-rest: 0px;
   --blur-nav-scrolled: 0px;
   --nav-fill: #ffffff;
@@ -88,10 +83,6 @@
   --nav-focus: var(--docs-blue);
   --nav-menu-fill: #ffffff;
   --nav-sheet: #ffffff;
-  --nav-cta-bg: #0e0f12;
-  --nav-cta-solid: #0e0f12;
-  --nav-cta-ink: #ffffff;
-  --nav-cta-shadow: 0 1px 2px rgb(0 0 0 / 0.2), 0 10px 22px -10px rgb(14 15 18 / 0.5);
 
   background: #f7f8fa;
 }
@@ -111,17 +102,18 @@
 :root[data-docs="1"] :is(.lg, .lg-strong)::before,
 :root[data-docs="1"] .lg[data-lit]::after { display: none; }
 
-/* Keyboard focus (only :focus-visible): the site cue from globals.css (a teal underline, or a short bar under icon controls), never an
-   outline box (owner rule, e2e/no-focus-box). The docs drop the brightness filter, so the underline is the cue; the search field
-   shows a teal inset edge while it is being typed in. */
+/* Keyboard focus (only :focus-visible): Space Studio's glow (space.css), in the docs' teal (--space-focus-glow above), never an
+   outline box (owner rule, e2e/no-focus-box). Links inside running text keep a teal underline; the search field glows while it is
+   being typed in. */
 :root[data-docs="1"] :is(a[href], button, summary, input, select, textarea, [tabindex="0"]):focus:not(:focus-visible) { outline: none; }
-:root[data-docs="1"] main :is(a[href], button, summary, [tabindex="0"]):focus-visible {
+:root[data-docs="1"] main [class*="prose"] a[href]:focus-visible {
+  box-shadow: none;
   text-decoration-line: underline;
   text-decoration-thickness: 2px;
   text-decoration-color: var(--docs-blue);
   text-underline-offset: 4px;
 }
-:root[data-docs="1"] main :is(pre, [role="region"])[tabindex="0"]:focus-visible { box-shadow: inset 3px 0 0 var(--docs-blue); }
+:root[data-docs="1"] main :is(pre, [role="region"])[tabindex="0"]:focus-visible { box-shadow: var(--space-focus-glow); }
 
 /* Docs chrome: teal current page, links and active TOC entry. */
 :root[data-docs="1"] main a[aria-current="page"] {
@@ -138,27 +130,27 @@
   text-decoration-color: currentColor;
 }
 :root[data-docs="1"] main :is([class*="sideTitle"], [class*="h1"]) { color: var(--c-ink); }
-:root[data-docs="1"] main [class*="tocLink"][data-active="true"] { color: var(--docs-blue); border-left-color: var(--docs-blue); }
-:root[data-docs="1"] main [class*="searchInput"]:focus-visible { box-shadow: inset 0 0 0 2px var(--docs-blue); }
+:root[data-docs="1"] main [class*="tocLink"][data-active="true"] { color: var(--docs-blue); box-shadow: inset 2px 0 0 var(--docs-blue); }
+:root[data-docs="1"] main [class*="searchInput"]:focus-visible { box-shadow: var(--space-field-depth), var(--space-focus-glow); }
 :root[data-docs="1"] main [class*="callout"] { background: var(--docs-blue-tint); box-shadow: inset 3px 0 0 var(--docs-blue); }
 :root[data-docs="1"] ::selection { background: var(--docs-blue-tint); color: var(--c-ink); }
 
-/* ---- UI v2 docs layout on top of the shared kb styles (kb.module.css) ----
-   The plain off-white canvas (no backdrop), the left menu as one plain card, the current page in a teal tint (not an ink pill),
-   cards that strengthen their edge on hover (no lift). The product surface tokens resolve to their light values here. */
+/* ---- Docs layout on top of the shared kb styles (kb.module.css) ----
+   The plain off-white canvas (no backdrop), the left menu as one 28px card with depth (no edge), the current page in a teal tint,
+   cards that lift on hover. The product surface tokens resolve to their light values here. */
 :root[data-docs="1"] main [class*="kb-module"][class*="__shell"] { background: transparent; }
 :root[data-docs="1"] main [class*="kb-module"][class*="__side"] {
   padding: 18px 12px;
   background: var(--surface-raised);
   border-radius: var(--r-card);
-  box-shadow: inset 0 0 0 1px var(--hairline), var(--elev-1);
+  box-shadow: var(--space-glass-depth);
 }
 :root[data-docs="1"] main [class*="kb-module"][class*="__sideTitle"] { padding: 0 12px; font-size: 17px; letter-spacing: -0.01em; }
-:root[data-docs="1"] main [class*="kb-module"][class*="__side"] a[aria-current="page"] { border-radius: var(--r-xs); }
-:root[data-docs="1"] main [class*="kb-module"][class*="__navLink"] { border-radius: var(--r-xs); }
+:root[data-docs="1"] main [class*="kb-module"][class*="__side"] a[aria-current="page"] { border-radius: 12px; font-weight: var(--w-semibold); }
+:root[data-docs="1"] main [class*="kb-module"][class*="__navLink"] { border-radius: 12px; }
 :root[data-docs="1"] main [class*="kb-module"][class*="__navLink"]:hover:not([aria-current="page"]) { background: var(--hover-wash); }
-:root[data-docs="1"] main [class*="kb-module"][class*="__searchInput"] { border-radius: var(--r-pill); padding-inline: 16px; }
-:root[data-docs="1"] main a[class*="card"]:hover { box-shadow: inset 0 0 0 1px var(--docs-blue-line), var(--elev-1); }
-:root[data-docs="1"] main [class*="callout"] { border-radius: var(--r-md); color: var(--c-ink); }
-:root[data-docs="1"] main [class*="codeBlock"] { background: var(--surface-raised); border-radius: var(--r-md); }
+:root[data-docs="1"] main [class*="kb-module"][class*="__searchInput"] { border-radius: var(--r-pill); padding-inline: 18px; }
+:root[data-docs="1"] main a[class*="card"]:hover { box-shadow: var(--space-glass-lift), 0 0 36px rgb(10 122 138 / 0.14); }
+:root[data-docs="1"] main [class*="callout"] { border-radius: var(--space-r-panel); color: var(--c-ink); }
+:root[data-docs="1"] main [class*="codeBlock"] { background: var(--surface-raised); border-radius: var(--space-r-panel); }
 :root[data-docs="1"] main [class*="prose"] code { background: var(--surface-raised); }

@@ -41,24 +41,24 @@
   flex-direction: column;
 }
 
-/* Kicker: plain small text in the quiet ink */
+/* Kicker: Space Studio's eyebrow (plain text, tracked, uppercase, quiet ink) */
 .eyebrow {
   display: block;
   margin-bottom: var(--s-5);
   font-family: var(--f-sans);
-  font-size: var(--t-small);
-  font-weight: var(--w-medium);
+  font-size: 12px;
+  font-weight: var(--w-semibold);
   line-height: var(--lh-small);
-  letter-spacing: 0;
-  text-transform: none;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   color: var(--c-ink-3);
 }
 
 .title {
   font-size: min(var(--t-headline), 11vw);
   line-height: 1.04;
-  letter-spacing: -0.04em;
-  font-weight: var(--w-regular);
+  letter-spacing: -0.045em;
+  font-weight: var(--w-semibold);
   color: var(--c-ink);
   text-wrap: balance;
 }
@@ -114,8 +114,8 @@
   gap: var(--s-6);
   padding: var(--s-10);
   border-radius: var(--r-card-lg);
-  background: var(--surface-raised);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1);
+  background: var(--space-glass);
+  box-shadow: var(--space-glass-depth);
 }
 
 .row2 {
@@ -157,47 +157,51 @@
   font-size: var(--t-label);
 }
 
+/* Space fields: pills with an inner depth that holds a 3:1 edge (no border), the violet glow while typed in, a red glow when invalid. */
 .input {
   width: 100%;
   height: 52px;
   padding: 0 var(--s-5);
   border: 0;
-  border-radius: var(--r-input);
-  background: var(--c-canvas);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong);
+  border-radius: var(--space-r-field);
+  background: var(--space-field);
+  box-shadow: var(--space-field-depth);
   font: inherit;
   font-size: max(16px, var(--t-body));
+  font-weight: var(--w-medium);
   color: var(--c-ink);
-  transition: box-shadow var(--d-fast) var(--e-standard), background-color var(--d-fast) var(--e-standard);
+  transition: box-shadow var(--space-dur-base) var(--space-ease-out), background-color var(--space-dur-base) var(--space-ease-out);
 }
 
 .input::placeholder {
   color: var(--c-ink-3);
+  font-weight: var(--w-regular);
 }
 
 .input:hover {
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-ink-3);
+  background: var(--space-field-hover);
 }
 
-/* a field being typed in may show it (owner rule): a stronger inset edge, never an outer ring */
 .input:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 var(--b-focus) var(--c-focus);
+  background: var(--space-field-focus);
+  box-shadow: var(--space-field-depth), var(--space-focus-glow);
 }
 
 .input[aria-invalid="true"] {
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-destructive);
+  box-shadow: var(--space-field-depth), 0 0 0 2px rgb(var(--rgb-destructive) / 0.5), 0 0 30px rgb(var(--rgb-destructive) / 0.2);
 }
 
 .input[aria-invalid="true"]:focus-visible {
-  box-shadow: inset 0 0 0 var(--b-focus) var(--c-destructive);
+  box-shadow: var(--space-field-depth), 0 0 0 3px rgb(var(--rgb-destructive) / 0.6), 0 0 30px rgb(var(--rgb-destructive) / 0.25);
 }
 
 .textarea,
 .textareaSm {
   height: auto;
   min-height: 148px;
-  padding: var(--s-4) var(--s-5);
+  padding: var(--s-4) 22px;
+  border-radius: var(--space-r-area);
   line-height: var(--lh-body);
   resize: vertical;
 }
@@ -228,15 +232,16 @@
 }
 
 /* segmented radios */
+/* The Space segmented control: a glass track; the checked option is the lit thumb (the 3D primary face). */
 .segmented {
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: minmax(0, 1fr);
   gap: 2px;
-  padding: 3px;
-  border-radius: var(--r-input);
-  background: var(--hover-wash);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline);
+  padding: 5px;
+  border-radius: var(--r-pill);
+  background: var(--space-track);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.18);
 }
 
 .segment {
@@ -259,8 +264,9 @@
   justify-content: center;
   height: 44px;
   padding: 0 var(--s-2);
-  border-radius: calc(var(--r-input) - 3px);
+  border-radius: var(--r-pill);
   font-size: var(--t-small);
+  font-weight: var(--w-semibold);
   color: var(--c-ink-2);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
@@ -273,19 +279,16 @@
 }
 
 .segment input:checked + span {
-  background: var(--surface-overlay);
-  color: var(--c-ink);
-  font-weight: var(--w-medium);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), var(--elev-1);
+  background: var(--space-p-face);
+  color: var(--space-p-ink);
+  font-weight: var(--w-bold);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4), 0 2px 8px rgb(0 0 0 / 0.25);
 }
 
-/* Keyboard focus on the hidden radio or checkbox: the site cue (an underline on the label), never an outline box */
+/* Keyboard focus on the hidden radio or checkbox: the Space glow around its pill, never an outline box */
 .segment input:focus-visible + span,
 .pill input:focus-visible + span {
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-decoration-color: var(--c-focus);
-  text-underline-offset: 4px;
+  box-shadow: var(--space-focus-glow);
 }
 
 /* interest pills */
@@ -307,9 +310,9 @@
   padding: 0 var(--s-4);
   border-radius: var(--r-pill);
   font-size: var(--t-small);
+  font-weight: var(--w-semibold);
   color: var(--c-ink-2);
-  background: var(--c-canvas);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong);
+  background: var(--space-track);
   pointer-events: none;
   transition: background-color var(--d-fast) var(--e-standard), color var(--d-fast) var(--e-standard), box-shadow var(--d-fast) var(--e-standard);
 }
@@ -325,18 +328,18 @@
 
 .pill:hover span {
   color: var(--c-ink);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-ink-3);
+  background: var(--space-g-hover);
 }
 
 .pill input:checked + span {
-  color: var(--c-canvas);
-  background: var(--c-ink);
-  box-shadow: none;
+  color: var(--space-p-ink);
+  background: var(--space-p-face);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4), 0 2px 8px rgb(0 0 0 / 0.25);
 }
 
 .pill input:checked + span::before {
-  background: var(--c-canvas);
-  box-shadow: none;
+  background: #b27cff;
+  box-shadow: 0 0 8px rgb(var(--space-aura) / 0.8);
 }
 
 /* business reveal */
@@ -363,8 +366,7 @@
   gap: var(--s-6);
   padding: var(--s-6);
   border-radius: var(--r-card);
-  background: var(--c-canvas);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline);
+  background: var(--space-track);
   opacity: 0;
   transform: translateY(-4px);
   transition: opacity var(--d-slow) var(--e-standard), transform var(--d-slow) var(--e-emphasized);
@@ -377,24 +379,27 @@
 
 .businessTitle {
   font-family: var(--f-sans);
-  font-size: var(--t-small);
-  font-weight: var(--w-medium);
-  letter-spacing: 0;
-  text-transform: none;
+  font-size: 12px;
+  font-weight: var(--w-semibold);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   color: var(--c-ink-3);
 }
 
 /* summary + submit */
 .summary {
-  padding: var(--s-4) var(--s-5);
-  border-radius: var(--r-md);
-  background: var(--c-canvas);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--c-destructive);
+  padding: var(--s-4) var(--s-6);
+  border-radius: 24px;
+  background: var(--space-glass);
+  box-shadow: var(--space-glass-depth), 0 0 44px rgb(var(--rgb-destructive) / 0.2);
   font-size: var(--t-small);
+  animation: inq-shake 0.5s var(--space-ease-out) both;
 }
 
+@keyframes inq-shake { 0% { transform: translateX(-8px); } 30% { transform: translateX(6px); } 55% { transform: translateX(-3px); } 100% { transform: none; } }
+
 .summaryTitle {
-  font-weight: var(--w-medium);
+  font-weight: var(--w-semibold);
   margin-bottom: var(--s-2);
 }
 
@@ -431,29 +436,39 @@
   padding-top: var(--s-2);
 }
 
-/* The one primary action: an ink pill. Hover changes colour; press is var(--m-press). */
+/* The one primary action: Space Studio's 3D primary (a lit face over a hard ledge; hover lifts with a violet glow, a press sinks
+   the face into the ledge). */
 .submit {
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
-  height: 52px;
-  padding: 0 var(--s-8);
+  height: 54px;
+  padding: 0 30px;
   border: 0;
   border-radius: var(--r-pill);
-  background: var(--c-ink);
-  color: var(--c-canvas);
-  font-size: var(--t-body);
-  font-weight: var(--w-medium);
+  background: var(--space-p-face);
+  color: var(--space-p-ink);
+  box-shadow: var(--space-p-depth);
+  font-size: 15px;
+  font-weight: var(--w-bold);
   cursor: pointer;
-  transition: background-color var(--m-dur-1) var(--m-ease-out), opacity var(--m-dur-1) var(--m-ease-out);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity var(--space-dur-fast) var(--space-ease-out);
 }
 
 .submit:hover:not(:disabled) {
-  background: var(--c-ink-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--space-p-depth-hover);
 }
 
 .submit:active:not(:disabled) {
-  scale: var(--m-press);
+  transform: translateY(var(--space-ledge));
+  box-shadow: var(--space-p-depth-press);
+  transition-duration: 0.06s;
+}
+
+.submit:focus-visible {
+  outline: none;
+  box-shadow: var(--space-p-depth), var(--space-focus-glow);
 }
 
 .submit:disabled {
@@ -488,7 +503,7 @@
   font-size: var(--t-title);
   line-height: var(--lh-title);
   letter-spacing: -0.035em;
-  font-weight: var(--w-regular);
+  font-weight: var(--w-semibold);
 }
 
 .successBody {
@@ -578,6 +593,7 @@
   .segmented {
     grid-auto-flow: row;
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-radius: 27px; /* two rows: a rounded track, not a stretched pill */
   }
   .business {
     padding: var(--s-4);
@@ -620,7 +636,8 @@
   .submit:active:not(:disabled) {
     scale: none;
   }
-  .success {
+  .success,
+  .summary {
     animation: none;
   }
 }

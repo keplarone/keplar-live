@@ -1,32 +1,36 @@
-/* Help centre (UI v2): the shared hero, calm topic tiles (plain cards), then a sticky topic list beside the questions. Questions are
-   hairline-divided rows that open in place, not panels. No numbers, no glow, no lift; colours are tokens only. */
+/* Help centre (Space UI): the shared hero, topic tiles as 28px glass cards that lift on hover, then a sticky topic rail beside the
+   questions. Each question is a glass panel that opens in place (separated by space, not rules). Colours are tokens only. */
 .wrap { position: relative; z-index: var(--z-content); max-width: var(--l-max); margin: 0 auto; padding: var(--s-4) var(--l-gutter) var(--s-24); }
 .tiles { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: var(--s-3); }
-.tile { display: grid; gap: var(--s-3); align-content: space-between; min-height: 128px; padding: var(--s-6); border-radius: var(--r-card); text-decoration: none; color: var(--c-ink); background: var(--surface-raised); box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1); transition: box-shadow var(--m-dur-1) var(--m-ease-out); }
-.tile:hover { box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), var(--elev-1); }
-.tile:active { scale: var(--m-press); }
+.tile { display: grid; gap: var(--s-3); align-content: space-between; min-height: 128px; padding: var(--s-6); border-radius: var(--r-card); text-decoration: none; color: var(--c-ink); background: var(--space-glass); box-shadow: var(--space-glass-depth); transition: box-shadow var(--space-dur-slow) var(--space-ease-out), transform var(--space-dur-slow) var(--space-ease-expo); }
+.tile:hover { box-shadow: var(--space-glass-lift); transform: translateY(-3px); color: var(--c-ink); }
+.tile:active { transform: translateY(1px) scale(0.995); transition-duration: 0.12s; }
+.tile:focus-visible { box-shadow: var(--space-glass-depth), var(--space-focus-glow); }
 /* Card-sized, not the page title size: five tiles share a row, and at --t-title "Connected apps and the desktop app" broke mid-word ("Connecte / d") and stretched one tile to twice the others. */
 .tiles > li { display: grid; }
-.tileTitle { font-size: clamp(1.25rem, 1.6vw, 2.25rem); line-height: 1.12; letter-spacing: -0.025em; font-weight: var(--w-regular); text-wrap: balance; overflow-wrap: break-word; }
-.tileCount { font-size: var(--t-small); color: var(--c-ink-3); }
+.tileTitle { font-size: clamp(1.25rem, 1.6vw, 2.25rem); line-height: 1.12; letter-spacing: -0.03em; font-weight: var(--w-semibold); text-wrap: balance; overflow-wrap: break-word; }
+.tileCount { font-size: var(--t-small); font-weight: var(--w-semibold); color: var(--c-accent); }
 .body { margin-top: var(--s-20); display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-12); }
 .rail { display: none; }
 .groups { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-16); min-width: 0; max-width: 68rem; } /* explicit minmax(0, …): the implicit track took a 720px line on a 320px phone */
-.group { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; min-width: 0; scroll-margin-top: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-6)); }
+.group { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-2); min-width: 0; scroll-margin-top: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-6)); }
 .groupHead { display: flex; align-items: baseline; gap: var(--s-4); margin-bottom: var(--s-5); }
-.groupTitle { font-size: var(--t-title); line-height: var(--lh-title); letter-spacing: -0.035em; font-weight: var(--w-regular); color: var(--c-ink); text-wrap: balance; }
+.groupTitle { font-size: var(--t-title); line-height: var(--lh-title); letter-spacing: -0.035em; font-weight: var(--w-semibold); color: var(--c-ink); text-wrap: balance; }
 
-/* A question: a hairline row; the answer opens below it */
-.q { border-top: var(--b-hairline) solid var(--hairline); scroll-margin-top: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-6)); }
-.q:last-child { border-bottom: var(--b-hairline) solid var(--hairline); }
-.q summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: var(--s-6); min-height: 44px; padding: var(--s-5) 0; color: var(--c-ink); font-weight: var(--w-medium); font-size: var(--t-body); line-height: 1.4; transition: color var(--m-dur-1) var(--m-ease-out); }
+/* A question: a glass panel; the answer resolves in below it */
+.q { border-radius: var(--space-r-panel); background: var(--space-glass); box-shadow: var(--space-glass-depth); scroll-margin-top: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-6)); transition: box-shadow var(--space-dur-slow) var(--space-ease-out); }
+.q[open] { box-shadow: var(--space-glass-lift); }
+.q summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: var(--s-6); min-height: 44px; padding: var(--s-5) var(--s-6); border-radius: var(--space-r-panel); color: var(--c-ink); font-weight: var(--w-semibold); font-size: var(--t-body); line-height: 1.4; transition: background-color var(--space-dur-fast) var(--space-ease-out); }
+.q summary:focus-visible { outline: none; box-shadow: var(--space-focus-glow); }
 .q summary::-webkit-details-marker { display: none; }
 /* A chevron that turns when the answer opens */
-.q summary::after { content: ""; flex: none; width: 8px; height: 8px; margin-right: var(--s-2); border-right: 1.5px solid var(--c-ink-3); border-bottom: 1.5px solid var(--c-ink-3); rotate: 45deg; translate: 0 -2px; transition: rotate var(--m-dur-2) var(--m-ease-out); }
+.q summary::after { content: ""; flex: none; width: 8px; height: 8px; margin-right: var(--s-2); border-right: 1.5px solid var(--c-ink-3); border-bottom: 1.5px solid var(--c-ink-3); rotate: 45deg; translate: 0 -2px; transition: rotate 0.45s var(--space-spring-bouncy); }
 .q[open] summary::after { rotate: 225deg; translate: 0 2px; }
-.q summary:hover { color: var(--c-ink-2); }
+.q summary:hover { background: var(--hover-wash); }
 .q summary:hover::after { border-color: var(--c-ink); }
-.a { display: grid; gap: var(--s-3); padding: 0 0 var(--s-6); max-width: 68ch; color: var(--c-ink-2); line-height: 1.65; font-size: var(--t-body); }
+.q[open] .a { animation: help-in 0.45s var(--space-ease-expo) both; }
+@keyframes help-in { from { opacity: 0; transform: translateY(-4px); filter: blur(6px); } }
+.a { display: grid; gap: var(--s-3); padding: 0 var(--s-6) var(--s-6); max-width: 68ch; color: var(--c-ink-2); line-height: 1.65; font-size: var(--t-body); }
 .a p { margin: 0; }
 .a a { color: var(--c-ink); text-decoration: underline; text-decoration-color: var(--hairline-strong); text-underline-offset: 3px; }
 .a a:hover { text-decoration-color: currentColor; }
@@ -34,10 +38,10 @@
 @media (min-width: 1100px) {
   .body { grid-template-columns: minmax(200px, 260px) minmax(0, 1fr); column-gap: clamp(48px, 6vw, 140px); }
   .rail { display: block; align-self: start; position: sticky; top: calc(var(--l-nav-h) + var(--l-nav-offset) + var(--s-8)); }
-  .rail h2 { font-size: var(--t-small); font-weight: var(--w-medium); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); margin-bottom: var(--s-3); }
-  .rail ol { list-style: none; margin: 0; padding: 0; border-left: var(--b-hairline) solid var(--hairline-strong); }
-  .rail a { display: block; min-height: 24px; padding: var(--s-1) var(--s-4); margin-left: -1px; border-left: var(--b-hairline) solid transparent; color: var(--c-ink-2); text-decoration: none; font-size: var(--t-small); line-height: 1.4; transition: color var(--m-dur-1) var(--m-ease-out), border-color var(--m-dur-1) var(--m-ease-out); }
-  .rail a:hover { color: var(--c-ink); border-left-color: var(--c-ink); }
+  .rail h2 { font-size: 12px; font-weight: var(--w-semibold); letter-spacing: 0.18em; text-transform: uppercase; color: var(--c-ink-3); margin-bottom: var(--s-3); }
+  .rail ol { list-style: none; margin: 0; padding: 0; box-shadow: inset 1px 0 0 var(--hairline-strong); }
+  .rail a { display: block; min-height: 24px; padding: var(--s-1) var(--s-4); color: var(--c-ink-2); text-decoration: none; font-size: var(--t-small); line-height: 1.4; transition: color var(--space-dur-fast) var(--space-ease-out), box-shadow var(--space-dur-fast) var(--space-ease-out); }
+  .rail a:hover { color: var(--c-ink); box-shadow: inset 2px 0 0 var(--c-accent); }
 }
-@media (max-width: 599px) { .tile { min-height: 0; padding: var(--s-5); } .q summary { padding: var(--s-4) 0; } .a { padding-bottom: var(--s-5); } }
-@media (prefers-reduced-motion: reduce) { .tile, .q summary, .q summary::after, .rail a { transition: none; } .tile:active { scale: none; } }
+@media (max-width: 599px) { .tile { min-height: 0; padding: var(--s-5); } .q summary { padding: var(--s-4) var(--s-5); } .a { padding: 0 var(--s-5) var(--s-5); } .q[open] .a { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .tile, .q, .q summary, .q summary::after, .rail a { transition: none; } .tile:hover, .tile:active { transform: none; } .q[open] .a { animation: none; } }

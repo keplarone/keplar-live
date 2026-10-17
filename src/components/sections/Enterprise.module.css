@@ -61,8 +61,8 @@
   height: 64px;
   margin: -32px 0 0 -32px;
   border-radius: 50%;
-  background: var(--surface-raised);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), var(--elev-2);
+  background: var(--space-glass);
+  box-shadow: var(--space-glass-depth);
   color: var(--c-ink);
 }
 

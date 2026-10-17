@@ -1,40 +1,40 @@
-/* Landing chapters: editorial, asymmetric (4 / 8), hairline rules, one row per feature. Dark by default via tokens. */
+/* Landing chapters: editorial, asymmetric (4 / 8), one row per feature. Space UI: rows separated by space and lifted onto glass on
+   hover (no rules), Space eyebrows, semibold titles. Dark by default via tokens. */
 .chapters { position: relative; z-index: var(--z-content); }
 .wrap { max-width: 1180px; margin: 0 auto; padding: 0 var(--l-gutter); }
-.chapter { padding: clamp(72px, 11vw, 144px) 0; border-top: var(--b-hairline) solid var(--c-border); scroll-margin-top: calc(var(--l-nav-h) + var(--s-4)); }
+.chapter { padding: clamp(72px, 11vw, 144px) 0; scroll-margin-top: calc(var(--l-nav-h) + var(--s-4)); }
 .split { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: clamp(32px, 6vw, 96px); align-items: start; }
 @media (max-width: 900px) { .split { grid-template-columns: minmax(0, 1fr); } }
 .side { position: sticky; top: calc(var(--l-nav-h) + var(--s-10)); }
 @media (max-width: 900px) { .side { position: static; } }
 .head { max-width: 760px; margin-bottom: var(--s-10); }
-.kicker { display: flex; gap: var(--s-3); align-items: baseline; font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-2); margin-bottom: var(--s-4); }
-.kicker b { font-family: var(--f-sans); font-weight: 400; color: var(--c-ink-3); letter-spacing: 0; }
-.title { font-size: clamp(30px, 4.2vw, 52px); line-height: 1.04; letter-spacing: -0.03em; font-weight: var(--w-medium); text-wrap: balance; }
+.kicker { display: flex; gap: var(--s-3); align-items: baseline; font-size: 12px; font-weight: var(--w-semibold); letter-spacing: 0.18em; text-transform: uppercase; color: var(--c-ink-2); margin-bottom: var(--s-4); }
+.kicker b { font-family: var(--f-sans); font-weight: var(--w-semibold); color: var(--c-accent); letter-spacing: 0.18em; }
+.title { font-size: clamp(30px, 4.2vw, 52px); line-height: 1.04; letter-spacing: -0.045em; font-weight: var(--w-semibold); text-wrap: balance; }
 .lede { margin-top: var(--s-4); color: var(--c-ink-2); max-width: 46ch; font-size: var(--t-body); line-height: 1.55; }
 .proof { margin-top: var(--s-8); font-size: var(--t-small); color: var(--c-ink-2); max-width: 70ch; }
 .proof a, .small a { color: var(--c-ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .small { font-size: var(--t-small); color: var(--c-ink-3); }
 
-.list { list-style: none; padding: 0; margin: var(--s-10) 0 0; border-top: var(--b-hairline) solid var(--c-border-strong); }
+.list { list-style: none; padding: 0; margin: var(--s-10) 0 0; display: grid; gap: 2px; }
 .split .list { margin-top: 0; }
 .extra + .list { margin-top: var(--s-10); }
-.row { border-bottom: var(--b-hairline) solid var(--c-border); }
-.rowIn { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr) auto 16px; gap: var(--s-5); align-items: baseline; padding: var(--s-5) 0; color: inherit; text-decoration: none; transition: padding-left 180ms ease, color 160ms ease; }
+.row { border-radius: 20px; }
+.rowIn { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr) auto 16px; gap: var(--s-5); align-items: baseline; padding: var(--s-5) var(--s-4); border-radius: 20px; color: inherit; text-decoration: none; transition: transform var(--space-dur-slow) var(--space-ease-expo), background-color var(--space-dur-fast) var(--space-ease-out), box-shadow var(--space-dur-fast) var(--space-ease-out), color 160ms ease; }
 div.rowIn { grid-template-columns: minmax(0, 4fr) minmax(0, 7fr) auto 16px; }
 @media (max-width: 640px) { .rowIn, div.rowIn { grid-template-columns: minmax(0, 1fr) auto; } .line { grid-column: 1 / -1; grid-row: 2; } .arrow { display: none; } }
-a.rowIn:hover { padding-left: var(--s-2); }
+a.rowIn:hover { transform: translateX(6px); background: var(--space-glass); box-shadow: var(--space-glass-depth); }
 a.rowIn:hover .arrow { transform: translateX(3px); color: var(--c-ink); }
-a.rowIn:focus-visible { outline: none; padding-left: var(--s-2); }
-a.rowIn:focus-visible .name { text-decoration: underline; text-underline-offset: 4px; }
-.name { font-weight: var(--w-medium); color: var(--c-ink); }
+a.rowIn:focus-visible { outline: none; box-shadow: var(--space-focus-glow); }
+.name { font-weight: var(--w-semibold); color: var(--c-ink); }
 .line { color: var(--c-ink-2); font-size: var(--t-small); line-height: 1.5; }
 .note { color: var(--c-ink-3); }
-.status { font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); white-space: nowrap; }
+.status { font-size: var(--t-label); font-weight: var(--w-semibold); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); white-space: nowrap; }
 .status[data-s="live"] { color: var(--v-verified, var(--c-ok)); }
 .status[data-s="beta"] { color: var(--v-attention, var(--c-attention)); }
 .row[data-s="soon"] .name { color: var(--c-ink-2); }
 .arrow { width: 16px; height: 16px; color: var(--c-ink-3); transition: transform 180ms ease, color 160ms ease; }
-@media (prefers-reduced-motion: reduce) { .rowIn, .arrow { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .rowIn, .arrow { transition: none; } a.rowIn:hover { transform: none; } }
 
 .extra { display: grid; gap: var(--s-6); }
 
@@ -58,13 +58,13 @@ a.rowIn:focus-visible .name { text-decoration: underline; text-underline-offset:
 .vsR { display: grid; grid-template-columns: 1fr 22px; gap: 8px; align-items: center; }
 .vsR i { height: 6px; background: rgba(43, 29, 20, 0.28); }
 .vsR b { height: 6px; background: #b8471a; }
-.close { padding: clamp(80px, 12vw, 160px) 0; border-top: var(--b-hairline) solid var(--c-border); }
-.closeTitle { font-size: clamp(44px, 8vw, 112px); line-height: 0.95; letter-spacing: -0.045em; font-weight: 700; }
+.close { padding: clamp(80px, 12vw, 160px) 0; }
+.closeTitle { font-size: clamp(44px, 8vw, 112px); line-height: 0.95; letter-spacing: -0.05em; font-weight: var(--w-semibold); }
 .closeRow { margin-top: var(--s-8); display: flex; gap: var(--s-6); align-items: center; flex-wrap: wrap; }
 
 /* Legibility over the space scene fixed behind the chapters (src/components/home/MonolithHome.module.css .sky): a subtle, solid
    graphite scrim behind the text blocks only. The spread shadow pads it visually without changing layout. */
-:global(html:not([data-theme="light"])) .chapter :is(.head, .side, .extra, .list) { background: rgb(11 11 13 / 0.8); box-shadow: 0 0 0 clamp(10px, 1.4vw, 18px) rgb(11 11 13 / 0.8); border-radius: 1px; }
+:global(html:not([data-theme="light"])) .chapter :is(.head, .side, .extra, .list) { background: rgb(10 9 14 / 0.82); box-shadow: 0 0 0 clamp(10px, 1.4vw, 18px) rgb(10 9 14 / 0.82); border-radius: 14px; }
 /* The scene is always the graphite night sky, so the light theme keeps the chapters as light pages: an opaque page-colour wrapper
    over the sky (MonolithHome only shows the sky behind the hero in the light theme), never light-theme ink on the dark scene. */
 :global(html[data-theme="light"]) .chapters { background: var(--c-canvas); }

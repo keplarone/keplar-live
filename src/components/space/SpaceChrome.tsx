@@ -1,8 +1,52 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { isPhone } from "@/lib/fx/lite";
+import { PAUSE_KEY, isMotionPaused, setMotionPaused, subscribePause } from "./motion-pause";
+
+/** True while the visitor has paused the site's motion (MotionToggle). */
+export function useMotionPaused() {
+  return useSyncExternalStore(subscribePause, isMotionPaused, () => false);
+}
+
+/**
+ * The pause / play control for the hero's moving parts. A real button whose label says what it will do; restores a saved
+ * pause on load. Phones and reduced motion keep everything still already, so it is not rendered there.
+ */
+export function MotionToggle({ className }: { className?: string }) {
+  const isPaused = useMotionPaused();
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    // Phones keep everything still already (no cycling, a still star field); reduced motion too. Nothing to pause there.
+    if (isPhone() || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let saved = false;
+    try { saved = localStorage.getItem(PAUSE_KEY) === "1"; } catch { /* ignore */ }
+    if (saved && !isMotionPaused()) setMotionPaused(true);
+    const raf = requestAnimationFrame(() => setShow(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
+  if (!show) return null;
+  return (
+    <button
+      type="button"
+      className={className ? `sp-btn ${className}` : "sp-btn"}
+      data-sp-btn=""
+      data-variant="ghost"
+      data-size="sm"
+      onClick={() => setMotionPaused(!isPaused)}
+    >
+      <span className="sp-btn__label" aria-hidden="true">
+        {isPaused ? (
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M3 1.8v8.4c0 .5.5.8.9.5l6.6-4.2a.6.6 0 0 0 0-1L3.9 1.3c-.4-.3-.9 0-.9.5z" /></svg>
+        ) : (
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><rect x="2.2" y="1.5" width="2.6" height="9" rx="1" /><rect x="7.2" y="1.5" width="2.6" height="9" rx="1" /></svg>
+        )}
+      </span>
+      <span className="sp-btn__label">{isPaused ? "Play animation" : "Pause animation"}</span>
+    </button>
+  );
+}
 
 // three.js only runs in the browser: loaded after hydration, never on the server.
 const Starfield = dynamic(() => import("./Starfield"), { ssr: false });
@@ -85,23 +129,26 @@ export function SpaceReveal() {
 const WORDS = ["Powerful", "Mighty", "Capable", "Potent", "Formidable", "Robust"] as const;
 
 /**
- * "Powerful" in the headline, cycling smoothly through synonyms: the outgoing word lifts and blurs away while the next rises
- * in, and the slot's width eases to the new word so the line never jumps. Screen readers get the first word only (the line is
- * labelled once); with reduced motion the word stays "Powerful".
+ * "Powerful" in the headline, cycling smoothly through synonyms: the outgoing word lifts away through a vertical motion blur
+ * while the next rises in (Space Studio's headline), and the slot's width eases to the new word so the line never jumps. Screen
+ * readers get the first word only (the line is labelled once); with reduced motion the word stays "Powerful"; <MotionToggle>
+ * pauses it.
  */
 export function RotatingWord({ className, wordClassName }: { className?: string; wordClassName?: string }) {
   const [i, setI] = useState(0);
   const [width, setWidth] = useState<number | null>(null);
   const measure = useRef<HTMLSpanElement[]>([]);
+  const isPaused = useMotionPaused();
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (isPaused || isPhone() || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const id = window.setInterval(() => {
+      if (document.hidden) return;
       setI((n) => (n + 1) % WORDS.length);
       window.dispatchEvent(new CustomEvent("space:aura")); // the aura shifts with each new word
     }, 2600);
     return () => window.clearInterval(id);
-  }, []);
+  }, [isPaused]);
   useEffect(() => {
     const el = measure.current[i];
     if (el) setWidth(el.getBoundingClientRect().width);

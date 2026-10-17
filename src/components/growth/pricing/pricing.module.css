@@ -1,5 +1,6 @@
-/* Pricing conversion sections (UI v2, docs/ui-v2.md): plain canvas, cards are --surface-raised with a 1px hairline, --r-card and
-   --elev-1 (hover strengthens the edge, no lift), tables are divided by hairlines. Plus is marked by an ink edge, never a glow. */
+/* Pricing conversion sections (Space UI): 28px glass cards with no outlines (hover lifts with a violet glow), the comparison is a
+   glass panel whose rows keep the faint data-table hairline, Plus stands lifted with a glow, and the phone plan picker is the
+   Space segmented control (glass track, lit thumb). */
 .section {
   position: relative;
   z-index: var(--z-content);
@@ -14,8 +15,8 @@
 .title {
   font-size: var(--t-title);
   line-height: 1.08;
-  letter-spacing: -0.04em;
-  font-weight: var(--w-regular);
+  letter-spacing: -0.045em;
+  font-weight: var(--w-semibold);
   text-wrap: balance;
 }
 
@@ -46,28 +47,32 @@
   flex-direction: column;
   padding: var(--s-6);
   border-radius: var(--r-card);
-  background: var(--surface-raised);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1);
-  transition: box-shadow var(--m-dur-2) var(--m-ease-out);
+  background: var(--space-glass);
+  box-shadow: var(--space-glass-depth);
+  transition: box-shadow var(--space-dur-slow) var(--space-ease-out), transform var(--space-dur-slow) var(--space-ease-expo);
+}
+
+@media (hover: hover) {
+  .fit:hover { transform: translateY(-3px); }
 }
 
 .fit:hover {
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), var(--elev-1);
+  box-shadow: var(--space-glass-lift);
 }
 
 .fit[data-plan="plus"],
 .fit[data-plan="plus"]:hover {
-  box-shadow: inset 0 0 0 1.5px var(--c-ink), var(--elev-1);
+  box-shadow: var(--space-glass-lift), 0 0 56px -10px rgb(var(--ring-rgb) / 0.45);
 }
 
 .fitPlan {
   display: flex;
   justify-content: space-between;
   gap: var(--s-3);
-  font-size: var(--t-small);
-  font-weight: var(--w-medium);
-  letter-spacing: 0;
-  text-transform: none;
+  font-size: 12px;
+  font-weight: var(--w-semibold);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   color: var(--c-ink);
 }
 
@@ -83,8 +88,8 @@
   margin-top: var(--s-5);
   font-size: var(--t-lead);
   line-height: var(--lh-lead);
-  letter-spacing: var(--tr-lead);
-  font-weight: var(--w-regular);
+  letter-spacing: -0.02em;
+  font-weight: var(--w-semibold);
   color: var(--c-ink);
 }
 
@@ -107,15 +112,15 @@
   margin-top: var(--s-8);
   overflow-x: auto;
   border-radius: var(--r-card);
-  background: var(--surface-raised);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline), var(--elev-1);
+  background: var(--space-glass-solid);
+  box-shadow: var(--space-glass-depth);
   -webkit-overflow-scrolling: touch;
 }
 
-/* Keyboard focus: the site cue (a bar), never an outline box. */
+/* Keyboard focus: the Space glow around the panel, never an outline box. */
 .scroller:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), inset 0 calc(var(--b-focus) * -1) 0 var(--c-focus), var(--elev-1);
+  box-shadow: var(--space-glass-depth), var(--space-focus-glow);
 }
 
 .table {
@@ -136,7 +141,7 @@
 }
 
 .table thead th {
-  font-weight: var(--w-medium);
+  font-weight: var(--w-semibold);
   color: var(--c-ink);
   letter-spacing: 0;
   text-transform: none;
@@ -146,13 +151,14 @@
   border-bottom-color: var(--hairline-strong);
 }
 
-/* Plus: an ink rule under its column head and a faint wash down the column. */
+/* Plus: a violet glow line under its column head and a faint violet wash down the column. */
 .table thead th[data-plan="plus"] {
-  box-shadow: inset 0 -1.5px 0 var(--c-ink);
+  color: var(--c-accent);
+  box-shadow: inset 0 -2px 0 rgb(var(--ring-rgb) / 0.7), inset 0 -14px 18px -14px rgb(var(--ring-rgb) / 0.35);
 }
 
 .table td[data-plan="plus"] {
-  background: var(--hover-wash);
+  background: rgb(var(--ring-rgb) / 0.06);
 }
 
 .table td {
@@ -175,7 +181,7 @@
   left: 0;
   z-index: 1;
   min-width: 220px;
-  background: var(--surface-raised);
+  background: var(--space-glass-solid);
   color: var(--c-ink);
   font-weight: var(--w-regular);
 }
@@ -192,12 +198,12 @@
   position: sticky;
   left: 0;
   padding-top: var(--s-6);
-  font-size: var(--t-small);
-  font-weight: var(--w-medium);
-  letter-spacing: 0;
-  text-transform: none;
+  font-size: 12px;
+  font-weight: var(--w-semibold);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   color: var(--c-ink-3);
-  background: var(--surface-raised);
+  background: var(--space-glass-solid);
 }
 
 .dash {
@@ -226,13 +232,13 @@
   max-width: var(--l-max);
   margin: var(--s-6) auto 0;
   padding: var(--s-4) var(--s-5);
-  border-radius: var(--r-md);
-  background: var(--surface-raised);
-  box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong), var(--elev-1);
+  border-radius: var(--space-r-panel);
+  background: var(--space-glass);
+  box-shadow: var(--space-glass-depth);
 }
 
 .contextTitle {
-  font-weight: var(--w-medium);
+  font-weight: var(--w-semibold);
 }
 
 .contextBody {
@@ -276,6 +282,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .fit { transition: none; }
+  .fit:hover { transform: none; }
 }
 
 /* ── Comparison plan picker (ComparePicker.tsx): phones only ── */
@@ -292,14 +299,16 @@
   .fitPrice, .fitCta { display: none; }
   .fitWho { margin-top: var(--s-2); }
 
+  /* The Space segmented control: a glass track; the picked plan is the lit thumb (the 3D primary face). Phones stay calm, so the
+     thumb swaps without travelling. */
   .picker {
     display: flex;
     margin-top: var(--s-6);
-    padding: 4px;
-    gap: 4px;
+    padding: 5px;
+    gap: 2px;
     border-radius: var(--r-pill);
-    background: var(--surface-raised);
-    box-shadow: inset 0 0 0 var(--b-hairline) var(--hairline-strong);
+    background: var(--space-track);
+    box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.18);
   }
   .picker button {
     flex: 1;
@@ -310,13 +319,19 @@
     background: none;
     font: inherit;
     font-size: var(--t-small);
+    font-weight: var(--w-semibold);
     color: var(--c-ink-2);
     cursor: pointer;
   }
+  .picker button:focus-visible {
+    outline: none;
+    box-shadow: var(--space-focus-glow);
+  }
   .picker button[aria-pressed="true"] {
-    background: var(--c-ink);
-    color: var(--c-canvas);
-    font-weight: var(--w-medium);
+    background: var(--space-p-face);
+    color: var(--space-p-ink);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4), 0 2px 8px rgb(0 0 0 / 0.3);
+    font-weight: var(--w-bold);
   }
   .scroller { margin-top: var(--s-3); }
   .table { min-width: 0; }

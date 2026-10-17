@@ -30,7 +30,7 @@ export default function SpaceLayout({ children }: { children: React.ReactNode })
           <Link href="/space-studio#plans">Plans</Link>
           <Link href="/space-studio#today">Status</Link>
         </nav>
-        <DownloadButton className={s.navCta} />
+        <DownloadButton className={s.navCta} size="md" />
       </header>
       <main id="main" className={s.main}>{children}</main>
       <footer className={s.footer}>

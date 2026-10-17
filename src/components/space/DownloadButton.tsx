@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { spaceButtonAttrs, type SpaceButtonSize, type SpaceButtonVariant } from "@/components/ui/space";
 import { OsIcon, type OsKind } from "./OsIcon";
 import s from "./space.module.css";
 
@@ -36,10 +37,10 @@ const KIND: Record<Platform, OsKind> = { windows: "windows", "mac-arm": "mac", "
 const NAME: Record<OsKind, string> = { windows: "Windows", mac: "macOS", linux: "Linux" };
 
 /**
- * "Download" with the visitor's platform logo (Windows, Apple or Linux) beside it. Starts the installer for this computer straight
+ * "Download" (Space Studio's 3D primary button by default) with the visitor's platform logo (Windows, Apple or Linux) beside it. Starts the installer for this computer straight
  * away. Without JavaScript (or on phones) there is no logo and the server picks the file from the user agent.
  */
-export function DownloadButton({ className, children = "Download" }: { className?: string; children?: React.ReactNode }) {
+export function DownloadButton({ className, children = "Download", variant = "primary", size = "lg" }: { className?: string; children?: React.ReactNode; variant?: SpaceButtonVariant; size?: SpaceButtonSize }) {
   const [platform, setPlatform] = useState<Platform | null>(null);
   useEffect(() => {
     let alive = true;
@@ -49,15 +50,15 @@ export function DownloadButton({ className, children = "Download" }: { className
   const kind = platform ? KIND[platform] : null;
   return (
     <a
-      className={className}
+      className={className ? `sp-btn ${className}` : "sp-btn"}
+      {...spaceButtonAttrs({ variant, size })}
       href={platform ? `${BASE}?os=${platform}` : BASE}
       download
       rel="nofollow"
       aria-label={kind ? `Download for ${NAME[kind]}` : undefined}
-      style={{ display: "inline-flex", alignItems: "center", gap: 9 }}
     >
-      {kind && <span className={s.osIcon}><OsIcon os={kind} size={17} /></span>}
-      {children}
+      {kind && <span className={`sp-btn__label ${s.osIcon}`}><OsIcon os={kind} size={17} /></span>}
+      <span className="sp-btn__label">{children}</span>
     </a>
   );
 }
