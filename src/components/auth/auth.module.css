@@ -380,13 +380,16 @@
 }
 .btnSecondary:hover:not(:disabled) { background: var(--hover-wash); }
 .input {
+  border: 1px solid var(--hairline);
   border-radius: 16px;
   background: var(--c-surface-2);
-  box-shadow: inset 0 0 0 1px var(--hairline);
+  box-shadow: none;
+  font-size: 16px;
 }
 .input:hover { background: var(--c-surface-2); }
 .input:focus,
-.input:focus-visible { box-shadow: inset 0 0 0 1px var(--c-ink); }
+.input:focus-visible { box-shadow: none; }
+.btn { font-size: 16px; }
 .alert,
 .alertErr,
 .alertOk { box-shadow: none; animation: none; }

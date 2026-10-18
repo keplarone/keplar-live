@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Montserrat } from "next/font/google";
 import { Telemetry } from "@/components/growth/Telemetry";
 import { JourneyCaption, SpaceAura, SpaceBackground, SpaceReveal } from "@/components/space/SpaceChrome";
 import { DownloadButton } from "@/components/space/DownloadButton";
@@ -8,13 +9,16 @@ import s from "@/components/space/space.module.css";
 
 const FORCE_DARK = `(function(){var r=document.documentElement;r.setAttribute("data-theme","dark");r.classList.remove("light");r.classList.add("dark");r.style.colorScheme="dark"})();`;
 
+/** Space Studio keeps Montserrat. Not preloaded, so keplar.one does not download it. */
+const spaceSans = Montserrat({ subsets: ["latin"], variable: "--font-space", display: "swap", adjustFontFallback: true, preload: false });
+
 /**
  * Space Studio's site (space.keplar.one, also keplar.one/space-studio). Always dark, its own nav and footer, and the star field
  * mounted here once so it keeps running across Space pages instead of restarting on every navigation.
  */
 export default function SpaceLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={s.root} data-space-root>
+    <div className={`${s.root} ${spaceSans.variable}`} data-space-root>
       {/* Space pages are always dark: switch the site theme before first paint so shared parts (cookie card, toasts) match. */}
       <script dangerouslySetInnerHTML={{ __html: FORCE_DARK }} />
       <SpaceBackground />

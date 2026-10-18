@@ -70,8 +70,8 @@
   --ui-scale: 1;
 
   /* type families + weights */
-  --f-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif; /* Montserrat (next/font: self-hosted, with its own metric-matched fallback in --font-sans) */
-  --f-mono: var(--font-mono), ui-monospace, "SFMono-Regular", monospace;
+  --f-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif; /* root layout face (next/font). Space Studio overrides --f-sans with Montserrat. */
+  --f-mono: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
   --w-light: 300;
   --w-regular: 400;
   --w-medium: 500;

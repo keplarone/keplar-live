@@ -15,8 +15,8 @@
 @import "./space.css"; /* Space UI: tokens, motion, components (docs/design/space-ui.md). */
 @import "./graphite.css"; /* keplar.one graphite system. After space.css so it wins outside Space Studio. */
 
-/* The UI font is Montserrat (root layout, next/font). next/font generates its metric-matched fallback face and includes it in
-   --font-sans, so the swap moves nothing; no hand-tuned fallback face is needed (the Google Sans one lived here). */
+/* The UI font is the root layout's next/font face. It generates a metric-matched fallback in
+   --font-sans, so the swap moves nothing. Space Studio sets its own --f-sans. Code uses the system mono stack. */
 
 *,
 *::before,
