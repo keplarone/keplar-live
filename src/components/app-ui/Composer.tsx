@@ -19,6 +19,7 @@ import type { Attachment, ComposerModes, RoutingPreferences, RoutingStrategy } f
 import { MEDIA_LIMITS, type MediaInput } from "@/lib/orchestration/media";
 import { IconMic, IconPlus, IconDebate, IconDeep, IconCreate, IconImage, IconMore, IconReason, IconRouting, IconSlides, IconStudy, IconWeb } from "./icons";
 import { toggleMode, type ModeKey } from "@/lib/composer/modes";
+import { suggestComposerMode } from "@/lib/composer/suggest";
 import { canUseSlides, slidesLimitsFor } from "@/lib/tools/limits";
 import { estimateDeckCredits } from "@/lib/slides/estimate";
 import { deckRequestFrom } from "@/lib/slides/from-chat";
@@ -118,8 +119,8 @@ const tools: { key: ModeKey; label: string; Icon: typeof IconWeb; hint: string }
 ];
 
 /**
- * Modes that are off live in the one quiet "Modes" menu (listed in this order of precedence); an active chip always stays in the row, and
- * on a row too narrow even for that it moves into the menu too. Attach (+), Voice and Talk never move (Talk is press-and-hold, which a menu can't do).
+ * Every mode lives in the Modes menu (and as /create, /study, …). A mode that is on is a removable chip inside the composer.
+ * Attach (+), Voice and Talk stay in the row (Talk is press-and-hold, which a menu can't do).
  */
 /** One short line per mode for the Modes menu (the full hint stays as the tooltip). Agent mode is business-only (business.keplar.one). */
 const BLURB: Partial<Record<ModeKey, string>> = {
@@ -132,8 +133,6 @@ const BLURB: Partial<Record<ModeKey, string>> = {
   create: "Apps, images, video, docs",
   image: "A picture from this message",
 };
-
-const OVERFLOW_ORDER: ModeKey[] = ["image", "web", "reason", "debate", "create", "deepResearch", "slides", "study"];
 
 /** Keplar Core depth (src/lib/core). Auto decides per question and escalates when the models disagree. */
 const DEPTH_OPTIONS: { id: Depth; label: string; hint: string }[] = [
@@ -251,68 +250,13 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
   const modesChanged = useRef(onModesChange);
   useEffect(() => { modesChanged.current = onModesChange; });
   useEffect(() => { modesChanged.current?.(modes); }, [modes]);
-  /* "More": mode chips that don't fit the row (measured on the live row, so it follows the container-query label steps) */
-  const toolsRef = useRef<HTMLDivElement>(null);
+  /* Modes live in one menu. A mode that is on is a removable chip inside the composer, not a row of nav items. */
   const moreBtnRef = useRef<HTMLButtonElement>(null);
-  const [overflow, setOverflow] = useState<ModeKey[]>([]);
   const [moreOpen, setMoreOpen] = useState(false);
-  const pressedKeys = tools.filter((t) => modes[t.key]).map((t) => t.key).join(",");
-  useLayoutEffect(() => {
-    const row = toolsRef.current;
-    const more = moreBtnRef.current;
-    if (!row || !more || typeof ResizeObserver === "undefined") return;
-    const fit = () => {
-      const chips = [...row.querySelectorAll<HTMLElement>("[data-mode]")];
-      chips.forEach((el) => { el.removeAttribute("data-overflow"); el.removeAttribute("data-compact"); });
-      more.setAttribute("data-show", "");
-      const cs = getComputedStyle(row);
-      const gap = parseFloat(cs.columnGap) || 0;
-      const avail = row.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
-      const moreW = more.offsetWidth;
-      more.removeAttribute("data-show");
-      const fixed = [...row.children].filter((el): el is HTMLElement => el instanceof HTMLElement && el !== more && !el.dataset.mode && el.offsetWidth > 0);
-      const width = new Map(chips.map((el) => [el.dataset.mode as ModeKey, el.offsetWidth]));
-      const shown = new Set(width.keys());
-      const total = () => {
-        const n = fixed.length + shown.size;
-        return fixed.reduce((a, el) => a + el.offsetWidth, 0) + [...shown].reduce((a, k) => a + (width.get(k) ?? 0), 0) + gap * Math.max(0, n - 1);
-      };
-      const pinned = new Set(pressedKeys.split(",").filter(Boolean));
-      // Calm bar: every mode that is off lives in the one quiet "Modes" menu; a mode that is on shows in the row, so the bar still
-      // says what the next message does. (Before, all eleven chips showed whenever they fit.)
-      const hidden: ModeKey[] = [];
-      for (const k of OVERFLOW_ORDER) {
-        if (!shown.has(k) || pinned.has(k)) continue;
-        shown.delete(k);
-        hidden.push(k);
-      }
-      // Still too wide with only the pinned (pressed) chips left: they drop their labels too (CSS [data-compact]).
-      if (total() + (hidden.length ? gap + moreW : 0) > avail + 0.5) {
-        for (const el of chips) {
-          const k = el.dataset.mode as ModeKey;
-          if (!pinned.has(k) || !shown.has(k)) continue;
-          el.setAttribute("data-compact", "");
-          width.set(k, el.offsetWidth);
-        }
-      }
-      // A phone row that can't even hold a pressed icon beside More: the pressed chip goes into More too, and More itself shows as pressed.
-      if (total() + gap + moreW > avail + 0.5) {
-        for (const k of [...pinned] as ModeKey[]) if (shown.has(k)) { shown.delete(k); hidden.push(k); }
-      }
-      chips.forEach((el) => { if (hidden.includes(el.dataset.mode as ModeKey)) el.setAttribute("data-overflow", ""); });
-      if (hidden.length) more.setAttribute("data-show", "");
-      if (hidden.some((k) => pinned.has(k))) more.setAttribute("data-active", ""); else more.removeAttribute("data-active");
-      const next = tools.map((t) => t.key).filter((k) => hidden.includes(k));
-      setOverflow((prev) => (prev.join() === next.join() ? prev : next));
-    };
-    fit();
-    const ro = new ResizeObserver(() => fit());
-    ro.observe(row.parentElement ?? row);
-    return () => ro.disconnect();
-  }, [pressedKeys, voice.state, voice.supported]);
-  useEffect(() => {
-    if (!overflow.length) setMoreOpen(false);
-  }, [overflow.length]);
+  const [suggestDismissed, setSuggestDismissed] = useState<string | null>(null);
+  const suggestion = useMemo(() => suggestComposerMode(text), [text]);
+  const showSuggest = Boolean(suggestion && !modes[suggestion.key] && suggestDismissed !== text.trim());
+  const activeModes = tools.filter((t) => modes[t.key]);
   const fileRef = useRef<HTMLInputElement>(null);
   const routingBtnRef = useRef<HTMLButtonElement>(null);
   /*
@@ -480,8 +424,18 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
     setVoiceNote(L.running ? "Your words are in the box. Send them when the current answer finishes." : "Your words are in the box. Check the attachments, then press Send.");
   }, [voiceAsk]);
 
+  const SLASH_MODE: Record<string, ModeKey> = { create: "create", study: "study", slides: "slides", debate: "debate", web: "web", reason: "reason", image: "image", research: "deepResearch" };
   const submit = () => {
     if (!canSend) return;
+    // A bare "/create" or "/study" turns that mode on and stays in the composer. Text after the command still sends.
+    const bare = /^\s*\/(create|study|slides|debate|web|reason|image|research)\s*$/i.exec(text);
+    if (bare && !media.length && !docs.length && !links.length) {
+      const key = SLASH_MODE[bare[1].toLowerCase()];
+      setModes((m) => toggleMode({ ...m, [key]: false }, key));
+      setText("");
+      setSlashOpen(false);
+      return;
+    }
     voice.abort(); // sending ends dictation immediately
     stopSpeaking(); // a new question ends any answer still being read aloud
     disarmReadback();
@@ -1166,8 +1120,42 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
             <Button size="sm" variant="secondary" onClick={share.stop}>Stop</Button>
           </div>
         ) : null}
+        {activeModes.length || showSuggest ? (
+          <div className={s.modeChips} role="group" aria-label="Modes for this message">
+            {activeModes.map(({ key, label }) => (
+              <button
+                key={key}
+                type="button"
+                className={s.modeChip}
+                data-mode={key}
+                aria-pressed="true"
+                onClick={() => setModes((m) => toggleMode(m, key))}
+              >
+                <span className={s.modeChipLabel}>{label}</span>
+                <span className={s.modeChipX} aria-hidden="true">×</span>
+                <span className="visually-hidden">Remove {label}</span>
+              </button>
+            ))}
+            {showSuggest && suggestion ? (
+              <span className={s.suggestChip}>
+                <button
+                  type="button"
+                  className={s.suggestApply}
+                  data-suggest={suggestion.key}
+                  onClick={() => { setModes((m) => toggleMode(m, suggestion.key)); setSuggestDismissed(text.trim()); }}
+                >
+                  <span className={s.modeChipLabel}>Use {suggestion.label}</span>
+                </button>
+                <button type="button" className={s.suggestDismiss} aria-label={`Dismiss ${suggestion.label} suggestion`} onClick={() => setSuggestDismissed(text.trim())}>
+                  ×
+                </button>
+              </span>
+            ) : null}
+          </div>
+        ) : null}
+
         <div className={s.row}>
-          <div ref={toolsRef} className={s.tools} role="group" aria-label="Tools">
+          <div className={s.tools} role="group" aria-label="Tools">
             <input
               ref={fileRef}
               type="file"
@@ -1208,23 +1196,6 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
               <IconPlus size={16} />
               <span className={s.toolLabel}>Attach</span>
             </button>
-            {tools.map(({ key, label, Icon, hint }) => (
-              <button
-                key={key}
-                type="button"
-                className={s.tool}
-                data-mode={key}
-                aria-pressed={Boolean(modes[key])}
-                aria-label={label}
-                title={key === "web" && liveDesktop && liveEnabled ? LIVE_WEB_HINT : hint}
-                // Kinds of run are exclusive (composer/modes.ts): Debate vs Deep Research, and Study / Slides vs every other kind.
-                onClick={() => setModes((m) => toggleMode(m, key))}
-              >
-                <Icon size={15} />
-                <span className={s.toolLabel}>{label}</span>
-                
-              </button>
-            ))}
             <button
               ref={moreBtnRef}
               type="button"
@@ -1232,16 +1203,14 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
               aria-haspopup="menu"
               aria-expanded={moreOpen}
               aria-controls={`${uid}-more`}
-              aria-label={`More modes: ${overflow.map((k) => tools.find((t) => t.key === k)?.label).join(", ")}${overflow.filter((k) => modes[k]).map((k) => ` (${tools.find((t) => t.key === k)?.label} is on)`).join("")}`}
-              title="Modes: Web, Deep Research, Debate, Study, Slides, Create and more"
-              data-show={overflow.length ? "" : undefined}
+              aria-pressed={activeModes.length > 0}
+              aria-label="Modes"
+              title="Modes. Or type /create, /study, /slides"
+              data-show=""
+              data-active={activeModes.length ? "" : undefined}
               onClick={toggleFrom(setMoreOpen)}
             >
-              {(() => {
-                // A pressed mode that lives in More shows its own icon here, so the row still says what the next message does.
-                const on = tools.find((t) => overflow.includes(t.key) && modes[t.key]);
-                return on ? <on.Icon size={15} /> : <IconMore size={15} />;
-              })()}
+              <IconMore size={15} />
               <span className={s.toolLabel}>Modes</span>
             </button>
           </div>
@@ -1289,28 +1258,26 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
                 </ul>
               </div>
           </Popover>
-          <Popover open={moreOpen && overflow.length > 0} onOpenChange={closeOnOutside(setMoreOpen)} anchorRef={popAnchorRef} side={popSide} align="start" label="More modes" role="menu" id={`${uid}-more`} className={s.moreMenu} onKeyDown={popKeys(() => setMoreOpen(false), moreBtnRef, '[role="menuitemcheckbox"]')}>
-              {overflow.map((k) => {
-                const t = tools.find((x) => x.key === k)!;
-                return (
-                  <button
-                    key={k}
-                    type="button"
-                    role="menuitemcheckbox"
-                    aria-checked={Boolean(modes[k])}
-                    className={s.moreItem}
-                    data-more-mode={k}
-                    title={k === "web" && liveDesktop && liveEnabled ? LIVE_WEB_HINT : t.hint}
-                    onClick={() => { setModes((m) => toggleMode(m, k)); setMoreOpen(false); taRef.current?.focus(); }}
-                  >
-                    <span className={s.moreIcon}><t.Icon size={16} /></span>
-                    <span className={s.moreText}>
-                      <span className={s.moreLabel}>{t.label}</span>
-                      <span className={s.moreBlurb}>{BLURB[k]}</span>
-                    </span>
-                  </button>
-                );
-              })}
+          <Popover open={moreOpen} onOpenChange={closeOnOutside(setMoreOpen)} anchorRef={popAnchorRef} side={popSide} align="start" label="Modes" role="menu" id={`${uid}-more`} className={s.moreMenu} onKeyDown={popKeys(() => setMoreOpen(false), moreBtnRef, '[role="menuitemcheckbox"]')}>
+              {tools.map((t) => (
+                <button
+                  key={t.key}
+                  type="button"
+                  role="menuitemcheckbox"
+                  aria-checked={Boolean(modes[t.key])}
+                  className={s.moreItem}
+                  data-more-mode={t.key}
+                  title={t.key === "web" && liveDesktop && liveEnabled ? LIVE_WEB_HINT : t.hint}
+                  onClick={() => { setModes((m) => toggleMode(m, t.key)); setMoreOpen(false); taRef.current?.focus(); }}
+                >
+                  <span className={s.moreIcon}><t.Icon size={16} /></span>
+                  <span className={s.moreText}>
+                    <span className={s.moreLabel}>{t.label}</span>
+                    <span className={s.moreBlurb}>{BLURB[t.key]}</span>
+                  </span>
+                </button>
+              ))}
+              <p className={s.modeHint}>Or type /create, /study, /slides</p>
           </Popover>
 
           <div className={s.actions}>

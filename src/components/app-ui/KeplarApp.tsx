@@ -70,7 +70,7 @@ import { AgentFlowTurn } from "./agent-flow/AgentFlow";
 import { giveHandoff, SLIDES_OPEN_KEY, STUDY_OPEN_KEY } from "./studio/handoff";
 import { CreateTurn } from "./create/CreateTurn";
 import { giveAppHandoff } from "../create/apps/handoff";
-import { studioOf, type StudioMode } from "@/lib/composer/modes";
+import { studioOf } from "@/lib/composer/modes";
 import { intentLabel, routeChat, type Intent } from "@/lib/chat-actions/intent";
 import { cardHistoryLine, lastCardOf, previousAnswer, previousQuestion } from "./state/cards";
 import { deleteProject, mergeProjects, renameProject, type Ops } from "./workspace/project-ops";
@@ -115,6 +115,12 @@ const ConnectedAppsView = appsView.View;
 /** Fetch (not run) the studios so opening one is instant: Create once the page is idle, the others when the pointer reaches the sidebar. Skipped on Data Saver. */
 /** Top-bar titles that are not just the capitalised view name. */
 const VIEW_TITLE: Partial<Record<View, string>> = { history: "All chats", apps: "Connected apps" };
+/** Opened beside the thread from chat. Business and Approvals still leave for the workspace. */
+const BESIDE_VIEWS = new Set<View>(["create", "slides", "study", "projects", "deployments", "apps", "history", "agents", "studio"]);
+const BESIDE_TITLE: Partial<Record<View, string>> = {
+  create: "Create", slides: "Slides", study: "Study", projects: "Projects", deployments: "Deployments",
+  apps: "Connected apps", history: "All chats", agents: "Agents", studio: "Studio",
+};
 function warmViews(all: boolean) {
   const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
   if (conn?.saveData) return;
@@ -201,7 +207,8 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
       return next;
     });
   }, []);
-  const [researchAsk, setResearchAsk] = useState(0);
+  /** A studio opened from the chat, beside the thread. Deep links still use the full view. */
+  const [beside, setBeside] = useState<{ view: View; nonce: number } | null>(null);
   // The desktop title bar's search box (DesktopTitleBar) opens this search.
   useEffect(() => {
     const open = () => { setDrawerOpen(false); setSearchOpen(true); };
@@ -810,6 +817,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
 
   const newThread = useCallback((projectId?: string | null) => {
     dispatch({ type: "new-thread", projectId });
+    setBeside(null);
     setDrawerOpen(false);
     const path = pathForView("thread");
     if (typeof window !== "undefined" && window.location.pathname !== path) window.history.pushState({ view: "thread" }, "", path);
@@ -818,6 +826,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
 
   const openThread = useCallback((id: string) => {
     dispatch({ type: "open-thread", id });
+    setBeside(null);
     setDrawerOpen(false);
     setAtBottom(true);
     const path = pathForView("thread");
@@ -836,6 +845,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     const t = viewTarget.current;
     if (!t) return;
     viewTarget.current = null;
+    if (t.view !== "thread") setBeside(null);
     dispatch({ type: "view", view: t.view, projectFilter: t.projectFilter });
   }, []);
   const switchView = useCallback((view: View, projectFilter?: string | null) => {
@@ -885,30 +895,54 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     return () => window.removeEventListener("popstate", onPop);
   }, [switchView]);
 
-  /* "Open in Study / Slides" from a chat card: the studio opens that set or deck (read once on mount). */
+  const [tabFocus, setTabFocus] = useState<TabTarget | null>(null);
+  useEffect(() => { tabFocusClear.current = () => setTabFocus(null); }, []);
+  /**
+   * From a chat, Create / Study / Slides / Projects and the other work surfaces open beside the thread.
+   * A deep link (the view is already that route) still replaces the page. Business leaves for its own site.
+   */
+  const openSurface = useCallback((view: View, projectFilter?: string | null) => {
+    if (stateRef.current.view === "thread" && BESIDE_VIEWS.has(view)) {
+      setTabFocus(
+        view === "history" && projectFilter ? { view: "history", projectId: projectFilter }
+        : view === "projects" && projectFilter ? { view: "projects", projectId: projectFilter }
+        : null,
+      );
+      setBeside({ view, nonce: Date.now() });
+      setDrawerOpen(false);
+      return;
+    }
+    setBeside(null);
+    goView(view, projectFilter);
+  }, [goView]);
+  /* "Open in Study / Slides" from a chat card: the studio opens that set or deck beside the thread (read once on mount). */
   const openStudio = useCallback((t: StudioOpen) => {
     if (t.id) giveHandoff(t.kind === "study" ? STUDY_OPEN_KEY : SLIDES_OPEN_KEY, t);
-    goView(t.kind);
-  }, [goView]);
-  /* "Open in Create studio" from a chat Create card: the App tab opens that app (or a new one with the chat's prompt). */
+    openSurface(t.kind);
+  }, [openSurface]);
+  /* "Open in Create studio" from a chat Create card: the App tab opens that app beside the thread. */
   const openCreateApp = useCallback((t: { id?: string; prompt?: string }) => {
     giveAppHandoff(t);
-    goView("create");
-  }, [goView]);
+    openSurface("create");
+  }, [openSurface]);
   const patchCreate = useCallback((threadId: string, keplarId: string, patch: Partial<NonNullable<KeplarMessage["create"]>>) => dispatch({ type: "create", threadId, keplarId, patch }), []);
   const patchStudio = useCallback((threadId: string, keplarId: string, patch: Partial<NonNullable<KeplarMessage["studio"]>>) => dispatch({ type: "studio", threadId, keplarId, patch }), []);
   const patchAgentFlow = useCallback((threadId: string, keplarId: string, patch: Partial<NonNullable<KeplarMessage["agentFlow"]>>) => dispatch({ type: "agentFlow", threadId, keplarId, patch }), []);
   const patchWorkspace = useCallback((threadId: string, keplarId: string, patch: Partial<NonNullable<KeplarMessage["workspace"]>>) => dispatch({ type: "workspace", threadId, keplarId, patch }), []);
   /** A card asks for a follow-up in the chat (a choice, "Show here", "Review drafts", "Rewrite this slide"). */
   const actFromCard = useCallback((text: string, intent: Intent | null) => send(text, [], { web: false, deepResearch: false, create: false, agent: false }, undefined, { intent }), [send]);
-  /** "Open in <Tab>" from a chat card: that tab, on the same object where the tab can show one. */
-  const [tabFocus, setTabFocus] = useState<TabTarget | null>(null);
-  useEffect(() => { tabFocusClear.current = () => setTabFocus(null); }, []);
+  /** "Open in <Tab>" from a chat card: that surface, beside the thread when a chat is open. */
   const openTab = useCallback((t: TabTarget) => {
-    if (t.view === "create") { if (t.appId) openCreateApp({ id: t.appId }); else goView("create"); return; }
+    if (t.view === "create") { if (t.appId) openCreateApp({ id: t.appId }); else openSurface("create"); return; }
+    if (stateRef.current.view === "thread" && BESIDE_VIEWS.has(t.view)) {
+      setTabFocus(t);
+      setBeside({ view: t.view, nonce: Date.now() });
+      setDrawerOpen(false);
+      return;
+    }
     goView(t.view, t.view === "history" ? t.projectId ?? null : null);
     setTabFocus(t);
-  }, [goView, openCreateApp]);
+  }, [goView, openCreateApp, openSurface]);
   const createProject = useCallback((raw: string): { ok: true; project: Project } | { ok: false; error: string } => {
     const n = raw.trim().replace(/\s+/g, " ");
     if (!n) return { ok: false, error: "Name the project." };
@@ -927,13 +961,9 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   const renameProjectFromCard = useCallback((id: string, name: string) => renameProject(projectOps, stateRef.current.projects, id, name), [projectOps]);
   const deleteProjectFromCard = useCallback((id: string, chats: "keep" | "delete") => deleteProject(projectOps, stateRef.current.projects, stateRef.current.threads, id, chats), [projectOps]);
   const mergeProjectsFromCard = useCallback((from: string, into: string) => mergeProjects(projectOps, stateRef.current.projects, stateRef.current.threads, from, into), [projectOps]);
-  // The sidebar marks Study / Slides while its chip is on, and on a thread whose latest turn is a study set or deck (as in the product videos).
-  const [composerStudio, setComposerStudio] = useState<StudioMode | null>(null);
-  const onComposerModes = useCallback((m: ComposerModes) => setComposerStudio(studioOf(m)), []);
-  const modeView: StudioMode | null = state.view === "thread" ? (composerStudio ?? lastKeplar?.studio?.kind ?? null) : null;
-
   const seedComposer = (text: string, modes: Partial<ComposerModes>) => {
     seedRef.current = { text, modes };
+    setBeside(null);
     dispatch({ type: "new-thread" });
     setSeedTick((n) => n + 1);
     const path = pathForView("thread");
@@ -947,14 +977,8 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     seedRef.current = null;
     composerRef.current?.setModes(seed.modes);
     composerRef.current?.setText(seed.text);
-  }, [state.view, state.activeThreadId, seedTick]);
-
-  /* Research in the sidebar turns Deep Research on for the next message and focuses the composer. */
-  useEffect(() => {
-    if (!researchAsk || state.view !== "thread") return;
-    composerRef.current?.setModes({ deepResearch: true });
     composerRef.current?.focus();
-  }, [researchAsk, state.view]);
+  }, [state.view, state.activeThreadId, seedTick]);
 
   /* keyboard shortcuts (app-wide) */
   useEffect(() => {
@@ -1072,16 +1096,14 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
           mac={mac}
           onNew={() => newThread()}
           onSearch={() => { setDrawerOpen(false); setSearchOpen(true); }}
-          onView={(v) => goView(v)}
+          onView={(v) => openSurface(v)}
           onOpen={openThread}
           onDeleteChat={del.request}
           onClose={drawerOpen ? () => setDrawerOpen(false) : undefined}
           businessProminent={businessProminent(useFor)}
           account={state.ledger.signedIn ? state.account : null}
           importOffer={importOffer}
-          modeView={modeView}
           id="keplar-sidebar"
-          onResearch={() => { goView("thread"); setResearchAsk((n) => n + 1); }}
           onToggleCollapse={toggleCollapsed}
         />
       </div>
@@ -1133,7 +1155,8 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
         </header>
 
         {state.view === "thread" ? (
-          <>
+          <div className={s.threadSplit} data-beside={beside?.view}>
+          <div className={s.threadCol}>
             <div ref={scrollRef} className={s.scroll} onScroll={onScroll}>
               {messages.length === 0 ? (
                 <div className={s.empty}>
@@ -1156,7 +1179,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                   {state.privateNext ? <PrivateBanner onClose={() => dispatch({ type: "private-next", on: false })} /> : null}
                   <SpecialistStarters specialist={specialists.find((x) => x.id === chatSpecialistId) ?? null} onSend={(text) => send(text, [], { web: false, deepResearch: false, create: false, agent: false })} />
                   {state.ledger.synced && state.ledger.signedIn ? (
-                    <AppOnboarding onAsk={(text) => send(text, [], { web: false, deepResearch: false, create: false, agent: false })} onView={(v) => goView(v)} refresh={state.threads.length} onSettled={() => setOnboardingSettled(true)} />
+                    <AppOnboarding onAsk={(text) => send(text, [], { web: false, deepResearch: false, create: false, agent: false })} onView={(v) => openSurface(v)} refresh={state.threads.length} onSettled={() => setOnboardingSettled(true)} />
                   ) : null}
                   {/* Hold the tiles and examples until we know whether the onboarding card goes above them: it used to be inserted
                       ~0.5 s after first paint and shoved everything down 800 px (Lighthouse CLS 0.45 on /app, phone). */}
@@ -1164,7 +1187,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                   <HomeStart
                     showBusiness={businessProminent(useFor)}
                     onSeed={seedComposer}
-                    onView={(v) => goView(v)}
+                    onView={(v) => openSurface(v)}
                     onSend={(text) => send(text, [], { web: false, deepResearch: false, create: false, agent: false })}
                     more={<>
                   <ul className={s.examples} aria-label="Example questions">
@@ -1355,7 +1378,6 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                 resetsAt={state.ledger.resetsAt}
                 plan={state.ledger.plan}
                 signedIn={state.ledger.synced ? state.ledger.signedIn : undefined}
-                onModesChange={onComposerModes}
                 placeholder={messages.length ? "Reply to Keplar…" : "How can Keplar help you today?"}
                 draftKey={draftKeyFor(state.scope, state.activeThreadId, Boolean(state.threads.find((x) => x.id === state.activeThreadId)?.private ?? state.privateNext))}
                 privateChat={messages.length === 0 && !family ? { on: Boolean(state.privateNext), onToggle: () => dispatch({ type: "private-next", on: !state.privateNext }) } : null}
@@ -1363,7 +1385,56 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
               />
               <p className={s.dockNote}>Keplar can be wrong, even when models agree. Verify important decisions.</p>
             </div>
-          </>
+          </div>
+          {beside ? (
+            <aside className={s.beside} aria-label={BESIDE_TITLE[beside.view] ?? "Panel"}>
+              <div className={s.besideHead}>
+                <h2 className={s.besideTitle}>{BESIDE_TITLE[beside.view] ?? beside.view}</h2>
+                <button type="button" className={s.besideClose} onClick={() => setBeside(null)}>Close</button>
+              </div>
+              <div className={s.besideBody} key={`${beside.view}-${beside.nonce}`}>
+                {beside.view === "create" ? (
+                  <div className={s.createHost}><CreateStudio embedded signedIn={state.scope === "pending" ? null : state.ledger.signedIn} plan={state.ledger.plan} /></div>
+                ) : beside.view === "slides" ? (
+                  <div className={s.createHost}><SlidesStudio /></div>
+                ) : beside.view === "study" ? (
+                  <div className={s.createHost}><StudyMode /></div>
+                ) : beside.view === "studio" ? (
+                  <div className={s.createHost}><KeplarStudio plan={state.ledger.plan} signedIn={state.ledger.synced ? state.ledger.signedIn : null} /></div>
+                ) : beside.view === "apps" ? (
+                  <div className={s.scroll}><ConnectedAppsView /></div>
+                ) : beside.view === "deployments" ? (
+                  <div className={s.scroll}><DeploymentsView onOpenCreate={() => openSurface("create")} /></div>
+                ) : beside.view === "history" ? (
+                  <div className={s.scroll}>
+                    <HistoryView key={tabFocus?.view === "history" ? `q:${tabFocus.query ?? ""}` : "h"} initialQuery={tabFocus?.view === "history" ? tabFocus.query : undefined} state={listedState} signedIn={sync.signedIn} onRename={sync.rename} onOpen={openThread} onDelete={del.request} onMove={sync.move} />
+                  </div>
+                ) : beside.view === "projects" ? (
+                  <div className={s.scroll}>
+                    <ProjectsView
+                      key={tabFocus?.view === "projects" ? `p:${tabFocus.projectId ?? ""}` : "p"}
+                      initialOpenId={tabFocus?.view === "projects" ? tabFocus.projectId : undefined}
+                      state={listedState}
+                      signedIn={sync.signedIn}
+                      onCreate={(project) => dispatch({ type: "add-project", project })}
+                      onMerge={(projects) => dispatch({ type: "merge-projects", scope: state.scope, projects })}
+                      onRemoved={(id, chats) => dispatch({ type: "remove-project", id, chats })}
+                      onChatsCleared={(id) => dispatch({ type: "drop-project-chats", id })}
+                      onOpenProject={(id) => openSurface("history", id)}
+                      onNewInProject={(id) => newThread(id)}
+                      onOpenThread={openThread}
+                      onResumeSite={(id) => { try { sessionStorage.setItem(RESUME_KEY, id); } catch { /* storage unavailable: Create opens the latest site */ } openSurface("create"); }}
+                    />
+                  </div>
+                ) : beside.view === "agents" ? (
+                  <div className={s.scroll}>
+                    <AgentsView onStart={() => { setBeside(null); seedComposer("", { agent: true }); }} signedIn={sync.signedIn} onOpenApprovals={() => goView("approvals")} />
+                  </div>
+                ) : null}
+              </div>
+            </aside>
+          ) : null}
+          </div>
         ) : state.view === "create" ? (
           <div className={s.createHost}>
             <CreateStudio embedded signedIn={state.scope === "pending" ? null : state.ledger.signedIn} plan={state.ledger.plan} />
@@ -1426,9 +1497,9 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
       <DraftPane key={state.scope} scope={state.scope} plan={state.ledger.plan} onAsk={(text) => send(text, [], { web: false, deepResearch: false, create: false, agent: false })} />
 
       {searchOpen ? (
-        <SearchDialog threads={listedThreads} onClose={() => setSearchOpen(false)} onOpen={openThread} onNew={() => newThread()} onView={(v) => goView(v)} />
+        <SearchDialog threads={listedThreads} onClose={() => setSearchOpen(false)} onOpen={openThread} onNew={() => newThread()} onView={(v) => openSurface(v)} />
       ) : null}
-      {state.view === "thread" ? <ExploreLinks className={s.mobileFoot} live /> : null}
+      {state.view === "thread" && !beside ? <ExploreLinks className={s.mobileFoot} live /> : null}
     </div>
   );
 }

@@ -541,6 +541,44 @@
   .tool:active, .routingBtn:active { scale: none; }
 }
 
+/* Active mode: a removable chip inside the composer. A suggestion sits beside it and never turns a mode on by itself. */
+.modeChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.modeChip, .suggestApply, .suggestDismiss {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+.modeChip {
+  gap: 6px;
+  padding: 0 8px 0 10px;
+  border: 1px solid var(--hairline-strong);
+  background: var(--hover-wash);
+  color: var(--c-ink);
+}
+.modeChipLabel { transition: translate 180ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+.modeChip:hover .modeChipLabel, .suggestApply:hover .modeChipLabel { translate: 1px 0; }
+.modeChip:hover { border-color: var(--c-ink-3); }
+.modeChipX, .suggestDismiss { color: var(--c-ink-3); }
+.suggestChip { display: inline-flex; align-items: center; border: 1px solid var(--hairline); border-radius: 999px; }
+.suggestApply { padding: 0 4px 0 10px; color: var(--c-ink-2); background: transparent; }
+.suggestDismiss { width: 24px; padding: 0; color: var(--c-ink-3); background: transparent; }
+.suggestChip:hover { border-color: var(--c-ink-3); }
+.modeHint { margin: 6px 8px 2px; font-size: 12px; color: var(--c-ink-3); }
+@media (prefers-reduced-motion: reduce) {
+  .modeChipLabel { transition: none; }
+  .modeChip:hover .modeChipLabel, .suggestApply:hover .modeChipLabel { translate: none; }
+}
+
 /* Phones and narrow columns: mode chips that don't fit move into the "More" menu (measured in Composer.tsx); the row never scrolls or clips. */
 .tool[data-overflow] { display: none; }
 .more:not([data-show]) { display: none; }
