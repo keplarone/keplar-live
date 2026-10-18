@@ -51,7 +51,7 @@ test("the chat home links to the rest of the site, and the sky stays off the cha
   assert.equal(isProductHost("space.keplar.one"), false);
   assert.equal(isProductHost("business.keplar.one"), false);
   assert.equal(whopPixelAllowed("/"), false);
-  assert.equal(whopPixelAllowed("/overview"), true);
+  assert.equal(whopPixelAllowed("/overview"), false);
   assert.match(readFileSync("src/app/layout.tsx", "utf8"), /APP_SURFACE_SCRIPT/);
   assert.match(readFileSync("src/styles/app-surface.css", "utf8"), /data-app-surface/);
 });

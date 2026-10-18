@@ -25,8 +25,7 @@ test("sitemap index lists the stable sitemap files and shards a 10,000 URL colle
   assert.match(res.headers.get("content-type") ?? "", /application\/xml/);
   assert.equal(await res.text(), xml);
   const robots = robotsSitemapUrls(site.url);
-  assert.equal(robots[0], `${site.url}/sitemap-index.xml`);
-  assert.deepEqual(robots.slice(1), SITEMAP_FILES.map((f) => `${site.url}${f.path}`));
+  assert.deepEqual(robots, [`${site.url}/sitemap-index.xml`]);
   assert.deepEqual(shardNames("answers-sitemap", 10_000), ["answers-sitemap.xml"]);
   assert.deepEqual(shardNames("answers-sitemap", SITEMAP_URL_CAP + 1), ["answers-sitemap.xml", "answers-sitemap-2.xml"]);
   const shards = shardLocs(Array.from({ length: SITEMAP_URL_CAP + 2 }, (_, i) => i));

@@ -1,7 +1,7 @@
 /**
  * Metadata for the localized pages: translated title and description, a self-canonical in the page's locale, hreflang to every
- * indexable locale plus x-default (English), og:locale with its alternates. Every locale and page is indexable, Beta ones and
- * the auth pages (sign in, sign up) included.
+ * indexable locale plus x-default (English), og:locale with its alternates. Beta locales stay indexable. Sign-in and sign-up
+ * are noindex, follow: they are auth pages, not content.
  */
 import type { Metadata } from "next";
 import { site } from "@/lib/site";
@@ -20,6 +20,7 @@ export async function localeMetadata(locale: string, page: PageKey): Promise<Met
   const alternates = localeAlternates(path, locale);
   const indexable = INDEXABLE_PATHS.includes(path as (typeof INDEXABLE_PATHS)[number]);
   const fullTitle = page === "home" ? m.title : `${m.title} · ${site.name}`;
+  const noindex = page === "signin" || page === "signup";
   return {
     title: page === "home" ? { absolute: m.title } : m.title,
     description: m.description,
@@ -35,5 +36,6 @@ export async function localeMetadata(locale: string, page: PageKey): Promise<Met
       images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: `${site.name}: ${site.tagline}` }],
     },
     twitter: { card: "summary_large_image", title: fullTitle, description: m.description },
+    ...(noindex ? { robots: { index: false, follow: true } } : {}),
   };
 }

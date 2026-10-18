@@ -8,7 +8,7 @@ import { afterWelcomePath, needsWelcome, welcomePath } from "@/lib/onboarding/mo
 import { payloadFor } from "@/lib/onboarding/service";
 import { Onboarding } from "@/components/onboarding/Onboarding";
 
-export const metadata: Metadata = { title: "Welcome" };
+export const metadata: Metadata = { title: "Welcome", robots: { index: false, follow: true } };
 export const dynamic = "force-dynamic";
 
 type Props = { searchParams: Promise<{ next?: string }> };

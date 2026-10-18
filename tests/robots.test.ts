@@ -8,7 +8,7 @@ test("robots source: named crawlers get the same rules as everyone, sitemaps lis
   const src = await readFile(new URL("../src/app/robots.ts", import.meta.url), "utf8");
   for (const bot of ["Googlebot", "Bingbot", "OAI-SearchBot", "ClaudeBot", "PerplexityBot", "Applebot"]) assert.ok(src.includes(`"${bot}"`), bot);
   assert.ok(src.includes('allow: "/"') && src.includes('"/api/"') && src.includes('"/dev/"'));
-  assert.ok(src.includes("robotsSitemapUrls"), "robots.txt advertises the sitemap registry");
+  assert.ok(src.includes("robotsSitemapUrls"), "robots.txt advertises the sitemap index");
   const paths = SITEMAP_FILES.map((f) => f.path).join(" ");
   assert.ok(paths.includes("answers-sitemap.xml") && paths.includes("topics-sitemap.xml") && paths.includes("/sitemap.xml") && paths.includes("templates-sitemap.xml"));
   assert.equal(src.includes('disallow: ["/answers'), false);

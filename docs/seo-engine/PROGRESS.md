@@ -1,6 +1,6 @@
 # Search Intent Domination Engine — Progress
 
-**Updated:** 2026-10-17
+**Updated:** 2026-10-18
 **Repo:** keplar-live (`/workspace`)
 **Author of commits:** `Keplar <team@keplar.one>`
 **Owner approved merge and auto-deploy on 2026-10-17.** Do not run `vercel` or `vercel --prod`. Merging to `main` is the deploy. #22 `8be1ce5`. #23 `953630b`. #24 `e2ebe63`.
@@ -28,6 +28,7 @@
 - [x] Phase 8 tool pages already link to the matching product with `TrackedLink` and reuse the existing marketing styles. No new visual language and no site-wide restyle.
 - [x] Phase 11 stack: #22 `8be1ce5`, #23 `953630b`, #24 `e2ebe63`, #25 `240521c` are on main. Production stamp `240521c7c8dc` served `/sitemap-index.xml`, `/tools`, `/tools/citation-formatter`, `/llms.txt`, `/robots.txt`, and `/` with status 200.
 - [x] Programmatic pages: `/guides/citation-styles` and `/guides/free-tool-limits` are built from `formatCitation`, `TOOLS`, and `TOOL_LIMITS`. Both pass `decidePublish` and are in the sitemap.
+- [x] Marketing fixes (2026-10-18): pricing meta names Lite $20 (English, OG card, all 25 locales). Auth, `/app`, the Business app, the embed shell, `/status`, `/welcome`, the 404, and an empty `/answers` or `/topics` index are noindex, follow. The Whop pixel loads only on `/checkout`, `/account`, and `/biz/account`. `robots.txt` lists `/sitemap-index.xml` only. Space Studio was not changed.
 
 ## This milestone (audit + critical fixes)
 
@@ -110,3 +111,22 @@ Not in this milestone: no public `/reports` page, no fabricated research, no Bin
 - `tests/seo-measure.test.ts`
 - `tests/share-public.test.ts`
 - `tests/seo-indexable.test.ts`
+
+## Marketing fixes (2026-10-18)
+
+Checked against current source on `main` (`f921e6f`). `FIXES.md` and the marketing `AUDIT.md` were not in the workspace, the repo, or GitHub, so paste-ready titles, descriptions, JSON-LD, redirects, sitemap removals, and performance steps from that sheet were not applied.
+
+Applied:
+
+- `/pricing` title, description, and the pricing share card name Lite at $20, next to Plus $45 and Pro $99. The same price is in `meta.pricing` for all 25 locales, which is what localized `og:title` and `og:description` copy. `softwareApp()` already offers Lite from `tiers.ts` (price 20). No `aggregateRating`.
+- noindex, follow on auth (`/signin`, `/signup`, `/forgot-password`, `/reset-password`, `/verify-email`, `/two-factor`, `/secure-account`, `/signin/verify`, `/desktop/connect`, and localized sign-in and sign-up), `/app` (layout and tabs), the Business app, the embed shell, `/welcome`, `/status`, the 404, and `/answers` or `/topics` when the list is empty.
+- Whop pixel scripts load only on `/checkout`, `/account`, and `/biz/account` (the Business account page that embeds checkout). `forms:false` stays. The checkout Elements script was already limited to checkout and account setup.
+- `robots.txt` sitemap field is `/sitemap-index.xml` only. The index still lists the four urlset files.
+
+Skipped:
+
+- Space Studio and `space.keplar.one`: not redirected, not noindexed, not removed. The existing noindex on `/space-studio/app` was already there and was left as-is.
+- Paste-ready English titles, descriptions, and JSON-LD for the other pages: the sheet was not attached.
+- Redirects and extra sitemap removals from that sheet: not visible, so no URLs were redirected or dropped.
+- Performance steps from that sheet: not visible. The home-page scene was not edited.
+- Account and checkout stay indexable. They were not in the noindex list.

@@ -3,10 +3,11 @@ import { robotsSitemapUrls } from "@/lib/seo/sitemaps";
 import { isIndexable } from "@/lib/site";
 
 /**
- * Crawling is open for every page. Keplar's own pages carry no noindex, except an unapproved comparison
- * (src/lib/kb/vs.ts). Private share links (/r, /c, /sp, /i) and preview hosts are noindex too, and a crawler can only
- * obey that if it may fetch the page. The private app pages sit behind real auth.
+ * Crawling stays open so a noindex page can still be fetched. Auth, the signed-in app, status, an empty
+ * answers or topics index, and an unapproved comparison (src/lib/kb/vs.ts) send noindex, follow.
+ * Private share links (/r, /c, /sp, /i) and preview hosts are noindex too.
  * Only API routes and the dev outbox are disallowed: they are not pages.
+ * The sitemap field is the index only. The index lists the urlset files.
  */
 /** Search and AI-answer crawlers published by their operators: allowed, with the same API/dev exclusions as everyone else. */
 export const REPUTABLE_CRAWLERS = [

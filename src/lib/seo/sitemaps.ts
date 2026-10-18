@@ -2,7 +2,7 @@ import { site } from "@/lib/site";
 import { xmlEscape } from "@/lib/sitemap-xml";
 
 /**
- * Discoverable sitemap files. /sitemap-index.xml and robots.txt both read this list.
+ * Discoverable sitemap files. /sitemap-index.xml lists this. robots.txt points at the index only.
  * A new cluster or a shard of a programmatic collection is added here; the four
  * existing files stay at their current URLs.
  *
@@ -19,9 +19,9 @@ export const SITEMAP_FILES: SitemapRef[] = [
   { path: "/topics-sitemap.xml" },
 ];
 
-/** The index plus every file it lists. robots.txt advertises all of them so existing sitemap URLs stay stable. */
+/** robots.txt points at the sitemap index only. The index lists SITEMAP_FILES; those files stay at their URLs. */
 export function robotsSitemapUrls(origin = site.url): string[] {
-  return [`${origin}/sitemap-index.xml`, ...SITEMAP_FILES.map((f) => `${origin}${f.path}`)];
+  return [`${origin}/sitemap-index.xml`];
 }
 
 export function sitemapIndexXml(files: SitemapRef[] = SITEMAP_FILES, origin = site.url): string {

@@ -4,7 +4,7 @@ import { Footer } from "@/components/chrome/Footer";
 import { ButtonLink } from "@/components/ui/Button";
 import s from "@/components/page/NotFound.module.css";
 
-export const metadata: Metadata = { title: "Page not found" };
+export const metadata: Metadata = { title: "Page not found", robots: { index: false, follow: true } };
 
 /** 404: a quiet "404", a two-tone line and two ways out (one primary, one secondary), on the colour backdrop. */
 export default function NotFound() {

@@ -13,7 +13,7 @@ import { AuthForm } from "@/components/auth/AuthForm";
 import { SavedAccounts } from "@/components/auth/SavedAccounts";
 import { savedAccounts } from "@/lib/accounts/multi-api";
 
-export const metadata = pageMeta("/signin", "Sign in", "Sign in to Keplar.");
+export const metadata = pageMeta("/signin", "Sign in", "Sign in to Keplar.", { noindex: true });
 export const dynamic = "force-dynamic";
 
 type Props = { searchParams: Promise<{ error?: string; next?: string; add?: string; expired?: string; reauth?: string }> };

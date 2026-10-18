@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   applicationName: "Keplar Business",
   icons: BUSINESS_ICONS,
   manifest: BUSINESS_MANIFEST_PATH,
+  robots: { index: false, follow: true },
 };
 
 /** The Keplar Business app (business.keplar.one/work): full screen, its own chrome; the desktop title bar when it runs in the desktop app. */

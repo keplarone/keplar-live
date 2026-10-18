@@ -8,7 +8,7 @@ import { pendingMfaFor } from "@/lib/accounts/mfa/gate";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { TwoFactorForm } from "@/components/auth/TwoFactorForm";
 
-export const metadata: Metadata = pageMeta("/two-factor", "Two-factor code", "Enter your authenticator code to finish logging in.");
+export const metadata: Metadata = pageMeta("/two-factor", "Two-factor code", "Enter your authenticator code to finish logging in.", { noindex: true });
 export const dynamic = "force-dynamic";
 
 type Props = { searchParams: Promise<{ next?: string }> };

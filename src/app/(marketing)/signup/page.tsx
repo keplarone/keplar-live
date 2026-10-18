@@ -11,7 +11,7 @@ import { TrackOnMount } from "@/components/growth/TrackOnMount";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { AuthForm } from "@/components/auth/AuthForm";
 
-export const metadata = pageMeta("/signup", "Create your account", "Create a free Keplar account.");
+export const metadata = pageMeta("/signup", "Create your account", "Create a free Keplar account.", { noindex: true });
 export const dynamic = "force-dynamic";
 
 type Props = { searchParams: Promise<{ error?: string; next?: string; add?: string; invited?: string }> };
