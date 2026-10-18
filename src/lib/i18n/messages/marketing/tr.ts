@@ -12,8 +12,8 @@ const m: MarketingCatalog = {
       "description": "Keplar’ın tüm özellikleri tek sayfada, amacına göre gruplanmış: soru sormak, dosya okumak, site ve uygulama oluşturmak, birlikte geliştirmek, yayınlamak, API ve widget, ve güven. Her birinin kullanımda mı, betada mı yoksa yakında mı olduğu yazıyor."
     },
     "pricing": {
-      "title": "Fiyatlandırma: Free, Plus $45, Pro $99",
-      "description": "Keplar One ile ücretsiz başlayın. Keplar Plus aylık $45, Keplar Pro aylık $99; Business planları satış ekibimiz aracılığıyla sunulur. Kullanımınızı görürsünüz, hiçbir şey gizli değildir."
+      "title": "Fiyatlandırma: Free, Lite $20, Plus $45, Pro $99",
+      "description": "Keplar One ile ücretsiz başlayın. Keplar Lite aylık $20, Keplar Plus aylık $45, Keplar Pro aylık $99; Business planları satış ekibimiz aracılığıyla sunulur. Kullanımınızı görürsünüz, hiçbir şey gizli değildir."
     },
     "showcase": {
       "title": "Create vitrini: Keplar ile yapılan bir uygulama nasıl görünmeli",

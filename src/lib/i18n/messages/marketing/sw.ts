@@ -12,8 +12,8 @@ const m: MarketingCatalog = {
       "description": "Kila kipengele cha Keplar kwenye ukurasa mmoja, kimepangwa kwa matumizi: kuuliza, kusoma faili, kutengeneza tovuti na programu, kujenga pamoja, kuchapisha, API na wijeti, na uaminifu. Kila kimoja kinaeleza kama kinapatikana, kiko kwenye beta au kinakuja hivi karibuni."
     },
     "pricing": {
-      "title": "Bei: Free, Plus $45, Pro $99",
-      "description": "Anza bure na Keplar One. Keplar Plus ni $45 kwa mwezi, Keplar Pro ni $99 kwa mwezi, na mipango ya Business inapatikana kupitia timu yetu ya mauzo. Matumizi unayoweza kuona, kamwe hayafichwi."
+      "title": "Bei: Free, Lite $20, Plus $45, Pro $99",
+      "description": "Anza bure na Keplar One. Keplar Lite ni $20 kwa mwezi, Keplar Plus ni $45 kwa mwezi, Keplar Pro ni $99 kwa mwezi, na mipango ya Business inapatikana kupitia timu yetu ya mauzo. Matumizi unayoweza kuona, kamwe hayafichwi."
     },
     "showcase": {
       "title": "Maonyesho ya Create: jinsi programu iliyotengenezwa na Keplar inavyopaswa kuonekana",

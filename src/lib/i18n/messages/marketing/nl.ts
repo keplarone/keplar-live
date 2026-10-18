@@ -12,8 +12,8 @@ const m: MarketingCatalog = {
       "description": "Alle functies van Keplar op één pagina, gegroepeerd naar doel: vragen stellen, bestanden lezen, sites en apps maken, samen bouwen, publiceren, de API en widget, en vertrouwen. Bij elke functie staat of die beschikbaar is, in bèta of binnenkort komt."
     },
     "pricing": {
-      "title": "Prijzen: Free, Plus $45, Pro $99",
-      "description": "Begin gratis met Keplar One. Keplar Plus kost $45 per maand, Keplar Pro $99 per maand, en Business-abonnementen zijn beschikbaar via ons salesteam. Verbruik dat je kunt zien, nooit verborgen."
+      "title": "Prijzen: Free, Lite $20, Plus $45, Pro $99",
+      "description": "Begin gratis met Keplar One. Keplar Lite kost $20 per maand, Keplar Plus kost $45 per maand, Keplar Pro $99 per maand, en Business-abonnementen zijn beschikbaar via ons salesteam. Verbruik dat je kunt zien, nooit verborgen."
     },
     "showcase": {
       "title": "Create-showcase: zo hoort een app gemaakt met Keplar eruit te zien",

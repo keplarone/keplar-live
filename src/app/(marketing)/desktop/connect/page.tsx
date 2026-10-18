@@ -13,7 +13,7 @@ import { defaultStore } from "@/lib/desktop-auth/store";
 import s from "@/components/auth/auth.module.css";
 
 // The request id is a capability: never leak it in a Referer header, never index the page.
-export const metadata: Metadata = { ...pageMeta("/desktop/connect", "Connect the Keplar app", "Sign in to the Keplar One or Keplar Business desktop app."), referrer: "no-referrer" };
+export const metadata: Metadata = { ...pageMeta("/desktop/connect", "Connect the Keplar app", "Sign in to the Keplar One or Keplar Business desktop app.", { noindex: true }), referrer: "no-referrer" };
 export const dynamic = "force-dynamic";
 
 type Props = { searchParams: Promise<{ rid?: string | string[] }> };

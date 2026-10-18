@@ -8,7 +8,7 @@ import { passwordCapabilities } from "@/lib/accounts/password-auth";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { ForgotForm } from "@/components/auth/RecoveryForms";
 
-export const metadata = pageMeta("/forgot-password", "Reset your password", "Reset your Keplar password.");
+export const metadata = pageMeta("/forgot-password", "Reset your password", "Reset your Keplar password.", { noindex: true });
 export const dynamic = "force-dynamic";
 
 type Props = { searchParams: Promise<{ next?: string }> };

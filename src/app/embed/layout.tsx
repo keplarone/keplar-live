@@ -3,6 +3,7 @@ import { THEME_COLORS } from "@/lib/theme";
 
 export const metadata: Metadata = {
   title: "Keplar Ask",
+  robots: { index: false, follow: true },
 };
 
 /** Minimal chrome-free shell so other sites can iframe Ask. */

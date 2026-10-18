@@ -16,8 +16,8 @@ import { pricingContext, pricingFaq } from "@/lib/growth/pricing-page";
 
 export const metadata = pageMeta(
   "/pricing",
-  "Pricing: Free, Plus $45, Pro $99",
-  `Start free with ${brand.engineName}. Keplar Plus is $45/month, Keplar Pro is $99/month, and Business plans are available through our sales team. Usage you can see, never hidden.`,
+  "Pricing: Free, Lite $20, Plus $45, Pro $99",
+  `Start free with ${brand.engineName}. Keplar Lite is $20/month, Keplar Plus is $45/month, Keplar Pro is $99/month, and Business plans are available through our sales team. Usage you can see, never hidden.`,
 );
 
 /** General questions kept on the pricing page next to the pricing ones (one FAQPage block per page). */
