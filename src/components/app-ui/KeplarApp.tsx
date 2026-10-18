@@ -33,6 +33,7 @@ import { ChatImageTurn } from "./chat-image/ChatImageTurn";
 import { ChatVideoTurn } from "./chat-video/ChatVideoTurn";
 import { detectImageIntent } from "@/lib/images/chat-intent";
 import { detectVideoIntent } from "@/lib/video/chat-intent";
+import { newVideoKey } from "@/lib/video/chat-flow";
 import type { ChatVideo } from "@/lib/video/chat-types";
 import { expandPromptIfSlash } from "@/lib/images/slash-commands";
 import { OPEN_APP_SEARCH_EVENT } from "@/lib/nav/commands";
@@ -585,6 +586,14 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
         dispatch({ type: "event", threadId, keplarId: keplar.id, event: shown });
         if (event.type === "memory") setMemory(event.enabled);
         // Soft upsell (Free only, real answers only: never small talk or the creator reply).
+        if (event.type === "answer" && event.answer.markdown.includes("[[keplar-video]]")) {
+          const intent = detectVideoIntent(user.text);
+          dispatch({
+            type: "event", threadId, keplarId: keplar.id,
+            event: { type: "video", video: { phase: "checking", prompt: intent?.prompt ?? "", needsSubject: intent?.needsSubject ?? true, statedAspect: intent?.aspect ?? null, statedDuration: intent?.durationSec ?? null, key: newVideoKey() } },
+          });
+          return;
+        }
         if (event.type === "answer" && !event.answer.smalltalk && stateRef.current.ledger.synced && stateRef.current.ledger.plan === "free") {
           const { state: next, show } = nextUpsell(readUpsell(), { complex: isComplexAnswer(event.answer) });
           writeUpsell(next);
@@ -652,17 +661,18 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
         if (last?.answer?.core && last.answer.id) sendCoreSignal(last.answer.id, looksConfused(text) ? "confused" : looksRephrased(lastAsk?.text, text) ? "edit" : "complete");
       }
       const stills = Boolean(media?.some((x) => x.kind === "image"));
-      const slash = expandPromptIfSlash(text, { hasReference: stills });
-      const promptText = slash.prompt;
-      const modesForSend: ComposerModes = slash.command ? { ...modes, image: true } : modes;
-      const user: UserMessage = { id: uid("u"), role: "user", text: slash.command ? promptText : text, attachments, modes: modesForSend, createdAt: Date.now(), ...(media?.length ? { media } : {}) };
+      // A leading image slash (/BTS, /Adcreative, …) is not a way to make a picture, and it is not a Create build.
+      const imageSlash = expandPromptIfSlash(text, { hasReference: stills }).command;
+      const user: UserMessage = { id: uid("u"), role: "user", text, attachments, modes, createdAt: Date.now(), ...(media?.length ? { media } : {}) };
       // Everything a tab does also works here: a chat slash command (/slides, /quiz, /approvals ...) or a clear request in words
       // ("make a slideshow about X", "show my pending approvals", "make slide 3 shorter") becomes that tab's card in the thread.
       // A mode chip is already an explicit choice, so only slash commands override one. Not sure -> null -> a normal answer.
       const msgs = current?.messages ?? [];
       const anyMode = Boolean(modes.deepResearch || modes.create || modes.agent || modes.debate || modes.image || modes.study || modes.slides);
-      const routed = forced ? (forced.intent ? { intent: forced.intent, via: "pick" as const } : null) : slash.command || media?.length ? null : routeChat(text, { last: lastCardOf(msgs) });
-      if (routed && (forced || routed.via === "slash" || !anyMode)) {
+      // A clip wins over a language route (including Create) and over every mode chip. A slash command or a card's own action still wins.
+      const videoAsk = !stills && !imageSlash ? detectVideoIntent(text) : null;
+      const routed = forced ? (forced.intent ? { intent: forced.intent, via: "pick" as const } : null) : imageSlash || media?.length ? null : routeChat(text, { last: lastCardOf(msgs) });
+      if (routed && (forced || routed.via === "slash" || (!anyMode && !videoAsk))) {
         const i = routed.intent;
         const label = intentLabel(i);
         const base: UserMessage = { ...user, ...(label ? { via: label } : {}) };
@@ -727,43 +737,41 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
           }
         }
       }
+      // A clip is never a model answer and never a Create build. This runs before Study, Slides and Create, on every chat send.
+      if (!forced && videoAsk) {
+        const video: ChatVideo = {
+          phase: "checking", prompt: videoAsk.prompt.slice(0, 1000), needsSubject: videoAsk.needsSubject, statedAspect: videoAsk.aspect, statedDuration: videoAsk.durationSec, key: newVideoKey(),
+        };
+        dispatch({ type: "send", threadId, user, keplar: newVideoKeplar(user.id, video), projectId: st.projectFilter });
+        setAtBottom(true);
+        return;
+      }
       // Study / Slides chips: the message goes to that studio (Slides has no panel answer; Study builds after the answer).
-      const studio = studioOf(modesForSend);
+      const studio = studioOf(modes);
       if (studio === "slides") {
         const keplar: KeplarMessage = { ...newKeplar(user.id), status: "done", finishedAt: Date.now(), studio: { kind: "slides", phase: "waiting" } };
         dispatch({ type: "send", threadId, user, keplar, projectId: st.projectFilter });
         setAtBottom(true);
         return;
       }
-      // A picture or clip is not a Create build. Create mode leaves those as ordinary chat (a clip with no mode is picked up below).
-      const found = detectImageIntent(promptText, { hasImage: stills });
-      const videoAsk = !stills && !slash.command ? detectVideoIntent(text) : null;
+      // A picture is not a Create build. Create mode leaves an image request as ordinary chat.
+      const found = detectImageIntent(text, { hasImage: stills });
       // Create chip: the message is built into a website or app right in the chat.
-      if (modesForSend.create && !studio && !slash.command && !found && !videoAsk) {
+      if (modes.create && !studio && !imageSlash && !found) {
         const keplar: KeplarMessage = { ...newKeplar(user.id), status: "done", finishedAt: Date.now(), create: { phase: "waiting" } };
         dispatch({ type: "send", threadId, user, keplar, projectId: st.projectFilter });
         setAtBottom(true);
         return;
       }
-      // "Create image" toggle, a leading slash image command, or a clear "draw / make / generate an image of ..." request.
-      const wantsImage = !studio && (modesForSend.image === true || slash.command !== null || (found !== null && !modes.deepResearch && !modes.create && !modes.agent && !modes.debate));
+      // A clear "draw / make / generate an image of ..." request. modes.image is only set by regenerate / variation / edit.
+      const wantsImage = !studio && !imageSlash && (modes.image === true || (found !== null && !modes.deepResearch && !modes.create && !modes.agent && !modes.debate));
       if (wantsImage) {
-        const edit = stills && (found?.edit === true || modesForSend.image === true || Boolean(slash.command?.prefersReference));
+        const edit = stills && (found?.edit === true || modes.image === true);
         const image: ChatImage = {
-          phase: "checking", kind: edit ? "edit" : "create", prompt: (slash.command ? promptText : (found?.prompt ?? promptText)).slice(0, 1000), size: found?.size ?? "1536x1024", quality: "high", key: newKey(),
+          phase: "checking", kind: edit ? "edit" : "create", prompt: (found?.prompt ?? text).slice(0, 1000), size: found?.size ?? "1536x1024", quality: "high", key: newKey(),
           ...(edit ? { ref: { from: "upload" as const } } : {}), ...(found?.asked ? { asked: found.asked } : {}),
         };
         dispatch({ type: "send", threadId, user, keplar: newImageKeplar(user.id, image), projectId: st.projectFilter });
-        setAtBottom(true);
-        return;
-      }
-      // Ordinary chat, no mode: a clear "make a video of…" request makes a clip. Create does not own this.
-      const noRun = !studio && !modes.deepResearch && !modes.create && !modes.agent && !modes.debate && !modes.image && !slash.command;
-      if (noRun && videoAsk) {
-        const video: ChatVideo = {
-          phase: "checking", prompt: videoAsk.prompt.slice(0, 1000), statedAspect: videoAsk.aspect, statedDuration: videoAsk.durationSec, key: newKey(),
-        };
-        dispatch({ type: "send", threadId, user, keplar: newVideoKeplar(user.id, video), projectId: st.projectFilter });
         setAtBottom(true);
         return;
       }
@@ -1261,7 +1269,6 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                               m.modes.web && "Web",
                               m.modes.deepResearch && "Deep Research",
                               m.modes.create && "Create",
-                              m.modes.image && "Create image",
                               m.modes.agent && "Agent",
                               m.modes.debate && "Debate",
                               m.modes.reason && "Reason",

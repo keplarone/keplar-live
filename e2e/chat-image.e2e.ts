@@ -1,10 +1,5 @@
 import { test, expect, type Page } from "playwright/test";
 
-/** Modes that are off live in the composer's "Modes" menu; turning one on puts its chip back in the row. */
-async function enableMode(page: Page, key: string) {
-  await page.getByRole("button", { name: /^More modes/ }).click();
-  await page.locator(`[data-more-mode='${key}']`).click();
-}
 import { execFileSync } from "node:child_process";
 import { DATA_DIR, SECRET } from "./playwright.config";
 
@@ -85,12 +80,9 @@ test.describe("Create image in chat", () => {
   test("Free plan: a clear 'draw me...' request is not sent to the panel; an upgrade card explains, with a way to ask as text", async ({ page }) => {
     await signIn(page, `ci.free.${STAMP}@example.com`);
     await openChat(page);
-    const toggle = page.locator("button[data-mode='image']");
-    await expect(toggle).toHaveAttribute("aria-pressed", "false");
-    await enableMode(page, "image");
-    await expect(toggle).toHaveAttribute("aria-pressed", "true");
-    await toggle.click();
-    await expect(toggle).toHaveAttribute("aria-pressed", "false");
+    await page.getByRole("button", { name: "Modes" }).click();
+    await expect(page.getByRole("menuitemcheckbox", { name: /Create image/ })).toHaveCount(0);
+    await page.keyboard.press("Escape");
     let keplarCalls = 0;
     await page.route(/\/api\/keplar$/, (route) => { keplarCalls++; return route.fallback(); });
     await ask(page, "Draw me an image of a fox in the snow");
@@ -203,38 +195,23 @@ test.describe("Create image in chat", () => {
     expect(seen.starts.length).toBe(before);
   });
 
-  test("The Create image toggle makes a picture from any message", async ({ page }) => {
-    const mail = `ci.toggle.${STAMP}@example.com`;
-    await signIn(page, mail);
-    run("set-plan.ts", mail, "plus");
-    const seen = await mockImages(page);
-    await openChat(page);
-    await enableMode(page, "image");
-    await ask(page, "a lighthouse in fog");
-    await expect(page.getByTestId("chat-image-result")).toBeVisible({ timeout: 20_000 });
-    expect(seen.starts[0]).toMatchObject({ prompt: "a lighthouse in fog" });
-    expect(seen.keplar).toBe(0);
-  });
-  test("Typing / opens slash commands; picking /BTS inserts the behind-the-scenes template", async ({ page }) => {
+  test("Modes has no Create image, and / offers chat commands rather than image slash commands", async ({ page }) => {
     const mail = `ci.slash.${STAMP}@example.com`;
     await signIn(page, mail);
     run("set-plan.ts", mail, "plus");
-    await mockImages(page);
     await openChat(page);
-    await enableMode(page, "image");
+    await page.getByRole("button", { name: "Modes" }).click();
+    await expect(page.getByRole("menuitemcheckbox", { name: /^Create\b/ })).toBeVisible();
+    await expect(page.getByRole("menuitemcheckbox", { name: /Create image/ })).toHaveCount(0);
+    await page.keyboard.press("Escape");
     const box = page.locator("textarea").first();
     await box.click();
     await box.pressSequentially("/", { delay: 20 });
     const menu = page.getByTestId("slash-command-menu");
     await expect(menu).toBeVisible();
-    await expect(menu.getByTestId("slash-cmd-bts")).toBeVisible();
-    await expect(menu.getByTestId("slash-cmd-adcreative")).toBeVisible();
-    await menu.getByTestId("slash-cmd-bts").click();
-    await expect(menu).toHaveCount(0);
-    await expect(box).toHaveValue(/Behind-the-scenes production photograph/i);
-    await expect(box).toHaveValue(/the subject/i);
-    // Create image stays on after a slash pick
-    await expect(page.getByRole("button", { name: "Create image" })).toHaveAttribute("aria-pressed", "true");
+    await expect(menu.getByTestId("slash-cmd-bts")).toHaveCount(0);
+    await expect(menu.getByTestId("slash-cmd-adcreative")).toHaveCount(0);
+    await expect(menu.getByTestId("slash-cmd-slides")).toBeVisible();
   });
 
 });

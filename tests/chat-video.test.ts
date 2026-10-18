@@ -11,6 +11,7 @@ import { ENTITLEMENTS } from "@/lib/create/platform/plans";
 import { compareGroups } from "@/lib/growth/pricing-page";
 import { settleVideo } from "@/components/app-ui/state/store";
 import type { KeplarMessage, Message } from "@/components/app-ui/state/types";
+import { POST as keplarPOST } from "@/app/api/keplar/route";
 
 const read = (p: string) => readFileSync(p, "utf8");
 
@@ -42,6 +43,39 @@ test("video intent: a request to make a clip is detected; questions and other bu
     "make a video editor",
   ];
   for (const t of no) assert.equal(detectVideoIntent(t), null, t);
+});
+
+test("video intent: a short request with no subject still opens the card, including typos", () => {
+  const bare = ["create me a video", "make a video", "make me a vid", "generate a video", "can you make a video", "video of...", "i want a video", "creat me a video", "create a vidoe", "video of"];
+  for (const text of bare) {
+    const hit = detectVideoIntent(text);
+    assert.ok(hit, text);
+    assert.equal(hit?.needsSubject, true, text);
+    assert.equal(hit?.prompt, "", text);
+  }
+  const of = detectVideoIntent("video of a fox");
+  assert.equal(of?.needsSubject, false);
+  assert.equal(of?.prompt, "a fox");
+  const both = detectVideoIntent("make a vertical 10 second video");
+  assert.equal(both?.needsSubject, true);
+  assert.equal(both?.aspect, "9:16");
+  assert.equal(both?.durationSec, 10);
+  assert.equal(planVideoQuestions(both!, defaultChatOffer(10))?.ready, false);
+});
+
+test("a bare video request is handed to the card before any model", async () => {
+  const res = await keplarPOST(new Request("https://keplar.one/api/keplar", {
+    method: "POST",
+    headers: { "content-type": "application/json", origin: "https://keplar.one", "x-forwarded-for": "10.44.8.8" },
+    body: JSON.stringify({ prompt: "create me a video", history: [] }),
+  }));
+  assert.equal(res.status, 200);
+  const events = (await res.text()).trim().split("\n").map((l) => JSON.parse(l) as { type: string; video?: { needsSubject?: boolean; prompt?: string; phase?: string } });
+  assert.equal(events.length, 1);
+  assert.equal(events[0]?.type, "video");
+  assert.equal(events[0]?.video?.needsSubject, true);
+  assert.equal(events[0]?.video?.prompt, "");
+  assert.equal(events[0]?.video?.phase, "checking");
 });
 
 test("video intent: shape and length are read from the words, and a conflict is left open", () => {
@@ -221,12 +255,18 @@ test("Create offers a website or an app, and a chat clip is not a Create build",
   assert.match(composer, /hint: "Build a website or app"/);
   assert.match(composer, /create: "Build a website or app"/);
   assert.doesNotMatch(composer, /Apps, images, video/);
+  assert.doesNotMatch(composer, /label: "Create image"/);
+  assert.doesNotMatch(composer, /filterSlashCommands/);
   const app = read("src/components/app-ui/KeplarApp.tsx");
   const videoAsk = app.indexOf("const videoAsk");
-  const createGate = app.indexOf("modesForSend.create && !studio && !slash.command && !found && !videoAsk");
-  const noRun = app.indexOf("if (noRun && videoAsk)");
-  assert.ok(videoAsk > 0 && videoAsk < createGate && createGate < noRun);
-  assert.match(app, /!modes\.create && !modes\.agent && !modes\.debate && !modes\.image/);
+  const createGate = app.indexOf("modes.create && !studio && !imageSlash && !found");
+  assert.ok(videoAsk > 0 && createGate > videoAsk, "a clip is chosen before Create builds an app");
+  assert.match(app, /if \(!forced && videoAsk\)/);
+  assert.match(app, /!anyMode && !videoAsk/, "a language route cannot send a clip request to the Creation model");
+  assert.match(read("src/components/app-ui/chat-video/ChatVideoTurn.tsx"), /What should the video show\?/);
+  assert.match(read("src/components/app-ui/chat-video/ChatVideoTurn.tsx"), /disabled=\{busy \|\| !subjectReady\}/);
+  assert.match(read("src/lib/orchestration/providers/shared.ts"), /\[\[keplar-video\]\]/);
+  assert.match(read("src/app/api/keplar/route.ts"), /detectVideoIntent\(req\.prompt\)/);
   const studio = read("src/components/create/CreateStudio.tsx");
   assert.match(studio, /value: "app", label: "App"/);
   assert.doesNotMatch(studio, /value: "images"|value: "video"/);

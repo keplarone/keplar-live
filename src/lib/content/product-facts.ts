@@ -89,7 +89,7 @@ export const FACT_SECTIONS: FactSection[] = [
     id: "media", title: "Pictures and video",
     intro: "Pictures and clips are made from a chat message. They are not part of Create.",
     facts: [
-      { name: "Image generation", what: "Make a picture from a message with Create image in the composer, or by asking to draw one. Attach an image to use it as a reference.", plans: "Plus and Pro" },
+      { name: "Image generation", what: "Ask in chat to draw a picture, for example “draw a lighthouse”. Attach an image to use it as a reference. Not part of Create.", plans: "Plus and Pro" },
       { name: "Video generation", what: "Ask in chat for a clip, for example “make a video of a fox in snow”. Keplar asks for 16:9 or 9:16 and a length the model supports, then makes one clip. Pro and Business.", plans: "Pro and Business", status: "beta" },
     ],
   },

@@ -40,7 +40,7 @@ export type VideoQuestions = {
   ready: boolean;
 };
 
-export function planVideoQuestions(intent: Pick<VideoIntent, "aspect" | "durationSec">, offer: VideoOffer, remembered: RememberedVideo = {}): VideoQuestions | null {
+export function planVideoQuestions(intent: Pick<VideoIntent, "aspect" | "durationSec"> & { needsSubject?: boolean }, offer: VideoOffer, remembered: RememberedVideo = {}): VideoQuestions | null {
   if (!offer.aspects.length || !offer.durations.length) return null;
   const statedAspect = intent.aspect && offer.aspects.includes(intent.aspect) ? intent.aspect : null;
   const statedDuration = intent.durationSec !== null && offer.durations.includes(intent.durationSec) ? intent.durationSec : null;
@@ -48,7 +48,7 @@ export function planVideoQuestions(intent: Pick<VideoIntent, "aspect" | "duratio
   const duration = statedDuration ?? (remembered.duration !== undefined && offer.durations.includes(remembered.duration) ? remembered.duration : (offer.durations.includes(5) ? 5 : offer.durations[0]));
   const askAspect = statedAspect === null;
   const askDuration = statedDuration === null;
-  return { askAspect, askDuration, aspect, duration, ready: !askAspect && !askDuration };
+  return { askAspect, askDuration, aspect, duration, ready: !askAspect && !askDuration && intent.needsSubject !== true };
 }
 
 const PREF_KEY = "keplar:chat-video";

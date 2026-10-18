@@ -1,7 +1,7 @@
 "use client";
 /**
- * Autocomplete list for slash commands: the image commands (/BTS, /Adcreative, …) while Create image is on, and the chat's own
- * commands (/slides, /quiz, /approvals, …) otherwise.
+ * Autocomplete list for the chat's slash commands (/slides, /quiz, /approvals, …).
+ * Image slash commands stay with the unmounted image studio.
  * Keyboard: ArrowUp/Down, Enter/Tab to pick, Escape to dismiss. Mobile-friendly tap targets.
  */
 import s from "./SlashCommandMenu.module.css";

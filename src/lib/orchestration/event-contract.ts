@@ -38,6 +38,7 @@ const SHAPES: Record<KeplarEvent["type"], (e: Record<string, unknown>) => boolea
   model: (e) => str(e.modelId) && str(e.status),
   disagreement: (e) => str(e.summary),
   smalltalk: () => true,
+  video: (e) => isObj(e.video) && str(e.video.prompt) && str(e.video.phase) && str(e.video.key),
   recovery: (e) => e.state === "replayed" || e.state === "recovering" || e.state === "recovered" || e.state === "lost",
   delta: (e) => str(e.text),
   answer: (e) => isObj(e.answer) && str(e.answer.id) && str(e.answer.markdown) && isObj(e.answer.compute),
