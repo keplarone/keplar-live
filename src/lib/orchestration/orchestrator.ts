@@ -30,6 +30,8 @@ import { runPlayful } from "./playful";
 import { earlyStream } from "./early-stream";
 import { isGuideRequest, shapeHint } from "./answer-shape";
 import { richHint } from "@/lib/rich-answer/prompt";
+import { quizAsk } from "@/lib/quiz/ask";
+import { QUIZ_PANEL_RULES, quizPanelHint } from "@/lib/quiz/prompt";
 import { answeredAsQuestion, IMAGE_ONLY_PROMPT, imageQuestionMode, isImageOnlyPrompt, QUESTION_IMAGE_NOTE } from "./image-question";
 import { systemPrompt } from "./providers/shared";
 import { createRetriever, retrievalApplies, retrievalEstimateUsd } from "./retriever";
@@ -194,6 +196,8 @@ const LIVE_COMPLEX_PANEL_PARAMS: GenerationParams = { reasoningEffort: "medium",
 /** A how-to guide (answer-shape.ts): room for every step, check and fix (a full guide runs 500 to 1,500 words), and enough thinking to get the order right. */
 const GUIDE_BUDGET_MS = 120_000;
 const GUIDE_PANEL_PARAMS: GenerationParams = { reasoningEffort: "medium", maxOutputTokens: 3600 };
+/** A quiz: room for ten questions with explanations, still one panel call. */
+const QUIZ_PANEL_PARAMS: GenerationParams = { reasoningEffort: "low", maxOutputTokens: 2800 };
 export const livePanelParams = (c: Classification, reason?: boolean, guide?: boolean) => (guide ? (reason ? { ...GUIDE_PANEL_PARAMS, maxOutputTokens: 4200 } : GUIDE_PANEL_PARAMS) : reason ? REASON_PANEL_PARAMS : c.complexity === "complex" ? LIVE_COMPLEX_PANEL_PARAMS : LIVE_PANEL_PARAMS);
 
 function paramsFor(slot: "panel" | "verifier" | "judge", index: number): GenerationParams {
@@ -464,17 +468,24 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
   const exact = exactCheck(req.prompt);
   // The shape of a good answer to a comparison, a how-to, an explanation or a piece of writing (see answer-shape.ts); nothing for quick facts, code or exact checks.
   const shape = media?.question ? "" : shapeHint(req.prompt, classification);
+  // A quiz or flashcards request: the panel returns one keplar-quiz fence. No early draft (the card shows a skeleton).
+  const practice = media?.question ? null : quizAsk(req.prompt);
   // Same panel call: a ranking, comparison, timeline, or how-to may append one keplar-ui block. Not a second request.
-  const rich = media?.question || classification.kind === "code" || classification.errorProne === "exact" ? "" : richHint(req.prompt);
-  const panelPrompt = (req.memory ?? "") + req.prompt + (exact ? exactNote(exact) : "") + (rich ? `\n\n${rich}` : "");
-  const shapeBlock = [shape, rich].filter(Boolean).join("\n\n");
+  const rich = practice || media?.question || classification.kind === "code" || classification.errorProne === "exact" ? "" : richHint(req.prompt);
+  const quizNote = practice ? `\n\n${quizPanelHint(req)}` : "";
+  const panelPrompt = (req.memory ?? "") + req.prompt + (exact ? exactNote(exact) : "") + (rich ? `\n\n${rich}` : "") + quizNote;
+  const shapeBlock = practice ? "" : [shape, rich].filter(Boolean).join("\n\n");
   // Live Research: every panel model reads the brief and cites it, because with one model (fast depth, Free) its text is the answer itself.
-  const panelSystem = liveResearch ? `${systemPrompt()}\n\n${LIVE_RESEARCH_RULES}${shapeBlock ? `\n\n${shapeBlock}` : ""}` : shapeBlock ? `${systemPrompt()}\n\n${shapeBlock}` : undefined;
+  const panelSystem = practice
+    ? `${systemPrompt()}\n\n${QUIZ_PANEL_RULES}`
+    : liveResearch ? `${systemPrompt()}\n\n${LIVE_RESEARCH_RULES}${shapeBlock ? `\n\n${shapeBlock}` : ""}` : shapeBlock ? `${systemPrompt()}\n\n${shapeBlock}` : undefined;
+  const seatParams = (model: Parameters<typeof sanitizeParams>[0], index: number) => sanitizeParams(model, practice ? QUIZ_PANEL_PARAMS : live ? livePanelParams(classification, req.modes?.reason, guide) : paramsFor("panel", index));
   // Real token streaming: the first panel model to speak is shown word by word while the rest of the panel, the review and the synthesis work.
+  // Quizzes skip it: the screen says it is building the quiz, and the checked quiz replaces that, never a markdown draft.
   const liveEvents: KeplarEvent[] = [];
   let wakeLoop: (() => void) | null = null;
   let leaderModelId: string | undefined;
-  const early = earlyStream((text) => { liveEvents.push({ type: "delta", text }); wakeLoop?.(); }, { prompt: req.prompt });
+  const early = earlyStream((text) => { if (practice) return; liveEvents.push({ type: "delta", text }); wakeLoop?.(); }, { prompt: req.prompt });
   // Stand-in requests only while the shared Free pool is comfortable (pool-governor.ts): each one is a request against the key's limit.
   // Debate: the rounds run here, before the normal pipeline; the final round's answers become the panel results below.
   let debateResults: ProviderResult[] | null = null;
@@ -520,7 +531,7 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
     const origCtl = new AbortController();
     const finish = (r: ProviderResult) => { if (!done) { done = true; resolve(r); } };
     registry
-      .generate({ model: p.model, prompt: panelPrompt, system: panelSystem, classification, params: sanitizeParams(p.model, live ? livePanelParams(classification, req.modes?.reason, guide) : paramsFor("panel", i)), tier, slot: "panel", signal: AbortSignal.any([panelSignal ?? origCtl.signal, origCtl.signal]), avoid: seatModels, onToken: early.tokens(i), ...vision })
+      .generate({ model: p.model, prompt: panelPrompt, system: panelSystem, classification, params: seatParams(p.model, i), tier, slot: "panel", signal: AbortSignal.any([panelSignal ?? origCtl.signal, origCtl.signal]), avoid: seatModels, onToken: practice ? undefined : early.tokens(i), ...vision })
       .then((r): ProviderResult => {
         // A substitute answered (the planned model was busy or missing): show the model that actually answered.
         if (r.ok && r.fellBackFrom && r.model.id !== p.model.id && !done) {
@@ -551,7 +562,7 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
       hedgeRunning = true;
       seatModels.add(alt.id);
       registry
-        .generate({ model: alt, prompt: panelPrompt, system: panelSystem, classification, params: sanitizeParams(alt, guide ? GUIDE_PANEL_PARAMS : LIVE_PANEL_PARAMS), tier, slot: "panel", signal: panelSignal, avoid: seatModels })
+        .generate({ model: alt, prompt: panelPrompt, system: panelSystem, classification, params: seatParams(alt, i), tier, slot: "panel", signal: panelSignal, avoid: seatModels })
         .then((r) => {
           if (r.ok && !done) {
             plan.panel[i] = { ...p, model: r.model, reason: `Stood in for ${p.model.name}, which was slow to answer.` };
@@ -634,7 +645,7 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
   if (!multi && sanityEnabled() && live) {
     const first = results.find((r) => r.ok);
     if (first && first.ok && first.text.length >= 40 && (await sanityCheck(registry, { question: req.prompt, answer: first.text, answeredBy: plan.panel[0].model.id, signal })) === "bad") {
-      const again = await registry.generate({ model: plan.panel[0].model, prompt: panelPrompt, system: panelSystem, classification, params: sanitizeParams(plan.panel[0].model, LIVE_PANEL_PARAMS), tier, slot: "panel", signal, avoid: new Set([plan.panel[0].model.id, ...seatModels]) });
+      const again = await registry.generate({ model: plan.panel[0].model, prompt: panelPrompt, system: panelSystem, classification, params: seatParams(plan.panel[0].model, 0), tier, slot: "panel", signal, avoid: new Set([plan.panel[0].model.id, ...seatModels]) });
       const second = again.ok && again.model.id !== plan.panel[0].model.id ? await sanityCheck(registry, { question: req.prompt, answer: again.text, answeredBy: again.model.id, signal }) : "bad";
       if (again.ok && second !== "bad") {
         plan.panel[0] = { ...plan.panel[0], model: again.model, reason: "Replaced the first model after a coherence check." };
@@ -769,7 +780,7 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
   while (!done || deltas.length) {
     if (!deltas.length) await new Promise<void>((r) => (flush = r));
     flush = null;
-    while (deltas.length) { const d = deltas.shift()!; if (!early.started) yield { type: "delta", text: d }; }
+    while (deltas.length) { const d = deltas.shift()!; if (!early.started && !practice) yield { type: "delta", text: d }; }
   }
   const body = answerBody ?? (await synth);
   // Deep Research: keep only [n] markers that point at a page that was really read (none at all when no page was read).

@@ -1,0 +1,305 @@
+/* Quiz and flashcards in the answer. Graphite and white. Correct and incorrect are a muted green and red, with an icon, never colour alone. */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 4px;
+  color: #212121;
+  background: #fff;
+  font-family: var(--f-sans);
+}
+
+.building {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.building p {
+  margin: 0;
+  color: #212121;
+  font-size: 0.95rem;
+}
+
+.meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.count {
+  margin: 0;
+  color: #212121;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+.source {
+  margin: 0;
+  color: #212121;
+  font-size: 0.82rem;
+  opacity: 0.62;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.track {
+  height: 2px;
+  background: #e7e7e7;
+  border-radius: 1px;
+}
+
+.track > span {
+  display: block;
+  height: 2px;
+  background: #212121;
+  border-radius: 1px;
+}
+
+.prompt {
+  margin: 0;
+  color: #212121;
+  font-size: 1.15rem;
+  font-weight: 560;
+  line-height: 1.4;
+  outline: none;
+}
+
+.prompt:focus-visible {
+  outline: 2px solid #212121;
+  outline-offset: 3px;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d4d4d4;
+  border-radius: 10px;
+  background: #fff;
+  color: #212121;
+  font: inherit;
+  font-size: 0.98rem;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1), color 180ms cubic-bezier(0.2, 0.8, 0.2, 1), border-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1), scale 180ms cubic-bezier(0.34, 1.32, 0.64, 1);
+}
+
+.opt:hover:not([aria-disabled="true"]) {
+  background: #f4f4f4;
+}
+
+.opt:active:not([aria-disabled="true"]) {
+  scale: 0.97;
+  transition-duration: 60ms;
+}
+
+.opt:focus-visible {
+  outline: 2px solid #212121;
+  outline-offset: 2px;
+}
+
+.opt[aria-disabled="true"] {
+  cursor: default;
+}
+
+.letter {
+  flex: none;
+  width: 1.25rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.55;
+}
+
+.mark {
+  flex: none;
+  display: inline-flex;
+  margin-left: auto;
+}
+
+.opt[data-state="correct"] {
+  border-color: #3d6b4f;
+  color: #3d6b4f;
+}
+
+.opt[data-state="wrong"] {
+  border-color: #8c403c;
+  color: #8c403c;
+}
+
+.feedback {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid #d4d4d4;
+  border-radius: 10px;
+  background: #fff;
+  color: #212121;
+  line-height: 1.45;
+}
+
+.feedback[data-state="correct"] {
+  border-color: #3d6b4f;
+  color: #3d6b4f;
+}
+
+.feedback[data-state="wrong"] {
+  border-color: #8c403c;
+  color: #8c403c;
+}
+
+.feedback p {
+  margin: 0;
+}
+
+.explain {
+  margin-top: 6px;
+  color: #212121;
+}
+
+.short {
+  display: flex;
+  gap: 8px;
+}
+
+.field {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid #d4d4d4;
+  border-radius: 10px;
+  background: #fff;
+  color: #212121;
+  font: inherit;
+  font-size: 0.98rem;
+}
+
+.field:focus-visible {
+  outline: 2px solid #212121;
+  outline-offset: 2px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.hint {
+  margin: 0;
+  color: #212121;
+  font-size: 0.92rem;
+}
+
+.score {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 560;
+  letter-spacing: -0.02em;
+}
+
+.missed {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.missed li {
+  padding-top: 12px;
+  border-top: 1px solid #e7e7e7;
+}
+
+.missed p {
+  margin: 0 0 4px;
+  line-height: 1.45;
+}
+
+.kicker {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.face {
+  min-height: 160px;
+  padding: 22px 18px;
+  border: 1px solid #d4d4d4;
+  border-radius: 12px;
+  background: #fff;
+  color: #212121;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1), border-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 180ms cubic-bezier(0.2, 0.8, 0.2, 1), scale 180ms cubic-bezier(0.34, 1.32, 0.64, 1);
+}
+
+.face:hover {
+  background: #f4f4f4;
+}
+
+.face:active {
+  scale: 0.97;
+  transition-duration: 60ms;
+}
+
+.face:focus-visible {
+  outline: 2px solid #212121;
+  outline-offset: 2px;
+}
+
+.face[data-side="back"] {
+  background: #212121;
+  color: #fff;
+  border-color: #212121;
+}
+
+.face[data-side="back"]:hover {
+  background: #212121;
+}
+
+.side {
+  margin: 0 0 8px;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.term {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 560;
+  line-height: 1.35;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opt,
+  .face {
+    transition: none;
+    scale: none;
+  }
+  .opt:active,
+  .face:active {
+    scale: none;
+  }
+}

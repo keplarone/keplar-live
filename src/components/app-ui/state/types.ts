@@ -15,6 +15,7 @@ import type { LiveResearch } from "./research";
 import type { LiveCore } from "./core";
 import type { DeckTheme } from "@/lib/slides/types";
 import type { Choice, StudyFocus, WorkspaceAct, WorkspaceKind } from "@/lib/chat-actions/intent";
+import type { QuizProgress } from "@/lib/quiz/types";
 
 export type { ChatImage };
 
@@ -202,6 +203,10 @@ export type KeplarMessage = {
   image?: ChatImage;
   /** A Study or Slides turn (composer chips). Slides turns have no panel answer; Study turns follow the answer. */
   studio?: StudioTurn;
+  /** Set as soon as the message is a quiz or flashcards request, so the card can show a skeleton instead of a draft. */
+  practice?: { kind: "quiz" | "flashcards"; count: number; source?: string };
+  /** Picks, place, and a missed-only round. Kept with the message so a reload resumes the quiz. */
+  quizProgress?: QuizProgress;
   /** Agent mode: the workflow card under the answer. */
   agentFlow?: AgentFlow;
   /** A Create turn (composer Create chip): an app built inline. Has no panel answer. */

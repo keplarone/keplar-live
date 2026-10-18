@@ -142,7 +142,8 @@ export type Action =
   | { type: "create"; threadId: string; keplarId: string; patch: Partial<ChatCreate> }
   | { type: "workspace"; threadId: string; keplarId: string; patch: Partial<WorkspaceCard> }
   | { type: "private-next"; on: boolean }
-  | { type: "set-specialist"; id: string | null };
+  | { type: "set-specialist"; id: string | null }
+  | { type: "quiz-progress"; threadId: string; keplarId: string; progress: import("@/lib/quiz/types").QuizProgress };
 
 /** Leaving a private chat (opening another or starting a new one) discards it: it was never saved anywhere. */
 function leavePrivate(state: AppState, nextActive: string | null): Thread[] {
@@ -231,6 +232,8 @@ export function reducer(state: AppState, a: Action): AppState {
       return { ...state, threads: leavePrivate(state, a.id), activeThreadId: a.id, view: "thread" };
     case "private-next":
       return { ...state, privateNext: a.on };
+    case "quiz-progress":
+      return patchKeplar(state, a.threadId, a.keplarId, (m) => ({ ...m, quizProgress: a.progress }));
     case "set-specialist": {
       const active = state.activeThreadId ? state.threads.find((t) => t.id === state.activeThreadId) : undefined;
       if (!active) return { ...state, specialistNext: a.id };

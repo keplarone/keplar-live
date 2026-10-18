@@ -63,7 +63,8 @@
     "unpdf": "^1.8.1",
     "y-codemirror.next": "^0.3.6",
     "y-protocols": "^1.0.7",
-    "yjs": "^13.6.33"
+    "yjs": "^13.6.33",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",

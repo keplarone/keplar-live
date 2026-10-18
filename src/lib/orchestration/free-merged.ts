@@ -23,6 +23,9 @@ import type { createRegistry, RegistryResult } from "./providers";
 import { parseChecks } from "./verifier";
 import { GUIDE_SYNTH_RULES, SYNTH_SYSTEM_PROMPT } from "./live-synthesizer";
 import { richHint } from "@/lib/rich-answer/prompt";
+import { quizAsk } from "@/lib/quiz/ask";
+import { parseQuizVerdicts } from "@/lib/quiz/build";
+import { QUIZ_VERIFY_ADDON, quizPanelHint } from "@/lib/quiz/prompt";
 import { identityPrompt } from "@/lib/identity";
 import { VOICE_PROMPT } from "@/lib/persona";
 import { HUMAN_TONE_PROMPT } from "@/lib/persona-tone";
@@ -91,7 +94,8 @@ export class MergedFreeReview {
     const ids = new Map(ok.map((r, i) => [r.modelId, `R${i + 1}`]));
     // How-to: the written part is a full guide (answer-shape.ts), so it needs each model's whole guide, more output and more time.
     const guide = classification.errorProne !== "exact" && !hasMedia(req.media) && isGuideRequest(req.prompt);
-    const body = ok.map((r) => `### ${ids.get(r.modelId)}\n${r.text.slice(0, guide ? 7000 : 4000)}`).join("\n\n");
+    const ask = quizAsk(req.prompt);
+    const body = ok.map((r) => `### ${ids.get(r.modelId)}\n${r.text.slice(0, guide || ask ? 7000 : 4000)}`).join("\n\n");
     const stage = this.budget ? this.budget.stageMs(0.5) : undefined;
     const cap = guide ? Math.max(this.capMs, 50_000) : this.capMs;
     const callSignal = stage !== undefined ? LatencyBudget.signal(Math.min(cap, stage), signal) : signal;
@@ -99,12 +103,12 @@ export class MergedFreeReview {
     try {
       r = await this.registry.generate({
         model: this.model,
-        prompt: `Question:\n${req.prompt}${textOnlyMediaNote(req.media)}\n\nResponses:\n${body}${richHint(req.prompt) ? `\n\n${richHint(req.prompt)}` : ""}`,
+        prompt: `Question:\n${req.prompt}${textOnlyMediaNote(req.media)}\n\nResponses:\n${body}${ask ? `\n\n${quizPanelHint(req)}` : richHint(req.prompt) ? `\n\n${richHint(req.prompt)}` : ""}`,
         classification,
-        params: { reasoningOff: true, maxOutputTokens: guide ? 5600 : 2400 },
+        params: { reasoningOff: true, maxOutputTokens: ask ? 3600 : guide ? 5600 : 2400 },
         tier: req.routing?.tier,
         slot: "verifier",
-        system: `${MERGED_SYSTEM_PROMPT}${guide ? `\n${GUIDE_SYNTH_RULES}` : ""}\n\n${identityPrompt()}\n\n${VOICE_PROMPT}\n\n${HUMAN_TONE_PROMPT}`,
+        system: `${MERGED_SYSTEM_PROMPT}${guide ? `\n${GUIDE_SYNTH_RULES}` : ""}${ask ? `\n${QUIZ_VERIFY_ADDON}\nThe answer after the marker is a one-line title and one keplar-quiz fence. Questions come only from the attached file, or from the conversation topic when there is no file.` : ""}\n\n${identityPrompt()}\n\n${VOICE_PROMPT}\n\n${HUMAN_TONE_PROMPT}`,
         signal: callSignal,
       });
     } catch (e) {
@@ -125,6 +129,7 @@ export class MergedFreeReview {
     const applied = applyExtraction(results, ids, ex);
     const checks = parsed?.checks ?? [];
     const removedCount = checks.filter((c) => c.outcome === "removed").length;
+    const quizVerdicts = ask ? parseQuizVerdicts(json) : [];
     const verification: Verification = {
       mode: "cross-model",
       reviewer: { modelId: by.id, name: by.name, role: "verifier" },
@@ -135,6 +140,7 @@ export class MergedFreeReview {
       removed: [],
       notes: parsed ? [] : ["The review's checks couldn't be read, so no checks are shown for this answer."],
       costUsd: spentUsd(by, r),
+      ...(quizVerdicts.length ? { quizVerdicts } : {}),
     };
     return { results: applied.results, topic: ex.topic, summaries: applied.summaries, verification, written, notes: [] };
   }

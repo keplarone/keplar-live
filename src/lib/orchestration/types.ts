@@ -9,6 +9,7 @@
 
 import type { ImageInput, MediaInput } from "./media";
 import type { RichAnswer } from "@/lib/rich-answer/types";
+import type { Quiz, QuizVerdict } from "@/lib/quiz/types";
 
 /* ───────────────────────────── catalog ───────────────────────────── */
 
@@ -470,6 +471,8 @@ export type Verification = {
   judgement?: { modelId: string; favoured: string; why: string };
   /** Billed cost of the review call(s), when a live provider reported it. */
   costUsd?: number;
+  /** Quiz requests: which question keys the reviewer would keep, drop, or replace from the source. */
+  quizVerdicts?: QuizVerdict[];
 };
 
 export interface Verifier {
@@ -626,6 +629,11 @@ export type KeplarAnswer = {
    * per-item quotes on it come from the real responses, not from the model JSON.
    */
   rich?: RichAnswer;
+  /**
+   * A quiz or flashcards built from the attached file (or the conversation, when there is no file).
+   * Absent when the request wasn't a quiz, or the block didn't validate: the markdown is the answer.
+   */
+  quiz?: Quiz;
   consensus: {
     level: ConsensusLevel;
     score: number | null;

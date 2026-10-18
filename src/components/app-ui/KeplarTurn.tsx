@@ -40,6 +40,8 @@ import { CoreLive, CoreSummaryView } from "./core/CoreTrace";
 import { asSentence } from "@/lib/sentence";
 import { needsChargeNote } from "@/lib/orchestration/no-response";
 import type { KeplarMessage, Ledger } from "./state/types";
+import type { QuizProgress } from "@/lib/quiz/types";
+import { QuizBuilding, QuizCard } from "./quiz/QuizCard";
 import s from "./KeplarTurn.module.css";
 
 type Props = {
@@ -54,11 +56,13 @@ type Props = {
   ledger: Ledger;
   isLast: boolean;
   onDismissUpsell?: () => void;
+  /** Saves quiz picks on the message. */
+  onQuizProgress?: (progress: QuizProgress) => void;
 };
 
 const seconds = (ms: number) => `${(ms / 1000).toFixed(1)}s`;
 
-export function KeplarTurn({ message: m, onRetry, onRefreshResearch, onSignal, onAsk, isLast, ledger, onDismissUpsell }: Props) {
+export function KeplarTurn({ message: m, onRetry, onRefreshResearch, onSignal, onAsk, isLast, ledger, onDismissUpsell, onQuizProgress }: Props) {
   const uid = useId();
   // Only answers streamed in this session type out; stored threads render at once.
   const [live] = useState(m.status === "running");
@@ -168,7 +172,9 @@ export function KeplarTurn({ message: m, onRetry, onRefreshResearch, onSignal, o
 
       <ToolUses uses={m.answer?.tools ?? m.tools} />
 
-      {typingAnswer && (m.smalltalk || m.answer?.smalltalk) ? (
+      {running && m.practice && !m.answer?.quiz ? <QuizBuilding kind={m.practice.kind} source={m.practice.source} /> : null}
+
+      {typingAnswer && !m.practice && (m.smalltalk || m.answer?.smalltalk) ? (
         <article className={`${s.answer} ${s.plainReply}`} aria-busy="true" data-typing="" data-plain="">
           <header className={s.answerHead}><AnswerTitle /></header>
           {running && m.mode === "consensus" ? <p className={s.draftNote} role="status" data-early-note="">Early draft from the first model to answer. Keplar is checking it with the others; the final answer will replace it.</p> : null}
@@ -177,7 +183,7 @@ export function KeplarTurn({ message: m, onRetry, onRefreshResearch, onSignal, o
         </article>
       ) : null}
 
-      {typingAnswer && !(m.smalltalk || m.answer?.smalltalk) ? (
+      {typingAnswer && !m.practice && !(m.smalltalk || m.answer?.smalltalk) ? (
         <article className={s.answer} aria-busy="true" data-typing="" data-continued={live || undefined}>
           <header className={s.answerHead}><AnswerTitle /></header>
           {/* A panel's first words are one model's early draft (early-stream.ts): say so, so the checked answer replacing it is no surprise. */}
@@ -189,7 +195,7 @@ export function KeplarTurn({ message: m, onRetry, onRefreshResearch, onSignal, o
       ) : null}
 
       {finished && m.answer && !typingAnswer && (m.smalltalk || m.answer.smalltalk) ? <PlainReply answer={m.answer} onRetry={onRetry} onSignal={onSignal} isLast={isLast} onAsk={onAsk} /> : null}
-      {finished && m.answer && !typingAnswer && !(m.smalltalk || m.answer.smalltalk) ? <Answer answer={m.answer} onRetry={onRetry} onRefreshResearch={onRefreshResearch} onSignal={onSignal} isLast={isLast} continued={live} /> : null}
+      {finished && m.answer && !typingAnswer && !(m.smalltalk || m.answer.smalltalk) ? <Answer answer={m.answer} onRetry={onRetry} onRefreshResearch={onRefreshResearch} onSignal={onSignal} isLast={isLast} continued={live} quizProgress={m.quizProgress} onQuizProgress={onQuizProgress} onAsk={onAsk} /> : null}
       {finished && m.answer?.core && !typingAnswer && !(m.smalltalk || m.answer.smalltalk) ? <CoreSummaryView core={m.answer.core} onAsk={onAsk} enabled={isLast} /> : null}
       {finished && m.answer?.debate && !typingAnswer ? <DebateTranscript debate={m.answer.debate} /> : null}
       {/* Answer recovery: real states only (state/recovery.ts polls the server's turn). */}
@@ -704,7 +710,7 @@ export function howMeta(a: KeplarAnswer): string {
   return [who, agreement, split, sources].filter(Boolean).join(" · ");
 }
 
-function Answer({ answer: a, onRetry, onRefreshResearch, onSignal, isLast, continued }: { answer: KeplarAnswer; onRetry: () => void; onRefreshResearch?: () => void; onSignal?: (kind: "up" | "down" | "copy") => void; isLast: boolean; continued?: boolean }) {
+function Answer({ answer: a, onRetry, onRefreshResearch, onSignal, isLast, continued, quizProgress, onQuizProgress, onAsk }: { answer: KeplarAnswer; onRetry: () => void; onRefreshResearch?: () => void; onSignal?: (kind: "up" | "down" | "copy") => void; isLast: boolean; continued?: boolean; quizProgress?: QuizProgress; onQuizProgress?: (progress: QuizProgress) => void; onAsk?: (text: string) => void }) {
   const uid = useId();
   const [open, setOpen] = useState<string | null>(null);
   // The detail rows (consensus, models, sources, disagreements, verification, reasoning) sit behind one row: the answer leads,
@@ -830,7 +836,7 @@ function Answer({ answer: a, onRetry, onRefreshResearch, onSignal, isLast, conti
       </header>
 
       {a.research ? <ResearchHead research={a.research} /> : null}
-      <StructuredAnswer source={a.markdown} cite={citeRenderer(a.research?.sources)} rich={a.rich} consensus={a.consensus} />
+      {a.quiz ? <QuizCard quiz={a.quiz} progress={quizProgress} onProgress={onQuizProgress} onNew={onAsk} /> : <StructuredAnswer source={a.markdown} cite={citeRenderer(a.research?.sources)} rich={a.rich} consensus={a.consensus} />}
 
       {modelStatus.missing.length && c.level !== "single" ? (
         <p className={s.missingNote} role="note" data-missing-models={modelStatus.missing.length}>
