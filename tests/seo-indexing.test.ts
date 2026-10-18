@@ -38,7 +38,7 @@ test("Search Console: app, welcome and the 404 are noindex, follow; public pages
   for (const f of ["src/app/app/layout.tsx", "src/app/(business-app)/layout.tsx", "src/app/embed/layout.tsx", "src/app/welcome/page.tsx", "src/app/not-found.tsx"]) {
     assert.match(readFileSync(f, "utf8"), /index: false, follow: true/, f);
   }
-  assert.doesNotMatch(readFileSync("src/app/bot/route.ts", "utf8"), /noindex|index: false/);
+  assert.match(readFileSync("src/app/bot/route.ts", "utf8"), /noindex, follow/, "KeplarBot's own page is noindex, follow");
   const space = readFileSync("src/app/(space)/space-studio/page.tsx", "utf8");
   assert.match(space, /index: false, follow: true/, "keplar.one/space-studio is noindex, follow");
   assert.match(space, /isSpaceHost\(host\)/, "space.keplar.one does not get that robots meta");

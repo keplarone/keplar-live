@@ -1,6 +1,6 @@
 ---
-title: Understand a long document, contract or report
-description: Use Keplar to get a plain-language summary, a list of questions and the points to confirm with a professional, with honest limits on legal and financial documents.
+title: Understand a Long Document or Contract With AI
+description: Get a plain-English summary of a long document, contract or report and see where AI models read it differently. Not legal advice.
 updated: 2026-10-03
 keywords: summarize a contract with AI, understand a document, AI document summary, explain a report
 related: /docs/using-keplar/attachments-images-video, /blogs/ai-for-money-and-legal-questions, /prompts/work

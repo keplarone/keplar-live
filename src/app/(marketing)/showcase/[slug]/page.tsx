@@ -6,6 +6,7 @@ import { BuildLikeThis } from "@/components/create/showcase/BuildLikeThis";
 import s from "@/components/create/showcase/Showcase.module.css";
 import { SHOWCASE, SHOWCASE_DISCLOSURE, showcaseBySlug } from "@/lib/create/showcase/data";
 import { pageMeta } from "@/lib/seo";
+import { GENERATED_META } from "@/lib/seo/generated-meta";
 import { breadcrumbs } from "@/lib/seo-graph";
 
 export const dynamicParams = false;
@@ -16,7 +17,9 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const it = showcaseBySlug((await params).slug);
   if (!it) return {};
-  return pageMeta(`/showcase/${it.slug}`, `${it.title}: ${it.style.toLowerCase()} ${it.kind.toLowerCase()} demo`, `${it.line} A Keplar Create showcase demo made by the Keplar team, with the brief you would type to build something like it. Not a customer site.`);
+  const path = `/showcase/${it.slug}`;
+  const sheet = GENERATED_META[path];
+  return pageMeta(path, sheet?.title ?? `${it.title}: ${it.style.toLowerCase()} ${it.kind.toLowerCase()} demo`, sheet?.description ?? `${it.line} A Keplar Create showcase demo made by the Keplar team, with the brief you would type to build something like it. Not a customer site.`);
 }
 
 export default async function ShowcaseDetail({ params }: { params: Promise<{ slug: string }> }) {

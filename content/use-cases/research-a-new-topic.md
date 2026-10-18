@@ -1,6 +1,6 @@
 ---
-title: Get oriented on a topic you know nothing about
-description: A routine for using multi-model answers and Deep Research to learn the lay of the land on a new subject, find the main positions and build a reading list.
+title: Research a New Topic Fast With AI
+description: Get oriented on an unfamiliar topic with several AI models, see where they disagree and leave with a list of what to read and verify next.
 updated: 2026-10-03
 keywords: research a topic with AI, learn a new subject, AI literature overview, Deep Research
 related: /docs/using-keplar/deep-research, /blogs/what-is-deep-research, /prompts/research

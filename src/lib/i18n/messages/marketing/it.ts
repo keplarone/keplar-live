@@ -20,7 +20,7 @@ const m: MarketingCatalog = {
       "description": "Otto siti e app dimostrativi realizzati dal team di Keplar per mostrare la gamma a cui punta Create: menu, registri, bacheche, calendari e pagine editoriali, ognuno con la propria tipografia e palette. Non sono siti di clienti."
     },
     "roadmap": {
-      "title": "Roadmap",
+      "title": "Roadmap (Italiano)",
       "description": "Cosa sta costruendo Keplar adesso, cosa è in beta e ancora in rifinitura, e cosa è uscito di recente. Nessuna data che non possiamo rispettare."
     },
     "developers": {

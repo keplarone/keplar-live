@@ -1,6 +1,6 @@
 ---
-title: How to show up in AI answers: a practical guide to GEO and AI search visibility
-description: Generative engine optimization, explained without hype: what is known, what is guesswork, and the content and technical basics that help both search engines and AI assistants.
+title: How to Show Up in AI Answers: A GEO Guide
+description: A practical guide to generative engine optimization (GEO): how AI search picks sources and what makes your pages citable by ChatGPT, Gemini and others.
 category: Trends
 published: 2026-10-03
 updated: 2026-10-03

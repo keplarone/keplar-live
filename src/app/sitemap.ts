@@ -41,8 +41,6 @@ export const sitemapPaths: string[] = [
   "/contact",
   "/help",
   "/security",
-  "/specialists",
-  "/simulation",
   "/guides",
   ...editorialPages.map((p) => p.path),
   ...landingPages.map((p) => p.path),

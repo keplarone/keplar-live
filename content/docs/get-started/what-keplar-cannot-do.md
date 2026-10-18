@@ -1,6 +1,6 @@
 ---
 title: What Keplar cannot do
-description: The limits, stated plainly: it can be wrong when the models agree, it does not browse the web or check sources, and it is not medical, legal or financial advice.
+description: Keplar's limits, stated plainly: it can be wrong when models agree, it does not check sources, and it is not medical, legal or financial advice.
 order: 6
 updated: 2026-10-03
 keywords: limitations, accuracy, hallucination, web search, advice

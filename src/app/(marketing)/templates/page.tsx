@@ -11,7 +11,7 @@ import { TwoTone } from "@/components/page/TwoTone";
 
 export const dynamic = "force-dynamic"; // a withdrawn or hidden template must disappear at once
 
-export const metadata: Metadata = pageMeta("/templates", "Website templates you can remix", "Start from a real website, then describe what to change. Keplar's own starters and sites whose owners chose to share them as templates. Remix copies the pages into your workspace; nothing private comes with it.");
+export const metadata: Metadata = pageMeta("/templates", "Free Website Templates You Can Remix With AI", "Start from a real site template (business, portfolio, landing page or restaurant) and change it by describing what you want in Keplar Create.");
 
 function Card({ t }: { t: GalleryTemplate }) {
   return (

@@ -20,7 +20,7 @@ const m: MarketingCatalog = {
       "description": "Acht Demo-Websites und -Apps vom Keplar-Team, die zeigen, was Create leisten soll: Speisekarten, Kassenbücher, Boards, Kalender und redaktionelle Seiten, jeweils mit eigener Schrift und Farbpalette. Keine Kundenseiten."
     },
     "roadmap": {
-      "title": "Roadmap",
+      "title": "Keplar-Roadmap: Woran wir bauen",
       "description": "Woran Keplar gerade baut, was in der Beta ist und noch fertiggestellt wird und was kürzlich erschienen ist. Keine Termine, die wir nicht halten können."
     },
     "developers": {

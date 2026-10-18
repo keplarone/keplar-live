@@ -27,8 +27,8 @@ const CHICAGO = line("chicago");
 export const citationGuide: Guide = {
   slug: "citation-styles",
   path: "/guides/citation-styles",
-  title: "How a citation line is built",
-  metaDescription: "The APA, MLA, and Chicago lines Keplar's formatter produces from one set of fields, and the inputs it refuses instead of guessing.",
+  title: "How a Citation Is Built: APA, MLA and Chicago",
+  metaDescription: "The APA, MLA and Chicago lines Keplar's formatter builds from fields you already have, and the blanks it refuses to guess.",
   published: "2026-10-17",
   updated: "2026-10-17",
   readingMinutes: 4,
@@ -80,8 +80,8 @@ const modeled = TOOLS.filter((t) => t.kind === "model").map((t) => t.title);
 export const limitsGuide: Guide = {
   slug: "free-tool-limits",
   path: "/guides/free-tool-limits",
-  title: "What the free tools will and will not run",
-  metaDescription: "Which Keplar tools call a model, which do not, and the rate limit, length cap, and cost check that keep a free run from becoming a paid one.",
+  title: "What Keplar's Free AI Tools Will and Won't Do",
+  metaDescription: "Which Keplar free tools call a model and which do not, plus the rate limit, length cap and cost check that keep a free run free.",
   published: "2026-10-17",
   updated: "2026-10-17",
   readingMinutes: 4,

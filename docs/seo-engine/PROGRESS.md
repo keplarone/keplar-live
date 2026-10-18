@@ -30,6 +30,7 @@
 - [x] Programmatic pages: `/guides/citation-styles` and `/guides/free-tool-limits` are built from `formatCitation`, `TOOLS`, and `TOOL_LIMITS`. Both pass `decidePublish` and are in the sitemap.
 - [x] Marketing fixes (2026-10-18): pricing meta names Lite $20 (English, OG card, all 25 locales). Auth, `/app`, the Business app, the embed shell, `/status`, `/welcome`, the 404, and an empty `/answers` or `/topics` index are noindex, follow. The Whop pixel loads only on `/checkout`, `/account`, and `/biz/account`. `robots.txt` lists `/sitemap-index.xml` only.
 - [x] Owner decision (2026-10-18): `keplar.one/space-studio` is noindex, follow and out of the sitemap. It is not redirected or removed. `space.keplar.one` stays indexable, canonical to itself. The page body is unchanged.
+- [x] Marketing sheet titles (2026-10-18): English titles and descriptions from the re-attached FIXES file, as absolute titles, except `/`. See the section below.
 
 ## This milestone (audit + critical fixes)
 
@@ -130,4 +131,40 @@ Skipped:
 - Paste-ready English titles, descriptions, and JSON-LD for the other pages: the sheet was not attached.
 - Redirects and extra sitemap removals from that sheet: not visible, so no URLs were redirected or dropped.
 - Performance steps from that sheet: not visible. The home-page scene was not edited.
-- Account and checkout stay indexable. They were not in the noindex list.
+- Account and checkout were left indexable in that pass. The re-attached sheet later noindexed them. See the section below.
+
+## English titles from the re-attached sheet (2026-10-18)
+
+Branch `cursor/seo-english-meta-4cb9`. The homepage files were not edited. `/` is the chat app (PR #50, restyled in #53) and the marketing landing is `/overview`. This branch only removes `/specialists` and `/simulation` from `sitemap.ts`. Main was merged in, including the sky split (#52) and the shared chrome (#55), so those files were not overwritten.
+
+Applied:
+
+- English titles and meta descriptions from FIXES section 3, stored as the complete `<title>` (`COMPLETE_TITLE_PATHS`, so the layout does not append " · Keplar"). `/` is not in that set.
+- `/pricing` uses the sheet title and description. "Billed monthly" and "cancel any time" match the pricing FAQ and the terms. The share-card alt points Business at business.keplar.one. The card subtitle lists Free, Lite $20, Plus $45, and Pro $99.
+- Localized `meta.pricing` already named Lite $20. Duplicate rendered titles were split: German roadmap `Keplar-Roadmap: Woran wir bauen`; Filipino, Italian, Dutch, and Brazilian Portuguese roadmap titles name the language; Dutch features `Alles in Keplar: alle functies`; Traditional Chinese features `Keplar 全部功能一覽`.
+- `/product`, `/roblox-studio-ai`, and `/blender-ai` H1s match the sheet. Studio breadcrumbs are Home, Keplar Studio (Beta), then Roblox Studio or Blender. Those two pages add a SoftwareApplication graph whose offers are Lite, Plus, and Pro from `tiers.ts`. The graph does not name a model provider.
+- `/about` no longer emits a second BreadcrumbList. The About graph still includes the Organization so both founders stay on that page.
+- noindex, follow on `/account`, `/account/usage`, `/checkout`, `/feedback`, `/bot`, `/simulation`, and `/specialists`. `/simulation` and `/specialists` are out of the sitemap. `?c=` on `/specialists` already canonicalizes to `/specialists`.
+- Docs pages whose description was over the length bar were shortened. `/docs/connectors-agents/business-tools` title is now `Business Tools: Forms, CRM, Inbox | Keplar docs`.
+
+Adjusted, not pasted verbatim:
+
+- `/guides/citation-styles` description does not say the formatter fills gaps. It says which blanks the formatter refuses to guess.
+- `/guides/study-from-a-pdf` description does not say "page references". The guide says to skim generated cards against the source.
+- Free-tool `title` fields stay the short names the limits guide and the tool lists use. The sheet titles are applied only in metadata.
+
+Skipped:
+
+- `/` title, description, og:title, og:image alt, home H2, and home FAQ JSON-LD. `softwareApp()` and `siteGraph()` are unchanged, so the homepage JSON-LD stays as it is.
+- Replacing the site-wide Organization graph, and the richer SoftwareApplication the sheet wanted on the home page.
+- Keplar Business offers at $199.99, $499.99, and $2499.99. Those prices are not in this repo.
+- 301 from `/space-studio` or from `/guides/why-ai-models-disagree`. Space Studio body and H1 are unchanged. `space.keplar.one` is not noindexed.
+- Full `robots.txt` replacement. The index is already the only sitemap line. An Allow for `/api/v1/openapi.json` would fight Disallow `/api/`.
+- Dropping empty `answers-sitemap.xml` and `topics-sitemap.xml` from the index. Those files are filled at request time.
+- Git-derived lastmod. Dates stay in `src/lib/content/lastmod.ts`.
+- Localized pricing FAQ translations. The catalogs do not already contain that FAQ.
+- Footer heading and footer-link edits. Another branch is changing `src/lib/site.ts`.
+- Performance work that would touch the homepage, `src/field`, or shared chunks.
+- Saying Space Studio is retired, or naming a model provider, in `llms.txt`.
+- BlogPosting `wordCount` is already the word count of the article body.
+- `/answers` stays noindex only while the public list is empty. Indexing still starts when someone has published with consent, not at a fixed count of 10.

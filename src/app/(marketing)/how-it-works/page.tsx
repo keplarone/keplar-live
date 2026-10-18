@@ -15,8 +15,8 @@ import { TwoTone } from "@/components/page/TwoTone";
 // Copy: /workspace/marketing/launch/how-it-works-page.md (revision of Sep 27, 2026).
 export const metadata = pageMeta(
   "/how-it-works",
-  `How ${brand.companyName} Works: Multiple AI Models, One Answer`,
-  `${brand.companyName} sends your question to the models it needs, investigates where they disagree, and writes one synthesized answer with the agreement and disagreements shown.`,
+  "How Keplar Works: Multiple AI Models, One Answer",
+  "Keplar-One picks the models your question needs, compares answers claim by claim, investigates disagreement, verifies and writes one answer. Try it free.",
   { absoluteTitle: true },
 );
 

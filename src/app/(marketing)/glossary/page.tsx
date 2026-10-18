@@ -7,7 +7,7 @@ import { breadcrumbs } from "@/lib/seo-graph";
 import s from "@/components/kb/kb.module.css";
 import { TwoTone } from "@/components/page/TwoTone";
 
-export const metadata = pageMeta("/glossary", "AI glossary: plain-English definitions of AI terms", "Plain-English definitions of AI terms from agent and context window to RAG and sycophancy, with notes on how each applies to Keplar.");
+export const metadata = pageMeta("/glossary", "AI Glossary: Plain-English Definitions of AI Terms", "Plain-English definitions of AI terms you keep seeing, from agent, hallucination and context window to MCP, RAG and sycophancy.");
 
 const letter = (t: string) => t.replace(/^[^A-Za-z]+/, "").charAt(0).toUpperCase();
 

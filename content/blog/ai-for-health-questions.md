@@ -1,6 +1,6 @@
 ---
-title: Can you use AI for health questions? A cautious guide to doing it well
-description: How to use AI chatbots for health information responsibly: what they can help with, what they get wrong, when to see a professional, and privacy concerns.
+title: Can You Use AI for Health Questions? A Careful Guide
+description: How to use AI for health questions safely: what it is good for, where it fails and when to see a professional. General information, not medical advice.
 category: Trust and accuracy
 published: 2026-10-03
 updated: 2026-10-03

@@ -1,6 +1,6 @@
 ---
-title: What is multi-model AI? Ensembles, routers and mixture-of-agents explained
-description: The different things people mean by multi-model AI: model routers, ensembles, mixture-of-agents, councils and mixture-of-experts, and what each is good for.
+title: What Is Multi-Model AI? Routers, Ensembles, MoA
+description: The things people mean by multi-model AI: routers, ensembles, mixture-of-agents, councils and mixture-of-experts, and what each is good for.
 category: How AI works
 published: 2026-10-03
 updated: 2026-10-03

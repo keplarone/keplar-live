@@ -1,6 +1,6 @@
 ---
 title: Exact checks for counting and arithmetic
-description: Why counting letters and doing sums are risky for language models, and how Keplar computes them with code and passes the result to the models as a verified fact.
+description: Why counting and arithmetic are risky for language models, and how Keplar computes them with code and passes the result on as a verified fact.
 order: 11
 updated: 2026-10-03
 keywords: counting letters, arithmetic, strawberry, exact check, calculator

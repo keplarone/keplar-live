@@ -1,6 +1,6 @@
 ---
 title: Generate images
-description: Generate an image from a prompt in Create, choose quality and size, keep versions, download the original and insert it into a site. What is refused and what is charged.
+description: Generate an image from a prompt in Create, choose quality and size, keep versions and insert it into a site. What is refused and charged.
 order: 4
 updated: 2026-10-03
 keywords: AI image generation, generate image, image history, download original

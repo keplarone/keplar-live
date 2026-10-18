@@ -43,9 +43,9 @@ export const editorialPages: EditorialPage[] = [
   {
     slug: "superintelligence",
     path: "/superintelligence",
-    metaTitle: "What is superintelligence (SI)? Definitions, paths, risks",
+    metaTitle: "What Is Superintelligence? Definitions and Risks",
     metaDescription:
-      "Superintelligence is a hypothetical intellect far beyond humans in virtually all domains. Sourced definitions, ASI vs AGI, paths, risks, and why timelines are contested.",
+      "What superintelligence (SI/ASI) means, the proposed paths to it, the risks researchers discuss and why timelines are contested, with sources.",
     ogTitle: "What is superintelligence?",
     label: "Superintelligence",
     h1: "What is superintelligence?",
@@ -196,9 +196,9 @@ export const editorialPages: EditorialPage[] = [
   {
     slug: "ai-vs-agi-vs-superintelligence",
     path: "/ai-vs-agi-vs-superintelligence",
-    metaTitle: "AI vs AGI vs superintelligence (ASI): the differences",
+    metaTitle: "AI vs AGI vs Superintelligence: The Differences",
     metaDescription:
-      "AI is the broad field, AGI means human-level generality, ASI or superintelligence means far beyond humans. A sourced comparison with Google DeepMind's levels table.",
+      "What separates today's AI from AGI and superintelligence (ASI), with sourced definitions, Google DeepMind's levels table and where the debate stands.",
     ogTitle: "AI vs AGI vs superintelligence",
     label: "AI vs AGI vs ASI",
     h1: "AI vs AGI vs superintelligence: what is the difference?",
@@ -292,9 +292,9 @@ export const editorialPages: EditorialPage[] = [
   {
     slug: "si-vs-ai",
     path: "/si-vs-ai",
-    metaTitle: "SI vs AI: what “SI” means, and the 2026 executive order",
+    metaTitle: "SI vs AI: What 'SI' Means and the 2026 Order",
     metaDescription:
-      "SI can mean superintelligence, the metric system, or, since September 2026, the US executive branch's new name for AI. What the order says, quoted from the Federal Register.",
+      "What 'SI' (superintelligence) means compared with AI, how the terms are used, and what the 2026 US executive order says, with sources.",
     ogTitle: "SI vs AI: what does SI mean?",
     label: "SI vs AI",
     h1: "SI vs AI: what does “SI” mean?",
@@ -382,9 +382,9 @@ export const editorialPages: EditorialPage[] = [
   {
     slug: "multi-model-ai",
     path: "/multi-model-ai",
-    metaTitle: "Multi-model AI: asking several AI models at once",
+    metaTitle: "Multi-Model AI: What It Is and What It Can't Do",
     metaDescription:
-      "What multi-model AI is, four ways tools combine models, what research reports, where it falls short, and how Keplar consults several models and writes one answer.",
+      "What multi-model AI is, four ways tools combine models, what research reports, where it falls short and how Keplar consults several models for one answer.",
     ogTitle: "Multi-model AI, explained",
     label: "Multi-model AI",
     h1: "Multi-model AI: what it is and what it can’t do",

@@ -43,8 +43,8 @@ export const vsPages: Vs[] = [
     name: "ChatGPT",
     vendor: "OpenAI",
     approved: true,
-    title: "Keplar vs ChatGPT: what each is for and how they differ",
-    description: "A factual comparison of Keplar and ChatGPT: how answers are produced, plans, features each lists publicly, where ChatGPT is the better fit and where Keplar may be.",
+    title: "Keplar vs ChatGPT: Differences and When to Use Each",
+    description: "ChatGPT gives one model's answer; Keplar asks several models and shows where they disagree. What each is for, features and pricing compared.",
     sources: [{ label: "ChatGPT pricing (OpenAI)", url: "https://openai.com/chatgpt/pricing/" }],
     summary: [
       "ChatGPT is OpenAI's assistant, built around OpenAI's own models. Keplar is an answer layer that sends a non-trivial question to several models from different providers, compares their positions, has a reviewer check the draft against the individual responses and shows where they agreed and differed. Simple questions go to a single model.",
@@ -90,8 +90,8 @@ export const vsPages: Vs[] = [
     name: "Claude",
     vendor: "Anthropic",
     approved: true,
-    title: "Keplar vs Claude: what each is for and how they differ",
-    description: "A factual comparison of Keplar and Claude: how answers are produced, plans and usage limits each lists publicly, where Claude is the better fit and where Keplar may be.",
+    title: "Keplar vs Claude: Differences and When to Use Each",
+    description: "Claude gives one model's answer; Keplar asks several models from different providers and shows where they disagree. What each is for, compared honestly.",
     sources: [{ label: "Claude pricing (Anthropic)", url: "https://www.anthropic.com/pricing" }],
     summary: [
       "Claude is Anthropic's assistant, built around Anthropic's own model family. Keplar is an answer layer that consults several models from different providers for non-trivial questions and shows the comparison. Claude is also a widely used coding assistant; Anthropic lists Claude Code in its paid plans.",
@@ -139,8 +139,8 @@ export const vsPages: Vs[] = [
     name: "Gemini",
     vendor: "Google",
     approved: true,
-    title: "Keplar vs Gemini: what each is for and how they differ",
-    description: "A factual comparison of Keplar and Google's Gemini: how answers are produced, subscriptions each lists publicly, where Gemini is the better fit and where Keplar may be.",
+    title: "Keplar vs Gemini: Differences and When to Use Each",
+    description: "Gemini gives one model's answer; Keplar asks several models and shows where they disagree. What each is for, features and pricing compared.",
     sources: [{ label: "Google Gemini subscriptions", url: "https://gemini.google/subscriptions/" }],
     summary: [
       "Gemini is Google's assistant, built around Google's models and integrated with Google services. Keplar is an answer layer that consults several providers' models for non-trivial questions and shows where they agree and differ.",
