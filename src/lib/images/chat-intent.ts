@@ -1,7 +1,6 @@
 /**
  * Does this chat message ask Keplar to MAKE a picture? Pure and conservative: a wrong "yes" would spend the person's credits
- * on something they only wanted to talk about, so anything unclear stays a normal question (and the composer has an explicit
- * "Create image" toggle for the rest). Questions ("how do I generate an image in Python?"), code and diagrams are never
+ * on something they only wanted to talk about, so anything unclear stays a normal question. Questions ("how do I generate an image in Python?"), code and diagrams are never
  * treated as image requests.
  */
 import type { ImageSize } from "./config";

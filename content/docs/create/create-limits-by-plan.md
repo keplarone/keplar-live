@@ -9,7 +9,7 @@ related: /docs/billing-plans/plans-compared, /docs/reference/limits-at-a-glance,
 
 Limits exist to keep the service affordable and safe. These numbers were read from the product on 18 October 2026. They can change; the Create screen and the [pricing page](/pricing) always show the current ones.
 
-Pictures and video are not Create tabs. A picture is made in chat with Create image, on Plus, Pro and Business. A clip is made by asking in chat, on Pro (up to 8 seconds) and Business (up to 10 seconds). Free, Lite and Plus cannot start a clip.
+Pictures and video are not Create tabs. A picture is made by asking in chat to draw one, on Plus, Pro and Business. A clip is made by asking in chat, on Pro (up to 8 seconds) and Business (up to 10 seconds). Free, Lite and Plus cannot start a clip.
 
 ## Sites and domains
 

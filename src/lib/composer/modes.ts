@@ -1,7 +1,7 @@
 /**
  * Composer mode chips: which ones can be on together.
  * Study and Slides hand the message to their own studio (study set, deck), so each is a kind of run on its own: turning one on
- * turns off every other kind of run (Deep Research, Debate, Create, Create image, Agent) and the other studio, and turning any of
+ * turns off every other kind of run (Deep Research, Debate, Create, Agent) and the other studio, and turning any of
  * those on turns Study / Slides off. Debate and Deep Research stay exclusive with each other as before. Web is a retrieval switch,
  * not a kind of run, so it is left alone.
  */

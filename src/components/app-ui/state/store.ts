@@ -188,6 +188,8 @@ export function applyEvent(m: KeplarMessage, e: KeplarEvent): KeplarMessage {
       return { ...m, disagreement: e.summary };
     case "smalltalk":
       return { ...m, smalltalk: true, mode: "single" };
+    case "video":
+      return { ...m, status: "done", draft: "", stages: [], capabilities: [], models: [], finishedAt: Date.now(), answer: undefined, video: e.video };
     case "delta":
       return { ...m, draft: m.draft + e.text };
     case "answer": {

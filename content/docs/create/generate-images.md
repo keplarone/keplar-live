@@ -3,15 +3,15 @@ title: Generate images
 description: Make a picture from a chat message, with the cost shown when a confirmation is required, and what is refused.
 order: 4
 updated: 2026-10-18
-keywords: AI image generation, generate image, Create image, download original
+keywords: AI image generation, generate image, draw a picture, download original
 related: /docs/create/create-limits-by-plan, /docs/billing-plans/credits-explained, /docs/create/publish-your-site
 ---
 
-Pictures are made in chat. Turn on **Create image** in the composer, or ask Keplar to draw one ("draw a …", "make an image of …"). Image generation is not a Create tab. It is part of Plus, Pro and Business.
+Pictures are made in chat. Ask Keplar to draw one ("draw a …", "make an image of …"). Image generation is not a Create mode and not a Create tab. It is part of Plus, Pro and Business.
 
 ## How to generate
 
-1. In chat, turn on Create image, or write a clear request to draw a picture. With Create mode on, that request is answered as a normal chat message and no picture is made.
+1. In chat, write a clear request to draw a picture. With Create mode on, that request is answered as a normal chat message and no picture is made.
 2. Describe the image: subject, setting, style, lighting, composition. Attach an image to use it as a reference.
 3. A small picture can start on its own. A larger one, or one that uses a reference, shows the cost first and waits for you to confirm. Failed, refused, blocked or timed-out jobs cost nothing.
 4. The picture appears in the thread. Download the original from there. You can regenerate it, ask for a variation, or describe an edit.
@@ -41,4 +41,4 @@ A repeated request with the same idempotency key returns the same job and never 
 
 ## Slides
 
-Image ideas in the [slideshow creator](/docs/using-keplar/slideshow-creator) are text placeholders. Turn on Create image in chat if you want a picture, then add it yourself.
+Image ideas in the [slideshow creator](/docs/using-keplar/slideshow-creator) are text placeholders. Ask in chat to draw a picture if you want one, then add it yourself.

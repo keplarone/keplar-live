@@ -129,7 +129,7 @@ export type ComposerModes = {
   deepResearch: boolean;
   create: boolean;
   agent: boolean;
-  /** "Create image" toggle in the composer: this message makes a picture instead of asking the panel. Client routing only. */
+  /** Set on a picture follow-up (regenerate, variation, edit). Not a composer mode. Client routing only. */
   image?: boolean;
   /** Debate (BETA, debate.ts): the panel argues in rounds and reads each other's arguments before Keplar writes one answer. */
   debate?: boolean;
@@ -756,6 +756,11 @@ export type KeplarEvent =
   | { type: "model"; modelId: string; name: string; status: "responded" | "failed" | "refused"; note?: string }
   | { type: "disagreement"; summary: string }
   | { type: "smalltalk" }
+  /**
+   * The message asked for a clip. No model is called. The chat replaces this turn with the video card
+   * (plan note, or shape, length and subject). A text answer must not say Keplar cannot make videos.
+   */
+  | { type: "video"; video: import("@/lib/video/chat-types").ChatVideo }
   /**
    * Answer recovery, always reporting a real state: "replayed" (this answer was saved by an earlier run of the same turn and is shown
    * again: no second run, no second charge), "recovering" (the browser lost the stream and is fetching the saved answer), "recovered"

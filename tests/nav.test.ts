@@ -29,7 +29,7 @@ test("modes open beside the chat; /app/create and the other routes still render 
   assert.match(app, /state\.view === "slides"/);
   const composer = readFileSync("src/components/app-ui/Composer.tsx", "utf8");
   assert.match(composer, /data-suggest=\{suggestion\.key\}/);
-  assert.match(composer, /\/\(create\|study\|slides\|debate\|web\|reason\|image\|research\)/);
+  assert.match(composer, /\/\(create\|study\|slides\|debate\|web\|reason\|research\)/);
   assert.match(composer, /Or type \/create, \/study, \/slides/);
 });
 

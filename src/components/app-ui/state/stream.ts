@@ -71,7 +71,7 @@ export async function* streamKeplar(req: KeplarRequest, signal: AbortSignal): As
         const event = validEvent(parsed);
         if (!event) { skipped++; continue; }
         if (!inOrder(event as KeplarEvent & { seq?: unknown })) continue;
-        if (event.type === "answer" || event.type === "limit" || event.type === "error") sawTerminal = true;
+        if (event.type === "answer" || event.type === "limit" || event.type === "error" || event.type === "video") sawTerminal = true;
         yield event;
       }
     }

@@ -18,7 +18,7 @@ import Link from "next/link";
 import type { Depth } from "@/lib/core/types";
 import type { Attachment, ComposerModes, RoutingPreferences, RoutingStrategy } from "@/lib/orchestration/types";
 import { MEDIA_LIMITS, type MediaInput } from "@/lib/orchestration/media";
-import { IconMic, IconPlus, IconDebate, IconDeep, IconCreate, IconImage, IconMore, IconReason, IconRouting, IconSlides, IconStudy, IconWeb } from "./icons";
+import { IconMic, IconPlus, IconDebate, IconDeep, IconCreate, IconMore, IconReason, IconRouting, IconSlides, IconStudy, IconWeb } from "./icons";
 import { toggleMode, type ModeKey } from "@/lib/composer/modes";
 import { suggestComposerMode } from "@/lib/composer/suggest";
 import { canUseSlides, slidesLimitsFor } from "@/lib/tools/limits";
@@ -44,12 +44,6 @@ import s from "./Composer.module.css";
 import { Button, Icon as KitIcon, IconButton, Popover } from "@/components/kit";
 import { SlashCommandMenu } from "./SlashCommandMenu";
 import { useScreenShare } from "./screen-share";
-import {
-  activeSlashToken,
-  expandSlashCommand,
-  filterSlashCommands,
-  type SlashCommand,
-} from "@/lib/images/slash-commands";
 import { chatSlashToken, filterChatCommands, type ChatCommand } from "@/lib/chat-actions/intent";
 
 export type ComposerHandle = { focus: () => void; setText: (t: string) => void; setModes: (m: Partial<ComposerModes>) => void };
@@ -116,7 +110,6 @@ const tools: { key: ModeKey; label: string; Icon: typeof IconWeb; hint: string }
   { key: "deepResearch", label: "Deep Research", Icon: IconDeep, hint: "Longer, multi-step research. Uses more usage" },
   { key: "debate", label: "Debate", Icon: IconDebate, hint: "The models argue in rounds and read each other's points, then Keplar writes one answer. Uses more usage" },
   { key: "create", label: "Create", Icon: IconCreate, hint: "Build a website or app" },
-  { key: "image", label: "Create image", Icon: IconImage, hint: "Make a picture from this message (Plus and Pro). Attach an image to use it as a reference" },
 ];
 
 /**
@@ -132,7 +125,6 @@ const BLURB: Partial<Record<ModeKey, string>> = {
   deepResearch: "Long, multi-step research",
   debate: "Models argue in rounds",
   create: "Build a website or app",
-  image: "A picture from this message",
 };
 
 /** Keplar Core depth (src/lib/core). Auto decides per question and escalates when the models disagree. */
@@ -238,13 +230,9 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
   const [slashQuery, setSlashQuery] = useState("/");
   const [slashActive, setSlashActive] = useState(0);
   const [slashRange, setSlashRange] = useState<{ start: number; end: number } | null>(null);
-  // "/" opens the image commands while Create image is on, and the chat's own commands (/slides, /quiz, /approvals ...) otherwise.
-  const [slashKind, setSlashKind] = useState<"image" | "chat">("image");
-  const slashItems = useMemo<(SlashCommand | ChatCommand)[]>(() => (!slashOpen ? [] : slashKind === "chat" ? filterChatCommands(slashQuery) : filterSlashCommands(slashQuery)), [slashOpen, slashQuery, slashKind]);
+  // "/" opens the chat's own commands (/slides, /quiz, /approvals ...). Image slash commands are not offered from the composer.
+  const slashItems = useMemo<ChatCommand[]>(() => (!slashOpen ? [] : filterChatCommands(slashQuery)), [slashOpen, slashQuery]);
   const slashListId = `${uid}-slash`;
-  useEffect(() => {
-    if (slashOpen && (slashKind === "image") !== Boolean(modes.image)) setSlashOpen(false);
-  }, [modes.image, slashOpen, slashKind]);
   const [routingOpen, setRoutingOpen] = useState(false);
   const modesChanged = useRef(onModesChange);
   useEffect(() => { modesChanged.current = onModesChange; });
@@ -423,11 +411,11 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
     setVoiceNote(L.running ? "Your words are in the box. Send them when the current answer finishes." : "Your words are in the box. Check the attachments, then press Send.");
   }, [voiceAsk]);
 
-  const SLASH_MODE: Record<string, ModeKey> = { create: "create", study: "study", slides: "slides", debate: "debate", web: "web", reason: "reason", image: "image", research: "deepResearch" };
+  const SLASH_MODE: Record<string, ModeKey> = { create: "create", study: "study", slides: "slides", debate: "debate", web: "web", reason: "reason", research: "deepResearch" };
   const submit = () => {
     if (!canSend) return;
     // A bare "/create" or "/study" turns that mode on and stays in the composer. Text after the command still sends.
-    const bare = /^\s*\/(create|study|slides|debate|web|reason|image|research)\s*$/i.exec(text);
+    const bare = /^\s*\/(create|study|slides|debate|web|reason|research)\s*$/i.exec(text);
     if (bare && !media.length && !docs.length && !links.length) {
       const key = SLASH_MODE[bare[1].toLowerCase()];
       setModes((m) => toggleMode({ ...m, [key]: false }, key));
@@ -707,70 +695,32 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
     };
   }, []);
 
-  const syncSlashFromCaret = useCallback((value: string, caret: number, imageMode: boolean) => {
-    if (!imageMode) {
-      const chat = chatSlashToken(value, caret);
-      if (chat) {
-        setSlashKind("chat");
-        setSlashOpen(true);
-        setSlashQuery(chat.query);
-        setSlashRange({ start: chat.end - chat.query.length, end: chat.end });
-        setSlashActive(0);
-        return;
-      }
-      setSlashOpen(false);
-      setSlashRange(null);
-      return;
-    }
-    setSlashKind("image");
-    const tok = activeSlashToken(value, caret);
-    if (!tok) {
+  const syncSlashFromCaret = useCallback((value: string, caret: number) => {
+    const chat = chatSlashToken(value, caret);
+    if (!chat) {
       setSlashOpen(false);
       setSlashRange(null);
       return;
     }
     setSlashOpen(true);
-    setSlashQuery(tok.query);
-    setSlashRange({ start: tok.start, end: tok.end });
+    setSlashQuery(chat.query);
+    setSlashRange({ start: chat.end - chat.query.length, end: chat.end });
     setSlashActive(0);
   }, []);
 
-  const applySlash = useCallback((picked: SlashCommand | ChatCommand) => {
+  const applySlash = useCallback((picked: ChatCommand) => {
     const ta = taRef.current;
     const value = ta?.value ?? textRef.current;
-    if (!("build" in picked)) {
-      // A chat command: put "/slides " in place of the typed token and leave the caret after it for the rest.
-      const range = slashRange ?? { start: 0, end: value.length };
-      const insert = `${picked.slash} `;
-      setText(`${value.slice(0, range.start)}${insert}${value.slice(range.end).replace(/^\S*\s?/, "")}`);
-      setSlashOpen(false);
-      setSlashRange(null);
-      requestAnimationFrame(() => {
-        const el = taRef.current;
-        if (!el) return;
-        const pos = range.start + insert.length;
-        el.focus();
-        el.setSelectionRange(pos, pos);
-      });
-      return;
-    }
-    const cmd = picked;
-    const range = slashRange ?? activeSlashToken(value, ta?.selectionStart ?? value.length);
-    if (!range) return;
-    const hasRef = mediaRef.current.some((m) => m.kind === "image" && m.status === "ready");
-    const lineAfter = value.slice(range.end).split("\n")[0] ?? "";
-    const subject = lineAfter.trim();
-    const expanded = expandSlashCommand(cmd, subject, hasRef);
-    const rest = value.slice(range.end + lineAfter.length);
-    const next = `${value.slice(0, range.start)}${expanded}${rest}`;
-    setText(next);
+    // A chat command: put "/slides " in place of the typed token and leave the caret after it for the rest.
+    const range = slashRange ?? { start: 0, end: value.length };
+    const insert = `${picked.slash} `;
+    setText(`${value.slice(0, range.start)}${insert}${value.slice(range.end).replace(/^\S*\s?/, "")}`);
     setSlashOpen(false);
     setSlashRange(null);
-    setModes((m) => ({ ...m, image: true }));
     requestAnimationFrame(() => {
       const el = taRef.current;
       if (!el) return;
-      const pos = range.start + expanded.length;
+      const pos = range.start + insert.length;
       el.focus();
       el.setSelectionRange(pos, pos);
     });
@@ -965,7 +915,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
         {slashOpen ? (
           <SlashCommandMenu
             id={slashListId}
-            label={slashKind === "chat" ? "Chat commands" : "Image slash commands"}
+            label="Chat commands"
             items={slashItems}
             active={slashActive}
             onActive={setSlashActive}
@@ -980,7 +930,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
           placeholder={modes.study ? "What do you want to learn?" : modes.slides ? "Describe the talk: the topic, who it's for, how many slides" : modes.create ? "Describe a website or an app" : placeholder}
           onChange={(e) => {
             setText(e.target.value);
-            syncSlashFromCaret(e.target.value, e.target.selectionStart ?? e.target.value.length, modes.image === true);
+            syncSlashFromCaret(e.target.value, e.target.selectionStart ?? e.target.value.length);
           }}
           onKeyDown={onKeyDown}
           onBeforeInput={enter.onBeforeInput}
@@ -1325,7 +1275,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
             />
           </div>
         </div>
-        <p id={`${uid}-hint`} className="visually-hidden">{prefs.sendKey === "mod-enter" ? "Press Control or Command Enter to send; Enter adds a new line. " : "Press Enter or Command Enter to send, Shift Enter for a new line. "}{modes.image ? "Type / for image slash commands. " : "Type / for chat commands such as /slides, /quiz and /approvals. Turn on Create image to use / image commands. "}Paste a link to have Keplar read it. Paste or drop images, video, audio, documents, code or data files to attach them.</p>
+        <p id={`${uid}-hint`} className="visually-hidden">{prefs.sendKey === "mod-enter" ? "Press Control or Command Enter to send; Enter adds a new line. " : "Press Enter or Command Enter to send, Shift Enter for a new line. "}Type / for chat commands such as /slides, /quiz and /approvals. Paste a link to have Keplar read it. Paste or drop images, video, audio, documents, code or data files to attach them.</p>
         <p id={`${uid}-attach-hint`} className="visually-hidden">{LIMITS_TEXT}. {plan === "free" ? FREE_MEDIA_NOTE : PAID_MEDIA_NOTE}.</p>
       </form>
     </div>

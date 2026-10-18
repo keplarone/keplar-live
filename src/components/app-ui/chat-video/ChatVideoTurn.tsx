@@ -44,13 +44,15 @@ export function ChatVideoTurn({ message: m, onPatch, onAskText, onSettled }: Pro
     else patchRef.current({ phase: "failed", error: e instanceof Error ? e.message : "Couldn't make the video. Nothing was charged." });
   };
 
-  const go = async (aspect: ChatAspect, durationSec: number, modelId: string, acknowledgeLarge = false) => {
+  const go = async (aspect: ChatAspect, durationSec: number, modelId: string, acknowledgeLarge = false, prompt = v.prompt) => {
+    const subject = prompt.trim();
+    if (subject.length < 2) return;
     setBusy(true);
     try {
       writeVideoPrefs(aspect, durationSec);
       const quote = acknowledgeLarge && typeof v.estimateUnits === "number"
         ? { units: v.estimateUnits, large: true, durationSec, aspectRatio: aspect, modelId }
-        : await quoteVideo({ prompt: v.prompt, aspect, durationSec, modelId });
+        : await quoteVideo({ prompt: subject, aspect, durationSec, modelId });
       if (quote.durationSec !== durationSec) {
         patchRef.current({ phase: "failed", error: `That model can't make a ${durationSec}s clip. Nothing was charged.`, aspect, durationSec, modelId });
         return;
@@ -60,7 +62,7 @@ export function ChatVideoTurn({ message: m, onPatch, onAskText, onSettled }: Pro
         return;
       }
       patchRef.current({ phase: "working", aspect, durationSec, modelId, estimateUnits: quote.units, status: "queued", error: undefined, mismatch: undefined });
-      const job = await startVideo({ prompt: v.prompt, aspect, durationSec, modelId, key: v.key, confirmUnits: quote.units, acknowledgeLarge: quote.large });
+      const job = await startVideo({ prompt: subject, aspect, durationSec, modelId, key: v.key, confirmUnits: quote.units, acknowledgeLarge: quote.large });
       patchRef.current({ jobId: job.id, status: job.status, ...(job.status === "failed" || job.status === "blocked" ? { phase: "failed", error: job.error ?? "Couldn't make the video. Nothing was charged." } : {}) });
     } catch (e) {
       fail(e);
@@ -89,14 +91,14 @@ export function ChatVideoTurn({ message: m, onPatch, onAskText, onSettled }: Pro
         }
         const model = chatModel(config);
         const offer = model ? chatVideoOffer({ durations: model.durations ?? undefined, aspectRatios: model.aspectRatios }, config.maxSeconds) : { aspects: [], durations: [] };
-        const questions = planVideoQuestions({ aspect: v.statedAspect, durationSec: v.statedDuration }, offer, readVideoPrefs());
+        const questions = planVideoQuestions({ aspect: v.statedAspect, durationSec: v.statedDuration, needsSubject: v.needsSubject }, offer, readVideoPrefs());
         if (!model || !questions) {
           patchRef.current({ phase: "blocked", blocked: { reason: "config", message: "Video generation has no length this plan can make." } });
           return;
         }
         if (!live) return;
         const base = { aspects: offer.aspects, durations: offer.durations, aspect: questions.aspect, durationSec: questions.duration, modelId: model.id };
-        if (questions.ready) await go(questions.aspect, questions.duration, model.id);
+        if (questions.ready && v.prompt.trim().length >= 2) await go(questions.aspect, questions.duration, model.id);
         else patchRef.current({ phase: "options", ...base });
       } catch (e) {
         if (live) fail(e);
@@ -150,9 +152,12 @@ export function ChatVideoTurn({ message: m, onPatch, onAskText, onSettled }: Pro
   const ratio = { "--ratio": (v.aspect ?? "16:9").replace(":", " / ") } as CSSProperties;
   const aspects = v.aspects ?? [];
   const durations = v.durations ?? [];
-  const questions = planVideoQuestions({ aspect: v.statedAspect, durationSec: v.statedDuration }, { aspects, durations }, {});
+  const questions = planVideoQuestions({ aspect: v.statedAspect, durationSec: v.statedDuration, needsSubject: v.needsSubject }, { aspects, durations }, {});
   const showAspect = v.phase === "options" && (questions?.askAspect ?? true);
   const showDuration = v.phase === "options" && (questions?.askDuration ?? true);
+  const [subject, setSubject] = useState(v.prompt);
+  const askSubject = v.phase === "options" && (v.needsSubject === true || subject.trim().length < 2 && v.needsSubject !== false);
+  const subjectReady = !v.needsSubject || subject.trim().length >= 2;
 
   const move = (e: KeyboardEvent<HTMLFieldSetElement>, values: string[], current: string | undefined, set: (value: string) => void) => {
     if (e.key !== "ArrowRight" && e.key !== "ArrowDown" && e.key !== "ArrowLeft" && e.key !== "ArrowUp") return;
@@ -165,8 +170,10 @@ export function ChatVideoTurn({ message: m, onPatch, onAskText, onSettled }: Pro
   };
 
   const submitOptions = () => {
-    if (!v.aspect || !v.durationSec || !v.modelId) return;
-    void go(v.aspect, v.durationSec, v.modelId);
+    const prompt = (v.needsSubject ? subject : v.prompt).trim();
+    if (!v.aspect || !v.durationSec || !v.modelId || prompt.length < 2) return;
+    if (v.needsSubject) onPatch({ prompt, needsSubject: false });
+    void go(v.aspect, v.durationSec, v.modelId, false, prompt);
   };
 
   return (
@@ -190,13 +197,20 @@ export function ChatVideoTurn({ message: m, onPatch, onAskText, onSettled }: Pro
         >
           <h3 id={`${uid}-h`}>Make this video</h3>
           <p className="visually-hidden">Arrow keys change the highlighted choice. Enter creates the video.</p>
-          <p className={css.prompt}>{v.prompt}</p>
+          {askSubject ? (
+            <label className={css.subject} htmlFor={`${uid}-subject`}>
+              <span>What should the video show?</span>
+              <input id={`${uid}-subject`} className={css.subjectInput} value={subject} autoFocus maxLength={1000} placeholder="A fox in the snow" onChange={(e) => setSubject(e.target.value)} />
+            </label>
+          ) : (
+            <p className={css.prompt}>{v.prompt}</p>
+          )}
           {!showAspect && v.aspect ? <p className={css.meta}>Shape · {ASPECT_LABEL[v.aspect]}</p> : null}
           {showAspect ? (
             <fieldset className={css.choices} role="radiogroup" aria-label="Aspect ratio" onKeyDown={(e) => move(e, aspects, v.aspect, (value) => onPatch({ aspect: value as ChatAspect }))}>
               <legend>Shape</legend>
               {aspects.map((a) => (
-                <Button key={a} type="button" size="sm" variant="secondary" className={css.chip} role="radio" aria-checked={v.aspect === a} tabIndex={v.aspect === a ? 0 : -1} data-value={a} autoFocus={showAspect && v.aspect === a} onClick={() => onPatch({ aspect: a })}>{ASPECT_LABEL[a]}</Button>
+                <Button key={a} type="button" size="sm" variant="secondary" className={css.chip} role="radio" aria-checked={v.aspect === a} tabIndex={v.aspect === a ? 0 : -1} data-value={a} autoFocus={showAspect && !askSubject && v.aspect === a} onClick={() => onPatch({ aspect: a })}>{ASPECT_LABEL[a]}</Button>
               ))}
             </fieldset>
           ) : null}
@@ -205,12 +219,12 @@ export function ChatVideoTurn({ message: m, onPatch, onAskText, onSettled }: Pro
             <fieldset className={css.choices} role="radiogroup" aria-label="Length" onKeyDown={(e) => move(e, durations.map(String), String(v.durationSec), (value) => onPatch({ durationSec: Number(value) }))}>
               <legend>Length</legend>
               {durations.map((d) => (
-                <Button key={d} type="button" size="sm" variant="secondary" className={css.chip} role="radio" aria-checked={v.durationSec === d} tabIndex={v.durationSec === d ? 0 : -1} data-value={String(d)} autoFocus={!showAspect && v.durationSec === d} onClick={() => onPatch({ durationSec: d })}>{d}s</Button>
+                <Button key={d} type="button" size="sm" variant="secondary" className={css.chip} role="radio" aria-checked={v.durationSec === d} tabIndex={v.durationSec === d ? 0 : -1} data-value={String(d)} autoFocus={!showAspect && !askSubject && v.durationSec === d} onClick={() => onPatch({ durationSec: d })}>{d}s</Button>
               ))}
             </fieldset>
           ) : null}
           <div className={css.row}>
-            <Button type="submit" size="sm" variant="primary" disabled={busy}>{busy ? "Starting…" : "Create video"}</Button>
+            <Button type="submit" size="sm" variant="primary" disabled={busy || !subjectReady}>{busy ? "Starting…" : "Create video"}</Button>
             <Button type="button" size="sm" variant="secondary" data-cancel="" onClick={() => onPatch({ phase: "canceled", error: "Not started. Nothing was charged." })}>Cancel</Button>
           </div>
         </form>

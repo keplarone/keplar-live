@@ -65,7 +65,7 @@ export type RouteContext = { last?: LastCard | null; /** The person's local day 
 
 export type ChatCommand = { id: string; slash: string; label: string; summary: string; takesText: boolean };
 
-/** The chat's own slash commands (shown in the composer's "/" menu when Create image is off). None clash with the image commands. */
+/** The chat's own slash commands (shown in the composer's "/" menu). None of these make a picture. */
 export const CHAT_COMMANDS: readonly ChatCommand[] = [
   { id: "slides", slash: "/slides", label: "Slideshow", summary: "Make a deck from the rest of the message", takesText: true },
   { id: "quiz", slash: "/quiz", label: "Quiz me", summary: "A-D quiz on a topic, right here", takesText: true },

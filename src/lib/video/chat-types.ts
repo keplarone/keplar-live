@@ -4,6 +4,8 @@ import type { ChatAspect } from "./chat-intent";
 export type ChatVideo = {
   phase: "checking" | "options" | "confirm" | "working" | "ready" | "failed" | "blocked" | "canceled";
   prompt: string;
+  /** The message asked for a clip and never said what it should show. The card asks before Create video enables. */
+  needsSubject?: boolean;
   /** Shape named in the message, when it was one of the two the card offers. */
   statedAspect: ChatAspect | null;
   /** Seconds named in the message, before the allowed list is applied. */

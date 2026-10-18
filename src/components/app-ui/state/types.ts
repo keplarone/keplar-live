@@ -200,7 +200,7 @@ export type KeplarMessage = {
   recovery?: { state: "replayed" | "recovering" | "recovered"; headless?: boolean };
   /** Free plan only: a soft, dismissible note about Plus (upsell.ts). */
   upsell?: "milestone" | "complex";
-  /** A picture turn (Create image toggle or a clear "draw me..." request). Has no panel answer. */
+  /** A picture turn (a clear "draw me..." request, or regenerate / variation / edit). Has no panel answer. */
   image?: ChatImage;
   /** A clip asked for in ordinary chat ("make a video of…"). Has no panel answer and is not Create mode. */
   video?: ChatVideo;

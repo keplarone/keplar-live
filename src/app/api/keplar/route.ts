@@ -87,6 +87,9 @@ import { projectItemCount } from "@/lib/projects/context";
 import { personalContext } from "@/lib/personalize/turn";
 import { validSpecialistId } from "@/lib/personalize/specialists";
 import { answerLanguageNote } from "@/lib/i18n/answer-language";
+import { detectVideoIntent } from "@/lib/video/chat-intent";
+import { newVideoKey } from "@/lib/video/chat-flow";
+import type { ChatVideo } from "@/lib/video/chat-types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -225,6 +228,11 @@ export async function POST(request: Request) {
       memoryReply = screened.reply;
       keepAlive(recordSafetyEvent({ category: screened.category, action: screened.action, plan: ws.plan, signedIn: !ws.anonymous }), "safety event");
     }
+  }
+  // A request to make a clip never reaches a model (the Creation route used to answer with a recipe). The chat shows the video card.
+  if (memoryReply === null && !req.media?.images?.length && !req.media?.videos?.length) {
+    const clip = detectVideoIntent(req.prompt);
+    if (clip) return videoHandoff(clip);
   }
   // A standing output rule the person set ("say nothing more and nothing less, just say Yess") is enforced here, in code: while it
   // is active the reply is that literal text, plain, with no model, no metadata card and no charge (output-rules.ts).
@@ -706,6 +714,21 @@ export async function POST(request: Request) {
   if (gate?.setCookie) headers.append("Set-Cookie", gate.setCookie);
   if (dailyClaim?.setCookie) headers.append("Set-Cookie", dailyClaim.setCookie);
   return new Response(stream, { headers });
+}
+
+/** A clip request. One event, no model, no charge. The chat turns the turn into the video card. */
+function videoHandoff(intent: { prompt: string; needsSubject: boolean; aspect: ChatVideo["statedAspect"]; durationSec: number | null }): Response {
+  const video: ChatVideo = {
+    phase: "checking",
+    prompt: intent.prompt,
+    needsSubject: intent.needsSubject,
+    statedAspect: intent.aspect,
+    statedDuration: intent.durationSec,
+    key: newVideoKey(),
+  };
+  const event: KeplarEvent = { type: "video", video };
+  const stamp = stamper();
+  return new Response(JSON.stringify(stamp(event)) + "\n", { headers: { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store, no-transform", [PROTOCOL_HEADER]: String(EVENT_PROTOCOL) } });
 }
 
 /** Answer recovery: the saved answer of an earlier run of this turn, as a normal answer stream (no run, no charge, no daily question). */

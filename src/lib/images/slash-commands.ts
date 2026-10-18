@@ -1,5 +1,5 @@
 /**
- * Slash image commands for Ask (Create image) and Create > Images.
+ * Slash image commands. The composer does not show these. The unmounted image studio still uses them.
  * Typing `/` opens an autocomplete menu; picking a command (or sending a leading
  * `/Command …`) expands into a strong prompt that keeps the subject from an
  * attached reference or from the text that follows the command.

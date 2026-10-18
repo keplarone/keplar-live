@@ -119,7 +119,7 @@ test("intent: slash commands are explicit and always win", () => {
   assert.deepEqual(r("/projects new Thesis")?.intent, { type: "workspace", card: "projects", act: { type: "create-project", name: "Thesis" } });
   assert.deepEqual(r("/history taxes")?.intent, { type: "workspace", card: "history", query: "taxes" });
   for (const id of ["crm", "leads", "dashboard", "deployments", "apps"]) assert.deepEqual(r(`/${id}`)?.intent, { type: "workspace", card: id });
-  assert.equal(r("/BTS red sneaker"), null, "image slash commands are left to Create image");
+  assert.equal(r("/BTS red sneaker"), null, "image slash commands are not chat commands");
   assert.equal(r("/nope"), null);
 });
 

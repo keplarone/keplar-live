@@ -76,7 +76,7 @@ export const compareGroups: CompareGroup[] = [
   {
     title: "Pictures and video",
     rows: [
-      { label: "Image generation", hint: "In chat, with Create image on, or by asking for a picture. Not part of Create.", values: per((p) => (IMAGE_LIMITS[p] ? `${n(IMAGE_LIMITS[p]!.perDay)} a day` : null)) },
+      { label: "Image generation", hint: "Ask in chat to draw a picture. Not part of Create.", values: per((p) => (IMAGE_LIMITS[p] ? `${n(IMAGE_LIMITS[p]!.perDay)} a day` : null)) },
       { label: "Video generation (Beta)", hint: "Ask in chat for a clip. Keplar asks for 16:9 or 9:16 and a length the model supports.", values: per((p) => (ENTITLEMENTS[p].video ? `Clips up to ${ENTITLEMENTS[p].maxVideoSeconds} s` : null)) },
     ],
   },
