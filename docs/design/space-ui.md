@@ -20,18 +20,18 @@ product promise, routes and the accessibility tree stay as they are. Restyle mar
    weather as a dimmed bluish almost-night sky with small stars; app surfaces stay `#0a0a0c` / `#141417` / `#1e1e23` on a `#000` canvas.
    Auto follows the OS. The theme switch is unchanged (`src/lib/theme.ts`).
 2. **No outlines.** Surfaces separate by depth and light: a fill step, a 1px inner top highlight
-   (`inset 0 1px 0 rgb(255 255 255 / .06)`), a soft drop. Never a 1px border around a card, button or field.
+   (`inset 0 1px 0 rgb(255 255 255 / .06)`), a soft drop, a violet glow. Never a 1px border around a card, button or field.
    (Data tables may keep the faint `--hairline`, which is now 5% white.)
 3. **Every control is a pill** (`--shape-control: 9999px`). Cards are 28px glass (`--r-card`, `--space-r-card`). Dialogs 28px.
    Textareas 22px (a pill would clip lines).
 4. **Primary buttons are 3D.** A lit face (white gradient in dark, ink gradient in light) over a hard ledge (`0 4px 0 #8c8a99`);
-   hover lifts 1px, a press sinks the face 4px into the ledge. One primary per surface.
+   hover lifts 1px and adds a violet glow, a press sinks the face 4px into the ledge. One primary per surface.
 5. **Montserrat everywhere** (UI and headings), IBM Plex Mono for code only. Headlines are semibold with tight tracking
    (`-0.045em` to `-0.05em`); eyebrows are 12px, `0.18em` tracked, uppercase, `--c-ink-3`.
 6. **Motion is transform, opacity and filter only**, with Space Studio's curves: things rise out of a blur, major views warp in,
    fast movement is motion-blurred, numbers roll like an odometer, the headline verb carries a moving gradient. Nothing waits on
    an animation to be readable.
-7. **Focus is a solid ring** (`--space-focus-glow`: canvas gap, then 2px of `--c-focus`) on keyboard focus only (`:focus-visible`). No browser outline, never
+7. **Focus is the violet glow** (`--space-focus-glow`) on keyboard focus only (`:focus-visible`). No browser outline, never
    invisible; a mouse press draws nothing (e2e/no-focus-box). Windows High Contrast keeps the system outline (mobile.css).
 8. **Calm on phones, still for reduced motion.** At 640px and narrower: no entrance animation, no blur filters, no infinite
    gradient drift, a still sky. `prefers-reduced-motion`: every animation lands on its final frame.
@@ -117,14 +117,15 @@ stars through the gaps (none under overcast, rain, snow or fog).
 | `--c-ink` | `#f4f4f6` (19:1) | `#0e0f12` | text |
 | `--c-ink-2` | `#b3b3bb` (10:1) | `#4b4f58` | secondary text |
 | `--c-ink-3` | `#8a8a94` (6.1:1 on black, 4.9:1 on `#1e1e23`) | `#686d78` | quiet text (still AA) |
-| `--c-accent`, `--c-focus` | `#f4f4f6` near-white | `#17171a` graphite (17.9:1 on white) | links, highlights, focus |
-| `--ring-rgb` | `244 244 246` | `23 23 26` | the accent as channels: `rgb(var(--ring-rgb) / .2)` |
+| `--c-accent`, `--c-focus` | `#c39bff` violet | `#7d3bc4` (6.4:1 on white) | links, highlights, focus |
+| `--ring-rgb` | `195 155 255` | `125 59 196` | glows: `rgb(var(--ring-rgb) / .2)` |
 | `--hover-wash` / `--press-wash` | 7% / 11% white | 5% / 9% ink | quiet control fills |
 | `--hairline` | 5% white | 8% ink | data tables only |
-| semantic `--c-reasoning`, `-research`, `-creation`, `-verified`, `-attention`, `-disagree`, `-destructive`, `-memory` | `#6ea8ff`, `#8fd8ff`, `#ffb37a`, `#5fd49a`, `#ffd66b`, `#ffa58f`, `#ff7a85`, `#d9cfc4` | AA on paper; memory is warm stone | one meaning each |
+| semantic `--c-reasoning`, `-research`, `-creation`, `-verified`, `-attention`, `-disagree`, `-destructive`, `-memory` | Space Studio hues: `#6ea8ff`, `#8fd8ff`, `#ffb37a`, `#5fd49a`, `#ffd66b`, `#ffa58f`, `#ff7a85`, `#f08bd8` | unchanged (AA on paper) | one meaning each |
 
 `tests/semantic-colour.test.ts` keeps the CSS and `src/lib/tokens.ts` in step and checks AA; `tests/palette.test.ts` still bans
-SaaS electric blues and the Tailwind pinks and violets (`purple-`, `violet-`, `fuchsia-`, `pink-`, `indigo-`, and hues 260–345). The accent is graphite in light and near-white in dark. `tests/no-pink-purple.test.ts` fails if those colors come back.
+SaaS electric blues and the Tailwind violets (`#7c3aed`, `#8b5cf6`...). Use the Space violets (`#b27cff`, `#c39bff`, `#d76cff`,
+`#a467f0`) and keep `b - r <= 80` for any new blue-violet.
 
 ### 3.2 Space tokens (`src/styles/space.css`, theme-aware)
 
@@ -172,9 +173,9 @@ All are typed, keyboard operable, reduced-motion aware, and render the `.sp-*` c
 | `Card` | `as`, `pad: none \| md \| lg`, `interactive` | 28px glass; `interactive` = hover lift + glow |
 | `Panel` | `title`, `actions`, `pad` | solid raised surface for dense app UI (no blur) |
 | `Notice` | `tone: info \| warn \| error \| success`, `title`, `shake` | glass + coloured glow, `role=status/alert` |
-| `Input`, `Textarea`, `Select`, `Field` | native props; `fieldSize: sm \| md`; `Field({ label, hint, error, children: (aria) => control })` | pill fields, accent ring while typing, red ring when invalid |
+| `Input`, `Textarea`, `Select`, `Field` | native props; `fieldSize: sm \| md`; `Field({ label, hint, error, children: (aria) => control })` | pill fields, violet glow while typing, red glow when invalid |
 | `SegmentedControl` | `segments`, `value`, `onChange`, `label`, `mode: radio \| tabs`, `idPrefix`, `size`, `fullWidth` | glass track, lit thumb on a spring, motion blur while it travels |
-| `Toggle` | `checked`, `onChange`, `label?`, `description?`, `disabled`, `ariaLabel` | `role=switch`, accent-coloured track, thumb in `--c-on-accent` |
+| `Toggle` | `checked`, `onChange`, `label?`, `description?`, `disabled`, `ariaLabel` | `role=switch`, violet gradient track, squashy thumb |
 | `Dialog` | `open`, `onClose`, `title`, `children`, `actions` | native `<dialog>`, rises out of a blur, backdrop click closes |
 | `Popover` | `open`, `onClose`, `anchorRef`, `label`, `prefer`, `align`, `width`, `role` | flips to the side with room; use `.sp-menu-item` rows |
 | `Disclosure` | `summary`, `children`, `defaultOpen` | caret turns, panel resolves in |
@@ -188,7 +189,7 @@ All are typed, keyboard operable, reduced-motion aware, and render the `.sp-*` c
 
 The kit (`@/components/kit`, used all over /app) keeps its API; `Button`, `IconButton`, `SegmentedControl`, `Switch`, `Menu`,
 `Dialog`, `Tooltip`, `Toast` now draw the Space look through `--ks-*` tokens (kit.css): 3D primary/secondary/danger, pill ghosts,
-the glass segmented track with the lit thumb, the graphite switch, 20px menus, 28px dialogs, the solid focus ring. Link-buttons
+the glass segmented track with the lit thumb, the violet switch, 20px menus, 28px dialogs, the violet focus glow. Link-buttons
 inside /app use `src/components/app-ui/link-action.module.css` (`className={la.act} data-variant="primary"`), also 3D.
 
 ---
@@ -260,9 +261,10 @@ no animation that holds content invisible on phones, no new font families.
   after idle and gives up on weak GPUs.
 - **Montserrat replaces Google Sans** sitewide (Space Studio's face). Business keeps Geist (its own brand, Phase D decides),
   OG/share images still render with the bundled Google Sans files (`src/lib/og.tsx`, open item).
-- **Light accent is graphite** (`#17171a`) and the dark accent is near-white (`#f4f4f6`), so focus, selection and links stay neutral in both themes. The light
+- **Light accent moved from teal to violet** (`#7d3bc4`) so focus, selection and links match Space in both themes. The light
   semantic colours (reasoning teal etc.) are unchanged: they carry meaning in answers.
-- **Focus**: a solid 2px ring in the accent colour on controls (`:focus-visible` only). Inline links keep an underline.
+- **Focus**: Space Studio's glow replaces the old brightness+underline+bar cue on controls; inline links keep an underline (a
+  glow around wrapped text would read as a box).
 - **No star field anywhere but the Space site.** Phase A's 2D-canvas star field (`SpaceSky`) was removed; the only stars left
   are the few the weather sky shows through clear gaps in Dark. The Space site (`/space-studio`, space.keplar.one) keeps its own three.js journey.
 - **No sky behind dense app UI** (/app, Business workspace, admin): the app sits on its canvas with solid panels.

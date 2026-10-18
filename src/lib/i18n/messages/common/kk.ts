@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Ресурстар",
     "items": {
       "/features": "Keplar ішіндегі бәрі",
-      "/overview#demo": "Тікелей демо",
+      "/#demo": "Тікелей демо",
       "/app/create": "Жасау",
       "/docs": "Құжаттама",
       "/pricing": "Бағалар",
@@ -30,7 +30,6 @@ const m: CommonCatalog = {
       "Legal": "Құқықтық ақпарат"
     },
     "links": {
-      "/overview": "About Keplar",
       "/features": "Keplar ішіндегі бәрі",
       "/showcase": "Туындылар көрмесі",
       "/templates": "Қауымдастық галереясы",

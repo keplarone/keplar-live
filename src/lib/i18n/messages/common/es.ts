@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Recursos",
     "items": {
       "/features": "Todo Keplar",
-      "/overview#demo": "Demo en vivo",
+      "/#demo": "Demo en vivo",
       "/app/create": "Create",
       "/docs": "Documentación",
       "/pricing": "Precios",
@@ -16,7 +16,7 @@ const m: CommonCatalog = {
     },
     "hints": {
       "/features": "Cada función y si ya está disponible",
-      "/overview#demo": "Haz una pregunta ahora, sin registrarte",
+      "/#demo": "Haz una pregunta ahora, sin registrarte",
       "/app/create": "Describe o dicta un sitio o una app"
     },
     "signIn": "Iniciar sesión",
@@ -41,7 +41,6 @@ const m: CommonCatalog = {
       "Legal": "Legal"
     },
     "links": {
-      "/overview": "About Keplar",
       "/features": "Todo Keplar",
       "/how-it-works": "Cómo funciona",
       "/showcase": "Escaparate de Create",

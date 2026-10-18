@@ -9,8 +9,8 @@ import prose from "@/components/sections/sections.module.css";
 
 export const metadata = pageMeta(
   "/guides",
-  "Guides to Using AI Well",
-  "Short, practical guides: why AI models disagree, studying from a PDF, turning notes into slides, citation styles and what the free tools will run.",
+  "Guides: using AI well",
+  `Short, practical guides on checking AI answers, why models disagree, studying from a PDF and building a slide deck. From the ${brand.name} team.`,
 );
 
 export default function GuidesIndex() {

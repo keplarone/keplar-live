@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Mga mapagkukunan",
     "items": {
       "/features": "Lahat ng nasa Keplar",
-      "/overview#demo": "Live na demo",
+      "/#demo": "Live na demo",
       "/app/create": "Create",
       "/docs": "Docs",
       "/pricing": "Presyo",
@@ -16,7 +16,7 @@ const m: CommonCatalog = {
     },
     "hints": {
       "/features": "Bawat feature at kung live na ito",
-      "/overview#demo": "Magtanong ngayon, walang sign-up",
+      "/#demo": "Magtanong ngayon, walang sign-up",
       "/app/create": "Ilarawan o sabihin ang isang site o app"
     },
     "signIn": "Mag-sign in",
@@ -41,7 +41,6 @@ const m: CommonCatalog = {
       "Legal": "Legal"
     },
     "links": {
-      "/overview": "About Keplar",
       "/features": "Lahat ng nasa Keplar",
       "/how-it-works": "Paano ito gumagana",
       "/showcase": "Create showcase",

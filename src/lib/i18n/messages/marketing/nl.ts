@@ -8,19 +8,19 @@ const m: MarketingCatalog = {
       "description": "Keplar stuurt je vraag naar meerdere AI-modellen, vindt waar ze het oneens zijn, controleert en geeft je één samengevat antwoord. Gratis te proberen, zonder account."
     },
     "features": {
-      "title": "Alles in Keplar: alle functies",
+      "title": "Alles in Keplar",
       "description": "Alle functies van Keplar op één pagina, gegroepeerd naar doel: vragen stellen, bestanden lezen, sites en apps maken, samen bouwen, publiceren, de API en widget, en vertrouwen. Bij elke functie staat of die beschikbaar is, in bèta of binnenkort komt."
     },
     "pricing": {
-      "title": "Prijzen: Free, Lite $20, Plus $45, Pro $99",
-      "description": "Begin gratis met Keplar One. Keplar Lite kost $20 per maand, Keplar Plus kost $45 per maand, Keplar Pro $99 per maand, en Business-abonnementen zijn beschikbaar via ons salesteam. Verbruik dat je kunt zien, nooit verborgen."
+      "title": "Prijzen: Free, Plus $45, Pro $99",
+      "description": "Begin gratis met Keplar One. Keplar Plus kost $45 per maand, Keplar Pro $99 per maand, en Business-abonnementen zijn beschikbaar via ons salesteam. Verbruik dat je kunt zien, nooit verborgen."
     },
     "showcase": {
       "title": "Create-showcase: zo hoort een app gemaakt met Keplar eruit te zien",
       "description": "Acht demosites en -apps van het Keplar-team die laten zien wat Create wil bereiken: menukaarten, kasboeken, borden, agenda’s en redactionele pagina’s, elk met een eigen lettertype en kleurenpalet. Geen klantensites."
     },
     "roadmap": {
-      "title": "Roadmap (Nederlands)",
+      "title": "Roadmap",
       "description": "Waar Keplar nu aan bouwt, wat in bèta is en nog wordt afgemaakt, en wat onlangs is uitgebracht. Geen datums die we niet kunnen halen."
     },
     "developers": {

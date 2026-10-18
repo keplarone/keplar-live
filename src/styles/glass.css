@@ -1,63 +1,37 @@
 /*
  * Liquid glass: clear, see-through surfaces with LIGHT blur only, a specular edge, soft depth and a gentle
- * liquid response on hover / press. Dark is the default glass; light overrides it. Focus glows use --ring-rgb.
+ * liquid response on hover / press. Light-mode first; primary buttons stay graphite; focus glows use --ring-rgb (teal).
  *
  *   .lg          surface: translucent fill + small blur + specular ring + soft shadow
  *   .lg-lens     adds SVG refraction of what is behind (Chromium only; set by <GlassCaps> via html[data-lens])
  *   .lg-solid    same look without any backdrop (lists of many cards; never stacks blur layers)
- *   data-lit     optional press state only. Glass does not move a highlight with the pointer.
+ *   data-lit     (optional) the existing pointer light moves the specular highlight (src/styles/lit.css)
  *
  * Text contrast: glass is clear (light fill, light blur); text-bearing glass sits over a near-white plate or uses
  * .lg-strong / .lg-solid, so ink text holds AA over the pale page (the field is thin grey lines). Fallbacks below make it opaque.
  * Mobile: one blur layer per surface, smaller radius of blur, no lens, no hover morph.
  */
 :root {
-  /* Dark is the primary glass: a dim body, a clear pill, depth from the shadow. */
-  /* Cards and panels are solid graphite. Only a few pills stay clear. */
-  --sky-glass: #171717;
-  --glass-clear: rgb(12 12 14 / 0.16);
-  --glass-depth:
-    inset 0 2px 0 rgb(255 255 255 / 0.42),
-    inset 0 -3px 0 rgb(0 0 0 / 0.62),
-    inset 2px 0 0 rgb(255 255 255 / 0.14),
-    inset -2px 0 0 rgb(0 0 0 / 0.32),
-    inset 0 0 0 1.5px rgb(255 255 255 / 0.16),
-    inset 0 -18px 22px rgb(0 0 0 / 0.46),
-    0 1px 1px rgb(0 0 0 / 0.28),
-    0 10px 22px rgb(0 0 0 / 0.36);
-  --sky-edge: var(--glass-depth);
-  --lg-fill: #171717;
-  --lg-fill-strong: #1c1c1c;
+  --lg-fill: rgb(255 255 255 / 0.42);
+  --lg-fill-strong: rgb(255 255 255 / 0.62);
   --lg-blur: 8px;
   --lg-sat: 1.5;
-  /* No white edges: depth comes from the drop shadow alone. */
+  --lg-edge-hi: rgb(255 255 255 / 0.95);
+  --lg-edge-lo: rgb(255 255 255 / 0.35);
+  --lg-rim: rgb(0 0 0 / 0.09);
+  --lg-shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 10px 30px -10px rgb(0 0 0 / 0.16); /* neutral depth only, no tinted glow */
+  --lg-radius: 22px;
+  --lg-solid: #ffffff;
+}
+:root[data-theme="dark"] {
+  --lg-fill: rgb(30 30 30 / 0.58);
+  --lg-fill-strong: rgb(30 30 30 / 0.78);
+  /* Dark glass has no white edges (Oct 2026): no highlight, no rim; depth comes from the drop shadow alone. */
   --lg-edge-hi: transparent;
   --lg-edge-lo: transparent;
   --lg-rim: transparent;
   --lg-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 34px -12px rgb(0 0 0 / 0.6);
-  --lg-radius: 22px;
   --lg-solid: #171717;
-}
-:root[data-theme="light"] {
-  --sky-glass: #ffffff;
-  --glass-clear: rgb(255 255 255 / 0.22);
-  --glass-depth:
-    inset 0 2px 0 rgb(255 255 255 / 0.92),
-    inset 0 -3px 0 rgb(14 15 18 / 0.18),
-    inset 2px 0 0 rgb(255 255 255 / 0.55),
-    inset -2px 0 0 rgb(14 15 18 / 0.08),
-    inset 0 0 0 1.5px rgb(255 255 255 / 0.5),
-    inset 0 -16px 20px rgb(14 15 18 / 0.1),
-    0 1px 1px rgb(14 15 18 / 0.06),
-    0 10px 22px rgb(14 15 18 / 0.12);
-  --sky-edge: var(--glass-depth);
-  --lg-fill: #ffffff;
-  --lg-fill-strong: #ffffff;
-  --lg-edge-hi: rgb(255 255 255 / 0.95);
-  --lg-edge-lo: rgb(255 255 255 / 0.35);
-  --lg-rim: rgb(0 0 0 / 0.09);
-  --lg-shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 10px 30px -10px rgb(0 0 0 / 0.16);
-  --lg-solid: #ffffff;
 }
 
 .lg {
@@ -65,8 +39,8 @@
   isolation: isolate;
   border-radius: var(--lg-radius);
   background: var(--lg-fill);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
+  -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
+  backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
   /* specular ring (top-left bright, bottom-right dim) + hairline rim + depth */
   box-shadow:
     inset 1.5px 1.5px 0 0 var(--lg-edge-hi),
@@ -91,44 +65,10 @@
 }
 .lg-strong { background: var(--lg-fill-strong); }
 
-/* Refraction stays on the few pills that opt in. A leftover .lg-lens does not get a filter. */
+/* Refraction (Chromium: SVG displacement of the backdrop). Subtle on purpose. */
 html[data-lens] .lg-lens {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
-
-/* Pills and other non-card glass: clear, no frost. Chromium refracts the sharp sky.
-   isolation gives the backdrop-filter a stacking context, which Chromium needs before url() runs. */
-[data-glass-pill] {
-  isolation: isolate;
-  background: var(--glass-clear);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  box-shadow: var(--glass-depth);
-}
-html[data-lens] [data-glass-pill][data-distort] {
-  -webkit-backdrop-filter: url(#liquid-glass);
-  backdrop-filter: url(#liquid-glass);
-}
-/* Suggestion chips: the same lens, but the filter region stays inside the pill so it cannot
-   sample the composer placeholder and paint a hollow copy that jitters as the pointer moves. */
-html[data-lens] [data-glass-chip][data-distort] {
-  -webkit-backdrop-filter: url(#liquid-glass-chip);
-  backdrop-filter: url(#liquid-glass-chip);
-}
-/* Cards, settings panels, menus: solid. No frost and no displacement. */
-.lg-panel,
-[data-glass-live],
-[data-glass-scope] [class*="panel"] {
-  background: var(--lg-solid);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
-}
-@media (prefers-reduced-motion: reduce) {
-  :root { --lg-fill: var(--lg-fill-strong); --sky-glass: var(--lg-fill-strong); --glass-clear: rgb(255 255 255 / 0.78); }
-  :root[data-theme="dark"] { --glass-clear: rgb(22 22 26 / 0.82); }
-  [data-glass-pill] { -webkit-backdrop-filter: none; backdrop-filter: none; }
+  -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
+  backdrop-filter: url(#lg-refract) blur(var(--lg-blur)) saturate(var(--lg-sat));
 }
 
 /* Liquid response: the surface swells and its corners relax on hover, squashes on press. Fine pointer only. */
@@ -136,8 +76,9 @@ html[data-lens] [data-glass-chip][data-distort] {
   .lg-morph:hover { transform: scale(1.012); border-radius: calc(var(--lg-radius) + 4px) calc(var(--lg-radius) - 2px) calc(var(--lg-radius) + 4px) calc(var(--lg-radius) - 2px); }
   .lg-morph:active { transform: scale(0.985, 0.975); transition-duration: 0.12s; }
 }
-/* Glass does not follow the pointer. A specular that tracks the cursor repaints the lens on every move. */
-.lg[data-lit]::after { background: none; opacity: 0; }
+/* Pointer light: the existing proximity light, as a specular glint that follows the cursor. */
+.lg[data-lit]::after { background: var(--lg-fill, rgb(255 255 255 / 0.06)); z-index: -1; }
+:root[data-theme="dark"] .lg[data-lit]::after { background: var(--lg-fill, rgb(255 255 255 / 0.06)); }
 
 /* Focus: a very quiet ink glow, never a heavy ring. */
 .lg:has(:is(textarea, input, select):focus) { box-shadow: inset 1.5px 1.5px 0 0 var(--lg-edge-hi), inset -1px -1px 0 0 var(--lg-edge-lo), inset 0 0 0 1px rgb(var(--ring-rgb, 23 23 26) / 0.35), 0 0 0 4px rgb(var(--ring-rgb, 23 23 26) / 0.1), var(--lg-shadow); }
@@ -150,13 +91,7 @@ html[data-lens] [data-glass-chip][data-distort] {
 /* Mobile / coarse pointers: lighter blur, no lens, no morph; the fewer layers the better. */
 @media (max-width: 899px), (pointer: coarse) {
   :root { --lg-blur: 5px; --lg-sat: 1.3; --lg-radius: 20px; }
-  html[data-lens] .lg-lens,
-  [data-glass-live],
-  [data-glass-scope] [class*="panel"],
-  [data-glass-pill] {
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
-  }
+  html[data-lens] .lg-lens { backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat)); -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat)); }
 }
 
 /* Fallbacks: no backdrop-filter, reduced transparency, increased contrast, or flagged low power -> opaque, same shape. */
@@ -164,15 +99,10 @@ html[data-lens] [data-glass-chip][data-distort] {
   .lg, .lg-strong { background: var(--lg-solid); }
 }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  .lg, .lg-strong, .lg-solid, .lg-panel, [data-distort], [data-glass-live], [data-glass-pill], [data-glass-scope] [class*="panel"] { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .lg, .lg-strong, .lg-solid { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
   .lg::before { display: none; }
 }
-html[data-glass="lite"] .lg,
-html[data-glass="lite"] .lg-strong,
-html[data-glass="lite"] [data-glass-live],
-html[data-glass="lite"] [data-glass-pill],
-html[data-glass="lite"] [data-distort],
-html[data-glass="lite"] [data-glass-scope] [class*="panel"] { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
+html[data-glass="lite"] .lg, html[data-glass="lite"] .lg-strong { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
 @media (prefers-reduced-motion: reduce) {
   .lg { transition: background-color 0.1s linear, box-shadow 0.1s linear; }
 }
@@ -198,13 +128,13 @@ html[data-glass="lite"] [data-glass-scope] [class*="panel"] { background: var(--
   --btn-p-solid: #f4f4f5;
 }
 .lgb-s {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
+  -webkit-backdrop-filter: blur(6px) saturate(1.4);
+  backdrop-filter: blur(6px) saturate(1.4);
 }
 .lgb-p, .lgb-s { transition: background-color var(--m-dur-1) var(--m-ease-out), box-shadow var(--m-dur-2) var(--m-ease-out), color var(--m-dur-1) var(--m-ease-out); }
 .lgb-p { background: var(--btn-p-bg); color: var(--btn-p-ink); box-shadow: var(--btn-p-shadow); border-color: transparent; }
 .lgb-s { background: var(--btn-s-bg); color: var(--btn-s-ink); box-shadow: var(--btn-s-shadow); }
-html[data-lens] .lgb-s { -webkit-backdrop-filter: none; backdrop-filter: none; }
+html[data-lens] .lgb-s { backdrop-filter: url(#lg-refract) blur(5px) saturate(1.4); }
 .lgb-p:hover:not(:disabled) { background: var(--c-ink-hover); }
 /* No swell or squash: the press is motion.css's uniform var(--m-press) dip. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -224,15 +154,15 @@ html[data-glass="lite"] .lgb-p, html[data-glass="lite"] .lgb-s { backdrop-filter
  *   --lg-card    translucent fill with the specular ring but NO backdrop: for repeated cards (never stacks blur layers)
  *   --lg-wash    flat canvas wash under clear glass */
 :root {
-  --lg-bf: none;
+  --lg-bf: blur(var(--lg-blur)) saturate(var(--lg-sat));
   --lg-ring: inset 1.5px 1.5px 0 0 var(--lg-edge-hi), inset -1px -1px 0 0 var(--lg-edge-lo), inset 0 0 0 1px var(--lg-rim);
-  --lg-card: #ffffff;
-  --lg-card-hover: #f4f4f5;
+  --lg-card: rgb(255 255 255 / 0.66);
+  --lg-card-hover: rgb(255 255 255 / 0.86);
   --lg-wash: var(--c-canvas);
 }
 :root[data-theme="dark"] {
-  --lg-card: #171717;
-  --lg-card-hover: #1c1c1c;
+  --lg-card: rgb(34 34 34 / 0.7);
+  --lg-card-hover: rgb(46 46 46 / 0.86);
   --lg-wash: var(--c-canvas);
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -242,13 +172,6 @@ html[data-glass="lite"] .lgb-p, html[data-glass="lite"] .lgb-s { backdrop-filter
   :root:root { --lg-bf: none; --lg-fill: var(--lg-solid); --lg-fill-strong: var(--lg-solid); --lg-card: var(--lg-solid); --lg-card-hover: var(--lg-solid); }
 }
 html[data-glass="lite"]:root { --lg-bf: none; --lg-fill: var(--lg-solid); --lg-fill-strong: var(--lg-solid); --lg-card: var(--lg-solid); --lg-card-hover: var(--lg-solid); }
-
-/* One lens, on the pills that ask for it. Everything else is solid, including cards, menus and modals.
-   Space Studio ([data-space-root]) keeps its own scene. */
-:where(body) :not([data-space-root], [data-space-root] *, [data-glass-pill]) {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-}
 
 
 /* ───────── Insert / overtype mode (opt-in; src/components/glass/InsertMode.tsx) ─────────

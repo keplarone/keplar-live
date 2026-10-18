@@ -1,6 +1,6 @@
 import {
-  NormalBlending, BufferAttribute, BufferGeometry, DoubleSide, Float32BufferAttribute, Group, LineSegments,
-  Mesh, PerspectiveCamera, PlaneGeometry, Points, Scene, ShaderMaterial, Vector3, WebGLRenderer, WebGLRenderTarget, Vector2, type Blending,
+  AdditiveBlending, BufferAttribute, BufferGeometry, DoubleSide, Float32BufferAttribute, Group, LineSegments,
+  Mesh, NormalBlending, PerspectiveCamera, PlaneGeometry, Points, Scene, ShaderMaterial, Vector3, WebGLRenderer, WebGLRenderTarget, Vector2, type Blending,
 } from "three";
 import {
   BEAM_FRAG, BEAM_VERT, DUST_FRAG, DUST_VERT, LOGO_FRAG, LOGO_VERT, NET_FRAG, NET_VERT,
@@ -272,7 +272,7 @@ export class MonolithScene {
   setTheme(t: "dark" | "light") {
     this.theme = t;
     const ink = INK[t];
-    const blending: Blending = t === "dark" ? NormalBlending : NormalBlending;
+    const blending: Blending = t === "dark" ? AdditiveBlending : NormalBlending;
     for (const m of this.mats) {
       (m.uniforms.uInk.value as Vector3).set(ink[0], ink[1], ink[2]);
       m.blending = blending;

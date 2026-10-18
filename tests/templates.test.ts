@@ -229,8 +229,7 @@ test("remix copies markup only: no leads, no owner images, no contact targets; a
 
 test("gallery surfaces are wired: sitemap in robots, privacy page describes templates, preview route never indexes", async () => {
   const { readFileSync } = await import("node:fs");
-  assert.ok(readFileSync("src/app/robots.ts", "utf8").includes("robotsSitemapUrls"));
-  assert.ok(readFileSync("src/lib/seo/sitemaps.ts", "utf8").includes("templates-sitemap.xml"));
+  assert.ok(readFileSync("src/app/robots.ts", "utf8").includes("templates-sitemap.xml"));
   const { privacy } = await import("../src/components/legal/content/privacy");
   const txt = JSON.stringify(privacy);
   assert.match(txt, /Templates \(beta\)/);

@@ -8,7 +8,6 @@ export const metadata: Metadata = {
   title: "Feedback",
   description: "Tell the Keplar team what works, what doesn't and what you would change. Anonymous by default.",
   alternates: { canonical: "/feedback" },
-  robots: { index: false, follow: true },
 };
 
 export default async function FeedbackPage({ searchParams }: { searchParams: Promise<{ kind?: string; from?: string }> }) {

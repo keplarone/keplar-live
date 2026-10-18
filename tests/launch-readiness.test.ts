@@ -40,27 +40,17 @@ test("cron routes record a heartbeat on success and on failure", () => {
   }
 });
 
-test("/status is linked in the footer, noindex, and not in the sitemap", () => {
+test("/status is linked in the footer, indexable and not in the sitemap", () => {
   assert.ok(footerNav.some((c) => c.links.some((l) => l.href === "/status")));
   assert.ok(!sitemapPaths.includes("/status"));
-  assert.match(readFileSync("src/app/(marketing)/status/page.tsx", "utf8"), /noindex: true/);
+  assert.doesNotMatch(readFileSync("src/app/(marketing)/status/page.tsx", "utf8"), /noindex/);
 });
 
-test("auth, account, checkout, feedback and the simulation are noindex, follow; templates stay indexable", () => {
-  for (const f of ["status", "signin", "signup", "forgot-password", "reset-password", "verify-email", "two-factor", "secure-account", "simulation", "account", "checkout"]) {
-    assert.match(readFileSync(`src/app/(marketing)/${f}/page.tsx`, "utf8"), /noindex: true/, f);
-  }
-  assert.match(readFileSync("src/app/(marketing)/signin/verify/page.tsx", "utf8"), /noindex: true/);
-  assert.match(readFileSync("src/app/(marketing)/feedback/page.tsx", "utf8"), /index: false, follow: true/);
-  for (const f of ["templates/[slug]"]) {
+test("Keplar's pages carry no noindex (content, auth and missing pages alike); private share links keep theirs", () => {
+  for (const f of ["status", "simulation", "feedback", "vs/[slug]", "signin", "signup", "templates/[slug]", "account", "checkout"]) {
     assert.doesNotMatch(readFileSync(`src/app/(marketing)/${f}/page.tsx`, "utf8"), /noindex|index: false/, f);
   }
-  // A comparison the owner has not approved is noindex. Approved pages in the same file stay indexable.
-  assert.match(readFileSync("src/app/(marketing)/vs/[slug]/page.tsx", "utf8"), /noindex: v\.approved === false/);
-  const i18n = readFileSync("src/lib/i18n/seo.ts", "utf8");
-  assert.doesNotMatch(i18n, /status === "stable"/, "beta locales stay indexable");
-  assert.match(i18n, /page === "signin" \|\| page === "signup"/);
-  assert.match(i18n, /index: false, follow: true/);
+  assert.doesNotMatch(readFileSync("src/lib/i18n/seo.ts", "utf8"), /status === "stable"|index: false/, "every locale and localized page is indexable");
   for (const f of ["r/[token]/page.tsx", "c/[token]/page.tsx", "sp/[token]/page.tsx"]) {
     assert.match(readFileSync(`src/app/(marketing)/${f}`, "utf8"), /index: false/, f);
   }

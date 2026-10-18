@@ -1,0 +1,40 @@
+/*
+ * Aura: static corner glows, LIGHT THEME ONLY.
+ * Peach, violet, cyan and gold sit in the four corners of a warm canvas. The middle stays clear so text is readable.
+ * Nothing here animates, nothing uses background-attachment, and nothing blurs a viewport-sized layer. Dark stays flat.
+ */
+:root[data-theme="light"] {
+  --aura-peach: 255 168 122;
+  --aura-violet: 168 112 176;
+  --aura-cyan: 72 186 196;
+  --aura-gold: 214 164 72;
+  /* kept so older placement names still resolve to the same static corners */
+  --aura-coral: 255 168 122;
+  --aura-pink: 168 112 176;
+  --aura-amber: 214 164 72;
+  --aura-sky: 72 186 196;
+  --aura-teal: 72 186 196;
+  --aura-blur: 0px;
+  --aura-anim: none;
+  --aura-corners:
+    radial-gradient(46% 42% at 0% 0%, rgb(var(--aura-peach) / 0.55) 0%, rgb(var(--aura-peach) / 0.16) 42%, transparent 68%),
+    radial-gradient(44% 40% at 100% 0%, rgb(var(--aura-violet) / 0.42) 0%, rgb(var(--aura-violet) / 0.12) 40%, transparent 66%),
+    radial-gradient(44% 42% at 0% 100%, rgb(var(--aura-cyan) / 0.38) 0%, rgb(var(--aura-cyan) / 0.1) 40%, transparent 66%),
+    radial-gradient(48% 44% at 100% 100%, rgb(var(--aura-gold) / 0.5) 0%, rgb(var(--aura-gold) / 0.14) 42%, transparent 68%);
+  --aura-hero: var(--aura-corners);
+  --aura-soft: var(--aura-corners);
+  --aura-dock: var(--aura-corners);
+  --aura-welcome: var(--aura-corners);
+}
+@media (prefers-contrast: more), (prefers-reduced-transparency: reduce) {
+  :root[data-theme="light"] {
+    --aura-corners: none;
+    --aura-hero: none;
+    --aura-soft: none;
+    --aura-dock: none;
+    --aura-welcome: none;
+  }
+}
+
+/* The /app workspace paints no aura: the product canvas stays calm and flat in both themes (App.module.css), so the work, not
+   the backdrop, carries the screen. The aura stays a marketing-page treatment (home close, Monolith hero). */

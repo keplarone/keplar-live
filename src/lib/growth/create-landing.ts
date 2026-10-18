@@ -11,9 +11,9 @@ const projects = (p: keyof typeof ENTITLEMENTS) => ENTITLEMENTS[p].projects;
 export const createLanding = {
   slug: "ai-app-builder",
   path: "/ai-app-builder",
-  metaTitle: "AI App and Website Builder That Tests Its Work",
+  metaTitle: "AI app and website builder that tests its own work",
   metaDescription:
-    "Describe a site or app and Keplar Create builds it with a code editor, terminal and live preview, then reviews it for accessibility and generic design.",
+    "Describe a site or app by text or voice. Keplar Create builds it, tests it in a real browser and fixes what fails before you see it. Free to start.",
   ogTitle: "Describe it. Keplar builds and tests it.",
   label: "Create",
   h1: "Describe it. Keplar builds it, then tests it.",

@@ -3,7 +3,6 @@
  * Dates are the publication date of the guide as written.
  */
 import { brand } from "@/lib/site";
-import { workedGuides } from "@/lib/seo/worked-guides";
 
 const K = brand.name;
 
@@ -25,8 +24,8 @@ export const guides: Guide[] = [
   {
     slug: "why-ai-models-disagree",
     path: "/guides/why-ai-models-disagree",
-    title: "Why AI Models Disagree, and What to Do About It",
-    metaDescription: "Different AI models can give different answers to the same question. Why it happens and how to use disagreement as a signal of what to check.",
+    title: "Why AI models disagree, and what to do when they do",
+    metaDescription: "Different AI models can give different answers to the same question. Here is why it happens and how to use disagreement as a signal.",
     published: "2026-10-01",
     updated: "2026-10-01",
     readingMinutes: 4,
@@ -60,8 +59,8 @@ export const guides: Guide[] = [
   {
     slug: "study-from-a-pdf",
     path: "/guides/study-from-a-pdf",
-    title: "How to Study From a PDF With AI, Step by Step",
-    metaDescription: "Turn a PDF into an outline, flashcards and quizzes with AI, then skim them against the source so the answers stay tied to your material.",
+    title: "How to study from a PDF with AI, step by step",
+    metaDescription: "Turn lecture notes or a chapter PDF into flashcards, quizzes and a study plan, and the habits that make them work.",
     published: "2026-10-01",
     updated: "2026-10-01",
     readingMinutes: 5,
@@ -97,8 +96,8 @@ export const guides: Guide[] = [
   {
     slug: "slide-deck-from-notes",
     path: "/guides/slide-deck-from-notes",
-    title: "How to Turn Rough Notes Into a Good Slide Deck",
-    metaDescription: "A step-by-step method for turning rough notes into a clear slide deck: structure, one idea per slide, and checking claims before you present.",
+    title: "How to turn rough notes into a good slide deck",
+    metaDescription: "A simple structure for turning notes into a clear presentation, whether you write it yourself or start from an AI draft.",
     published: "2026-10-01",
     updated: "2026-10-01",
     readingMinutes: 4,
@@ -131,7 +130,6 @@ export const guides: Guide[] = [
     ],
     related: ["/ai-slideshow-maker", "/for-founders", "/for-students"],
   },
-  ...workedGuides,
 ];
 
 export const guideBySlug = (slug: string) => guides.find((g) => g.slug === slug);

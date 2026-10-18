@@ -11,7 +11,7 @@
 .url { font-family: var(--f-sans); font-size: 12px; overflow-wrap: anywhere; color: var(--c-ink-2); }
 .state { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; text-transform: none; letter-spacing: 0; font-family: var(--f-sans); }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c-ink-3); flex: none; }
-.state[data-state="connected"] .dot { background: var(--c-verified); box-shadow: none; }
+.state[data-state="connected"] .dot { background: var(--c-verified); box-shadow: 0 0 10px rgb(var(--rgb-verified) / 0.6); }
 .state[data-state="failed"] { color: var(--c-dissent); }
 .state[data-state="failed"] .dot { background: var(--c-dissent); }
 .state[data-state="connecting"] .dot { animation: pulse 1s ease-in-out infinite; }
@@ -25,7 +25,7 @@
 .desc { margin: 0; color: var(--c-ink-2); overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .controls { display: flex; flex-wrap: wrap; gap: var(--s-3) var(--s-4); align-items: center; }
 .check { display: inline-flex; align-items: center; gap: var(--s-2); min-height: 32px; cursor: pointer; }
-.check input { width: 18px; height: 18px; accent-color: var(--kb-accent); }
+.check input { width: 18px; height: 18px; accent-color: #b27cff; }
 .warnLine { margin: 0; padding: 10px 16px; border-radius: 18px; background: rgb(var(--rgb-destructive) / 0.1); color: var(--c-destructive); font-size: 12px; }
 .noteLine { margin: 0; padding: 10px 16px; border-radius: 18px; background: var(--hover-wash); color: var(--c-ink-2); font-size: 12px; }
 .out { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 320px; overflow: auto; background: var(--hover-wash); border-radius: 18px; padding: var(--s-3); margin: 0; font-family: var(--f-sans); font-size: 12px; }

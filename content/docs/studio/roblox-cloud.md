@@ -1,6 +1,6 @@
 ---
 title: Roblox Cloud (overnight jobs)
-description: Give Keplar a goal for your Roblox game and close your computer. It edits scripts on Keplar's servers and leaves changes to review in Studio.
+description: Hand Keplar a goal for your Roblox game and close your computer. It works on your scripts on Keplar's servers and leaves changes for you to review and apply in Studio.
 order: 2
 updated: 2026-10-12
 keywords: Roblox Cloud, overnight Roblox development, AI Roblox scripts, Luau checker, Keplar Roblox Cloud

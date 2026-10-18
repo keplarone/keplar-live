@@ -15,9 +15,6 @@ export function ThemeToggle({ className }: { className?: string }) {
     <button
       type="button"
       className={className}
-      data-glass-pill=""
-      data-distort=""
-      data-glass-chip=""
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
       title={dark ? "Light mode" : "Dark mode"}
       onClick={() => saveThemePref(dark ? "light" : "dark")}

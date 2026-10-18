@@ -43,9 +43,9 @@ const nextConfig: NextConfig = {
       { source: "/app/create/site", destination: "/app/create", permanent: true },
       // Explicit ?tab=app so the query is not preserved (same-path redirects keep unmatched query otherwise → loop).
       { source: "/app/create", has: [{ type: "query", key: "tab", value: "site" }], destination: "/app/create?tab=app", permanent: false },
-      // The chat lives at /. Bare /app opens it. /app/ask still renders the same view for older links.
-      { source: "/app", destination: "/", permanent: true },
-      { source: "/app/", destination: "/", permanent: true },
+      // Each /app tab has its own subfolder; bare /app is Ask.
+      { source: "/app", destination: "/app/ask", permanent: true },
+      { source: "/app/", destination: "/app/ask", permanent: true },
       // Keplar Wants and Keplar Browser were removed by owner decision: old links land in Ask instead of a 404.
       { source: "/app/wants", destination: "/app/ask", permanent: true },
       { source: "/app/browser", destination: "/app/ask", permanent: true },
@@ -90,6 +90,8 @@ const nextConfig: NextConfig = {
       { source: "/fonts/:path*", headers: [{ key: "Cache-Control", value: YEAR }, { key: "X-Content-Type-Options", value: "nosniff" }] },
       // Runtime scripts for generated apps, loaded from sandboxed (opaque-origin) previews: cross-origin readable (FX_HEADERS).
       { source: "/fx/:path*", headers: [{ key: "Cache-Control", value: YEAR }, { key: "X-Content-Type-Options", value: "nosniff" }, ...FX_HEADERS] },
+      // The weather sky's stills (public/sky): re-rendered rarely and under the same names, so a day (not a year).
+      { source: "/sky/:path*", headers: [{ key: "Cache-Control", value: DAY }, { key: "X-Content-Type-Options", value: "nosniff" }] },
       { source: "/manifest.webmanifest", headers: [{ key: "Cache-Control", value: DAY }] },
       { source: "/sw.js", headers: [{ key: "Cache-Control", value: "public, max-age=0, must-revalidate" }, { key: "Service-Worker-Allowed", value: "/" }] },
       { source: "/:path*", headers: BASE_HEADERS.filter((h) => h.key !== HSTS) },

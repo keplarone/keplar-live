@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Resurser",
     "items": {
       "/features": "Allt i Keplar",
-      "/overview#demo": "Livedemo",
+      "/#demo": "Livedemo",
       "/app/create": "Skapa",
       "/docs": "Dokumentation",
       "/pricing": "Priser",
@@ -30,7 +30,6 @@ const m: CommonCatalog = {
       "Legal": "Juridiskt"
     },
     "links": {
-      "/overview": "About Keplar",
       "/features": "Allt i Keplar",
       "/showcase": "Skapelser i fokus",
       "/templates": "Gemenskapens galleri",

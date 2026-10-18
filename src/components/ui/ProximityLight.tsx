@@ -25,8 +25,6 @@ export function ProximityLight() {
       const now = new Set<HTMLElement>();
       const nodes = document.querySelectorAll<HTMLElement>("[data-lit]");
       nodes.forEach((el) => {
-        // Composer and glass stay still. A proximity write on them restamps the lens and duplicates type.
-        if (el.closest("[data-glass-pill], [data-glass-chip], [data-composer]")) return;
         const r = el.getBoundingClientRect();
         if (r.bottom < y - RANGE || r.top > y + RANGE || r.right < x - RANGE || r.left > x + RANGE) return;
         const dx = Math.max(r.left - x, 0, x - r.right);

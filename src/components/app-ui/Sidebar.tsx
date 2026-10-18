@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useState, type MouseEvent } from "react";
 import { KeplarLogo } from "@/components/brand";
 import { formatResetAt, PLAN_ALLOWANCES, WINDOW_WARN_AT, windowResetText } from "@/lib/orchestration/plans";
-import { brand, SPACE_URL } from "@/lib/site";
+import { brand } from "@/lib/site";
 import { dailyLeftText, formatDailyReset } from "@/lib/usage/format";
 import { extensionNote, usageMeter } from "@/lib/usage/meter";
-import { IconApps, IconAsk, IconClose, IconCreate, IconDeep, IconDeploy, IconHistory, IconMenu, IconMore, IconPlus, IconProjects, IconSearch, IconSettings, IconSlides, IconSpace, IconStudy } from "./icons";
+import { IconApps, IconClose, IconCreate, IconDeploy, IconHistory, IconMore, IconPlus, IconProjects, IconSearch, IconSettings, IconSlides, IconStudy } from "./icons";
 import { pathForView } from "./app-paths";
 import type { AccountInfo, AppState, View } from "./state/types";
 import { AccountMenu, ImportPrompt, type ImportOffer } from "./AccountMenu";
@@ -15,7 +15,6 @@ import s from "./App.module.css";
 import la from "./link-action.module.css";
 import { IconButton, Tooltip } from "@/components/kit";
 import { Recents } from "./Recents";
-import { ExploreLinks } from "./ExploreLinks";
 
 type Props = {
   state: AppState;
@@ -36,24 +35,19 @@ type Props = {
   /** Study / Slides is the mode of the next message (composer chip) or of this thread's latest turn: that item is marked. */
   modeView?: "study" | "slides" | null;
   id?: string;
-  /** Deep Research for the next message, from the Research row. */
-  onResearch?: () => void;
-  /** Hide the sidebar on a wide screen. Phones keep the slide-in drawer. */
-  onToggleCollapse?: () => void;
 };
 
 type Icon = typeof IconProjects;
 type NavRow = { view: View; label: string; Icon: Icon };
 /** Primary rows under New chat and Search. Order is fixed. */
 const primary: NavRow[] = [
-  { view: "thread", label: "Ask", Icon: IconAsk },
   { view: "create", label: "Create", Icon: IconCreate },
-  { view: "study", label: "Study", Icon: IconStudy },
+  { view: "projects", label: "Projects", Icon: IconProjects },
 ];
 /** More: every other place. Settings, Memory and Usage live in Settings (the gear next to the account) and the account menu. */
 const secondary: NavRow[] = [
-  { view: "projects", label: "Projects", Icon: IconProjects },
   { view: "slides", label: "Slides", Icon: IconSlides },
+  { view: "study", label: "Study", Icon: IconStudy },
   { view: "deployments", label: "Deployments", Icon: IconDeploy },
   { view: "apps", label: "Connected apps", Icon: IconApps },
   { view: "history", label: "All chats", Icon: IconHistory },
@@ -71,7 +65,7 @@ function tabClick(e: MouseEvent, go: () => void) {
   go();
 }
 
-export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteChat, onClose, businessProminent = false, account = null, importOffer = null, modeView = null, id, onResearch, onToggleCollapse }: Props) {
+export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteChat, onClose, businessProminent = false, account = null, importOffer = null, modeView = null, id }: Props) {
   void businessProminent;
   const rows = primary;
   // Keplar Studio (Roblox Studio | Blender) lives in Create (one tab, desktop app only), not in the sidebar.
@@ -143,11 +137,6 @@ export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteC
         <Link href="/" className={s.sideBrand} aria-label="Keplar home">
           <KeplarLogo height={18} />
         </Link>
-        {onToggleCollapse ? (
-          <button type="button" className={s.collapseBtn} onClick={onToggleCollapse} aria-label="Collapse sidebar">
-            <IconMenu size={16} />
-          </button>
-        ) : null}
         {onClose ? (
           <IconButton shape="circle" onClick={onClose} label="Close sidebar" tooltipSide="left" icon={<IconClose size={16} />} />
         ) : null}
@@ -165,30 +154,18 @@ export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteC
         <li>
           <button type="button" className={s.sideItem} data-nav="search" data-primary="" onClick={onSearch} aria-keyshortcuts={mac ? "Meta+K" : "Control+K"}>
             <IconSearch size={15} />
-            <span>Search chats</span>
+            <span>Search</span>
             <kbd className={s.kbd} aria-hidden="true">{mod}K</kbd>
           </button>
         </li>
         {rows.map(({ view, label, Icon }) => (
           <li key={view}>
-            <Link href={pathForView(view)} className={s.sideItem} data-nav={view} data-primary="" aria-current={state.view === view ? "page" : undefined} data-mode-on={modeView === view || undefined} onClick={(e) => tabClick(e, () => onView(view))}>
+            <Link href={pathForView(view)} className={s.sideItem} data-nav={view} data-primary="" aria-current={state.view === view ? "page" : undefined} onClick={(e) => tabClick(e, () => onView(view))}>
               <Icon size={15} />
               <span>{label}</span>
             </Link>
           </li>
         ))}
-        <li>
-          <button type="button" className={s.sideItem} data-nav="research" data-feature="" onClick={onResearch}>
-            <IconDeep size={15} />
-            <span>Research</span>
-          </button>
-        </li>
-        <li>
-          <a className={s.sideItem} data-nav="space" data-feature="" href={SPACE_URL}>
-            <IconSpace size={15} />
-            <span>Space Studio</span>
-          </a>
-        </li>
         <li>
           <button type="button" className={s.sideItem} data-more="" aria-expanded={moreShown} aria-controls="side-more" onClick={() => setMoreOpen((v) => !v)}>
             <IconMore size={15} />
@@ -208,7 +185,6 @@ export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteC
       </ul>
 
       <Recents threads={state.threads} activeId={state.activeThreadId} view={state.view} userKey={state.ledger.synced ? (account?.id ?? state.account?.id ?? "anon") : null} onOpen={onOpen} onDeleteChat={onDeleteChat} onAll={() => onView("history")} />
-      <ExploreLinks className={s.sideFoot} live />
       </div>
 
       <div className={s.meter}>

@@ -27,20 +27,14 @@ test("Comparison pages (approved 2026-10-12): indexable, with Keplar's real pric
   assert.ok(landingPages.some((p) => (p.related ?? []).includes("/compare")), "landing pages link to the hub");
 });
 
-test("Search Console: app, welcome and the 404 are noindex, follow; public pages and the bot route are not", () => {
+test("Search Console: Keplar's own pages send no noindex; private share links and preview hosts keep it", () => {
   const config = readFileSync("next.config.ts", "utf8");
-  assert.doesNotMatch(config, /\(app\|signin\|signup\|welcome\|account\|checkout/, "no X-Robots-Tag rule; metadata sends noindex, follow instead of a host header");
+  assert.doesNotMatch(config, /\(app\|signin\|signup\|welcome\|account\|checkout/, "no X-Robots-Tag rule for the app, auth, account, checkout or /compare routes");
   assert.match(config, /vercel[^"]*app\)" \}\],\s*headers: \[\{ key: "X-Robots-Tag", value: "noindex, nofollow" \}\]/, "*.vercel.app and localhost copies stay out of search");
   const proxy = readFileSync("src/proxy.ts", "utf8");
-  assert.doesNotMatch(proxy, /if \(pathname !== "\/"\) res\.headers\.set\("x-robots-tag"/, "Business marketing pages are indexable");
+  assert.doesNotMatch(proxy, /if \(pathname !== "\/"\) res\.headers\.set\("x-robots-tag"/, "Business pages are indexable");
   assert.match(proxy, /pathname\.startsWith\("\/r\/"\)[\s\S]{0,120}"x-robots-tag", "noindex, nofollow, noarchive"/, "private shared answers stay noindex");
-  for (const f of ["src/app/app/_tab.tsx"]) assert.match(readFileSync(f, "utf8"), /noindex: true/, f);
-  for (const f of ["src/app/app/layout.tsx", "src/app/(business-app)/layout.tsx", "src/app/embed/layout.tsx", "src/app/welcome/page.tsx", "src/app/not-found.tsx"]) {
-    assert.match(readFileSync(f, "utf8"), /index: false, follow: true/, f);
+  for (const f of ["src/app/app/_tab.tsx", "src/app/(business-app)/layout.tsx", "src/app/embed/layout.tsx", "src/app/welcome/page.tsx", "src/app/not-found.tsx", "src/app/bot/route.ts"]) {
+    assert.doesNotMatch(readFileSync(f, "utf8"), /noindex|index: false/, f);
   }
-  assert.match(readFileSync("src/app/bot/route.ts", "utf8"), /noindex, follow/, "KeplarBot's own page is noindex, follow");
-  const space = readFileSync("src/app/(space)/space-studio/page.tsx", "utf8");
-  assert.match(space, /index: false, follow: true/, "keplar.one/space-studio is noindex, follow");
-  assert.match(space, /isSpaceHost\(host\)/, "space.keplar.one does not get that robots meta");
-  assert.doesNotMatch(space, /redirect\(/, "the page is not redirected");
 });

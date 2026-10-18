@@ -1,5 +1,5 @@
 ---
-title: Business Tools: Forms, CRM, Inbox
+title: Business tools: forms, CRM, inbox and dashboard
 description: How a contact form on a Create site becomes a lead, a deal and a drafted reply, and what the dashboard, CRM, inbox, orders and audit log show.
 order: 8
 updated: 2026-10-03

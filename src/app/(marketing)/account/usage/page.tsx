@@ -4,7 +4,7 @@ import { FreeAllowance } from "@/components/usage/FreeAllowance";
 import { OverageSettings } from "@/components/usage/OverageSettings";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Usage", robots: { index: false, follow: true } };
+export const metadata = { title: "Usage" };
 
 /** Account → Usage: Free daily allowance and paid pay-as-you-go settings. Hidden (404) until the owner turns either flag on. */
 export default async function UsagePage() {

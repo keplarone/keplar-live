@@ -8,13 +8,13 @@ import hero from "@/components/page/RoutePlaceholder.module.css";
 import s from "@/components/support/Help.module.css";
 import { TwoTone } from "@/components/page/TwoTone";
 
-export const metadata = pageMeta("/help", "Keplar Help Center: Answers and Support", "Find answers about accounts, plans, credits, the desktop app, Create and Studio, or contact the Keplar team for help.");
+export const metadata = pageMeta("/help", "Help", "Answers about using Keplar, your account and plan, your data, connected apps, the desktop app and reporting an answer.");
 
 export default function HelpPage() {
   const graph = { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: allHelpItems().map((i) => ({ "@type": "Question", name: i.q, acceptedAnswer: { "@type": "Answer", text: i.a.join(" ") } })) };
   return (
     <>
-      <JsonLd data={breadcrumbs([{ name: "Keplar Help Center: Answers and Support", path: "/help" }])} />
+      <JsonLd data={breadcrumbs([{ name: "Help", path: "/help" }])} />
       <JsonLd data={graph} />
       <header className={hero.hero}>
         <div className={hero.header}>

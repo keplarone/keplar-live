@@ -3,7 +3,7 @@
  *  - A competitor fact appears only if it was read on that vendor's own public page on the access date, and the page is cited.
  *  - No claim about quality, accuracy, safety, privacy or speed superiority in either direction.
  *  - Where the other product does something Keplar does not (or does it first), the page says so.
- *  - `approved: false` pages are noindex, left out of the sitemap, and unlinked from the hub until the owner signs off.
+ *  - `approved: false` pages are left out of the sitemap and unlinked from the hub until the owner signs off (they are still indexable).
  */
 import { PLAN_ALLOWANCES } from "@/lib/orchestration/plans";
 import { tiers } from "@/lib/tiers";
@@ -43,8 +43,8 @@ export const vsPages: Vs[] = [
     name: "ChatGPT",
     vendor: "OpenAI",
     approved: true,
-    title: "Keplar vs ChatGPT: Differences and When to Use Each",
-    description: "ChatGPT gives one model's answer; Keplar asks several models and shows where they disagree. What each is for, features and pricing compared.",
+    title: "Keplar vs ChatGPT: what each is for and how they differ",
+    description: "A factual comparison of Keplar and ChatGPT: how answers are produced, plans, features each lists publicly, where ChatGPT is the better fit and where Keplar may be.",
     sources: [{ label: "ChatGPT pricing (OpenAI)", url: "https://openai.com/chatgpt/pricing/" }],
     summary: [
       "ChatGPT is OpenAI's assistant, built around OpenAI's own models. Keplar is an answer layer that sends a non-trivial question to several models from different providers, compares their positions, has a reviewer check the draft against the individual responses and shows where they agreed and differed. Simple questions go to a single model.",
@@ -90,8 +90,8 @@ export const vsPages: Vs[] = [
     name: "Claude",
     vendor: "Anthropic",
     approved: true,
-    title: "Keplar vs Claude: Differences and When to Use Each",
-    description: "Claude gives one model's answer; Keplar asks several models from different providers and shows where they disagree. What each is for, compared honestly.",
+    title: "Keplar vs Claude: what each is for and how they differ",
+    description: "A factual comparison of Keplar and Claude: how answers are produced, plans and usage limits each lists publicly, where Claude is the better fit and where Keplar may be.",
     sources: [{ label: "Claude pricing (Anthropic)", url: "https://www.anthropic.com/pricing" }],
     summary: [
       "Claude is Anthropic's assistant, built around Anthropic's own model family. Keplar is an answer layer that consults several models from different providers for non-trivial questions and shows the comparison. Claude is also a widely used coding assistant; Anthropic lists Claude Code in its paid plans.",
@@ -139,8 +139,8 @@ export const vsPages: Vs[] = [
     name: "Gemini",
     vendor: "Google",
     approved: true,
-    title: "Keplar vs Gemini: Differences and When to Use Each",
-    description: "Gemini gives one model's answer; Keplar asks several models and shows where they disagree. What each is for, features and pricing compared.",
+    title: "Keplar vs Gemini: what each is for and how they differ",
+    description: "A factual comparison of Keplar and Google's Gemini: how answers are produced, subscriptions each lists publicly, where Gemini is the better fit and where Keplar may be.",
     sources: [{ label: "Google Gemini subscriptions", url: "https://gemini.google/subscriptions/" }],
     summary: [
       "Gemini is Google's assistant, built around Google's models and integrated with Google services. Keplar is an answer layer that consults several providers' models for non-trivial questions and shows where they agree and differ.",

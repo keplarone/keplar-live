@@ -12,15 +12,15 @@ const m: MarketingCatalog = {
       "description": "Bawat feature ng Keplar sa iisang page, nakagrupo ayon sa gamit: pagtatanong, pagbasa ng file, paggawa ng site at app, sama-samang pagbuo, pag-publish, ang API at widget, at tiwala. Sinasabi ng bawat isa kung live na, nasa beta o malapit na."
     },
     "pricing": {
-      "title": "Presyo: Free, Lite $20, Plus $45, Pro $99",
-      "description": "Magsimula nang libre sa Keplar One. Ang Keplar Lite ay $20/buwan, ang Keplar Plus ay $45/buwan, ang Keplar Pro ay $99/buwan, at available ang mga Business plan sa pamamagitan ng aming sales team. Paggamit na nakikita mo, hindi kailanman nakatago."
+      "title": "Presyo: Free, Plus $45, Pro $99",
+      "description": "Magsimula nang libre sa Keplar One. Ang Keplar Plus ay $45/buwan, ang Keplar Pro ay $99/buwan, at available ang mga Business plan sa pamamagitan ng aming sales team. Paggamit na nakikita mo, hindi kailanman nakatago."
     },
     "showcase": {
       "title": "Create showcase: ganito dapat ang itsura ng app na ginawa sa Keplar",
       "description": "Walong demo na site at app na ginawa ng Keplar team para ipakita ang saklaw na layunin ng Create: mga menu, ledger, board, kalendaryo at editorial na page, bawat isa may sariling font at kulay. Hindi mga site ng customer."
     },
     "roadmap": {
-      "title": "Roadmap (Filipino)",
+      "title": "Roadmap",
       "description": "Ano ang ginagawa ngayon ng Keplar, ano ang nasa beta at tinatapos pa, at ano ang kalalabas lang. Walang target na petsang hindi namin kayang tuparin."
     },
     "developers": {

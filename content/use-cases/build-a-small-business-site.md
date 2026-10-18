@@ -1,6 +1,6 @@
 ---
-title: Build a Small Business Website From a Description
-description: Describe your business and Keplar Create builds and publishes a site with a free keplar.site address or your own domain. Step by step.
+title: Build a small business website from a description
+description: Describe your business, get a first site you can edit, publish on a Keplar address or your own domain, and add a contact form, without writing code.
 updated: 2026-10-03
 keywords: AI website builder, build a website with AI, small business website, publish a site
 related: /docs/create/build-a-site, /docs/create/publish-your-site, /for-small-business

@@ -183,10 +183,10 @@ test("client: sign-out wipes account caches (and session handoffs), keeps device
   ls.setItem(`${ACCOUNT_PREFIX}uid-B`, "{}");
   ls.setItem("keplar.upsell.v1", "{}");
   ls.setItem(ANON_KEY, JSON.stringify({ threads: [thread("thr_anon", "kept")] }));
-  ls.setItem("keplar-theme-v3", "light");
+  ls.setItem("keplar-theme-v2", "dark");
   ss.setItem("keplar.mcp.oauth", "{}");
   clearAccountCaches(ls, ss);
-  assert.deepEqual([...ls.m.keys()].sort(), [ANON_KEY, "keplar-theme-v3"].sort());
+  assert.deepEqual([...ls.m.keys()].sort(), [ANON_KEY, "keplar-theme-v2"].sort());
   assert.equal(ss.length, 0);
 });
 

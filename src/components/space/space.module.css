@@ -25,19 +25,6 @@
   --sp-expo: var(--space-ease-expo);
   --sp-spring: var(--space-spring-bouncy);
   --sp-width: 1200px;
-  /* Headline words keep Space Studio's pink and purple gradient (Mighty, YOU). Owned here so the shared site accent can stay neutral. */
-  --sp-word: linear-gradient(100deg, #b27cff 0%, #f08bd8 17%, #8ff0ff 34%, #a98cff 51%, #ff8fd0 68%, #c58cff 84%, #8fd8ff 100%);
-  --space-grad: var(--sp-word);
-  /* Dark glass from before the shared sky: violet lift and focus, only inside this root. */
-  --space-void: #000000;
-  --space-aura: 176 104 255;
-  --space-glass: linear-gradient(180deg, rgb(22 20 30 / 0.78), rgb(10 9 14 / 0.82));
-  --space-glass-solid: #0e0d13;
-  --space-s-face: linear-gradient(180deg, rgb(40 38 52 / 0.92), rgb(18 17 24 / 0.94));
-  --space-glass-lift: inset 0 1px 0 rgb(255 255 255 / 0.1), 0 28px 70px rgb(0 0 0 / 0.6), 0 0 44px rgb(178 112 255 / 0.2);
-  --space-focus-glow: 0 0 0 3px rgb(195 155 255 / 0.55), 0 0 24px rgb(176 104 255 / 0.35);
-  --space-p-depth-hover: inset 0 1px 0 #ffffff, inset 0 -3px 0 rgb(0 0 0 / 0.1), 0 5px 0 #8c8a99, 0 14px 30px rgb(0 0 0 / 0.6), 0 0 32px rgb(190 150 255 / 0.25);
-  --space-s-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.12), 0 4px 0 rgb(0 0 0 / 0.65), 0 20px 46px rgb(0 0 0 / 0.55), 0 0 44px rgb(178 112 255 / 0.24);
 
   position: relative;
   isolation: isolate;
@@ -134,7 +121,7 @@
 .swap { display: inline-grid; vertical-align: bottom; overflow: hidden; padding: 0 0.04em 0.1em; margin: 0 -0.04em -0.1em; transition: width 0.7s var(--sp-expo); text-align: left; }
 .swapWord {
   grid-area: 1 / 1; white-space: nowrap; justify-self: start; font-weight: 600;
-  background-image: var(--sp-word); background-size: 400% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
+  background-image: var(--space-grad); background-size: 400% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
   animation: gradShift 9s ease-in-out infinite;
   transform-origin: 50% 90%;
   transition: transform 0.9s var(--space-spring-gentle), opacity 0.42s ease-out;
@@ -304,13 +291,6 @@
 /* The pause control (MotionToggle): every loop holds its frame. */
 :global(html[data-space-paused]) .you, :global(html[data-space-paused]) .swapWord, :global(html[data-space-paused]) .scrollCue::after { animation-play-state: paused; }
 /* (The quietest ink is the site-wide --c-ink-3 now: 6.1:1 on black, 4.9:1 on the raised glass, so phones need no override.) */
-/* Shared cloud sky and liquid-glass lens stay off Space Studio. Its own blur glass and star field remain. */
-:global(html[data-space-studio]) :global([data-site-sky]),
-:global(html:has([data-space-root])) :global([data-site-sky]) { display: none !important; }
-:global(html:has([data-space-root]) :is([data-glass-pill], [data-glass-live], [data-distort], .lg, .lg-lens, .lg-panel, .lgb-s)) {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-}
 /* Phones: a soft dark band behind the floating nav, so text scrolling under the two pills does not collide with them. */
 @media (max-width: 640px) {
   .nav::before { content: ""; position: fixed; inset: 0 0 auto; height: 76px; z-index: -1; pointer-events: none; background: linear-gradient(#000 55%, transparent); }

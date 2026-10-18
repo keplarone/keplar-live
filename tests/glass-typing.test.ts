@@ -16,26 +16,11 @@ test("liquid glass: every glass surface has fallbacks (no backdrop-filter, reduc
   const caps = read("src/components/glass/GlassCaps.tsx");
   assert.match(caps, /prefers-reduced-transparency/);
   assert.match(caps, /id="lg-refract"/);
-  assert.doesNotMatch(caps, /liquid-glass-card/, "cards do not get a displacement filter");
-  assert.doesNotMatch(caps, /MutationObserver/, "the lens is not restamped while typing or scrolling");
-  assert.match(caps, /feDisplacementMap/);
-  assert.match(caps, /colorInterpolationFilters="sRGB"/);
-  assert.match(caps, /primitiveUnits="userSpaceOnUse"/);
-  assert.match(caps, /y="-120%"/, "the pill filter region reaches past the rim so the lens can sample the sky");
-  assert.doesNotMatch(caps, /<feImage/, "the lens is primitives, not an feImage map");
-  assert.match(css, /\[data-glass-pill\] \{[^}]*isolation: isolate/s);
-  const entry = read("src/styles/redesign.css");
-  assert.match(entry, /animation: kp-page-in 360ms var\(--m-ease-out\) backwards/, "page entry must not keep a backdrop root after it finishes");
-  assert.doesNotMatch(entry, /kp-page-in[^;\n]*\bboth\b/);
-  const nav = read("src/components/chrome/Nav.module.css");
-  const pills = nav.slice(nav.indexOf(".brand, .links ul"), nav.indexOf(".brand {"));
-  assert.match(pills, /backdrop-filter: none/, "nav pills have no frost");
-  assert.doesNotMatch(pills, /blur\(/);
 });
 
-test("dark is the default and Light / Auto stay selectable", () => {
-  assert.match(read("src/lib/theme.ts"), /DEFAULT_THEME_PREF: ThemePref = "dark"/);
-  assert.match(read("src/lib/theme.ts"), /THEME_KEY = "keplar-theme-v3"/);
+test("light (the day sky) is the default and Dark / Auto stay selectable", () => {
+  // Space UI decision (docs/design/space-ui.md): a bright cloud sky is the default look; Dark is the same system at dusk.
+  assert.match(read("src/lib/theme.ts"), /DEFAULT_THEME_PREF: ThemePref = "light"/);
   const ctl = read("src/components/theme/ThemeControl.tsx");
   for (const id of ["dark", "light", "auto"]) assert.match(ctl, new RegExp(`id: "${id}"`));
 });

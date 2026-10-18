@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Ressourcer",
     "items": {
       "/features": "Alt i Keplar",
-      "/overview#demo": "Live-demo",
+      "/#demo": "Live-demo",
       "/app/create": "Opret",
       "/docs": "Dokumentation",
       "/pricing": "Priser",
@@ -30,7 +30,6 @@ const m: CommonCatalog = {
       "Legal": "Juridisk"
     },
     "links": {
-      "/overview": "About Keplar",
       "/features": "Alt i Keplar",
       "/showcase": "Udstilling af kreationer",
       "/templates": "Fællesskabsgalleri",

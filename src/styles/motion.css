@@ -135,21 +135,17 @@
 }
 
 /* ── pages ── */
-/* Full page loads between our own pages opt into the API. The old snapshot is removed
-   before the new page paints, so a heading from the page you left cannot sit on the next one. */
+/* Full page loads between our own pages (docs host, sign-in redirects, hard links): a quick crossfade. */
 @view-transition { navigation: auto; }
 /* Clicks during a transition reach the live page instead of the snapshot overlay. */
 ::view-transition { pointer-events: none; }
-::view-transition-old(root) { animation: none; display: none; }
-::view-transition-new(root) { animation: none; }
-/* Route templates (src/components/motion/RouteTransition.tsx): the old page is gone before the next one paints. */
-::view-transition-old(.kp-route-out) { animation: none; display: none; }
-::view-transition-new(.kp-route-in) { animation: none; }
+::view-transition-old(root) { animation: m-fade-out var(--m-dur-1) var(--m-ease-in) both; }
+::view-transition-new(root) { animation: m-rise-in var(--m-dur-3) var(--m-ease-out) both; --m-rise: var(--m-dist-2); }
+/* Route templates (src/components/motion/RouteTransition.tsx): the page leaves fast, the next one fades and rises 4px. */
+::view-transition-old(.kp-route-out) { animation: m-fade-out var(--m-dur-1) var(--m-ease-in) both; }
+::view-transition-new(.kp-route-in) { animation: m-rise-in var(--m-dur-3) var(--m-ease-out) both; --m-rise: var(--m-dist-2); }
 /* The floating nav is an anchor: it never moves or fades between pages. */
-/* The nav is not a named view-transition snapshot. Chromium refuses to run an SVG
-   backdrop-filter on anything inside an element that has view-transition-name, so the
-   liquid-glass lens would never bend the sky. The group rules stay for anything that opts in. */
-.m-vt-nav { view-transition-name: none; }
+.m-vt-nav { view-transition-name: kp-nav; }
 ::view-transition-group(kp-nav) { animation: none; z-index: 100; }
 ::view-transition-old(kp-nav) { display: none; }
 ::view-transition-new(kp-nav) { animation: none; }

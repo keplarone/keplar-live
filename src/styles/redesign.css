@@ -87,10 +87,8 @@
      within one beat; anything after the third block simply arrives with it. Not the Keplar Business workspace: it is an app window,
      and sliding its shell in pushed the bottom 18px off-screen while it ran. */
   @keyframes kp-page-in { from { opacity: 0; translate: 0 10px; } }
-  /* backwards, not both. Chromium keeps a finished opacity/translate animation as a backdrop root when
-     fill-mode is both, and an SVG backdrop-filter inside that root never samples the sky. */
   #main:not([data-kb]) > :not([class*="workspace-module__"]) > :is(header, section, div, article, nav, form):nth-child(-n + 6) {
-    animation: kp-page-in 360ms var(--m-ease-out) backwards;
+    animation: kp-page-in 360ms var(--m-ease-out) both;
   }
   #main > * > :nth-child(2) { animation-delay: 40ms; }
   #main > * > :nth-child(n + 3) { animation-delay: 80ms; }
@@ -105,7 +103,7 @@
   #main > [data-ks-root] > * { animation: none !important; } /* outranks the page-entry selector above */
 
   /* App: each view's header and content ease in together when the view opens */
-  [class*="App-module__"][class$="__view"] > * { animation: kp-page-in 280ms var(--m-ease-out) backwards; }
+  [class*="App-module__"][class$="__view"] > * { animation: kp-page-in 280ms var(--m-ease-out) both; }
   [class*="App-module__"][class$="__view"] > :nth-child(n + 2) { animation-delay: 40ms; }
 }
 
@@ -129,7 +127,18 @@
 
 /* (The canvas style's rounder corners and softer hairlines now live in tokens.css and light.css, the one source for tokens.) */
 
-/* Phones: dialogs, menus and the cookie card stay solid. A blur here used to flicker and clip. */
+/* Phones: floating overlays keep their blur (they rely on it to stay readable over the page, and are on screen briefly; the app
+   sidebar drawer is opaque, so it needs none);
+   only in-page cards drop it (see "Mobile performance" above). Not Keplar Studio ([data-ks-root], including the narrow
+   desktop overlay window): its dialogs and menus are opaque token surfaces and never blur. */
+@media (pointer: coarse), (max-width: 767px) {
+  :not([data-ks-root], [data-ks-root] *):is([role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], [role="tooltip"],
+      [class*="CookieBanner-module__"][class$="__banner"],
+      [class*="CommandPalette-module__"]) {
+    -webkit-backdrop-filter: blur(18px) saturate(1.3) !important;
+    backdrop-filter: blur(18px) saturate(1.3) !important;
+  }
+}
 
 /* Desktop app (html[data-desktop], src/lib/desktop.ts): the height of its own title bar, the band the window controls live in.
    The /app shell starts below it (App.module.css, DesktopTitleBar). */

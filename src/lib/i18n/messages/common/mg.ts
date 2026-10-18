@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Loharano",
     "items": {
       "/features": "Ny zava-drehetra ao amin'ny Keplar",
-      "/overview#demo": "Fampisehoana mivantana",
+      "/#demo": "Fampisehoana mivantana",
       "/app/create": "Mamorona",
       "/docs": "Antontan-taratasy",
       "/pricing": "Vidiny",
@@ -30,7 +30,6 @@ const m: CommonCatalog = {
       "Legal": "Lalàna"
     },
     "links": {
-      "/overview": "About Keplar",
       "/features": "Ny zava-drehetra ao amin'ny Keplar",
       "/showcase": "Fampirantiana ny zavaboary",
       "/templates": "Galerian'ny vondrom-piarahamonina",

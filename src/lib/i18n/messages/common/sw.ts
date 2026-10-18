@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Rasilimali",
     "items": {
       "/features": "Kila kitu ndani ya Keplar",
-      "/overview#demo": "Onyesho la moja kwa moja",
+      "/#demo": "Onyesho la moja kwa moja",
       "/app/create": "Create",
       "/docs": "Nyaraka",
       "/pricing": "Bei",
@@ -16,7 +16,7 @@ const m: CommonCatalog = {
     },
     "hints": {
       "/features": "Kila kipengele na kama kinapatikana",
-      "/overview#demo": "Uliza swali sasa, bila kujisajili",
+      "/#demo": "Uliza swali sasa, bila kujisajili",
       "/app/create": "Eleza au tamka tovuti au programu"
     },
     "signIn": "Ingia",
@@ -41,7 +41,6 @@ const m: CommonCatalog = {
       "Legal": "Kisheria"
     },
     "links": {
-      "/overview": "About Keplar",
       "/features": "Kila kitu ndani ya Keplar",
       "/how-it-works": "Jinsi inavyofanya kazi",
       "/showcase": "Maonyesho ya Create",

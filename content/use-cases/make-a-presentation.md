@@ -1,6 +1,6 @@
 ---
-title: Make a Presentation From an Outline With AI
-description: Turn an outline or source text into a slide deck with Keplar, check the claims and export to PowerPoint or PDF.
+title: Make a presentation from an outline or source text
+description: Use the slideshow creator on Plus and above to turn a topic and notes into a deck you can edit and export to PowerPoint or PDF, and what to check before presenting.
 updated: 2026-10-03
 keywords: AI slideshow maker, make a presentation with AI, PowerPoint from notes, AI slides
 related: /docs/using-keplar/slideshow-creator, /ai-slideshow-maker, /prompts/work

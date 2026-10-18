@@ -1,6 +1,6 @@
 ---
-title: Study for an Exam With AI and Your Own Notes
-description: Turn your notes or a PDF into flashcards, quizzes and a day-by-day plan to your exam date, answered only from your material.
+title: Study for an exam with your own notes
+description: Turn your notes into an outline, flashcards and quizzes in Study mode, practice before you look at answers, and keep control of your own learning.
 updated: 2026-10-03
 keywords: AI study guide, AI flashcards, study for exam with AI, quiz generator
 related: /docs/using-keplar/study-mode, /ai-study-tool, /blogs/best-ai-for-essays-and-studying

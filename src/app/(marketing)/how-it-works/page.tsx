@@ -15,8 +15,8 @@ import { TwoTone } from "@/components/page/TwoTone";
 // Copy: /workspace/marketing/launch/how-it-works-page.md (revision of Sep 27, 2026).
 export const metadata = pageMeta(
   "/how-it-works",
-  "How Keplar Works: Multiple AI Models, One Answer",
-  "Keplar-One picks the models your question needs, compares answers claim by claim, investigates disagreement, verifies and writes one answer. Try it free.",
+  `How ${brand.companyName} Works: Multiple AI Models, One Answer`,
+  `${brand.companyName} sends your question to the models it needs, investigates where they disagree, and writes one synthesized answer with the agreement and disagreements shown.`,
   { absoluteTitle: true },
 );
 
@@ -89,7 +89,7 @@ const steps: { n: 1 | 2 | 3 | 4 | 5 | 6; title: string; lead: string; body: Reac
       <>
         <p>Every synthesized answer is attributed to {O}. Below it, you can expand:</p>
         <dl className={s.defs}>
-          <div><dt>Consensus</dt><dd>how many models agreed, as counts such as &quot;4 of 5&quot;, never a percentage of correctness</dd></div>
+          <div><dt>Consensus</dt><dd>the agreement percentage, and how many models agreed and disagreed</dd></div>
           <div><dt>Models consulted</dt><dd>which models {O} asked</dd></div>
           <div><dt>Sources</dt><dd>the sources the models cite ({K} hasn&apos;t checked them)</dd></div>
           <div><dt>Disagreements</dt><dd>which model or models disagreed, and a summary of what they concluded differently</dd></div>

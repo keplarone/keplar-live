@@ -1,7 +1,7 @@
 "use client";
 /**
  * Debate mode (BETA): the live transcript while the models argue, and the collapsible record under the final answer.
- * Turns are 18px cards, not the pill token (a 9999px radius becomes an ellipse on a tall column). Only the held / refined / changed tags are pills. Screen readers hear each finished turn
+ * Turns are rounded-rect bubbles (shape-system.md); only the held / refined / changed tags are pills. Screen readers hear each finished turn
  * once (polite), not every streamed word. Motion is a short fade, off under prefers-reduced-motion.
  */
 import { useId, useState } from "react";

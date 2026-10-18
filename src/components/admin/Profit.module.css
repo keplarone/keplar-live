@@ -27,7 +27,7 @@
 /* Space UI (area d): pill range links and tags, no outlines; the plot keeps its baseline (a chart axis, not a border). */
 .range a { border: 0; border-radius: var(--r-pill); background: var(--space-track); font-weight: var(--w-semibold); }
 .range a[aria-current="page"] { background: var(--space-p-face); color: var(--space-p-ink); }
-.bar { background: linear-gradient(0deg, var(--c-accent), var(--c-accent)); border-radius: 3px 3px 0 0; }
+.bar { background: linear-gradient(180deg, #d76cff, #a467f0); border-radius: 3px 3px 0 0; }
 .tag { border: 0; border-radius: var(--r-pill); background: var(--space-track); }
 .tagBad { background: rgb(var(--rgb-destructive) / 0.14); }
 .meter { background: var(--space-track); border-radius: 999px; }

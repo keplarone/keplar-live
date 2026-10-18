@@ -1,7 +1,8 @@
 /*
- * Site nav: solid brand and link pills, glass only on the theme and weather icons and on an empty
- * layer behind the Sign in label. The displacement filter never has text as a child. The menu is an
- * opaque sheet over a dimmed page. Colours come from the tokens, so the theme swaps them.
+ * Site nav in the Space UI (docs/design/space-ui.md): Space Studio's floating top bar. Three glass pills over the page (the brand,
+ * the primary links, the actions) and the 3D white CTA; no bar, no hairline. Once the page scrolls, a soft fade of the canvas
+ * colour rises behind the pills so text never runs under them. The current link wears the lit face (white in dark, ink in
+ * light), like Space Studio's tab indicator. Colours come from the --nav-* and --space-* tokens, so the theme swaps them.
  */
 .wrap {
   position: fixed;
@@ -20,17 +21,10 @@
   opacity: 0;
   transition: opacity var(--space-dur-slow) var(--space-ease-out);
 }
-/* Once the page moves, the bar is solid graphite. Glass stays on the small icon and sign-in pills. */
-.wrap[data-scrolled] {
-  background: var(--lg-solid);
-  box-shadow: inset 0 -1px 0 var(--hairline-strong);
-}
 .wrap[data-scrolled]::after,
-.wrap[data-open]::after { opacity: 0; }
+.wrap[data-open]::after { opacity: 1; }
 
 .bar {
-  position: relative;
-  z-index: 3;
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
@@ -40,33 +34,12 @@
   margin: 0 auto;
 }
 
-/* Text links stay solid. A displacement filter on the glyphs paints an upside-down
-   green/red copy outside the pill, so nothing that contains text is a lens. */
-.brand, .links ul, .icon {
-  background: var(--lg-solid);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  filter: none;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.12);
-}
-.link, .word, .signIn, .lensLabel {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  filter: none;
-}
-/* Theme and weather are icon pills. Clip the filter region so it cannot spill a copy of nearby type. */
-.theme, .weather {
-  isolation: isolate;
-  overflow: hidden;
-  background: var(--glass-clear);
-  box-shadow: var(--glass-depth);
-}
-:global(html[data-lens]) :is(.theme, .weather, .lens)[data-distort] {
-  -webkit-backdrop-filter: url(#liquid-glass-chip);
-  backdrop-filter: url(#liquid-glass-chip);
-}
-@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  .brand, .links ul, .icon, .signIn, .theme, .weather { background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; filter: none; }
+/* glass pill surface shared by the brand, the link group and the icon buttons */
+.brand, .links ul, .icon, .signIn {
+  background: var(--nav-fill);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--nav-shadow);
 }
 
 /* brand: Space Studio's logo pill; the mark turns a little on hover */
@@ -81,7 +54,7 @@
   text-decoration: none;
   transition: background-color 0.3s ease, box-shadow 0.5s var(--space-ease-out);
 }
-.brand:hover { box-shadow: var(--nav-shadow); }
+.brand:hover { box-shadow: var(--nav-shadow), 0 14px 44px rgb(176 104 255 / 0.3); }
 .mark { flex: none; transition: transform 0.8s var(--space-ease-out); }
 .brand:hover .mark { transform: rotate(-14deg) scale(0.94); }
 .word { font-size: 16px; font-weight: var(--w-bold); letter-spacing: -0.02em; }
@@ -102,13 +75,11 @@
   white-space: nowrap;
   transition: background-color 0.35s ease, color 0.35s ease, box-shadow 0.35s ease;
 }
-/* Hovering one link leaves the others at their normal ink. Nothing in the row fades out. */
-.links:hover .link:not(:hover):not([aria-current="page"]) { color: var(--nav-link); opacity: 1; }
-.link:hover { color: var(--nav-ink); background: var(--nav-hover-bg); opacity: 1; }
+.link:hover { color: var(--nav-ink); background: var(--nav-hover-bg); }
 .link[aria-current="page"] {
   color: var(--space-p-ink);
   background: var(--space-p-face);
-  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12);
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12), 0 6px 20px rgb(var(--ring-rgb) / 0.18);
   font-weight: var(--w-bold);
 }
 
@@ -124,43 +95,14 @@
   color: var(--nav-link);
   transition: color 0.3s ease, box-shadow 0.5s var(--space-ease-out);
 }
-.icon:hover { color: var(--nav-ink); box-shadow: var(--nav-shadow); }
+.icon:hover { color: var(--nav-ink); box-shadow: var(--nav-shadow), 0 10px 32px rgb(176 104 255 / 0.25); }
 .theme { flex: none; }
-/* Snow, rain, clear: one glass pill, the same height as the other top buttons. */
-.weather {
-  display: inline-flex;
-  align-items: center;
-  height: 44px;
-  padding: 0 4px;
-  border-radius: var(--r-pill);
-  gap: 0;
-}
-.weather button {
-  display: inline-grid;
-  place-items: center;
-  width: 32px;
-  height: 36px;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--nav-link);
-  cursor: pointer;
-}
-.weather button[aria-checked="true"] {
-  background: var(--nav-ink);
-  color: var(--c-canvas);
-}
-.panelWeather { display: none; }
 .signIn {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
   display: inline-flex;
   align-items: center;
   height: 44px;
   padding: 0 20px;
   border-radius: var(--r-pill);
-  background: transparent;
   color: var(--nav-ink);
   font-size: 13.5px;
   font-weight: var(--w-semibold);
@@ -168,16 +110,7 @@
   white-space: nowrap;
   transition: box-shadow 0.5s var(--space-ease-out);
 }
-/* The lens is an empty layer behind the label. The filter never has the glyphs as children. */
-.lens {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  pointer-events: none;
-}
-.lensLabel { position: relative; z-index: 1; }
-.signIn:hover { box-shadow: var(--nav-shadow); }
+.signIn:hover { box-shadow: var(--nav-shadow), 0 10px 32px rgb(176 104 255 / 0.25); }
 /* the one CTA: Space Studio's 3D white button (ink in light) */
 .cta {
   display: inline-flex;
@@ -208,34 +141,20 @@
 .wrap[data-open] .toggleIcon i:first-child { translate: 0 3.2px; rotate: 45deg; }
 .wrap[data-open] .toggleIcon i:last-child { translate: 0 -3.2px; rotate: -45deg; }
 
-/* Dims the page, including the hero, while the menu is open. The bar stays above it. */
-.scrim {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: var(--space-scrim);
-  cursor: pointer;
-}
-/* Solid menu. No glass: the hero must not read through the links. */
+/* the sheet under the bar: a glass card that unfolds from the Menu pill */
 .sheet {
   position: absolute;
-  z-index: 2;
   top: calc(env(safe-area-inset-top, 0px) + 72px);
   right: var(--l-gutter);
   width: min(720px, calc(100vw - 2 * var(--l-gutter)));
   max-height: calc(100dvh - 96px);
   overflow-y: auto;
   padding: var(--s-6);
-  border: 1px solid var(--hairline-strong);
   border-radius: var(--space-r-card);
-  background: var(--lg-solid);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  filter: none;
-  box-shadow: 0 24px 60px rgb(0 0 0 / 0.45);
+  background: var(--nav-menu-fill);
+  -webkit-backdrop-filter: blur(26px) saturate(1.3);
+  backdrop-filter: blur(26px) saturate(1.3);
+  box-shadow: var(--space-glass-depth), 0 30px 80px rgb(0 0 0 / 0.35), 0 0 60px rgb(176 104 255 / 0.12);
   --m-origin: 100% 0;
 }
 .sheet[hidden] { display: none; }
@@ -292,11 +211,12 @@
   .sheet { top: calc(env(safe-area-inset-top, 0px) + 62px); right: 12px; width: calc(100vw - 24px); padding: var(--s-5); }
   .cols { grid-template-columns: 1fr; gap: var(--s-5); }
   .cta { padding: 0 18px; font-size: 13.5px; }
+  /* phones: no live blur on the pills (redesign.css drops backdrop-filter); the fill is near-opaque so it stays readable */
+  .brand, .links ul, .icon, .signIn { background: var(--nav-fill-scrolled); }
 }
 @media (max-width: 400px) {
-  .actions .theme, .actions .weather { display: none; }
+  .actions .theme { display: none; }
   .panelTheme { display: inline-grid; }
-  .panelWeather { display: inline-flex; }
 }
 
 /* Desktop app (Keplar One for Windows/macOS/Linux): html[data-desktop] (set before paint by src/lib/desktop.ts) or

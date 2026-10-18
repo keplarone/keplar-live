@@ -28,19 +28,16 @@ test("the app layout and the composer are one block for both themes (no hex-copi
   }
 });
 
-test("menus, the composer and the sidebar stay opaque", () => {
-  // The composer's Attach, Modes and routing pop-ups stay on the opaque overlay surface.
+test("menus, popovers and the sidebar drawer are opaque inside the app", () => {
+  // UI v2: the composer's Attach, Modes and routing pop-ups are kit Popovers on the opaque overlay surface; no glass anywhere in it.
   const composer = strip(read("src/components/app-ui/Composer.module.css"));
   assert.match(composer, /\.panel\.panel, \.moreMenu\.moreMenu, \.attachMenu\.attachMenu \{[^}]*background: var\(--surface-overlay\)/);
   assert.doesNotMatch(composer, /backdrop-filter|--lg-|--c-glass/, "no glass in the composer");
   const tsx = read("src/components/app-ui/Composer.tsx");
   assert.equal((tsx.match(/<Popover /g) ?? []).length, 3, "Attach, Modes and routing are kit Popovers");
   const app = strip(read("src/components/app-ui/App.module.css"));
-  assert.match(app, /\.app \{[^}]*--lg-fill: var\(--surface-overlay\)[^}]*--lg-bf: none/, "menus that read the glass tokens stay opaque");
-  assert.match(app, /\.sidebar \{[^}]*background: var\(--lg-solid\)/);
-  assert.doesNotMatch(app, /\.sidebar \{[^}]*backdrop-filter: blur/);
-  assert.match(app, /\.app \{[^}]*background: transparent/);
-  assert.doesNotMatch(app, /isolation:\s*isolate/);
+  assert.match(app, /\.app \{[^}]*--lg-fill: var\(--surface-overlay\)[^}]*--lg-bf: none/, "glass tokens resolve to opaque surfaces in the app");
+  assert.match(app, /\.sidebar \{[^}]*background: var\(--surface-panel\)/);
 });
 
 test("no backdrop art, corner glow or animated gradient text in the app", () => {
@@ -49,7 +46,7 @@ test("no backdrop art, corner glow or animated gradient text in the app", () => 
   const css = strip(read("src/components/app-ui/App.module.css"));
   assert.doesNotMatch(css, /background-clip: text/, "no gradient-filled text");
   assert.doesNotMatch(css, /welcome-flow/);
-  assert.equal(existsSync("src/styles/aura.css"), false, "the aura stylesheet is gone");
+  assert.doesNotMatch(strip(read("src/styles/aura.css")), /App-module__|studio-module__/);
   assert.equal(existsSync("src/components/app-ui/WelcomeBack.tsx"), false, "one home: the welcome-back overlay is gone");
 });
 

@@ -16,7 +16,7 @@ import { ButtonFx } from "@/components/ui/ButtonFx";
 import { FitRuntime } from "@/components/ui/FitRuntime";
 import { SmoothCaret } from "@/components/glass/SmoothCaret";
 import { ThemeWatcher } from "@/components/theme/ThemeControl";
-import { GlassBudget, GlassCaps, GlassDefs } from "@/components/glass/GlassCaps";
+import { GlassCaps, GlassDefs } from "@/components/glass/GlassCaps";
 import { TypingFeel } from "@/components/glass/TypingFeel";
 import { InsertMode } from "@/components/glass/InsertMode";
 import { PageMonolith } from "@/components/monolith/PageMonolith";
@@ -25,8 +25,6 @@ import { CommandPalette } from "@/components/nav/CommandPalette";
 import { LocaleHtml } from "@/components/i18n/LocaleHtml";
 import { KitHosts } from "@/components/kit/Hosts";
 import { SpaceMotionFilters } from "@/components/ui/space/MotionFilters";
-import { SpaceSkyExempt } from "@/components/space/SpaceSkyExempt";
-import { APP_SURFACE_SCRIPT, SPACE_SKY_SCRIPT } from "@/components/space/surface";
 import "@/styles/globals.css";
 import "@/styles/redesign.css";
 
@@ -81,8 +79,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // Dark first. The head script / ThemeWatcher update this when the visitor chose Light or Auto.
-  themeColor: THEME_COLORS.dark,
+  // Light first (the day sky); the head script / ThemeWatcher update it for Dark or Auto.
+  themeColor: THEME_COLORS.light,
   colorScheme: "light dark",
   width: "device-width",
   initialScale: 1,
@@ -91,24 +89,21 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    // data-theme is the server default (dark). THEME_SCRIPT corrects it before paint from
-    // localStorage / the keplar-theme-v3 cookie, hence suppressHydrationWarning.
+    // data-theme is the server default (light, the day sky); THEME_SCRIPT corrects it before
+    // paint from localStorage / the keplar-theme-v2 cookie, hence suppressHydrationWarning.
     // LocaleHtml renders <html> with lang and dir from the URL (/ar → ar, rtl; English at the root → en, ltr). src/components/i18n/LocaleHtml.tsx
-    <LocaleHtml className={`${sans.variable} ${mono.variable} dark`} data-theme="dark" data-theme-pref="dark" style={{ colorScheme: "dark" }}>
+    <LocaleHtml className={`${sans.variable} ${mono.variable} light`} data-theme="light" data-theme-pref="light" style={{ colorScheme: "light" }}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: PREFS_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: DESKTOP_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: SIGNED_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: HOME_FX_SCRIPT }} />
-        <script dangerouslySetInnerHTML={{ __html: SPACE_SKY_SCRIPT }} />
-        <script dangerouslySetInnerHTML={{ __html: APP_SURFACE_SCRIPT }} />
         <WhopPixel />
       </head>
       <body>
         <ThemeWatcher />
         <GlassCaps />
-        <GlassBudget />
         <TypingFeel />
         <InsertMode />
         <PageMonolith />
@@ -123,8 +118,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <FitRuntime />
         <SmoothCaret />
         <JsonLd data={siteGraph()} />
-        {/* Marks chat and Space Studio. The cloud sky itself mounts only in the marketing layouts. */}
-        <SpaceSkyExempt>{null}</SpaceSkyExempt>
         <a className="skip-link" href="#main">
           Skip to content
         </a>

@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Àwọn ohun èlò",
     "items": {
       "/features": "Ohun gbogbo nínú Keplar",
-      "/overview#demo": "Ìfihàn ní tààrà",
+      "/#demo": "Ìfihàn ní tààrà",
       "/app/create": "Ṣẹ̀dá",
       "/docs": "Ìwé àlàyé",
       "/pricing": "Iye owó",
@@ -30,7 +30,6 @@ const m: CommonCatalog = {
       "Legal": "Òfin"
     },
     "links": {
-      "/overview": "About Keplar",
       "/features": "Ohun gbogbo nínú Keplar",
       "/showcase": "Àfihàn àwọn ìṣẹ̀dá",
       "/templates": "Àwòrán àwùjọ",

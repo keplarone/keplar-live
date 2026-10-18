@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "ግብዓቶች",
     "items": {
       "/features": "ሁሉም ነገር በKeplar",
-      "/overview#demo": "የቀጥታ ማሳያ",
+      "/#demo": "የቀጥታ ማሳያ",
       "/app/create": "ፍጠር",
       "/docs": "ሰነዶች",
       "/pricing": "ዋጋዎች",
@@ -30,7 +30,6 @@ const m: CommonCatalog = {
       "Legal": "ሕጋዊ"
     },
     "links": {
-      "/overview": "About Keplar",
       "/features": "ሁሉም ነገር በKeplar",
       "/showcase": "የፈጠራዎች ማሳያ",
       "/templates": "የማህበረሰብ ማዕከለ-ስዕላት",

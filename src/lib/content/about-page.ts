@@ -7,8 +7,8 @@ const K = brand.name;
 export const aboutPage: EditorialPage = {
   slug: "about",
   path: "/about",
-  metaTitle: "About Keplar One: Founders and Mission",
-  metaDescription: "Keplar was founded in 2026 by Hassen and Hussain Keder. It asks several AI models a question, finds where they disagree, verifies and writes one answer.",
+  metaTitle: "About Keplar One: who made it and what it does",
+  metaDescription: "Keplar was created by two co-founders, Hassen and Hussain Keder, in 2026. It sends a question to multiple AI models, detects disagreement, verifies, and writes one answer.",
   ogTitle: "About Keplar One",
   label: "About",
   h1: "About Keplar One",

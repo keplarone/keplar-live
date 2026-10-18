@@ -12,8 +12,8 @@ const m: MarketingCatalog = {
       "description": "Keplar の全機能を用途別に 1 ページで紹介します。質問、ファイルの読み込み、サイトやアプリの作成、共同作業、公開、API とウィジェット、そして信頼性。それぞれ公開中、ベータ、近日公開のどれかを明記しています。"
     },
     "pricing": {
-      "title": "料金：Free、Lite $20、Plus $45、Pro $99",
-      "description": "Keplar One は無料で始められます。Keplar Lite は月額 $20、Keplar Plus は月額 $45、Keplar Pro は月額 $99、Business プランは営業チームを通じてご利用いただけます。使用量は常に見え、隠されることはありません。"
+      "title": "料金：Free、Plus $45、Pro $99",
+      "description": "Keplar One は無料で始められます。Keplar Plus は月額 $45、Keplar Pro は月額 $99、Business プランは営業チームを通じてご利用いただけます。使用量は常に見え、隠されることはありません。"
     },
     "showcase": {
       "title": "Create ショーケース：Keplar で作るアプリのあるべき姿",

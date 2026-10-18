@@ -132,12 +132,14 @@
 /* ── Space UI (docs/design/space-ui.md, area d; reference: Space Studio entry.css .ob-*). The entry sky behind the setup card;
  *    the card is 28px glass that rises out of a blur, steps slide in with a little horizontal motion blur, chips and the
  *    three-way choice are Space pills, 3D buttons. No outlines. Declared last so it wins at equal specificity. ── */
-.root { background: transparent; }
+.root { isolation: isolate; }
 .root .sky { position: fixed; }
 .top, .card { position: relative; z-index: 1; }
 .brand { font-weight: var(--w-bold); letter-spacing: -0.02em; min-height: 44px; padding: 0 var(--s-4) 0 var(--s-3); border-radius: var(--r-pill); background: var(--space-glass); box-shadow: var(--space-glass-depth); }
 .seg { height: 6px; background: var(--space-track); }
-.card { border-radius: var(--space-r-card); background: var(--lg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: 0 1px 2px rgb(0 0 0 / 0.08); }
+.card { border-radius: var(--space-r-card); background: var(--space-glass); box-shadow: var(--space-glass-depth); }
+:root[data-theme="light"] .card { box-shadow: inset 0 1px 0 #ffffff, 0 2px 4px rgb(14 15 18 / 0.05), 0 30px 70px -26px rgb(20 50 90 / 0.4); }
+@media (min-width: 768px) and (pointer: fine) { .card { -webkit-backdrop-filter: blur(24px) saturate(1.3); backdrop-filter: blur(24px) saturate(1.3); } }
 @media (min-width: 641px) and (prefers-reduced-motion: no-preference) {
   .card { animation: sp-rise var(--space-dur-entry) var(--space-ease-expo) 80ms both; }
   .stepBody { animation: ob-slide 0.85s var(--space-ease-expo) 70ms both, sp-mb-x 0.6s linear 70ms both; }
@@ -147,7 +149,7 @@
 .title { font-weight: var(--w-semibold); letter-spacing: -0.045em; }
 .chip { border-radius: var(--space-r-panel); background: var(--space-s-face); box-shadow: var(--space-s-depth); transition: transform var(--space-dur-slow) var(--space-spring-bouncy), box-shadow var(--space-dur-slow) var(--space-ease-out); }
 .chip:hover { transform: translateY(-2px); box-shadow: var(--space-s-depth-hover); }
-.chip[aria-pressed="true"], .chip[aria-checked="true"], .chip[data-on] { box-shadow: var(--space-s-depth), 0 0 0 2px rgb(var(--ring-rgb) / 0.7); }
+.chip[aria-pressed="true"], .chip[aria-checked="true"], .chip[data-on] { box-shadow: var(--space-s-depth), 0 0 0 2px rgb(var(--ring-rgb) / 0.7), 0 0 30px rgb(var(--ring-rgb) / 0.3); }
 .label { padding-left: 18px; font-size: 13px; font-weight: var(--w-semibold); color: var(--c-ink-2); }
 .input { height: 48px; padding: 0 20px; border: 0; border-radius: var(--space-r-field); background: var(--space-field); box-shadow: var(--space-field-depth); }
 .input:hover { background: var(--space-field-hover); }

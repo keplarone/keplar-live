@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Манбаъҳо",
     "items": {
       "/features": "Ҳама чиз дар Keplar",
-      "/overview#demo": "Намоиши зинда",
+      "/#demo": "Намоиши зинда",
       "/app/create": "Сохтан",
       "/docs": "Ҳуҷҷатҳо",
       "/pricing": "Нархҳо",
@@ -30,7 +30,6 @@ const m: CommonCatalog = {
       "Legal": "Ҳуқуқӣ"
     },
     "links": {
-      "/overview": "About Keplar",
       "/features": "Ҳама чиз дар Keplar",
       "/showcase": "Намоишгоҳи эҷодиёт",
       "/templates": "Галереяи ҷомеа",

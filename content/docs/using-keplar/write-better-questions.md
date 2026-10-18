@@ -1,6 +1,6 @@
 ---
 title: Write better questions
-description: Eight habits for better multi-model answers: state the decision, add constraints, ask for the counterargument and separate facts from judgment.
+description: Eight habits that get more from a multi-model answer: state the decision, add constraints, ask for the counterargument, separate facts from judgment, and more, with prompts you can copy.
 order: 2
 updated: 2026-10-03
 keywords: prompt tips, better questions, prompt writing, how to ask AI

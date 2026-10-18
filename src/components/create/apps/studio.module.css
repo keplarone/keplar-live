@@ -10,9 +10,8 @@
 .grow { flex: 1; }
 .dim { color: var(--c-ink-3); }
 
-/* ── Create's kind switch (App, Images, Video, Mobile, Keplar Studio): the kit's Tabs, an underline that slides ──
-   No fill: the page sky shows through. A canvas fill was a solid black bar (dark --c-canvas is #000). */
-.kindBar { display: flex; align-items: flex-end; min-width: 0; max-width: 100%; padding: 0 var(--s-6); background: transparent; }
+/* ── Create's kind switch (App, Images, Video, Mobile, Keplar Studio): the kit's Tabs, an underline that slides ── */
+.kindBar { display: flex; align-items: flex-end; min-width: 0; max-width: 100%; padding: 0 var(--s-6); background: var(--c-canvas); }
 .kindTabs { flex: 1; min-width: 0; }
 .kindTabs [role="tab"] { height: 40px; padding: 0 var(--s-3); font-size: var(--t-small); }
 .beta { color: var(--c-ink-3); font-size: 0.85em; font-weight: var(--w-regular); }
@@ -153,7 +152,7 @@
 .badge[data-tone="live"] { color: var(--c-ink); }
 
 /* ── studio ── */
-.top { display: flex; align-items: center; gap: var(--s-3); padding: 8px var(--s-4); border-bottom: var(--b-hairline) solid var(--c-border); background: transparent; flex-wrap: wrap; min-height: 52px; }
+.top { display: flex; align-items: center; gap: var(--s-3); padding: 8px var(--s-4); border-bottom: var(--b-hairline) solid var(--c-border); background: var(--c-canvas); flex-wrap: wrap; min-height: 52px; }
 .title { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .appName { font-size: 17px; font-weight: var(--w-medium); letter-spacing: -0.015em; max-width: 26ch; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--c-creation); }
 .ver { font-size: var(--t-label); color: var(--c-ink-3); font-variant-numeric: tabular-nums; }
@@ -288,7 +287,7 @@
 /* ── layout: tablet and phone ── */
 @media (max-width: 900px) {
   .work { grid-template-columns: minmax(0, 1fr); }
-  .panelSwitch { display: flex; justify-content: center; padding: 8px var(--s-4); border-bottom: var(--b-hairline) solid var(--hairline); background: transparent; }
+  .panelSwitch { display: flex; justify-content: center; padding: 8px var(--s-4); border-bottom: var(--b-hairline) solid var(--hairline); background: var(--c-canvas); }
   .work[data-panel="canvas"] .ledger { display: none; }
   .work[data-panel="log"] .stage { display: none; }
   .ledger { border-right: 0; }
@@ -333,8 +332,7 @@
 }
 @media (max-width: 600px) {
   .ship .cta { width: 100%; }
-  /* Content scrolls under this bar: the nav's glass, never a solid canvas (that was pure black in dark mode). */
-  .top { position: sticky; top: 0; z-index: 4; background: var(--nav-fill); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+  .top { position: sticky; top: 0; z-index: 4; background: var(--c-canvas); }
   .work { min-height: 0; }
   .refineBox { font-size: 16px; }
 }
@@ -423,13 +421,13 @@
 .calmIntro { gap: 12px; }
 .calmTitle { font-size: clamp(32px, 3.4vw, 44px); line-height: 1.08; letter-spacing: -0.035em; font-weight: var(--w-regular); color: var(--c-ink); text-wrap: balance; }
 .calmLede { font-size: 17px; line-height: 1.55; color: var(--c-ink-3); max-width: 46ch; }
-.calmCard { gap: 10px; padding: 18px 18px 12px 22px; border: 0; border-radius: 26px; background: var(--sky-glass); -webkit-backdrop-filter: blur(6px) saturate(1.12); backdrop-filter: blur(6px) saturate(1.12); box-shadow: var(--glass-depth); }
+.calmCard { gap: 10px; padding: 18px 18px 12px 22px; border: 0; border-radius: 26px; background: var(--surface-raised); box-shadow: var(--elev-2); }
 .calmCard:focus-within { box-shadow: inset 0 0 0 1px var(--hairline-strong), var(--elev-2); }
 .calmCard .prompt { font-size: 17px; }
 .calmBar .textBtn { height: 34px; padding: 0 14px; border-radius: 999px; background: var(--hover-wash); color: var(--c-ink); font-size: 13px; text-decoration: none; }
 .calmBar .textBtn:hover { background: var(--press-wash); }
 .calmChips { gap: 8px; }
-.calmChip { height: 38px; padding: 0 16px; border: 1px solid transparent; background: var(--glass-clear); -webkit-backdrop-filter: none; backdrop-filter: none; color: var(--c-ink-2); font-size: 14px; box-shadow: var(--glass-depth); }
+.calmChip { height: 38px; padding: 0 16px; border: 1px solid transparent; background: var(--hover-wash); color: var(--c-ink-2); font-size: 14px; box-shadow: none; }
 .calmChip:hover { background: var(--surface-raised); color: var(--c-ink); }
 
 .shelf { max-width: 1240px; width: 100%; box-sizing: border-box; }
@@ -697,20 +695,3 @@
 .shelfPage .shelfGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); overflow: visible; scroll-snap-type: none; padding-bottom: 0; }
 .shelfPage .shelfGrid > li { flex: none; }
 @media (max-width: 600px) { .calm { min-height: 0; } .shelfPage .shelfGrid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } }
-
-/* Calm chrome: ink actions, no lift, no glow. */
-:global(:root[data-theme]:not([data-business-app])) .linkPrimary {
-  background: var(--c-ink);
-  color: var(--c-canvas);
-  box-shadow: none;
-  font-weight: var(--w-medium);
-  transform: none;
-}
-:global(:root[data-theme]:not([data-business-app])) .linkPrimary:hover:not(:disabled, [aria-disabled="true"]) { background: var(--c-ink-hover); transform: none; box-shadow: none; }
-:global(:root[data-theme]:not([data-business-app])) .linkBtn {
-  background: transparent;
-  color: var(--c-ink);
-  box-shadow: inset 0 0 0 1px var(--hairline);
-  transform: none;
-}
-:global(:root[data-theme]:not([data-business-app])) .linkBtn:hover:not(:disabled, [aria-disabled="true"]) { background: var(--hover-wash); transform: none; box-shadow: inset 0 0 0 1px var(--hairline); }

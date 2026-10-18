@@ -10,7 +10,7 @@ import { TwoTone } from "@/components/page/TwoTone";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = pageMeta("/specialists", "Keplar Specialist Directory", "Custom Keplar specialists people made and shared: saved instructions for one kind of work, reviewed before listing. Add one to your account.", { noindex: true });
+export const metadata: Metadata = pageMeta("/specialists", "Specialist directory", "Specialists shared by Keplar users and reviewed before listing. Add one to your account and Keplar's panel of models answers with it.");
 
 /** The search field: a hairline pill on the raised surface, 44px tall (UI v2 tokens). Category links and the button use the kb pill. */
 const field: React.CSSProperties = { display: "inline-flex", alignItems: "center", minHeight: 44, padding: "0 var(--s-4)", border: 0, borderRadius: "var(--r-pill)", background: "var(--surface-raised)", boxShadow: "inset 0 0 0 var(--b-hairline) var(--hairline-strong)", color: "var(--c-ink)" };

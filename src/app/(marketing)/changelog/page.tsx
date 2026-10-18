@@ -8,7 +8,7 @@ import s from "@/components/kb/kb.module.css";
 import { TwoTone } from "@/components/page/TwoTone";
 
 export const metadata = {
-  ...pageMeta("/changelog", "Keplar Changelog: Release Notes and Updates", "What changed in Keplar and when: new features, fixes and model updates across the web app, desktop app, Create, Studio and the API."),
+  ...pageMeta("/changelog", "Keplar release notes: what changed and when", "Dated release notes for Keplar: new features, changes and fixes you can see, newest first. Beta features are marked beta."),
   alternates: { canonical: "/changelog", types: { "application/atom+xml": "/changelog/feed.xml" } },
 };
 

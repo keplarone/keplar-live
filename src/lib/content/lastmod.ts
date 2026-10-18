@@ -11,14 +11,13 @@ import { kbLastmod } from "../kb/paths";
 
 /** Hand-maintained static pages: path -> ISO date of last content change. */
 export const staticLastmod: Record<string, string> = {
-  "/": "2026-10-18",
-  "/overview": "2026-10-18",
+  "/": "2026-10-11",
   "/what-is-keplar": "2026-10-11",
   "/features": "2026-10-06",
   "/showcase": "2026-10-06",
   "/roadmap": "2026-10-06",
   "/product": "2026-10-11",
-  "/how-it-works": "2026-10-17",
+  "/how-it-works": "2026-10-03",
   "/keplar-one": "2026-10-11",
   "/for-you": "2026-10-01",
   "/pricing": "2026-10-06",
@@ -53,7 +52,7 @@ export const staticLastmod: Record<string, string> = {
   "/for-founders": "2026-10-01",
   "/for-researchers": "2026-10-01",
   "/for-small-business": "2026-10-01",
-  "/for-developers": "2026-10-17", // src/lib/growth/developers-page.ts (meta shortened 2026-10-17)
+  "/for-developers": "2026-10-03", // src/lib/growth/developers-page.ts (added 2026-10-03)
   // Comparison pages (src/lib/compare.ts): published 2026-10-12 with Keplar's prices updated from the plan data.
   "/compare": "2026-10-12",
   "/compare/perplexity-model-council": "2026-10-12",
@@ -67,6 +66,5 @@ export function lastmodFor(path: string): string | undefined {
   const e = [...editorialPages, aboutPage, modelsPage].find((x) => x.path === path);
   if (e) return e.updated;
   if (path.startsWith("/showcase/")) return staticLastmod["/showcase"];
-  if (path === "/tools" || path.startsWith("/tools/")) return "2026-10-17";
   return staticLastmod[path] ?? kbLastmod(path);
 }

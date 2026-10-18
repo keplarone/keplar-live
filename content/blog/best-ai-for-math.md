@@ -1,6 +1,6 @@
 ---
-title: Best AI for Math: Calculation, Proofs, Word Problems
-description: Why AI handles calculation, proofs and word problems differently, which approaches are reliable and how to check a math answer from AI.
+title: What is the best AI for math? Why calculation, proof and word problems differ
+description: AI can explain math well and still get arithmetic wrong. A guide to what language models do well, where tools and code are better, and how to check results.
 category: Model choice
 published: 2026-10-03
 updated: 2026-10-03

@@ -7,7 +7,7 @@ import { AuthShell, LinkProblem } from "@/components/auth/AuthShell";
 import { SecureAccountConfirm } from "@/components/auth/SecureAccountConfirm";
 import s from "@/components/auth/auth.module.css";
 
-export const metadata: Metadata = { ...pageMeta("/secure-account", "Secure your account", "Sign out of every device.", { noindex: true }), referrer: "no-referrer" };
+export const metadata: Metadata = { ...pageMeta("/secure-account", "Secure your account", "Sign out of every device."), referrer: "no-referrer" };
 export const dynamic = "force-dynamic";
 
 type Props = { searchParams: Promise<{ token?: string | string[] }> };

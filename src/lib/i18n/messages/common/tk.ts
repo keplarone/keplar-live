@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Çeşmeler",
     "items": {
       "/features": "Keplar-daky ähli zat",
-      "/overview#demo": "Göni demo",
+      "/#demo": "Göni demo",
       "/app/create": "Döret",
       "/docs": "Resminamalar",
       "/pricing": "Bahalar",
@@ -30,7 +30,6 @@ const m: CommonCatalog = {
       "Legal": "Hukuk"
     },
     "links": {
-      "/overview": "About Keplar",
       "/features": "Keplar-daky ähli zat",
       "/showcase": "Döredijilik sergisi",
       "/templates": "Jemgyýetçilik galereýasy",

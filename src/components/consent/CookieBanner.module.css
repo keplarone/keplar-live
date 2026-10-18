@@ -111,32 +111,3 @@
 .tertiary { border-radius: var(--r-pill); text-decoration-color: rgb(var(--ring-rgb) / 0.45); font-weight: var(--w-semibold); }
 .link { text-decoration-color: rgb(var(--ring-rgb) / 0.45); }
 @media (prefers-reduced-motion: reduce) { .primary, .secondary { transition: none; } .primary:hover, .secondary:hover, .primary:active, .secondary:active { transform: none; } }
-
-/* The chat shell is a fixed layer at --z-overlay, so the choice has to sit above it or the sidebar swallows the click. */
-.banner { z-index: calc(var(--z-overlay) + 2); }
-
-/* Phones: a full-width bar along the bottom edge, short enough that the chat composer stays above it.
-   The three actions still wrap (a nowrap row ran past 320px). */
-@media (max-width: 640px) {
-  .banner[data-placement="bottom"] {
-    z-index: calc(var(--z-overlay) + 2);
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: auto;
-    border-radius: 0;
-    background: var(--c-canvas);
-    box-shadow: inset 0 1px 0 var(--hairline);
-    padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px));
-    gap: 4px 8px;
-    max-height: none;
-  }
-  .banner[data-placement="bottom"] .title { font-size: 13px; }
-  .banner[data-placement="bottom"] .text { font-size: 12px; line-height: 1.35; }
-  .banner[data-placement="bottom"] .actions { flex-wrap: wrap; margin-top: 0; gap: 6px; }
-  .banner[data-placement="bottom"] .primary,
-  .banner[data-placement="bottom"] .secondary,
-  .banner[data-placement="bottom"] .tertiary { min-height: 36px; padding: 0 10px; }
-  .banner > * { min-width: 0; }
-  .banner .actions { flex-wrap: wrap; }
-}

@@ -55,7 +55,7 @@ export function LandingTemplate({ page }: { page: LandingPage }) {
       </section>
       <StickyCta where={page.slug} />
       <JsonLd data={webPage({ path: page.path, title: page.metaTitle, description: page.metaDescription })} />
-      <JsonLd data={breadcrumbs(page.path === "/roblox-studio-ai" || page.path === "/blender-ai" ? [{ name: "Keplar Studio (Beta)", path: "/docs/studio" }, { name: page.path === "/roblox-studio-ai" ? "Roblox Studio" : "Blender", path: page.path }] : [{ name: page.label, path: page.path }])} />
+      <JsonLd data={breadcrumbs([{ name: page.label, path: page.path }])} />
     </>
   );
 }

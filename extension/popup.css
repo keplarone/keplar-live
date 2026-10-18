@@ -11,12 +11,12 @@
   --line: rgb(14 15 18 / 0.09);
   --line-strong: rgb(14 15 18 / 0.15);
   --ink: #0e0f12;
-  --ink2: #171a20;
+  --ink2: #4b4f58;
   --ink3: #686d78;
   --btn: #0e0f12;
   --btn-ink: #ffffff;
   --btn-hover: #26262b;
-  --focus: #17171a;
+  --focus: #7d3bc4;
   --err: #b42318;
   --shadow: 0 1px 2px rgb(14 15 18 / 0.05), 0 10px 28px -14px rgb(14 15 18 / 0.16);
 }
@@ -34,7 +34,7 @@
     --btn: #f4f4f6;
     --btn-ink: #000000;
     --btn-hover: #ffffff;
-    --focus: #f4f4f6;
+    --focus: #c39bff;
     --err: #ff9a8f;
     --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 30px -16px rgb(0 0 0 / 0.7);
   }

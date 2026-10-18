@@ -2,16 +2,18 @@ import type { Metadata } from "next";
 import { Nav } from "@/components/chrome/Nav";
 import { Footer } from "@/components/chrome/Footer";
 import { ButtonLink } from "@/components/ui/Button";
+import { SkyBackdrop } from "@/components/sky/SkyBackdrop";
 import s from "@/components/page/NotFound.module.css";
 
-export const metadata: Metadata = { title: "Page not found", robots: { index: false, follow: true } };
+export const metadata: Metadata = { title: "Page not found" };
 
 /** 404: a quiet "404", a two-tone line and two ways out (one primary, one secondary), on the colour backdrop. */
 export default function NotFound() {
   return (
     <>
       <Nav />
-      <main id="main" style={{ position: "relative", zIndex: 1, isolation: "isolate", overflowX: "clip" }}>
+      <main id="main" style={{ position: "relative", zIndex: 0, isolation: "isolate", overflowX: "clip" }}>
+        <SkyBackdrop />
         <section className={s.wrap} aria-labelledby="nf-title">
           <div className={s.card}>
             <p className={s.code} aria-hidden="true">404</p>

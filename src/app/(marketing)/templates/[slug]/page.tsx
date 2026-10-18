@@ -7,7 +7,6 @@ import { RemixPanel } from "@/components/templates/RemixPanel";
 import { LikeButton } from "@/components/templates/LikeButton";
 import s from "@/components/templates/Templates.module.css";
 import { abs, pageMeta } from "@/lib/seo";
-import { GENERATED_META } from "@/lib/seo/generated-meta";
 import { breadcrumbs } from "@/lib/seo-graph";
 import { CATEGORY_LABEL } from "@/lib/templates/constants";
 import { openTemplate } from "@/lib/templates/store";
@@ -20,9 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const t = await openTemplate(slug).catch(() => null);
   if (!t) return {};
-  const path = `/templates/${slug}`;
-  const sheet = GENERATED_META[path];
-  return pageMeta(path, sheet?.title ?? `${t.view.title} website template`, sheet?.description ?? t.view.description, { image: `/templates/${slug}/og` });
+  return pageMeta(`/templates/${slug}`, `${t.view.title} website template`, t.view.description, { image: `/templates/${slug}/og` });
 }
 
 export default async function TemplatePage({ params }: Props) {

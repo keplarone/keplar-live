@@ -1,6 +1,6 @@
 ---
 title: Study mode
-description: Turn a PDF or notes into an outline, summary, flashcards with spaced review, quizzes and a study plan, with answers drawn only from your material.
+description: Turn a text-based PDF or your notes into an outline, summary, flashcards with spaced review, quizzes and a day-by-day plan, and ask questions answered only from your material.
 order: 8
 updated: 2026-10-03
 keywords: study mode, flashcards, quiz, study plan, PDF study guide

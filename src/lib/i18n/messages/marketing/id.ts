@@ -12,8 +12,8 @@ const m: MarketingCatalog = {
       "description": "Setiap fitur Keplar dalam satu halaman, dikelompokkan menurut kegunaannya: bertanya, membaca file, membuat situs dan aplikasi, membangun bersama, merilis, API dan widget, serta kepercayaan. Masing-masing menyebutkan apakah sudah tersedia, beta, atau segera hadir."
     },
     "pricing": {
-      "title": "Harga: Free, Lite $20, Plus $45, Pro $99",
-      "description": "Mulai gratis dengan Keplar One. Keplar Lite $20/bulan, Keplar Plus $45/bulan, Keplar Pro $99/bulan, dan paket Business tersedia melalui tim penjualan kami. Pemakaian yang bisa Anda lihat, tidak pernah disembunyikan."
+      "title": "Harga: Free, Plus $45, Pro $99",
+      "description": "Mulai gratis dengan Keplar One. Keplar Plus $45/bulan, Keplar Pro $99/bulan, dan paket Business tersedia melalui tim penjualan kami. Pemakaian yang bisa Anda lihat, tidak pernah disembunyikan."
     },
     "showcase": {
       "title": "Etalase Create: seperti apa seharusnya aplikasi buatan Keplar",

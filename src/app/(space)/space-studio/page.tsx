@@ -1,30 +1,17 @@
-import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { MODELS, PLANS, PRICING_NOTE, publicView } from "@/lib/space-studio/core";
 import { DownloadButton } from "@/components/space/DownloadButton";
 import { MotionToggle, RotatingWord } from "@/components/space/SpaceChrome";
 import { pageMeta } from "@/lib/seo";
-import { isSpaceHost, SPACE_URL } from "@/lib/site";
 import s from "@/components/space/space.module.css";
 
-export const dynamic = "force-dynamic";
-
-const TITLE = "Space Studio by Keplar: AI for Roblox Studio and Blender";
-const DESCRIPTION = "Space Studio is Keplar's desktop app for Roblox Studio and Blender development, with four AI models: Orbit 3.8, Nebula 4.2, Solar 5.4 and Nova 5.5.";
-
-/**
- * keplar.one/space-studio is noindex, follow. space.keplar.one rewrites "/" onto this same page, so that host
- * stays indexable and canonical to itself. The page body is the same on both hosts.
- */
-export async function generateMetadata(): Promise<Metadata> {
-  const host = (await headers()).get("x-forwarded-host") ?? (await headers()).get("host");
-  const meta: Metadata = {
-    ...pageMeta("/space-studio", TITLE, DESCRIPTION),
-    icons: { icon: "/icons/space-studio.png", apple: "/icons/space-studio.png" },
-  };
-  if (isSpaceHost(host)) return { ...meta, alternates: { canonical: `${SPACE_URL}/` } };
-  return { ...meta, robots: { index: false, follow: true } };
-}
+export const metadata = {
+  ...pageMeta(
+    "/space-studio",
+    "Space Studio by Keplar: AI for Roblox Studio and Blender",
+    "Space Studio is Keplar's desktop app for Roblox Studio and Blender development, with four AI models: Orbit 3.8, Nebula 4.2, Solar 5.4 and Nova 5.5.",
+  ),
+  icons: { icon: "/icons/space-studio.png", apple: "/icons/space-studio.png" },
+};
 
 const PLAN_IDS = ["free", "plus", "pro", "team", "enterprise"] as const;
 

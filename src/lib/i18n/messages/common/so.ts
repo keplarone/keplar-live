@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Ilaha",
     "items": {
       "/features": "Wax kasta oo Keplar ku jira",
-      "/overview#demo": "Bandhig toos ah",
+      "/#demo": "Bandhig toos ah",
       "/app/create": "Abuur",
       "/docs": "Dukumentiyo",
       "/pricing": "Qiimaha",
@@ -30,7 +30,6 @@ const m: CommonCatalog = {
       "Legal": "Sharci"
     },
     "links": {
-      "/overview": "About Keplar",
       "/features": "Wax kasta oo Keplar ku jira",
       "/showcase": "Bandhigga waxyaabaha la abuuray",
       "/templates": "Bandhigga bulshada",

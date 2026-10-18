@@ -6,7 +6,7 @@ import { breadcrumbs } from "@/lib/seo-graph";
 import s from "@/components/kb/kb.module.css";
 import { TwoTone } from "@/components/page/TwoTone";
 
-export const metadata = pageMeta("/use-cases", "What to Use Keplar For: 10 Practical Use Cases", "Ten practical ways people use Keplar: check a claim, compare options, study for an exam, understand a contract, get a second opinion on code and more.");
+export const metadata = pageMeta("/use-cases", "What to use Keplar for: ten practical use cases", "Concrete ways to use Keplar: compare options before buying, check a claim, study for an exam, research a topic, review code, build a site and more, each with honest limits.");
 
 export default function UseCasesPage() {
   const list = allUseCases();
