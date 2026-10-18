@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Montserrat, IBM_Plex_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { brand, isIndexable, site, siteVerification } from "@/lib/site";
 import { siteGraph } from "@/lib/structuredData";
@@ -22,23 +22,14 @@ import { SpaceMotionFilters } from "@/components/ui/space/MotionFilters";
 import "@/styles/globals.css";
 import "@/styles/redesign.css";
 
-// Montserrat (SIL OFL 1.1) is the one sitewide UI font, the Space Studio face: body, headings, buttons, inputs. next/font fetches it at
-// build time and self-hosts it from our own origin as one variable file (wght 400-700), latin subset, display swap, preloaded, with
-// next/font's metric-matched fallback (adjustFontFallback) so the swap does not shift layout. The CSS variable is --font-sans
-// (tokens.css --f-sans). IBM Plex Mono stays for code. docs/design/space-ui.md
-const sans = Montserrat({
-  subsets: ["latin"],
+// Inter (SIL OFL) is the UI face for keplar.one: the closest free match to a calm product sans. next/font self-hosts one
+// variable file (weights 400–700), display swap, preloaded, with a metric-matched fallback so the swap does not shift layout.
+// Space Studio loads Montserrat on its own layout. Code uses the system mono stack, so no second font file is fetched.
+const sans = Inter({
+  subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext", "greek", "greek-ext", "vietnamese"],
   variable: "--font-sans",
   display: "swap",
   adjustFontFallback: true,
-});
-
-const mono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-  weight: ["400", "500"],
-  display: "swap",
-  preload: false, // mono is rare above the fold; fetch it only on pages that actually use it
 });
 
 export const metadata: Metadata = {
@@ -85,7 +76,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     // data-theme is the server default (dark graphite); THEME_SCRIPT corrects it before
     // paint from localStorage / the keplar-theme-v2 cookie, hence suppressHydrationWarning.
     // LocaleHtml renders <html> with lang and dir from the URL (/ar → ar, rtl; English at the root → en, ltr). src/components/i18n/LocaleHtml.tsx
-    <LocaleHtml className={`${sans.variable} ${mono.variable} dark`} data-theme="dark" data-theme-pref="dark" style={{ colorScheme: "dark" }}>
+    <LocaleHtml className={`${sans.variable} dark`} data-theme="dark" data-theme-pref="dark" style={{ colorScheme: "dark" }}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: PREFS_SCRIPT }} />

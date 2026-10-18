@@ -14,14 +14,13 @@ function walk(dir: string, out: string[] = []) {
   return out;
 }
 
-test("font: Montserrat (Space UI, OFL, variable, swap) via next/font/google in the root layout; sans token feeds body; mono only for code", () => {
-  // Space UI decision (docs/design/space-ui.md): the sitewide face is Space Studio's Montserrat, replacing Google Sans. next/font
-  // self-hosts it and generates its metric-matched fallback (adjustFontFallback), so the hand-tuned "Keplar Sans Fallback" face is gone.
+test("font: Inter (variable, swap) via next/font/google on keplar.one; Space Studio keeps Montserrat; mono only for code", () => {
   const layout = read("src/app/layout.tsx");
-  assert.match(layout, /import \{ Montserrat, IBM_Plex_Mono \} from "next\/font\/google"/);
-  assert.match(layout, /Montserrat\(\{[\s\S]*display: "swap"[\s\S]*adjustFontFallback: true/);
-  assert.ok(!/Lexend|Google_Sans/.test(layout), "neither Lexend Deca nor Google Sans is the UI font any more");
-  // Share images render in Montserrat too, from the bundled OFL files (src/lib/og.tsx reads them from disk: no network); Lexend stays gone.
+  assert.match(layout, /import \{ Inter \} from "next\/font\/google"/);
+  assert.match(layout, /Inter\(\{[\s\S]*display: "swap"[\s\S]*adjustFontFallback: true/);
+  assert.doesNotMatch(layout, /Montserrat\(|IBM_Plex|Google_Sans|Lexend/);
+  assert.match(read("src/app/(space)/layout.tsx"), /Montserrat\(\{[\s\S]*variable: "--font-space"[\s\S]*preload: false/);
+  // Share images still render from the bundled OFL files (no network). Lexend stays gone.
   assert.match(read("assets/fonts/OFL-Montserrat.txt"), /SIL OPEN FONT LICENSE Version 1\.1/);
   for (const w of [400, 500, 600]) assert.ok(existsSync(`assets/fonts/Montserrat-latin-${w}.woff`) && existsSync(`assets/fonts/Montserrat-latin-ext-${w}.woff`));
   assert.ok(!existsSync("assets/fonts/LexendDeca-400.ttf"));
@@ -31,16 +30,14 @@ test("font: Montserrat (Space UI, OFL, variable, swap) via next/font/google in t
   assert.match(layout, /variable: "--font-sans"/);
   assert.match(read("src/styles/globals.css"), /body \{[^}]*font-family: var\(--f-sans\)/);
   assert.match(read("src/styles/globals.css"), /input,\s*textarea,\s*select,[\s\S]*font-family: var\(--f-sans\)/);
-  // Localized pages: Montserrat with its extended subsets first, Google Sans only for the scripts Montserrat does not draw.
-  assert.match(read("src/lib/i18n/fonts.ts"), /Montserrat\(\{[\s\S]*"latin-ext"[\s\S]*"cyrillic"/);
-  assert.match(read("src/components/i18n/i18n.css"), /html:not\(:lang\(en\)\) \{\s*--f-sans: var\(--font-sans-intl-latin\), var\(--font-sans-intl\)/);
-  // No other sans/display family is named anywhere in app CSS or components. keplar.one's graphite system
-  // uses the platform UI font; Space Studio keeps Montserrat because the override is scoped off [data-space-root].
+  assert.ok(!/next\/font/.test(read("src/lib/i18n/fonts.ts")), "localized pages do not load a second face");
+  assert.match(read("src/components/i18n/i18n.css"), /html:not\(:lang\(en\)\) \{\s*--f-sans: var\(--font-sans\), ui-sans-serif/);
   const graphite = read("src/styles/graphite.css");
-  assert.match(graphite, /html:not\(:has\(\[data-space-root\]\)\) \{[^}]*--f-sans: ui-sans-serif, system-ui/);
-  const bad = walk("src").filter((f) => !f.endsWith("serve.ts") && !f.endsWith("styles/graphite.css") && !f.includes("/api/") && !f.includes("/site-builder/") /* fonts of generated sites, not the app */ && !f.includes("/app-builder/design/") /* font pairings offered to generated apps */ && !f.endsWith("slides/export.ts") && /Instrument|Inter\b|Helvetica|Arial|"Segoe/.test(readFileSync(f, "utf8")));
+  assert.match(graphite, /html:not\(:has\(\[data-space-root\]\)\) \{[^}]*--f-sans: var\(--font-sans\), ui-sans-serif, system-ui/);
+  assert.match(graphite, /--t-body: 1rem;/);
+  assert.match(graphite, /--lh-body: 1\.65;/);
+  const bad = walk("src").filter((f) => !f.endsWith("serve.ts") && !f.endsWith("styles/graphite.css") && !f.endsWith("app/layout.tsx") && !f.endsWith("lib/i18n/fonts.ts") && !f.endsWith("components/i18n/i18n.css") && !f.includes("/api/") && !f.includes("/site-builder/") /* fonts of generated sites, not the app */ && !f.includes("/app-builder/design/") /* font pairings offered to generated apps */ && !f.endsWith("slides/export.ts") && /Instrument|Inter\b|Helvetica|Arial|"Segoe/.test(readFileSync(f, "utf8")));
   assert.deepEqual(bad, []);
-  // The sans token is next/font's variable (Montserrat + its generated fallback), then the system UI font.
   assert.match(read("src/styles/tokens.css"), /--f-sans: var\(--font-sans\), ui-sans-serif, system-ui, sans-serif;/);
   assert.ok(!/Keplar Sans Fallback/.test(read("src/styles/globals.css")), "the Google Sans fallback face is gone");
   // --f-mono is limited to code-like surfaces.

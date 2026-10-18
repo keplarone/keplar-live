@@ -17,8 +17,9 @@
   --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 64px; --sp-9: 96px; --sp-10: 144px;
   /* radii */
   --sp-r-sm: 14px; --sp-r-md: var(--space-r-panel); --sp-r-card: var(--space-r-card); --sp-r-pill: 999px;
-  /* type */
-  --sp-font: var(--f-sans, system-ui), system-ui, sans-serif; /* the main site's font */
+  /* type: Montserrat, loaded only on this layout (--font-space). */
+  --f-sans: var(--font-space), "Montserrat", sans-serif;
+  --sp-font: var(--f-sans), system-ui, sans-serif;
   --sp-t-xs: 12px; --sp-t-sm: 14px; --sp-t-md: 16px; --sp-t-lg: 20px; --sp-t-xl: clamp(28px, 3.4vw, 44px); --sp-t-hero: clamp(40px, 7.2vw, 104px);
   /* motion */
   --sp-ease: var(--space-ease-out);

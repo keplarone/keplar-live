@@ -45,7 +45,9 @@
   font-weight: 600;
   text-decoration: none;
 }
+.primary:hover { background: #e8e8e8; }
 :global(html[data-theme="light"]) .primary { background: #0d0d0d; color: #fff; }
+:global(html[data-theme="light"]) .primary:hover { background: #2a2a2a; }
 
 .section {
   margin: 0 auto 96px;

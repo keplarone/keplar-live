@@ -4,9 +4,13 @@
  */
 
 html:not(:has([data-space-root])) {
-  --f-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --f-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --f-mono: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
+  --t-body: 1rem;
+  --lh-body: 1.65;
   --space-grad: none;
   --space-focus-glow: none;
+  --focus-filter: none;
   --sh-window: none;
   --sh-float: none;
   --nav-shadow: none;
@@ -56,6 +60,10 @@ html:not(:has([data-space-root]))[data-theme="dark"] {
   --ks-switch-thumb-on: #171717;
   --ks-seg-thumb-depth: none;
   --nav-fill: #171717;
+  --nav-fill-scrolled: #171717;
+  --nav-solid: #171717;
+  --nav-menu-fill: #171717;
+  --nav-sheet: #171717;
   --nav-ink: #ececec;
   --nav-link: #c5c5c5;
   --nav-hover-bg: rgb(255 255 255 / 0.06);
@@ -103,6 +111,10 @@ html:not(:has([data-space-root]))[data-theme="light"] {
   --ks-switch-thumb-on: #ffffff;
   --ks-seg-thumb-depth: none;
   --nav-fill: #ffffff;
+  --nav-fill-scrolled: #ffffff;
+  --nav-solid: #ffffff;
+  --nav-menu-fill: #ffffff;
+  --nav-sheet: #ffffff;
   --nav-ink: #0d0d0d;
   background: #ffffff;
   color-scheme: light;
@@ -129,4 +141,95 @@ html:not(:has([data-space-root])) :where(.sp-grad) {
 html:not(:has([data-space-root])) [data-site-sky],
 html:not(:has([data-space-root])) [data-weather-sky] {
   display: none !important;
+}
+
+/* Flat controls. No halo, blurred ring, text glow, drop shadow or hover lift.
+   CSS modules load after this file, so the wipe is !important. Hover is a background shift. */
+html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]) {
+  text-shadow: none !important;
+  filter: none !important;
+}
+html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]) {
+  box-shadow: none !important;
+}
+html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]):is(:hover, :active, :focus, :focus-visible) {
+  transform: none !important;
+  translate: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href], input, textarea, select):focus-visible {
+  outline: 2px solid var(--c-ink) !important;
+  outline-offset: 2px !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+/* A secondary control that used an inset shadow as its only edge keeps a hairline. */
+html:not(:has([data-space-root])) :is(button, a)[class*="btnSecondary"],
+html:not(:has([data-space-root])) :is(button, a)[class*="__secondary"] {
+  border: 1px solid var(--hairline-strong);
+}
+html:not(:has([data-space-root])) :is(button, a)[class*="btnPrimary"]:hover:not(:disabled),
+html:not(:has([data-space-root])) a[class*="__cta"]:hover {
+  background: var(--c-ink-hover);
+}
+html:not(:has([data-space-root])) a[class*="signIn"]:hover {
+  background: var(--hover-wash);
+}
+html:not(:has([data-space-root])) :is(h1, h2) {
+  letter-spacing: -0.02em;
+}
+
+/* Halos painted on chips, icons, meters, menus and plan cards (not the control itself). */
+html:not(:has([data-space-root])) :is(
+  [class*="composer"],
+  [class*="homeChip"],
+  [class*="useForOption"],
+  [class*="__jump"],
+  [class*="sideItem"],
+  [class*="rowItem"],
+  [class*="deployRow"],
+  [class*="__example"],
+  [class*="moreIcon"],
+  [class*="moreItem"],
+  [class*="routingBtn"],
+  [class*="__panel"],
+  [class*="moreMenu"],
+  [class*="attachMenu"],
+  [class*="__plan"],
+  [class*="__fit"],
+  [class*="__sheet"],
+  [class*="upgradeTop"],
+  [class*="textInput"],
+  [class*="promptBox"],
+  [class*="dotLive"]
+),
+html:not(:has([data-space-root])) :is([class*="sideItem"] svg, [class*="meterTrack"] > span, [class*="strengthBar"] span, [class*="moreIcon"], [class*="__fill"]),
+html:not(:has([data-space-root])) :is([class*="routingBtn"], [class*="choiceText"], [class*="points"])::before,
+html:not(:has([data-space-root])) :is([class*="routingBtn"], [class*="choiceText"], [class*="points"])::after {
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+html:not(:has([data-space-root])) :is([class*="homeChip"], [class*="useForOption"], [class*="__plan"], [class*="__fit"], [class*="__jump"], [class*="rowItem"], [class*="deployRow"], [class*="__example"]):is(:hover, :active) {
+  transform: none !important;
+  translate: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+html:not(:has([data-space-root])) [class*="meterTrack"] > span,
+html:not(:has([data-space-root])) [class*="strengthBar"] span {
+  background: var(--c-ink) !important;
+}
+html:not(:has([data-space-root])) [class*="composer"][data-pulse] {
+  animation: none !important;
+}
+html:not(:has([data-space-root])) [class*="composer"]:is(:focus-within, [data-dragging]) {
+  box-shadow: none !important;
+}
+html:not(:has([data-space-root])) [class*="__sheet"] {
+  border: 1px solid var(--hairline);
+  background: var(--c-canvas);
 }
