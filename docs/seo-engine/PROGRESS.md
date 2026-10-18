@@ -135,7 +135,7 @@ Skipped:
 
 ## English titles from the re-attached sheet (2026-10-18)
 
-Branch `cursor/seo-english-meta-4cb9`, off `main` at `3d01ede`. The homepage files were not edited. PR #50 (`cursor/app-first-home-2120`) is moving `/` to the chat app; this branch only removes `/specialists` and `/simulation` from `sitemap.ts`, which is a different line from their `/overview` addition.
+Branch `cursor/seo-english-meta-4cb9`. The homepage files were not edited. `/` is the chat app (PR #50, restyled in #53) and the marketing landing is `/overview`. This branch only removes `/specialists` and `/simulation` from `sitemap.ts`. Main was merged in, including the sky split (#52) and the shared chrome (#55), so those files were not overwritten.
 
 Applied:
 
