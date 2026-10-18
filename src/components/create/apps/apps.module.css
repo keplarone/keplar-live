@@ -160,3 +160,22 @@
   :global(:root[data-theme]:not([data-business-app])) .primary:hover:not(:disabled),
   :global(:root[data-theme]:not([data-business-app])) .btn:not(.primary):hover:not(:disabled) { transform: none; }
 }
+
+/* Calm chrome: ink actions, no lift, no glow. */
+:global(:root[data-theme]:not([data-business-app])) .primary,
+:global(:root[data-theme]:not([data-business-app])) .btn.primary {
+  background: var(--c-ink);
+  color: var(--c-canvas);
+  box-shadow: none;
+  font-weight: var(--w-medium);
+  transform: none;
+}
+:global(:root[data-theme]:not([data-business-app])) .primary:hover:not(:disabled, [aria-disabled="true"]),
+:global(:root[data-theme]:not([data-business-app])) .btn.primary:hover:not(:disabled, [aria-disabled="true"]) { background: var(--c-ink-hover); transform: none; box-shadow: none; }
+:global(:root[data-theme]:not([data-business-app])) .btn:not(.primary) {
+  background: transparent;
+  color: var(--c-ink);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  transform: none;
+}
+:global(:root[data-theme]:not([data-business-app])) .btn:not(.primary):hover:not(:disabled, [aria-disabled="true"]) { background: var(--hover-wash); transform: none; box-shadow: inset 0 0 0 1px var(--hairline); }

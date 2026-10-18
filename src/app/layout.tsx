@@ -25,7 +25,6 @@ import { CommandPalette } from "@/components/nav/CommandPalette";
 import { LocaleHtml } from "@/components/i18n/LocaleHtml";
 import { KitHosts } from "@/components/kit/Hosts";
 import { SpaceMotionFilters } from "@/components/ui/space/MotionFilters";
-import { SiteClouds } from "@/components/sky/clouds/LandingClouds";
 import { SpaceSkyExempt } from "@/components/space/SpaceSkyExempt";
 import { APP_SURFACE_SCRIPT, SPACE_SKY_SCRIPT } from "@/components/space/surface";
 import "@/styles/globals.css";
@@ -124,11 +123,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <FitRuntime />
         <SmoothCaret />
         <JsonLd data={siteGraph()} />
-        <div data-site-sky="">
-          <SpaceSkyExempt>
-            <SiteClouds />
-          </SpaceSkyExempt>
-        </div>
+        {/* Marks chat and Space Studio. The cloud sky itself mounts only in the marketing layouts. */}
+        <SpaceSkyExempt>{null}</SpaceSkyExempt>
         <a className="skip-link" href="#main">
           Skip to content
         </a>

@@ -31,7 +31,8 @@ test("the pinned star cluster is gone and the landing clouds follow the MIT tech
   assert.equal(existsSync(new URL("src/components/sky/particle-scene.ts", root)), false);
   const story = read("src/components/sky/ParticleStory.tsx");
   assert.doesNotMatch(story, /use client|particle-scene|<canvas/);
-  assert.match(read("src/app/layout.tsx"), /<SiteClouds \/>/);
+  assert.match(read("src/app/(marketing)/layout.tsx"), /<MarketingSky \/>/);
+  assert.doesNotMatch(read("src/app/layout.tsx"), /SiteClouds|MarketingSky/);
   assert.doesNotMatch(read("src/components/sky/SkyHome.tsx"), /LandingClouds|SiteClouds|<canvas/);
   const dir = new URL("src/components/sky/clouds/", root);
   const files = readdirSync(dir).filter((n) => n.endsWith(".ts") || n.endsWith(".tsx"));

@@ -6,9 +6,9 @@ import s from "../Sky.module.css";
 import { CloudCutouts } from "./CloudCutouts";
 
 /**
- * One cloud sky for the whole site. The root layout mounts it once, fixed behind every page.
- * Space Studio never mounts this: SpaceSkyExempt leaves the slot empty on that host and those routes.
- * The canvas is fetched after first paint so the first screen and the composer stay responsive.
+ * The cloud sky for marketing pages. Mount it from the marketing layouts only
+ * (English and localized). The chat shell, /app, and Space Studio do not.
+ * The canvas is fetched after first paint so the first screen stays responsive.
  */
 export function SiteClouds() {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -42,6 +42,15 @@ export function SiteClouds() {
     <div className={s.siteSky} aria-hidden="true">
       <canvas ref={ref} className={s.landingClouds} />
       <CloudCutouts />
+    </div>
+  );
+}
+
+/** The only mount. Marketing layouts render this; the root layout and the chat shell do not. */
+export function MarketingSky() {
+  return (
+    <div data-site-sky="">
+      <SiteClouds />
     </div>
   );
 }

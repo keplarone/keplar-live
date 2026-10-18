@@ -164,3 +164,15 @@
 @media (prefers-reduced-motion: reduce) {
   :global(:root[data-theme]:not([data-business-app])) .btn:hover:not(:disabled) { transform: none; }
 }
+
+/* Calm Create: an ink action on a solid surface, no lift and no glow. */
+:global(:root[data-theme]:not([data-business-app])) .btn {
+  background: var(--c-ink);
+  color: var(--c-canvas);
+  box-shadow: none;
+  font-weight: var(--w-medium);
+  transform: none;
+}
+:global(:root[data-theme]:not([data-business-app])) .btn:hover:not(:disabled, [aria-disabled="true"]) { background: var(--c-ink-hover); transform: none; box-shadow: none; }
+:global(:root[data-theme]:not([data-business-app])) .btn:active:not(:disabled, [aria-disabled="true"]) { transform: none; box-shadow: none; }
+:global(:root[data-theme]:not([data-business-app])) .btn:focus-visible { box-shadow: inset 0 0 0 1px var(--c-ink); }
