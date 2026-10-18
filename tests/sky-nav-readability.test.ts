@@ -58,7 +58,6 @@ test("dark sky is navy with clouds that stay visible and keep light ink at AA", 
   assert.match(webgl, /uCover\.value = draw\.gray/);
   assert.doesNotMatch(webgl, /p\.z > -3\.3/);
   assert.match(webgl, /float drift = uTime \* 0\.012/);
-  assert.match(webgl, /smoothstep\(0\.95, 1\.7, abs\(p\.x\)\)/);
   assert.match(webgl, /vec2\(0\.80, 0\.82\)/);
   assert.match(webgl, /col = mix\(col, uBody \* \(1\.0 - crater\), disc \* vis\)/);
   assert.doesNotMatch(webgl, /edge \* \(1\.0 - disc\)/);

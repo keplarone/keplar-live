@@ -57,28 +57,37 @@ fn fbm(p: vec3<f32>) -> f32 {
   const bank = wgslFn(`
 fn bank(p: vec2<f32>, c: vec2<f32>, r: vec2<f32>, n: f32) -> f32 {
   let q = (p - c) / r;
-  let rad = 0.84 + (n - 0.5) * 0.32;
-  return smoothstep(0.0, 0.13, rad - length(q));
+  let edge = 0.55 + (n - 0.5) * 1.45;
+  return smoothstep(edge + 0.5, edge - 0.55, dot(q, q));
 }`);
   const density = wgslFn(`
 fn density(p: vec3<f32>, time: f32, lite: f32, cover: f32) -> f32 {
-  let drift = time * 0.012 * (0.65 + p.z * 0.06);
-  let xz = p.xz + vec2<f32>(drift, drift * 0.08);
-  let edgeN = fbm(vec3<f32>(xz * 1.25 + vec2<f32>(1.7, 4.2), 1.2));
-  var detail = 0.55;
+  let drift = time * 0.012 * (0.55 + p.z * 0.28);
+  let xz = p.xz + vec2<f32>(drift, drift * 0.12);
+  let warp = vec2<f32>(fbm(vec3<f32>(xz * 0.85, 1.2)), fbm(vec3<f32>(xz * 0.85 + vec2<f32>(4.2, 1.1), 3.4)));
+  let q = xz + warp * mix(0.95, 0.35, step(0.5, lite));
+  let base = fbm(vec3<f32>(q * 0.72, p.y));
+  var detail = 0.0;
   if (lite < 0.5) {
-    detail = fbm(vec3<f32>(xz * 2.35 + vec2<f32>(8.0, 2.0), 2.0));
+    detail = fbm(vec3<f32>(q * 2.15 + vec2<f32>(3.0, 7.0), 2.0));
   }
+  let n = base * 0.68 + detail * 0.32;
+  let edgeN = fbm(vec3<f32>(xz * 0.62 + vec2<f32>(8.0, 1.4), 4.0));
+  let yh = clamp((p.y - 0.12) / 1.15, 0.0, 1.0);
+  let profile = smoothstep(0.0, 0.18, yh) * smoothstep(1.0, 0.38, yh);
   var banks = 0.0;
-  banks = max(banks, bank(xz, vec2<f32>(-2.7, 2.35), vec2<f32>(1.4, 1.05), edgeN));
-  banks = max(banks, bank(xz, vec2<f32>(2.8, 3.45), vec2<f32>(1.5, 1.15), edgeN + 0.22));
-  banks = max(banks, bank(xz, vec2<f32>(-2.9, 4.3), vec2<f32>(1.2, 0.9), edgeN + 0.38));
-  let extra = smoothstep(0.18, 0.55, cover);
-  banks = max(banks, bank(xz, vec2<f32>(2.95, 1.7), vec2<f32>(1.05, 0.72), edgeN + 0.12) * extra);
-  banks = banks * smoothstep(0.95, 1.7, abs(p.x));
-  let yh = clamp((p.y - 0.1) / 1.05, 0.0, 1.0);
-  let profile = smoothstep(0.0, 0.07, yh) * smoothstep(1.0, 0.58, yh);
-  return clamp(banks * profile * mix(0.86, 1.0, detail) * 1.4, 0.0, 1.0);
+  banks = max(banks, bank(xz, vec2<f32>(-2.15, 2.55), vec2<f32>(1.85, 1.05), edgeN));
+  banks = max(banks, bank(xz, vec2<f32>(2.25, 2.35), vec2<f32>(1.9, 1.0), edgeN + 0.17));
+  banks = max(banks, bank(xz, vec2<f32>(-2.7, 4.15), vec2<f32>(1.7, 0.85), edgeN + 0.31));
+  banks = max(banks, bank(xz, vec2<f32>(2.85, 4.05), vec2<f32>(1.65, 0.8), edgeN + 0.08));
+  let extra = smoothstep(0.1, 0.48, cover);
+  banks = max(banks, bank(xz, vec2<f32>(-1.2, 3.3), vec2<f32>(1.35, 0.7), edgeN) * extra);
+  banks = max(banks, bank(xz, vec2<f32>(1.35, 3.15), vec2<f32>(1.3, 0.65), edgeN + 0.2) * extra);
+  let mid = smoothstep(1.45, 0.28, abs(p.x)) * smoothstep(0.7, 1.7, p.z) * smoothstep(3.5, 2.3, p.z);
+  banks = banks * (1.0 - mid * 0.96);
+  banks = banks * smoothstep(0.15, 1.05, p.z);
+  let thresh = mix(0.5, 0.38, cover);
+  return smoothstep(thresh, thresh + 0.3, n) * profile * banks;
 }`, [asInclude(bank), asInclude(fbm)]);
   const shade = wgslFn(`
 fn cloudShade(uv: vec2<f32>, time: f32, aspect: f32, zenith: vec3<f32>, horizon: vec3<f32>, lit: vec3<f32>, shadow: vec3<f32>, altitude: f32, journey: f32, ground: f32, dark: f32, fall: f32, cover: f32) -> vec4<f32> {
@@ -128,19 +137,19 @@ fn cloudShade(uv: vec2<f32>, time: f32, aspect: f32, zenith: vec3<f32>, horizon:
         lp = lp + sun * ldt;
         lightAcc = lightAcc + density(lp, time, 1.0, cover) * ldt;
       }
-      let beer = exp(-lightAcc * 0.85);
-      let shade = clamp(beer * 0.62 + 0.38, 0.08, 1.0);
-      let absorb = den * 3.2 * dt;
-      let contrib = 1.0 - exp(-absorb);
-      col = col + transmittance * contrib * mix(shadow, lit, shade);
+      let beer = exp(-lightAcc * 1.7);
+      let absorb = den * 1.25 * dt;
+      let contrib = (1.0 - exp(-absorb)) * beer;
+      col = col + transmittance * contrib * mix(shadow, lit, beer);
       transmittance = transmittance * exp(-absorb);
     }
     t = t + dt;
   }
   col = col + sky * transmittance;
-  let column = smoothstep(0.32, 0.16, abs(uv.x - 0.5));
-  let heroRows = smoothstep(0.2, 0.42, uv.y);
-  col = mix(col, sky, column * heroRows);
+  let hx = abs(uv.x - 0.5);
+  let hero = smoothstep(0.34, 0.1, hx) * smoothstep(0.4, 0.6, uv.y) * smoothstep(0.98, 0.76, uv.y);
+  let nav = smoothstep(0.84, 0.94, uv.y);
+  col = mix(col, sky, hero * 0.9 * (1.0 - nav));
   let center = vec2<f32>(0.80, 0.82);
   let delta = uv - center;
   let pd = length(vec2<f32>(delta.x * aspect, delta.y));
