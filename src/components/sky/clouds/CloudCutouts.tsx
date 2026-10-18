@@ -10,7 +10,7 @@ import { CLOUD_CUTOUTS } from "./cloud-cutouts";
 
 /**
  * CC0 cumulus cutouts (public/sky/clouds). Two depths drift at different speeds.
- * A dark-mode filter tints these images only. Overcast and rain reveal the extra pair and grey them.
+ * A dark-mode filter tints these images only. Overcast and rain grey the same clouds.
  */
 export function CloudCutouts() {
   const ref = useRef<HTMLDivElement>(null);
@@ -48,7 +48,7 @@ export function CloudCutouts() {
         // eslint-disable-next-line @next/next/no-img-element
         <img
           key={cloud.src}
-          className={cloud.extra ? `${s.cloudImg} ${s.cloudExtra}` : s.cloudImg}
+          className={cloud.hideOnPhone ? `${s.cloudImg} ${s.cloudPhone}` : s.cloudImg}
           src={cloud.src}
           alt=""
           width={cloud.w}

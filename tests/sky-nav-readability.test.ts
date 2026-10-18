@@ -73,7 +73,11 @@ test("dark sky is navy with clouds that stay visible and keep light ink at AA", 
   assert.match(vol, /return \(p\.x \+ drift\) \* lite \* cover \* 0\.0/);
   const css = read("src/components/sky/Sky.module.css");
   assert.match(css, /@keyframes cloud-drift/);
-  assert.match(css, /:global\(:root\[data-theme="dark"\]\) \.cloudImg \{\s*filter:/);
+  const nightClouds = css.match(/:global\(:root\[data-theme="dark"\]\) \.cloudImg \{([^}]*)\}/)?.[1] ?? "";
+  assert.match(nightClouds, /opacity:\s*0\.3/);
+  assert.match(nightClouds, /filter:/);
+  assert.doesNotMatch(nightClouds, /contrast/);
+  assert.match(css, /\.cloudPhone \{ display: none; \}/);
   assert.doesNotMatch(css, /\.h1 \{[^}]*filter:/);
   assert.match(css, /url\("\.\/static-day\.svg"\)/);
   assert.match(css, /url\("\.\/static-night\.svg"\)/);
@@ -85,21 +89,23 @@ test("cumulus cutouts are CC0, light, and stay off the headline", () => {
   assert.ok(license.includes("WickedInsignia"));
   assert.ok(license.includes("public domain"));
   const files = readdirSync("public/sky/clouds").filter((name) => name.endsWith(".webp"));
-  assert.equal(files.length, 8);
+  assert.equal(files.length, 4);
   const bytes = files.reduce((sum, name) => sum + statSync(`public/sky/clouds/${name}`).size, 0);
   assert.ok(bytes < 400 * 1024, `cutouts are ${bytes} bytes`);
-  assert.equal(CLOUD_CUTOUTS.length, 8);
+  assert.equal(CLOUD_CUTOUTS.length, 4);
+  assert.ok(CLOUD_CUTOUTS.length <= 5);
+  assert.equal(CLOUD_CUTOUTS.filter((cloud) => cloud.hideOnPhone).length, 1);
   for (const cloud of CLOUD_CUTOUTS) {
-    if (cloud.extra) continue;
     const width = Number.parseFloat(cloud.width);
     const top = Number.parseFloat(cloud.top);
+    const drift = Number.parseFloat(cloud.dx);
     const start = cloud.left != null
       ? Number.parseFloat(cloud.left)
       : 100 - Number.parseFloat(cloud.right ?? "0") - width;
-    const end = start + width;
-    if (top < 48) {
-      const overlaps = Math.min(end, 70) - Math.max(start, 30);
-      assert.ok(overlaps < 4, `${cloud.src} crosses the headline`);
+    const end = start + width + (cloud.left != null ? drift : 0);
+    if (top < 60) {
+      const overlaps = Math.min(end, 75) - Math.max(start, 25);
+      assert.ok(overlaps <= 0, `${cloud.src} crosses the hero sky`);
     }
   }
   const deck = read("src/components/sky/clouds/CloudCutouts.tsx");
