@@ -1927,7 +1927,8 @@ a.sideItem {
 @media (prefers-reduced-motion: reduce) { .view[data-connected-apps] button:not([role]):hover:not(:disabled) { transform: none; } }
 
 /* Signed-out home: Log in and Sign up sit at the top right. Solid ink, no glass. */
-.authTop { display: inline-flex; align-items: center; gap: 8px; flex: none; }
+.authTop { display: inline-flex; align-items: center; gap: 8px; flex: none; min-width: 0; }
+.authShort { display: none; }
 .authIn, .authUp {
   display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 999px;
   font-size: 14px; font-weight: 500; white-space: nowrap;
@@ -1941,8 +1942,9 @@ a.sideItem {
 .explore, .sideFoot { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 13px; line-height: 1.4; }
 .explore { justify-content: center; }
 .sideFoot { padding: 2px 12px 0; }
-.explore a, .sideFoot a { color: var(--c-ink-3); text-decoration: none; }
-.explore a:hover, .sideFoot a:hover { color: var(--c-ink); text-decoration: underline; text-underline-offset: 3px; }
+.explore a, .sideFoot a, .mobileFoot a { color: var(--c-ink-3); text-decoration: none; }
+.explore a:hover, .sideFoot a:hover, .mobileFoot a:hover { color: var(--c-ink); text-decoration: underline; text-underline-offset: 3px; }
+.mobileFoot { display: none; }
 
 /* ── ChatGPT-calm chat (both themes) ──
    Solid graphite or white, a 1px edge, a 760px reading column, 16px type. No glow, no glass, no surface gradient. */
@@ -2047,4 +2049,49 @@ a.sideItem {
   :global(:root[data-theme]) .topbar .iconBtn {
     transition: background-color 160ms ease, color 160ms ease;
   }
+}
+
+/* Phones: the top bar fits (short Sign up, no reserved title on an empty chat), the empty greeting and
+   composer sit high enough that the chips stay above the fold, and the link row is one footer at the
+   bottom of the page. --consent-bar is the cookie bar's height, so neither covers the composer. */
+@media (max-width: 640px) {
+  .authFull { display: none; }
+  .authShort { display: inline; }
+  .authIn, .authUp { height: 32px; padding: 0 10px; font-size: 13px; }
+}
+@media (max-width: 899px) {
+  :global(:root[data-theme]) .topbar { overflow: hidden; gap: 2px; padding: 8px 8px 0; }
+  :global(:root[data-theme]) .main[data-empty] .topTitle { display: none; }
+  .sideFoot { display: none; }
+  .mobileFoot {
+    display: flex;
+    position: absolute;
+    z-index: 6;
+    left: 0;
+    right: 0;
+    bottom: var(--consent-bar, 0px);
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2px 10px;
+    margin: 0;
+    padding: 6px 12px;
+    font-size: 12px;
+    line-height: 1.4;
+    background: var(--c-canvas);
+    border-top: 1px solid var(--hairline);
+  }
+  :global(:root[data-theme]) .main[data-view="thread"]:not([data-empty]) .dock {
+    bottom: calc(52px + var(--consent-bar, 0px));
+  }
+  :global(:root[data-theme]) .main[data-view="thread"]:not([data-empty]) .scroll {
+    padding-bottom: calc(var(--dock-h, 170px) + 64px + var(--consent-bar, 0px));
+  }
+  :global(:root[data-theme]) .main[data-empty] .scroll {
+    padding-top: 56px;
+    padding-bottom: calc(56px + var(--consent-bar, 0px));
+  }
+  :global(:root[data-theme]) .main[data-empty] .welcome { min-height: 72px; }
+  :global(:root[data-theme]) .main[data-empty] .dock { top: 128px; bottom: auto; }
+  :global(:root[data-theme]) .main[data-empty] .emptyBody { padding-top: calc(var(--dock-h, 140px) + 4px); }
+  :global(:root[data-theme]) .main[data-empty] .welcomeTitle { font-size: 26px; }
 }

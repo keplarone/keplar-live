@@ -26,6 +26,28 @@ export function CookieBanner() {
   const { t, ready, locale } = useConsentText();
 
   useEffect(() => {
+    const root = document.documentElement;
+    const el = region.current;
+    if (!el) {
+      root.removeAttribute("data-consent-open");
+      root.style.removeProperty("--consent-bar");
+      return;
+    }
+    const apply = () => {
+      root.setAttribute("data-consent-open", "");
+      root.style.setProperty("--consent-bar", `${Math.ceil(el.getBoundingClientRect().height)}px`);
+    };
+    apply();
+    const ro = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(apply);
+    ro?.observe(el);
+    return () => {
+      ro?.disconnect();
+      root.removeAttribute("data-consent-open");
+      root.style.removeProperty("--consent-bar");
+    };
+  }, [banner.mounted, ready, custom, path]);
+
+  useEffect(() => {
     const rec = readConsent();
     const t = window.setTimeout(() => {
       if (!rec) setOpen(true);
@@ -58,7 +80,7 @@ export function CookieBanner() {
   const info = localeInfo(locale);
   const placement = path.startsWith("/app") ? "top" : path.startsWith("/welcome") ? "side" : "bottom";
   return (
-    <div ref={region} className={s.banner} data-placement={placement} {...banner.motion(placement === "top" ? "drop" : "toast")} role="region" aria-labelledby="cookie-title" lang={info?.code ?? "en"} dir={info?.dir ?? "ltr"} onKeyDown={(e) => { if (e.key === "Escape" && wasOpenedByUser.current) setOpen(false); }}>
+    <div ref={region} className={s.banner} data-cookie-banner="" data-placement={placement} {...banner.motion(placement === "top" ? "drop" : "toast")} role="region" aria-labelledby="cookie-title" lang={info?.code ?? "en"} dir={info?.dir ?? "ltr"} onKeyDown={(e) => { if (e.key === "Escape" && wasOpenedByUser.current) setOpen(false); }}>
       <h2 id="cookie-title" className={s.title}>{t.title}</h2>
       <p className={s.text}>
         {t.text}{" "}

@@ -45,7 +45,6 @@ import { DeleteChatAction } from "./delete/DeleteChat";
 import { usePresence } from "@/components/motion/usePresence";
 import { withViewTransition } from "@/lib/ui/view-transition";
 import { useChatDelete } from "./delete/useChatDelete";
-import { UseForPrompt } from "./UseForPrompt";
 import { ResumeChats } from "./ResumeChats";
 import { OfflineNotice } from "./OfflineNotice";
 import { useDockHeight } from "./dock-height";
@@ -56,7 +55,7 @@ import { AppOnboarding } from "@/components/onboarding/AppOnboarding";
 import { DeploymentsView } from "./DeploymentsView";
 import { KeplarStudio } from "./studio-mode/workspace/KeplarStudio";
 import { BUSINESS_URL, BUSINESS_VIEWS } from "@/lib/business-site";
-import { businessProminent, examplesFor, readUseFor, useForOptions, writeUseFor, type UseFor } from "./use-for";
+import { businessProminent, examplesFor, readUseFor, type UseFor } from "./use-for";
 import type { Ledger } from "./state/types";
 import { formatDailyReset } from "@/lib/usage/format";
 import { giveBackOne, takeOne } from "@/lib/usage/meter";
@@ -78,6 +77,7 @@ import { deleteProject, mergeProjects, renameProject, type Ops } from "./workspa
 import { WorkspaceTurn, type TabTarget } from "./workspace/WorkspaceTurn";
 import { AnswerTools } from "./parity/AnswerTools";
 import { ChatOptionsBar, PrivateBanner, SpecialistStarters, useSpecialists } from "./parity/ChatOptionsBar";
+import { useFamilyMode } from "./parity/family-client";
 import { DraftPane } from "./parity/DraftPane";
 import s from "./App.module.css";
 
@@ -285,9 +285,9 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   // Delete a chat: gone from the screen at once, brought back by Undo for a few seconds, then deleted for good.
   const del = useChatDelete({ threads: state.threads, activeId: state.activeThreadId, drop: sync.drop, restore: sync.restore, commit: sync.commit });
   const { setMemory } = sync;
-  // First-visit preference (localStorage only); null until chosen. Default examples are personal.
-  const [useFor, setUseFor] = useState<UseFor | null>(() => readUseFor());
-  const [askUseFor, setAskUseFor] = useState(() => readUseFor() === null);
+  // First-visit preference (localStorage only); null until chosen on sign-up. Default examples are personal.
+  const [useFor] = useState<UseFor | null>(() => readUseFor());
+  const family = useFamilyMode(state.ledger.signedIn);
   const [onboardingSettled, setOnboardingSettled] = useState(false);
   const [holdOver, setHoldOver] = useState(false);
   useEffect(() => { const t = window.setTimeout(() => setHoldOver(true), 1800); return () => window.clearTimeout(t); }, []);
@@ -295,15 +295,6 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   // Greeting: the signed-in person's first name when the account has one (never guessed from the email address).
   const firstName = state.ledger.signedIn ? (state.account?.name?.trim().split(/\s+/)[0] ?? "").slice(0, 40) : "";
   const [welcome] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("welcome") === "1");
-  // Keplar Business has its own desktop app (keplarone/keplar-business) and site (business.keplar.one): Keplar One never sends
-  // a Business account over. Keplar One's desktop window only shows keplar.one, so a redirect to the Business host would leave it.
-  const chooseUseFor = useCallback((v: UseFor) => {
-    writeUseFor(v);
-    setUseFor(v);
-    setAskUseFor(false);
-    requestAnimationFrame(() => composerRef.current?.focus());
-  }, []);
-
   useEffect(() => {
     // Drop ?welcome=1 (from sign-up) so a reload doesn't repeat the greeting.
     if (!welcome) return;
@@ -462,7 +453,8 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     const main = root?.closest("main");
     // The desktop app's title bar (DesktopTitleBar) is the app's own chrome, not the site's: it stays usable. So do the kit hosts
     // (KitHosts: toasts and confirmAction dialogs), which the app itself uses; inert there made Undo and every confirm unclickable.
-    const siblings = main ? [...document.body.children].filter((el) => el !== main && el.tagName !== "SCRIPT" && !el.hasAttribute("data-desktop-titlebar") && !el.hasAttribute("data-kit-host")) : [];
+    // The cookie choice is the same: it has to stay clickable on the chat, or the bar can never be dismissed.
+    const siblings = main ? [...document.body.children].filter((el) => el !== main && el.tagName !== "SCRIPT" && !el.hasAttribute("data-desktop-titlebar") && !el.hasAttribute("data-kit-host") && !el.hasAttribute("data-cookie-banner")) : [];
     siblings.forEach((el) => el.setAttribute("inert", ""));
     document.documentElement.style.overflow = "hidden";
     document.documentElement.style.scrollbarGutter = "auto"; // the app is a fixed full-screen shell: no empty scrollbar strip beside it on Windows/Linux
@@ -1119,7 +1111,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
           {state.ledger.synced && !state.ledger.signedIn ? (
             <span className={s.authTop}>
               <Link href="/signin" className={s.authIn}>Log in</Link>
-              <Link href="/signup" className={s.authUp}>Sign up for free</Link>
+              <Link href="/signup" className={s.authUp}><span className={s.authFull}>Sign up for free</span><span className={s.authShort}>Sign up</span></Link>
             </span>
           ) : null}
           <button type="button" className={`${s.iconBtn} ${s.newBtnMobile}`} onClick={() => newThread()} aria-label="New chat">
@@ -1162,14 +1154,6 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                     onView={(v) => goView(v)}
                     onSend={(text) => send(text, [], { web: false, deepResearch: false, create: false, agent: false })}
                     more={<>
-                  {askUseFor ? null : (
-                    <p className={s.useForLine}>
-                      Examples for {useForOptions.find((o) => o.id === (useFor ?? "personal"))?.label.toLowerCase()} use.{" "}
-                      <button type="button" className={s.useForChange} onClick={() => setAskUseFor(true)}>
-                        Change
-                      </button>
-                    </p>
-                  )}
                   <ul className={s.examples} aria-label="Example questions">
                     {examplesFor(useFor).map((p) => (
                       <li key={p.label}>
@@ -1183,10 +1167,6 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                     </>}
                   />
                   {state.ledger.signedIn ? <ResumeChats threads={state.threads} onOpen={openThread} onAll={() => goView("history")} /> : null}
-                  {/* The one-time "What will you use Keplar for?" question sits under the suggestions, not above the greeting's chips. */}
-                  {askUseFor ? (
-                    <UseForPrompt value={useFor} onChoose={chooseUseFor} onSkip={() => chooseUseFor(useFor ?? "personal")} />
-                  ) : null}
                   </>) : null}
                   </div>
                 </div>
@@ -1338,9 +1318,6 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
             >
               <OfflineNotice />
               <ChatOptionsBar
-                isNew={messages.length === 0}
-                privateOn={Boolean(state.privateNext)}
-                onPrivate={(on) => dispatch({ type: "private-next", on })}
                 specialists={specialists}
                 specialistId={chatSpecialistId}
                 onSpecialist={(id) => dispatch({ type: "set-specialist", id })}
@@ -1368,9 +1345,10 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                 onModesChange={onComposerModes}
                 placeholder={messages.length ? "Reply to Keplar…" : "How can Keplar help you today?"}
                 draftKey={draftKeyFor(state.scope, state.activeThreadId, Boolean(state.threads.find((x) => x.id === state.activeThreadId)?.private ?? state.privateNext))}
+                privateChat={messages.length === 0 && !family ? { on: Boolean(state.privateNext), onToggle: () => dispatch({ type: "private-next", on: !state.privateNext }) } : null}
+                recordNotes={messages.length === 0}
               />
               <p className={s.dockNote}>Keplar can be wrong, even when models agree. Verify important decisions.</p>
-              {messages.length === 0 ? <ExploreLinks className={s.explore} live /> : null}
             </div>
           </>
         ) : state.view === "create" ? (
@@ -1437,6 +1415,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
       {searchOpen ? (
         <SearchDialog threads={listedThreads} onClose={() => setSearchOpen(false)} onOpen={openThread} onNew={() => newThread()} onView={(v) => goView(v)} />
       ) : null}
+      {state.view === "thread" ? <ExploreLinks className={s.mobileFoot} /> : null}
     </div>
   );
 }

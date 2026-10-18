@@ -21,8 +21,19 @@ const ctor = (): Ctor | null => {
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 };
 
-/** Record notes: transcribe a meeting or lecture live, then open the transcript as a side draft to turn into notes. */
-export function RecordNotes() {
+/** The + menu asks a mounted RecordNotes to start or stop. The control stays mounted so a recording survives the menu closing. */
+export const RECORD_NOTES_EVENT = "keplar:record-notes";
+export function toggleRecordNotes() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(RECORD_NOTES_EVENT));
+}
+export function recordNotesSupported(): boolean {
+  return Boolean(ctor());
+}
+
+/** Record notes: transcribe a meeting or lecture live, then open the transcript as a side draft to turn into notes.
+ *  `hideIdle` keeps the start button out of the layout (the + menu owns it) and only shows Stop while a recording is running. */
+export function RecordNotes({ hideIdle = false }: { hideIdle?: boolean }) {
   const [supported, setSupported] = useState(false);
   const [on, setOn] = useState(false);
   const [segs, setSegs] = useState<Segment[]>([]);
@@ -33,8 +44,14 @@ export function RecordNotes() {
   const started = useRef<Date | null>(null);
   const live = useRef(false);
   const segsRef = useRef<Segment[]>([]);
+  const toggleRef = useRef<() => void>(() => {});
 
   useEffect(() => { const id = window.setTimeout(() => setSupported(Boolean(ctor())), 0); return () => window.clearTimeout(id); }, []);
+  useEffect(() => {
+    const onToggle = () => toggleRef.current();
+    window.addEventListener(RECORD_NOTES_EVENT, onToggle);
+    return () => window.removeEventListener(RECORD_NOTES_EVENT, onToggle);
+  }, []);
   useEffect(() => {
     if (!on) return;
     const id = window.setInterval(() => {
@@ -45,8 +62,6 @@ export function RecordNotes() {
     return () => window.clearInterval(id);
   }); // re-armed each render so finish() sees fresh state
   useEffect(() => () => { live.current = false; rec.current?.abort(); }, []);
-
-  if (!supported) return null;
 
   const begin = () => {
     const C = ctor();
@@ -76,6 +91,10 @@ export function RecordNotes() {
     setInterim("");
     if (started.current) openDraft({ kind: "open", ...recordingDraft(segsRef.current, started.current, Date.now() - started.current.getTime()) });
   }
+
+  toggleRef.current = () => { if (live.current) finish(); else begin(); };
+  if (!supported) return null;
+  if (hideIdle && !on && !err) return null;
 
   return (
     <>
