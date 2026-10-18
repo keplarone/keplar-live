@@ -2,8 +2,10 @@ import "./setup";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { readdirSync, readFileSync } from "node:fs";
+import { sitemapPaths } from "../src/app/sitemap";
 import { softwareApp } from "../src/lib/structuredData";
 import { tiers } from "../src/lib/tiers";
+import { isSpaceHost, SPACE_HOST } from "../src/lib/site";
 
 test("pricing title, description and OG name Lite at the real $20 price, in every locale", () => {
   const lite = tiers.find((t) => t.id === "lite");
@@ -27,4 +29,13 @@ test("pricing title, description and OG name Lite at the real $20 price, in ever
   const raw = JSON.stringify(softwareApp());
   assert.equal(raw.includes("aggregateRating"), false);
   assert.equal(raw.includes('"Review"'), false);
+});
+
+test("keplar.one/space-studio is out of the sitemap, and only the space host stays indexable", () => {
+  assert.equal(sitemapPaths.includes("/space-studio"), false);
+  assert.equal(isSpaceHost(SPACE_HOST), true);
+  assert.equal(isSpaceHost(`${SPACE_HOST}:443`), true);
+  assert.equal(isSpaceHost("keplar.one"), false);
+  assert.equal(isSpaceHost("www.keplar.one"), false);
+  assert.equal(isSpaceHost(null), false);
 });

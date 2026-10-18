@@ -32,6 +32,13 @@ export const DOCS_URL = `https://${DOCS_HOST}`;
 /** Space Studio subdomain: same project; serves the Space Studio pages at the root (src/proxy.ts spaceHost). */
 export const SPACE_HOST = `space.${PRODUCTION_HOST}`;
 export const SPACE_URL = `https://${SPACE_HOST}`;
+
+/** True only for the Space Studio host. keplar.one/space-studio is a different origin and is not this host. */
+export function isSpaceHost(host: string | null | undefined): boolean {
+  const raw = (host ?? "").split(",")[0].trim().toLowerCase();
+  const noPort = raw.startsWith("[") ? raw.slice(0, raw.indexOf("]") + 1) : raw.replace(/:\d+$/, "");
+  return noPort.replace(/\.$/, "") === SPACE_HOST;
+}
 /** Business subdomain: same project; until Keplar Business is built it serves one landing page (src/proxy.ts businessHost). */
 export const BUSINESS_HOST = `business.${PRODUCTION_HOST}`;
 
