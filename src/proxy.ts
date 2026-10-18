@@ -174,6 +174,38 @@ export function businessMoved(req: NextRequest): NextResponse | null {
   return moved === null ? null : NextResponse.redirect(businessUrl(`${moved}${search}`), 308);
 }
 
+/**
+ * Real /app pages. The catch-all page calls notFound(), but the @modal parallel slot makes that response HTTP 200.
+ * Unknown paths are rewritten to a missing URL so the root 404's status is 404. Redirect targets stay listed so
+ * next.config can still send them on.
+ */
+const APP_PAGES = new Set([
+  "/app/agents",
+  "/app/approvals",
+  "/app/apps",
+  "/app/ask",
+  "/app/business",
+  "/app/browser",
+  "/app/create",
+  "/app/create/site",
+  "/app/deployments",
+  "/app/history",
+  "/app/projects",
+  "/app/slides",
+  "/app/studio",
+  "/app/studio/overlay",
+  "/app/study",
+  "/app/wants",
+]);
+
+export function unknownAppPath(pathname: string): boolean {
+  const p = pathname.replace(/\/+$/, "") || "/";
+  if (!p.startsWith("/app/")) return false;
+  if (APP_PAGES.has(p)) return false;
+  if (/^\/app\/create\/live\/[^/]+$/.test(p)) return false;
+  return true;
+}
+
 /** Where user-authored files are served (sites, apps, drafts). Their pages are sandboxed to an opaque origin (CSP sandbox). */
 const USER_CONTENT = /^\/(s|sites|apps)\//;
 /** Request destinations that execute what they load. */
@@ -208,6 +240,12 @@ export async function proxy(req: NextRequest, event?: NextFetchEvent) {
     if (moved) return moved;
   }
   const { pathname } = req.nextUrl;
+  // Unknown /app URLs: rewrite onto a path with no page so the response is the real 404, not the soft one parallel routes produce.
+  if (!business && unknownAppPath(pathname)) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/__missing";
+    return NextResponse.rewrite(url);
+  }
   if (firstPartyLoadOfUserCode(req)) return new NextResponse("User content can't run as a Keplar script.", { status: 403, headers: PLAIN });
   // Referral short link: /?ref=CODE → /invite/CODE (same cookies/claim flow).
   if ((pathname === "/" || pathname === "") && req.method === "GET") {

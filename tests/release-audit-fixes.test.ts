@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { initialState, messagesForSave, reducer } from "@/components/app-ui/state/store";
 import { docsFor, docsForTurn, keepTranscript } from "@/components/app-ui/doc-client";
+import { NextRequest } from "next/server";
+import { proxy, unknownAppPath } from "@/proxy";
 import { modelChain, MODELS } from "@/lib/site-builder/limits";
 import type { KeplarMessage, UserMessage } from "@/components/app-ui/state/types";
 
@@ -48,6 +50,18 @@ test("Lite site builds use the Flash chain, not the Pro model", () => {
   assert.equal(modelChain("lite", "normal")[0]?.id, MODELS.plus.id);
   assert.equal(modelChain("lite", "normal").some((m) => m.id === MODELS.pro.id), false);
   assert.equal(modelChain("pro", "normal")[0]?.id, MODELS.pro.id);
+});
+
+test("unknown /app paths are rewritten to a missing URL; real app paths are not", async () => {
+  assert.equal(unknownAppPath("/app/settings"), true);
+  assert.equal(unknownAppPath("/app/create"), false);
+  assert.equal(unknownAppPath("/app/create/live/abc"), false);
+  assert.equal(unknownAppPath("/app"), false);
+  const missing = await proxy(new NextRequest("https://keplar.one/app/settings", { headers: { host: "keplar.one" } }));
+  assert.equal(missing.headers.get("x-middleware-rewrite"), "https://keplar.one/__missing");
+  const create = await proxy(new NextRequest("https://keplar.one/app/create", { headers: { host: "keplar.one" } }));
+  assert.equal(create.headers.get("x-middleware-rewrite"), null);
+  assert.equal(create.status, 200);
 });
 
 test("Business app paths land on the workspace, and Stripe return leaves for it", () => {
