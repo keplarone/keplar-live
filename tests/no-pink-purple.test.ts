@@ -14,6 +14,10 @@ const SKIP_FILE = [
   /src\/lib\/critic\//,
   /src\/lib\/site-builder\/lint\.ts$/,
   /src\/lib\/app-builder\/rubric\.ts$/,
+  /* Space Studio is exempt: violet aura, headline gradient, and focus glow stay. */
+  /src\/components\/space\/space\.module\.css$/,
+  /src\/components\/space\/SpaceChrome\.tsx$/,
+  /src\/components\/space\/Starfield\.tsx$/,
 ];
 const EXT = /\.(css|ts|tsx|js|mjs|svg|html)$/;
 const TW = /\b(?:purple|violet|fuchsia|pink|indigo)-\d{2,3}\b/;
@@ -121,4 +125,19 @@ test("the single accent is graphite in light and near-white in dark, at AA", () 
   assert.ok(ratio("#f4f4f6", "#000000") >= 4.5);
   assert.ok(ratio("#f4f4f6", "#0a0a0c") >= 4.5);
   assert.ok(ratio("#17171a", "#f4f4f6") >= 4.5);
+});
+
+test("Space Studio keeps its violet aura, headline, and focus glow", () => {
+  const css = readFileSync("src/components/space/space.module.css", "utf8");
+  const chrome = readFileSync("src/components/space/SpaceChrome.tsx", "utf8");
+  assert.match(chrome, /rgb\(176, 104, 255\)/);
+  assert.match(css, /#c58cff 0%, #f08bd8/);
+  assert.match(css, /background: #c39bff/);
+  assert.match(css, /--c-accent: #c39bff/);
+  assert.match(css, /--space-focus-glow: 0 0 0 3px rgb\(195 155 255 \/ 0\.55\), 0 0 24px rgb\(176 104 255 \/ 0\.35\)/);
+  assert.match(css, /html:has\(\[data-space-root\]\)/);
+  const graphite = readFileSync("src/styles/graphite.css", "utf8");
+  assert.match(graphite, /outline: 2px solid var\(--c-ink\) !important;/);
+  assert.match(graphite, /outline-offset: 2px !important;/);
+  assert.match(readFileSync("src/app/(space)/layout.tsx", "utf8"), /Montserrat/);
 });

@@ -212,10 +212,21 @@ export function JourneyCaption({ className, lineClassName, fillClassName }: { cl
   );
 }
 
+// Aura colours: violet first, then neighbours on the wheel (indigo, orchid, plum, periwinkle). Kept soft and low in opacity.
+const AURAS = ["rgb(176, 104, 255)", "rgb(150, 140, 255)", "rgb(196, 96, 236)", "rgb(214, 110, 220)", "rgb(170, 118, 250)"] as const;
+
 /**
- * A layer behind the star field. It used to cycle violet glows; it now stays clear so the sky is the only colour back there.
- * Decorative, behind content, ignores the pointer.
+ * A slight purple aura over the star field: two soft glows (bottom-left and top-right) whose colour eases to the next hue
+ * whenever something fires "space:aura" (on the site, each new headline word). background-color transitions smoothly while
+ * the radial mask keeps the glow shape. Decorative, behind content, ignores the pointer; still with reduced motion.
  */
 export function SpaceAura({ className }: { className?: string }) {
-  return <div className={className} aria-hidden="true" />;
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const next = () => setI((n) => (n + 1) % AURAS.length);
+    window.addEventListener("space:aura", next);
+    return () => window.removeEventListener("space:aura", next);
+  }, []);
+  return <div className={className} aria-hidden="true" style={{ backgroundColor: AURAS[i] }} />;
 }

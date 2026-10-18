@@ -1,8 +1,40 @@
 /*
- * Space Studio site. Always dark (the layout forces data-theme="dark"), so every value reads from the shared Space tokens
- * (src/styles/space.css --space-*, tokens.css --c-*): the same black void, glass, 3D buttons, violet focus glow and motion
- * curves as keplar.one and the Space Studio app. The --sp-* names below are this module's aliases onto them.
+ * Space Studio site. Always dark (the layout forces data-theme="dark"). keplar.one is graphite with flat buttons and a
+ * 2px focus outline; this page is exempt and keeps its own violet accent, glows, and Montserrat. The shared tokens
+ * (src/styles/space.css --space-*, tokens.css --c-*) are pinned back to that palette below. The --sp-* names are aliases.
  */
+/* Pin the pre-graphite Space Studio palette. These beat tokens.css / space.css on this page only. */
+:global(html:has([data-space-root])) {
+  --c-accent: #c39bff;
+  --c-focus: #c39bff;
+  --c-on-accent: #ffffff;
+  --ring-rgb: 195 155 255;
+  --nav-focus: #c39bff;
+  --c-glass: rgba(16, 15, 22, 0.78);
+  --c-glass-strong: rgba(14, 13, 20, 0.9);
+  --c-memory: #f08bd8;
+  --rgb-memory: 240 139 216;
+  --v-memory: #f08bd8;
+  --on-memory: #000000;
+  --nav-fill: rgb(14 14 20 / 0.86);
+  --nav-fill-scrolled: rgb(12 12 17 / 0.92);
+  --nav-solid: #0e0e14;
+  --nav-menu-fill: rgb(16 14 22 / 0.97);
+  --nav-sheet: rgb(10 9 14 / 0.97);
+  --sh-window: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 30px 80px -30px rgb(0 0 0 / 0.85), 0 0 90px rgb(176 104 255 / 0.08);
+  --space-grad: linear-gradient(100deg, #b27cff 0%, #f08bd8 17%, #8ff0ff 34%, #a98cff 51%, #ff8fd0 68%, #c58cff 84%, #8fd8ff 100%);
+  --space-grad-ink: #b27cff;
+  --space-aura: 176 104 255;
+  --space-glass: linear-gradient(180deg, rgb(22 20 30 / 0.78), rgb(10 9 14 / 0.82));
+  --space-glass-solid: #0e0d13;
+  --space-glass-lift: inset 0 1px 0 rgb(255 255 255 / 0.1), 0 28px 70px rgb(0 0 0 / 0.6), 0 0 44px rgb(178 112 255 / 0.2);
+  --space-focus-glow: 0 0 0 3px rgb(195 155 255 / 0.55), 0 0 24px rgb(176 104 255 / 0.35);
+  --space-p-depth-hover: inset 0 1px 0 #ffffff, inset 0 -3px 0 rgb(0 0 0 / 0.1), 0 5px 0 #8c8a99, 0 14px 30px rgb(0 0 0 / 0.6), 0 0 32px rgb(190 150 255 / 0.25);
+  --space-s-face: linear-gradient(180deg, rgb(40 38 52 / 0.92), rgb(18 17 24 / 0.94));
+  --space-s-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.12), 0 4px 0 rgb(0 0 0 / 0.65), 0 20px 46px rgb(0 0 0 / 0.55), 0 0 44px rgb(178 112 255 / 0.24);
+  --space-d-depth-hover: inset 0 1px 0 rgb(255 255 255 / 0.5), inset 0 -3px 0 rgb(0 0 0 / 0.1), 0 5px 0 #8f3a44, 0 14px 30px rgb(0 0 0 / 0.6), 0 0 30px rgb(255 122 133 / 0.25);
+}
+
 .root {
   /* colour */
   --sp-bg: var(--space-void);
@@ -43,7 +75,7 @@
 .root a:not([data-sp-btn]) { color: inherit; }
 /* The site's global heading and body fonts must not leak in: every Space element uses Montserrat. */
 .root :where(h1, h2, h3, h4, p, a, li, span, button, em) { font-family: var(--sp-font); }
-/* Keyboard focus: Space Studio's violet glow, like the rest of keplar.one (no outline; a pointer press draws nothing). */
+/* Keyboard focus: Space Studio's violet glow (no outline; a pointer press draws nothing). keplar.one uses a flat 2px outline. */
 .root :focus-visible { outline: none; box-shadow: var(--space-focus-glow); }
 .root a:focus-visible { border-radius: 999px; }
 
@@ -69,7 +101,7 @@
   font-size: 17px; font-weight: 600; letter-spacing: -0.02em; transform: translateX(-6px);
   transition: max-width 0.42s var(--sp-ease), opacity 0.28s var(--sp-ease), transform 0.42s var(--sp-ease), margin 0.42s var(--sp-ease);
 }
-.brand:hover { padding-right: 20px; box-shadow: var(--nav-shadow); }
+.brand:hover { padding-right: 20px; box-shadow: var(--nav-shadow), 0 0 30px rgb(var(--space-aura) / 0.22); }
 .brand:focus-visible { padding-right: 20px; box-shadow: var(--nav-shadow), var(--space-focus-glow); }
 .brand:hover .word, .brand:focus-visible .word { max-width: 90px; opacity: 1; margin-left: 10px; transform: none; }
 .brand:hover .mark, .brand:focus-visible .mark { transform: rotate(-14deg) scale(0.94); }
@@ -85,9 +117,12 @@
 .root .navCta { justify-self: end; min-height: 48px; padding: 0 24px; }
 
 .main { position: relative; }
-/* The star field stays clear. This layer no longer paints a coloured glow. */
+/* Purple aura over the stars: the element's colour eases between hues (SpaceAura); the mask shapes it into two soft glows. */
 .aura {
-  position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0; background: none;
+  position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0.22;
+  transition: background-color 2.2s cubic-bezier(0.22, 1, 0.36, 1);
+  -webkit-mask-image: radial-gradient(60% 55% at 12% 100%, #000 0%, transparent 70%), radial-gradient(55% 50% at 92% 0%, #000 0%, transparent 70%);
+  mask-image: radial-gradient(60% 55% at 12% 100%, #000 0%, transparent 70%), radial-gradient(55% 50% at 92% 0%, #000 0%, transparent 70%);
 }
 
 /* ---- shared layout ---- */
@@ -119,18 +154,30 @@
 .swap { display: inline-grid; vertical-align: bottom; overflow: hidden; padding: 0 0.04em 0.1em; margin: 0 -0.04em -0.1em; transition: width 0.7s var(--sp-expo); text-align: left; }
 .swapWord {
   grid-area: 1 / 1; white-space: nowrap; justify-self: start; font-weight: 600;
-  color: var(--c-accent); background: none;
+  background-image: var(--space-grad); background-size: 400% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: gradShift 9s ease-in-out infinite;
   transform-origin: 50% 90%;
   transition: transform 0.9s var(--space-spring-gentle), opacity 0.42s ease-out;
 }
 .swapWord[data-state="idle"] { opacity: 0; transform: translateY(0.7em) scaleY(1.9) scaleX(0.94); }
-.swapWord[data-state="in"] { opacity: 1; transform: none; animation: swapBlur 0.8s linear 1; }
+.swapWord[data-state="in"] { opacity: 1; transform: none; animation: gradShift 9s ease-in-out infinite, swapBlur 0.8s linear 1; }
+@keyframes gradShift { 0% { background-position: 0% 50%; } 33% { background-position: 60% 50%; } 66% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 @keyframes swapBlur { 0% { filter: url(#sp-mb-y3); } 28% { filter: url(#sp-mb-y2); } 52% { filter: url(#sp-mb-y); } 72%, 100% { filter: none; } }
-.swapWord[data-state="out"] { opacity: 0; transform: translateY(-0.55em) scaleY(1.6) scaleX(0.96); transition: transform 0.5s var(--space-ease-in-expo), opacity 0.36s ease-in 0.09s; animation: swapBlurOut 0.45s linear both; }
+.swapWord[data-state="out"] { opacity: 0; transform: translateY(-0.55em) scaleY(1.6) scaleX(0.96); transition: transform 0.5s var(--space-ease-in-expo), opacity 0.36s ease-in 0.09s; animation: gradShift 9s ease-in-out infinite, swapBlurOut 0.45s linear both; }
 @keyframes swapBlurOut { 0%, 18% { filter: none; } 40% { filter: url(#sp-mb-y); } 65% { filter: url(#sp-mb-y2); } 100% { filter: url(#sp-mb-y3); } }
 .you {
   font-style: normal; font-weight: 700;
-  color: var(--c-accent); background: none;
+  background: linear-gradient(100deg, #c58cff 0%, #f08bd8 18%, #a98cff 36%, #d76cff 54%, #b36bff 72%, #f0a0ff 90%, #c58cff 100%);
+  background-size: 400% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: youShift 14s ease-in-out infinite;
+}
+/* Holds each colour for a few seconds, then glides to the next. */
+@keyframes youShift {
+  0%, 14% { background-position: 0% 50%; }
+  25%, 39% { background-position: 33% 50%; }
+  50%, 64% { background-position: 66% 50%; }
+  75%, 89% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 /* "New" announcement pill above the headline. */
 .badge {
@@ -144,7 +191,7 @@
 .journey { position: fixed; left: var(--sp-5); bottom: var(--sp-5); z-index: 30; display: flex; flex-direction: column; gap: var(--sp-2); pointer-events: none; font-size: var(--sp-t-xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--sp-ink-2); }
 .journey > span:first-child { animation: rise 0.7s var(--sp-ease) both; }
 .journeyLine { display: block; width: 140px; height: 2px; border-radius: 999px; background: var(--space-track); overflow: hidden; }
-.journeyFill { display: block; height: 100%; background: var(--c-accent); box-shadow: none; transform-origin: left; transition: transform 0.2s linear; }
+.journeyFill { display: block; height: 100%; background: linear-gradient(90deg, #a467f0, #d76cff); box-shadow: 0 0 12px rgb(var(--space-aura) / 0.6); transform-origin: left; transition: transform 0.2s linear; }
 .lede { margin: var(--sp-6) auto 0; max-width: 56ch; font-size: clamp(16px, 1.3vw, 19px); line-height: 1.65; color: var(--sp-ink-2); }
 .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-3); margin-top: var(--sp-7); }
 .note { margin: var(--sp-5) auto 0; max-width: 64ch; font-size: var(--sp-t-xs); line-height: 1.7; color: var(--sp-ink-3); }
@@ -184,7 +231,7 @@
 .cellTag { margin: 0; font-size: var(--sp-t-sm); line-height: 1.5; color: var(--sp-ink); }
 .plain { list-style: none; margin: var(--sp-2) 0 0; padding: 0; display: grid; gap: var(--sp-2); font-size: var(--sp-t-sm); line-height: 1.5; color: var(--sp-ink-2); }
 .plain li { padding-left: 14px; position: relative; }
-.plain li::before { content: ""; position: absolute; left: 0; top: 0.6em; width: 5px; height: 5px; border-radius: 999px; background: var(--c-accent); box-shadow: none; }
+.plain li::before { content: ""; position: absolute; left: 0; top: 0.6em; width: 5px; height: 5px; border-radius: 999px; background: #c39bff; box-shadow: 0 0 8px rgb(var(--space-aura) / 0.6); }
 .cellMeta { margin: auto 0 0; padding: 10px 14px; border-radius: var(--sp-r-sm); background: var(--space-track); font-size: var(--sp-t-xs); line-height: 1.6; color: var(--sp-ink-2); }
 
 /* plans: a stack of glass panels, one per plan */
@@ -280,4 +327,58 @@
 /* Phones: a soft dark band behind the floating nav, so text scrolling under the two pills does not collide with them. */
 @media (max-width: 640px) {
   .nav::before { content: ""; position: fixed; inset: 0 0 auto; height: 76px; z-index: -1; pointer-events: none; background: linear-gradient(#000 55%, transparent); }
+}
+
+/* Shared components (space.css) dropped their violet glows for keplar.one. Put those paints back on this page. */
+:global(html:has([data-space-root])) :global(::selection) { background: rgb(195 155 255 / 0.3); }
+@media not (forced-colors: active) {
+  :global(html:has([data-space-root])) :global(:is(p, dd, td, th, blockquote, figcaption, small, label, h1, h2, h3, h4, h5, h6) a[href]:not([data-sp-btn]):focus-visible) {
+    text-shadow: 0 0 14px rgb(195 155 255 / 0.55);
+  }
+}
+:global(html:has([data-space-root])) :global(.sp-grad) {
+  background-image: var(--space-grad);
+  background-size: 400% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: sp-grad-shift 9s ease-in-out infinite;
+}
+:global(html:has([data-space-root])) :global(.sp-hl__verb) { filter: drop-shadow(0 0 28px rgb(178 124 255 / 0.45)); }
+:global(html:has([data-space-root])) :global(.sp-hl__verb) :global(.sp-hl__ch) {
+  background-image: var(--space-grad);
+  background-size: calc(var(--ww, 3em) * 3) 100%;
+  background-position: calc(var(--space-flow) * var(--ww, 3em) * -2 - var(--cx, 0em)) 0;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+:global(html:has([data-space-root])) :global(.sp-notice) { box-shadow: var(--space-glass-depth), 0 0 40px rgb(var(--ring-rgb) / 0.12); }
+:global(html:has([data-space-root])) :global(.sp-notice[data-tone="warn"]) { box-shadow: var(--space-glass-depth), 0 0 44px rgb(var(--rgb-attention) / 0.18); }
+:global(html:has([data-space-root])) :global(.sp-notice[data-tone="error"]) { box-shadow: var(--space-glass-depth), 0 0 44px rgb(var(--rgb-destructive) / 0.2); }
+:global(html:has([data-space-root])) :global(.sp-notice[data-tone="success"]) { box-shadow: var(--space-glass-depth), 0 0 44px rgb(var(--rgb-verified) / 0.18); }
+:global(html:has([data-space-root])) :global(.sp-btn[data-status="loading"])::after {
+  background: linear-gradient(105deg, transparent 30%, rgb(176 104 255 / 0.22) 50%, transparent 70%);
+}
+:global(html:has([data-space-root])) :global(.sp-input[aria-invalid="true"]),
+:global(html:has([data-space-root])) :global(.sp-textarea[aria-invalid="true"]),
+:global(html:has([data-space-root])) :global(.sp-select[aria-invalid="true"]) {
+  box-shadow: var(--space-field-depth), 0 0 0 2px rgb(var(--rgb-destructive) / 0.5), 0 0 30px rgb(var(--rgb-destructive) / 0.2);
+}
+:global(html:has([data-space-root])) :global(.sp-seg__ind) {
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12), 0 6px 20px rgb(var(--ring-rgb) / 0.18);
+}
+:global(html:has([data-space-root])) :global(.sp-toggle[aria-checked="true"]) {
+  background: linear-gradient(90deg, #a467f0, #d76cff);
+  box-shadow: 0 0 18px rgb(176 104 255 / 0.35);
+}
+:global(html:has([data-space-root])) :global(.sp-toggle__thumb) { background: #fff; }
+:global(html:has([data-space-root])) :global(.sp-dialog) {
+  box-shadow: var(--space-glass-depth), 0 0 90px rgb(176 104 255 / 0.12);
+}
+:global(html:has([data-space-root])) :global(.sp-pop) {
+  box-shadow: var(--space-glass-depth), 0 30px 80px rgb(0 0 0 / 0.35), 0 0 60px rgb(176 104 255 / 0.14);
 }
