@@ -4,7 +4,7 @@
  * sanitized here before the browser shows it. Nothing is saved: the result joins the canvas draft, and the owner approves it.
  * A cheap model (the same chain as product-photo reading), metered as "site.edit".
  */
-import { OPENROUTER_BASE } from "./generate";
+import { OPENROUTER_BASE, providerRouting } from "./generate";
 import { tokensOf } from "./limits";
 import { visionChain } from "./product/vision";
 import { canonicalHtml } from "./sanitize";
@@ -59,7 +59,7 @@ export async function canvasEdit(plan: string, input: { element: string; instruc
           max_tokens: Math.min(6000, tokensOf(input.element.length) * 2 + 600),
           messages: [{ role: "system", content: SYSTEM }, { role: "user", content: user }],
           usage: { include: true },
-          provider: m.free ? { allow_fallbacks: true } : { allow_fallbacks: true, data_collection: "deny" },
+          provider: providerRouting(m.free),
           reasoning: m.free ? { effort: "none", exclude: true } : { effort: "low", exclude: true },
         }),
         signal: ctl.signal,

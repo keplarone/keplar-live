@@ -33,5 +33,5 @@ test("a request that never got a response is marked unreached; a stream that dro
 test("the app gives the count back only when the question never reached Keplar and the meter sync failed", () => {
   const src = readFileSync("src/components/app-ui/KeplarApp.tsx", "utf8");
   assert.match(src, /unreached = !e\.reached/);
-  assert.match(src, /syncMeter\(\)\.then\(\(ok\) => \{[\s\S]{0,200}!ok && took && unreached[\s\S]{0,120}giveBackOne/);
+  assert.match(src, /syncMeter\(true\)\.then\(\(ok\) => \{[\s\S]{0,200}!ok && took && unreached[\s\S]{0,120}giveBackOne/);
 });

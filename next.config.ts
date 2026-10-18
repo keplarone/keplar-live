@@ -49,8 +49,9 @@ const nextConfig: NextConfig = {
       // Keplar Wants and Keplar Browser were removed by owner decision: old links land in Ask instead of a 404.
       { source: "/app/wants", destination: "/app/ask", permanent: true },
       { source: "/app/browser", destination: "/app/ask", permanent: true },
-      // Business, Agents and Approvals moved to business.keplar.one for now (src/lib/business.ts).
-      ...["/app/business", "/app/agents", "/app/approvals", "/enterprise", "/agents"].map((source) => ({ source, destination: "https://business.keplar.one", permanent: false })),
+      // Business, Agents and Approvals moved to the Business workspace. Marketing links stay on the storefront.
+      ...["/app/business", "/app/agents", "/app/approvals"].map((source) => ({ source, destination: "https://business.keplar.one/work", permanent: false })),
+      ...["/enterprise", "/agents"].map((source) => ({ source, destination: "https://business.keplar.one", permanent: false })),
       // Common account URLs people type or other sites link to (/login answered 404 on the live site).
       ...["/login", "/log-in", "/sign-in"].map((source) => ({ source, destination: "/signin", permanent: true })),
       ...["/register", "/sign-up", "/join"].map((source) => ({ source, destination: "/signup", permanent: true })),
@@ -90,8 +91,6 @@ const nextConfig: NextConfig = {
       { source: "/fonts/:path*", headers: [{ key: "Cache-Control", value: YEAR }, { key: "X-Content-Type-Options", value: "nosniff" }] },
       // Runtime scripts for generated apps, loaded from sandboxed (opaque-origin) previews: cross-origin readable (FX_HEADERS).
       { source: "/fx/:path*", headers: [{ key: "Cache-Control", value: YEAR }, { key: "X-Content-Type-Options", value: "nosniff" }, ...FX_HEADERS] },
-      // The weather sky's stills (public/sky): re-rendered rarely and under the same names, so a day (not a year).
-      { source: "/sky/:path*", headers: [{ key: "Cache-Control", value: DAY }, { key: "X-Content-Type-Options", value: "nosniff" }] },
       { source: "/manifest.webmanifest", headers: [{ key: "Cache-Control", value: DAY }] },
       { source: "/sw.js", headers: [{ key: "Cache-Control", value: "public, max-age=0, must-revalidate" }, { key: "Service-Worker-Allowed", value: "/" }] },
       { source: "/:path*", headers: BASE_HEADERS.filter((h) => h.key !== HSTS) },

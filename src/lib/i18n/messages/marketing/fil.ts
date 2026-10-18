@@ -207,7 +207,7 @@ const m: MarketingCatalog = {
       },
       "roblox-studio": {
         "name": "Roblox Studio mode",
-        "line": "Kasamang tagabuo sa loob ng Roblox Studio: mapa, UI, flipbook effects at Luau scripts, gamit ang Claude Opus 5.5.",
+        "line": "Kasamang tagabuo sa loob ng Roblox Studio: mapa, UI, flipbook effects at Luau scripts, gamit ang Keplar's studio model.",
         "note": "Desktop app, Lite pataas."
       },
       "roblox-cloud": {

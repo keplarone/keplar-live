@@ -4,7 +4,7 @@
  * It may not invent facts (names, prices, hours, addresses, numbers, reviews). Nothing is applied until the owner chooses it.
  * A cheap model call (free models on the Free plan); when no model answers, the caller keeps the original and says so.
  */
-import { OPENROUTER_BASE } from "./generate";
+import { OPENROUTER_BASE, providerRouting } from "./generate";
 import { tokensOf } from "./limits";
 import { visionChain } from "./product/vision";
 import { briefToPrompt, type SiteBrief } from "./brief";
@@ -53,7 +53,7 @@ export async function enhanceBrief(plan: string, brief: SiteBrief, fetchImpl: ty
           max_tokens: 700,
           messages: [{ role: "system", content: SYSTEM }, { role: "user", content: input }],
           usage: { include: true },
-          provider: m.free ? { allow_fallbacks: true } : { allow_fallbacks: true, data_collection: "deny" },
+          provider: providerRouting(m.free),
           reasoning: m.free ? { effort: "none", exclude: true } : { effort: "low", exclude: true },
         }),
         signal: ctl.signal,

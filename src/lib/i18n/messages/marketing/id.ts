@@ -207,7 +207,7 @@ const m: MarketingCatalog = {
       },
       "roblox-studio": {
         "name": "Mode Roblox Studio",
-        "line": "Rekan pembangun di dalam Roblox Studio: peta, UI, efek flipbook, dan skrip Luau, dengan Claude Opus 5.5.",
+        "line": "Rekan pembangun di dalam Roblox Studio: peta, UI, efek flipbook, dan skrip Luau, dengan Keplar's studio model.",
         "note": "Aplikasi desktop, Lite ke atas."
       },
       "roblox-cloud": {

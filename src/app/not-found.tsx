@@ -15,7 +15,7 @@ export default function NotFound() {
         <section className={s.wrap} aria-labelledby="nf-title">
           <div className={s.card}>
             <p className={s.code} aria-hidden="true">404</p>
-            <h1 id="nf-title" className={s.title}>This page <span className="tt-g">drifted off.</span></h1>
+            <h1 id="nf-title" className={s.title}>This page <span className="tt-g">{"isn't here."}</span></h1>
             <p className={s.lede}>The link may be old, or the page moved. Try help and search, or start from home.</p>
             <div className={s.actions}>
               <ButtonLink href="/" size="lg">Go home</ButtonLink>

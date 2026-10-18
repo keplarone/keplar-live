@@ -207,7 +207,7 @@ const m: MarketingCatalog = {
       },
       "roblox-studio": {
         "name": "Режим Roblox Studio",
-        "line": "Співтворець у Roblox Studio: мапи, інтерфейс, flipbook-ефекти й скрипти Luau, на Claude Opus 5.5.",
+        "line": "Співтворець у Roblox Studio: мапи, інтерфейс, flipbook-ефекти й скрипти Luau, на Keplar's studio model.",
         "note": "Застосунок для комп’ютера, від тарифу Lite."
       },
       "roblox-cloud": {

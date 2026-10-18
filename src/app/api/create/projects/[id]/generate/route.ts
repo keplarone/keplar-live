@@ -25,6 +25,7 @@ export async function POST(req: Request, { params }: Ctx) {
     const { id } = await params;
     project = await projects().get(ws.id, id);
     if (!project) throw new HttpError(404, "Project not found.", "not_found");
+    if (ws.plan === "free") throw new HttpError(403, "This generator isn't available on Free. Create's site builder stays on free models.", "plan");
     prompt = ((await body<{ prompt?: string }>(req)).prompt ?? "").trim().slice(0, 4000);
     if (prompt.length < 3) throw new HttpError(400, "Describe what you want to build.");
     const verdict = await moderateText(prompt);

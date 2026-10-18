@@ -58,6 +58,7 @@ export async function createMediaJob(ws: Workspace, input: { kind: MediaKind; pr
   if (prompt.length < 3) throw new HttpError(400, "Describe what you want to create.");
   const model = MEDIA_MODELS.find((m) => m.id === input.model && m.kind === input.kind) ?? MEDIA_MODELS.find((m) => m.kind === input.kind)!;
   if (input.kind === "video" && !ws.entitlements.video) throw new EntitlementError("Video generation is available on Pro and Business.", "pro");
+  if (input.kind === "image" && !ws.entitlements.images) throw new EntitlementError("Image generation is available on Plus and above.", "plus");
   if (model.premium && !ws.entitlements.premiumImages) throw new EntitlementError("That model is available on Plus and above.", "plus");
   const durationSec = input.kind === "video" ? Math.min(Math.max(2, input.durationSec ?? 5), ws.entitlements.maxVideoSeconds) : undefined;
   const est = estimateMedia(model, durationSec);
@@ -189,6 +190,10 @@ defineJob(
     let job = await mediaJobs().get(wsId, String(jobId));
     // A "running" job is only picked up again by a resumed run of the queue (its earlier run died or yielded).
     if (!job || !(job.status === "queued" || (job.status === "running" && ctx.resumed))) return;
+    if (String(plan) === "free" && job.kind === "image") {
+      await mediaJobs().update(wsId, job.id, { status: "failed", error: "Image generation isn't available on Free.", completedAt: now() });
+      return;
+    }
     if (job.status === "queued") await mediaJobs().update(wsId, job.id, { status: "running" });
     try {
       let out: MediaOut;

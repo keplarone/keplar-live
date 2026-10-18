@@ -36,6 +36,19 @@ export function isBusinessHost(host: string): boolean {
 export const businessUrl = (path = "/") => `${BUSINESS_URL}${path.startsWith("/") ? path : `/${path}`}`;
 
 /**
+ * Leave the website for the Business workspace. The Keplar One desktop window stays where it is:
+ * Business has its own desktop app, and this window only shows keplar.one.
+ * Returns true when the page is leaving.
+ */
+export function openBusinessWorkspace(how: "assign" | "replace" = "assign"): boolean {
+  if (typeof window === "undefined" || document.documentElement.getAttribute("data-desktop") === "1") return false;
+  const url = businessUrl("/work");
+  if (how === "replace") window.location.replace(url);
+  else window.location.assign(url);
+  return true;
+}
+
+/**
  * The Keplar Business favicon set (public/business): the glossy black mark on a transparent background, as supplied.
  * Transparency is preserved in every size. Both Business layouts use it, and src/proxy.ts answers /favicon.ico
  * (and the other well-known icon paths) on the Business host with these files.

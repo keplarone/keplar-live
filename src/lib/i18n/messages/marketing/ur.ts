@@ -207,7 +207,7 @@ const m: MarketingCatalog = {
       },
       "roblox-studio": {
         "name": "Roblox Studio موڈ",
-        "line": "Roblox Studio کے اندر ایک ساتھی بلڈر: نقشے، UI، flipbook اثرات اور Luau اسکرپٹس، Claude Opus 5.5 کے ساتھ۔",
+        "line": "Roblox Studio کے اندر ایک ساتھی بلڈر: نقشے، UI، flipbook اثرات اور Luau اسکرپٹس، Keplar's studio model کے ساتھ۔",
         "note": "ڈیسک ٹاپ ایپ، Lite اور اس سے اوپر۔"
       },
       "roblox-cloud": {

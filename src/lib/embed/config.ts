@@ -58,7 +58,7 @@ export const EMBED_POLICY: Record<PlanId, EmbedPlanPolicy> = {
 export const embedAvailable = (plan: PlanId) => EMBED_POLICY[plan].available;
 
 export const EMBED_STATEMENT =
-  "The Ask widget is in beta. Drop it on your site with a short script. Asks spend the publisher's plan credits (Free uses OpenRouter :free models only). You can restrict which origins may load the widget.";
+  "The Ask widget is in beta. Drop it on your site with a short script. Asks spend the publisher's plan credits (Free uses free models only). You can restrict which origins may load the widget.";
 
 export const isTheme = (v: unknown): v is EmbedTheme => typeof v === "string" && (EMBED_THEMES as readonly string[]).includes(v);
 export const isSize = (v: unknown): v is EmbedSize => typeof v === "string" && (EMBED_SIZES as readonly string[]).includes(v);

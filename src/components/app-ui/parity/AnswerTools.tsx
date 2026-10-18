@@ -12,7 +12,7 @@ import s from "./parity.module.css";
  * Under a finished answer: the Reason steps (when the question was asked with Reason) and the side-draft actions
  * ("Open as draft", or "Apply to draft" when this answer is a revision of a draft).
  */
-export function AnswerTools({ message: m, user }: { message: KeplarMessage; user?: UserMessage }) {
+export function AnswerTools({ message: m, user, signedIn = false }: { message: KeplarMessage; user?: UserMessage; signedIn?: boolean }) {
   const a = m.answer;
   if (m.status !== "done" || !a || a.smalltalk || !a.markdown) return null;
   const reason = Boolean(user?.modes?.reason);
@@ -38,7 +38,7 @@ export function AnswerTools({ message: m, user }: { message: KeplarMessage; user
           <Button size="sm" variant="primary" onClick={() => openDraft({ kind: "apply", draftId: fromDraft, markdown: a.markdown })}>Apply to draft</Button>
         ) : null}
         <Button size="sm" variant="ghost" className={s.quiet} onClick={() => openDraft({ kind: "open", markdown: a.markdown, title })} data-open-draft="">Open as draft</Button>
-        {user && !fromDraft ? <XPostsTool question={user.text} /> : null}
+        {user && !fromDraft ? <XPostsTool question={user.text} signedIn={signedIn} /> : null}
       </div>
     </div>
   );

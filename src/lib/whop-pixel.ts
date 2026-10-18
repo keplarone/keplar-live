@@ -34,12 +34,14 @@ const EXCLUDED = [
   "/app", "/admin", "/account", "/checkout", "/welcome",
   "/signin", "/signup", "/forgot-password", "/reset-password", "/verify-email", "/two-factor", "/secure-account",
   "/contact", "/feedback", "/inquire",
+  "/docs", // docs are not a checkout surface
   "/embed", // the Ask widget framed on other sites: no ad pixel there
   "/r", "/s", "/sites", "/i", "/api", "/dev",
 ];
 
-/** True when the pixel may load on this path (public marketing and content pages). Unknown path: allowed only if it is not under an excluded prefix. */
+/** True when the pixel may load on this path (public marketing and content pages). The chat home is `/` and never loads it. */
 export function whopPixelAllowed(pathname: string | null | undefined): boolean {
-  const p = (pathname ?? "/").split(/[?#]/)[0].toLowerCase();
+  const p = (pathname ?? "/").split(/[?#]/)[0].toLowerCase() || "/";
+  if (p === "/") return false;
   return !EXCLUDED.some((x) => p === x || p.startsWith(`${x}/`));
 }

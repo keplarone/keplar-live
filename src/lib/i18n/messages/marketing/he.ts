@@ -207,7 +207,7 @@ const m: MarketingCatalog = {
       },
       "roblox-studio": {
         "name": "מצב Roblox Studio",
-        "line": "שותף בנייה בתוך Roblox Studio: מפות, ממשק, אפקטי flipbook וסקריפטים ב-Luau, עם Claude Opus 5.5.",
+        "line": "שותף בנייה בתוך Roblox Studio: מפות, ממשק, אפקטי flipbook וסקריפטים ב-Luau, עם Keplar's studio model.",
         "note": "אפליקציית שולחן העבודה, מ-Lite ומעלה."
       },
       "roblox-cloud": {

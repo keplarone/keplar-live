@@ -2,7 +2,7 @@
  * One OpenRouter chat call with a model fallback chain, real cost from `usage.cost` (priced from tokens when missing), an
  * overall deadline and an idle timeout for streams. Every Keplar Apps model call goes through here so metering is uniform.
  */
-import { OPENROUTER_BASE } from "@/lib/site-builder/generate";
+import { OPENROUTER_BASE, providerRouting } from "@/lib/site-builder/generate";
 import { priceOf, type AppModel } from "./models";
 
 export class LlmError extends Error {
@@ -64,7 +64,7 @@ export async function llm(
           messages,
           usage: { include: true },
           ...(opts.json && !model.free ? { response_format: { type: "json_object" } } : {}),
-          provider: model.free ? { allow_fallbacks: true } : { allow_fallbacks: true, data_collection: "deny" },
+          provider: providerRouting(model.free),
           reasoning: { effort: model.free ? "low" : opts.reasoning ?? "low", exclude: true },
         }),
         signal: ctl.signal,

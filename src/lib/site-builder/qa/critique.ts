@@ -3,7 +3,7 @@
  * as JSON. Advisory input to the repair loop, never a verdict on its own: the deterministic browser checks decide what is an error.
  * Free plan uses $0 vision models; paid plans a cheap one. Costs are returned so the caller can meter them.
  */
-import { OPENROUTER_BASE } from "../generate";
+import { OPENROUTER_BASE, providerRouting } from "../generate";
 import { tokensOf } from "../limits";
 import { visionChain } from "../product/vision";
 
@@ -56,7 +56,7 @@ export async function critiqueScreens(plan: string, images: Buffer[], fetchImpl:
           max_tokens: 900,
           messages: [{ role: "user", content }],
           usage: { include: true },
-          provider: m.free ? { allow_fallbacks: true } : { allow_fallbacks: true, data_collection: "deny" },
+          provider: providerRouting(m.free),
           reasoning: m.free ? { effort: "none", exclude: true } : { effort: "low", exclude: true },
         }),
         signal: ctl.signal,

@@ -565,7 +565,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
         transcribe(file, attachLimits.audioSeconds, (done, total) => patch({ progress: total ? Math.max(0.05, done / total) : undefined, stage: `Transcribing ${done}/${total}` })).then(
           (out) => {
             if (!out.text.trim()) { fail(`No speech was found in ${file.name}.`); return; }
-            const attachment = keepTranscript(file.name, out.text);
+            const attachment = keepTranscript(file.name, out.text, false, id);
             patch({ status: out.failed ? "warn" : "ready", progress: undefined, attachment, summary: `${fmtClock(out.seconds)} · transcribed`, note: out.failed ? "Part of the audio couldn't be transcribed." : undefined });
             setAnnounce(`${file.name} transcribed.`);
           },
@@ -573,11 +573,11 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
         );
         continue;
       }
-      readDocument(file).then(
+      readDocument(file, undefined, id).then(
         (out) => {
           // Free: file text isn't sent to free hosts (privacy gate); say so on the chip before sending, not after.
           const freeBlocked = plan === "free";
-          patch({ status: freeBlocked || out.notes.length ? "warn" : "ready", pages: out.pages, truncated: out.truncated, summary: out.summary, kind: out.kind, warnShort: freeBlocked ? "not sent on Free" : "read with a note", note: freeBlocked ? FREE_DOCS_NOT_SENT : out.notes.join(" ") || undefined, attachment: { name: file.name, size: file.size, type: file.type } });
+          patch({ status: freeBlocked || out.notes.length ? "warn" : "ready", pages: out.pages, truncated: out.truncated, summary: out.summary, kind: out.kind, warnShort: freeBlocked ? "not sent on Free" : "read with a note", note: freeBlocked ? FREE_DOCS_NOT_SENT : out.notes.join(" ") || undefined, attachment: { id, name: file.name, size: file.size, type: file.type } });
           setAnnounce(`${file.name} attached${out.truncated ? ". Only the first part fits." : "."}`);
         },
         (e) => fail(e instanceof DocUploadError ? e.message : `Couldn't read ${file.name}.`),

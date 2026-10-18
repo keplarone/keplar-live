@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Dispatch } from "react";
 import type { Action } from "./state/store";
 import type { AppState, Message, Thread } from "./state/types";
+import { messagesForSave } from "./state/store";
 import { activeScopeHeaders, userIdOf } from "./state/scope";
 
 const idle = (t: Thread) => !t.messages.some((m) => m.role === "keplar" && m.status === "running");
@@ -58,7 +59,7 @@ export function useChatSync(state: AppState, dispatch: Dispatch<Action>, onAccou
         if (saved.current.get(th.id) === th.updatedAt) continue;
         if (!state.threads.length) continue;
         saved.current.set(th.id, th.updatedAt);
-        void call(`/api/chats/${encodeURIComponent(th.id)}`, "PUT", { title: th.title, projectId: th.projectId, createdAt: th.createdAt, updatedAt: th.updatedAt, messages: th.messages, specialistId: th.specialistId ?? null }).then((r) => { if (!r.ok) saved.current.delete(th.id); if (r.status === 409) changed.current?.(); }).catch(() => saved.current.delete(th.id));
+        void call(`/api/chats/${encodeURIComponent(th.id)}`, "PUT", { title: th.title, projectId: th.projectId, createdAt: th.createdAt, updatedAt: th.updatedAt, messages: messagesForSave(th.messages), specialistId: th.specialistId ?? null }).then((r) => { if (!r.ok) saved.current.delete(th.id); if (r.status === 409) changed.current?.(); }).catch(() => saved.current.delete(th.id));
       }
     }, 1200);
     return () => window.clearTimeout(t);
@@ -76,7 +77,7 @@ export function useChatSync(state: AppState, dispatch: Dispatch<Action>, onAccou
   /** Save one local chat to the signed-in account right now (used by "Import chats from this device"). */
   const upload = useCallback(async (th: Thread): Promise<"ok" | "rate" | "fail"> => {
     try {
-      const r = await call(`/api/chats/${encodeURIComponent(th.id)}`, "PUT", { title: th.title, projectId: th.projectId, createdAt: th.createdAt, updatedAt: th.updatedAt, messages: th.messages, specialistId: th.specialistId ?? null });
+      const r = await call(`/api/chats/${encodeURIComponent(th.id)}`, "PUT", { title: th.title, projectId: th.projectId, createdAt: th.createdAt, updatedAt: th.updatedAt, messages: messagesForSave(th.messages), specialistId: th.specialistId ?? null });
       if (r.status === 409) changed.current?.();
       if (r.ok) { saved.current.set(th.id, th.updatedAt); return "ok"; }
       return r.status === 429 ? "rate" : "fail";

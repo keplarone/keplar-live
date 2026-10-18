@@ -206,8 +206,7 @@ export function AuthForm({ mode, providers, caps, next, devTools, nextQs }: Prop
               autoComplete={signup ? "new-password" : "current-password"}
               error={errors.password}
               inputRef={passwordRef}
-              aside={signup ? undefined : <Link className={s.link} href={`/forgot-password${nextQs}`}>{t.forgot}</Link>}
-              below={signup ? <StrengthHint value={password} context={{ email: emailTrim, name }} /> : undefined}
+              below={signup ? <StrengthHint value={password} context={{ email: emailTrim, name }} /> : <Link className={s.link} href={`/forgot-password${nextQs}`}>{t.forgot}</Link>}
             />
             {signup ? (
               <PasswordField

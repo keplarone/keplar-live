@@ -4,7 +4,7 @@
  * Free plan uses $0 models; paid plans use a cheap vision model. Metered like any other model call.
  */
 import sharp from "sharp";
-import { OPENROUTER_BASE } from "../generate";
+import { OPENROUTER_BASE, providerRouting } from "../generate";
 import { tokensOf } from "../limits";
 
 export type VisionResult = { name: string; category: string; description: string; features: string[]; alt: string; visibleText: string[] };
@@ -63,7 +63,7 @@ export async function readProductPhoto(plan: string, bytes: Buffer, fetchImpl: t
           max_tokens: 500,
           messages: [{ role: "user", content: [{ type: "text", text: PROMPT }, { type: "image_url", image_url: { url } }] }],
           usage: { include: true },
-          provider: m.free ? { allow_fallbacks: true } : { allow_fallbacks: true, data_collection: "deny" },
+          provider: providerRouting(m.free),
           reasoning: m.free ? { effort: "none", exclude: true } : { effort: "low", exclude: true },
         }),
         signal: ctl.signal,

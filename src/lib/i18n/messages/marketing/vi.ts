@@ -207,7 +207,7 @@ const m: MarketingCatalog = {
       },
       "roblox-studio": {
         "name": "Chế độ Roblox Studio",
-        "line": "Người cùng xây dựng ngay trong Roblox Studio: bản đồ, UI, hiệu ứng flipbook và script Luau, với Claude Opus 5.5.",
+        "line": "Người cùng xây dựng ngay trong Roblox Studio: bản đồ, UI, hiệu ứng flipbook và script Luau, với Keplar's studio model.",
         "note": "Ứng dụng máy tính, từ gói Lite trở lên."
       },
       "roblox-cloud": {

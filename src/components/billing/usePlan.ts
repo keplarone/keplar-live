@@ -8,6 +8,20 @@ const FREE: PlanInfo = { ready: false, plan: "free", signedIn: false, admin: fal
 const FAILED: PlanInfo = { ...FREE, ready: true };
 let cached: Promise<PlanInfo> | undefined;
 
+type ComputeBody = { plan?: PlanInfo["plan"]; signedIn?: boolean; admin?: boolean; checkout?: boolean; liteCheckout?: boolean } & Record<string, unknown>;
+let computeInflight: { at: number; p: Promise<ComputeBody | null> } | null = null;
+
+/** One in-flight GET /api/compute. Callers that start within a short window share it (nav plan + the chat meter). */
+export function fetchCompute(fresh = false): Promise<ComputeBody | null> {
+  const now = Date.now();
+  if (!fresh && computeInflight && now - computeInflight.at < 2000) return computeInflight.p;
+  const p = fetch("/api/compute", { cache: "no-store", credentials: "same-origin" })
+    .then((r) => (r.ok ? (r.json() as Promise<ComputeBody>) : null))
+    .catch((): null => null);
+  computeInflight = { at: now, p };
+  return p;
+}
+
 /** Remember the session state for the next page load (signed-hint.ts) and switch the "Try Keplar" labels to "Open Keplar" right now. */
 function remember(i: PlanInfo): PlanInfo {
   if (i === FAILED) return i; // an unreachable server says nothing about the session
@@ -18,9 +32,8 @@ function remember(i: PlanInfo): PlanInfo {
 
 /** One small request per page load; marketing pages stay static. Failures fall back to Free/signed-out. */
 function load(): Promise<PlanInfo> {
-  cached ??= fetch("/api/compute", { cache: "no-store", credentials: "same-origin" })
-    .then((r) => (r.ok ? r.json() : null))
-    .then((m: { plan?: PlanInfo["plan"]; signedIn?: boolean; admin?: boolean; checkout?: boolean; liteCheckout?: boolean } | null): PlanInfo => (!m ? FAILED : {
+  cached ??= fetchCompute()
+    .then((m): PlanInfo => (!m ? FAILED : {
       ready: true,
       plan: m?.plan === "lite" || m?.plan === "plus" || m?.plan === "pro" || m?.plan === "business" ? m.plan : "free",
       signedIn: Boolean(m?.signedIn),

@@ -64,7 +64,8 @@ export const MODELS = {
 export function modelChain(plan: PlanId, breaker: BreakerLevel = "normal"): BuilderModel[] {
   if (plan === "free") return [MODELS.freeA, MODELS.freeB, MODELS.freeC];
   const stepped = breaker !== "normal";
-  if (plan === "plus" || stepped) return [stepped ? MODELS.cheap : MODELS.plus, MODELS.cheap, MODELS.freeB];
+  // Lite matches Plus: Flash first. Pro and Business keep Sonnet. A breaker steps every paid plan down.
+  if (plan === "plus" || plan === "lite" || stepped) return [stepped ? MODELS.cheap : MODELS.plus, MODELS.cheap, MODELS.freeB];
   return [MODELS.pro, MODELS.plus, MODELS.cheap];
 }
 

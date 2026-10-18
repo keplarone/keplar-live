@@ -207,7 +207,7 @@ const m: MarketingCatalog = {
       },
       "roblox-studio": {
         "name": "Tryb Roblox Studio",
-        "line": "Współtwórca w Roblox Studio: mapy, UI, efekty flipbook i skrypty Luau, z Claude Opus 5.5.",
+        "line": "Współtwórca w Roblox Studio: mapy, UI, efekty flipbook i skrypty Luau, z Keplar's studio model.",
         "note": "Aplikacja desktopowa, od planu Lite."
       },
       "roblox-cloud": {

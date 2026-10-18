@@ -743,10 +743,7 @@ function Answer({ answer: a, onRetry, onRefreshResearch, onSignal, isLast, conti
         <ul className={s.modelList}>
           {a.models.map((m) => (
             <li key={`${m.slot}-${m.id}`} className={s.modelRow} data-status={m.status}>
-              <span className={s.modelName}>
-                {m.name}
-                <span className={s.modelProvider}>{m.provider}</span>
-              </span>
+              <span className={s.modelName}>{m.name}</span>
               <span className={s.modelSlot}>{slotLabel[m.slot]}</span>
               <span className={s.modelStatus}>{statusLabel[m.status]}</span>
               {m.stance || m.note ? <span className={s.modelNote}>{[m.stance, m.note].filter(Boolean).join(" · ")}</span> : null}

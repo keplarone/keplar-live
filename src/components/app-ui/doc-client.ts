@@ -7,7 +7,9 @@ import type { DocKind } from "@/lib/attachments/kinds";
  */
 type Stored = { name: string; text: string; truncated: boolean; source: "file" | "link" | "transcript"; url?: string };
 const store = new Map<string, Stored>();
-const key = (a: { name: string; size: number }) => `${a.name}\u0000${a.size}`;
+const newDocId = () => (globalThis.crypto?.randomUUID?.() ?? `doc_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`);
+/** A client id wins, so two files with the same name and size do not share one extracted text. */
+const key = (a: { id?: string; name: string; size: number }) => (a.id ? `id\u0000${a.id}` : `${a.name}\u0000${a.size}`);
 
 export class DocUploadError extends Error {
   constructor(message: string, public code?: string) {
@@ -18,7 +20,7 @@ export class DocUploadError extends Error {
 export type DocRead = { text: string; truncated: boolean; pages: number; kind: DocKind; summary: string; notes: string[]; title?: string };
 
 /** Send the file to be read on the server (PDF, Office, data, code, archives). Throws DocUploadError with a message that is safe to show. */
-export async function readDocument(file: File, signal?: AbortSignal): Promise<DocRead> {
+export async function readDocument(file: File, signal?: AbortSignal, id?: string): Promise<DocRead> {
   const body = new FormData();
   body.append("file", file);
   let res: Response;
@@ -31,7 +33,7 @@ export async function readDocument(file: File, signal?: AbortSignal): Promise<Do
   if (res.status === 401) throw new DocUploadError("Sign in to attach documents. Images, video, audio and links work without an account.", "signin");
   const data = (await res.json().catch(() => null)) as (Partial<DocRead> & { error?: string; code?: string }) | null;
   if (!res.ok || !data?.text) throw new DocUploadError(data?.error ?? `Couldn't read ${file.name}.`, data?.code);
-  store.set(key(file), { name: file.name, text: data.text, truncated: Boolean(data.truncated), source: "file" });
+  store.set(key({ id, name: file.name, size: file.size }), { name: file.name, text: data.text, truncated: Boolean(data.truncated), source: "file" });
   return { text: data.text, truncated: Boolean(data.truncated), pages: data.pages ?? 1, kind: (data.kind ?? "text") as DocKind, summary: data.summary ?? "", notes: data.notes ?? [], title: data.title };
 }
 
@@ -64,14 +66,14 @@ export async function readLink(url: string, opts: { purpose?: "answer" | "refere
   }
   const data = (await res.json().catch(() => null)) as (LinkPreview & { error?: string; code?: string }) | null;
   if (!res.ok || !data || data.error) throw new DocUploadError(data?.error ?? "Couldn't read that link.", data?.code);
-  const attachment: Attachment = { name: `${data.host} — ${data.title}`.slice(0, 180), size: 0, type: "text/uri-list" };
+  const attachment: Attachment = { id: newDocId(), name: `${data.host} — ${data.title}`.slice(0, 180), size: 0, type: "text/uri-list" };
   if (data.text) store.set(key(attachment), { name: attachment.name, text: data.text, truncated: data.truncated, source: "link", url: data.finalUrl });
   return { read: data, attachment };
 }
 
 /** Keep a transcript for the message; returns the attachment that lists it. */
-export function keepTranscript(mediaName: string, text: string, truncated = false): Attachment {
-  const attachment: Attachment = { name: `${mediaName} · transcript`.slice(0, 180), size: text.length, type: "text/x-transcript" };
+export function keepTranscript(mediaName: string, text: string, truncated = false, id?: string): Attachment {
+  const attachment: Attachment = { id: id ?? newDocId(), name: `${mediaName} · transcript`.slice(0, 180), size: text.length, type: "text/x-transcript" };
   store.set(key(attachment), { name: attachment.name, text, truncated, source: "transcript" });
   return attachment;
 }
@@ -86,4 +88,20 @@ export function docsFor(attachments: Attachment[] | undefined) {
   return out.length ? out : undefined;
 }
 
-export const forgetDocument = (a: { name: string; size: number }) => void store.delete(key(a));
+/** Current-turn docs first, then earlier docs from this tab (newest first), capped at what one ask may carry. */
+export function docsForTurn(prior: Attachment[] | undefined, current: Attachment[] | undefined) {
+  const now = docsFor(current) ?? [];
+  const seen = new Set(now.map((d) => `${d.name}\0${d.text}`));
+  const out = [...now];
+  const older = docsFor(prior) ?? [];
+  for (let i = older.length - 1; i >= 0 && out.length < 12; i--) {
+    const d = older[i]!;
+    const k = `${d.name}\0${d.text}`;
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(d);
+  }
+  return out.length ? out : undefined;
+}
+
+export const forgetDocument = (a: { id?: string; name: string; size: number }) => void store.delete(key(a));
