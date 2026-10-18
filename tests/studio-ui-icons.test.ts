@@ -34,6 +34,7 @@ test("every required morph pair exists", () => {
     build: ["build", "stop"],
     search: ["idle", "focused"],
     settings: ["closed", "open"],
+    copy: ["idle", "copied"],
   };
   for (const [name, states] of Object.entries(required)) {
     assert.ok(name in MORPH_ICONS, `missing morph icon ${name}`);

@@ -99,6 +99,14 @@ export const MORPH_ICONS = {
     idle: { strokes: [P("M11 4.5 A6.5 6.5 0 1 1 11 17.5 A6.5 6.5 0 1 1 11 4.5"), P("M15.8 15.8 L20 20")] },
     focused: { strokes: [P("M10.5 5.5 A5 5 0 1 1 10.5 15.5 A5 5 0 1 1 10.5 5.5"), P("M14.2 14.2 L20 20")] },
   },
+  /**
+   * copy: the page corner folds into a check. The second stroke is the sheet behind it, and it shrinks to a point once copied.
+   * Both states share M L L so the browser interpolates `d` (see tests/studio-ui-icons.test.ts).
+   */
+  copy: {
+    idle: { strokes: [P("M8 7 L16 7 L16 17"), P("M6 9 L6 5 L12 5")] },
+    copied: { strokes: [P("M6 12 L10 16 L18 8"), P("M10 16 L10 16 L10 16", 0)] },
+  },
   /** settings (sliders): the three knobs slide to new positions while the settings surface is open */
   settings: {
     closed: {

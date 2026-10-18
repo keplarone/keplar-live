@@ -11,7 +11,7 @@ import { splitForEase } from "@/lib/typing/smooth";
 import { Fragment, memo, useState, type ReactNode } from "react";
 import { MATH_TOKEN, maskMath, type MathItem } from "@/lib/math/extract";
 import { joinLines, splitLines } from "@/lib/md-lines";
-import { IconCheck, IconCopy } from "./icons";
+import { MorphIcon } from "@/components/kit";
 import { MathSpan } from "./MathSpan";
 import { Button } from "@/components/kit";
 import s from "./Markdown.module.css";
@@ -176,7 +176,7 @@ export function CodeBlock({ code, lang, streaming }: { code: string; lang: strin
     <figure className={s.code}>
       <figcaption className={s.codeBar}>
         <span className={s.codeLang}>{lang || "text"}</span>
-        <Button size="sm" variant="ghost" className={s.copy} onClick={copy} disabled={streaming} aria-label={copied ? "Copied" : `Copy ${lang || "code"}`} leadingIcon={copied ? <IconCheck size={14} /> : <IconCopy size={14} />}>
+        <Button size="sm" variant="ghost" className={s.copy} onClick={copy} disabled={streaming} aria-label={copied ? "Copied" : `Copy ${lang || "code"}`} leadingIcon={<MorphIcon icon="copy" state={copied ? "copied" : "idle"} size={14} />}>
           {copied ? "Copied" : "Copy"}
         </Button>
         {runLang && !streaming && !runOpen ? (

@@ -10,9 +10,9 @@ import { formatResetAt, upgradesFrom, WINDOW_WARN_AT, windowResetText } from "@/
 import { computeLevelLabel } from "@/lib/orchestration/compute";
 import { summarizeModels } from "@/lib/orchestration/model-status";
 import type { KeplarAnswer, VerificationCheck } from "@/lib/orchestration/types";
-import { IconCheck, IconChevron, IconCopy, IconRetry, IconSave, IconThumb, IconWeb } from "./icons";
+import { IconCheck, IconChevron, IconRetry, IconSave, IconThumb, IconWeb } from "./icons";
 import { ListenButton } from "./ListenButton";
-import { Button, Icon, IconButton, Tooltip } from "@/components/kit";
+import { Button, Icon, IconButton, MorphIcon, Tooltip } from "@/components/kit";
 import la from "./link-action.module.css";
 import { Markdown } from "./Markdown";
 import { StructuredAnswer } from "./rich/StructuredAnswer";
@@ -299,7 +299,7 @@ function TypingBar({ text }: { text: string }) {
   };
   return (
     <div className={s.typingBar}>
-      <IconButton size="sm" className={s.footAct} onClick={copy} label={copied ? "Copied answer" : "Copy full answer"} icon={copied ? <IconCheck size={15} /> : <IconCopy size={15} />} />
+      <IconButton size="sm" className={s.footAct} onClick={copy} label={copied ? "Copied answer" : "Copy full answer"} icon={<MorphIcon icon="copy" state={copied ? "copied" : "idle"} size={15} />} />
     </div>
   );
 }
@@ -656,7 +656,7 @@ function AnswerFooter({ answer: a, meta, onRetry, onRefreshResearch, onSignal, i
       <div className={s.footMeta}>{meta}</div>
       <div className={s.footActions}>
         {/* Quiet kit IconButtons; the name is the tooltip, and a longer note (what a vote does) is the tooltip of its own. */}
-        <IconButton size="sm" className={s.footAct} onClick={copy} label={copied ? "Copied answer" : "Copy answer"} icon={copied ? <IconCheck size={15} /> : <IconCopy size={15} />} />
+        <IconButton size="sm" className={s.footAct} onClick={copy} label={copied ? "Copied answer" : "Copy answer"} icon={<MorphIcon icon="copy" state={copied ? "copied" : "idle"} size={15} />} />
         {onSignal ? (
           <>
             <Tooltip content="Good answer. This helps Keplar choose better next time (the models themselves are not retrained).">
