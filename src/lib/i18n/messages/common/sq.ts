@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Burime",
     "items": {
       "/features": "Gjithçka në Keplar",
-      "/#demo": "Demo e drejtpërdrejtë",
+      "/overview#demo": "Demo e drejtpërdrejtë",
       "/app/create": "Krijo",
       "/docs": "Dokumentacion",
       "/pricing": "Çmimet",
@@ -30,6 +30,7 @@ const m: CommonCatalog = {
       "Legal": "Ligjore"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "Gjithçka në Keplar",
       "/showcase": "Vitrina e krijimeve",
       "/templates": "Galeria e komunitetit",

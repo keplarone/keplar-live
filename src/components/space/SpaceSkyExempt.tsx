@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { hideSharedSky, isSpaceStudioSurface } from "./surface";
+import { hideSharedSky, isChatSurface, isProductHost, isSpaceStudioSurface } from "./surface";
 
 /**
  * The root layout mounts one cloud sky for the rest of the site. Space Studio leaves it unmounted, so the sky
@@ -17,7 +17,11 @@ export function SpaceSkyExempt({ children }: { children: ReactNode }) {
   const exempt = hideSharedSky(path);
   useLayoutEffect(() => {
     const root = document.documentElement;
-    if (exempt || isSpaceStudioSurface(window.location.hostname, path)) root.setAttribute("data-space-studio", "");
+    const host = window.location.hostname;
+    // Chat surfaces are solid. Marketing pages keep the sky. Other hosts' "/" is not the chat.
+    if (isProductHost(host) && isChatSurface(path)) root.setAttribute("data-app-surface", "");
+    else root.removeAttribute("data-app-surface");
+    if (exempt || isSpaceStudioSurface(host, path)) root.setAttribute("data-space-studio", "");
     else root.removeAttribute("data-space-studio");
   }, [exempt, path]);
   if (exempt) return null;

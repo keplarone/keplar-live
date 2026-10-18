@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "وسيلا",
     "items": {
       "/features": "Keplar ۾ سڀ ڪجهه",
-      "/#demo": "سڌو ڊيمو",
+      "/overview#demo": "سڌو ڊيمو",
       "/app/create": "ٺاهيو",
       "/docs": "دستاويز",
       "/pricing": "قيمتون",
@@ -30,6 +30,7 @@ const m: CommonCatalog = {
       "Legal": "قانوني"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "Keplar ۾ سڀ ڪجهه",
       "/showcase": "تخليقن جي نمائش",
       "/templates": "برادريءَ جي گيلري",

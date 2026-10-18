@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Izixhobo",
     "items": {
       "/features": "Yonke into eku-Keplar",
-      "/#demo": "Umboniso ophilayo",
+      "/overview#demo": "Umboniso ophilayo",
       "/app/create": "Yila",
       "/docs": "Amaxwebhu",
       "/pricing": "Amaxabiso",
@@ -30,6 +30,7 @@ const m: CommonCatalog = {
       "Legal": "Ezomthetho"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "Yonke into eku-Keplar",
       "/showcase": "Umboniso wezinto ezenziweyo",
       "/templates": "Igalari yoluntu",

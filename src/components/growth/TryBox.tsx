@@ -2,6 +2,7 @@
 
 import { useId, useState } from "react";
 import { track } from "@/lib/analytics";
+import { tryHref } from "@/lib/site";
 import { parseUtm, useUtmRaw, withUtm } from "@/lib/utm";
 import s from "./growth.module.css";
 
@@ -19,7 +20,7 @@ export function TryBox({ examples, where, heading = "Try it now. No signup." }: 
     if (!question) return;
     track(event, { where });
     // Full page load, not router.push: the Whop Pixel (public pages) reports soft navigations with their full URL, and this one carries the question in its fragment.
-    window.location.assign(withUtm(`/app#q=${encodeURIComponent(question)}`, utm));
+    window.location.assign(withUtm(`${tryHref}#q=${encodeURIComponent(question)}`, utm));
   };
 
   return (

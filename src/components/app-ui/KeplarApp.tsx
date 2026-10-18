@@ -50,6 +50,7 @@ import { ResumeChats } from "./ResumeChats";
 import { OfflineNotice } from "./OfflineNotice";
 import { useDockHeight } from "./dock-height";
 import { HomeStart } from "./HomeStart";
+import { ExploreLinks } from "./ExploreLinks";
 import { oauthReturnView, pathForView, viewForPath } from "./app-paths";
 import { AppOnboarding } from "@/components/onboarding/AppOnboarding";
 import { DeploymentsView } from "./DeploymentsView";
@@ -1096,6 +1097,12 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
           {state.view === "thread" && thread && thread.messages.length ? <DeleteChatAction variant="header" title={thread.title} onDelete={() => del.request(thread.id)} /> : null}
           {/* Phones signed in: the theme lives in the account menu and memory in Settings, so the bar keeps the title room. */}
           <ThemeToggle className={`${s.iconBtn} ${state.ledger.signedIn ? s.phoneHide : ""}`} />
+          {state.ledger.synced && !state.ledger.signedIn ? (
+            <span className={s.authTop}>
+              <Link href="/signin" className={s.authIn}>Log in</Link>
+              <Link href="/signup" className={s.authUp}>Sign up for free</Link>
+            </span>
+          ) : null}
           <button type="button" className={`${s.iconBtn} ${s.newBtnMobile}`} onClick={() => newThread()} aria-label="New chat">
             <IconPlus size={18} />
           </button>
@@ -1109,14 +1116,14 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                   <div className={s.welcome}>
                     {/* Held invisible (same height) until the session is known, so the name never pops in over a generic line.
                         firstName is only set after the client knows the session, so the time-of-day greeting never renders on the server. */}
-                    <h1 className={s.welcomeTitle} data-welcome-name={firstName || undefined} style={state.ledger.synced ? undefined : { visibility: "hidden" }}>
+                    <h1 className={s.welcomeTitle} data-welcome="" data-welcome-name={firstName || undefined} style={state.ledger.synced ? undefined : { visibility: "hidden" }}>
                       <KeplarSymbol size={22} className={s.welcomeMark} />
                       <span>
                         {firstName ? (
                           <>
                             <span>{welcome ? "Welcome," : `${dayGreeting(new Date().getHours())},`}</span> <span className={s.welcomeName}>{firstName}</span>
                           </>
-                        ) : <span>{state.ledger.synced ? `${dayGreeting(new Date().getHours())}.` : "Welcome to Keplar."}</span>}
+                        ) : <span>{state.ledger.synced ? "How can Keplar help you today?" : "Welcome to Keplar."}</span>}
                       </span>
                     </h1>
                     <p className={s.welcomeLede}>Ask anything. Keplar checks with several models and gives you one clear answer.</p>
@@ -1344,6 +1351,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                 draftKey={draftKeyFor(state.scope, state.activeThreadId, Boolean(state.threads.find((x) => x.id === state.activeThreadId)?.private ?? state.privateNext))}
               />
               <p className={s.dockNote}>Keplar can be wrong, even when models agree. Verify important decisions.</p>
+              {messages.length === 0 ? <ExploreLinks className={s.explore} live /> : null}
             </div>
           </>
         ) : state.view === "create" ? (

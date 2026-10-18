@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Sumber daya",
     "items": {
       "/features": "Sagala hal dina Keplar",
-      "/#demo": "Démo langsung",
+      "/overview#demo": "Démo langsung",
       "/app/create": "Jieun",
       "/docs": "Dokuméntasi",
       "/pricing": "Harga",
@@ -30,6 +30,7 @@ const m: CommonCatalog = {
       "Legal": "Hukum"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "Sagala hal dina Keplar",
       "/showcase": "Paméran kréasi",
       "/templates": "Galeri komunitas",

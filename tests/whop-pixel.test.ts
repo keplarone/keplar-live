@@ -15,7 +15,8 @@ test("Whop Pixel snippet is unchanged and sends only the page view", () => {
 });
 
 test("Whop Pixel loads on public pages, never on signed-in, checkout or form pages", () => {
-  for (const ok of ["/", "/pricing", "/privacy", "/blogs/some-post", "/compare/x", "/vs", "/help", "/answers/abc", "/download", "/application"]) assert.equal(whopPixelAllowed(ok), true, ok);
+  for (const ok of ["/overview", "/pricing", "/privacy", "/blogs/some-post", "/compare/x", "/vs", "/help", "/answers/abc", "/download", "/application"]) assert.equal(whopPixelAllowed(ok), true, ok);
+  assert.equal(whopPixelAllowed("/"), false, "/ is the chat");
   for (const no of ["/app", "/app/create", "/admin", "/admin/seo", "/account", "/checkout", "/checkout/x", "/welcome", "/signin", "/signup", "/forgot-password", "/reset-password", "/verify-email", "/two-factor", "/secure-account", "/contact", "/feedback", "/inquire", "/r/token", "/s/slug", "/sites/slug/draft", "/i/token", "/api/x", "/APP/x", "/app?x=1"]) assert.equal(whopPixelAllowed(no), false, no);
 });
 

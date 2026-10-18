@@ -59,7 +59,7 @@ export async function FeaturesView({ locale = "en" }: { locale?: string }) {
           </table>
         </section>
       ))}
-      <p className={s.foot}>{rich(p.foot, { changelog: (t) => <Link href="/changelog">{t}</Link>, roadmap: (t) => <Link href={L("/roadmap")}>{t}</Link>, demo: (t) => <Link href={L("/#demo")}>{t}</Link> })}</p>
+      <p className={s.foot}>{rich(p.foot, { changelog: (t) => <Link href="/changelog">{t}</Link>, roadmap: (t) => <Link href={L("/roadmap")}>{t}</Link>, demo: (t) => <Link href={L("/overview#demo")}>{t}</Link> })}</p>
       <JsonLd data={breadcrumbs([{ name: p.crumb, path: L("/features") }])} />
     </div>
   );

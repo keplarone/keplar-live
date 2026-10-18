@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Izinsiza",
     "items": {
       "/features": "Konke ku-Keplar",
-      "/#demo": "Umboniso obukhoma",
+      "/overview#demo": "Umboniso obukhoma",
       "/app/create": "Dala",
       "/docs": "Imibhalo",
       "/pricing": "Amanani",
@@ -30,6 +30,7 @@ const m: CommonCatalog = {
       "Legal": "Ezomthetho"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "Konke ku-Keplar",
       "/showcase": "Umbukiso wezakhiwo",
       "/templates": "Igalari yomphakathi",

@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Kaynaklar",
     "items": {
       "/features": "Keplar’daki her şey",
-      "/#demo": "Canlı demo",
+      "/overview#demo": "Canlı demo",
       "/app/create": "Create",
       "/docs": "Belgeler",
       "/pricing": "Fiyatlandırma",
@@ -16,7 +16,7 @@ const m: CommonCatalog = {
     },
     "hints": {
       "/features": "Her özellik ve kullanıma açık olup olmadığı",
-      "/#demo": "Hemen bir soru sorun, kayıt gerekmez",
+      "/overview#demo": "Hemen bir soru sorun, kayıt gerekmez",
       "/app/create": "Bir site ya da uygulamayı anlatın veya söyleyin"
     },
     "signIn": "Giriş yap",
@@ -41,6 +41,7 @@ const m: CommonCatalog = {
       "Legal": "Yasal"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "Keplar’daki her şey",
       "/how-it-works": "Nasıl çalışır",
       "/showcase": "Create vitrini",

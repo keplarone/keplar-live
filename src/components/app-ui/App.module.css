@@ -1925,3 +1925,21 @@ a.sideItem {
 .deployRow:hover { background: var(--press-wash); box-shadow: none; }
 .deployName { font-weight: var(--w-semibold); }
 @media (prefers-reduced-motion: reduce) { .view[data-connected-apps] button:not([role]):hover:not(:disabled) { transform: none; } }
+
+/* Signed-out home: Log in and Sign up sit at the top right. Solid ink, no glass. */
+.authTop { display: inline-flex; align-items: center; gap: 8px; flex: none; }
+.authIn, .authUp {
+  display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 999px;
+  font-size: 14px; font-weight: 500; white-space: nowrap;
+}
+.authIn { color: var(--c-ink); }
+.authIn:hover { background: var(--hover-wash); }
+.authUp { background: var(--c-ink); color: var(--c-canvas); }
+.authUp:hover { background: var(--c-ink-hover); }
+
+/* Links out to the rest of the site, under an empty composer and along the sidebar. */
+.explore, .sideFoot { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 13px; line-height: 1.4; }
+.explore { justify-content: center; }
+.sideFoot { padding: 2px 12px 0; }
+.explore a, .sideFoot a { color: var(--c-ink-3); text-decoration: none; }
+.explore a:hover, .sideFoot a:hover { color: var(--c-ink); text-decoration: underline; text-underline-offset: 3px; }

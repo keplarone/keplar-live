@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Akụrụngwa",
     "items": {
       "/features": "Ihe niile dị na Keplar",
-      "/#demo": "Ngosipụta ozugbo",
+      "/overview#demo": "Ngosipụta ozugbo",
       "/app/create": "Mepụta",
       "/docs": "Akwụkwọ nkọwa",
       "/pricing": "Ọnụahịa",
@@ -30,6 +30,7 @@ const m: CommonCatalog = {
       "Legal": "Iwu"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "Ihe niile dị na Keplar",
       "/showcase": "Ngosi ihe e mepụtara",
       "/templates": "Ebe ngosi obodo",

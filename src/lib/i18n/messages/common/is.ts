@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Úrræði",
     "items": {
       "/features": "Allt í Keplar",
-      "/#demo": "Bein kynning",
+      "/overview#demo": "Bein kynning",
       "/app/create": "Búa til",
       "/docs": "Skjölun",
       "/pricing": "Verð",
@@ -30,6 +30,7 @@ const m: CommonCatalog = {
       "Legal": "Lagalegt"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "Allt í Keplar",
       "/showcase": "Sýningarsalur sköpunarverka",
       "/templates": "Myndasafn samfélagsins",

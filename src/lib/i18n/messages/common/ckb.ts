@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "سەرچاوەکان",
     "items": {
       "/features": "هەموو شتێک لە Keplar",
-      "/#demo": "نمایشی ڕاستەوخۆ",
+      "/overview#demo": "نمایشی ڕاستەوخۆ",
       "/app/create": "دروستکردن",
       "/docs": "بەڵگەنامەکان",
       "/pricing": "نرخەکان",
@@ -30,6 +30,7 @@ const m: CommonCatalog = {
       "Legal": "یاسایی"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "هەموو شتێک لە Keplar",
       "/showcase": "پێشانگای دروستکراوەکان",
       "/templates": "گەلەری کۆمەڵگە",

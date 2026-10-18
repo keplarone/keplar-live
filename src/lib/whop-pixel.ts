@@ -38,8 +38,9 @@ const EXCLUDED = [
   "/r", "/s", "/sites", "/i", "/api", "/dev",
 ];
 
-/** True when the pixel may load on this path (public marketing and content pages). Unknown path: allowed only if it is not under an excluded prefix. */
+/** True when the pixel may load on this path (public marketing and content pages). Unknown path: allowed only if it is not under an excluded prefix. The site root is the chat, including for signed-in people, so the pixel stays off it. */
 export function whopPixelAllowed(pathname: string | null | undefined): boolean {
   const p = (pathname ?? "/").split(/[?#]/)[0].toLowerCase();
+  if (p === "/" || p === "") return false;
   return !EXCLUDED.some((x) => p === x || p.startsWith(`${x}/`));
 }

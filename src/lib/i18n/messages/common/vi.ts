@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Tài nguyên",
     "items": {
       "/features": "Mọi thứ trong Keplar",
-      "/#demo": "Bản demo trực tiếp",
+      "/overview#demo": "Bản demo trực tiếp",
       "/app/create": "Create",
       "/docs": "Tài liệu",
       "/pricing": "Bảng giá",
@@ -16,7 +16,7 @@ const m: CommonCatalog = {
     },
     "hints": {
       "/features": "Mọi tính năng và tình trạng hoạt động",
-      "/#demo": "Đặt câu hỏi ngay, không cần đăng ký",
+      "/overview#demo": "Đặt câu hỏi ngay, không cần đăng ký",
       "/app/create": "Mô tả hoặc nói ra một trang web hay ứng dụng"
     },
     "signIn": "Đăng nhập",
@@ -41,6 +41,7 @@ const m: CommonCatalog = {
       "Legal": "Pháp lý"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "Mọi thứ trong Keplar",
       "/how-it-works": "Cách hoạt động",
       "/showcase": "Trưng bày Create",

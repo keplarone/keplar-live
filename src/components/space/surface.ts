@@ -1,4 +1,4 @@
-import { SPACE_HOST } from "@/lib/site";
+import { BUSINESS_HOST, DOCS_HOST, SPACE_HOST } from "@/lib/site";
 
 /**
  * Space Studio is its own site: space.keplar.one, and the /space-studio routes on keplar.one.
@@ -28,3 +28,24 @@ export function spaceHostFlag(): boolean {
 export function hideSharedSky(pathname: string, hostFlag = spaceHostFlag()): boolean {
   return hostFlag || isSpaceStudioSurface("", pathname);
 }
+
+const bare = (pathname: string) => pathname.split(/[?#]/)[0].replace(/\/+$/, "") || "/";
+
+/** The chat home and /app. Marketing pages, including the moved landing at /overview, are not. */
+export function isChatSurface(pathname: string): boolean {
+  const p = bare(pathname);
+  return p === "/" || p === "/app" || p.startsWith("/app/");
+}
+
+/** Hosts that serve a different site at "/". The chat sky rule must not follow them. */
+export function isProductHost(host: string): boolean {
+  const name = host.trim().toLowerCase().replace(/:\d+$/, "");
+  return name !== SPACE_HOST && name !== BUSINESS_HOST && name !== DOCS_HOST;
+}
+
+/**
+ * Hide the cloud sky on the chat before paint. Space, Business and Docs hosts rewrite "/" to their own
+ * pages, so they are skipped. The attribute is on <html> (suppressHydrationWarning); client navigations
+ * update it from SpaceSkyExempt.
+ */
+export const APP_SURFACE_SCRIPT = `(function(){var h=location.hostname;if(h==="${SPACE_HOST}"||h==="${BUSINESS_HOST}"||h==="${DOCS_HOST}")return;var p=location.pathname.replace(/\\/+$/,"")||"/";if(p==="/"||p==="/app"||p.indexOf("/app/")===0)document.documentElement.setAttribute("data-app-surface","")})();`;

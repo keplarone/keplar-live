@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Hulpbronne",
     "items": {
       "/features": "Alles in Keplar",
-      "/#demo": "Regstreekse demo",
+      "/overview#demo": "Regstreekse demo",
       "/app/create": "Skep",
       "/docs": "Dokumentasie",
       "/pricing": "Pryse",
@@ -30,6 +30,7 @@ const m: CommonCatalog = {
       "Legal": "Regsinligting"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "Alles in Keplar",
       "/showcase": "Skeppingsvertoonkas",
       "/templates": "Gemeenskapsgalery",
