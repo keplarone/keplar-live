@@ -10,7 +10,7 @@ import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server
 import { clientIpOf, rateLimit, RateLimitError } from "@/lib/create/platform/ratelimit";
 import { logEvent, newRequestId, requestIdOf } from "@/lib/ops/log";
 import { hostOf, isAppHost, resolveCustomHost } from "@/lib/domains/routing";
-import { DOCS_HOST, PRODUCTION_URL, SPACE_HOST } from "@/lib/site";
+import { DOCS_HOST, PRODUCTION_HOST, PRODUCTION_URL, SPACE_HOST } from "@/lib/site";
 import { BUSINESS_ICON_PATHS, BUSINESS_MANIFEST_PATH, BUSINESS_PREFIX, businessUrl, isBusinessHost } from "@/lib/business-site";
 import { DOC_SECTION_IDS } from "@/lib/kb/doc-sections";
 import { isOriginExempt, isSameOrigin, SAFE_METHODS } from "@/lib/security/origin";
@@ -224,9 +224,18 @@ export function firstPartyLoadOfUserCode(req: Pick<NextRequest, "headers"> & { n
   return RUNS_CODE.has(dest) && site === "same-origin";
 }
 
+/** keplar.one and www hide Space Studio. space.keplar.one still serves those pages (spaceHost). */
+export function hideSpaceStudio(host: string, pathname: string): boolean {
+  if (host !== PRODUCTION_HOST && host !== `www.${PRODUCTION_HOST}`) return false;
+  return pathname === "/space-studio" || pathname.startsWith("/space-studio/");
+}
+
 export async function proxy(req: NextRequest, event?: NextFetchEvent) {
   const host = hostOf(req);
   if (!isAppHost(host)) return customHost(req, host);
+  if (!req.nextUrl.pathname.startsWith("/api/") && hideSpaceStudio(host, req.nextUrl.pathname)) {
+    return NextResponse.redirect(`${PRODUCTION_URL}/`, 308);
+  }
   // /api on the docs and Space hosts goes through the same API guard as keplar.one (rate limit, same-origin check) below.
   const api = req.nextUrl.pathname.startsWith("/api/");
   if (host === DOCS_HOST && !api) return docsHost(req);

@@ -20,6 +20,7 @@ import { CreateOptions } from "./CreateOptions";
 import ci from "./create-intro.module.css";
 import s from "./create.module.css";
 import b from "./images.module.css";
+import { composerEnter, readComposerKey } from "@/lib/composer-keys";
 import { ActivityIndicator, Button, SegmentedControl, confirmAction } from "@/components/kit";
 
 type Status = "understanding" | "generating" | "ready" | "failed";
@@ -436,11 +437,17 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
                 syncSlash(e.target.value, e.target.selectionStart ?? e.target.value.length);
               }}
               onKeyDown={(e) => {
-                if (!slashOpen || !slashItems.length) return;
-                if (e.key === "ArrowDown") { e.preventDefault(); setSlashActive((i) => (i + 1) % slashItems.length); }
-                else if (e.key === "ArrowUp") { e.preventDefault(); setSlashActive((i) => (i - 1 + slashItems.length) % slashItems.length); }
-                else if ((e.key === "Enter" || e.key === "Tab") && !e.shiftKey) { e.preventDefault(); applySlash(slashItems[Math.min(slashActive, slashItems.length - 1)]!); }
-                else if (e.key === "Escape") { e.preventDefault(); setSlashOpen(false); }
+                if (slashOpen && slashItems.length) {
+                  if (e.key === "ArrowDown") { e.preventDefault(); setSlashActive((i) => (i + 1) % slashItems.length); return; }
+                  if (e.key === "ArrowUp") { e.preventDefault(); setSlashActive((i) => (i - 1 + slashItems.length) % slashItems.length); return; }
+                  if ((e.key === "Enter" || e.key === "Tab") && !e.shiftKey && !e.nativeEvent.isComposing && e.nativeEvent.keyCode !== 229) { e.preventDefault(); applySlash(slashItems[Math.min(slashActive, slashItems.length - 1)]!); return; }
+                  if (e.key === "Escape") { e.preventDefault(); setSlashOpen(false); return; }
+                }
+                if (e.key !== "Enter") return;
+                const action = composerEnter(readComposerKey(e), { canSend: !disabled && !busyNow && prompt.trim().length > 0 });
+                if (action === "newline") return;
+                e.preventDefault();
+                if (action === "send") openConfirm();
               }}
               aria-autocomplete={slashOpen ? "list" : undefined}
               aria-controls={slashOpen ? slashListId : undefined}

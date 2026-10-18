@@ -37,7 +37,6 @@ export const staticLastmod: Record<string, string> = {
   "/security": "2026-10-13",
   "/specialists": "2026-10-14",
   "/simulation": "2026-10-11",
-  "/space-studio": "2026-10-14",
   "/guides": "2026-10-01",
   // Landing and use-case pages (src/lib/content/landing.ts). The FAQ wording on /ai-answer-engine changed on 2026-10-03.
   "/ai-answer-engine": "2026-10-03",

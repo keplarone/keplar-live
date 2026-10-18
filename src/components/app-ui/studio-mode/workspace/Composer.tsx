@@ -124,7 +124,7 @@ export function Composer({ a, env, compact = false, mode, canPlayTest, onTyping 
         value={text}
         placeholder={placeholder(a, env)}
         onChange={(e) => { setText(e.target.value); onTyping?.(e.target.value.length); }}
-        onKeyDown={(e) => { if (submitsOnKey({ key: e.key, shiftKey: e.shiftKey, isComposing: e.nativeEvent.isComposing }, a.running)) { e.preventDefault(); submit(); } }}
+        onKeyDown={(e) => { if (submitsOnKey({ key: e.key, shiftKey: e.shiftKey, metaKey: e.metaKey, ctrlKey: e.ctrlKey, isComposing: e.nativeEvent.isComposing, keyCode: e.nativeEvent.keyCode }, a.running)) { e.preventDefault(); submit(); } }}
         aria-label={`Describe what to build in ${appName(env)}`}
         disabled={a.running}
       />

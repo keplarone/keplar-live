@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useState, type MouseEvent } from "react";
 import { KeplarLogo } from "@/components/brand";
 import { formatResetAt, PLAN_ALLOWANCES, WINDOW_WARN_AT, windowResetText } from "@/lib/orchestration/plans";
-import { brand, SPACE_URL } from "@/lib/site";
+import { brand } from "@/lib/site";
 import { dailyLeftText, formatDailyReset } from "@/lib/usage/format";
 import { extensionNote, usageMeter } from "@/lib/usage/meter";
-import { IconApps, IconAsk, IconClose, IconCreate, IconDeep, IconDeploy, IconHistory, IconMenu, IconMore, IconPlus, IconProjects, IconSearch, IconSettings, IconSlides, IconSpace, IconStudy } from "./icons";
+import { IconApps, IconAsk, IconClose, IconCreate, IconDeep, IconDeploy, IconHistory, IconMenu, IconMore, IconPlus, IconProjects, IconSearch, IconSettings, IconSlides, IconStudy } from "./icons";
 import { pathForView } from "./app-paths";
 import type { AccountInfo, AppState, View } from "./state/types";
 import { AccountMenu, ImportPrompt, type ImportOffer } from "./AccountMenu";
@@ -182,12 +182,6 @@ export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteC
             <IconDeep size={15} />
             <span>Research</span>
           </button>
-        </li>
-        <li>
-          <a className={s.sideItem} data-nav="space" data-feature="" href={SPACE_URL}>
-            <IconSpace size={15} />
-            <span>Space Studio</span>
-          </a>
         </li>
         <li>
           <button type="button" className={s.sideItem} data-more="" aria-expanded={moreShown} aria-controls="side-more" onClick={() => setMoreOpen((v) => !v)}>

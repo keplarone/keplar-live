@@ -23,6 +23,30 @@ test("space.keplar.one passes Space Studio pages, API and assets through, and se
   assert.equal(r.headers.get("location"), "https://keplar.one/pricing?x=1");
 });
 
+test("keplar.one and www permanently redirect /space-studio to /, and leave the API and the space host alone", async () => {
+  for (const host of ["keplar.one", "www.keplar.one"]) {
+    for (const p of ["/space-studio", "/space-studio/", "/space-studio/app", "/space-studio/app?view=account"]) {
+      const r = await proxy(nreq(host, p));
+      assert.equal(r.status, 308, `${host}${p}`);
+      assert.equal(r.headers.get("location"), "https://keplar.one/");
+    }
+  }
+  const api = await proxy(nreq("keplar.one", "/api/space-studio/me"));
+  assert.notEqual(api.status, 308);
+  assert.equal((await space("/space-studio")).status, 200);
+  assert.equal(rewriteOf(await space("/space-studio/app")), null);
+});
+
+test("Space Studio stays out of the keplar.one sitemap and the command catalogue", async () => {
+  const { sitemapPaths } = await import("../src/app/sitemap");
+  const { readFileSync } = await import("node:fs");
+  assert.equal(sitemapPaths.includes("/space-studio"), false);
+  assert.doesNotMatch(readFileSync("src/lib/content/lastmod.ts", "utf8"), /"\/space-studio"/);
+  for (const f of ["src/lib/nav/commands.ts", "src/components/chrome/Footer.tsx", "src/components/app-ui/HomeStart.tsx", "src/components/app-ui/SearchDialog.tsx", "src/components/app-ui/Sidebar.tsx"]) {
+    assert.doesNotMatch(readFileSync(f, "utf8"), /Space Studio|\/space-studio/, f);
+  }
+});
+
 test("space.keplar.one serves the Space Studio favicon", async () => {
   assert.equal(rewriteOf(await space("/favicon.ico")), `https://${SPACE_HOST}/icons/space-studio-favicon.ico`);
 });

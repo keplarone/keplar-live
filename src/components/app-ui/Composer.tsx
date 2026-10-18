@@ -1,6 +1,7 @@
 "use client";
 
 import { SEND_EVENT } from "@/lib/spatial/events";
+import { composerEnter, readComposerKey, type ComposerEnter } from "@/lib/composer-keys";
 import { spaceFx } from "@/lib/fx/space-fx";
 import { forwardRef, useCallback, useDeferredValue, useEffect, useId, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { hasResearchBridge, noSubscribe, researchCapabilities } from "@/lib/desktop/research-bridge";
@@ -16,7 +17,7 @@ import Link from "next/link";
 import type { Depth } from "@/lib/core/types";
 import type { Attachment, ComposerModes, RoutingPreferences, RoutingStrategy } from "@/lib/orchestration/types";
 import { MEDIA_LIMITS, type MediaInput } from "@/lib/orchestration/media";
-import { IconMic, IconPlus, IconDebate, IconDeep, IconCreate, IconImage, IconMore, IconReason, IconRouting, IconSlides, IconStop, IconStudy, IconWeb } from "./icons";
+import { IconMic, IconPlus, IconDebate, IconDeep, IconCreate, IconImage, IconMore, IconReason, IconRouting, IconSlides, IconStudy, IconWeb } from "./icons";
 import { toggleMode, type ModeKey } from "@/lib/composer/modes";
 import { canUseSlides, slidesLimitsFor } from "@/lib/tools/limits";
 import { estimateDeckCredits } from "@/lib/slides/estimate";
@@ -159,6 +160,8 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
 ) {
   const uid = useId();
   const taRef = useRef<HTMLTextAreaElement>(null);
+  /** The Enter decision from keydown, so a following insertLineBreak cannot sneak a newline in. */
+  const enterAction = useRef<ComposerEnter | null>(null);
   const prefs = usePrefs();
   const [text, setTextState] = useState("");
   /** Space UI: the composer gives a short squeeze-and-glow as a question leaves it (alternates a/b so each send restarts it). */
@@ -833,7 +836,8 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
         return;
       }
       if (e.key === "Enter" || e.key === "Tab") {
-        if (!e.shiftKey && !e.nativeEvent.isComposing && e.keyCode !== 229) {
+        const key = readComposerKey(e);
+        if (!e.shiftKey && !key.isComposing && key.keyCode !== 229) {
           e.preventDefault();
           applySlash(slashItems[Math.min(slashActive, slashItems.length - 1)]!);
           return;
@@ -845,12 +849,28 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
         return;
       }
     }
-    // Settings → Chat → Send with: Enter (Shift+Enter for a new line) or Ctrl/⌘+Enter (Enter adds a new line).
-    const sendCombo = prefs.sendKey === "mod-enter" ? e.metaKey || e.ctrlKey : e.metaKey || e.ctrlKey || !e.shiftKey;
-    if (e.key === "Enter" && !e.nativeEvent.isComposing && e.keyCode !== 229 && sendCombo) {
-      e.preventDefault();
-      submit();
+    // Settings → Chat → Send with: Enter (Shift+Enter for a new line) or Ctrl/⌘+Enter (plain Enter adds a new line).
+    // keyCode is read from the native event: React 19 does not put it on the synthetic event, so an IME's 229
+    // has to come from there. preventDefault runs for send and for swallow, or the textarea inserts a newline.
+    if (e.key !== "Enter") {
+      enterAction.current = null;
+      return;
     }
+    const action = composerEnter(readComposerKey(e), { canSend, sendKey: prefs.sendKey });
+    enterAction.current = action;
+    if (action === "newline") return;
+    e.preventDefault();
+    if (action === "send") submit();
+  };
+
+  const onBeforeInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
+    const ne = e.nativeEvent as InputEvent;
+    if (ne.inputType !== "insertLineBreak") return;
+    const pending = enterAction.current;
+    enterAction.current = null;
+    if (ne.isComposing || pending === "newline") return;
+    e.preventDefault();
+    if (pending === null && canSend) submit();
   };
 
   const depth = routing.depth ?? "auto";
@@ -1013,6 +1033,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
             syncSlashFromCaret(e.target.value, e.target.selectionStart ?? e.target.value.length, modes.image === true);
           }}
           onKeyDown={onKeyDown}
+          onBeforeInput={onBeforeInput}
           onPaste={onPaste}
           aria-describedby={`${uid}-hint`}
           spellCheck={prefs.spellcheck}
@@ -1323,14 +1344,21 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
               <span className={s.routingLabel}>{strategyLabel}</span>
               <span className="visually-hidden">. Advanced routing</span>
             </button>
-            {running ? (
-              <Button variant="secondary" className={s.stop} onClick={onStop} aria-label="Stop generating (Esc)" leadingIcon={<IconStop size={14} />}>
-                Stop
-              </Button>
-            ) : (
-              // The send: the area's one ink action, a round arrow. Its name ("Ask Keplar") is the label and the tooltip.
-              <IconButton type="submit" variant="primary" shape="circle" className={s.send} label="Ask Keplar" disabled={!canSend} aria-describedby={drBlocked ? `${uid}-budget` : undefined} icon={<KitIcon name="arrow-up" size={18} />} />
-            )}
+            {/* One round button: the arrow nudges up on hover and morphs into a stop square while a reply is streaming. */}
+            <IconButton
+              type="button"
+              variant="primary"
+              shape="circle"
+              className={s.send}
+              motion="send"
+              streaming={running}
+              label={running ? "Stop generating" : "Ask Keplar"}
+              disabled={!running && !canSend}
+              aria-keyshortcuts={running ? "Escape" : undefined}
+              aria-describedby={drBlocked ? `${uid}-budget` : undefined}
+              onClick={() => { if (running) onStop(); else submit(); }}
+              icon={<KitIcon name="arrow-up" size={18} />}
+            />
           </div>
         </div>
         <p id={`${uid}-hint`} className="visually-hidden">{prefs.sendKey === "mod-enter" ? "Press Control or Command Enter to send; Enter adds a new line. " : "Press Enter or Command Enter to send, Shift Enter for a new line. "}{modes.image ? "Type / for image slash commands. " : "Type / for chat commands such as /slides, /quiz and /approvals. Turn on Create image to use / image commands. "}Paste a link to have Keplar read it. Paste or drop images, video, audio, documents, code or data files to attach them.</p>

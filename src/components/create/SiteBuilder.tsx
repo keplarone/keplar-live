@@ -1,5 +1,6 @@
 "use client";
 import { coverage, fixPrompt, gapsOf, type CoverageItem } from "@/lib/site-builder/coverage";
+import { composerEnter, readComposerKey } from "@/lib/composer-keys";
 /**
  * Site builder: describe a site, get a multi-page result with a live sandboxed preview, change it by chat,
  * undo/restore versions, view the code, export a ZIP, edit SEO, read form leads and publish to /s/<slug>.
@@ -764,10 +765,13 @@ export function SiteBuilder() {
               placeholder={placeholder}
               onChange={(e) => setPrompt(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  submit();
-                }
+                if (e.key !== "Enter") return;
+                const asking = flow.stage === "asking";
+                const ready = asking ? prompt.trim().length > 0 : prompt.trim().length >= 3;
+                const action = composerEnter(readComposerKey(e), { canSend: !composerLocked && ready });
+                if (action === "newline") return;
+                e.preventDefault();
+                if (action === "send") submit();
               }}
             />
             <div className={w.composerRow}>
