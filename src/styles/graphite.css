@@ -152,9 +152,20 @@ html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [ro
 html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]) {
   box-shadow: none !important;
 }
-html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]):is(:hover, :active, :focus, :focus-visible) {
+html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]) {
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, opacity 160ms ease, scale 180ms cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]):is(:hover, :focus, :focus-visible) {
   transform: none !important;
   translate: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]):active:not(:disabled):not([aria-disabled="true"]) {
+  transform: none !important;
+  translate: none !important;
+  scale: 0.97 !important;
   box-shadow: none !important;
   text-shadow: none !important;
   filter: none !important;
@@ -165,6 +176,19 @@ html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [ro
   box-shadow: none !important;
   text-shadow: none !important;
   filter: none !important;
+}
+/* The composer's textarea carries no square outline. Focus sits on the rounded container (border only, no glow). */
+html:not(:has([data-space-root])) [class*="composer"] textarea:focus,
+html:not(:has([data-space-root])) [class*="composer"] textarea:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]) {
+    transition: none !important;
+    scale: none !important;
+  }
 }
 /* A secondary control that used an inset shadow as its only edge keeps a hairline. */
 html:not(:has([data-space-root])) :is(button, a)[class*="btnSecondary"],
@@ -219,6 +243,22 @@ html:not(:has([data-space-root])) :is([class*="homeChip"], [class*="useForOption
   box-shadow: none !important;
   filter: none !important;
 }
+html:not(:has([data-space-root])) [class*="homeChip"] {
+  border-color: #3a3a3a;
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+html:not(:has([data-space-root])) [class*="homeChip"]:hover {
+  border-color: #5a5a5a !important;
+  background: var(--hover-wash);
+}
+html:not(:has([data-space-root])) [data-theme="light"] [class*="homeChip"],
+html:not(:has([data-space-root]))[data-theme="light"] [class*="homeChip"] {
+  border-color: #d4d4d4;
+}
+html:not(:has([data-space-root])) [data-theme="light"] [class*="homeChip"]:hover,
+html:not(:has([data-space-root]))[data-theme="light"] [class*="homeChip"]:hover {
+  border-color: #8a8a8a !important;
+}
 html:not(:has([data-space-root])) [class*="meterTrack"] > span,
 html:not(:has([data-space-root])) [class*="strengthBar"] span {
   background: var(--c-ink) !important;
@@ -228,6 +268,19 @@ html:not(:has([data-space-root])) [class*="composer"][data-pulse] {
 }
 html:not(:has([data-space-root])) [class*="composer"]:is(:focus-within, [data-dragging]) {
   box-shadow: none !important;
+}
+html:not(:has([data-space-root])) [class*="composer"] {
+  border-color: #3a3a3a;
+}
+html:not(:has([data-space-root])) [class*="composer"]:focus-within {
+  border-color: #5a5a5a !important;
+  box-shadow: none !important;
+}
+html:not(:has([data-space-root]))[data-theme="light"] [class*="composer"] {
+  border-color: #d4d4d4;
+}
+html:not(:has([data-space-root]))[data-theme="light"] [class*="composer"]:focus-within {
+  border-color: #8a8a8a !important;
 }
 html:not(:has([data-space-root])) [class*="__sheet"] {
   border: 1px solid var(--hairline);

@@ -3,6 +3,7 @@
  * when the thinking indicator shows, reference limits, the composer's keyboard rule and run controls. No React, no CSS, so it
  * is unit tested (tests/studio-conversation.test.ts). Everything here is derived from the run's real state (useStudioAgent).
  */
+import { composerEnter } from "@/lib/composer-keys";
 import type { StudioEvent } from "../code/events";
 import type { CodeModel } from "../code/documents";
 import type { ActionStatus, Item, PlanStep, Risk } from "../useStudioAgent";
@@ -160,9 +161,9 @@ export function mergeRefs(current: readonly string[], next: readonly string[], m
   return { refs, error: current.length + next.length > max ? REFS_LIMIT_ERROR : "" };
 }
 
-/** Enter sends; Shift+Enter is a newline; never while a run is in flight or an IME composition is open. */
-export function submitsOnKey(e: { key: string; shiftKey: boolean; isComposing?: boolean }, running: boolean): boolean {
-  return e.key === "Enter" && !e.shiftKey && !e.isComposing && !running;
+/** Enter sends; Shift+Enter is a newline; Command/Ctrl+Enter also sends. Never while a run is in flight or an IME composition is open. */
+export function submitsOnKey(e: { key: string; shiftKey: boolean; metaKey?: boolean; ctrlKey?: boolean; isComposing?: boolean; keyCode?: number }, running: boolean): boolean {
+  return composerEnter(e, { canSend: !running }) === "send";
 }
 
 export function canBuild(text: string, refs: number, a: { running: boolean; playing: boolean }): boolean {

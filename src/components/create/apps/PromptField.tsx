@@ -2,8 +2,9 @@
 /**
  * The studio's prompt. Typing must feel like a word processor, so the textarea is uncontrolled: a keystroke never re-renders
  * React. Readers subscribe to a tiny store instead: `ready` (enough text to build) flips at most twice per prompt, and `settled`
- * (the text after a 220 ms pause) drives the blueprint and the saved draft. Cmd/Ctrl+Enter submits.
+ * (the text after a 220 ms pause) drives the blueprint and the saved draft. Enter submits; Shift+Enter is a new line.
  */
+import { composerEnter, readComposerKey } from "@/lib/composer-keys";
 import { forwardRef, useEffect, useImperativeHandle, useRef, useSyncExternalStore } from "react";
 
 type Snapshot = { ready: boolean; settled: string };
@@ -146,12 +147,14 @@ export const PromptField = forwardRef<PromptHandle, Props>(function PromptField(
       enterKeyHint="go"
       onInput={(e) => changed(e.currentTarget.value)}
       onKeyDown={(e) => {
-        if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-          e.preventDefault();
-          if (timer.current) clearTimeout(timer.current);
-          settle(e.currentTarget.value);
-          submit.current();
-        }
+        if (e.key !== "Enter") return;
+        const action = composerEnter(readComposerKey(e), { canSend: e.currentTarget.value.trim().length > 0 });
+        if (action === "newline") return;
+        e.preventDefault();
+        if (action !== "send") return;
+        if (timer.current) clearTimeout(timer.current);
+        settle(e.currentTarget.value);
+        submit.current();
       }}
     />
   );

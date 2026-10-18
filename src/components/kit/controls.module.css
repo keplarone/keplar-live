@@ -109,6 +109,48 @@
 .glyphAct:focus-visible { box-shadow: var(--ks-focus-ring); }
 .glyphAct[aria-disabled="true"] { opacity: 0.42; cursor: default; }
 
+/* Send: the arrow nudges up on hover. While streaming it fades into a stop square (opacity and transform only). */
+.sendGlyph { display: grid; place-items: center; }
+.sendGlyph > * { grid-area: 1 / 1; }
+.glyphAct[data-motion="send"] .sendGlyph > :global(svg) {
+  transition: transform 180ms cubic-bezier(0.34, 1.4, 0.64, 1), opacity 160ms ease;
+}
+:global(html:not(:has([data-space-root]))) .glyphAct[data-motion="send"]:hover:not([data-streaming]):not([aria-disabled="true"]) .sendGlyph > :global(svg) {
+  transform: translateY(-2px);
+}
+.stopSquare {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0;
+  transform: scale(0.55);
+  transition: opacity 160ms ease, transform 180ms cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+.glyphAct[data-streaming] .stopSquare { opacity: 1; transform: scale(1); }
+.glyphAct[data-streaming] .sendGlyph > :global(svg) { opacity: 0; transform: scale(0.72); }
+@media (prefers-reduced-motion: reduce) {
+  .glyphAct[data-motion="send"] .sendGlyph > :global(svg),
+  .stopSquare { transition: none; }
+  .glyphAct[data-motion="send"]:hover .sendGlyph > :global(svg),
+  .glyphAct[data-streaming] .sendGlyph > :global(svg),
+  .glyphAct[data-streaming] .stopSquare { transform: none; }
+}
+
+/* keplar.one only: a 180ms colour shift and a 0.97 press. Space Studio keeps its own 3D buttons. */
+:global(html:not(:has([data-space-root]))) .act,
+:global(html:not(:has([data-space-root]))) .glyphAct {
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, opacity 160ms ease, scale 180ms cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+:global(html:not(:has([data-space-root]))) .act:active:not([aria-disabled="true"]):not(:disabled),
+:global(html:not(:has([data-space-root]))) .glyphAct:active:not([aria-disabled="true"]):not(:disabled) {
+  scale: 0.97;
+}
+@media (prefers-reduced-motion: reduce) {
+  :global(html:not(:has([data-space-root]))) .act,
+  :global(html:not(:has([data-space-root]))) .glyphAct { transition: none; scale: none; }
+}
+
 /* ── Switch ───────────────────────────────────────────────────────────────── */
 .switchRow {
   display: inline-flex;

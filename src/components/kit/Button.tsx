@@ -87,6 +87,10 @@ export interface IconButtonProps extends Omit<ComponentPropsWithRef<"button">, "
   /** Default true. Set false when the label is visible elsewhere or a menu from this button is open. */
   tooltip?: boolean;
   tooltipSide?: "top" | "bottom" | "left" | "right";
+  /** "send": the arrow nudges up on hover and a square takes its place while `streaming`. */
+  motion?: "send";
+  /** A reply is in flight: the send glyph shows the stop square. */
+  streaming?: boolean;
 }
 
 export function IconButton({
@@ -100,11 +104,19 @@ export function IconButton({
   shortcut,
   tooltip = true,
   tooltipSide = "top",
+  motion,
+  streaming = false,
   className,
   onClick,
   type = "button",
   ...rest
 }: IconButtonProps) {
+  const glyph = motion === "send" ? (
+    <span className={c.sendGlyph}>
+      {icon}
+      <span className={c.stopSquare} />
+    </span>
+  ) : icon;
   const button = (
     <button
       {...rest}
@@ -116,6 +128,8 @@ export function IconButton({
       data-variant={variant}
       data-size={size}
       data-shape={shape ?? (variant === "primary" ? "circle" : "square")}
+      data-motion={motion}
+      data-streaming={streaming ? "" : undefined}
       onClick={(e: MouseEvent<HTMLButtonElement>) => {
         if (disabled) {
           e.preventDefault();
@@ -124,7 +138,7 @@ export function IconButton({
         onClick?.(e);
       }}
     >
-      {icon}
+      {glyph}
     </button>
   );
   // Always the same tree (the tooltip is disabled, not removed), so toggling `tooltip` never remounts the button and

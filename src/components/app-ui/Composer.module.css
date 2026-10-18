@@ -36,6 +36,11 @@
   outline: none;
   field-sizing: content;
 }
+.input:focus,
+.input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
 
 .input::placeholder {
   color: var(--c-ink-3);
@@ -994,10 +999,9 @@
   filter: none;
   padding: 14px 12px 10px 16px;
 }
-:global(:root[data-theme]) .composer:has(:is(textarea, input):focus) {
-  box-shadow: none;
-  border-color: var(--hairline-strong);
-}
+:global(:root[data-theme="dark"]) .composer { border-color: #3a3a3a; }
+:global(:root[data-theme="dark"]) .composer:focus-within { border-color: #5a5a5a; }
+:global(:root[data-theme="light"]) .composer:focus-within { border-color: #8a8a8a; }
 :global(:root[data-theme]) .input { font-size: 16px; }
 :global(:root[data-theme]) .tool,
 :global(:root[data-theme]) .routingBtn {

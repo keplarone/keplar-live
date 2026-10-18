@@ -71,7 +71,8 @@ test("Device prefs: applied before paint, saved only when not default, and wired
   assert.match(read("src/app/layout.tsx"), /__html: PREFS_SCRIPT/);
   assert.match(read("src/styles/globals.css"), /@import "\.\/prefs\.css";/);
   assert.match(prefs, /filter\(\(\[k, v\]\) => v !== PREF_DEFAULTS/);
-  assert.match(read("src/components/app-ui/Composer.tsx"), /prefs\.sendKey === "mod-enter"/);
+  assert.match(read("src/components/app-ui/Composer.tsx"), /sendKey: prefs\.sendKey/);
+  assert.match(read("src/lib/composer-keys.ts"), /mod-enter/);
   assert.match(read("src/components/app-ui/Composer.tsx"), /spellCheck=\{prefs\.spellcheck\}/);
   const app = read("src/components/app-ui/KeplarApp.tsx");
   assert.match(app, /followRef\.current/);

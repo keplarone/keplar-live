@@ -8,7 +8,7 @@ test("sidebar: New chat and Search, then Ask, Create and Study; no Business entr
   assert.match(side, /<span>New chat<\/span>/);
   assert.match(side, /data-nav="search"/);
   assert.match(side, /<span>Research<\/span>/);
-  assert.match(side, /<span>Space Studio<\/span>/);
+  assert.doesNotMatch(side, /Space Studio|SPACE_URL|data-nav="space"/, "Space Studio is not linked from the keplar.one sidebar");
   const block = side.slice(side.indexOf("const primary"), side.indexOf("const secondary"));
   const labels = [...block.matchAll(/label: "([^"]+)"/g)].map((m) => m[1]);
   assert.deepEqual(labels, ["Ask", "Create", "Study"]);
