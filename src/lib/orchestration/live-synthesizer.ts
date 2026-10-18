@@ -31,7 +31,7 @@ import { guardDisagreement } from "./disagreement-guard";
 import { RESEARCH_CRITIQUE_RULES, RESEARCH_SYNTH_RULES } from "./research";
 import { CLARITY_STYLE, GROUNDING_STYLE } from "@/lib/style/clarity";
 import { isGuideRequest } from "./answer-shape";
-import { RICH_UI_RULES } from "@/lib/rich-answer/prompt";
+import { RICH_UI_RULES, richHint } from "@/lib/rich-answer/prompt";
 import { buildRich, parseRich, RICH_PENDING, takeRichFence } from "@/lib/rich-answer/parse";
 import type { RichAnswer } from "@/lib/rich-answer/types";
 
@@ -208,7 +208,9 @@ export class ModelSynthesizer implements Synthesizer {
       const guide = classification.errorProne !== "exact" && !hasMedia(req.media) && isGuideRequest(req.prompt);
       const guideMaterial = guide ? `\n\nFull responses (use their exact steps, commands and values):\n${ok.map((r) => `### ${nameOf(r.modelId)}\n${r.text.slice(0, 7000)}`).join("\n\n")}` : "";
       // A quick factual lookup or an exact check needs a sentence or two, not 350 words: shorter output is also the fastest part to save.
-      const quick = !guide && (classification.kind === "factual" || classification.errorProne === "exact");
+      const structured = Boolean(richHint(req.prompt));
+      // A ranking or comparison needs the room for one keplar-ui block on this same call. A quick fact still stays short.
+      const quick = !guide && !structured && (classification.kind === "factual" || classification.errorProne === "exact");
       // Free plan, every responding model took the same position, nothing was flagged, and the question is not an exact one (counting, arithmetic, exact facts): the reply the
       // person is already reading is the answer. A separate write-up would only take another 4-9 s (measured) to say the same thing.
       const keep = req.plan === "free" && scored && comparison.positions.length === 1 && ok.length >= 2 && !classification.errorProne
@@ -222,7 +224,8 @@ export class ModelSynthesizer implements Synthesizer {
       this.keptReply = !writtenBeatsKeep && Boolean(keep);
       if (this.noExtraCalls) this.callFailure = "unavailable";
       const synthSystem = `${SYNTH_SYSTEM_PROMPT}${this.research ? `\n${this.researchRules}` : ""}${guide ? `\n${GUIDE_SYNTH_RULES}` : ""}`;
-      const out = writtenBeatsKeep ? this.prewritten : keep ? { text: keep.text, by: keep.modelId } : this.prewritten ? this.prewritten : this.noExtraCalls ? null : await this.call(quick ? `${synthSystem}\nThis is a quick lookup: answer in at most 120 words (state the answer first, then at most two supporting points). Omit any keplar-ui block.` : synthSystem, `Question:\n${req.memory ?? ""}${req.prompt}${textOnlyMediaNote(req.media)}\n\n${material}${guideMaterial}\n\nReviewer findings:\n${findings}\n\nDraft:\n${draft.slice(0, 3000)}`, quick ? 500 : guide ? 4800 : 1800, 1, signal, req, classification, guide ? Math.max(this.synthCapMs, 60_000) : this.synthCapMs);
+      const richNote = structured ? `\n\n${richHint(req.prompt)}` : "";
+      const out = writtenBeatsKeep ? this.prewritten : keep ? { text: keep.text, by: keep.modelId } : this.prewritten ? this.prewritten : this.noExtraCalls ? null : await this.call(quick ? `${synthSystem}\nThis is a quick lookup: answer in at most 120 words (state the answer first, then at most two supporting points). Omit any keplar-ui block.` : synthSystem, `Question:\n${req.memory ?? ""}${req.prompt}${textOnlyMediaNote(req.media)}\n\n${material}${guideMaterial}\n\nReviewer findings:\n${findings}\n\nDraft:\n${draft.slice(0, 3000)}${richNote}`, quick ? 500 : guide ? 4800 : 1800, 1, signal, req, classification, guide ? Math.max(this.synthCapMs, 60_000) : this.synthCapMs);
       let text = out?.text;
       if (text) {
         const res = text.match(/\n?\s*(RESOLUTION:\s*.+)\s*$/i);
@@ -263,7 +266,7 @@ export class ModelSynthesizer implements Synthesizer {
     // polish() drops stock openers/closers ("Certainly!", "I hope this helps") and replaces any claim to be human.
     markdown = polish(guardVoice(markdown));
 
-    const richMaterial = ok.map((r) => `${r.text}\n${(r.citations ?? []).map((c) => `${c.url} ${c.title ?? ""}`).join("\n")}`).join("\n");
+    const richMaterial = ok.map((r) => `${takeRichFence(r.text).prose}\n${(r.citations ?? []).map((c) => `${c.url} ${c.title ?? ""}`).join("\n")}`).join("\n");
     const rich: RichAnswer | undefined = buildRich(richRaw, {
       responses: ok.map((r) => ({ name: nameOf(r.modelId), text: r.text })),
       material: richMaterial,
