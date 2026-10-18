@@ -36,8 +36,15 @@ test("the space host and the rewritten path hide the shared sky on the same rend
 test("the root layout skips the shared sky on Space Studio before paint, and the page keeps its star field", () => {
   const root = read("src/app/layout.tsx");
   assert.match(root, /SPACE_SKY_SCRIPT/);
-  assert.match(root, /data-site-sky/);
-  assert.match(root, /<SpaceSkyExempt>\s*<SiteClouds \/>/);
+  assert.doesNotMatch(root, /SiteClouds|MarketingSky/);
+  const marketing = read("src/app/(marketing)/layout.tsx");
+  const locale = read("src/app/(i18n)/[locale]/layout.tsx");
+  assert.match(marketing, /<MarketingSky \/>/);
+  assert.match(locale, /<MarketingSky \/>/);
+  assert.match(read("src/components/sky/clouds/LandingClouds.tsx"), /data-site-sky/);
+  assert.doesNotMatch(read("src/app/app/layout.tsx"), /SiteClouds|MarketingSky/);
+  assert.doesNotMatch(read("src/app/(chat)/layout.tsx"), /SiteClouds|MarketingSky/);
+  assert.match(root, /<SpaceSkyExempt>\{null\}<\/SpaceSkyExempt>/);
   assert.match(SPACE_SKY_SCRIPT, new RegExp(SPACE_HOST.replace(".", "\\.")));
   assert.match(SPACE_SKY_SCRIPT, new RegExp(`window\\.${SPACE_HOST_FLAG}=1`));
   assert.doesNotMatch(SPACE_SKY_SCRIPT, /setAttribute|appendChild|createElement|document\.documentElement/);

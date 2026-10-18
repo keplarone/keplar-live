@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { MarketingSky } from "@/components/sky/clouds/LandingClouds";
 import { PageChrome } from "@/components/chrome/PageChrome";
 import { Nav } from "@/components/chrome/Nav";
 import { Footer } from "@/components/chrome/Footer";
@@ -27,6 +28,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   const [common, client] = await Promise.all([getMessages(locale, "common"), getMessages(locale, "client")]);
   return (
     <I18nProvider locale={locale} common={common} client={client}>
+      <MarketingSky />
       <AmbientRuntime />
       <PageChrome />
       <Nav />

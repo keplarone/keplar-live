@@ -5,8 +5,9 @@ import { usePathname } from "next/navigation";
 import { hideSharedSky, isChatSurface, isProductHost, isSpaceStudioSurface } from "./surface";
 
 /**
- * The root layout mounts one cloud sky for the rest of the site. Space Studio leaves it unmounted, so the sky
- * never starts and never asks for weather.
+ * Marks chat and Space Studio on the document. The cloud sky is not mounted here: marketing layouts
+ * mount MarketingSky, and this component only keeps data-app-surface and data-space-studio in step
+ * when the visitor navigates.
  *
  * The rewritten space host disagrees with the address bar on the first render ("/space-studio" on the server,
  * "/" in the browser). hideSharedSky treats those as the same page: the path, or the flag the head script sets
