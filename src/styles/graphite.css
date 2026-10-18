@@ -270,14 +270,14 @@ html:not(:has([data-space-root])) [class*="composer"]:is(:focus-within, [data-dr
   box-shadow: none !important;
 }
 html:not(:has([data-space-root])) [class*="composer"] {
-  border-color: #3a3a3a;
+  border-color: #3a3a3a !important;
 }
 html:not(:has([data-space-root])) [class*="composer"]:focus-within {
   border-color: #5a5a5a !important;
   box-shadow: none !important;
 }
 html:not(:has([data-space-root]))[data-theme="light"] [class*="composer"] {
-  border-color: #d4d4d4;
+  border-color: #d4d4d4 !important;
 }
 html:not(:has([data-space-root]))[data-theme="light"] [class*="composer"]:focus-within {
   border-color: #8a8a8a !important;

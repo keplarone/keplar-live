@@ -201,5 +201,6 @@ test("create studio: heavy tabs and panes are code-split; the prompt box is unco
   for (const pane of ["DesignPicker", "CodePane", "ChangesPane"]) assert.match(builder, new RegExp(`lazy\\(\\s*\\(\\)\\s*=>\\s*import\\([^)]*${pane}`), `${pane} should be lazy`);
   const field = readFileSync("src/components/create/apps/PromptField.tsx", "utf8");
   assert.doesNotMatch(field, /\bvalue=\{/);
-  assert.match(field, /metaKey|ctrlKey/);
+  assert.match(field, /composerEnter\(readComposerKey/);
+  assert.match(readFileSync("src/lib/composer-keys.ts", "utf8"), /metaKey|ctrlKey/);
 });

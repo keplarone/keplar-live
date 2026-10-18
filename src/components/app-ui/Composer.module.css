@@ -999,9 +999,6 @@
   filter: none;
   padding: 14px 12px 10px 16px;
 }
-:global(:root[data-theme="dark"]) .composer { border-color: #3a3a3a; }
-:global(:root[data-theme="dark"]) .composer:focus-within { border-color: #5a5a5a; }
-:global(:root[data-theme="light"]) .composer:focus-within { border-color: #8a8a8a; }
 :global(:root[data-theme]) .input { font-size: 16px; }
 :global(:root[data-theme]) .tool,
 :global(:root[data-theme]) .routingBtn {
