@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "ግብዓቶች",
     "items": {
       "/features": "ሁሉም ነገር በKeplar",
-      "/#demo": "የቀጥታ ማሳያ",
+      "/": "የቀጥታ ማሳያ",
       "/app/create": "ፍጠር",
       "/docs": "ሰነዶች",
       "/pricing": "ዋጋዎች",

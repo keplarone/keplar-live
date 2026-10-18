@@ -68,6 +68,7 @@ export function IconMic(p: P) {
 }
 
 export const IconAsk = (p: P) => <Svg {...p}><path d="M3 4.5A1.5 1.5 0 0 1 4.5 3h7A1.5 1.5 0 0 1 13 4.5v5A1.5 1.5 0 0 1 11.5 11H7l-3 2.5V11H4.5A1.5 1.5 0 0 1 3 9.5z" /></Svg>;
+export const IconSpace = (p: P) => <Svg {...p}><circle cx="8" cy="8" r="2" /><circle cx="8" cy="8" r="5.4" /></Svg>;
 export const IconMemory = (p: P) => <Svg {...p}><circle cx="8" cy="8" r="1.4" /><circle cx="3.6" cy="4.4" r="1" /><circle cx="12.4" cy="5" r="1" /><circle cx="11" cy="12.2" r="1" /><path d="M4.4 5 7 7.2M11.5 5.7 9.2 7.3M9.8 11.4 8.8 9.2" /></Svg>;
 export const IconApprovals = (p: P) => <Svg {...p}><rect x="2.5" y="2.5" width="11" height="11" rx="2" /><path d="m5.5 8.2 1.8 1.8 3.2-3.6" /></Svg>;
 export const IconUsage = (p: P) => <Svg {...p}><path d="M3 13V8.5M7 13V4M11 13V6.5M14 13H2" /></Svg>;

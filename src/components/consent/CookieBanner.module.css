@@ -111,3 +111,27 @@
 .tertiary { border-radius: var(--r-pill); text-decoration-color: rgb(var(--ring-rgb) / 0.45); font-weight: var(--w-semibold); }
 .link { text-decoration-color: rgb(var(--ring-rgb) / 0.45); }
 @media (prefers-reduced-motion: reduce) { .primary, .secondary { transition: none; } .primary:hover, .secondary:hover, .primary:active, .secondary:active { transform: none; } }
+
+/* Chat: a slim bar along the bottom edge, above the composer, not a card on top of it. */
+.banner { z-index: calc(var(--z-overlay) + 2); }
+.banner[data-placement="bar"] {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  border-radius: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 8px 16px calc(8px + env(safe-area-inset-bottom, 0px));
+  background: var(--c-canvas);
+  box-shadow: inset 0 1px 0 var(--hairline);
+  max-height: none;
+}
+.banner[data-placement="bar"] .title { font-size: 13px; }
+.banner[data-placement="bar"] .text { font-size: 12px; line-height: 1.35; flex: 1 1 220px; }
+.banner[data-placement="bar"] .actions { flex-wrap: wrap; margin-top: 0; gap: 6px; }
+.banner[data-placement="bar"] .primary,
+.banner[data-placement="bar"] .secondary,
+.banner[data-placement="bar"] .tertiary { min-height: 32px; padding: 0 10px; }

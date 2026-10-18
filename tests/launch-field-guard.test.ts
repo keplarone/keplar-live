@@ -25,10 +25,10 @@ test("the particle layer is skipped when WebGL is missing, and error pages give 
   assert.match(glob, /<html lang="en">/);
 });
 
-test("probeCaps().webgl is false on a CPU renderer, and the home orb falls back to static when it is false", () => {
+test("probeCaps().webgl is false on a CPU renderer, and the chat does not mount the old orb", () => {
   const caps = readFileSync("src/field/caps.ts", "utf8");
   assert.match(caps, /webglOk = Boolean\(gl\) && !soft/);
   assert.match(caps, /isSoftwareRendererName\(String\(gl\.getParameter/);
-  const orb = readFileSync("src/components/home/OrbHero.tsx", "utf8");
-  assert.match(orb, /if \(!caps\.webgl\) \{\s*setMode\("static"\)/);
+  const home = readFileSync("src/components/app-ui/ChatHome.tsx", "utf8") + readFileSync("src/app/(chat)/page.tsx", "utf8");
+  assert.doesNotMatch(home, /OrbHero|field\/orb|PageField/);
 });

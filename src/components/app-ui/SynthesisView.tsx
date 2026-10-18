@@ -3,7 +3,6 @@
 import { useSyncExternalStore } from "react";
 import { KeplarSymbol } from "@/components/brand";
 import { prefersReducedMotion } from "@/lib/ui/presence";
-import { modelMark } from "./model-marks";
 import type { ModelTick } from "./state/types";
 import s from "./SynthesisView.module.css";
 
@@ -43,8 +42,7 @@ export function SynthesisView({ models, count, disagreement }: { models: ModelTi
     return { x: CX + Math.cos(a) * rx, y: CY + Math.sin(a) * ry };
   });
 
-  const names = answered.map((m) => modelMark(m.id, m.name).family).filter((f, i, all) => all.indexOf(f) === i);
-  const list = names.length <= 1 ? names.join("") : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+  const list = "";
   // One honest line about what is happening now (the answers that arrived are being combined). It used to rotate through four
   // claimed sub-steps on a 2.4 s timer, whatever the server was doing: a progress display that did not reflect real work.
   const line = n > 1 ? (disagreement ? `Combining ${n} answers, including where they disagree` : `Combining ${n} answers into one`) : "Writing the answer";
@@ -75,17 +73,16 @@ export function SynthesisView({ models, count, disagreement }: { models: ModelTi
         {place.map((p, i) => {
           const m = models[i];
           const st = m?.status ?? "pending";
-          const mark = m ? modelMark(m.id, m.name) : null;
           return (
             <span
               key={i}
               className={s.seat}
               data-state={st}
-              title={m ? `${m.name}${st === "responded" ? "" : st === "refused" ? " (declined)" : st === "failed" ? " (didn't answer)" : ""}` : undefined}
+              title={m ? (st === "responded" ? "Answered" : st === "refused" ? "Declined" : st === "failed" ? "Didn't answer" : "Waiting") : undefined}
               style={{ left: `${(p.x / W) * 100}%`, top: `${(p.y / H) * 100}%`, "--dx": `${CX - p.x}px`, "--dy": `${CY - p.y}px`, "--i": i } as React.CSSProperties}
             >
               <span className={s.disc}>
-                {mark?.kind === "logo" ? <img src={mark.src} alt="" width={18} height={18} /> : mark ? <span className={s.mono}>{mark.text}</span> : null}
+                <span className={s.mono}>{i + 1}</span>
               </span>
             </span>
           );

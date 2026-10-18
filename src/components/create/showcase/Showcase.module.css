@@ -139,3 +139,14 @@
 @media (prefers-reduced-motion: reduce) {
   :global(:root[data-theme]:not([data-business-app])) .btn.btn:hover:not(:disabled) { transform: none; }
 }
+
+
+/* Calm chrome: ink actions, no lift, no glow. */
+:global(:root[data-theme]:not([data-business-app])) .btn {
+  background: var(--c-ink);
+  color: var(--c-canvas);
+  box-shadow: none;
+  font-weight: var(--w-medium);
+  transform: none;
+}
+:global(:root[data-theme]:not([data-business-app])) .btn:hover:not(:disabled, [aria-disabled="true"]) { background: var(--c-ink-hover); transform: none; box-shadow: none; }

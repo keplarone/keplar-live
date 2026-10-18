@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Acmhainní",
     "items": {
       "/features": "Gach rud in Keplar",
-      "/#demo": "Taispeántas beo",
+      "/": "Taispeántas beo",
       "/app/create": "Cruthaigh",
       "/docs": "Doiciméid",
       "/pricing": "Praghsáil",

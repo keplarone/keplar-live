@@ -18,7 +18,7 @@ import {
   weatherForCell,
   SKY_TTL_SECONDS,
 } from "@/lib/sky/weather";
-import { SKY_VARIANTS, skyLook, stillName, windFactor } from "@/lib/sky/variants";
+import { SKY_VARIANTS, skyLook, windFactor } from "@/lib/sky/variants";
 import { GET } from "@/app/api/sky/route";
 
 const read = (f: string) => readFileSync(f, "utf8");
@@ -154,40 +154,20 @@ test("GET /api/sky: { sky, wind } only, private 15-minute cache, no cookies", as
   assert.doesNotMatch(JSON.stringify(body), /Paris|lat|lon/i);
 });
 
-test("phones and reduced motion get the still only; the live renderer loads on demand on desktop", () => {
-  const src = read("src/components/ui/space/WeatherSky.tsx");
-  const guard = src.indexOf('if (isPhone() || matchMedia("(prefers-reduced-motion: reduce)").matches) return;');
-  const load = src.indexOf('await import("@/lib/sky/renderer")');
-  assert.ok(guard > 0 && load > guard, "the phone / reduced-motion guard returns before the renderer is imported");
-  assert.doesNotMatch(src, /^import .*sky\/renderer/m, "the renderer is never in the initial bundle");
-  assert.match(src, /failIfMajorPerformanceCaveat: true/);
-  assert.match(src, /swiftshader\|llvmpipe/);
-  assert.match(src, /document\.hidden/);
-  assert.match(src, /IntersectionObserver/);
-  assert.match(src, /credentials: "omit"/, "the weather fetch is cookie-less");
-  assert.doesNotMatch(src, /geolocation/, "no client geolocation, no permission prompt");
-  // the stills: every variant x theme x size exists, small, and the CSS points at them
-  const css = read("src/styles/space.css");
-  for (const v of SKY_VARIANTS)
-    for (const t of ["light", "dark"] as const)
-      for (const small of [false, true]) {
-        const stem = stillName(v, t, small);
-        for (const ext of ["avif", "webp"]) {
-          const f = `public/sky/${stem}.${ext}`;
-          assert.ok(existsSync(f), f);
-          assert.ok(readFileSync(f).length < 120_000, `${f} is small`);
-        }
-        assert.ok(css.includes(`/sky/${stem}.avif`), `space.css uses ${stem}`);
-      }
-  assert.match(css, /@media \(max-width: 640px\) \{\n {2}\.sp-sky__still\[data-sky="clear"\] \{ background-image: url\("\/sky\/clear-day-sm\.webp"\)/);
+test("the weather sky is not mounted on any keplar.one page", () => {
+  assert.equal(existsSync("src/components/ui/space/WeatherSky.tsx"), false);
+  for (const f of [
+    "src/app/layout.tsx",
+    "src/app/(chat)/layout.tsx",
+    "src/app/(marketing)/layout.tsx",
+    "src/app/(business)/layout.tsx",
+    "src/app/not-found.tsx",
+    "src/components/onboarding/Onboarding.tsx",
+  ]) assert.doesNotMatch(read(f), /WeatherSky|SkyBackdrop/, f);
 });
 
-test("lightning stays rare and soft (WCAG 2.3.1: far below 3 flashes a second)", () => {
-  const src = read("src/components/ui/space/WeatherSky.tsx");
-  assert.match(src, /flashAt = now \+ 6000 \+ Math\.random\(\) \* 9000/, "6-15 s of calm between strikes");
-  assert.match(src, /double \? 0\.7 \* pulse\(k - 420\) : 0/, "at most two pulses, 420 ms apart");
-});
-
-test("privacy policy says the approximate location is used once for the weather and not stored", () => {
-  assert.match(read("src/components/legal/content/privacy.ts"), /approximate location of your connection, once, to show your local weather in the background, and doesn't store it/);
+test("privacy policy does not claim a weather background", () => {
+  const privacy = read("src/components/legal/content/privacy.ts");
+  assert.doesNotMatch(privacy, /local weather|weather in the background/);
+  assert.match(privacy, /does not use your approximate location, and it does not store one/);
 });

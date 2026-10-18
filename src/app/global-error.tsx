@@ -7,7 +7,7 @@
 export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, minHeight: "100vh", display: "grid", placeItems: "center", background: "#0b0b0d", color: "#f3f3f4", fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif", textAlign: "center", padding: "2rem" }}>
+      <body style={{ margin: 0, minHeight: "100vh", display: "grid", placeItems: "center", background: "#212121", color: "#ececec", fontFamily: "ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif", textAlign: "center", padding: "2rem" }}>
         <main style={{ maxWidth: 440 }}>
           <h1 style={{ fontSize: "1.6rem", margin: "0 0 .75rem", fontWeight: 500 }}>Keplar hit a problem.</h1>
           <p style={{ opacity: 0.75, margin: "0 0 1.5rem" }}>Nothing you did caused this. Try again, or reload the page.</p>

@@ -349,3 +349,74 @@
   .btn, .toggleItem, .input, .pwToggle, .providerLogo { transition: none; }
   .btn:hover:not(:disabled), .btn:active:not(:disabled) { transform: none; }
 }
+
+/* Graphite entry: form on the left, solid surfaces, a slow collage of the real product on the right. */
+.shell { background: var(--c-canvas); grid-template-columns: minmax(0, 1fr); }
+.formSide { order: 0; padding-inline: var(--s-4); }
+.strengthBar span[data-on] { box-shadow: none; }
+.card,
+:global(:root[data-theme="light"]) .card {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+@media (min-width: 768px) and (pointer: fine) {
+  .card { backdrop-filter: none; -webkit-backdrop-filter: none; }
+}
+.btn::before { display: none; }
+.btnPrimary {
+  background: var(--c-ink);
+  color: var(--c-canvas);
+  box-shadow: none;
+}
+.btnSecondary { background: transparent; color: var(--c-ink); box-shadow: inset 0 0 0 1px var(--hairline); }
+.btnGhost { background: transparent; color: var(--c-ink); box-shadow: none; }
+.btn:hover:not(:disabled),
+.btn:active:not(:disabled),
+.btn:focus-visible,
+.btn[aria-busy="true"] {
+  transform: none;
+  box-shadow: none;
+}
+.btnSecondary:hover:not(:disabled) { background: var(--hover-wash); }
+.input {
+  border-radius: 16px;
+  background: var(--c-surface-2);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+.input:hover { background: var(--c-surface-2); }
+.input:focus,
+.input:focus-visible { box-shadow: inset 0 0 0 1px var(--c-ink); }
+.alert,
+.alertErr,
+.alertOk { box-shadow: none; animation: none; }
+.divider::before,
+.divider::after { background: var(--hairline); }
+.toggleItem[aria-current="page"] { box-shadow: none; animation: none; }
+.card { animation: none; }
+.collage { display: none; }
+.collageTrack { display: flex; flex-direction: column; gap: 20px; padding: 24px; }
+.shot { margin: 0; overflow: hidden; border-radius: 20px; border: 1px solid var(--hairline); background: var(--c-surface-1); }
+.shot img { display: block; width: 100%; height: auto; }
+@media (min-width: 960px) {
+  .shell { grid-template-columns: minmax(420px, 520px) minmax(0, 1fr); column-gap: 0; padding-inline: 0; min-height: 100svh; }
+  .formSide { align-items: center; padding-inline: 40px; }
+  .collage {
+    display: block;
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    overflow: hidden;
+    box-sizing: border-box;
+    padding-top: calc(var(--l-nav-offset) + var(--l-nav-h));
+    background: var(--c-surface-1);
+  }
+  .collageTrack { animation: collage-rise 56s linear infinite; }
+}
+@keyframes collage-rise {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .collageTrack { animation: none; }
+}

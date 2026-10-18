@@ -93,7 +93,7 @@ export const primaryNav: NavLink[] = [
     label: "Product",
     children: [
       { href: "/features", label: "Everything in Keplar", hint: "Every feature and whether it is live" },
-      { href: "/#demo", label: "Live demo", hint: "Ask a question now, no sign-up" },
+      { href: "/", label: "Ask Keplar", hint: "Ask a question now, no sign-up" },
       { href: "/app/create", label: "Create", hint: "Describe or speak a site or app" },
     ],
   },
@@ -107,6 +107,7 @@ export const footerNav: { heading: string; links: NavLink[] }[] = [
   {
     heading: "Product",
     links: [
+      { href: "/overview", label: "What Keplar is" },
       { href: "/features", label: "Everything in Keplar" },
       { href: "/how-it-works", label: "How it works" },
       { href: "/showcase", label: "Create showcase" },
@@ -160,4 +161,4 @@ export const paletteOnlyPages: NavLink[] = [
 ];
 
 export const signInHref = "/signin";
-export const tryHref = "/app/ask";
+export const tryHref = "/";

@@ -74,6 +74,7 @@ test("button effects: magnet is bounded, off for touch / reduced motion / data s
   const css = readFileSync("src/styles/lit.css", "utf8");
   assert.match(css, /\[data-lit\]\[aria-busy="true"\]::after/);
   assert.match(css, /prefers-reduced-motion: reduce[\s\S]*aria-busy/);
-  assert.match(readFileSync("src/app/layout.tsx", "utf8"), /<ButtonFx \/>/);
+  assert.match(readFileSync("src/components/chrome/LegacyDecor.tsx", "utf8"), /<ButtonFx \/>/);
+  assert.doesNotMatch(readFileSync("src/app/layout.tsx", "utf8"), /<ButtonFx \/>/);
   assert.match(readFileSync("src/components/ui/Button.tsx", "utf8"), /aria-busy=\{loading \|\| undefined\}/);
 });

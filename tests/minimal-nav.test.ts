@@ -68,13 +68,11 @@ test("Create: the empty state is one prompt like Ask; extras sit behind Options;
   assert.match(ab, /const MAIN_TABS: Tab\[\] = \["preview", "code", "changes"\]/);
 });
 
-test("home: hero story, live demo, one compact 'Everything in Keplar' list linking to /features, pricing, one closing CTA", () => {
-  const ch = readFileSync("src/components/landing/Chapters.tsx", "utf8");
-  assert.equal((ch.match(/<section /g) ?? []).length, 3, "demo, overview and close (pricing comes in via beforeClose)");
-  assert.match(ch, /href=\{L\(`\/features#\$\{c\.id\}`\)\}/, "each other chapter is one row to its /features section");
-  assert.match(ch, /id=\{c\.id\}/, "old /#chapter anchors still land");
-  assert.doesNotMatch(ch, /<ShowcaseStrip|<VoiceSchematic/, "deep feature showcases live on /features and /showcase");
-  assert.equal((ch.match(/<ButtonLink /g) ?? []).length, 1, "one primary action below the hero");
+test("overview: a short explanation and one primary ask link, with the old chapter story gone", () => {
+  const ch = readFileSync("src/components/marketing/CalmOverview.tsx", "utf8");
+  assert.match(ch, /Several models\. One answer\./);
+  assert.match(ch, /href="\/"/);
+  assert.doesNotMatch(ch, /ShowcaseStrip|VoiceSchematic|data-chapter|SkyHome|MonolithHome/);
 });
 
 test("Business: four sections visible, the rest under one More menu, pending approvals still counted", () => {

@@ -7,7 +7,7 @@ import { footerNav, paletteOnlyPages, primaryNav, brand, BUSINESS_HOST } from "@
 export type Command = { id: string; label: string; href: string; group: "Go to" | "Features" | "Learn" | "Account" | "Docs" | "On this page"; hint?: string; keywords?: string };
 
 export const FEATURE_COMMANDS: Command[] = [
-  { id: "ask", label: "Ask Keplar", href: "/app/ask", group: "Features", hint: "Live demo — no sign-up needed", keywords: "demo try chat question answer" },
+  { id: "ask", label: "Ask Keplar", href: "/", group: "Features", hint: "Live demo — no sign-up needed", keywords: "demo try chat question answer" },
   { id: "create", label: "Create", href: "/app/create", group: "Features", hint: "Build sites and apps", keywords: "builder site app studio make" },
   { id: "slides", label: "Slides", href: "/app/slides", group: "Features", hint: "Decks from a prompt or file", keywords: "presentation deck" },
   { id: "study", label: "Study", href: "/app/study", group: "Features", hint: "Flashcards and quizzes", keywords: "learn exam cards quiz" },

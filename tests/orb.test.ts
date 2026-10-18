@@ -60,24 +60,28 @@ test("headline scramble ends exactly on the real text and never changes spaces o
   }
 });
 
-test("hero copy is truthful: no accuracy claims or fake stats; model names are plain text from the catalogue; no logos", () => {
+test("hero copy is truthful: no accuracy claims or fake stats, and the chat does not show provider names or logos", () => {
   const text = [orbHeroCopy.pill, orbHeroCopy.sub, orbHeroCopy.note, ...orbHeroCopy.chips].join(" ");
   assert.ok(!/\d+\s?%|accura|guarantee|always right|never wrong|#1|best/i.test(text), text);
   const catalog = readFileSync("src/lib/orchestration/catalog.json", "utf8");
   for (const n of NODE_NAMES) assert.ok(catalog.includes(`"provider": "${n}"`), `${n} is a provider in the catalogue`);
-  const tsx = readFileSync("src/components/home/OrbHero.tsx", "utf8");
-  assert.ok(!/<img|\.svg"|next\/image/.test(tsx), "no logo images");
-  assert.match(tsx, /Names belong|orbHeroCopy/);
+  const chat = readFileSync("src/components/app-ui/ChatHome.tsx", "utf8");
+  const overview = readFileSync("src/components/marketing/CalmOverview.tsx", "utf8");
+  const shots = readFileSync("src/components/marketing/product-shots.ts", "utf8");
+  const home = chat + overview + shots;
+  assert.ok(!/<img|\.svg"|next\/image/.test(chat), "the chat has no logo images");
+  assert.ok(!/\.svg"|next\/image/.test(overview + shots), "overview frames are product screens, not logos");
+  assert.match(overview, /src=\{shot\.src\}/);
+  assert.match(shots, /\/product\/chat\.png/);
+  assert.match(shots, /\/product\/debate\.png/);
+  assert.match(shots, /\/product\/create\.png/);
+  for (const n of NODE_NAMES) assert.ok(!home.includes(n), `${n} is not named on the chat or overview`);
   assert.match(orbHeroCopy.note, /belong to their owners/);
 });
 
-test("hero wiring: composer stays an uncontrolled textarea, typing only bumps a number, submit converges before navigating, reduced motion is still", () => {
-  const tsx = readFileSync("src/components/home/OrbHero.tsx", "utf8");
-  assert.ok(!/\bvalue=\{/.test(tsx));
-  assert.match(tsx, /scene\.current\?\.agitate\(/);
-  assert.match(tsx, /converge\(\)\.then\(run\)/);
-  assert.match(tsx, /window\.setTimeout\(run, 1700\)/, "navigation never waits on the animation forever");
+test("orb scene still pauses and disposes; the chat home does not mount it", () => {
   const sc = readFileSync("src/field/orb/scene.ts", "utf8");
+  assert.doesNotMatch(readFileSync("src/components/app-ui/ChatHome.tsx", "utf8"), /field\/orb|OrbHero/);
   assert.match(sc, /Math\.min\(window\.devicePixelRatio \|\| 1, this\.b\.dprCap\)/);
   assert.match(sc, /visibilitychange/);
   assert.match(sc, /webglcontextlost/);

@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Ilaha",
     "items": {
       "/features": "Wax kasta oo Keplar ku jira",
-      "/#demo": "Bandhig toos ah",
+      "/": "Bandhig toos ah",
       "/app/create": "Abuur",
       "/docs": "Dukumentiyo",
       "/pricing": "Qiimaha",

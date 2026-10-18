@@ -78,3 +78,14 @@
 }
 
 .opt { margin-left: 6px; font-weight: 400; font-size: 0.8rem; color: var(--c-ink-3); }
+
+
+/* Calm chrome: ink actions, no lift, no glow. */
+:global(:root[data-theme]:not([data-business-app])) .btn {
+  background: var(--c-ink);
+  color: var(--c-canvas);
+  box-shadow: none;
+  font-weight: var(--w-medium);
+  transform: none;
+}
+:global(:root[data-theme]:not([data-business-app])) .btn:hover:not(:disabled, [aria-disabled="true"]) { background: var(--c-ink-hover); transform: none; box-shadow: none; }

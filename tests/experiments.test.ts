@@ -121,5 +121,6 @@ test("the home hero button is the experiment's control by default and is counted
   assert.match(hero, /useExperiment\("home-cta"\)/);
   assert.match(hero, /track\("cta_click", \{ where: `home:hero:\$\{arm\.id\}` \}\)/);
   assert.equal(exp.arms[0].label, "Try Keplar");
-  assert.match(readFileSync("src/components/sky/SkyHome.tsx", "utf8"), /<HeroCta href=\{tryHref\}/);
+  assert.match(readFileSync("src/components/marketing/CalmOverview.tsx", "utf8"), /href="\/"/);
+  assert.doesNotMatch(readFileSync("src/components/marketing/CalmOverview.tsx", "utf8"), /data-sp-btn|SkyHome/);
 });

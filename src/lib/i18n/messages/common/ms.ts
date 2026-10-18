@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Sumber",
     "items": {
       "/features": "Semua dalam Keplar",
-      "/#demo": "Demo langsung",
+      "/": "Demo langsung",
       "/app/create": "Cipta",
       "/docs": "Dokumentasi",
       "/pricing": "Harga",

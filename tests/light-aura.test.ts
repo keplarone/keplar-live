@@ -69,8 +69,8 @@ test("every rule that paints an aura is scoped to light, sitewide", () => {
       assert.match(r.body, /pointer-events:\s*none|animation:/, `${f}: aura layer must not take pointer events`);
     }
   }
-  // Marketing only (the home close and the Monolith hero): the /app workspace keeps a calm, flat canvas in both themes.
-  assert.ok(painters >= 2, `expected aura placements, found ${painters}`);
+  // The graphite system paints no aura. A leftover painter would still have to be light-scoped and inert.
+  assert.equal(painters, 0, `keplar.one paints no aura, found ${painters}`);
 });
 
 test("the /app workspace paints no aura and no backdrop art", () => {
@@ -90,11 +90,10 @@ test("dark theme defines and paints no aura", () => {
       assert.doesNotMatch(r.body, /--aura-|var\(--aura-/, `${f}: dark rule "${r.selector}" touches the aura`);
     }
   }
-  // and the dark canvas is the Space void (Space UI, docs/design/space-ui.md: the dusk sky, not an aura, sits behind marketing pages)
+  // Base tokens stay the Space void. keplar.one paints graphite from graphite.css, outside Space Studio.
   assert.match(read("src/styles/tokens.css"), /:root\[data-theme="dark"\]\s*\{[^}]*--c-canvas:\s*#000000/);
-  // the home scene stays the opaque night sky in dark; it is only transparent (over the aura) in light
-  const home = read("src/components/home/MonolithHome.tsx");
-  assert.match(home, /opaque:\s*sceneTheme === "dark"/);
+  assert.match(read("src/styles/graphite.css"), /--c-canvas:\s*#212121/);
+  assert.match(read("src/components/app-ui/ChatHome.tsx"), /How can Keplar help you today/);
 });
 
 test("the aura stays static: no drift, no viewport blur, no background-attachment; colour off under increased contrast", () => {
@@ -134,7 +133,7 @@ test("light palette: cool off-white canvas and AA inks", () => {
       assert.ok(r >= 4.5, `${ink} on ${bg} = ${r.toFixed(2)}:1 (needs 4.5)`);
     }
   }
-  // the light block never redefines dark tokens, and light (the day sky) is the default theme
+  // the light block never redefines dark tokens; dark graphite is the default theme
   assert.doesNotMatch(light, /data-theme="dark"/);
-  assert.match(read("src/lib/theme.ts"), /DEFAULT_THEME_PREF: ThemePref = "light"/);
+  assert.match(read("src/lib/theme.ts"), /DEFAULT_THEME_PREF: ThemePref = "dark"/);
 });

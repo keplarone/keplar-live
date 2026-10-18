@@ -150,7 +150,7 @@ export const privacy: LegalDoc = {
       title: "Device and connection information",
       blocks: [
         { type: "p", text: "Like any website, our servers and hosting provider receive your IP address, browser type and the pages you request. We use this to deliver the site, apply rate limits (including per-IP limits for signed-out Free use) and protect against abuse." },
-        { type: "p", text: "The site uses the approximate location of your connection, once, to show your local weather in the background, and doesn't store it." },
+        { type: "p", text: "Keplar does not use your approximate location, and it does not store one." },
       ],
     },
     {

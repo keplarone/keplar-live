@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Nav } from "@/components/chrome/Nav";
 import { Footer } from "@/components/chrome/Footer";
 import { ButtonLink } from "@/components/ui/Button";
-import { SkyBackdrop } from "@/components/sky/SkyBackdrop";
 import s from "@/components/page/NotFound.module.css";
 
 export const metadata: Metadata = { title: "Page not found" };
@@ -13,7 +12,6 @@ export default function NotFound() {
     <>
       <Nav />
       <main id="main" style={{ position: "relative", zIndex: 0, isolation: "isolate", overflowX: "clip" }}>
-        <SkyBackdrop />
         <section className={s.wrap} aria-labelledby="nf-title">
           <div className={s.card}>
             <p className={s.code} aria-hidden="true">404</p>

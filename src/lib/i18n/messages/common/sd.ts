@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "وسيلا",
     "items": {
       "/features": "Keplar ۾ سڀ ڪجهه",
-      "/#demo": "سڌو ڊيمو",
+      "/": "سڌو ڊيمو",
       "/app/create": "ٺاهيو",
       "/docs": "دستاويز",
       "/pricing": "قيمتون",

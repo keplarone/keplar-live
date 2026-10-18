@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Àwọn ohun èlò",
     "items": {
       "/features": "Ohun gbogbo nínú Keplar",
-      "/#demo": "Ìfihàn ní tààrà",
+      "/": "Ìfihàn ní tààrà",
       "/app/create": "Ṣẹ̀dá",
       "/docs": "Ìwé àlàyé",
       "/pricing": "Iye owó",

@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Ištekliai",
     "items": {
       "/features": "Viskas Keplar",
-      "/#demo": "Tiesioginė demonstracija",
+      "/": "Tiesioginė demonstracija",
       "/app/create": "Kurti",
       "/docs": "Dokumentacija",
       "/pricing": "Kainos",

@@ -20,7 +20,7 @@ export function SettingsDialog({ mode, children }: { mode: "modal" | "page"; chi
     if (modal) { router.back(); return; }
     const fromHere = document.referrer && new URL(document.referrer).origin === window.location.origin;
     if (fromHere && window.history.length > 1) router.back();
-    else router.push("/app/ask");
+    else router.push("/");
   }, [modal, router]);
 
   // Modal: lock the page behind, move focus in, keep Tab inside, give focus back on close.

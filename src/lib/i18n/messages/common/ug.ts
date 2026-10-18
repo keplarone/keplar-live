@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "مەنبەلەر",
     "items": {
       "/features": "Keplar دىكى ھەممە نەرسە",
-      "/#demo": "بىۋاسىتە كۆرسىتىش",
+      "/": "بىۋاسىتە كۆرسىتىش",
       "/app/create": "قۇرۇش",
       "/docs": "ھۆججەتلەر",
       "/pricing": "باھا",

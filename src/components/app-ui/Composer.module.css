@@ -972,9 +972,9 @@
 .family span:hover { background: var(--press-wash); color: var(--c-ink); }
 .previewLine { border-top: 0; padding-top: var(--s-2); }
 
-/* Notes under the field (Deep Research budget, Debate, Study, Slides): Space Studio's escalation strip, a violet wash. */
-.budget { border-radius: 20px; background: linear-gradient(100deg, rgb(var(--ring-rgb) / 0.12), rgb(var(--ring-rgb) / 0.03)); }
-.budget[data-blocked] { background: linear-gradient(100deg, rgb(var(--rgb-attention) / 0.16), rgb(var(--rgb-attention) / 0.05)); }
+/* Notes under the field sit on a solid surface. */
+.budget { border-radius: 16px; background: var(--c-surface-2); }
+.budget[data-blocked] { background: var(--c-surface-2); }
 .shareBar { border-radius: 999px; box-shadow: none; }
 @media (max-width: 640px) {
   .composer[data-pulse] { animation: none; }
@@ -984,3 +984,40 @@
   .composer[data-pulse] { animation: none; }
   .tool:active, .routingBtn:active { scale: none; }
 }
+
+/* One rounded composer. Solid, 1px edge. */
+:global(:root[data-theme]) .composer {
+  border-radius: 24px;
+  border: 1px solid var(--hairline);
+  background: var(--c-canvas);
+  box-shadow: none;
+  filter: none;
+  padding: 14px 12px 10px 16px;
+}
+:global(:root[data-theme]) .composer:has(:is(textarea, input):focus) {
+  box-shadow: none;
+  border-color: var(--hairline-strong);
+}
+:global(:root[data-theme]) .input { font-size: 16px; }
+:global(:root[data-theme]) .tool,
+:global(:root[data-theme]) .routingBtn {
+  background: transparent;
+  box-shadow: none;
+  font-weight: var(--w-medium);
+}
+:global(:root[data-theme]) .tool:hover,
+:global(:root[data-theme]) .routingBtn:hover { background: var(--hover-wash); box-shadow: none; }
+:global(:root[data-theme]) .panel.panel,
+:global(:root[data-theme]) .moreMenu.moreMenu,
+:global(:root[data-theme]) .attachMenu.attachMenu {
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  box-shadow: none;
+  background: var(--c-canvas);
+}
+.moreItem[aria-checked="true"] .moreIcon { box-shadow: none; background: var(--c-surface-2); color: var(--c-ink); }
+.choice input:checked + .choiceText::before,
+.check input:checked + span::before { box-shadow: none; }
+.segment input:checked + span { box-shadow: none; }
+.recordHold:empty { display: none; }
+.recordHold { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 12px 0; }
