@@ -56,10 +56,10 @@
 .productLink::after { content: " →"; display: inline-block; transition: transform 0.4s var(--space-spring-bouncy); }
 .product:hover .productLink::after { transform: translateX(3px); }
 
-/* Tiers: the featured tier stands lifted with a violet glow (no edge). */
+/* Tiers: the featured tier is lifted with the same neutral glass depth as other cards. */
 .tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: var(--s-4); }
 .tier { border-radius: var(--r-card); padding: var(--s-6); display: grid; gap: var(--s-4); align-content: start; background: var(--space-glass); box-shadow: var(--space-glass-depth); }
-.tier[data-featured] { box-shadow: var(--space-glass-lift), 0 0 56px -10px rgb(var(--ring-rgb) / 0.45); }
+.tier[data-featured] { box-shadow: var(--space-glass-lift); }
 .tierName { margin: 0; font-size: var(--t-lead); font-weight: var(--w-semibold); display: flex; justify-content: space-between; align-items: baseline; gap: var(--s-2); }
 .tierPlans { font-size: var(--t-small); color: var(--c-ink-3); font-weight: var(--w-regular); }
 .tierRows { display: grid; gap: var(--s-2); margin: 0; }

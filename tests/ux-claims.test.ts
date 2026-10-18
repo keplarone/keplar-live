@@ -67,15 +67,15 @@ test("chat: a heading structure (h1 title, h2 per question; answers' own heading
   assert.equal((turn.match(/const titleId = useId\(\)/g) ?? []).length, 4);
 });
 
-test("focus: every keyboard-focused control gets the Space violet glow (never an outline, never invisible); text links an underline", () => {
-  // Space UI (docs/design/space-ui.md): Space Studio's focus glow replaced the bar/underline cue on controls. :focus-visible only, so
-  // a pointer press still draws nothing (e2e/no-focus-box).
+test("focus: every keyboard-focused control gets a solid neutral ring (never an outline, never invisible); text links an underline", () => {
+  // Focus is a 2px ring in the accent (graphite in light, near-white in dark). :focus-visible only, so
+  // a pointer press still draws nothing (e2e/no-focus-box). The ring is not a blurred glow.
   const g = read("src/styles/globals.css");
   const sp = read("src/styles/space.css");
   assert.match(g, /:focus, :focus-visible \{ outline: none !important; \}/);
   assert.match(sp, /:is\(a\[href\], button, summary, select, input:is\(\[type="checkbox"\], \[type="radio"\], \[type="range"\][^)]*\)[^{]*\[role="switch"\][^{]*\[tabindex="0"\]\):focus-visible \{\s*box-shadow: var\(--space-focus-glow\);/);
-  assert.match(sp, /:root \{[\s\S]*?--space-focus-glow: 0 0 0 3px rgb\(125 59 196 \/ 0\.45\)/);
-  assert.match(sp, /:root\[data-theme="dark"\] \{[\s\S]*?--space-focus-glow: 0 0 0 3px rgb\(195 155 255 \/ 0\.55\)/);
+  assert.match(sp, /:root \{[\s\S]*?--space-focus-glow: 0 0 0 2px var\(--c-focus\)/);
+  assert.match(sp, /:root\[data-theme="dark"\] \{[\s\S]*?--space-focus-glow: 0 0 0 2px var\(--c-focus\)/);
   assert.match(sp, /h6\) a\[href\]:not\(\[data-sp-btn\]\):focus-visible \{\s*box-shadow: none;\s*text-decoration-line: underline;/);
 });
 

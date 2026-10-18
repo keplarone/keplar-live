@@ -24,10 +24,11 @@
   --c-agree: var(--c-reasoning);
   --c-dissent: #c9664a;
   --c-dissent-text: var(--c-disagree);
-  --c-focus: #7d3bc4; /* Space violet, deepened for the light canvas (6.4:1 on white) */
-  --focus-filter: brightness(0.94); /* keyboard focus: the Space glow (space.css) plus this slight shift; never a browser outline */
-  --c-accent: #7d3bc4; /* Space violet accent for links/highlights/selection; primary buttons stay ink (light) / white (dark) */
-  --ring-rgb: 125 59 196; /* violet focus glows */
+  --c-focus: #17171a; /* graphite ring on the light canvas (17.9:1 on white) */
+  --focus-filter: brightness(0.94); /* keyboard focus: a solid ring (space.css) plus this slight shift; never a browser outline or a glow */
+  --c-accent: #17171a; /* one neutral accent: dark graphite in light, near-white in dark. Primary buttons stay ink / white */
+  --c-on-accent: #ffffff; /* ink on an accent fill */
+  --ring-rgb: 23 23 26;
   --c-ink-hover: #1d1d22; /* hover for ink-filled (primary) controls */
   --c-ok: var(--c-verified); /* alias: one meaning, one color */
   --c-err: var(--c-destructive);
@@ -45,12 +46,12 @@
   --v-reasoning: #00c0e0; --on-reasoning: #09090b;
   --v-research: #12a3b5; --on-research: #09090b;
   --v-creation: #d4894a; --on-creation: #09090b;
-  --v-memory: #d4848e; --on-memory: #09090b;
+  --v-memory: #c9b7a4; --on-memory: #17171a;
   --v-disagree: #e0715a; --on-disagree: #09090b;
   --v-attention: #e2a73b; --on-attention: #09090b;
   --v-verified: #34a56f; --on-verified: #09090b;
   --v-destructive: #d92d20; --on-destructive: #ffffff;
-  --c-memory: #8a4550; --rgb-memory: 138 69 80;
+  --c-memory: #5c4a3e; --rgb-memory: 92 74 62;
   /* Neutrals: white-first, then off-white, silver, graphite, black. */
   --n-paper: #f6f7f9; --n-silver: #d9dce2; --n-graphite: #26282d; --n-black: #07080a;
   /* Neutral for marks/strokes that must read on the canvas in either theme (graphite in light, silver in dark). */
@@ -182,7 +183,7 @@
 /*
  * Dark theme = the Space theme (the default since the Space UI, docs/design/space-ui.md): the Space Studio palette. A black void
  * (#000) with surfaces raised by light, not lines: #0a0a0c panels, #141417 raised, #1e1e23 pressed. White primary on black, a
- * violet focus glow (#c39bff), Space Studio's semantic hues. <html data-theme> is set before paint by the inline script in the root
+ * graphite / near-white focus ring, Space Studio's semantic hues. <html data-theme> is set before paint by the inline script in the root
  * layout (src/lib/theme.ts). Contrast on black: ink 19:1, ink-2 10:1, ink-3 6.1:1 (5.4:1 on #141417, 4.9:1 on #1e1e23).
  */
 :root[data-theme="dark"] {
@@ -195,16 +196,17 @@
   /* No outlines (Space Studio): lines are nearly invisible; depth and light separate surfaces. Data tables still get a faint rule. */
   --c-border: rgb(255 255 255 / 0.05);
   --c-border-strong: rgb(255 255 255 / 0.09);
-  --c-glass: rgba(16, 15, 22, 0.78);
-  --c-glass-strong: rgba(14, 13, 20, 0.9);
+  --c-glass: rgba(16, 16, 18, 0.78);
+  --c-glass-strong: rgba(14, 14, 16, 0.9);
   --c-glass-border: transparent;
   --c-agree: var(--c-reasoning);
   --c-dissent: #ff9f8a;
   --c-dissent-text: var(--c-disagree);
-  --c-focus: #c39bff;
+  --c-focus: #f4f4f6;
   --focus-filter: brightness(1.12);
-  --c-accent: #c39bff;
-  --ring-rgb: 195 155 255;
+  --c-accent: #f4f4f6;
+  --c-on-accent: #17171a; /* ink on the near-white accent fill */
+  --ring-rgb: 244 244 246;
   --c-ink-hover: #ffffff;
   --c-ok: var(--c-verified); /* alias: one meaning, one color */
   --c-err: var(--c-destructive);
@@ -218,12 +220,12 @@
   --v-reasoning: #6ea8ff; --on-reasoning: #000000;
   --v-research: #8fd8ff; --on-research: #000000;
   --v-creation: #ffb37a; --on-creation: #000000;
-  --v-memory: #f08bd8; --on-memory: #000000;
+  --v-memory: #e6ddd4; --on-memory: #17171a;
   --v-disagree: #ff8f78; --on-disagree: #000000;
   --v-attention: #ffd66b; --on-attention: #000000;
   --v-verified: #5fd49a; --on-verified: #000000;
   --v-destructive: #ff7a85; --on-destructive: #000000;
-  --c-memory: #f08bd8; --rgb-memory: 240 139 216;
+  --c-memory: #d9cfc4; --rgb-memory: 217 207 196;
   --n-paper: #0a0a0c; --n-silver: #2a2a31; --n-graphite: #141417; --n-black: #000000;
   --n-mark: #b3b3bb;
   --n-line: #4a4a52;
@@ -234,7 +236,7 @@
   --rgb-surface: 10 10 12;
   --sh-hairline: inset 0 1px 0 rgb(255 255 255 / 0.05);
   --sh-float: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 18px 48px rgb(0 0 0 / 0.5);
-  --sh-window: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 30px 80px -30px rgb(0 0 0 / 0.85), 0 0 90px rgb(176 104 255 / 0.08);
+  --sh-window: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 30px 80px -30px rgb(0 0 0 / 0.85);
   color-scheme: dark;
 }
 
@@ -321,7 +323,7 @@
   --nav-edge-lo: rgb(255 255 255 / 0.5);
   --nav-rim: rgb(9 9 11 / 0.14);
   --nav-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 10px 30px -10px rgb(0 0 0 / 0.28);
-  --nav-focus: #7d3bc4;
+  --nav-focus: #17171a;
   --nav-menu-fill: rgb(255 255 255 / 0.97);
   --nav-sheet: rgb(255 255 255 / 0.97);
   --nav-cta-bg: #17171a;
@@ -330,9 +332,9 @@
   --nav-cta-shadow: 0 1px 2px rgb(0 0 0 / 0.25), 0 8px 18px -8px rgb(0 0 0 / 0.55);
 }
 :root[data-theme="dark"] {
-  --nav-fill: rgb(14 14 20 / 0.86);
-  --nav-fill-scrolled: rgb(12 12 17 / 0.92);
-  --nav-solid: #0e0e14;
+  --nav-fill: rgb(14 14 16 / 0.86);
+  --nav-fill-scrolled: rgb(12 12 14 / 0.92);
+  --nav-solid: #101012;
   --nav-ink: #ffffff;
   --nav-link: #e4e6ea;
   --nav-link-2: #d6d8de;
@@ -342,9 +344,9 @@
   --nav-edge-lo: transparent;
   --nav-rim: transparent;
   --nav-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 16px 40px rgb(0 0 0 / 0.45);
-  --nav-focus: #c39bff;
-  --nav-menu-fill: rgb(16 14 22 / 0.97);
-  --nav-sheet: rgb(10 9 14 / 0.97);
+  --nav-focus: #f4f4f6;
+  --nav-menu-fill: rgb(16 16 18 / 0.97);
+  --nav-sheet: rgb(10 10 12 / 0.97);
   --nav-cta-bg: #ffffff;
   --nav-cta-solid: #f4f4f5;
   --nav-cta-ink: #000000;

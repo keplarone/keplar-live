@@ -18,10 +18,10 @@
   --c-canvas: var(--w-bg); --c-surface-1: var(--w-panel); --c-surface-2: var(--w-panel-2);
   --c-ink: var(--w-ink); --c-ink-2: var(--w-ink-2); --c-ink-3: var(--w-ink-3); --c-ink-hover: #ffffff;
   --c-border: var(--w-line); --c-border-strong: var(--w-line-2);
-  --c-glass: rgb(16 15 22 / 0.78); --c-glass-strong: rgb(14 13 20 / 0.9); --c-glass-border: transparent;
+  --c-glass: rgb(16 16 18 / 0.78); --c-glass-strong: rgb(14 14 16 / 0.9); --c-glass-border: transparent;
   --c-accent: var(--w-accent); --c-focus: var(--w-accent); --ring-rgb: var(--kb-accent-rgb); --nav-focus: var(--w-accent);
   --rgb-canvas: 0 0 0; --rgb-surface: 10 10 12; --rgb-ink: 244 244 246;
-  --n-paper: #0a0a0c; --n-graphite: var(--w-panel-2); --c-night: #0a0a0c; --nav-solid: #0a0a0c; --nav-sheet: rgb(14 13 20 / 0.97); --nav-menu-fill: rgb(14 13 20 / 0.97);
+  --n-paper: #0a0a0c; --n-graphite: var(--w-panel-2); --c-night: #0a0a0c; --nav-solid: #0a0a0c; --nav-sheet: rgb(14 14 16 / 0.97); --nav-menu-fill: rgb(14 14 16 / 0.97);
   --sh-hairline: inset 0 1px 0 rgb(255 255 255 / 0.05); --sh-float: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 18px 48px rgb(0 0 0 / 0.5);
   --btn-p-bg: var(--kb-p-face); --btn-p-ink: var(--kb-p-ink); --btn-p-solid: #ffffff; --btn-p-shadow: var(--kb-p-depth);
   --font-sans: var(--kb-sans); --font-mono: var(--kb-code);
@@ -82,7 +82,7 @@ select.input {
   background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
   background-position: calc(100% - 24px) 50%, calc(100% - 18px) 50%; background-size: 6px 6px, 6px 6px; background-repeat: no-repeat;
 }
-select.input option { background: #0e0d13; color: var(--w-ink); }
+select.input option { background: #0e0e12; color: var(--w-ink); }
 .textarea { width: 100%; padding: 12px 18px; border-radius: 20px; resize: vertical; line-height: 1.55; }
 .input:hover, .textarea:hover { background-color: var(--kb-field-hover); }
 .root :is(.input, .textarea):focus-visible, .root :is(.input, .textarea):focus { outline: none; background-color: var(--kb-field-focus); box-shadow: var(--kb-field-depth), var(--kb-glow); }
@@ -139,7 +139,7 @@ select.input option { background: #0e0d13; color: var(--w-ink); }
 .chip { min-height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: rgb(255 255 255 / 0.06); color: var(--w-ink-2); font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: color 0.3s ease, background 0.45s var(--kb-spring), box-shadow 0.45s var(--kb-spring), transform 0.4s var(--kb-spring); }
 .chip:hover { color: var(--w-ink); background: rgb(255 255 255 / 0.09); }
 .chip:active { transform: scale(0.96); }
-.chip[aria-checked="true"] { background: var(--kb-p-face); color: var(--kb-p-ink); box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12), 0 6px 20px rgb(var(--kb-accent-rgb) / 0.18); }
+.chip[aria-checked="true"] { background: var(--kb-p-face); color: var(--kb-p-ink); box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12); }
 .field { display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; font-weight: 600; color: var(--w-ink-2); }
 .field > span:first-child { padding-left: 16px; }
 .field small { font-weight: 500; }
@@ -152,7 +152,7 @@ select.input option { background: #0e0d13; color: var(--w-ink); }
 .progress { display: flex; flex-direction: column; gap: 10px; }
 .progress > .h2 { display: inline-flex; align-items: center; gap: 10px; }
 .progress > .h2::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--kb-accent); animation: w-live 1.6s ease-out infinite; }
-@keyframes w-live { 0% { box-shadow: 0 0 0 0 rgb(var(--kb-accent-rgb) / 0.7); } 100% { box-shadow: 0 0 0 10px rgb(var(--kb-accent-rgb) / 0); } }
+@keyframes w-live { 0%, 100% { box-shadow: none; } }
 .queries { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; color: var(--w-ink-2); font-size: 13px; }
 .report { display: flex; flex-direction: column; gap: 16px; min-width: 0; animation: w-rise 0.75s var(--kb-ease-expo) both; }
 .reportHead { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }

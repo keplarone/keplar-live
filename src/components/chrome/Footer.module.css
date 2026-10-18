@@ -1,4 +1,4 @@
-/* Space UI footer: no rule lines. The page fades into the canvas (a soft violet horizon glows at the top edge), then the columns. */
+/* Space UI footer: solid canvas, hairline, then the columns. */
 .footer {
   position: relative;
   z-index: var(--z-content);

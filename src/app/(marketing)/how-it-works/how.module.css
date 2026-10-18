@@ -94,7 +94,7 @@
 .quote {
   margin: 0;
   padding-left: var(--s-5);
-  box-shadow: inset 2px 0 0 var(--c-accent), -8px 0 18px -10px rgb(var(--ring-rgb) / 0.7);
+  box-shadow: inset 2px 0 0 var(--c-accent);
   font-size: var(--t-lead);
   color: var(--c-ink);
 }

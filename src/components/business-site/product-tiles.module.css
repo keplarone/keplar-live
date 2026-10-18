@@ -1,6 +1,6 @@
 /* Product grid (ProductTiles.tsx): Space Studio cards, each a small moving example of one module. Tokens from tokens.css.
    28px glass without backdrop blur (the grid repeats), depth instead of outlines; a hover lifts the card and adds the violet glow. */
-:global(:root[data-theme="dark"]) .tile { --tile-bg: #0a090e; }
+:global(:root[data-theme="dark"]) .tile { --tile-bg: #0a0a0c; }
 .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; width: 100%; max-width: var(--kb-max); margin: 0 auto; padding: 0 var(--kb-gutter); box-sizing: border-box; }
 .tile {
   --tile-bg: #f6f7fa;
@@ -55,9 +55,9 @@
 .agentList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .agentList li { display: flex; justify-content: space-between; gap: 10px; padding: 9px 14px; border-radius: 999px; background: var(--kb-wash); font-size: 12.5px; }
 .agentName { color: var(--kb-ink); font-weight: 600; }
-.approval { padding: 14px 16px; border-radius: 22px; background: var(--kb-card-featured); box-shadow: var(--kb-depth-sm), 0 0 34px rgb(255 214 107 / 0.12); }
+.approval { padding: 14px 16px; border-radius: 22px; background: var(--kb-card-featured); box-shadow: var(--kb-depth-sm); }
 .approvalHead { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 11px; font-weight: 600; color: var(--kb-warn); }
-.approvalHead::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--kb-warn); box-shadow: 0 0 10px rgb(255 214 107 / 0.6); }
+.approvalHead::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--kb-warn); box-shadow: none; }
 .approvalText { margin: 6px 0 12px; font-size: 13px; color: var(--kb-ink); }
 .approvalActions { display: flex; justify-content: flex-end; gap: 8px; }
 .btnDark, .btnLight { display: inline-flex; align-items: center; height: 28px; padding: 0 14px; border-radius: 999px; font-size: 11.5px; font-weight: 700; transition: transform 160ms ease, box-shadow 160ms ease, background 300ms var(--kb-ease), color 300ms var(--kb-ease); }
@@ -70,7 +70,7 @@
 .report { display: flex; flex-direction: column; gap: 10px; }
 .reportTitle { margin: 0 0 4px; font-size: 14px; font-weight: 700; letter-spacing: -0.01em; color: var(--kb-ink); }
 .reportLine { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--kb-ink-2); }
-.reportLine sup { display: inline-grid; place-items: center; min-width: 17px; height: 17px; margin-left: 2px; border-radius: 999px; background: rgb(var(--kb-accent-rgb) / 0.18); font-size: 10.5px; font-weight: 700; color: var(--kb-accent-ink); vertical-align: 2px; }
+.reportLine sup { display: inline-grid; place-items: center; min-width: 17px; height: 17px; margin-left: 2px; border-radius: 999px; background: rgb(var(--kb-accent-rgb) / 0.18); font-size: 10.5px; font-weight: 700; color: var(--kb-accent); vertical-align: 2px; }
 .sources { list-style: none; margin: 6px 0 0; padding: 10px 12px; border-radius: 18px; background: var(--kb-wash); display: flex; flex-direction: column; gap: 6px; font-size: 11.5px; color: var(--kb-ink-3); }
 .sources li { display: flex; gap: 8px; }
 .sources span { font-weight: 700; color: var(--kb-accent-ink); }
@@ -79,28 +79,28 @@
 .canvas { position: relative; margin-top: -30px; display: flex; flex-direction: column; align-items: center; gap: 14px; height: 100%; }
 .modes { position: relative; display: inline-flex; gap: 2px; padding: 4px; border-radius: 999px; background: var(--kb-pill); box-shadow: var(--kb-pill-depth); font-size: 11.5px; font-weight: 700; }
 .modes span { padding: 5px 14px; border-radius: 999px; color: var(--kb-ink-2); transition: background 0.5s var(--kb-spring), color 0.35s ease, box-shadow 0.5s var(--kb-spring); }
-.modes span[data-on] { background: var(--kb-p-face); color: var(--kb-p-ink); box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12), 0 6px 20px rgb(var(--kb-accent-rgb) / 0.2); }
+.modes span[data-on] { background: var(--kb-p-face); color: var(--kb-p-ink); box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12); }
 .frame { position: relative; width: min(100%, 560px); flex: 1; padding: 14px; border-radius: 18px 18px 0 0; background: #f4f4f6; box-shadow: inset 0 0 0 1px rgb(14 15 18 / 0.06); box-sizing: border-box; }
 .frame i { display: block; border-radius: 4px; background: #dcdce2; }
 .wNav { display: flex; gap: 8px; margin-bottom: 18px; }
 .wNav i { width: 34px; height: 6px; }
 .wNav i:first-child { width: 52px; background: #0a0a0c; }
 .wHero { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 10px; margin: -10px -10px 8px; border-radius: 6px; }
-.wHero[data-sel] { box-shadow: inset 0 0 0 1.5px #7d3bc4; }
+.wHero[data-sel] { box-shadow: inset 0 0 0 1.5px var(--kb-accent); }
 .wH1 { width: 58%; height: 16px; background: #0a0a0c !important; }
 .wP { width: 42%; height: 7px; }
 .wBtn { width: 70px; height: 20px; border-radius: 999px !important; background: #0a0a0c !important; margin-top: 4px; }
-.h { position: absolute; width: 7px; height: 7px; border-radius: 2px; background: #fff; box-shadow: 0 0 0 1.5px #7d3bc4; }
+.h { position: absolute; width: 7px; height: 7px; border-radius: 2px; background: #fff; box-shadow: 0 0 0 1.5px var(--kb-accent); }
 .h[data-c="tl"] { top: -3px; left: -3px; } .h[data-c="tr"] { top: -3px; right: -3px; } .h[data-c="bl"] { bottom: -3px; left: -3px; } .h[data-c="br"] { bottom: -3px; right: -3px; }
 .wGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .wGrid i { height: 54px; border-radius: 8px; }
 .code { position: absolute; right: 12px; bottom: 12px; margin: 0; padding: 10px 14px; border-radius: 16px; background: var(--kb-term); color: var(--kb-ink-2); font-family: var(--kb-code); font-size: 10.5px; line-height: 1.5; box-shadow: 0 14px 30px rgb(0 0 0 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.07); animation: pop 0.42s var(--kb-ease-expo) both; }
-.ai { position: absolute; right: 12px; bottom: 12px; margin: 0; max-width: 220px; padding: 10px 14px; border-radius: 18px 18px 6px 18px; background: var(--kb-card-featured); color: var(--kb-ink); font-size: 11.5px; box-shadow: var(--kb-depth), 0 0 30px rgb(var(--kb-accent-rgb) / 0.2); animation: pop 0.42s var(--kb-ease-expo) both; }
+.ai { position: absolute; right: 12px; bottom: 12px; margin: 0; max-width: 220px; padding: 10px 14px; border-radius: 18px 18px 6px 18px; background: var(--kb-card-featured); color: var(--kb-ink); font-size: 11.5px; box-shadow: var(--kb-depth); animation: pop 0.42s var(--kb-ease-expo) both; }
 @keyframes pop { from { opacity: 0; transform: translateY(-8px) scale(0.94); filter: blur(6px); } }
 
-/* Several models (Converge.tsx) fills the stage; without WebGL a soft core of light stands in */
+/* Several models (Converge.tsx) fills the stage. Without WebGL the stage stays empty: no violet core. */
 .converge { position: absolute; inset: 0 0 -8px; }
-.converge[data-fallback] { background: radial-gradient(ellipse 46% 26% at 50% 52%, rgb(220 210 255 / 0.35), rgb(150 110 220 / 0.12) 45%, transparent 70%); }
+.converge[data-fallback] { background: none; }
 .tile:has(.converge) .stage::after { display: none; }
 
 /* Product section feature rows (ProductDemo): the same examples, larger, on a glass card */
