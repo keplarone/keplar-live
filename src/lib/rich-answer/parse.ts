@@ -276,7 +276,137 @@ function scrubDates(text: string, material: string): string {
     .trim();
 }
 
-function groundBlock(block: RichBlock, material: string): RichBlock | null {
+const STOP = new Set(
+  "a an the this that these those there their they them then than here when where what which while after before from with and but for not one two three four five six seven eight nine ten its into onto over under between among across through during without within against around above below again always never often also only just still even more less most many some other others each every all both such same however therefore because although since until about your you our his her she him who how why can could would should will may might must are was were been being has have had does did get got make made use used using like well very much several various important notable major main key core base based including include includes called named known leading strongest popular current latest generation world system systems model models answer answers question user users people company version versions today now year years first next last new old high low best top greatest also european american chinese french german japanese korean british global general digital artificial broad careful open fast small close strong".split(
+    /\s+/,
+  ),
+);
+const MODIFIER = /^(?:pro|ultra|sonnet|opus|haiku|flash|mini|turbo|preview|max|lite|nano|omni|plus|air|thinking|advanced)$/i;
+const escRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+function isNameToken(token: string): boolean {
+  if (/^[a-z]\d/.test(token)) return true;
+  if (!/^[A-Z]/.test(token)) return false;
+  if (STOP.has(token.toLowerCase())) return false;
+  return token.length >= 3 || /\d/.test(token);
+}
+
+/** Product-like names actually written in the answer, in the order they appear. Makers are not listed as their own entries. */
+function entitiesIn(text: string): { name: string; maker?: string; why: string }[] {
+  const flat = text.replace(/\s+/g, " ").trim();
+  if (!flat) return [];
+  const sentences = flat.split(/(?<=[.!?])\s+/);
+  const hits: { name: string; at: number; sentence: string }[] = [];
+  let cursor = 0;
+  for (const sentence of sentences) {
+    const re = /\b[A-Za-z][A-Za-z0-9]*(?:[.\-][A-Za-z0-9]+)*\b/g;
+    const tokens: { text: string; index: number }[] = [];
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(sentence))) tokens.push({ text: m[0], index: m.index });
+    for (let i = 0; i < tokens.length; i++) {
+      const t = tokens[i]!;
+      if (!isNameToken(t.text)) continue;
+      let end = i;
+      let name = t.text;
+      while (end + 1 < tokens.length) {
+        const prev = tokens[end]!;
+        const next = tokens[end + 1]!;
+        const gap = sentence.slice(prev.index + prev.text.length, next.index);
+        if (!/^\s+$/.test(gap)) break;
+        const version = /^\d+(?:\.\d+)?[a-z]?$/.test(next.text);
+        if (!(version || MODIFIER.test(next.text) || isNameToken(next.text))) break;
+        name += ` ${next.text}`;
+        end++;
+      }
+      hits.push({ name: name.replace(/\s+/g, " ").trim(), at: cursor + t.index, sentence });
+      i = end;
+    }
+    cursor += sentence.length + 1;
+  }
+  const longer = (short: string, long: string) => {
+    const s = short.toLowerCase();
+    const l = long.toLowerCase();
+    return l !== s && l.startsWith(s) && /[\s.\-\d]/.test(l.charAt(s.length));
+  };
+  const kept = hits.filter((h) => !hits.some((o) => longer(h.name, o.name)));
+  const seen = new Set<string>();
+  const out: { name: string; maker?: string; why: string }[] = [];
+  for (const h of kept.sort((a, b) => a.at - b.at)) {
+    const key = h.name.toLowerCase();
+    if (seen.has(key)) continue;
+    if (onlyAsMaker(h.sentence, h.name) && kept.filter((o) => o.name.toLowerCase() === key).every((o) => onlyAsMaker(o.sentence, o.name))) continue;
+    const why = whyFor(h.sentence, h.name);
+    if (!why) continue;
+    seen.add(key);
+    const maker = makerFor(h.sentence, h.name);
+    out.push({ name: h.name, ...(maker ? { maker } : {}), why });
+    if (out.length >= 8) break;
+  }
+  return out;
+}
+
+function onlyAsMaker(sentence: string, name: string): boolean {
+  const n = escRe(name);
+  const stripped = sentence.replace(new RegExp(`\\b(?:from|by)\\s+${n}\\b`, "gi"), " ").replace(new RegExp(`\\b${n}['’]s\\b`, "gi"), " ");
+  return !mentioned(stripped, name);
+}
+
+function whyFor(sentence: string, name: string): string | null {
+  const clauses = sentence.split(/\s*(?:,|;|\band\b|\bor\b)\s*/i).map((c) => c.trim()).filter(Boolean);
+  const own = clauses.filter((c) => mentioned(c, name) && c.length >= name.length + 12).sort((a, b) => a.length - b.length)[0];
+  const chosen = (own ?? (mentioned(sentence, name) ? sentence : "")).trim();
+  const rest = chosen.replace(new RegExp(escRe(name), "ig"), " ").trim();
+  if (rest.split(/\s+/).filter(Boolean).length < 3) return null;
+  return clip(chosen);
+}
+
+function makerFor(sentence: string, name: string): string | undefined {
+  const n = escRe(name);
+  const patterns = [
+    new RegExp(`${n}\\s+(?:from|by)\\s+([A-Z][A-Za-z0-9]+(?:\\s+[A-Z][A-Za-z0-9]+)?)`),
+    new RegExp(`([A-Z][A-Za-z0-9]+(?:\\s+[A-Z][A-Za-z0-9]+)?)['’]s\\s+${n}`),
+    new RegExp(`${n}\\s*\\(([A-Z][^)]{1,40})\\)`),
+  ];
+  for (const p of patterns) {
+    const maker = p.exec(sentence)?.[1]?.replace(/\s+/g, " ").trim();
+    if (!maker || STOP.has(maker.toLowerCase()) || maker.toLowerCase() === name.toLowerCase()) continue;
+    if (!mentioned(sentence, maker)) continue;
+    return maker;
+  }
+  return undefined;
+}
+
+function sameRankName(a: string, b: string): boolean {
+  return mentioned(a, b) && mentioned(b, a);
+}
+
+/** When the fence lists fewer names than the answer itself, use the names the answer wrote. Never adds a name that is not in the text. */
+function completeRanking(items: RankedItem[], material: string): RankedItem[] | null {
+  const named = entitiesIn(material);
+  let list = items;
+  if (named.length > items.length) {
+    const merged: RankedItem[] = [];
+    for (const n of named) {
+      if (merged.length >= 8) break;
+      const prior = items.find((it) => sameRankName(it.name, n.name));
+      if (prior) {
+        merged.push({
+          ...prior,
+          name: n.name.length > prior.name.length ? n.name : prior.name,
+          ...(prior.maker || n.maker ? { maker: prior.maker ?? n.maker } : {}),
+          why: prior.why || n.why,
+        });
+      } else {
+        merged.push({ rank: merged.length + 1, name: n.name, ...(n.maker ? { maker: n.maker } : {}), why: n.why, tags: [] });
+      }
+    }
+    list = merged;
+  }
+  if (list.length < 3) return null;
+  return list.map((it, i) => ({ ...it, rank: i + 1 }));
+}
+
+function groundBlock(block: RichBlock, material: string, answer?: string): RichBlock | null {
   if (block.type === "stats") {
     const items = block.items.filter((it) => numIn(it.value, material));
     return items.length ? { ...block, items } : null;
@@ -295,10 +425,11 @@ function groundBlock(block: RichBlock, material: string): RichBlock | null {
         return { ...it, tags, ...(maker ? { maker } : { maker: undefined }), ...(score ? { score } : { score: undefined }) };
       })
       .map(({ maker, score, ...rest }) => ({ ...rest, ...(maker ? { maker } : {}), ...(score ? { score } : {}) }));
-    if (!items.length) return null;
+    const filled = completeRanking(items, answer?.trim() ? answer : material);
+    if (!filled) return null;
     const note = scrubDates(block.note, material);
     const judged = /judgment|subjective|opinion|change/i.test(note);
-    return { ...block, items, note: judged ? note : note ? `${note} ${SUBJECTIVE}` : SUBJECTIVE };
+    return { ...block, items: filled, note: judged ? note : note ? `${note} ${SUBJECTIVE}` : SUBJECTIVE };
   }
   if (block.type === "timeline") {
     const items = block.items.filter((it) => {
@@ -381,14 +512,14 @@ function withSplits(block: RichBlock, responses: { name: string; text: string }[
  */
 export function buildRich(
   raw: string | null,
-  ctx: { responses: { name: string; text: string }[]; material?: string; disagreed: boolean },
+  ctx: { responses: { name: string; text: string }[]; material?: string; answer?: string; disagreed: boolean },
 ): RichAnswer | undefined {
   if (!raw) return undefined;
   const parsed = parseRich(raw);
   if (!parsed) return undefined;
   const material = ctx.material ?? ctx.responses.map((r) => r.text).join("\n");
   const blocks = parsed.blocks
-    .map((b) => groundBlock(b, material))
+    .map((b) => groundBlock(b, material, ctx.answer))
     .filter((b): b is RichBlock => Boolean(b))
     .map((b) => withSplits(b, ctx.responses, ctx.disagreed));
   return blocks.length ? { blocks } : undefined;
