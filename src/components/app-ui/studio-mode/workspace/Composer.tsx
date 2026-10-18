@@ -11,7 +11,8 @@ import { solarMode, type SolarModeId } from "@/lib/studio/solar-modes";
 import { referencesFromFiles } from "../references";
 import type { useStudioAgent } from "../useStudioAgent";
 import { ActivityIndicator, Button, IconButton, Icon, MorphIcon, Switch, srOnly } from "@/components/kit";
-import { MAX_REFS, appName, canBuild, controls, mergeRefs, placeholder, runState, sendIcon, submitsOnKey, type Env } from "./conversation-model";
+import { useEnterToSend } from "@/lib/use-enter-to-send";
+import { MAX_REFS, appName, canBuild, controls, mergeRefs, placeholder, runState, sendIcon, type Env } from "./conversation-model";
 import { peekDraft, subscribeDrafts, takeDraft } from "./draft";
 import s from "./conversation.module.css";
 
@@ -90,6 +91,10 @@ export function Composer({ a, env, compact = false, mode, canPlayTest, onTyping 
     onTyping?.(0);
     void a.send(t, r);
   };
+  const [inputRef, enter] = useEnterToSend({
+    canSend: canBuild(text, refs.length, a),
+    onSend: submit,
+  });
 
   const c = controls(a, canPlayTest, Boolean(text.trim() || refs.length));
   const press = (action: "playtest" | "pause" | "resume" | "build" | "stop") => {
@@ -118,13 +123,15 @@ export function Composer({ a, env, compact = false, mode, canPlayTest, onTyping 
       {refErr ? <p className={s.refErr} role="status"><Icon name="warning" size={12} />{refErr}</p> : null}
 
       <textarea
-        ref={boxRef}
+        ref={(node) => { boxRef.current = node; inputRef(node); }}
         className={s.box}
         rows={compact ? 1 : 2}
         value={text}
         placeholder={placeholder(a, env)}
+        enterKeyHint={enter.enterKeyHint}
         onChange={(e) => { setText(e.target.value); onTyping?.(e.target.value.length); }}
-        onKeyDown={(e) => { if (submitsOnKey({ key: e.key, shiftKey: e.shiftKey, metaKey: e.metaKey, ctrlKey: e.ctrlKey, isComposing: e.nativeEvent.isComposing, keyCode: e.nativeEvent.keyCode }, a.running)) { e.preventDefault(); submit(); } }}
+        onKeyDown={enter.onKeyDown}
+        onBeforeInput={enter.onBeforeInput}
         aria-label={`Describe what to build in ${appName(env)}`}
         disabled={a.running}
       />

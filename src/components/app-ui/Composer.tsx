@@ -1,7 +1,8 @@
 "use client";
 
 import { SEND_EVENT } from "@/lib/spatial/events";
-import { composerEnter, readComposerKey, type ComposerEnter } from "@/lib/composer-keys";
+import { readComposerKey } from "@/lib/composer-keys";
+import { useEnterToSend } from "@/lib/use-enter-to-send";
 import { spaceFx } from "@/lib/fx/space-fx";
 import { forwardRef, useCallback, useDeferredValue, useEffect, useId, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { hasResearchBridge, noSubscribe, researchCapabilities } from "@/lib/desktop/research-bridge";
@@ -159,8 +160,6 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
 ) {
   const uid = useId();
   const taRef = useRef<HTMLTextAreaElement>(null);
-  /** The Enter decision from keydown, so a following insertLineBreak cannot sneak a newline in. */
-  const enterAction = useRef<ComposerEnter | null>(null);
   const prefs = usePrefs();
   const [text, setTextState] = useState("");
   /** Space UI: the composer gives a short squeeze-and-glow as a question leaves it (alternates a/b so each send restarts it). */
@@ -777,8 +776,26 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
     });
   }, [setText, slashRange]);
 
+  const slashMenu = slashOpen && slashItems.length > 0;
+  const selectModeItem = () => {
+    const menu = document.getElementById(`${uid}-more`);
+    const focused = menu?.querySelector<HTMLElement>("[role='menuitemcheckbox']:focus");
+    const first = menu?.querySelector<HTMLElement>("[role='menuitemcheckbox']");
+    (focused ?? first)?.click();
+  };
+  const [inputRef, enter] = useEnterToSend({
+    canSend,
+    onSend: submit,
+    sendKey: prefs.sendKey,
+    menuOpen: slashMenu || moreOpen,
+    onMenuSelect: () => {
+      if (slashMenu) applySlash(slashItems[Math.min(slashActive, slashItems.length - 1)]!);
+      else selectModeItem();
+    },
+  });
+
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (slashOpen && slashItems.length) {
+    if (slashMenu) {
       if (e.key === "ArrowDown") {
         e.preventDefault();
         setSlashActive((i) => (i + 1) % slashItems.length);
@@ -789,7 +806,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
         setSlashActive((i) => (i - 1 + slashItems.length) % slashItems.length);
         return;
       }
-      if (e.key === "Enter" || e.key === "Tab") {
+      if (e.key === "Tab") {
         const key = readComposerKey(e);
         if (!e.shiftKey && !key.isComposing && key.keyCode !== 229) {
           e.preventDefault();
@@ -803,28 +820,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
         return;
       }
     }
-    // Settings → Chat → Send with: Enter (Shift+Enter for a new line) or Ctrl/⌘+Enter (plain Enter adds a new line).
-    // keyCode is read from the native event: React 19 does not put it on the synthetic event, so an IME's 229
-    // has to come from there. preventDefault runs for send and for swallow, or the textarea inserts a newline.
-    if (e.key !== "Enter") {
-      enterAction.current = null;
-      return;
-    }
-    const action = composerEnter(readComposerKey(e), { canSend, sendKey: prefs.sendKey });
-    enterAction.current = action;
-    if (action === "newline") return;
-    e.preventDefault();
-    if (action === "send") submit();
-  };
-
-  const onBeforeInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
-    const ne = e.nativeEvent as InputEvent;
-    if (ne.inputType !== "insertLineBreak") return;
-    const pending = enterAction.current;
-    enterAction.current = null;
-    if (ne.isComposing || pending === "newline") return;
-    e.preventDefault();
-    if (pending === null && canSend) submit();
+    enter.onKeyDown(e);
   };
 
   const depth = routing.depth ?? "auto";
@@ -978,7 +974,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
         ) : null}
         <textarea
           id={`${uid}-input`}
-          ref={taRef}
+          ref={(node) => { taRef.current = node; inputRef(node); }}
           className={s.input}
           rows={1}
           placeholder={modes.study ? "What do you want to learn?" : modes.slides ? "Describe the talk: the topic, who it's for, how many slides" : placeholder}
@@ -987,7 +983,8 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
             syncSlashFromCaret(e.target.value, e.target.selectionStart ?? e.target.value.length, modes.image === true);
           }}
           onKeyDown={onKeyDown}
-          onBeforeInput={onBeforeInput}
+          onBeforeInput={enter.onBeforeInput}
+          enterKeyHint={enter.enterKeyHint}
           onPaste={onPaste}
           aria-describedby={`${uid}-hint`}
           spellCheck={prefs.spellcheck}

@@ -20,7 +20,7 @@ import { CreateOptions } from "./CreateOptions";
 import ci from "./create-intro.module.css";
 import s from "./create.module.css";
 import b from "./images.module.css";
-import { composerEnter, readComposerKey } from "@/lib/composer-keys";
+import { useEnterToSend } from "@/lib/use-enter-to-send";
 import { ActivityIndicator, Button, SegmentedControl, confirmAction } from "@/components/kit";
 
 type Status = "understanding" | "generating" | "ready" | "failed";
@@ -382,6 +382,16 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
     }
   }
 
+  const [inputRef, enter] = useEnterToSend({
+    canSend: Boolean(config?.configured) && !config?.paused && !cooldown && !busyNow && prompt.trim().length > 0,
+    onSend: () => openConfirm(),
+    menuOpen: slashOpen && slashItems.length > 0,
+    onMenuSelect: () => {
+      const item = slashItems[Math.min(slashActive, slashItems.length - 1)];
+      if (item) applySlash(item);
+    },
+  });
+
   if (loading) return <div className={b.root}><p className={s.muted}><ActivityIndicator label="Loading your images" showLabel /></p></div>;
   if (!listing || !config) return <div className={b.root}><p className={b.error} role="alert">{error ?? "Couldn't load images."}</p></div>;
 
@@ -425,29 +435,27 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
               />
             ) : null}
             <textarea
-              ref={promptRef}
+              ref={(node) => { promptRef.current = node; inputRef(node); }}
               className={s.textarea}
               rows={5}
               maxLength={config.limits?.promptChars}
               value={prompt}
+              enterKeyHint={enter.enterKeyHint}
               onChange={(e) => {
                 setPrompt(e.target.value);
                 keyRef.current = null;
                 setConfirm(null);
                 syncSlash(e.target.value, e.target.selectionStart ?? e.target.value.length);
               }}
+              onBeforeInput={enter.onBeforeInput}
               onKeyDown={(e) => {
                 if (slashOpen && slashItems.length) {
                   if (e.key === "ArrowDown") { e.preventDefault(); setSlashActive((i) => (i + 1) % slashItems.length); return; }
                   if (e.key === "ArrowUp") { e.preventDefault(); setSlashActive((i) => (i - 1 + slashItems.length) % slashItems.length); return; }
-                  if ((e.key === "Enter" || e.key === "Tab") && !e.shiftKey && !e.nativeEvent.isComposing && e.nativeEvent.keyCode !== 229) { e.preventDefault(); applySlash(slashItems[Math.min(slashActive, slashItems.length - 1)]!); return; }
+                  if (e.key === "Tab" && !e.shiftKey && !e.nativeEvent.isComposing && e.nativeEvent.keyCode !== 229) { e.preventDefault(); applySlash(slashItems[Math.min(slashActive, slashItems.length - 1)]!); return; }
                   if (e.key === "Escape") { e.preventDefault(); setSlashOpen(false); return; }
                 }
-                if (e.key !== "Enter") return;
-                const action = composerEnter(readComposerKey(e), { canSend: !disabled && !busyNow && prompt.trim().length > 0 });
-                if (action === "newline") return;
-                e.preventDefault();
-                if (action === "send") openConfirm();
+                enter.onKeyDown(e);
               }}
               aria-autocomplete={slashOpen ? "list" : undefined}
               aria-controls={slashOpen ? slashListId : undefined}

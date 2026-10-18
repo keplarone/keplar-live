@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useEnterToSend } from "@/lib/use-enter-to-send";
 import { Markdown } from "@/components/app-ui/Markdown";
 import type { KeplarEvent } from "@/lib/orchestration/types";
 import type { MediaInput } from "@/lib/orchestration/media";
@@ -82,6 +83,16 @@ export function Ask({ chatId, first, firstMedia, projectId: projectIn, resume, o
     // eslint-disable-next-line react-hooks/exhaustive-deps -- the first question runs once, on arrival
   }, []);
   useEffect(() => { end.current?.scrollIntoView({ block: "end" }); }, [turns]);
+  const sendFollow = () => {
+    if (media.busy || busy || !text.trim()) return;
+    const q = text;
+    setText("");
+    void ask(q, media.take());
+  };
+  const [inputRef, enter] = useEnterToSend({
+    canSend: !media.busy && !busy && text.trim().length > 0,
+    onSend: sendFollow,
+  });
 
   return (
     <div className={s.thread}>
@@ -101,11 +112,11 @@ export function Ask({ chatId, first, firstMedia, projectId: projectIn, resume, o
         ))}
         <div ref={end} />
       </div>
-      <form className={`${s.composer} ${s.threadComposer}`} onSubmit={(e) => { e.preventDefault(); if (media.busy) return; const q = text; setText(""); void ask(q, media.take()); }} {...mediaHandlers(media)}>
+      <form className={`${s.composer} ${s.threadComposer}`} onSubmit={(e) => { e.preventDefault(); sendFollow(); }} {...mediaHandlers(media)}>
         <ShareBar share={share} />
         <MediaTray media={media} />
         <label htmlFor="biz-follow" className={s.srOnly}>Follow-up</label>
-        <textarea id="biz-follow" rows={1} value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (media.busy || busy || !text.trim()) return; const q = text; setText(""); void ask(q, media.take()); } }} placeholder={busy ? "Keplar is answering…" : "Follow up"} />
+        <textarea id="biz-follow" ref={inputRef} rows={1} value={text} enterKeyHint={enter.enterKeyHint} onChange={(e) => setText(e.target.value)} onKeyDown={enter.onKeyDown} onBeforeInput={enter.onBeforeInput} placeholder={busy ? "Keplar is answering…" : "Follow up"} />
         <div className={s.composeBar}>
           <AttachButton media={media} disabled={busy} />
           <ShareButton share={share} />

@@ -5,6 +5,7 @@
  * Posts height to the parent via postMessage so embed.js can resize.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useEnterToSend } from "@/lib/use-enter-to-send";
 import s from "./EmbedAsk.module.css";
 import { EMBED_ACCENT_HEX, type EmbedAccent, type EmbedTheme } from "@/lib/embed/config";
 
@@ -77,6 +78,11 @@ export function EmbedAsk({ widgetId, theme, accent, models, parent, grant, origi
     }
   };
 
+  const [inputRef, enter] = useEnterToSend({
+    canSend: !busy && q.trim().length > 0,
+    onSend: () => void ask(),
+  });
+
   if (originDenied) {
     return (
       <div ref={root} className={s.root} data-theme={theme} style={{ ["--emb-accent" as string]: EMBED_ACCENT_HEX[accent] }}>
@@ -120,18 +126,16 @@ export function EmbedAsk({ widgetId, theme, accent, models, parent, grant, origi
         <label className="kp-embed-sr" htmlFor="keplar-embed-q" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>Your question</label>
         <textarea
           id="keplar-embed-q"
+          ref={inputRef}
           className={s.input}
           value={q}
           maxLength={2000}
           placeholder="Ask Keplar…"
           disabled={busy}
+          enterKeyHint={enter.enterKeyHint}
           onChange={(e) => setQ(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              void ask();
-            }
-          }}
+          onKeyDown={enter.onKeyDown}
+          onBeforeInput={enter.onBeforeInput}
         />
         <div className={s.foot}>
           <button type="submit" className={s.btn} disabled={busy || !q.trim()}>{busy ? "Asking…" : "Ask"}</button>

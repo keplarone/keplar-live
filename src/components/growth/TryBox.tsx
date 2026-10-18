@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { useEnterToSend } from "@/lib/use-enter-to-send";
 import { track } from "@/lib/analytics";
 import { parseUtm, useUtmRaw, withUtm } from "@/lib/utm";
 import s from "./growth.module.css";
@@ -21,6 +22,10 @@ export function TryBox({ examples, where, heading = "Try it now. No signup." }: 
     // Full page load, not router.push: the Whop Pixel (public pages) reports soft navigations with their full URL, and this one carries the question in its fragment.
     window.location.assign(withUtm(`/app#q=${encodeURIComponent(question)}`, utm));
   };
+  const [inputRef, enter] = useEnterToSend({
+    canSend: text.trim().length > 0,
+    onSend: () => go(text, "try_submit"),
+  });
 
   return (
     <section className={s.try} aria-labelledby={`${id}-h`}>
@@ -35,18 +40,16 @@ export function TryBox({ examples, where, heading = "Try it now. No signup." }: 
         <label htmlFor={`${id}-q`} className="visually-hidden">Your question</label>
         <textarea
           id={`${id}-q`}
+          ref={inputRef}
           className={s.tryInput}
           rows={2}
           maxLength={600}
           value={text}
           placeholder="Ask anything. Keplar asks several AI models and gives you one answer."
+          enterKeyHint={enter.enterKeyHint}
           onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              go(text, "try_submit");
-            }
-          }}
+          onKeyDown={enter.onKeyDown}
+          onBeforeInput={enter.onBeforeInput}
         />
         <button type="submit" className={`sp-btn ${s.tryGo}`} data-sp-btn="" data-variant="primary" data-size="md" disabled={!text.trim()}>Ask Keplar →</button>
       </form>

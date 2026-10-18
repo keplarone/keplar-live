@@ -14,6 +14,7 @@ import s from "../create.module.css";
 import { ReferencePicker, type RefItem, type RefLimits } from "./ReferencePicker";
 import v from "./video.module.css";
 import { ActivityIndicator, Button, EmptyState } from "@/components/kit";
+import { useEnterToSend } from "@/lib/use-enter-to-send";
 
 type ModelCfg = {
   id: string; label: string; mode: string; note: string; default: boolean; durations: number[] | null; durationFollowsSource: boolean; aspectRatios: string[];
@@ -186,6 +187,15 @@ export function VideoStudio() {
 
   const problems = (preview?.items ?? []).filter((i) => i.problem);
   const canStart = Boolean(config?.configured && config.available && preview && quotedKey === quoteKey && preview.priceKnown && preview.totalUnits !== null && problems.length === 0 && !preview.blocked && !uploading && !quoting && (!readyRefs.length || rights) && prompt.trim().length >= 4);
+  const [inputRef, enter] = useEnterToSend({
+    canSend: canStart,
+    onSend: () => {
+      const total = preview?.totalUnits;
+      if (!canStart || total == null || !preview) return;
+      keyRef.current ??= newKey();
+      setConfirm({ total, large: preview.large });
+    },
+  });
 
   async function start() {
     if (!confirm || busy) return;
@@ -285,7 +295,7 @@ export function VideoStudio() {
             <h2 className={ci.studioTitle}>Video{label ? <span className={v.badge} data-state={off ? "off" : "on"} data-testid="video-badge">{label}</span> : null}</h2>
             <label className={v.field}>
               <span className="visually-hidden">Prompt</span>
-              <textarea className={s.textarea} rows={4} maxLength={config.limits?.promptChars} value={prompt} disabled={off} onChange={(e) => { setPrompt(e.target.value); touch(); }} placeholder="A slow push-in on a rainy street at night, neon reflections" />
+              <textarea ref={inputRef} className={s.textarea} rows={4} maxLength={config.limits?.promptChars} value={prompt} disabled={off} enterKeyHint={enter.enterKeyHint} onKeyDown={enter.onKeyDown} onBeforeInput={enter.onBeforeInput} onChange={(e) => { setPrompt(e.target.value); touch(); }} placeholder="A slow push-in on a rainy street at night, neon reflections" />
             </label>
 
             <CreateOptions summary={[chosen.map((m) => m.label).join(", "), !followsSource && duration ? `${duration}s` : null, ratio || null].filter(Boolean).join(" · ")}>
