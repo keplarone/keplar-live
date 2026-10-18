@@ -985,3 +985,41 @@
   .composer[data-pulse] { animation: none; }
   .tool:active, .routingBtn:active { scale: none; }
 }
+
+/* One rounded composer: the message on top, attach on the left, effort, voice and send on the right. Solid, 1px edge. */
+:global(:root[data-theme]) .composer {
+  border-radius: 28px;
+  border: 1px solid var(--hairline);
+  background: var(--c-canvas);
+  box-shadow: none;
+  filter: none;
+  padding: 14px 12px 10px 16px;
+}
+:global(:root[data-theme]) .composer:has(:is(textarea, input):focus) {
+  box-shadow: none;
+  border-color: var(--hairline-strong);
+}
+:global(:root[data-theme]) .composer[data-dragging] { box-shadow: none; border-color: var(--c-ink-2); }
+:global(:root[data-theme]) .input { font-size: 16px; }
+:global(:root[data-theme]) .tool,
+:global(:root[data-theme]) .routingBtn {
+  background: transparent;
+  box-shadow: none;
+  font-weight: var(--w-medium);
+}
+:global(:root[data-theme]) .tool:hover,
+:global(:root[data-theme]) .routingBtn:hover { background: var(--hover-wash); box-shadow: none; }
+:global(:root[data-theme]) .tool[aria-pressed="true"] {
+  background: var(--hover-wash);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  color: var(--c-ink);
+}
+:global(:root[data-theme]) .tool[aria-pressed="true"] svg { color: var(--c-ink); }
+:global(:root[data-theme]) .tool:focus-visible,
+:global(:root[data-theme]) .routingBtn:focus-visible { box-shadow: inset 0 0 0 1px var(--c-ink); }
+.budget { background: var(--hover-wash); border-radius: 12px; }
+.panel.panel, .moreMenu.moreMenu, .attachMenu.attachMenu {
+  border: 1px solid var(--hairline);
+  box-shadow: none;
+  background: var(--c-canvas);
+}

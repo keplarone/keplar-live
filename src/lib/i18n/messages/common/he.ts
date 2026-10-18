@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "משאבים",
     "items": {
       "/features": "כל מה שיש ב-Keplar",
-      "/#demo": "הדגמה חיה",
+      "/overview#demo": "הדגמה חיה",
       "/app/create": "Create",
       "/docs": "תיעוד",
       "/pricing": "מחירים",
@@ -16,7 +16,7 @@ const m: CommonCatalog = {
     },
     "hints": {
       "/features": "כל תכונה והאם היא כבר זמינה",
-      "/#demo": "שאלו שאלה עכשיו, בלי הרשמה",
+      "/overview#demo": "שאלו שאלה עכשיו, בלי הרשמה",
       "/app/create": "תארו או הכתיבו אתר או אפליקציה"
     },
     "signIn": "התחברות",
@@ -41,6 +41,7 @@ const m: CommonCatalog = {
       "Legal": "משפטי"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "כל מה שיש ב-Keplar",
       "/how-it-works": "איך זה עובד",
       "/showcase": "תצוגת Create",

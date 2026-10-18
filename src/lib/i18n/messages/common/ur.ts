@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "وسائل",
     "items": {
       "/features": "Keplar میں سب کچھ",
-      "/#demo": "لائیو ڈیمو",
+      "/overview#demo": "لائیو ڈیمو",
       "/app/create": "Create",
       "/docs": "دستاویزات",
       "/pricing": "قیمتیں",
@@ -16,7 +16,7 @@ const m: CommonCatalog = {
     },
     "hints": {
       "/features": "ہر فیچر اور کیا وہ لائیو ہے",
-      "/#demo": "ابھی سوال پوچھیں، سائن اپ کے بغیر",
+      "/overview#demo": "ابھی سوال پوچھیں، سائن اپ کے بغیر",
       "/app/create": "سائٹ یا ایپ لکھ کر یا بول کر بیان کریں"
     },
     "signIn": "سائن ان",
@@ -41,6 +41,7 @@ const m: CommonCatalog = {
       "Legal": "قانونی"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "Keplar میں سب کچھ",
       "/how-it-works": "یہ کیسے کام کرتا ہے",
       "/showcase": "Create شوکیس",

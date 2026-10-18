@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Adnoddau",
     "items": {
       "/features": "Popeth yn Keplar",
-      "/#demo": "Demo byw",
+      "/overview#demo": "Demo byw",
       "/app/create": "Creu",
       "/docs": "Dogfennaeth",
       "/pricing": "Prisiau",
@@ -30,6 +30,7 @@ const m: CommonCatalog = {
       "Legal": "Cyfreithiol"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "Popeth yn Keplar",
       "/showcase": "Arddangosfa creadigaethau",
       "/templates": "Oriel y gymuned",

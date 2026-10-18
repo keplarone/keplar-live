@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "အရင်းအမြစ်များ",
     "items": {
       "/features": "Keplar ရှိ အရာအားလုံး",
-      "/#demo": "တိုက်ရိုက် သရုပ်ပြ",
+      "/overview#demo": "တိုက်ရိုက် သရုပ်ပြ",
       "/app/create": "ဖန်တီးရန်",
       "/docs": "စာရွက်စာတမ်းများ",
       "/pricing": "စျေးနှုန်း",
@@ -30,6 +30,7 @@ const m: CommonCatalog = {
       "Legal": "ဥပဒေရေးရာ"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "Keplar ရှိ အရာအားလုံး",
       "/showcase": "ဖန်တီးမှုများ ပြခန်း",
       "/templates": "အသိုင်းအဝိုင်း ပြခန်း",

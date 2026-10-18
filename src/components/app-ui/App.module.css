@@ -1925,3 +1925,126 @@ a.sideItem {
 .deployRow:hover { background: var(--press-wash); box-shadow: none; }
 .deployName { font-weight: var(--w-semibold); }
 @media (prefers-reduced-motion: reduce) { .view[data-connected-apps] button:not([role]):hover:not(:disabled) { transform: none; } }
+
+/* Signed-out home: Log in and Sign up sit at the top right. Solid ink, no glass. */
+.authTop { display: inline-flex; align-items: center; gap: 8px; flex: none; }
+.authIn, .authUp {
+  display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 999px;
+  font-size: 14px; font-weight: 500; white-space: nowrap;
+}
+.authIn { color: var(--c-ink); }
+.authIn:hover { background: var(--hover-wash); }
+.authUp { background: var(--c-ink); color: var(--c-canvas); }
+.authUp:hover { background: var(--c-ink-hover); }
+
+/* Links out to the rest of the site, under an empty composer and along the sidebar. */
+.explore, .sideFoot { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 13px; line-height: 1.4; }
+.explore { justify-content: center; }
+.sideFoot { padding: 2px 12px 0; }
+.explore a, .sideFoot a { color: var(--c-ink-3); text-decoration: none; }
+.explore a:hover, .sideFoot a:hover { color: var(--c-ink); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ── ChatGPT-calm chat (both themes) ──
+   Solid graphite or white, a 1px edge, a 760px reading column, 16px type. No glow, no glass, no surface gradient. */
+:global(:root[data-theme]) .app.app {
+  background: var(--c-canvas);
+  font-size: 16px;
+  line-height: 1.55;
+}
+@media (min-width: 900px) {
+  :global(:root[data-theme]) .app[data-collapsed] { grid-template-columns: minmax(0, 1fr); }
+  :global(:root[data-theme]) .app[data-collapsed] .sideWrap { display: none; }
+  :global(:root[data-theme]) .app[data-collapsed] .menuBtn { display: inline-grid; }
+}
+.collapseBtn {
+  display: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--c-ink-2);
+}
+.collapseBtn:hover { background: var(--hover-wash); color: var(--c-ink); }
+@media (min-width: 900px) { .collapseBtn { display: inline-grid; } }
+
+:global(:root[data-theme]) .sideWrap {
+  padding: 0;
+  background: var(--c-surface-1);
+  border-right: 1px solid var(--hairline);
+}
+:global(:root[data-theme]) .sidebar {
+  border-radius: 0;
+  background: var(--c-surface-1);
+  box-shadow: none;
+}
+:global(:root[data-theme]) .sideItem { border-radius: 10px; font-weight: var(--w-regular); }
+:global(:root[data-theme]) .topbar {
+  height: 52px;
+  background: var(--c-canvas);
+  border-bottom: 1px solid var(--hairline);
+  pointer-events: auto;
+}
+:global(:root[data-theme]) .main[data-view="thread"]:not([data-empty]) .topbar::before { display: none; }
+:global(:root[data-theme]) .topbar .iconBtn,
+:global(:root[data-theme]) .memoryChip {
+  background: transparent;
+  box-shadow: none;
+}
+:global(:root[data-theme]) .scroll { padding-top: 72px; }
+:global(:root[data-theme]) .thread,
+:global(:root[data-theme]) .dock > *,
+:global(:root[data-theme]) .empty.empty { max-width: 760px; }
+:global(:root[data-theme]) .welcomeTitle { color: var(--c-ink); font-weight: var(--w-medium); letter-spacing: -0.03em; }
+:global(:root[data-theme]) .welcomeMark { display: none; }
+:global(:root[data-theme]) .userMsg {
+  border: 1px solid var(--hairline);
+  border-radius: 18px;
+  background: var(--c-surface-2);
+  box-shadow: none;
+  font-weight: var(--w-regular);
+  font-size: 16px;
+  animation: none;
+}
+:global(:root[data-theme]) .homeChip {
+  border: 1px solid var(--hairline);
+  background: var(--c-canvas);
+  box-shadow: none;
+  filter: none;
+}
+:global(:root[data-theme]) .homeChip:hover { background: var(--hover-wash); }
+:global(:root[data-theme]) .homeChip:focus-visible { box-shadow: inset 0 0 0 1px var(--c-ink); }
+:global(:root[data-theme]) .useFor {
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  background: var(--c-surface-1);
+  box-shadow: none;
+}
+:global(:root[data-theme]) .useForOption,
+:global(:root[data-theme]) .useForOption.useForOption {
+  background: var(--c-canvas);
+  box-shadow: none;
+  border: 1px solid var(--hairline);
+  translate: none;
+}
+:global(:root[data-theme]) .useForOption[aria-pressed="true"] { box-shadow: inset 0 0 0 1px var(--c-ink); background: var(--c-canvas); }
+:global(:root[data-theme]) .jump {
+  background: var(--c-canvas);
+  border: 1px solid var(--hairline);
+  box-shadow: none;
+  font-weight: var(--w-medium);
+}
+:global(:root[data-theme]) .upgradeTop {
+  background: var(--c-ink);
+  color: var(--c-canvas);
+  box-shadow: none;
+  font-weight: var(--w-medium);
+  transform: none;
+}
+:global(:root[data-theme]) .upgradeTop:hover { transform: none; box-shadow: none; }
+@media (prefers-reduced-motion: no-preference) {
+  :global(:root[data-theme]) .sideItem,
+  :global(:root[data-theme]) .homeChip,
+  :global(:root[data-theme]) .topbar .iconBtn {
+    transition: background-color 160ms ease, color 160ms ease;
+  }
+}

@@ -50,6 +50,7 @@ import { ResumeChats } from "./ResumeChats";
 import { OfflineNotice } from "./OfflineNotice";
 import { useDockHeight } from "./dock-height";
 import { HomeStart } from "./HomeStart";
+import { ExploreLinks } from "./ExploreLinks";
 import { oauthReturnView, pathForView, viewForPath } from "./app-paths";
 import { AppOnboarding } from "@/components/onboarding/AppOnboarding";
 import { DeploymentsView } from "./DeploymentsView";
@@ -191,6 +192,16 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   const dockRef = useDockHeight<HTMLDivElement>();
   const [searchOpen, setSearchOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  // Wide screens can tuck the sidebar away. The app is client-only, so reading localStorage here does not mismatch a server render.
+  const [collapsed, setCollapsed] = useState(() => typeof window !== "undefined" && localStorage.getItem("keplar.sidebar") === "closed");
+  const toggleCollapsed = useCallback(() => {
+    setCollapsed((v) => {
+      const next = !v;
+      localStorage.setItem("keplar.sidebar", next ? "closed" : "open");
+      return next;
+    });
+  }, []);
+  const [researchAsk, setResearchAsk] = useState(0);
   // The desktop title bar's search box (DesktopTitleBar) opens this search.
   useEffect(() => {
     const open = () => { setDrawerOpen(false); setSearchOpen(true); };
@@ -932,6 +943,13 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     composerRef.current?.setText(seed.text);
   }, [state.view, state.activeThreadId, seedTick]);
 
+  /* Research in the sidebar turns Deep Research on for the next message and focuses the composer. */
+  useEffect(() => {
+    if (!researchAsk || state.view !== "thread") return;
+    composerRef.current?.setModes({ deepResearch: true });
+    composerRef.current?.focus();
+  }, [researchAsk, state.view]);
+
   /* keyboard shortcuts (app-wide) */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -1038,7 +1056,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   const projectName = state.projects.find((p) => p.id === (thread?.projectId ?? state.projectFilter))?.name;
 
   return (
-    <div ref={rootRef} className={s.app} data-product="" data-own-search="" data-drawer={drawerOpen || undefined} data-app-ready={state.scope === "pending" ? undefined : ""}>
+    <div ref={rootRef} className={s.app} data-product="" data-own-search="" data-collapsed={collapsed || undefined} data-drawer={drawerOpen || undefined} data-app-ready={state.scope === "pending" ? undefined : ""}>
       <ExtensionReturn onChanged={() => void syncMeter()} />
       <ReferralClaim signedIn={state.ledger.signedIn} onChanged={() => void syncMeter()} />
       <ReferralNudge signedIn={state.ledger.signedIn} />
@@ -1057,6 +1075,8 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
           importOffer={importOffer}
           modeView={modeView}
           id="keplar-sidebar"
+          onResearch={() => { goView("thread"); setResearchAsk((n) => n + 1); }}
+          onToggleCollapse={toggleCollapsed}
         />
       </div>
       <SendFieldLazy />
@@ -1064,7 +1084,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
 
       <div key={state.epoch} className={s.main} inert={drawerOpen || undefined} data-view={state.view} data-empty={(state.view === "thread" && messages.length === 0) || undefined}>
         <header className={s.topbar} data-keplar-drag>
-          <button ref={menuBtnRef} type="button" className={`${s.iconBtn} ${s.menuBtn}`} onClick={() => setDrawerOpen(true)} aria-label="Open sidebar" aria-expanded={drawerOpen} aria-controls="keplar-sidebar">
+          <button ref={menuBtnRef} type="button" className={`${s.iconBtn} ${s.menuBtn}`} onClick={() => { if (window.matchMedia("(min-width: 900px)").matches) { toggleCollapsed(); return; } setDrawerOpen(true); }} aria-label="Open sidebar" aria-expanded={drawerOpen} aria-controls="keplar-sidebar">
             <KeplarSymbol size={22} />
           </button>
           <p className={s.topTitle}>
@@ -1096,6 +1116,12 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
           {state.view === "thread" && thread && thread.messages.length ? <DeleteChatAction variant="header" title={thread.title} onDelete={() => del.request(thread.id)} /> : null}
           {/* Phones signed in: the theme lives in the account menu and memory in Settings, so the bar keeps the title room. */}
           <ThemeToggle className={`${s.iconBtn} ${state.ledger.signedIn ? s.phoneHide : ""}`} />
+          {state.ledger.synced && !state.ledger.signedIn ? (
+            <span className={s.authTop}>
+              <Link href="/signin" className={s.authIn}>Log in</Link>
+              <Link href="/signup" className={s.authUp}>Sign up for free</Link>
+            </span>
+          ) : null}
           <button type="button" className={`${s.iconBtn} ${s.newBtnMobile}`} onClick={() => newThread()} aria-label="New chat">
             <IconPlus size={18} />
           </button>
@@ -1109,14 +1135,14 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                   <div className={s.welcome}>
                     {/* Held invisible (same height) until the session is known, so the name never pops in over a generic line.
                         firstName is only set after the client knows the session, so the time-of-day greeting never renders on the server. */}
-                    <h1 className={s.welcomeTitle} data-welcome-name={firstName || undefined} style={state.ledger.synced ? undefined : { visibility: "hidden" }}>
+                    <h1 className={s.welcomeTitle} data-welcome="" data-welcome-name={firstName || undefined} style={state.ledger.synced ? undefined : { visibility: "hidden" }}>
                       <KeplarSymbol size={22} className={s.welcomeMark} />
                       <span>
                         {firstName ? (
                           <>
                             <span>{welcome ? "Welcome," : `${dayGreeting(new Date().getHours())},`}</span> <span className={s.welcomeName}>{firstName}</span>
                           </>
-                        ) : <span>{state.ledger.synced ? `${dayGreeting(new Date().getHours())}.` : "Welcome to Keplar."}</span>}
+                        ) : <span>{state.ledger.synced ? "How can Keplar help you today?" : "Welcome to Keplar."}</span>}
                       </span>
                     </h1>
                     <p className={s.welcomeLede}>Ask anything. Keplar checks with several models and gives you one clear answer.</p>
@@ -1344,6 +1370,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                 draftKey={draftKeyFor(state.scope, state.activeThreadId, Boolean(state.threads.find((x) => x.id === state.activeThreadId)?.private ?? state.privateNext))}
               />
               <p className={s.dockNote}>Keplar can be wrong, even when models agree. Verify important decisions.</p>
+              {messages.length === 0 ? <ExploreLinks className={s.explore} live /> : null}
             </div>
           </>
         ) : state.view === "create" ? (

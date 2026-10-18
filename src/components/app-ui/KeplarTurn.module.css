@@ -1100,6 +1100,28 @@
 @media (min-width: 641px) and (prefers-reduced-motion: no-preference) {
   :global(:root[data-theme]) .limit { animation: spAnswerIn 0.7s var(--space-ease-expo) both; }
 }
+/* Assistant text is the page, full width, with the small actions under it. Solid notices, no glow. */
+:global(:root[data-theme]) .answer {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 16px;
+  line-height: 1.65;
+  animation: none;
+}
+:global(:root[data-theme]) .notice,
+:global(:root[data-theme]) .limit,
+:global(:root[data-theme]) .upsell {
+  background: var(--c-surface-1);
+  border: 1px solid var(--hairline);
+  box-shadow: none;
+}
+:global(:root[data-theme]) .notice[data-kind="error"] {
+  background: var(--c-surface-1);
+  box-shadow: none;
+}
+:global(:root[data-theme]) .limit { animation: none; }
 .noticeTitle, .limitTitle { font-weight: var(--w-semibold); letter-spacing: -0.02em; }
 .limitTitle { font-size: 18px; }
 .limitMeter { height: 6px; background: var(--space-track); box-shadow: none; }

@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "संसाधन",
     "items": {
       "/features": "Keplar में सब कुछ",
-      "/#demo": "लाइव डेमो",
+      "/overview#demo": "लाइव डेमो",
       "/app/create": "Create",
       "/docs": "डॉक्स",
       "/pricing": "कीमतें",
@@ -16,7 +16,7 @@ const m: CommonCatalog = {
     },
     "hints": {
       "/features": "हर फ़ीचर और क्या वह लाइव है",
-      "/#demo": "अभी सवाल पूछें, साइन-अप नहीं",
+      "/overview#demo": "अभी सवाल पूछें, साइन-अप नहीं",
       "/app/create": "साइट या ऐप लिखकर या बोलकर बताएँ"
     },
     "signIn": "साइन इन",
@@ -41,6 +41,7 @@ const m: CommonCatalog = {
       "Legal": "कानूनी"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "Keplar में सब कुछ",
       "/how-it-works": "यह कैसे काम करता है",
       "/showcase": "Create शोकेस",

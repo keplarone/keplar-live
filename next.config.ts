@@ -43,9 +43,9 @@ const nextConfig: NextConfig = {
       { source: "/app/create/site", destination: "/app/create", permanent: true },
       // Explicit ?tab=app so the query is not preserved (same-path redirects keep unmatched query otherwise → loop).
       { source: "/app/create", has: [{ type: "query", key: "tab", value: "site" }], destination: "/app/create?tab=app", permanent: false },
-      // Each /app tab has its own subfolder; bare /app is Ask.
-      { source: "/app", destination: "/app/ask", permanent: true },
-      { source: "/app/", destination: "/app/ask", permanent: true },
+      // The chat lives at /. Bare /app opens it. /app/ask still renders the same view for older links.
+      { source: "/app", destination: "/", permanent: true },
+      { source: "/app/", destination: "/", permanent: true },
       // Keplar Wants and Keplar Browser were removed by owner decision: old links land in Ask instead of a 404.
       { source: "/app/wants", destination: "/app/ask", permanent: true },
       { source: "/app/browser", destination: "/app/ask", permanent: true },

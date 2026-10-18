@@ -1,15 +1,16 @@
 /**
- * Each /app tab is a real URL under /app/…. The shell stays mounted across tabs
+ * Ask is the site root (/). Other tabs are real URLs under /app/…. The shell stays mounted across tabs
  * (history.pushState); a fresh load of the same path opens that tab via AppLoader.
- * Settings / Memory / Usage live under /account, not here.
+ * /app and /app/ask still open Ask. Settings / Memory / Usage live under /account, not here.
  */
 import type { View } from "./state/types";
 
-export const APP_HOME = "/app/ask";
+/** The chat home. /app and /app/ask stay as aliases (viewForPath). */
+export const APP_HOME = "/";
 
-/** Path for every View. Ask is /app/ask (not bare /app). */
+/** Path for every View. Ask is the site root. Other tabs stay under /app. */
 export const VIEW_PATH: Record<View, string> = {
-  thread: "/app/ask",
+  thread: "/",
   create: "/app/create",
   projects: "/app/projects",
   agents: "/app/agents",
@@ -29,16 +30,16 @@ export function pathForView(view: View): string {
   return VIEW_PATH[view];
 }
 
-/** Resolve a pathname to a View. Bare /app and /app/ mean Ask (after the redirect). Unknown → null. */
+/** Resolve a pathname to a View. / , /app and /app/ask are Ask. Unknown → null. */
 export function viewForPath(pathname: string): View | null {
   const p = pathname.replace(/\/+$/, "") || "/";
-  if (p === "/app") return "thread";
+  if (p === "/app" || p === "/app/ask") return "thread";
   return BY_PATH.get(p) ?? null;
 }
 
 export function isAppPath(pathname: string): boolean {
   const p = pathname.replace(/\/+$/, "") || "/";
-  return p === "/app" || p.startsWith("/app/");
+  return p === "/" || p === "/app" || p.startsWith("/app/");
 }
 
 /**

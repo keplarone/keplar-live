@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "רעסורסן",
     "items": {
       "/features": "אַלץ אין Keplar",
-      "/#demo": "לעבעדיקע דעמאָ",
+      "/overview#demo": "לעבעדיקע דעמאָ",
       "/app/create": "שאַפֿן",
       "/docs": "דאָקומענטאַציע",
       "/pricing": "פּרייזן",
@@ -30,6 +30,7 @@ const m: CommonCatalog = {
       "Legal": "יורידיש"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "אַלץ אין Keplar",
       "/showcase": "אויסשטעלונג פֿון שאַפֿונגען",
       "/templates": "קהילה־גאַלעריע",

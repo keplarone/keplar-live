@@ -11,7 +11,7 @@ export default function AppLayout({ children, modal }: { children: React.ReactNo
   return (
     <>
       <DesktopTitleBar />
-      <main id="main">
+      <main id="main" data-app-root="">
         {children}
         <ViewportKeyboard />
         <AppBeacon />

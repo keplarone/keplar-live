@@ -86,7 +86,9 @@ export const VARIANTS: Record<VariantId, Variant> = {
 /** Which variant each page uses (one per family of pages). */
 export function variantFor(path: string): VariantId | null {
   const p = path.split("?")[0].replace(/\/+$/, "") || "/";
-  if (p === "/") return "home";
+  // The chat home is a working screen. The moved marketing landing keeps the home scene.
+  if (p === "/") return null;
+  if (p === "/overview") return "home";
   if (/^\/(sites|s|i|api|embed|app|create|admin|account|checkout|desktop|r|docs)(\/|$)/.test(p) || /-preview(\/|$)/.test(p)) return null;
   if (/^\/(about|product|enterprise|keplar-one|superintelligence|si-vs-ai|ai-vs-agi-vs-superintelligence|for-researchers)/.test(p)) return "ridge";
   if (/^\/(how-it-works|guides|use-cases|for-you|for-students|for-developers|for-founders|for-small-business|ai-answer-engine|ai-fact-check|ai-study-tool|ai-slideshow-maker|agents)/.test(p)) return "beams";
