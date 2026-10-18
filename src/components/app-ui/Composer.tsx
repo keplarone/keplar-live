@@ -1201,22 +1201,6 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
               <IconPlus size={16} />
               <span className={s.toolLabel}>Attach</span>
             </button>
-            {voice.supported ? (
-              <button
-                type="button"
-                className={s.tool}
-                data-voice-btn={voice.state}
-                aria-pressed={voice.state === "listening"}
-                aria-label={voice.state === "listening" ? "Stop dictation" : voice.state === "processing" ? "Finishing dictation" : "Dictate with your voice"}
-                title={voice.state === "listening" ? "Stop dictation" : "Dictate. Your browser's speech service turns your voice into text; Keplar doesn't record audio."}
-                disabled={voice.state === "processing"}
-                onClick={voice.toggle}
-              >
-                <IconMic size={15} />
-                <span className={s.toolLabel}>{voice.state === "listening" ? "Listening…" : voice.state === "processing" ? "Finishing…" : "Voice"}</span>
-              </button>
-            ) : null}
-            <VoiceTalk voice={voice} className={s.tool} labelClass={s.toolLabel} disabled={running} onNote={setVoiceNote} onAsk={() => setVoiceAsk((n) => n + 1)} />
             {tools.map(({ key, label, Icon, hint }) => (
               <button
                 key={key}
@@ -1311,6 +1295,22 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
           </Popover>
 
           <div className={s.actions}>
+            {voice.supported ? (
+              <button
+                type="button"
+                className={s.tool}
+                data-voice-btn={voice.state}
+                aria-pressed={voice.state === "listening"}
+                aria-label={voice.state === "listening" ? "Stop dictation" : voice.state === "processing" ? "Finishing dictation" : "Dictate with your voice"}
+                title={voice.state === "listening" ? "Stop dictation" : "Dictate. Your browser's speech service turns your voice into text; Keplar doesn't record audio."}
+                disabled={voice.state === "processing"}
+                onClick={voice.toggle}
+              >
+                <IconMic size={15} />
+                <span className={s.toolLabel}>{voice.state === "listening" ? "Listening…" : voice.state === "processing" ? "Finishing…" : "Voice"}</span>
+              </button>
+            ) : null}
+            <VoiceTalk voice={voice} className={s.tool} labelClass={s.toolLabel} disabled={running} onNote={setVoiceNote} onAsk={() => setVoiceAsk((n) => n + 1)} />
             <button
               ref={routingBtnRef}
               type="button"
