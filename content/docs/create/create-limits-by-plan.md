@@ -1,13 +1,15 @@
 ---
 title: Create limits by plan
-description: Project counts, custom domains, agents, connected apps, product import and media access by plan, and what happens when you hit a limit.
+description: Project counts, custom domains, agents, connected apps, product import, and picture and video access by plan.
 order: 8
-updated: 2026-10-03
+updated: 2026-10-18
 keywords: Create limits, projects per plan, domain limits, plan limits
 related: /docs/billing-plans/plans-compared, /docs/reference/limits-at-a-glance, /docs/billing-plans/when-you-reach-a-limit
 ---
 
-Limits exist to keep the service affordable and safe. These numbers were read from the product on 3 October 2026. They can change; the Create screen and the [pricing page](/pricing) always show the current ones.
+Limits exist to keep the service affordable and safe. These numbers were read from the product on 18 October 2026. They can change; the Create screen and the [pricing page](/pricing) always show the current ones.
+
+Pictures and video are not Create tabs. A picture is made in chat with Create image, on Plus, Pro and Business. A clip is made by asking in chat, on Pro (up to 8 seconds) and Business (up to 10 seconds). Free, Lite and Plus cannot start a clip.
 
 ## Sites and domains
 
@@ -16,8 +18,8 @@ Limits exist to keep the service affordable and safe. These numbers were read fr
 | Projects | 1 | 2 | 5 | 20 | 100 |
 | Free Keplar address | Yes | Yes | Yes | Yes | Yes |
 | Custom domains | 0 | 0 | 1 | 3 | 10 |
-| Images | See the Create screen | No | Yes | Yes | Yes |
-| Video (Beta) | No | No | No | Yes | Yes |
+| Pictures in chat | No | No | Yes | Yes | Yes |
+| Video in chat (Beta) | No | No | No | Yes, up to 8 seconds | Yes, up to 10 seconds |
 | Commerce tools | No | No | Yes | Yes | Yes |
 | Agents | 0 | 0 | 3 | 10 | 50 |
 

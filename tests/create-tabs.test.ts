@@ -19,6 +19,7 @@ test("create tabs: Site is not a Create sub-tab; Site URLs redirect to App", () 
   // SiteBuilder may still mount for resume/remix handoff, but never as a tab. UI v2: the kinds are the kit's Tabs.
   assert.match(studio, /<Tabs id=\{KIND_TABS\} label="Create"/);
   assert.match(studio, /\{ value: "app", label: "App" \}/);
+  assert.doesNotMatch(studio, /value: "images"|value: "video"|ImageStudio|VideoStudio/);
   const cfg = readFileSync("next.config.ts", "utf8");
   assert.match(cfg, /source:\s*"\/create\/site"/);
   assert.match(cfg, /source:\s*"\/app\/create\/site"/);

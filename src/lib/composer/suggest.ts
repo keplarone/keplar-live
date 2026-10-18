@@ -29,7 +29,7 @@ export function suggestComposerMode(text: string): ModeSuggestion | null {
   const routed = routeChat(t);
   switch (routed?.intent.type) {
     case "create.new":
-      return { key: "create", label: "Create", detail: "Build this in the chat" };
+      return { key: "create", label: "Create", detail: "Build a website or app" };
     case "study.new":
       return { key: "study", label: "Study", detail: "Flashcards and a quiz" };
     case "slides.new":

@@ -146,6 +146,7 @@ test("cross-user isolation: projects, domains, media, blobs, business data", asy
 
   const media = await import("@/app/api/create/media/[id]/route");
   gone(await media.GET(call(b.cookie, "/api/create/media/job_authz"), ctx("job_authz")), "media GET");
+  gone(await media.DELETE(call(b.cookie, "/api/create/media/job_authz", { method: "DELETE" }), ctx("job_authz")), "media DELETE");
 
   const blob = await import("@/app/api/create/blob/[...key]/route");
   const bk = (key: string[]) => ({ params: Promise.resolve({ key }) });

@@ -1,6 +1,6 @@
 import { applyCore } from "./core";
 import type { KeplarEvent } from "@/lib/orchestration/types";
-import type { AccountInfo, AppState, ChatImage, KeplarMessage, Ledger, Message, Project, Settings, StudioTurn, AgentFlow, ChatCreate, WorkspaceCard, Thread, UserMessage, View } from "./types";
+import type { AccountInfo, AppState, ChatImage, ChatVideo, KeplarMessage, Ledger, Message, Project, Settings, StudioTurn, AgentFlow, ChatCreate, WorkspaceCard, Thread, UserMessage, View } from "./types";
 
 import { topicTitle } from "@/lib/chat-title";
 import { readSaved, storageKey, writeSaved, type Scope } from "./scope";
@@ -41,6 +41,12 @@ export const settleImage = (m: Message): Message =>
     ? { ...m, image: { ...m.image, phase: "canceled", error: "This picture wasn't started. Nothing was charged." } }
     : m;
 
+/** A clip still choosing a shape or length, or not yet submitted, is not started after a reload. One with a job id keeps polling. */
+export const settleVideo = (m: Message): Message =>
+  m.role === "keplar" && m.video && (m.video.phase === "checking" || m.video.phase === "options" || m.video.phase === "confirm" || (m.video.phase === "working" && !m.video.jobId))
+    ? { ...m, video: { ...m.video, phase: "canceled", error: "This video wasn't started. Nothing was charged." } }
+    : m;
+
 /** A study set or deck that was being made when the page went away: the studio may have finished it, so never start it again on its own. */
 export const settleStudio = (m: Message): Message =>
   m.role === "keplar" && m.studio?.phase === "working"
@@ -54,7 +60,7 @@ export const settleAgentFlow = (m: Message): Message =>
 /** A run can't survive a reload (or a move to another store): mark it so the user can retry. */
 export const settle = (t: Thread): Thread => ({
   ...t,
-  messages: t.messages.map(settleImage).map(settleStudio).map(settleAgentFlow).map((m) =>
+  messages: t.messages.map(settleImage).map(settleVideo).map(settleStudio).map(settleAgentFlow).map((m) =>
     m.role === "keplar" && m.status === "running"
       ? ({ ...m, status: "error", error: { kind: "network", message: "Interrupted before the answer finished.", retryable: true } } as KeplarMessage)
       : m,
@@ -137,6 +143,7 @@ export type Action =
   | { type: "ledger"; ledger: Omit<Ledger, "synced"> }
   | { type: "upsell"; threadId: string; keplarId: string; reason: "milestone" | "complex" | null }
   | { type: "image"; threadId: string; keplarId: string; patch: Partial<ChatImage> }
+  | { type: "video"; threadId: string; keplarId: string; patch: Partial<ChatVideo> }
   | { type: "studio"; threadId: string; keplarId: string; patch: Partial<StudioTurn> }
   | { type: "agentFlow"; threadId: string; keplarId: string; patch: Partial<AgentFlow> }
   | { type: "create"; threadId: string; keplarId: string; patch: Partial<ChatCreate> }
@@ -372,6 +379,8 @@ export function reducer(state: AppState, a: Action): AppState {
       return { ...state, ledger: { ...a.ledger, synced: true } };
     case "image":
       return patchKeplar(state, a.threadId, a.keplarId, (m) => (m.image ? { ...m, image: { ...m.image, ...a.patch } } : m));
+    case "video":
+      return patchKeplar(state, a.threadId, a.keplarId, (m) => (m.video ? { ...m, video: { ...m.video, ...a.patch } } : m));
     case "studio":
       return patchKeplar(state, a.threadId, a.keplarId, (m) => (m.studio ? { ...m, studio: { ...m.studio, ...a.patch } } : m));
     case "create":

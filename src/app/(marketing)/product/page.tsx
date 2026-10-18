@@ -55,7 +55,7 @@ export default function ProductPage() {
             lookups aren&apos;t live yet, so check what matters.
           </p>
           <p>
-            Switch to creation in the same thread to build a personal site, an app, images, video, or code. Power users can
+            Switch to creation in the same thread to build a personal site or an app. Power users can
             adjust routing, but you never have to pick models to get a good answer. {brand.engineName} does that for you.
           </p>
           <h2>Run a business? It can run with you</h2>

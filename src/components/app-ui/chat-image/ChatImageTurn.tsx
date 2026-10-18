@@ -138,7 +138,7 @@ export function ChatImageTurn({ message: m, media, onPatch, onFollowUp, onAskTex
     waitForJob(jobId, { signal: ctl.signal })
       .then((j) => {
         if (ctl.signal.aborted) return;
-        if (!j) patchRef.current({ phase: "failed", error: "This is taking longer than expected. Check Create > Images in a minute; you're only charged if it's made." });
+        if (!j) patchRef.current({ phase: "failed", error: "This is taking longer than expected. You're only charged if the picture is made. Try again in a minute." });
         else if (j.status === "ready") patchRef.current({ phase: "ready", url: j.url ?? undefined, units: j.units ?? undefined, error: undefined });
         else patchRef.current({ phase: "failed", error: j.error ?? "Couldn't make the picture. Nothing was charged." });
         settledRef.current();
@@ -201,7 +201,7 @@ export function ChatImageTurn({ message: m, media, onPatch, onFollowUp, onAskTex
               <img src={img.url} alt={img.prompt} data-testid="chat-image-result" />
             </button>
           </figure>
-          <p className={css.meta}>{typeof img.units === "number" ? `${credits(img.units)} · ` : ""}{SIZE_LABEL[img.size]} · full quality original kept in Create &gt; Images</p>
+          <p className={css.meta}>{typeof img.units === "number" ? `${credits(img.units)} · ` : ""}{SIZE_LABEL[img.size]} · full quality original kept in your account</p>
           <div className={css.row}>
             <a className={la.act} data-variant="secondary" data-size="sm" href={`${img.url}?download=1`} download>Download original</a>
             <Button size="sm" variant="secondary" onClick={() => onFollowUp({ kind: "regenerate" })}>Regenerate</Button>

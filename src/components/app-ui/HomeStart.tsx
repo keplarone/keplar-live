@@ -52,7 +52,7 @@ export function HomeStart({ showBusiness: _showBusiness, onSeed, onView, onSend,
   }, []);
   const tiles: Tile[] = [
     { id: "research", title: "Research a topic", body: "Deep Research mode on, you write the question.", run: () => onSeed("", { deepResearch: true }) },
-    { id: "create", title: "Create an app or image", body: "Create mode on. Describe it in the chat.", run: () => onSeed("", { create: true }) },
+    { id: "create", title: "Create a website or app", body: "Create mode on. Describe it in the chat.", run: () => onSeed("", { create: true }) },
     { id: "study", title: "Study something", body: "Study mode on. A topic becomes flashcards and a quiz.", run: () => onSeed("", { study: true }) },
     { id: "project", title: "Start a project", body: "Keep related threads together.", run: () => onView("projects") },
   ];

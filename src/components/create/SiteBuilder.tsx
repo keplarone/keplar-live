@@ -523,7 +523,7 @@ export function SiteBuilder() {
     return (
       <div className={w.root}>
         {error === SIGN_IN_ERROR ? (
-          <SignInGate title="Sign in to create" body="Create builds your site, images and video, and keeps them in your account so you can edit, publish and come back to them. Free accounts can start; Plus and Pro unlock more." next="/app/create" />
+          <SignInGate title="Sign in to create" body="Create builds your website or app, and keeps it in your account so you can edit, publish and come back to it. Free accounts can start; Plus and Pro unlock more." next="/app/create" />
         ) : (
           <p className={w.error} style={{ padding: 24 }} role="alert">{error}</p>
         )}
@@ -1020,10 +1020,6 @@ function PublishPane({ detail, verified, onChanged, onDelete }: { detail: Detail
       <div className={b.card}>
         <strong>Custom domain</strong>
         <DomainPanel siteId={site.id} />
-      </div>
-      <div className={b.card}>
-        <strong>Images and video</strong>
-        <p className={s.muted}>Image generation and editing, a gallery and video are coming next. Nothing is generated or charged for them today.</p>
       </div>
       <div className={b.card}>
         <strong>Delete this site</strong>

@@ -60,7 +60,8 @@ const videoConfig = (over: Record<string, unknown> = {}) => ({
   ...over,
 });
 
-test.describe.serial("Create > Video and image options", () => {
+// Images and Video are no longer Create tabs. The studios stay in the repo; chat video is covered by tests/chat-video.test.ts.
+test.describe.skip("Create > Video and image options", () => {
   test("video is Beta and honestly 'Not configured' without Higgsfield keys; nothing can be started", async ({ page }) => {
     await signIn(page, EMAIL.replace("@", "+nc@"));
     run("set-plan.ts", EMAIL.replace("@", "+nc@"), "pro");

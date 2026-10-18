@@ -71,7 +71,7 @@ export const FACT_SECTIONS: FactSection[] = [
     ],
   },
   {
-    id: "create", title: "Create: websites, apps, images, video and games",
+    id: "create", title: "Create: websites and apps",
     intro: "Describe what you want, or say it out loud, and Create builds it: it plans a design for the brief, writes the code, tests every screen and publishes it.",
     facts: [
       { name: "Websites and web apps", what: "Builds full sites and apps from a brief, with a code editor, terminal and live preview side by side. A written design rubric and a lint pass reject the generic AI look (purple glows, gradient blobs, three-card grids) before you see it.", plans: "Lite (one small personal site), Plus and Pro", feature: "anti-vibe", href: "/ai-app-builder" },
@@ -81,10 +81,16 @@ export const FACT_SECTIONS: FactSection[] = [
       { name: "Watch the code being written", what: "While Create builds an app, the files appear as they are written, with a Tasks checklist of the plan and Ctrl+P to jump to any file.", status: "live" },
       { name: "Templates and community gallery", what: "Start from a real site and describe what to change. Sites people chose to share can be liked, remixed and reported.", feature: "community", href: "/templates" },
       { name: "Showcase", what: "Demo sites and apps by the Keplar team that set the bar Create is held to.", feature: "showcase", href: "/showcase" },
-      { name: "Image generation", what: "Make pictures from a message or in the Images studio; attach an image to use as a reference.", plans: "Plus and Pro" },
-      { name: "Video generation", what: "Generate short videos in Create's Video tab.", plans: "Pro", status: "beta" },
       { name: "Mobile apps", what: "Build mobile app projects in Create's Mobile tab.", status: "beta" },
       { name: "Product import", what: "Paste a product page link and Keplar's fetcher (KeplarBot, which obeys robots.txt) brings in the product details for a page about it.", plans: "Signed-in users" },
+    ],
+  },
+  {
+    id: "media", title: "Pictures and video",
+    intro: "Pictures and clips are made from a chat message. They are not part of Create.",
+    facts: [
+      { name: "Image generation", what: "Make a picture from a message with Create image in the composer, or by asking to draw one. Attach an image to use it as a reference.", plans: "Plus and Pro" },
+      { name: "Video generation", what: "Ask in chat for a clip, for example “make a video of a fox in snow”. Keplar asks for 16:9 or 9:16 and a length the model supports, then makes one clip. Pro and Business.", plans: "Pro and Business", status: "beta" },
     ],
   },
   {
@@ -166,7 +172,7 @@ export const FACT_SECTIONS: FactSection[] = [
 const BUSINESS_CORE = BUSINESS_TIERS.starter.includes.slice(0, 11);
 export const BUSINESS_FACTS = {
   title: "Keplar Business (business.keplar.one)",
-  intro: `A separate desktop app for companies, on the same ${brand.name} accounts. business.keplar.one shows the plans, takes inquiries and business-account sign-up, and offers the download once a subscription is active. Agents live here: daily briefs, page monitors and lead follow-ups run on a schedule with run history, and anything an agent wants to send outside Keplar, such as an email, waits in Approvals until someone approves it. Team workspaces have owner, admin, editor and viewer roles. The workspace also has Create (sites, apps, images, video), Operations (orders, CRM, inbox, audit log) and Integrations (connectors and connected apps).`,
+  intro: `A separate desktop app for companies, on the same ${brand.name} accounts. business.keplar.one shows the plans, takes inquiries and business-account sign-up, and offers the download once a subscription is active. Agents live here: daily briefs, page monitors and lead follow-ups run on a schedule with run history, and anything an agent wants to send outside Keplar, such as an email, waits in Approvals until someone approves it. Team workspaces have owner, admin, editor and viewer roles. The workspace also has Create (sites and apps), Operations (orders, CRM, inbox, audit log) and Integrations (connectors and connected apps).`,
   includes: BUSINESS_CORE,
   plans: Object.values(BUSINESS_TIERS).map((t) => ({ name: t.name, price: t.monthly === null ? "Custom pricing" : `$${t.monthly.toLocaleString("en-US", { minimumFractionDigits: 2 })} a month`, audience: t.audience, highlights: t.includes.filter((x) => !x.startsWith("Everything in") && !BUSINESS_CORE.includes(x)).slice(0, 6) })),
 };

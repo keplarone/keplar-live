@@ -18,7 +18,7 @@ export type RemovalImpact = {
   assets: number;
   /** Custom domains connected to this site. */
   domains: string[];
-  /** Images from the Images tab that this site uses (they stay in the library). */
+  /** Pictures made in chat that this site uses (they stay in the library). */
   libraryImages: number;
   blockers: RemovalBlocker[];
 };
@@ -33,8 +33,8 @@ export function removalSummary(i: RemovalImpact): { removed: string[]; kept: str
   if (i.domains.length > 0) removed.push(`The custom domain connection (${i.domains.join(", ")}). It is detached from hosting; you keep the domain itself.`);
   removed.push(i.leads > 0 ? `${n(i.leads, "form message")} received through the site. Download the CSV first if you want a copy.` : "Form messages received through the site (none so far).");
   const kept: string[] = [];
-  if (i.libraryImages > 0) kept.push(`${n(i.libraryImages, "image")} you made in Images stay in your library; this site just stops using them.`);
-  else kept.push("Images you made in the Images tab stay in your library.");
+  if (i.libraryImages > 0) kept.push(`${n(i.libraryImages, "image")} you made stay in your library; this site just stops using them.`);
+  else kept.push("Images you made stay in your library.");
   kept.push("Orders and payments: Create sites don't take payments, so none are removed here. Any Business orders and customer records stay in Business.");
   kept.push("Abuse-report records, if there are any, are kept for safety review.");
   kept.push(`The address /s/${i.slug} is reserved for you for ${SLUG_HOLD_DAYS} days, then anyone can use it.`);

@@ -30,7 +30,10 @@ import { notePreloaded, predictNext, recordTransition } from "./predict";
 import { draftKeyFor } from "./drafts";
 import type { AccountInfo, ChatImage, KeplarMessage, Message, MessageMedia, Project, Thread, UserMessage, View } from "./state/types";
 import { ChatImageTurn } from "./chat-image/ChatImageTurn";
+import { ChatVideoTurn } from "./chat-video/ChatVideoTurn";
 import { detectImageIntent } from "@/lib/images/chat-intent";
+import { detectVideoIntent } from "@/lib/video/chat-intent";
+import type { ChatVideo } from "@/lib/video/chat-types";
 import { expandPromptIfSlash } from "@/lib/images/slash-commands";
 import { OPEN_APP_SEARCH_EVENT } from "@/lib/nav/commands";
 import { followUpPrompt, newKey } from "@/lib/images/chat-flow";
@@ -152,6 +155,7 @@ const newKeplar = (replyTo: string): KeplarMessage => ({
 
 /** A picture turn: no panel answer, a card that checks the plan and cost, makes the picture and shows it (chat-image/). */
 const newImageKeplar = (replyTo: string, image: ChatImage): KeplarMessage => ({ ...newKeplar(replyTo), status: "done", finishedAt: Date.now(), image });
+const newVideoKeplar = (replyTo: string, video: ChatVideo): KeplarMessage => ({ ...newKeplar(replyTo), status: "done", finishedAt: Date.now(), video });
 
 /** Home greeting by local hour: "Good morning" before noon, "Good afternoon" until 6 pm, then "Good evening". */
 const dayGreeting = (hour: number) => (hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening");
@@ -178,6 +182,7 @@ function historyFor(thread: Thread | undefined, uptoId?: string) {
     if (m.role === "user") out.push({ role: "user", text: m.text });
     else if (m.answer) out.push({ role: "keplar", text: m.answer.markdown.slice(0, 3000) });
     else if (m.image && m.image.phase !== "canceled") out.push({ role: "keplar", text: `[Keplar made a picture here: ${m.image.prompt.slice(0, 300)}]` });
+    else if (m.video && m.video.phase !== "canceled") out.push({ role: "keplar", text: `[Keplar made a video here: ${m.video.prompt.slice(0, 300)}]` });
     else {
       const line = cardHistoryLine(m);
       if (line) out.push({ role: "keplar", text: line });
@@ -730,15 +735,17 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
         setAtBottom(true);
         return;
       }
-      // Create chip: the message is built into an app right in the chat (the Create pipeline, streamed into a card with a live preview).
-      if (modesForSend.create && !studio && !slash.command) {
+      // A picture or clip is not a Create build. Create mode leaves those as ordinary chat (a clip with no mode is picked up below).
+      const found = detectImageIntent(promptText, { hasImage: stills });
+      const videoAsk = !stills && !slash.command ? detectVideoIntent(text) : null;
+      // Create chip: the message is built into a website or app right in the chat.
+      if (modesForSend.create && !studio && !slash.command && !found && !videoAsk) {
         const keplar: KeplarMessage = { ...newKeplar(user.id), status: "done", finishedAt: Date.now(), create: { phase: "waiting" } };
         dispatch({ type: "send", threadId, user, keplar, projectId: st.projectFilter });
         setAtBottom(true);
         return;
       }
       // "Create image" toggle, a leading slash image command, or a clear "draw / make / generate an image of ..." request.
-      const found = detectImageIntent(promptText, { hasImage: stills });
       const wantsImage = !studio && (modesForSend.image === true || slash.command !== null || (found !== null && !modes.deepResearch && !modes.create && !modes.agent && !modes.debate));
       if (wantsImage) {
         const edit = stills && (found?.edit === true || modesForSend.image === true || Boolean(slash.command?.prefersReference));
@@ -747,6 +754,16 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
           ...(edit ? { ref: { from: "upload" as const } } : {}), ...(found?.asked ? { asked: found.asked } : {}),
         };
         dispatch({ type: "send", threadId, user, keplar: newImageKeplar(user.id, image), projectId: st.projectFilter });
+        setAtBottom(true);
+        return;
+      }
+      // Ordinary chat, no mode: a clear "make a video of…" request makes a clip. Create does not own this.
+      const noRun = !studio && !modes.deepResearch && !modes.create && !modes.agent && !modes.debate && !modes.image && !slash.command;
+      if (noRun && videoAsk) {
+        const video: ChatVideo = {
+          phase: "checking", prompt: videoAsk.prompt.slice(0, 1000), statedAspect: videoAsk.aspect, statedDuration: videoAsk.durationSec, key: newKey(),
+        };
+        dispatch({ type: "send", threadId, user, keplar: newVideoKeplar(user.id, video), projectId: st.projectFilter });
         setAtBottom(true);
         return;
       }
@@ -764,6 +781,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   );
 
   const patchImage = useCallback((threadId: string, keplarId: string, patch: Partial<ChatImage>) => dispatch({ type: "image", threadId, keplarId, patch }), []);
+  const patchVideo = useCallback((threadId: string, keplarId: string, patch: Partial<ChatVideo>) => dispatch({ type: "video", threadId, keplarId, patch }), []);
 
   /* Regenerate / Variation / Edit: a new picture turn from this one (the same checks, cost and approval as any picture). */
   const imageFollowUp = useCallback((k: KeplarMessage, f: { kind: "regenerate" | "variation" | "edit"; instruction?: string }) => {
@@ -1260,6 +1278,14 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                         media={(messages.find((x) => x.id === m.replyTo) as UserMessage | undefined)?.media}
                         onPatch={(patch) => patchImage(thread!.id, m.id, patch)}
                         onFollowUp={(f) => imageFollowUp(m, f)}
+                        onAskText={() => askAsText(m)}
+                        onSettled={() => void syncMeter(true)}
+                      />
+                    ) : m.video ? (
+                      <ChatVideoTurn
+                        key={m.id}
+                        message={m}
+                        onPatch={(patch) => patchVideo(thread!.id, m.id, patch)}
                         onAskText={() => askAsText(m)}
                         onSettled={() => void syncMeter(true)}
                       />

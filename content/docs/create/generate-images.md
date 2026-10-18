@@ -1,21 +1,20 @@
 ---
 title: Generate images
-description: Generate an image from a prompt in Create, choose quality and size, keep versions, download the original and insert it into a site. What is refused and what is charged.
+description: Make a picture from a chat message, with the cost shown when a confirmation is required, and what is refused.
 order: 4
-updated: 2026-10-03
-keywords: AI image generation, generate image, image history, download original
+updated: 2026-10-18
+keywords: AI image generation, generate image, Create image, download original
 related: /docs/create/create-limits-by-plan, /docs/billing-plans/credits-explained, /docs/create/publish-your-site
 ---
 
-The Images tab in Create turns a prompt into a real image. Image generation is part of Plus, Pro and Business; the Create screen shows what your plan includes.
+Pictures are made in chat. Turn on **Create image** in the composer, or ask Keplar to draw one ("draw a …", "make an image of …"). Image generation is not a Create tab. It is part of Plus, Pro and Business.
 
 ## How to generate
 
-1. Open Create, then Images.
-2. Describe the image: subject, setting, style, lighting, composition.
-3. Pick quality and size. Higher quality and larger sizes cost more credits; the estimate is shown before you start.
-4. Generate. Failed, refused, blocked or timed-out jobs cost nothing.
-5. Regenerate to make another version in the same history, download the original, or insert the image into a site.
+1. In chat, turn on Create image, or write a clear request to draw a picture. With Create mode on, that request is answered as a normal chat message and no picture is made.
+2. Describe the image: subject, setting, style, lighting, composition. Attach an image to use it as a reference.
+3. A small picture can start on its own. A larger one, or one that uses a reference, shows the cost first and waits for you to confirm. Failed, refused, blocked or timed-out jobs cost nothing.
+4. The picture appears in the thread. Download the original from there. You can regenerate it, ask for a variation, or describe an edit.
 
 ## Prompts that work
 
@@ -25,12 +24,12 @@ shallow depth of field, calm and minimal, no text.
 ```
 
 - Describe what to draw, not what to avoid. If the model supports a negative prompt, use it for specifics.
-- Keep text out of the image; generated lettering is often wrong. Put words in your site's text instead.
-- Reference images, where the model supports them, can guide style or subject.
+- Keep text out of the image; generated lettering is often wrong.
+- Reference images, where the model supports them, can guide style or subject. You confirm you have the rights before a reference is used.
 
 ## What happens to the file
 
-The image is stored in your account and served only to you through authenticated routes. When you use an image in a site, that one image becomes public at an unguessable address so published pages can show it. Deleting an image used in a site asks you to confirm. Downloads are the original file (PNG), not a recompressed copy.
+The image is stored in your account and served only to you through authenticated routes. Downloads are the original file, not a recompressed copy.
 
 ## Safety rules
 
@@ -42,4 +41,4 @@ A repeated request with the same idempotency key returns the same job and never 
 
 ## Slides
 
-Image ideas in the [slideshow creator](/docs/using-keplar/slideshow-creator) are text placeholders. Generate pictures here and add them yourself.
+Image ideas in the [slideshow creator](/docs/using-keplar/slideshow-creator) are text placeholders. Turn on Create image in chat if you want a picture, then add it yourself.

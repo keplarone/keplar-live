@@ -81,7 +81,7 @@ test.describe.serial("delete a site", () => {
     await expect(d).toContainText(`/s/${alpha.slug}`);
     await expect(d).toContainText(/form messages/i);
     await expect(d).toContainText("Create sites don't take payments");
-    await expect(d).toContainText("Images you made in the Images tab stay in your library");
+    await expect(d).toContainText("Images you made stay in your library");
     await expect(d).toContainText("6 seconds to undo");
     await expect(d.getByRole("button", { name: "Cancel" })).toBeFocused(); // the safe button first
     await d.getByRole("button", { name: "Cancel" }).click();

@@ -115,7 +115,7 @@ const tools: { key: ModeKey; label: string; Icon: typeof IconWeb; hint: string }
   { key: "reason", label: "Reason", Icon: IconReason, hint: "Work it through step by step and show how the answer was checked. Paid plans also add a model to the panel" },
   { key: "deepResearch", label: "Deep Research", Icon: IconDeep, hint: "Longer, multi-step research. Uses more usage" },
   { key: "debate", label: "Debate", Icon: IconDebate, hint: "The models argue in rounds and read each other's points, then Keplar writes one answer. Uses more usage" },
-  { key: "create", label: "Create", Icon: IconCreate, hint: "Build an app, image, video or document" },
+  { key: "create", label: "Create", Icon: IconCreate, hint: "Build a website or app" },
   { key: "image", label: "Create image", Icon: IconImage, hint: "Make a picture from this message (Plus and Pro). Attach an image to use it as a reference" },
 ];
 
@@ -131,7 +131,7 @@ const BLURB: Partial<Record<ModeKey, string>> = {
   reason: "Step by step, checked",
   deepResearch: "Long, multi-step research",
   debate: "Models argue in rounds",
-  create: "Apps, images, video, docs",
+  create: "Build a website or app",
   image: "A picture from this message",
 };
 
@@ -977,7 +977,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
           ref={(node) => { taRef.current = node; inputRef(node); }}
           className={s.input}
           rows={1}
-          placeholder={modes.study ? "What do you want to learn?" : modes.slides ? "Describe the talk: the topic, who it's for, how many slides" : placeholder}
+          placeholder={modes.study ? "What do you want to learn?" : modes.slides ? "Describe the talk: the topic, who it's for, how many slides" : modes.create ? "Describe a website or an app" : placeholder}
           onChange={(e) => {
             setText(e.target.value);
             syncSlashFromCaret(e.target.value, e.target.selectionStart ?? e.target.value.length, modes.image === true);

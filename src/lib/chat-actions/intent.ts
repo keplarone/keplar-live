@@ -71,7 +71,7 @@ export const CHAT_COMMANDS: readonly ChatCommand[] = [
   { id: "quiz", slash: "/quiz", label: "Quiz me", summary: "A-D quiz on a topic, right here", takesText: true },
   { id: "flashcards", slash: "/flashcards", label: "Flashcards", summary: "Flip-cards on a topic, right here", takesText: true },
   { id: "study", slash: "/study", label: "Study set", summary: "Outline, flashcards, quiz and mastery", takesText: true },
-  { id: "create", slash: "/create", label: "Build an app", summary: "Build a working app or site in the chat", takesText: true },
+  { id: "create", slash: "/create", label: "Create", summary: "Build a website or app", takesText: true },
   { id: "edit", slash: "/edit", label: "Edit an app", summary: "/edit BikeFix: add a dark mode", takesText: true },
   { id: "theme", slash: "/theme", label: "App look", summary: "/theme BikeFix dark, or /theme brutalist", takesText: true },
   { id: "publish", slash: "/publish", label: "Publish an app", summary: "Put an app live (you confirm)", takesText: true },
