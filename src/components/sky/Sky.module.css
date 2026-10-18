@@ -65,26 +65,29 @@
   user-select: none;
   animation: cloud-drift var(--dur, 120s) ease-in-out infinite alternate;
 }
-.cloudExtra { display: none; }
-:global(:root[data-cloud-cover="more"]) .cloudExtra { display: block; }
 @keyframes cloud-drift {
   from { transform: translate3d(0, 0, 0); }
-  to { transform: translate3d(var(--dx, 4%), var(--dy, 0.4%), 0); }
+  to { transform: translate3d(var(--dx, 2%), var(--dy, 0.3%), 0); }
 }
+/* Overcast and rain grey the same few clouds. They do not add another row. */
 :global(:root[data-cloud-cover="more"]) .cloudImg {
-  filter: saturate(0.5) brightness(0.84);
+  filter: saturate(0.6) brightness(0.9);
 }
+/* Night: faint blue-grey. Opacity stays in the mid-20s to mid-30s, with no contrast boost. */
 :global(:root[data-theme="dark"]) .cloudImg {
-  filter: brightness(0.52) contrast(1.06) saturate(0.38) sepia(0.2) hue-rotate(188deg);
+  opacity: 0.32;
+  filter: grayscale(0.4) sepia(0.45) hue-rotate(192deg) saturate(0.5) brightness(0.95);
 }
 :global(:root[data-theme="dark"][data-cloud-cover="more"]) .cloudImg {
-  filter: brightness(0.4) contrast(1.02) saturate(0.26) sepia(0.16) hue-rotate(190deg);
+  opacity: 0.28;
+  filter: grayscale(0.5) sepia(0.35) hue-rotate(192deg) saturate(0.35) brightness(0.88);
 }
 .cloudDeck[data-drift="off"] .cloudImg { animation: none; }
 @media (prefers-reduced-motion: reduce) {
   .cloudImg { animation: none; }
 }
 @media (max-width: 640px) {
+  .cloudPhone { display: none; }
   .cloudImg { animation: none; }
 }
 
