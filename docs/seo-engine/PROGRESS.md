@@ -28,7 +28,8 @@
 - [x] Phase 8 tool pages already link to the matching product with `TrackedLink` and reuse the existing marketing styles. No new visual language and no site-wide restyle.
 - [x] Phase 11 stack: #22 `8be1ce5`, #23 `953630b`, #24 `e2ebe63`, #25 `240521c` are on main. Production stamp `240521c7c8dc` served `/sitemap-index.xml`, `/tools`, `/tools/citation-formatter`, `/llms.txt`, `/robots.txt`, and `/` with status 200.
 - [x] Programmatic pages: `/guides/citation-styles` and `/guides/free-tool-limits` are built from `formatCitation`, `TOOLS`, and `TOOL_LIMITS`. Both pass `decidePublish` and are in the sitemap.
-- [x] Marketing fixes (2026-10-18): pricing meta names Lite $20 (English, OG card, all 25 locales). Auth, `/app`, the Business app, the embed shell, `/status`, `/welcome`, the 404, and an empty `/answers` or `/topics` index are noindex, follow. The Whop pixel loads only on `/checkout`, `/account`, and `/biz/account`. `robots.txt` lists `/sitemap-index.xml` only. Space Studio was not changed.
+- [x] Marketing fixes (2026-10-18): pricing meta names Lite $20 (English, OG card, all 25 locales). Auth, `/app`, the Business app, the embed shell, `/status`, `/welcome`, the 404, and an empty `/answers` or `/topics` index are noindex, follow. The Whop pixel loads only on `/checkout`, `/account`, and `/biz/account`. `robots.txt` lists `/sitemap-index.xml` only.
+- [x] Owner decision (2026-10-18): `keplar.one/space-studio` is noindex, follow and out of the sitemap. It is not redirected or removed. `space.keplar.one` stays indexable, canonical to itself. The page body is unchanged.
 
 ## This milestone (audit + critical fixes)
 
@@ -125,7 +126,7 @@ Applied:
 
 Skipped:
 
-- Space Studio and `space.keplar.one`: not redirected, not noindexed, not removed. The existing noindex on `/space-studio/app` was already there and was left as-is.
+- Space Studio, in the first pass: not redirected, not noindexed, not removed. The owner later chose noindex, follow for `keplar.one/space-studio` only. `space.keplar.one` stays without that robots meta. The existing noindex on `/space-studio/app` was already there and was left as-is.
 - Paste-ready English titles, descriptions, and JSON-LD for the other pages: the sheet was not attached.
 - Redirects and extra sitemap removals from that sheet: not visible, so no URLs were redirected or dropped.
 - Performance steps from that sheet: not visible. The home-page scene was not edited.
