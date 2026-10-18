@@ -1,14 +1,15 @@
 "use client";
 /**
- * Create: Apps (one prompt -> a tested, full-stack app; the default tab) and image / video / mobile studios.
+ * Create: a website or an app (the App studio) and, where it applies, Mobile and Keplar Studio.
+ * Images and video are not Create tabs. Image and video generation stay in the codebase and in chat.
  * The older Site (landing-page) builder is no longer a Create tab; Site URLs redirect to App. Views stay mounted
  * so switching never loses work in progress.
  *
  * Site resume / template remix still set sessionStorage "keplar:create-site" and land here: we mount SiteBuilder
  * for that handoff only (no Site tab), then "Back to Create" returns to the App tabs.
  *
- * Only the App studio ships with the Create chunk; Images, Video and Mobile are separate chunks fetched the first
- * time their tab is opened (and warmed when the pointer reaches the tab), so opening Create costs only what the
+ * Only the App studio ships with the Create chunk; Mobile is a separate chunk fetched the first
+ * time its tab is opened (and warmed when the pointer reaches the tab), so opening Create costs only what the
  * App studio needs.
  *
  * Keplar Studio (desktop app only) is one tab with an environment switch, Roblox Studio | Blender, and mounts the Keplar
@@ -26,19 +27,15 @@ import st from "./apps/studio.module.css";
 import { KeplarStudioElsewhere, KeplarStudioPane } from "./studio/KeplarStudioPane";
 import { createSearch, locationFromUrl, pickEnv, readRememberedEnv, rememberEnv, resolveCreateLocation, studioRequested, type CreateLocation, type CreateView, type StudioEnv } from "./studio/keplar-studio-nav";
 
-const loadImages = () => import("./ImageStudio");
-const loadVideo = () => import("./video/VideoStudio");
 const loadMobile = () => import("./mobile/MobileStudio");
 const loadSite = () => import("./SiteBuilder");
-const ImageStudio = lazy(() => loadImages().then((m) => ({ default: m.ImageStudio })));
-const VideoStudio = lazy(() => loadVideo().then((m) => ({ default: m.VideoStudio })));
 const MobileStudio = lazy(() => loadMobile().then((m) => ({ default: m.MobileStudio })));
 const SiteBuilder = lazy(() => loadSite().then((m) => ({ default: m.SiteBuilder })));
 // One chunk serves both environments (Roblox Studio and Blender share the Keplar Studio Workspace).
 const loadWorkspace = () => import("@/components/app-ui/studio-mode/workspace/Workspace");
 const StudioWorkspace = lazy(() => loadWorkspace().then((m) => ({ default: m.Workspace })));
 const noSubscribe = () => () => {};
-const WARM: Record<string, () => Promise<unknown>> = { images: loadImages, video: loadVideo, mobile: loadMobile, roblox: loadWorkspace, blender: loadWorkspace };
+const WARM: Record<string, () => Promise<unknown>> = { mobile: loadMobile, roblox: loadWorkspace, blender: loadWorkspace };
 
 /** "studio" is Keplar Studio: desktop app only, so its tab appears only when the desktop bridge is there. */
 type View = CreateView;
@@ -91,8 +88,6 @@ export function CreateStudio({ initialTab, initialEnv, signedIn, plan = "free" }
   const [start] = useState(() => initialLocation(initialTab, initialEnv));
   const [view, setView] = useState<View>(start.view);
   const [env, setEnv] = useState<StudioEnv>(() => pickEnv(start.env, readRememberedEnv()));
-  const [imagesSeen, setImagesSeen] = useState(start.view === "images");
-  const [videoSeen, setVideoSeen] = useState(start.view === "video");
   const [mobileSeen, setMobileSeen] = useState(start.view === "mobile");
   // Which environments have been opened (each stays mounted after that, so switching keeps its work).
   const [envSeen, setEnvSeen] = useState<Record<StudioEnv, boolean>>(() => ({ roblox: start.view === "studio" && env === "roblox", blender: start.view === "studio" && env === "blender" }));
@@ -104,8 +99,6 @@ export function CreateStudio({ initialTab, initialEnv, signedIn, plan = "free" }
   const pick = (v: View) => {
     setView(v);
     setCreateQuery(v, env);
-    if (v === "images") setImagesSeen(true);
-    if (v === "video") setVideoSeen(true);
     if (v === "mobile") setMobileSeen(true);
     if (v === "studio") setEnvSeen((s) => (s[env] ? s : { ...s, [env]: true }));
   };
@@ -163,12 +156,10 @@ export function CreateStudio({ initialTab, initialEnv, signedIn, plan = "free" }
     };
   }, [signedIn]);
 
-  // The kind switch is the kit's Tabs (UI v2): an underline that slides between App, Images, Video, Mobile and (desktop app)
-  // Keplar Studio. Pointing at or focusing a tab that is not open fetches its chunk early.
+  // The kind switch is the kit's Tabs (UI v2): App (a website or an app), Mobile and (desktop app) Keplar Studio.
+  // Pointing at or focusing a tab that is not open fetches its chunk early.
   const kinds: TabItem<View>[] = [
     { value: "app", label: "App" },
-    { value: "images", label: "Images" },
-    { value: "video", label: <>Video</> },
     { value: "mobile", label: <>Mobile</> },
     ...(desktop ? [{ value: "studio" as const, label: "Keplar Studio" }] : []),
   ];
@@ -197,7 +188,7 @@ export function CreateStudio({ initialTab, initialEnv, signedIn, plan = "free" }
         <h1 className="visually-hidden">Create</h1>
         <SignInGate
           title="Sign in to create"
-          body="Create builds your app, images and video, and keeps them in your account so you can edit, publish and come back to them. Free accounts can start; Plus and Pro unlock more."
+          body="Create builds your website or app, and keeps it in your account so you can edit, publish and come back to it. Free accounts can start; Plus and Pro unlock more."
           next="/app/create"
         />
       </div>
@@ -231,16 +222,6 @@ export function CreateStudio({ initialTab, initialEnv, signedIn, plan = "free" }
       <div {...panel("app")} className={`${b.root} ${st.kindPanel}`}>
         <AppBuilder />
       </div>
-      {imagesSeen ? (
-        <div {...panel("images")} className={st.kindPanel} data-scroll="">
-          <Suspense fallback={loading}><ImageStudio /></Suspense>
-        </div>
-      ) : null}
-      {videoSeen ? (
-        <div {...panel("video")} className={st.kindPanel} data-scroll="">
-          <Suspense fallback={loading}><VideoStudio /></Suspense>
-        </div>
-      ) : null}
       {mobileSeen ? (
         <div {...panel("mobile")} className={st.kindPanel} data-scroll="">
           <Suspense fallback={loading}><MobileStudio /></Suspense>

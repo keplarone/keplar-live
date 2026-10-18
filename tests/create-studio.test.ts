@@ -193,10 +193,9 @@ test("create studio: heavy tabs and panes are code-split; the prompt box is unco
   const studio = readFileSync("src/components/create/CreateStudio.tsx", "utf8");
   assert.doesNotMatch(studio, /tab\("site"/, "Site Create tab must be gone");
   assert.match(studio, /const SiteBuilder = lazy\(/, "SiteBuilder stays lazy for resume/remix handoff only");
-  for (const tab of ["ImageStudio", "VideoStudio", "MobileStudio"]) {
-    assert.match(studio, new RegExp(`const ${tab} = lazy\\(`), `${tab} should be lazy`);
-    assert.doesNotMatch(studio, new RegExp(`^import[^\\n]*\\b${tab}\\b`, "m"), `${tab} must not be imported statically`);
-  }
+  assert.match(studio, /const MobileStudio = lazy\(/, "MobileStudio should be lazy");
+  assert.doesNotMatch(studio, /^import[^\n]*\bMobileStudio\b/m, "MobileStudio must not be imported statically");
+  assert.doesNotMatch(studio, /ImageStudio|VideoStudio/, "Images and Video are not Create tabs");
   const builder = readFileSync("src/components/create/apps/AppBuilder.tsx", "utf8");
   for (const pane of ["DesignPicker", "CodePane", "ChangesPane"]) assert.match(builder, new RegExp(`lazy\\(\\s*\\(\\)\\s*=>\\s*import\\([^)]*${pane}`), `${pane} should be lazy`);
   const field = readFileSync("src/components/create/apps/PromptField.tsx", "utf8");

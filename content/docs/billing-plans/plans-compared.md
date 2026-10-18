@@ -2,7 +2,7 @@
 title: Plans compared
 description: Free, Lite, Plus, Pro and Business side by side: price, credits, rolling limits and the features each unlocks. Numbers are read from the product.
 order: 1
-updated: 2026-10-03
+updated: 2026-10-18
 keywords: Keplar pricing, plans, Free vs Plus, Lite plan
 related: /pricing, /docs/billing-plans/credits-explained, /docs/billing-plans/usage-windows
 ---
@@ -22,8 +22,8 @@ Prices and credit numbers on this page are read from the same source as the [pri
 | Study mode | Yes, smaller limits | Stronger models | Stronger models, bigger limits | Largest limits | Yes |
 | Slideshow creator | No | No | Yes | Yes, largest limits | Yes |
 | Create: sites | 1 project | 2 projects, small | 5 projects | 20 projects | 100 projects |
-| Image generation | See Create | No | Yes | Yes | Yes |
-| Video (Beta) | No | No | No | Yes | Yes |
+| Image generation (in chat) | No | No | Yes | Yes | Yes |
+| Video (Beta, in chat) | No | No | No | Yes, up to 8 seconds | Yes, up to 10 seconds |
 | Custom domains | 0 | 0 | 1 | 3 | 10 |
 | Connected apps | 0 | 0 | 3 | 10 | 25 |
 | Agents | 0 | 0 | 3 | 10 | 50 |

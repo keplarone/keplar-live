@@ -70,9 +70,14 @@ export const compareGroups: CompareGroup[] = [
     rows: [
       { label: "Sites and apps from text or voice", values: per((p) => `${n(ENTITLEMENTS[p].projects)} project${ENTITLEMENTS[p].projects === 1 ? "" : "s"}`) },
       { label: "Custom domains", values: per((p) => (ENTITLEMENTS[p].customDomains > 0 ? n(ENTITLEMENTS[p].customDomains) : null)) },
-      { label: "Image generation", values: per((p) => (IMAGE_LIMITS[p] ? `${n(IMAGE_LIMITS[p]!.perDay)} a day` : null)) },
-      { label: "Video generation (Beta)", values: per((p) => (ENTITLEMENTS[p].video ? `Clips up to ${ENTITLEMENTS[p].maxVideoSeconds} s` : null)) },
       { label: "Agents", values: per((p) => (ENTITLEMENTS[p].agents > 0 ? n(ENTITLEMENTS[p].agents) : null)) },
+    ],
+  },
+  {
+    title: "Pictures and video",
+    rows: [
+      { label: "Image generation", hint: "In chat, with Create image on, or by asking for a picture. Not part of Create.", values: per((p) => (IMAGE_LIMITS[p] ? `${n(IMAGE_LIMITS[p]!.perDay)} a day` : null)) },
+      { label: "Video generation (Beta)", hint: "Ask in chat for a clip. Keplar asks for 16:9 or 9:16 and a length the model supports.", values: per((p) => (ENTITLEMENTS[p].video ? `Clips up to ${ENTITLEMENTS[p].maxVideoSeconds} s` : null)) },
     ],
   },
   {

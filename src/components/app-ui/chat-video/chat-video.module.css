@@ -1,0 +1,114 @@
+/* A clip made in chat. Tokens only: graphite and white, no glow. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  width: min(100%, 560px);
+}
+
+.frame {
+  position: relative;
+  margin: 0;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--c-surface-2);
+  box-shadow: var(--elev-1);
+}
+
+.frame video {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 560px;
+  background: var(--c-ink);
+}
+
+.wait {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--s-3);
+  aspect-ratio: var(--ratio, 16 / 9);
+  padding: var(--s-4);
+  background: var(--c-surface-2);
+  color: var(--c-ink-2);
+}
+
+.meta {
+  margin: 0;
+  font-size: var(--t-label);
+  color: var(--c-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.prompt {
+  margin: 0;
+  font-size: var(--t-small);
+  color: var(--c-ink-2);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border-radius: var(--r-md);
+  background: var(--c-surface-2);
+  box-shadow: var(--elev-1);
+}
+
+.panel h3 {
+  margin: 0;
+  font-size: var(--t-body);
+  font-weight: var(--w-medium);
+  color: var(--c-ink);
+}
+
+.panel p {
+  margin: 0;
+  font-size: var(--t-small);
+  color: var(--c-ink-2);
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.choices legend {
+  padding: 0;
+  margin-bottom: var(--s-1);
+  font-size: var(--t-label);
+  color: var(--c-ink-3);
+}
+
+.chip {
+  color: var(--c-ink-2);
+}
+
+.choices .chip[aria-checked="true"],
+.choices .chip[aria-checked="true"]:hover:not([aria-disabled="true"]) {
+  background: var(--ks-primary-bg, var(--c-ink));
+  color: var(--ks-primary-text, var(--c-canvas));
+  box-shadow: var(--ks-primary-depth, none);
+}
+
+.choices .chip[aria-checked="true"]:focus-visible {
+  box-shadow: var(--ks-primary-depth, none), var(--ks-focus-ring);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  align-items: center;
+}
+
+.error {
+  color: var(--c-ink);
+  font-size: var(--t-small);
+}

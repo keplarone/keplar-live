@@ -10,6 +10,7 @@ import type {
 } from "@/lib/orchestration/types";
 import type { ImageInput } from "@/lib/orchestration/media";
 import type { ChatImage } from "@/lib/images/chat-types";
+import type { ChatVideo } from "@/lib/video/chat-types";
 import type { LiveDebate } from "./debate";
 import type { LiveResearch } from "./research";
 import type { LiveCore } from "./core";
@@ -17,7 +18,7 @@ import type { DeckTheme } from "@/lib/slides/types";
 import type { Choice, StudyFocus, WorkspaceAct, WorkspaceKind } from "@/lib/chat-actions/intent";
 import type { QuizProgress } from "@/lib/quiz/types";
 
-export type { ChatImage };
+export type { ChatImage, ChatVideo };
 
 export type StageState = { id: StageId; status: "active" | "done"; detail?: string };
 
@@ -201,6 +202,8 @@ export type KeplarMessage = {
   upsell?: "milestone" | "complex";
   /** A picture turn (Create image toggle or a clear "draw me..." request). Has no panel answer. */
   image?: ChatImage;
+  /** A clip asked for in ordinary chat ("make a video of…"). Has no panel answer and is not Create mode. */
+  video?: ChatVideo;
   /** A Study or Slides turn (composer chips). Slides turns have no panel answer; Study turns follow the answer. */
   studio?: StudioTurn;
   /** Set as soon as the message is a quiz or flashcards request, so the card can show a skeleton instead of a draft. */

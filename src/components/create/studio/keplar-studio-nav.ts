@@ -9,15 +9,15 @@
  *   /app/create?tab=studio               Keplar Studio, last environment used (Roblox Studio the first time)
  *   /app/create?tab=roblox               legacy, same as tab=studio&env=roblox
  *   /app/create?tab=blender              legacy, same as tab=studio&env=blender
- *   /app/create?tab=images|video|mobile  the other Create studios
- *   /app/create?tab=site, or anything else  App (the Site builder has no tab)
+ *   /app/create?tab=mobile                 the mobile studio
+ *   /app/create?tab=images|video|site, or anything else  App (Images, Video and Site are not Create tabs)
  *
  * Keplar Studio needs the desktop app. Outside it, a Studio link lands on App (as it always has) and CreateStudio shows a
  * plain note that points to the download page and the two product pages; see `studioRequested`.
  */
 
-/** Create's top-level tabs. "studio" is Keplar Studio (desktop app only). */
-export type CreateView = "app" | "images" | "video" | "mobile" | "studio";
+/** Create's top-level tabs. "studio" is Keplar Studio (desktop app only). Images and video are not tabs. */
+export type CreateView = "app" | "mobile" | "studio";
 
 /** The environments Keplar Studio works in. */
 export type StudioEnv = "roblox" | "blender";
@@ -52,7 +52,8 @@ export const studioEnvLabel = (env: StudioEnv): string => STUDIO_ENVS.find((e) =
 
 /** Turns `?tab=` / `?env=` values into a Create location. Unknown tabs (including the retired "site") land on App. */
 export function resolveCreateLocation(tab?: string | null, env?: string | null): CreateLocation {
-  if (tab === "images" || tab === "video" || tab === "mobile") return { view: tab, env: null };
+  if (tab === "mobile") return { view: "mobile", env: null };
+  if (tab === "images" || tab === "video") return { view: "app", env: null };
   if (tab === "roblox" || tab === "blender") return { view: "studio", env: tab };
   if (tab === "studio") return { view: "studio", env: isStudioEnv(env) ? env : null };
   return { view: "app", env: null };

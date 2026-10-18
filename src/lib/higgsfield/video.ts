@@ -432,6 +432,15 @@ export async function listVideoJobs(ws: Workspace): Promise<MediaJob[]> {
   return rows.map((j) => by.get(j.id) ?? j);
 }
 
+/** Stops a clip that is still queued or running. A finished clip is left as it is (nothing further is charged). */
+export async function cancelVideoJob(ws: Workspace, jobId: string): Promise<MediaJob> {
+  const job = await mediaJobs().get(ws.id, jobId);
+  if (!job?.hf || job.workspaceId !== ws.id) throw new HttpError(404, "Video not found.", "not_found");
+  if (!active(job)) return job;
+  if (job.hf.requestId) await hfCancel(job.hf.requestId);
+  return fail(job, "canceled");
+}
+
 /** Removes finished clips the owner doesn't want (Compare: keep the ones you picked). Running clips can't be removed. */
 export async function removeVideoJobs(ws: Workspace, ids: unknown): Promise<{ removed: string[]; skipped: string[] }> {
   const list = Array.isArray(ids) ? ids.filter((x): x is string => typeof x === "string").slice(0, 60) : [];

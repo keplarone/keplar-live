@@ -21,7 +21,7 @@ The slideshow creator is part of Plus and Pro. It is not available on Free or Li
 
 ## What each slide has
 
-A title, bullet points, speaker notes, and an **image idea**. The image ideas are text placeholders, not generated pictures. If you want pictures, add your own or generate images in [Create](/docs/create/generate-images).
+A title, bullet points, speaker notes, and an **image idea**. The image ideas are text placeholders, not generated pictures. If you want pictures, add your own or turn on Create image in chat.
 
 ## Tips
 

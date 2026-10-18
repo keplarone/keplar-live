@@ -6,7 +6,7 @@ import type { View } from "@/components/app-ui/state/types";
 
 const META: Record<View, { title: string; description: string }> = {
   thread: { title: "Ask Keplar", description: "Ask one question. Keplar consults multiple AI models, investigates where they disagree, and gives you one answer." },
-  create: { title: "Create", description: "Build an app, image, video or document with Keplar Create. Preview, edit and publish from your account." },
+  create: { title: "Create", description: "Build a website or an app with Keplar Create. Preview, edit and publish from your account." },
   projects: { title: "Projects", description: "Keep related Keplar threads together in a project." },
   agents: { title: "Agents", description: "Hand off a task to a Keplar agent." },
   business: { title: "Business", description: "Orders, inbox and approvals for your Keplar business workspace." },

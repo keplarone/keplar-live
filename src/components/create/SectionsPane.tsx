@@ -68,7 +68,7 @@ export function SectionsPane({ files, disabled, onRegenerate }: { files: Record<
             ))}
           </ul>
         )}
-        <p className={b.hint}>Keplar draws these as inline SVG or geometric art so the site never depends on another website. Real photos can be made in the Images tab; placing them into a site is not built yet.</p>
+        <p className={b.hint}>Keplar draws these as inline SVG or geometric art so the site never depends on another website. Placing a real photo into a site is not built yet.</p>
       </div>
     </div>
   );

@@ -24,7 +24,7 @@ A single chatbot gives you one model's view, in one confident voice. Two models 
 
 ## What else is in the product
 
-Keplar is not only a chat box. The same account includes Study mode (flashcards, quizzes and a plan from your notes), a slideshow creator, Create for building and publishing a personal site, images and video, connected apps through the Model Context Protocol, and agents for business work with spend caps and approvals. Which of these you can use depends on your plan; see [plans compared](/docs/billing-plans/plans-compared).
+Keplar is not only a chat box. The same account includes Study mode (flashcards, quizzes and a plan from your notes), a slideshow creator, Create for building and publishing websites and apps, pictures and short videos made by asking in chat, connected apps through the Model Context Protocol, and agents for business work with spend caps and approvals. Which of these you can use depends on your plan; see [plans compared](/docs/billing-plans/plans-compared).
 
 ## What Keplar is not
 

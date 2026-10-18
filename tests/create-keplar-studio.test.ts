@@ -30,7 +30,8 @@ test("Create links: legacy roblox/blender tabs and the canonical studio form lan
   assert.deepEqual(resolveCreateLocation("studio", "maya"), { view: "studio", env: null }, "unknown env is ignored, not trusted");
   // Legacy tab names win over a stray env.
   assert.deepEqual(resolveCreateLocation("roblox", "blender"), { view: "studio", env: "roblox" });
-  for (const t of ["images", "video", "mobile"] as const) assert.deepEqual(resolveCreateLocation(t, "blender"), { view: t, env: null });
+  assert.deepEqual(resolveCreateLocation("mobile", "blender"), { view: "mobile", env: null });
+  for (const t of ["images", "video"] as const) assert.deepEqual(resolveCreateLocation(t, "blender"), { view: "app", env: null }, `${t} is not a Create tab`);
   for (const t of [null, undefined, "", "site", "app", "nope"]) assert.deepEqual(resolveCreateLocation(t), { view: "app", env: null }, String(t));
 });
 
@@ -46,7 +47,7 @@ test("Create URL: tab switches write the canonical form and keep unrelated param
   assert.equal(createSearch("?tab=roblox&x=1", "studio", "roblox"), "?tab=studio&x=1&env=roblox");
   assert.equal(createSearch("?tab=studio&env=roblox", "studio", "blender"), "?tab=studio&env=blender");
   assert.equal(createSearch("?tab=studio&env=blender&x=1", "app", "blender"), "?x=1");
-  assert.equal(createSearch("?tab=studio&env=blender", "images", "blender"), "?tab=images");
+  assert.equal(createSearch("?tab=studio&env=blender", "mobile", "blender"), "?tab=mobile");
   assert.equal(createSearch("", "app", "roblox"), "");
   // Round trip: what we write is what we read back.
   for (const e of ["roblox", "blender"] as const) assert.deepEqual(locationFromUrl(`/app/create${createSearch("", "studio", e)}`), { view: "studio", env: e });

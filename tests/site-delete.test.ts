@@ -51,7 +51,7 @@ test("the dialog copy names what is removed and what is kept, with the real coun
   assert.match(r, /3 form messages/);
   assert.match(r, /CSV/);
   const k = kept.join("\n");
-  assert.match(k, /4 images you made in Images stay in your library/);
+  assert.match(k, /4 images you made stay in your library/);
   assert.match(k, /Create sites don't take payments/);
   assert.match(k, /Business orders and customer records stay/);
   assert.match(k, new RegExp(`reserved for you for ${SLUG_HOLD_DAYS} days`));
