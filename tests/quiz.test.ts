@@ -409,6 +409,7 @@ test("the card says when the source cannot cover the asked count", () => {
   assert.match(html, /cover more questions/);
   assert.equal(sourceCapacity(SOURCE), 3);
   assert.equal(sourceCapacity("quiz me"), null);
+  assert.equal(sourceCapacity("A teaspoon is a small spoon. A tablespoon is three teaspoons. A cup is sixteen tablespoons. A pint is two cups. A quart is two pints."), 5);
   assert.equal(quizMaterial({ prompt: `Create a 5-question quiz for this study guide.\n\n${SOURCE}` }), SOURCE);
   assert.equal(sourceCapacity(quizMaterial({ prompt: `Create a 5-question quiz for this study guide.\n\n${SOURCE}` })), 3);
   const room = applyShortfall(QUIZ, 10, SOURCE, "This source doesn't cover more questions.");

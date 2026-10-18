@@ -9,14 +9,14 @@ import type { Quiz, QuizQuestion } from "./types";
 
 const NOTE = "This source doesn't cover more questions.";
 
-/** How many distinct facts the source states, when the text is long enough to count. */
+/** How many distinct facts the source states. A short sentence such as "A pint is two cups." still counts. */
 export function sourceCapacity(source: string): number | null {
   const text = source.trim();
-  if (text.length < 40) return null;
+  if (text.length < 12) return null;
   const parts = text
     .split(/\n+|(?<=[.!?])\s+/)
     .map((s) => s.trim())
-    .filter((s) => s.length >= 40 && s.split(/\s+/).filter((w) => w.length >= 4).length >= 3);
+    .filter((s) => s.length >= 12 && s.split(/\s+/).filter(Boolean).length >= 3);
   if (!parts.length) return null;
   return Math.min(20, parts.length);
 }
