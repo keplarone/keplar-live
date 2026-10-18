@@ -18,7 +18,7 @@ import { TwoTone } from "@/components/page/TwoTone";
 export const metadata = pageMeta(
   "/developers",
   "Keplar for developers: API, embeddable Ask, Teams",
-  "Ask Keplar from your own code with a Bearer API key, or drop the Ask widget on your site with one script tag. Free tier on OpenRouter :free models, paid tiers on your plan. OpenAPI spec, streaming, per-plan limits stated plainly.",
+  "Ask Keplar from your own code with a Bearer API key, or drop the Ask widget on your site with one script tag. Free tier on free models, paid tiers on your plan. OpenAPI spec, streaming, per-plan limits stated plainly.",
 );
 
 const fmt = (n: number) => n.toLocaleString("en-US");
@@ -26,7 +26,7 @@ const range = (a: number, b: number) => (a === b ? fmt(a) : `${fmt(a)}–${fmt(b
 
 /** Free / Pro, mapped onto the real plans (Pro = Lite, Plus and Pro). Business API access comes with Keplar Business (business.keplar.one). Numbers come from the policy modules. */
 const TIERS = [
-  { id: "free", name: "Free", plans: "free", note: "OpenRouter :free models only. Good for prototypes and a small site widget.", api: API_POLICY.free, embed: EMBED_POLICY.free, cta: { href: "/signup?next=/account%23api", label: "Create a free key" } },
+  { id: "free", name: "Free", plans: "free", note: "Free models only. Good for prototypes and a small site widget.", api: API_POLICY.free, embed: EMBED_POLICY.free, cta: { href: "/signup?next=/account%23api", label: "Create a free key" } },
   { id: "pro", name: "Pro", plans: "lite · plus · pro", note: "Premium models and Keplar consensus, metered from your plan's credits exactly like the app.", api: { maxKeys: [API_POLICY.lite.maxKeys, API_POLICY.pro.maxKeys], keyPerMinute: [API_POLICY.lite.keyPerMinute, API_POLICY.pro.keyPerMinute], keyPerDay: [API_POLICY.lite.keyPerDay, API_POLICY.pro.keyPerDay] }, embed: { maxWidgets: [EMBED_POLICY.lite.maxWidgets, EMBED_POLICY.pro.maxWidgets] }, cta: { href: "/pricing", label: "See plans" }, featured: true },
 ] as const;
 
@@ -164,7 +164,7 @@ export default function DevelopersPage() {
 
           <section className={s.section} id="embed" aria-labelledby="embed-h">
             <div className={s.sectionHead}><span className={s.num}>05</span><h2 id="embed-h" className={s.h2}>Embeddable Ask widget</h2></div>
-            <p className={s.p}>Create a widget in <Link href="/account#embed">Account → Embed Ask</Link>. You get a public id (<code>emb_…</code>) and a snippet. Paste it where the box should appear. Questions are answered by Keplar and spend the publisher&apos;s credits. Free publishers always run on OpenRouter <code>:free</code> models, and paid publishers choose free models or their plan&apos;s models for each widget.</p>
+            <p className={s.p}>Create a widget in <Link href="/account#embed">Account → Embed Ask</Link>. You get a public id (<code>emb_…</code>) and a snippet. Paste it where the box should appear. Questions are answered by Keplar and spend the publisher&apos;s credits. Free publishers always run on free models, and paid publishers choose free models or their plan&apos;s models for each widget.</p>
             <EmbedConfigurator origin={site.url} />
             <ul className={s.list}>
               <li className={s.li}><strong>Allowlist.</strong> Add up to 10 origins such as <code>https://docs.example.com</code>. Other sites get a refusal from the server, not only a hidden box.</li>

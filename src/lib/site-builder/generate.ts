@@ -13,6 +13,9 @@ import type { PlanId } from "@/lib/create/platform/plans";
 
 export const OPENROUTER_BASE = () => (process.env.KEPLAR_OPENROUTER_BASE || "https://openrouter.ai/api/v1").replace(/\/$/, "");
 
+/** Free calls must not fall through to a paid host. The meter trusts the requested slug, not the model that answered. */
+export const providerRouting = (free: boolean) => (free ? { allow_fallbacks: false } : { allow_fallbacks: true, data_collection: "deny" as const });
+
 const FORMAT = `OUTPUT FORMAT. Reply with exactly this and nothing else (no markdown fences, no commentary):
 <summary>One or two plain sentences saying what you built or changed.</summary>
 <file path="index.html">
@@ -218,7 +221,7 @@ export async function* generateSite(input: GenInput, opts: { signal?: AbortSigna
           max_tokens: input.limits.maxOutputTokens,
           messages,
           usage: { include: true },
-          provider: model.free ? { allow_fallbacks: true } : { allow_fallbacks: true, data_collection: "deny" },
+          provider: providerRouting(model.free),
           reasoning: model.free ? { effort: "none", exclude: true } : { effort: "low", exclude: true },
         }),
         signal: ctl.signal,

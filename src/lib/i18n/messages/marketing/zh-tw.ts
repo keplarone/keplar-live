@@ -207,7 +207,7 @@ const m: MarketingCatalog = {
       },
       "roblox-studio": {
         "name": "Roblox Studio 模式",
-        "line": "Roblox Studio 裡的共同建造者：地圖、介面、序列幀特效和 Luau 腳本，由 Claude Opus 5.5 驅動。",
+        "line": "Roblox Studio 裡的共同建造者：地圖、介面、序列幀特效和 Luau 腳本，由 Keplar's studio model 驅動。",
         "note": "桌面應用程式，Lite 以上。"
       },
       "roblox-cloud": {

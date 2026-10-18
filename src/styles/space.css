@@ -575,45 +575,7 @@
 .sp-sky__live { opacity: 0; transition: opacity 1.4s var(--space-ease-out); }
 .sp-sky__live[data-on] { opacity: 1; }
 @keyframes sp-sky-in { from { opacity: 0; } to { opacity: 1; } }
-.sp-sky__still[data-sky="clear"] { background-image: url("/sky/clear-day.webp"); background-image: image-set(url("/sky/clear-day.avif") type("image/avif"), url("/sky/clear-day.webp") type("image/webp")); }
-:root[data-theme="dark"] .sp-sky__still[data-sky="clear"] { background-image: url("/sky/clear-night.webp"); background-image: image-set(url("/sky/clear-night.avif") type("image/avif"), url("/sky/clear-night.webp") type("image/webp")); }
-.sp-sky__still[data-sky="partly-cloudy"] { background-image: url("/sky/partly-cloudy-day.webp"); background-image: image-set(url("/sky/partly-cloudy-day.avif") type("image/avif"), url("/sky/partly-cloudy-day.webp") type("image/webp")); }
-:root[data-theme="dark"] .sp-sky__still[data-sky="partly-cloudy"] { background-image: url("/sky/partly-cloudy-night.webp"); background-image: image-set(url("/sky/partly-cloudy-night.avif") type("image/avif"), url("/sky/partly-cloudy-night.webp") type("image/webp")); }
-.sp-sky__still[data-sky="cloudy"] { background-image: url("/sky/cloudy-day.webp"); background-image: image-set(url("/sky/cloudy-day.avif") type("image/avif"), url("/sky/cloudy-day.webp") type("image/webp")); }
-:root[data-theme="dark"] .sp-sky__still[data-sky="cloudy"] { background-image: url("/sky/cloudy-night.webp"); background-image: image-set(url("/sky/cloudy-night.avif") type("image/avif"), url("/sky/cloudy-night.webp") type("image/webp")); }
-.sp-sky__still[data-sky="overcast"] { background-image: url("/sky/overcast-day.webp"); background-image: image-set(url("/sky/overcast-day.avif") type("image/avif"), url("/sky/overcast-day.webp") type("image/webp")); }
-:root[data-theme="dark"] .sp-sky__still[data-sky="overcast"] { background-image: url("/sky/overcast-night.webp"); background-image: image-set(url("/sky/overcast-night.avif") type("image/avif"), url("/sky/overcast-night.webp") type("image/webp")); }
-.sp-sky__still[data-sky="fog"] { background-image: url("/sky/fog-day.webp"); background-image: image-set(url("/sky/fog-day.avif") type("image/avif"), url("/sky/fog-day.webp") type("image/webp")); }
-:root[data-theme="dark"] .sp-sky__still[data-sky="fog"] { background-image: url("/sky/fog-night.webp"); background-image: image-set(url("/sky/fog-night.avif") type("image/avif"), url("/sky/fog-night.webp") type("image/webp")); }
-.sp-sky__still[data-sky="drizzle"] { background-image: url("/sky/drizzle-day.webp"); background-image: image-set(url("/sky/drizzle-day.avif") type("image/avif"), url("/sky/drizzle-day.webp") type("image/webp")); }
-:root[data-theme="dark"] .sp-sky__still[data-sky="drizzle"] { background-image: url("/sky/drizzle-night.webp"); background-image: image-set(url("/sky/drizzle-night.avif") type("image/avif"), url("/sky/drizzle-night.webp") type("image/webp")); }
-.sp-sky__still[data-sky="rain"] { background-image: url("/sky/rain-day.webp"); background-image: image-set(url("/sky/rain-day.avif") type("image/avif"), url("/sky/rain-day.webp") type("image/webp")); }
-:root[data-theme="dark"] .sp-sky__still[data-sky="rain"] { background-image: url("/sky/rain-night.webp"); background-image: image-set(url("/sky/rain-night.avif") type("image/avif"), url("/sky/rain-night.webp") type("image/webp")); }
-.sp-sky__still[data-sky="thunderstorm"] { background-image: url("/sky/thunderstorm-day.webp"); background-image: image-set(url("/sky/thunderstorm-day.avif") type("image/avif"), url("/sky/thunderstorm-day.webp") type("image/webp")); }
-:root[data-theme="dark"] .sp-sky__still[data-sky="thunderstorm"] { background-image: url("/sky/thunderstorm-night.webp"); background-image: image-set(url("/sky/thunderstorm-night.avif") type("image/avif"), url("/sky/thunderstorm-night.webp") type("image/webp")); }
-.sp-sky__still[data-sky="snow"] { background-image: url("/sky/snow-day.webp"); background-image: image-set(url("/sky/snow-day.avif") type("image/avif"), url("/sky/snow-day.webp") type("image/webp")); }
-:root[data-theme="dark"] .sp-sky__still[data-sky="snow"] { background-image: url("/sky/snow-night.webp"); background-image: image-set(url("/sky/snow-night.avif") type("image/avif"), url("/sky/snow-night.webp") type("image/webp")); }
-/* Phones: the portrait still, never the live canvas (WeatherSky doesn't start it there). */
-@media (max-width: 640px) {
-  .sp-sky__still[data-sky="clear"] { background-image: url("/sky/clear-day-sm.webp"); background-image: image-set(url("/sky/clear-day-sm.avif") type("image/avif"), url("/sky/clear-day-sm.webp") type("image/webp")); }
-  :root[data-theme="dark"] .sp-sky__still[data-sky="clear"] { background-image: url("/sky/clear-night-sm.webp"); background-image: image-set(url("/sky/clear-night-sm.avif") type("image/avif"), url("/sky/clear-night-sm.webp") type("image/webp")); }
-  .sp-sky__still[data-sky="partly-cloudy"] { background-image: url("/sky/partly-cloudy-day-sm.webp"); background-image: image-set(url("/sky/partly-cloudy-day-sm.avif") type("image/avif"), url("/sky/partly-cloudy-day-sm.webp") type("image/webp")); }
-  :root[data-theme="dark"] .sp-sky__still[data-sky="partly-cloudy"] { background-image: url("/sky/partly-cloudy-night-sm.webp"); background-image: image-set(url("/sky/partly-cloudy-night-sm.avif") type("image/avif"), url("/sky/partly-cloudy-night-sm.webp") type("image/webp")); }
-  .sp-sky__still[data-sky="cloudy"] { background-image: url("/sky/cloudy-day-sm.webp"); background-image: image-set(url("/sky/cloudy-day-sm.avif") type("image/avif"), url("/sky/cloudy-day-sm.webp") type("image/webp")); }
-  :root[data-theme="dark"] .sp-sky__still[data-sky="cloudy"] { background-image: url("/sky/cloudy-night-sm.webp"); background-image: image-set(url("/sky/cloudy-night-sm.avif") type("image/avif"), url("/sky/cloudy-night-sm.webp") type("image/webp")); }
-  .sp-sky__still[data-sky="overcast"] { background-image: url("/sky/overcast-day-sm.webp"); background-image: image-set(url("/sky/overcast-day-sm.avif") type("image/avif"), url("/sky/overcast-day-sm.webp") type("image/webp")); }
-  :root[data-theme="dark"] .sp-sky__still[data-sky="overcast"] { background-image: url("/sky/overcast-night-sm.webp"); background-image: image-set(url("/sky/overcast-night-sm.avif") type("image/avif"), url("/sky/overcast-night-sm.webp") type("image/webp")); }
-  .sp-sky__still[data-sky="fog"] { background-image: url("/sky/fog-day-sm.webp"); background-image: image-set(url("/sky/fog-day-sm.avif") type("image/avif"), url("/sky/fog-day-sm.webp") type("image/webp")); }
-  :root[data-theme="dark"] .sp-sky__still[data-sky="fog"] { background-image: url("/sky/fog-night-sm.webp"); background-image: image-set(url("/sky/fog-night-sm.avif") type("image/avif"), url("/sky/fog-night-sm.webp") type("image/webp")); }
-  .sp-sky__still[data-sky="drizzle"] { background-image: url("/sky/drizzle-day-sm.webp"); background-image: image-set(url("/sky/drizzle-day-sm.avif") type("image/avif"), url("/sky/drizzle-day-sm.webp") type("image/webp")); }
-  :root[data-theme="dark"] .sp-sky__still[data-sky="drizzle"] { background-image: url("/sky/drizzle-night-sm.webp"); background-image: image-set(url("/sky/drizzle-night-sm.avif") type("image/avif"), url("/sky/drizzle-night-sm.webp") type("image/webp")); }
-  .sp-sky__still[data-sky="rain"] { background-image: url("/sky/rain-day-sm.webp"); background-image: image-set(url("/sky/rain-day-sm.avif") type("image/avif"), url("/sky/rain-day-sm.webp") type("image/webp")); }
-  :root[data-theme="dark"] .sp-sky__still[data-sky="rain"] { background-image: url("/sky/rain-night-sm.webp"); background-image: image-set(url("/sky/rain-night-sm.avif") type("image/avif"), url("/sky/rain-night-sm.webp") type("image/webp")); }
-  .sp-sky__still[data-sky="thunderstorm"] { background-image: url("/sky/thunderstorm-day-sm.webp"); background-image: image-set(url("/sky/thunderstorm-day-sm.avif") type("image/avif"), url("/sky/thunderstorm-day-sm.webp") type("image/webp")); }
-  :root[data-theme="dark"] .sp-sky__still[data-sky="thunderstorm"] { background-image: url("/sky/thunderstorm-night-sm.webp"); background-image: image-set(url("/sky/thunderstorm-night-sm.avif") type("image/avif"), url("/sky/thunderstorm-night-sm.webp") type("image/webp")); }
-  .sp-sky__still[data-sky="snow"] { background-image: url("/sky/snow-day-sm.webp"); background-image: image-set(url("/sky/snow-day-sm.avif") type("image/avif"), url("/sky/snow-day-sm.webp") type("image/webp")); }
-  :root[data-theme="dark"] .sp-sky__still[data-sky="snow"] { background-image: url("/sky/snow-night-sm.webp"); background-image: image-set(url("/sky/snow-night-sm.avif") type("image/avif"), url("/sky/snow-night-sm.webp") type("image/webp")); }
-}
+/* Weather stills were removed with the sky backdrop. The gradient above is unused unless a .sp-sky node is mounted. */
 /* Text over the sky keeps WCAG AA: on pages that carry it (and only there) the quieter inks step darker in Light and lighter in
    Dark, and darker again under the gray rain and storm skies. */
 :root[data-theme="light"] body:has(.sp-sky) { --c-ink-2: #2f3440; --c-ink-3: #3b414c; }

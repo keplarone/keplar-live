@@ -207,7 +207,7 @@ const m: MarketingCatalog = {
       },
       "roblox-studio": {
         "name": "Roblox Studio modu",
-        "line": "Roblox Studio içinde bir yardımcı yapımcı: haritalar, arayüz, flipbook efektleri ve Luau betikleri, Claude Opus 5.5 ile.",
+        "line": "Roblox Studio içinde bir yardımcı yapımcı: haritalar, arayüz, flipbook efektleri ve Luau betikleri, Keplar's studio model ile.",
         "note": "Masaüstü uygulaması, Lite ve üzeri."
       },
       "roblox-cloud": {

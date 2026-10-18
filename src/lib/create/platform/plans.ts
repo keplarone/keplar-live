@@ -34,7 +34,7 @@ export type Entitlements = {
 };
 
 export const ENTITLEMENTS: Record<PlanId, Entitlements> = {
-  free: { plan: "free", label: brand.plans.free, monthlyUnits: units("free"), projects: 1, freeSubdomain: true, customDomains: DOMAIN_LIMITS.free, images: true, premiumImages: false, video: false, maxVideoSeconds: 0, commerce: false, agents: 0, autoSendAllowed: false, rpm: 10 },
+  free: { plan: "free", label: brand.plans.free, monthlyUnits: units("free"), projects: 1, freeSubdomain: true, customDomains: DOMAIN_LIMITS.free, images: false, premiumImages: false, video: false, maxVideoSeconds: 0, commerce: false, agents: 0, autoSendAllowed: false, rpm: 10 },
   // Lite: the everyday paid step. Premium chat models, Study, a small site; no images, Slides, Deep Research, video, commerce, agents, connected apps or custom domains (those start at Plus).
   lite: { plan: "lite", label: brand.plans.lite, monthlyUnits: units("lite"), projects: 2, freeSubdomain: true, customDomains: DOMAIN_LIMITS.lite, images: false, premiumImages: false, video: false, maxVideoSeconds: 0, commerce: false, agents: 0, autoSendAllowed: false, rpm: 20 },
   plus: { plan: "plus", label: brand.plans.plus, monthlyUnits: units("plus"), projects: 5, freeSubdomain: true, customDomains: DOMAIN_LIMITS.plus, images: true, premiumImages: true, video: false, maxVideoSeconds: 0, commerce: true, agents: 3, autoSendAllowed: true, rpm: 30 },

@@ -46,4 +46,9 @@ test("Manage in Ask's Tools bar opens Connected apps in Keplar One, not the Busi
 test("coming back from a sign-in opens the right place: MCP results to Connected apps, Business connectors, banks and Stripe to Business", () => {
   for (const r of ["ok", "denied", "state", "failed"]) assert.equal(oauthReturnView(r), "apps", r);
   for (const r of ["stripe", "conn_ok_gmail", "conn_no", "bank_done"]) assert.equal(oauthReturnView(r), "business", r);
+  assert.match(app, /openBusinessWorkspace\("replace"\)/);
+  const site = readFileSync("src/lib/business-site.ts", "utf8");
+  assert.match(site, /data-desktop"\) === "1"\) return false/);
+  assert.match(site, /window\.location\.replace\(url\)/);
+  assert.match(site, /businessUrl\("\/work"\)/);
 });

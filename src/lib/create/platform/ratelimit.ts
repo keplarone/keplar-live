@@ -150,7 +150,8 @@ export function clientIpOf(req: Request) {
 }
 
 /** Per-IP and per-account limit for one bucket. */
-export async function limitRequest(req: Request, bucket: string, opts: { perIp: number; perAccount?: number; accountId?: string | null; windowSec?: number }) {
-  await rateLimit(`ip:${clientIpOf(req)}:${bucket}`, opts.perIp, opts.windowSec);
-  if (opts.accountId && opts.perAccount) await rateLimit(`acct:${opts.accountId}:${bucket}`, opts.perAccount, opts.windowSec);
+export async function limitRequest(req: Request, bucket: string, opts: { perIp: number; perAccount?: number; accountId?: string | null; windowSec?: number; shared?: boolean }) {
+  const shared = opts.shared ? { shared: true as const } : {};
+  await rateLimit(`ip:${clientIpOf(req)}:${bucket}`, opts.perIp, opts.windowSec, shared);
+  if (opts.accountId && opts.perAccount) await rateLimit(`acct:${opts.accountId}:${bucket}`, opts.perAccount, opts.windowSec, shared);
 }

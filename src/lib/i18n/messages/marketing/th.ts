@@ -207,7 +207,7 @@ const m: MarketingCatalog = {
       },
       "roblox-studio": {
         "name": "โหมด Roblox Studio",
-        "line": "ผู้ช่วยสร้างใน Roblox Studio: แผนที่ UI เอฟเฟกต์ flipbook และสคริปต์ Luau ด้วย Claude Opus 5.5",
+        "line": "ผู้ช่วยสร้างใน Roblox Studio: แผนที่ UI เอฟเฟกต์ flipbook และสคริปต์ Luau ด้วย Keplar's studio model",
         "note": "แอปเดสก์ท็อป ตั้งแต่ Lite ขึ้นไป"
       },
       "roblox-cloud": {

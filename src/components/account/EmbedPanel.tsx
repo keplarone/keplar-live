@@ -104,7 +104,7 @@ export function EmbedPanel() {
                   <option value="plan">Your plan&apos;s models (uses your credits)</option>
                 </select>
               </>
-            ) : <p className={s.note}>Free plan widgets always use OpenRouter :free models.</p>}
+            ) : <p className={s.note}>Free plan widgets always use free models.</p>}
             <label className={s.fieldLabel} htmlFor="emb-origins">Allowed origins (optional)</label>
             <textarea id="emb-origins" className={s.input} style={{ height: 72, padding: "10px 12px" }} value={origins} placeholder={"https://example.com\nhttps://docs.example.com"} onChange={(e) => setOrigins(e.target.value)} />
             <p className={s.note}>Leave empty to allow any site (still rate-limited). One origin per line.</p>

@@ -207,7 +207,7 @@ const m: MarketingCatalog = {
       },
       "roblox-studio": {
         "name": "Mode Roblox Studio",
-        "line": "Un co-constructeur dans Roblox Studio : cartes, interface, effets flipbook et scripts Luau, avec Claude Opus 5.5.",
+        "line": "Un co-constructeur dans Roblox Studio : cartes, interface, effets flipbook et scripts Luau, avec Keplar's studio model.",
         "note": "Application de bureau, à partir de Lite."
       },
       "roblox-cloud": {

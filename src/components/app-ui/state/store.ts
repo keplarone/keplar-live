@@ -77,6 +77,15 @@ export function loadScope(scope: Scope): Loaded {
   };
 }
 
+/** Media bytes never go to the server. Keep the name and size so a saved chat still lists what was attached. */
+export function messagesForSave(messages: Message[]): Message[] {
+  return messages.map((m) =>
+    m.role === "user" && m.media?.length
+      ? { ...m, media: m.media.map((x) => ({ id: x.id, kind: x.kind, name: x.name, bytes: x.bytes, durationSec: x.durationSec, frames: x.frames })) }
+      : m,
+  );
+}
+
 export function persist(state: AppState) {
   const key = storageKey(state.scope);
   if (!key) return; // pending: nothing is known to belong anywhere yet
@@ -277,9 +286,20 @@ export function reducer(state: AppState, a: Action): AppState {
       const merged = state.threads.map((t) => { const r = byId.get(t.id); return r && r.updatedAt > t.updatedAt && t.messages.length === 0 ? { ...t, title: r.title, updatedAt: r.updatedAt } : t; });
       return added.length ? { ...state, threads: [...merged, ...added].sort((x, y) => y.updatedAt - x.updatedAt) } : { ...state, threads: merged };
     }
-    case "hydrate":
+    case "hydrate": {
       if (a.scope !== state.scope) return state;
-      return { ...state, threads: state.threads.map((t) => (t.id === a.id ? { ...t, messages: a.messages.map(settleImage).map(settleStudio), remote: false, ...(a.specialistId !== undefined ? { specialistId: a.specialistId ?? undefined } : {}) } : t)) };
+      return {
+        ...state,
+        threads: state.threads.map((t) => {
+          if (t.id !== a.id) return t;
+          const remote = a.messages.map(settleImage).map(settleStudio);
+          const remoteIds = new Set(remote.map((m) => m.id));
+          // A message sent while this chat was still loading is not in the server copy. Keep it.
+          const localOnly = t.messages.filter((m) => !remoteIds.has(m.id));
+          return { ...t, messages: [...remote, ...localOnly], remote: false, ...(a.specialistId !== undefined ? { specialistId: a.specialistId ?? undefined } : {}) };
+        }),
+      };
+    }
     case "forget-remote":
       return { ...state, threads: state.threads.filter((t) => !t.remote) };
     case "view":

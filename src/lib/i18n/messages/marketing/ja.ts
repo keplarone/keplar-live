@@ -207,7 +207,7 @@ const m: MarketingCatalog = {
       },
       "roblox-studio": {
         "name": "Roblox Studio モード",
-        "line": "Roblox Studio の中の共同ビルダー。マップ、UI、フリップブック効果、Luau スクリプトを Claude Opus 5.5 で。",
+        "line": "Roblox Studio の中の共同ビルダー。マップ、UI、フリップブック効果、Luau スクリプトを Keplar's studio model で。",
         "note": "デスクトップアプリ、Lite 以上。"
       },
       "roblox-cloud": {

@@ -141,7 +141,8 @@ export type ComposerModes = {
   liveDepth?: LiveDepth;
 };
 
-export type Attachment = { name: string; size: number; type: string };
+/** `id` is a client key so two files with the same name and size keep separate extracted text. The ask route does not store it. */
+export type Attachment = { id?: string; name: string; size: number; type: string };
 
 /**
  * One connected-app (MCP) tool use in a chat turn, shown to the user as a safe visible state ("Using DeepWiki: read_wiki_structure").

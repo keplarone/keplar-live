@@ -207,7 +207,7 @@ const m: MarketingCatalog = {
       },
       "roblox-studio": {
         "name": "Roblox Studio 모드",
-        "line": "Roblox Studio 안의 공동 빌더: 맵, UI, 플립북 이펙트, Luau 스크립트를 Claude Opus 5.5로.",
+        "line": "Roblox Studio 안의 공동 빌더: 맵, UI, 플립북 이펙트, Luau 스크립트를 Keplar's studio model로.",
         "note": "데스크톱 앱, Lite 이상."
       },
       "roblox-cloud": {

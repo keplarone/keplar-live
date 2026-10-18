@@ -207,7 +207,7 @@ const m: MarketingCatalog = {
       },
       "roblox-studio": {
         "name": "Hali ya Roblox Studio",
-        "line": "Mjenzi mwenzi ndani ya Roblox Studio: ramani, UI, madoido ya flipbook na skripti za Luau, kwa Claude Opus 5.5.",
+        "line": "Mjenzi mwenzi ndani ya Roblox Studio: ramani, UI, madoido ya flipbook na skripti za Luau, kwa Keplar's studio model.",
         "note": "Programu ya kompyuta, Lite na zaidi."
       },
       "roblox-cloud": {

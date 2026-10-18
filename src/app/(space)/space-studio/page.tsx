@@ -9,6 +9,7 @@ export const metadata = {
     "/space-studio",
     "Space Studio by Keplar: AI for Roblox Studio and Blender",
     "Space Studio is Keplar's desktop app for Roblox Studio and Blender development, with four AI models: Orbit 3.8, Nebula 4.2, Solar 5.4 and Nova 5.5.",
+    { noindex: true },
   ),
   icons: { icon: "/icons/space-studio.png", apple: "/icons/space-studio.png" },
 };

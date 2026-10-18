@@ -45,4 +45,4 @@ export const API_ASK_LIMITS = { questionChars: 8_000, historyTurns: 10, historyT
 export const KEY_EXPIRY_CHOICES = [30, 90, 365] as const;
 
 export const API_STATEMENT =
-  "The API is in beta. Free keys are limited and use OpenRouter :free models only. Paid plans (Lite and above) use your plan's models and credits. An API answer is metered exactly like an app answer and counts against the same credits, rolling limits and spend caps. Per key, on top of that: requests per minute and per day, and a limit on active keys.";
+  "The API is in beta. Free keys are limited and use free models only. Paid plans (Lite and above) use your plan's models and credits. An API answer is metered exactly like an app answer and counts against the same credits, rolling limits and spend caps. Per key, on top of that: requests per minute and per day, and a limit on active keys.";

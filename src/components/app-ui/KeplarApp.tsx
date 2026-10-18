@@ -18,7 +18,7 @@ import { IconArrowDown, IconMemory, IconPlus } from "./icons";
 import { KeplarTurn } from "./KeplarTurn";
 import { ChatToolsBar } from "./ChatTools";
 import { ThreadBar, EditMessage } from "./ThreadBar";
-import { docsFor } from "./doc-client";
+import { docsFor, docsForTurn } from "./doc-client";
 import { SearchDialog } from "./SearchDialog";
 import { Sidebar } from "./Sidebar";
 import { initialState, loadScope, persist, reducer, remaining, settle, uid } from "./state/store";
@@ -54,7 +54,8 @@ import { oauthReturnView, pathForView, viewForPath } from "./app-paths";
 import { AppOnboarding } from "@/components/onboarding/AppOnboarding";
 import { DeploymentsView } from "./DeploymentsView";
 import { KeplarStudio } from "./studio-mode/workspace/KeplarStudio";
-import { BUSINESS_URL, BUSINESS_VIEWS } from "@/lib/business-site";
+import { BUSINESS_VIEWS, openBusinessWorkspace } from "@/lib/business-site";
+import { fetchCompute } from "@/components/billing/usePlan";
 import { businessProminent, examplesFor, readUseFor, type UseFor } from "./use-for";
 import type { Ledger } from "./state/types";
 import { formatDailyReset } from "@/lib/usage/format";
@@ -393,13 +394,12 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   }, [state.view]);
 
   /* Usage meter: one server ledger for /app, Create and Business. */
-  const syncMeter = useCallback(async () => {
+  const syncMeter = useCallback(async (fresh = false) => {
     const seq = ++meterSeq.current;
     try {
-      const res = await fetch("/api/compute", { cache: "no-store" });
+      const m = (await fetchCompute(fresh)) as { used: number; total: number | null; plan: Ledger["plan"]; resetsAt: string | null; paused: boolean; signedIn: boolean; admin?: boolean; account?: AccountInfo | null; windows: Ledger["windows"]; cooldown?: { until: string; message: string } | null; breaker?: { notice: string | null }; daily?: Ledger["daily"]; extension?: Ledger["extension"] } | null;
       if (seq !== meterSeq.current) return true; // a newer sync applies the count
-      if (!res.ok) return false;
-      const m = (await res.json()) as { used: number; total: number | null; plan: Ledger["plan"]; resetsAt: string | null; paused: boolean; signedIn: boolean; admin?: boolean; account?: AccountInfo | null; windows: Ledger["windows"]; cooldown?: { until: string; message: string } | null; breaker?: { notice: string | null }; daily?: Ledger["daily"]; extension?: Ledger["extension"] };
+      if (!m) return false;
       if (seq !== meterSeq.current) return true; // a newer answer is on its way: never apply an older identity
       // Whose chats are these? Signed in as one account, or anonymous on this device. Anything else is replaced, not merged.
       if (!m.signedIn || m.account?.id) {
@@ -425,11 +425,11 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
       return false;
     }
   }, []);
-  useEffect(() => { identityRef.current = () => void syncMeter(); }, [syncMeter]);
+  useEffect(() => { identityRef.current = () => void syncMeter(true); }, [syncMeter]);
 
   useEffect(() => {
     void syncMeter();
-    const onFocus = () => void syncMeter();
+    const onFocus = () => void syncMeter(true);
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
   }, [syncMeter]);
@@ -477,14 +477,16 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     }
     const media = user.media?.length ? toMediaInput(user.media) : undefined;
     // Documents are read for one message and kept in this tab only (the chat keeps the file name): after a reload, say so instead of answering without them.
-    const docs = docsFor(user.attachments);
-    if (user.attachments.length && (docs?.length ?? 0) < user.attachments.length) {
+    const currentDocs = docsFor(user.attachments);
+    if (user.attachments.length && (currentDocs?.length ?? 0) < user.attachments.length) {
       controllers.current.delete(keplar.id);
       dispatch({ type: "fail", threadId, keplarId: keplar.id, error: { kind: "server", message: "The attached file isn't kept after a reload. Attach it again in a new message.", retryable: false } });
       return;
     }
     // The saved project this chat sits in (the server checks it belongs to this account and applies the Free privacy gate before using it).
     const existingThread = st.threads.find((t) => t.id === threadId);
+    const priorDocs = (existingThread?.messages ?? []).filter((m): m is UserMessage => m.role === "user" && m.id !== user.id).flatMap((m) => m.attachments);
+    const docs = docsForTurn(priorDocs, user.attachments);
     const threadProjectId = existingThread ? existingThread.projectId : st.projectFilter;
     const req: KeplarRequest = {
       prompt: user.text,
@@ -592,14 +594,14 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
         dispatch({ type: "fail", threadId, keplarId: keplar.id, error: { kind: "network", message: e.message, retryable: true } });
       }
       else if (e instanceof StreamHttpError) {
-        if (e.status === 409) void syncMeter(); // signed in as someone else in another tab: reload who is on screen
+        if (e.status === 409) void syncMeter(true); // signed in as someone else in another tab: reload who is on screen
         dispatch({ type: "fail", threadId, keplarId: keplar.id, error: { kind: "server", message: e.message, retryable: e.status >= 500 || e.status === 429, upgrade: (e.status === 429 || e.status === 413) && stateRef.current.ledger.plan === "free" } });
       } else dispatch({ type: "fail", threadId, keplarId: keplar.id, error: { kind: "server", message: "Something went wrong while reading the answer.", retryable: true } });
     } finally {
       controllers.current.delete(keplar.id);
       // Offline: the question never reached Keplar and the real count can't be fetched either, so the one taken on send goes back
       // (it used to stay off: "49 of 50 left" next to "Couldn't reach Keplar"). Back online, the next sync shows the server's number.
-      void syncMeter().then((ok) => {
+      void syncMeter(true).then((ok) => {
         const L = stateRef.current.ledger;
         if (!ok && took && unreached && L.daily) dispatch({ type: "ledger", ledger: { ...L, daily: giveBackOne(L.daily) } });
       });
@@ -842,7 +844,14 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     else applyView();
   }, [applyView]);
   const goView = useCallback((view: View, projectFilter?: string | null) => {
-    if (BUSINESS_VIEWS.has(view)) { window.location.assign(BUSINESS_URL); return; }
+    // Website: Business, Agents and Approvals are the workspace. Desktop stays in this window.
+    if (BUSINESS_VIEWS.has(view)) {
+      if (openBusinessWorkspace()) return;
+      tabFocusClear.current();
+      switchView(view, projectFilter ?? null);
+      setDrawerOpen(false);
+      return;
+    }
     tabFocusClear.current();
     switchView(view, projectFilter ?? null);
     setDrawerOpen(false);
@@ -853,11 +862,17 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     }
   }, [switchView]);
 
-  /* Back from an app's OAuth sign-in (the callback redirects to /app?mcp_oauth=<result>): keep only the result word, clean the URL. Connected apps opens on /app/apps (Stripe: /app/business). */
+  /* Back from an app's OAuth sign-in (the callback redirects to /app?mcp_oauth=<result>): keep only the result word, clean the URL. Connected apps opens on /app/apps. Stripe, connectors and banks leave for the Business workspace. */
   useEffect(() => {
     if (!oauthBack) return;
-    const path = pathForView(oauthReturnView(oauthBack));
-    window.history.replaceState(null, "", path);
+    const view = oauthReturnView(oauthBack);
+    // Website leaves for the workspace. Desktop keeps the embedded screen and a URL that stays on keplar.one.
+    if (BUSINESS_VIEWS.has(view)) {
+      if (openBusinessWorkspace("replace")) return;
+      window.history.replaceState(null, "", pathForView("thread"));
+      return;
+    }
+    window.history.replaceState(null, "", pathForView(view));
   }, [oauthBack]);
 
   /* Browser back/forward: the path is the source of truth for which tab is open. */
@@ -1048,8 +1063,8 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
 
   return (
     <div ref={rootRef} className={s.app} data-product="" data-own-search="" data-collapsed={collapsed || undefined} data-drawer={drawerOpen || undefined} data-app-ready={state.scope === "pending" ? undefined : ""}>
-      <ExtensionReturn onChanged={() => void syncMeter()} />
-      <ReferralClaim signedIn={state.ledger.signedIn} onChanged={() => void syncMeter()} />
+      <ExtensionReturn onChanged={() => void syncMeter(true)} />
+      <ReferralClaim signedIn={state.ledger.signedIn} onChanged={() => void syncMeter(true)} />
       <ReferralNudge signedIn={state.ledger.signedIn} />
       <div ref={drawerRef} className={s.sideWrap} data-open={drawerOpen || undefined} onPointerEnter={() => warmViews(true)} onFocus={() => warmViews(true)}>
         <Sidebar
@@ -1206,7 +1221,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                         onPatch={(patch) => patchImage(thread!.id, m.id, patch)}
                         onFollowUp={(f) => imageFollowUp(m, f)}
                         onAskText={() => askAsText(m)}
-                        onSettled={() => void syncMeter()}
+                        onSettled={() => void syncMeter(true)}
                       />
                     ) : m.create ? (
                       <CreateTurn
@@ -1216,7 +1231,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                         ledger={state.ledger}
                         onPatch={(patch) => patchCreate(thread!.id, m.id, patch)}
                         onOpen={openCreateApp}
-                        onSettled={() => void syncMeter()}
+                        onSettled={() => void syncMeter(true)}
                       />
                     ) : m.workspace ? (
                       <WorkspaceTurn
@@ -1226,7 +1241,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                         ledger={state.ledger}
                         isLast={m.id === lastKeplar?.id}
                         onPatch={(patch) => patchWorkspace(thread!.id, m.id, patch)}
-                        onSettled={() => void syncMeter()}
+                        onSettled={() => void syncMeter(true)}
                         onOpenTab={openTab}
                         onAct={actFromCard}
                         onSeed={(text) => { composerRef.current?.setText(text); composerRef.current?.focus(); }}
@@ -1251,7 +1266,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                         ledger={state.ledger}
                         onPatch={(patch) => patchStudio(thread!.id, m.id, patch)}
                         onOpen={openStudio}
-                        onSettled={() => void syncMeter()}
+                        onSettled={() => void syncMeter(true)}
                         onAct={actFromCard}
                         sourceAnswer={m.studio.from ? (messages.find((x) => x.id === m.studio!.from) as KeplarMessage | undefined)?.answer?.markdown : undefined}
                       />
@@ -1270,7 +1285,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                           dispatch({ type: "upsell", threadId: thread!.id, keplarId: m.id, reason: null });
                         }}
                       />
-                      <AnswerTools message={m} user={messages.find((x): x is UserMessage => x.id === m.replyTo && x.role === "user")} />
+                      <AnswerTools message={m} signedIn={state.ledger.signedIn} user={messages.find((x): x is UserMessage => x.id === m.replyTo && x.role === "user")} />
                       {m.studio ? (
                         <StudioTurn
                           message={m}
@@ -1278,7 +1293,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                           ledger={state.ledger}
                           onPatch={(patch) => patchStudio(thread!.id, m.id, patch)}
                           onOpen={openStudio}
-                          onSettled={() => void syncMeter()}
+                          onSettled={() => void syncMeter(true)}
                         />
                       ) : null}
                       {m.agentFlow || (m.id === lastKeplar?.id && m.status === "done" && m.answer && (messages.find((x) => x.id === m.replyTo) as UserMessage | undefined)?.modes?.agent) ? (
@@ -1288,7 +1303,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                           ledger={state.ledger}
                           isLast={m.id === lastKeplar?.id}
                           onPatch={(patch) => patchAgentFlow(thread!.id, m.id, patch)}
-                          onSettled={() => void syncMeter()}
+                          onSettled={() => void syncMeter(true)}
                         />
                       ) : null}
                       </Fragment>
@@ -1321,7 +1336,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                 onSpecialist={(id) => dispatch({ type: "set-specialist", id })}
                 signedIn={state.ledger.signedIn}
               />
-              <UsageNotice cooldown={state.ledger.cooldown ?? null} breakerNotice={state.ledger.breakerNotice ?? null} onEnd={syncMeter} />
+              <UsageNotice cooldown={state.ledger.cooldown ?? null} breakerNotice={state.ledger.breakerNotice ?? null} onEnd={() => void syncMeter(true)} />
               <ChatToolsBar
                 show={state.ledger.synced && state.ledger.signedIn && state.ledger.plan !== "free"}
                 synced={state.ledger.synced}

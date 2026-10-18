@@ -11,13 +11,12 @@ const ROLE: Record<string, string> = { primary: "Panel", verifier: "Verifier", j
 const ctx = (n: number) => (n >= 1_000_000 ? `${(n / 1_000_000).toFixed(n % 1_000_000 ? 2 : 0).replace(/\.?0+$/, "")}M` : `${Math.round(n / 1000)}k`);
 const row = (m: LiveSeed) => [
   m.name.replace(/ \(free\)$/, ""),
-  m.provider,
   ROLE[m.role] ?? m.role,
   m.openWeights ? "Open weights" : "Hosted only",
   ctx(m.contextWindow),
   m.input.includes("image") ? "Yes" : "No",
 ];
-const head = ["Model", "Provider", "Used as", "Weights", "Context (tokens)", "Reads images"];
+const head = ["Model", "Used as", "Weights", "Context (tokens)", "Reads images"];
 
 export const modelsPage: EditorialPage = {
   slug: "models",
@@ -37,7 +36,7 @@ export const modelsPage: EditorialPage = {
       id: "free",
       h2: "Free plan: free open models only",
       p: [
-        "Free uses OpenRouter models that cost nothing to call. If one is busy or rate limited, Keplar tries another free model; it never falls back to a paid one. Free answers can be slower when free models are busy, and the hosts of free models may log prompts, so do not paste anything you would not want logged. Free allows up to 50 questions a day (fair use).",
+        "Free uses models that cost nothing to call. If one is busy or rate limited, Keplar tries another free model; it never falls back to a paid one. Free answers can be slower when free models are busy, and the hosts of free models may log prompts, so do not paste anything you would not want logged. Free allows up to 50 questions a day (fair use).",
       ],
       table: { caption: "Free-plan roster", head, rows: FREE_LIVE_SEEDS.map((m) => row(m)) },
     },
@@ -66,7 +65,7 @@ export const modelsPage: EditorialPage = {
       bullets: [
         "It does not rank the models or claim one is better. Keplar has not published its own benchmark of them.",
         "It lists the roster, not what each question used. Open Models consulted under any answer to see that.",
-        "Premium providers such as Anthropic's Claude models are not listed because they are not in the current live roster.",
+        "Some premium models are not listed because they are not in the current live roster.",
       ],
     },
   ],

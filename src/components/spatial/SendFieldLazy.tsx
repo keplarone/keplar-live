@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ComponentType } from "react";
+import { THREE_D_ENABLED } from "@/lib/fx/three-d";
 import { SEND_EVENT, type SendDetail } from "@/lib/spatial/events";
 
 /**
@@ -10,10 +11,11 @@ export function SendFieldLazy() {
   const [loaded, setLoaded] = useState<{ C: ComponentType<{ replay?: SendDetail }>; replay?: SendDetail } | null>(null);
   const replay = useRef<SendDetail | undefined>(undefined);
   useEffect(() => {
+    if (!THREE_D_ENABLED) return;
     let started = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const load = () => {
-      if (started) return;
+      if (!THREE_D_ENABLED || started) return;
       started = true;
       clearTimeout(timer);
       window.removeEventListener("keydown", warm);

@@ -207,7 +207,7 @@ const m: MarketingCatalog = {
       },
       "roblox-studio": {
         "name": "Roblox Studio মোড",
-        "line": "Roblox Studio-র ভেতরে একজন সহ-নির্মাতা: ম্যাপ, UI, flipbook ইফেক্ট আর Luau স্ক্রিপ্ট, Claude Opus 5.5 দিয়ে।",
+        "line": "Roblox Studio-র ভেতরে একজন সহ-নির্মাতা: ম্যাপ, UI, flipbook ইফেক্ট আর Luau স্ক্রিপ্ট, Keplar's studio model দিয়ে।",
         "note": "ডেস্কটপ অ্যাপ, Lite ও তার উপরে।"
       },
       "roblox-cloud": {

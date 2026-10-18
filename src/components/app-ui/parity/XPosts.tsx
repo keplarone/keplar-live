@@ -21,14 +21,19 @@ function xAvailable(): Promise<boolean> {
 const when = (iso: string | null) => (iso ? new Date(iso).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "");
 
 /** Under an answer: what people are posting on X about it right now. Public posts, shown as-is and not checked by the panel. */
-export function XPostsTool({ question }: { question: string }) {
+export function XPostsTool({ question, signedIn }: { question: string; signedIn: boolean }) {
   const [on, setOn] = useState(false);
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState(() => xQueryFrom(question));
   const [busy, setBusy] = useState(false);
   const [posts, setPosts] = useState<XPost[] | null>(null);
   const [err, setErr] = useState("");
-  useEffect(() => { let off = false; void Promise.all([xAvailable(), familyOn()]).then(([v, fam]) => { if (!off) setOn(v && !fam); }); return () => { off = true; }; }, []);
+  useEffect(() => {
+    if (!signedIn) return;
+    let off = false;
+    void Promise.all([xAvailable(), familyOn()]).then(([v, fam]) => { if (!off) setOn(v && !fam); });
+    return () => { off = true; };
+  }, [signedIn]);
   if (!on) return null;
 
   const search = async (e?: React.FormEvent) => {

@@ -169,7 +169,7 @@ export async function POST(request: Request) {
   try {
     ws = await currentWorkspace(request, { allowAnonymous: true, team: true });
     assertSameAccount(request, ws.userId);
-    await limitRequest(request, "keplar", { perIp: 30, perAccount: ws.entitlements.rpm, accountId: ws.anonymous ? null : ws.id });
+    await limitRequest(request, "keplar", { perIp: 30, perAccount: ws.entitlements.rpm, accountId: ws.anonymous ? null : ws.id, shared: true });
   } catch (e) {
     return errorResponse(e);
   }

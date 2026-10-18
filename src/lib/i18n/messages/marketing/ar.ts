@@ -207,7 +207,7 @@ const m: MarketingCatalog = {
       },
       "roblox-studio": {
         "name": "وضع Roblox Studio",
-        "line": "شريك بناء داخل Roblox Studio: خرائط وواجهات وتأثيرات flipbook وسكربتات Luau، باستخدام Claude Opus 5.5.",
+        "line": "شريك بناء داخل Roblox Studio: خرائط وواجهات وتأثيرات flipbook وسكربتات Luau، باستخدام Keplar's studio model.",
         "note": "تطبيق سطح المكتب، من Lite فما فوق."
       },
       "roblox-cloud": {

@@ -108,7 +108,7 @@ export const landingPages: LandingPage[] = [
       limits,
     ],
     faq: [
-      { q: "Which models does Keplar use?", a: "A mix of open and premium models from providers such as OpenRouter, OpenAI and NVIDIA, depending on your plan and the question. Free uses free open models only." },
+      { q: "Which models does Keplar use?", a: "A mix of open and premium models, depending on your plan and the question. Free uses free open models only." },
       { q: "Can I choose the models myself?", a: "Not today. Keplar picks the models a question needs. You can choose how thorough it should be: Fastest, Balanced or Most thorough." },
       { q: "How is this different from a model-comparison site?", a: "Keplar also writes one answer from the replies and summarizes the disagreement, so you don't have to read every model's response." },
     ],
@@ -150,7 +150,7 @@ export const landingPages: LandingPage[] = [
     ],
     faq: [
       { q: "Is Keplar a replacement for ChatGPT?", a: "It's an alternative approach rather than a one-for-one replacement. Some features of other products, such as voice or custom assistants, are not part of Keplar today." },
-      { q: "Does Keplar use OpenAI models?", a: "Paid plans can include OpenAI models among others. Which models answer depends on your plan and the question." },
+      { q: "Can I see which models answered?", a: "Yes. Open Models consulted under an answer. Which models run depends on your plan and the question. Free uses free open models only." },
       { q: "How much does it cost?", a: "Free is $0. Lite is $20 a month, Plus is $45 a month and Pro is $99 a month. Business is custom." },
     ],
     related: ["/ai-answer-engine", "/compare-ai-models", "/compare", "/pricing"],
@@ -440,8 +440,8 @@ export const landingPages: LandingPage[] = [
   {
     slug: "roblox-studio-ai",
     path: "/roblox-studio-ai",
-    metaTitle: "Roblox Studio AI: build games with Claude inside Studio",
-    metaDescription: `The ${K} desktop app connects to Roblox Studio and builds with you on Claude Opus 5.5: maps, UI, flipbook effects and Luau scripts, plus overnight Roblox Cloud jobs.`,
+    metaTitle: "Roblox Studio AI: build games inside Studio",
+    metaDescription: `The ${K} desktop app connects to Roblox Studio and builds with you: maps, UI, flipbook effects and Luau scripts, plus overnight Roblox Cloud jobs.`,
     ogTitle: "An AI co-builder for Roblox Studio",
     label: "Keplar Studio · Roblox Studio",
     h1: "Build Roblox games with an AI inside Studio.",
@@ -465,8 +465,8 @@ export const landingPages: LandingPage[] = [
         p: ["Give it a goal, a credit budget and a time limit of up to 12 hours, then close your computer. It works on your game's scripts on Keplar's servers, checks every edit with Luau's own analyzer, and leaves a list of changes you review and apply in Studio, each as one Undo step. It only touches scripts and can't play-test, so test what it made before you publish."],
       },
       {
-        h2: "Always Claude Opus 5.5",
-        p: ["Studio mode and Roblox Cloud run on Claude Opus 5.5 only. If it can't be reached, the build pauses and tells you, instead of quietly switching to another model."],
+        h2: "One studio model",
+        p: ["Studio mode and Roblox Cloud run on one model only. If it can't be reached, the build pauses and tells you, instead of quietly switching to another model."],
       },
       {
         h2: "You play-test it",
@@ -490,7 +490,7 @@ export const landingPages: LandingPage[] = [
       { q: "Does it work in the browser?", a: "No. It needs the desktop app running on the same computer as Roblox Studio." },
       { q: "Can it upload images to my Roblox account?", a: "Yes, and it always asks first." },
       { q: "Can it keep working when Studio is closed?", a: "Yes, with Roblox Cloud: it edits your game's scripts on Keplar's servers within the budget and time limit you set, and you apply the changes in Studio later. It can't play-test while you're away." },
-      { q: "Which model does it use?", a: "Claude Opus 5.5, every time. If that model is unavailable the build pauses rather than switching." },
+      { q: "Which model does it use?", a: "One model, every time. If that model is unavailable the build pauses rather than switching." },
     ],
     related: ["/blender-ai", "/download", "/docs/studio/roblox-studio-mode", "/docs/studio/roblox-cloud", "/docs/studio/effects-and-textures", "/pricing"],
   },
