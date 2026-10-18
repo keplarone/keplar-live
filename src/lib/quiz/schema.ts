@@ -69,8 +69,8 @@ function asQuestion(v: unknown, n: number): QuizQuestion | null {
   const rawAnswer = clean(typeof o.answer === "string" ? o.answer : typeof o.correct === "string" ? o.correct : "", 400);
   let answer = resolveChoice(rawAnswer, options);
   if (!answer && type === "true_false") {
-    if (/^t|true|yes/i.test(rawAnswer)) answer = options.find((x) => /^t/i.test(x)) ?? "True";
-    else if (/^f|false|no/i.test(rawAnswer)) answer = options.find((x) => /^f/i.test(x)) ?? "False";
+    if (/^(?:t|true|yes)$/i.test(rawAnswer)) answer = options.find((x) => /^t/i.test(x)) ?? "True";
+    else if (/^(?:f|false|no)$/i.test(rawAnswer)) answer = options.find((x) => /^f/i.test(x)) ?? "False";
   }
   if (!answer) return null;
   const q: QuizQuestion = { id, type, prompt, options, answer, explanation, ...(hint ? { hint } : {}) };

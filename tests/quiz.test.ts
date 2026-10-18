@@ -79,6 +79,14 @@ test("a valid quiz fence parses, a letter answer maps to its option, and bad JSO
   }));
   assert.equal(lettered?.questions[0]?.answer, "A person who starts a business and takes on financial risk");
 
+  const tf = (answer: string) => parseQuiz(JSON.stringify({
+    title: "T",
+    kind: "quiz",
+    questions: [{ id: "q1", type: "true_false", prompt: "An entrepreneur takes on financial risk.", answer, explanation: "The guide defines an entrepreneur as someone who takes on financial risk." }],
+  }));
+  assert.equal(tf("yes")?.questions[0]?.answer, "True");
+  assert.equal(tf("not true"), null);
+
   assert.equal(parseQuiz("not json at all"), null);
   assert.equal(parseQuiz('{"title":"T","questions":[{"type":"multiple_choice","prompt":"?"}]}'), null);
 });
