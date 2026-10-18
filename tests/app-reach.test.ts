@@ -18,11 +18,9 @@ test("Connected apps is an app view with its own /app path, rendered by the shel
   }
 });
 
-test("the sidebar's More lists Connected apps (not the removed Browser or Wants); search finds it too", () => {
-  const block = side.slice(side.indexOf("const secondary"), side.indexOf("const LOW_AT"));
-  const views = [...block.matchAll(/view: "([a-z]+)"/g)].map((m) => m[1]);
-  assert.ok(views.includes("apps"));
-  for (const v of ["browser", "wants"]) assert.ok(!views.includes(v), v);
+test("Connected apps is not a sidebar row; search still opens it, and Browser and Wants stay gone", () => {
+  assert.doesNotMatch(side, /const secondary|data-more|data-nav="apps"|Connected apps/);
+  assert.doesNotMatch(side, /data-nav="(?:browser|wants)"/);
   const search = readFileSync("src/components/app-ui/SearchDialog.tsx", "utf8");
   assert.match(search, /onView\("apps"\)/);
   assert.doesNotMatch(search, /onView\("(browser|wants)"\)/);
