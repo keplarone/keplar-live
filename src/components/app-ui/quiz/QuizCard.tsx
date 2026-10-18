@@ -10,6 +10,22 @@ import s from "./QuizCard.module.css";
 
 const empty = (): QuizProgress => ({ index: 0, picks: {}, done: false });
 
+/** Letter of a multiple-choice answer, or the expected phrase for a short answer. */
+function answerLead(q: QuizQuestion): string {
+  if (q.options?.length) {
+    const i = q.options.indexOf(q.answer);
+    if (i >= 0) return String.fromCharCode(65 + i);
+  }
+  return q.answer;
+}
+
+/** Correct keeps the source sentence. A miss names the key, then the same sentence. */
+function feedbackBody(q: QuizQuestion, correct: boolean): string {
+  const why = q.explanation.replace(/\s+/g, " ").trim();
+  if (correct) return why;
+  return `The answer is ${answerLead(q)}. ${why}`;
+}
+
 function questionsOf(quiz: Quiz, progress: QuizProgress): QuizQuestion[] {
   const ids = progress.order ?? quiz.questions.map((q) => q.id);
   return ids.map((id) => quiz.questions.find((q) => q.id === id)).filter((q): q is QuizQuestion => Boolean(q));
@@ -139,12 +155,14 @@ function QuizRun({
   const n = questions.length;
   return (
     <section className={s.card} data-quiz="" data-quiz-question="" aria-labelledby={`${uid}-q`} onKeyDown={onKeyDown}>
-      <div className={s.meta}>
-        <p className={s.count}>{index + 1} of {n}</p>
-        {quiz.source ? <p className={s.source}>{quiz.source}</p> : null}
-      </div>
-      <div className={s.track} role="progressbar" aria-valuemin={1} aria-valuemax={n} aria-valuenow={index + 1} aria-label={`Question ${index + 1} of ${n}`}>
-        <span style={{ width: `${((index + 1) / n) * 100}%` }} />
+      <div className={s.progress}>
+        <div className={s.meta}>
+          <p className={s.count}>{index + 1} of {n}</p>
+          {quiz.source ? <p className={s.source}>{quiz.source}</p> : null}
+        </div>
+        <div className={s.track} role="progressbar" aria-valuemin={1} aria-valuemax={n} aria-valuenow={index + 1} aria-label={`Question ${index + 1} of ${n}`}>
+          <span style={{ width: `${((index + 1) / n) * 100}%` }} />
+        </div>
       </div>
       <h3 id={`${uid}-q`} ref={head} className={s.prompt} tabIndex={-1}>{q.prompt}</h3>
       {q.options ? (
@@ -166,7 +184,7 @@ function QuizRun({
                 <span className={s.letter}>{String.fromCharCode(65 + i)}</span>
                 <span>{opt}</span>
                 {state === "correct" ? <span className={s.mark}><IconCheck size={16} /> <span className="visually-hidden">Correct</span></span> : null}
-                {state === "wrong" ? <span className={s.mark}><IconClose size={16} /> <span className="visually-hidden">Incorrect</span></span> : null}
+                {state === "wrong" ? <span className={s.mark}><IconClose size={16} /> <span className="visually-hidden">Not quite</span></span> : null}
               </button>
             );
           })}
@@ -186,8 +204,8 @@ function QuizRun({
       <div aria-live="polite">
         {graded ? (
           <div className={s.feedback} data-state={correct ? "correct" : "wrong"} role="status">
-            <p>{correct ? "Correct" : "Incorrect"}{q.type === "short_answer" && !correct ? ` · ${q.answer}` : ""}</p>
-            <p className={s.explain}>{q.explanation}</p>
+            <p className={s.verdict}>{correct ? "Correct" : "Not quite"}</p>
+            <p className={s.explain}>{feedbackBody(q, correct)}</p>
           </div>
         ) : null}
       </div>
@@ -232,8 +250,7 @@ function Score({
               <p className={s.kicker}>Missed</p>
               <p>{q.prompt}</p>
               <p>Your answer: {progress.picks[q.id] || "—"}</p>
-              <p>Answer: {q.answer}</p>
-              <p>{q.explanation}</p>
+              <p>{feedbackBody(q, false)}</p>
             </li>
           ))}
         </ul>
@@ -296,12 +313,14 @@ function Flashcards({
         else go(1);
       }}
     >
-      <div className={s.meta}>
-        <p className={s.count}>{index + 1} of {n}</p>
-        {quiz.source ? <p className={s.source}>{quiz.source}</p> : null}
-      </div>
-      <div className={s.track} role="progressbar" aria-valuemin={1} aria-valuemax={n} aria-valuenow={index + 1} aria-label={`Card ${index + 1} of ${n}`}>
-        <span style={{ width: `${((index + 1) / n) * 100}%` }} />
+      <div className={s.progress}>
+        <div className={s.meta}>
+          <p className={s.count}>{index + 1} of {n}</p>
+          {quiz.source ? <p className={s.source}>{quiz.source}</p> : null}
+        </div>
+        <div className={s.track} role="progressbar" aria-valuemin={1} aria-valuemax={n} aria-valuenow={index + 1} aria-label={`Card ${index + 1} of ${n}`}>
+          <span style={{ width: `${((index + 1) / n) * 100}%` }} />
+        </div>
       </div>
       <button
         type="button"

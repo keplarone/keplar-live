@@ -170,6 +170,13 @@ test("the card renders one question, the score screen, and a building skeleton",
   assert.match(done, /Missed/);
   const sk = renderToStaticMarkup(createElement(QuizBuilding, { source: "study-guide.pdf" }));
   assert.match(sk, /Building your quiz from study-guide\.pdf/);
+  const missed = renderToStaticMarkup(createElement(QuizCard, {
+    quiz: QUIZ,
+    progress: { index: 0, picks: { q1: "A lender" }, done: false },
+  }));
+  assert.match(missed, /Not quite/);
+  assert.match(missed, /The answer is A\./);
+  assert.doesNotMatch(missed, /Incorrect/);
   const follow = newQuizFollowUp(QUIZ);
   assert.ok(quizAsk(follow));
 });
@@ -237,15 +244,19 @@ test("when the fence does not parse, the markdown answer is kept", async () => {
   assert.match(out.markdown, /What is an entrepreneur/);
 });
 
-test("the quiz stylesheet stays graphite and white, with motion that turns off", () => {
+test("the quiz stylesheet uses surface tokens, with motion that turns off", () => {
   const css = readFileSync("src/components/app-ui/quiz/QuizCard.module.css", "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
-  assert.match(css, /#212121/);
-  assert.match(css, /#fff/);
+  assert.match(css, /var\(--surface-panel\)/);
+  assert.match(css, /var\(--c-ink\)/);
+  assert.match(css, /var\(--hairline-strong\)/);
+  assert.match(css, /padding:\s*22px/);
+  assert.match(css, /border-radius:\s*12px/);
   assert.match(css, /#3d6b4f/);
   assert.match(css, /#8c403c/);
   assert.match(css, /prefers-reduced-motion:\s*reduce/);
-  assert.match(css, /outline:\s*2px solid #212121/);
+  assert.match(css, /outline:\s*2px solid var\(--c-ink\)/);
   assert.match(css, /scale:\s*0\.97/);
+  assert.doesNotMatch(css, /#fff\b|#ffffff/i);
   assert.doesNotMatch(css, /gradient|blur\(|purple|violet|pink|glow|box-shadow|backdrop-filter/i);
 });
 
