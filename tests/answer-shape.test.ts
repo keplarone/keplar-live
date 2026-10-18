@@ -38,7 +38,8 @@ test("the final write-up of a how-to keeps the full guide: its own rules, every 
   assert.match(GUIDE_SYNTH_RULES, /override the length and list rules/);
   const { readFileSync } = await import("node:fs");
   const synth = readFileSync("src/lib/orchestration/live-synthesizer.ts", "utf8");
-  assert.match(synth, /guide \? 4000 : 1200, 1, signal/, "synthesis output room");
+  // The same synthesis call also has room for one keplar-ui block. Still one call.
+  assert.match(synth, /guide \? 4800 : 1800, 1, signal/, "synthesis output room");
   assert.match(synth, /Full responses \(use their exact steps/);
   assert.match(readFileSync("src/lib/orchestration/free-merged.ts", "utf8"), /GUIDE_SYNTH_RULES/, "the Free plan's combined review writes the guide too");
   const { livePanelParams } = await import("@/lib/orchestration/orchestrator");

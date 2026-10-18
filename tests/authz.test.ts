@@ -60,6 +60,9 @@ PUBLIC_OK.add("POST chatgpt/oauth/authorize"); // Consent submit: issuer origin 
 PUBLIC_OK.add("POST chatgpt/oauth/revoke"); // RFC 7009: answers {} either way; only deletes a grant whose token secret hash matches, for the published ChatGPT client.
 PUBLIC_OK.add("POST chatgpt/oauth/token"); // Code exchange checks client, redirect_uri, resource and the PKCE verifier, single-use (atomic delete); refresh rotates. 400 for anything else.
 PUBLIC_OK.add("GET chatgpt/status"); // Signed out: { state: "signed_out" } only; signed in: that account's own connection count, never tokens or grant ids.
+// Citation marks for a structured answer. Signed out on purpose: a hostname only (never a URL), refused before any fetch when it is
+// not a public host, then fetched with the SSRF-safe reader and returned only if the bytes are a real image. Nothing is stored.
+PUBLIC_OK.add("GET favicon");
 
 test("anonymous Business status and handoff expose no account data or sign-in ticket", async () => {
   const { GET: account } = await import("@/app/api/business/account/route");

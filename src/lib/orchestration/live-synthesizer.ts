@@ -31,6 +31,9 @@ import { guardDisagreement } from "./disagreement-guard";
 import { RESEARCH_CRITIQUE_RULES, RESEARCH_SYNTH_RULES } from "./research";
 import { CLARITY_STYLE, GROUNDING_STYLE } from "@/lib/style/clarity";
 import { isGuideRequest } from "./answer-shape";
+import { RICH_UI_RULES } from "@/lib/rich-answer/prompt";
+import { buildRich, parseRich, RICH_PENDING, takeRichFence } from "@/lib/rich-answer/parse";
+import type { RichAnswer } from "@/lib/rich-answer/types";
 
 type Ok = Extract<ProviderResult, { ok: true }>;
 const nameOf = (id: string) => catalogById.get(id)?.name ?? id;
@@ -57,7 +60,7 @@ Write the final answer for the user in markdown:
 If the question has several parts, answer each part in order and make sure none is skipped.
 ${CLARITY_STYLE}
 ${GROUNDING_STYLE}
-After the answer, on its own final line, write: RESOLUTION: <one sentence on how the disagreement was resolved, or "No disagreement.">`;
+After the answer, on its own final line, write: RESOLUTION: <one sentence on how the disagreement was resolved, or "No disagreement.">${RICH_UI_RULES}`;
 
 /**
  * How-to questions (answer-shape.ts isGuideRequest): these rules override the length and list rules above. The writer gets every model's
@@ -185,9 +188,16 @@ export class ModelSynthesizer implements Synthesizer {
 
     let markdown: string;
     let resolution = "";
+    // The optional structured block rides in the same synthesis reply. Parsing it is not another model call.
+    let richRaw: string | null = null;
+    const peel = (s: string) => {
+      const t = takeRichFence(s);
+      if (t.raw && parseRich(t.raw)) richRaw = t.raw;
+      return t.prose;
+    };
     if (single) {
       // One model answered a simple question: its answer is the answer (nothing to synthesize).
-      markdown = ok[0]?.text ?? "No model returned an answer.";
+      markdown = peel(ok[0]?.text ?? "No model returned an answer.");
     } else {
       const findings = verification.checks.filter((c) => c.kind !== "web").map((c) => `- [${c.kind}/${c.outcome}] ${c.finding} → ${c.resolution}`).join("\n") || "- No issues found.";
       const material = scored
@@ -205,11 +215,20 @@ export class ModelSynthesizer implements Synthesizer {
         && !verification.checks.some((c) => c.kind !== "web" && c.outcome !== "held")
         ? ok.find((r) => r.modelId === preferredModelId && r.text.trim().length > 0)
         : undefined;
-      this.keptReply = Boolean(keep);
+      // Agreeing Free models keep the reply already on screen, unless the one combined review wrote a valid keplar-ui block.
+      // That block is part of the call that already happened; it does not add another request.
+      const preFence = this.prewritten ? takeRichFence(this.prewritten.text) : null;
+      const writtenBeatsKeep = Boolean(this.prewritten && preFence?.raw && parseRich(preFence.raw));
+      this.keptReply = !writtenBeatsKeep && Boolean(keep);
       if (this.noExtraCalls) this.callFailure = "unavailable";
       const synthSystem = `${SYNTH_SYSTEM_PROMPT}${this.research ? `\n${this.researchRules}` : ""}${guide ? `\n${GUIDE_SYNTH_RULES}` : ""}`;
-      const out = keep ? { text: keep.text, by: keep.modelId } : this.prewritten ? this.prewritten : this.noExtraCalls ? null : await this.call(quick ? `${synthSystem}\nThis is a quick lookup: answer in at most 120 words (state the answer first, then at most two supporting points).` : synthSystem, `Question:\n${req.memory ?? ""}${req.prompt}${textOnlyMediaNote(req.media)}\n\n${material}${guideMaterial}\n\nReviewer findings:\n${findings}\n\nDraft:\n${draft.slice(0, 3000)}`, quick ? 500 : guide ? 4000 : 1200, 1, signal, req, classification, guide ? Math.max(this.synthCapMs, 60_000) : this.synthCapMs);
+      const out = writtenBeatsKeep ? this.prewritten : keep ? { text: keep.text, by: keep.modelId } : this.prewritten ? this.prewritten : this.noExtraCalls ? null : await this.call(quick ? `${synthSystem}\nThis is a quick lookup: answer in at most 120 words (state the answer first, then at most two supporting points). Omit any keplar-ui block.` : synthSystem, `Question:\n${req.memory ?? ""}${req.prompt}${textOnlyMediaNote(req.media)}\n\n${material}${guideMaterial}\n\nReviewer findings:\n${findings}\n\nDraft:\n${draft.slice(0, 3000)}`, quick ? 500 : guide ? 4800 : 1800, 1, signal, req, classification, guide ? Math.max(this.synthCapMs, 60_000) : this.synthCapMs);
       let text = out?.text;
+      if (text) {
+        const res = text.match(/\n?\s*(RESOLUTION:\s*.+)\s*$/i);
+        const body = peel((res ? text.slice(0, text.search(/\n?\s*RESOLUTION:/i)) : text).trim());
+        text = res ? `${body}\n${res[1].trim()}` : body;
+      }
       this.writer = out?.by ?? null;
       // Hard (DEEP) questions get one self-critique pass before the answer is shown: completeness, overclaiming, tone.
       this.critique = "skipped";
@@ -228,12 +247,12 @@ export class ModelSynthesizer implements Synthesizer {
       if (text) {
         const m = text.match(/\n?\s*RESOLUTION:\s*(.+)\s*$/i);
         resolution = m ? m[1].trim() : "";
-        markdown = (m ? text.slice(0, m.index) : text).trim();
+        markdown = peel((m ? text.slice(0, m.index) : text).trim());
       } else {
         // The synthesis was too slow: show the answer of a model that took the leading position (not a list of positions), and say so.
         const lead = (scored ? ok.find((r) => r.stance === comparison.positions[0]?.stance) : undefined) ?? ok[0];
         if (lead) this.notes.push(`The final write-up ${this.callFailure === "slow" ? "was slow" : "was not available"}, so this is the answer from ${nameOf(lead.modelId)}${scored ? ", which took the leading position" : ""}, not a combined one.`);
-        markdown = lead?.text.trim() || "No model returned an answer.";
+        markdown = peel(lead?.text.trim() || "No model returned an answer.");
       }
     }
 
@@ -244,7 +263,16 @@ export class ModelSynthesizer implements Synthesizer {
     // polish() drops stock openers/closers ("Certainly!", "I hope this helps") and replaces any claim to be human.
     markdown = polish(guardVoice(markdown));
 
-    const words = markdown.split(/(?<=\s)/);
+    const richMaterial = ok.map((r) => `${r.text}\n${(r.citations ?? []).map((c) => `${c.url} ${c.title ?? ""}`).join("\n")}`).join("\n");
+    const rich: RichAnswer | undefined = buildRich(richRaw, {
+      responses: ok.map((r) => ({ name: nameOf(r.modelId), text: r.text })),
+      material: richMaterial,
+      disagreed: !single && scored && comparison.positions.length > 1,
+    });
+
+    // Prose streams as usual. A valid block is not streamed as JSON: one open fence tells the client to show a skeleton until the answer arrives.
+    const streamed = rich ? `${markdown}${RICH_PENDING}` : markdown;
+    const words = streamed.split(/(?<=\s)/);
     for (let i = 0; i < words.length; i += 6) {
       onDelta(words.slice(i, i + 6).join(""));
       await sleep(8, signal);
@@ -310,6 +338,7 @@ export class ModelSynthesizer implements Synthesizer {
 
     return {
       markdown,
+      ...(rich ? { rich } : {}),
       consensus: {
         level: comparison.level,
         score: comparison.score,
