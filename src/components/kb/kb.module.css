@@ -237,3 +237,19 @@
 @media (pointer: coarse) {
   .relatedLine a { display: inline-flex; align-items: center; min-height: 44px; }
 }
+
+/* Docs and guides chrome: solid cards, a 1px edge, no glass depth. */
+.results, .mobileMenu > summary, .callout, .codeBlock, .tableWrap, .tocInline, .pn, .card, .faq details, .cta, .notice, .release, .featured {
+  background: var(--c-surface-1);
+  box-shadow: none;
+  border: 1px solid var(--hairline);
+}
+.pn:hover, :is(a).card:hover, .featured:hover, .list a:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--hairline-strong);
+  background: var(--c-surface-1);
+}
+.pn:focus-visible, :is(a).card:focus-visible, .featured:focus-visible {
+  box-shadow: inset 0 0 0 1px var(--c-ink);
+}

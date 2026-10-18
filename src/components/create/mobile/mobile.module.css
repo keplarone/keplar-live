@@ -78,3 +78,20 @@
 }
 
 .opt { margin-left: 6px; font-weight: 400; font-size: 0.8rem; color: var(--c-ink-3); }
+
+/* Calm chrome: ink actions, no lift, no glow. */
+:global(:root[data-theme]:not([data-business-app])) .btn {
+  background: var(--c-ink);
+  color: var(--c-canvas);
+  box-shadow: none;
+  font-weight: var(--w-medium);
+  transform: none;
+}
+:global(:root[data-theme]:not([data-business-app])) .btn:hover:not(:disabled, [aria-disabled="true"]) { background: var(--c-ink-hover); transform: none; box-shadow: none; }
+:global(:root[data-theme]:not([data-business-app])) .ghost {
+  background: transparent;
+  color: var(--c-ink);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  transform: none;
+}
+:global(:root[data-theme]:not([data-business-app])) .ghost:hover:not(:disabled, [aria-disabled="true"]) { background: var(--hover-wash); transform: none; box-shadow: inset 0 0 0 1px var(--hairline); }
