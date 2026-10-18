@@ -19,10 +19,20 @@ test("Whop Pixel loads only on checkout and account pages", () => {
   for (const no of ["/", "/overview", "/pricing", "/privacy", "/blogs/some-post", "/compare/x", "/vs", "/help", "/answers/abc", "/download", "/application", "/biz", "/biz/pricing", "/app", "/app/create", "/admin", "/welcome", "/signin", "/signup", "/forgot-password", "/space-studio", "/space-studio/app", "/contact", "/api/x", "/APP/x", "/app?x=1"]) assert.equal(whopPixelAllowed(no), false, no);
 });
 
-test("the root layout renders the pixel in <head>", () => {
-  const layout = readFileSync(path.join(process.cwd(), "src/app/layout.tsx"), "utf8");
-  const head = /<head>([\s\S]*?)<\/head>/.exec(layout)?.[1] ?? "";
-  assert.match(head, /<WhopPixel \/>/);
+test("the pixel is mounted only by checkout and account layouts, not the root layout", () => {
+  const root = readFileSync(path.join(process.cwd(), "src/app/layout.tsx"), "utf8");
+  assert.doesNotMatch(root, /WhopPixel/);
+  for (const file of [
+    "src/app/(marketing)/checkout/layout.tsx",
+    "src/app/(marketing)/account/layout.tsx",
+    "src/app/(business)/biz/account/layout.tsx",
+  ]) {
+    assert.match(readFileSync(path.join(process.cwd(), file), "utf8"), /<WhopPixel \/>/, file);
+  }
+  const embed = readFileSync(path.join(process.cwd(), "src/components/billing/WhopEmbed.tsx"), "utf8");
+  assert.match(embed, /cdn\.whop\.com\/elements\/amber\/elements\.js/);
+  const embedUsers = ["src/components/billing/CheckoutStart.tsx", "src/components/business-site/AccountSetup.tsx"];
+  for (const file of embedUsers) assert.match(readFileSync(path.join(process.cwd(), file), "utf8"), /WhopEmbed/, file);
 });
 
 test("the pixel's automatic form-field capture is switched off before it starts", () => {

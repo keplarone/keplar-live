@@ -31,6 +31,7 @@
 - [x] Marketing fixes (2026-10-18): pricing meta names Lite $20 (English, OG card, all 25 locales). Auth, `/app`, the Business app, the embed shell, `/status`, `/welcome`, the 404, and an empty `/answers` or `/topics` index are noindex, follow. The Whop pixel loads only on `/checkout`, `/account`, and `/biz/account`. `robots.txt` lists `/sitemap-index.xml` only.
 - [x] Owner decision (2026-10-18): `keplar.one/space-studio` is noindex, follow and out of the sitemap. It is not redirected or removed. `space.keplar.one` stays indexable, canonical to itself. The page body is unchanged.
 - [x] Marketing sheet titles (2026-10-18): English titles and descriptions from the re-attached FIXES file, as absolute titles, except `/`. See the section below.
+- [x] Whop scripts (2026-10-18): the pixel is mounted only by the checkout, account, and Business account layouts. `/` and other marketing pages do not include it. Whop Elements stays inside checkout and Business account setup.
 
 ## This milestone (audit + critical fixes)
 
@@ -168,3 +169,7 @@ Skipped:
 - Saying Space Studio is retired, or naming a model provider, in `llms.txt`.
 - BlogPosting `wordCount` is already the word count of the article body.
 - `/answers` stays noindex only while the public list is empty. Indexing still starts when someone has published with consent, not at a fixed count of 10.
+
+## Whop scripts off the marketing pages (2026-10-18)
+
+The pixel's allow-list already refused `/` and `/pricing`, but `WhopPixel` was still imported by the root layout, so the snippet traveled in the shared client chunk. It is now rendered only from `src/app/(marketing)/checkout/layout.tsx`, `src/app/(marketing)/account/layout.tsx`, and `src/app/(business)/biz/account/layout.tsx`. `whopPixelAllowed()` remains a second check. Whop Elements (`cdn.whop.com`) is still loaded only by `WhopEmbed`, which only checkout and Business account setup render. The privacy page now says the same thing.

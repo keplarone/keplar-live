@@ -82,7 +82,7 @@ review date fails the quarterly check.
 | Script | Where it loads | Why | Control |
 |---|---|---|---|
 | Whop Elements (`cdn.whop.com`) | Checkout pages | Embedded checkout | Exact origin in CSP; only pages that sell |
-| Whop Pixel (`t.whop.tw`) | Public marketing pages only | Ad measurement | Never in the app, account, sign-in or forms; disclosed in the privacy policy; auto-capture of form fields off |
+| Whop Pixel (`t.whop.tw`) | Checkout and account pages only (`/checkout`, `/account`, `/biz/account`) | Ad measurement | Not on `/`, marketing pages, the app, or sign-in; disclosed in the privacy policy; auto-capture of form fields off |
 | Stripe.js (`js.stripe.com`, `connect-js`, `hooks`) | `/app/*` and Business pages | Bank linking, seller payouts | Exact origins; `/app` CSP variant only |
 | Google Fonts CSS and files | `/app/*` typography previews, generated apps that choose a Google face | Font previews | Style and font sources only, never script |
 | Vercel Web Analytics and Speed Insights | Public pages after consent | Page performance | Consent-gated, cookie-free |

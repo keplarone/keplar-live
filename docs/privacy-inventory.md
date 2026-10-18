@@ -22,12 +22,12 @@ changes (the PR template asks). Owner: team@keplar.one. Last revised Oct 17, 202
 | Error reports (scrubbed message, fingerprint, route) | `errors` collection, optional Sentry | Fixing bugs | Legitimate interest | Internal | Per retention job |
 | Visit counts (anonymous daily code, page, referrer type) and presence heartbeat | `visits` | Admin traffic card | Legitimate interest (no personal data) | Internal | Days |
 | Consent-gated analytics (Vercel Web Analytics, first-party funnel events: page, source type, milestone, random device id) | Vercel; `seo_events` | Measuring the public site | Consent | Internal | 180 days |
-| Whop Pixel (visits to public marketing pages) | Whop | Ad measurement | Consent where required; disclosed | Internal | Whop's policy |
+| Whop Pixel (checkout and account pages only) | Whop | Ad measurement | Disclosed; not loaded on marketing pages | Internal | Whop's policy |
 | Feedback, support tickets, abuse reports, "report this answer" | collections + email copy to team@keplar.one | Support and safety | Legitimate interest | Confidential | Until handled; deleted on request |
 | Emails sent (magic links, notices) | Resend | Delivery | Contract | Confidential | Resend's log retention; Keplar keeps no body unless dev tools |
 
-Not collected: payment card numbers (Whop/Stripe only), precise location, advertising identifiers beyond the Whop Pixel on marketing
-pages, biometric data (passkeys use the device's own check; Keplar sees a public key), raw IP addresses in any durable row (hashed only).
+Not collected: payment card numbers (Whop/Stripe only), precise location, advertising identifiers beyond the Whop Pixel on checkout
+and account pages, biometric data (passkeys use the device's own check; Keplar sees a public key), raw IP addresses in any durable row (hashed only).
 
 ## 2. Processors and sub-processors
 
@@ -87,7 +87,7 @@ and model providers' retention (disclosed).
 Essential cookies only by default (session, plan, consent choice, language hint). Analytics loads only after "Accept all" or a
 customised choice; "Reject non-essential" and the footer's Cookie settings work on every page; Global Privacy Control and Do Not Track
 are honoured as a rejection (`src/lib/consent.ts`, `src/components/consent/CookieBanner.tsx`, `tests/consent.test.ts`). The Whop Pixel
-loads on marketing pages only and is disclosed in the policy.
+loads on checkout and account pages only and is disclosed in the policy.
 
 ## 6. Children
 

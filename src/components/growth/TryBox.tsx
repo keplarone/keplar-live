@@ -19,7 +19,7 @@ export function TryBox({ examples, where, heading = "Try it now. No signup." }: 
     const question = q.trim().slice(0, 600);
     if (!question) return;
     track(event, { where });
-    // Full page load, not router.push: the Whop Pixel (public pages) reports soft navigations with their full URL, and this one carries the question in its fragment.
+    // Full page load, not router.push: the question stays in the fragment, which a soft navigation would put in the history URL.
     window.location.assign(withUtm(`${tryHref}#q=${encodeURIComponent(question)}`, utm));
   };
 

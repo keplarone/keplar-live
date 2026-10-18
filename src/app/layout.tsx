@@ -9,7 +9,6 @@ import { SIGNED_SCRIPT } from "@/lib/signed-hint";
 import { HOME_FX_SCRIPT } from "@/lib/home-fx";
 import { PREFS_SCRIPT } from "@/lib/prefs";
 import { CookieBanner } from "@/components/consent/CookieBanner";
-import { WhopPixel } from "@/components/analytics/WhopPixel";
 import { PresenceBeacon } from "@/components/analytics/PresenceBeacon";
 import { ProximityLight } from "@/components/ui/ProximityLight";
 import { ButtonFx } from "@/components/ui/ButtonFx";
@@ -103,7 +102,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: HOME_FX_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: SPACE_SKY_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: APP_SURFACE_SCRIPT }} />
-        <WhopPixel />
       </head>
       <body>
         <ThemeWatcher />

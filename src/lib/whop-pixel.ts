@@ -3,8 +3,8 @@
  *
  * WHOP_PIXEL_SCRIPT is Whop's install snippet, verbatim (only the account id filled in). Do not reformat or edit it:
  * tests/whop-pixel.test.ts pins it character for character. It is not run as a plain head script: WHOP_PIXEL_LOADER_SCRIPT (below) wraps it
- * and runs it after window load + idle, or at the first user interaction. That loader is rendered as an inline <script> in the root layout
- * <head> (src/components/analytics/WhopPixel.tsx), so the CSP needs `script-src 'unsafe-inline'` (already set, see security/headers.ts) and
+ * and runs it after window load + idle, or at the first user interaction. That loader is rendered as an inline <script> by the checkout
+ * and account layouts only (src/components/analytics/WhopPixel.tsx), so the CSP needs `script-src 'unsafe-inline'` (already set, see security/headers.ts) and
  * https://t.whop.tw in script-src (the pixel's /s.js and chunks) and connect-src (its beacons).
  *
  * The pixel's own script also reads email / phone / name fields on `change` events and sends them as visitor traits.
@@ -16,8 +16,8 @@ export const WHOP_PIXEL_ORIGIN = "https://t.whop.tw";
 export const WHOP_PIXEL_SCRIPT = `!function(w,d,s,u,n,a,b){if(w[n])return;a=w[n]={q:[],t:+new Date,s:[],o:u,track:function(){a.q.push([+new Date].concat([].slice.call(arguments)))},setScope:function(){a.s=[].slice.call(arguments).filter(function(x){return typeof x==="string"});a.q.push([+new Date,"setScope"].concat(a.s))},scope:function(){var c=[].slice.call(arguments);return{track:function(){a.q.push([+new Date].concat([].slice.call(arguments)).concat([{__scope:c}]))}}}};b=d.createElement(s);b.async=1;b.src=u+"/s.js";d.getElementsByTagName(s)[0].parentNode.insertBefore(b,d.getElementsByTagName(s)[0])}(window,document,"script","https://t.whop.tw","whop");whop.setScope("biz_z2gxvcmr06XrpI");whop.track("page");`;
 
 /**
- * Why deferred: the pixel's fingerprint.js is a ~1.3 s main-thread task on a throttled phone (Lighthouse TBT 1.2-1.4 s on / and /pricing,
- * mobile score 95-98 -> 70-72). Running it after load + idle keeps it off the critical path. It still runs on the first pointerdown /
+ * Why deferred: the pixel's fingerprint.js is a long main-thread task. It now mounts only on checkout and account pages.
+ * Running it after load + idle keeps it off the critical path there. It still runs on the first pointerdown /
  * keydown / scroll / touchstart (whichever comes first, even before load), and at the latest ~3 s after load, so a visitor who interacts
  * and leaves is still counted. The snippet is pasted untouched into go(); go() runs once, so whop.track("page") fires once per page load.
  */
