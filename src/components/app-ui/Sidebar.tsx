@@ -15,6 +15,7 @@ import s from "./App.module.css";
 import la from "./link-action.module.css";
 import { IconButton, Tooltip } from "@/components/kit";
 import { Recents } from "./Recents";
+import { ExploreLinks } from "./ExploreLinks";
 
 type Props = {
   state: AppState;
@@ -185,6 +186,7 @@ export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteC
       </ul>
 
       <Recents threads={state.threads} activeId={state.activeThreadId} view={state.view} userKey={state.ledger.synced ? (account?.id ?? state.account?.id ?? "anon") : null} onOpen={onOpen} onDeleteChat={onDeleteChat} onAll={() => onView("history")} />
+      <ExploreLinks className={s.sideFoot} live />
       </div>
 
       <div className={s.meter}>

@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Zdroje",
     "items": {
       "/features": "Vše v Keplaru",
-      "/#demo": "Živá ukázka",
+      "/overview#demo": "Živá ukázka",
       "/app/create": "Vytvořit",
       "/docs": "Dokumentace",
       "/pricing": "Ceník",
@@ -30,6 +30,7 @@ const m: CommonCatalog = {
       "Legal": "Právní informace"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "Vše v Keplaru",
       "/showcase": "Přehlídka výtvorů",
       "/templates": "Galerie komunity",

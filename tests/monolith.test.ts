@@ -70,7 +70,7 @@ test("scene poses: one scene fully visible per act position, neighbours fly past
 
 test("every page family gets a variant; working screens get none", () => {
   const map: Record<string, VariantId | null> = {
-    "/": "home", "/about": "ridge", "/how-it-works": "beams", "/models": "network", "/pricing": "network", "/blogs": "calm", "/docs/x": null, "/privacy": "calm",
+    "/": null, "/overview": "home", "/about": "ridge", "/how-it-works": "beams", "/models": "network", "/pricing": "network", "/blogs": "calm", "/docs/x": null, "/privacy": "calm",
     "/app": null, "/app/slides": null, "/app/create": null, "/create": null, "/admin/seo": null, "/account": null, "/sites/x": null,
   };
   for (const [p, v] of Object.entries(map)) assert.equal(variantFor(p), v, p);
@@ -89,7 +89,7 @@ test("wiring: lazy three, pauses when hidden, DPR cap, grey-only, no scroll hija
   const canvas = readFileSync("src/components/monolith/MonolithCanvas.tsx", "utf8");
   const home = readFileSync("src/components/home/MonolithHome.tsx", "utf8");
   const layout = readFileSync("src/app/layout.tsx", "utf8");
-  const page = readFileSync("src/app/(marketing)/page.tsx", "utf8");
+  const page = readFileSync("src/app/(marketing)/overview/page.tsx", "utf8");
   assert.ok(/document\.hidden/.test(scene) && /visibilitychange/.test(scene), "pauses when the tab is hidden");
   assert.ok(/dprCap/.test(scene) && /forceContextLoss/.test(scene));
   assert.ok(/import\("@\/field\/monolith\/scene"\)/.test(canvas), "page scene is lazy-loaded");

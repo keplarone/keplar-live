@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Források",
     "items": {
       "/features": "Minden a Keplarban",
-      "/#demo": "Élő bemutató",
+      "/overview#demo": "Élő bemutató",
       "/app/create": "Létrehozás",
       "/docs": "Dokumentáció",
       "/pricing": "Árak",
@@ -30,6 +30,7 @@ const m: CommonCatalog = {
       "Legal": "Jogi információk"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "Minden a Keplarban",
       "/showcase": "Alkotások bemutatója",
       "/templates": "Közösségi galéria",

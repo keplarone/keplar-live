@@ -33,7 +33,7 @@ export const WHOP_PIXEL_OPTIONS_SCRIPT = "window.__whopApp={forms:false,links:fa
 /** Checkout and account pages only. /biz/account is the Business account setup, which embeds the same checkout. */
 const ALLOWED = ["/checkout", "/account", "/biz/account"];
 
-/** True only on checkout and account pages. Every other path, including marketing pages, stays without the pixel. */
+/** True only on checkout and account pages. Every other path, including the chat home and marketing pages, stays without the pixel. */
 export function whopPixelAllowed(pathname: string | null | undefined): boolean {
   const p = (pathname ?? "/").split(/[?#]/)[0].toLowerCase();
   return ALLOWED.some((x) => p === x || p.startsWith(`${x}/`));

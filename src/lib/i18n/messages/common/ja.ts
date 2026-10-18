@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "リソース",
     "items": {
       "/features": "Keplar のすべて",
-      "/#demo": "ライブデモ",
+      "/overview#demo": "ライブデモ",
       "/app/create": "Create",
       "/docs": "ドキュメント",
       "/pricing": "料金",
@@ -16,7 +16,7 @@ const m: CommonCatalog = {
     },
     "hints": {
       "/features": "すべての機能と、それが公開済みかどうか",
-      "/#demo": "今すぐ質問できます。登録不要",
+      "/overview#demo": "今すぐ質問できます。登録不要",
       "/app/create": "サイトやアプリを文章か音声で説明"
     },
     "signIn": "ログイン",
@@ -41,6 +41,7 @@ const m: CommonCatalog = {
       "Legal": "法的情報"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "Keplar のすべて",
       "/how-it-works": "仕組み",
       "/showcase": "Create ショーケース",

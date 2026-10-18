@@ -1,0 +1,13 @@
+/* Chat and /app sit on a solid canvas. The cloud sky stays on marketing pages.
+   The head script sets data-app-surface before paint; the layout effect keeps it in step on client navigations.
+   Specificity beats the sky wash on html (:root[data-theme="light"] and the dark default). Desktop overlay stays transparent. */
+html[data-app-surface]:not([data-overlay]),
+html[data-app-surface][data-theme="light"]:not([data-overlay]),
+html[data-app-surface][data-theme="dark"]:not([data-overlay]) {
+  background: var(--c-canvas);
+}
+
+html[data-app-surface] [data-site-sky],
+body:has([data-app-root]) [data-site-sky] {
+  display: none !important;
+}

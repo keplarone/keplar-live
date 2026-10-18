@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "資源",
     "items": {
       "/features": "Keplar 全部功能",
-      "/#demo": "線上示範",
+      "/overview#demo": "線上示範",
       "/app/create": "Create",
       "/docs": "文件",
       "/pricing": "價格",
@@ -16,7 +16,7 @@ const m: CommonCatalog = {
     },
     "hints": {
       "/features": "每項功能及其是否已上線",
-      "/#demo": "現在就提問，無需註冊",
+      "/overview#demo": "現在就提問，無需註冊",
       "/app/create": "用文字或語音描述網站或應用"
     },
     "signIn": "登入",
@@ -41,6 +41,7 @@ const m: CommonCatalog = {
       "Legal": "法律"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "Keplar 全部功能",
       "/how-it-works": "工作原理",
       "/showcase": "Create 作品展示",

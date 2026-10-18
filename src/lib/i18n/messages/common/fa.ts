@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "منابع",
     "items": {
       "/features": "همه‌چیز در Keplar",
-      "/#demo": "نمایش زنده",
+      "/overview#demo": "نمایش زنده",
       "/app/create": "ساختن",
       "/docs": "مستندات",
       "/pricing": "قیمت‌ها",
@@ -30,6 +30,7 @@ const m: CommonCatalog = {
       "Legal": "حقوقی"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "همه‌چیز در Keplar",
       "/showcase": "ویترین ساخته‌ها",
       "/templates": "گالری جامعه",

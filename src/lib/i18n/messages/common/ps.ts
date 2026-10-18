@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "سرچینې",
     "items": {
       "/features": "په Keplar کې هر څه",
-      "/#demo": "ژوندۍ ننداره",
+      "/overview#demo": "ژوندۍ ننداره",
       "/app/create": "جوړول",
       "/docs": "اسناد",
       "/pricing": "بیې",
@@ -30,6 +30,7 @@ const m: CommonCatalog = {
       "Legal": "حقوقي"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "په Keplar کې هر څه",
       "/showcase": "د جوړښتونو ننداره",
       "/templates": "د ټولنې ګالري",

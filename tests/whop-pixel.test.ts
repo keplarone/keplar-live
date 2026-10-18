@@ -16,7 +16,7 @@ test("Whop Pixel snippet is unchanged and sends only the page view", () => {
 
 test("Whop Pixel loads only on checkout and account pages", () => {
   for (const ok of ["/checkout", "/checkout/x", "/account", "/account/usage", "/biz/account", "/BIZ/account/"]) assert.equal(whopPixelAllowed(ok), true, ok);
-  for (const no of ["/", "/pricing", "/privacy", "/blogs/some-post", "/compare/x", "/vs", "/help", "/answers/abc", "/download", "/application", "/biz", "/biz/pricing", "/app", "/app/create", "/admin", "/welcome", "/signin", "/signup", "/forgot-password", "/space-studio", "/space-studio/app", "/contact", "/api/x", "/APP/x", "/app?x=1"]) assert.equal(whopPixelAllowed(no), false, no);
+  for (const no of ["/", "/overview", "/pricing", "/privacy", "/blogs/some-post", "/compare/x", "/vs", "/help", "/answers/abc", "/download", "/application", "/biz", "/biz/pricing", "/app", "/app/create", "/admin", "/welcome", "/signin", "/signup", "/forgot-password", "/space-studio", "/space-studio/app", "/contact", "/api/x", "/APP/x", "/app?x=1"]) assert.equal(whopPixelAllowed(no), false, no);
 });
 
 test("the root layout renders the pixel in <head>", () => {

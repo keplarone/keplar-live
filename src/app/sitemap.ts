@@ -17,6 +17,7 @@ import { toolPaths } from "@/lib/seo/tools";
  */
 export const sitemapPaths: string[] = [
   "/",
+  "/overview",
   "/what-is-keplar",
   "/product",
   "/how-it-works",

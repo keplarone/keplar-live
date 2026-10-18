@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Ресурсы",
     "items": {
       "/features": "Всё о Keplar",
-      "/#demo": "Живое демо",
+      "/overview#demo": "Живое демо",
       "/app/create": "Create",
       "/docs": "Документация",
       "/pricing": "Цены",
@@ -16,7 +16,7 @@ const m: CommonCatalog = {
     },
     "hints": {
       "/features": "Все функции и их доступность",
-      "/#demo": "Задайте вопрос сейчас, без регистрации",
+      "/overview#demo": "Задайте вопрос сейчас, без регистрации",
       "/app/create": "Опишите или продиктуйте сайт или приложение"
     },
     "signIn": "Войти",
@@ -41,6 +41,7 @@ const m: CommonCatalog = {
       "Legal": "Правовая информация"
     },
     "links": {
+      "/overview": "About Keplar",
       "/features": "Всё о Keplar",
       "/how-it-works": "Как это работает",
       "/showcase": "Витрина Create",
