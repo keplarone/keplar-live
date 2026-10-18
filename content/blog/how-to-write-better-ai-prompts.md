@@ -1,6 +1,6 @@
 ---
-title: How to Write Better AI Prompts: 8 Habits
-description: Eight prompt habits that work on any AI assistant: state the task, give context, set constraints, ask for the counterargument and more.
+title: How to write better AI prompts: eight habits that work on any assistant
+description: Practical prompt-writing habits that improve answers from any AI model: context, constraints, examples, formats, iteration and verification, with before-and-after examples.
 category: How-to
 published: 2026-10-03
 updated: 2026-10-03

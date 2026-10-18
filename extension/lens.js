@@ -30,9 +30,9 @@
   // keplar.one's theme tokens (src/styles/tokens.css dark, light.css light) and its aura colours for the Lens glow.
   const style = document.createElement("style");
   style.textContent = [
-    ":host,:host([data-keplar='light']){--bg:#f7f8fa;--panel:#ffffff;--panel2:#f1f3f6;--ink:#0e0f12;--muted:#171a20;--faint:#686d78;--line:rgb(14 15 18 / .09);--strong:rgb(14 15 18 / .15);--btn:#0e0f12;--btnInk:#ffffff;--focus:#17171a;--veil:rgb(14 15 18 / .38);--err:#b42318;--sh:0 1px 2px rgb(14 15 18 / .05),0 18px 48px -18px rgb(14 15 18 / .28)}",
-    ":host([data-keplar='dark']){--bg:#000000;--panel:#0a0a0c;--panel2:#141417;--ink:#f4f4f6;--muted:#b3b3bb;--faint:#8a8a94;--line:rgb(255 255 255 / .09);--strong:rgb(255 255 255 / .17);--btn:#f4f4f6;--btnInk:#000000;--focus:#f4f4f6;--veil:rgb(11 11 13 / .55);--err:#ff9a8f;--sh:0 1px 2px rgb(0 0 0 / .4),0 20px 50px -20px rgb(0 0 0 / .75)}",
-    ":host{all:initial;--g1:var(--ink);--g2:var(--ink2);--g3:var(--ink);--g4:var(--ink3)}",
+    ":host,:host([data-keplar='light']){--bg:#f7f8fa;--panel:#ffffff;--panel2:#f1f3f6;--ink:#0e0f12;--muted:#4b4f58;--faint:#686d78;--line:rgb(14 15 18 / .09);--strong:rgb(14 15 18 / .15);--btn:#0e0f12;--btnInk:#ffffff;--focus:#7d3bc4;--veil:rgb(14 15 18 / .38);--err:#b42318;--sh:0 1px 2px rgb(14 15 18 / .05),0 18px 48px -18px rgb(14 15 18 / .28)}",
+    ":host([data-keplar='dark']){--bg:#000000;--panel:#0a0a0c;--panel2:#141417;--ink:#f4f4f6;--muted:#b3b3bb;--faint:#8a8a94;--line:rgb(255 255 255 / .09);--strong:rgb(255 255 255 / .17);--btn:#f4f4f6;--btnInk:#000000;--focus:#c39bff;--veil:rgb(11 11 13 / .55);--err:#ff9a8f;--sh:0 1px 2px rgb(0 0 0 / .4),0 20px 50px -20px rgb(0 0 0 / .75)}",
+    ":host{all:initial;--g1:#6d8dff;--g2:#b48cff;--g3:#ff9f7a;--g4:#5fd3b5}",
     "*{box-sizing:border-box;font:14px/1.5 \"Google Sans\",\"Product Sans\",system-ui,-apple-system,\"Segoe UI\",sans-serif;-webkit-font-smoothing:antialiased}",
     // The colour sweep when Lens opens, then a soft veil over the page.
     ".wash{position:fixed;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 0%,color-mix(in srgb,var(--g1) 34%,transparent) 30%,color-mix(in srgb,var(--g2) 30%,transparent) 45%,color-mix(in srgb,var(--g3) 26%,transparent) 60%,color-mix(in srgb,var(--g4) 28%,transparent) 75%,transparent 100%);background-size:300% 300%;animation:sweep 1.5s cubic-bezier(.4,0,.2,1) forwards}",
@@ -45,7 +45,7 @@
     // The selection: page bright inside, dimmed outside, an animated glowing border in the aura colours.
     ".frame{position:fixed;z-index:2;pointer-events:none;border-radius:14px;box-shadow:0 0 0 9999px var(--veil)}",
     ".frame::before{content:\"\";position:absolute;inset:-3px;border-radius:17px;padding:3px;background:linear-gradient(90deg,var(--g1),var(--g2),var(--g3),var(--g4),var(--g1));background-size:300% 100%;animation:flow 3s linear infinite;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}",
-    ".frame::after{content:\"\";position:absolute;inset:-10px;border-radius:24px;background:linear-gradient(90deg,var(--g1),var(--g2),var(--g3),var(--g4),var(--g1));background-size:300% 100%;animation:flow 3s linear infinite;filter:none;opacity:0;z-index:-1;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;padding:10px}",
+    ".frame::after{content:\"\";position:absolute;inset:-10px;border-radius:24px;background:linear-gradient(90deg,var(--g1),var(--g2),var(--g3),var(--g4),var(--g1));background-size:300% 100%;animation:flow 3s linear infinite;filter:blur(16px);opacity:.45;z-index:-1;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;padding:10px}",
     "@keyframes flow{to{background-position:300% 0}}",
     // Click to search (like Google Lens): the picture or block under the pointer gets a white outline before it is clicked.
     ".hint{position:fixed;z-index:3;pointer-events:none;border-radius:12px;box-shadow:0 0 0 2px #fff,0 0 0 3px rgb(0 0 0 / .35),0 8px 24px -8px rgb(0 0 0 / .45);transition:left .12s,top .12s,width .12s,height .12s}",

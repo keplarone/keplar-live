@@ -85,9 +85,7 @@ export function noteHeartbeat(req: Request, kind: "hb" | "bye", at = Date.now())
 /** Write the queued heartbeats (update the visitor's row, or create it). Errors are swallowed: presence never breaks a page. */
 export async function flush(now?: number): Promise<number> {
   const batch = [...pending].slice(0, 300);
-  // An empty flush with no clock (a leave beacon cancelled the queued beat) must not purge against the wall clock.
-  // That would delete rows recorded at a test time, or any row older than ten minutes of real time, by chance.
-  const ref = now ?? (batch.length ? Math.max(...batch.map(([, at]) => at)) : undefined);
+  const ref = now ?? (batch.length ? Math.max(...batch.map(([, at]) => at)) : Date.now()); // purge relative to the newest heartbeat
   let n = 0;
   for (const [mark, at] of batch) {
     if (pending.get(mark) === at) pending.delete(mark);
@@ -104,7 +102,7 @@ export async function flush(now?: number): Promise<number> {
       console.error("[presence] heartbeat not recorded:", e instanceof Error ? e.name : "error");
     }
   }
-  if (ref !== undefined && Math.random() < 0.02) await rows().purgeSystemBefore("seen", new Date(ref - 10 * 60_000).toISOString(), 500).catch(() => 0);
+  if (Math.random() < 0.02) await rows().purgeSystemBefore("seen", new Date(ref - 10 * 60_000).toISOString(), 500).catch(() => 0);
   return n;
 }
 

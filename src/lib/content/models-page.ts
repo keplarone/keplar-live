@@ -22,8 +22,8 @@ const head = ["Model", "Provider", "Used as", "Weights", "Context (tokens)", "Re
 export const modelsPage: EditorialPage = {
   slug: "models",
   path: "/models",
-  metaTitle: "Which AI Models Does Keplar Use? Free and Paid",
-  metaDescription: "The AI models Keplar can consult on Free and paid plans, listed from the product, and how Keplar-One decides which ones to ask for each question.",
+  metaTitle: "Which AI models does Keplar use? Free and paid rosters",
+  metaDescription: `The AI models ${K} consults on Free and paid plans, how it picks them for each question, and what that means for privacy and cost, from the product's own roster.`,
   ogTitle: "Which AI models does Keplar use?",
   label: "Models",
   h1: "Which AI models does Keplar use?",

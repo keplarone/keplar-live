@@ -10,7 +10,6 @@ import s from "./Nav.module.css";
 import { useCommon, useLocale } from "@/lib/i18n/client";
 import { localizedPath } from "@/lib/i18n/routing";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
-import { WeatherToggle } from "@/components/theme/WeatherToggle";
 import { CtaLabel } from "@/components/ui/CtaLabel";
 import { lockScroll } from "@/lib/ui/scroll-lock";
 import { usePresence } from "@/components/motion/usePresence";
@@ -115,11 +114,9 @@ export function Nav() {
           <button type="button" className={`${s.icon} ${s.searchBtn}`} onClick={search} aria-label={en ? "Search" : t.search}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></svg>
           </button>
-          <WeatherToggle className={`${s.weather}`} />
           <ThemeToggle className={`${s.icon} ${s.theme}`} />
           <Link href={me.signedIn ? "/account" : href(signInHref)} className={s.signIn}>
-            <span className={s.lens} data-glass-pill="" data-distort="" data-glass-chip="" aria-hidden="true" />
-            <span className={s.lensLabel}>{me.signedIn ? t.account : t.signIn}</span>
+            {me.signedIn ? t.account : t.signIn}
           </Link>
           {/* "Try Keplar" signed out, "Open Keplar" signed in (CtaLabel: both in the HTML, CSS shows one from <html data-signed>). */}
           <Link href={tryHref} className={s.cta}>
@@ -139,9 +136,6 @@ export function Nav() {
         </div>
       </div>
 
-      {panel.mounted ? (
-        <button type="button" className={s.scrim} aria-label={t.closeMenu} tabIndex={-1} onClick={() => setOpen(false)} {...panel.motion("fade", false)} />
-      ) : null}
       <nav ref={sheetRef} id="site-menu" className={s.sheet} aria-label={t.siteMenu} hidden={!panel.mounted} {...panel.motion("drop")}>
         <div className={s.cols}>
           <div className={s.col}>
@@ -175,7 +169,6 @@ export function Nav() {
             {en ? "Search" : t.search}
           </button>
           {/* Phones under 400px: the bar has no room for it, so the theme switch lives here (Nav.module.css .panelTheme). */}
-          <WeatherToggle className={`${s.weather} ${s.panelWeather}`} />
           <ThemeToggle className={`${s.icon} ${s.theme} ${s.panelTheme}`} />
           <Link href={me.signedIn ? "/account" : href(signInHref)} className={s.sheetSignIn}>
             {me.signedIn ? t.account : t.signIn}

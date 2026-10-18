@@ -59,15 +59,15 @@
 
 .bottom { width: min(calc(760 * var(--u)), 100%); display: flex; flex-direction: column; align-items: center; gap: clamp(8px, 1.5vh, 16px); }
 /* The composer: a Space pill field (inner depth that holds a 3:1 edge, no border) that glows violet while it is typed in. */
-.composer { width: 100%; display: flex; align-items: center; gap: var(--s-3); padding: 7px 7px 7px clamp(16px, 2vw, 26px); border-radius: 999px; border: 0; background: #101012; backdrop-filter: none; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), inset 0 0 0 1px rgb(255 255 255 / 0.32), 0 24px 60px rgb(0 0 0 / 0.55); transition: box-shadow var(--space-dur-base) var(--space-ease-out); }
-.composer:has(:is(textarea, input):focus-visible) { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), inset 0 0 0 1px rgb(255 255 255 / 0.32), 0 0 0 3px rgb(var(--ring-rgb) / 0.55); }
+.composer { width: 100%; display: flex; align-items: center; gap: var(--s-3); padding: 7px 7px 7px clamp(16px, 2vw, 26px); border-radius: 999px; border: 0; background: #0e0d13; backdrop-filter: none; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), inset 0 0 0 1px rgb(255 255 255 / 0.32), 0 24px 60px rgb(0 0 0 / 0.55); transition: box-shadow var(--space-dur-base) var(--space-ease-out); }
+.composer:has(:is(textarea, input):focus-visible) { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), inset 0 0 0 1px rgb(255 255 255 / 0.32), 0 0 0 3px rgb(195 155 255 / 0.55), 0 0 24px rgb(176 104 255 / 0.35); }
 .input { flex: 1 1 auto; min-width: 0; min-height: 26px; max-height: 120px; resize: none; border: 0; outline: 0; background: transparent; color: #fff; font: inherit; font-size: clamp(10.2px, 0.85vw, calc(18 * var(--u))); line-height: 1.5; letter-spacing: 0; field-sizing: content; padding: 12px 0; text-align: left; caret-color: #fff; }
 .input::placeholder { color: rgb(255 255 255 / 0.5); }
 /* Send: Space Studio's 3D primary (white face over the #8c8a99 ledge; the stage is always dark). */
 .go { flex: none; width: calc(48 * var(--u)); height: calc(48 * var(--u)); margin-bottom: 4px; border-radius: 999px; border: 0; cursor: pointer; display: grid; place-items: center; background: linear-gradient(180deg, #ffffff 0%, #ececf2 55%, #d9d9e2 100%); color: #000; box-shadow: inset 0 1px 0 #fff, inset 0 -3px 0 rgb(0 0 0 / 0.1), 0 4px 0 #8c8a99, 0 10px 24px rgb(0 0 0 / 0.6); transition: transform 0.12s ease, box-shadow 0.12s ease; }
-.go:hover { transform: translateY(-1px); box-shadow: inset 0 1px 0 #fff, inset 0 -3px 0 rgb(0 0 0 / 0.1), 0 5px 0 #8c8a99, 0 14px 30px rgb(0 0 0 / 0.6); }
+.go:hover { transform: translateY(-1px); box-shadow: inset 0 1px 0 #fff, inset 0 -3px 0 rgb(0 0 0 / 0.1), 0 5px 0 #8c8a99, 0 14px 30px rgb(0 0 0 / 0.6), 0 0 32px rgb(190 150 255 / 0.25); }
 .go:active { transform: translateY(4px); box-shadow: inset 0 1px 0 #fff, inset 0 -1px 0 rgb(0 0 0 / 0.1), 0 0 0 #8c8a99, 0 4px 10px rgb(0 0 0 / 0.5); }
-.go:focus-visible { outline: none; box-shadow: inset 0 1px 0 #fff, 0 4px 0 #8c8a99, 0 0 0 3px rgb(var(--ring-rgb) / 0.55); }
+.go:focus-visible { outline: none; box-shadow: inset 0 1px 0 #fff, 0 4px 0 #8c8a99, 0 0 0 3px rgb(195 155 255 / 0.55), 0 0 24px rgb(176 104 255 / 0.35); }
 .go:disabled { opacity: 0.6; cursor: progress; }
 
 .chips { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%; max-width: 100%; background: none; border: 0; border-radius: 0; box-shadow: none; }
@@ -143,7 +143,7 @@
 
 /* respond: three answers as abstract text blocks */
 .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 150px)); gap: 14px; margin-top: 6px; }
-.card { display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 22px; border: 0; background: #101012; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 24px 60px rgb(0 0 0 / 0.55); transform: translateY(calc(var(--k) * 6px - 6px)); }
+.card { display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 22px; border: 0; background: linear-gradient(180deg, rgb(22 20 30 / 0.78), rgb(10 9 14 / 0.82)); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 24px 60px rgb(0 0 0 / 0.55); transform: translateY(calc(var(--k) * 6px - 6px)); }
 .card span { display: block; height: 6px; border-radius: 999px; background: rgb(255 255 255 / 0.28); }
 .card span:nth-child(2) { width: 82%; }
 .card span:nth-child(3) { width: 56%; background: rgb(255 255 255 / 0.5); }
@@ -213,9 +213,13 @@
   .goText + :global(.visually-hidden) { display: revert; }
 }
 
-.hero :is(.h1, .sub, .proof, .note, .kicker, .prompt, .body, .fine, .nodes li, .title, .huge, .one, .link) { text-shadow: none; }
+/* Legibility over the scene (planets, terrain and the silver mark pass behind the copy mid-scroll): a tight solid graphite halo under
+   every line of hero and scene text instead of a white glow, which washed the text out over bright planets and the logo. */
+.hero :is(.h1, .sub, .proof, .note, .kicker, .prompt, .body, .fine, .nodes li, .title, .huge, .one, .link) { text-shadow: 0 0 2px rgb(11 11 13 / 0.85), 0 1px 14px rgb(11 11 13 / 0.75); }
 
-/* Light theme: the same graphite stage, with solid ink on the canvas. */
+/* ── Light theme: a warm, bright stage with a soft aura (Dark above stays the graphite night sky) ─────────────────────────────
+   The scene draws its light ink on a transparent canvas (MonolithHome.tsx), so the warm page and the aura show behind the mark.
+   Inks are solid colours picked for AA on #faf9f7 and on the palest aura tint behind the copy; the legibility halo turns warm white. */
 :global(:root[data-theme="light"]) .hero {
   --mono-bg: var(--c-canvas);
   --on-black: #111113;
@@ -233,33 +237,48 @@
 :global(:root[data-theme="light"]) .line[data-n="1"] { color: #6a6b71; }
 :global(:root[data-theme="light"]) .scr i[data-s] { color: rgb(17 17 19 / 0.45); }
 :global(:root[data-theme="light"]) .hero :is(.h1, .sub, .proof, .note, .kicker, .prompt, .body, .fine, .nodes li, .title, .huge, .one, .link) {
-  text-shadow: none;
+  text-shadow: 0 0 2px rgb(250 249 247 / 0.9), 0 1px 14px rgb(250 249 247 / 0.7);
 }
 :global(:root[data-theme="light"]) .scan { display: none; }
+/* composer: a crisp white card floating on the aura */
 :global(:root[data-theme="light"]) .composer {
   background: #fff;
-  box-shadow: inset 0 1px 2px rgb(14 15 18 / 0.08), inset 0 0 0 1px rgb(14 15 18 / 0.5);
+  box-shadow: inset 0 1px 2px rgb(14 15 18 / 0.08), inset 0 0 0 1px rgb(14 15 18 / 0.5), 0 18px 44px -20px rgb(125 59 196 / 0.28);
 }
 :global(:root[data-theme="light"]) .composer:has(:is(textarea, input):focus-visible) {
-  box-shadow: inset 0 1px 2px rgb(14 15 18 / 0.08), inset 0 0 0 1px rgb(14 15 18 / 0.5), 0 0 0 2px var(--c-canvas), 0 0 0 4px var(--c-focus);
+  box-shadow: inset 0 1px 2px rgb(14 15 18 / 0.08), inset 0 0 0 1px rgb(14 15 18 / 0.5), 0 0 0 3px rgb(125 59 196 / 0.45), 0 0 22px rgb(125 59 196 / 0.28);
 }
 :global(:root[data-theme="light"]) .input { color: var(--c-ink); caret-color: var(--c-ink); }
 :global(:root[data-theme="light"]) .input::placeholder { color: #6b6c72; }
 :global(:root[data-theme="light"]) .go { background: linear-gradient(180deg, #3a3a42 0%, #1d1d22 55%, #0e0e12 100%); color: #fff; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), inset 0 -3px 0 rgb(0 0 0 / 0.25), 0 4px 0 #000, 0 10px 22px rgb(14 15 18 / 0.3); }
-:global(:root[data-theme="light"]) .go:hover { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.26), inset 0 -3px 0 rgb(0 0 0 / 0.25), 0 5px 0 #000, 0 14px 30px rgb(14 15 18 / 0.34); }
+:global(:root[data-theme="light"]) .go:hover { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.26), inset 0 -3px 0 rgb(0 0 0 / 0.25), 0 5px 0 #000, 0 14px 30px rgb(14 15 18 / 0.34), 0 0 30px rgb(125 59 196 / 0.22); }
 :global(:root[data-theme="light"]) .go:active { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2), 0 0 0 #000, 0 3px 8px rgb(14 15 18 / 0.3); }
 :global(:root[data-theme="light"]) .proof a { text-decoration-color: rgb(17 17 19 / 0.3); }
 /* the six scenes */
 :global(:root[data-theme="light"]) .card { background: rgb(255 255 255 / 0.86); box-shadow: inset 0 1px 0 #fff, 0 1px 2px rgb(14 15 18 / 0.05), 0 16px 40px -18px rgb(14 15 18 / 0.22); }
 :global(:root[data-theme="light"]) .card span { background: rgb(17 17 19 / 0.14); }
 :global(:root[data-theme="light"]) .card span:nth-child(3) { background: rgb(17 17 19 / 0.32); }
-:global(:root[data-theme="light"]) .nodes i { box-shadow: none; }
-:global(:root[data-theme="light"]) .dots i { box-shadow: none; }
+:global(:root[data-theme="light"]) .nodes i { box-shadow: 0 0 0 3px rgb(178 124 255 / 0.35); }
+:global(:root[data-theme="light"]) .dots i { box-shadow: 0 0 0 3px rgb(178 124 255 / 0.3); }
 :global(:root[data-theme="light"]) .dots i[data-odd] { box-shadow: none; }
 :global(:root[data-theme="light"]) .caret { box-shadow: none; }
 :global(:root[data-theme="light"]) .steps li { background: rgb(255 255 255 / 0.8); }
 @keyframes pulseLight { 50% { opacity: 0.5; } }
 :global(:root[data-theme="light"]) .nodes i { animation-name: pulseLight; }
+
+/* Static corner glows on the hero stage. No blur, no drift, no background-attachment: the stage clips them. */
+:global(:root[data-theme="light"]) .pin::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: var(--aura-hero);
+  opacity: 0.95;
+}
+@media (max-width: 899px) {
+  :global(:root[data-theme="light"]) .pin::before { opacity: 0.9; }
+}
 
 /* Stacked layout (no WebGL / reduced motion): the hero copy first, then the story list, then the scenes. The list used to come first
    and sat under the nav pill, above the headline. */

@@ -10,9 +10,9 @@
 @import "./mobile.css";
 @import "./motion.css";
 @import "./light.css";
+@import "./aura.css";
 @import "./prefs.css";
 @import "./space.css"; /* Space UI: tokens, motion, components (docs/design/space-ui.md). Last, so its rules win. */
-@import "./app-surface.css"; /* Chat home and /app: solid canvas, no cloud sky. After space.css so it wins. */
 
 /* The UI font is Montserrat (root layout, next/font). next/font generates its metric-matched fallback face and includes it in
    --font-sans, so the swap moves nothing; no hand-tuned fallback face is needed (the Google Sans one lived here). */
@@ -28,17 +28,12 @@ html {
   font-size: calc(16px * var(--ui-scale));
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  /* Wash behind the cloud sky. Dark is the first paint; light replaces it only when that theme is on. */
-  background: #161e2c;
+  background: var(--c-canvas);
   color: var(--c-ink);
   scroll-behavior: auto;
 }
-:root[data-theme="light"] { background: #5d9be8; }
 
 body {
-  position: relative;
-  z-index: 0;
-  background: transparent;
   margin: 0;
   font-family: var(--f-sans);
   font-size: var(--t-body);
@@ -54,11 +49,6 @@ body {
 
 /* Shared scroll lock (src/lib/ui/scroll-lock.ts): menus, the palette and the lightbox hold it while open. overscroll-behavior stops
    iOS/Android chaining the overlay's own scroll into the page underneath (no rubber-band bleed). */
-/* The sky canvas is a WebGL layer. Chromium will composite that canvas over text when it sits at
-   z-index -1 alone. Every page root is a stacking context above it, so rain and snow stay behind
-   sections, cards, the nav and the type. */
-#main { position: relative; z-index: 1; isolation: isolate; }
-
 html[data-scroll-lock] { overflow: hidden; overscroll-behavior: none; }
 [role="dialog"][aria-modal="true"] { overscroll-behavior: contain; }
 
@@ -208,11 +198,12 @@ canvas { outline: none; }
   font-family: var(--f-mono);
 }
 
-/* Scroll reveal: [data-reveal] blocks rise as they enter the viewport. A scroll-driven animation tied to the block's own
+/* Scroll reveal: [data-reveal] blocks fade and rise as they enter the viewport. A scroll-driven animation tied to the block's own
    position, so content is visible by default and is never left hidden: browsers without scroll timelines, reduced motion, print,
-   find-in-page and full-page captures all just show it. Translate only: text stays at full contrast the whole way through. */
+   find-in-page and full-page captures all just show it. Opacity and translate only: no layout shift. */
 @keyframes kp-reveal {
   from {
+    opacity: 0;
     translate: 0 16px;
   }
 }

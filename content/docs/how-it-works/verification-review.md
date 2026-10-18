@@ -1,6 +1,6 @@
 ---
 title: The verification review
-description: What Keplar's verifier does: it reads the draft against each model's response and flags reasoning gaps, contradictions and unsupported claims.
+description: What the verifier or judge actually does: it reads the draft against each model's response and flags reasoning gaps, contradictions and unsupported claims. It does not browse or open sources.
 order: 8
 updated: 2026-10-03
 keywords: verification, verifier, judge, contradiction, unsupported claim

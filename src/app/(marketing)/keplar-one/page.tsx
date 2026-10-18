@@ -11,8 +11,8 @@ import s from "@/components/sections/sections.module.css";
 
 export const metadata = pageMeta(
   "/keplar-one",
-  "Keplar-One Engine: Routing, Disagreement, Synthesis",
-  "Keplar-One is the orchestration layer behind Keplar: it routes each question to the right models, weighs evidence over headcount and writes one answer.",
+  `${brand.engineName}: the intelligence behind the intelligences`,
+  `${brand.engineName} classifies each task, selects only the AI models it needs by quality, reliability, latency, and cost, compares their reasoning, weighs the evidence behind it, and synthesizes one answer.`,
 );
 
 export default function KeplarOnePage() {

@@ -215,24 +215,15 @@ async function fail(job: ImageJob, code: string, message: string, usd?: number) 
 }
 
 export async function runImageJob(ws: Workspace, jobId: string, release: (() => Promise<void>) | null): Promise<ImageJob | null> {
-  let hold = release;
-  // Free the concurrency slot before any terminal status is written. A client that sees "failed" or "ready"
-  // must be able to start the next picture; releasing only in `finally` races that next request.
-  const freeSlot = async () => {
-    const r = hold;
-    hold = null;
-    await r?.().catch(() => undefined);
-  };
   const job = await getJob(ws.id, jobId);
   if (!job || job.status !== "understanding") {
-    await freeSlot();
+    await release?.();
     return job;
   }
   try {
     // 1. UNDERSTANDING: safety check on the prompt (OpenAI moderation, fails closed).
     const verdict = await checkImagePrompt(job.prompt);
     if (!verdict.ok) {
-      await freeSlot();
       await fail(job, verdict.transient ? "busy" : "refused", verdict.message);
       return job;
     }
@@ -240,7 +231,6 @@ export async function runImageJob(ws: Workspace, jobId: string, release: (() => 
     try {
       await assertImagesAllowed(ws, job.estimateUnits);
     } catch (e) {
-      await freeSlot();
       await fail(job, "paused", e instanceof Error ? e.message : "Image generation is paused right now. Nothing was charged.");
       return job;
     }
@@ -254,7 +244,6 @@ export async function runImageJob(ws: Workspace, jobId: string, release: (() => 
       if (pe?.usd) await recordSpend(pe.usd, ws.plan).catch(() => undefined); // billed by the provider, not charged to the user
       if (pe?.code === "rejected" || pe?.code === "not_configured") console.error("[images] provider rejected the request:", pe.message);
       const code = CODE_OF[pe?.code ?? "server"] ?? pe?.code ?? "server";
-      await freeSlot();
       await fail(job, code, FRIENDLY[pe?.code ?? "server"] ?? FRIENDLY.server, pe?.usd);
       return job;
     }
@@ -262,7 +251,6 @@ export async function runImageJob(ws: Workspace, jobId: string, release: (() => 
     const outCheck = await checkImageOutput(out.bytes, out.contentType, job.prompt);
     if (!outCheck.ok) {
       await recordSpend(out.usd, ws.plan).catch(() => undefined);
-      await freeSlot();
       await fail(job, "refused", "That image was filtered by the safety check, so it wasn't kept. Nothing was charged. Try a different description.", out.usd);
       return job;
     }
@@ -272,7 +260,6 @@ export async function runImageJob(ws: Workspace, jobId: string, release: (() => 
     } catch (e) {
       console.error("[images] could not store image:", e instanceof Error ? e.name : "error");
       await recordSpend(out.usd, ws.plan).catch(() => undefined);
-      await freeSlot();
       await fail(job, "server", "The image was created but couldn't be saved. Nothing was charged. Please try again.", out.usd);
       return job;
     }
@@ -284,16 +271,14 @@ export async function runImageJob(ws: Workspace, jobId: string, release: (() => 
     } catch (e) {
       console.error("[images] charge failed:", e instanceof Error ? e.name : "error"); // the image is kept; never lose a paid-for result
     }
-    await freeSlot();
     await patch(job, { status: "ready", blobId, contentType: out.contentType, bytes: out.bytes.length, units, usd: out.usd, model: out.model, finishedAt: now() });
     return job;
   } catch (e) {
     console.error("[images] job failed:", e instanceof Error ? e.name : "error");
-    await freeSlot();
     await fail(job, "server", FRIENDLY.server).catch(() => undefined);
     return job;
   } finally {
-    await freeSlot();
+    await release?.().catch(() => undefined);
   }
 }
 

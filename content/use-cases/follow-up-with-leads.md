@@ -1,6 +1,6 @@
 ---
-title: Follow Up With New Leads Using AI Agents
-description: Let a scheduled Keplar agent draft lead follow-ups while every outgoing message waits for your approval. How it works in Keplar Business.
+title: Follow up with new leads without losing control
+description: Set up an agent that drafts replies to contact-form submissions and puts them in an approval queue, so you stay in charge of what gets sent.
 updated: 2026-10-03
 keywords: AI lead follow-up, automate email replies, small business automation, AI agent for sales
 related: /docs/connectors-agents/agents-overview, /docs/connectors-agents/agent-guardrails, /agents

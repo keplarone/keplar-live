@@ -1,6 +1,6 @@
 ---
-title: What Happens to Your AI Prompts? AI Privacy Guide
-description: Where your prompts go, who can log them, how training opt-outs work and what to keep out of free AI tools. A plain guide to AI privacy.
+title: What happens to your prompts? A plain guide to AI privacy
+description: Where your questions go when you use an AI assistant, what providers may store or train on, how free and paid tiers differ, and what to keep out of a prompt.
 category: Trust and accuracy
 published: 2026-10-03
 updated: 2026-10-03

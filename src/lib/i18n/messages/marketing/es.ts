@@ -12,8 +12,8 @@ const m: MarketingCatalog = {
       "description": "Todas las funciones de Keplar en una página, agrupadas por su uso: preguntar, leer archivos, crear sitios y apps, construir en equipo, publicar, la API y el widget, y confianza. Cada una indica si está disponible, en beta o próximamente."
     },
     "pricing": {
-      "title": "Precios: Free, Lite $20, Plus $45, Pro $99",
-      "description": "Empieza gratis con Keplar One. Keplar Lite cuesta $20 al mes, Keplar Plus cuesta $45 al mes, Keplar Pro $99 al mes y los planes Business están disponibles con nuestro equipo de ventas. Un uso que puedes ver, nunca oculto."
+      "title": "Precios: Free, Plus $45, Pro $99",
+      "description": "Empieza gratis con Keplar One. Keplar Plus cuesta $45 al mes, Keplar Pro $99 al mes y los planes Business están disponibles con nuestro equipo de ventas. Un uso que puedes ver, nunca oculto."
     },
     "showcase": {
       "title": "Escaparate de Create: cómo debería verse una app hecha con Keplar",

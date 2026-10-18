@@ -1,5 +1,5 @@
-/* Plans (Space UI, docs/design/space-ui.md): calm, scannable 28px glass cards, no outlines. Hover lifts a card;
-   the recommended plan (Plus) stands lifted and carries the one 3D primary button. */
+/* Plans (Space UI, docs/design/space-ui.md): calm, scannable 28px glass cards, no outlines. Hover lifts a card with a violet glow;
+   the recommended plan (Plus) stands lifted with a stronger glow and carries the one 3D primary button. */
 .section {
   position: relative;
   z-index: var(--z-content);
@@ -24,10 +24,8 @@
   flex-direction: column;
   padding: var(--s-8) var(--s-6) var(--s-6);
   border-radius: var(--r-card);
-  background: var(--lg-solid);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+  background: var(--space-glass);
+  box-shadow: var(--space-glass-depth);
   transition: box-shadow var(--space-dur-slow) var(--space-ease-out), transform var(--space-dur-slow) var(--space-ease-expo);
 }
 
@@ -41,7 +39,7 @@
 
 .plan[data-plan="plus"],
 .plan[data-plan="plus"]:hover {
-  box-shadow: var(--space-glass-lift);
+  box-shadow: var(--space-glass-lift), 0 0 56px -10px rgb(var(--ring-rgb) / 0.45);
 }
 
 .plan[data-plan="business"] {
@@ -133,12 +131,7 @@
 }
 
 .cta {
-  position: static;
   margin-top: var(--s-8);
-}
-.cta :is(a, button) {
-  position: relative;
-  top: auto;
 }
 
 .fine {
@@ -159,10 +152,8 @@
   align-items: start;
   padding: var(--s-10);
   border-radius: var(--r-card);
-  background: var(--lg-solid);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+  background: var(--space-glass);
+  box-shadow: var(--space-glass-depth);
 }
 
 .computeTitle {
@@ -212,8 +203,8 @@
 }
 
 .bars i[data-on] {
-  background: var(--c-accent);
-  box-shadow: none;
+  background: linear-gradient(90deg, #a467f0, #d76cff);
+  box-shadow: 0 0 10px rgb(var(--space-aura) / 0.45);
 }
 
 @media (max-width: 1080px) {
@@ -299,15 +290,4 @@
   .compute {
     margin-top: var(--s-10);
   }
-}
-
-/* Calm plan cards: a solid surface and a 1px edge. The page sky stays behind them. */
-.plan,
-.plan:hover,
-.plan[data-plan="plus"],
-.plan[data-plan="plus"]:hover {
-  background: var(--c-surface-1);
-  border: 1px solid var(--hairline);
-  box-shadow: none;
-  transform: none;
 }

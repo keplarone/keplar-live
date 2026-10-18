@@ -84,19 +84,16 @@ function paint(url: string, stored: string | null) {
   return attrs;
 }
 
-test("docs follow the site theme (dark by default) and mark data-docs before first paint; a saved choice still wins", () => {
+test("docs paint light with data-docs before first paint; the stored preference is kept and the main site uses the default (light: the day sky)", () => {
   for (const url of ["https://keplar.one/docs", "https://keplar.one/docs/get-started/quickstart", "https://docs.keplar.one/", "https://docs.keplar.one/reference"]) {
-    const fresh = paint(url, null);
-    assert.equal(fresh["data-theme"], "dark", url);
-    assert.equal(fresh["data-docs"], "1", url);
-    assert.equal(fresh["data-theme-pref"], "dark", url);
-    const chosen = paint(url, "light");
-    assert.equal(chosen["data-theme"], "light", `${url}: an explicit light choice persists`);
-    assert.equal(chosen["data-theme-pref"], "light", url);
+    const a = paint(url, "dark");
+    assert.equal(a["data-theme"], "light", url);
+    assert.equal(a["data-docs"], "1", url);
+    assert.equal(a["data-theme-pref"], "dark", `${url}: preference untouched`);
   }
   for (const url of ["https://keplar.one/", "https://keplar.one/docsy", "https://keplar.one/pricing"]) {
     const a = paint(url, null);
-    assert.equal(a["data-theme"], "dark", url);
+    assert.equal(a["data-theme"], "light", url); // Space UI: light (the cloud sky) is the default (docs/design/space-ui.md)
     assert.equal(a["data-docs"], undefined, url);
   }
 });

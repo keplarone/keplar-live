@@ -32,7 +32,7 @@ const STEPS = [
   { title: "You get one answer", body: "Their views are compared claim by claim and combined into one answer, with any disagreement shown." },
 ];
 
-/** The home: a calm cloud sky, hero, product window, feature list, the three steps, use cases and the live demo. */
+/** The light, Space-inspired home: hero, animated product window that zooms in on scroll, feature list, the particle scroll scene for the steps, use cases and the live demo. */
 export function SkyHome({ pricing }: { pricing?: React.ReactNode }) {
   const cases = allUseCases();
   const useCases = USE_CASES.map((u) => ({ ...u, data: cases.find((c) => c.slug === u.slug) })).filter((u) => u.data);
@@ -40,7 +40,7 @@ export function SkyHome({ pricing }: { pricing?: React.ReactNode }) {
   const ref = referralConfig();
 
   return (
-    <div className={s.home} data-sky-home="">
+    <div className={s.home}>
       <section className={s.hero} aria-labelledby="hero-title">
         <p className={s.badge}>
           <ModelStack />
@@ -81,8 +81,8 @@ export function SkyHome({ pricing }: { pricing?: React.ReactNode }) {
         <MoreRoot className={s.casesWrap}>
           <ul className={s.cards3} data-reveal-stagger>
             {useCases.map((u, i) => (
-              <li key={u.slug} data-more-rest={i >= PHONE_CASES ? "" : undefined}>
-                <Link href={u.data!.path} className={`${s.card} ${s.cardLink}`} data-reveal="">
+              <li key={u.slug} data-reveal data-more-rest={i >= PHONE_CASES ? "" : undefined}>
+                <Link href={u.data!.path} className={`${s.card} ${s.cardLink}`}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={u.color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{u.icon}</svg>
                   <h3>{u.data!.title}</h3>
                   <p>{u.data!.description}</p>

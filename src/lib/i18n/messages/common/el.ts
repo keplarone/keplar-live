@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Πόροι",
     "items": {
       "/features": "Όλα στο Keplar",
-      "/overview#demo": "Ζωντανή επίδειξη",
+      "/#demo": "Ζωντανή επίδειξη",
       "/app/create": "Δημιουργία",
       "/docs": "Τεκμηρίωση",
       "/pricing": "Τιμές",
@@ -30,7 +30,6 @@ const m: CommonCatalog = {
       "Legal": "Νομικά"
     },
     "links": {
-      "/overview": "About Keplar",
       "/features": "Όλα στο Keplar",
       "/showcase": "Βιτρίνα δημιουργιών",
       "/templates": "Γκαλερί κοινότητας",

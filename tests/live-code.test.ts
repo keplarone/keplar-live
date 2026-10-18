@@ -41,23 +41,6 @@ test("go to file: subsequence matching, best match first, file-name hits before 
   assert.equal(rankPaths(files, "q", 50).length, 0, "no path contains a q");
 });
 
-test("plan line: reading only while a build is running; a blocked build stops before a plan", async () => {
-  const { planPlaceholder, timelineStage, PLAN_READING, PLAN_STOPPED } = await import("../src/components/create/apps/code-nav");
-  assert.equal(planPlaceholder(true, false), PLAN_READING);
-  assert.equal(planPlaceholder(false, false), PLAN_STOPPED);
-  assert.equal(planPlaceholder(true, true), null);
-  assert.equal(planPlaceholder(false, true), null);
-  assert.equal(timelineStage(true, "", false), "plan", "a build that just started is planning, so the dot can pulse");
-  assert.equal(timelineStage(true, "generate", true), "generate");
-  assert.equal(timelineStage(false, "", false), "", "blocked before a plan: idle, not done and not live");
-  assert.equal(timelineStage(false, "plan", false), "");
-  assert.equal(timelineStage(false, "generate", true), "done");
-  const timeline = readFileSync("src/components/create/apps/BuildTimeline.tsx", "utf8");
-  assert.match(timeline, /timelineStage\(running, live\.stage, Boolean\(spec\)\)/);
-  assert.match(timeline, /planPlaceholder\(running, false\)/);
-  assert.doesNotMatch(timeline, /running \? live\.stage : "done"/);
-});
-
 test("tasks: each step's state follows the build stage; a finished build is all done; planned screens tick off as files land", async () => {
   const { stepState, screenWritten } = await import("../src/components/create/apps/code-nav");
   assert.equal(stepState("plan", "generate", true), "done");

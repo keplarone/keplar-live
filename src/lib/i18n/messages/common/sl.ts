@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Viri",
     "items": {
       "/features": "Vse v Keplarju",
-      "/overview#demo": "Predstavitev v živo",
+      "/#demo": "Predstavitev v živo",
       "/app/create": "Ustvari",
       "/docs": "Dokumentacija",
       "/pricing": "Cene",
@@ -30,7 +30,6 @@ const m: CommonCatalog = {
       "Legal": "Pravno"
     },
     "links": {
-      "/overview": "About Keplar",
       "/features": "Vse v Keplarju",
       "/showcase": "Razstava stvaritev",
       "/templates": "Galerija skupnosti",

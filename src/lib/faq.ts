@@ -27,7 +27,7 @@ export const faq: { q: string; a: string }[] = [
   },
   {
     q: "Can I see how Keplar reached its answer?",
-    a: "Yes. Below every Keplar answer you can expand six sections: Consensus (how many models agreed, as counts such as \"4 of 5\", never a percentage of correctness), Models consulted, Sources the models cite, Disagreements, Verification, and Reasoning summary.",
+    a: "Yes. Below every Keplar answer you can expand six sections: Consensus (the agreement percentage and how many models agreed and disagreed), Models consulted, Sources the models cite, Disagreements, Verification, and Reasoning summary.",
   },
   {
     q: "Is Keplar for personal use or for businesses?",

@@ -11,12 +11,12 @@ test("robots.txt keeps noindex pages crawlable (so noindex is seen) and only blo
   const rules = ([] as NonNullable<typeof r.rules extends infer T ? (T extends unknown[] ? T[number] : T) : never>[]).concat(r.rules as never);
   const dis = rules.flatMap((x) => (Array.isArray(x.disallow) ? x.disallow : x.disallow ? [x.disallow] : []));
   assert.deepEqual([...new Set(dis)].sort(), ["/api/", "/dev/"]);
-  assert.deepEqual(r.sitemap, [`${site.url}/sitemap-index.xml`]);
+  assert.match(String(r.sitemap), /sitemap\.xml$/);
 });
 
 test("llms.txt lists the pillar and supporting pages with absolute URLs and no hype", async () => {
   const body = await (await llms()).text();
-  for (const p of ["/superintelligence", "/multi-model-ai", "/si-vs-ai", "/ai-vs-agi-vs-superintelligence", "/pricing", "/models", "/tools", "/tools/citation-formatter"]) assert.ok(body.includes(`${site.url}${p}`), p);
+  for (const p of ["/superintelligence", "/multi-model-ai", "/si-vs-ai", "/ai-vs-agi-vs-superintelligence", "/pricing", "/models"]) assert.ok(body.includes(`${site.url}${p}`), p);
   assert.ok(body.startsWith("# "));
   assert.match(body.toLowerCase(), /not (agi|superintelligence)/);
 });

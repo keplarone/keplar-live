@@ -12,15 +12,15 @@ const m: MarketingCatalog = {
       "description": "Tutte le funzioni di Keplar in una pagina, raggruppate per scopo: fare domande, leggere file, creare siti e app, costruire insieme, pubblicare, l’API e il widget, e la fiducia. Per ognuna è indicato se è disponibile, in beta o in arrivo."
     },
     "pricing": {
-      "title": "Prezzi: Free, Lite $20, Plus $45, Pro $99",
-      "description": "Inizia gratis con Keplar One. Keplar Lite costa $20 al mese, Keplar Plus costa $45 al mese, Keplar Pro $99 al mese e i piani Business sono disponibili tramite il nostro team commerciale. Un utilizzo che vedi, mai nascosto."
+      "title": "Prezzi: Free, Plus $45, Pro $99",
+      "description": "Inizia gratis con Keplar One. Keplar Plus costa $45 al mese, Keplar Pro $99 al mese e i piani Business sono disponibili tramite il nostro team commerciale. Un utilizzo che vedi, mai nascosto."
     },
     "showcase": {
       "title": "Vetrina di Create: come dovrebbe essere un’app creata con Keplar",
       "description": "Otto siti e app dimostrativi realizzati dal team di Keplar per mostrare la gamma a cui punta Create: menu, registri, bacheche, calendari e pagine editoriali, ognuno con la propria tipografia e palette. Non sono siti di clienti."
     },
     "roadmap": {
-      "title": "Roadmap (Italiano)",
+      "title": "Roadmap",
       "description": "Cosa sta costruendo Keplar adesso, cosa è in beta e ancora in rifinitura, e cosa è uscito di recente. Nessuna data che non possiamo rispettare."
     },
     "developers": {

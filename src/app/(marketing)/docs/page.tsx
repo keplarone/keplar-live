@@ -8,7 +8,7 @@ import { softwareApp } from "@/lib/structuredData";
 import s from "@/components/kb/kb.module.css";
 import { TwoTone } from "@/components/page/TwoTone";
 
-export const metadata = pageMeta("/docs", "Keplar Docs: Guides, Concepts and Reference", "How to use Keplar and how routing, disagreement detection, verification and synthesis work, plus Create, Studio, connectors, plans, limits and privacy.");
+export const metadata = pageMeta("/docs", "Keplar docs: guides, concepts and reference", "How to use Keplar, how routing, agreement, disagreement, verification and synthesis work, Create, connectors, agents, plans and limits, privacy and security.");
 
 const START = ["/docs/get-started/quickstart", "/docs/how-it-works/which-questions-use-more-models", "/docs/how-it-works/disagreement-detection", "/docs/billing-plans/credits-explained", "/docs/privacy-security/data-handling"];
 

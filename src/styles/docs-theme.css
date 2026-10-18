@@ -1,22 +1,16 @@
 /*
- * Docs chrome. Dark follows the site (the default). Light, when the visitor chose it, is the paper skin: a cool off-white
- * canvas, white cards, near-black ink. The docs keep their own accent, teal (#0a7a8a), for links, the current page and the keyboard glow.
+ * Docs-only theme: Space UI on paper (docs/design/space-ui.md), tuned for reading. A plain cool off-white canvas, white cards with
+ * depth instead of edges, near-black ink, the Space 3D buttons (ink face on its ledge), pill fields, Montserrat throughout; the docs
+ * keep their own accent, teal (#0a7a8a), for links, the current page and the keyboard glow.
  * Scoped to <html data-docs="1">, which the head script (src/lib/theme.ts THEME_SCRIPT) sets before first paint on /docs/... and on
- * docs.keplar.one, and DocsSkin sets on client-side navigation.
+ * docs.keplar.one, and DocsSkin sets on client-side navigation. The docs are always light.
  *
  * The --docs-blue* names are kept for compatibility; they now hold the teal accent.
- * Contrast: ink #0e0f12, ink-2 #171a20 and ink-3 #26282e each clear 4.5:1 on #f7f8fa and on the day sky #5d9be8.
- * Teal #0a7a8a is 4.9:1 on white, 4.6:1 on its #e8f4f6 tint.
+ * Contrast: ink #0e0f12 on #f7f8fa 18.9:1, ink-2 8.1:1, ink-3 5.1:1; teal #0a7a8a 4.9:1 on white, 4.6:1 on its #e8f4f6 tint.
  *
- * The paper tokens apply only in light. Their selector weight beats the site dark tokens when that theme is on.
+ * Selector weight :root[data-docs="1"][data-theme] (0,3,0) beats :root[data-theme="dark"] and glass.css's :root:root fallbacks.
  */
-:root[data-docs="1"] {
-  --docs-blue: #7dced8;
-  --docs-blue-hover: #a5e0e6;
-  --docs-blue-tint: rgb(125 206 216 / 0.16);
-  --docs-blue-line: rgb(125 206 216 / 0.45);
-}
-:root[data-docs="1"][data-theme="light"] {
+:root[data-docs="1"][data-theme] {
   --docs-blue: #0a7a8a;
   --docs-blue-hover: #075f6b;
   --docs-blue-tint: #e8f4f6;
@@ -29,8 +23,8 @@
   --c-surface-1: #ffffff;
   --c-surface-2: #f1f3f6;
   --c-ink: #0e0f12;
-  --c-ink-2: #171a20;
-  --c-ink-3: #26282e;
+  --c-ink-2: #4b4f58;
+  --c-ink-3: #686d78;
   --c-border: var(--docs-line);
   --c-border-strong: var(--docs-line-strong);
   --c-glass: #ffffff;
@@ -40,7 +34,7 @@
   --c-accent: var(--docs-blue);
   --c-cyan: var(--docs-blue);
   --ring-rgb: 10 122 138;
-  --space-focus-glow: 0 0 0 2px #ffffff, 0 0 0 4px var(--docs-blue);
+  --space-focus-glow: 0 0 0 3px rgb(10 122 138 / 0.42), 0 0 22px rgb(10 122 138 / 0.24);
   --c-ink-hover: var(--docs-blue-hover);
   --focus-filter: none;
   --rgb-ink: 14 15 18;
@@ -94,11 +88,9 @@
 }
 
 :root[data-docs="1"] body {
+  background: #f7f8fa;
   color: var(--c-ink-2);
   font-family: var(--f-sans);
-}
-:root[data-docs="1"][data-theme="light"] body {
-  background: #f7f8fa;
 }
 
 /* No ambient wash, no glass blur, no glow layers on the docs. */
@@ -158,7 +150,7 @@
 :root[data-docs="1"] main [class*="kb-module"][class*="__navLink"] { border-radius: 12px; }
 :root[data-docs="1"] main [class*="kb-module"][class*="__navLink"]:hover:not([aria-current="page"]) { background: var(--hover-wash); }
 :root[data-docs="1"] main [class*="kb-module"][class*="__searchInput"] { border-radius: var(--r-pill); padding-inline: 18px; }
-:root[data-docs="1"] main a[class*="card"]:hover { box-shadow: var(--space-glass-lift); }
+:root[data-docs="1"] main a[class*="card"]:hover { box-shadow: var(--space-glass-lift), 0 0 36px rgb(10 122 138 / 0.14); }
 :root[data-docs="1"] main [class*="callout"] { border-radius: var(--space-r-panel); color: var(--c-ink); }
 :root[data-docs="1"] main [class*="codeBlock"] { background: var(--surface-raised); border-radius: var(--space-r-panel); }
 :root[data-docs="1"] main [class*="prose"] code { background: var(--surface-raised); }

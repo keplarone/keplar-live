@@ -29,7 +29,7 @@ function build(): KbPath[] {
     { path: "/blogs", lastmod: max(posts.map((p) => p.updated)) },
     ...posts.map((p) => ({ path: p.path, lastmod: p.updated })),
     { path: "/changelog", lastmod: latestRelease() },
-    { path: "/glossary", lastmod: "2026-10-17" },
+    { path: "/glossary", lastmod: "2026-10-03" },
     { path: "/prompts", lastmod: "2026-10-03" },
     ...promptCategories.map((c) => ({ path: `/prompts/${c.slug}`, lastmod: "2026-10-03" })),
     { path: "/use-cases", lastmod: max(cases.map((c) => c.updated)) },

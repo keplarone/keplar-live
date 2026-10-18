@@ -1,6 +1,6 @@
 ---
-title: Why Does AI Agree With Everything? Sycophancy
-description: Why AI assistants tend to agree with you, what sycophancy is, why it happens in training and how to get more honest answers.
+title: Why does AI agree with everything you say? Understanding sycophancy
+description: AI assistants can flatter, defer and tell you what you want to hear. Why it happens, how to spot it, how to prompt around it, and why a panel of models helps.
 category: Trust and accuracy
 published: 2026-10-03
 updated: 2026-10-03

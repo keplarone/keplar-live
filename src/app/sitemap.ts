@@ -8,7 +8,6 @@ import { kbPaths } from "@/lib/kb/paths";
 import { SHOWCASE } from "@/lib/create/showcase/data";
 import { comparePages, hub as compareHub } from "@/lib/compare";
 import { localizedSitemapAlternates, localizedSitemapEntries } from "@/lib/i18n/sitemap";
-import { toolPaths } from "@/lib/seo/tools";
 
 /**
  * Canonical, indexable, 200 public URLs only. /app, /api, auth, checkout and account are excluded (private or transactional);
@@ -17,7 +16,6 @@ import { toolPaths } from "@/lib/seo/tools";
  */
 export const sitemapPaths: string[] = [
   "/",
-  "/overview",
   "/what-is-keplar",
   "/product",
   "/how-it-works",
@@ -41,6 +39,9 @@ export const sitemapPaths: string[] = [
   "/contact",
   "/help",
   "/security",
+  "/specialists",
+  "/simulation",
+  "/space-studio",
   "/guides",
   ...editorialPages.map((p) => p.path),
   ...landingPages.map((p) => p.path),
@@ -48,7 +49,6 @@ export const sitemapPaths: string[] = [
   ...kbPaths().map((p) => p.path), // docs, blog, glossary, prompts, use cases, approved comparisons
   compareHub.path,
   ...comparePages.map((p) => p.path),
-  ...toolPaths(),
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

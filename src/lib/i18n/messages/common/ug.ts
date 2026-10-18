@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "مەنبەلەر",
     "items": {
       "/features": "Keplar دىكى ھەممە نەرسە",
-      "/overview#demo": "بىۋاسىتە كۆرسىتىش",
+      "/#demo": "بىۋاسىتە كۆرسىتىش",
       "/app/create": "قۇرۇش",
       "/docs": "ھۆججەتلەر",
       "/pricing": "باھا",
@@ -30,7 +30,6 @@ const m: CommonCatalog = {
       "Legal": "قانۇنىي"
     },
     "links": {
-      "/overview": "About Keplar",
       "/features": "Keplar دىكى ھەممە نەرسە",
       "/showcase": "ئىجادىيەت كۆرگەزمىسى",
       "/templates": "جامائەت رەسىمخانىسى",

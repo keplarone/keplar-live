@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Goireasan",
     "items": {
       "/features": "A h-uile rud ann an Keplar",
-      "/overview#demo": "Taisbeanadh beò",
+      "/#demo": "Taisbeanadh beò",
       "/app/create": "Cruthaich",
       "/docs": "Docamaideadh",
       "/pricing": "Prìsean",
@@ -30,7 +30,6 @@ const m: CommonCatalog = {
       "Legal": "Laghail"
     },
     "links": {
-      "/overview": "About Keplar",
       "/features": "A h-uile rud ann an Keplar",
       "/showcase": "Taisbeanadh chruthachaidhean",
       "/templates": "Gailearaidh na coimhearsnachd",

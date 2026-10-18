@@ -28,11 +28,11 @@ const fit = (id: string) => {
 const en = {
   meta: {
     home: { title: site.seoTitle, description: "Keplar sends your question to multiple AI models, finds where they disagree, verifies, and gives you one synthesized answer. Free to try, no signup." },
-    features: { title: "Keplar Features: Every Tool and Its Status", description: "Every Keplar feature in one list, with the plan it needs and whether it is live or in beta: multi-model answers, Study, Deep Research, Create, Studio and more." },
-    pricing: { title: "Keplar Pricing: Free, Lite $20, Plus $45, Pro $99", description: "Start free with 50 questions a day. Keplar Lite is $20/month, Plus $45/month and Pro $99/month, billed monthly, cancel any time. Business plans are separate." },
-    showcase: { title: "Sites Built With Keplar Create: Showcase", description: "Eight demo sites and apps built with Keplar Create, each designed for its brief: no purple glow, no three-card grid. See them live, then build your own." },
-    roadmap: { title: "Keplar Roadmap: What We're Building Next", description: "What Keplar is building now, what is in beta and still being finished, and what shipped recently. No target dates we can't keep." },
-    developers: { title: "Keplar API for Developers: Multi-Model Answers in Code", description: "Ask Keplar from your code: a beta REST API with Bearer keys, streaming and an OpenAPI spec, plus an embeddable Ask widget. Free keys use free models." },
+    features: { title: "Everything in Keplar", description: "Every Keplar feature on one page, grouped by what it is for: asking, reading files, creating sites and apps, building together, shipping, the API and widget, and trust. Each one says whether it is live, in beta or coming soon." },
+    pricing: { title: "Pricing: Free, Plus $45, Pro $99", description: "Start free with Keplar One. Keplar Plus is $45/month, Keplar Pro is $99/month, and Business plans are available through our sales team. Usage you can see, never hidden." },
+    showcase: { title: "Create showcase: what an app built with Keplar should look like", description: "Eight demo sites and apps made by the Keplar team to show the range Create aims for: menus, ledgers, boards, calendars and editorial pages, each in its own type and palette. Not customer sites." },
+    roadmap: { title: "Roadmap", description: "What Keplar is building now, what is in beta and still being finished, and what shipped recently. No target dates we cannot keep." },
+    developers: { title: "Keplar for developers: API, embeddable Ask, Teams", description: "Ask Keplar from your own code with a Bearer API key, or drop the Ask widget on your site with one script tag. OpenAPI spec, streaming, per-plan limits stated plainly." },
     signin: { title: "Sign in", description: "Sign in to Keplar." },
     signup: { title: "Create your account", description: "Create a free Keplar account." },
   },

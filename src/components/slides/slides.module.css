@@ -163,15 +163,15 @@ textarea.input { border-radius: var(--space-r-area); padding: 14px 20px; }
 .input:hover { background: var(--space-field-hover); }
 .input:focus, .input:focus-visible { background: var(--space-field-focus); box-shadow: var(--space-field-depth), var(--space-focus-glow); }
 .range { accent-color: var(--c-accent); }
-.error { border-radius: 20px; background: rgb(var(--rgb-destructive) / 0.1); box-shadow: none; }
+.error { border-radius: 20px; background: rgb(var(--rgb-destructive) / 0.1); box-shadow: 0 0 40px rgb(var(--rgb-destructive) / 0.12); }
 .primary:focus-visible, .ghost:focus-visible, .linkBtn:focus-visible, .tiny:focus-visible, .thumb:focus-visible, .deckOpen:focus-visible, .pBtn:focus-visible, .fileInput:focus-visible + label { text-decoration: none; box-shadow: var(--space-focus-glow); }
 .deckList { gap: 6px; }
 .deckRow { border-bottom: 0; padding: 10px 14px; border-radius: 20px; background: var(--hover-wash); }
 .deckRow:last-child { border-bottom: 0; }
 .thumb { border-radius: 10px; box-shadow: 0 6px 16px rgb(0 0 0 / 0.25); }
-.thumbItem[data-active] .thumb { box-shadow: 0 0 0 2px rgb(var(--ring-rgb) / 0.8); }
+.thumbItem[data-active] .thumb { box-shadow: 0 0 0 2px rgb(var(--ring-rgb) / 0.8), 0 0 22px rgb(var(--ring-rgb) / 0.35); }
 .tiny { border-radius: 999px; box-shadow: none; background: var(--hover-wash); }
 .tiny:hover:not(:disabled) { background: var(--press-wash); }
 .frame { border-radius: 12px; }
-.lockIcon { background: var(--space-p-face); color: var(--space-p-ink); box-shadow: none; }
+.lockIcon { background: var(--space-p-face); color: var(--space-p-ink); box-shadow: 0 0 22px rgb(var(--ring-rgb) / 0.35); }
 .presentBar { border-radius: 999px; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 18px 48px rgb(0 0 0 / 0.55); }

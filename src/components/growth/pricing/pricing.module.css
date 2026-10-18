@@ -62,7 +62,7 @@
 
 .fit[data-plan="plus"],
 .fit[data-plan="plus"]:hover {
-  box-shadow: var(--space-glass-lift);
+  box-shadow: var(--space-glass-lift), 0 0 56px -10px rgb(var(--ring-rgb) / 0.45);
 }
 
 .fitPlan {
@@ -102,12 +102,7 @@
 }
 
 .fitCta {
-  position: static;
   margin-top: var(--s-6);
-}
-.fitCta :is(a, button) {
-  position: relative;
-  top: auto;
 }
 
 /* ── Comparison table ── */
@@ -117,9 +112,8 @@
   margin-top: var(--s-8);
   overflow-x: auto;
   border-radius: var(--r-card);
-  background: var(--lg-solid);
-  color: var(--c-ink);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+  background: var(--space-glass-solid);
+  box-shadow: var(--space-glass-depth);
   -webkit-overflow-scrolling: touch;
 }
 
@@ -157,10 +151,10 @@
   border-bottom-color: var(--hairline-strong);
 }
 
-/* Plus: a graphite (light) or near-white (dark) rule under its column head, and a faint neutral wash down the column. */
+/* Plus: a violet glow line under its column head and a faint violet wash down the column. */
 .table thead th[data-plan="plus"] {
   color: var(--c-accent);
-  box-shadow: inset 0 -2px 0 rgb(var(--ring-rgb) / 0.7);
+  box-shadow: inset 0 -2px 0 rgb(var(--ring-rgb) / 0.7), inset 0 -14px 18px -14px rgb(var(--ring-rgb) / 0.35);
 }
 
 .table td[data-plan="plus"] {
@@ -187,7 +181,7 @@
   left: 0;
   z-index: 1;
   min-width: 220px;
-  background: var(--lg-solid);
+  background: var(--space-glass-solid);
   color: var(--c-ink);
   font-weight: var(--w-regular);
 }
@@ -209,7 +203,7 @@
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--c-ink-3);
-  background: var(--lg-solid);
+  background: var(--space-glass-solid);
 }
 
 .dash {

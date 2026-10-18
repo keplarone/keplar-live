@@ -35,10 +35,9 @@ test("phones: the header fits on one line in every language (search and Sign in 
   assert.match(phone, /\.searchBtn, \.signIn \{ display: none; \}/);
   assert.match(phone, /\.sheetSignIn \{ display: inline-flex; \}/);
   assert.match(nav, /\.cta \{[^}]*white-space: nowrap;/);
-  assert.match(block(nav, "max-width: 400px", ".panelTheme"), /\.actions \.theme, \.actions \.weather \{ display: none; \}[\s\S]*\.panelTheme \{ display: inline-grid; \}[\s\S]*\.panelWeather \{ display: inline-flex; \}/);
+  assert.match(block(nav, "max-width: 400px", ".panelTheme"), /\.actions \.theme \{ display: none; \}[\s\S]*\.panelTheme \{ display: inline-grid; \}/);
   const tsx = readFileSync("src/components/chrome/Nav.tsx", "utf8");
   assert.match(tsx, /<ThemeToggle className=\{`\$\{s\.icon\} \$\{s\.theme\} \$\{s\.panelTheme\}`\} \/>/, "the theme switch is still reachable on small phones");
-  assert.match(tsx, /<WeatherToggle className=\{`\$\{s\.weather\} \$\{s\.panelWeather\}`\} \/>/, "the weather switch is still reachable on small phones");
   assert.match(tsx, /aria-label=\{open \? t\.closeMenu : t\.openMenu\}/, "the icon-only menu button keeps its name");
 });
 

@@ -5,7 +5,6 @@ import { guides } from "../src/lib/content/guides";
 import { landingPages } from "../src/lib/content/landing";
 import { allPosts } from "../src/lib/kb/blog";
 import { allDocs } from "../src/lib/kb/docs";
-import { toolPaths } from "../src/lib/seo/tools";
 import sitemap from "../src/app/sitemap";
 import { parseUtm, withUtm } from "../src/lib/utm";
 
@@ -31,7 +30,7 @@ test("every page has a unique title, description, and path", () => {
 });
 
 test("internal links point at real pages", () => {
-  const known = new Set(["/how-it-works", "/pricing", "/compare", "/for-you", "/for-developers", "/download", "/what-is-keplar", "/guides", ...landingPages.map((p) => p.path), ...guides.map((g) => g.path), ...allPosts().map((b) => b.path), ...allDocs().map((d) => d.path), ...toolPaths()]);
+  const known = new Set(["/how-it-works", "/pricing", "/compare", "/for-you", "/for-developers", "/download", "/what-is-keplar", ...landingPages.map((p) => p.path), ...guides.map((g) => g.path), ...allPosts().map((b) => b.path), ...allDocs().map((d) => d.path)]);
   for (const p of landingPages) for (const r of p.related) assert.ok(known.has(r), `${p.path} -> ${r}`);
   for (const g of guides) for (const r of g.related) assert.ok(known.has(r), `${g.path} -> ${r}`);
 });

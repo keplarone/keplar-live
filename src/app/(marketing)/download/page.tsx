@@ -15,8 +15,8 @@ export const revalidate = 600; // keep equal to REVALIDATE_SECONDS (segment conf
 
 export const metadata = pageMeta(
   "/download",
-  "Download Keplar One for Windows, macOS and Linux",
-  "Get the Keplar One desktop app for Windows, macOS and Linux. It adds Live Research and the Keplar Studio co-builders for Roblox Studio and Blender.",
+  `Download the ${brand.companyName} desktop app for Windows, macOS and Linux`,
+  `Get the ${brand.companyName} desktop app: Windows, macOS and Linux downloads with checksums, install steps and release notes. The app is a client for the ${brand.name} cloud service; you can also use ${brand.name} in your browser.`,
 );
 
 export default async function DownloadPage() {

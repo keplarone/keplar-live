@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Mga kahinguhaan",
     "items": {
       "/features": "Tanan sa Keplar",
-      "/overview#demo": "Live nga demo",
+      "/#demo": "Live nga demo",
       "/app/create": "Paghimo",
       "/docs": "Dokumentasyon",
       "/pricing": "Mga presyo",
@@ -30,7 +30,6 @@ const m: CommonCatalog = {
       "Legal": "Ligal"
     },
     "links": {
-      "/overview": "About Keplar",
       "/features": "Tanan sa Keplar",
       "/showcase": "Pasundayag sa mga nahimo",
       "/templates": "Galeriya sa komunidad",

@@ -1,7 +1,7 @@
 import { pageMeta } from "@/lib/seo";
 import { AccountSettings } from "@/components/account/AccountSettings";
 
-export const metadata = pageMeta("/account", "Settings", "Your Keplar account and settings.", { noindex: true });
+export const metadata = pageMeta("/account", "Settings", "Your Keplar account and settings.");
 export const dynamic = "force-dynamic";
 
 type Props = { searchParams: Promise<{ checkout?: string; status?: string }> };

@@ -1,6 +1,5 @@
 /* Debate mode (BETA), on UI v2 (docs/ui-v2.md): a raised panel with a hairline, product tokens only (both themes from one block).
-   Answer columns are fixed-radius cards (18px). Do not use --shape-control here: that token is a 9999px pill, and on a tall
-   column it collapses into an ellipse whose border is drawn through the headline and body. Pills only for the small tags. */
+   Rounded rects for bubbles and panels (shape-system.md); pills only for the small tags. */
 
 .debate,
 .record {
@@ -84,9 +83,10 @@
   flex-direction: column;
   gap: 6px;
   min-width: 0;
-  padding: 16px 18px;
-  border: 1px solid var(--hairline-strong);
-  border-radius: 18px;
+  padding: var(--s-3);
+  border: 1px solid transparent;
+  border-left: 3px solid var(--seat);
+  border-radius: var(--shape-control);
   background: var(--c-canvas);
   animation: turnIn 220ms var(--e-standard, ease-out) both;
   box-shadow: var(--elev-1);
@@ -99,7 +99,7 @@
 .turn[data-seat="2"], .castItem[data-seat="2"], .summaryTag[data-seat="2"] { --seat: var(--c-ink-3); --seat-ink: var(--c-canvas); }
 .turn[data-seat="3"], .castItem[data-seat="3"], .summaryTag[data-seat="3"] { --seat: var(--hairline-strong); --seat-ink: var(--c-ink); }
 
-.turn[data-status="failed"] { border-color: var(--c-border-strong); }
+.turn[data-status="failed"] { border-left-color: var(--c-border-strong); }
 
 .turnHead { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); font-size: var(--t-small); }
 

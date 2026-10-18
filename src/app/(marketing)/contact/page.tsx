@@ -7,7 +7,7 @@ import { brand } from "@/lib/site";
 import s from "@/components/feedback/Feedback.module.css";
 import { TwoTone } from "@/components/page/TwoTone";
 
-export const metadata: Metadata = pageMeta("/contact", "Contact Keplar Support", "Questions about your account, billing or a Keplar answer? Contact the Keplar team at team@keplar.one or through the form.", { noindex: false });
+export const metadata: Metadata = pageMeta("/contact", "Contact support", "Write to the Keplar team about your account, billing, a bug, connected apps, safety or your data.", { noindex: false });
 
 export default async function ContactPage({ searchParams }: { searchParams: Promise<{ topic?: string }> }) {
   const q = await searchParams;

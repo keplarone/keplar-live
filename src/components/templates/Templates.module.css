@@ -58,7 +58,7 @@ button.chip:focus-visible { outline: none; color: var(--c-ink); box-shadow: var(
 .reportLink { min-height: 44px; padding: 0 var(--s-2); background: transparent; border: 0; color: var(--c-ink); font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; border-radius: var(--shape-control); transition: background-color var(--m-dur-1) var(--m-ease-out); }
 .reportLink:hover { background: var(--hover-wash); }
 .reportLink:focus-visible { outline: none; text-decoration-thickness: 2px; }
-.error { color: var(--c-ink); font-size: var(--t-small); padding: var(--s-3) var(--s-5); border-radius: 20px; background: var(--space-glass); box-shadow: var(--space-glass-depth); }
+.error { color: var(--c-ink); font-size: var(--t-small); padding: var(--s-3) var(--s-5); border-radius: 20px; background: var(--space-glass); box-shadow: var(--space-glass-depth), 0 0 44px rgb(var(--rgb-destructive) / 0.2); }
 .copied { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--s-2); font-size: var(--t-small); color: var(--c-ink-2); }
 .copied li { padding-left: var(--s-5); position: relative; }
 .copied li::before { content: "•"; position: absolute; left: var(--s-1); }

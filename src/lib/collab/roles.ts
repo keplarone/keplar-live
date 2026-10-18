@@ -20,7 +20,7 @@ export const ROLE_NAME: Record<CollabRole, string> = { owner: "Owner", admin: "A
  * Presence colors: picked for legibility on the graphite base (#0b0b0d) AND as a selection tint, spread around the wheel and
  * deliberately skipping the purple-blue band. Stable per user id, so you are the same color in every session.
  */
-export const PRESENCE_COLORS = ["#f2a541", "#3ccf91", "#ff6b5b", "#4fc3d9", "#e7d34f", "#c47b5a", "#9bd85b", "#f07a2b", "#5ed6c0", "#d9a66b"] as const;
+export const PRESENCE_COLORS = ["#f2a541", "#3ccf91", "#ff6b5b", "#4fc3d9", "#e7d34f", "#ff8fb1", "#9bd85b", "#f07a2b", "#5ed6c0", "#d9a66b"] as const;
 export function colorFor(id: string): string {
   let h = 2166136261;
   for (let i = 0; i < id.length; i++) h = Math.imul(h ^ id.charCodeAt(i), 16777619);

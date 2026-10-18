@@ -1,6 +1,6 @@
 ---
-title: What Is AI Deep Research and When Is It Worth It?
-description: What AI 'deep research' modes do, how they differ from a normal chat answer and when the longer, multi-step report is worth the wait.
+title: What is AI "deep research", and when is it worth using?
+description: Deep research modes run many searches and read many pages to produce a report. What they do, what they cost, where they fail, and how to judge a report.
 category: How AI works
 published: 2026-10-03
 updated: 2026-10-03

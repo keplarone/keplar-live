@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Sumber daya",
     "items": {
       "/features": "Semua tentang Keplar",
-      "/overview#demo": "Demo langsung",
+      "/#demo": "Demo langsung",
       "/app/create": "Create",
       "/docs": "Dokumentasi",
       "/pricing": "Harga",
@@ -16,7 +16,7 @@ const m: CommonCatalog = {
     },
     "hints": {
       "/features": "Setiap fitur dan apakah sudah tersedia",
-      "/overview#demo": "Ajukan pertanyaan sekarang, tanpa daftar",
+      "/#demo": "Ajukan pertanyaan sekarang, tanpa daftar",
       "/app/create": "Jelaskan atau ucapkan situs atau aplikasi"
     },
     "signIn": "Masuk",
@@ -41,7 +41,6 @@ const m: CommonCatalog = {
       "Legal": "Hukum"
     },
     "links": {
-      "/overview": "About Keplar",
       "/features": "Semua tentang Keplar",
       "/how-it-works": "Cara kerja",
       "/showcase": "Etalase Create",

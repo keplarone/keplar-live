@@ -6,9 +6,10 @@ import { join } from "node:path";
 /**
  * Palette: graphite base + rich semantic accents (teal/cyan, warm earth, dusty rose).
  * Still banned: generic AI-SaaS electric blues and purple spam. Primary buttons stay ink/white.
- * Customer site-builder palettes and legal copy are out of scope.
+ * Customer site-builder palettes are out of scope, and so are the Space Studio star colours (simulated stellar colours drawn
+ * by the star field shader, not UI accents; the Space site's chrome itself is black, white and greys).
  */
-const SKIP = [/src\/lib\/site-builder/, /src\/lib\/legal/, /src\/components\/legal\/content/];
+const SKIP = [/src\/lib\/site-builder/, /src\/lib\/legal/, /src\/components\/legal\/content/, /src\/components\/space\/Starfield\.tsx$/];
 const walk = (d: string): string[] => readdirSync(d).flatMap((n) => { const p = join(d, n).replace(/\\/g, "/"); return statSync(p).isDirectory() ? walk(p) : [p]; });
 const files = walk("src").filter((f) => /\.(css|ts|tsx)$/.test(f) && !SKIP.some((r) => r.test(f)));
 
@@ -34,9 +35,9 @@ test("primary buttons stay graphite (ink) / white; semantic accents may be colou
   const light = css.match(/--btn-p-solid: (#[0-9a-f]{6});/i)?.[1] ?? "";
   assert.equal(light.toLowerCase(), "#17171a");
   const tokens = readFileSync("src/styles/tokens.css", "utf8");
-  // One neutral accent: dark graphite in light, near-white in dark (src/styles/tokens.css).
-  assert.match(tokens, /--c-accent: #17171a;/);
-  assert.match(tokens, /:root\[data-theme="dark"\] \{[\s\S]*?--c-accent: #f4f4f6;/);
+  // Accent is the Space violet (Space UI, docs/design/space-ui.md), not ink; light #7d3bc4, dark #c39bff
+  assert.match(tokens, /--c-accent: #7d3bc4;/);
+  assert.match(tokens, /:root\[data-theme="dark"\] \{[\s\S]*?--c-accent: #c39bff;/);
   assert.match(tokens, /--v-reasoning: #00c0e0;/);
   assert.match(tokens, /--v-creation: #d4894a;/);
 });
@@ -60,6 +61,8 @@ test("no electric blue-dominant spam (teal OK: green channel stays close to blue
   // Keep this exact per-file list so new blue or purple colors still fail the guard.
   const sceneColors: Record<string, string[]> = {
     "src/components/app-ui/App.module.css": ["74,99,184"],
+    "src/components/business-app/BusinessWorkspace.tsx": ["167,139,250"],
+    "src/components/business-app/cursor.module.css": ["167,139,250"],
     "src/components/create/images.module.css": ["38,92,140"],
     "src/components/create/video/video.module.css": ["38,92,140"],
     "src/components/kb/blogCovers.ts": ["91,116,201", "66,133,244", "77,107,254"],
@@ -67,8 +70,6 @@ test("no electric blue-dominant spam (teal OK: green channel stays close to blue
     "src/components/sky/SkyHome.tsx": ["74,99,184"],
     // the weather sky: natural daylight sky blues (zenith / gradient), not UI accents (docs/design/space-ui.md 2.1)
     "src/lib/sky/variants.ts": ["63,134,216", "60,130,212"],
-    "src/components/sky/Sky.module.css": ["79,134,200"],
-    "src/components/sky/clouds/palette.ts": ["79,134,200"],
     "src/styles/space.css": ["61,132,213"],
   };
   const hits: string[] = [];

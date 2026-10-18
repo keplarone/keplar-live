@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Acmhainní",
     "items": {
       "/features": "Gach rud in Keplar",
-      "/overview#demo": "Taispeántas beo",
+      "/#demo": "Taispeántas beo",
       "/app/create": "Cruthaigh",
       "/docs": "Doiciméid",
       "/pricing": "Praghsáil",
@@ -30,7 +30,6 @@ const m: CommonCatalog = {
       "Legal": "Dlíthiúil"
     },
     "links": {
-      "/overview": "About Keplar",
       "/features": "Gach rud in Keplar",
       "/showcase": "Taispeántas cruthúchán",
       "/templates": "Gailearaí an phobail",

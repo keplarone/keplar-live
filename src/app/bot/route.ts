@@ -1,7 +1,7 @@
 /** What KeplarBot is, for site owners who see it in their logs (the address in its User-Agent). Plain and static. */
 export const dynamic = "force-static";
 
-const page = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex, follow"><title>KeplarBot</title>
+const page = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>KeplarBot</title>
 <style>body{font:16px/1.55 system-ui,sans-serif;max-width:40rem;margin:3rem auto;padding:0 1.25rem;color:#111}h1{font-size:1.4rem}code{background:#f2f2f2;padding:.1em .3em;border-radius:4px}@media(prefers-color-scheme:dark){body{background:#0b0b0c;color:#eee}code{background:#222}}</style></head><body>
 <h1>KeplarBot</h1>
 <p>KeplarBot is the visitor you see in your logs as <code>KeplarBot/1.0 (+https://keplar.one/bot)</code>. It is not a crawler. It opens <strong>one product page</strong>, and the product photos on it, only when a signed-in Keplar user pastes that page's link into the Keplar website builder to build a page about that product.</p>
@@ -15,5 +15,5 @@ const page = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta n
 </body></html>`;
 
 export function GET() {
-  return new Response(page, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=3600", "x-robots-tag": "noindex, follow" } });
+  return new Response(page, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=3600" } });
 }

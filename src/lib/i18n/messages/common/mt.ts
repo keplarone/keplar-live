@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Riżorsi",
     "items": {
       "/features": "Kollox f'Keplar",
-      "/overview#demo": "Demo dirett",
+      "/#demo": "Demo dirett",
       "/app/create": "Oħloq",
       "/docs": "Dokumentazzjoni",
       "/pricing": "Prezzijiet",
@@ -30,7 +30,6 @@ const m: CommonCatalog = {
       "Legal": "Legali"
     },
     "links": {
-      "/overview": "About Keplar",
       "/features": "Kollox f'Keplar",
       "/showcase": "Vetrina tal-ħolqien",
       "/templates": "Gallerija tal-komunità",

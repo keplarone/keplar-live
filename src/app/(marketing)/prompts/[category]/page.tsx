@@ -4,7 +4,6 @@ import { PromptCard } from "@/components/kb/PromptCard";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { promptCategories, promptCategoryBySlug } from "@/lib/kb/prompts";
 import { abs, pageMeta } from "@/lib/seo";
-import { GENERATED_META } from "@/lib/seo/generated-meta";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import s from "@/components/kb/kb.module.css";
 
@@ -17,9 +16,7 @@ type Props = { params: Promise<{ category: string }> };
 export async function generateMetadata({ params }: Props) {
   const c = promptCategoryBySlug((await params).category);
   if (!c) return {};
-  const path = `/prompts/${c.slug}`;
-  const sheet = GENERATED_META[path];
-  return pageMeta(path, sheet?.title ?? `${c.name} prompts: ${c.prompts.length} copyable templates`, sheet?.description ?? `${c.blurb} ${c.prompts.length} prompt templates with why each works and what to check afterward.`, { image: `/og/prompts/${c.slug}` });
+  return pageMeta(`/prompts/${c.slug}`, `${c.name} prompts: ${c.prompts.length} copyable templates`, `${c.blurb} ${c.prompts.length} prompt templates with why each works and what to check afterward.`, { image: `/og/prompts/${c.slug}` });
 }
 
 export default async function PromptCategoryPage({ params }: Props) {

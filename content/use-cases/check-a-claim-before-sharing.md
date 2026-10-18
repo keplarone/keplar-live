@@ -1,6 +1,6 @@
 ---
-title: Check a Claim Before You Share It, With AI
-description: Ask several AI models about a claim, see where they disagree and know what to verify in a primary source before you share it.
+title: Check a claim before you share it
+description: Use a multi-model answer to find out whether a claim you saw online is plausible, where sources disagree, and which parts to verify before you repost it.
 updated: 2026-10-03
 keywords: fact check with AI, check if something is true, verify a claim, AI fact checker
 related: /ai-fact-check, /blogs/how-to-check-an-ai-answer, /docs/how-it-works/verification-review

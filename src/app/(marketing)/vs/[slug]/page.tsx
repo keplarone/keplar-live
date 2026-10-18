@@ -19,7 +19,7 @@ const date = (iso: string) => new Date(iso + "T12:00:00Z").toLocaleDateString("e
 export async function generateMetadata({ params }: Props) {
   const v = vsBySlug((await params).slug);
   if (!v) return {};
-  return pageMeta(`/vs/${v.slug}`, v.title, v.description, { noindex: v.approved === false, article: { published: VS_ACCESSED, modified: VS_ACCESSED } });
+  return pageMeta(`/vs/${v.slug}`, v.title, v.description, { article: { published: VS_ACCESSED, modified: VS_ACCESSED } });
 }
 
 export default async function VsPage({ params }: Props) {

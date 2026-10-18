@@ -30,7 +30,7 @@ writeFileSync(join(copy, "manifest.json"), JSON.stringify(manifest, null, 2));
 const PAGE = `<!doctype html><html><head><meta charset="utf-8"><title>Lens test</title><style>
 body{margin:0;font:18px/1.6 Georgia,serif;background:#fbfaf7;color:#222}main{max-width:760px;margin:60px auto;padding:0 24px}
 h1{font-size:40px;margin:0 0 18px}.card{display:flex;gap:18px;align-items:center;margin:24px 0;padding:18px;border-radius:14px;background:#fff;box-shadow:0 0 0 1px #e6e2da}
-.swatch{width:120px;height:90px;border-radius:10px;background:linear-gradient(135deg,#ff9f7a,#c8c4bc)}</style></head><body><main>
+.swatch{width:120px;height:90px;border-radius:10px;background:linear-gradient(135deg,#ff9f7a,#b48cff)}</style></head><body><main>
 <h1>The four-day week, two years in</h1>
 <p>Several small companies that moved to a four-day, 32-hour week report steady output and lower staff turnover.</p>
 <div class="card" id="card"><div class="swatch"></div><p>Critics point out that most trials are short, self-selected and run by firms already doing well.</p></div>

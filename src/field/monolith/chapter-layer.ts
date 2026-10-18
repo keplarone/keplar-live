@@ -1,4 +1,4 @@
-import { NormalBlending, BufferAttribute, DynamicDrawUsage, BufferGeometry, Group, LineSegments, Points, ShaderMaterial, Vector3, type PerspectiveCamera } from "three";
+import { AdditiveBlending, BufferAttribute, DynamicDrawUsage, BufferGeometry, Group, LineSegments, NormalBlending, Points, ShaderMaterial, Vector3, type PerspectiveCamera } from "three";
 import { along, chapterState, lightU, MOTIFS, SPECTRAL, type ChapterId, type Motif } from "./chapters";
 
 const MAX_P = 72;
@@ -72,7 +72,7 @@ export class ChapterLayer {
 
   constructor(private cam: PerspectiveCamera, private mobile: boolean, private still: boolean) {
     const u = () => ({ uAlpha: { value: 0 }, uLight: { value: 0 }, uDpr: { value: 1 }, uPx: { value: 9 }, uTime: { value: 0 }, uTw: { value: 1 } });
-    const mk = (v: string, f: string) => new ShaderMaterial({ vertexShader: v, fragmentShader: f, uniforms: u(), transparent: true, depthTest: true, depthWrite: false, blending: NormalBlending });
+    const mk = (v: string, f: string) => new ShaderMaterial({ vertexShader: v, fragmentShader: f, uniforms: u(), transparent: true, depthTest: true, depthWrite: false, blending: AdditiveBlending });
     this.ptM = mk(PT_VERT, PT_FRAG); this.lnM = mk(LN_VERT, LN_FRAG); this.ltM = mk(PT_VERT, PT_FRAG);
     this.ltM.uniforms.uTw.value = 0;
     attr(this.pg, "position", MAX_P, 3); attr(this.pg, "aCol", MAX_P, 3); attr(this.pg, "aSize", MAX_P, 1); attr(this.pg, "aA", MAX_P, 1);
@@ -96,7 +96,7 @@ export class ChapterLayer {
   private swap() { this.cur = this.want; this.elapsed = 0; this.mp = this.cur ? { ...MOTIFS[this.cur], pts: MOTIFS[this.cur].pts.map((p) => [...p] as [number, number, number, number]) } : null; }
 
   setTheme(dark: boolean) {
-    for (const m of [this.ptM, this.lnM, this.ltM]) { m.blending = dark ? NormalBlending : NormalBlending; m.uniforms.uLight.value = dark ? 0 : 1; m.needsUpdate = true; }
+    for (const m of [this.ptM, this.lnM, this.ltM]) { m.blending = dark ? AdditiveBlending : NormalBlending; m.uniforms.uLight.value = dark ? 0 : 1; m.needsUpdate = true; }
   }
 
   resize(h: number, dpr: number) {

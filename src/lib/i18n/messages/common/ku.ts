@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Çavkanî",
     "items": {
       "/features": "Her tişt di Keplar de",
-      "/overview#demo": "Demoya zindî",
+      "/#demo": "Demoya zindî",
       "/app/create": "Çêke",
       "/docs": "Belgekirin",
       "/pricing": "Biha",
@@ -30,7 +30,6 @@ const m: CommonCatalog = {
       "Legal": "Hiqûqî"
     },
     "links": {
-      "/overview": "About Keplar",
       "/features": "Her tişt di Keplar de",
       "/showcase": "Pêşangeha afirandinan",
       "/templates": "Galeriya civakê",

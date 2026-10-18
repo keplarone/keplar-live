@@ -373,22 +373,3 @@
   :global(:root[data-theme]:not([data-business-app])) .btnGhost:hover:not(:disabled),
   :global(:root[data-theme]:not([data-business-app])) .linkBtn:hover:not(:disabled) { transform: none; }
 }
-
-/* Calm chrome: ink actions, no lift, no glow. */
-:global(:root[data-theme]:not([data-business-app])) .btn,
-:global(:root[data-theme]:not([data-business-app])) .newChat {
-  background: var(--c-ink);
-  color: var(--c-canvas);
-  box-shadow: none;
-  font-weight: var(--w-medium);
-  transform: none;
-}
-:global(:root[data-theme]:not([data-business-app])) .btn:hover:not(:disabled, [aria-disabled="true"]),
-:global(:root[data-theme]:not([data-business-app])) .newChat:hover:not(:disabled, [aria-disabled="true"]) { background: var(--c-ink-hover); transform: none; box-shadow: none; }
-:global(:root[data-theme]:not([data-business-app])) .btnGhost,
-:global(:root[data-theme]:not([data-business-app])) .linkBtn {
-  background: transparent;
-  color: var(--c-ink);
-  box-shadow: inset 0 0 0 1px var(--hairline);
-  transform: none;
-}

@@ -20,7 +20,7 @@
 
 .top { display: flex; flex-direction: column; align-items: center; gap: clamp(8px, 1.5vh, 16px); }
 .pill { margin: 0; padding: 7px 16px; border-radius: 999px; border: 1px solid rgb(255 255 255 / 0.28); background: #0b0b0d; color: var(--on-black); font-size: clamp(12px, 1.05vw, 14.5px); letter-spacing: 0.01em; max-width: 100%; text-wrap: balance; box-shadow: none; }
-.h1 { margin: 0; font-size: clamp(30px, min(5.6vw, 8vh), 92px); line-height: 1.03; letter-spacing: -0.045em; font-weight: 700; color: var(--on-black); text-shadow: none; display: flex; flex-direction: column; align-items: center; max-width: 100%; }
+.h1 { margin: 0; font-size: clamp(30px, min(5.6vw, 8vh), 92px); line-height: 1.03; letter-spacing: -0.045em; font-weight: 700; color: var(--on-black); text-shadow: 0 0 40px rgb(255 255 255 / 0.18); display: flex; flex-direction: column; align-items: center; max-width: 100%; }
 .line { position: relative; display: block; max-width: 100%; }
 .line[data-n="1"] { color: rgb(255 255 255 / 0.62); }
 .sizer { display: block; }
@@ -36,7 +36,7 @@
 .node { position: absolute; left: 0; top: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; transform: translate(-50%, 0); will-change: transform; opacity: 0; transition: opacity 600ms var(--e-standard); }
 .hero[data-mode="webgl"][data-live] .node, .hero[data-mode="still"][data-live] .node { opacity: 1; }
 .glyph { display: none; width: 44px; height: 44px; border-radius: 14px; border: 1px solid rgb(255 255 255 / 0.35); background: #141417; padding: 10px; color: #fff; box-shadow: none; }
-.name { font-size: clamp(10px, 0.82vw, 12px); letter-spacing: 0; text-transform: none; color: var(--on-black-2); white-space: nowrap; text-shadow: none; }
+.name { font-size: clamp(10px, 0.82vw, 12px); letter-spacing: 0; text-transform: none; color: var(--on-black-2); white-space: nowrap; text-shadow: 0 0 12px #000; }
 .hero[data-mode="webgl"] .name, .hero[data-mode="still"] .name { margin-top: calc(var(--tile, 56px) * 0.5 + 2px); }
 .logo { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); color: #0a0a0a; pointer-events: none; opacity: 0; transition: opacity 600ms var(--e-standard); }
 .hero[data-live] .logo { opacity: 0.92; }
