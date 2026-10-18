@@ -4,12 +4,18 @@ import { readFileSync } from "node:fs";
 
 const side = readFileSync("src/components/app-ui/Sidebar.tsx", "utf8");
 
-test("sidebar: New chat and Search, then Create and Projects; no Business entry (Keplar Business is its own app)", () => {
+test("sidebar: New chat, Search chats, then Ask, Create and Study; Research and Space Studio sit with them", () => {
   assert.match(side, /<span>New chat<\/span>/);
+  assert.match(side, /<span>Search chats<\/span>/);
   assert.match(side, /data-nav="search"/);
   const block = side.slice(side.indexOf("const primary"), side.indexOf("const secondary"));
   const labels = [...block.matchAll(/label: "([^"]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(labels, ["Create", "Projects"]);
+  assert.deepEqual(labels, ["Ask", "Create", "Study"]);
+  assert.match(side, /data-nav="research"/);
+  assert.match(side, /<span>Research<\/span>/);
+  assert.match(side, /<span>Space Studio<\/span>/);
+  assert.match(side, /SPACE_URL/);
+  assert.match(side, /Collapse sidebar/);
   assert.doesNotMatch(side, /data-nav="business"|BUSINESS_URL/, "Keplar One has no way into Business from its sidebar");
   assert.doesNotMatch(readFileSync("src/components/app-ui/SearchDialog.tsx", "utf8"), /id: "business"/, "nor from search");
   assert.match(readFileSync("src/lib/business-site.ts", "utf8"), /https:\/\/business\.keplar\.one/);
@@ -19,7 +25,8 @@ test("sidebar: New chat and Search, then Create and Projects; no Business entry 
 test("sidebar: More holds every other view; Settings, Memory and Usage moved to the gear and the account menu", () => {
   const block = side.slice(side.indexOf("const secondary"), side.indexOf("const LOW_AT"));
   const labels = [...block.matchAll(/label: "([^"]+)"/g)].map((m) => m[1]);
-  for (const v of ["Slides", "Study", "Deployments", "All chats"]) assert.ok(labels.includes(v), v);
+  for (const v of ["Projects", "Slides", "Deployments", "All chats"]) assert.ok(labels.includes(v), v);
+  assert.ok(!labels.includes("Study"), "Study is a feature row, not buried in More");
   assert.ok(!labels.includes("Approvals") && !labels.includes("Business"));
   assert.match(side, /href="\/account" className=\{s\.iconBtn\} aria-label="Settings"/);
   const menu = readFileSync("src/components/app-ui/AccountMenu.tsx", "utf8");

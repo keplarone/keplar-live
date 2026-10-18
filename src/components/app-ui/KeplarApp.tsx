@@ -192,6 +192,16 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   const dockRef = useDockHeight<HTMLDivElement>();
   const [searchOpen, setSearchOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  // Wide screens can tuck the sidebar away. The app is client-only, so reading localStorage here does not mismatch a server render.
+  const [collapsed, setCollapsed] = useState(() => typeof window !== "undefined" && localStorage.getItem("keplar.sidebar") === "closed");
+  const toggleCollapsed = useCallback(() => {
+    setCollapsed((v) => {
+      const next = !v;
+      localStorage.setItem("keplar.sidebar", next ? "closed" : "open");
+      return next;
+    });
+  }, []);
+  const [researchAsk, setResearchAsk] = useState(0);
   // The desktop title bar's search box (DesktopTitleBar) opens this search.
   useEffect(() => {
     const open = () => { setDrawerOpen(false); setSearchOpen(true); };
@@ -933,6 +943,13 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     composerRef.current?.setText(seed.text);
   }, [state.view, state.activeThreadId, seedTick]);
 
+  /* Research in the sidebar turns Deep Research on for the next message and focuses the composer. */
+  useEffect(() => {
+    if (!researchAsk || state.view !== "thread") return;
+    composerRef.current?.setModes({ deepResearch: true });
+    composerRef.current?.focus();
+  }, [researchAsk, state.view]);
+
   /* keyboard shortcuts (app-wide) */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -1039,7 +1056,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   const projectName = state.projects.find((p) => p.id === (thread?.projectId ?? state.projectFilter))?.name;
 
   return (
-    <div ref={rootRef} className={s.app} data-product="" data-own-search="" data-drawer={drawerOpen || undefined} data-app-ready={state.scope === "pending" ? undefined : ""}>
+    <div ref={rootRef} className={s.app} data-product="" data-own-search="" data-collapsed={collapsed || undefined} data-drawer={drawerOpen || undefined} data-app-ready={state.scope === "pending" ? undefined : ""}>
       <ExtensionReturn onChanged={() => void syncMeter()} />
       <ReferralClaim signedIn={state.ledger.signedIn} onChanged={() => void syncMeter()} />
       <ReferralNudge signedIn={state.ledger.signedIn} />
@@ -1058,6 +1075,8 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
           importOffer={importOffer}
           modeView={modeView}
           id="keplar-sidebar"
+          onResearch={() => { goView("thread"); setResearchAsk((n) => n + 1); }}
+          onToggleCollapse={toggleCollapsed}
         />
       </div>
       <SendFieldLazy />
@@ -1065,7 +1084,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
 
       <div key={state.epoch} className={s.main} inert={drawerOpen || undefined} data-view={state.view} data-empty={(state.view === "thread" && messages.length === 0) || undefined}>
         <header className={s.topbar} data-keplar-drag>
-          <button ref={menuBtnRef} type="button" className={`${s.iconBtn} ${s.menuBtn}`} onClick={() => setDrawerOpen(true)} aria-label="Open sidebar" aria-expanded={drawerOpen} aria-controls="keplar-sidebar">
+          <button ref={menuBtnRef} type="button" className={`${s.iconBtn} ${s.menuBtn}`} onClick={() => { if (window.matchMedia("(min-width: 900px)").matches) { toggleCollapsed(); return; } setDrawerOpen(true); }} aria-label="Open sidebar" aria-expanded={drawerOpen} aria-controls="keplar-sidebar">
             <KeplarSymbol size={22} />
           </button>
           <p className={s.topTitle}>
