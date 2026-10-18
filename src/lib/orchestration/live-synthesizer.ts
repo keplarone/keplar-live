@@ -34,11 +34,12 @@ import { isGuideRequest } from "./answer-shape";
 import { RICH_UI_RULES, richHint } from "@/lib/rich-answer/prompt";
 import { buildRich, parseRich, RICH_PENDING, takeRichFence } from "@/lib/rich-answer/parse";
 import type { RichAnswer } from "@/lib/rich-answer/types";
-import { quizAsk, quizSourceText } from "@/lib/quiz/ask";
+import { quizAsk, quizMaterial } from "@/lib/quiz/ask";
 import { finalizeQuiz, quizPlain, takeQuizFence } from "@/lib/quiz/build";
+import { addQuizQuestions, applyShortfall, sourceCapacity } from "@/lib/quiz/fill";
 import { quizPanelHint } from "@/lib/quiz/prompt";
-import { cheapestQuizModel, QUIZ_REPAIR_SYSTEM, quizFromRepair, quizRepairUser } from "@/lib/quiz/repair";
-import type { Quiz, QuizAsk } from "@/lib/quiz/types";
+import { cheapestQuizModel, QUIZ_REPAIR_SYSTEM, QUIZ_TOPUP_SYSTEM, quizFromRepair, quizRepairUser, quizTopUpUser, questionsFromModel, readQuizLimited } from "@/lib/quiz/repair";
+import type { Quiz, QuizAsk, QuizQuestion } from "@/lib/quiz/types";
 
 type Ok = Extract<ProviderResult, { ok: true }>;
 const nameOf = (id: string) => catalogById.get(id)?.name ?? id;
@@ -162,10 +163,14 @@ export class ModelSynthesizer implements Synthesizer {
    * The panel and the write-up both failed to yield a quiz. One call, on the cheapest model that can run,
    * turns the source plus that markdown into JSON. A failure leaves the markdown as the answer.
    */
-  private async repairQuiz(req: Parameters<Synthesizer["synthesize"]>[0]["req"], classification: Parameters<Synthesizer["synthesize"]>[0]["classification"], ask: QuizAsk, texts: string[], signal: AbortSignal | undefined): Promise<Quiz | null> {
+  private quizModel(req: Parameters<Synthesizer["synthesize"]>[0]["req"]) {
     const free = req.plan === "free" || ("freeOnly" in this.registry && Boolean(this.registry.freeOnly));
-    const model = cheapestQuizModel(free) ?? this.model;
-    const source = quizSourceText(req).trim() || req.prompt;
+    return cheapestQuizModel(free) ?? this.model;
+  }
+
+  private async repairQuiz(req: Parameters<Synthesizer["synthesize"]>[0]["req"], classification: Parameters<Synthesizer["synthesize"]>[0]["classification"], ask: QuizAsk, texts: string[], signal: AbortSignal | undefined): Promise<{ quiz: Quiz | null; limited: string | null }> {
+    const model = this.quizModel(req);
+    const source = quizMaterial(req);
     const draft = texts.map((t) => t.trim()).filter(Boolean).join("\n\n");
     const repairSignal = signal ? AbortSignal.any([signal, AbortSignal.timeout(40_000)]) : AbortSignal.timeout(40_000);
     try {
@@ -174,16 +179,49 @@ export class ModelSynthesizer implements Synthesizer {
         prompt: quizRepairUser(source, draft, ask),
         system: QUIZ_REPAIR_SYSTEM,
         classification,
-        params: sanitizeParams(model, { reasoningOff: true, temperature: 0, maxOutputTokens: 2200 }),
+        params: sanitizeParams(model, { reasoningOff: true, temperature: 0, maxOutputTokens: 4200 }),
         tier: req.routing?.tier,
         slot: "judge",
         signal: repairSignal,
       });
-      if (!r.ok) return null;
+      if (!r.ok) return { quiz: null, limited: null };
       this.spentUsd += spentUsd(model, r);
-      return quizFromRepair(r.text, ask.kind);
+      return { quiz: quizFromRepair(r.text, ask.kind), limited: readQuizLimited(r.text) };
     } catch {
-      return null;
+      return { quiz: null, limited: null };
+    }
+  }
+
+  /**
+   * The quiz is real but short of the asked count. One call, on the cheapest model,
+   * writes only the missing questions from the same source. It does not run when
+   * the source has already been used up.
+   */
+  private async fillShortQuiz(req: Parameters<Synthesizer["synthesize"]>[0]["req"], classification: Parameters<Synthesizer["synthesize"]>[0]["classification"], ask: QuizAsk, quiz: Quiz, signal: AbortSignal | undefined): Promise<{ questions: QuizQuestion[]; limited: string | null }> {
+    const source = quizMaterial(req);
+    const cap = sourceCapacity(source);
+    if (cap != null && quiz.questions.length >= cap) {
+      return { questions: [], limited: "This source doesn't cover more questions." };
+    }
+    const model = this.quizModel(req);
+    const need = Math.min(20, ask.count - quiz.questions.length);
+    const fillSignal = signal ? AbortSignal.any([signal, AbortSignal.timeout(40_000)]) : AbortSignal.timeout(40_000);
+    try {
+      const r = await this.registry.generate({
+        model,
+        prompt: quizTopUpUser(source, quiz.questions.map((q) => q.prompt), need, ask.kind),
+        system: QUIZ_TOPUP_SYSTEM,
+        classification,
+        params: sanitizeParams(model, { reasoningOff: true, temperature: 0, maxOutputTokens: 4200 }),
+        tier: req.routing?.tier,
+        slot: "judge",
+        signal: fillSignal,
+      });
+      if (!r.ok) return { questions: [], limited: null };
+      this.spentUsd += spentUsd(model, r);
+      return { questions: questionsFromModel(r.text, ask.kind), limited: readQuizLimited(r.text) };
+    } catch {
+      return { questions: [], limited: null };
     }
   }
 
@@ -230,9 +268,10 @@ export class ModelSynthesizer implements Synthesizer {
     const single = plan.mode === "single";
 
     const ask = quizAsk(req.prompt);
-    // A quiz the panel already agreed on is the answer. Writing it again would only risk a wrong key.
+    // The panel and the already-written answer are read together, so a short panel quiz does not hide a fuller one.
+    const earlyTexts = [...ok.map((r) => r.text), ...(this.prewritten?.text ? [this.prewritten.text] : [])];
     let quiz: Quiz | null = ask
-      ? finalizeQuiz({ texts: ok.map((r) => r.text), req, ask, verdicts: verification.quizVerdicts })
+      ? finalizeQuiz({ texts: earlyTexts, req, ask, verdicts: verification.quizVerdicts })
       : null;
 
     let markdown: string;
@@ -277,7 +316,7 @@ export class ModelSynthesizer implements Synthesizer {
       const synthSystem = `${SYNTH_SYSTEM_PROMPT}${this.research ? `\n${this.researchRules}` : ""}${guide ? `\n${GUIDE_SYNTH_RULES}` : ""}`;
       const richNote = structured ? `\n\n${richHint(req.prompt)}` : "";
       const quizNote = ask ? `\n\n${quizPanelHint(req)}` : "";
-      const out = writtenBeatsKeep ? this.prewritten : keep ? { text: keep.text, by: keep.modelId } : this.prewritten ? this.prewritten : this.noExtraCalls ? null : await this.call(quick ? `${synthSystem}\nThis is a quick lookup: answer in at most 120 words (state the answer first, then at most two supporting points). Omit any keplar-ui block.` : synthSystem, `Question:\n${req.memory ?? ""}${req.prompt}${textOnlyMediaNote(req.media)}\n\n${material}${guideMaterial}\n\nReviewer findings:\n${findings}\n\nDraft:\n${draft.slice(0, 3000)}${richNote}${quizNote}`, quick ? 500 : ask ? 3200 : guide ? 4800 : 1800, 1, signal, req, classification, guide ? Math.max(this.synthCapMs, 60_000) : this.synthCapMs);
+      const out = writtenBeatsKeep ? this.prewritten : keep ? { text: keep.text, by: keep.modelId } : this.prewritten ? this.prewritten : this.noExtraCalls ? null : await this.call(quick ? `${synthSystem}\nThis is a quick lookup: answer in at most 120 words (state the answer first, then at most two supporting points). Omit any keplar-ui block.` : synthSystem, `Question:\n${req.memory ?? ""}${req.prompt}${textOnlyMediaNote(req.media)}\n\n${material}${guideMaterial}\n\nReviewer findings:\n${findings}\n\nDraft:\n${draft.slice(0, 3000)}${richNote}${quizNote}`, quick ? 500 : ask ? 4800 : guide ? 4800 : 1800, 1, signal, req, classification, guide ? Math.max(this.synthCapMs, 60_000) : ask ? Math.max(this.synthCapMs, 40_000) : this.synthCapMs);
       let text = out?.text;
       if (text) {
         const res = text.match(/\n?\s*(RESOLUTION:\s*.+)\s*$/i);
@@ -321,16 +360,32 @@ export class ModelSynthesizer implements Synthesizer {
       }
     }
 
-    // Still no quiz: one repair, on the cheapest model, then give up to the markdown.
+    // Still no quiz: one repair, on the cheapest model. A short quiz instead gets one top-up. Never both.
+    let limited: string | null = null;
+    let usedFill = false;
     if (ask && !quiz) {
       const repaired = await this.repairQuiz(req, classification, ask, quizTexts(), signal);
-      if (repaired) {
-        const built = finalizeQuiz({ texts: [JSON.stringify(repaired)], req, ask, verdicts: verification.quizVerdicts });
+      usedFill = true;
+      limited = repaired.limited;
+      if (repaired.quiz) {
+        const built = finalizeQuiz({ texts: [JSON.stringify(repaired.quiz)], req, ask, verdicts: verification.quizVerdicts });
         if (built) {
           quiz = built;
           markdown = quizPlain(built);
         }
       }
+    }
+
+    if (ask && quiz && quiz.questions.length < ask.count && !usedFill) {
+      const filled = await this.fillShortQuiz(req, classification, ask, quiz, signal);
+      limited = filled.limited;
+      quiz = addQuizQuestions(quiz, filled.questions, quizMaterial(req), ask.count);
+      markdown = quizPlain(quiz);
+    }
+
+    if (ask && quiz && quiz.questions.length < ask.count) {
+      quiz = applyShortfall(quiz, ask.count, quizMaterial(req), limited);
+      markdown = quizPlain(quiz);
     }
 
     // Disagreement is only ever shown when the detector found a split (scored, more than one position); never invented by the writer.

@@ -71,4 +71,20 @@ export function quizSourceText(req: { docs?: { name: string; text: string; sourc
   return docs.join("\n").trim();
 }
 
+/**
+ * The text a top-up may use. An attached file wins. Otherwise the study guide
+ * pasted under the request (the request line itself is not a fact).
+ */
+export function quizMaterial(req: { prompt: string; docs?: { name: string; text: string; source?: string }[] }): string {
+  const file = quizSourceText(req).trim();
+  if (file) return file;
+  const prompt = req.prompt.trim();
+  const split = prompt.split(/\n\s*\n/);
+  if (split.length >= 2) {
+    const body = split.slice(1).join("\n\n").trim();
+    if (body.length >= 40) return body;
+  }
+  return prompt;
+}
+
 export type { QuizKind };

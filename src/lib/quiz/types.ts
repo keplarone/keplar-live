@@ -24,6 +24,8 @@ export type Quiz = {
   source?: string;
   kind: QuizKind;
   questions: QuizQuestion[];
+  /** One sentence, shown when the source cannot support the number they asked for. */
+  note?: string;
 };
 
 /** Saved on the chat message so a reload keeps the place, the picks, and a "retry missed" subset. */

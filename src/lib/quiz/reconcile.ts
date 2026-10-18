@@ -1,7 +1,10 @@
 /**
- * Several models each propose a quiz. Keep a question when they agree on the
- * answer, or when only one answer is actually in the source. Drop the rest
- * rather than ship a wrong key. A verifier can then drop or fix what remains.
+ * Several models each propose a quiz. A question that validates stays.
+ * Agreement keeps it. A disagreement keeps the answer the source supports,
+ * or the answer most models gave when the source does not decide (a pasted
+ * guide has no file, and dropping those questions is how a 5-question ask
+ * came back as one or two). A question that is not in an attached file is
+ * dropped. The caller tops up whatever is still short of the asked count.
  */
 import { questionSchema, quizSchema } from "./schema";
 import { normalizeAnswer } from "./grade";
@@ -18,6 +21,10 @@ export function contentWords(s: string): string[] {
     .replace(/[^a-z0-9\s]/g, " ")
     .split(/\s+/)
     .filter((w) => w.length >= 4 && !STOP.has(w));
+}
+
+export function similarPrompt(a: string, b: string): boolean {
+  return jaccard(contentWords(a), contentWords(b)) >= 0.5;
 }
 
 function jaccard(a: string[], b: string[]): number {
@@ -47,7 +54,7 @@ export function answerGrounded(q: QuizQuestion, source: string): boolean {
   return hits >= Math.max(1, Math.ceil(words.length * 0.5));
 }
 
-function questionGrounded(q: QuizQuestion, source: string): boolean {
+export function questionGrounded(q: QuizQuestion, source: string): boolean {
   if (!source.trim()) return true;
   if (answerGrounded(q, source)) return true;
   return overlap(q.explanation, source) >= 0.4;
@@ -55,24 +62,43 @@ function questionGrounded(q: QuizQuestion, source: string): boolean {
 
 type Item = { q: QuizQuestion; from: number };
 
+function majority(items: Item[]): Item {
+  const by = new Map<string, Item[]>();
+  for (const item of items) {
+    const key = normalizeAnswer(item.q.answer);
+    const arr = by.get(key) ?? [];
+    arr.push(item);
+    by.set(key, arr);
+  }
+  let best = items.slice(0, 1);
+  for (const arr of by.values()) if (arr.length > best.length) best = arr;
+  return best[0]!;
+}
+
 function cluster(items: Item[]): Item[][] {
   const groups: Item[][] = [];
   for (const item of items) {
-    const words = contentWords(item.q.prompt);
-    const hit = groups.find((g) => jaccard(words, contentWords(g[0]!.q.prompt)) >= 0.5);
+    const hit = groups.find((g) => similarPrompt(item.q.prompt, g[0]!.q.prompt));
     if (hit) hit.push(item);
     else groups.push([item]);
   }
   return groups;
 }
 
+function freshId(id: string, seen: Set<string>): string {
+  let next = id.slice(0, 40) || "q";
+  let n = 2;
+  while (seen.has(next)) {
+    const suffix = `-${n++}`;
+    next = `${id.slice(0, Math.max(1, 40 - suffix.length))}${suffix}`;
+  }
+  seen.add(next);
+  return next;
+}
+
 function pack(questions: QuizQuestion[], opts: { title: string; sourceName?: string; kind: QuizAsk["kind"] }): Quiz | null {
   const seen = new Set<string>();
-  const unique = questions.filter((q) => {
-    if (seen.has(q.id)) return false;
-    seen.add(q.id);
-    return true;
-  });
+  const unique = questions.map((q) => ({ ...q, id: freshId(q.id, seen) }));
   if (!unique.length) return null;
   const quiz = {
     title: opts.title,
@@ -86,7 +112,8 @@ function pack(questions: QuizQuestion[], opts: { title: string; sourceName?: str
 
 /**
  * Merge quizzes from the panel. `source` is the attached file text (empty when
- * there is no file). Disagreement with no source-backed winner drops the question.
+ * there is no file). A disagreement keeps the source-backed answer, or the
+ * majority answer when the source does not decide.
  */
 export function reconcileQuizzes(quizzes: Quiz[], opts: { source: string; count: number; kind: QuizAsk["kind"]; sourceName?: string; title?: string }): Quiz | null {
   const items: Item[] = [];
@@ -106,8 +133,12 @@ export function reconcileQuizzes(quizzes: Quiz[], opts: { source: string; count:
       if (questionGrounded(q, opts.source)) kept.push(q);
       continue;
     }
-    const grounded = [...byAnswer.values()].map((arr) => arr[0]!).filter((item) => answerGrounded(item.q, opts.source));
-    if (opts.source && grounded.length === 1) kept.push(grounded[0]!.q);
+    const grounded = [...byAnswer.values()].filter((arr) => answerGrounded(arr[0]!.q, opts.source));
+    if (grounded.length >= 1) {
+      kept.push(majority(grounded.flat()).q);
+      continue;
+    }
+    if (!opts.source.trim()) kept.push(majority(group).q);
   }
   const title = opts.title || quizzes.find((q) => q.title && q.title !== "Quiz" && q.title !== "Flashcards")?.title || (opts.kind === "flashcards" ? "Flashcards" : "Quiz");
   return pack(kept.slice(0, opts.count), { title, sourceName: opts.sourceName ?? quizzes.find((q) => q.source)?.source, kind: opts.kind });

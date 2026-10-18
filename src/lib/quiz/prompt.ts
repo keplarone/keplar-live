@@ -7,7 +7,7 @@ import { quizAsk, quizSourceName } from "./ask";
 export const QUIZ_PANEL_RULES = `This message asks for a quiz or for flashcards. Reply with a one-line title, then exactly one keplar-quiz fence and nothing else.
 The fence is JSON:
 {"title":"...","source":"file name","kind":"quiz","questions":[{"id":"q1","type":"multiple_choice","prompt":"...","options":["...","...","...","..."],"answer":"...","explanation":"...","hint":"..."}]}
-- Use the number of questions they asked for. Otherwise 10. Never more than 20.
+- Use the number of questions they asked for. Otherwise 10. Never more than 20. Do not stop early. If the source has fewer distinct facts than that number, write one question per fact and stop.
 - type is multiple_choice, true_false, or short_answer.
 - multiple_choice has exactly 4 options. answer is the correct option's full text, not a letter.
 - true_false uses options ["True","False"] and answer "True" or "False".

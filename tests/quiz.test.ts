@@ -4,12 +4,13 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { quizAsk, newQuizFollowUp } from "@/lib/quiz/ask";
+import { quizAsk, newQuizFollowUp, quizMaterial } from "@/lib/quiz/ask";
 import { parseQuiz } from "@/lib/quiz/schema";
 import { gradeAnswer, quizKeyCommand } from "@/lib/quiz/grade";
 import { applyQuizVerdicts, reconcileQuizzes } from "@/lib/quiz/reconcile";
 import { finalizeQuiz, quizPlain, quizStreamView, takeQuizFence } from "@/lib/quiz/build";
 import { parseMarkdownQuiz } from "@/lib/quiz/markdown";
+import { addQuizQuestions, applyShortfall, sourceCapacity } from "@/lib/quiz/fill";
 import { cheapestQuizModel } from "@/lib/quiz/repair";
 import { blendedPrice } from "@/lib/orchestration/pricing";
 import { liveRoster } from "@/lib/orchestration/live-catalog";
@@ -206,7 +207,7 @@ test("a panel quiz is the answer, with no extra model call and no streamed JSON"
   const classification = { kind: "general", complexity: "moderate", capabilities: [], estimatedInputTokens: 1, estimatedOutputTokens: 1, needsWeb: false, rationale: "" } as never;
   const deltas: string[] = [];
   const out = await s.synthesize({
-    req: { prompt: "create me a quiz for this study guide", plan: "free", docs: [{ name: "study-guide.pdf", text: SOURCE, source: "file" }] },
+    req: { prompt: "Create a 2-question quiz for this study guide", plan: "free", docs: [{ name: "study-guide.pdf", text: SOURCE, source: "file" }] },
     classification,
     plan,
     results,
@@ -283,7 +284,7 @@ test("a markdown quiz is the card, and a repair runs once only when that parse f
   const verification = { mode: "not-needed", checks: [], disputed: [], checked: 0, supported: 0, removed: [], notes: [] } as never;
   const classification = { kind: "general", complexity: "simple", capabilities: [], estimatedInputTokens: 1, estimatedOutputTokens: 1, needsWeb: false, rationale: "" } as never;
   const out = await s.synthesize({
-    req: { prompt: "create me a quiz for this study guide", plan: "free", docs: [{ name: "study-guide.pdf", text: SOURCE, source: "file" }] },
+    req: { prompt: "Create a 2-question quiz for this study guide", plan: "free", docs: [{ name: "study-guide.pdf", text: SOURCE, source: "file" }] },
     classification, plan, results, comparison, verification, onDelta: () => {}, signal: undefined,
   } as never);
   assert.equal(calls, 0);
@@ -348,4 +349,155 @@ test("finalizeQuiz drops a question the verifier rejects", () => {
     verdicts: [{ id: "q2", verdict: "drop" }],
   });
   assert.deepEqual(quiz?.questions.map((x) => x.id), ["q1"]);
+});
+
+test("a letter plus the option text is kept, and a cut-off fence keeps finished questions", () => {
+  const spelled = parseQuiz(JSON.stringify({
+    title: "T",
+    kind: "quiz",
+    questions: [{
+      id: "q1",
+      type: "multiple_choice",
+      prompt: "What is an entrepreneur?",
+      options: ["A lender", "A person who starts a business and takes on financial risk", "A customer", "A bank"],
+      answer: "B. A person who starts a business and takes on financial risk",
+      explanation: "An entrepreneur is a person who starts a business and takes on financial risk.",
+    }],
+  }));
+  assert.equal(spelled?.questions[0]?.answer, "A person who starts a business and takes on financial risk");
+  const mismatched = parseQuiz(JSON.stringify({
+    title: "T",
+    kind: "quiz",
+    questions: [{
+      id: "q1",
+      type: "multiple_choice",
+      prompt: "What is an entrepreneur?",
+      options: ["A lender", "A person who starts a business and takes on financial risk", "A customer", "A bank"],
+      answer: "B. A lender",
+      explanation: "An entrepreneur is a person who starts a business and takes on financial risk.",
+    }],
+  }));
+  assert.equal(mismatched, null);
+
+  const one = QUIZ.questions[0]!;
+  const cut = `{"title":"Entrepreneurship","kind":"quiz","questions":[${JSON.stringify(one)},{"id":"q2","prompt":"What is`;
+  const parsed = parseQuiz(cut);
+  assert.equal(parsed?.title, "Entrepreneurship");
+  assert.equal(parsed?.questions.length, 1);
+  assert.equal(parsed?.questions[0]?.prompt, one.prompt);
+});
+
+test("a disagreement with no file keeps the question, and a shared id does not drop the other", () => {
+  const other: Quiz = {
+    ...QUIZ,
+    questions: [
+      QUIZ.questions[0]!,
+      { ...QUIZ.questions[1]!, answer: "The money left after costs", explanation: "Profit is what remains after costs are paid." },
+    ],
+  };
+  const kept = reconcileQuizzes([QUIZ, other], { source: "", count: 10, kind: "quiz" });
+  assert.equal(kept?.questions.length, 2);
+
+  const twin: Quiz = { ...QUIZ, questions: [{ ...QUIZ.questions[1]!, id: "q1" }] };
+  const both = reconcileQuizzes([{ ...QUIZ, questions: [QUIZ.questions[0]!] }, twin], { source: SOURCE, count: 10, kind: "quiz" });
+  assert.equal(both?.questions.length, 2);
+  assert.notEqual(both?.questions[0]?.id, both?.questions[1]?.id);
+});
+
+test("the card says when the source cannot cover the asked count", () => {
+  const html = renderToStaticMarkup(createElement(QuizCard, { quiz: { ...QUIZ, note: "This source doesn't cover more questions." } }));
+  assert.match(html, /cover more questions/);
+  assert.equal(sourceCapacity(SOURCE), 3);
+  assert.equal(sourceCapacity("quiz me"), null);
+  assert.equal(quizMaterial({ prompt: `Create a 5-question quiz for this study guide.\n\n${SOURCE}` }), SOURCE);
+  assert.equal(sourceCapacity(quizMaterial({ prompt: `Create a 5-question quiz for this study guide.\n\n${SOURCE}` })), 3);
+  const room = applyShortfall(QUIZ, 10, SOURCE, "This source doesn't cover more questions.");
+  assert.equal(room.note, undefined);
+  const sole = q({
+    id: "q3",
+    prompt: "What is a sole proprietorship?",
+    options: ["A business owned by one person", "A partnership", "A bank", "A school"],
+    answer: "A business owned by one person",
+    explanation: "A sole proprietorship is a business owned by one person.",
+  });
+  const done = applyShortfall({ ...QUIZ, questions: [...QUIZ.questions, sole] }, 10, SOURCE, null);
+  assert.equal(done.questions.length, 3);
+  assert.match(done.note ?? "", /doesn't cover more/);
+  const asked = applyShortfall(done, 3, SOURCE, null);
+  assert.equal(asked.note, undefined);
+});
+
+test("a short quiz is topped up once from the source, and an invented question is left out", async () => {
+  const [m1] = freeRoster;
+  let calls = 0;
+  const extra = QUIZ.questions[1]!;
+  const registry = {
+    generate: async () => {
+      calls++;
+      return { ok: true, modelId: m1.id, text: JSON.stringify({ questions: [extra] }), latencyMs: 1, usage: { inputTokens: 1, outputTokens: 1 } };
+    },
+  } as never;
+  const short: Quiz = { ...QUIZ, questions: [QUIZ.questions[0]!] };
+  const fence = `Title\n\n\`\`\`keplar-quiz\n${JSON.stringify(short)}\n\`\`\``;
+  const results: ProviderResult[] = [{ ok: true, modelId: m1.id, stance: "a", claims: [], text: fence, latencyMs: 1, usage: { inputTokens: 1, outputTokens: 1 } }];
+  const plan = { mode: "single", panel: [{ model: m1, slot: "panel", covers: "Reasoning", reason: "" }], verifier: null, judge: null, estimate: { breakdown: [] }, rationale: "" } as never;
+  const verification = { mode: "not-needed", checks: [], disputed: [], checked: 0, supported: 0, removed: [], notes: [] } as never;
+  const classification = { kind: "general", complexity: "simple", capabilities: [], estimatedInputTokens: 1, estimatedOutputTokens: 1, needsWeb: false, rationale: "" } as never;
+  const out = await new ModelSynthesizer(registry, m1, new LatencyBudget(60_000).start()).synthesize({
+    req: { prompt: "Create a 2-question quiz for this study guide", plan: "free", docs: [{ name: "study-guide.pdf", text: SOURCE, source: "file" }] },
+    classification, plan, results, comparison: new EvidenceWeightedComparator().compare(results), verification, onDelta: () => {}, signal: undefined,
+  } as never);
+  assert.equal(calls, 1);
+  assert.equal(out.quiz?.questions.length, 2);
+  assert.equal(out.quiz?.note, undefined);
+  assert.match(out.quiz?.questions[1]?.answer ?? "", /earns from sales/);
+
+  calls = 0;
+  const invented = q({
+    id: "q9",
+    prompt: "What is a unicorn startup?",
+    options: ["A company valued over one billion", "A farm", "A bank", "A school"],
+    answer: "A company valued over one billion",
+    explanation: "A unicorn startup is a private company valued at over one billion dollars.",
+  });
+  const registry2 = {
+    generate: async () => {
+      calls++;
+      return { ok: true, modelId: m1.id, text: JSON.stringify({ questions: [invented], limited: "This source doesn't cover more questions." }), latencyMs: 1, usage: { inputTokens: 1, outputTokens: 1 } };
+    },
+  } as never;
+  const out2 = await new ModelSynthesizer(registry2, m1, new LatencyBudget(60_000).start()).synthesize({
+    req: { prompt: "Create a 2-question quiz for this study guide", plan: "free", docs: [{ name: "study-guide.pdf", text: SOURCE, source: "file" }] },
+    classification, plan, results, comparison: new EvidenceWeightedComparator().compare(results), verification, onDelta: () => {}, signal: undefined,
+  } as never);
+  assert.equal(calls, 1);
+  assert.equal(out2.quiz?.questions.length, 1);
+  assert.equal(out2.quiz?.note, undefined);
+  assert.equal(addQuizQuestions(short, [invented], SOURCE, 2).questions.length, 1);
+});
+
+test("when the source is already used up, the card says so and no model is called", async () => {
+  const [m1] = freeRoster;
+  let calls = 0;
+  const registry = { generate: async () => { calls++; return { ok: false }; } } as never;
+  const sole = q({
+    id: "q3",
+    prompt: "What is a sole proprietorship?",
+    options: ["A business owned by one person", "A partnership", "A bank", "A school"],
+    answer: "A business owned by one person",
+    explanation: "A sole proprietorship is a business owned by one person.",
+  });
+  const three: Quiz = { ...QUIZ, questions: [...QUIZ.questions, sole] };
+  const fence = `Title\n\n\`\`\`keplar-quiz\n${JSON.stringify(three)}\n\`\`\``;
+  const results: ProviderResult[] = [{ ok: true, modelId: m1.id, stance: "a", claims: [], text: fence, latencyMs: 1, usage: { inputTokens: 1, outputTokens: 1 } }];
+  const plan = { mode: "single", panel: [{ model: m1, slot: "panel", covers: "Reasoning", reason: "" }], verifier: null, judge: null, estimate: { breakdown: [] }, rationale: "" } as never;
+  const verification = { mode: "not-needed", checks: [], disputed: [], checked: 0, supported: 0, removed: [], notes: [] } as never;
+  const classification = { kind: "general", complexity: "simple", capabilities: [], estimatedInputTokens: 1, estimatedOutputTokens: 1, needsWeb: false, rationale: "" } as never;
+  const out = await new ModelSynthesizer(registry, m1, new LatencyBudget(60_000).start()).synthesize({
+    req: { prompt: "create me a quiz for this study guide", plan: "free", docs: [{ name: "study-guide.pdf", text: SOURCE, source: "file" }] },
+    classification, plan, results, comparison: new EvidenceWeightedComparator().compare(results), verification, onDelta: () => {}, signal: undefined,
+  } as never);
+  assert.equal(calls, 0);
+  assert.equal(out.quiz?.questions.length, 3);
+  assert.match(out.quiz?.note ?? "", /doesn't cover more/);
 });

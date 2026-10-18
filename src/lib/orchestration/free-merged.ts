@@ -97,7 +97,7 @@ export class MergedFreeReview {
     const ask = quizAsk(req.prompt);
     const body = ok.map((r) => `### ${ids.get(r.modelId)}\n${r.text.slice(0, guide || ask ? 7000 : 4000)}`).join("\n\n");
     const stage = this.budget ? this.budget.stageMs(0.5) : undefined;
-    const cap = guide ? Math.max(this.capMs, 50_000) : this.capMs;
+    const cap = guide ? Math.max(this.capMs, 50_000) : ask ? Math.max(this.capMs, 40_000) : this.capMs;
     const callSignal = stage !== undefined ? LatencyBudget.signal(Math.min(cap, stage), signal) : signal;
     let r: RegistryResult;
     try {
@@ -105,7 +105,7 @@ export class MergedFreeReview {
         model: this.model,
         prompt: `Question:\n${req.prompt}${textOnlyMediaNote(req.media)}\n\nResponses:\n${body}${ask ? `\n\n${quizPanelHint(req)}` : richHint(req.prompt) ? `\n\n${richHint(req.prompt)}` : ""}`,
         classification,
-        params: { reasoningOff: true, maxOutputTokens: ask ? 3600 : guide ? 5600 : 2400 },
+        params: { reasoningOff: true, maxOutputTokens: ask ? 6400 : guide ? 5600 : 2400 },
         tier: req.routing?.tier,
         slot: "verifier",
         system: `${MERGED_SYSTEM_PROMPT}${guide ? `\n${GUIDE_SYNTH_RULES}` : ""}${ask ? `\n${QUIZ_VERIFY_ADDON}\nThe answer after the marker is a one-line title and one keplar-quiz fence. Questions come only from the attached file, or from the conversation topic when there is no file.` : ""}\n\n${identityPrompt()}\n\n${VOICE_PROMPT}\n\n${HUMAN_TONE_PROMPT}`,
