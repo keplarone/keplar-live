@@ -56,9 +56,9 @@ const plansFreeNote = keplarPlans.replace(/^Free \$0/, "Free $0 (free open model
 export const perplexity: ComparePage = {
   slug: "perplexity-model-council",
   path: "/compare/perplexity-model-council",
-  metaTitle: `${KO} vs Perplexity Model Council (2026)`,
+  metaTitle: "Keplar One vs Perplexity Model Council",
   metaDescription:
-    "Both send your question to several AI models and synthesize one answer. A model council for $45, not $200, with a disagreement summary that shows where models split.",
+    "How Keplar One and Perplexity Model Council each combine several AI models into one answer: model choice, disagreement handling, plans and price.",
   h1: `${KO} vs Perplexity Model Council`,
   label: "Compare",
   lastChecked: LAST_CHECKED,
@@ -142,8 +142,8 @@ export const perplexity: ComparePage = {
 export const poe: ComparePage = {
   slug: "poe",
   path: "/compare/poe",
-  metaTitle: `${KO} vs Poe (2026): Many AI Bots vs One Answer`,
-  metaDescription: `Poe lets you chat with many AI models and bots, and compare their replies in one thread. ${KO} sends your question to several models and synthesizes one answer, flagging where they disagree.`,
+  metaTitle: "Keplar One vs Poe: Many AI Bots vs One Answer",
+  metaDescription: "Poe gives you many AI bots to switch between; Keplar One asks several models at once and writes one checked answer. How they differ, with prices.",
   h1: `${KO} vs Poe`,
   label: "Compare",
   lastChecked: LAST_CHECKED,
@@ -229,8 +229,8 @@ export const poe: ComparePage = {
 export const chathub: ComparePage = {
   slug: "chathub",
   path: "/compare/chathub",
-  metaTitle: `${KO} vs ChatHub (2026): Side-by-Side vs One Answer`,
-  metaDescription: `ChatHub shows up to 6 AI models' replies side by side. ${KO} sends your question to several models and synthesizes one answer, with disagreements flagged and consensus shown.`,
+  metaTitle: "Keplar One vs ChatHub: Side by Side vs One Answer",
+  metaDescription: "ChatHub shows several chatbots side by side; Keplar One compares them for you and writes one answer with the disagreements shown. Features and prices.",
   h1: `${KO} vs ChatHub`,
   label: "Compare",
   lastChecked: LAST_CHECKED,
@@ -305,9 +305,9 @@ export const chathub: ComparePage = {
 export const hub: ComparePage = {
   slug: "",
   path: "/compare",
-  metaTitle: "Best Multi-Model AI Tools & Model Council Alternatives 2026",
+  metaTitle: "Best Multi-Model AI Tools and Model Council Apps",
   metaDescription:
-    "A fair guide to tools that ask several AI models at once: council and consensus apps that synthesize one answer, and hubs that let you switch or compare side by side. Prices checked Sep 2026.",
+    "An honest comparison of multi-model AI tools: Keplar One, Perplexity Model Council, ChatHub, Poe and others, by how they combine models and what they cost.",
   h1: "Best multi-model AI tools and AI model council alternatives",
   label: "Compare",
   lastChecked: LAST_CHECKED,

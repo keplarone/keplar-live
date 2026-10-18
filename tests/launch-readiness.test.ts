@@ -46,12 +46,13 @@ test("/status is linked in the footer, noindex, and not in the sitemap", () => {
   assert.match(readFileSync("src/app/(marketing)/status/page.tsx", "utf8"), /noindex: true/);
 });
 
-test("auth and status are noindex, follow; public content, account and checkout stay indexable", () => {
-  for (const f of ["status", "signin", "signup", "forgot-password", "reset-password", "verify-email", "two-factor", "secure-account"]) {
+test("auth, account, checkout, feedback and the simulation are noindex, follow; templates stay indexable", () => {
+  for (const f of ["status", "signin", "signup", "forgot-password", "reset-password", "verify-email", "two-factor", "secure-account", "simulation", "account", "checkout"]) {
     assert.match(readFileSync(`src/app/(marketing)/${f}/page.tsx`, "utf8"), /noindex: true/, f);
   }
   assert.match(readFileSync("src/app/(marketing)/signin/verify/page.tsx", "utf8"), /noindex: true/);
-  for (const f of ["simulation", "feedback", "templates/[slug]", "account", "checkout"]) {
+  assert.match(readFileSync("src/app/(marketing)/feedback/page.tsx", "utf8"), /index: false, follow: true/);
+  for (const f of ["templates/[slug]"]) {
     assert.doesNotMatch(readFileSync(`src/app/(marketing)/${f}/page.tsx`, "utf8"), /noindex|index: false/, f);
   }
   // A comparison the owner has not approved is noindex. Approved pages in the same file stay indexable.

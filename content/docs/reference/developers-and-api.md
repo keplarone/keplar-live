@@ -1,6 +1,6 @@
 ---
 title: Developers and API status
-description: What Keplar offers developers today (and what it does not): a beta API with keys on paid plans, outbound MCP connections, a shareable answer format, and what is still missing.
+description: What Keplar offers developers today: a beta API with keys, outbound MCP connections, a shareable answer format, and what is still missing.
 order: 4
 updated: 2026-10-12
 keywords: Keplar API, developer, MCP, API access, programmatic

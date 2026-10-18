@@ -1,6 +1,6 @@
 ---
-title: How to check an AI answer before you rely on it
-description: A practical, tool-agnostic routine for checking an AI answer: what to verify, which red flags matter, and how asking more than one model fits in.
+title: How to Check an AI Answer Before You Rely on It
+description: A step-by-step method for checking an AI answer: spot risky claims, cross-check with other models and confirm what matters in primary sources.
 category: Trust and accuracy
 published: 2026-10-03
 updated: 2026-10-03

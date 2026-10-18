@@ -7,7 +7,7 @@ import { breadcrumbs } from "@/lib/seo-graph";
 import s from "@/components/kb/kb.module.css";
 import { TwoTone } from "@/components/page/TwoTone";
 
-export const metadata = pageMeta("/vs", "Keplar compared with other AI assistants", "Fair, dated comparisons of Keplar with ChatGPT, Claude and Gemini: what each is for, what each lists publicly, and when the other one is the better choice.");
+export const metadata = pageMeta("/vs", "Keplar vs ChatGPT, Claude and Gemini", "How Keplar compares with single-model assistants like ChatGPT, Claude and Gemini: what each is for and when asking several models helps.");
 
 const date = (iso: string) => new Date(iso + "T12:00:00Z").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
 
@@ -42,7 +42,7 @@ export default function VsHub() {
           <p>More in this subject: {clusterAlso("/vs").map((p, i) => <span key={p.path}>{i ? ", " : ""}<Link href={p.path}>{p.label}</Link></span>)}.</p>
         </div>
       </div>
-      <JsonLd data={{ "@context": "https://schema.org", "@type": "CollectionPage", name: "Keplar compared with other AI assistants", url: abs("/vs"), hasPart: list.map((v) => ({ "@type": "WebPage", name: `Keplar vs ${v.name}`, url: abs(`/vs/${v.slug}`) })) }} />
+      <JsonLd data={{ "@context": "https://schema.org", "@type": "CollectionPage", name: "Keplar vs ChatGPT, Claude and Gemini", url: abs("/vs"), hasPart: list.map((v) => ({ "@type": "WebPage", name: `Keplar vs ${v.name}`, url: abs(`/vs/${v.slug}`) })) }} />
       <JsonLd data={breadcrumbs([{ name: "Compare", path: "/vs" }])} />
     </div>
   );

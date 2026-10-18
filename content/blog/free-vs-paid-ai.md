@@ -1,6 +1,6 @@
 ---
-title: Free vs paid AI: what you actually give up, and when paying makes sense
-description: An honest look at the trade-offs of free AI tiers versus paid plans: limits, model quality, privacy, features and how to decide without overspending.
+title: Free vs Paid AI: What You Give Up and When to Pay
+description: What free AI plans really cost you in model quality, limits and privacy, and when a paid AI plan is worth it.
 category: Model choice
 published: 2026-10-03
 updated: 2026-10-03

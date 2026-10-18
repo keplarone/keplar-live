@@ -6,7 +6,7 @@ import { breadcrumbs } from "@/lib/seo-graph";
 import s from "@/components/kb/kb.module.css";
 import { TwoTone } from "@/components/page/TwoTone";
 
-export const metadata = pageMeta("/prompts", "AI prompt library: copyable prompts for any assistant", `${allPrompts().length} prompt templates for studying, writing, work, coding, research and checking AI answers, each with why it works and what to verify afterward.`);
+export const metadata = pageMeta("/prompts", "AI Prompt Library: Copyable Prompts for Any Assistant", "Copyable prompt templates for writing, coding, research, studying, work and checking AI answers. Works with Keplar, ChatGPT, Claude or Gemini.");
 
 export default function PromptsHub() {
   return (

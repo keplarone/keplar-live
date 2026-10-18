@@ -20,7 +20,7 @@ const m: MarketingCatalog = {
       "description": "Walong demo na site at app na ginawa ng Keplar team para ipakita ang saklaw na layunin ng Create: mga menu, ledger, board, kalendaryo at editorial na page, bawat isa may sariling font at kulay. Hindi mga site ng customer."
     },
     "roadmap": {
-      "title": "Roadmap",
+      "title": "Roadmap (Filipino)",
       "description": "Ano ang ginagawa ngayon ng Keplar, ano ang nasa beta at tinatapos pa, at ano ang kalalabas lang. Walang target na petsang hindi namin kayang tuparin."
     },
     "developers": {

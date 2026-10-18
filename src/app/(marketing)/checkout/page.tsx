@@ -10,7 +10,7 @@ import { baseUrl, whopCheckoutConfigured } from "@/lib/billing/whop";
 import { CheckoutStart } from "@/components/billing/CheckoutStart";
 import s from "@/components/account/account.module.css";
 
-export const metadata = pageMeta("/checkout", "Checkout", "Upgrade your Keplar plan.");
+export const metadata = pageMeta("/checkout", "Checkout", "Upgrade your Keplar plan.", { noindex: true });
 export const dynamic = "force-dynamic";
 
 type Props = { searchParams: Promise<{ plan?: string }> };

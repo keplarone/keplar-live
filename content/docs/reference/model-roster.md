@@ -1,6 +1,6 @@
 ---
 title: The model roster and roles
-description: How Keplar organizes the models it can call into families and roles (panelist, verifier, judge, vision seat), why the list changes, and where to see the current one.
+description: How Keplar groups the models it calls into families and roles (panelist, verifier, judge, vision seat), why the list changes and where to see it.
 order: 1
 updated: 2026-10-03
 keywords: AI model list, model families, panel, judge, verifier, open-weight models

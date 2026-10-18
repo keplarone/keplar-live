@@ -7,6 +7,7 @@ import { TrackedLink } from "@/components/growth/TrackedLink";
 import { TwoTone } from "@/components/page/TwoTone";
 import { clusterById } from "@/lib/seo/clusters";
 import { pageMeta } from "@/lib/seo";
+import { GENERATED_META } from "@/lib/seo/generated-meta";
 import { breadcrumbs } from "@/lib/seo-graph";
 import { TOOLS, toolBySlug } from "@/lib/seo/tools";
 import hero from "@/components/page/RoutePlaceholder.module.css";
@@ -20,7 +21,9 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const tool = toolBySlug((await params).slug);
   if (!tool) return {};
-  return pageMeta(`/tools/${tool.slug}`, tool.title, tool.description);
+  const path = `/tools/${tool.slug}`;
+  const sheet = GENERATED_META[path];
+  return pageMeta(path, sheet?.title ?? tool.title, sheet?.description ?? tool.description);
 }
 
 export default async function ToolPage({ params }: { params: Promise<{ slug: string }> }) {

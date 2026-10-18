@@ -1,6 +1,6 @@
 ---
 title: Connect a custom domain
-description: Add your own domain to a published site on Plus, Pro or Business: the DNS records to create, what each status means, Cloudflare settings and how to fix common errors.
+description: Add your own domain to a published site on Plus, Pro or Business: DNS records to create, what each status means and how to fix common errors.
 order: 7
 updated: 2026-10-03
 keywords: custom domain, DNS records, CNAME, A record, Cloudflare, TXT verification

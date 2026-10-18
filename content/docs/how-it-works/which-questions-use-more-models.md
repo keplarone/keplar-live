@@ -1,6 +1,6 @@
 ---
 title: Which questions use more models
-description: A practical guide to what makes Keplar consult one model, three, or five: question type, length, stakes, forecasts, attachments, Deep Research and thoroughness, with examples.
+description: What makes Keplar consult one model, three or five: question type, stakes, attachments, Deep Research and thoroughness, with examples.
 order: 3
 updated: 2026-10-03
 keywords: how many models, panel size, complex questions, forecasts, Deep Research, thoroughness

@@ -14,8 +14,8 @@ import s from "@/components/sections/sections.module.css";
 
 export const metadata = pageMeta(
   "/product",
-  "Multi-model AI answers, with the work shown",
-  "Keplar asks multiple AI models your question, finds where they agree, investigates where they don't, and gives you one answer with consensus and disagreements shown.",
+  "Keplar Product Tour: Multi-Model AI With the Work Shown",
+  "See how Keplar answers: models consulted, consensus counts, sources, disagreements, verification and a reasoning summary under every answer. Free to start.",
 );
 
 export default function ProductPage() {
@@ -24,7 +24,7 @@ export default function ProductPage() {
       <JsonLd data={breadcrumbs([{ name: "Product", path: "/product" }])} />
       <PageHero
         label="Product"
-        title="One question. Multiple intelligences. One answer."
+        title="Multi-model AI answers, with the work shown."
         lede={`${brand.name} asks multiple AI models your question, finds where they agree, investigates where they don't, and gives you one synthesized answer with the agreement and disagreements shown.`}
         ctas={[{ href: "/app", label: `Ask ${brand.name}` }, { href: "/how-it-works", label: "How it works", variant: "secondary" }]}
       />

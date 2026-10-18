@@ -6,14 +6,14 @@ import { InquireExperience } from "@/components/inquire/InquireExperience";
 
 export const metadata: Metadata = pageMeta(
   "/inquire",
-  "Talk to Keplar",
-  "Deploying agents, integrating Keplar, exploring a partnership, or asking about Business plans? Talk directly with the Keplar team.",
+  "Talk to Keplar: Partnerships and Business",
+  "Talk to the Keplar team about partnerships, the API, embedding Keplar on your site or Keplar Business for your company.",
 );
 
 export default function InquirePage() {
   return (
     <>
-      <JsonLd data={breadcrumbs([{ name: "Talk to Keplar", path: "/inquire" }])} />
+      <JsonLd data={breadcrumbs([{ name: "Talk to Keplar: Partnerships and Business", path: "/inquire" }])} />
       <InquireExperience />
     </>
   );

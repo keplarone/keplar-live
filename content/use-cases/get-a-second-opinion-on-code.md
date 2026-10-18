@@ -1,6 +1,6 @@
 ---
-title: Get a second opinion on code
-description: Use panels of different models to review a change, compare proposed fixes and spot risky assumptions, then verify with tests, a linter and your own reading.
+title: Get an AI Second Opinion on Your Code
+description: Paste code or a design and see where several AI models agree and split on bugs, security and approach, with one answer and the disagreement shown.
 updated: 2026-10-03
 keywords: AI code review, second opinion on code, compare AI code suggestions, debug with multiple models
 related: /blogs/best-ai-for-coding, /prompts/coding, /docs/using-keplar/tools-in-chat

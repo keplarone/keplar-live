@@ -8,7 +8,7 @@ const m: MarketingCatalog = {
       "description": "Keplar 把你的問題發給多個 AI 模型，找出它們的分歧並加以核實，給你一個綜合後的答案。免費試用，無需註冊。"
     },
     "features": {
-      "title": "Keplar 全部功能",
+      "title": "Keplar 全部功能一覽",
       "description": "Keplar 的每項功能都在這一頁，按用途分組：提問、讀取檔案、建立網站和應用、協作、發布、API 和小元件，以及信任。每項都註明是已上線、測試版還是即將推出。"
     },
     "pricing": {

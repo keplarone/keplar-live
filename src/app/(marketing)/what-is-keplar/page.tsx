@@ -12,8 +12,8 @@ import s from "@/components/sections/sections.module.css";
 import kb from "@/components/kb/kb.module.css";
 
 const PATH = "/what-is-keplar";
-const TITLE = `What is ${brand.companyName}? Everything Keplar does`;
-const DESCRIPTION = "Keplar is an AI workspace: a multi-model answer engine plus Study mode, Deep Research, slides, image and video generation, website and app building, Roblox Studio and Blender co-builders, an API, and Keplar Business for companies.";
+const TITLE = "What Is Keplar One? The Multi-Model AI Workspace";
+const DESCRIPTION = "Everything Keplar does on one page: the multi-model answer engine, Study, Deep Research, slides, Create, Roblox and Blender co-builders, the API and Business.";
 
 export const metadata = pageMeta(PATH, TITLE, DESCRIPTION);
 
@@ -35,7 +35,7 @@ function ItemList() {
   return {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: `Everything in ${brand.name}`,
+    name: "Keplar Features: Every Tool and Its Status",
     itemListElement: FACT_SECTIONS.flatMap((sec) => sec.facts).map((f, i) => ({ "@type": "ListItem", position: i + 1, name: f.name, description: f.what, ...(f.href && !f.href.includes("#") ? { url: abs(f.href) } : {}) })),
   };
 }

@@ -1,6 +1,6 @@
 ---
-title: Can you trust AI consensus? When agreement helps and when it misleads
-description: Why several AI models agreeing is useful evidence but not proof, how shared training data and shared errors fool consensus, and what to do about it.
+title: Can You Trust AI Consensus? When Agreement Misleads
+description: When several AI models agree, is the answer right? When consensus helps, when it misleads and why evidence should outweigh headcount.
 category: Trust and accuracy
 published: 2026-10-03
 updated: 2026-10-03

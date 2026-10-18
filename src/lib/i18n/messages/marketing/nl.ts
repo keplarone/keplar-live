@@ -8,7 +8,7 @@ const m: MarketingCatalog = {
       "description": "Keplar stuurt je vraag naar meerdere AI-modellen, vindt waar ze het oneens zijn, controleert en geeft je één samengevat antwoord. Gratis te proberen, zonder account."
     },
     "features": {
-      "title": "Alles in Keplar",
+      "title": "Alles in Keplar: alle functies",
       "description": "Alle functies van Keplar op één pagina, gegroepeerd naar doel: vragen stellen, bestanden lezen, sites en apps maken, samen bouwen, publiceren, de API en widget, en vertrouwen. Bij elke functie staat of die beschikbaar is, in bèta of binnenkort komt."
     },
     "pricing": {
@@ -20,7 +20,7 @@ const m: MarketingCatalog = {
       "description": "Acht demosites en -apps van het Keplar-team die laten zien wat Create wil bereiken: menukaarten, kasboeken, borden, agenda’s en redactionele pagina’s, elk met een eigen lettertype en kleurenpalet. Geen klantensites."
     },
     "roadmap": {
-      "title": "Roadmap",
+      "title": "Roadmap (Nederlands)",
       "description": "Waar Keplar nu aan bouwt, wat in bèta is en nog wordt afgemaakt, en wat onlangs is uitgebracht. Geen datums die we niet kunnen halen."
     },
     "developers": {

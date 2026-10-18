@@ -9,8 +9,8 @@ import prose from "@/components/sections/sections.module.css";
 
 export const metadata = pageMeta(
   "/tools",
-  "Free tools",
-  "Small tools for citations, prompts, notes, and outlines. Model tools use free models only, say so, and stop when the free service is not configured.",
+  "Free AI Tools: Summarizer, Flashcards and More",
+  "Free single-purpose AI tools from Keplar: summarizer, flashcard maker, study guide, citation formatter, prompt optimizer and more. Each says what it won't do.",
 );
 
 export default function ToolsIndex() {

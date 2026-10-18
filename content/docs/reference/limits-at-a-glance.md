@@ -1,6 +1,6 @@
 ---
 title: Limits at a glance
-description: One table with Keplar's main limits per plan: questions, credits, rolling windows, panels, Create projects, domains, apps, agents and sharing. Read from the product.
+description: One table of Keplar's limits per plan: questions, credits, rolling windows, panels, Create projects, domains, apps, agents and sharing.
 order: 3
 updated: 2026-10-03
 keywords: Keplar limits, plan limits, share link limits, panel size

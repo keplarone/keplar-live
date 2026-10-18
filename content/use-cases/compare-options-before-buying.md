@@ -1,6 +1,6 @@
 ---
-title: Compare products and options before you buy
-description: Use Keplar to lay out the trade-offs between two or more options, see where models disagree, and get a list of facts to verify before you spend money.
+title: Compare Products and Options Before You Buy
+description: Lay out options, constraints and trade-offs and let several AI models weigh in. Keplar writes one answer and flags where they disagree.
 updated: 2026-10-03
 keywords: compare products with AI, AI buying advice, which one should I buy, compare options
 related: /blogs/chatgpt-vs-claude-vs-gemini-vs-perplexity, /prompts/research, /docs/how-it-works/which-questions-use-more-models

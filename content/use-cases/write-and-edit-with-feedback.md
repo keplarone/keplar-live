@@ -1,6 +1,6 @@
 ---
-title: Write and edit with honest feedback
-description: Use Keplar to critique drafts, tighten text, find vague sentences and test an argument, while keeping your voice and verifying the facts.
+title: Write and Edit With Honest AI Feedback
+description: Get critique on your draft from several AI models: unclear lines, weak arguments and claims to check. Your voice stays yours.
 updated: 2026-10-03
 keywords: AI editing, AI writing feedback, improve my writing, critique my essay
 related: /for-writers, /blogs/best-ai-for-writing, /prompts/writing, /docs/using-keplar/write-better-questions

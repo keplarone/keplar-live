@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { brand } from "@/lib/site";
 import { Pricing } from "@/components/sections/Pricing";
 import { Faq } from "@/components/sections/Faq";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -16,8 +15,8 @@ import { pricingContext, pricingFaq } from "@/lib/growth/pricing-page";
 
 export const metadata = pageMeta(
   "/pricing",
-  "Pricing: Free, Lite $20, Plus $45, Pro $99",
-  `Start free with ${brand.engineName}. Keplar Lite is $20/month, Keplar Plus is $45/month, Keplar Pro is $99/month, and Business plans are available through our sales team. Usage you can see, never hidden.`,
+  "Keplar Pricing: Free, Lite $20, Plus $45, Pro $99",
+  "Start free with 50 questions a day. Keplar Lite is $20/month, Plus $45/month and Pro $99/month, billed monthly, cancel any time. Business plans are separate.",
 );
 
 /** General questions kept on the pricing page next to the pricing ones (one FAQPage block per page). */
