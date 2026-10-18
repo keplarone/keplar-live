@@ -16,8 +16,8 @@
   z-index: -1;
   pointer-events: none;
   overflow: hidden;
-  /* Painted sky for phones, low-power devices and reduced motion. The SVG is original
-     fractal noise (no stock photo). The disc is the sun, 20% from the right and 18% from the top. */
+  /* Painted sky until the cutouts are in the DOM. The SVG is the static fallback
+     (original fractal noise, no stock photo). The disc is the sun, 20% from the right and 18% from the top. */
   background-color: #5d9be8;
   background-image:
     radial-gradient(circle at 80% 18%, #fff6e4 0 11px, transparent 12px),
@@ -34,9 +34,59 @@
     url("./static-night.svg"),
     linear-gradient(180deg, #161e2c 0%, #2a3848 80%);
 }
-.landingClouds { display: block; width: 100%; height: 100%; pointer-events: none; }
+.landingClouds { position: absolute; inset: 0; z-index: 0; display: block; width: 100%; height: 100%; pointer-events: none; }
 /* A failed context leaves an opaque black canvas. Hide it so the painted clouds stay. */
 .landingClouds[data-sky="css"] { display: none; }
+/* The cutouts replace the painted blobs, so the SVG does not show through their gaps. */
+.siteSky:has(.cloudDeck) {
+  background-image:
+    radial-gradient(circle at 80% 18%, #fff6e4 0 11px, transparent 12px),
+    linear-gradient(180deg, #5d9be8 0%, #b9d8f5 80%);
+}
+:global(:root[data-theme="dark"]) .siteSky:has(.cloudDeck) {
+  background-image:
+    radial-gradient(circle at 80% 18%, #e4eaf6 0 11px, transparent 12px),
+    linear-gradient(180deg, #161e2c 0%, #2a3848 80%);
+}
+
+/* Two depths. Near drifts farther than far, which reads as parallax. The filter never leaves these images. */
+.cloudDeck {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.cloudImg {
+  position: absolute;
+  height: auto;
+  max-width: none;
+  pointer-events: none;
+  user-select: none;
+  animation: cloud-drift var(--dur, 120s) ease-in-out infinite alternate;
+}
+.cloudExtra { display: none; }
+:global(:root[data-cloud-cover="more"]) .cloudExtra { display: block; }
+@keyframes cloud-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(var(--dx, 4%), var(--dy, 0.4%), 0); }
+}
+:global(:root[data-cloud-cover="more"]) .cloudImg {
+  filter: saturate(0.5) brightness(0.84);
+}
+:global(:root[data-theme="dark"]) .cloudImg {
+  filter: brightness(0.52) contrast(1.06) saturate(0.38) sepia(0.2) hue-rotate(188deg);
+}
+:global(:root[data-theme="dark"][data-cloud-cover="more"]) .cloudImg {
+  filter: brightness(0.4) contrast(1.02) saturate(0.26) sepia(0.16) hue-rotate(190deg);
+}
+.cloudDeck[data-drift="off"] .cloudImg { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .cloudImg { animation: none; }
+}
+@media (max-width: 640px) {
+  .cloudImg { animation: none; }
+}
 
 /* ---- hero ---- */
 .hero {

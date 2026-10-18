@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { afterPaint } from "@/lib/perf/after-paint";
 import s from "../Sky.module.css";
+import { CloudCutouts } from "./CloudCutouts";
 
 /**
  * One cloud sky for the whole site. The root layout mounts it once, fixed behind every page.
@@ -40,6 +41,7 @@ export function SiteClouds() {
   return (
     <div className={s.siteSky} aria-hidden="true">
       <canvas ref={ref} className={s.landingClouds} />
+      <CloudCutouts />
     </div>
   );
 }

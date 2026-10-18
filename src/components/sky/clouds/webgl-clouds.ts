@@ -108,29 +108,9 @@ float bank(vec2 p, vec2 c, vec2 r, float n) {
   return smoothstep(edge + 0.5, edge - 0.55, dot(q, q));
 }
 float density(vec3 p, float lite) {
-  float drift = uTime * 0.012 * (0.55 + p.z * 0.28);
-  vec2 xz = p.xz + vec2(drift, drift * 0.12);
-  vec2 warp = vec2(fbm(xz * 0.85 + vec2(0.0, 2.0)), fbm(xz * 0.85 + vec2(4.2, 1.1)));
-  vec2 q = xz + warp * (lite > 0.5 ? 0.35 : 0.95);
-  float base = fbm(q * 0.72);
-  float detail = lite > 0.5 ? 0.0 : fbm(q * 2.15 + vec2(3.0, 7.0));
-  float n = base * 0.68 + detail * 0.32;
-  float edgeN = fbm(xz * 0.62 + vec2(8.0, 1.4));
-  float yh = clamp((p.y - 0.12) / 1.15, 0.0, 1.0);
-  float profile = smoothstep(0.0, 0.18, yh) * smoothstep(1.0, 0.38, yh);
-  float banks = 0.0;
-  banks = max(banks, bank(xz, vec2(-2.15, 2.55), vec2(1.85, 1.05), edgeN));
-  banks = max(banks, bank(xz, vec2(2.25, 2.35), vec2(1.9, 1.0), edgeN + 0.17));
-  banks = max(banks, bank(xz, vec2(-2.7, 4.15), vec2(1.7, 0.85), edgeN + 0.31));
-  banks = max(banks, bank(xz, vec2(2.85, 4.05), vec2(1.65, 0.8), edgeN + 0.08));
-  float extra = smoothstep(0.1, 0.48, uCover);
-  banks = max(banks, bank(xz, vec2(-1.2, 3.3), vec2(1.35, 0.7), edgeN) * extra);
-  banks = max(banks, bank(xz, vec2(1.35, 3.15), vec2(1.3, 0.65), edgeN + 0.2) * extra);
-  float mid = smoothstep(1.45, 0.28, abs(p.x)) * smoothstep(0.7, 1.7, p.z) * smoothstep(3.5, 2.3, p.z);
-  banks *= 1.0 - mid * 0.96;
-  banks *= smoothstep(0.15, 1.05, p.z);
-  float thresh = mix(0.5, 0.38, uCover);
-  return smoothstep(thresh, thresh + 0.3, n) * profile * banks;
+  /* The cumulus are CC0 cutouts in the DOM. This march no longer paints them. */
+  float drift = uTime * 0.012;
+  return (p.x + drift) * lite * uCover * 0.0;
 }
 void main() {
   float h = smoothstep(0.0, 0.85, vUv.y);
