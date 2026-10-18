@@ -30,7 +30,7 @@ test("the pixel is mounted only by checkout and account layouts, not the root la
     assert.match(readFileSync(path.join(process.cwd(), file), "utf8"), /<WhopPixel \/>/, file);
   }
   const embed = readFileSync(path.join(process.cwd(), "src/components/billing/WhopEmbed.tsx"), "utf8");
-  assert.match(embed, /cdn\.whop\.com\/elements\/amber\/elements\.js/);
+  assert.ok(embed.includes("https://cdn.whop.com/elements/amber/elements.js"));
   const embedUsers = ["src/components/billing/CheckoutStart.tsx", "src/components/business-site/AccountSetup.tsx"];
   for (const file of embedUsers) assert.match(readFileSync(path.join(process.cwd(), file), "utf8"), /WhopEmbed/, file);
 });
