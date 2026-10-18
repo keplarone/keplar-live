@@ -50,7 +50,7 @@ textarea.field { min-height: 6.5rem; resize: vertical; line-height: 1.5; }
 textarea.field { border-radius: var(--space-r-area); padding: 12px 18px; }
 .field:focus-visible { background: var(--space-field-focus); box-shadow: var(--space-field-depth), var(--space-focus-glow); }
 .badge { box-shadow: none; background: var(--hover-wash); font-weight: var(--w-semibold); }
-.badgeOn { background: var(--space-p-face); color: var(--space-p-ink); box-shadow: 0 0 12px rgb(var(--ring-rgb) / 0.3); }
+.badgeOn { background: var(--space-p-face); color: var(--space-p-ink); box-shadow: none; }
 .badgeWarn { background: rgb(var(--rgb-attention) / 0.14); box-shadow: none; }
 .notice { border-radius: 20px; background: var(--hover-wash); }
 .switch input { accent-color: var(--c-accent); }

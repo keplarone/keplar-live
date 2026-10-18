@@ -1,13 +1,13 @@
 /* Settings popover (Settings.tsx, TeamPanel.tsx): Space Studio's dialog, floating in the middle of the workspace and rising out of
-   a blur. A glass sidebar of pill sections, rows that separate by space instead of lines, pill fields that glow violet, the
-   violet gradient switch, white 3D primaries. Tokens from tokens.css (the workspace is always dark). */
+   a blur. A glass sidebar of pill sections, rows that separate by space instead of lines, pill fields, a solid accent
+   switch, white 3D primaries. Tokens from tokens.css (the workspace is always dark). */
 .scrim { position: fixed; inset: 0; z-index: 60; background: rgb(0 0 0 / 0.6); animation: fade var(--kb-d-3) var(--kb-ease) both; }
 .popover {
   position: fixed; z-index: 61; inset: 0; margin: auto;
   display: grid; grid-template-columns: 200px minmax(0, 1fr);
   width: min(800px, calc(100vw - 24px)); height: min(580px, calc(100vh - 96px));
-  border-radius: var(--kb-r-lg); background: linear-gradient(180deg, #100f16, #07070b); color: var(--kb-ink);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 30px 80px rgb(0 0 0 / 0.7), 0 0 90px rgb(176 104 255 / 0.12);
+  border-radius: var(--kb-r-lg); background: linear-gradient(180deg, #101014, #07070b); color: var(--kb-ink);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 30px 80px rgb(0 0 0 / 0.7);
   overflow: hidden; transform-origin: 50% 50%;
   animation: pop 0.6s var(--kb-ease-expo) both;
   font-family: var(--kb-sans); font-size: var(--kb-t-md);
@@ -26,7 +26,7 @@
 .navItem:hover { background: var(--kb-hover); color: var(--kb-ink); }
 .navItem[aria-current="true"] { background: var(--kb-g-face); color: var(--kb-ink); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 8px 22px rgb(0 0 0 / 0.4); }
 .navItem svg { flex: none; color: var(--kb-ink-3); }
-.navItem[aria-current="true"] svg { color: #d9c4ff; filter: drop-shadow(0 0 6px rgb(176 104 255 / 0.6)); }
+.navItem[aria-current="true"] svg { color: var(--kb-accent); filter: none; }
 
 .body { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
 .head { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 64px; padding: 0 14px 0 28px; }
@@ -56,11 +56,11 @@
 .popover .input[aria-invalid="true"] { box-shadow: var(--kb-field-depth), var(--kb-invalid); }
 .err { padding-right: 14px; font-style: normal; font-size: var(--kb-t-xs); color: var(--kb-del); }
 
-/* Space Studio's switch: a violet gradient track with a squashy white thumb */
+/* Switch: a solid accent track. The thumb uses the inverse ink so it stays visible on the near-white dark accent. */
 .switch { appearance: none; position: relative; flex: none; width: 44px; height: 26px; margin: 0; border-radius: 999px; background: rgb(255 255 255 / 0.08); box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.25), inset 0 0 0 1px rgb(244 244 246 / 0.28); cursor: pointer; transition: background-color var(--kb-d-1) var(--kb-ease), box-shadow var(--kb-d-2) var(--kb-ease); }
 .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / 0.35); transition: transform 0.45s var(--kb-spring), width 0.2s ease; }
-.switch:checked { background: linear-gradient(90deg, #a467f0, #d76cff); box-shadow: 0 0 18px rgb(176 104 255 / 0.35); }
-.switch:checked::after { transform: translateX(18px); }
+.switch:checked { background: var(--kb-accent); box-shadow: none; }
+.switch:checked::after { transform: translateX(18px); background: var(--kb-ink-inverse); }
 .switch:active::after { width: 24px; }
 .switch:checked:active::after { transform: translateX(14px); }
 .switch:disabled { opacity: 0.45; cursor: default; }
@@ -88,7 +88,7 @@
 
 .meter { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; font-size: var(--kb-t-sm); font-weight: 700; color: var(--kb-ink); font-variant-numeric: tabular-nums; }
 .bar { display: block; width: 180px; height: 8px; border-radius: 999px; background: rgb(255 255 255 / 0.06); overflow: hidden; }
-.bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #a467f0, #d76cff); box-shadow: 0 0 14px rgb(176 104 255 / 0.5); }
+.bar i { display: block; height: 100%; border-radius: 999px; background: var(--kb-accent); box-shadow: none; }
 
 .toast { position: absolute; left: 28px; bottom: 18px; margin: 0; padding: 10px 18px; border-radius: var(--kb-r-pill); background: var(--kb-p-face); color: var(--kb-p-ink); font-size: var(--kb-t-sm); font-weight: 700; box-shadow: 0 3px 0 #8c8a99, 0 14px 30px rgb(0 0 0 / 0.5); animation: swap 0.45s var(--kb-ease-expo) both; }
 
@@ -120,7 +120,7 @@ select.input {
   background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
   background-position: calc(100% - 22px) 50%, calc(100% - 17px) 50%; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
 }
-select.input option { background: #0e0d13; color: var(--kb-ink); }
+select.input option { background: #0e0e12; color: var(--kb-ink); }
 /* Team (TeamPanel.tsx) */
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .invite { padding-bottom: 6px; }

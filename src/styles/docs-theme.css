@@ -34,7 +34,7 @@
   --c-accent: var(--docs-blue);
   --c-cyan: var(--docs-blue);
   --ring-rgb: 10 122 138;
-  --space-focus-glow: 0 0 0 3px rgb(10 122 138 / 0.42), 0 0 22px rgb(10 122 138 / 0.24);
+  --space-focus-glow: 0 0 0 3px rgb(10 122 138 / 0.42);
   --c-ink-hover: var(--docs-blue-hover);
   --focus-filter: none;
   --rgb-ink: 14 15 18;
@@ -150,7 +150,7 @@
 :root[data-docs="1"] main [class*="kb-module"][class*="__navLink"] { border-radius: 12px; }
 :root[data-docs="1"] main [class*="kb-module"][class*="__navLink"]:hover:not([aria-current="page"]) { background: var(--hover-wash); }
 :root[data-docs="1"] main [class*="kb-module"][class*="__searchInput"] { border-radius: var(--r-pill); padding-inline: 18px; }
-:root[data-docs="1"] main a[class*="card"]:hover { box-shadow: var(--space-glass-lift), 0 0 36px rgb(10 122 138 / 0.14); }
+:root[data-docs="1"] main a[class*="card"]:hover { box-shadow: var(--space-glass-lift); }
 :root[data-docs="1"] main [class*="callout"] { border-radius: var(--space-r-panel); color: var(--c-ink); }
 :root[data-docs="1"] main [class*="codeBlock"] { background: var(--surface-raised); border-radius: var(--space-r-panel); }
 :root[data-docs="1"] main [class*="prose"] code { background: var(--surface-raised); }

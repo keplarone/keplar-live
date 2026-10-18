@@ -1042,29 +1042,29 @@
   :global(:root[data-theme]) .answer { padding: 16px 16px 10px; border-radius: 22px; }
 }
 .answerTitle { font-weight: var(--w-semibold); }
-.answerTitle > svg { filter: drop-shadow(0 0 8px rgb(var(--ring-rgb) / 0.55)); }
+.answerTitle > svg { filter: none; }
 
 /* Agreement badge: a Space chip (wash pill) with the ring lit violet when models agree. */
 .consensus { gap: 10px; padding: 4px 14px 4px 5px; border-radius: 999px; background: var(--hover-wash); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05); }
 .ring { width: 30px; height: 30px; }
 .ringTrack { stroke: var(--space-track); }
-.consensus[data-level="consensus"] .ringValue { stroke: var(--c-accent); filter: drop-shadow(0 0 4px rgb(var(--ring-rgb) / 0.7)); }
+.consensus[data-level="consensus"] .ringValue { stroke: var(--c-accent); filter: none; }
 .consensusPct { font-weight: var(--w-bold); letter-spacing: -0.01em; }
 .consensusSplit { border-left: 0; padding-left: 4px; }
 .badgeQuiet { display: inline-flex; align-items: center; height: 26px; padding: 0 12px; border-radius: 999px; background: var(--hover-wash); font-weight: var(--w-semibold); color: var(--c-ink-2); }
 
 /* Progress: violet dots that glow while a step runs; capability chips are Space chips; model ticks fill violet. */
 .processSummary { font-weight: var(--w-medium); }
-.step[data-state="active"] .stepDot { background: var(--c-accent); box-shadow: 0 0 10px rgb(var(--ring-rgb) / 0.8); }
+.step[data-state="active"] .stepDot { background: var(--c-accent); box-shadow: none; }
 .dotDone { background: var(--c-accent); }
 .chip { height: 26px; padding: 0 12px; background: var(--hover-wash); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05); font-weight: var(--w-semibold); color: var(--c-ink-2); }
 .bar { height: 4px; background: var(--space-track); }
-.bar[data-state="responded"] { background: linear-gradient(90deg, #a467f0, #f08bd8); opacity: 1; box-shadow: 0 0 8px rgb(var(--ring-rgb) / 0.5); }
+.bar[data-state="responded"] { background: var(--c-accent); opacity: 1; box-shadow: none; }
 
 /* "How Keplar answered" and its sections: pills on a wash, no rule lines. */
 .how { border-top: 0; border-bottom: 0; }
 .howBtn { padding: var(--s-2) var(--s-4); border-radius: 999px; background: var(--hover-wash); font-weight: var(--w-semibold); transition: background-color 0.25s ease, box-shadow 0.4s var(--space-ease-out), color 0.25s ease; }
-.howBtn:hover { background: var(--press-wash); box-shadow: 0 8px 26px rgb(var(--ring-rgb) / 0.16); }
+.howBtn:hover { background: var(--press-wash); box-shadow: none; }
 .how > .sections { margin: var(--s-2) 0 0; border-left: 0; padding-left: 0; gap: 2px; }
 .section { border-bottom: 0; }
 .sectionBtn { padding: var(--s-2) var(--s-4); border-radius: 18px; }
@@ -1090,10 +1090,10 @@
   background: linear-gradient(180deg, rgb(var(--ring-rgb) / 0.05), rgb(var(--ring-rgb) / 0) 140px), var(--surface-panel);
   box-shadow: var(--space-glass-depth);
 }
-:global(:root[data-theme]) .limit { box-shadow: var(--space-glass-depth), 0 0 70px rgb(var(--ring-rgb) / 0.2); }
+:global(:root[data-theme]) .limit { box-shadow: var(--space-glass-depth); }
 :global(:root[data-theme]) .notice[data-kind="error"] {
   background: linear-gradient(180deg, rgb(var(--rgb-destructive) / 0.08), rgb(var(--rgb-destructive) / 0) 140px), var(--surface-panel);
-  box-shadow: var(--space-glass-depth), 0 0 60px rgb(var(--rgb-destructive) / 0.14);
+  box-shadow: var(--space-glass-depth);
 }
 :global(:root[data-theme]) .answer .notice,
 :global(:root[data-theme]) .answer .notice[data-kind="error"] { padding: 0; background: transparent; box-shadow: none; }
@@ -1103,7 +1103,7 @@
 .noticeTitle, .limitTitle { font-weight: var(--w-semibold); letter-spacing: -0.02em; }
 .limitTitle { font-size: 18px; }
 .limitMeter { height: 6px; background: var(--space-track); box-shadow: none; }
-.limitMeter span { background: linear-gradient(90deg, #a467f0 0%, #b27cff 45%, #f08bd8 100%); box-shadow: 0 0 10px rgb(190 130 255 / 0.5); }
+.limitMeter span { background: var(--c-accent); box-shadow: none; }
 .limitMeterText { font-weight: var(--w-semibold); }
 .limitPlans li { border-radius: 20px; background: var(--hover-wash); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05); }
 .limitPrice { font-weight: var(--w-semibold); color: var(--c-ink); }

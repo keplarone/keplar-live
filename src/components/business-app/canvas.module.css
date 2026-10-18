@@ -19,7 +19,7 @@
 .seg { display: inline-flex; gap: 2px; padding: 4px; border-radius: 999px; background: rgb(255 255 255 / 0.05); }
 .segBtn { min-height: 30px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: var(--w-ink-2); font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: color 0.35s ease, background 0.5s var(--kb-spring), box-shadow 0.5s var(--kb-spring); }
 .segBtn:hover { color: var(--w-ink); }
-.segBtn[aria-selected="true"], .segBtn[aria-pressed="true"] { background: var(--kb-p-face); color: var(--kb-p-ink); box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12), 0 6px 20px rgb(195 155 255 / 0.18); }
+.segBtn[aria-selected="true"], .segBtn[aria-pressed="true"] { background: var(--kb-p-face); color: var(--kb-p-ink); box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12); }
 .root .segBtn:focus-visible { outline: none; box-shadow: var(--kb-glow); }
 
 .body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 320px; }
@@ -31,8 +31,8 @@
 .overlay { position: absolute; inset: 0; cursor: crosshair; }
 .hover, .picked { position: absolute; pointer-events: none; border-radius: 2px; }
 .hover { box-shadow: 0 0 0 1px rgb(250 250 250 / 0.9); background: rgb(250 250 250 / 0.06); }
-.picked { box-shadow: 0 0 0 2px #7d3bc4, 0 0 18px rgb(125 59 196 / 0.4); }
-.tag { position: absolute; left: -2px; bottom: 100%; margin-bottom: 4px; max-width: 280px; padding: 2px 8px; border-radius: 999px; background: #7d3bc4; color: #fff; font: 500 11px/1.4 var(--f-mono, ui-monospace, monospace); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.picked { box-shadow: 0 0 0 2px var(--kb-accent); }
+.tag { position: absolute; left: -2px; bottom: 100%; margin-bottom: 4px; max-width: 280px; padding: 2px 8px; border-radius: 999px; background: var(--kb-accent); color: var(--kb-ink-inverse); font: 500 11px/1.4 var(--f-mono, ui-monospace, monospace); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .panel { min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 16px; margin: 16px 16px 16px 0; padding: 18px; border-radius: var(--kb-r-lg); background: var(--kb-glass-solid); box-shadow: var(--kb-depth); }
 .stack { display: flex; flex-direction: column; gap: 10px; }

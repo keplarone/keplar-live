@@ -103,7 +103,7 @@
 /* The current section: a short violet bar that glows on the rail. */
 .tocLink { display: block; min-height: 24px; padding: 4px var(--s-3); color: var(--c-ink-3); text-decoration: none; line-height: 1.35; transition: color var(--space-dur-fast) var(--space-ease-out), box-shadow var(--space-dur-slow) var(--space-ease-out); }
 .tocLink:hover { color: var(--c-ink); }
-.tocLink[data-active="true"] { color: var(--c-ink); box-shadow: inset 2px 0 0 var(--c-accent), -6px 0 14px -8px rgb(var(--ring-rgb) / 0.8); }
+.tocLink[data-active="true"] { color: var(--c-ink); box-shadow: inset 2px 0 0 var(--c-accent); }
 .tocSub { padding-left: var(--s-4); }
 .tocInline { display: none; margin: 0 0 var(--s-8); max-width: 68ch; border-radius: var(--space-r-panel); background: var(--space-glass); box-shadow: var(--space-glass-depth); }
 .tocInline > summary { cursor: pointer; color: var(--c-ink); font-size: var(--t-small); font-weight: var(--w-semibold); padding: var(--s-3) var(--s-5); }

@@ -69,7 +69,7 @@
   font-size: 17px; font-weight: 600; letter-spacing: -0.02em; transform: translateX(-6px);
   transition: max-width 0.42s var(--sp-ease), opacity 0.28s var(--sp-ease), transform 0.42s var(--sp-ease), margin 0.42s var(--sp-ease);
 }
-.brand:hover { padding-right: 20px; box-shadow: var(--nav-shadow), 0 0 30px rgb(var(--space-aura) / 0.22); }
+.brand:hover { padding-right: 20px; box-shadow: var(--nav-shadow); }
 .brand:focus-visible { padding-right: 20px; box-shadow: var(--nav-shadow), var(--space-focus-glow); }
 .brand:hover .word, .brand:focus-visible .word { max-width: 90px; opacity: 1; margin-left: 10px; transform: none; }
 .brand:hover .mark, .brand:focus-visible .mark { transform: rotate(-14deg) scale(0.94); }
@@ -85,12 +85,9 @@
 .root .navCta { justify-self: end; min-height: 48px; padding: 0 24px; }
 
 .main { position: relative; }
-/* Purple aura over the stars: the element's colour eases between hues (SpaceAura); the mask shapes it into two soft glows. */
+/* The star field stays clear. This layer no longer paints a coloured glow. */
 .aura {
-  position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0.22;
-  transition: background-color 2.2s cubic-bezier(0.22, 1, 0.36, 1);
-  -webkit-mask-image: radial-gradient(60% 55% at 12% 100%, #000 0%, transparent 70%), radial-gradient(55% 50% at 92% 0%, #000 0%, transparent 70%);
-  mask-image: radial-gradient(60% 55% at 12% 100%, #000 0%, transparent 70%), radial-gradient(55% 50% at 92% 0%, #000 0%, transparent 70%);
+  position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0; background: none;
 }
 
 /* ---- shared layout ---- */
@@ -122,30 +119,18 @@
 .swap { display: inline-grid; vertical-align: bottom; overflow: hidden; padding: 0 0.04em 0.1em; margin: 0 -0.04em -0.1em; transition: width 0.7s var(--sp-expo); text-align: left; }
 .swapWord {
   grid-area: 1 / 1; white-space: nowrap; justify-self: start; font-weight: 600;
-  background-image: var(--space-grad); background-size: 400% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
-  animation: gradShift 9s ease-in-out infinite;
+  color: var(--c-accent); background: none;
   transform-origin: 50% 90%;
   transition: transform 0.9s var(--space-spring-gentle), opacity 0.42s ease-out;
 }
 .swapWord[data-state="idle"] { opacity: 0; transform: translateY(0.7em) scaleY(1.9) scaleX(0.94); }
-.swapWord[data-state="in"] { opacity: 1; transform: none; animation: gradShift 9s ease-in-out infinite, swapBlur 0.8s linear 1; }
-@keyframes gradShift { 0% { background-position: 0% 50%; } 33% { background-position: 60% 50%; } 66% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+.swapWord[data-state="in"] { opacity: 1; transform: none; animation: swapBlur 0.8s linear 1; }
 @keyframes swapBlur { 0% { filter: url(#sp-mb-y3); } 28% { filter: url(#sp-mb-y2); } 52% { filter: url(#sp-mb-y); } 72%, 100% { filter: none; } }
-.swapWord[data-state="out"] { opacity: 0; transform: translateY(-0.55em) scaleY(1.6) scaleX(0.96); transition: transform 0.5s var(--space-ease-in-expo), opacity 0.36s ease-in 0.09s; animation: gradShift 9s ease-in-out infinite, swapBlurOut 0.45s linear both; }
+.swapWord[data-state="out"] { opacity: 0; transform: translateY(-0.55em) scaleY(1.6) scaleX(0.96); transition: transform 0.5s var(--space-ease-in-expo), opacity 0.36s ease-in 0.09s; animation: swapBlurOut 0.45s linear both; }
 @keyframes swapBlurOut { 0%, 18% { filter: none; } 40% { filter: url(#sp-mb-y); } 65% { filter: url(#sp-mb-y2); } 100% { filter: url(#sp-mb-y3); } }
 .you {
   font-style: normal; font-weight: 700;
-  background: linear-gradient(100deg, #c58cff 0%, #f08bd8 18%, #a98cff 36%, #d76cff 54%, #b36bff 72%, #f0a0ff 90%, #c58cff 100%);
-  background-size: 400% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
-  animation: youShift 14s ease-in-out infinite;
-}
-/* Holds each colour for a few seconds, then glides to the next. */
-@keyframes youShift {
-  0%, 14% { background-position: 0% 50%; }
-  25%, 39% { background-position: 33% 50%; }
-  50%, 64% { background-position: 66% 50%; }
-  75%, 89% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  color: var(--c-accent); background: none;
 }
 /* "New" announcement pill above the headline. */
 .badge {
@@ -159,7 +144,7 @@
 .journey { position: fixed; left: var(--sp-5); bottom: var(--sp-5); z-index: 30; display: flex; flex-direction: column; gap: var(--sp-2); pointer-events: none; font-size: var(--sp-t-xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--sp-ink-2); }
 .journey > span:first-child { animation: rise 0.7s var(--sp-ease) both; }
 .journeyLine { display: block; width: 140px; height: 2px; border-radius: 999px; background: var(--space-track); overflow: hidden; }
-.journeyFill { display: block; height: 100%; background: linear-gradient(90deg, #a467f0, #d76cff); box-shadow: 0 0 12px rgb(var(--space-aura) / 0.6); transform-origin: left; transition: transform 0.2s linear; }
+.journeyFill { display: block; height: 100%; background: var(--c-accent); box-shadow: none; transform-origin: left; transition: transform 0.2s linear; }
 .lede { margin: var(--sp-6) auto 0; max-width: 56ch; font-size: clamp(16px, 1.3vw, 19px); line-height: 1.65; color: var(--sp-ink-2); }
 .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-3); margin-top: var(--sp-7); }
 .note { margin: var(--sp-5) auto 0; max-width: 64ch; font-size: var(--sp-t-xs); line-height: 1.7; color: var(--sp-ink-3); }
@@ -199,7 +184,7 @@
 .cellTag { margin: 0; font-size: var(--sp-t-sm); line-height: 1.5; color: var(--sp-ink); }
 .plain { list-style: none; margin: var(--sp-2) 0 0; padding: 0; display: grid; gap: var(--sp-2); font-size: var(--sp-t-sm); line-height: 1.5; color: var(--sp-ink-2); }
 .plain li { padding-left: 14px; position: relative; }
-.plain li::before { content: ""; position: absolute; left: 0; top: 0.6em; width: 5px; height: 5px; border-radius: 999px; background: #c39bff; box-shadow: 0 0 8px rgb(var(--space-aura) / 0.6); }
+.plain li::before { content: ""; position: absolute; left: 0; top: 0.6em; width: 5px; height: 5px; border-radius: 999px; background: var(--c-accent); box-shadow: none; }
 .cellMeta { margin: auto 0 0; padding: 10px 14px; border-radius: var(--sp-r-sm); background: var(--space-track); font-size: var(--sp-t-xs); line-height: 1.6; color: var(--sp-ink-2); }
 
 /* plans: a stack of glass panels, one per plan */
