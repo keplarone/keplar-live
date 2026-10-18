@@ -1,6 +1,6 @@
 /* Product grid (ProductTiles.tsx): Space Studio cards, each a small moving example of one module. Tokens from tokens.css.
    28px glass without backdrop blur (the grid repeats), depth instead of outlines; a hover lifts the card and adds the violet glow. */
-:global(:root[data-theme="dark"]) .tile { --tile-bg: #0a090e; }
+:global(:root[data-theme="dark"]) .tile { --tile-bg: #0a0a0c; }
 .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; width: 100%; max-width: var(--kb-max); margin: 0 auto; padding: 0 var(--kb-gutter); box-sizing: border-box; }
 .tile {
   --tile-bg: #f6f7fa;
@@ -70,7 +70,7 @@
 .report { display: flex; flex-direction: column; gap: 10px; }
 .reportTitle { margin: 0 0 4px; font-size: 14px; font-weight: 700; letter-spacing: -0.01em; color: var(--kb-ink); }
 .reportLine { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--kb-ink-2); }
-.reportLine sup { display: inline-grid; place-items: center; min-width: 17px; height: 17px; margin-left: 2px; border-radius: 999px; background: rgb(var(--kb-accent-rgb) / 0.18); font-size: 10.5px; font-weight: 700; color: var(--kb-accent-ink); vertical-align: 2px; }
+.reportLine sup { display: inline-grid; place-items: center; min-width: 17px; height: 17px; margin-left: 2px; border-radius: 999px; background: rgb(var(--kb-accent-rgb) / 0.18); font-size: 10.5px; font-weight: 700; color: var(--kb-accent); vertical-align: 2px; }
 .sources { list-style: none; margin: 6px 0 0; padding: 10px 12px; border-radius: 18px; background: var(--kb-wash); display: flex; flex-direction: column; gap: 6px; font-size: 11.5px; color: var(--kb-ink-3); }
 .sources li { display: flex; gap: 8px; }
 .sources span { font-weight: 700; color: var(--kb-accent-ink); }
@@ -98,9 +98,9 @@
 .ai { position: absolute; right: 12px; bottom: 12px; margin: 0; max-width: 220px; padding: 10px 14px; border-radius: 18px 18px 6px 18px; background: var(--kb-card-featured); color: var(--kb-ink); font-size: 11.5px; box-shadow: var(--kb-depth); animation: pop 0.42s var(--kb-ease-expo) both; }
 @keyframes pop { from { opacity: 0; transform: translateY(-8px) scale(0.94); filter: blur(6px); } }
 
-/* Several models (Converge.tsx) fills the stage; without WebGL a soft core of light stands in */
+/* Several models (Converge.tsx) fills the stage. Without WebGL the stage stays empty: no violet core. */
 .converge { position: absolute; inset: 0 0 -8px; }
-.converge[data-fallback] { background: radial-gradient(ellipse 46% 26% at 50% 52%, rgb(220 210 255 / 0.35), rgb(var(--kb-accent-rgb) / 0.12) 45%, transparent 70%); }
+.converge[data-fallback] { background: none; }
 .tile:has(.converge) .stage::after { display: none; }
 
 /* Product section feature rows (ProductDemo): the same examples, larger, on a glass card */
