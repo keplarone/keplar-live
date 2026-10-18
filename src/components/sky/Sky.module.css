@@ -8,7 +8,7 @@
   overflow-x: clip;
 }
 
-/* One sky for every page (SiteClouds, mounted by the root layout). Fixed, behind the document, and a
+/* Marketing pages only (MarketingSky). Fixed, behind the document, and a
    gradient until the canvas paints. z-index -1 stays inside body's stacking context, above the html wash. */
 .siteSky {
   position: fixed;

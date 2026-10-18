@@ -1,3 +1,4 @@
+import { MarketingSky } from "@/components/sky/clouds/LandingClouds";
 import { PageChrome } from "@/components/chrome/PageChrome";
 import { Nav } from "@/components/chrome/Nav";
 import { Footer } from "@/components/chrome/Footer";
@@ -10,6 +11,7 @@ import { LocaleSuggest } from "@/components/i18n/LocaleSuggest";
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
+      <MarketingSky />
       <AmbientRuntime />
       <PageChrome />
       <Nav />

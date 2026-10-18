@@ -171,8 +171,8 @@ test("the old weather backdrop stays unmounted; the cloud sky asks /api/sky/weat
   assert.match(space, /<SpaceBackground \/>/);
   assert.match(space, /<SpaceAura /);
   assert.doesNotMatch(space, /WeatherSky|SkyBackdrop/);
-  const root = read("src/app/layout.tsx");
-  assert.match(root, /<SpaceSkyExempt>\s*<SiteClouds \/>\s*<\/SpaceSkyExempt>/);
+  assert.match(read("src/app/(marketing)/layout.tsx"), /<MarketingSky \/>/);
+  assert.doesNotMatch(read("src/app/layout.tsx"), /SiteClouds|MarketingSky/);
   const scene = read("src/components/sky/clouds/cloud-scene.ts");
   assert.match(scene, /\/api\/sky\/weather/);
   assert.match(scene, /skyFromQuery/);
