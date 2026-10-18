@@ -1,6 +1,6 @@
 "use client";
 import { coverage, fixPrompt, gapsOf, type CoverageItem } from "@/lib/site-builder/coverage";
-import { composerEnter, readComposerKey } from "@/lib/composer-keys";
+import { useEnterToSend } from "@/lib/use-enter-to-send";
 /**
  * Site builder: describe a site, get a multi-page result with a live sandboxed preview, change it by chat,
  * undo/restore versions, view the code, export a ZIP, edit SEO, read form leads and publish to /s/<slug>.
@@ -508,6 +508,16 @@ export function SiteBuilder() {
     void refreshList().catch(() => undefined);
   }, [refreshList]);
 
+  const [inputRef, enter] = useEnterToSend({
+    canSend: () => {
+      const asking = flow.stage === "asking";
+      const ready = asking ? prompt.trim().length > 0 : prompt.trim().length >= 3;
+      const locked = working || Boolean(cooldownUntil) || flow.working || flow.stage === "review" || flow.stage === "product" || flow.stage === "understand";
+      return !locked && ready;
+    },
+    onSend: () => submit(),
+  });
+
   if (loading) return <div className={w.root}><p className={w.muted} style={{ padding: 24 }} role="status">Loading Create…</p></div>;
   if (error && !config) {
     return (
@@ -757,22 +767,17 @@ export function SiteBuilder() {
             <label htmlFor="ws-prompt" className="visually-hidden">{isNew ? "Describe what to build" : "Describe a change"}</label>
             <textarea
               id="ws-prompt"
+              ref={inputRef}
               className={w.prompt}
               rows={2}
               maxLength={config?.limits.promptChars}
               value={prompt}
               disabled={composerLocked}
               placeholder={placeholder}
+              enterKeyHint={enter.enterKeyHint}
               onChange={(e) => setPrompt(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key !== "Enter") return;
-                const asking = flow.stage === "asking";
-                const ready = asking ? prompt.trim().length > 0 : prompt.trim().length >= 3;
-                const action = composerEnter(readComposerKey(e), { canSend: !composerLocked && ready });
-                if (action === "newline") return;
-                e.preventDefault();
-                if (action === "send") submit();
-              }}
+              onKeyDown={enter.onKeyDown}
+              onBeforeInput={enter.onBeforeInput}
             />
             <div className={w.composerRow}>
               <span className={w.estimate} aria-live="polite">{shownEstimate ? (shownEstimate.free ? `Free · ${shownEstimate.modelLabel} · text only` : `About ${shownEstimate.units.toLocaleString()} credits · ${shownEstimate.modelLabel}`) : config?.textOnly ? "Free plan: text-only, free models" : ""}</span>

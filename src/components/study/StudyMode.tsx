@@ -8,7 +8,7 @@ import type { PlanDay, TopicMastery } from "@/lib/study/progress";
 import { STUDY_OPEN_KEY, takeHandoff } from "@/components/app-ui/studio/handoff";
 import c from "@/components/slides/slides.module.css";
 import s from "./study.module.css";
-import { composerEnter, readComposerKey } from "@/lib/composer-keys";
+import { useEnterToSend } from "@/lib/use-enter-to-send";
 import { ActivityIndicator, Button, Tabs, confirmAction, tabId, tabPanelId } from "@/components/kit";
 
 type Row = { id: string; title: string; pages: number; topics: number; cards: number; questions: number; examDate: string | null; updatedAt: string };
@@ -413,6 +413,10 @@ function Ask({ id, plan }: { id: string; plan: string }) {
       window.dispatchEvent(new Event("focus"));
     } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
   };
+  const [inputRef, enter] = useEnterToSend({
+    canSend: !busy && q.trim().length > 0,
+    onSend: () => void send("ask"),
+  });
   return (
     <section className={c.card}>
       <p className={s.note}>Answers come only from your uploaded material, with page references. If it isn&rsquo;t in the guide, Keplar says so.{plan === "free" ? " Free runs on free models." : ""}</p>
@@ -426,13 +430,7 @@ function Ask({ id, plan }: { id: string; plan: string }) {
         ))}
       </div>
       {error ? <p className={c.error} role="alert">{error}</p> : null}
-      <textarea className={c.input} rows={3} value={q} onChange={(e) => setQ(e.target.value)} maxLength={800} placeholder="Ask about your guide, e.g. What is the difference between mitosis and meiosis?" aria-label="Question about your guide" onKeyDown={(e) => {
-        if (e.key !== "Enter") return;
-        const action = composerEnter(readComposerKey(e), { canSend: !busy && q.trim().length > 0 });
-        if (action === "newline") return;
-        e.preventDefault();
-        if (action === "send") void send("ask");
-      }} />
+      <textarea ref={inputRef} className={c.input} rows={3} value={q} onChange={(e) => setQ(e.target.value)} maxLength={800} placeholder="Ask about your guide, e.g. What is the difference between mitosis and meiosis?" aria-label="Question about your guide" enterKeyHint={enter.enterKeyHint} onKeyDown={enter.onKeyDown} onBeforeInput={enter.onBeforeInput} />
       <div className={c.submitRow}>
         <Button variant="primary" size="sm" disabled={busy || !q.trim()} onClick={() => void send("ask")}>{busy ? "Reading your guide…" : "Ask the guide"}</Button>
         <Button variant="secondary" size="sm" disabled={busy || !q.trim()} onClick={() => void send("simple")}>Explain this simply</Button>

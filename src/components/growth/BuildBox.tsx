@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { useEnterToSend } from "@/lib/use-enter-to-send";
 import { useRouter } from "next/navigation";
 import { giveAppHandoff } from "@/components/create/apps/handoff";
 import { track } from "@/lib/analytics";
@@ -24,6 +25,10 @@ export function BuildBox({ examples, where }: { examples: readonly string[]; whe
     giveAppHandoff({ prompt });
     router.push(withUtm(`/app/create`, Object.keys(utm).length ? utm : { utm_source: where }));
   };
+  const [inputRef, enter] = useEnterToSend({
+    canSend: text.trim().length > 0,
+    onSend: () => go(text, "try_submit"),
+  });
 
   return (
     <section className={s.try} aria-labelledby={`${id}-h`}>
@@ -38,18 +43,16 @@ export function BuildBox({ examples, where }: { examples: readonly string[]; whe
         <label htmlFor={`${id}-q`} className="visually-hidden">Describe your site or app</label>
         <textarea
           id={`${id}-q`}
+          ref={inputRef}
           className={s.tryInput}
           rows={2}
           maxLength={1200}
           value={text}
           placeholder="Describe a site or app: who it is for, what it should do."
+          enterKeyHint={enter.enterKeyHint}
           onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              go(text, "try_submit");
-            }
-          }}
+          onKeyDown={enter.onKeyDown}
+          onBeforeInput={enter.onBeforeInput}
         />
         <button type="submit" className={`sp-btn ${s.tryGo}`} data-sp-btn="" data-variant="primary" data-size="md" disabled={!text.trim()}>Start building →</button>
       </form>

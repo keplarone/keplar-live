@@ -4,7 +4,7 @@
  * React. Readers subscribe to a tiny store instead: `ready` (enough text to build) flips at most twice per prompt, and `settled`
  * (the text after a 220 ms pause) drives the blueprint and the saved draft. Enter submits; Shift+Enter is a new line.
  */
-import { composerEnter, readComposerKey } from "@/lib/composer-keys";
+import { useEnterToSend } from "@/lib/use-enter-to-send";
 import { forwardRef, useEffect, useImperativeHandle, useRef, useSyncExternalStore } from "react";
 
 type Snapshot = { ready: boolean; settled: string };
@@ -134,9 +134,19 @@ export const PromptField = forwardRef<PromptHandle, Props>(function PromptField(
     },
   }));
 
+  const [inputRef, enter] = useEnterToSend({
+    canSend: () => (el.current?.value.trim().length ?? 0) > 0,
+    onSend: () => {
+      const value = el.current?.value ?? "";
+      if (timer.current) clearTimeout(timer.current);
+      settle(value);
+      submit.current();
+    },
+  });
+
   return (
     <textarea
-      ref={el}
+      ref={(node) => { el.current = node; inputRef(node); }}
       id={id}
       className={className}
       placeholder={placeholder}
@@ -144,18 +154,10 @@ export const PromptField = forwardRef<PromptHandle, Props>(function PromptField(
       maxLength={maxLength}
       spellCheck
       autoComplete="off"
-      enterKeyHint="go"
+      enterKeyHint={enter.enterKeyHint}
       onInput={(e) => changed(e.currentTarget.value)}
-      onKeyDown={(e) => {
-        if (e.key !== "Enter") return;
-        const action = composerEnter(readComposerKey(e), { canSend: e.currentTarget.value.trim().length > 0 });
-        if (action === "newline") return;
-        e.preventDefault();
-        if (action !== "send") return;
-        if (timer.current) clearTimeout(timer.current);
-        settle(e.currentTarget.value);
-        submit.current();
-      }}
+      onKeyDown={enter.onKeyDown}
+      onBeforeInput={enter.onBeforeInput}
     />
   );
 });

@@ -44,15 +44,23 @@ test("composer focus is the container border, and the agree dot is not blue", ()
   assert.doesNotMatch(turn, /\.agreeDot,\s*\.dissentDot \{[^}]*background: var\(--c-agree\)/);
 });
 
-test("the chat composer and the other prompt fields use the shared Enter decision", () => {
+test("chat composers share useEnterToSend", () => {
   for (const file of [
     "src/components/app-ui/Composer.tsx",
     "src/components/create/SiteBuilder.tsx",
     "src/components/create/apps/PromptField.tsx",
     "src/components/create/ImageStudio.tsx",
+    "src/components/create/video/VideoStudio.tsx",
     "src/components/study/StudyMode.tsx",
-    "src/components/app-ui/studio-mode/workspace/conversation-model.ts",
+    "src/components/app-ui/studio-mode/workspace/Composer.tsx",
+    "src/components/embed/EmbedAsk.tsx",
+    "src/components/growth/TryBox.tsx",
+    "src/components/growth/BuildBox.tsx",
+    "src/components/business-app/Home.tsx",
+    "src/components/business-app/Ask.tsx",
   ]) {
-    assert.match(readFileSync(file, "utf8"), /composerEnter/, file);
+    const src = readFileSync(file, "utf8");
+    assert.match(src, /useEnterToSend/, file);
+    assert.match(src, /enterKeyHint/, file);
   }
 });

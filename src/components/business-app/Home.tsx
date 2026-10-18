@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useEnterToSend } from "@/lib/use-enter-to-send";
 import type { MediaInput } from "@/lib/orchestration/media";
 import { AttachButton, mediaHandlers, MediaTray, ShareBar, ShareButton, useMediaAttach, useShare } from "./attach";
 import { count, type Pulse } from "./pulse";
@@ -78,6 +79,10 @@ export function Home({ projects, onSend, onNewProject, onOpenProject, onBuild, c
 
   const send = () => { if (text.trim() && !media.busy) onSend(mode, text.trim(), projectId || null, media.take()); };
   const cycle = () => setMode((cur) => MODES[(MODES.findIndex((x) => x.id === cur) + 1) % MODES.length]!.id);
+  const [inputRef, enter] = useEnterToSend({
+    canSend: text.trim().length > 0 && !media.busy,
+    onSend: send,
+  });
 
   // Dictation with the browser's own speech recognition where available (Chromium, so the desktop app); nothing is uploaded by us.
   const SpeechCtor = typeof window === "undefined" ? null : ((window as unknown as { webkitSpeechRecognition?: new () => SpeechLike; SpeechRecognition?: new () => SpeechLike }).SpeechRecognition ?? (window as unknown as { webkitSpeechRecognition?: new () => SpeechLike }).webkitSpeechRecognition ?? null);
@@ -109,13 +114,15 @@ export function Home({ projects, onSend, onNewProject, onOpenProject, onBuild, c
         <label htmlFor="biz-compose" className={s.srOnly}>Message</label>
         <textarea
           id="biz-compose"
-          ref={ref}
+          ref={(node) => { ref.current = node; inputRef(node); }}
           rows={2}
           value={text}
+          enterKeyHint={enter.enterKeyHint}
           onChange={(e) => setText(e.target.value)}
+          onBeforeInput={enter.onBeforeInput}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
-            if (e.key.toLowerCase() === "m" && e.altKey) { e.preventDefault(); cycle(); }
+            if (e.key.toLowerCase() === "m" && e.altKey) { e.preventDefault(); cycle(); return; }
+            enter.onKeyDown(e);
           }}
           placeholder={m.placeholder}
         />
