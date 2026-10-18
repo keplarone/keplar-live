@@ -22,6 +22,7 @@ function Favicon({ domain }: { domain: string }) {
 }
 
 function Ranked({ block, i }: { block: Extract<RichBlock, { type: "ranked" }>; i: number }) {
+  if (block.items.length < 3) return null;
   return (
     <section className={s.block} style={{ "--i": i } as CSSProperties} data-rich-block="ranked" aria-label={block.title || "Ranking"}>
       {block.title ? <h3 className={s.title}>{block.title}</h3> : null}
@@ -32,9 +33,9 @@ function Ranked({ block, i }: { block: Extract<RichBlock, { type: "ranked" }>; i
             <div>
               <div className={s.nameRow}>
                 <h3 className={s.name}>{it.name}</h3>
-                {it.maker ? <span className={s.maker}>{it.maker}</span> : null}
                 {it.score ? <span className={s.score}>{it.score}</span> : null}
               </div>
+              {it.maker ? <p className={s.makerLine}>{it.maker}</p> : null}
               <p className={s.why}>{it.why}</p>
               {it.tags.length ? (
                 <ul className={s.tags} aria-label="Tags">
@@ -259,11 +260,12 @@ export function RichSkeleton() {
 
 export function RichAnswer({ data, consensus }: { data: RichData; consensus?: AgreementCounts }) {
   const line = agreementLine(consensus);
-  if (!data.blocks.length && !line) return null;
+  const blocks = data.blocks.filter((b) => b.type !== "ranked" || b.items.length >= 3);
+  if (!blocks.length && !line) return null;
   return (
     <div className={s.stack} data-rich="">
       {line ? <p className={s.agree} data-agreement="">{line}</p> : null}
-      {data.blocks.map((b, i) => (
+      {blocks.map((b, i) => (
         <Block key={i} block={b} i={i} />
       ))}
     </div>

@@ -24,6 +24,7 @@ const RANKED = {
       items: [
         { rank: 1, name: "Alpha", maker: "Acme", why: "Strongest general answers in the responses.", tags: ["general"], score: "99" },
         { rank: 2, name: "Beta", maker: "Other", why: "Close behind on writing.", tags: ["writing"] },
+        { rank: 3, name: "Gamma", maker: "Third", why: "Steady on the rest.", tags: [] },
       ],
     },
     { type: "callout", text: "Use Alpha unless you need Beta's writing." },
@@ -31,7 +32,7 @@ const RANKED = {
   ],
 };
 
-const material = "Alpha from Acme leads. Beta is close on writing. A score of 99 showed up in one response. https://acme.example/alpha";
+const material = "Alpha from Acme leads. Beta is close on writing. Gamma from Third is steady. A score of 99 showed up in one response. https://acme.example/alpha";
 
 test("a valid keplar-ui fence is parsed and the prose is kept without the JSON", () => {
   const md = `Alpha leads the field.\n\n\`\`\`keplar-ui\n${JSON.stringify(RANKED)}\n\`\`\`\n`;
@@ -77,13 +78,32 @@ test("scores, stats, citations, years, and as-of dates that are not in the respo
       { type: "callout", text: "Worth using as of January 1999." },
     ],
   });
-  const rich = buildRich(raw, { responses: [{ name: "M", text: material + " in 2024" }], material: material + " in 2024", disagreed: false });
-  const ranked = rich?.blocks.find((b) => b.type === "ranked");
+  const one = "Alpha from Acme leads. A score of 99 showed up in one response. https://acme.example/alpha in 2024";
+  const rich = buildRich(raw, { responses: [{ name: "M", text: one }], material: one, disagreed: false });
+  assert.equal(rich?.blocks.find((b) => b.type === "ranked"), undefined, "one named item is not a ranking card");
+  const kept = buildRich(
+    JSON.stringify({
+      blocks: [
+        {
+          type: "ranked",
+          note: "As of 4 March 1999.",
+          items: [
+            { rank: 1, name: "Alpha", maker: "InventedCo", why: "Because.", tags: ["madeup"], score: "42" },
+            { rank: 2, name: "Beta", maker: "Other", why: "Close on writing.", tags: [], score: "99" },
+            { rank: 3, name: "Gamma", maker: "Third", why: "Steady.", tags: [], score: "7" },
+          ],
+        },
+      ],
+    }),
+    { responses: [{ name: "M", text: material + " in 2024" }], material: material + " in 2024", disagreed: false },
+  );
+  const ranked = kept?.blocks.find((b) => b.type === "ranked");
   assert.equal(ranked?.type, "ranked");
   if (ranked?.type === "ranked") {
     assert.equal(ranked.items[0]?.score, undefined);
     assert.equal(ranked.items[0]?.maker, undefined);
     assert.deepEqual(ranked.items[0]?.tags, []);
+    assert.equal(ranked.items.find((i) => i.name === "Beta")?.score, "99");
     assert.match(ranked.note, /judgment/);
     assert.doesNotMatch(ranked.note, /1999/);
   }
@@ -102,8 +122,8 @@ test("a ranking marker quotes the real responses, and only when those sentences 
     blocks: [{ type: "ranked", items: [{ rank: 1, name: "Alpha", why: "Leads.", split: [{ model: "Invented", said: "This quote was not said." }] }] }],
   });
   const responses = [
-    { name: "North", text: "Alpha is the strongest general system in this set. I would start there." },
-    { name: "South", text: "Alpha is overrated for writing. Beta is the one I would pick." },
+    { name: "North", text: "Alpha is the strongest general system in this set. Beta is narrower on writing. Gamma is a distant third." },
+    { name: "South", text: "Alpha is overrated for writing. Beta is the one I would pick. Gamma is a distant third." },
   ];
   const split = buildRich(raw, { responses, disagreed: true });
   const item = split?.blocks[0]?.type === "ranked" ? split.blocks[0].items[0] : undefined;
@@ -150,11 +170,11 @@ test("parsing a block does not add a model call, and the stored markdown stays p
       { type: "callout", text: "Start with Alpha." },
     ],
   });
-  const results: ProviderResult[] = [m1, m2].map((m) => ({ ok: true, modelId: m.id, stance: "alpha", claims: [], text: "Alpha from Acme led both replies. Start there.", latencyMs: 1, usage: { inputTokens: 1, outputTokens: 1 } }));
+  const results: ProviderResult[] = [m1, m2].map((m) => ({ ok: true, modelId: m.id, stance: "alpha", claims: [], text: "Alpha from Acme led both replies. Beta from Other is close on writing. Gamma from Third is the careful one.", latencyMs: 1, usage: { inputTokens: 1, outputTokens: 1 } }));
   const comparison = new EvidenceWeightedComparator().compare(results);
   const s = new ModelSynthesizer(registry, m1, new LatencyBudget(60_000).start());
   s.noExtraCalls = true;
-  s.prewritten = { text: `Alpha from Acme is the one to start with.\n\n\`\`\`keplar-ui\n${fence}\n\`\`\`\nRESOLUTION: No disagreement.`, by: m1.id };
+  s.prewritten = { text: `Alpha from Acme is the one to start with. Beta from Other is close on writing. Gamma from Third is the careful one.\n\n\`\`\`keplar-ui\n${fence}\n\`\`\`\nRESOLUTION: No disagreement.`, by: m1.id };
   const deltas: string[] = [];
   const plan = { mode: "consensus", panel: [m1, m2].map((model) => ({ model, slot: "panel", covers: "Reasoning", reason: "" })), verifier: null, judge: null, estimate: { breakdown: [] }, rationale: "" } as never;
   const verification = { mode: "cross-model", checks: [], disputed: [], checked: 0, supported: 0, removed: [], notes: [] } as never;
@@ -179,7 +199,11 @@ test("the rich view renders a ranking, a disagreement quote, a takeaway, sources
         {
           type: "ranked",
           note: "This order is a judgment, and it changes.",
-          items: [{ rank: 1, name: "Alpha", maker: "Acme", why: "It led the replies.", tags: ["general"], split: [{ model: "North", said: "Alpha is the strongest." }, { model: "South", said: "Alpha is overrated." }] }],
+          items: [
+            { rank: 1, name: "Alpha", maker: "Acme", why: "It led the replies.", tags: ["general"], split: [{ model: "North", said: "Alpha is the strongest." }, { model: "South", said: "Alpha is overrated." }] },
+            { rank: 2, name: "Beta", maker: "Other", why: "Close on writing.", tags: [] },
+            { rank: 3, name: "Gamma", maker: "Third", why: "Steady.", tags: [] },
+          ],
         },
         { type: "callout", text: "Start with Alpha." },
         { type: "sources", items: [{ title: "Acme", url: "https://acme.example/alpha", domain: "acme.example" }] },
@@ -210,6 +234,43 @@ test("the rich view renders a ranking, a disagreement quote, a takeaway, sources
   assert.doesNotMatch(html, /99 of 100|agreed by \d/);
 });
 
+test("a one-item ranking is not shown, and a short block is filled from names in the answer", () => {
+  const lonely = renderToStaticMarkup(createElement(RichAnswer, {
+    data: { blocks: [{ type: "ranked", note: "This order is a judgment, and it changes.", items: [{ rank: 1, name: "Alpha", why: "Leads.", tags: [] }, { rank: 2, name: "Beta", why: "Close.", tags: [] }] }] },
+  }));
+  assert.equal(lonely, "");
+  const prose = "GPT-4 from OpenAI is the broad default. Gemini from Google is close on images. Claude from Anthropic writes carefully. Llama from Meta is the open one. Grok is fast in conversation. Mistral is the compact one.";
+  const rich = buildRich(
+    JSON.stringify({ blocks: [{ type: "ranked", note: "This order is a judgment, and it changes.", items: [{ rank: 1, name: "GPT-4", maker: "OpenAI", why: "The broad default." }] }, { type: "callout", text: "Start with GPT-4." }] }),
+    { responses: [{ name: "M", text: prose }], material: prose, disagreed: false },
+  );
+  const ranked = rich?.blocks.find((b) => b.type === "ranked");
+  assert.equal(ranked?.type, "ranked");
+  if (ranked?.type !== "ranked") return;
+  assert.ok(ranked.items.length >= 5 && ranked.items.length <= 8);
+  assert.deepEqual(ranked.items.map((i) => i.name), ["GPT-4", "Gemini", "Claude", "Llama", "Grok", "Mistral"]);
+  assert.equal(ranked.items[0]?.maker, "OpenAI");
+  assert.equal(ranked.items.find((i) => i.name === "Gemini")?.maker, "Google");
+  assert.equal(ranked.items.some((i) => i.name === "OpenAI" || i.name === "Google" || i.name === "Meta"), false);
+  for (const it of ranked.items) assert.ok(prose.includes(it.name) && prose.toLowerCase().includes(it.why.replace(/…$/, "").toLowerCase().slice(0, 24)));
+  assert.equal(rich?.blocks.some((b) => b.type === "callout"), true);
+  const thin = buildRich(
+    JSON.stringify({ blocks: [{ type: "ranked", note: "This order is a judgment, and it changes.", items: [{ rank: 1, name: "Alpha", why: "Leads the field today." }] }, { type: "callout", text: "Use Alpha." }] }),
+    { responses: [{ name: "M", text: "Alpha leads the field today." }], disagreed: false },
+  );
+  assert.equal(thin?.blocks.find((b) => b.type === "ranked"), undefined);
+  assert.equal(thin?.blocks[0]?.type, "callout");
+  const answer = "GPT-4 from OpenAI is the broad default. Gemini from Google is close on images. Claude from Anthropic writes carefully.";
+  const aside = "DeepSeek from DeepSeek is cheap to run. Qwen from Alibaba is strong on long text. Phi from Microsoft is the small one.";
+  const scoped = buildRich(
+    JSON.stringify({ blocks: [{ type: "ranked", note: "This order is a judgment, and it changes.", items: [{ rank: 1, name: "GPT-4", maker: "OpenAI", why: "The broad default." }] }] }),
+    { responses: [{ name: "M", text: `${answer} ${aside}` }], material: `${answer}\n${aside}`, answer, disagreed: false },
+  );
+  const scopedRank = scoped?.blocks.find((b) => b.type === "ranked");
+  assert.equal(scopedRank?.type, "ranked");
+  if (scopedRank?.type === "ranked") assert.deepEqual(scopedRank.items.map((i) => i.name), ["GPT-4", "Gemini", "Claude"]);
+});
+
 test("an answer with no block renders nothing extra, and a half-written block is a skeleton", () => {
   const html = renderToStaticMarkup(createElement(RichAnswer, { data: { blocks: [] } }));
   assert.equal(html, "");
@@ -231,6 +292,8 @@ test("the rich stylesheet stays graphite and white, and motion is transform and 
 test("a ranking, comparison, timeline, or how-to asks the same call for one block; a fact does not", () => {
   assert.match(richHint("what are the greatest ai in the world"), /"type":"ranked"/);
   assert.match(richHint("what are the greatest ai in the world"), /judgment/);
+  assert.match(richHint("what are the greatest ai in the world"), /5 to 8/);
+  assert.match(richHint("what are the greatest ai in the world"), /current generation/);
   assert.match(richHint("compare iPhone 17 vs Pixel 10"), /"type":"compare"/);
   assert.match(richHint("history of the internet"), /"type":"timeline"/);
   assert.match(richHint("how do I make sourdough"), /"type":"steps"/);
@@ -251,7 +314,7 @@ test("one model can carry the block in its own reply, with no extra call", async
       { type: "callout", text: "Start with Alpha." },
     ],
   });
-  const text = `Alpha from Acme leads.\n\n\`\`\`keplar-ui\n${fence}\n\`\`\``;
+  const text = `Alpha from Acme leads the general answers. Beta from Other is close on writing. Gamma from Third is the careful one.\n\n\`\`\`keplar-ui\n${fence}\n\`\`\``;
   const results: ProviderResult[] = [{ ok: true, modelId: m1.id, stance: "alpha", claims: [], text, latencyMs: 1, usage: { inputTokens: 1, outputTokens: 1 } }];
   const comparison = new EvidenceWeightedComparator().compare(results);
   const s = new ModelSynthesizer(registry, m1, new LatencyBudget(60_000).start());

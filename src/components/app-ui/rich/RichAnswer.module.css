@@ -59,6 +59,38 @@
   gap: var(--s-3);
 }
 
+.ranked {
+  gap: 0;
+}
+
+.rankItem {
+  padding: var(--s-3) 0;
+  border-top: 1px solid var(--hairline, var(--c-border));
+}
+
+.rankItem:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.rankItem .rank {
+  width: auto;
+  height: auto;
+  min-width: 1.5rem;
+  border: 0;
+  border-radius: 0;
+  font-size: 1.125rem;
+  font-weight: var(--w-medium);
+  line-height: 1.2;
+}
+
+.makerLine {
+  margin: 2px 0 0;
+  color: var(--c-ink-3);
+  font-size: var(--t-label);
+  line-height: 1.4;
+}
+
 .rankItem,
 .step,
 .event {

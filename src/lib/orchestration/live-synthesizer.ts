@@ -266,10 +266,11 @@ export class ModelSynthesizer implements Synthesizer {
     // polish() drops stock openers/closers ("Certainly!", "I hope this helps") and replaces any claim to be human.
     markdown = polish(guardVoice(markdown));
 
-    const richMaterial = ok.map((r) => `${takeRichFence(r.text).prose}\n${(r.citations ?? []).map((c) => `${c.url} ${c.title ?? ""}`).join("\n")}`).join("\n");
+    const richMaterial = `${markdown}\n${ok.map((r) => `${takeRichFence(r.text).prose}\n${(r.citations ?? []).map((c) => `${c.url} ${c.title ?? ""}`).join("\n")}`).join("\n")}`;
     const rich: RichAnswer | undefined = buildRich(richRaw, {
       responses: ok.map((r) => ({ name: nameOf(r.modelId), text: r.text })),
       material: richMaterial,
+      answer: markdown,
       disagreed: !single && scored && comparison.positions.length > 1,
     });
 
