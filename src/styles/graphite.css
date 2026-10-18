@@ -8,6 +8,10 @@ html:not(:has([data-space-root])) {
   --f-mono: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
   --t-body: 1rem;
   --lh-body: 1.65;
+  /* Shared motion: 120/180/240ms live in motion.css. This ease is the one keplar.one uses for colour and travel. */
+  --m-ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --kp-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --kp-spring: cubic-bezier(0.34, 1.32, 0.64, 1);
   --space-grad: none;
   --space-focus-glow: none;
   --focus-filter: none;
@@ -153,7 +157,7 @@ html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [ro
   box-shadow: none !important;
 }
 html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]) {
-  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, opacity 160ms ease, scale 180ms cubic-bezier(0.34, 1.4, 0.64, 1);
+  transition: background-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1), border-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1), color 180ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 160ms cubic-bezier(0.2, 0.8, 0.2, 1), scale 180ms cubic-bezier(0.34, 1.32, 0.64, 1);
 }
 html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]):is(:hover, :focus, :focus-visible) {
   transform: none !important;
@@ -166,9 +170,23 @@ html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [ro
   transform: none !important;
   translate: none !important;
   scale: 0.97 !important;
+  /* Press is quick. Releasing uses the 180ms spring on the rule above. */
+  transition-duration: 60ms;
   box-shadow: none !important;
   text-shadow: none !important;
   filter: none !important;
+}
+/* Sidebar rows fade their fill and step 2px in. The hover rule above clears translate on every control. */
+@media (prefers-reduced-motion: no-preference) {
+  html:not(:has([data-space-root])) [class*="sideItem"]:hover {
+    translate: 2px 0 !important;
+  }
+  html:not(:has([data-space-root])) [class*="homeChipLabel"] {
+    transition: translate 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  html:not(:has([data-space-root])) [class*="homeChip"]:hover [class*="homeChipLabel"] {
+    translate: 1px 0;
+  }
 }
 html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href], input, textarea, select):focus-visible {
   outline: 2px solid var(--c-ink) !important;
@@ -188,6 +206,10 @@ html:not(:has([data-space-root])) [class*="composer"] textarea:focus-visible {
   html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]) {
     transition: none !important;
     scale: none !important;
+  }
+  html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]):active:not(:disabled):not([aria-disabled="true"]) {
+    scale: none !important;
+    transition: none !important;
   }
 }
 /* A secondary control that used an inset shadow as its only edge keeps a hairline. */
