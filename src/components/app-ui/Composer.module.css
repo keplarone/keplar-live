@@ -1023,3 +1023,6 @@
   box-shadow: none;
   background: var(--c-canvas);
 }
+/* Stop / listening, only while a recording is running. Idle lives in the + menu, so this row stays out of the empty state. */
+.recordHold:empty { display: none; }
+.recordHold { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 12px 0; }

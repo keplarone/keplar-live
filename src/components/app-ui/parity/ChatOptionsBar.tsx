@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import { activeScopeHeaders } from "../state/scope";
 import { LiveVoice, useLiveVoice } from "./LiveVoice";
-import { RecordNotes } from "./RecordNotes";
 import { useFamilyMode } from "./family-client";
-import { Button, Tooltip } from "@/components/kit";
+import { Button } from "@/components/kit";
 import s from "./parity.module.css";
 
 export type SpecialistLite = { id: string; name: string; description: string; starters: string[] };
@@ -29,16 +28,13 @@ export function useSpecialists(signedIn: boolean, scope: string): SpecialistLite
 }
 
 /**
- * Above the composer: Private chat (new chats only, before the first message), the Specialist for this chat (signed in), and
- * Talk live when live voice is switched on (src/lib/voice/realtime.ts).
+ * Above the composer: the Specialist for this chat (signed in) and Talk live when live voice is switched on
+ * (src/lib/voice/realtime.ts). Private chat and Record notes live in the composer's + menu.
  * Private chat is a request: the server also refuses to read or write memory for it; this browser keeps it out of history.
  */
 export function ChatOptionsBar({
-  isNew, privateOn, onPrivate, specialists, specialistId, onSpecialist, signedIn,
+  specialists, specialistId, onSpecialist, signedIn,
 }: {
-  isNew: boolean;
-  privateOn: boolean;
-  onPrivate: (on: boolean) => void;
   specialists: SpecialistLite[];
   specialistId: string | null;
   onSpecialist: (id: string | null) => void;
@@ -46,21 +42,12 @@ export function ChatOptionsBar({
 }) {
   const current = specialists.find((x) => x.id === specialistId) ?? null;
   const family = useFamilyMode(signedIn); // Family mode: chats stay in history, no live voice (src/lib/personalize/family.ts)
-  const showPrivate = isNew && !family;
   const showSpecialist = signedIn && specialists.length > 0;
   const voiceOn = useLiveVoice(signedIn);
   const showVoice = voiceOn && !family;
-  const showRecord = isNew; // starts from a fresh chat; the transcript opens as a side draft
-  if (!showPrivate && !showSpecialist && !showVoice && !showRecord) return null;
+  if (!showSpecialist && !showVoice) return null;
   return (
     <div className={s.bar} data-chat-options="">
-      {showPrivate ? (
-        <Tooltip content="Not saved to your history, never used for memory, gone when you leave it">
-          <Button size="sm" variant="ghost" className={s.toggle} aria-pressed={privateOn} onClick={() => onPrivate(!privateOn)} data-private-toggle="" leadingIcon={<span className={s.pip} aria-hidden="true" />}>
-            Private chat {privateOn ? "on" : "off"}
-          </Button>
-        </Tooltip>
-      ) : null}
       {showSpecialist ? (
         <label className={s.row}>
           <span>Specialist</span>
@@ -71,9 +58,8 @@ export function ChatOptionsBar({
         </label>
       ) : null}
       {showVoice ? <LiveVoice /> : null}
-      {showRecord ? <RecordNotes /> : null}
       <span className={s.note} role="status">
-        {privateOn && showPrivate ? "This chat won't be saved or used for memory." : current?.description ? current.description : ""}
+        {current?.description ? current.description : ""}
       </span>
     </div>
   );

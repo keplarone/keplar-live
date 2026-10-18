@@ -48,6 +48,7 @@ import {
   type SlashCommand,
 } from "@/lib/images/slash-commands";
 import { chatSlashToken, filterChatCommands, type ChatCommand } from "@/lib/chat-actions/intent";
+import { RecordNotes, recordNotesSupported, toggleRecordNotes } from "./parity/RecordNotes";
 
 export type ComposerHandle = { focus: () => void; setText: (t: string) => void; setModes: (m: Partial<ComposerModes>) => void };
 
@@ -70,6 +71,10 @@ type Props = {
   onModesChange?: (m: ComposerModes) => void;
   /** Session continuity (drafts.ts): this chat's unsent draft is restored and kept as it is typed. null = keep nothing (private chats). */
   draftKey?: string | null;
+  /** New chats only. Private chat lives in the + menu (not a row above the composer). */
+  privateChat?: { on: boolean; onToggle: () => void } | null;
+  /** New chats only. Record notes starts from the + menu; the stop control stays mounted in the composer. */
+  recordNotes?: boolean;
 };
 
 const MB = 1024 * 1024;
@@ -150,7 +155,7 @@ const router = new CostAwareRouter();
 
 
 export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
-  { running, onSend, onStop, routing, onRouting, placeholder, computeRemaining, resetsAt, plan, signedIn, onModesChange, draftKey = null },
+  { running, onSend, onStop, routing, onRouting, placeholder, computeRemaining, resetsAt, plan, signedIn, onModesChange, draftKey = null, privateChat = null, recordNotes = false },
   ref,
 ) {
   const uid = useId();
@@ -200,6 +205,8 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
   /* the spoken audio of an attached video, transcribed after its frames */
   const [tracks, setTracks] = useState<Record<string, AudioTrack>>({});
   const [attachOpen, setAttachOpen] = useState(false);
+  const [canRecord, setCanRecord] = useState(false);
+  useEffect(() => { if (recordNotes) setCanRecord(recordNotesSupported()); }, [recordNotes]);
   const [linkDraft, setLinkDraft] = useState<string | null>(null);
   const attachBtnRef = useRef<HTMLButtonElement>(null);
   const photoRef = useRef<HTMLInputElement>(null);
@@ -1005,6 +1012,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
         {voice.error ? <p className={s.fileError} role="alert">{voice.error.message}</p> : null}
         {voiceNote && !voice.error ? <p className={s.fileError} role="status" data-testid="voice-note">{voiceNote}</p> : null}
 
+        {recordNotes ? <div className={s.recordHold}><RecordNotes hideIdle /></div> : null}
         <label htmlFor={`${uid}-input`} className="visually-hidden">Message Keplar</label>
         {slashOpen ? (
           <SlashCommandMenu
@@ -1238,7 +1246,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
               <span className={s.toolLabel}>Modes</span>
             </button>
           </div>
-          <Popover open={attachOpen} onOpenChange={closeOnOutside(setAttachOpen)} anchorRef={popAnchorRef} side={popSide} align="start" label="Attach" role="menu" id={`${uid}-attach`} className={s.attachMenu} onKeyDown={popKeys(() => setAttachOpen(false), attachBtnRef, '[role="menuitem"], input')}>
+          <Popover open={attachOpen} onOpenChange={closeOnOutside(setAttachOpen)} anchorRef={popAnchorRef} side={popSide} align="start" label="Attach" role="menu" id={`${uid}-attach`} className={s.attachMenu} onKeyDown={popKeys(() => setAttachOpen(false), attachBtnRef, '[role="menuitem"], [role="menuitemcheckbox"], input')}>
               <button type="button" role="menuitem" className={s.attachItem} data-attach-item="files" onClick={() => { setAttachOpen(false); fileRef.current?.click(); }}>
                 <GlyphUpload size={16} />
                 <span className={s.attachText}><span>Upload files</span><span className={s.attachSub}>Docs, slides, sheets, data, code, .zip, audio</span></span>
@@ -1263,6 +1271,18 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
                   <Button size="sm" variant="primary" disabled={!linkDraft.trim()} onClick={submitLinkDraft}>Read</Button>
                 </div>
               )}
+              {privateChat ? (
+                <button type="button" role="menuitemcheckbox" aria-checked={privateChat.on} className={s.attachItem} data-attach-item="private" data-private-toggle="" onClick={() => privateChat.onToggle()}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
+                  <span className={s.attachText}><span>Private chat {privateChat.on ? "on" : "off"}</span><span className={s.attachSub}>Not saved, not used for memory, gone when you leave</span></span>
+                </button>
+              ) : null}
+              {recordNotes && canRecord ? (
+                <button type="button" role="menuitem" className={s.attachItem} data-attach-item="notes" onClick={() => { toggleRecordNotes(); setAttachOpen(false); }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z" /><path d="M19 11a7 7 0 0 1-14 0M12 18v3" /></svg>
+                  <span className={s.attachText}><span>Record notes</span><span className={s.attachSub}>Transcribe a meeting or lecture, then turn it into notes</span></span>
+                </button>
+              ) : null}
               <div className={s.attachReads}>
                 <p className={s.attachReadsTitle}>Keplar reads</p>
                 <ul>
