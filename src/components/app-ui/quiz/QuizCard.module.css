@@ -1,13 +1,23 @@
-/* Quiz and flashcards in the answer. Graphite and white. Correct and incorrect are a muted green and red, with an icon, never colour alone. */
+/* Quiz and flashcards inside the answer. Surfaces follow the theme tokens. Correct and incorrect are a muted green and red, with an icon, never colour alone. */
 
 .card {
+  --quiz-ok: #3d6b4f;
+  --quiz-bad: #8c403c;
   display: flex;
   flex-direction: column;
   gap: 16px;
   margin-top: 4px;
-  color: #212121;
-  background: #fff;
+  padding: 22px;
+  color: var(--c-ink);
+  background: var(--surface-panel);
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
   font-family: var(--f-sans);
+}
+
+:global(html[data-theme="dark"]) .card {
+  --quiz-ok: #9bb5a6;
+  --quiz-bad: #c4a09c;
 }
 
 .building {
@@ -15,12 +25,23 @@
   flex-direction: column;
   gap: 10px;
   margin-top: 8px;
+  padding: 22px;
+  color: var(--c-ink);
+  background: var(--surface-panel);
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
 }
 
 .building p {
   margin: 0;
-  color: #212121;
+  color: var(--c-ink);
   font-size: 0.95rem;
+}
+
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .meta {
@@ -32,7 +53,7 @@
 
 .count {
   margin: 0;
-  color: #212121;
+  color: var(--c-ink-2);
   font-size: 0.82rem;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
@@ -40,9 +61,8 @@
 
 .source {
   margin: 0;
-  color: #212121;
+  color: var(--c-ink-2);
   font-size: 0.82rem;
-  opacity: 0.62;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -50,28 +70,28 @@
 
 .track {
   height: 2px;
-  background: #e7e7e7;
+  background: var(--hairline-strong);
   border-radius: 1px;
 }
 
 .track > span {
   display: block;
   height: 2px;
-  background: #212121;
+  background: var(--c-ink);
   border-radius: 1px;
 }
 
 .prompt {
   margin: 0;
-  color: #212121;
+  color: var(--c-ink);
   font-size: 1.15rem;
   font-weight: 560;
-  line-height: 1.4;
+  line-height: 1.45;
   outline: none;
 }
 
 .prompt:focus-visible {
-  outline: 2px solid #212121;
+  outline: 2px solid var(--c-ink);
   outline-offset: 3px;
 }
 
@@ -89,21 +109,21 @@
   align-items: flex-start;
   gap: 12px;
   width: 100%;
-  padding: 12px 14px;
-  border: 1px solid #d4d4d4;
-  border-radius: 10px;
-  background: #fff;
-  color: #212121;
+  padding: 14px 16px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--c-ink);
   font: inherit;
   font-size: 0.98rem;
-  line-height: 1.4;
+  line-height: 1.45;
   text-align: left;
   cursor: pointer;
   transition: background-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1), color 180ms cubic-bezier(0.2, 0.8, 0.2, 1), border-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1), scale 180ms cubic-bezier(0.34, 1.32, 0.64, 1);
 }
 
 .opt:hover:not([aria-disabled="true"]) {
-  background: #f4f4f4;
+  background: var(--hover-wash);
 }
 
 .opt:active:not([aria-disabled="true"]) {
@@ -112,7 +132,7 @@
 }
 
 .opt:focus-visible {
-  outline: 2px solid #212121;
+  outline: 2px solid var(--c-ink);
   outline-offset: 2px;
 }
 
@@ -124,7 +144,7 @@
   flex: none;
   width: 1.25rem;
   font-variant-numeric: tabular-nums;
-  opacity: 0.55;
+  color: var(--c-ink-2);
 }
 
 .mark {
@@ -134,42 +154,52 @@
 }
 
 .opt[data-state="correct"] {
-  border-color: #3d6b4f;
-  color: #3d6b4f;
+  border-color: var(--quiz-ok);
+  color: var(--quiz-ok);
 }
 
 .opt[data-state="wrong"] {
-  border-color: #8c403c;
-  color: #8c403c;
+  border-color: var(--quiz-bad);
+  color: var(--quiz-bad);
 }
 
 .feedback {
   margin: 0;
-  padding: 12px 14px;
-  border: 1px solid #d4d4d4;
-  border-radius: 10px;
-  background: #fff;
-  color: #212121;
-  line-height: 1.45;
+  padding: 14px 16px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--c-ink);
+  line-height: 1.5;
 }
 
 .feedback[data-state="correct"] {
-  border-color: #3d6b4f;
-  color: #3d6b4f;
+  border-color: var(--quiz-ok);
 }
 
 .feedback[data-state="wrong"] {
-  border-color: #8c403c;
-  color: #8c403c;
+  border-color: var(--quiz-bad);
 }
 
 .feedback p {
   margin: 0;
 }
 
+.verdict {
+  font-weight: 560;
+}
+
+.feedback[data-state="correct"] .verdict {
+  color: var(--quiz-ok);
+}
+
+.feedback[data-state="wrong"] .verdict {
+  color: var(--quiz-bad);
+}
+
 .explain {
   margin-top: 6px;
-  color: #212121;
+  color: var(--c-ink);
 }
 
 .short {
@@ -180,17 +210,17 @@
 .field {
   flex: 1;
   min-width: 0;
-  padding: 12px 14px;
-  border: 1px solid #d4d4d4;
-  border-radius: 10px;
-  background: #fff;
-  color: #212121;
+  padding: 14px 16px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--c-ink);
   font: inherit;
   font-size: 0.98rem;
 }
 
 .field:focus-visible {
-  outline: 2px solid #212121;
+  outline: 2px solid var(--c-ink);
   outline-offset: 2px;
 }
 
@@ -201,17 +231,39 @@
   align-items: center;
 }
 
+.row :global(button[data-variant="primary"]) {
+  background: var(--space-p-face);
+  color: var(--space-p-ink);
+  border-color: transparent;
+}
+
+.row :global(button[data-variant="primary"]:hover:not([aria-disabled="true"])) {
+  background: var(--c-ink-hover);
+}
+
+.row :global(button[aria-disabled="true"]) {
+  opacity: 0.42;
+  cursor: default;
+}
+
 .hint {
   margin: 0;
-  color: #212121;
+  color: var(--c-ink-2);
   font-size: 0.92rem;
 }
 
 .score {
   margin: 0;
+  color: var(--c-ink);
   font-size: 1.35rem;
   font-weight: 560;
   letter-spacing: -0.02em;
+  outline: none;
+}
+
+.score:focus-visible {
+  outline: 2px solid var(--c-ink);
+  outline-offset: 3px;
 }
 
 .missed {
@@ -225,7 +277,8 @@
 
 .missed li {
   padding-top: 12px;
-  border-top: 1px solid #e7e7e7;
+  border-top: 1px solid var(--hairline);
+  color: var(--c-ink);
 }
 
 .missed p {
@@ -234,19 +287,19 @@
 }
 
 .kicker {
+  color: var(--c-ink-2);
   font-size: 0.78rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  opacity: 0.6;
 }
 
 .face {
   min-height: 160px;
   padding: 22px 18px;
-  border: 1px solid #d4d4d4;
+  border: 1px solid var(--hairline-strong);
   border-radius: 12px;
-  background: #fff;
-  color: #212121;
+  background: transparent;
+  color: var(--c-ink);
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -254,7 +307,7 @@
 }
 
 .face:hover {
-  background: #f4f4f4;
+  background: var(--hover-wash);
 }
 
 .face:active {
@@ -263,18 +316,18 @@
 }
 
 .face:focus-visible {
-  outline: 2px solid #212121;
+  outline: 2px solid var(--c-ink);
   outline-offset: 2px;
 }
 
 .face[data-side="back"] {
-  background: #212121;
-  color: #fff;
-  border-color: #212121;
+  background: var(--c-ink);
+  color: var(--c-canvas);
+  border-color: var(--c-ink);
 }
 
 .face[data-side="back"]:hover {
-  background: #212121;
+  background: var(--c-ink);
 }
 
 .side {
@@ -290,6 +343,19 @@
   font-size: 1.2rem;
   font-weight: 560;
   line-height: 1.35;
+  outline: none;
+}
+
+.term:focus-visible {
+  outline: 2px solid var(--c-ink);
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .card,
+  .building {
+    padding: 20px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
