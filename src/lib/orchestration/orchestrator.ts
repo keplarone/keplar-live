@@ -29,6 +29,7 @@ import { isSupportRequest, runSupport } from "./support";
 import { runPlayful } from "./playful";
 import { earlyStream } from "./early-stream";
 import { isGuideRequest, shapeHint } from "./answer-shape";
+import { richHint } from "@/lib/rich-answer/prompt";
 import { answeredAsQuestion, IMAGE_ONLY_PROMPT, imageQuestionMode, isImageOnlyPrompt, QUESTION_IMAGE_NOTE } from "./image-question";
 import { systemPrompt } from "./providers/shared";
 import { createRetriever, retrievalApplies, retrievalEstimateUsd } from "./retriever";
@@ -461,11 +462,14 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
   if (deps.run) deps.run.started = true;
   // A verified result for counting / arithmetic questions (computed by code), given to every model as a fact.
   const exact = exactCheck(req.prompt);
-  const panelPrompt = (req.memory ?? "") + req.prompt + (exact ? exactNote(exact) : "");
   // The shape of a good answer to a comparison, a how-to, an explanation or a piece of writing (see answer-shape.ts); nothing for quick facts, code or exact checks.
   const shape = media?.question ? "" : shapeHint(req.prompt, classification);
+  // Same panel call: a ranking, comparison, timeline, or how-to may append one keplar-ui block. Not a second request.
+  const rich = media?.question || classification.kind === "code" || classification.errorProne === "exact" ? "" : richHint(req.prompt);
+  const panelPrompt = (req.memory ?? "") + req.prompt + (exact ? exactNote(exact) : "") + (rich ? `\n\n${rich}` : "");
+  const shapeBlock = [shape, rich].filter(Boolean).join("\n\n");
   // Live Research: every panel model reads the brief and cites it, because with one model (fast depth, Free) its text is the answer itself.
-  const panelSystem = liveResearch ? `${systemPrompt()}\n\n${LIVE_RESEARCH_RULES}${shape ? `\n\n${shape}` : ""}` : shape ? `${systemPrompt()}\n\n${shape}` : undefined;
+  const panelSystem = liveResearch ? `${systemPrompt()}\n\n${LIVE_RESEARCH_RULES}${shapeBlock ? `\n\n${shapeBlock}` : ""}` : shapeBlock ? `${systemPrompt()}\n\n${shapeBlock}` : undefined;
   // Real token streaming: the first panel model to speak is shown word by word while the rest of the panel, the review and the synthesis work.
   const liveEvents: KeplarEvent[] = [];
   let wakeLoop: (() => void) | null = null;

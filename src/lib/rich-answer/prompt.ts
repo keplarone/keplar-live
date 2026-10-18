@@ -21,3 +21,33 @@ The markdown above the fence must stay a complete answer by itself. Use only the
 - {"type":"sources","items":[{"title":"...","url":"https://..."}]}
 
 Block rules: at most 6 blocks and 8 items; one sentence per why, body, or cell; at most 3 short tags. Never invent a score, benchmark, citation, URL, or "as of" date. A score or stat may include a number only when that exact number is in the material. A source URL only when that URL is in the material; if there is no URL, omit sources. Do not put agreement counts, model names, or who-said-what in the block. For a ranking, note must say the order is a judgment and that it changes, and must not name a date unless the material gives that date. One callout, the single takeaway. A how-to uses a steps block (titles and one line each) and leaves the full guide in the markdown. If you are not sure the block is valid JSON, omit it.`;
+
+/**
+ * A short, shape-specific instruction for the model that is already answering.
+ * It rides on that same call (the panel, or the one combined review). Empty for chat, facts, code, and math.
+ */
+const RANK = /\b(?:greatest|best|top\s+\d+|ranking|ranked)\b/i;
+const WAY = /\b(?:best|good|right|easiest|fastest|safest)\s+way\s+to\b/i;
+const COMPARE = /\b(?:compare|comparison|versus|\bvs\.?\b|difference between)\b/i;
+const PROS = /\bpros and cons\b/i;
+const TIMELINE = /\b(?:history of|timeline of|origins of)\b/i;
+const STEPS = /\b(?:how (?:do|can|should|would|could) (?:i|you|we)|how to|steps? to|walk me through|show me how)\b/i;
+
+const CLOSE =
+  "The markdown above the fence must already name every item. Use only facts from that markdown. Never invent a score, benchmark, citation, URL, or date. Omit sources when you have no URL. If the JSON would be invalid, omit the fence.";
+
+function fence(body: string): string {
+  return `After the markdown, end with exactly one fenced block and nothing after it:\n\n\`\`\`keplar-ui\n${body}\n\`\`\`\n${CLOSE}`;
+}
+
+export function richHint(prompt: string): string {
+  const p = prompt.trim();
+  const words = p.split(/\s+/);
+  if (p.length < 8 || words.length < 3 || words.length > 80) return "";
+  if (PROS.test(p)) return fence('{"blocks":[{"type":"proscons","pros":["..."],"cons":["..."]},{"type":"callout","text":"One sentence takeaway."}]}');
+  if (STEPS.test(p) || WAY.test(p)) return fence('{"blocks":[{"type":"steps","items":[{"title":"Step title from the guide","body":"One line."}]},{"type":"callout","text":"One sentence takeaway."}]}');
+  if (COMPARE.test(p)) return fence('{"blocks":[{"type":"compare","columns":["Option A","Option B"],"rows":[{"label":"A real point of comparison","cells":["...","..."]}]},{"type":"callout","text":"One sentence verdict."}]}');
+  if (TIMELINE.test(p)) return fence('{"blocks":[{"type":"timeline","items":[{"when":"A year you stated","title":"...","body":"One line."}]},{"type":"callout","text":"One sentence takeaway."}]}');
+  if (RANK.test(p)) return fence('{"blocks":[{"type":"ranked","note":"This order is a judgment, and it changes.","items":[{"rank":1,"name":"A name you stated","maker":"Its maker, if you stated one","why":"One line from your answer."}]},{"type":"callout","text":"One sentence takeaway."}]}');
+  return "";
+}

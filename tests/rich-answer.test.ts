@@ -11,6 +11,7 @@ import { freeRoster } from "@/lib/orchestration/live-catalog";
 import { LatencyBudget } from "@/lib/orchestration/latency";
 import type { KeplarAnswer, ProviderResult } from "@/lib/orchestration/types";
 import { faviconType, faviconUrl } from "@/lib/rich-answer/favicon";
+import { richHint } from "@/lib/rich-answer/prompt";
 import { agreementLine, buildRich, parseRich, streamView, takeRichFence } from "@/lib/rich-answer/parse";
 import { RichAnswer, RichSkeleton } from "@/components/app-ui/rich/RichAnswer";
 import { GET as faviconGET } from "@/app/api/favicon/route";
@@ -225,6 +226,43 @@ test("the rich stylesheet stays graphite and white, and motion is transform and 
   assert.match(css, /max-width:\s*480px/);
   assert.match(css, /overflow-x:\s*auto/);
   assert.doesNotMatch(css, /gradient|blur\(|purple|violet|pink|glow|box-shadow|backdrop-filter|#[0-9a-f]{3,8}/i);
+});
+
+test("a ranking, comparison, timeline, or how-to asks the same call for one block; a fact does not", () => {
+  assert.match(richHint("what are the greatest ai in the world"), /"type":"ranked"/);
+  assert.match(richHint("what are the greatest ai in the world"), /judgment/);
+  assert.match(richHint("compare iPhone 17 vs Pixel 10"), /"type":"compare"/);
+  assert.match(richHint("history of the internet"), /"type":"timeline"/);
+  assert.match(richHint("how do I make sourdough"), /"type":"steps"/);
+  assert.equal(richHint("What is the capital of Australia?"), "");
+  assert.equal(richHint("hi"), "");
+  const orch = readFileSync("src/lib/orchestration/orchestrator.ts", "utf8");
+  assert.match(orch, /richHint\(req\.prompt\)/);
+  assert.match(readFileSync("src/lib/orchestration/free-merged.ts", "utf8"), /richHint\(req\.prompt\)/);
+});
+
+test("one model can carry the block in its own reply, with no extra call", async () => {
+  const [m1] = freeRoster;
+  let calls = 0;
+  const registry = { generate: async () => { calls++; return { ok: false }; } } as never;
+  const fence = JSON.stringify({
+    blocks: [
+      { type: "ranked", note: "This order is a judgment, and it changes.", items: [{ rank: 1, name: "Alpha", maker: "Acme", why: "It led the reply." }] },
+      { type: "callout", text: "Start with Alpha." },
+    ],
+  });
+  const text = `Alpha from Acme leads.\n\n\`\`\`keplar-ui\n${fence}\n\`\`\``;
+  const results: ProviderResult[] = [{ ok: true, modelId: m1.id, stance: "alpha", claims: [], text, latencyMs: 1, usage: { inputTokens: 1, outputTokens: 1 } }];
+  const comparison = new EvidenceWeightedComparator().compare(results);
+  const s = new ModelSynthesizer(registry, m1, new LatencyBudget(60_000).start());
+  const plan = { mode: "single", panel: [{ model: m1, slot: "panel", covers: "Reasoning", reason: "" }], verifier: null, judge: null, estimate: { breakdown: [] }, rationale: "" } as never;
+  const verification = { mode: "not-needed", checks: [], disputed: [], checked: 0, supported: 0, removed: [], notes: [] } as never;
+  const classification = { kind: "general", complexity: "simple", capabilities: [], estimatedInputTokens: 1, estimatedOutputTokens: 1, needsWeb: false, rationale: "" } as never;
+  const out = (await s.synthesize({ req: { prompt: "what are the greatest ai in the world", plan: "free" }, classification, plan, results, comparison, verification, onDelta: () => {}, signal: undefined } as never)) as unknown as KeplarAnswer;
+  assert.equal(calls, 0);
+  assert.match(out.markdown, /Alpha from Acme/);
+  assert.doesNotMatch(out.markdown, /keplar-ui/);
+  assert.equal(out.rich?.blocks[0]?.type, "ranked");
 });
 
 test("favicon hosts are real domains, and only image bytes are served", async () => {

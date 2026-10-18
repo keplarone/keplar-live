@@ -22,6 +22,7 @@ import { spentUsd } from "./pricing";
 import type { createRegistry, RegistryResult } from "./providers";
 import { parseChecks } from "./verifier";
 import { GUIDE_SYNTH_RULES, SYNTH_SYSTEM_PROMPT } from "./live-synthesizer";
+import { richHint } from "@/lib/rich-answer/prompt";
 import { identityPrompt } from "@/lib/identity";
 import { VOICE_PROMPT } from "@/lib/persona";
 import { HUMAN_TONE_PROMPT } from "@/lib/persona-tone";
@@ -98,7 +99,7 @@ export class MergedFreeReview {
     try {
       r = await this.registry.generate({
         model: this.model,
-        prompt: `Question:\n${req.prompt}${textOnlyMediaNote(req.media)}\n\nResponses:\n${body}`,
+        prompt: `Question:\n${req.prompt}${textOnlyMediaNote(req.media)}\n\nResponses:\n${body}${richHint(req.prompt) ? `\n\n${richHint(req.prompt)}` : ""}`,
         classification,
         params: { reasoningOff: true, maxOutputTokens: guide ? 5600 : 2400 },
         tier: req.routing?.tier,
