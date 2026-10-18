@@ -10,7 +10,7 @@ import s from "./Overview.module.css";
 export function CalmOverview({ locale }: { locale?: string }) {
   const pricing = localizedPath("/pricing", locale ?? "en");
   return (
-    <article className={s.page}>
+    <article className={s.page} data-overview="">
       <header className={s.hero}>
         <h1 className={s.h1}>Several models. One answer.</h1>
         <p className={s.lede}>
