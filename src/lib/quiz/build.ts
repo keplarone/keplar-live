@@ -3,6 +3,7 @@
  * and apply the verifier's keep / drop / fix list.
  */
 import { quizSourceName, quizSourceText } from "./ask";
+import { parseMarkdownQuiz } from "./markdown";
 import { parseQuiz } from "./schema";
 import { applyQuizVerdicts, reconcileQuizzes } from "./reconcile";
 import type { Quiz, QuizAsk, QuizVerdict } from "./types";
@@ -32,8 +33,11 @@ export function quizStreamView(source: string): { prose: string; pending: boolea
 
 export function quizFromText(text: string, kind: QuizAsk["kind"]): Quiz | null {
   const taken = takeQuizFence(text);
-  const raw = taken.raw ?? text;
-  return parseQuiz(raw, kind);
+  if (taken.raw) {
+    const fromFence = parseQuiz(taken.raw, kind);
+    if (fromFence) return fromFence;
+  }
+  return parseQuiz(text, kind) ?? parseMarkdownQuiz(taken.prose || text, kind) ?? parseMarkdownQuiz(text, kind);
 }
 
 /** Questions without the key, so copy and share don't reveal the answers. The card holds the key. */

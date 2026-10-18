@@ -9,6 +9,10 @@ import { parseQuiz } from "@/lib/quiz/schema";
 import { gradeAnswer, quizKeyCommand } from "@/lib/quiz/grade";
 import { applyQuizVerdicts, reconcileQuizzes } from "@/lib/quiz/reconcile";
 import { finalizeQuiz, quizPlain, quizStreamView, takeQuizFence } from "@/lib/quiz/build";
+import { parseMarkdownQuiz } from "@/lib/quiz/markdown";
+import { cheapestQuizModel } from "@/lib/quiz/repair";
+import { blendedPrice } from "@/lib/orchestration/pricing";
+import { liveRoster } from "@/lib/orchestration/live-catalog";
 import { QuizBuilding, QuizCard } from "@/components/app-ui/quiz/QuizCard";
 import { ModelSynthesizer } from "@/lib/orchestration/live-synthesizer";
 import { EvidenceWeightedComparator } from "@/lib/orchestration/comparator";
@@ -219,6 +223,82 @@ test("a panel quiz is the answer, with no extra model call and no streamed JSON"
   assert.doesNotMatch(out.markdown, /keplar-quiz/);
   assert.equal(out.markdown, quizPlain(out.quiz!));
   assert.equal(out.rich, undefined);
+});
+
+const MARKDOWN_QUIZ = [
+  "Entrepreneurship quiz",
+  "",
+  "1. What is an entrepreneur?",
+  "A. A person who starts a business and takes on financial risk",
+  "B. A lender",
+  "C. A customer",
+  "D. A person who only invests",
+  "",
+  "2. What is revenue?",
+  "A. Revenue is the money a business earns from sales",
+  "B. Profit after costs",
+  "C. A loan",
+  "D. A tax",
+  "",
+  "Answer key",
+  "1. A",
+  "2. A — Revenue is the money a business earns from sales.",
+].join("\n");
+
+test("a numbered quiz with an answer key becomes the card without a model call", () => {
+  const quiz = parseMarkdownQuiz(MARKDOWN_QUIZ);
+  assert.equal(quiz?.questions.length, 2);
+  assert.equal(quiz?.questions[0]?.answer, "A person who starts a business and takes on financial risk");
+  assert.match(quiz?.questions[1]?.explanation ?? "", /earns from sales/);
+  assert.equal(parseMarkdownQuiz("1. What is an entrepreneur? A. A person who starts a business."), null);
+  const inline = parseMarkdownQuiz("1. What is an entrepreneur? A. A person who starts a business and takes on financial risk B. A lender C. A customer D. An investor\nAnswer key\n1. A");
+  assert.equal(inline?.questions[0]?.answer, "A person who starts a business and takes on financial risk");
+  assert.equal(inline?.questions[0]?.options?.length, 4);
+  const via = finalizeQuiz({
+    texts: [MARKDOWN_QUIZ],
+    req: { prompt: "create me a quiz for this study guide", docs: [{ name: "study-guide.pdf", text: SOURCE, source: "file" }] },
+    ask: { kind: "quiz", count: 10 },
+  });
+  assert.equal(via?.questions.length, 2);
+});
+
+test("the repair model is the cheapest one that can run", () => {
+  const free = cheapestQuizModel(true);
+  assert.ok(free);
+  assert.equal(blendedPrice(free!, "2026-10-18"), 0);
+  const paid = cheapestQuizModel(false);
+  assert.ok(paid);
+  const cheapest = [...liveRoster].sort((a, b) => (blendedPrice(a, "2026-10-18") ?? 99) - (blendedPrice(b, "2026-10-18") ?? 99))[0];
+  assert.equal(paid!.id, cheapest!.id);
+});
+
+test("a markdown quiz is the card, and a repair runs once only when that parse fails", async () => {
+  const [m1] = freeRoster;
+  let calls = 0;
+  const registry = { generate: async () => { calls++; return { ok: true, modelId: m1.id, text: JSON.stringify(QUIZ), latencyMs: 1, usage: { inputTokens: 1, outputTokens: 1 } }; } } as never;
+  const results: ProviderResult[] = [{ ok: true, modelId: m1.id, stance: "a", claims: [], text: MARKDOWN_QUIZ, latencyMs: 1, usage: { inputTokens: 1, outputTokens: 1 } }];
+  const comparison = new EvidenceWeightedComparator().compare(results);
+  const s = new ModelSynthesizer(registry, m1, new LatencyBudget(60_000).start());
+  const plan = { mode: "single", panel: [{ model: m1, slot: "panel", covers: "Reasoning", reason: "" }], verifier: null, judge: null, estimate: { breakdown: [] }, rationale: "" } as never;
+  const verification = { mode: "not-needed", checks: [], disputed: [], checked: 0, supported: 0, removed: [], notes: [] } as never;
+  const classification = { kind: "general", complexity: "simple", capabilities: [], estimatedInputTokens: 1, estimatedOutputTokens: 1, needsWeb: false, rationale: "" } as never;
+  const out = await s.synthesize({
+    req: { prompt: "create me a quiz for this study guide", plan: "free", docs: [{ name: "study-guide.pdf", text: SOURCE, source: "file" }] },
+    classification, plan, results, comparison, verification, onDelta: () => {}, signal: undefined,
+  } as never);
+  assert.equal(calls, 0);
+  assert.equal(out.quiz?.questions.length, 2);
+
+  calls = 0;
+  const broken: ProviderResult[] = [{ ok: true, modelId: m1.id, stance: "a", claims: [], text: "Here is a quiz with no options and no key.", latencyMs: 1, usage: { inputTokens: 1, outputTokens: 1 } }];
+  const s2 = new ModelSynthesizer(registry, m1, new LatencyBudget(60_000).start());
+  const repaired = await s2.synthesize({
+    req: { prompt: "create me a quiz for this study guide", plan: "free", docs: [{ name: "study-guide.pdf", text: SOURCE, source: "file" }] },
+    classification, plan, results: broken, comparison: new EvidenceWeightedComparator().compare(broken), verification, onDelta: () => {}, signal: undefined,
+  } as never);
+  assert.equal(calls, 1);
+  assert.ok(repaired.quiz);
+  assert.equal(repaired.quiz?.questions.length, 2);
 });
 
 test("when the fence does not parse, the markdown answer is kept", async () => {

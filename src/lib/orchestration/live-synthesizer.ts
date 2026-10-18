@@ -18,7 +18,7 @@ import { GENERIC_RESOLUTION } from "@/lib/disagreement-view";
 import { catalogById } from "./catalog";
 import { UNCLASSIFIED } from "./comparator";
 import { isBudgetAbort, LatencyBudget } from "./latency";
-import { spentUsd } from "./pricing";
+import { sanitizeParams, spentUsd } from "./pricing";
 import { sleep } from "./sleep";
 import { fmtClock, hasMedia, textOnlyMediaNote } from "./media";
 import type { createRegistry } from "./providers";
@@ -34,10 +34,11 @@ import { isGuideRequest } from "./answer-shape";
 import { RICH_UI_RULES, richHint } from "@/lib/rich-answer/prompt";
 import { buildRich, parseRich, RICH_PENDING, takeRichFence } from "@/lib/rich-answer/parse";
 import type { RichAnswer } from "@/lib/rich-answer/types";
-import { quizAsk } from "@/lib/quiz/ask";
+import { quizAsk, quizSourceText } from "@/lib/quiz/ask";
 import { finalizeQuiz, quizPlain, takeQuizFence } from "@/lib/quiz/build";
 import { quizPanelHint } from "@/lib/quiz/prompt";
-import type { Quiz } from "@/lib/quiz/types";
+import { cheapestQuizModel, QUIZ_REPAIR_SYSTEM, quizFromRepair, quizRepairUser } from "@/lib/quiz/repair";
+import type { Quiz, QuizAsk } from "@/lib/quiz/types";
 
 type Ok = Extract<ProviderResult, { ok: true }>;
 const nameOf = (id: string) => catalogById.get(id)?.name ?? id;
@@ -153,6 +154,35 @@ export class ModelSynthesizer implements Synthesizer {
     } catch (e) {
       if (!isBudgetAbort(e, signal)) throw e;
       this.callFailure = "slow";
+      return null;
+    }
+  }
+
+  /**
+   * The panel and the write-up both failed to yield a quiz. One call, on the cheapest model that can run,
+   * turns the source plus that markdown into JSON. A failure leaves the markdown as the answer.
+   */
+  private async repairQuiz(req: Parameters<Synthesizer["synthesize"]>[0]["req"], classification: Parameters<Synthesizer["synthesize"]>[0]["classification"], ask: QuizAsk, texts: string[], signal: AbortSignal | undefined): Promise<Quiz | null> {
+    const free = req.plan === "free" || ("freeOnly" in this.registry && Boolean(this.registry.freeOnly));
+    const model = cheapestQuizModel(free) ?? this.model;
+    const source = quizSourceText(req).trim() || req.prompt;
+    const draft = texts.map((t) => t.trim()).filter(Boolean).join("\n\n");
+    const repairSignal = signal ? AbortSignal.any([signal, AbortSignal.timeout(40_000)]) : AbortSignal.timeout(40_000);
+    try {
+      const r = await this.registry.generate({
+        model,
+        prompt: quizRepairUser(source, draft, ask),
+        system: QUIZ_REPAIR_SYSTEM,
+        classification,
+        params: sanitizeParams(model, { reasoningOff: true, temperature: 0, maxOutputTokens: 2200 }),
+        tier: req.routing?.tier,
+        slot: "judge",
+        signal: repairSignal,
+      });
+      if (!r.ok) return null;
+      this.spentUsd += spentUsd(model, r);
+      return quizFromRepair(r.text, ask.kind);
+    } catch {
       return null;
     }
   }
@@ -281,17 +311,25 @@ export class ModelSynthesizer implements Synthesizer {
       }
     }
 
-    // The panel's fences didn't parse. The write-up may still have carried one.
+    // The panel's fences didn't parse. The write-up, or a numbered quiz with an answer key, may still carry one.
+    const quizTexts = () => [markdown, ...ok.map((r) => r.text), ...(this.prewritten ? [this.prewritten.text] : [])];
     if (ask && !quiz) {
-      const built = finalizeQuiz({
-        texts: [markdown, ...ok.map((r) => r.text), ...(this.prewritten ? [this.prewritten.text] : [])],
-        req,
-        ask,
-        verdicts: verification.quizVerdicts,
-      });
+      const built = finalizeQuiz({ texts: quizTexts(), req, ask, verdicts: verification.quizVerdicts });
       if (built) {
         quiz = built;
         markdown = quizPlain(built);
+      }
+    }
+
+    // Still no quiz: one repair, on the cheapest model, then give up to the markdown.
+    if (ask && !quiz) {
+      const repaired = await this.repairQuiz(req, classification, ask, quizTexts(), signal);
+      if (repaired) {
+        const built = finalizeQuiz({ texts: [JSON.stringify(repaired)], req, ask, verdicts: verification.quizVerdicts });
+        if (built) {
+          quiz = built;
+          markdown = quizPlain(built);
+        }
       }
     }
 
