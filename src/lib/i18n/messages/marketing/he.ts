@@ -12,8 +12,8 @@ const m: MarketingCatalog = {
       "description": "כל היכולות של Keplar בעמוד אחד, לפי ייעוד: שאלות, קריאת קבצים, יצירת אתרים ואפליקציות, עבודה משותפת, פרסום, ה-API והווידג'ט, ואמון. לכל יכולת מצוין אם היא פעילה, בבטא או בקרוב."
     },
     "pricing": {
-      "title": "מחירים: Free, Plus $45, Pro $99",
-      "description": "התחילו בחינם עם Keplar One. Keplar Plus עולה $45 לחודש, Keplar Pro עולה $99 לחודש, ותוכניות Business זמינות דרך צוות המכירות שלנו. שימוש שרואים, אף פעם לא מוסתר."
+      "title": "מחירים: Free, Lite $20, Plus $45, Pro $99",
+      "description": "התחילו בחינם עם Keplar One. Keplar Lite עולה $20 לחודש, Keplar Plus עולה $45 לחודש, Keplar Pro עולה $99 לחודש, ותוכניות Business זמינות דרך צוות המכירות שלנו. שימוש שרואים, אף פעם לא מוסתר."
     },
     "showcase": {
       "title": "תצוגת Create: איך אפליקציה שנבנתה עם Keplar צריכה להיראות",

@@ -7,7 +7,7 @@ import { VerifyEmailConfirm } from "@/components/auth/RecoveryForms";
 import s from "@/components/auth/auth.module.css";
 
 // Never leak the token in a Referer header.
-export const metadata: Metadata = { ...pageMeta("/verify-email", "Verify your email", "Verify your Keplar email address."), referrer: "no-referrer" };
+export const metadata: Metadata = { ...pageMeta("/verify-email", "Verify your email", "Verify your Keplar email address.", { noindex: true }), referrer: "no-referrer" };
 export const dynamic = "force-dynamic";
 
 type Props = { searchParams: Promise<{ token?: string | string[] }> };

@@ -70,7 +70,7 @@ export const landingPages: LandingPage[] = [
       limits,
     ],
     faq: [
-      { q: "Is Keplar free?", a: "Yes. Free is $0, runs on free open models, and allows up to 50 questions a day (fair use). Keplar Plus is $45 a month and Keplar Pro is $99 a month." },
+      { q: "Is Keplar free?", a: "Yes. Free is $0, runs on free open models, and allows up to 50 questions a day (fair use). Keplar Lite is $20 a month, Keplar Plus is $45 a month, and Keplar Pro is $99 a month." },
       { q: "Do I need an account to try it?", a: "No. You can ask questions without signing up. An account saves your chats and unlocks Study sets, saved chats and optional memory." },
       { q: "Does agreement mean the answer is correct?", a: "Not always. Consensus can be wrong, so Keplar shows how strongly the models agreed and where they disagree, instead of treating a majority as the truth." },
     ],

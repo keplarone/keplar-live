@@ -12,8 +12,8 @@ const m: MarketingCatalog = {
       "description": "Mọi tính năng của Keplar trên một trang, nhóm theo mục đích: hỏi đáp, đọc tệp, tạo trang web và ứng dụng, cùng nhau xây dựng, phát hành, API và widget, và sự tin cậy. Mỗi mục đều ghi rõ đang hoạt động, beta hay sắp ra mắt."
     },
     "pricing": {
-      "title": "Bảng giá: Free, Plus $45, Pro $99",
-      "description": "Bắt đầu miễn phí với Keplar One. Keplar Plus giá $45/tháng, Keplar Pro giá $99/tháng, và gói Business có sẵn qua đội ngũ kinh doanh của chúng tôi. Mức sử dụng luôn hiển thị, không bao giờ bị ẩn."
+      "title": "Bảng giá: Free, Lite $20, Plus $45, Pro $99",
+      "description": "Bắt đầu miễn phí với Keplar One. Keplar Lite giá $20/tháng, Keplar Plus giá $45/tháng, Keplar Pro giá $99/tháng, và gói Business có sẵn qua đội ngũ kinh doanh của chúng tôi. Mức sử dụng luôn hiển thị, không bao giờ bị ẩn."
     },
     "showcase": {
       "title": "Trưng bày Create: một ứng dụng làm bằng Keplar nên trông thế nào",

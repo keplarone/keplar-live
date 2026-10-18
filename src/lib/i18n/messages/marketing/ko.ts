@@ -12,8 +12,8 @@ const m: MarketingCatalog = {
       "description": "Keplar의 모든 기능을 용도별로 한 페이지에 모았습니다. 질문, 파일 읽기, 사이트와 앱 만들기, 함께 만들기, 배포, API와 위젯, 신뢰. 각 기능이 출시됨, 베타, 출시 예정 중 무엇인지 표시합니다."
     },
     "pricing": {
-      "title": "요금: Free, Plus $45, Pro $99",
-      "description": "Keplar One을 무료로 시작하세요. Keplar Plus는 월 $45, Keplar Pro는 월 $99이며, Business 요금제는 영업팀을 통해 이용할 수 있습니다. 사용량은 언제나 보이고, 숨기지 않습니다."
+      "title": "요금: Free, Lite $20, Plus $45, Pro $99",
+      "description": "Keplar One을 무료로 시작하세요. Keplar Lite는 월 $20, Keplar Plus는 월 $45, Keplar Pro는 월 $99이며, Business 요금제는 영업팀을 통해 이용할 수 있습니다. 사용량은 언제나 보이고, 숨기지 않습니다."
     },
     "showcase": {
       "title": "Create 쇼케이스: Keplar로 만든 앱이 갖춰야 할 모습",

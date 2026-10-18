@@ -12,8 +12,8 @@ const m: MarketingCatalog = {
       "description": "Keplar 的每項功能都在這一頁，按用途分組：提問、讀取檔案、建立網站和應用、協作、發布、API 和小元件，以及信任。每項都註明是已上線、測試版還是即將推出。"
     },
     "pricing": {
-      "title": "價格：Free、Plus $45、Pro $99",
-      "description": "免費開始使用 Keplar One。Keplar Plus 每月 $45，Keplar Pro 每月 $99，Business 方案可透過我們的銷售團隊獲取。用量清晰可見，從不隱藏。"
+      "title": "價格：Free、Lite $20、Plus $45、Pro $99",
+      "description": "免費開始使用 Keplar One。Keplar Lite 每月 $20，Keplar Plus 每月 $45，Keplar Pro 每月 $99，Business 方案可透過我們的銷售團隊獲取。用量清晰可見，從不隱藏。"
     },
     "showcase": {
       "title": "Create 作品展示：用 Keplar 構建的應用應有的樣子",

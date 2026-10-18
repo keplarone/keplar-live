@@ -7,8 +7,9 @@
  * <head> (src/components/analytics/WhopPixel.tsx), so the CSP needs `script-src 'unsafe-inline'` (already set, see security/headers.ts) and
  * https://t.whop.tw in script-src (the pixel's /s.js and chunks) and connect-src (its beacons).
  *
- * The pixel's own script also reads email / phone / name fields on `change` events and sends them as visitor traits, so it must never
- * run on a page with such a form or on a signed-in page. whopPixelAllowed() is the one list of where it does not load.
+ * The pixel's own script also reads email / phone / name fields on `change` events and sends them as visitor traits.
+ * forms:false (WHOP_PIXEL_OPTIONS_SCRIPT) turns that capture off. whopPixelAllowed() loads the scripts only on checkout
+ * and account pages, which is where a purchase is measured.
  */
 export const WHOP_PIXEL_ORIGIN = "https://t.whop.tw";
 
@@ -29,17 +30,11 @@ export const WHOP_PIXEL_LOADER_SCRIPT = `(function(){var done=0,t,ev=["pointerdo
  */
 export const WHOP_PIXEL_OPTIONS_SCRIPT = "window.__whopApp={forms:false,links:false,iframes:false};";
 
-/** Path prefixes where the pixel never loads: signed-in app, admin, account, checkout, onboarding, every auth or contact form, and shared or user-site routes. */
-const EXCLUDED = [
-  "/app", "/admin", "/account", "/checkout", "/welcome",
-  "/signin", "/signup", "/forgot-password", "/reset-password", "/verify-email", "/two-factor", "/secure-account",
-  "/contact", "/feedback", "/inquire",
-  "/embed", // the Ask widget framed on other sites: no ad pixel there
-  "/r", "/s", "/sites", "/i", "/api", "/dev",
-];
+/** Checkout and account pages only. /biz/account is the Business account setup, which embeds the same checkout. */
+const ALLOWED = ["/checkout", "/account", "/biz/account"];
 
-/** True when the pixel may load on this path (public marketing and content pages). Unknown path: allowed only if it is not under an excluded prefix. */
+/** True only on checkout and account pages. Every other path, including marketing pages, stays without the pixel. */
 export function whopPixelAllowed(pathname: string | null | undefined): boolean {
   const p = (pathname ?? "/").split(/[?#]/)[0].toLowerCase();
-  return !EXCLUDED.some((x) => p === x || p.startsWith(`${x}/`));
+  return ALLOWED.some((x) => p === x || p.startsWith(`${x}/`));
 }

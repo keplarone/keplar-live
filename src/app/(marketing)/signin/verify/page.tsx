@@ -8,7 +8,7 @@ import { ConfirmSignIn } from "@/components/account/ConfirmSignIn";
 import s from "@/components/auth/auth.module.css";
 
 // Never leak the token in a Referer header.
-export const metadata: Metadata = { ...pageMeta("/signin/verify", "Confirm sign-in", "Confirm your Keplar sign-in."), referrer: "no-referrer" };
+export const metadata: Metadata = { ...pageMeta("/signin/verify", "Confirm sign-in", "Confirm your Keplar sign-in.", { noindex: true }), referrer: "no-referrer" };
 export const dynamic = "force-dynamic";
 
 type Props = { searchParams: Promise<{ token?: string | string[] }> };
