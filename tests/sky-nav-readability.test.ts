@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { CLOUD_CUTOUTS } from "../src/components/sky/clouds/cloud-cutouts";
 
 const read = (f: string) => readFileSync(f, "utf8");
 const strip = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, "");
@@ -68,6 +69,42 @@ test("dark sky is navy with clouds that stay visible and keep light ink at AA", 
   assert.match(read("src/styles/globals.css"), /#main \{ position: relative; z-index: 1; isolation: isolate; \}/);
   assert.match(read("src/components/sky/Sky.module.css"), /pointer-events: none/);
   assert.match(read("src/components/sky/Sky.module.css"), /#5d9be8 0%, #b9d8f5 80%/);
+  assert.match(webgl, /return \(p\.x \+ drift\) \* lite \* uCover \* 0\.0/);
+  assert.match(vol, /return \(p\.x \+ drift\) \* lite \* cover \* 0\.0/);
+  const css = read("src/components/sky/Sky.module.css");
+  assert.match(css, /@keyframes cloud-drift/);
+  assert.match(css, /:global\(:root\[data-theme="dark"\]\) \.cloudImg \{\s*filter:/);
+  assert.doesNotMatch(css, /\.h1 \{[^}]*filter:/);
+  assert.match(css, /url\("\.\/static-day\.svg"\)/);
+  assert.match(css, /url\("\.\/static-night\.svg"\)/);
+});
+
+test("cumulus cutouts are CC0, light, and stay off the headline", () => {
+  const license = read("public/sky/clouds/LICENSE.md");
+  assert.ok(license.includes("CC0 1.0 Universal"));
+  assert.ok(license.includes("WickedInsignia"));
+  assert.ok(license.includes("public domain"));
+  const files = readdirSync("public/sky/clouds").filter((name) => name.endsWith(".webp"));
+  assert.equal(files.length, 8);
+  const bytes = files.reduce((sum, name) => sum + statSync(`public/sky/clouds/${name}`).size, 0);
+  assert.ok(bytes < 400 * 1024, `cutouts are ${bytes} bytes`);
+  assert.equal(CLOUD_CUTOUTS.length, 8);
+  for (const cloud of CLOUD_CUTOUTS) {
+    if (cloud.extra) continue;
+    const width = Number.parseFloat(cloud.width);
+    const top = Number.parseFloat(cloud.top);
+    const start = cloud.left != null
+      ? Number.parseFloat(cloud.left)
+      : 100 - Number.parseFloat(cloud.right ?? "0") - width;
+    const end = start + width;
+    if (top < 48) {
+      const overlaps = Math.min(end, 70) - Math.max(start, 30);
+      assert.ok(overlaps < 4, `${cloud.src} crosses the headline`);
+    }
+  }
+  const deck = read("src/components/sky/clouds/CloudCutouts.tsx");
+  assert.match(deck, /loading="lazy"/);
+  assert.match(deck, /fetchPriority="low"/);
 });
 
 test("day sky is blue at the top and light ink stays AA on it", () => {

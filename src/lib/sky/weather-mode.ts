@@ -3,6 +3,7 @@
  * The sky scene and the nav toggle share this so a click and a weather lookup stay in step.
  */
 import { effectivePrecip, readPrecipChoice, WEATHER_KEY, type PrecipMode } from "@/lib/sky/journey";
+import { skyProfile } from "@/lib/sky/profile";
 import type { SkyVariant } from "@/lib/sky/variants";
 
 type Listener = () => void;
@@ -45,12 +46,15 @@ export function setWeatherChoice(next: PrecipMode) {
 }
 
 export function setLiveVariant(next: SkyVariant) {
-  if (live === next) return;
+  const changed = live !== next;
   live = next;
-  if (choice === null && typeof document !== "undefined") {
-    document.documentElement.setAttribute("data-weather", effectivePrecip(next, null));
+  if (typeof document !== "undefined") {
+    document.documentElement.dataset.cloudCover = skyProfile(next).gray >= 0.16 ? "more" : "few";
+    if (changed && choice === null) {
+      document.documentElement.setAttribute("data-weather", effectivePrecip(next, null));
+    }
   }
-  emit();
+  if (changed) emit();
 }
 
 export function subscribeWeather(fn: Listener) {
