@@ -81,8 +81,9 @@ test("dark sky is navy with clouds that stay visible and keep light ink at AA", 
 
 test("cumulus cutouts are CC0, light, and stay off the headline", () => {
   const license = read("public/sky/clouds/LICENSE.md");
-  assert.ok(license.includes("CC0 1.0"));
-  assert.ok(license.includes("https://opengameart.org/content/clouds-with-transparency"));
+  assert.ok(license.includes("CC0 1.0 Universal"));
+  assert.ok(license.includes("WickedInsignia"));
+  assert.ok(license.includes("public domain"));
   const files = readdirSync("public/sky/clouds").filter((name) => name.endsWith(".webp"));
   assert.equal(files.length, 8);
   const bytes = files.reduce((sum, name) => sum + statSync(`public/sky/clouds/${name}`).size, 0);
