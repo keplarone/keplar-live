@@ -14,6 +14,9 @@ import { catalogById } from "./catalog";
 import { textOnlyMediaNote } from "./media";
 import { spentUsd } from "./pricing";
 import type { createRegistry } from "./providers";
+import { quizAsk } from "@/lib/quiz/ask";
+import { QUIZ_VERIFY_ADDON } from "@/lib/quiz/prompt";
+import { parseQuizVerdicts } from "@/lib/quiz/build";
 import type { Claim, ProviderResult, RoutedModel, Verification, VerificationCheck, Verifier } from "./types";
 
 export type VerifyInput = Parameters<Verifier["verify"]>[0];
@@ -102,20 +105,22 @@ export class ModelVerifier implements Verifier {
       .filter((r): r is Extract<ProviderResult, { ok: true }> => r.ok)
       .map((r) => `### ${nameOf(r.modelId)}\n${r.text.slice(0, 6000)}`)
       .join("\n\n");
+    const quiz = quizAsk(req.prompt);
     const prompt = `Question:\n${req.memory ?? ""}${req.prompt}${textOnlyMediaNote(req.media)}\n\nResponses:\n${responses}\n\n${draft.trim() ? `Draft synthesis:\n${draft.slice(0, 6000)}` : "No draft yet: review the responses against each other (reasoning that doesn't hold, contradictions, claims only some models support)."}`;
 
     const r = await this.registry.generate({
       model: reviewer.rm.model,
       prompt,
       classification,
-      params: { reasoningEffort: reviewer.role === "judge" ? "medium" : "low", maxOutputTokens: 1200 },
+      params: { reasoningEffort: reviewer.role === "judge" ? "medium" : "low", maxOutputTokens: quiz ? 1600 : 1200 },
       tier: req.routing?.tier,
       slot: reviewer.role,
-      system: VERIFIER_SYSTEM_PROMPT,
+      system: quiz ? `${VERIFIER_SYSTEM_PROMPT}\n${QUIZ_VERIFY_ADDON}` : VERIFIER_SYSTEM_PROMPT,
       signal,
     });
 
     const parsed = r.ok ? parseChecks(r.text) : null;
+    const quizVerdicts = r.ok && quiz ? parseQuizVerdicts(r.text) : [];
     // A substitute may have reviewed (Free plan fallback when the planned reviewer was busy): name the one that did.
     const by = r.ok ? r.model : reviewer.rm.model;
     const base = { mode: "cross-model" as const, reviewer: { modelId: by.id, name: by.name, role: reviewer.role } };
@@ -130,6 +135,7 @@ export class ModelVerifier implements Verifier {
         removed: [],
         notes: [r.ok ? "The reviewer's output couldn't be read, so no checks are shown for this answer." : "The reviewer didn't respond, so this answer wasn't cross-checked."],
         costUsd: r.ok ? r.actualCostUsd : 0,
+        ...(quizVerdicts.length ? { quizVerdicts } : {}),
       };
     }
     const removedCount = parsed.checks.filter((c) => c.outcome === "removed").length;
@@ -142,6 +148,7 @@ export class ModelVerifier implements Verifier {
       removed: [],
       notes: [],
       costUsd: r.ok ? spentUsd(by, r) : undefined,
+      ...(quizVerdicts.length ? { quizVerdicts } : {}),
     };
   }
 }

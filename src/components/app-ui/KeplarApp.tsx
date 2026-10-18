@@ -72,6 +72,7 @@ import { CreateTurn } from "./create/CreateTurn";
 import { giveAppHandoff } from "../create/apps/handoff";
 import { studioOf } from "@/lib/composer/modes";
 import { intentLabel, routeChat, type Intent } from "@/lib/chat-actions/intent";
+import { quizAsk } from "@/lib/quiz/ask";
 import { cardHistoryLine, lastCardOf, previousAnswer, previousQuestion } from "./state/cards";
 import { deleteProject, mergeProjects, renameProject, type Ops } from "./workspace/project-ops";
 import { WorkspaceTurn, type TabTarget } from "./workspace/WorkspaceTurn";
@@ -126,6 +127,15 @@ function warmViews(all: boolean) {
   if (conn?.saveData) return;
   create.warm().catch(() => {});
   if (all) for (const v of [business, slides, study]) v.warm().catch(() => {});
+}
+
+/** A quiz or flashcards request, known before the answer arrives so the card can show a skeleton. */
+function practiceFor(text: string, attachments: { name: string }[], kind?: "quiz" | "flashcards"): KeplarMessage["practice"] {
+  const ask = quizAsk(text);
+  const resolved = kind ?? ask?.kind;
+  if (!resolved) return undefined;
+  const source = attachments.find((a) => a.name)?.name;
+  return { kind: resolved, count: ask?.count ?? 10, ...(source ? { source } : {}) };
 }
 
 const newKeplar = (replyTo: string): KeplarMessage => ({
@@ -496,7 +506,11 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     const docs = docsForTurn(priorDocs, user.attachments);
     const threadProjectId = existingThread ? existingThread.projectId : st.projectFilter;
     const req: KeplarRequest = {
-      prompt: user.text,
+      prompt: keplar.practice && !quizAsk(user.text)
+        ? keplar.practice.kind === "flashcards"
+          ? `Make ${keplar.practice.count} flashcards on: ${user.text}`
+          : `Create a ${keplar.practice.count}-question quiz on: ${user.text}`
+        : user.text,
       history,
       chatId: threadId,
       ...(threadProjectId ? { projectId: threadProjectId } : {}),
@@ -678,7 +692,9 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
               if (prev) return card({ studio: { kind: "study", phase: "waiting", standalone: true, from: prev.id, focus: i.focus } });
             }
             const u: UserMessage = { ...base, text: routed.via === "slash" && i.topic ? i.topic : text, modes: { ...modes, study: true } };
-            return answerWith(u, { ...newKeplar(u.id), studio: { kind: "study", phase: "waiting", focus: i.focus } });
+            const kind = i.focus === "quiz" ? "quiz" : i.focus === "cards" ? "flashcards" : undefined;
+            const practice = practiceFor(text, attachments, kind);
+            return answerWith(u, { ...newKeplar(u.id), studio: { kind: "study", phase: "waiting", focus: i.focus }, ...(practice ? { practice } : {}) });
           }
           case "study.again":
             return card({ studio: { kind: "study", phase: "ready", id: i.setId, focus: i.focus, standalone: true, ...(i.examDate !== undefined ? { examDate: i.examDate } : {}) } });
@@ -734,7 +750,8 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
         setAtBottom(true);
         return;
       }
-      const keplar: KeplarMessage = studio === "study" ? { ...newKeplar(user.id), studio: { kind: "study", phase: "waiting" } } : newKeplar(user.id);
+      const practice = practiceFor(text, attachments);
+      const keplar: KeplarMessage = { ...(studio === "study" ? { ...newKeplar(user.id), studio: { kind: "study", phase: "waiting" } } : newKeplar(user.id)), ...(practice ? { practice } : {}) };
       if (!st.activeThreadId && toolsRef.current.new) {
         toolsRef.current = { ...toolsRef.current, [threadId]: true, new: false };
         setToolsMap((m) => ({ ...m, [threadId]: true, new: false }));
@@ -772,7 +789,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     const t = st.threads.find((x) => x.messages.some((m) => m.id === k.id));
     const user = t?.messages.find((m): m is UserMessage => m.id === k.replyTo && m.role === "user");
     if (!t || !user) return;
-    const next = newKeplar(user.id);
+    const next = { ...newKeplar(user.id), ...(k.practice ? { practice: k.practice } : {}) };
     dispatch({ type: "retry", threadId: t.id, keplarId: k.id, next });
     void run(t.id, next, user, historyFor(t, user.id));
   }, [run]);
@@ -784,7 +801,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
       const user = t?.messages.find((m): m is UserMessage => m.id === k.replyTo && m.role === "user");
       if (!t || !user) return;
       // A Study turn that never got its set tries again with the new answer; a made set stays where it is.
-      const next: KeplarMessage = k.studio?.kind === "study" && k.studio.phase !== "ready" ? { ...newKeplar(user.id), studio: { kind: "study", phase: "waiting" } } : newKeplar(user.id);
+      const next: KeplarMessage = { ...(k.studio?.kind === "study" && k.studio.phase !== "ready" ? { ...newKeplar(user.id), studio: { kind: "study", phase: "waiting" } } : newKeplar(user.id)), ...(k.practice ? { practice: k.practice } : {}) };
       signalFor(t, k, "regenerate");
       // Refresh research (Live Research): the desktop reads the pages again instead of using its cache.
       if (opts?.freshResearch) freshResearch.current.add(next.id);
@@ -1302,6 +1319,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                         onRefreshResearch={m.answer?.research?.live && desktopResearch ? () => retry(m, { freshResearch: true }) : undefined}
                         onSignal={(kind) => signalFor(thread, m, kind)}
                         onAsk={(text) => send(text, [], { web: false, deepResearch: false, create: false, agent: false })}
+                        onQuizProgress={(progress) => dispatch({ type: "quiz-progress", threadId: thread!.id, keplarId: m.id, progress })}
                         ledger={state.ledger}
                         onDismissUpsell={() => {
                           writeUpsell(dismissUpsell(readUpsell()));

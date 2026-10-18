@@ -34,6 +34,10 @@ import { isGuideRequest } from "./answer-shape";
 import { RICH_UI_RULES, richHint } from "@/lib/rich-answer/prompt";
 import { buildRich, parseRich, RICH_PENDING, takeRichFence } from "@/lib/rich-answer/parse";
 import type { RichAnswer } from "@/lib/rich-answer/types";
+import { quizAsk } from "@/lib/quiz/ask";
+import { finalizeQuiz, quizPlain, takeQuizFence } from "@/lib/quiz/build";
+import { quizPanelHint } from "@/lib/quiz/prompt";
+import type { Quiz } from "@/lib/quiz/types";
 
 type Ok = Extract<ProviderResult, { ok: true }>;
 const nameOf = (id: string) => catalogById.get(id)?.name ?? id;
@@ -165,6 +169,15 @@ export class ModelSynthesizer implements Synthesizer {
   private callFailure: "slow" | "unavailable" = "slow";
 
   async draft(input: Parameters<NonNullable<Synthesizer["draft"]>>[0]) {
+    const ask = quizAsk(input.req.prompt);
+    if (ask) {
+      // The reviewer checks the quiz the panel already wrote. No extra writing call.
+      const q = finalizeQuiz({ texts: input.results.filter((r): r is Ok => r.ok).map((r) => r.text), req: input.req, ask });
+      this.lastDraft = q
+        ? JSON.stringify({ title: q.title, source: q.source, questions: q.questions.map((x) => ({ id: x.id, prompt: x.prompt, answer: x.answer, explanation: x.explanation })) })
+        : "";
+      return this.lastDraft;
+    }
     this.lastDraft = await this.writeDraft(input);
     return this.lastDraft;
   }
@@ -186,16 +199,24 @@ export class ModelSynthesizer implements Synthesizer {
     const scored = comparison.positions.length > 0 && !ok.some((r) => r.stance === UNCLASSIFIED);
     const single = plan.mode === "single";
 
+    const ask = quizAsk(req.prompt);
+    // A quiz the panel already agreed on is the answer. Writing it again would only risk a wrong key.
+    let quiz: Quiz | null = ask
+      ? finalizeQuiz({ texts: ok.map((r) => r.text), req, ask, verdicts: verification.quizVerdicts })
+      : null;
+
     let markdown: string;
     let resolution = "";
     // The optional structured block rides in the same synthesis reply. Parsing it is not another model call.
     let richRaw: string | null = null;
     const peel = (s: string) => {
-      const t = takeRichFence(s);
+      const t = takeRichFence(takeQuizFence(s).prose);
       if (t.raw && parseRich(t.raw)) richRaw = t.raw;
       return t.prose;
     };
-    if (single) {
+    if (quiz) {
+      markdown = quizPlain(quiz);
+    } else if (single) {
       // One model answered a simple question: its answer is the answer (nothing to synthesize).
       markdown = peel(ok[0]?.text ?? "No model returned an answer.");
     } else {
@@ -208,7 +229,7 @@ export class ModelSynthesizer implements Synthesizer {
       const guide = classification.errorProne !== "exact" && !hasMedia(req.media) && isGuideRequest(req.prompt);
       const guideMaterial = guide ? `\n\nFull responses (use their exact steps, commands and values):\n${ok.map((r) => `### ${nameOf(r.modelId)}\n${r.text.slice(0, 7000)}`).join("\n\n")}` : "";
       // A quick factual lookup or an exact check needs a sentence or two, not 350 words: shorter output is also the fastest part to save.
-      const structured = Boolean(richHint(req.prompt));
+      const structured = !ask && Boolean(richHint(req.prompt));
       // A ranking or comparison needs the room for one keplar-ui block on this same call. A quick fact still stays short.
       const quick = !guide && !structured && (classification.kind === "factual" || classification.errorProne === "exact");
       // Free plan, every responding model took the same position, nothing was flagged, and the question is not an exact one (counting, arithmetic, exact facts): the reply the
@@ -225,7 +246,8 @@ export class ModelSynthesizer implements Synthesizer {
       if (this.noExtraCalls) this.callFailure = "unavailable";
       const synthSystem = `${SYNTH_SYSTEM_PROMPT}${this.research ? `\n${this.researchRules}` : ""}${guide ? `\n${GUIDE_SYNTH_RULES}` : ""}`;
       const richNote = structured ? `\n\n${richHint(req.prompt)}` : "";
-      const out = writtenBeatsKeep ? this.prewritten : keep ? { text: keep.text, by: keep.modelId } : this.prewritten ? this.prewritten : this.noExtraCalls ? null : await this.call(quick ? `${synthSystem}\nThis is a quick lookup: answer in at most 120 words (state the answer first, then at most two supporting points). Omit any keplar-ui block.` : synthSystem, `Question:\n${req.memory ?? ""}${req.prompt}${textOnlyMediaNote(req.media)}\n\n${material}${guideMaterial}\n\nReviewer findings:\n${findings}\n\nDraft:\n${draft.slice(0, 3000)}${richNote}`, quick ? 500 : guide ? 4800 : 1800, 1, signal, req, classification, guide ? Math.max(this.synthCapMs, 60_000) : this.synthCapMs);
+      const quizNote = ask ? `\n\n${quizPanelHint(req)}` : "";
+      const out = writtenBeatsKeep ? this.prewritten : keep ? { text: keep.text, by: keep.modelId } : this.prewritten ? this.prewritten : this.noExtraCalls ? null : await this.call(quick ? `${synthSystem}\nThis is a quick lookup: answer in at most 120 words (state the answer first, then at most two supporting points). Omit any keplar-ui block.` : synthSystem, `Question:\n${req.memory ?? ""}${req.prompt}${textOnlyMediaNote(req.media)}\n\n${material}${guideMaterial}\n\nReviewer findings:\n${findings}\n\nDraft:\n${draft.slice(0, 3000)}${richNote}${quizNote}`, quick ? 500 : ask ? 3200 : guide ? 4800 : 1800, 1, signal, req, classification, guide ? Math.max(this.synthCapMs, 60_000) : this.synthCapMs);
       let text = out?.text;
       if (text) {
         const res = text.match(/\n?\s*(RESOLUTION:\s*.+)\s*$/i);
@@ -235,7 +257,7 @@ export class ModelSynthesizer implements Synthesizer {
       this.writer = out?.by ?? null;
       // Hard (DEEP) questions get one self-critique pass before the answer is shown: completeness, overclaiming, tone.
       this.critique = "skipped";
-      if (text && !this.noExtraCalls && classification.complexity === "complex" && (!this.budget || this.budget.remaining() > 12_000)) {
+      if (text && !ask && !this.noExtraCalls && classification.complexity === "complex" && (!this.budget || this.budget.remaining() > 12_000)) {
         const body = (text.match(/\n?\s*RESOLUTION:\s*(.+)\s*$/i) ? text.slice(0, text.search(/\n?\s*RESOLUTION:/i)) : text).trim();
         const res = (text.match(/\n?\s*(RESOLUTION:\s*.+)\s*$/i)?.[1] ?? "").trim();
         const crit = await this.call(this.research ? `${CRITIQUE_SYSTEM_PROMPT}\n${RESEARCH_CRITIQUE_RULES}` : CRITIQUE_SYSTEM_PROMPT, `Question:\n${req.prompt}${textOnlyMediaNote(req.media)}\n\nAnswer about to be shown:\n${body}\n\nMaterial:\n${material.slice(0, 3000)}${this.research ? `\n\n${(req.memory ?? "").slice(0, 4000)}` : ""}`, guide ? 4000 : 1200, 0.5, signal, req, classification);
@@ -259,27 +281,45 @@ export class ModelSynthesizer implements Synthesizer {
       }
     }
 
+    // The panel's fences didn't parse. The write-up may still have carried one.
+    if (ask && !quiz) {
+      const built = finalizeQuiz({
+        texts: [markdown, ...ok.map((r) => r.text), ...(this.prewritten ? [this.prewritten.text] : [])],
+        req,
+        ask,
+        verdicts: verification.quizVerdicts,
+      });
+      if (built) {
+        quiz = built;
+        markdown = quizPlain(built);
+      }
+    }
+
     // Disagreement is only ever shown when the detector found a split (scored, more than one position); never invented by the writer.
-    if (!single) markdown = guardDisagreement(markdown, { positions: scored ? comparison.positions.length : 0 });
+    if (!single && !quiz) markdown = guardDisagreement(markdown, { positions: scored ? comparison.positions.length : 0 });
 
     // The voice never asserts as fact that Keplar is conscious, sentient, alive, superintelligent or AGI: code replaces any such sentence.
     // polish() drops stock openers/closers ("Certainly!", "I hope this helps") and replaces any claim to be human.
     markdown = polish(guardVoice(markdown));
 
     const richMaterial = `${markdown}\n${ok.map((r) => `${takeRichFence(r.text).prose}\n${(r.citations ?? []).map((c) => `${c.url} ${c.title ?? ""}`).join("\n")}`).join("\n")}`;
-    const rich: RichAnswer | undefined = buildRich(richRaw, {
-      responses: ok.map((r) => ({ name: nameOf(r.modelId), text: r.text })),
-      material: richMaterial,
-      answer: markdown,
-      disagreed: !single && scored && comparison.positions.length > 1,
-    });
+    const rich: RichAnswer | undefined = quiz
+      ? undefined
+      : buildRich(richRaw, {
+          responses: ok.map((r) => ({ name: nameOf(r.modelId), text: r.text })),
+          material: richMaterial,
+          answer: markdown,
+          disagreed: !single && scored && comparison.positions.length > 1,
+        });
 
-    // Prose streams as usual. A valid block is not streamed as JSON: one open fence tells the client to show a skeleton until the answer arrives.
-    const streamed = rich ? `${markdown}${RICH_PENDING}` : markdown;
-    const words = streamed.split(/(?<=\s)/);
-    for (let i = 0; i < words.length; i += 6) {
-      onDelta(words.slice(i, i + 6).join(""));
-      await sleep(8, signal);
+    // A quiz is not streamed: the card shows a skeleton until the answer arrives, never the JSON or an early draft.
+    if (!quiz) {
+      const streamed = rich ? `${markdown}${RICH_PENDING}` : markdown;
+      const words = streamed.split(/(?<=\s)/);
+      for (let i = 0; i < words.length; i += 6) {
+        onDelta(words.slice(i, i + 6).join(""));
+        await sleep(8, signal);
+      }
     }
 
     const byId = new Map(results.map((r) => [r.modelId, r]));
@@ -342,6 +382,7 @@ export class ModelSynthesizer implements Synthesizer {
 
     return {
       markdown,
+      ...(quiz ? { quiz } : {}),
       ...(rich ? { rich } : {}),
       consensus: {
         level: comparison.level,
