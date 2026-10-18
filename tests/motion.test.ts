@@ -124,7 +124,7 @@ test("overlays use the shared exit pattern at the source", () => {
     ["src/components/app-ui/KeplarApp.tsx", /usePresence\(drawerOpen\)[\s\S]*drawerScrim\.motion\("fade"\)[\s\S]*\{searchOpen \? \(\s*<SearchDialog /],
     ["src/components/app-ui/delete/useChatDelete.ts", /notify\(\{ id: UNDO_TOAST_ID,[\s\S]*?duration: UNDO_MS, action: \{ label: "Undo"/],
     // Composer: Attach, Modes and routing are kit Popovers, placed on the side of the composer with more room.
-    ["src/components/app-ui/Composer.tsx", /<Popover open=\{routingOpen\}[\s\S]*<Popover open=\{attachOpen\}[\s\S]*<Popover open=\{moreOpen && overflow\.length > 0\}/],
+    ["src/components/app-ui/Composer.tsx", /<Popover open=\{routingOpen\}[\s\S]*<Popover open=\{attachOpen\}[\s\S]*<Popover open=\{moreOpen\}/],
     // UI v2: Create's invite and publish-gate dialogs are the kit Dialog (native <dialog>, motion in overlay.module.css), and
     // the live studio's feedback is a kit toast (notify), which enters and leaves in the kit's own motion.
     ["src/components/create/advanced/InviteDialog.tsx", /<Dialog open onOpenChange=/],

@@ -36,7 +36,7 @@ const TILE_ICONS: Record<string, ReactNode> = {
  * "More ideas" disclosure: the use-for examples and "Most frequently asked question", which lists "Are you conscious?" first (always),
  * then questions that at least a minimum number of different opted-in people really asked (a daily snapshot from /api/faq, shown with the
  * number of people), then generic starters only while there is not enough real data. Clicking an entry sends it.
- * "Ask a question" is the composer itself; Projects and Business stay one click away in the sidebar.
+ * "Ask a question" is the composer itself. Create and Study turn that mode on in the composer; Projects opens beside the thread.
  */
 export function HomeStart({ showBusiness: _showBusiness, onSeed, onView, onSend, more }: Props) {
   const [faq, setFaq] = useState<FaqItem[]>(FALLBACK);
@@ -52,8 +52,8 @@ export function HomeStart({ showBusiness: _showBusiness, onSeed, onView, onSend,
   }, []);
   const tiles: Tile[] = [
     { id: "research", title: "Research a topic", body: "Deep Research mode on, you write the question.", run: () => onSeed("", { deepResearch: true }) },
-    { id: "create", title: "Create an app or image", body: "Describe it, preview it, publish it.", run: () => onView("create") },
-    { id: "study", title: "Study something", body: "Notes or a topic into flashcards and a quiz.", run: () => onView("study") },
+    { id: "create", title: "Create an app or image", body: "Create mode on. Describe it in the chat.", run: () => onSeed("", { create: true }) },
+    { id: "study", title: "Study something", body: "Study mode on. A topic becomes flashcards and a quiz.", run: () => onSeed("", { study: true }) },
     { id: "project", title: "Start a project", body: "Keep related threads together.", run: () => onView("projects") },
   ];
 

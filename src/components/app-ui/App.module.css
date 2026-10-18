@@ -339,6 +339,73 @@
 
 /* ── main ──────────────────────────────────────────── */
 
+/* Chat plus a surface opened from the chat (Create, Study, …). The thread stays; the surface sits beside it. */
+.threadSplit {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+}
+.threadCol {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.beside {
+  flex: none;
+  width: min(560px, 46%);
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--hairline);
+  background: var(--c-canvas);
+  padding-top: 56px;
+}
+.besideHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 44px;
+  padding: 0 12px 0 16px;
+  border-bottom: 1px solid var(--hairline);
+}
+.besideTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--c-ink);
+}
+.besideClose {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--c-ink-2);
+  background: transparent;
+}
+.besideClose:hover { background: var(--hover-wash); color: var(--c-ink); }
+.besideBody {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+.beside .createHost { padding-top: 0; }
+.beside .scroll { padding-top: 16px; padding-bottom: 24px; }
+@media (max-width: 800px) {
+  .threadSplit[data-beside] .threadCol { display: none; }
+  .beside { width: 100%; border-left: 0; }
+}
+
 .main {
   position: relative;
   display: flex;
