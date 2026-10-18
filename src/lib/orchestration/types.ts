@@ -631,7 +631,7 @@ export type KeplarAnswer = {
   rich?: RichAnswer;
   /**
    * A quiz or flashcards built from the attached file (or the conversation, when there is no file).
-   * Absent when the request wasn't a quiz, or the block didn't validate: the markdown is the answer.
+   * Absent when the request wasn't a quiz, or the block, the markdown quiz, and one repair call all failed: the markdown is the answer.
    */
   quiz?: Quiz;
   consensus: {
