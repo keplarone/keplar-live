@@ -40,7 +40,9 @@ test("answer progress comes only from real run state and stays within bounds", (
 });
 
 test("the layer is wired: mounted once in the root layout, behind content, inert, with reduced-motion/data-saver only lowering the tier or slowing the drift", () => {
-  assert.match(read("src/app/layout.tsx"), /<PageMonolith \/>/); // the Monolith layer replaced the particle layer in the root layout; PageField.tsx stays for history/reuse
+  assert.match(read("src/app/layout.tsx"), /<LegacyDecor \/>/);
+  assert.match(read("src/components/chrome/LegacyDecor.tsx"), /<PageMonolith \/>/);
+  assert.doesNotMatch(read("src/app/layout.tsx"), /<PageMonolith \/>/);
   const css = read("src/styles/field.css");
   assert.match(css, /\.pagefield[^}]*pointer-events: none/s);
   assert.match(css, /z-index: -1/);

@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Hulpbronne",
     "items": {
       "/features": "Alles in Keplar",
-      "/#demo": "Regstreekse demo",
+      "/": "Regstreekse demo",
       "/app/create": "Skep",
       "/docs": "Dokumentasie",
       "/pricing": "Pryse",

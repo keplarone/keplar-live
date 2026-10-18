@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Loharano",
     "items": {
       "/features": "Ny zava-drehetra ao amin'ny Keplar",
-      "/#demo": "Fampisehoana mivantana",
+      "/": "Fampisehoana mivantana",
       "/app/create": "Mamorona",
       "/docs": "Antontan-taratasy",
       "/pricing": "Vidiny",

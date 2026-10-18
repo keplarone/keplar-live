@@ -70,7 +70,7 @@ test("scene poses: one scene fully visible per act position, neighbours fly past
 
 test("every page family gets a variant; working screens get none", () => {
   const map: Record<string, VariantId | null> = {
-    "/": "home", "/about": "ridge", "/how-it-works": "beams", "/models": "network", "/pricing": "network", "/blogs": "calm", "/docs/x": null, "/privacy": "calm",
+    "/": null, "/overview": null, "/about": "ridge", "/how-it-works": "beams", "/models": "network", "/pricing": "network", "/blogs": "calm", "/docs/x": null, "/privacy": "calm",
     "/app": null, "/app/slides": null, "/app/create": null, "/create": null, "/admin/seo": null, "/account": null, "/sites/x": null,
   };
   for (const [p, v] of Object.entries(map)) assert.equal(variantFor(p), v, p);
@@ -87,17 +87,17 @@ test("wiring: lazy three, pauses when hidden, DPR cap, grey-only, no scroll hija
   const scene = readFileSync("src/field/monolith/scene.ts", "utf8");
   const gl = readFileSync("src/field/monolith/glsl.ts", "utf8");
   const canvas = readFileSync("src/components/monolith/MonolithCanvas.tsx", "utf8");
-  const home = readFileSync("src/components/home/MonolithHome.tsx", "utf8");
   const layout = readFileSync("src/app/layout.tsx", "utf8");
-  const page = readFileSync("src/app/(marketing)/page.tsx", "utf8");
+  const decor = readFileSync("src/components/chrome/LegacyDecor.tsx", "utf8");
+  const chat = readFileSync("src/app/(chat)/page.tsx", "utf8");
   assert.ok(/document\.hidden/.test(scene) && /visibilitychange/.test(scene), "pauses when the tab is hidden");
   assert.ok(/dprCap/.test(scene) && /forceContextLoss/.test(scene));
   assert.ok(/import\("@\/field\/monolith\/scene"\)/.test(canvas), "page scene is lazy-loaded");
-  assert.ok(/import\("@\/field\/monolith\/scene"\)/.test(home), "home planet scene is lazy-loaded");
-  assert.ok(/softwareRenderer\(\)/.test(canvas) && /softwareRenderer\(\)/.test(home) && /reducedMotion/.test(home), "CPU rendering and reduced motion fall back");
-  assert.ok(!/wheel|scrollTo|scrollBy|overflow:\s*hidden/.test(home + canvas), "never takes over scrolling");
-  // The 3D page layer stays in the layout (dark theme); the Oct 2026 light home no longer mounts MonolithHome.
-  assert.ok(/<PageMonolith \/>/.test(layout) && /<SkyHome /.test(page));
+  assert.ok(/softwareRenderer\(\)/.test(canvas) && /reducedMotion/.test(canvas), "CPU rendering and reduced motion fall back");
+  assert.ok(!/wheel|scrollTo|scrollBy|overflow:\s*hidden/.test(canvas), "never takes over scrolling");
+  // The 3D layer mounts only inside Space Studio. The chat home does not.
+  assert.ok(/<PageMonolith \/>/.test(decor) && /space-studio/.test(decor) && !/<PageMonolith \/>/.test(layout));
+  assert.ok(!/SkyHome|MonolithHome|field\/monolith/.test(chat));
   // colour is limited to the four star families (and the planets); no neon accents in the monolith shaders
   assert.ok(!/cyan|indigo|violet|purple|magenta/i.test(gl + scene), "no neon accents in the scene");
   assert.ok(/SPECTRAL/.test(scene) && /aCol/.test(gl), "constellation stars use the spectral palette");
@@ -189,8 +189,7 @@ test("logo: the real Keplar mark, extruded + bevelled, one non-indexed geometry 
   const scene = readFileSync("src/field/monolith/scene.ts", "utf8");
   assert.ok(/logoGeometry\(/.test(scene) && /LOGO_FRAG/.test(scene));
   assert.ok(!/BoxGeometry|EdgesGeometry|GLASS_FRAG|CORE_FRAG|HALO_FRAG/.test(scene), "the old glass monolith and blob are gone");
-  const home = readFileSync("src/components/home/MonolithHome.tsx", "utf8");
-  assert.ok(/KeplarSymbol/.test(home), "no-WebGL fallback shows the static logo");
+  assert.ok(/KeplarSymbol/.test(readFileSync("src/components/app-ui/KeplarApp.tsx", "utf8")), "the chat shows the static mark");
 });
 
 test("chapters: seven documented chapters, valid motifs, static under reduced motion, a DOM watcher and a scene API", async () => {
@@ -226,34 +225,22 @@ test("planets never change size on hover (no hover zoom / grow anywhere)", () =>
   assert.ok(!/focused \* 0\.28|focused \* 4|bestD/.test(space), "no pointer-driven focus scale or dolly");
 });
 
-test("home particles: one screen, real sentence, pauses when hidden, still word, no scroll hijack", () => {
-  const home = readFileSync("src/components/home/MonolithHome.tsx", "utf8");
-  const css = readFileSync("src/components/home/MonolithHome.module.css", "utf8");
+test("home is the chat: a real greeting, no three.js scene, no scroll hijack", () => {
+  const home = readFileSync("src/components/app-ui/ChatHome.tsx", "utf8");
   const scene = readFileSync("src/field/words/scene.ts", "utf8");
   const gl = readFileSync("src/field/words/glsl.ts", "utf8");
   const phrases = readFileSync("src/field/words/glyphs.ts", "utf8");
-  assert.ok(!/780svh/.test(css), "the hero is not a long scroll");
-  assert.ok(/\.sky \{[^}]*position: absolute[^}]*pointer-events: none[^}]*background: #0b0b0d/.test(css));
-  assert.ok(!/gradient\(/.test(css.match(/\.sky \{[^}]*\}/g)!.join("")));
-  assert.ok(/t\.lead/.test(home) && /placeholder=\{t\.ask\}/.test(home), "the sentence and the prompt are real text");
-  assert.ok(/variant: "home"/.test(home) && /field\/monolith\/scene/.test(home), "the hero draws the planet scene");
-  assert.ok(/setProgress\(p\)/.test(home) && /scroll/.test(home), "scroll drives the planet camera");
-  assert.ok(!/field\/words\/scene/.test(home), "the star field is not the home scene");
-  assert.ok(/still = caps\.reducedMotion/.test(home) && /opaque: sceneTheme === "dark"/.test(home) && /onThemeChange/.test(home));
+  assert.match(home, /How can Keplar help you today\?/);
+  assert.doesNotMatch(home, /field\/monolith|field\/words|SkyHome|MonolithHome|three/);
+  assert.doesNotMatch(home, /wheel|scrollTo|scrollBy/);
   assert.ok(/document\.hidden/.test(scene) && /visibilitychange/.test(scene) && /dprCap/.test(scene) && /forceContextLoss/.test(scene));
   assert.ok(/PHRASES\[0\]/.test(scene) && /KEPLAR/.test(phrases) && /ONE ANSWER/.test(phrases));
   assert.ok(!/cyan|indigo|violet|purple|magenta/i.test(gl + scene));
-  assert.ok(!/wheel|scrollTo|scrollBy/.test(home));
 });
 
-test("chapters stay readable over their own pages, and the monolith post pass stays clean", () => {
-  const css = readFileSync("src/components/home/MonolithHome.module.css", "utf8");
-  const chapters = readFileSync("src/components/landing/Chapters.module.css", "utf8");
+test("the monolith post pass stays clean", () => {
   const gl = readFileSync("src/field/monolith/glsl.ts", "utf8");
   const scene = readFileSync("src/field/monolith/scene.ts", "utf8");
-  assert.ok(/:global\(body\):has\(\.hero\) \{ background: var\(--c-canvas\); \}/.test(css), "body carries the theme background");
-  assert.ok(/\.canvas \{[^}]*object-fit: cover/.test(css), "pending resizes keep the aspect (cover), never stretch");
-  assert.ok(/html\[data-theme="light"\]\) \.chapters \{ background: var\(--c-canvas\); \}/.test(chapters) && /html:not\(\[data-theme="light"\]\)\) \.chapter :is/.test(chapters));
   const post = gl.slice(gl.indexOf("POST_FRAG"), gl.indexOf("LOGO_VERT"));
   assert.ok(!/sin\(uv\.y \* uRes\.y/.test(post) && !/uv\.x \* 10\.0/.test(post) && !/floor\(uv\.y \* 28\.0\)/.test(post), "no scan lines, vertical stripes or torn row slices");
   assert.ok(/samples: this\.o\.mobile \? 0 : 4/.test(scene) && !/vel \* 0\.35/.test(scene), "smooth logo through a cut, no scroll-speed glitch");

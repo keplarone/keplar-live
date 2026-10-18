@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Források",
     "items": {
       "/features": "Minden a Keplarban",
-      "/#demo": "Élő bemutató",
+      "/": "Élő bemutató",
       "/app/create": "Létrehozás",
       "/docs": "Dokumentáció",
       "/pricing": "Árak",

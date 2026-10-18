@@ -18,24 +18,20 @@ test("liquid glass: every glass surface has fallbacks (no backdrop-filter, reduc
   assert.match(caps, /id="lg-refract"/);
 });
 
-test("light (the day sky) is the default and Dark / Auto stay selectable", () => {
-  // Space UI decision (docs/design/space-ui.md): a bright cloud sky is the default look; Dark is the same system at dusk.
-  assert.match(read("src/lib/theme.ts"), /DEFAULT_THEME_PREF: ThemePref = "light"/);
+test("dark graphite is the default and Light / Auto stay selectable", () => {
+  assert.match(read("src/lib/theme.ts"), /DEFAULT_THEME_PREF: ThemePref = "dark"/);
   const ctl = read("src/components/theme/ThemeControl.tsx");
   for (const id of ["dark", "light", "auto"]) assert.match(ctl, new RegExp(`id: "${id}"`));
 });
 
-test("typing feel: text boxes are native, the hero box is uncontrolled and the undo-splitting write is guarded", () => {
-  const hero = read("src/components/home/OrbHero.tsx");
-  const prompt = hero.slice(hero.indexOf("function HeroPrompt"), hero.indexOf("export function OrbHero"));
-  assert.ok(!/\bvalue=\{/.test(prompt), "hero textarea must stay uncontrolled so React never rewrites it");
-  assert.match(prompt, /<textarea/);
+test("typing feel: the composer is a native box and the undo-splitting write is guarded", () => {
   const composer = read("src/components/app-ui/Composer.tsx");
   assert.ok(!/defaultValue=""/.test(composer), "composer must not re-sync defaultValue (splits native undo)");
   assert.match(composer, /field-sizing/);
   const feel = read("src/components/glass/TypingFeel.tsx");
   assert.match(feel, /HTMLTextAreaElement\.prototype/);
-  assert.match(read("src/app/layout.tsx"), /<TypingFeel \/>/);
+  assert.match(read("src/components/chrome/LegacyDecor.tsx"), /<TypingFeel \/>/);
+  assert.match(read("src/app/layout.tsx"), /<LegacyDecor \/>/);
   const g = read("src/styles/globals.css");
   assert.match(g, /caret-color/);
   assert.match(g, /::selection/);

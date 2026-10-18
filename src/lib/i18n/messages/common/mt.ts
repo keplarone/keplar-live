@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Riżorsi",
     "items": {
       "/features": "Kollox f'Keplar",
-      "/#demo": "Demo dirett",
+      "/": "Demo dirett",
       "/app/create": "Oħloq",
       "/docs": "Dokumentazzjoni",
       "/pricing": "Prezzijiet",

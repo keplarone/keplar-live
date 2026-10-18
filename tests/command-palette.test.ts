@@ -22,14 +22,14 @@ test("palette: every static destination is a real route in the tree", () => {
 
 test("palette: major features are all present (Create, live demo, gallery, changelog, API, Keplar Business)", () => {
   const hrefs = FEATURE_COMMANDS.map((c) => c.href);
-  for (const h of ["/app/create", "/app/ask", "/templates", "/changelog", "/developers", "https://business.keplar.one"]) assert.ok(hrefs.includes(h), h);
+  for (const h of ["/app/create", "/", "/templates", "/changelog", "/developers", "https://business.keplar.one"]) assert.ok(hrefs.includes(h), h);
 });
 
 test("palette ranking: label prefix first, keywords match, empty query keeps order, no dupes", () => {
   const all = staticCommands();
   assert.equal(rankCommands(all, "cre")[0].href, "/app/create");
   assert.ok(rankCommands(all, "api").some((c) => c.href === "/developers"));
-  assert.ok(rankCommands(all, "demo").some((c) => c.href === "/app/ask"));
+  assert.ok(rankCommands(all, "demo").some((c) => c.href === "/"));
   assert.equal(new Set(all.map((c) => c.href)).size, all.length);
   assert.deepEqual(rankCommands(all, "").slice(0, 3), all.slice(0, 3));
   assert.deepEqual(rankCommands(all, "zzzqqq"), []);

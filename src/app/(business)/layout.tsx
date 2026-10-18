@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { BUSINESS_ICONS, BUSINESS_MANIFEST_PATH } from "@/lib/business-site";
 import s from "@/components/business-site/business-site.module.css";
 import "@/components/business-site/tokens.css";
-import { SkyBackdrop } from "@/components/sky/SkyBackdrop";
 
 export const metadata: Metadata = {
   title: { default: "Keplar Business", template: "%s · Keplar Business" },
@@ -20,8 +19,6 @@ export const metadata: Metadata = {
 export default function BusinessLayout({ children }: { children: React.ReactNode }) {
   return (
     <main id="main" className={s.root} data-business="" data-kb="">
-      {/* Inside the isolated main, like the marketing layout: a z-index:-1 sky directly under <body> would paint below body's own background. */}
-      <SkyBackdrop />
       {children}
     </main>
   );

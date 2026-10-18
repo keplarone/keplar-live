@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Bronnen",
     "items": {
       "/features": "Alles in Keplar",
-      "/#demo": "Live demo",
+      "/": "Live demo",
       "/app/create": "Create",
       "/docs": "Documentatie",
       "/pricing": "Prijzen",
@@ -16,7 +16,7 @@ const m: CommonCatalog = {
     },
     "hints": {
       "/features": "Elke functie en of die al beschikbaar is",
-      "/#demo": "Stel nu een vraag, zonder account",
+      "/": "Stel nu een vraag, zonder account",
       "/app/create": "Beschrijf of spreek een site of app in"
     },
     "signIn": "Inloggen",
@@ -41,6 +41,7 @@ const m: CommonCatalog = {
       "Legal": "Juridisch"
     },
     "links": {
+      "/overview": "Wat Keplar is",
       "/features": "Alles in Keplar",
       "/how-it-works": "Hoe het werkt",
       "/showcase": "Create-showcase",

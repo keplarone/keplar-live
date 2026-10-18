@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Akụrụngwa",
     "items": {
       "/features": "Ihe niile dị na Keplar",
-      "/#demo": "Ngosipụta ozugbo",
+      "/": "Ngosipụta ozugbo",
       "/app/create": "Mepụta",
       "/docs": "Akwụkwọ nkọwa",
       "/pricing": "Ọnụahịa",

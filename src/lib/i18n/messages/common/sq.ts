@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Burime",
     "items": {
       "/features": "Gjithçka në Keplar",
-      "/#demo": "Demo e drejtpërdrejtë",
+      "/": "Demo e drejtpërdrejtë",
       "/app/create": "Krijo",
       "/docs": "Dokumentacion",
       "/pricing": "Çmimet",

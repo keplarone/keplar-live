@@ -1,0 +1,132 @@
+/*
+ * keplar.one graphite system. Dark by default, solid canvas, hairline edges, white and graphite only.
+ * Space Studio keeps its own look: these rules do not apply while [data-space-root] is on the page.
+ */
+
+html:not(:has([data-space-root])) {
+  --f-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --space-grad: none;
+  --space-focus-glow: none;
+  --sh-window: none;
+  --sh-float: none;
+  --nav-shadow: none;
+}
+
+html:not(:has([data-space-root]))[data-theme="dark"] {
+  --c-canvas: #212121;
+  --c-surface-1: #171717;
+  --c-surface-2: #2f2f2f;
+  --c-ink: #ececec;
+  --c-ink-2: #c5c5c5;
+  --c-ink-3: #9b9b9b;
+  --c-border: rgb(255 255 255 / 0.12);
+  --c-border-strong: rgb(255 255 255 / 0.22);
+  --c-accent: #ffffff;
+  --c-focus: #ffffff;
+  --ring-rgb: 255 255 255;
+  --c-ink-hover: #ffffff;
+  --rgb-ink: 236 236 236;
+  --rgb-canvas: 33 33 33;
+  --rgb-surface: 23 23 23;
+  --hairline: rgb(255 255 255 / 0.12);
+  --hairline-strong: rgb(255 255 255 / 0.22);
+  --space-void: #212121;
+  --space-p-face: #ececec;
+  --space-p-ink: #171717;
+  --space-p-depth: none;
+  --space-p-depth-hover: none;
+  --space-p-depth-press: none;
+  --space-s-face: #2f2f2f;
+  --space-s-ink: #ececec;
+  --space-s-depth: none;
+  --space-s-depth-hover: none;
+  --space-s-depth-press: none;
+  --space-glass: #2f2f2f;
+  --space-glass-solid: #212121;
+  --space-glass-depth: none;
+  --space-field: #2f2f2f;
+  --space-field-depth: none;
+  --space-field-focus: #2f2f2f;
+  --space-d-face: #b42318;
+  --space-d-depth: none;
+  --space-d-depth-hover: none;
+  --space-d-depth-press: none;
+  --ks-switch-on: #ececec;
+  --ks-switch-on-glow: none;
+  --ks-switch-thumb-on: #171717;
+  --ks-seg-thumb-depth: none;
+  --nav-fill: #171717;
+  --nav-ink: #ececec;
+  --nav-link: #c5c5c5;
+  --nav-hover-bg: rgb(255 255 255 / 0.06);
+  --surface-overlay: #2f2f2f;
+  --surface-raised: #2f2f2f;
+  --surface-panel: #171717;
+  background: #212121;
+  color-scheme: dark;
+}
+
+html:not(:has([data-space-root]))[data-theme="light"] {
+  --c-canvas: #ffffff;
+  --c-surface-1: #f7f7f8;
+  --c-surface-2: #ececec;
+  --c-ink: #0d0d0d;
+  --c-ink-2: #5d5d5d;
+  --c-ink-3: #6e6e6e;
+  --c-accent: #0d0d0d;
+  --c-focus: #0d0d0d;
+  --ring-rgb: 13 13 13;
+  --rgb-canvas: 255 255 255;
+  --rgb-ink: 13 13 13;
+  --rgb-surface: 247 247 248;
+  --hairline: rgb(0 0 0 / 0.1);
+  --hairline-strong: rgb(0 0 0 / 0.18);
+  --space-void: #ffffff;
+  --space-p-face: #0d0d0d;
+  --space-p-ink: #ffffff;
+  --space-p-depth: none;
+  --space-p-depth-hover: none;
+  --space-s-face: #ffffff;
+  --space-s-ink: #0d0d0d;
+  --space-s-depth: none;
+  --space-glass: #ffffff;
+  --space-glass-solid: #ffffff;
+  --space-glass-depth: none;
+  --space-focus-glow: none;
+  --space-grad: none;
+  --space-d-face: #b42318;
+  --space-d-depth: none;
+  --space-d-depth-hover: none;
+  --space-d-depth-press: none;
+  --ks-switch-on: #0d0d0d;
+  --ks-switch-on-glow: none;
+  --ks-switch-thumb-on: #ffffff;
+  --ks-seg-thumb-depth: none;
+  --nav-fill: #ffffff;
+  --nav-ink: #0d0d0d;
+  background: #ffffff;
+  color-scheme: light;
+}
+
+html:not(:has([data-space-root]))[data-theme] body {
+  background: var(--c-canvas);
+  color: var(--c-ink);
+  font-family: var(--f-sans);
+}
+
+html:not(:has([data-space-root])) :where(*, *::before, *::after) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html:not(:has([data-space-root])) :where(.sp-grad) {
+  background-image: none !important;
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+/* Marketing and app pages sit on the solid canvas. No sky, no aura wash. */
+html:not(:has([data-space-root])) [data-site-sky],
+html:not(:has([data-space-root])) [data-weather-sky] {
+  display: none !important;
+}

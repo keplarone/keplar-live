@@ -84,16 +84,17 @@ function paint(url: string, stored: string | null) {
   return attrs;
 }
 
-test("docs paint light with data-docs before first paint; the stored preference is kept and the main site uses the default (light: the day sky)", () => {
+test("docs follow the same theme as the rest of the site; no stored preference is dark, and data-docs is not set", () => {
   for (const url of ["https://keplar.one/docs", "https://keplar.one/docs/get-started/quickstart", "https://docs.keplar.one/", "https://docs.keplar.one/reference"]) {
     const a = paint(url, "dark");
-    assert.equal(a["data-theme"], "light", url);
-    assert.equal(a["data-docs"], "1", url);
+    assert.equal(a["data-theme"], "dark", url);
+    assert.equal(a["data-docs"], undefined, url);
     assert.equal(a["data-theme-pref"], "dark", `${url}: preference untouched`);
+    assert.equal(paint(url, "light")["data-theme"], "light", `${url}: a stored light choice stays light`);
   }
   for (const url of ["https://keplar.one/", "https://keplar.one/docsy", "https://keplar.one/pricing"]) {
     const a = paint(url, null);
-    assert.equal(a["data-theme"], "light", url); // Space UI: light (the cloud sky) is the default (docs/design/space-ui.md)
+    assert.equal(a["data-theme"], "dark", url);
     assert.equal(a["data-docs"], undefined, url);
   }
 });
@@ -114,6 +115,6 @@ test("docs theme: off-white canvas, teal accent, no gradients or blur in the the
     assert.ok(!(r - g > 30 && b - g > 30), `#${m[1]} reads purple`);
   }
   const layout = readFileSync("src/app/(marketing)/docs/layout.tsx", "utf8");
-  assert.match(layout, /docs-theme\.css/);
+  assert.doesNotMatch(layout, /docs-theme\.css/, "docs use the site graphite theme, not the old paper skin");
   assert.match(readFileSync("src/app/(marketing)/docs/icon.svg", "utf8"), /#0B57D0/i);
 });

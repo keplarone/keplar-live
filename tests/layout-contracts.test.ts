@@ -63,12 +63,10 @@ test("app: the composer dock floats as an overlay over the thread; one-row grid 
   assert.match(app, /ref=\{dockRef\}\s+className=\{s\.dock\}/);
 });
 
-test("home hero: type and spacing follow the viewport height, short windows scroll the hero instead of clipping it", () => {
-  const css = read("src/components/home/FieldHome.module.css");
-  assert.match(css, /\.h1 \{[^}]*min\(6\.4vw, 8\.6vh\)/);
-  assert.match(css, /justify-content: safe center/);
-  assert.match(css, /overflow-y: auto/);
-  assert.match(css, /@media \(max-height: 960px\)/);
+test("chat home: the greeting is a normal heading and the page is not a locked viewport", () => {
+  const css = read("src/components/app-ui/ChatHome.module.css");
+  assert.match(css, /\.h1 \{[^}]*font-size:/);
+  assert.doesNotMatch(css, /100svh|780svh/);
 });
 
 test("layout regression check exists and covers the viewports in question", () => {

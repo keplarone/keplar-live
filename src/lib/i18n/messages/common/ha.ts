@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Albarkatu",
     "items": {
       "/features": "Komai a cikin Keplar",
-      "/#demo": "Nunin kai tsaye",
+      "/": "Nunin kai tsaye",
       "/app/create": "Ƙirƙira",
       "/docs": "Takardun bayani",
       "/pricing": "Farashi",

@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "Izixhobo",
     "items": {
       "/features": "Yonke into eku-Keplar",
-      "/#demo": "Umboniso ophilayo",
+      "/": "Umboniso ophilayo",
       "/app/create": "Yila",
       "/docs": "Amaxwebhu",
       "/pricing": "Amaxabiso",

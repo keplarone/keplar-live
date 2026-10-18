@@ -110,10 +110,8 @@ test("legacy resolveQuality still answers off/static, but no live surface uses i
   assert.equal(resolveQuality("immersive", { ...base, deviceMemoryGb: 2 }), "static");
   assert.equal(resolveQuality("immersive", base), "high");
   assert.equal(resolveQuality("immersive", { ...base, mobile: true }), "medium");
-  const src = readFileSync("src/components/home/FieldHome.tsx", "utf8");
-  assert.doesNotMatch(src, /quality === "off" \|\| quality === "static"/);
-  assert.match(src, /resolveTier/);
-  assert.ok(!/from "three"/.test(src), "FieldHome must not import three statically");
+  const src = readFileSync("src/components/app-ui/ChatHome.tsx", "utf8");
+  assert.doesNotMatch(src, /resolveQuality|from "three"|FieldHome/);
 });
 
 import { resolveTier } from "../src/lib/spatial/policy";
@@ -153,7 +151,7 @@ test("the live field has no hold-still-while-typing path, recovers from context 
     assert.match(src, /webglcontextrestored/);
   }
   assert.match(readFileSync("src/field/debug.ts", "utf8"), /fxdebug/);
-  for (const f of ["src/components/field/PageField.tsx", "src/components/home/FieldHome.tsx"]) {
+  for (const f of ["src/components/field/PageField.tsx"]) {
     const c = readFileSync(f, "utf8");
     assert.match(c, /resolveTier/);
     assert.match(c, /fxDebug/);

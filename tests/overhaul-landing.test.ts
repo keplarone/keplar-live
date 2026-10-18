@@ -17,7 +17,8 @@ const page = (route: string) => {
   const biz = /^https:\/\/business\.keplar\.one(\/[^#?]*)?/.exec(route);
   if (biz) return page(`/biz${biz[1] && biz[1] !== "/" ? biz[1] : ""}`.replace(/^\/biz$/, "/biz/"));
   const p = route.split("#")[0].split("?")[0];
-  if (p === "/") return "src/app/(marketing)/page.tsx";
+  if (p === "/") return "src/app/(chat)/page.tsx";
+  if (p === "/overview") return "src/app/(marketing)/overview/page.tsx";
   if (p === "/biz/") return existsSync("src/app/(business)/biz/page.tsx") ? "src/app/(business)/biz/page.tsx" : null;
   for (const base of [`src/app/(marketing)${p}/page.tsx`, `src/app${p}/page.tsx`]) if (existsSync(base)) return base;
   return null;
@@ -35,23 +36,21 @@ test("features: seven chapters in the landing order, unique ids, every live/beta
   }
 });
 
-test("features: no certification or invented proof anywhere in the registry or landing", () => {
-  const text = [JSON.stringify(CHAPTERS), readFileSync("src/components/landing/Chapters.tsx", "utf8"), readFileSync("src/components/landing/LiveDemo.tsx", "utf8")].join(" ");
+test("features: no certification or invented proof anywhere in the registry or the overview", () => {
+  const text = [JSON.stringify(CHAPTERS), readFileSync("src/components/marketing/CalmOverview.tsx", "utf8"), readFileSync("src/lib/features.ts", "utf8")].join(" ");
   assert.doesNotMatch(text, /SOC ?2|ISO ?27001|HIPAA|GDPR[- ]certified|trusted by|\d[\d,]* (users|customers|teams)\b|supercharge|unlock|seamless|revolutioni[sz]e|powered by AI/i);
-  { /* the credit now lives in the locale catalogs (names untranslated in every language); Chapters reads it from there */
-    assert.match(readFileSync("src/components/landing/Chapters.tsx", "utf8"), /credit: common\.credit/);
-    assert.match(readFileSync("src/lib/i18n/messages/common/en.ts", "utf8"), /credit: "Hassen and Hussain Keder"/);
-    for (const f of readdirSync("src/lib/i18n/messages/common")) { const c = readFileSync(`src/lib/i18n/messages/common/${f}`, "utf8"); const credit = /"?credit"?: "([^"]*)"/.exec(c)?.[1] ?? ""; assert.match(credit, /Hassen/, f); assert.match(credit, /Hussain Keder/, f); assert.doesNotMatch(credit, /Keplar|\d/, f); } };
+  assert.match(readFileSync("src/lib/i18n/messages/common/en.ts", "utf8"), /credit: "Hassen and Hussain Keder"/);
+  for (const f of readdirSync("src/lib/i18n/messages/common")) { const c = readFileSync(`src/lib/i18n/messages/common/${f}`, "utf8"); const credit = /"?credit"?: "([^"]*)"/.exec(c)?.[1] ?? ""; assert.match(credit, /Hassen/, f); assert.match(credit, /Hussain Keder/, f); assert.doesNotMatch(credit, /Keplar|\d/, f); }
 });
 
-test("landing: chapters carry data-chapter for the space scene; single bold CTA text", () => {
-  const ch = readFileSync("src/components/landing/Chapters.tsx", "utf8");
-  assert.match(ch, /data-chapter=\{ask\.id\}/);
-  assert.match(ch, /data-chapter=\{c\.id\}/);
-  assert.match(ch, /tryText=\{ch\.closeCta\}/); assert.match(readFileSync("src/lib/i18n/messages/marketing/en.ts", "utf8"), /closeCta: "Ask Keplar anything"/);
-  assert.match(readFileSync("src/components/home/MonolithHome.tsx", "utf8"), /\{t\.ask\}/); assert.match(readFileSync("src/lib/narrative.ts", "utf8"), /primary: "Ask Keplar anything"/);
-  // The Oct 2026 home (src/components/sky) lists the chapters as a hover list instead of the space-scene story.
-  assert.match(readFileSync("src/components/sky/SkyHome.tsx", "utf8"), /<FeatureList rows=\{chapters/);
+test("overview is a calm page; the chat at / is the way in", () => {
+  const overview = readFileSync("src/components/marketing/CalmOverview.tsx", "utf8");
+  assert.match(overview, /Several models\. One answer\./);
+  assert.match(overview, /href="\/"/);
+  assert.doesNotMatch(overview, /SkyHome|MonolithHome|data-chapter|OpenAI|Anthropic|Claude|Gemini/);
+  assert.match(readFileSync("src/lib/narrative.ts", "utf8"), /primary: "Ask Keplar anything"/);
+  assert.match(readFileSync("src/app/(chat)/page.tsx", "utf8"), /ChatHome/);
+  assert.match(readFileSync("src/lib/i18n/messages/marketing/en.ts", "utf8"), /closeCta: "Ask Keplar anything"/);
 });
 
 test("nav, footer and sitemap reach the new pages", () => {

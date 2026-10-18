@@ -5,11 +5,11 @@
  */
 import type { View } from "./state/types";
 
-export const APP_HOME = "/app/ask";
+export const APP_HOME = "/";
 
-/** Path for every View. Ask is /app/ask (not bare /app). */
+/** Path for every View. Ask is the site root. /app/ask still resolves to Ask for older links. */
 export const VIEW_PATH: Record<View, string> = {
-  thread: "/app/ask",
+  thread: "/",
   create: "/app/create",
   projects: "/app/projects",
   agents: "/app/agents",
@@ -29,16 +29,16 @@ export function pathForView(view: View): string {
   return VIEW_PATH[view];
 }
 
-/** Resolve a pathname to a View. Bare /app and /app/ mean Ask (after the redirect). Unknown → null. */
+/** Resolve a pathname to a View. /, /app and /app/ask mean Ask. Unknown → null. */
 export function viewForPath(pathname: string): View | null {
   const p = pathname.replace(/\/+$/, "") || "/";
-  if (p === "/app") return "thread";
+  if (p === "/" || p === "/app" || p === "/app/ask") return "thread";
   return BY_PATH.get(p) ?? null;
 }
 
 export function isAppPath(pathname: string): boolean {
   const p = pathname.replace(/\/+$/, "") || "/";
-  return p === "/app" || p.startsWith("/app/");
+  return p === "/" || p === "/app" || p.startsWith("/app/");
 }
 
 /**

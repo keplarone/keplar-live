@@ -8,7 +8,7 @@ const m: CommonCatalog = {
     "resources": "سەرچاوەکان",
     "items": {
       "/features": "هەموو شتێک لە Keplar",
-      "/#demo": "نمایشی ڕاستەوخۆ",
+      "/": "نمایشی ڕاستەوخۆ",
       "/app/create": "دروستکردن",
       "/docs": "بەڵگەنامەکان",
       "/pricing": "نرخەکان",

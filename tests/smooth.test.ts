@@ -52,6 +52,8 @@ test("wiring: visual only, never hides the real cursor, never touches the input 
   assert.match(css, /\[data-sc\] \{ caret-color: transparent; \}/);
   assert.match(css, /prefers-reduced-motion: reduce\)[^{]*\{ \.smooth-caret \{ display: none; \}/);
   assert.match(readFileSync("src/components/app-ui/Markdown.module.css", "utf8"), /@media \(prefers-reduced-motion: reduce\) \{ \.w \{ animation: none; \} \}/);
-  assert.match(readFileSync("src/app/layout.tsx", "utf8"), /<SmoothCaret \/>/);
+  assert.match(readFileSync("src/components/chrome/LegacyDecor.tsx", "utf8"), /<SmoothCaret \/>/);
+  assert.match(readFileSync("src/components/chrome/LegacyDecor.tsx", "utf8"), /space-studio/);
+  assert.ok(!/<SmoothCaret \/>/.test(readFileSync("src/app/layout.tsx", "utf8")));
   assert.ok(!/PointerFollower/.test(readFileSync("src/app/layout.tsx", "utf8")));
 });

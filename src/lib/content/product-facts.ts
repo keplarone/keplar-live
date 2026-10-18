@@ -45,7 +45,7 @@ export const FACT_SECTIONS: FactSection[] = [
       { name: "Deep Research", what: "Longer, multi-step research into a report for big decisions. Uses more of your monthly usage.", plans: "Plus and Pro" },
       { name: "Debate mode", what: "The models argue in rounds and read each other's points before Keplar writes one answer. Uses more usage.", feature: "debate" },
       { name: "Voice and Talk", what: "Ask out loud and hear the answer read back; press and hold to talk. Keplar does not record or store your audio.", feature: "voice" },
-      { name: "Live demo", what: "Ask a real question on the home page without an account.", plans: "No account needed", feature: "demo", href: "/#demo" },
+      { name: "Live demo", what: "Ask a real question on the home page without an account.", plans: "No account needed", feature: "demo", href: "/" },
       { name: "Shared answers", what: "Publish an answer you are proud of to a public page that shows the question, how many models agreed and where they differed.", plans: "Signed-in users", href: "/answers" },
       { name: "Web lookups", what: "Live web search inside answers. Shown in the app but not switched on yet.", plans: "Paid plans when live", status: "soon" },
     ],
