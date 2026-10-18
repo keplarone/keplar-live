@@ -234,6 +234,8 @@ function MarkdownImpl({ source, streaming, caret, cite }: { source: string; stre
           case "hr":
             return <hr key={k} className={s.hr} />;
           case "code":
+            // The structured view is rendered beside the prose. A leaked or half-written fence is never shown as code.
+            if (b.lang === "keplar-ui") return null;
             return <CodeBlock key={k} code={b.code} lang={b.lang} streaming={streaming && b.open} />;
           case "table":
             return (

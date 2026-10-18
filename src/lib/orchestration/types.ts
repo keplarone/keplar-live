@@ -8,6 +8,7 @@
  */
 
 import type { ImageInput, MediaInput } from "./media";
+import type { RichAnswer } from "@/lib/rich-answer/types";
 
 /* ───────────────────────────── catalog ───────────────────────────── */
 
@@ -617,8 +618,14 @@ export type KeplarAnswer = {
   id: string;
   /** Casual chat answered by one free model: the UI shows a plain reply with no comparison panel. */
   smalltalk?: boolean;
-  /** Markdown. */
+  /** Markdown. A complete answer on its own. */
   markdown: string;
+  /**
+   * Optional structured view (ranking, comparison, timeline, steps, and so on).
+   * Absent when the synthesis didn't emit a valid block. Agreement figures and
+   * per-item quotes on it come from the real responses, not from the model JSON.
+   */
+  rich?: RichAnswer;
   consensus: {
     level: ConsensusLevel;
     score: number | null;

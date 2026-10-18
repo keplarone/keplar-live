@@ -100,7 +100,7 @@ export class MergedFreeReview {
         model: this.model,
         prompt: `Question:\n${req.prompt}${textOnlyMediaNote(req.media)}\n\nResponses:\n${body}`,
         classification,
-        params: { reasoningOff: true, maxOutputTokens: guide ? 4800 : 1800 },
+        params: { reasoningOff: true, maxOutputTokens: guide ? 5600 : 2400 },
         tier: req.routing?.tier,
         slot: "verifier",
         system: `${MERGED_SYSTEM_PROMPT}${guide ? `\n${GUIDE_SYNTH_RULES}` : ""}\n\n${identityPrompt()}\n\n${VOICE_PROMPT}\n\n${HUMAN_TONE_PROMPT}`,

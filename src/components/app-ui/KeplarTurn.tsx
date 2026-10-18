@@ -15,6 +15,7 @@ import { ListenButton } from "./ListenButton";
 import { Button, Icon, IconButton, Tooltip } from "@/components/kit";
 import la from "./link-action.module.css";
 import { Markdown } from "./Markdown";
+import { StructuredAnswer } from "./rich/StructuredAnswer";
 import { ToolUses } from "./ToolUses";
 import { ClarifyChips, DetailsBody, quietIds, reasoningMeta, UsingMemory } from "./AnswerExtras";
 import { ShareAnswer } from "./ShareAnswer";
@@ -182,7 +183,7 @@ export function KeplarTurn({ message: m, onRetry, onRefreshResearch, onSignal, o
           {/* A panel's first words are one model's early draft (early-stream.ts): say so, so the checked answer replacing it is no surprise. */}
           {running && m.mode === "consensus" && !m.answer ? <p className={s.draftNote} role="status" data-early-note="">Early draft from the first model to answer. Keplar is checking it with the others; the final answer will replace it.</p> : null}
           {m.answer?.research ? <ResearchHead research={m.answer.research} /> : null}
-          <Markdown source={tw.text} streaming caret cite={citeRenderer(m.answer ? m.answer.research?.sources : m.research?.sources)} />
+          <StructuredAnswer source={tw.text} streaming caret cite={citeRenderer(m.answer ? m.answer.research?.sources : m.research?.sources)} rich={m.answer?.rich} consensus={m.answer?.consensus} />
           <TypingBar text={fullText} />
         </article>
       ) : null}
@@ -829,7 +830,7 @@ function Answer({ answer: a, onRetry, onRefreshResearch, onSignal, isLast, conti
       </header>
 
       {a.research ? <ResearchHead research={a.research} /> : null}
-      <Markdown source={a.markdown} cite={citeRenderer(a.research?.sources)} />
+      <StructuredAnswer source={a.markdown} cite={citeRenderer(a.research?.sources)} rich={a.rich} consensus={a.consensus} />
 
       {modelStatus.missing.length && c.level !== "single" ? (
         <p className={s.missingNote} role="note" data-missing-models={modelStatus.missing.length}>
