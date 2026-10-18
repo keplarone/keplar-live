@@ -300,3 +300,14 @@
     margin-top: var(--s-10);
   }
 }
+
+/* Calm plan cards: a solid surface and a 1px edge. The page sky stays behind them. */
+.plan,
+.plan:hover,
+.plan[data-plan="plus"],
+.plan[data-plan="plus"]:hover {
+  background: var(--c-surface-1);
+  border: 1px solid var(--hairline);
+  box-shadow: none;
+  transform: none;
+}
