@@ -68,6 +68,13 @@
   white-space: nowrap;
 }
 
+.note {
+  margin: 0;
+  color: var(--c-ink-2);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
 .track {
   height: 2px;
   background: var(--hairline-strong);

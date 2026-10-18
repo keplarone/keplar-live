@@ -6,9 +6,10 @@
 import { blendedPrice } from "@/lib/orchestration/pricing";
 import { FREE_FALLBACK_ORDER, freeRoster, liveRoster } from "@/lib/orchestration/live-catalog";
 import type { ModelSpec } from "@/lib/orchestration/types";
+import { cleanLimited } from "./fill";
 import { parseMarkdownQuiz } from "./markdown";
-import { parseQuiz } from "./schema";
-import type { Quiz, QuizAsk } from "./types";
+import { extractJson, parseQuiz } from "./schema";
+import type { Quiz, QuizAsk, QuizQuestion } from "./types";
 
 const order = new Map(FREE_FALLBACK_ORDER.map((id, i) => [id, i]));
 
@@ -37,8 +38,42 @@ export const QUIZ_REPAIR_SYSTEM = `You repair a quiz into JSON and nothing else.
 - multiple_choice has exactly 4 options. answer is the correct option's full text, not a letter.
 - true_false uses options ["True","False"].
 - explanation is one or two sentences copied from the source, at least eight characters.
-- Use only facts in the source. If the draft's answer contradicts the source, fix it from the source.
-- Keep the draft's questions. Do not add a question that is in neither the draft nor the source.`;
+- Write exactly the requested number of questions when the source contains that many distinct facts.
+- Use only facts in the source. Never invent a name, number, date, or definition. If the draft's answer contradicts the source, fix it from the source.
+- If the source does not contain that many distinct facts, write only the ones it supports and set "limited" to one sentence saying so. Otherwise omit limited.`;
+
+export const QUIZ_TOPUP_SYSTEM = `You add quiz questions as JSON and nothing else. Reply with one JSON object. No markdown, no code fence, no prose.
+{"questions":[{"id":"q1","type":"multiple_choice","prompt":"...","options":["...","...","...","..."],"answer":"...","explanation":"..."}]}
+- Write exactly the number of NEW questions requested. For flashcards, type is short_answer, options are omitted, the prompt is the term, and the answer is the definition.
+- multiple_choice has exactly 4 options. answer is the correct option's full text, copied from the source, not a letter.
+- explanation is one or two sentences copied from the source, at least eight characters.
+- Use only facts stated in the source. Never invent a name, number, date, or definition.
+- Do not repeat a prompt listed under Already asked.
+- If the source does not contain enough distinct facts for that many new questions, return only the ones it supports and set "limited" to one sentence saying the source does not cover more. Otherwise omit limited.`;
+
+export function quizTopUpUser(source: string, existing: string[], need: number, kind: QuizAsk["kind"]): string {
+  const asked = existing.map((p, i) => `${i + 1}. ${p}`).join("\n") || "(none)";
+  return `Kind: ${kind === "flashcards" ? "flashcards" : "quiz"}
+New questions needed: ${need}
+
+Source:
+${source.slice(0, 6000)}
+
+Already asked:
+${asked.slice(0, 4000)}`;
+}
+
+/** The optional one-line limit the repair or top-up model reported. */
+export function readQuizLimited(text: string): string | null {
+  const json = extractJson(text);
+  if (!json || typeof json !== "object") return null;
+  const limited = (json as { limited?: unknown }).limited;
+  return typeof limited === "string" ? cleanLimited(limited) : null;
+}
+
+export function questionsFromModel(text: string, kind: QuizAsk["kind"]): QuizQuestion[] {
+  return (parseQuiz(text, kind) ?? parseMarkdownQuiz(text, kind))?.questions ?? [];
+}
 
 export function quizRepairUser(source: string, draft: string, ask: QuizAsk): string {
   const kind = ask.kind === "flashcards" ? "flashcards" : "quiz";

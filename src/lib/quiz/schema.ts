@@ -33,15 +33,19 @@ function questionType(raw: string): QuizQuestionType | null {
   return null;
 }
 
+/** "B", "B.", or "B. the option text" maps onto that option. A letter plus different text does not. */
 function resolveChoice(answer: string, options: string[]): string | null {
   const exact = options.find((o) => o.toLowerCase() === answer.toLowerCase());
   if (exact) return exact;
-  const letter = /^([a-f])(?:\s*[.)]|\s|$)/i.exec(answer.trim());
-  if (letter && answer.trim().length <= 3) {
-    const i = letter[1].toLowerCase().charCodeAt(0) - 97;
-    return options[i] ?? null;
-  }
-  if (/^[1-6]$/.test(answer.trim())) return options[Number(answer.trim()) - 1] ?? null;
+  const trimmed = answer.trim();
+  const num = /^([1-6])\b/.exec(trimmed);
+  const letter = /^([a-f])\b/i.exec(trimmed);
+  const index = num ? Number(num[1]) - 1 : letter ? letter[1]!.toLowerCase().charCodeAt(0) - 97 : -1;
+  if (index < 0) return null;
+  const opt = options[index];
+  if (!opt) return null;
+  const rest = trimmed.replace(/^[a-f1-6]\s*[.)]?\s*/i, "").trim();
+  if (!rest || rest.toLowerCase() === opt.toLowerCase()) return opt;
   return null;
 }
 
@@ -75,6 +79,53 @@ function asQuestion(v: unknown, n: number): QuizQuestion | null {
   if (!answer) return null;
   const q: QuizQuestion = { id, type, prompt, options, answer, explanation, ...(hint ? { hint } : {}) };
   return questionSchema.safeParse(q).success ? q : null;
+}
+
+function readObject(raw: string, at: number): string | null {
+  if (raw[at] !== "{") return null;
+  let depth = 0;
+  let str = false;
+  let esc = false;
+  for (let k = at; k < raw.length; k++) {
+    const c = raw[k];
+    if (str) {
+      if (esc) esc = false;
+      else if (c === "\\") esc = true;
+      else if (c === '"') str = false;
+      continue;
+    }
+    if (c === '"') str = true;
+    else if (c === "{") depth++;
+    else if (c === "}") {
+      depth--;
+      if (depth === 0) return raw.slice(at, k + 1);
+    }
+  }
+  return null;
+}
+
+/** Complete question objects from a fence the model stopped writing mid-way. */
+function salvageQuestionValues(raw: string): unknown[] {
+  const out: unknown[] = [];
+  let i = 0;
+  while (i < raw.length && out.length < 20) {
+    const at = raw.indexOf("{", i);
+    if (at < 0) break;
+    const slice = readObject(raw, at);
+    if (!slice) {
+      i = at + 1;
+      continue;
+    }
+    i = at + slice.length;
+    if (!/"prompt"|"question"/.test(slice)) continue;
+    try {
+      const v = JSON.parse(slice.replace(/,\s*([}\]])/g, "$1")) as unknown;
+      if (v && typeof v === "object") out.push(v);
+    } catch {
+      /* a broken object is skipped; the ones around it still count */
+    }
+  }
+  return out;
 }
 
 /** Pull a JSON value out of a fence body. Trailing commas are tolerated; anything else is rejected. */
@@ -119,10 +170,11 @@ export function extractJson(raw: string): unknown {
  */
 export function parseQuiz(raw: string, kind: "quiz" | "flashcards" = "quiz"): Quiz | null {
   const json = extractJson(raw);
-  if (!json || typeof json !== "object") return null;
-  const o = json as Record<string, unknown>;
-  const list = Array.isArray(o.questions) ? o.questions : Array.isArray(json) ? (json as unknown[]) : null;
-  if (!list) return null;
+  const salvaged = json ? [] : salvageQuestionValues(raw);
+  if ((!json || typeof json !== "object") && !salvaged.length) return null;
+  const o = json && typeof json === "object" ? (json as Record<string, unknown>) : {};
+  const list = Array.isArray(o.questions) ? o.questions : Array.isArray(json) ? (json as unknown[]) : salvaged;
+  if (!list?.length) return null;
   const seen = new Set<string>();
   const questions: QuizQuestion[] = [];
   for (const item of list.slice(0, 20)) {
@@ -134,7 +186,9 @@ export function parseQuiz(raw: string, kind: "quiz" | "flashcards" = "quiz"): Qu
     questions.push({ ...q, id });
   }
   if (!questions.length) return null;
-  const title = clean(typeof o.title === "string" ? o.title : "", 140) || (kind === "flashcards" ? "Flashcards" : "Quiz");
+  const titled = /"title"\s*:\s*"((?:[^"\\]|\\.){1,140})"/.exec(raw);
+  const fromRaw = titled ? clean(titled[1]!.replace(/\\"/g, '"'), 140) : "";
+  const title = clean(typeof o.title === "string" ? o.title : "", 140) || fromRaw || (kind === "flashcards" ? "Flashcards" : "Quiz");
   const source = clean(typeof o.source === "string" ? o.source : "", 200);
   const stated = o.kind === "flashcards" || o.kind === "quiz" ? o.kind : kind;
   const quiz = { title, ...(source ? { source } : {}), kind: stated, questions };

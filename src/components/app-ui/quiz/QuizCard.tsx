@@ -26,6 +26,11 @@ function feedbackBody(q: QuizQuestion, correct: boolean): string {
   return `The answer is ${answerLead(q)}. ${why}`;
 }
 
+function Shortfall({ note }: { note?: string }) {
+  if (!note) return null;
+  return <p className={s.note}>{note}</p>;
+}
+
 function questionsOf(quiz: Quiz, progress: QuizProgress): QuizQuestion[] {
   const ids = progress.order ?? quiz.questions.map((q) => q.id);
   return ids.map((id) => quiz.questions.find((q) => q.id === id)).filter((q): q is QuizQuestion => Boolean(q));
@@ -160,6 +165,7 @@ function QuizRun({
           <p className={s.count}>{index + 1} of {n}</p>
           {quiz.source ? <p className={s.source}>{quiz.source}</p> : null}
         </div>
+        <Shortfall note={quiz.note} />
         <div className={s.track} role="progressbar" aria-valuemin={1} aria-valuemax={n} aria-valuenow={index + 1} aria-label={`Question ${index + 1} of ${n}`}>
           <span style={{ width: `${((index + 1) / n) * 100}%` }} />
         </div>
@@ -243,6 +249,7 @@ function Score({
       <h3 id={scoreId} ref={head} className={s.score} tabIndex={-1}>
         You got {right.length} of {questions.length}
       </h3>
+      <Shortfall note={quiz.note} />
       {missed.length ? (
         <ul className={s.missed} aria-label="Missed questions">
           {missed.map((q) => (
@@ -318,6 +325,7 @@ function Flashcards({
           <p className={s.count}>{index + 1} of {n}</p>
           {quiz.source ? <p className={s.source}>{quiz.source}</p> : null}
         </div>
+        <Shortfall note={quiz.note} />
         <div className={s.track} role="progressbar" aria-valuemin={1} aria-valuemax={n} aria-valuenow={index + 1} aria-label={`Card ${index + 1} of ${n}`}>
           <span style={{ width: `${((index + 1) / n) * 100}%` }} />
         </div>

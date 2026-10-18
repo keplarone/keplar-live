@@ -196,8 +196,8 @@ const LIVE_COMPLEX_PANEL_PARAMS: GenerationParams = { reasoningEffort: "medium",
 /** A how-to guide (answer-shape.ts): room for every step, check and fix (a full guide runs 500 to 1,500 words), and enough thinking to get the order right. */
 const GUIDE_BUDGET_MS = 120_000;
 const GUIDE_PANEL_PARAMS: GenerationParams = { reasoningEffort: "medium", maxOutputTokens: 3600 };
-/** A quiz: room for ten questions with explanations, still one panel call. */
-const QUIZ_PANEL_PARAMS: GenerationParams = { reasoningEffort: "low", maxOutputTokens: 2800 };
+/** Ten questions, four options, and a short explanation each. One panel call. */
+const QUIZ_PANEL_PARAMS: GenerationParams = { reasoningEffort: "low", maxOutputTokens: 4800 };
 export const livePanelParams = (c: Classification, reason?: boolean, guide?: boolean) => (guide ? (reason ? { ...GUIDE_PANEL_PARAMS, maxOutputTokens: 4200 } : GUIDE_PANEL_PARAMS) : reason ? REASON_PANEL_PARAMS : c.complexity === "complex" ? LIVE_COMPLEX_PANEL_PARAMS : LIVE_PANEL_PARAMS);
 
 function paramsFor(slot: "panel" | "verifier" | "judge", index: number): GenerationParams {
