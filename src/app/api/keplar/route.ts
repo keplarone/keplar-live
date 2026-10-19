@@ -489,9 +489,10 @@ export async function POST(request: Request) {
     else {
       // Three independent reads in parallel (PERF-8): this period's usage, the rolling window, and bought extension credits
       // (limit_extensions, which add to what is left once the allowance or a window runs out; the per-request cap still applies).
-      const [usedNow, room, extra] = await Promise.all([usedThisPeriod(ws), windowRoom(ws), ws.admin || !canBuyExtension(ws.plan) ? 0 : extensionBalance(ws.id)]);
-      const monthly = Math.max(0, ws.entitlements.monthlyUnits - usedNow - (gate ? inflight(gate.wsKey).units : 0));
-      const inflightUnits = gate ? inflight(gate.wsKey).units : 0;
+      // Credits held by this account's other running answers: this instance's count, or every instance's (shared slots), whichever is larger.
+      const [usedNow, room, extra, shared] = await Promise.all([usedThisPeriod(ws), windowRoom(ws), ws.admin || !canBuyExtension(ws.plan) ? 0 : extensionBalance(ws.id), gate ? gate.reservedElsewhere() : 0]);
+      const inflightUnits = Math.max(gate ? inflight(gate.wsKey).units : 0, shared);
+      const monthly = Math.max(0, ws.entitlements.monthlyUnits - usedNow - inflightUnits);
       const windowLeft = Math.max(0, room.remaining - inflightUnits);
       if (room.binding && windowLeft < monthly) windowBound = room.binding;
       req.computeRemaining = Math.min(monthly, windowLeft) + extra;
@@ -617,7 +618,7 @@ export async function POST(request: Request) {
         }
         await warmLearning();
         for await (let event of memoryReply !== null ? runCreator(undefined, memoryReply, extra) : creator || !deps ? runCreator() : runCore(req, deps, abort.signal, coreRunOpts({ ws, req, askedPrompt, noPersonal, defer: (p) => { try { after(p); } catch { /* outside a request scope */ } } }))) {
-          if (!releaseReserved && run.plannedUnits > 0 && gate && !smallTalk) releaseReserved = reserveUnits(gate.wsKey, run.plannedUnits);
+          if (!releaseReserved && run.plannedUnits > 0 && gate && !smallTalk) { releaseReserved = reserveUnits(gate.wsKey, run.plannedUnits); gate.holdUnits(run.plannedUnits); }
           // Final-empty path: an "answer" with no text or no responding model is a no-response run, not an answer. Not charged.
           if (event.type === "answer" && !smallTalk && isEmptyAnswer(event.answer)) {
             run.noResponse = true;
