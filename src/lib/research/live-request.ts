@@ -73,7 +73,7 @@ export function liveResearchFrom(v: unknown): LiveResearchInput | undefined {
   if (!runId || !depth || typeof o.brief !== "string" || o.brief.length > LIVE_BRIEF_INPUT_MAX) return undefined;
   const raw = o.brief.trim();
   if (!raw.startsWith("<research_brief") || !raw.endsWith("</research_brief>")) return undefined;
-  const brief = clampLiveBrief(raw, LIVE_BRIEF_MAX).brief;
+  const brief = sealLiveBrief(clampLiveBrief(raw, LIVE_BRIEF_MAX).brief);
   const inBrief = briefNumbers(brief);
   if (!inBrief.size) return undefined;
   const seen = new Set<number>();
@@ -97,6 +97,22 @@ export function liveResearchFrom(v: unknown): LiveResearchInput | undefined {
   if (!sources.length) return undefined;
   const queries = (Array.isArray(o.queries) ? o.queries.slice(0, MAX_QUERIES * 2) : []).map((q) => clean(q, 200)).filter(Boolean).slice(0, MAX_QUERIES);
   return { runId, depth, brief, queries, sources: sources.sort((a, b) => a.n - b.n), webSearch: o.webSearch === true };
+}
+
+const FENCE_OPEN = "<research_brief";
+const FENCE_CLOSE = "</research_brief>";
+
+/**
+ * Neutralises every fence marker inside the brief except its own opening and closing tags: a page whose text contains
+ * `</research_brief>`, `<research_brief` or `[End of Live Research]` would otherwise make what follows read as outside the data fence.
+ * The `<` becomes `&lt;` and the brackets become parentheses, so the text stays readable as page content. Pure, linear.
+ */
+export function sealLiveBrief(brief: string): string {
+  if (!brief.startsWith(FENCE_OPEN) || !brief.endsWith(FENCE_CLOSE)) return brief;
+  const inner = brief.slice(FENCE_OPEN.length, brief.length - FENCE_CLOSE.length)
+    .replace(/<(\s*\/?\s*research_brief)/gi, "&lt;$1")
+    .replace(/\[(\s*end of live research\s*)\]/gi, "($1)");
+  return FENCE_OPEN + inner + FENCE_CLOSE;
 }
 
 /** The `<source …>…</source>` blocks after `from`, in order: one linear pass (an unclosed block ends the list). */
