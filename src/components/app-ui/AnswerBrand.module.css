@@ -1,0 +1,43 @@
+/* The answer header's brand (AnswerBrand.tsx): logo + name of the model that answered; several brands swap with a short slide. */
+.title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0;
+  font-size: var(--t-small);
+  font-weight: var(--w-semibold);
+  letter-spacing: var(--tr-body);
+  line-height: 1.3;
+  color: var(--c-ink);
+}
+.title > svg { filter: none; }
+
+/* One line tall, clipped, so the incoming brand slides up into place without moving anything around it. */
+.slot { display: inline-grid; overflow: hidden; height: 1.3em; align-items: center; }
+.item { display: inline-flex; align-items: center; gap: var(--s-2); white-space: nowrap; }
+.item[data-swap] { animation: brand-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes brand-in {
+  from { transform: translateY(70%); opacity: 0; filter: blur(2px); }
+  to { transform: none; opacity: 1; filter: none; }
+}
+
+.logo, .tint, .mono { width: 16px; height: 16px; flex: none; }
+.logo { display: block; }
+/* One-colour logos (ChatGPT, Grok) are drawn in the text colour so they read on the dark and light canvas alike. */
+.tint { display: block; background: currentColor; mask-repeat: no-repeat; mask-position: center; mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center; -webkit-mask-size: contain; }
+.mono {
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  border: var(--b-hairline, 1px) solid var(--c-border);
+  font-size: 8.5px;
+  font-weight: var(--w-semibold);
+  letter-spacing: 0;
+  color: var(--c-ink-2);
+}
+.name { font-variant-ligatures: none; }
+.more { font-size: var(--t-label, 12px); font-weight: var(--w-medium); color: var(--c-ink-3); }
+
+@media (prefers-reduced-motion: reduce) {
+  .item[data-swap] { animation: none; }
+}
