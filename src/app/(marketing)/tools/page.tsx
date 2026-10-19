@@ -11,7 +11,7 @@ import s from "@/components/tools/tools.module.css";
 
 export const metadata = pageMeta(
   TOOLS_HUB,
-  "Free AI tools: prompts, study guides, flashcards, summaries",
+  "Free AI tools: prompts, study guides, summaries",
   `Ten free tools from ${brand.name}: a prompt optimizer, study guide and flashcard generators, a summarizer, a writing improver, a citation formatter, a study planner and more. No account.`,
 );
 
