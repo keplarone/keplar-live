@@ -1,0 +1,147 @@
+/*
+ * Activity center on the business work page. Graphite ink on white, hairline edge, flat surfaces.
+ * Inter is the Business face (--font-business). Press, hover timing, and reduced motion come from src/styles/motion.css.
+ */
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 16px 16px 12px;
+  border: 1px solid #d9dce2;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #17171a;
+  box-shadow: none;
+  font-family: var(--font-business), Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 4px 8px;
+}
+
+.title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.006em;
+  color: #17171a;
+}
+
+.count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #17171a;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 22px;
+  box-shadow: none;
+}
+
+.review {
+  margin-left: auto;
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid #17171a;
+  border-radius: 999px;
+  background: #17171a;
+  color: #ffffff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.review:disabled { opacity: 0.45; cursor: default; }
+
+.list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #17171a;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.row:hover { background: #f4f4f5; }
+
+.row:focus-visible,
+.review:focus-visible,
+.retry:focus-visible {
+  outline: 2px solid #17171a;
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+.text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.meta {
+  margin-left: auto;
+  flex: none;
+  font-size: 12px;
+  font-weight: 500;
+  color: #3a3d44;
+}
+
+.empty, .more, .alert {
+  margin: 0;
+  padding: 8px 12px 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #3a3d44;
+}
+
+.alert { color: #17171a; }
+
+.retry {
+  align-self: flex-start;
+  margin: 0 12px 8px;
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid #d9dce2;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #17171a;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.retry:hover { background: #f4f4f5; }
+.review:hover { background: #26282d; }
+
+.skel { height: 44px; margin: 2px 0; border-radius: 12px; }
+
+.also { margin: 8px 0 0; padding: 8px 0 0; border-top: 1px solid #d9dce2; list-style: none; }
+
+@media (max-width: 720px) {
+  .panel { padding: 14px 12px 10px; }
+  .meta { display: none; }
+}
