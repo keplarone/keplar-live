@@ -45,6 +45,15 @@ type Ok = Extract<ProviderResult, { ok: true }>;
 const nameOf = (id: string) => catalogById.get(id)?.name ?? id;
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
+/** The start of one model's own answer for "View Disagrees": up to `max` characters, cut at a paragraph or sentence end when one is near. */
+export function answerExcerpt(text: string, max = 1500): string {
+  const t = stripVerdict(text).trim();
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max);
+  const at = Math.max(cut.lastIndexOf("\n\n"), cut.lastIndexOf(". "));
+  return `${(at > max * 0.6 ? cut.slice(0, at + 1) : cut).trimEnd()}…`;
+}
+
 /** A reviser that appends its own "OK" verdict line must not leak it into the answer. */
 export const stripVerdict = (t: string) => t.replace(/\n+\s*OK\.?\s*$/i, "").trim();
 
@@ -422,7 +431,7 @@ export class ModelSynthesizer implements Synthesizer {
         const base = { id: p.model.id, name: p.model.name, provider: p.model.provider, slot: "panel" as const };
         if (!r) return { ...base, status: "failed", note: "No response." };
         if (!r.ok) return { ...base, status: r.reason === "refusal" ? "refused" : "failed", note: r.reason === "timeout" ? `${r.message} Excluded from consensus, not counted as dissent.` : `${r.message} Excluded from consensus.` };
-        return { ...base, status: "responded", stance: r.stance === UNCLASSIFIED ? undefined : r.stance, note: p.reason?.startsWith("Stood in") ? p.reason : r.servedBy ? `Served via ${r.servedBy.via}.` : undefined };
+        return { ...base, status: "responded", stance: r.stance === UNCLASSIFIED ? undefined : r.stance, note: p.reason?.startsWith("Stood in") ? p.reason : r.servedBy ? `Served via ${r.servedBy.via}.` : undefined, ...(r.text ? { excerpt: answerExcerpt(r.text) } : {}) };
       }),
       ...(plan.verifier
         ? [{ ...(verification.reviewer?.role === "verifier" ? { id: verification.reviewer.modelId, name: verification.reviewer.name, provider: catalogById.get(verification.reviewer.modelId)?.provider ?? plan.verifier.model.provider } : { id: plan.verifier.model.id, name: plan.verifier.model.name, provider: plan.verifier.model.provider }), slot: "verifier" as const, status: verification.reviewer?.role === "verifier" ? ("responded" as const) : ("not-needed" as const), note: verification.reviewer?.role === "verifier" ? "Reviewed the draft answer against each response." : "Not called." }]
@@ -486,6 +495,7 @@ export class ModelSynthesizer implements Synthesizer {
         responded: ok.length,
         consulted: plan.panel.length,
         summary: consensusSummary(comparison.level, comparison.agree, comparison.disagree, comparison.missing),
+        majorityStance: comparison.majorityStance,
       },
       models,
       sources,

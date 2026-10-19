@@ -54,3 +54,44 @@ test("answer brands: every answer header credits its models, notices keep the Ke
   assert.match(comp, /visually-hidden">\{`\$\{brand\.answer\} from \$\{brandList\(marks\)\}`\}/, "one stable accessible name, still 'Keplar Answer'");
   assert.match(readFileSync("src/components/app-ui/AnswerBrand.module.css", "utf8"), /prefers-reduced-motion: reduce\) \{\s*\.item\[data-swap\] \{ animation: none; \}/);
 });
+
+test("synthesis scene: each seat shows its model's brand logo; only seats with no model yet show a number", async () => {
+  const { readFileSync } = await import("node:fs");
+  const view = readFileSync("src/components/app-ui/SynthesisView.tsx", "utf8");
+  assert.match(view, /const mark = m \? modelMark\(m\.id, m\.name\) : null;/);
+  assert.match(view, /\{mark \? <SeatMark mark=\{mark\} \/> : <span className=\{s\.mono\}>\{i \+ 1\}<\/span>\}/);
+  assert.match(view, /title=\{mark \? `\$\{mark\.family\}: \$\{state\}` : undefined\}/, "hover names the brand and its state");
+  assert.match(readFileSync("src/components/app-ui/SynthesisView.module.css", "utf8"), /\.tint \{[^}]*background: var\(--n-graphite\)/, "one-colour logos stay dark on the white disc");
+});
+
+test("agree and disagree sides: split by the recorded majority, fall back only when unambiguous, panel models only", async () => {
+  const { consensusSides } = await import("@/components/app-ui/model-marks");
+  const ms = [
+    { id: "a:gpt", name: "GPT-6 Luna", status: "responded", slot: "panel", stance: "jsonb" },
+    { id: "b:claude", name: "Claude Sonnet", status: "responded", slot: "panel", stance: "jsonb" },
+    { id: "c:gemini", name: "Gemini 3.8", status: "responded", slot: "panel", stance: "columns" },
+    { id: "d:grok", name: "Grok 5", status: "failed", slot: "panel" },
+    { id: "e:judge", name: "Claude Opus", status: "responded", slot: "verifier" },
+  ];
+  const ids = (x: { agree: { id: string }[]; dissent: { id: string }[] }) => [x.agree.map((m) => m.id), x.dissent.map((m) => m.id)];
+  assert.deepEqual(ids(consensusSides(ms, { agree: 2, majorityStance: "jsonb" })), [["a:gpt", "b:claude"], ["c:gemini"]]);
+  assert.deepEqual(ids(consensusSides(ms, { agree: 2 })), [["a:gpt", "b:claude"], ["c:gemini"]], "older answers: the one group of size agree");
+  assert.deepEqual(ids(consensusSides(ms.slice(0, 2).concat({ ...ms[2], stance: "x" }, { ...ms[2], id: "z", stance: "y" }), { agree: 1 })), [[], []], "ambiguous: nobody placed");
+});
+
+test("view disagrees: the excerpt is the model's own answer, trimmed at a sentence; the badge shows logos and the button sits outside it", async () => {
+  const { answerExcerpt } = await import("@/lib/orchestration/live-synthesizer");
+  assert.equal(answerExcerpt("Short answer.\nOK"), "Short answer.");
+  const long = "First sentence here. ".repeat(120);
+  const ex = answerExcerpt(long, 300);
+  assert.ok(ex.length <= 301 && ex.endsWith(".…"), ex.slice(-20));
+  const { readFileSync } = await import("node:fs");
+  const turn = readFileSync("src/components/app-ui/KeplarTurn.tsx", "utf8");
+  assert.match(turn, /\{c\.agree\} agree<LogoStack models=\{sides\.agree\} \/>/);
+  assert.match(turn, /<LogoStack models=\{sides\.dissent\} \/>/);
+  assert.match(turn, /\{dissentOpen \? "Hide Disagrees" : "View Disagrees"\}/);
+  assert.match(turn, /<\/header>\s*\{dissentOpen && dissenters\.length \? <DissentPanel/, "the panel opens under the header");
+  const share = readFileSync("src/lib/growth/share.ts", "utf8");
+  assert.ok(!/excerpt/.test(share), "a model's own answer text is never copied into a public share snapshot");
+  assert.match(readFileSync("src/lib/orchestration/live-synthesizer.ts", "utf8"), /majorityStance: comparison\.majorityStance/);
+});

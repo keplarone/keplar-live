@@ -55,3 +55,23 @@ export const brandList = (marks: readonly ModelMark[]) => {
   const n = marks.map((m) => m.family);
   return n.length <= 2 ? n.join(" and ") : `${n.slice(0, -1).join(", ")} and ${n[n.length - 1]}`;
 };
+
+type PanelModel = { id: string; name: string; status?: string; slot?: string; stance?: string };
+
+/**
+ * Who agreed and who did not: the panel models that responded with a stance, split by the majority stance. Answers saved before
+ * the majority was recorded fall back to the one stance group whose size equals the agree count; when that is ambiguous, or there
+ * is no majority, nobody is placed on a side (the badge then shows counts only).
+ */
+export function consensusSides<T extends PanelModel>(models: readonly T[], c: { agree: number; majorityStance?: string | null }): { agree: T[]; dissent: T[] } {
+  const voters = models.filter((m) => (m.slot ?? "panel") === "panel" && m.status === "responded" && m.stance);
+  let major = c.majorityStance ?? null;
+  if (!major) {
+    const sizes = new Map<string, number>();
+    for (const m of voters) sizes.set(m.stance!, (sizes.get(m.stance!) ?? 0) + 1);
+    const fits = [...sizes].filter(([, n]) => n === c.agree);
+    major = fits.length === 1 ? fits[0][0] : null;
+  }
+  if (!major) return { agree: [], dissent: [] };
+  return { agree: voters.filter((m) => m.stance === major), dissent: voters.filter((m) => m.stance !== major) };
+}

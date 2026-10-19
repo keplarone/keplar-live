@@ -9,12 +9,15 @@ import b from "./AnswerBrand.module.css";
 /** How long each brand stays before the next slides in, when several models contributed. */
 export const BRAND_SWAP_MS = 1800;
 
-function Mark({ mark }: { mark: ModelMark }) {
-  if (mark.kind === "mono") return <span className={b.mono} aria-hidden="true">{mark.text}</span>;
-  if (mark.tint) return <span className={b.tint} style={{ maskImage: `url(${mark.src})`, WebkitMaskImage: `url(${mark.src})` }} aria-hidden="true" />;
-  // eslint-disable-next-line @next/next/no-img-element -- a 16px static SVG from our own origin; next/image adds nothing here
-  return <img className={b.logo} src={mark.src} alt="" width={16} height={16} decoding="async" />;
+/** One brand's logo at `size` px: the image, a one-colour mask in the text colour, or a monogram. Decorative (the text names the brand). */
+export function BrandMark({ mark, size = 16 }: { mark: ModelMark; size?: number }) {
+  const box = { width: size, height: size };
+  if (mark.kind === "mono") return <span className={b.mono} style={{ ...box, fontSize: Math.max(7, Math.round(size * 0.53)) }} aria-hidden="true">{mark.text}</span>;
+  if (mark.tint) return <span className={b.tint} style={{ ...box, maskImage: `url(${mark.src})`, WebkitMaskImage: `url(${mark.src})` }} aria-hidden="true" />;
+  // eslint-disable-next-line @next/next/no-img-element -- a small static SVG from our own origin; next/image adds nothing here
+  return <img className={b.logo} style={box} src={mark.src} alt="" width={size} height={size} decoding="async" />;
 }
+const Mark = BrandMark;
 
 const reducedMotion = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
