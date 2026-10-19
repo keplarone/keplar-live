@@ -166,12 +166,39 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
   const textRef = useRef("");
   // The textarea is UNCONTROLLED: the DOM owns the value, so native undo/redo, IME composition and the caret are never
   // disturbed by React. Programmatic writes (dictation, seeds, clearing after send) go through here.
+  /*
+   * Long text: on wide screens the composer is one pill row (+ and Modes · the field · voice, routing, send; gemini.css). Once
+   * the text needs a second line it switches to the stacked layout (the field across the full width, the controls below, normal
+   * corners); otherwise the pill grows into a tall stadium with the text squeezed between the controls. It switches back only
+   * when the text is clearly shorter again (90% of the length that wrapped) or empty, so it never flickers at the boundary.
+   */
+  const [multiline, setMultiline] = useState(false);
+  const multilineRef = useRef(false);
+  const wrappedAt = useRef(0);
+  const fitLayout = useCallback(() => {
+    requestAnimationFrame(() => {
+      const ta = taRef.current;
+      if (!ta) return;
+      const v = ta.value;
+      let next = multilineRef.current;
+      if (!v) next = false;
+      else if (multilineRef.current) next = v.includes("\n") || v.length >= wrappedAt.current * 0.9;
+      else {
+        const cs = getComputedStyle(ta);
+        const line = parseFloat(cs.lineHeight) || 24;
+        const pad = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+        if (v.includes("\n") || ta.scrollHeight - pad > line * 1.5) { next = true; wrappedAt.current = v.length; }
+      }
+      if (next !== multilineRef.current) { multilineRef.current = next; setMultiline(next); }
+    });
+  }, []);
   const setText = useCallback((v: string) => {
     textRef.current = v;
     const ta = taRef.current;
     if (ta && ta.value !== v) ta.value = v;
     setTextState(v);
-  }, []);
+    fitLayout();
+  }, [fitLayout]);
   const voice = useVoice({ getText: () => textRef.current, setText });
   // Drafts (drafts.ts): opening a chat shows its unsent draft; typing keeps it (debounced); sending clears it (the text goes blank).
   const draftFor = useRef<string | null>(null);
@@ -861,6 +888,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
 
       <form
         className={s.composer}
+        data-multiline={multiline || undefined}
         onSubmit={(e) => {
           e.preventDefault();
           submit();

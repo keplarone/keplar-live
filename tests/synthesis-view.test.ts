@@ -17,8 +17,9 @@ test("model marks: catalog models map to their family logo, others to a monogram
   assert.equal(logo("free:nemotron-3-super", "Nemotron 3 Super (free)"), "/models/nvidia.svg");
   assert.equal(logo("free:llama-4-maverick", "Llama 4 Maverick (free)"), "/models/meta.svg");
   assert.equal(logo("live:kimi-k3", "Kimi K3"), "/models/kimi.svg");
-  assert.deepEqual(modelMark("live:glm-5", "GLM-5"), { kind: "mono", text: "Z", family: "Z.ai" });
-  for (const f of ["qwen", "meta", "nvidia", "kimi"]) assert.ok(existsSync(`public/models/${f}.svg`) && !/<script|href=|on[a-z]+=/i.test(readFileSync(`public/models/${f}.svg`, "utf8")), `${f}.svg is a plain logo`);
+  assert.equal(logo("live:glm-5", "GLM-5"), "/models/zai.svg");
+  assert.equal(logo("live:phi-5", "Phi-5"), "/models/microsoft.svg");
+  for (const f of ["qwen", "meta", "nvidia", "kimi", "zai", "microsoft"]) assert.ok(existsSync(`public/models/${f}.svg`) && !/<script|href=|on[a-z]+=/i.test(readFileSync(`public/models/${f}.svg`, "utf8")), `${f}.svg is a plain logo`);
   assert.deepEqual(modelMark("free:dots-3-note", "Dots3-Note Preview (free)"), { kind: "mono", text: "Do", family: "Dots3-Note Preview" });
 });
 

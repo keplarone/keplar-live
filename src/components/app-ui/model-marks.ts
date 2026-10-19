@@ -18,11 +18,11 @@ const LOGOS: { rx: RegExp; family: string; src: string; tint?: boolean }[] = [
   { rx: /nemotron|nvidia/i, family: "NVIDIA", src: "/models/nvidia.svg" },
   { rx: /llama|\bmeta\b/i, family: "Meta", src: "/models/meta.svg" },
   { rx: /kimi|moonshot/i, family: "Kimi", src: "/models/kimi.svg", tint: true },
+  { rx: /glm|zhipu|z\.ai/i, family: "Z.ai", src: "/models/zai.svg", tint: true },
+  { rx: /\bphi[-\s]?\d|microsoft/i, family: "Microsoft", src: "/models/microsoft.svg" },
 ];
 
 const MONOS: { rx: RegExp; family: string; text: string }[] = [
-  { rx: /glm|zhipu|z\.ai/i, family: "Z.ai", text: "Z" },
-  { rx: /\bphi[-\s]?\d|microsoft/i, family: "Microsoft", text: "Ms" },
 ];
 
 export function modelMark(id: string, name: string): ModelMark {

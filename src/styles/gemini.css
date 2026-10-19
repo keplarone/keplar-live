@@ -107,8 +107,10 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer
   border-color: transparent !important;
   box-shadow: none !important;
 }
-/* Keyboard focus stays a visible 2px solid outline, clear of the gradient ring. Pointer focus gets the bloom only. */
-html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:focus-within:has(:focus-visible) {
+/* Keyboard focus stays a visible 2px solid outline, clear of the gradient ring. Pointer focus gets the bloom only.
+   Not for the text field: a textarea always matches :focus-visible while typing, which drew a second white ring around the
+   composer on every keystroke. The field's focus is shown by the gradient ring; the controls keep the outline. */
+html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:focus-within:has(:focus-visible:not(textarea)) {
   outline: 2px solid var(--c-ink) !important;
   outline-offset: 4px !important;
 }
@@ -427,9 +429,11 @@ html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [class*="__meterLin
 /* ---------- Composer: one row like Gemini's (+ and Modes · the field · voice, routing, send) ----------
    Only while the composer holds just the field and its controls: mode chips, attachments, link entry or any other row added
    above the field make it fall back to the stacked layout. The field grows upward as text wraps (field-sizing), with the
-   controls held to the bottom edge, so typing never makes the box jump. Phones (< 600px composer) keep the stacked layout. */
+   controls held to the bottom edge, so typing never makes the box jump. Phones (< 600px composer) keep the stacked layout, and so
+   does text longer than one line (data-multiline, set by Composer.tsx): a 999px pill around many lines became a tall stadium
+   with the text squeezed between the controls. */
 @container composer (min-width: 600px) {
-  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not([data-multiline]):not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) {
     display: grid !important;
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: end;
@@ -438,22 +442,22 @@ html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [class*="__meterLin
     padding: 14px 16px 14px 18px !important;
     border-radius: 999px !important;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) > [class*="__row"] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not([data-multiline]):not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) > [class*="__row"] {
     display: contents !important;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) > textarea {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not([data-multiline]):not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) > textarea {
     grid-column: 2;
     grid-row: 1;
     align-self: center;
     padding: 8px 6px !important;
     margin: 0 !important;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) [class*="__tools"] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not([data-multiline]):not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) [class*="__tools"] {
     grid-column: 1;
     grid-row: 1;
     align-self: end;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) [class*="__actions"] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not([data-multiline]):not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) [class*="__actions"] {
     grid-column: 3;
     grid-row: 1;
     align-self: end;
