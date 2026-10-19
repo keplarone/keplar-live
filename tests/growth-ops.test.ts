@@ -297,3 +297,11 @@ test("reports: facts carry their source, unavailable data is null (never a guess
   assert.equal(mrrChange?.value, "+45");
   assert.equal(mrrChange?.source, "computed");
 });
+
+test("html handling: end tags with whitespace still end the element; entities are decoded once", () => {
+  assert.equal(readableText("<p>Price</p><script>var secret = 1</script ><style>.a{}</style\n><noscript>x</noscript foo><p>$20</p>"), "Price $20");
+  const p = readPage("https://k.one/x", 200, [], '<title>Tom &amp;lt;b&amp;gt; &amp; Jerry</title><script type="application/ld+json">{"a":1}</script ><h1>x</h1>');
+  assert.equal(p.title, "Tom &lt;b&gt; & Jerry", "&amp;lt; is the text &lt;, not a tag");
+  assert.equal(p.jsonLdBlocks, 1);
+  assert.equal(p.jsonLdInvalid, 0);
+});

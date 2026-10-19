@@ -38,9 +38,10 @@ const UA = "KeplarPageWatch/1.0 (+https://keplar.one; weekly check of public pag
 /** Pure: the readable text of an HTML page (scripts, styles and tags removed, whitespace collapsed). */
 export function readableText(html: string): string {
   return html
-    .replace(/<script[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style[\s\S]*?<\/style>/gi, " ")
-    .replace(/<noscript[\s\S]*?<\/noscript>/gi, " ")
+    // End tags may carry whitespace or junk before ">" (</script >, </script foo>): browsers still end the element there.
+    .replace(/<script\b[\s\S]*?<\/script\b[^>]*>/gi, " ")
+    .replace(/<style\b[\s\S]*?<\/style\b[^>]*>/gi, " ")
+    .replace(/<noscript\b[\s\S]*?<\/noscript\b[^>]*>/gi, " ")
     .replace(/<[^>]+>/g, " ")
     .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")

@@ -12,7 +12,8 @@ export const MAX_PAGES = 40;
 const MAX_REDIRECTS = 5;
 
 const attr = (tag: string, name: string) => tag.match(new RegExp(`${name}\\s*=\\s*("([^"]*)"|'([^']*)')`, "i"))?.slice(2).find((x) => x !== undefined) ?? null;
-const decode = (s: string) => s.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, " ").trim();
+/** Entities decoded once each: "&amp;" goes last, so "&amp;lt;" stays the text "&lt;" instead of becoming "<". */
+const decode = (s: string) => s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
 
 /** Pure: the facts the audit needs from one page's HTML. */
 export function readPage(url: string, status: number, redirects: string[], html: string): PageFacts {
@@ -23,7 +24,7 @@ export function readPage(url: string, status: number, redirects: string[], html:
   const description = metas.find((m) => /name\s*=\s*["']description["']/i.test(m));
   const robots = metas.filter((m) => /name\s*=\s*["'](robots|googlebot)["']/i.test(m)).map((m) => attr(m, "content") ?? "").join(",");
   const canonical = links.find((l) => /rel\s*=\s*["']canonical["']/i.test(l));
-  const blocks = [...html.matchAll(/<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+  const blocks = [...html.matchAll(/<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script\b[^>]*>/gi)].map((m) => m[1]);
   let invalid = 0;
   for (const b of blocks) { try { JSON.parse(b); } catch { invalid++; } }
   return {
