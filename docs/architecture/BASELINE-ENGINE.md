@@ -281,6 +281,8 @@ Each live provider attempt calls `recordModelCall` (`src/lib/ops/telemetry.ts`):
 
 Small engine slices, each verifiable without a new service. None of these should start before draft PR #43's Studio deletion is accounted for, so new work does not land in `src/lib/studio/` or `src/lib/space-studio/`.
 
+The ordered list that merges this section with the engine items in the 18 Oct 2026 audit is [`ENGINE-ROADMAP.md`](./ENGINE-ROADMAP.md).
+
 1. **Make agent mode honest.** Add a test that `modes.agent` does not call `runChatTools` or `solve` by itself (`src/lib/core/assess.ts`, `src/app/api/keplar/route.ts`). Then either route that flag into the existing MCP pre-stage when tools are granted, or stop treating it as a task kind that skips Core. One path, with a unit test for the chosen behavior.
 2. **Pin the retrieval-off contract.** A test that `modes.web` with the default env never calls `Retriever.check` or `research`, and that the answer source note stays "Web retrieval isn't live yet" (`src/lib/orchestration/live-synthesizer.ts`). Turning the flag on stays a separate, explicit change.
 3. **Wire or drop `DirectProvider`.** `defaultProviders` should construct it when a direct key is set, or `liveEnv` should stop reading keys that cannot serve Ask. A registry test should show which providers exist for a fixture env (`src/lib/orchestration/providers/index.ts`).
