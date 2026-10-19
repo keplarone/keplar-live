@@ -132,15 +132,17 @@ test("Business account: company profile is validated and the website normalised"
   if (!bad.ok) assert.deepEqual(Object.keys(bad.errors).sort(), ["company", "industry", "role", "size", "website"]);
 });
 
-test("Business site: storefront on business.keplar.one, download only for active plans, dark Space chrome in Montserrat", () => {
+test("Business site: storefront on business.keplar.one, download only for active plans, Apple-led look in Inter", () => {
   const route = readFileSync("src/app/api/business/account/route.ts", "utf8");
   assert.match(route, /if \(active\) \{\s*(?:\/\/[^\n]*\n\s*)?const r = await getDesktopRelease\(fetch, "business"\)/, "download links (the Business app's own) are computed only for an active Business plan");
   assert.doesNotMatch(route, /access-control-allow-origin/, "same origin now: business.keplar.one serves its own account API");
   const layout = readFileSync("src/app/(business)/layout.tsx", "utf8");
-  // Space UI: Business reads the family's Montserrat (the root layout's --font-sans) instead of loading Geist of its own.
+  // Apple-led: Business has its own face, Inter, loaded once by font.tsx (next/font) and read through --kb-sans; no Geist.
   assert.ok(!existsSync("src/components/business-site/fonts.ts"), "no separate Business font files");
   assert.doesNotMatch(layout, /geist/i);
-  assert.match(readFileSync("src/components/business-site/tokens.css", "utf8"), /--kb-sans: var\(--font-sans\), "Montserrat"/);
+  assert.match(layout, /BusinessFont/);
+  assert.match(readFileSync("src/components/business-site/font.tsx", "utf8"), /Inter\(\{[\s\S]*variable: "--font-business"[\s\S]*display: "swap"/);
+  assert.match(readFileSync("src/components/business-site/tokens.css", "utf8"), /--kb-sans: var\(--font-business\), "Inter"/);
   const store = readFileSync("src/components/business-site/Storefront.tsx", "utf8");
   assert.doesNotMatch(store, /study|skills/i);
   assert.match(readFileSync("src/proxy.ts", "utf8"), /url\.pathname = pathname === "\/" \? BUSINESS_PREFIX/);

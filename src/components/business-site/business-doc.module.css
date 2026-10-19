@@ -1,7 +1,8 @@
 /*
  * Keplar Business copies of keplar.one's Status, Terms, Privacy and Security pages (BusinessDoc.tsx). They render the very same
- * components as keplar.one, so the words never drift apart, in keplar.one's own Space UI tokens for the site theme (Light or
- * Dark); this file adds the Business header (floating glass pills like the storefront's) and the Business type and layout.
+ * components as keplar.one, so the words never drift apart. This file maps keplar.one's tokens onto the Business ones (Apple-led,
+ * tokens.css), so the shared content reads as Business: flat tiles, the Business face, Apple tracking, no tracked capitals, and adds the
+ * Business header.
  */
 .doc {
   /* type */
@@ -13,14 +14,26 @@
   --l-max: var(--kb-max);
   --l-gutter: var(--kb-gutter);
 
-  /* transparent: the family's shared sky shows through, as on keplar.one */
-  background: transparent;
+  /* keplar.one's tokens, answered by the Business ones */
+  --c-canvas: var(--kb-bg);
+  --c-ink: var(--kb-ink);
+  --c-ink-2: var(--kb-ink-2);
+  --c-ink-3: var(--kb-ink-3);
+  --c-surface-1: var(--kb-surface-2);
+  --c-surface-2: var(--kb-surface-3);
+  --hairline: var(--kb-border);
+  --hairline-strong: var(--kb-border-strong);
+  --space-glass: var(--kb-surface-2);
+  --space-glass-depth: none;
+  --space-r-panel: var(--kb-r-sm);
+  --space-r-card: var(--kb-r-lg);
+  background: var(--kb-bg);
   color: var(--kb-ink);
   font-family: var(--kb-sans);
   padding-top: var(--kb-s-6);
-  animation: rise 1.1s var(--kb-ease-expo) both;
+  animation: rise 0.7s var(--kb-ease-expo) both;
 }
-@keyframes rise { 0% { opacity: 0; transform: translateY(26px) scale(0.985); filter: blur(14px); } 60% { filter: blur(0.6px); } 100% { opacity: 1; transform: none; filter: none; } }
+@keyframes rise { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: none; filter: none; } }
 .doc a {
   color: var(--kb-ink);
   text-decoration-color: rgb(var(--kb-accent-rgb) / 0.5);
@@ -29,7 +42,7 @@
   text-decoration-color: var(--kb-accent);
 }
 
-/* header: the brand pill and a glass "back" pill, floating like the storefront's */
+/* header: the Business mark and a "back" link, flat like the storefront's bar */
 .header {
   display: flex;
   align-items: center;
@@ -49,38 +62,37 @@
   min-width: 48px;
   padding: 0 12px;
   box-sizing: border-box;
-  border-radius: var(--kb-r-pill);
-  background: var(--kb-pill);
-  box-shadow: var(--kb-pill-depth);
+  border-radius: var(--kb-r-sm);
+  background: transparent;
   color: var(--kb-ink);
   text-decoration: none;
-  transition: box-shadow 0.5s var(--kb-ease);
+  transition: opacity var(--kb-d-3) var(--kb-ease);
 }
 .home:hover {
-  box-shadow: var(--kb-pill-depth), var(--kb-pill-hover);
+  opacity: 0.72;
 }
 .back {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   min-height: 44px;
-  padding: 0 20px 0 16px;
-  border-radius: var(--kb-r-pill);
-  background: var(--kb-pill);
-  box-shadow: var(--kb-pill-depth);
-  color: var(--kb-nav-ink);
-  font-size: var(--kb-t-sm);
-  font-weight: 600;
+  padding: 0 4px;
+  border-radius: var(--kb-r-sm);
+  background: transparent;
+  color: var(--kb-accent-ink);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: -0.016em;
   text-decoration: none;
-  transition: color var(--kb-d-2) var(--kb-ease), box-shadow 0.5s var(--kb-ease);
+  transition: color var(--kb-d-2) var(--kb-ease);
 }
 .back > span {
   display: inline-block;
   transition: transform 0.4s var(--kb-spring);
 }
 .back:hover {
-  color: var(--kb-ink);
-  box-shadow: var(--kb-pill-depth), var(--kb-pill-hover);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .back:hover > span {
   transform: translateX(-3px);
@@ -88,8 +100,11 @@
 .header .home:focus-visible,
 .header .back:focus-visible {
   outline: none;
-  box-shadow: var(--kb-pill-depth), var(--kb-glow);
+  box-shadow: var(--kb-glow);
 }
+/* the shared pages' eyebrows (Status, Legal): Apple's sentence-case category label, not tracked capitals */
+.doc :global([class*="__eyebrow"]) { font-size: 17px; letter-spacing: -0.022em; text-transform: none; font-weight: 600; color: var(--kb-ink-3); }
+.doc :is(h1, h2) { letter-spacing: -0.024em; }
 @media (max-width: 640px), (prefers-reduced-motion: reduce) {
   .doc { animation: none; }
 }

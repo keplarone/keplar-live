@@ -1,7 +1,7 @@
 import "./setup";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { DEFAULT_THEME_PREF, isThemePref, resolveTheme, THEME_SCRIPT } from "@/lib/theme";
+import { BUSINESS_DEFAULT_THEME_PREF, DEFAULT_THEME_PREF, isThemePref, resolveTheme, THEME_SCRIPT } from "@/lib/theme";
 
 /** Runs the real pre-paint script against a minimal fake DOM. */
 function runScript({ stored, cookie = "", osDark = false }: { stored?: string | null; cookie?: string; osDark?: boolean }) {
@@ -57,4 +57,22 @@ test("theme: storedThemePref reads the saved choice (storage, then cookie), not 
     g.document = prev.document;
     g.localStorage = prev.localStorage;
   }
+});
+
+test("theme: Keplar Business defaults to Light (Apple-led); a stored choice still wins, and other hosts keep Dark", () => {
+  const run = (hostname: string, stored: string | null = null) => {
+    const attrs: Record<string, string> = {};
+    const root = { setAttribute: (k: string, v: string) => (attrs[k] = v), classList: { add: () => {}, remove: () => {} }, style: {} as Record<string, string> };
+    const mm = () => ({ matches: false });
+    new Function("localStorage", "document", "window", "matchMedia", "location", THEME_SCRIPT)(
+      { getItem: () => stored }, { cookie: "", documentElement: root }, { matchMedia: mm }, mm, { hostname },
+    );
+    return attrs["data-theme"];
+  };
+  assert.equal(BUSINESS_DEFAULT_THEME_PREF, "light");
+  assert.equal(run("business.keplar.one"), "light");
+  assert.equal(run("business.localhost"), "light");
+  assert.equal(run("business.keplar.one", "dark"), "dark", "a saved Dark choice is kept");
+  assert.equal(run("keplar.one"), "dark");
+  assert.equal(run("businessxkeplar.one"), "dark", "only the business. subdomain");
 });

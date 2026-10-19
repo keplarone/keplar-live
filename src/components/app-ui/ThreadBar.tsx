@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button, Dialog } from "@/components/kit";
+import { Button, Dialog, Icon, IconButton, Menu, MenuItem } from "@/components/kit";
 import type { Thread } from "./state/types";
 import { downloadText, exportFileName, threadToMarkdown } from "./chat-export";
 import { ShareChatDialog } from "./parity/ShareChatDialog";
 import s from "./ThreadBar.module.css";
 
-/** Share this chat as a redacted link, export it as a Markdown file, and the keyboard shortcuts list. */
+/** Share this chat as a redacted link (the one visible action, like Gemini), and a More menu with export and the shortcuts list. */
 export function ThreadBar({ thread, signedIn = false }: { thread: Thread; signedIn?: boolean }) {
   const [help, setHelp] = useState(false);
   const [share, setShare] = useState(false);
@@ -31,14 +31,20 @@ export function ThreadBar({ thread, signedIn = false }: { thread: Thread; signed
             Share chat
           </Button>
         ) : null}
-        {has ? (
-          <Button size="sm" variant="ghost" className={s.act} data-export="" onClick={() => downloadText(exportFileName(thread), threadToMarkdown(thread))}>
-            Export chat
-          </Button>
-        ) : null}
-        <Button size="sm" variant="ghost" className={s.act} onClick={() => setHelp(true)} aria-haspopup="dialog">
-          Shortcuts
-        </Button>
+        <Menu
+          label="More for this chat"
+          align="end"
+          trigger={(p) => <IconButton {...p} size="sm" variant="ghost" className={s.more} label="More" tooltip={!p.open} icon={<Icon name="more" />} />}
+        >
+          {has ? (
+            <MenuItem icon={<Icon name="file" />} onSelect={() => downloadText(exportFileName(thread), threadToMarkdown(thread))}>
+              Export chat
+            </MenuItem>
+          ) : null}
+          <MenuItem icon={<Icon name="code" />} shortcut={["?"]} onSelect={() => setHelp(true)}>
+            Keyboard shortcuts
+          </MenuItem>
+        </Menu>
       </div>
       <Shortcuts open={help} mac={mac} onClose={() => setHelp(false)} />
       {share ? <ShareChatDialog thread={thread} signedIn={signedIn} onClose={() => setShare(false)} /> : null}

@@ -806,6 +806,8 @@
 .readsHint { display: none; }
 .wrap .tool.more:not([aria-pressed="true"]) { width: auto; padding: 0 var(--s-3) 0 10px; gap: 6px; color: var(--c-ink-2); }
 .wrap .tool.more:not([data-mode]) .toolLabel { display: inline; }
+/* With a mode on, the button is a 36px icon and the mode shows as its own chip; the word used to squeeze into "M…". */
+.wrap .tool.more[aria-pressed="true"] .toolLabel { display: none; }
 @container composer (max-width: 420px) {
   .wrap .tool.more:not([aria-pressed="true"]) { width: 36px; padding: 0; }
   .wrap .tool.more:not([data-mode]) .toolLabel { display: none; }

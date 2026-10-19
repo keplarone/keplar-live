@@ -27,7 +27,7 @@ test.beforeEach(async ({ page }) => {
 
 test("export chat downloads a Markdown file with the questions and answers", async ({ page }) => {
   await ask(page, "pg or mysql?");
-  const [dl] = await Promise.all([page.waitForEvent("download"), page.locator("[data-export]").click()]);
+  const [dl] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "More" }).click().then(() => page.getByRole("menuitem", { name: "Export chat" }).click())]);
   expect(dl.suggestedFilename()).toMatch(/\.md$/);
   const text = (await (await import("node:fs/promises")).readFile(await dl.path(), "utf8"));
   expect(text).toContain("pg or mysql?");
