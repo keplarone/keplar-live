@@ -67,10 +67,9 @@ test("no electric blue-dominant spam (teal OK: green channel stays close to blue
     // the weather sky: natural daylight sky blues (zenith / gradient), not UI accents (docs/design/space-ui.md 2.1)
     "src/lib/sky/variants.ts": ["63,134,216", "60,130,212"],
     "src/styles/space.css": ["61,132,213"],
-    // Keplar One's Gemini-led layer: the sign-up pill (dark #0c4a86 / hover #0f569b, light #1a5fe0 / hover #164fc0) and the
-    // ambient glow behind the empty home (#2f6bff) and the light theme's greeting-name stops (#1a5fe0, #1570d6). Each is a
-    // single action or brand moment, not a UI-wide accent.
-    "src/styles/gemini.css": ["47,107,255", "26,95,224", "21,112,214", "12,74,134", "15,86,155", "22,79,192"],
+    // Keplar One's Gemini-led layer: the sign-up pill (dark #0c4a86 / hover #0f569b, light #1a5fe0 / hover #164fc0).
+    // Each is a single action, not a UI-wide accent. The empty-home glow and the greeting gradient are not part of this list.
+    "src/styles/gemini.css": ["26,95,224", "12,74,134", "15,86,155", "22,79,192"],
     // Keplar Business's Apple-led system: the one action colour (#0071e3) and its link (#0066cc) and pressed (#0058b0) steps.
     "src/components/business-site/tokens.css": ["0,113,227", "0,102,204", "0,88,176"],
   };
