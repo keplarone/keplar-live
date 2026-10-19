@@ -4,6 +4,8 @@ import Script from "next/script";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { onThemeChange, currentTheme } from "@/lib/theme";
 import { parseUtm } from "@/lib/utm";
+import { storedAttribution } from "@/lib/seo-events";
+import { attributionMetadata } from "@/lib/seo/attribution";
 import { track } from "@/lib/analytics";
 import s from "./embed.module.css";
 
@@ -62,7 +64,8 @@ export function WhopEmbed({ config, planName, onPaid, onFallback, theme }: Props
       const u = parseUtm((() => { try { return sessionStorage.getItem("keplar_utm") ?? ""; } catch { return ""; } })());
       const handle = window.WhopElements().checkout.create({
         plan: config.planId,
-        metadata: config.metadata,
+        // First-touch attribution as extra metadata (browser-set, so the webhook treats it as a label only; src/lib/seo/attribution.ts).
+        metadata: { ...config.metadata, ...attributionMetadata(storedAttribution()) },
         returnUrl: config.returnUrl,
         appearance: appearance(),
         ...(Object.keys(u).length ? { attribution: { utmSource: u.utm_source, utmMedium: u.utm_medium, utmCampaign: u.utm_campaign, utmTerm: u.utm_term, utmContent: u.utm_content, source: "keplar.one" } } : {}),

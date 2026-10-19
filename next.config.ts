@@ -62,6 +62,8 @@ const nextConfig: NextConfig = {
       { source: "/blog/:slug", destination: "/blogs/:slug", permanent: true },
       // The short guide duplicated the fuller blog post's search intent and title; one page now owns it.
       { source: "/guides/check-an-ai-answer", destination: "/blogs/how-to-check-an-ai-answer", permanent: true },
+      // Same slug, same question: the four-section guide duplicated the 800-word post (audit 2026-10-19); one page owns the intent.
+      { source: "/guides/why-ai-models-disagree", destination: "/blogs/why-ai-models-disagree", permanent: true },
       {
         // www → apex, permanent
         source: "/:path*",

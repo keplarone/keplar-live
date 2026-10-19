@@ -51,3 +51,19 @@ test("utm tags are validated and appended only to internal links", () => {
   assert.equal(withUtm("//evil.com", u), "//evil.com");
   assert.equal(withUtm("/pricing", {}), "/pricing");
 });
+
+test("blog posts carry a short search title (the long title stays the headline)", () => {
+  const posts = allPosts();
+  assert.equal(new Set(posts.map((p) => p.metaTitle)).size, posts.length, "duplicate blog search titles");
+  for (const p of posts) assert.ok(p.metaTitle.length >= 10 && p.metaTitle.length <= 51, `${p.path} search title ${p.metaTitle.length}`);
+});
+
+test("comparison pages the owner has not approved are noindex, and only approved ones are in the sitemap", async () => {
+  const { generateMetadata } = await import("../src/app/(marketing)/vs/[slug]/page");
+  const held = (await generateMetadata({ params: Promise.resolve({ slug: "perplexity" }) })) as { robots?: { index?: boolean } };
+  assert.equal(held.robots?.index, false);
+  const ok = (await generateMetadata({ params: Promise.resolve({ slug: "chatgpt" }) })) as { robots?: unknown };
+  assert.equal(ok.robots, undefined);
+  const urls = sitemap().map((e) => new URL(e.url).pathname);
+  assert.ok(urls.includes("/vs/chatgpt") && !urls.includes("/vs/perplexity"));
+});

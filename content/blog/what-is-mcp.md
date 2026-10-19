@@ -1,5 +1,6 @@
 ---
 title: What is MCP (Model Context Protocol), and why does it matter for AI tools?
+metaTitle: What is MCP (Model Context Protocol)?
 description: MCP is an open protocol for connecting AI applications to tools and data. A plain explanation of how it works, what it enables, and the security questions to ask.
 category: How AI works
 published: 2026-10-03

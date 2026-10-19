@@ -9,6 +9,8 @@ import { allUseCases, getUseCase } from "@/lib/kb/usecases";
 import { pageMeta } from "@/lib/seo";
 import s from "@/components/kb/kb.module.css";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { ClusterLinks } from "@/components/seo/ClusterLinks";
+import { productCta } from "@/lib/seo/clusters";
 import { TwoTone } from "@/components/page/TwoTone";
 
 export const dynamicParams = false;
@@ -42,9 +44,10 @@ export default async function UseCasePage({ params }: Props) {
             <ul>{more.map((m) => <li key={m.path}><Link href={m.path}>{m.title}</Link>: <Inline text={m.description} /></li>)}</ul>
           </div>
         ) : null}
+        <div className={s.prose} style={{ marginTop: "var(--s-12)" }}><ClusterLinks path={u.path} /></div>
         <div className={s.cta}>
           <p>Try it on your own question. Keplar is free to start, and each answer shows which models responded and where they differed.</p>
-          <div className={s.ctaRow}><TrackedLink where={`use-case:${u.slug}`} href="/app" size="md" arrow>Try Keplar free</TrackedLink></div>
+          <div className={s.ctaRow}>{productCta(u.path).href !== "/app" ? <TrackedLink where={`use-case:${u.slug}:product`} href={productCta(u.path).href} size="md" arrow>{productCta(u.path).label}</TrackedLink> : null}<TrackedLink where={`use-case:${u.slug}`} href="/app" size="md" arrow={productCta(u.path).href === "/app"} variant={productCta(u.path).href === "/app" ? "primary" : "secondary"}>Try Keplar free</TrackedLink></div>
         </div>
       </div>
       <JsonLd data={webArticle({ path: u.path, title: u.title, description: u.description, updated: u.updated, keywords: u.keywords, words: u.words })} />

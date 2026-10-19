@@ -17,6 +17,22 @@
   color: var(--c-ink);
 }
 
+/* One line under the heading, same life cycle as the heading: in the HTML and visible until the app paints its own greeting. */
+.lede {
+  position: fixed;
+  z-index: 210;
+  top: calc(18vh + 4rem);
+  left: clamp(264px, 14vw, 400px);
+  right: 0;
+  margin: 0 auto;
+  max-width: 44ch;
+  padding: 0 24px;
+  text-align: center;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--c-ink-2);
+}
+
 .crawl {
   position: fixed;
   z-index: 210;
@@ -47,6 +63,7 @@
 /* Once the app has painted its own greeting and link row, keep this copy in the document for the
    initial HTML but out of the way of the composer. */
 :global(body:has([data-welcome])) .h1,
+:global(body:has([data-welcome])) .lede,
 :global(body:has([data-explore])) .crawl {
   position: absolute;
   width: 1px;
@@ -61,12 +78,14 @@
 
 /* A conversation has no [data-welcome]. Without this, the fixed server heading stays on screen and
    sits on top of the user's message. The empty state keeps the client greeting; no-JS still sees this h1. */
-:global(body:has([data-app-ready]):not(:has([data-welcome]))) .h1 {
+:global(body:has([data-app-ready]):not(:has([data-welcome]))) .h1,
+:global(body:has([data-app-ready]):not(:has([data-welcome]))) .lede {
   display: none;
 }
 
 @media (max-width: 899px) {
   .h1,
+  .lede,
   .crawl {
     left: 0;
   }

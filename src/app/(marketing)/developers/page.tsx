@@ -18,7 +18,7 @@ import { TwoTone } from "@/components/page/TwoTone";
 export const metadata = pageMeta(
   "/developers",
   "Keplar for developers: API, embeddable Ask, Teams",
-  "Ask Keplar from your own code with a Bearer API key, or drop the Ask widget on your site with one script tag. Free tier on free models, paid tiers on your plan. OpenAPI spec, streaming, per-plan limits stated plainly.",
+  "Ask Keplar from your own code with a Bearer API key, or put the Ask widget on your site with one script tag. Free keys use free models; paid keys use your plan.",
 );
 
 const fmt = (n: number) => n.toLocaleString("en-US");

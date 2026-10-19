@@ -1,5 +1,6 @@
 ---
 title: What is the best AI for image generation? How to compare, and what to watch for
+metaTitle: Best AI for image generation: how to compare
 description: How to evaluate AI image generators fairly: prompt adherence, text in images, consistency, editing, licensing and safety, plus a repeatable comparison method.
 category: Model choice
 published: 2026-10-03

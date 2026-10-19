@@ -9,7 +9,7 @@ import { captureUtm } from "@/lib/utm";
 import { captureLanding } from "@/lib/seo-events";
 
 /**
- * Marketing pages only (never /app). Page views, Web Vitals and campaign tags run ONLY after the visitor allowed
+ * Marketing pages and the chat home (never /app). Page views, Web Vitals and campaign tags run ONLY after the visitor allowed
  * Analytics in the cookie banner; before that (and after "Reject") no analytics script is loaded or called.
  */
 export function Telemetry() {

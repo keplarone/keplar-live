@@ -44,7 +44,7 @@ export default function GlossaryPage() {
             </div>
           ))}
         </div>
-        <p className={s.meta}>Definitions are general descriptions, not legal or technical specifications. Spot an error? Tell us through <Link href="/feedback">feedback</Link>.</p>
+        <p className={s.meta}>Definitions are general descriptions, not legal or technical specifications. Some terms also have a dated <Link href="/topics">topic page</Link> with related searches and how to check what you read. Spot an error? Tell us through <Link href="/feedback">feedback</Link>.</p>
       </div>
       <JsonLd data={{ "@context": "https://schema.org", "@type": "DefinedTermSet", "@id": abs("/glossary#set"), name: "Keplar AI glossary", url: abs("/glossary"), inLanguage: "en", hasDefinedTerm: terms.map((t) => ({ "@type": "DefinedTerm", name: t.term, description: t.def, url: abs(`/glossary#${slugOfTerm(t.term)}`), inDefinedTermSet: abs("/glossary#set") })) }} />
       <JsonLd data={breadcrumbs([{ name: "Glossary", path: "/glossary" }])} />

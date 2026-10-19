@@ -1,5 +1,6 @@
 ---
 title: Why different AI models give different answers to the same question
+metaTitle: Why AI models give different answers
 description: The real reasons ChatGPT, Claude, Gemini and others disagree: training data, tuning, randomness, ambiguity and missing context. And how to use disagreement.
 category: How AI works
 published: 2026-10-03

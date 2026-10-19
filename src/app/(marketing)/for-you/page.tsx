@@ -14,7 +14,7 @@ import s from "@/components/sections/sections.module.css";
 export const metadata = pageMeta(
   "/for-you",
   "Keplar for you: everyday questions, one answer",
-  "Studying, health questions, money and big purchases, travel, fact-checking, writing, and personal projects. Keplar asks several AI models, shows where they disagree, and gives you one answer. Free to start.",
+  "Studying, health questions, money and purchases, travel, fact-checking, writing and projects: Keplar asks several AI models and gives you one answer.",
 );
 
 export default function ForYouPage() {

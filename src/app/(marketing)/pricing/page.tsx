@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { brand } from "@/lib/site";
 import { Pricing } from "@/components/sections/Pricing";
 import { Faq } from "@/components/sections/Faq";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -9,15 +8,20 @@ import { PlanCompare } from "@/components/growth/pricing/PlanCompare";
 import { PricingContext } from "@/components/growth/pricing/PricingContext";
 import { PricingClosing } from "@/components/growth/pricing/PricingClosing";
 import { pageMeta } from "@/lib/seo";
+import { tiers } from "@/lib/tiers";
 import { softwareApp } from "@/lib/structuredData";
 import { breadcrumbs } from "@/lib/seo-graph";
 import { faq } from "@/lib/faq";
 import { pricingContext, pricingFaq } from "@/lib/growth/pricing-page";
 
+/** "Free, Lite $20, Plus $45, Pro $99" and "Keplar Lite is $20 a month, …", from src/lib/tiers.ts so the metadata cannot drift from the plans. */
+const PLAN_LINE = tiers.filter((t) => t.price !== null).map((t) => (t.price ? `${t.name.replace(/^Keplar /, "")} $${t.price}` : t.name)).join(", ");
+const PLAN_SENTENCE = `${tiers.filter((t) => t.price).map((t) => `${t.name} is $${t.price} a month`).join(", ")}.`;
+
 export const metadata = pageMeta(
   "/pricing",
-  "Pricing: Free, Plus $45, Pro $99",
-  `Start free with ${brand.engineName}. Keplar Plus is $45/month, Keplar Pro is $99/month, and Business plans are available through our sales team. Usage you can see, never hidden.`,
+  `Pricing: ${PLAN_LINE}`,
+  `Start free. ${PLAN_SENTENCE} Business plans are at business.keplar.one. Usage you can see, never hidden.`,
 );
 
 /** General questions kept on the pricing page next to the pricing ones (one FAQPage block per page). */

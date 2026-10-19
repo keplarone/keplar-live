@@ -23,6 +23,8 @@ export const SEO_EVENTS = [
   "checkout_start",
   "subscription_complete",
   "experiment_exposure",
+  /** A free tool produced a result (src/lib/free-tools); `where` carries the tool slug, never the input. */
+  "tool_run",
 ] as const;
 export type SeoEvent = (typeof SEO_EVENTS)[number];
 /** Coarse device class from the viewport (never the user agent string). */

@@ -9,6 +9,7 @@
  */
 import { consentAllows } from "./consent";
 import type { SeoEvent, SeoSource } from "./seo/events";
+import type { Attribution } from "./seo/attribution";
 
 const VID = "keplar_vid";
 const LP = "keplar_lp";
@@ -102,10 +103,12 @@ export function captureLanding(pathname: string, search: string) {
   const known = read<Landing>(LP);
   const fresh = !known || Date.now() - known.t > LP_MAX_AGE || known.p === "(unknown)";
   const src = classifySource(document.referrer, location.hostname);
+  // A page reached by an in-site click is never the landing page: when nothing is stored yet (consent given mid-visit), leave it
+  // unset rather than record this page as where the visit began.
   const lp: Landing = fresh
-    ? { p: pathname.replace(/\/$/, "") || "/", s: src, u: q.get("utm_source")?.slice(0, 40) || undefined, c: q.get("utm_campaign")?.slice(0, 60) || undefined, t: Date.now() }
+    ? { p: src === "internal" ? "(unknown)" : pathname.replace(/\/$/, "") || "/", s: src, u: q.get("utm_source")?.slice(0, 40) || undefined, c: q.get("utm_campaign")?.slice(0, 60) || undefined, t: Date.now() }
     : known;
-  if (fresh) write(LP, lp);
+  if (fresh && src !== "internal") write(LP, lp);
   // One landing_view per browser session, and only when this page is really the session's entry (not an in-site click).
   if (!sessionStorage.getItem(SESSION_LV) && src !== "internal") {
     try {
@@ -135,4 +138,12 @@ function seoTrackInner(event: SeoEvent, extra: { where?: string; level?: string 
   }
   const lp = read<Landing>(LP);
   send({ e: event, landing: lp?.p ?? "(unknown)", src: lp?.s ?? "other", vid: vid(), utmSource: lp?.u, utmCampaign: lp?.c, ...extra });
+}
+
+/** The stored first-touch attribution for checkout (src/lib/seo/attribution.ts), or null without consent or before any landing was recorded. */
+export function storedAttribution(): Attribution | null {
+  if (!consentAllows("analytics")) return null;
+  const lp = read<Landing>(LP);
+  if (!lp || lp.p === "(unknown)") return null;
+  return { landing: lp.p, src: lp.s, ...(lp.u ? { utmSource: lp.u } : {}), ...(lp.c ? { utmCampaign: lp.c } : {}) };
 }

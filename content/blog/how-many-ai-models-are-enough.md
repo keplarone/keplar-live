@@ -1,5 +1,6 @@
 ---
 title: How many AI models are enough? Diminishing returns in multi-model answers
+metaTitle: How many AI models are enough?
 description: Why two models are not three, why ten is rarely better than five, and how diversity, question type and cost decide how many models a question deserves.
 category: How AI works
 published: 2026-10-03

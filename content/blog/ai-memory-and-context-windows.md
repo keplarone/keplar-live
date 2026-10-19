@@ -1,5 +1,6 @@
 ---
 title: AI memory and context windows: why assistants forget, and what "memory" really means
+metaTitle: AI memory and context windows, explained
 description: Context windows, chat history, saved memories and projects explained: why a long chat drifts, what memory features store, and how to control them.
 category: How AI works
 published: 2026-10-03

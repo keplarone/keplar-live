@@ -8,6 +8,7 @@ import { getMessages } from "@/lib/i18n/server";
 import { loadConsent } from "@/lib/i18n/consent";
 import { localizedPath } from "@/lib/i18n/routing";
 import { MoreButton, MoreRoot } from "@/components/ui/MobileMore";
+import { TOPIC_LINKS } from "@/lib/seo/clusters";
 import s from "./Footer.module.css";
 
 /** Site footer. In a localized layout labels come from that locale's catalog and links to translated pages stay in the locale.
@@ -48,6 +49,13 @@ export async function Footer({ locale = "en" }: { locale?: string }) {
             </MoreRoot>
             );
           })}
+        </nav>
+        {/* The search-intent topic hubs (src/lib/seo/clusters.ts): one compact row, so every hub is linked from every page. English only. */}
+        <nav className={s.topics} aria-label="Topics">
+          <span className={s.topicsLabel}>Topics</span>
+          {TOPIC_LINKS.map((l) => (
+            <Link key={l.href} href={l.href} className={s.link}>{l.label}</Link>
+          ))}
         </nav>
       </div>
       <div className={s.base}>

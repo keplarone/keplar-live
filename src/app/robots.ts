@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { isIndexable, site } from "@/lib/site";
+import { SITEMAP_INDEX_PATH, sitemapUrls } from "@/lib/seo/sitemaps";
 
 /**
  * Crawling is open for every page. Keplar's own pages carry no noindex; only private share links (/r, /c, /sp, /i) and preview
@@ -22,6 +23,8 @@ export default function robots(): MetadataRoute.Robots {
     // Named groups repeat the disallow list (a crawler obeys only its most specific group). These are the documented user agents of
     // the major search and AI-answer crawlers; naming them makes the policy explicit. Any other crawler falls under "*".
     rules: [{ userAgent: "*", ...open }, { userAgent: [...REPUTABLE_CRAWLERS], ...open }],
-    sitemap: [`${site.url}/sitemap.xml`, `${site.url}/answers-sitemap.xml`, `${site.url}/templates-sitemap.xml`, `${site.url}/topics-sitemap.xml`],
+    // The index first, then every file it lists (src/lib/seo/sitemaps.ts): a crawler that reads only the index still sees
+    // every URL, and one that ignores indexes still finds every file. Adding a sitemap there adds it here.
+    sitemap: [`${site.url}${SITEMAP_INDEX_PATH}`, ...sitemapUrls()],
   };
 }

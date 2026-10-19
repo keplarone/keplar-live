@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { adminFromHeaders } from "@/lib/ops/admin-auth";
 import { funnel, seoRows, seoSnapshot, type FunnelRow } from "@/lib/seo/events";
+import { paidByLanding } from "@/lib/seo/attribution";
 import { sitemapPaths } from "@/app/sitemap";
 import { lastmodFor } from "@/lib/content/lastmod";
 import s from "@/components/admin/Admin.module.css";
@@ -15,6 +16,7 @@ export default async function AdminSeoPage() {
   if (!admin) notFound();
   const { at: nowMs, report } = await seoSnapshot(28);
   const rows = await seoRows(28, nowMs).catch(() => null);
+  const paid = await paidByLanding(90, nowMs).catch(() => null);
   const f = rows ? funnel(rows) : null;
   const pages = sitemapPaths.map((p) => {
     const lm = lastmodFor(p);
@@ -109,6 +111,23 @@ export default async function AdminSeoPage() {
           </div>
         )}
         <p className={s.sub}>“(unknown)” means the visitor allowed Analytics after landing, or cleared storage, so the first page was not recorded. Small numbers are noise: do not compare pages until each has a few hundred visits.</p>
+      </section>
+
+      <section className={s.panel} aria-labelledby="paid-h">
+        <h2 id="paid-h">Paid plan payments by landing page (90 days)</h2>
+        {!paid ? (
+          <p className={s.empty}>The payments store could not be read.</p>
+        ) : !paid.length ? (
+          <p className={s.empty}>No plan payments in the last 90 days.</p>
+        ) : (
+          <div className={s.scroll}>
+            <table className={s.table}>
+              <thead><tr>{["Landing page", "Source", "Payments", "Charged (USD)"].map((h) => <th key={h} scope="col">{h}</th>)}</tr></thead>
+              <tbody>{paid.map((r) => <tr key={`${r.landing}|${r.src}`}><td>{r.landing}</td><td>{r.src || "—"}</td><td>{r.payments}</td><td>{r.amountUsd === null ? "—" : `$${r.amountUsd.toFixed(2)}`}</td></tr>)}</tbody>
+            </table>
+          </div>
+        )}
+        <p className={s.sub}>Attribution is the first public page of the visit and its source class, carried into checkout only when the visitor allowed Analytics and recorded by the verified Whop webhook (src/lib/seo/attribution.ts). Payments without it appear as one line. Refunded payments are left out.</p>
       </section>
 
       <section className={s.panel} aria-labelledby="fresh-h">

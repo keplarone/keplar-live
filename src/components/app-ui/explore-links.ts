@@ -4,6 +4,10 @@ export const EXPLORE_LINKS = [
   { href: "/pricing", label: "Pricing" },
   { href: "/docs", label: "Docs" },
   { href: "/guides", label: "Guides" },
+  { href: "/ai-study-tool", label: "Study" },
+  { href: "/ai-slideshow-maker", label: "Slides" },
+  { href: "/compare-ai-models", label: "Compare models" },
+  { href: "/tools", label: "Free tools" },
   { href: "/privacy", label: "Privacy" },
   { href: "/terms", label: "Terms" },
 ] as const;

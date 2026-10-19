@@ -5,6 +5,8 @@ export type BlogPost = {
   slug: string;
   path: string;
   title: string;
+  /** Short <title> for search results (≤ 51 characters before the site suffix); the long title stays the H1 and headline. */
+  metaTitle: string;
   description: string;
   category: string;
   published: string;
@@ -25,6 +27,7 @@ export function allPosts(): BlogPost[] {
         slug: l.rel,
         path: `/blogs/${l.rel}`,
         title: l.front.title,
+        metaTitle: l.front.metaTitle || l.front.title,
         description: l.front.description,
         category: l.front.category,
         published: l.front.published,

@@ -8,6 +8,8 @@ import { allDocs, docBySlug, docSections, docsIn, neighbors, sectionById } from 
 import { faqLd, faqPairs, howToLd, techArticle, tocOf } from "@/lib/kb/jsonld";
 import { pageMeta } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { ClusterLinks } from "@/components/seo/ClusterLinks";
+import { productCta } from "@/lib/seo/clusters";
 import s from "@/components/kb/kb.module.css";
 
 export const dynamicParams = false;
@@ -76,6 +78,7 @@ export default async function DocPage({ params }: Props) {
             <ul>{related.map((r) => <li key={r.p}><Link href={r.p}>{r.d!.title}</Link>: <Inline text={r.d!.description} /></li>)}</ul>
           </>
         ) : null}
+        <ClusterLinks path={d.path} />
       </article>
       <nav className={s.pnRow} aria-label="Previous and next page">
         {prev ? <Link href={prev.path} className={s.pn} data-dir="prev"><small>Previous</small><span>{prev.title}</span></Link> : <span />}
@@ -83,7 +86,7 @@ export default async function DocPage({ params }: Props) {
       </nav>
       <div className={s.cta}>
         <p>Questions this page does not answer? Write to <a href="mailto:team@keplar.one">team@keplar.one</a>, or try Keplar on your own question.</p>
-        <div className={s.ctaRow}><TrackedLink where={`docs:${d.slug}`} href="/app" size="md" arrow>Try Keplar free</TrackedLink></div>
+        <div className={s.ctaRow}>{productCta(d.path).href !== "/app" ? <TrackedLink where={`docs:${d.slug}:product`} href={productCta(d.path).href} size="md" arrow>{productCta(d.path).label}</TrackedLink> : null}<TrackedLink where={`docs:${d.slug}`} href="/app" size="md" arrow={productCta(d.path).href === "/app"} variant={productCta(d.path).href === "/app" ? "primary" : "secondary"}>Try Keplar free</TrackedLink></div>
       </div>
       <JsonLd data={techArticle({ path: d.path, title: d.title, description: d.description, published: d.updated, updated: d.updated, section: section.title, keywords: d.keywords, words: d.words, image: `/og/docs/${d.slug}` })} />
       {faq.length ? <JsonLd data={faqLd(faq)} /> : null}

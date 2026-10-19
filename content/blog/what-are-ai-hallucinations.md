@@ -1,5 +1,6 @@
 ---
 title: What are AI hallucinations, and how do you spot them?
+metaTitle: What are AI hallucinations, and how to spot them
 description: Why language models invent plausible but false details, which situations make it more likely, how to recognize it, and practical ways to reduce the risk.
 category: Trust and accuracy
 published: 2026-10-03

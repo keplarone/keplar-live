@@ -213,3 +213,7 @@
     margin-top: var(--s-10);
   }
 }
+
+/* Topic hubs: one wrapped row under the columns, quiet, same link style. */
+.topics { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-5); align-items: baseline; margin-top: var(--s-8); padding-top: var(--s-5); border-top: 1px solid var(--c-border); font-size: var(--t-small); }
+.topicsLabel { color: var(--c-ink-3); margin-right: var(--s-2); }

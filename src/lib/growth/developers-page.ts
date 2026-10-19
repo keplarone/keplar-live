@@ -81,5 +81,5 @@ export const developersPage: LandingPage = {
     { q: "How do I know when the models disagreed?", a: "The answer says so in plain words and the Disagreements section lists each position, which models took it and why." },
     { q: "Can I share an answer with a teammate?", a: "Signed-in users can create a link to one answer. It is private until you create it, not listed in search engines, expires after 90 days and can be turned off at any time." },
   ],
-  related: ["/how-it-works", "/guides/why-ai-models-disagree", "/blogs/how-to-check-an-ai-answer", "/for-founders", "/pricing"],
+  related: ["/how-it-works", "/blogs/why-ai-models-disagree", "/blogs/how-to-check-an-ai-answer", "/for-founders", "/pricing"],
 };

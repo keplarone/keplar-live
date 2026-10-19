@@ -1,5 +1,6 @@
 ---
 title: What is AI? What does AI stand for, and what can it actually do?
+metaTitle: What is AI, and what can it actually do?
 description: A plain-English explanation of artificial intelligence, machine learning and generative AI, what AI stands for, what it can and cannot do today, and common misconceptions.
 category: How AI works
 published: 2026-10-03

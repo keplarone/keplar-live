@@ -1,5 +1,6 @@
 ---
 title: What is an AI agent? How agents differ from chatbots, and what can go wrong
+metaTitle: What is an AI agent? Agents vs chatbots
 description: AI agents plan, use tools and act over several steps. A clear explanation of how they differ from chat assistants, where they are useful, and why guardrails matter.
 category: How AI works
 published: 2026-10-03

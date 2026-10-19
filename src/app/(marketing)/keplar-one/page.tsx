@@ -11,8 +11,8 @@ import s from "@/components/sections/sections.module.css";
 
 export const metadata = pageMeta(
   "/keplar-one",
-  `${brand.engineName}: the intelligence behind the intelligences`,
-  `${brand.engineName} classifies each task, selects only the AI models it needs by quality, reliability, latency, and cost, compares their reasoning, weighs the evidence behind it, and synthesizes one answer.`,
+  `${brand.engineName}: the engine behind the answer`,
+  `${brand.engineName} sizes up each question, picks only the AI models it needs by quality, reliability, speed and cost, compares their reasoning and writes one answer.`,
 );
 
 export default function KeplarOnePage() {

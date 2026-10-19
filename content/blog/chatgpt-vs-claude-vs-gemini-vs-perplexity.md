@@ -1,5 +1,6 @@
 ---
 title: ChatGPT vs Claude vs Gemini vs Perplexity: how to choose without chasing rankings
+metaTitle: ChatGPT vs Claude vs Gemini vs Perplexity
 description: A fair, dated framework for choosing between the major AI assistants: what each is publicly positioned for, what to test, and why many people use more than one.
 category: Model choice
 published: 2026-10-03

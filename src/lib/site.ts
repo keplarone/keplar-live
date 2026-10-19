@@ -123,6 +123,7 @@ export const footerNav: { heading: string; links: NavLink[] }[] = [
       { href: "/docs", label: "Docs" },
       { href: "/developers", label: "API and widget" },
       { href: "/guides", label: "Guides" },
+      { href: "/tools", label: "Free tools" },
       { href: "/blogs", label: "Blog" },
       { href: "/changelog", label: "Changelog" },
       { href: "/roadmap", label: "Roadmap" },
@@ -158,6 +159,7 @@ export const paletteOnlyPages: NavLink[] = [
   { href: "/models", label: "Models we use" },
   { href: "/glossary", label: "Glossary" },
   { href: "/prompts", label: "Prompt library" },
+  { href: "/tools", label: "Free tools", hint: "Prompt optimizer, study guide, flashcards, summarizer and more" },
 ];
 
 export const signInHref = "/signin";

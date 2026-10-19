@@ -1,0 +1,37 @@
+/* Free tools (src/components/tools): a plain form on the page canvas, a result panel below it. Tokens only; no glass, no glow. */
+.form { display: grid; gap: var(--s-5); max-width: 72ch; }
+.field { display: grid; gap: var(--s-2); }
+.field label { font-size: var(--t-small); line-height: var(--lh-small); font-weight: var(--w-medium); color: var(--c-ink-2); }
+.field input, .field textarea, .field select {
+  width: 100%; font: inherit; font-size: var(--t-body); line-height: var(--lh-body); color: var(--c-ink);
+  background: var(--c-surface-1); border: 1px solid var(--c-border); border-radius: var(--r-input); padding: var(--s-3) var(--s-4);
+}
+.field textarea { resize: vertical; min-height: 5.5rem; }
+.field input:focus-visible, .field textarea:focus-visible, .field select:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+.help { font-size: var(--t-small); color: var(--c-ink-3); }
+.row { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3); }
+.examples { display: flex; flex-wrap: wrap; gap: var(--s-2); margin: 0; padding: 0; list-style: none; }
+.chip { font: inherit; font-size: var(--t-small); color: var(--c-ink-2); background: transparent; border: 1px solid var(--c-border); border-radius: var(--r-pill); padding: var(--s-2) var(--s-4); cursor: pointer; }
+.chip:hover { color: var(--c-ink); border-color: var(--c-border-strong); }
+.note { font-size: var(--t-small); line-height: 1.6; color: var(--c-ink-3); max-width: 72ch; }
+.error { color: var(--c-err); font-size: var(--t-small); }
+.result { margin-top: var(--s-8); padding: var(--s-6); border: 1px solid var(--c-border); border-radius: var(--r-card); background: var(--c-surface-1); max-width: 78ch; }
+.meta { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-5); font-size: var(--t-small); color: var(--c-ink-3); margin: 0 0 var(--s-4); }
+.result pre, .result code { font-family: var(--f-mono); font-size: var(--t-small); }
+.citation { font-size: var(--t-body); line-height: 1.7; margin: 0 0 var(--s-3); }
+.table { width: 100%; border-collapse: collapse; font-size: var(--t-small); }
+.table th, .table td { text-align: left; vertical-align: top; padding: var(--s-2) var(--s-3); border-bottom: 1px solid var(--c-border); }
+.table th { font-weight: var(--w-medium); color: var(--c-ink-2); }
+.tableWrap { overflow-x: auto; max-width: 100%; }
+.kind { display: inline-block; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--c-ink-3); border: 1px solid var(--c-border); border-radius: var(--r-pill); padding: 1px 8px; margin-left: var(--s-2); }
+.hard { color: var(--c-ink); font-weight: var(--w-medium); }
+.filters { display: flex; flex-wrap: wrap; gap: var(--s-3) var(--s-5); align-items: center; margin-bottom: var(--s-5); font-size: var(--t-small); }
+.filters label { display: inline-flex; align-items: center; gap: var(--s-2); }
+.filters select { font: inherit; font-size: var(--t-small); padding: var(--s-1) var(--s-2); border: 1px solid var(--c-border); border-radius: var(--r-sm); background: var(--c-surface-1); color: var(--c-ink); }
+.cards { display: grid; gap: var(--s-5); grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); list-style: none; padding: 0; margin: var(--s-8) 0 0; }
+.card { border: 1px solid var(--c-border); border-radius: var(--r-card); padding: var(--s-5); display: grid; gap: var(--s-2); }
+.card h3 { margin: 0; font-size: var(--t-body); font-weight: var(--w-medium); }
+.card p { margin: 0; font-size: var(--t-small); color: var(--c-ink-2); line-height: 1.6; }
+.card a { color: inherit; text-decoration: none; }
+.card a:hover { text-decoration: underline; text-underline-offset: 3px; }

@@ -1,5 +1,6 @@
 ---
 title: What is AI "deep research", and when is it worth using?
+metaTitle: What is AI deep research, and when to use it
 description: Deep research modes run many searches and read many pages to produce a report. What they do, what they cost, where they fail, and how to judge a report.
 category: How AI works
 published: 2026-10-03

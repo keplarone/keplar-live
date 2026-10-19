@@ -1,5 +1,6 @@
 ---
 title: What happens to your prompts? A plain guide to AI privacy
+metaTitle: What happens to your prompts? AI privacy
 description: Where your questions go when you use an AI assistant, what providers may store or train on, how free and paid tiers differ, and what to keep out of a prompt.
 category: Trust and accuracy
 published: 2026-10-03

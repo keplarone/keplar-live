@@ -1,5 +1,6 @@
 ---
 title: How to show up in AI answers: a practical guide to GEO and AI search visibility
+metaTitle: How to show up in AI answers (GEO guide)
 description: Generative engine optimization, explained without hype: what is known, what is guesswork, and the content and technical basics that help both search engines and AI assistants.
 category: Trends
 published: 2026-10-03

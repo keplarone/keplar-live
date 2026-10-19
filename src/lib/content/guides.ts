@@ -2,9 +2,7 @@
  * Evergreen guides. Plain, practical, and honest: no statistics, no claims about accuracy, no invented studies.
  * Dates are the publication date of the guide as written.
  */
-import { brand } from "@/lib/site";
 
-const K = brand.name;
 
 export type Guide = {
   slug: string;
@@ -21,41 +19,6 @@ export type Guide = {
 };
 
 export const guides: Guide[] = [
-  {
-    slug: "why-ai-models-disagree",
-    path: "/guides/why-ai-models-disagree",
-    title: "Why AI models disagree, and what to do when they do",
-    metaDescription: "Different AI models can give different answers to the same question. Here is why it happens and how to use disagreement as a signal.",
-    published: "2026-10-01",
-    updated: "2026-10-01",
-    readingMinutes: 4,
-    summary: "Two chatbots, one question, two answers. That isn't a bug in your question. Here is what's going on and how to use it.",
-    sections: [
-      {
-        h2: "They are different systems",
-        p: [
-          "AI models are trained on different data, tuned in different ways, and updated at different times. Ask the same question twice and you can get two different answers, even from the same model, because the wording of an answer is partly chance.",
-        ],
-      },
-      {
-        h2: "Questions that invite disagreement",
-        p: ["Some questions have a settled answer, like the capital of a country. Others depend on judgment, recent events or incomplete information, and models vary the most there."],
-        bullets: ["Advice with trade-offs (rent or buy, which tool to pick).", "Anything that changed recently.", "Questions with a hidden assumption in them.", "Niche topics with little written about them."],
-      },
-      {
-        h2: "Disagreement is information",
-        p: [
-          "When models split, it tells you the answer isn't solid. That's the moment to slow down: look at the reasons each gives, ask a more specific follow-up, or check a primary source.",
-          `${K} is built around this idea. It asks several models, writes one answer, and shows you where they disagreed.`,
-        ],
-      },
-      {
-        h2: "Agreement isn't proof either",
-        p: ["Models trained on similar data can share the same mistake. Treat agreement as a mild reassurance and still verify anything that matters."],
-      },
-    ],
-    related: ["/ai-fact-check", "/blogs/how-to-check-an-ai-answer", "/compare-ai-models"],
-  },
   {
     slug: "study-from-a-pdf",
     path: "/guides/study-from-a-pdf",

@@ -51,7 +51,7 @@ export const lifecycleEmails: LifecycleEmail[] = [
     subject: "The models disagreed on your question. Here's how to read that",
     preheader: "A split is information, not an error.",
     body: "Hi {{firstName}},\n\nOn one of your questions, the models didn't all agree. Keplar showed you the split instead of picking a side quietly.\n\nA disagreement usually points at an assumption worth checking: a fact that changed recently, a judgment call, or missing context. Open the Disagreements section under the answer to see what each side said.",
-    cta: { label: "Why AI models disagree", path: "/guides/why-ai-models-disagree" },
+    cta: { label: "Why AI models disagree", path: "/blogs/why-ai-models-disagree" },
     reason: "Your question got a split answer for the first time.",
   },
   {

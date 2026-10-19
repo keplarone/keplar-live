@@ -7,7 +7,7 @@ import s from "@/components/kb/kb.module.css";
 import { TwoTone } from "@/components/page/TwoTone";
 import { BlogCover } from "@/components/kb/BlogCover";
 
-export const metadata = pageMeta("/blogs", "Keplar blog: honest answers to the questions people ask about AI", "Plain-English articles on the AI questions people search for, each ending with how Keplar approaches it. No invented statistics, no testimonials.");
+export const metadata = pageMeta("/blogs", "Keplar blog: plain answers to common AI questions", "Plain-English articles on the AI questions people search for, each ending with how Keplar approaches it. No invented statistics, no testimonials.");
 
 const date = (iso: string) => new Date(iso + "T12:00:00Z").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
 

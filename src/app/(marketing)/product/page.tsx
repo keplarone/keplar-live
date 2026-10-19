@@ -15,7 +15,7 @@ import s from "@/components/sections/sections.module.css";
 export const metadata = pageMeta(
   "/product",
   "Multi-model AI answers, with the work shown",
-  "Keplar asks multiple AI models your question, finds where they agree, investigates where they don't, and gives you one answer with consensus and disagreements shown.",
+  "Keplar asks multiple AI models your question, finds where they agree, investigates where they don't, and gives you one answer with the disagreements shown.",
 );
 
 export default function ProductPage() {

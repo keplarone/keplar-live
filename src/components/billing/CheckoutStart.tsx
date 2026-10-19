@@ -1,4 +1,5 @@
 "use client";
+import { storedAttribution } from "@/lib/seo-events";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -20,7 +21,7 @@ export function CheckoutStart({ plan, name, price, ready, embed }: Props) {
     setState("opening");
     setError(null);
     try {
-      const res = await fetch("/api/billing/checkout", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ plan }) });
+      const res = await fetch("/api/billing/checkout", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ plan, attribution: storedAttribution() }) });
       const j = (await res.json().catch(() => ({}))) as { url?: string; error?: string; configured?: boolean; code?: string };
       if (res.status === 401 || j.code === "unauthenticated") {
         router.push(`/signin?next=${encodeURIComponent(`/checkout?plan=${plan}`)}`);

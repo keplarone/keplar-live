@@ -1,5 +1,6 @@
 ---
 title: What is the best AI for coding? A way to choose that survives the next release
+metaTitle: Best AI for coding: how to choose
 description: Why no single AI is best for coding, what actually differs between tools, a test you can run on your own code in an afternoon, and where multi-model checking helps.
 category: Model choice
 published: 2026-10-03

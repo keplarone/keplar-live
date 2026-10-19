@@ -1,5 +1,6 @@
 ---
 title: Using AI for money, tax and legal questions: what to trust and what to confirm
+metaTitle: Using AI for money, tax and legal questions
 description: AI can explain financial and legal concepts, but jurisdiction, dates and your facts decide the answer. A guide to using it safely and when to hire a professional.
 category: Trust and accuracy
 published: 2026-10-03

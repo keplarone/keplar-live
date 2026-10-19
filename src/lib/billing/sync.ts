@@ -19,6 +19,7 @@ import { EMBED_SOURCE, verifyEmbedRef } from "./embed";
 import { extensionValidDays, packForWhopPlanId, type Pack } from "./extensions";
 import { extensionForPayment, grantExtension, revokeExtensionByPayment } from "@/lib/create/platform/extensions";
 import { revokeStudioTopUp, syncStudioTopUp } from "./studio-topup";
+import { attributionFromMetadata, type Attribution } from "@/lib/seo/attribution";
 
 type EventRow = { id: string; workspaceId: string; type: string; at: string; result: string };
 const events = () => collection<EventRow>("billing_events");
@@ -26,6 +27,8 @@ type PaymentRow = {
   id: string; workspaceId: string; email: string; plan: GrantablePlan; membershipId: string | null; at: string;
   /** What Whop says was charged, in USD (webhook payload or a later API backfill). Missing on older rows: never guessed. */
   amountUsd?: number; netUsd?: number; refundedAt?: string; disputedAt?: string;
+  /** Coarse first-touch attribution from the checkout metadata (landing page, source class, campaign); a label, never an entitlement. */
+  attribution?: Attribution;
 };
 const paymentsMap = () => collection<PaymentRow>("whop_payments");
 const SYSTEM = "system";
@@ -168,7 +171,8 @@ async function applyWhopEvent(event: WhopEvent, webhookId: string): Promise<stri
       }
       if (ids.paymentId && ids.email) {
         const amt = amountsOf(data);
-        await paymentsMap().insert({ id: ids.paymentId, workspaceId: SYSTEM, email: ids.email, plan, membershipId: ids.membershipId, at: now(), ...(amt.amountUsd !== null ? { amountUsd: amt.amountUsd } : {}), ...(amt.netUsd !== null ? { netUsd: amt.netUsd } : {}) }).catch(() => undefined);
+        const attribution = attributionFromMetadata(obj(data.metadata));
+        await paymentsMap().insert({ id: ids.paymentId, workspaceId: SYSTEM, email: ids.email, plan, membershipId: ids.membershipId, at: now(), ...(amt.amountUsd !== null ? { amountUsd: amt.amountUsd } : {}), ...(amt.netUsd !== null ? { netUsd: amt.netUsd } : {}), ...(attribution ? { attribution } : {}) }).catch(() => undefined);
       }
       await grant(ws, plan, ids, str(data.paid_at));
       result = `plan=${plan}`;

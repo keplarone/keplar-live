@@ -1,5 +1,6 @@
 ---
 title: What is the best AI for writing? Match the tool to the kind of writing
+metaTitle: Best AI for writing: match the tool to the job
 description: A practical guide to choosing AI for writing: drafting, editing, tone, long documents and research-based pieces, what to check, and how to keep your own voice.
 category: Model choice
 published: 2026-10-03

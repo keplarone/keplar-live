@@ -47,9 +47,11 @@ test("/status is linked in the footer, indexable and not in the sitemap", () => 
 });
 
 test("Keplar's pages carry no noindex (content, auth and missing pages alike); private share links keep theirs", () => {
-  for (const f of ["status", "simulation", "feedback", "vs/[slug]", "signin", "signup", "templates/[slug]", "account", "checkout"]) {
+  for (const f of ["status", "simulation", "feedback", "signin", "signup", "templates/[slug]", "account", "checkout"]) {
     assert.doesNotMatch(readFileSync(`src/app/(marketing)/${f}/page.tsx`, "utf8"), /noindex|index: false/, f);
   }
+  // The one guarded exception: a comparison the owner has not approved yet (src/lib/kb/vs.ts `approved: false`) is reachable but noindex.
+  assert.match(readFileSync("src/app/(marketing)/vs/[slug]/page.tsx", "utf8"), /v\.approved \? \{\} : \{ noindex: true \}/, "noindex only while unapproved");
   assert.doesNotMatch(readFileSync("src/lib/i18n/seo.ts", "utf8"), /status === "stable"|index: false/, "every locale and localized page is indexable");
   for (const f of ["r/[token]/page.tsx", "c/[token]/page.tsx", "sp/[token]/page.tsx"]) {
     assert.match(readFileSync(`src/app/(marketing)/${f}`, "utf8"), /index: false/, f);

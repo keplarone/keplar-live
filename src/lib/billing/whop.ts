@@ -48,7 +48,9 @@ export function whopPurchaseUrl(raw: unknown): string | null {
   }
 }
 
-export type CheckoutInput = { plan: PaidPlan; email: string; workspaceId: string; origin?: string };
+import { attributionMetadata, type Attribution } from "@/lib/seo/attribution";
+
+export type CheckoutInput = { plan: PaidPlan; email: string; workspaceId: string; origin?: string; attribution?: Attribution | null };
 
 /** The request body for an inline monthly plan; the first charge is the plan price (no extra initial fee). */
 export function checkoutBody(input: CheckoutInput & { plan: Exclude<PaidPlan, "lite"> }) {
@@ -66,7 +68,7 @@ export function checkoutBody(input: CheckoutInput & { plan: Exclude<PaidPlan, "l
       visibility: "hidden",
       product: { external_identifier: p.productKey, title: p.name },
     },
-    metadata: { email: input.email.trim().toLowerCase(), plan: input.plan, workspace_id: input.workspaceId, source: "keplar.one" },
+    metadata: { email: input.email.trim().toLowerCase(), plan: input.plan, workspace_id: input.workspaceId, source: "keplar.one", ...attributionMetadata(input.attribution) },
     redirect_url: `${baseUrl(input.origin)}/account?checkout=success`,
   };
 }
@@ -75,7 +77,7 @@ export function checkoutBody(input: CheckoutInput & { plan: Exclude<PaidPlan, "l
 export function liteCheckoutBody(input: CheckoutInput) {
   return {
     plan_id: embedPlanId("lite") ?? "",
-    metadata: { email: input.email.trim().toLowerCase(), plan: "lite", workspace_id: input.workspaceId, source: "keplar.one" },
+    metadata: { email: input.email.trim().toLowerCase(), plan: "lite", workspace_id: input.workspaceId, source: "keplar.one", ...attributionMetadata(input.attribution) },
     redirect_url: `${baseUrl(input.origin)}/account?checkout=success`,
   };
 }

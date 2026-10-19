@@ -9,10 +9,14 @@ import { TryBox } from "./TryBox";
 import hero from "@/components/page/RoutePlaceholder.module.css";
 import prose from "@/components/sections/sections.module.css";
 import { TwoTone } from "@/components/page/TwoTone";
+import { ClusterLinks } from "@/components/seo/ClusterLinks";
+import { productCta } from "@/lib/seo/clusters";
 
 /** Shared layout for the indexable landing and use-case pages. One h1, a primary CTA above the fold, a no-signup try box, FAQ, related links. */
 export function LandingTemplate({ page }: { page: LandingPage }) {
   const related = page.related.map((p) => ({ path: p, title: landingBySlug(p.slice(1))?.label ?? RELATED_LABELS[p] ?? p }));
+  // The primary action is the cluster's product route (Study pages open Study mode, slides pages open Slides); the chat stays one click away.
+  const cta = productCta(page.path);
   return (
     <>
       <header className={hero.hero}>
@@ -21,8 +25,8 @@ export function LandingTemplate({ page }: { page: LandingPage }) {
           <h1 className={hero.title}><TwoTone text={page.h1} /></h1>
           <p className={hero.lede}>{page.lede}</p>
           <div className={hero.ctaRow}>
-            <TrackedLink where={`${page.slug}:hero`} href="/app" size="lg" arrow>Try Keplar free</TrackedLink>
-            <TrackedLink where={`${page.slug}:hero-pricing`} href="/pricing" size="lg" variant="secondary">See plans</TrackedLink>
+            <TrackedLink where={`${page.slug}:hero`} href={cta.href} size="lg" arrow>{cta.label}</TrackedLink>
+            <TrackedLink where={`${page.slug}:hero-pricing`} href={cta.href === "/app" ? "/pricing" : "/app"} size="lg" variant="secondary">{cta.href === "/app" ? "See plans" : "Ask Keplar"}</TrackedLink>
           </div>
         </div>
       </header>
@@ -42,13 +46,14 @@ export function LandingTemplate({ page }: { page: LandingPage }) {
               <li key={r.path}><Link href={r.path}>{r.title}</Link></li>
             ))}
           </ul>
+          <ClusterLinks path={page.path} />
         </div>
       </section>
       <Faq title="Questions" entries={page.faq} />
       <section className={prose.section} style={{ paddingTop: 0, textAlign: "center" }}>
         <div className={prose.inner}>
           <div className={hero.ctaRow} style={{ justifyContent: "center", marginTop: 0 }}>
-            <TrackedLink where={`${page.slug}:footer`} href="/app" size="lg" arrow>Try Keplar free</TrackedLink>
+            <TrackedLink where={`${page.slug}:footer`} href={cta.href} size="lg" arrow>{cta.label}</TrackedLink>
             <TrackedLink where={`${page.slug}:footer-signup`} href="/signup" size="lg" variant="secondary">Create a free account</TrackedLink>
           </div>
         </div>
@@ -69,7 +74,6 @@ const RELATED_LABELS: Record<string, string> = {
   "/guides/study-from-a-pdf": "How to study from a PDF with AI",
   "/guides/slide-deck-from-notes": "How to turn rough notes into a slide deck",
   "/blogs/how-to-check-an-ai-answer": "How to check an AI answer",
-  "/guides/why-ai-models-disagree": "Why AI models disagree",
   "/download": "Download the desktop app",
   "/docs/studio/roblox-studio-mode": "Docs: Roblox Studio mode",
   "/docs/studio/roblox-cloud": "Docs: Roblox Cloud overnight jobs",

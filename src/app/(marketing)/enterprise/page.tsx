@@ -12,8 +12,8 @@ import b from "@/components/sections/BusinessTools.module.css";
 
 export const metadata = pageMeta(
   "/enterprise",
-  "Keplar for business: commerce, CRM, agents, and control",
-  "Run a business? Keplar Business adds optional commerce, CRM, inbox, a dashboard, and autonomous agents, with spend caps, permissions, audit logs, approvals, and deployment gates.",
+  "Keplar for business: commerce, CRM and agents",
+  "Keplar Business adds optional commerce, CRM, an inbox, a dashboard and autonomous agents, with spend caps, permissions, audit logs and approvals.",
 );
 
 export default function EnterprisePage() {

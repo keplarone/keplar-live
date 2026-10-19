@@ -1,5 +1,6 @@
 ---
 title: Can AI help you study and write essays without cheating yourself?
+metaTitle: Can AI help you study without cheating yourself?
 description: How to use AI for studying, practice and essay feedback in ways that build understanding, what to avoid, and how to follow your school's rules.
 category: How-to
 published: 2026-10-03

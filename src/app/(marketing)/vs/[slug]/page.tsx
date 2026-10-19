@@ -19,7 +19,8 @@ const date = (iso: string) => new Date(iso + "T12:00:00Z").toLocaleDateString("e
 export async function generateMetadata({ params }: Props) {
   const v = vsBySlug((await params).slug);
   if (!v) return {};
-  return pageMeta(`/vs/${v.slug}`, v.title, v.description, { article: { published: VS_ACCESSED, modified: VS_ACCESSED } });
+  // A comparison the owner has not approved yet (vs.ts `approved: false`) is reachable but noindex: its facts are still being checked.
+  return pageMeta(`/vs/${v.slug}`, v.title, v.description, { article: { published: VS_ACCESSED, modified: VS_ACCESSED }, ...(v.approved ? {} : { noindex: true }) });
 }
 
 export default async function VsPage({ params }: Props) {

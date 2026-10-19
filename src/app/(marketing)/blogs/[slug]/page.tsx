@@ -10,6 +10,8 @@ import { allDocs } from "@/lib/kb/docs";
 import { blogPosting, faqLd, faqPairs, tocOf } from "@/lib/kb/jsonld";
 import { pageMeta } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { ClusterLinks } from "@/components/seo/ClusterLinks";
+import { productCta } from "@/lib/seo/clusters";
 import s from "@/components/kb/kb.module.css";
 
 export const dynamicParams = false;
@@ -23,7 +25,7 @@ const date = (iso: string) => new Date(iso + "T12:00:00Z").toLocaleDateString("e
 export async function generateMetadata({ params }: Props) {
   const p = postBySlug((await params).slug);
   if (!p) return {};
-  return pageMeta(p.path, p.title, p.description, { article: { published: p.published, modified: p.updated, authors: FOUNDERS.map((f) => f.name) }, image: `/og/blogs/${p.slug}` });
+  return pageMeta(p.path, p.metaTitle, p.description, { article: { published: p.published, modified: p.updated, authors: FOUNDERS.map((f) => f.name) }, image: `/og/blogs/${p.slug}` });
 }
 
 export default async function BlogPost({ params }: Props) {
@@ -58,9 +60,10 @@ export default async function BlogPost({ params }: Props) {
               <ul>{more.map((m) => <li key={m.path}><Link href={m.path}>{m.title}</Link>: <Inline text={m.description} /></li>)}</ul>
             </div>
           ) : null}
+          <div className={s.prose} style={{ marginTop: "var(--s-12)" }}><ClusterLinks path={p.path} /></div>
           <div className={s.cta}>
             <p>See it on your own question. Keplar is free to try with no signup, and the answer shows which models responded and where they differed.</p>
-            <div className={s.ctaRow}><TrackedLink where={`blog:${p.slug}`} href="/app" size="md" arrow>Try Keplar free</TrackedLink></div>
+            <div className={s.ctaRow}>{productCta(p.path).href !== "/app" ? <TrackedLink where={`blog:${p.slug}:product`} href={productCta(p.path).href} size="md" arrow>{productCta(p.path).label}</TrackedLink> : null}<TrackedLink where={`blog:${p.slug}`} href="/app" size="md" arrow={productCta(p.path).href === "/app"} variant={productCta(p.path).href === "/app" ? "primary" : "secondary"}>Try Keplar free</TrackedLink></div>
           </div>
         </div>
         <Toc items={toc} />

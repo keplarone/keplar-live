@@ -15,8 +15,8 @@ import { TwoTone } from "@/components/page/TwoTone";
 // Copy: /workspace/marketing/launch/how-it-works-page.md (revision of Sep 27, 2026).
 export const metadata = pageMeta(
   "/how-it-works",
-  `How ${brand.companyName} Works: Multiple AI Models, One Answer`,
-  `${brand.companyName} sends your question to the models it needs, investigates where they disagree, and writes one synthesized answer with the agreement and disagreements shown.`,
+  `How ${brand.name} works: multiple AI models, one answer`,
+  `${brand.name} sends your question to the models it needs, investigates where they disagree, and writes one answer with the agreement and disagreements shown.`,
   { absoluteTitle: true },
 );
 
@@ -166,6 +166,7 @@ export default function HowItWorksPage() {
       <section className={s.closing} aria-labelledby="closing-title">
         <h2 id="closing-title" className={s.h2}>Ask your first question</h2>
         <ButtonLink href="/app" arrow size="lg">Try it free</ButtonLink>
+        <p>Or read <Link href="/answers">answers people chose to publish</Link>, each with its models and disagreements shown.</p>
       </section>
     </article>
     </>
