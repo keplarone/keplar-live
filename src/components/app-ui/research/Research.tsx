@@ -239,7 +239,7 @@ export function ResearchChecks({ check }: { check?: CitationCheck }) {
   if (!check) return null;
   const sum = check.summary;
   return (
-    <ClaimList claims={check.claims} flagged={sum.notVerified + sum.partiallySupported} attr="data-research-checks"
+    <ClaimList claims={check.claims} flagged={sum.notVerified + sum.partiallySupported + (sum.conflicting ?? 0)} attr="data-research-checks"
       note="Keplar compared each cited sentence with what was read from its page: the passage the search returned and a model's notes on it. It matches words and numbers, not meaning, so a paraphrase can show here; open the page before relying on these." />
   );
 }

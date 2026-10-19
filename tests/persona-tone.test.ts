@@ -41,13 +41,13 @@ test("the tone prompt asks for warmth, matched empathy, first-person feelings as
   assert.ok(SMALLTALK_SYSTEM_PROMPT.includes(VOICE_PROMPT), "the voice layer is still there");
 });
 
-test("a real sense of humor, with judgment: everywhere Keplar writes, never when the person is upset or the subject is sensitive", () => {
-  assert.ok(HUMAN_TONE_PROMPT.includes(HUMOR_PROMPT), "writers get the full humor guidance");
-  for (const w of ["dry, quick and observational", "at most one", "never instead of it", "callback", "self-deprecation about being an AI", "frustrated, sad, stressed", "health, legal, safety", "code, math, data", "at their expense", "blur a fact"]) assert.match(HUMOR_PROMPT, new RegExp(w, "i"), w);
-  assert.match(HUMAN_TONE_SHORT, /sense of humor/);
-  assert.match(HUMAN_TONE_SHORT, /never when they are upset/);
-  assert.match(SMALLTALK_SYSTEM_PROMPT, /quick-witted/);
-  assert.match(PLAYFUL_SYSTEM, /fresh joke/);
+test("no joke after every answer: humor only when the person is joking, never when upset or on a sensitive subject (owner, 2026-10-19)", () => {
+  assert.ok(HUMAN_TONE_PROMPT.includes(HUMOR_PROMPT), "writers get the humor rule");
+  for (const w of ["do not add jokes, puns, wordplay, wry asides or funny closing lines", "clearly joking", "never replaces or blurs the answer", "frustrated, sad, stressed", "health, legal, safety", "code, math, data", "at their expense"]) assert.match(HUMOR_PROMPT, new RegExp(w, "i"), w);
+  for (const p of [HUMOR_PROMPT, HUMAN_TONE_SHORT, SMALLTALK_SYSTEM_PROMPT]) assert.doesNotMatch(p, /touch of wit|playful or wry touch|quick-witted|sense of humor/i);
+  assert.match(HUMAN_TONE_SHORT, /no jokes, puns or witty asides unless the person is clearly joking/);
+  assert.match(SMALLTALK_SYSTEM_PROMPT, /no jokes, puns or wisecracks unless they are joking/);
+  assert.match(PLAYFUL_SYSTEM, /fresh joke/, "asking for a joke still gets one");
   for (const m of ["frustrated", "sad", "stressed"] as const) assert.match(moodNote(m), /jokes/, m);
   assert.doesNotMatch(moodNote("crisis"), /playful/);
 });
@@ -101,10 +101,10 @@ test("humor is decided in code too: off for serious subjects even in a calm tone
     assert.equal(humorCall(q, "neutral"), "off", q);
     assert.match(humorNote(q, "neutral"), /subject is serious\. No jokes, wit, wordplay or wry asides/, q);
   }
-  // Everyday words that only look serious are light subjects: one fresh touch of wit, in the opening or closing line.
+  // Everyday questions get no humor note at all: the general rule (no jokes) applies. They used to be asked for "one touch of wit".
   for (const q of ["Best shoes for a basketball court?", "How do I paint a smooth brush stroke?", "Why are my phone charges so high this month?", "What's a good name for a cat?", "How long should I boil an egg?", "what's the best way to keep basil alive on a kitchen windowsill?"]) {
-    assert.equal(humorCall(q, "neutral"), "light", q);
-    assert.match(humorNote(q, "neutral"), /subject is light\. Include exactly one short, fresh touch of wit[\s\S]*opening or the closing line, not inside a step/, q);
+    assert.equal(humorCall(q, "neutral"), "default", q);
+    assert.equal(humorNote(q, "neutral"), "", q);
   }
   // Code, math, exact formats, error reports and bare fragments are left to the general rule (no humor there).
   for (const q of ["write a python function that reverses a string", "what is 17 * 23", "convert this list to JSON please", "I get a TypeError when I run npm start", "solve the equation x^2 = 9", "capital of France?"]) {

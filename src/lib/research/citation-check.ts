@@ -7,6 +7,9 @@
  * numbers, not meaning, so a paraphrase can read as "not verified" and the answer says so. Nothing is removed; statements are labelled.
  *
  * Numbers carry the most weight: a cited sentence whose figures appear in none of its pages is "not verified", whatever its words.
+ * When a cited page is on the same topic and gives a different figure for the same unit ("330 metres" against the sentence's
+ * "300 metres"), the statement is "conflicting" and the page's own wording is quoted. The passage compared is the fuller text the
+ * search returned (up to PAGE_TEXT_CHARS, kept server side), not only the short snippet the card shows.
  * Pure and linear in the answer's length.
  */
 import type { CitationCheck, LiveClaim, ResearchSource } from "@/lib/orchestration/types";
@@ -47,9 +50,18 @@ export function citedSentences(markdown: string): { text: string; cites: number[
   return out;
 }
 
-/** What was read from each page: its passage plus every note line that cites it. */
-export function evidenceByPage(sources: ResearchSource[], notes: string[]): Map<number, string[]> {
-  const ev = new Map<number, string[]>(sources.map((s) => [s.n, s.snippet ? [s.snippet] : []]));
+/** How much of a page's returned text is compared (server side only; the card itself shows the 280-character snippet). */
+export const PAGE_TEXT_CHARS = 4000;
+
+/**
+ * What was read from each page: its passage plus every note line that cites it. `pageText`, when given, holds the fuller text the
+ * search returned for a page (up to PAGE_TEXT_CHARS) and is used in place of the clipped snippet.
+ */
+export function evidenceByPage(sources: ResearchSource[], notes: string[], pageText?: ReadonlyMap<number, string>): Map<number, string[]> {
+  const ev = new Map<number, string[]>(sources.map((s) => {
+    const passage = pageText?.get(s.n) ?? s.snippet;
+    return [s.n, passage ? [passage] : []];
+  }));
   for (const line of notes.join("\n").split(/\n+/)) {
     for (const m of line.matchAll(/\[(\d{1,2})\]/g)) ev.get(Number(m[1]))?.push(line.replace(/\s*\[\d{1,2}\]/g, "").replace(/^\s*[-*•]\s*/, "").trim());
   }
@@ -70,6 +82,16 @@ export function checkCitations(markdown: string, sources: ResearchSource[], evid
     const termShare = terms.length ? terms.filter((t) => pageTerms.has(t)).length / terms.length : 0;
     let status: LiveClaim["status"];
     let note: string | undefined;
+    // On topic, but the page gives a different figure for the same unit ("330 metres" against "300 metres"): the page says otherwise.
+    // Topic is judged without the unit words themselves ("million" on a coffee page doesn't make it about Paris).
+    const topic = terms.filter((t) => !UNIT_TERMS.has(t));
+    const topicShare = topic.length ? topic.filter((t) => pageTerms.has(t)).length / topic.length : 0;
+    const conflict = topicShare >= 0.25 ? conflictIn(text, cites, evidence, pageNums) : undefined;
+    if (conflict) {
+      // The card shows it as "Source n says: …" (Research.tsx ClaimList), so no separate note.
+      claims.push({ text, citations: cites, status: "conflicting", conflict });
+      continue;
+    }
     if (!lines.length) {
       status = "not-verified";
       note = "Nothing was kept from the cited page to compare with.";
@@ -86,9 +108,37 @@ export function checkCitations(markdown: string, sources: ResearchSource[], evid
   }
   const count = (st: LiveClaim["status"]) => claims.filter((c) => c.status === st).length;
   return {
-    summary: { claims: claims.length, supported: count("supported"), partiallySupported: count("partially-supported"), notVerified: count("not-verified") },
+    summary: { claims: claims.length, supported: count("supported"), partiallySupported: count("partially-supported"), conflicting: count("conflicting"), notVerified: count("not-verified") },
     claims: claims.filter((c) => c.status !== "supported").sort((a, b) => RANK[a.status] - RANK[b.status]).slice(0, MAX_LISTED),
   };
+}
+
+const UNITS = new Set(["%", "percent", "million", "billion", "trillion", "thousand", "km", "kilometres", "kilometers", "miles", "kg", "tonnes", "tons", "people", "users", "employees", "dollars", "euros", "metres", "meters", "feet", "ft", "degrees", "days", "hours", "minutes", "years", "points"]);
+const UNIT_TERMS = new Set([...UNITS].map(stem));
+/** "X unit" pairs in a text ("45 %", "3.5 million", "330 metres"), numbers normalised, units lower-cased. */
+function measures(t: string): { n: string; unit: string; at: number }[] {
+  const out: { n: string; unit: string; at: number }[] = [];
+  for (const m of t.matchAll(/(?<![\w.])(\d[\d,]*(?:\.\d+)?)\s?(%|[a-zA-Z]{1,12})/g)) {
+    const unit = m[2].toLowerCase();
+    if (UNITS.has(unit)) out.push({ n: normNum(m[1]), unit: unit === "percent" ? "%" : unit, at: m.index! });
+  }
+  return out;
+}
+
+/** A cited page that gives a different figure for one of the sentence's "X unit" pairs (and not X anywhere it was read). Pure. */
+function conflictIn(text: string, cites: number[], evidence: Map<number, string[]>, pageNums: Set<string>): { n: number; quote: string } | undefined {
+  for (const s of measures(text)) {
+    if (pageNums.has(s.n)) continue;
+    for (const n of cites) {
+      for (const line of evidence.get(n) ?? []) {
+        const other = measures(line).find((p) => p.unit === s.unit && p.n !== s.n);
+        if (!other) continue;
+        const from = line.lastIndexOf(" ", Math.max(0, other.at - 90)) + 1;
+        return { n, quote: line.slice(from, other.at + 90).trim().slice(0, 200) };
+      }
+    }
+  }
+  return undefined;
 }
 
 /** The read line closest to the sentence, so the person can see what the page did say. */

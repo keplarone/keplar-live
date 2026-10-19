@@ -74,6 +74,16 @@ Rules:
 
 `BuiltInDecision` is the decision before the permit exists: `allow`, `require_approval` (reasons, optional risk, message) or `deny` (status, code, message).
 
+### Tool-call gate
+
+`registerToolCallSecurityGate` in `src/lib/security/tool-gate.ts` is that plug-in for `mcp.call`. `authorize-mcp.ts` registers it when the MCP policy loads, so it runs with the other gates: after the action policy, the team check, the plan check, and the firewall.
+
+- The scanner, `runSecurityGate`, returns `{ ok, findings }` plus `failAt` and `checksRun`. The registered gate (`toolCallOpinion`) turns that report into `null` or a `deny`. It never returns `allow`. A clean report is `null`, which leaves the built-in decision unchanged.
+- `missing-route-auth` applies only to route files (`app/api/**/route.ts`, `pages/api/**`, and the same paths in `.tsx`, `.js`, or `.mjs`) that export a handler and do not call `getSession`, `currentWorkspace`, `mcpOwner`, `requireUser`, `requireAuth`, or `requireOwner`. A tool call is scanned as `mcp-call/<tool>.json` with only `hard-coded-secret` and `unsafe-execution`, so that finding is never raised from tool arguments.
+- Severities map by `failAt`, which defaults to `high`. Rank is `low` < `medium` < `high` < `critical`. A finding at `high` or above makes `ok` false, and the tool-call gate turns that into a `deny` (`secret_in_args` or `unsafe_execution`, status 403). A finding below `failAt` changes nothing. The gate never returns `require_approval`.
+- If the built-in decision is already `deny`, the gate returns `null`. A secret the firewall already blocked therefore stays `firewall_blocked`.
+- The scanner skips a file whose path or contents is not a string, instead of throwing. `JSON.stringify` of the arguments is caught and becomes a `deny` (`unsafe_execution`). The gate does not throw, so `authorize` does not record `gate_error` for it.
+
 ## Permit
 
 On allow, `authorize` puts the permit object in a private set and returns it. `permitMatches(permit, { action, binding })` is true only for that object. Copying the fields into a new object does not match. For `mcp.call` the binding is `mcpCallBinding(serverUrl, tool, args)` (a hash). `callTool` recomputes it from the URL, tool and arguments it was given and throws `McpError` kind `forbidden` ("This call was not authorized.") before any request when the permit does not match. The same permit may be reused for the bounded read retries of that one call.

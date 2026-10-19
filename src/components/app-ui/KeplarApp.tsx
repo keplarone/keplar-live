@@ -194,7 +194,7 @@ function historyFor(thread: Thread | undefined, uptoId?: string) {
   return out.slice(-40);
 }
 
-export default function KeplarApp({ initialView }: { initialView?: View }) {
+export default function KeplarApp({ initialView, retrievalEnabled = false }: { initialView?: View; retrievalEnabled?: boolean }) {
   // Client-only component (no SSR), so the address is readable on the first render.
   const [oauthBack] = useState(() => {
     if (typeof window === "undefined") return null;
@@ -1439,6 +1439,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                 draftKey={draftKeyFor(state.scope, state.activeThreadId, Boolean(state.threads.find((x) => x.id === state.activeThreadId)?.private ?? state.privateNext))}
                 privateChat={messages.length === 0 && !family ? { on: Boolean(state.privateNext), onToggle: () => dispatch({ type: "private-next", on: !state.privateNext }) } : null}
                 recordNotes={messages.length === 0}
+                retrievalEnabled={retrievalEnabled}
               />
               <p className={s.dockNote}>Keplar can be wrong, even when models agree. Verify important decisions.</p>
             </div>
