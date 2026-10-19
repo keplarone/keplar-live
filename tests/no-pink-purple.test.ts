@@ -19,6 +19,8 @@ const SKIP_FILE = [
   /src\/components\/space\/SpaceChrome\.tsx$/,
   /src\/components\/space\/Starfield\.tsx$/,
 ];
+/* Third-party brand marks, exact colours per file: Gemini's violet stop in the rotating greeting's brand gradient (RotatingModelName). */
+const BRAND_COLOURS: Record<string, string[]> = { "src/styles/gemini.css": ["#9177c7"] };
 const EXT = /\.(css|ts|tsx|js|mjs|svg|html)$/;
 const TW = /\b(?:purple|violet|fuchsia|pink|indigo)-\d{2,3}\b/;
 
@@ -98,7 +100,7 @@ test("no pink, magenta, purple or violet accents, and no Tailwind purple utiliti
       if (TW.test(line)) hits.push(`${f}:${i + 1}: ${line.trim().slice(0, 120)}`);
       for (const { label, rgb } of coloursIn(line)) {
         const info = hsv(...rgb);
-        if (bannedHue(info)) hits.push(`${f}:${i + 1}: ${label} hue ${info!.h}: ${line.trim().slice(0, 100)}`);
+        if (bannedHue(info) && !BRAND_COLOURS[f]?.includes(label.toLowerCase())) hits.push(`${f}:${i + 1}: ${label} hue ${info!.h}: ${line.trim().slice(0, 100)}`);
       }
     });
   }

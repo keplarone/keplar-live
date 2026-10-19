@@ -8,6 +8,7 @@ import { Button } from "@/components/kit";
 import { usePrefs } from "@/lib/use-prefs";
 import { playDoneSound } from "@/lib/prefs";
 import { KeplarSymbol } from "@/components/brand";
+import { RotatingModelName } from "./RotatingModelName";
 import { HOME_HINTS, useRotatingHint } from "./rotating-hint";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import type { Attachment, ComposerModes, KeplarRequest, ResearchEvent } from "@/lib/orchestration/types";
@@ -1357,8 +1358,9 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
                             <span>{welcome ? "Welcome," : `${dayGreeting(new Date().getHours())},`}</span> <span className={s.welcomeName}>{firstName}</span>
                           </>
                         ) : state.ledger.synced ? (
-                          // "Keplar" carries the same blue-to-teal greeting fill as a signed-in name (src/styles/gemini.css).
-                          <span>How can <span className={s.welcomeName}>Keplar</span> help you today?</span>
+                          // The name slot cycles through the models Keplar asks, each in its brand gradient (RotatingModelName). Three
+                          // sibling spans, so no gradient-filled span wraps the slot and shows through while a name fades.
+                          <><span>How can </span><RotatingModelName /><span> help you today?</span></>
                         ) : <span>Welcome to Keplar.</span>}
                       </span>
                     </h1>

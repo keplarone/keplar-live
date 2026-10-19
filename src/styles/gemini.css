@@ -190,6 +190,23 @@ html:not(:has([data-space-root], [data-kb]))[data-theme="light"] [data-welcome] 
   /* darker stops on white: #1a5fe0 5.6:1, #1570d6 4.9:1, #007f99 4.7:1 (large text needs 3:1) */
   background-image: linear-gradient(90deg, #1a5fe0 0%, #1570d6 45%, #007f99 100%);
 }
+/* The rotating model name in the signed-out greeting (RotatingModelName.tsx): each name in its brand's colors, as a gradient the
+   module animates (background-position). Dark stops are 4.3:1 or more on #131314, light stops 3.9:1 or more on white (large text
+   needs 3:1). The slot and its measuring spans carry no fill of their own, so nothing shows through while a name fades. */
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] [data-model-slot],
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] [data-model-slot] span:not([data-model]) {
+  background: none !important;
+}
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] [data-model="claude"] { background-image: linear-gradient(90deg, #d97757, #f2a57e, #e0835e, #d97757); }
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] [data-model="chatgpt"] { background-image: linear-gradient(90deg, #10a37f, #5fd4b0, #19c37d, #10a37f); }
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] [data-model="deepseek"] { background-image: linear-gradient(90deg, #4d6bfe, #8ea2ff, #6b84ff, #4d6bfe); }
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] [data-model="mistral"] { background-image: linear-gradient(90deg, #ffd800, #ff8205, #fa500f, #ff8205, #ffd800); }
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] [data-model="gemini"] { background-image: linear-gradient(90deg, #4796e3, #9177c7, #ca6673, #9177c7, #4796e3); }
+html:not(:has([data-space-root], [data-kb]))[data-theme="light"] [data-welcome] [data-model="claude"] { background-image: linear-gradient(90deg, #b5532f, #c96442, #a3471f, #b5532f); }
+html:not(:has([data-space-root], [data-kb]))[data-theme="light"] [data-welcome] [data-model="chatgpt"] { background-image: linear-gradient(90deg, #0b7a5f, #0d8c6c, #08664f, #0b7a5f); }
+html:not(:has([data-space-root], [data-kb]))[data-theme="light"] [data-welcome] [data-model="deepseek"] { background-image: linear-gradient(90deg, #3651e0, #4d6bfe, #2a40c4, #3651e0); }
+html:not(:has([data-space-root], [data-kb]))[data-theme="light"] [data-welcome] [data-model="mistral"] { background-image: linear-gradient(90deg, #b45309, #c2410c, #e10500, #c2410c, #b45309); }
+html:not(:has([data-space-root], [data-kb]))[data-theme="light"] [data-welcome] [data-model="gemini"] { background-image: linear-gradient(90deg, #2f6fc0, #7a5fb8, #b4505d, #7a5fb8, #2f6fc0); }
 @media (forced-colors: active) {
   html:not(:has([data-space-root], [data-kb])) [data-welcome] span {
     background: none;

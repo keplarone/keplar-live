@@ -69,7 +69,9 @@ test("no electric blue-dominant spam (teal OK: green channel stays close to blue
     "src/styles/space.css": ["61,132,213"],
     // Empty-home wash and greeting only: Keplar blue #2f6bff, and the light greeting stops #1a5fe0 / #1570d6.
     // Teal and cyan stops stay under the green-channel rule and are not listed here.
-    "src/styles/gemini.css": ["47,107,255", "26,95,224", "21,112,214"],
+    // Plus the rotating greeting's third-party brand gradients (RotatingModelName): DeepSeek's blue #4d6bfe with its #6b84ff tint and
+    // light-theme #3651e0 / #2a40c4 steps, and Gemini's light-theme blue #2f6fc0. Model marks, not Keplar accents.
+    "src/styles/gemini.css": ["47,107,255", "26,95,224", "21,112,214", "77,107,254", "107,132,255", "54,81,224", "42,64,196", "47,111,192"],
     // Keplar Business's Apple-led system: the one action colour (#0071e3) and its link (#0066cc) and pressed (#0058b0) steps.
     "src/components/business-site/tokens.css": ["0,113,227", "0,102,204", "0,88,176"],
   };

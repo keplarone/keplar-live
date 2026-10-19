@@ -1,0 +1,60 @@
+/* The greeting's rotating model name (RotatingModelName.tsx). The brand gradients live in src/styles/gemini.css next to the
+   greeting's own fill; this file is the slot, the switch and the shimmer. Transform, opacity, filter and width only. */
+
+.slot {
+  position: relative;
+  display: inline-block;
+  vertical-align: bottom;
+  white-space: nowrap;
+  transition: width 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* The current name is in flow (it gives the slot its height and baseline); the outgoing one sits on top of it. */
+.word {
+  display: inline-block;
+  background-size: 220% 100%;
+  animation: shimmer 4.8s ease-in-out infinite alternate;
+  will-change: transform, opacity, filter;
+}
+.out {
+  position: absolute;
+  left: 0;
+  top: 0;
+  animation: lift-out 520ms cubic-bezier(0.4, 0, 1, 1) both, shimmer 4.8s ease-in-out infinite alternate;
+}
+.in {
+  animation: roll-in 620ms cubic-bezier(0.16, 1, 0.3, 1) both, shimmer 4.8s ease-in-out infinite alternate;
+}
+
+/* Every name rendered once, invisibly, so the slot can take the next name's width before it arrives. */
+.measure {
+  position: absolute;
+  left: 0;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.measure > span {
+  position: absolute;
+  white-space: nowrap;
+}
+
+@keyframes roll-in {
+  from { opacity: 0; transform: translateY(0.55em) scale(0.96); filter: blur(10px); }
+  60% { filter: blur(0); }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+@keyframes lift-out {
+  from { opacity: 1; transform: none; filter: blur(0); }
+  to { opacity: 0; transform: translateY(-0.5em) scale(1.02); filter: blur(10px); }
+}
+/* The brand gradient drifts back and forth across the word. */
+@keyframes shimmer {
+  from { background-position: 0% 50%; }
+  to { background-position: 100% 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slot { transition: none; }
+  .word, .in, .out { animation: none; }
+}
