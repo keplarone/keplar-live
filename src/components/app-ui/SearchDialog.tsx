@@ -50,6 +50,7 @@ export function SearchDialog({ threads, onClose, onOpen, onNew, onView }: Props)
       { kind: "action", group: "Go to", id: "projects", title: "Projects", run: () => onView("projects"), keywords: "folders files" },
       { kind: "action", group: "Go to", id: "slides", title: "Slides", run: () => onView("slides"), keywords: "deck presentation" },
       { kind: "action", group: "Go to", id: "study", title: "Study", run: () => onView("study"), keywords: "flashcards quiz learn" },
+      { kind: "action", group: "Go to", id: "tasks", title: "Tasks", run: () => onView("tasks"), keywords: "runs jobs progress agents approvals done working keep" },
       { kind: "action", group: "Go to", id: "deployments", title: "Deployments", run: () => onView("deployments"), keywords: "publish live sites" },
       { kind: "action", group: "Go to", id: "apps", title: "Connected apps", run: () => onView("apps"), keywords: "mcp tools integrations connections" },
       { kind: "action", group: "Go to", id: "history", title: "All chats", run: () => onView("history"), keywords: "history past threads" },

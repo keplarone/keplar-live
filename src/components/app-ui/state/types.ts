@@ -242,7 +242,7 @@ export type Thread = {
 
 export type Project = { id: string; name: string; createdAt: number };
 
-export type View = "thread" | "projects" | "agents" | "create" | "slides" | "study" | "business" | "history" | "deployments" | "approvals" | "studio" | "apps";
+export type View = "thread" | "projects" | "agents" | "create" | "slides" | "study" | "business" | "history" | "deployments" | "approvals" | "studio" | "apps" | "tasks";
 
 /**
  * Mirror of the server Usage meter (GET /api/compute). The ledger itself

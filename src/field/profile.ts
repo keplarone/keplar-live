@@ -61,7 +61,7 @@ export function sceneForView(view: string): SceneId {
   switch (view) {
     case "create": case "slides": case "study": case "deployments": return "create";
     case "projects": case "history": return "projects";
-    case "agents": case "approvals": return "agents";
+    case "agents": case "approvals": case "tasks": return "agents";
     case "business": return "business";
     default: return "ask";
   }
