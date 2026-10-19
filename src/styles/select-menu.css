@@ -1,0 +1,86 @@
+/*
+ * Custom menus for native <select> (src/components/ui/SelectMenus.tsx), site-wide including Keplar Business.
+ * The menu takes its colours from the select's own context (--ks-* set inline from --g-container-high / --kb-surface-2 /
+ * --c-surface-2 and the ink tokens); the values below are the fallbacks when a page defines none.
+ * Contrast: dark #e3e3e3 on #282a2c 11.6:1, group label #9a9b9c on #282a2c 5.2:1; light #1f1f1f on #ffffff 16.5:1,
+ * group label #5e5e5e on #ffffff 6.4:1.
+ */
+.ks-menu {
+  --ks-r: 16px;
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  z-index: 2147483000;
+  box-sizing: border-box;
+  display: block;
+  min-width: 160px;
+  max-height: 360px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px;
+  border: 0;
+  border-radius: var(--ks-r);
+  background: var(--ks-bg, #282a2c);
+  color: var(--ks-ink, #e3e3e3);
+  box-shadow: var(--ks-shadow, 0 0 20px rgb(0 0 0 / 0.28)), 0 0 0 1px rgb(255 255 255 / 0.06);
+  font-size: 14px;
+  line-height: 20px;
+  text-align: start;
+  outline: none;
+  scrollbar-width: thin;
+  color-scheme: dark;
+}
+.ks-menu[data-scheme="light"] {
+  background: var(--ks-bg, #ffffff);
+  color: var(--ks-ink, #1f1f1f);
+  box-shadow: var(--ks-shadow, 0 1px 3px rgb(0 0 0 / 0.08), 0 8px 24px -6px rgb(31 31 31 / 0.18)), 0 0 0 1px rgb(0 0 0 / 0.06);
+  color-scheme: light;
+}
+.ks-menu:popover-open { inset: auto; }
+
+.ks-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 8px 14px 8px 10px;
+  border-radius: 10px;
+  cursor: default;
+  white-space: nowrap;
+  user-select: none;
+}
+.ks-label { overflow: hidden; text-overflow: ellipsis; }
+.ks-check { flex: none; width: 16px; height: 16px; visibility: hidden; }
+.ks-option[aria-selected="true"] .ks-check { visibility: visible; }
+.ks-option[aria-selected="true"] { font-weight: 500; }
+.ks-option[data-active] { background: var(--ks-hover, rgb(227 227 227 / 0.08)); }
+.ks-menu[data-scheme="light"] .ks-option[data-active] { background: var(--ks-hover, rgb(31 31 31 / 0.06)); }
+.ks-option[aria-disabled="true"] { opacity: 0.45; }
+.ks-option[aria-disabled="true"][data-active] { background: transparent; }
+
+.ks-group {
+  padding: 10px 14px 4px 36px;
+  color: var(--ks-ink-3, #9a9b9c);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+}
+.ks-menu[data-scheme="light"] .ks-group { color: var(--ks-ink-3, #5e5e5e); }
+.ks-menu > [role="group"] + [role="group"],
+.ks-menu > .ks-option + [role="group"] { margin-top: 4px; border-top: 1px solid rgb(127 127 127 / 0.18); padding-top: 2px; }
+
+/* Fingers: 44px rows (HIG accessibility.md, controls). */
+@media (pointer: coarse) {
+  .ks-option { min-height: 44px; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ks-menu { animation: ks-in 120ms cubic-bezier(0, 0, 0.2, 1); transform-origin: top center; }
+  .ks-menu[data-side="top"] { transform-origin: bottom center; }
+}
+@keyframes ks-in { from { opacity: 0; scale: 0.96; } }
+
+@media (forced-colors: active) {
+  .ks-menu { border: 1px solid CanvasText; }
+  .ks-option[data-active] { background: Highlight; color: HighlightText; forced-color-adjust: none; }
+}

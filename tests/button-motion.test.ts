@@ -11,7 +11,8 @@ test("keplar.one shares one ease, presses to 0.97, and steps sidebar rows 2px", 
   assert.match(g, /scale: 0\.97 !important;/);
   assert.match(g, /transition-duration: 60ms;/);
   assert.match(g, /\[class\*="sideItem"\]:hover \{\s*translate: 2px 0 !important;/);
-  assert.match(g, /\[class\*="homeChip"\]:hover \[class\*="homeChipLabel"\] \{\s*translate: 1px 0;/);
+  // button[...__homeChip], not [class*="homeChip"]: that also matched the list (homeChips) and washed the whole row on hover.
+  assert.match(g, /button\[class\*="__homeChip"\]:hover \[class\*="homeChipLabel"\] \{\s*translate: 1px 0;/);
   assert.match(g, /prefers-reduced-motion: reduce\)[\s\S]*:active:not\(:disabled\):not\(\[aria-disabled="true"\]\) \{\s*scale: none !important;/);
 });
 
