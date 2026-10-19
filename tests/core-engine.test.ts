@@ -133,7 +133,7 @@ test("billing: a stop while Core revises the held answer still bills the panel p
   setActiveForTests(null);
   await withEnv(ENV, async () => {
     const { p } = fakeGateway();
-    const deps = liveDeps([p], liveEnv("plus"));
+    const deps = liveDeps([p], liveEnv("paid"));
     const run = { started: false, settled: false, plannedUnits: 0 } as NonNullable<typeof deps.run>;
     deps.run = run;
     const seen: { kind: string; started: boolean; settled: boolean; planned: number }[] = [];
