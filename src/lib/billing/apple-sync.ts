@@ -16,6 +16,7 @@ import {
   verifySignedTransaction,
 } from "./apple";
 import type { PaidPlan } from "./plans";
+import { claimEvent, finishEvent, releaseEvent, type ClaimRow } from "./event-claim";
 
 type AppleSubRow = {
   id: string; // originalTransactionId
@@ -33,7 +34,7 @@ type AppleSubRow = {
   updatedAt: string;
 };
 
-type AppleEventRow = { id: string; workspaceId: string; type: string; at: string; result: string };
+type AppleEventRow = ClaimRow;
 
 const subs = () => collection<AppleSubRow>("apple_subscriptions");
 const events = () => collection<AppleEventRow>("apple_billing_events");
@@ -154,14 +155,22 @@ export async function syncAppleTransactionForWorkspace(wsRef: { id: string; emai
 }
 
 export async function handleAppleNotification(notification: ResponseBodyV2DecodedPayload, notificationUUID: string): Promise<{ result: string }> {
-  const existing = await events().get(SYSTEM, notificationUUID);
-  if (existing) return { result: existing.result };
-
   const type = typeof notification.notificationType === "string" ? notification.notificationType : "";
-  if (type === NotificationTypeV2.TEST) {
-    await events().insert({ id: notificationUUID, workspaceId: SYSTEM, type, at: now(), result: "test_ok" }).catch(() => undefined);
-    return { result: "test_ok" };
+  // Atomic claim (event-claim.ts): two copies of one notification arriving together can't both grant or revoke.
+  const claim = await claimEvent(events(), { id: notificationUUID, workspaceId: SYSTEM, type });
+  if (!claim.claimed) return { result: claim.result };
+  try {
+    const result = await applyAppleNotification(notification, type);
+    await finishEvent(events(), SYSTEM, notificationUUID, result);
+    return { result };
+  } catch (e) {
+    await releaseEvent(events(), SYSTEM, notificationUUID);
+    throw e;
   }
+}
+
+async function applyAppleNotification(notification: ResponseBodyV2DecodedPayload, type: string): Promise<string> {
+  if (type === NotificationTypeV2.TEST) return "test_ok";
 
   const data = notification.data;
   let decoded: DecodedAppleTransaction | null = null;
@@ -206,9 +215,7 @@ export async function handleAppleNotification(notification: ResponseBodyV2Decode
     throw e;
   }
 
-  const wsId = decoded ? ((await workspaceForOriginal(decoded.originalTransactionId))?.id ?? SYSTEM) : SYSTEM;
-  await events().insert({ id: notificationUUID, workspaceId: wsId === SYSTEM ? SYSTEM : SYSTEM, type, at: now(), result }).catch(() => undefined);
-  return { result };
+  return result;
 }
 
 /**
@@ -220,8 +227,19 @@ export async function applyDecodedAppleEvent(input: {
   workspace: WorkspaceRow;
   decoded: DecodedAppleTransaction;
 }): Promise<{ result: string }> {
-  const existing = await events().get(SYSTEM, input.notificationUUID);
-  if (existing) return { result: existing.result };
+  const claim = await claimEvent(events(), { id: input.notificationUUID, workspaceId: SYSTEM, type: input.type });
+  if (!claim.claimed) return { result: claim.result };
+  try {
+    const result = await applyDecoded(input);
+    await finishEvent(events(), SYSTEM, input.notificationUUID, result);
+    return { result };
+  } catch (e) {
+    await releaseEvent(events(), SYSTEM, input.notificationUUID);
+    throw e;
+  }
+}
+
+async function applyDecoded(input: { type: string; workspace: WorkspaceRow; decoded: DecodedAppleTransaction }): Promise<string> {
   let result = `ignored:${input.type}`;
   if (GRANT_TYPES.has(input.type) || input.type === NotificationTypeV2.DID_CHANGE_RENEWAL_PREF) {
     await grantApple(input.workspace, { ...input.decoded, appAccountToken: input.decoded.appAccountToken ?? appAccountTokenForWorkspace(input.workspace.id) });
@@ -236,8 +254,7 @@ export async function applyDecodedAppleEvent(input: {
   } else if (input.type === NotificationTypeV2.TEST) {
     result = "test_ok";
   }
-  await events().insert({ id: input.notificationUUID, workspaceId: SYSTEM, type: input.type, at: now(), result });
-  return { result };
+  return result;
 }
 
 export { decodeTransactionPayload };

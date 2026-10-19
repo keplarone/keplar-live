@@ -9,9 +9,13 @@
  *  - concurrency: questions running at once, and credits reserved by running questions
  *
  * Counters use Upstash when configured (shared) and process memory otherwise, so
- * without Upstash the burst/daily/concurrency numbers are per serverless instance
- * (best effort). The hard stops that do not depend on this: the credit balance,
- * the per-request cost cap, the live daily spend guard and the global daily cap.
+ * without Upstash the burst/daily numbers are per serverless instance (best effort).
+ * Concurrency is claimed before any await (so one instance can't over-admit), and
+ * signed-in paid plans also take a shared "answer" job slot (jobs.ts) that every
+ * instance sees. Each running answer records its planned credits on that slot, and
+ * the route subtracts other slots' credits from what is left. The hard stops that
+ * do not depend on this: the credit balance, the per-request cost cap, the live
+ * daily spend guard and the global daily cap.
  */
 import { FREE_UPGRADE_HINT } from "@/lib/upgrade-copy";
 import { createHmac, timingSafeEqual } from "node:crypto";
@@ -23,6 +27,8 @@ import { activeCooldown } from "./cooldown";
 import { assertNotStopped } from "@/lib/ops/controls";
 import { costGuardForSpend } from "@/lib/cost/hooks";
 import type { Workspace } from "./workspace";
+import { acquireJobSlotHandle, reservedJobUnits, setJobSlotUnits, type JobSlotHandle } from "./jobs";
+import { HttpError } from "./http";
 
 export class UsageLimitError extends Error {
   constructor(message: string, public code: "burst" | "daily" | "daily_ip" | "daily_spend" | "concurrent" | "cooldown", public retryAfterSec = 60) {
@@ -103,7 +109,20 @@ export async function spentTodayUsd(ws: Workspace): Promise<number> {
   return collection<LedgerRow>("compute_ledger").sum(ws.id, "usd", { field: "at", gte: start });
 }
 
-export type UsageGate = { release: () => void; wsKey: string; setCookie: string | null };
+/** A shared answer slot outlives the route's 300 s limit by a margin, so a crashed instance's slot frees itself. */
+export const ANSWER_SLOT_TTL_MS = 330_000;
+const ANSWER_SLOT_PREFIX = "answer";
+const BUSY = "Keplar is still working on your earlier questions. Wait for one to finish.";
+
+export type UsageGate = {
+  release: () => void;
+  wsKey: string;
+  setCookie: string | null;
+  /** Records this answer's planned credits on its shared slot (paid plans, signed in); a no-op otherwise. */
+  holdUnits: (units: number) => void;
+  /** Credits other running answers of this account have reserved, on any instance (0 without a shared slot). */
+  reservedElsewhere: () => Promise<number>;
+};
 
 /**
  * Checks every per-user guard before a question starts. Throws UsageLimitError
@@ -118,6 +137,32 @@ export async function enterUsage(req: Request, ws: Workspace, opts: { countsDail
   const free = plan === "free";
   const up = free ? UPGRADE : "";
 
+  // Checked and claimed in one synchronous step, before the first await, so parallel requests on this instance can't all pass.
+  if (inflight(wsKey).n >= L.concurrent) throw new UsageLimitError(BUSY, "concurrent", 10);
+  const local = begin(wsKey);
+  try {
+    return await checkUsage(req, ws, opts, { L, ip, wsKey, free, up, local });
+  } catch (e) {
+    local();
+    throw e;
+  }
+}
+
+async function checkUsage(req: Request, ws: Workspace, opts: { countsDaily: boolean }, c: { L: ReturnType<typeof limitsFor>; ip: string; wsKey: string; free: boolean; up: string; local: () => void }): Promise<UsageGate> {
+  const { L, free } = c;
+  // The shared slot that caps paid answers across instances, taken alongside the checks below (no extra round trip before the
+  // first byte) and given back if any of them refuses.
+  const slotP: Promise<JobSlotHandle | Error> | null = !free && !ws.anonymous ? acquireJobSlotHandle(ws.id, "answer", L.concurrent, ANSWER_SLOT_TTL_MS, ANSWER_SLOT_PREFIX, BUSY).catch((e: unknown) => (e instanceof Error ? e : new Error(String(e)))) : null;
+  try {
+    return await checkWithSlot(req, ws, opts, c, slotP);
+  } catch (e) {
+    if (slotP) void slotP.then((h) => { if (!(h instanceof Error)) void h.release(); });
+    throw e;
+  }
+}
+
+async function checkWithSlot(req: Request, ws: Workspace, opts: { countsDaily: boolean }, c: { L: ReturnType<typeof limitsFor>; ip: string; wsKey: string; free: boolean; up: string; local: () => void }, slotP: Promise<JobSlotHandle | Error> | null): Promise<UsageGate> {
+  const { L, ip, wsKey, free, up, local } = c;
   // Operator global stop: nothing that costs money runs (throws a 503 with a plain message).
   await assertNotStopped();
   // Cost guard (src/lib/cost): per-feature kill switch, throttle, quotas and Free daily limits for this route's feature.
@@ -132,7 +177,6 @@ export async function enterUsage(req: Request, ws: Workspace, opts: { countsDail
   // `use:ip:<ip>:burst` counted every signed-out question twice on one counter (Free got 3 a minute, not 6).
   if (ws.anonymous) await hit(`use:net:${ip}:burst`, L.burstPerMin * 2, 60, "burst", "You're asking quickly. Wait a few seconds and try again.");
 
-  if (inflight(wsKey).n >= L.concurrent) throw new UsageLimitError("Keplar is still working on your earlier questions. Wait for one to finish.", "concurrent", 10);
 
   let setCookie: string | null = null;
   // Free: the daily question count is claimed (and given back when no answer is shown) in claimDaily (lib/usage/daily.ts), in the route.
@@ -149,5 +193,15 @@ export async function enterUsage(req: Request, ws: Workspace, opts: { countsDail
     const spent = await spentTodayUsd(ws);
     if (spent >= L.dailyUsd) throw new UsageLimitError("You've reached today's usage cap for your plan. It resets at 00:00 UTC. Your monthly credits are kept.", "daily_spend", DAY);
   }
-  return { release: begin(wsKey), wsKey, setCookie };
+  const slot = slotP ? await slotP : null;
+  if (slot instanceof HttpError && slot.status === 429) throw new UsageLimitError(BUSY, "concurrent", 10);
+  if (slot instanceof Error) throw slot;
+  const held = slot;
+  return {
+    release: () => { local(); if (held) void held.release(); },
+    wsKey,
+    setCookie,
+    holdUnits: (units) => { if (held) void setJobSlotUnits(ws.id, held.id, units).catch(() => undefined); },
+    reservedElsewhere: () => (held ? reservedJobUnits(ws.id, ANSWER_SLOT_PREFIX, held.id).catch(() => 0) : Promise.resolve(0)),
+  };
 }

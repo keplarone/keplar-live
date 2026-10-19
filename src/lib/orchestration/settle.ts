@@ -7,7 +7,7 @@
 import { chargeUnits } from "@/lib/create/platform/compute";
 import type { Workspace } from "@/lib/create/platform/workspace";
 
-export type RunState = { started: boolean; settled: boolean; plannedUnits: number; noResponse?: boolean; responded?: number };
+export type RunState = { started: boolean; settled: boolean; plannedUnits: number; noResponse?: boolean; responded?: number; extraUnits?: number };
 
 /** True when the run produced nothing a user could use, so it must not be billed. */
 export const runWasEmpty = (run: Pick<RunState, "noResponse" | "responded">) => run.noResponse === true || run.responded === 0;
