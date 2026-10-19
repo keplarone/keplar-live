@@ -103,7 +103,8 @@ test("empty home keeps the graphite canvas, a blue-teal glow, and a visible keyb
   assert.match(gemini, /linear-gradient\(90deg,\s*#5b8cff 0%,\s*#2f6bff/);
   assert.match(gemini, /@keyframes g-glow-in \{\s*from \{ opacity: 0; scale: 0\.88; \}/);
   assert.match(gemini, /@keyframes g-bloom \{\s*0% \{ opacity: 0; scale: 0\.975; \}/);
-  assert.match(gemini, /form\[class\*="__composer"\]:focus-within:has\(:focus-visible\) \{\s*outline:\s*2px solid var\(--c-ink\) !important;/);
+  // The controls inside the composer keep the outline; the text field doesn't (a textarea always matches :focus-visible while typing).
+  assert.match(gemini, /form\[class\*="__composer"\]:focus-within:has\(:focus-visible:not\(textarea\)\) \{\s*outline:\s*2px solid var\(--c-ink\) !important;/);
   assert.match(gemini, /form\[class\*="__composer"\]:focus-within \{\s*border-color: transparent !important;\s*box-shadow:\s*none !important;/);
   assert.match(gemini, /#keplar-sidebar :is\(a, button\):focus-visible \{[^}]*outline:\s*2px solid var\(--c-ink\) !important;/);
   assert.doesNotMatch(gemini, /filter:\s*blur|backdrop-filter/);
