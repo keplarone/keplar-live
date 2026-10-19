@@ -80,3 +80,14 @@ test("judge independence: a judge from the baseline's family is refused", () => 
   assert.match(judgeAllowed("claude-opus-5-5", "claude-sonnet-5") ?? "", /same family/);
   assert.equal(judgeAllowed("glm-5.3", "claude-sonnet-5"), null);
 });
+
+test("regression check: only a clear drop is a regression; small moves are noise", async () => {
+  const { compareRuns } = await import("../regress");
+  const S = (wins: number, losses: number, est: number, lo: number, hi: number, checks = { tasks: 12, keplar: 10, baseline: 8 }) => ({ n: 26, judged: wins + losses, excluded: 0, wins, losses, ties: 0, positionFlips: 0, winRate: { estimate: est, lo, hi }, winRateTiesHalf: null, pValue: null, checks, byCategory: {}, latencyMs: { keplarP50: null, keplarP95: null, baselineP50: null, baselineP95: null }, usd: { keplar: 0, baseline: 0, judge: 0 } });
+  assert.equal(compareRuns(S(14, 6, 0.7, 0.48, 0.85), S(12, 8, 0.6, 0.39, 0.78)).regression, false, "overlapping intervals");
+  const bad = compareRuns(S(16, 4, 0.8, 0.58, 0.92), S(5, 15, 0.25, 0.11, 0.47));
+  assert.equal(bad.regression, true);
+  assert.match(bad.reasons[0], /entirely below/);
+  assert.equal(compareRuns(S(14, 6, 0.7, 0.48, 0.85), S(14, 6, 0.7, 0.48, 0.85, { tasks: 12, keplar: 7, baseline: 8 })).regression, true, "checks fell 25 points");
+  assert.equal(compareRuns(S(4, 1, 0.8, 0.38, 0.96), S(1, 4, 0.2, 0.04, 0.62)).regression, false, "too few pairs to call it");
+});
