@@ -227,7 +227,7 @@ export function applyEvent(m: KeplarMessage, e: KeplarEvent): KeplarMessage {
         status: "error",
         error: e.code === "no_response"
           ? { kind: "no_response", message: e.message, retryable: true, upgrade: e.upgrade === true }
-          : { kind: e.code === "network" ? "network" : "server", message: e.message, retryable: e.retryable, ...((e.code as string) === "plan_required" ? { upgrade: true } : {}) },
+          : { kind: e.code === "network" ? "network" : "server", message: e.message, retryable: e.retryable, ...(e.code === "plan_required" ? { upgrade: true } : {}) },
         // What had already arrived stays: the card shows it as an unfinished answer under the error, never as a finished one. Except
         // no_response: no model produced a reliable answer, so an early draft from one of them is not shown at all.
         draft: e.code === "no_response" ? "" : m.draft,

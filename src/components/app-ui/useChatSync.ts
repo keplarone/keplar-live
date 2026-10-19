@@ -6,6 +6,8 @@ import type { AppState, Message, Thread } from "./state/types";
 import { messagesForSave, settle } from "./state/store";
 import { activeScopeHeaders, userIdOf } from "./state/scope";
 
+/** The server no longer sees the account on screen: signed in as someone else (409) or the session expired (401). */
+const stale = (status: number) => status === 409 || status === 401;
 const idle = (t: Thread) => !t.messages.some((m) => m.role === "keplar" && m.status === "running");
 const runningKeys = (t: Thread) => t.messages.flatMap((m) => (m.role === "keplar" && m.status === "running" && m.turnKey ? [m.turnKey] : []));
 const body = (th: Thread) => ({ title: th.title, projectId: th.projectId, createdAt: th.createdAt, updatedAt: th.updatedAt, messages: messagesForSave(th.messages), specialistId: th.specialistId ?? null });
@@ -57,7 +59,7 @@ export function useChatSync(state: AppState, dispatch: Dispatch<Action>, onAccou
     }).catch(() => undefined);
     void call("/api/chats", "GET").then(async (r) => {
       if (!live) return;
-      if (r.status === 409) return changed.current?.();
+      if (stale(r.status)) return changed.current?.();
       if (!r.ok) return;
       const j = (await r.json()) as { chats: { id: string; title: string; projectId: string | null; createdAt: number; updatedAt: number; specialistId?: string }[] };
       if (!live) return;
@@ -76,7 +78,7 @@ export function useChatSync(state: AppState, dispatch: Dispatch<Action>, onAccou
         if (saved.current.get(th.id) === th.updatedAt) continue;
         if (!state.threads.length) continue;
         saved.current.set(th.id, th.updatedAt);
-        void call(`/api/chats/${encodeURIComponent(th.id)}`, "PUT", body(th)).then((r) => { if (!r.ok) saved.current.delete(th.id); if (r.status === 409) changed.current?.(); }).catch(() => saved.current.delete(th.id));
+        void call(`/api/chats/${encodeURIComponent(th.id)}`, "PUT", body(th)).then((r) => { if (!r.ok) saved.current.delete(th.id); if (stale(r.status)) changed.current?.(); }).catch(() => saved.current.delete(th.id));
       }
     }, 1200);
     return () => window.clearTimeout(t);
@@ -92,7 +94,7 @@ export function useChatSync(state: AppState, dispatch: Dispatch<Action>, onAccou
       const keys = runningKeys(th).filter((k) => !savedRunning.current.has(k));
       if (!keys.length) continue;
       keys.forEach((k) => savedRunning.current.add(k));
-      void call(`/api/chats/${encodeURIComponent(th.id)}`, "PUT", body(settle(th))).then((r) => { if (r.status === 409) changed.current?.(); }).catch(() => undefined);
+      void call(`/api/chats/${encodeURIComponent(th.id)}`, "PUT", body(settle(th))).then((r) => { if (stale(r.status)) changed.current?.(); }).catch(() => undefined);
     }
   }, [state.threads, signedIn]);
 
@@ -107,7 +109,7 @@ export function useChatSync(state: AppState, dispatch: Dispatch<Action>, onAccou
     setLoad(id, "loading");
     try {
       const r = await call(`/api/chats/${encodeURIComponent(id)}`, "GET");
-      if (r.status === 409) { setLoad(id, null); return changed.current?.(); }
+      if (stale(r.status)) { setLoad(id, null); return changed.current?.(); }
       if (!r.ok) { setLoad(id, "failed"); return; }
       const j = (await r.json()) as { chat: { messages: Message[]; updatedAt: number; specialistId?: string | null } };
       saved.current.set(id, j.chat.updatedAt);
@@ -122,7 +124,7 @@ export function useChatSync(state: AppState, dispatch: Dispatch<Action>, onAccou
   const upload = useCallback(async (th: Thread): Promise<"ok" | "rate" | "fail"> => {
     try {
       const r = await call(`/api/chats/${encodeURIComponent(th.id)}`, "PUT", body(th));
-      if (r.status === 409) changed.current?.();
+      if (stale(r.status)) changed.current?.();
       if (r.ok) { saved.current.set(th.id, th.updatedAt); return "ok"; }
       return r.status === 429 ? "rate" : "fail";
     } catch {

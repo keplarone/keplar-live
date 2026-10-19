@@ -2,6 +2,7 @@
 
 import { Fragment, useCallback, useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore, type ComponentType } from "react";
 import Link from "next/link";
+import { SignInLink } from "./SignInLink";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/kit";
 import { usePrefs } from "@/lib/use-prefs";
@@ -1372,6 +1373,7 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
                       ~0.5 s after first paint and shoved everything down 800 px (Lighthouse CLS 0.45 on /app, phone). */}
                   {homeReady ? (<>
                   <HomeStart
+                    plan={state.ledger.synced ? state.ledger.plan : undefined}
                     showBusiness={businessProminent(useFor)}
                     onSeed={seedComposer}
                     onView={(v) => openSurface(v)}
@@ -1583,7 +1585,7 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
               {sessionExpired ? (
                 <p className={s.dockNote} role="alert">
                   Your session expired, so you&rsquo;re signed out. Your question is back in the box.{" "}
-                  <Link href={`/signin?next=${encodeURIComponent(window.location.pathname + window.location.search)}`}>Sign in again</Link>
+                  <SignInLink>Sign in again</SignInLink>
                 </p>
               ) : null}
               <p className={s.dockNote}>Keplar can be wrong, even when models agree. Verify important decisions.</p>

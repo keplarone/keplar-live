@@ -91,7 +91,7 @@ export function HistoryView({ state, signedIn, onRename, onOpen, onDelete, onMov
                   {editing === t.id ? (
                     <form className={s.rowMain} onSubmit={(e) => { e.preventDefault(); const n = draft.trim(); if (n) onRename(t.id, n); setEditing(null); }}>
                       <label htmlFor={`${uid}-rn`} className="visually-hidden">Chat name</label>
-                      <input id={`${uid}-rn`} className={s.textInput} value={draft} maxLength={120} autoFocus onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Escape") setEditing(null); }} onBlur={() => setEditing(null)} />
+                      <input id={`${uid}-rn`} className={s.textInput} value={draft} maxLength={120} autoFocus onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Escape") { e.stopPropagation(); setEditing(null); } }} onBlur={() => setEditing(null)} />
                     </form>
                   ) : (
                     <button type="button" className={s.rowMain} onClick={() => onOpen(t.id)}>

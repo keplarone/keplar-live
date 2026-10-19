@@ -18,7 +18,7 @@ test("an error keeps what had already arrived (shown as unfinished, never as an 
 });
 
 test("plan_required (Deep Research on Free / Lite) offers plans instead of a dead-end error", () => {
-  const m = applyEvent(keplar("k", "u"), { type: "error", code: "plan_required" as never, message: "Deep Research is available on Plus and up.", retryable: false });
+  const m = applyEvent(keplar("k", "u"), { type: "error", code: "plan_required", message: "Deep Research is available on Plus and up.", retryable: false });
   assert.equal(m.error?.upgrade, true);
   assert.equal(m.error?.retryable, false);
 });
