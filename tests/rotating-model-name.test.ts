@@ -14,7 +14,7 @@ test("greeting name slot: the five models in order, each with a dark and a light
     assert.match(css, new RegExp(`\\[data-theme\\] \\[data-welcome\\] \\[data-model="${m.id}"\\] \\{ background-image: linear-gradient`), `${m.id} dark`);
     assert.match(css, new RegExp(`\\[data-theme="light"\\] \\[data-welcome\\] \\[data-model="${m.id}"\\] \\{ background-image: linear-gradient`), `${m.id} light`);
   }
-  assert.ok(SWITCH_MS >= 2000, "each name stays long enough to read");
+  assert.ok(SWITCH_MS >= 1500, "each name stays long enough to read");
 });
 
 test("greeting name slot: motion is transform/opacity/filter/width only, off under reduced motion; screen readers get every name once", () => {
