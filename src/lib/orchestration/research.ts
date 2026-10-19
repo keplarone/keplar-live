@@ -13,7 +13,10 @@
 import { liveEnv, SEARCH_PRICE_USD } from "./config";
 import { callCostUsd, sanitizeParams, spentUsd } from "./pricing";
 import type { createRegistry } from "./providers";
+import { OFF_FAILED } from "./research-notes";
 import type { Classification, KeplarRequest, ResearchEvent, ResearchSource, ResearchSummary, Retriever, RoutingPlan } from "./types";
+
+export { OFF_BUDGET, OFF_FAILED, OFF_NOT_ENABLED, OFF_SENSITIVE, deepResearchChipNote } from "./research-notes";
 
 export const RESEARCH = {
   /** Planned search queries per question. */
@@ -23,11 +26,6 @@ export const RESEARCH = {
   /** Notes kept per query in the brief. */
   noteChars: 1400,
 } as const;
-
-export const OFF_NOT_ENABLED = "Live web search isn't switched on for Deep Research yet, so this report was researched by the models only. No pages were read.";
-export const OFF_SENSITIVE = "Web search is skipped on the Sensitive data tier (it can't keep zero data retention), so this report was researched by the models only.";
-export const OFF_BUDGET = "The web research was skipped to stay inside your allowance, so this report was researched by the models only.";
-export const OFF_FAILED = "The web searches didn't return any pages, so this report was researched by the models only.";
 
 export const PLAN_SYSTEM = `You plan web research for one question.
 Return ONLY JSON: {"queries": [string]} with up to ${RESEARCH.queries} short web search queries (under 12 words each) that together find what's needed to answer the question well: the main facts, the options or sides, and recent or local specifics if they matter.
