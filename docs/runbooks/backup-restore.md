@@ -16,7 +16,7 @@ Export for a user (data request): until the self-serve export exists, run SQL fo
 
 ## Scripted export and Neon branch snapshot (`scripts/backup-db.mjs`)
 
-**Status: NOT VERIFIED IN PRODUCTION.** The script is tested against a fake database only (`tests/backup-script.test.ts`). Nobody has yet run it against the real Neon database, and no scheduled backup is running. Until the founder runs the checks below and records the date here, assume the only protection is Neon's own point-in-time restore window (check the Neon *Restore* tab for its length on your plan).
+**Status: NOT VERIFIED IN PRODUCTION.** The script is tested against a fake endpoint (`tests/backup-script.test.ts`) and, end to end, against two real Postgres engines (PGlite) with the app's DDL (`tests/backup-restore-pglite.test.ts`): an encrypted export restores row-for-row into an empty database, including `jsonb`, `bytea`, unicode, timestamps and serial sequences. That rehearsal proves the file format and the restore SQL on Postgres; it does not prove Neon, its roles/RLS, or your credentials. Nobody has yet run it against the real Neon database, and no scheduled backup is running. Until the founder runs the checks below and records the date here, assume the only protection is Neon's own point-in-time restore window (check the Neon *Restore* tab for its length on your plan).
 
 ```
 BACKUP_DATABASE_URL=postgres://…  BACKUP_PASSPHRASE=…  node scripts/backup-db.mjs --out /secure/backups --keep 14
@@ -28,7 +28,7 @@ NEON_API_KEY=…  NEON_PROJECT_ID=…  node scripts/backup-db.mjs --neon-branch
 - Output: `keplar-<UTC stamp>.jsonl.gz[.enc]` plus `.manifest.json` (per-table row counts, SHA-256 of the file). Every run re-reads the file it wrote and checks it against the manifest before saying success. Tables are read one after another, not in one snapshot.
 - The file contains personal data and any credentials stored in the database. Set `BACKUP_PASSPHRASE` (AES-256-GCM) and keep the file off Vercel and out of git (`backups/` is git-ignored). Keep the passphrase somewhere other than next to the file. The restore needs it.
 - `--neon-branch` creates a copy-on-write Neon branch `backup-<stamp>` through the Neon API and reads it back. It lives inside the same Neon project, so it does **not** protect against losing the project or the account. Delete old ones.
-- Restore: `BACKUP_RESTORE_URL=<scratch database with the app's tables created> node scripts/backup-db.mjs --restore <file> --confirm`. It refuses to run against the app's own `DATABASE_URL`. The restore path has never run against a real Postgres: rehearse it into a scratch Neon branch before you need it.
+- Restore: `BACKUP_RESTORE_URL=<scratch database with the app's tables created> node scripts/backup-db.mjs --restore <file> --confirm`. It refuses to run against the app's own `DATABASE_URL`, refuses a target whose tables already hold rows, and afterwards resets serial/identity sequences so the app's next insert does not collide. Create the tables first by pointing a preview deploy (or `npm run dev` with `DATABASE_URL`) at the scratch branch once; tables the app creates lazily (e.g. `keplar_images`, `keplar_collab_log`) must exist before the restore or it fails on them. The restore inserts row by row without a transaction: if it fails part-way, drop the scratch branch and start again. Rehearsed on PGlite in CI; never yet against a real Neon branch.
 
 ### Run it on a schedule (cron)
 Vercel cron cannot do this (no durable disk, short time limit). Use any machine you control, e.g. weekly at 03:10 UTC:
@@ -39,4 +39,4 @@ Vercel cron cannot do this (no durable disk, short time limit). Use any machine 
 The script exits 1 on any failure so cron/monitoring can alert. A scheduler you sign up for (cron host, uptime monitor, off-site storage) is a founder action: see docs/known-gaps.md.
 
 ### Founder checklist to make this real
-1. Run the export once; confirm the row counts against the Neon console. 2. Run `--verify`. 3. Restore into a scratch Neon branch and sign in against it. 4. Schedule it and store the output off-site. 5. Write the date of step 3 here: `Last restore test: never`.
+1. Run the export once; confirm the row counts against the Neon console. 2. Run `--verify`. 3. Restore into a scratch Neon branch and sign in against it. 4. Schedule it and store the output off-site. 5. Write the date of step 3 here: `Last restore test against Neon: never` (CI rehearsal on PGlite runs with every `npm test`).

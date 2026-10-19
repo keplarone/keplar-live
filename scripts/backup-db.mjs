@@ -146,14 +146,21 @@ async function restore(file) {
   if (url === process.env.DATABASE_URL || url === process.env.POSTGRES_URL) die("refusing: BACKUP_RESTORE_URL equals the app's DATABASE_URL. Restore into a scratch branch, never straight into production.");
   verify(file);
   const q = sqlClient(url);
-  const { lines } = readBackup(file);
+  const { lines, counts } = readBackup(file);
+  for (const t of Object.keys(counts)) {
+    const have = Number((await q(`SELECT count(*)::text AS n FROM ${ident(t)}`))[0].n);
+    if (have > 0) die(`target table ${t} already has ${have} rows: restore only into an EMPTY database with the app's tables created`);
+  }
   let n = 0;
   for (const l of lines) {
     const { t, r } = JSON.parse(l);
     await q(`INSERT INTO ${ident(t)} SELECT * FROM jsonb_populate_record(NULL::${ident(t)}, $1::jsonb)`, [JSON.stringify(r)]);
     n++;
   }
-  console.log(`backup: restored ${n} rows into the target. Check row counts and sign in before trusting it.`);
+  // Rows keep their ids, which does not advance serial/identity sequences: without this the app's next insert collides.
+  const seqs = await q("SELECT table_name AS t, column_name AS c, pg_get_serial_sequence(quote_ident(table_name), column_name) AS s FROM information_schema.columns WHERE table_schema = 'public' AND pg_get_serial_sequence(quote_ident(table_name), column_name) IS NOT NULL");
+  for (const { t, c, s } of seqs) await q(`SELECT setval($1, COALESCE((SELECT max(${ident(c)}) FROM ${ident(t)}), 1), (SELECT max(${ident(c)}) FROM ${ident(t)}) IS NOT NULL)`, [s]);
+  console.log(`backup: restored ${n} rows into the target and reset ${seqs.length} sequence(s). Check row counts and sign in before trusting it.`);
 }
 
 try {

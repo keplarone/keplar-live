@@ -22,8 +22,10 @@ function fake(): Promise<{ url: string; close: () => void }> {
       const { query, params } = JSON.parse(b) as { query: string; params: unknown[] };
       const out = (rows: unknown[]) => { res.setHeader("content-type", "application/json"); res.end(JSON.stringify({ rows })); };
       if (/information_schema\.tables/.test(query)) return out(Object.keys(DB).sort().map((t) => ({ table_name: t })));
+      const scratch = String(req.headers["neon-connection-string"]).includes("scratch");
       let m = /SELECT count\(\*\)::text AS n FROM "(\w+)"/.exec(query);
-      if (m) return out([{ n: String(DB[m[1]].length) }]);
+      if (m) return out([{ n: scratch ? "0" : String(DB[m[1]].length) }]);
+      if (/pg_get_serial_sequence/.test(query)) return out([]);
       m = /FROM "(\w+)" ORDER BY ctid LIMIT (\d+) OFFSET (\d+)/.exec(query);
       if (m) return out(DB[m[1]].slice(Number(m[3]), Number(m[3]) + Number(m[2])).map((r) => ({ j: JSON.stringify(r) })));
       if (/INSERT INTO/.test(query)) { lastRestoreSql.push({ q: query, p: params }); return out([]); }
