@@ -204,7 +204,7 @@ export function BuildDemo() {
         </button>
         <div className={s.bars} aria-hidden="true">
           {STAGES.map((x, i) => (
-            <span key={x.id} className={s.bar}><i style={{ transform: `scaleX(${i < stage ? 1 : i > stage ? 0 : Math.min(1, full / x.ticks)})` }} /></span>
+            <span key={x.id} className={s.bar} data-now={i === stage || undefined} data-done={i < stage || undefined}><i style={{ transform: `scaleX(${i < stage ? 1 : i > stage ? 0 : Math.min(1, full / x.ticks)})` }} /></span>
           ))}
         </div>
         <span className={s.counter}>{stage + 1}/{STAGES.length}</span>

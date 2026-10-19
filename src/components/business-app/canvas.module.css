@@ -1,30 +1,30 @@
 /* AI Design Canvas (DesignCanvas.tsx): the workspace's Space chrome around a white page (a glass tool bar, a glass tools panel
    on the right, stacked on phones); pill controls, a lit segmented track, the violet focus glow. */
 .pick { max-width: 760px; margin: 0 auto; padding: 40px 24px; display: flex; flex-direction: column; gap: 14px; }
-.title { margin: 0; font-size: 34px; font-weight: 600; letter-spacing: -0.045em; line-height: 1.05; }
+.title { margin: 0; font-size: 34px; font-weight: 600; letter-spacing: -0.024em; line-height: 1.05; }
 .lede { margin: 0; color: var(--w-ink-2); line-height: 1.55; }
 .sites { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
-.site { width: 100%; display: flex; flex-direction: column; gap: 4px; padding: 18px 20px; border: 0; border-radius: 24px; background: var(--kb-glass-solid); box-shadow: var(--kb-depth-sm); color: var(--w-ink); font: inherit; text-align: left; cursor: pointer; transition: transform 0.55s var(--kb-spring), box-shadow 0.45s var(--kb-ease); }
-.site:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--kb-lift); }
+.site { width: 100%; display: flex; flex-direction: column; gap: 4px; padding: 18px 20px; border: 0; border-radius: var(--kb-r-lg); background: var(--kb-glass-solid); box-shadow: var(--kb-depth-sm); color: var(--w-ink); font: inherit; text-align: left; cursor: pointer; transition: transform 0.55s var(--kb-spring), box-shadow 0.45s var(--kb-ease); }
+.site:hover:not(:disabled) { box-shadow: var(--kb-lift); }
 .pick .site:focus-visible { outline: none; box-shadow: var(--kb-glow); }
-.siteName { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.siteName { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .siteMeta { font-size: 12px; color: var(--w-ink-3); }
 
 .root { height: 100%; min-height: 0; display: flex; flex-direction: column; }
 .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 12px 0; padding: 8px 10px 8px 18px; border-radius: 999px; background: var(--kb-pill); box-shadow: var(--kb-pill-depth); }
-.name { max-width: 24ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+.name { max-width: 24ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
 .meta { font-size: 12px; color: var(--w-ink-3); }
 .grow { flex: 1; }
 .inline { display: inline-flex; }
 .seg { display: inline-flex; gap: 2px; padding: 4px; border-radius: 999px; background: rgb(255 255 255 / 0.05); }
-.segBtn { min-height: 30px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: var(--w-ink-2); font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: color 0.35s ease, background 0.5s var(--kb-spring), box-shadow 0.5s var(--kb-spring); }
+.segBtn { min-height: 30px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: var(--w-ink-2); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: color 0.35s ease, background 0.5s var(--kb-spring), box-shadow 0.5s var(--kb-spring); }
 .segBtn:hover { color: var(--w-ink); }
-.segBtn[aria-selected="true"], .segBtn[aria-pressed="true"] { background: var(--kb-p-face); color: var(--kb-p-ink); box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12); }
+.segBtn[aria-selected="true"], .segBtn[aria-pressed="true"] { background: rgb(255 255 255 / 0.16); color: var(--kb-ink); box-shadow: none; }
 .root .segBtn:focus-visible { outline: none; box-shadow: var(--kb-glow); }
 
 .body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 320px; }
 .stage { min-height: 0; overflow: auto; padding: 16px; background: var(--w-bg); display: flex; justify-content: center; }
-.frameWrap { position: relative; width: 100%; height: 100%; min-height: 480px; border-radius: 22px; overflow: hidden; background: #fff; box-shadow: 0 24px 60px rgb(0 0 0 / 0.55); transition: width 0.5s var(--kb-spring-snappy); }
+.frameWrap { position: relative; width: 100%; height: 100%; min-height: 480px; border-radius: var(--kb-r-lg); overflow: hidden; background: #fff; box-shadow: 0 24px 60px rgb(0 0 0 / 0.55); transition: width 0.5s var(--kb-spring-snappy); }
 .frameWrap[data-width="tablet"] { width: 820px; max-width: 100%; }
 .frameWrap[data-width="phone"] { width: 390px; max-width: 100%; }
 .frame { display: block; width: 100%; height: 100%; border: 0; background: #fff; }

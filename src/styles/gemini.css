@@ -15,7 +15,7 @@
 @property --kg-a { syntax: "<color>"; inherits: true; initial-value: #2f6bff; }
 @property --kg-b { syntax: "<color>"; inherits: true; initial-value: #00b2cc; }
 
-html:not(:has([data-space-root])) {
+html:not(:has([data-space-root], [data-kb])) {
   --g-ease: cubic-bezier(0.2, 0, 0, 1);
   --g-ease-decel: cubic-bezier(0.05, 0.7, 0.1, 1);
   --g-ease-menu: cubic-bezier(0, 0, 0.2, 1);
@@ -27,7 +27,7 @@ html:not(:has([data-space-root])) {
 }
 
 /* Dark: Gemini's tonal steps. Depth comes from the surface tone, not borders or shadows. */
-html:not(:has([data-space-root]))[data-theme="dark"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme="dark"] {
   --c-canvas: #131314;
   --c-surface-1: #1e1f20;
   --c-surface-2: #282a2c;
@@ -82,7 +82,7 @@ html:not(:has([data-space-root]))[data-theme="dark"] {
 }
 
 /* Light: white canvas, Gemini's cool blue-grey containers. */
-html:not(:has([data-space-root]))[data-theme="light"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme="light"] {
   --c-canvas: #ffffff;
   --c-surface-1: #f0f4f9;
   --c-surface-2: #e9eef6;
@@ -134,26 +134,26 @@ html:not(:has([data-space-root]))[data-theme="light"] {
 }
 
 /* ---------- Sidebar: a tonal panel with pill rows ---------- */
-html:not(:has([data-space-root])) #keplar-sidebar {
+html:not(:has([data-space-root], [data-kb])) #keplar-sidebar {
   background: var(--g-container);
   border-inline-end-color: transparent;
 }
-html:not(:has([data-space-root]))[data-theme] [class*="__sideItem"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="__sideItem"] {
   border-radius: 999px !important;
   transition: background-color 150ms var(--g-ease), color 150ms var(--g-ease);
 }
-html:not(:has([data-space-root]))[data-theme] [class*="__sideItem"]:hover {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="__sideItem"]:hover {
   background: var(--hover-wash) !important;
   translate: none !important; /* Gemini rows don't slide; the state layer is the feedback */
 }
-html:not(:has([data-space-root]))[data-theme] [class*="__sideItem"][aria-current="page"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="__sideItem"][aria-current="page"] {
   background: var(--g-selected) !important;
   color: var(--c-ink);
 }
 
 /* ---------- Composer: one big rounded tonal field, no border ---------- */
 /* !important: the Composer module themes this with :root[data-theme] .composer (higher specificity), as graphite.css also does. */
-html:not(:has([data-space-root]))[data-theme] form[class*="__composer"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"] {
   background: var(--g-container) !important;
   border-color: transparent !important;
   border-radius: var(--g-r-composer) !important;
@@ -161,19 +161,19 @@ html:not(:has([data-space-root]))[data-theme] form[class*="__composer"] {
   transition: background-color 250ms var(--g-ease), box-shadow 250ms var(--g-ease);
 }
 /* Tool buttons (Attach, Modes, mic, routing) sit flat on the field like Gemini's; the wash appears on hover only. */
-html:not(:has([data-space-root]))[data-theme] form[class*="__composer"] button[class*="__tool"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"] button[class*="__tool"] {
   background: transparent !important;
 }
-html:not(:has([data-space-root]))[data-theme] form[class*="__composer"] button[class*="__tool"]:is(:hover, [aria-expanded="true"]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"] button[class*="__tool"]:is(:hover, [aria-expanded="true"]) {
   background: var(--hover-wash) !important;
 }
-html:not(:has([data-space-root]))[data-theme] form[class*="__composer"]:focus-within {
+html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:focus-within {
   border-color: transparent !important;
   box-shadow: 0 0 0 1px rgb(var(--ring-rgb) / 0.14) !important;
 }
 @media (prefers-reduced-motion: no-preference) {
   /* Gemini's focus bloom: a soft ring of the glow colour that settles into the 1px edge. */
-  html:not(:has([data-space-root]))[data-theme] form[class*="__composer"]:focus-within {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:focus-within {
     animation: g-bloom 1000ms var(--g-ease-decel) !important;
   }
 }
@@ -184,28 +184,28 @@ html:not(:has([data-space-root]))[data-theme] form[class*="__composer"]:focus-wi
 }
 
 /* Attach: the plus turns into a close mark while its menu is open (Gemini's + to ×, 200ms). */
-html:not(:has([data-space-root])) [data-attach-btn] > svg:first-of-type {
+html:not(:has([data-space-root], [data-kb])) [data-attach-btn] > svg:first-of-type {
   transition: rotate 200ms ease-in-out;
 }
-html:not(:has([data-space-root])) [data-attach-btn][aria-expanded="true"] > svg:first-of-type {
+html:not(:has([data-space-root], [data-kb])) [data-attach-btn][aria-expanded="true"] > svg:first-of-type {
   rotate: 45deg;
 }
 
 /* Send: stays in place for keyboard and screen-reader users, and lights up with a short hold so fast typing doesn't flicker. */
-html:not(:has([data-space-root])) button[class*="__send"] {
+html:not(:has([data-space-root], [data-kb])) button[class*="__send"] {
   transition: background-color 250ms var(--g-ease) 50ms, color 250ms var(--g-ease) 50ms;
 }
 
 /* Composer menus: tonal, rounded, soft shadow, and they pop in (scale .8 to 1, 120ms) and close instantly. */
 /* Exact class matches only ($= or followed by a space): "__panel" must not also catch __panelHead, __panelTitle, __panelLede. */
-html:not(:has([data-space-root]))[data-theme] :is([class$="__attachMenu"], [class*="__attachMenu "], [class$="__moreMenu"], [class*="__moreMenu "], [class$="__panel"], [class*="__panel "]):is([class*="Composer-module"]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is([class$="__attachMenu"], [class*="__attachMenu "], [class$="__moreMenu"], [class*="__moreMenu "], [class$="__panel"], [class*="__panel "]):is([class*="Composer-module"]) {
   background: var(--g-container-high) !important; /* the Composer module themes these with :root[data-theme] too */
   border: 0 !important;
   border-radius: var(--g-r-menu) !important;
   box-shadow: var(--g-menu-shadow) !important;
 }
 @media (prefers-reduced-motion: no-preference) {
-  html:not(:has([data-space-root])) [data-motion="ks"] {
+  html:not(:has([data-space-root], [data-kb])) [data-motion="ks"] {
     animation: g-menu-in 120ms var(--g-ease-menu);
   }
 }
@@ -214,12 +214,12 @@ html:not(:has([data-space-root]))[data-theme] :is([class$="__attachMenu"], [clas
 }
 
 /* ---------- Home: chips, greeting, glow ---------- */
-html:not(:has([data-space-root]))[data-theme] button[class*="__homeChip"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] button[class*="__homeChip"] {
   background: var(--g-container) !important; /* App module themes chips with :root[data-theme] .homeChip */
   border-color: transparent !important;
   transition: background-color 150ms var(--g-ease), color 150ms var(--g-ease);
 }
-html:not(:has([data-space-root])) button[class*="__homeChip"]:hover {
+html:not(:has([data-space-root], [data-kb])) button[class*="__homeChip"]:hover {
   background: var(--g-container-high);
   border-color: transparent !important;
 }
@@ -227,27 +227,27 @@ html:not(:has([data-space-root])) button[class*="__homeChip"]:hover {
 /* The greeting: lighter and larger, like Gemini's. The name carries the gradient (Keplar blue to reasoning teal). */
 /* Gemini: 36px, light, normal tracking. Google Sans stops at 400, so 400 with near-normal tracking. !important: the App
    module sets the title with :root[data-theme] .welcomeTitle. */
-html:not(:has([data-space-root]))[data-theme] [data-welcome] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] {
   font-size: clamp(28px, calc(1.6vw + 16px), 36px) !important;
   font-weight: 400 !important;
   letter-spacing: -0.01em !important;
 }
-html:not(:has([data-space-root]))[data-theme] [data-welcome] span {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] span {
   font-weight: inherit !important;
 }
-html:not(:has([data-space-root])) [data-welcome] [class*="__welcomeName"] {
+html:not(:has([data-space-root], [data-kb])) [data-welcome] [class*="__welcomeName"] {
   background: linear-gradient(90deg, #5b8cff 0%, #3aa0ff 45%, #1fc4d8 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
 }
-html:not(:has([data-space-root]))[data-theme="light"] [data-welcome] [class*="__welcomeName"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme="light"] [data-welcome] [class*="__welcomeName"] {
   /* darker stops on white: #1a5fe0 5.6:1, #1570d6 4.9:1, #007f99 4.7:1 (large text needs 3:1) */
   background-image: linear-gradient(90deg, #1a5fe0 0%, #1570d6 45%, #007f99 100%);
 }
 @media (forced-colors: active) {
-  html:not(:has([data-space-root])) [data-welcome] [class*="__welcomeName"] {
+  html:not(:has([data-space-root], [data-kb])) [data-welcome] [class*="__welcomeName"] {
     background: none;
     color: CanvasText;
     -webkit-text-fill-color: CanvasText;
@@ -256,10 +256,10 @@ html:not(:has([data-space-root]))[data-theme="light"] [data-welcome] [class*="__
 
 /* Signature: the ambient glow behind the empty composer. It grows in once (1000ms) and never loops, so it costs nothing after
    the first second. It leaves as soon as the first message is sent (data-empty goes away). */
-html:not(:has([data-space-root])) [data-empty] {
+html:not(:has([data-space-root], [data-kb])) [data-empty] {
   isolation: isolate;
 }
-html:not(:has([data-space-root])) [data-empty]::before {
+html:not(:has([data-space-root], [data-kb])) [data-empty]::before {
   content: "";
   position: absolute;
   left: 50%;
@@ -275,7 +275,7 @@ html:not(:has([data-space-root])) [data-empty]::before {
   transition: --kg-a 1000ms var(--g-ease), --kg-b 1000ms var(--g-ease);
 }
 @media (prefers-reduced-motion: no-preference) {
-  html:not(:has([data-space-root])) [data-empty]::before {
+  html:not(:has([data-space-root], [data-kb])) [data-empty]::before {
     animation: g-glow-in 1000ms var(--g-ease) both;
   }
 }
@@ -283,25 +283,25 @@ html:not(:has([data-space-root])) [data-empty]::before {
   from { opacity: 0; scale: 0.3; }
 }
 @media (prefers-contrast: more) {
-  html:not(:has([data-space-root])) [data-empty]::before { display: none; }
+  html:not(:has([data-space-root], [data-kb])) [data-empty]::before { display: none; }
 }
 
 /* ---------- Top bar: no divider, Gemini-style sign-up pill in Keplar blue ---------- */
-html:not(:has([data-space-root]))[data-theme] [class*="App-module"][class*="__topbar"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][class*="__topbar"] {
   border-bottom: 0 !important;
   box-shadow: none !important;
 }
-html:not(:has([data-space-root]))[data-theme="dark"] a[class*="__authUp"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme="dark"] a[class*="__authUp"] {
   --g-signup: #0c4a86; /* Gemini-style deep tonal pill in Keplar blue; #cfe3ff text on it 6.9:1 */
   --g-signup-ink: #cfe3ff;
   --g-signup-hover: #0f569b; /* 5.7:1 */
 }
-html:not(:has([data-space-root]))[data-theme="light"] a[class*="__authUp"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme="light"] a[class*="__authUp"] {
   --g-signup: #1a5fe0; /* white on it 5.6:1 */
   --g-signup-ink: #ffffff;
   --g-signup-hover: #164fc0;
 }
-html:not(:has([data-space-root]))[data-theme] a[class*="__authUp"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] a[class*="__authUp"] {
   background: var(--g-signup) !important;
   color: var(--g-signup-ink) !important;
   height: 40px;
@@ -309,93 +309,93 @@ html:not(:has([data-space-root]))[data-theme] a[class*="__authUp"] {
   border-radius: 999px;
   transition: background-color 150ms var(--g-ease);
 }
-html:not(:has([data-space-root]))[data-theme] a[class*="__authUp"]:hover {
+html:not(:has([data-space-root], [data-kb]))[data-theme] a[class*="__authUp"]:hover {
   background: var(--g-signup-hover) !important;
 }
-html:not(:has([data-space-root]))[data-theme] a[class*="__authIn"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] a[class*="__authIn"] {
   height: 36px;
   padding: 0 14px;
   border-radius: 999px;
   transition: background-color 150ms var(--g-ease);
 }
-html:not(:has([data-space-root]))[data-theme] a[class*="__authIn"]:hover {
+html:not(:has([data-space-root], [data-kb]))[data-theme] a[class*="__authIn"]:hover {
   background: var(--hover-wash) !important;
 }
 
 /* ---------- Conversation: your words in a tonal bubble, Keplar's answer on the page ---------- */
-html:not(:has([data-space-root]))[data-theme] [class*="App-module"]:is([class$="__userMsg"], [class*="__userMsg "]),
-html:not(:has([data-space-root]))[data-theme] [class*="KeplarTurn-module"]:is([class$="__userMsg"], [class*="__userMsg "]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"]:is([class$="__userMsg"], [class*="__userMsg "]),
+html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="KeplarTurn-module"]:is([class$="__userMsg"], [class*="__userMsg "]) {
   background: var(--g-container-high) !important;
   border-radius: 24px 6px 24px 24px !important;
   font-weight: 400 !important;
 }
 /* Gemini sets answers on the canvas, not in a card. The evidence row, consensus and actions keep their own surfaces. */
-html:not(:has([data-space-root]))[data-theme] [class*="KeplarTurn-module"]:is([class$="__answer"], [class*="__answer "]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="KeplarTurn-module"]:is([class$="__answer"], [class*="__answer "]) {
   background: transparent !important;
   box-shadow: none !important;
   border: 0 !important;
   border-radius: 0 !important;
   padding-inline: 0 !important;
 }
-html:not(:has([data-space-root]))[data-theme] [class*="KeplarTurn-module"]:is([class$="__answer"], [class*="__answer "]) [class*="Markdown-module"]:is([class$="__md"], [class*="__md "]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="KeplarTurn-module"]:is([class$="__answer"], [class*="__answer "]) [class*="Markdown-module"]:is([class$="__md"], [class*="__md "]) {
   font-size: 1.0625rem; /* 17px, Gemini's reading size */
   line-height: 1.65;
 }
 
 /* ---------- Sidebar details ---------- */
 /* Recents header: a pill like the rows above it, not a small rectangle. */
-html:not(:has([data-space-root])) #keplar-sidebar [class*="Recents-module"]:is([class$="__toggle"], [class*="__toggle "]) {
+html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [class*="Recents-module"]:is([class$="__toggle"], [class*="__toggle "]) {
   border-radius: 999px;
 }
 /* Search dialog: the field sits inside the dialog's own focus treatment; no square outline crossing the dialog edge. */
-html:not(:has([data-space-root]))[data-theme] dialog input[class*="App-module"][class*="__searchInput"]:is(:focus, :focus-visible) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] dialog input[class*="App-module"][class*="__searchInput"]:is(:focus, :focus-visible) {
   outline: none !important;
   box-shadow: none !important;
 }
 
 /* ---------- Collapsed sidebar: Gemini's icon rail instead of nothing (wide screens) ---------- */
 @media (min-width: 900px) {
-  html:not(:has([data-space-root]))[data-theme] [class*="App-module"][data-collapsed] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][data-collapsed] {
     grid-template-columns: 68px minmax(0, 1fr) !important;
   }
-  html:not(:has([data-space-root]))[data-theme] [data-collapsed] [class*="App-module"]:is([class$="__sideWrap"], [class*="__sideWrap "]) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-collapsed] [class*="App-module"]:is([class$="__sideWrap"], [class*="__sideWrap "]) {
     display: block !important;
     overflow: visible;
   }
   /* The rail has its own expand button, so the top bar's Keplar-mark opener steps aside. */
-  html:not(:has([data-space-root]))[data-theme] [data-collapsed] [class*="App-module"][class*="__menuBtn"] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-collapsed] [class*="App-module"][class*="__menuBtn"] {
     display: none !important;
   }
-  html:not(:has([data-space-root])) [data-collapsed] #keplar-sidebar {
+  html:not(:has([data-space-root], [data-kb])) [data-collapsed] #keplar-sidebar {
     align-items: flex-start; /* icons stay at x=12 (what centring gave), so they hold still while the width animates */
     padding-inline: 12px;
     overflow: visible; /* the rail is short; scrolling here clipped the tooltips and showed a stray scrollbar */
   }
-  html:not(:has([data-space-root])) [data-collapsed] #keplar-sidebar [data-side-scroll] {
+  html:not(:has([data-space-root], [data-kb])) [data-collapsed] #keplar-sidebar [data-side-scroll] {
     overflow: visible;
   }
-  html:not(:has([data-space-root])) [data-collapsed] #keplar-sidebar [class*="__sideTop"] {
+  html:not(:has([data-space-root], [data-kb])) [data-collapsed] #keplar-sidebar [class*="__sideTop"] {
     justify-content: flex-start;
     padding: 0;
   }
-  html:not(:has([data-space-root])) [data-collapsed] #keplar-sidebar [class*="__sideBrand"],
-  html:not(:has([data-space-root])) [data-collapsed] #keplar-sidebar [data-side-scroll] > :not([data-primary-nav]),
-  html:not(:has([data-space-root])) [data-collapsed] #keplar-sidebar [class*="__signedOutRow"],
-  html:not(:has([data-space-root])) [data-collapsed] #keplar-sidebar [data-side-links],
-  html:not(:has([data-space-root])) [data-collapsed] #keplar-sidebar [class*="__lowUsage"] {
+  html:not(:has([data-space-root], [data-kb])) [data-collapsed] #keplar-sidebar [class*="__sideBrand"],
+  html:not(:has([data-space-root], [data-kb])) [data-collapsed] #keplar-sidebar [data-side-scroll] > :not([data-primary-nav]),
+  html:not(:has([data-space-root], [data-kb])) [data-collapsed] #keplar-sidebar [class*="__signedOutRow"],
+  html:not(:has([data-space-root], [data-kb])) [data-collapsed] #keplar-sidebar [data-side-links],
+  html:not(:has([data-space-root], [data-kb])) [data-collapsed] #keplar-sidebar [class*="__lowUsage"] {
     display: none !important;
   }
-  html:not(:has([data-space-root])) [data-collapsed] #keplar-sidebar [class*="__collapseBtn"] {
+  html:not(:has([data-space-root], [data-kb])) [data-collapsed] #keplar-sidebar [class*="__collapseBtn"] {
     display: inline-grid !important;
     width: 44px;
     height: 44px;
     border-radius: 999px;
   }
-  html:not(:has([data-space-root])) [data-collapsed] #keplar-sidebar [class*="__accountRow"] {
+  html:not(:has([data-space-root], [data-kb])) [data-collapsed] #keplar-sidebar [class*="__accountRow"] {
     flex-direction: column;
     gap: 8px;
   }
-  html:not(:has([data-space-root])) [data-collapsed] #keplar-sidebar [class*="__sideItem"] {
+  html:not(:has([data-space-root], [data-kb])) [data-collapsed] #keplar-sidebar [class*="__sideItem"] {
     position: relative;
     width: 44px;
     height: 44px;
@@ -404,7 +404,7 @@ html:not(:has([data-space-root]))[data-theme] dialog input[class*="App-module"][
     gap: 0;
   }
   /* Labels stay in the accessibility tree; they just aren't drawn in the rail. */
-  html:not(:has([data-space-root])) [data-collapsed] #keplar-sidebar [class*="__sideItem"] > :is(span, kbd) {
+  html:not(:has([data-space-root], [data-kb])) [data-collapsed] #keplar-sidebar [class*="__sideItem"] > :is(span, kbd) {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -413,7 +413,7 @@ html:not(:has([data-space-root]))[data-theme] dialog input[class*="App-module"][
     white-space: nowrap;
   }
   /* Gemini's pill tooltip, shown on hover and keyboard focus. */
-  html:not(:has([data-space-root])) [data-collapsed] #keplar-sidebar :is([data-rail-label], [class*="__collapseBtn"])::after {
+  html:not(:has([data-space-root], [data-kb])) [data-collapsed] #keplar-sidebar :is([data-rail-label], [class*="__collapseBtn"])::after {
     content: attr(data-rail-label);
     position: absolute;
     left: calc(100% + 10px);
@@ -432,9 +432,9 @@ html:not(:has([data-space-root]))[data-theme] dialog input[class*="App-module"][
     translate: -4px -50%;
     transition: opacity 150ms var(--g-ease), translate 150ms var(--g-ease);
   }
-  html:not(:has([data-space-root])) [data-collapsed] #keplar-sidebar [class*="__collapseBtn"] { position: relative; }
-  html:not(:has([data-space-root])) [data-collapsed] #keplar-sidebar [class*="__collapseBtn"]::after { content: attr(aria-label); }
-  html:not(:has([data-space-root])) [data-collapsed] #keplar-sidebar :is([data-rail-label], [class*="__collapseBtn"]):is(:hover, :focus-visible)::after {
+  html:not(:has([data-space-root], [data-kb])) [data-collapsed] #keplar-sidebar [class*="__collapseBtn"] { position: relative; }
+  html:not(:has([data-space-root], [data-kb])) [data-collapsed] #keplar-sidebar [class*="__collapseBtn"]::after { content: attr(aria-label); }
+  html:not(:has([data-space-root], [data-kb])) [data-collapsed] #keplar-sidebar :is([data-rail-label], [class*="__collapseBtn"]):is(:hover, :focus-visible)::after {
     opacity: 1;
     translate: 0 -50%;
     transition-delay: 200ms;
@@ -442,7 +442,7 @@ html:not(:has([data-space-root]))[data-theme] dialog input[class*="App-module"][
 }
 
 /* "See plans" under Sign in was a 17px-tall target; give it a comfortable hit area without moving the text. */
-html:not(:has([data-space-root])) #keplar-sidebar [class*="__meterLink"] {
+html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [class*="__meterLink"] {
   display: inline-block;
   padding-block: 10px;
   margin-block: -10px;
@@ -450,14 +450,14 @@ html:not(:has([data-space-root])) #keplar-sidebar [class*="__meterLink"] {
 
 /* Touch screens: Apple's 44pt default target (HIG layout.md) for the controls this layer styles. Desktop stays compact. */
 @media (pointer: coarse) {
-  html:not(:has([data-space-root]))[data-theme] :is(a[class*="__authUp"], a[class*="__authIn"]) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] :is(a[class*="__authUp"], a[class*="__authIn"]) {
     height: 44px;
   }
-  html:not(:has([data-space-root]))[data-theme] button[class*="__homeChip"] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] button[class*="__homeChip"] {
     min-height: 44px;
   }
   /* The phone footer (About, Pricing, Docs…) was 17px tall: pad the hit area, keep the text where it is. */
-  html:not(:has([data-space-root])) [data-explore] a {
+  html:not(:has([data-space-root], [data-kb])) [data-explore] a {
     display: inline-block;
     padding-block: 14px;
     margin-block: -14px;
@@ -469,7 +469,7 @@ html:not(:has([data-space-root])) #keplar-sidebar [class*="__meterLink"] {
    above the field make it fall back to the stacked layout. The field grows upward as text wraps (field-sizing), with the
    controls held to the bottom edge, so typing never makes the box jump. Phones (< 600px composer) keep the stacked layout. */
 @container composer (min-width: 600px) {
-  html:not(:has([data-space-root]))[data-theme] form[class*="__composer"]:not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) {
     display: grid !important;
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: end;
@@ -477,22 +477,22 @@ html:not(:has([data-space-root])) #keplar-sidebar [class*="__meterLink"] {
     min-height: 64px;
     padding: 10px 10px 10px 12px !important;
   }
-  html:not(:has([data-space-root]))[data-theme] form[class*="__composer"]:not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) > [class*="__row"] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) > [class*="__row"] {
     display: contents !important;
   }
-  html:not(:has([data-space-root]))[data-theme] form[class*="__composer"]:not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) > textarea {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) > textarea {
     grid-column: 2;
     grid-row: 1;
     align-self: center;
     padding: 8px 6px !important;
     margin: 0 !important;
   }
-  html:not(:has([data-space-root]))[data-theme] form[class*="__composer"]:not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) [class*="__tools"] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) [class*="__tools"] {
     grid-column: 1;
     grid-row: 1;
     align-self: end;
   }
-  html:not(:has([data-space-root]))[data-theme] form[class*="__composer"]:not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) [class*="__actions"] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) [class*="__actions"] {
     grid-column: 3;
     grid-row: 1;
     align-self: end;
@@ -503,22 +503,22 @@ html:not(:has([data-space-root])) #keplar-sidebar [class*="__meterLink"] {
    The greeting is held at visibility:hidden until the session is known, so its rise starts when that inline style goes away.
    Translate only (no layout shift); every element ends fully visible; nothing runs under reduced motion. */
 @media (prefers-reduced-motion: no-preference) {
-  html:not(:has([data-space-root])) [data-welcome]:not([style*="hidden"]) {
+  html:not(:has([data-space-root], [data-kb])) [data-welcome]:not([style*="hidden"]) {
     animation: g-rise 420ms var(--g-ease-decel) both;
   }
-  html:not(:has([data-space-root])) [class*="App-module"][class*="__homeChips"] > li {
+  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][class*="__homeChips"] > li {
     animation: g-rise-sm 420ms var(--g-ease) both;
   }
-  html:not(:has([data-space-root])) [class*="App-module"][class*="__homeChips"] > li:nth-child(1) { animation-delay: 120ms; }
-  html:not(:has([data-space-root])) [class*="App-module"][class*="__homeChips"] > li:nth-child(2) { animation-delay: 150ms; }
-  html:not(:has([data-space-root])) [class*="App-module"][class*="__homeChips"] > li:nth-child(3) { animation-delay: 180ms; }
-  html:not(:has([data-space-root])) [class*="App-module"][class*="__homeChips"] > li:nth-child(n + 4) { animation-delay: 210ms; }
+  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][class*="__homeChips"] > li:nth-child(1) { animation-delay: 120ms; }
+  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][class*="__homeChips"] > li:nth-child(2) { animation-delay: 150ms; }
+  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][class*="__homeChips"] > li:nth-child(3) { animation-delay: 180ms; }
+  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][class*="__homeChips"] > li:nth-child(n + 4) { animation-delay: 210ms; }
 }
 @keyframes g-rise { from { opacity: 0; translate: 0 14px; } }
 @keyframes g-rise-sm { from { opacity: 0; translate: 0 8px; } }
 
 /* Rotating placeholder: fades out, swaps, fades back in (useRotatingHint sets data-hint-swap for the fade). */
-html:not(:has([data-space-root])) form[class*="__composer"] textarea::placeholder {
+html:not(:has([data-space-root], [data-kb])) form[class*="__composer"] textarea::placeholder {
   transition: opacity 180ms var(--g-ease);
 }
 html[data-hint-swap]:not(:has([data-space-root])) form[class*="__composer"] textarea::placeholder {
@@ -526,7 +526,7 @@ html[data-hint-swap]:not(:has([data-space-root])) form[class*="__composer"] text
 }
 
 /* ---------- Search dialog: the field is an inset tonal pill (Gemini), not a full-width bar with a hard underline ---------- */
-html:not(:has([data-space-root]))[data-theme] [class*="App-module"][class*="__searchBar"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][class*="__searchBar"] {
   margin: 12px 12px 4px;
   padding-inline: 16px;
   min-height: 48px;
@@ -536,25 +536,25 @@ html:not(:has([data-space-root]))[data-theme] [class*="App-module"][class*="__se
   box-shadow: none !important;
   transition: box-shadow 150ms var(--g-ease);
 }
-html:not(:has([data-space-root]))[data-theme="light"] [class*="App-module"][class*="__searchBar"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme="light"] [class*="App-module"][class*="__searchBar"] {
   background: var(--g-container-high);
 }
-html:not(:has([data-space-root]))[data-theme] [class*="App-module"][class*="__searchBar"]:has(:focus-visible) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][class*="__searchBar"]:has(:focus-visible) {
   box-shadow: 0 0 0 1px rgb(var(--ring-rgb) / 0.45) !important; /* focus is drawn on the pill (plus the caret), like the composer */
 }
 /* Result rows: full pills with the hover wash, a little taller so they read as targets (Gemini's 40px list rows). */
-html:not(:has([data-space-root]))[data-theme] dialog [class*="App-module"][class*="__searchItem"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] dialog [class*="App-module"][class*="__searchItem"] {
   min-height: 40px;
   border-radius: 999px !important;
   padding-inline: 16px !important;
   transition: background-color 150ms var(--g-ease);
 }
-html:not(:has([data-space-root]))[data-theme] dialog [class*="App-module"][class*="__searchGroup"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] dialog [class*="App-module"][class*="__searchGroup"] {
   padding-inline: 16px;
 }
 
 /* ---------- Tooltips: one shape app-wide. The kit tooltip matches the rail's: Gemini's inverse 12px pill, 13px text ---------- */
-html:not(:has([data-space-root]))[data-theme] [role="tooltip"][class*="overlay-module"][class*="__tip"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [role="tooltip"][class*="overlay-module"][class*="__tip"] {
   padding: 6px 12px;
   border-radius: 12px;
   background: var(--c-ink);
@@ -565,38 +565,38 @@ html:not(:has([data-space-root]))[data-theme] [role="tooltip"][class*="overlay-m
   box-shadow: none;
 }
 @media (prefers-reduced-motion: no-preference) {
-  html:not(:has([data-space-root])) [role="tooltip"][class*="overlay-module"][class*="__tip"] {
+  html:not(:has([data-space-root], [data-kb])) [role="tooltip"][class*="overlay-module"][class*="__tip"] {
     animation: g-tip-in 150ms var(--g-ease-decel) both;
   }
 }
 @keyframes g-tip-in { from { opacity: 0; scale: 0.96; translate: 0 2px; } }
 
 /* ---------- Sidebar keyboard focus: a 2px pill ring that follows the row's shape (not a darkening filter on a pill) ---------- */
-html:not(:has([data-space-root]))[data-theme] #keplar-sidebar :is(a, button):focus-visible {
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar :is(a, button):focus-visible {
   filter: none !important;
   box-shadow: inset 0 0 0 2px rgb(var(--ring-rgb) / 0.9) !important;
   background-color: var(--hover-wash) !important;
 }
 @media (forced-colors: active) {
-  html:not(:has([data-space-root])) #keplar-sidebar :is(a, button):focus-visible { outline: 2px solid Highlight !important; }
+  html:not(:has([data-space-root], [data-kb])) #keplar-sidebar :is(a, button):focus-visible { outline: 2px solid Highlight !important; }
 }
 
 /* ---------- Phone drawer: Gemini's modal drawer has rounded outer corners; its small icon buttons get full 44pt targets ---------- */
 @media (max-width: 899px) {
-  html:not(:has([data-space-root]))[data-theme] #keplar-sidebar {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar {
     border-start-end-radius: 16px;
     border-end-end-radius: 16px;
   }
 }
 @media (pointer: coarse) {
-  html:not(:has([data-space-root])) #keplar-sidebar :is(button[class*="__glyphAct"], button[class*="__trigger"]) {
+  html:not(:has([data-space-root], [data-kb])) #keplar-sidebar :is(button[class*="__glyphAct"], button[class*="__trigger"]) {
     min-width: 44px;
     min-height: 44px;
   }
 }
 
 /* ---------- Code blocks: Gemini's flat tonal well (container colour, 16px radius), no drop shadow or lit edge ---------- */
-html:not(:has([data-space-root]))[data-theme] [class*="Markdown-module"]:is([class$="__code"], [class*="__code "]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="Markdown-module"]:is([class$="__code"], [class*="__code "]) {
   border-radius: 16px !important;
   background: var(--g-container) !important;
   box-shadow: none !important;
@@ -605,7 +605,7 @@ html:not(:has([data-space-root]))[data-theme] [class*="Markdown-module"]:is([cla
 /* Single-row composer: the left tools (+, Modes) share the right actions' 44px row, so every control centres on one line
    (they were 36px tall and bottom-aligned, so they sat 4px below the mic, routing and send buttons). */
 @container composer (min-width: 600px) {
-  html:not(:has([data-space-root]))[data-theme] form[class*="__composer"] [class*="Composer-module"]:is([class$="__tools"], [class*="__tools "]) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"] [class*="Composer-module"]:is([class$="__tools"], [class*="__tools "]) {
     min-height: 44px;
     align-items: center;
     padding-block: 0;
@@ -618,69 +618,69 @@ html:not(:has([data-space-root]))[data-theme] [class*="Markdown-module"]:is([cla
    ========================================================================================================================== */
 @media (prefers-reduced-motion: no-preference) {
   /* Search dialog: the surface pops from .9 (Gemini dialogs: .8→1 in 150ms) and the results cascade in. */
-  html:not(:has([data-space-root])) dialog[open][class*="App-module"][class*="__search"] {
+  html:not(:has([data-space-root], [data-kb])) dialog[open][class*="App-module"][class*="__search"] {
     animation: g-pop 180ms var(--g-ease-decel) both;
   }
-  html:not(:has([data-space-root])) dialog[open][class*="App-module"][class*="__search"] [class*="__searchItem"] {
+  html:not(:has([data-space-root], [data-kb])) dialog[open][class*="App-module"][class*="__search"] [class*="__searchItem"] {
     animation: g-rise-sm 260ms var(--g-ease) both;
   }
-  html:not(:has([data-space-root])) dialog[open] [class*="__searchItem"]:nth-child(2) { animation-delay: 30ms; }
-  html:not(:has([data-space-root])) dialog[open] [class*="__searchItem"]:nth-child(3) { animation-delay: 60ms; }
-  html:not(:has([data-space-root])) dialog[open] [class*="__searchItem"]:nth-child(4) { animation-delay: 90ms; }
-  html:not(:has([data-space-root])) dialog[open] [class*="__searchItem"]:nth-child(n + 5) { animation-delay: 120ms; }
+  html:not(:has([data-space-root], [data-kb])) dialog[open] [class*="__searchItem"]:nth-child(2) { animation-delay: 30ms; }
+  html:not(:has([data-space-root], [data-kb])) dialog[open] [class*="__searchItem"]:nth-child(3) { animation-delay: 60ms; }
+  html:not(:has([data-space-root], [data-kb])) dialog[open] [class*="__searchItem"]:nth-child(4) { animation-delay: 90ms; }
+  html:not(:has([data-space-root], [data-kb])) dialog[open] [class*="__searchItem"]:nth-child(n + 5) { animation-delay: 120ms; }
 
   /* Answer: once it lands, the action row follows it in, one button after another (30ms apart). */
-  html:not(:has([data-space-root])) [class*="KeplarTurn-module"][class*="__footActions"] > * {
+  html:not(:has([data-space-root], [data-kb])) [class*="KeplarTurn-module"][class*="__footActions"] > * {
     animation: g-rise-sm 320ms var(--g-ease) both;
     animation-delay: 220ms;
   }
-  html:not(:has([data-space-root])) [class*="__footActions"] > :nth-child(2) { animation-delay: 250ms; }
-  html:not(:has([data-space-root])) [class*="__footActions"] > :nth-child(3) { animation-delay: 280ms; }
-  html:not(:has([data-space-root])) [class*="__footActions"] > :nth-child(4) { animation-delay: 310ms; }
-  html:not(:has([data-space-root])) [class*="__footActions"] > :nth-child(5) { animation-delay: 340ms; }
-  html:not(:has([data-space-root])) [class*="__footActions"] > :nth-child(n + 6) { animation-delay: 370ms; }
+  html:not(:has([data-space-root], [data-kb])) [class*="__footActions"] > :nth-child(2) { animation-delay: 250ms; }
+  html:not(:has([data-space-root], [data-kb])) [class*="__footActions"] > :nth-child(3) { animation-delay: 280ms; }
+  html:not(:has([data-space-root], [data-kb])) [class*="__footActions"] > :nth-child(4) { animation-delay: 310ms; }
+  html:not(:has([data-space-root], [data-kb])) [class*="__footActions"] > :nth-child(5) { animation-delay: 340ms; }
+  html:not(:has([data-space-root], [data-kb])) [class*="__footActions"] > :nth-child(n + 6) { animation-delay: 370ms; }
 
   /* Recents: rows cascade in when the group opens. */
-  html:not(:has([data-space-root])) #keplar-sidebar [class*="__recentList"] > li {
+  html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [class*="__recentList"] > li {
     animation: g-slide-in 260ms var(--g-ease) both;
   }
-  html:not(:has([data-space-root])) #keplar-sidebar [class*="__recentList"] > li:nth-child(2) { animation-delay: 30ms; }
-  html:not(:has([data-space-root])) #keplar-sidebar [class*="__recentList"] > li:nth-child(3) { animation-delay: 60ms; }
-  html:not(:has([data-space-root])) #keplar-sidebar [class*="__recentList"] > li:nth-child(n + 4) { animation-delay: 90ms; }
+  html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [class*="__recentList"] > li:nth-child(2) { animation-delay: 30ms; }
+  html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [class*="__recentList"] > li:nth-child(3) { animation-delay: 60ms; }
+  html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [class*="__recentList"] > li:nth-child(n + 4) { animation-delay: 90ms; }
 
   /* Sidebar expanding from the rail: labels fade back in after the width settles (Gemini: 100ms after 100ms).
      The rail sets these to `animation: none`, so the animation restarts each time the sidebar opens. */
-  html:not(:has([data-space-root])) [data-product]:not([data-collapsed]) #keplar-sidebar [class*="__sideItem"] > span {
+  html:not(:has([data-space-root], [data-kb])) [data-product]:not([data-collapsed]) #keplar-sidebar [class*="__sideItem"] > span {
     animation: g-fade 160ms var(--g-ease) 100ms both;
   }
 
   /* Home chips: the icon turns a little toward the pointer, like Gemini's lively chip glyphs. */
-  html:not(:has([data-space-root])) button[class*="__homeChip"] svg {
+  html:not(:has([data-space-root], [data-kb])) button[class*="__homeChip"] svg {
     transition: rotate 200ms var(--g-ease), scale 200ms var(--g-ease);
   }
-  html:not(:has([data-space-root])) button[class*="__homeChip"]:hover svg {
+  html:not(:has([data-space-root], [data-kb])) button[class*="__homeChip"]:hover svg {
     rotate: -10deg;
     scale: 1.12;
   }
 
   /* Send wakes up when there is something to send: a small scale-in with the colour change. */
-  html:not(:has([data-space-root])) form[class*="__composer"] button[class*="__send"] {
+  html:not(:has([data-space-root], [data-kb])) form[class*="__composer"] button[class*="__send"] {
     transition-property: background-color, color, scale;
   }
-  html:not(:has([data-space-root])) form[class*="__composer"] button[class*="__send"][aria-disabled="true"] {
+  html:not(:has([data-space-root], [data-kb])) form[class*="__composer"] button[class*="__send"][aria-disabled="true"] {
     scale: 0.92;
   }
 
   /* Theme switch: the new icon turns in. The icon is re-rendered on each switch, so this runs every time. */
-  html:not(:has([data-space-root])) .kp-theme-icon {
+  html:not(:has([data-space-root], [data-kb])) .kp-theme-icon {
     animation: g-turn-in 360ms var(--g-ease-decel) both;
   }
 
   /* Press feedback on round icon buttons and pills: a quick dip (exits faster than it enters). */
-  html:not(:has([data-space-root])) :is(button[class*="__glyphAct"], button[class*="__tool"], button[class*="__homeChip"], #keplar-sidebar [class*="__sideItem"]) {
+  html:not(:has([data-space-root], [data-kb])) :is(button[class*="__glyphAct"], button[class*="__tool"], button[class*="__homeChip"], #keplar-sidebar [class*="__sideItem"]) {
     transition-property: background-color, color, scale, box-shadow;
   }
-  html:not(:has([data-space-root])) :is(button[class*="__glyphAct"], button[class*="__tool"], button[class*="__homeChip"], #keplar-sidebar [class*="__sideItem"]):active:not([aria-disabled="true"]) {
+  html:not(:has([data-space-root], [data-kb])) :is(button[class*="__glyphAct"], button[class*="__tool"], button[class*="__homeChip"], #keplar-sidebar [class*="__sideItem"]):active:not([aria-disabled="true"]) {
     scale: 0.96;
     transition-duration: 75ms;
   }
@@ -691,11 +691,11 @@ html:not(:has([data-space-root]))[data-theme] [class*="Markdown-module"]:is([cla
 @keyframes g-turn-in { from { opacity: 0; rotate: -90deg; scale: 0.6; } }
 
 /* ---------- Chat header: Share is Gemini's tonal pill; the rest lives behind the ⋮ menu ---------- */
-html:not(:has([data-space-root]))[data-theme] [class*="ThreadBar-module"][class*="__bar"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="ThreadBar-module"][class*="__bar"] {
   align-items: center;
   gap: 4px;
 }
-html:not(:has([data-space-root]))[data-theme] [class*="ThreadBar-module"][class*="__bar"] > button[data-share-chat-open] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="ThreadBar-module"][class*="__bar"] > button[data-share-chat-open] {
   height: 36px;
   padding-inline: 16px;
   border-radius: 999px;
@@ -703,15 +703,15 @@ html:not(:has([data-space-root]))[data-theme] [class*="ThreadBar-module"][class*
   color: var(--c-ink);
   font-weight: 500;
 }
-html:not(:has([data-space-root]))[data-theme] [class*="ThreadBar-module"][class*="__bar"] > button[data-share-chat-open]:hover {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="ThreadBar-module"][class*="__bar"] > button[data-share-chat-open]:hover {
   background: var(--g-container-high);
 }
 
 /* ---------- Under an answer: "Open as draft" is a follow-up chip (Gemini's suggestion chips), not loose text ---------- */
-html:not(:has([data-space-root]))[data-theme] [data-answer-tools] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-answer-tools] {
   margin-top: 4px;
 }
-html:not(:has([data-space-root]))[data-theme] [data-answer-tools] button[data-open-draft] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-answer-tools] button[data-open-draft] {
   height: 36px;
   padding-inline: 16px;
   border-radius: 999px;
@@ -719,30 +719,30 @@ html:not(:has([data-space-root]))[data-theme] [data-answer-tools] button[data-op
   color: var(--c-ink-2);
   font-size: 14px;
 }
-html:not(:has([data-space-root]))[data-theme] [data-answer-tools] button[data-open-draft]:hover {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-answer-tools] button[data-open-draft]:hover {
   background: var(--g-container-high);
   color: var(--c-ink);
 }
 
 /* ---------- Edit under your own message: shown on hover or keyboard focus (Gemini), always shown on touch ---------- */
 @media (hover: hover) {
-  html:not(:has([data-space-root])) [class*="App-module"][class*="__userTurn"] > [data-edit-message] {
+  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][class*="__userTurn"] > [data-edit-message] {
     opacity: 0;
     transition: opacity 150ms var(--g-ease);
   }
-  html:not(:has([data-space-root])) [class*="App-module"][class*="__userTurn"]:is(:hover, :focus-within) > [data-edit-message] {
+  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][class*="__userTurn"]:is(:hover, :focus-within) > [data-edit-message] {
     opacity: 1;
   }
 }
 
 /* ---------- Signed-out sidebar: "Sign in" is a quiet tonal pill, so the blue "Sign up" stays the one primary action ---------- */
-html:not(:has([data-space-root]))[data-theme] #keplar-sidebar a[class*="__signInCta"],
-html:not(:has([data-space-root]))[data-theme] #keplar-sidebar button[class*="__signInCta"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar a[class*="__signInCta"],
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar button[class*="__signInCta"] {
   background: var(--g-container-high) !important;
   color: var(--c-ink) !important;
   box-shadow: none !important;
 }
-html:not(:has([data-space-root]))[data-theme] #keplar-sidebar :is(a, button)[class*="__signInCta"]:hover {
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar :is(a, button)[class*="__signInCta"]:hover {
   background: var(--g-container-highest) !important;
 }
 
@@ -751,11 +751,11 @@ html:not(:has([data-space-root]))[data-theme] #keplar-sidebar :is(a, button)[cla
    hugging the top bar with a third of the screen empty below. The module pins the scroll padding (56px) and the dock (128px =
    56 + the 72px greeting) separately, so both move by the same --g-home-lift and stay locked together. Short screens keep 56px. ---------- */
 @media (max-width: 899px) {
-  html:not(:has([data-space-root])) { --g-home-lift: max(56px, calc(50svh - 230px)); }
-  html:not(:has([data-space-root]))[data-theme] [class*="App-module"][data-empty] [class*="App-module"]:is([class$="__scroll"], [class*="__scroll "]) {
+  html:not(:has([data-space-root], [data-kb])) { --g-home-lift: max(56px, calc(50svh - 230px)); }
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][data-empty] [class*="App-module"]:is([class$="__scroll"], [class*="__scroll "]) {
     padding-top: var(--g-home-lift) !important;
   }
-  html:not(:has([data-space-root]))[data-theme] [class*="App-module"][data-empty] [class*="App-module"]:is([class$="__dock"], [class*="__dock "]) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][data-empty] [class*="App-module"]:is([class$="__dock"], [class*="__dock "]) {
     top: calc(var(--g-home-lift) + 72px) !important;
   }
 }
@@ -763,40 +763,40 @@ html:not(:has([data-space-root]))[data-theme] #keplar-sidebar :is(a, button)[cla
 /* ---------- Sidebar collapse / expand, animated like Gemini: the column tweens 264 ⇄ 68px on the house curve, labels never
    wrap mid-tween, and whatever the rail hides fades back in once the width has mostly settled. ---------- */
 @media (min-width: 900px) and (prefers-reduced-motion: no-preference) {
-  html:not(:has([data-space-root])) [class*="App-module"][data-product] {
+  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][data-product] {
     transition: grid-template-columns 280ms var(--g-ease);
   }
-  html:not(:has([data-space-root])) [data-product] #keplar-sidebar :is([class*="__sideItem"] > span, [class*="__sideBrand"]) {
+  html:not(:has([data-space-root], [data-kb])) [data-product] #keplar-sidebar :is([class*="__sideItem"] > span, [class*="__sideBrand"]) {
     white-space: nowrap;
   }
-  html:not(:has([data-space-root])) [data-product]:not([data-collapsed]) [class*="App-module"]:is([class$="__sideWrap"], [class*="__sideWrap "]) {
+  html:not(:has([data-space-root], [data-kb])) [data-product]:not([data-collapsed]) [class*="App-module"]:is([class$="__sideWrap"], [class*="__sideWrap "]) {
     overflow: hidden; /* clips the rows while the column is still narrow */
   }
-  html:not(:has([data-space-root])) [data-product]:not([data-collapsed]) #keplar-sidebar :is([class*="__sideBrand"], [data-side-scroll] > :not([data-primary-nav]), [data-side-links], [class*="__signedOutRow"]) {
+  html:not(:has([data-space-root], [data-kb])) [data-product]:not([data-collapsed]) #keplar-sidebar :is([class*="__sideBrand"], [data-side-scroll] > :not([data-primary-nav]), [data-side-links], [class*="__signedOutRow"]) {
     animation: g-fade 200ms var(--g-ease) 120ms both;
   }
 }
 
 /* ---------- Sidebar footer: Gemini's link list above a compact "Sign in" pill and the settings gear ---------- */
-html:not(:has([data-space-root])) #keplar-sidebar [data-side-links] {
+html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [data-side-links] {
   margin-top: auto;
   padding-top: 8px;
 }
-html:not(:has([data-space-root])) #keplar-sidebar [data-side-links] [class*="__sideItem"] {
+html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [data-side-links] [class*="__sideItem"] {
   font-weight: 400;
   color: var(--c-ink-2);
 }
-html:not(:has([data-space-root])) #keplar-sidebar [data-side-links] [class*="__sideItem"]:hover {
+html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [data-side-links] [class*="__sideItem"]:hover {
   color: var(--c-ink);
 }
-html:not(:has([data-space-root]))[data-theme] #keplar-sidebar [class*="__signedOutRow"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [class*="__signedOutRow"] {
   display: flex !important;
   flex-direction: row !important;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
-html:not(:has([data-space-root]))[data-theme] #keplar-sidebar [class*="__signedOutRow"] > [class*="__signInCta"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [class*="__signedOutRow"] > [class*="__signInCta"] {
   width: auto !important;
   flex: 0 0 auto;
   height: 40px;
@@ -805,20 +805,20 @@ html:not(:has([data-space-root]))[data-theme] #keplar-sidebar [class*="__signedO
 
 /* ---------- Modes menu: Gemini's Tools list (one column, a row per mode) instead of two cramped columns whose blurbs
    wrapped to three lines ---------- */
-html:not(:has([data-space-root]))[data-theme] [class*="Composer-module"]:is([class$="__moreMenu"], [class*="__moreMenu "]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="Composer-module"]:is([class$="__moreMenu"], [class*="__moreMenu "]) {
   grid-template-columns: minmax(0, 1fr) !important;
   width: 340px !important;
   gap: 2px !important;
   padding: 8px !important;
 }
-html:not(:has([data-space-root]))[data-theme] [class*="Composer-module"][class*="__moreItem"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="Composer-module"][class*="__moreItem"] {
   min-height: 52px !important;
   padding: 6px 14px 6px 8px !important;
   border-radius: 999px !important;
 }
-html:not(:has([data-space-root]))[data-theme] [class*="Composer-module"][class*="__moreBlurb"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="Composer-module"][class*="__moreBlurb"] {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-html:not(:has([data-space-root]))[data-theme] [class*="Composer-module"][class*="__moreBlurb"] br { display: none; }
+html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="Composer-module"][class*="__moreBlurb"] br { display: none; }

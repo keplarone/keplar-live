@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { DesktopTitleBar } from "@/components/desktop/DesktopTitleBar";
 import { BUSINESS_ICONS, BUSINESS_MANIFEST_PATH } from "@/lib/business-site";
 import "@/components/business-site/tokens.css";
+import { BusinessFont, businessFontClass } from "@/components/business-site/font";
 
 export const metadata: Metadata = {
   title: { default: "Keplar Business", template: "%s · Keplar Business" },
@@ -14,8 +15,9 @@ export const metadata: Metadata = {
 export default function BusinessAppLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
+      <BusinessFont />
       <DesktopTitleBar />
-      <main id="main" data-business-app="" data-kb="">{children}</main>
+      <main id="main" className={businessFontClass} data-business-app="" data-kb="">{children}</main>
     </>
   );
 }
