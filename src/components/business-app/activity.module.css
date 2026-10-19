@@ -1,6 +1,6 @@
 /*
  * Activity center on the business work page. Graphite ink on white, hairline edge, flat surfaces.
- * Inter is the Business face (--font-business). Press, hover timing, and reduced motion come from src/styles/motion.css.
+ * The Business face is --font-business (loaded once for the Business app). Press, hover timing, and reduced motion come from src/styles/motion.css.
  */
 .panel {
   display: flex;
@@ -12,7 +12,7 @@
   background: #ffffff;
   color: #17171a;
   box-shadow: none;
-  font-family: var(--font-business), Inter, ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-business), ui-sans-serif, system-ui, sans-serif;
 }
 
 .head {

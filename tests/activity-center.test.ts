@@ -62,7 +62,7 @@ test("the work page activity center reads existing approvals and does not add a 
   assert.match(route, /pendingCount/);
   assert.match(route, /approvals\.activity/);
   assert.doesNotMatch(`${center}\n${route}\n${readFileSync("src/lib/business/activity.ts", "utf8")}`, /CREATE TABLE|ALTER TABLE|DROP TABLE/);
-  assert.match(css, /Inter/);
+  assert.match(css, /--font-business/);
   assert.match(css, /#ffffff/);
   assert.match(css, /#17171a/);
   const rules = css.replace(/\/\*[\s\S]*?\*\//g, "");
