@@ -1,5 +1,5 @@
 /* Slash command autocomplete: a combobox listbox (focus stays in the text field, so it is not a kit Menu), drawn on the same opaque
-   overlay surface as the kit's menus. Product tokens only (Google Sans via --f-sans). */
+   overlay surface as the kit's menus. Product tokens only (the site face via --f-sans). */
 .menu {
   list-style: none;
   margin: 0 0 6px;

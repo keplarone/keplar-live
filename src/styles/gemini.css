@@ -5,7 +5,7 @@
  * empty chat (gemini.google.com): a calm greeting, a pill composer, and one soft wash behind them. We borrow Gemini's
  * system (shapes and timing), never its brand. Canvas, ink and keyboard focus stay on graphite.css: dark #212121, light
  * #ffffff, a 2px solid focus outline. The empty-home wash and the greeting fill stay in Keplar blue, teal and cyan
- * (--kg-a #2f6bff, --kg-b). No pink, magenta, purple or violet. Type stays the site face at Google Sans's greeting weight
+ * (--kg-a #2f6bff, --kg-b). No pink, magenta, purple or violet. Type stays the site face (Nunito Sans) at the greeting weight
  * (400). Motion: Gemini's curve, slow opacity and transform only, menus close instantly, reduced motion has an answer.
  */
 
@@ -169,7 +169,7 @@ html:not(:has([data-space-root], [data-kb])) button[class*="__homeChip"]:hover {
   border-color: transparent !important;
 }
 
-/* The greeting: Gemini's "Hello, name" line. Weight 400 (the site face, Google Sans's greeting weight), open tracking,
+/* The greeting: Gemini's "Hello, name" line. Weight 400 (the site face's greeting weight), open tracking,
    and a blue-to-teal fill on the greeting, the same stops on the name and the rest of the line.
    !important: the App module sets the title with :root[data-theme] .welcomeTitle. */
 html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] {

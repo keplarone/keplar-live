@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Google_Sans } from "next/font/google";
+import { Nunito_Sans } from "next/font/google";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { brand, isIndexable, site, siteVerification } from "@/lib/site";
 import { siteGraph } from "@/lib/structuredData";
@@ -22,12 +22,12 @@ import { SpaceMotionFilters } from "@/components/ui/space/MotionFilters";
 import "@/styles/globals.css";
 import "@/styles/redesign.css";
 
-// Google Sans (SIL OFL 1.1, the open-source family on Google Fonts) is the one UI face for keplar.one, matching the Gemini-led look in
-// src/styles/gemini.css. next/font self-hosts one variable file (wght 400–700), display swap, preloaded, with a metric-matched fallback
-// so the swap does not shift layout. The subsets match what Inter covered so translated pages keep their glyphs. (Google Sans Flex
-// has no Cyrillic or Greek, so it is not used.) Space Studio loads Montserrat on its own layout. Code uses the system mono stack.
-const sans = Google_Sans({
-  subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext", "greek", "greek-ext", "vietnamese"],
+// Nunito Sans (SIL OFL 1.1, Google Fonts) is the one UI face for keplar.one. next/font self-hosts the variable file, display swap,
+// preloaded, with a metric-matched fallback so the swap does not shift layout. Nunito Sans has every subset below; it draws no Greek,
+// so Greek letters fall through per glyph to the system faces in --f-sans (src/components/i18n/i18n.css). Keplar Business loads Inter
+// (src/components/business-site/font.tsx) and Space Studio Montserrat, each on its own layout. Code uses the system mono stack.
+const sans = Nunito_Sans({
+  subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext", "vietnamese"],
   variable: "--font-sans",
   display: "swap",
   adjustFontFallback: true,
