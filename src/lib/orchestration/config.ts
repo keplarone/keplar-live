@@ -39,6 +39,14 @@ export function readKey(env: Record<string, string | undefined>, name: string): 
  */
 export const freeEndpointsMayTrain = (env: Record<string, string | undefined> = typeof process !== "undefined" ? process.env : {}): boolean => env.KEPLAR_FREE_DATA_COLLECTION !== "deny";
 
+/**
+ * One cheap model call classifies the question instead of the regex.
+ * Off unless this is exactly "1". Turning it on spends a model call per question, so it stays off until the owner says so.
+ */
+export function modelClassifierEnabled(env: Record<string, string | undefined> = typeof process !== "undefined" ? process.env : {}): boolean {
+  return env.KEPLAR_MODEL_CLASSIFIER === "1";
+}
+
 export function liveEnv(keyTier: KeyTier = "paid") {
   const env = typeof process !== "undefined" ? process.env : ({} as Record<string, string | undefined>);
   const free = keyTier === "free";
