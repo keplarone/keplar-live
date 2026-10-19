@@ -46,6 +46,7 @@ const m: CommonCatalog = {
       "/how-it-works": "Nasıl çalışır",
       "/showcase": "Create vitrini",
       "/templates": "Topluluk galerisi",
+      "/tools": "Ücretsiz araçlar",
       "/keplar-one": "Keplar-One",
       "/pricing": "Fiyatlandırma",
       "/download": "İndir",

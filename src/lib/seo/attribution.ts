@@ -3,10 +3,10 @@
  * other) and optional utm_source / utm_campaign, nothing else. Never the browser id, the referrer URL or any personal detail.
  * The browser stores it (consent-gated, src/lib/seo-events.ts) and sends it when checkout starts; the server allow-lists it
  * into the Whop checkout metadata; the verified webhook copies it onto the payment row (src/lib/billing/sync.ts), so revenue
- * can be reported by landing page on /admin/seo. It grants nothing and is never used for entitlements.
+ * can be reported by landing page on /admin/seo (src/lib/seo/attribution-report.ts). This module is pure and shared with the
+ * browser (checkout sends it), so it imports neither the store nor src/lib/seo/events.ts. It grants nothing and is never used for entitlements.
  */
-import { SEO_SOURCES, type SeoSource } from "@/lib/seo/events";
-import { collection } from "@/lib/create/platform/store";
+import { SEO_SOURCES, type SeoSource } from "@/lib/seo/sources";
 
 export type Attribution = { landing: string; src: SeoSource; utmSource?: string; utmCampaign?: string };
 
@@ -39,23 +39,4 @@ export function attributionMetadata(a: Attribution | null | undefined): Record<s
 export function attributionFromMetadata(md: Record<string, unknown> | null | undefined): Attribution | null {
   if (!md) return null;
   return sanitizeAttribution({ landing: md.landing, src: md.src, utmSource: md.utm_source, utmCampaign: md.utm_campaign });
-}
-
-type PaidRow = { id: string; workspaceId: string; at: string; plan?: string; amountUsd?: number; refundedAt?: string; attribution?: Attribution };
-export type PaidByLanding = { landing: string; src: string; payments: number; amountUsd: number | null };
-
-/** Paid plan payments of the last `days` days grouped by landing page and source class. Only rows the webhook stored with attribution count; the rest are reported as one "(no attribution)" line so the share is visible. */
-export async function paidByLanding(days = 90, now = Date.now()): Promise<PaidByLanding[]> {
-  const since = new Date(now - days * 864e5).toISOString();
-  const rows = (await collection<PaidRow>("whop_payments").listSystem().catch(() => [])) as PaidRow[];
-  const by = new Map<string, PaidByLanding>();
-  for (const r of rows) {
-    if (r.at < since || r.refundedAt) continue;
-    const key = r.attribution ? `${r.attribution.landing}\u0000${r.attribution.src}` : "(no attribution)\u0000";
-    const cur = by.get(key) ?? { landing: r.attribution?.landing ?? "(no attribution)", src: r.attribution?.src ?? "", payments: 0, amountUsd: null };
-    cur.payments += 1;
-    if (typeof r.amountUsd === "number") cur.amountUsd = (cur.amountUsd ?? 0) + r.amountUsd;
-    by.set(key, cur);
-  }
-  return [...by.values()].sort((a, b) => b.payments - a.payments || a.landing.localeCompare(b.landing));
 }

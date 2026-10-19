@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { TrackedLink } from "@/components/growth/TrackedLink";
 import s from "@/components/share/Shared.module.css";
 import { listPublic, publicSummary, publicTitle } from "@/lib/growth/share-public";
 import { abs, pageMeta } from "@/lib/seo";
@@ -37,7 +38,7 @@ export default async function Answers() {
         <p className={s.muted} style={{ marginTop: "var(--s-8)" }}>No public answers yet. To publish one, open Share on any answer in Keplar and choose Make public.</p>
       )}
       <div className={s.cta}>
-        <Link className={s.btn} href="/app?utm_source=answers&utm_medium=index">Ask your own question, free</Link>
+        <TrackedLink where="answers:index" href="/app?utm_source=answers&utm_medium=index" size="md" arrow>Ask your own question, free</TrackedLink>
       </div>
       <JsonLd data={breadcrumbs([{ name: "Shared answers", path: "/answers" }])} />
       <JsonLd data={{ "@context": "https://schema.org", "@type": "CollectionPage", name: "Shared Keplar answers", url: abs("/answers"), inLanguage: "en" }} />

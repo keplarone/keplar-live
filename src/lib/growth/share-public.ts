@@ -13,10 +13,15 @@
  *  - a minimum length so thin pages are not indexed; at most MAX_PUBLIC public pages per account;
  *  - the page never contains account id, name, email, history or memory (the snapshot has none);
  *  - text is rendered as plain text, no links.
+ *  - the question and answer pass the content moderation used for generated media (rules, plus the hosted classifier when
+ *    configured); a refusal names the category and the page stays private;
+ *  - KEPLAR_PUBLIC_ANSWERS=off pauses the whole surface: nothing publishes, /answers and the sitemap are empty, every public
+ *    page is a 404, and the owners' private links keep working.
  * Detection is a safety net, not a guarantee: the dialog tells the owner to re-read the page before publishing.
  */
 import { randomBytes } from "node:crypto";
 import { collection } from "@/lib/create/platform/store";
+import { moderateText } from "@/lib/create/platform/moderation";
 import type { ShareRow } from "./share";
 
 export const PUBLIC_LIMITS = { maxPerAccount: 10, minAnswer: 400, minQuestion: 12, maxTitle: 70 } as const;
@@ -77,9 +82,13 @@ export function publicSummary(markdown: string, max = 155) {
   return `${cut.slice(0, i > 60 ? i : max).trimEnd()}…`;
 }
 
-export type PublishResult = { ok: true; slug: string; row: ShareRow } | { ok: false; code: "not_found" | "taken_down" | "needs_question" | "too_short" | "personal_data" | "limit"; message: string; found?: string[] };
+/** The public-answers kill switch: `KEPLAR_PUBLIC_ANSWERS=off` pauses publishing, listing and every public page at once. */
+export const publicAnswersOn = (env: Record<string, string | undefined> = process.env) => env.KEPLAR_PUBLIC_ANSWERS?.trim().toLowerCase() !== "off";
+
+export type PublishResult = { ok: true; slug: string; row: ShareRow } | { ok: false; code: "not_found" | "taken_down" | "needs_question" | "too_short" | "personal_data" | "unsafe" | "limit" | "paused"; message: string; found?: string[] };
 
 export async function publishShare(workspaceId: string, token: string, at = Date.now()): Promise<PublishResult> {
+  if (!publicAnswersOn()) return { ok: false, code: "paused", message: "Public pages are paused right now. Your private link keeps working." };
   const r = await rows().get(workspaceId, token);
   if (!r || r.revokedAt || Date.parse(r.expiresAt) <= at) return { ok: false, code: "not_found", message: "That link doesn't exist, was turned off, or has expired." };
   if (r.hiddenAt) return { ok: false, code: "taken_down", message: "This page was taken down by Keplar and can't be made public." };
@@ -88,6 +97,8 @@ export async function publishShare(workspaceId: string, token: string, at = Date
   if (r.markdown.length < PUBLIC_LIMITS.minAnswer) return { ok: false, code: "too_short", message: "This answer is too short to be useful as a public page. Short answers stay private." };
   const found = findPersonalData([q, r.markdown, ...r.disagreements.flatMap((d) => [d.topic, d.resolution, ...d.positions.flatMap((p) => [p.stance, p.summary])]), ...r.models.map((m) => m.stance ?? ""), ...(r.checks ?? []).flatMap((k) => [k.finding, k.resolution]), ...(r.sourcing?.claims ?? []).flatMap((c) => [c.text, c.finding])].join("\n"));
   if (found.length) return { ok: false, code: "personal_data", found, message: `This page appears to contain ${found.join(", ")}. Remove it from the question or answer and make a new link, or keep this one private.` };
+  const verdict = await moderateText(`${q}\n\n${r.markdown}`);
+  if (!verdict.allowed) return { ok: false, code: "unsafe", message: `This page can't be made public under Keplar's content rules${verdict.category ? ` (${verdict.category})` : ""}. Your private link keeps working.` };
   const mine = await rows().list(workspaceId);
   const already = mine.filter((x) => x.publicAt && !x.revokedAt && !x.hiddenAt).length;
   if (!r.publicAt && already >= PUBLIC_LIMITS.maxPerAccount) return { ok: false, code: "limit", message: `You can have ${PUBLIC_LIMITS.maxPerAccount} public pages at a time. Turn one off to publish another.` };
@@ -116,7 +127,7 @@ const isPublic = (r: ShareRow) => Boolean(r.publicAt) && !r.hiddenAt && !r.revok
 
 /** Public lookup. A page stays up while public (it does not expire after 90 days like a private link). */
 export async function openPublic(slug: string, opts: { count?: boolean } = {}): Promise<ShareRow | null> {
-  if (!validPublicSlug(slug)) return null;
+  if (!publicAnswersOn() || !validPublicSlug(slug)) return null;
   const r = await rows().findSystemBy("publicSlug", slug);
   if (!r || !isPublic(r)) return null;
   if (opts.count) await rows().increment(r.workspaceId, r.id, { views: 1 }, { ...r, views: 0 }).catch(() => undefined);
@@ -124,5 +135,6 @@ export async function openPublic(slug: string, opts: { count?: boolean } = {}): 
 }
 
 export async function listPublic(limit = 200): Promise<ShareRow[]> {
+  if (!publicAnswersOn()) return [];
   return (await rows().listSystemRange({ field: "publicAt", gte: "1" }, limit)).filter(isPublic);
 }

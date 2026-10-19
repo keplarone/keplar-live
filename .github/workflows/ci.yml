@@ -54,6 +54,15 @@ jobs:
           KEPLAR_DEV_TOOLS: '1'
           KEPLAR_MX_CHECK: 'off'
           RESEND_API_KEY: ''
+      - name: SEO gate (crawl the build for indexing regressions)
+        # Starts the built app on a free port and checks every sitemap URL: status, title, description, one h1, self-canonical,
+        # no stray noindex, valid JSON-LD, alt text, broken internal links, sitemap index and llms.txt (scripts/seo-gate.mjs).
+        run: node scripts/seo-gate.mjs --start
+        env:
+          BETTER_AUTH_SECRET: ci-build-secret-0123456789abcdefghijklmnop
+          KEPLAR_DEV_TOOLS: '1'
+          KEPLAR_MX_CHECK: 'off'
+          RESEND_API_KEY: ''
       - name: Secret scan of the build output
         # Nothing under .next/static (what browsers download) may contain a credential pattern.
         run: node scripts/secret-scan.mjs --dir .next/static

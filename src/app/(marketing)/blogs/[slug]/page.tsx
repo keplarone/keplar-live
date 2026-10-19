@@ -63,7 +63,7 @@ export default async function BlogPost({ params }: Props) {
           <div className={s.prose} style={{ marginTop: "var(--s-12)" }}><ClusterLinks path={p.path} /></div>
           <div className={s.cta}>
             <p>See it on your own question. Keplar is free to try with no signup, and the answer shows which models responded and where they differed.</p>
-            <div className={s.ctaRow}>{productCta(p.path).href !== "/app" ? <TrackedLink where={`blog:${p.slug}:product`} href={productCta(p.path).href} size="md" arrow>{productCta(p.path).label}</TrackedLink> : null}<TrackedLink where={`blog:${p.slug}`} href="/app" size="md" arrow={productCta(p.path).href === "/app"} variant={productCta(p.path).href === "/app" ? "primary" : "secondary"}>Try Keplar free</TrackedLink></div>
+            <div className={s.ctaRow}><TrackedLink where={`blog:${p.slug}`} href="/app" size="md" arrow>Try Keplar free</TrackedLink>{productCta(p.path) ? <TrackedLink where={`blog:${p.slug}:product`} href={productCta(p.path)!.href} size="md" variant="secondary">{productCta(p.path)!.label}</TrackedLink> : null}</div>
           </div>
         </div>
         <Toc items={toc} />

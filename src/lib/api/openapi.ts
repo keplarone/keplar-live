@@ -1,5 +1,5 @@
 /** OpenAPI 3.1 description of the public API (BETA). Served at /api/v1/openapi.json and rendered on /developers. */
-import { API_ASK_LIMITS } from "./policy";
+import { API_ASK_LIMITS, API_STATEMENT } from "./policy";
 
 const err = (description: string) => ({ description, content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } });
 
@@ -9,7 +9,7 @@ export function openApiSpec(origin = "https://keplar.one") {
     info: {
       title: "Keplar API (beta)",
       version: "1.0.0-beta",
-      description: "Ask Keplar a question and get one final answer plus a summary of where the models disagreed. BETA: fields may be added; existing fields won't be renamed or removed within v1. Paid plans only (Lite and above); answers spend the same credits as in the app.",
+      description: `Ask Keplar a question and get one final answer plus a summary of where the models disagreed. BETA: fields may be added; existing fields won't be renamed or removed within v1. ${API_STATEMENT}`,
     },
     servers: [{ url: origin }],
     security: [{ bearer: [] }],

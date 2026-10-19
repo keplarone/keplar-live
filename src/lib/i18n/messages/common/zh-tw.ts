@@ -46,6 +46,7 @@ const m: CommonCatalog = {
       "/how-it-works": "工作原理",
       "/showcase": "Create 作品展示",
       "/templates": "社群畫廊",
+      "/tools": "免費工具",
       "/keplar-one": "Keplar-One",
       "/pricing": "價格",
       "/download": "下載",

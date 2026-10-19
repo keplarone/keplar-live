@@ -65,3 +65,9 @@ button.chip:focus-visible { outline: none; color: var(--c-ink); box-shadow: var(
 .actions { margin-top: var(--s-10); display: flex; gap: var(--s-3); flex-wrap: wrap; align-items: center; }
 
 @media (prefers-reduced-motion: reduce) { .card, .cardTitle a, .btn, .input, .reportLink, button.chip { transition: none; } .card:hover { transform: none; } }
+
+/* Template detail: the readable summary of each page, below the preview (src/lib/templates/excerpt.ts). */
+.pagesText { display: grid; gap: var(--s-4); margin-top: var(--s-6); max-width: 70ch; }
+.pagesText article { display: grid; gap: var(--s-2); }
+.pagesText h3 { font-size: var(--t-body); font-weight: var(--w-medium); margin: 0; }
+.pagesText p { margin: 0; color: var(--c-ink-2); }

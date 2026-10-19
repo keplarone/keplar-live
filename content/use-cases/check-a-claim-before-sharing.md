@@ -1,7 +1,7 @@
 ---
 title: Check a claim before you share it
 description: Use a multi-model answer to find out whether a claim you saw online is plausible, where sources disagree, and which parts to verify before you repost it.
-updated: 2026-10-03
+updated: 2026-10-19
 keywords: fact check with AI, check if something is true, verify a claim, AI fact checker
 related: /ai-fact-check, /blogs/how-to-check-an-ai-answer, /docs/how-it-works/verification-review
 ---
@@ -44,7 +44,7 @@ Quotes and numbers are the common weak spot, and exact counting and arithmetic a
 
 ## Where it falls short
 
-Keplar has no live web lookups for normal questions, so very recent events may be missing. It does not verify images, videos or screenshots for authenticity. And it shows no accuracy score: a consensus tells you the models agreed, not that the claim is true. The longer explanation is in [Why consensus can be wrong](/docs/how-it-works/why-consensus-can-be-wrong).
+In the browser, Keplar has no live web lookups for normal questions, so very recent events may be missing (the desktop app's Live Research, in beta, searches the web). It does not verify images, videos or screenshots for authenticity. And it shows no accuracy score: a consensus tells you the models agreed, not that the claim is true. The longer explanation is in [Why consensus can be wrong](/docs/how-it-works/why-consensus-can-be-wrong).
 
 ## Related
 

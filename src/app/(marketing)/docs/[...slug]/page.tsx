@@ -86,7 +86,7 @@ export default async function DocPage({ params }: Props) {
       </nav>
       <div className={s.cta}>
         <p>Questions this page does not answer? Write to <a href="mailto:team@keplar.one">team@keplar.one</a>, or try Keplar on your own question.</p>
-        <div className={s.ctaRow}>{productCta(d.path).href !== "/app" ? <TrackedLink where={`docs:${d.slug}:product`} href={productCta(d.path).href} size="md" arrow>{productCta(d.path).label}</TrackedLink> : null}<TrackedLink where={`docs:${d.slug}`} href="/app" size="md" arrow={productCta(d.path).href === "/app"} variant={productCta(d.path).href === "/app" ? "primary" : "secondary"}>Try Keplar free</TrackedLink></div>
+        <div className={s.ctaRow}><TrackedLink where={`docs:${d.slug}`} href="/app" size="md" arrow>Try Keplar free</TrackedLink>{productCta(d.path) ? <TrackedLink where={`docs:${d.slug}:product`} href={productCta(d.path)!.href} size="md" variant="secondary">{productCta(d.path)!.label}</TrackedLink> : null}</div>
       </div>
       <JsonLd data={techArticle({ path: d.path, title: d.title, description: d.description, published: d.updated, updated: d.updated, section: section.title, keywords: d.keywords, words: d.words, image: `/og/docs/${d.slug}` })} />
       {faq.length ? <JsonLd data={faqLd(faq)} /> : null}

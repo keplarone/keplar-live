@@ -4,7 +4,7 @@ metaTitle: ChatGPT vs Claude vs Gemini vs Perplexity
 description: A fair, dated framework for choosing between the major AI assistants: what each is publicly positioned for, what to test, and why many people use more than one.
 category: Model choice
 published: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-19
 keywords: ChatGPT vs Claude vs Gemini, ChatGPT vs Perplexity, which AI is best, compare AI assistants, AI chatbot comparison
 related: /vs, /multi-model-ai, /blogs/best-ai-for-coding
 ---
@@ -78,4 +78,4 @@ Only if you have found tasks where one clearly beats the other. Start with free 
 
 Keplar does not claim to beat any of these assistants, and this article is not a ranking. It takes the "use more than one" idea and builds it into the answer: for a non-trivial question, it consults several models from different families, compares their positions, has a reviewer check the draft against their individual responses, and shows you where they agree and disagree. Simple questions go to one model.
 
-It also has limits you should know about: no live web lookups, no source-checking, no accuracy score, and Free runs on free open models only. Keplar's own comparison pages with dated, sourced facts about specific products are at [Keplar versus other assistants](/vs). If you want to try the cross-check approach without juggling subscriptions, that is what it is for.
+It also has limits you should know about: no live web lookups in the browser (the desktop app's Live Research, in beta, does search), no source-checking, no accuracy score, and Free runs on free open models only. Keplar's own comparison pages with dated, sourced facts about specific products are at [Keplar versus other assistants](/vs). If you want to try the cross-check approach without juggling subscriptions, that is what it is for.

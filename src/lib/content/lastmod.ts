@@ -9,6 +9,7 @@ import { aboutPage } from "./about-page";
 import { modelsPage } from "./models-page";
 import { kbLastmod } from "../kb/paths";
 import { TOOLS, TOOLS_HUB, toolPath } from "@/lib/free-tools/registry";
+import { allReports } from "@/lib/kb/reports";
 
 /** Hand-maintained static pages: path -> ISO date of last content change. */
 export const staticLastmod: Record<string, string> = {
@@ -71,6 +72,9 @@ export function lastmodFor(path: string): string | undefined {
   if (path === TOOLS_HUB) return TOOLS.map((t) => t.updated).sort().at(-1);
   const tool = TOOLS.find((t) => toolPath(t) === path);
   if (tool) return tool.updated;
+  if (path === "/reports") return allReports().map((r) => r.updated).sort().at(-1);
+  const report = allReports().find((r) => r.path === path);
+  if (report) return report.updated;
   const g = guides.find((x) => x.path === path);
   if (g) return g.updated;
   const e = [...editorialPages, aboutPage, modelsPage].find((x) => x.path === path);

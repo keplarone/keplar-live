@@ -166,7 +166,7 @@ export default function HowItWorksPage() {
       <section className={s.closing} aria-labelledby="closing-title">
         <h2 id="closing-title" className={s.h2}>Ask your first question</h2>
         <ButtonLink href="/app" arrow size="lg">Try it free</ButtonLink>
-        <p>Or read <Link href="/answers">answers people chose to publish</Link>, each with its models and disagreements shown.</p>
+        <p>Or read <Link href="/answers">answers people chose to publish</Link>, each with its models and disagreements shown, or watch <Link href="/simulation">a scripted simulation</Link> of one question going through the engine.</p>
       </section>
     </article>
     </>

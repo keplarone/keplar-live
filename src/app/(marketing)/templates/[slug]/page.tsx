@@ -10,6 +10,7 @@ import { abs, pageMeta } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/seo-graph";
 import { CATEGORY_LABEL } from "@/lib/templates/constants";
 import { openTemplate } from "@/lib/templates/store";
+import { excerptSnapshot } from "@/lib/templates/excerpt";
 
 export const dynamic = "force-dynamic"; // withdrawn, hidden or deleted templates must 404 at once
 
@@ -28,6 +29,7 @@ export default async function TemplatePage({ params }: Props) {
   if (!t) notFound();
   const v = t.view;
   const path = `/templates/${slug}`;
+  const excerpts = excerptSnapshot(t.files, { maxHeadings: 6, maxWords: 60 });
   return (
     <div className={s.page}>
       <p className={s.eyebrow}><Link href="/templates">Templates</Link></p>
@@ -52,6 +54,19 @@ export default async function TemplatePage({ params }: Props) {
             <iframe className={s.previewFrame} src={`/sites/template/${slug}`} title={`Preview of the ${v.title} template`} sandbox="allow-popups" referrerPolicy="no-referrer" loading="lazy" />
           </div>
           <p className={s.notice}>Pages: {v.pages.join(", ")}. The preview is read-only; forms and features come alive in your own copy.</p>
+          {excerpts.length ? (
+            <div className={s.pagesText} aria-labelledby="pages-h">
+              <h2 id="pages-h" className={s.h}>What is on each page</h2>
+              {excerpts.map((e) => (
+                <article key={e.file}>
+                  <h3>{e.title && e.title.toLowerCase() !== e.name.toLowerCase() ? `${e.name}: ${e.title}` : e.name}</h3>
+                  {e.headings.length ? <p className={s.meta}>Sections: {e.headings.join(" · ")}</p> : null}
+                  {e.text ? <p>{e.text}</p> : null}
+                </article>
+              ))}
+              <p className={s.notice}>{v.kind === "starter" ? "Starter copy is placeholder text to replace with your own." : "Text as the owner shared it; Keplar has not edited it."}</p>
+            </div>
+          ) : null}
         </section>
         <div style={{ display: "grid", gap: "var(--s-4)" }}>
           <RemixPanel slug={slug} title={v.title} credit={v.credit} />

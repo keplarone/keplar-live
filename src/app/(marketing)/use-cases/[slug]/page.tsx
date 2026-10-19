@@ -47,7 +47,7 @@ export default async function UseCasePage({ params }: Props) {
         <div className={s.prose} style={{ marginTop: "var(--s-12)" }}><ClusterLinks path={u.path} /></div>
         <div className={s.cta}>
           <p>Try it on your own question. Keplar is free to start, and each answer shows which models responded and where they differed.</p>
-          <div className={s.ctaRow}>{productCta(u.path).href !== "/app" ? <TrackedLink where={`use-case:${u.slug}:product`} href={productCta(u.path).href} size="md" arrow>{productCta(u.path).label}</TrackedLink> : null}<TrackedLink where={`use-case:${u.slug}`} href="/app" size="md" arrow={productCta(u.path).href === "/app"} variant={productCta(u.path).href === "/app" ? "primary" : "secondary"}>Try Keplar free</TrackedLink></div>
+          <div className={s.ctaRow}><TrackedLink where={`use-case:${u.slug}`} href="/app" size="md" arrow>Try Keplar free</TrackedLink>{productCta(u.path) ? <TrackedLink where={`use-case:${u.slug}:product`} href={productCta(u.path)!.href} size="md" variant="secondary">{productCta(u.path)!.label}</TrackedLink> : null}</div>
         </div>
       </div>
       <JsonLd data={webArticle({ path: u.path, title: u.title, description: u.description, updated: u.updated, keywords: u.keywords, words: u.words })} />

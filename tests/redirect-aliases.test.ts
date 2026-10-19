@@ -15,3 +15,12 @@ test("common account URLs redirect to the real pages (/login answered 404 on the
   }
   assert.ok(existsSync("src/app/(marketing)/signin") && existsSync("src/app/(marketing)/signup"));
 });
+
+test("the retired guide redirects permanently to the blog post that answers the same query, and the post exists", async () => {
+  const rules = (await nextConfig.redirects!()) as { source: string; destination: string; permanent?: boolean; has?: unknown }[];
+  const r = rules.find((x) => x.source === "/guides/why-ai-models-disagree" && !x.has);
+  assert.equal(r?.destination, "/blogs/why-ai-models-disagree");
+  assert.equal(r?.permanent, true);
+  assert.ok(existsSync("content/blog/why-ai-models-disagree.md"));
+  assert.ok(!existsSync("src/app/(marketing)/guides/why-ai-models-disagree"));
+});

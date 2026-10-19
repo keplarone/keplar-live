@@ -2,7 +2,7 @@
 title: Thoroughness modes
 description: Automatic, Fastest, Balanced and Most thorough: what each changes about panel size and the judge, when to use each, and how they interact with your plan.
 order: 1
-updated: 2026-10-03
+updated: 2026-10-19
 keywords: Fastest, Balanced, Most thorough, routing strategy, panel size
 related: /docs/how-it-works/which-questions-use-more-models, /docs/how-it-works/routing-and-panels, /docs/billing-plans/credits-explained
 ---
@@ -29,7 +29,7 @@ Panels are capped at six models, and the Free plan caps them at three whatever y
 ## What it does not do
 
 - It does not choose specific models. You cannot pick models today.
-- It does not turn on web access. Web lookups are not live.
+- It does not turn on web access. In the browser, web lookups are not live; the desktop app's Live Research (beta) is a separate option.
 - It does not make an answer verified. More models make a disagreement more likely to show, not an error less likely to exist.
 
 ## Credits

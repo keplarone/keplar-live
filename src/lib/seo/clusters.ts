@@ -64,7 +64,7 @@ export const CLUSTERS: readonly Cluster[] = [
     intent: "Using AI to learn: flashcards, quizzes, study plans and explanations from a reader's own notes or textbook.",
     hub: "/ai-study-tool",
     hubStatus: "live",
-    product: { href: "/app/study", label: "Open Study mode" },
+    product: { href: "/app/study", label: "Open Study mode (free account)" },
     pages: [
       "/docs/using-keplar/study-mode", "/guides/study-from-a-pdf", "/use-cases/study-for-an-exam", "/blogs/best-ai-for-essays-and-studying",
       "/blogs/best-ai-for-math", "/prompts/learning", "/for-students",
@@ -84,6 +84,7 @@ export const CLUSTERS: readonly Cluster[] = [
       "/use-cases/check-a-claim-before-sharing", "/for-researchers", "/blogs/how-to-check-an-ai-answer", "/blogs/can-you-trust-ai-consensus",
       "/prompts/research", "/prompts/checking-ai", "/docs/how-it-works/verification-review", "/docs/how-it-works/sources-and-citations",
       "/docs/using-keplar/thoroughness-modes", "/docs/how-it-works/why-consensus-can-be-wrong", "/blogs/what-are-ai-hallucinations",
+      "/reports", "/reports/keplar-core-evals-2026-10",
     ],
     tools: ["research-question-generator", "citation-formatter"],
     queries: ["AI research assistant", "deep research AI", "AI fact check", "research question generator", "how to check an AI answer"],
@@ -94,7 +95,7 @@ export const CLUSTERS: readonly Cluster[] = [
     intent: "Turning a topic, notes or a document into a slide deck, and exporting it to PowerPoint or PDF.",
     hub: "/ai-slideshow-maker",
     hubStatus: "live",
-    product: { href: "/app/slides", label: "Open Slides" },
+    product: { href: "/app/slides", label: "Open Slides (Plus and Pro)" },
     pages: ["/docs/using-keplar/slideshow-creator", "/guides/slide-deck-from-notes", "/use-cases/make-a-presentation"],
     tools: ["presentation-outline-generator"],
     queries: ["AI slideshow maker", "AI presentation generator", "slide deck from notes", "presentation outline generator"],
@@ -105,7 +106,7 @@ export const CLUSTERS: readonly Cluster[] = [
     intent: "Making or understanding images with AI: generating pictures from a description, and asking about screenshots and photos.",
     hub: "/ai-image-generator",
     hubStatus: "live",
-    product: { href: "/", label: "Ask Keplar for an image" },
+    product: { href: "/", label: "Ask Keplar for an image (Plus and up)" },
     pages: ["/docs/create/generate-images", "/blogs/best-ai-for-image-generation", "/docs/using-keplar/attachments-images-video"],
     tools: ["prompt-optimizer"],
     queries: ["AI image generator", "generate an image from text", "best AI for image generation", "image prompt ideas"],
@@ -116,7 +117,7 @@ export const CLUSTERS: readonly Cluster[] = [
     intent: "Generating short video clips from a description, and asking questions about a video.",
     hub: "/ai-video-generator",
     hubStatus: "live",
-    product: { href: "/", label: "Ask Keplar for a video" },
+    product: { href: "/", label: "Ask Keplar for a video (Pro, beta)" },
     pages: ["/docs/create/generate-video", "/docs/using-keplar/attachments-images-video"],
     tools: ["prompt-optimizer"],
     queries: ["AI video generator", "text to video AI", "generate a video clip from a prompt"],
@@ -222,10 +223,14 @@ export function clusterTrail(path: string, name: string): { name: string; path: 
   return [{ name: c.name, path: c.hub }, { name, path }];
 }
 
-/** The product call to action for a page: its cluster's product route, or the chat for pages outside every cluster. */
-export function productCta(path: string): { href: string; label: string } {
+/**
+ * The secondary product call to action for a page: its cluster's product route with an honest label (Study needs a free
+ * account, Slides is Plus and Pro), or null when the cluster's product is the chat itself. The primary action on every
+ * content page stays "Try Keplar free" → /app, which works signed out, so a page that promises no signup keeps that promise.
+ */
+export function productCta(path: string): { href: string; label: string } | null {
   const c = clusterOf(path);
-  return c ? { href: c.product.href === "/" ? "/app" : c.product.href, label: c.product.href === "/" ? "Try Keplar free" : c.product.label } : { href: "/app", label: "Try Keplar free" };
+  return c && c.product.href !== "/" ? { href: c.product.href, label: c.product.label } : null;
 }
 
 /** Short labels for the cluster hubs in the site chrome (footer topic row), in a fixed order. */

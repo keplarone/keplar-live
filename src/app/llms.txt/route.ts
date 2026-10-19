@@ -11,6 +11,7 @@ import { allUseCases } from "@/lib/kb/usecases";
 import { promptCategories } from "@/lib/kb/prompts";
 import { approvedVs } from "@/lib/kb/vs";
 import { glossary } from "@/lib/kb/glossary";
+import { allReports } from "@/lib/kb/reports";
 import { factsText } from "@/lib/content/product-facts";
 
 export const dynamic = "force-static";
@@ -63,6 +64,10 @@ export function GET() {
     "",
     "## Blog",
     ...allPosts().map((p) => line(p.path, p.title, p.description)),
+    "",
+    "## Research reports (dated, reproducible, with data files)",
+    line("/reports", "Research reports", "evaluations run by the Keplar team, each with its method, results as recorded, limitations, how to reproduce it and the raw data in the repository"),
+    ...allReports().map((r) => line(r.path, r.title, r.description)),
     "",
     "## How to use Keplar for a task",
     ...allUseCases().map((u) => line(u.path, u.title, u.description)),

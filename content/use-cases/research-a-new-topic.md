@@ -1,7 +1,7 @@
 ---
 title: Get oriented on a topic you know nothing about
 description: A routine for using multi-model answers and Deep Research to learn the lay of the land on a new subject, find the main positions and build a reading list.
-updated: 2026-10-03
+updated: 2026-10-19
 keywords: research a topic with AI, learn a new subject, AI literature overview, Deep Research
 related: /docs/using-keplar/deep-research, /blogs/what-is-deep-research, /prompts/research
 ---
@@ -37,7 +37,7 @@ For anything that changes, such as prices, laws, rankings and counts, write down
 
 ## What to be careful about
 
-Models can be out of date, can blur similar concepts, and can invent references. Normal questions do not use live web lookups. And a clean summary can make a messy field look more settled than it is.
+Models can be out of date, can blur similar concepts, and can invent references. In the browser, normal questions do not use live web lookups; the desktop app's Live Research (beta) does search and read pages. And a clean summary can make a messy field look more settled than it is.
 
 ## Related
 

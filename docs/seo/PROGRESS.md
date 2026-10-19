@@ -2,6 +2,20 @@
 
 Newest first. Facts only; unfinished items are marked.
 
+## 2026-10-19 · search intent engine (branch `claude/seo-intent-engine`, not merged, not deployed)
+- Audit: 13 dimensions, 153 findings (35 High, 69 Medium, 49 Low, no Critical), with a verifier pass on seven; written up in `AUDIT-2026-10-19.md` with the status of each.
+- Clusters: `src/lib/seo/clusters.ts` names 11 search-intent clusters, each with a hub, its supporting pages, its tools, its product route and its queries; `ClusterLinks` renders "Part of" and "In this topic" links on landing, blog, docs and use-case pages; the footer carries a topic row. Five new hubs (`/ai-research-assistant`, `/ai-image-generator`, `/ai-video-generator`, `/ai-writing-assistant`, `/ai-productivity`); Study and Slides hubs expanded.
+- Free tools: `/tools` and ten tools (`src/lib/free-tools/registry.ts`), seven on free models through the embed ask path with 4 runs a minute and 25 a day per visitor, three fully local (citations, model explorer, study plan). `tool_run` is a funnel event.
+- Reports: `content/reports/*.md` loaded by `src/lib/kb/reports.ts`, served at `/reports` and `/reports/[slug]` with `Report` structured data; a test requires the Summary, Method, Results, Limitations, Reproduce and Data sections, real data files in the repository and no duplication of a blog post. First report: the October 2026 Core evals, from `docs/core-intelligence-evals.md`.
+- Programmatic infrastructure: `/sitemap-index.xml` and a sitemap registry (robots lists all of them), `src/lib/seo/quality.ts` (title and description bounds, shingle near-duplicate and metadata-collision checks, `gatePage`), template detail pages render each page's headings and first paragraphs from the snapshot.
+- Public answers: content moderation on publish (code `unsafe`) and the `KEPLAR_PUBLIC_ANSWERS=off` kill switch (publishing, listing, sitemap and pages all off; private links unchanged), tested.
+- Facts: web search, Business pricing, API availability and agents are now stated one way each and derived from the registries where one exists; blog search titles; 16 descriptions shortened; pricing metadata from `tiers.ts`; the duplicate guide redirects to its blog post.
+- Conversion: the primary action on content pages is the no-signup chat, the cluster product route is the secondary; `PageHero` CTAs are tracked.
+- Measurement: telemetry on `/`; first-touch attribution (landing path, source class, campaign) carried into checkout metadata and stored by the verified webhook, reported on `/admin/seo`; Search Console module (`src/lib/seo/gsc.ts`, service-account JWT, read-only scope) and admin section, which says "not connected" until the owner adds credentials.
+- SEO QA in CI: `scripts/seo-gate.mjs` crawls the production build after `next build` in `npm run verify` and in `.github/workflows/ci.yml`; it fails on a missing title or description, a wrong length, more than one h1, a wrong canonical, a stray noindex, invalid JSON-LD, missing alt text, a thin page, a broken internal link, a missing sitemap child or a missing `llms.txt`.
+- Localization: "Free tools" footer label translated in the 24 stable locales (beta locales fall back to English).
+- Not done: Search Console and Bing verification and credentials (owner); CI-gated deploys (Vercel setting); font subsets, CSS split and pixel consent (design and legal decisions); beta-locale indexing; agents wording confirmation; language check and global rate cap on public answers; per-tool reporting on `/admin/seo`. No deploy from this branch: it ships through a pull request to `main` after CI.
+
 ## 2026-10-03 · knowledge base deployed
 - Commits 1177ebd and 16758d9 deployed to production (`keplar-9xyxf8eku`, aliased to keplar.one). Live crawl of 128 knowledge-base URLs from the sitemap: all 200, one canonical matching the URL, one H1, valid JSON-LD, share image present and serving (120 distinct images). Sitemap has 162 URLs, all with `lastmod`. `/vs/perplexity` is noindex and not in the sitemap. IndexNow: 162 URLs accepted (HTTP 200).
 - Not done: Search Console / Bing verification, comparison approval, Lighthouse on live pages.

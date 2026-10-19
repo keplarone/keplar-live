@@ -223,7 +223,7 @@ export default function DevelopersPage() {
             <ul className={s.list}>
               <li className={s.li}>Team-level API keys, per-key credit caps, webhooks and an official SDK.</li>
               <li className={s.li}>Separate usage-based billing for API and widget traffic. Today it draws on your plan&apos;s credits.</li>
-              <li className={s.li}>Tool use, file or image input, and Create through the API. No stated uptime figure during the beta.</li>
+              <li className={s.li}>File input beyond one image, and Create through the API. No stated uptime figure during the beta.</li>
             </ul>
             <p className={s.p}>Need one of these? <Link href="/inquire">Tell us</Link>. The machine-readable spec is at <a href="/api/v1/openapi.json">/api/v1/openapi.json</a> (OpenAPI 3.1).</p>
           </section>

@@ -36,6 +36,7 @@ const EXCLUDED = [
   "/contact", "/feedback", "/inquire",
   "/docs", // docs are not a checkout surface
   "/embed", // the Ask widget framed on other sites: no ad pixel there
+  "/tools", "/answers", // visitors paste their own text into the tools; answers are people's published content: no ad pixel there
   "/r", "/s", "/sites", "/i", "/api", "/dev",
 ];
 

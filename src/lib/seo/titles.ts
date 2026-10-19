@@ -10,6 +10,7 @@ import { comparePages } from "@/lib/compare";
 import { landingPages } from "@/lib/content/landing";
 import { guides } from "@/lib/content/guides";
 import { editorialPages } from "@/lib/content/editorial";
+import { allReports } from "@/lib/kb/reports";
 
 /** Static pages whose titles live in their route files. */
 const STATIC: Record<string, string> = {
@@ -35,6 +36,7 @@ const STATIC: Record<string, string> = {
   "/simulation": "How Keplar works: a simulation",
   "/specialists": "Specialist directory",
   "/tools": "Free tools",
+  "/reports": "Research reports",
   "/app/study": "Study mode",
   "/app/slides": "Slides",
   "/app/create": "Create",
@@ -55,6 +57,8 @@ export function titleFor(path: string): string {
   if (vs) return `Keplar vs ${vs.name}`;
   const cmp = comparePages.find((c) => c.path === path);
   if (cmp) return cmp.h1;
+  const report = allReports().find((r) => r.path === path);
+  if (report) return report.metaTitle;
   if (STATIC[path]) return STATIC[path];
   const last = path.split("/").filter(Boolean).at(-1) ?? "";
   return last ? last.replace(/-/g, " ").replace(/^\w/, (c) => c.toUpperCase()) : path;
@@ -62,5 +66,5 @@ export function titleFor(path: string): string {
 
 /** True when the title came from a registry or the static map, not from the path. */
 export function hasTitle(path: string): boolean {
-  return Boolean(allBlogAndDocsByPath(path) || landingPages.some((p) => p.path === path) || guides.some((g) => g.path === path) || editorialPages.some((e) => e.path === path) || promptCategories.some((c) => `/prompts/${c.slug}` === path) || vsPages.some((v) => `/vs/${v.slug}` === path) || comparePages.some((c) => c.path === path) || STATIC[path]);
+  return Boolean(allBlogAndDocsByPath(path) || landingPages.some((p) => p.path === path) || guides.some((g) => g.path === path) || editorialPages.some((e) => e.path === path) || promptCategories.some((c) => `/prompts/${c.slug}` === path) || vsPages.some((v) => `/vs/${v.slug}` === path) || comparePages.some((c) => c.path === path) || allReports().some((r) => r.path === path) || STATIC[path]);
 }

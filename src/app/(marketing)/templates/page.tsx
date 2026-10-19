@@ -1,3 +1,4 @@
+import { TrackedLink } from "@/components/growth/TrackedLink";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -55,7 +56,7 @@ export default async function Templates() {
       )}
 
       <div className={s.actions}>
-        <Link className={s.btn} href="/app/create?utm_source=templates&utm_medium=index">Build something from scratch</Link>
+        <TrackedLink where="templates:index" href="/app/create?utm_source=templates&utm_medium=index" size="md" arrow>Build something from scratch</TrackedLink>
         <Link className={s.btn} href="/showcase">See the curated Create showcase</Link>
       </div>
       <JsonLd data={breadcrumbs([{ name: "Templates", path: "/templates" }])} />

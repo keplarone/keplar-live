@@ -2,7 +2,8 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { adminFromHeaders } from "@/lib/ops/admin-auth";
 import { funnel, seoRows, seoSnapshot, type FunnelRow } from "@/lib/seo/events";
-import { paidByLanding } from "@/lib/seo/attribution";
+import { paidByLanding } from "@/lib/seo/attribution-report";
+import { gscReport } from "@/lib/seo/gsc";
 import { sitemapPaths } from "@/app/sitemap";
 import { lastmodFor } from "@/lib/content/lastmod";
 import s from "@/components/admin/Admin.module.css";
@@ -17,6 +18,8 @@ export default async function AdminSeoPage() {
   const { at: nowMs, report } = await seoSnapshot(28);
   const rows = await seoRows(28, nowMs).catch(() => null);
   const paid = await paidByLanding(90, nowMs).catch(() => null);
+  const gsc = await gscReport(28);
+  const share = (n: number) => `${(n * 100).toFixed(1)}%`;
   const f = rows ? funnel(rows) : null;
   const pages = sitemapPaths.map((p) => {
     const lm = lastmodFor(p);
@@ -128,6 +131,44 @@ export default async function AdminSeoPage() {
           </div>
         )}
         <p className={s.sub}>Attribution is the first public page of the visit and its source class, carried into checkout only when the visitor allowed Analytics and recorded by the verified Whop webhook (src/lib/seo/attribution.ts). Payments without it appear as one line. Refunded payments are left out.</p>
+      </section>
+
+      <section className={s.panel} aria-labelledby="gsc-h">
+        <h2 id="gsc-h">Google Search Console (last 28 full days)</h2>
+        {!gsc.configured ? (
+          <p className={s.empty}>Not connected. Create a service account, add its email to the Search Console property as a user, then set GSC_CLIENT_EMAIL and GSC_PRIVATE_KEY (optionally GSC_SITE_URL) in Vercel (src/lib/seo/gsc.ts). Nothing on this page is estimated; until then there are no search figures here.</p>
+        ) : gsc.error ? (
+          <p className={s.empty}>Search Console could not be read for {gsc.siteUrl}: {gsc.error}</p>
+        ) : (
+          <>
+            <div className={s.grid}>
+              {[["Clicks", gsc.totals ? String(gsc.totals.clicks) : "—"], ["Impressions", gsc.totals ? String(gsc.totals.impressions) : "—"], ["CTR", gsc.totals ? share(gsc.totals.ctr) : "—"], ["Average position", gsc.totals ? gsc.totals.position.toFixed(1) : "—"]].map(([k, v]) => (
+                <div key={k} className={s.stat}><span>{k}</span><strong>{v}</strong></div>
+              ))}
+            </div>
+            {[["Top pages", gsc.pages] as const, ["Top queries", gsc.queries] as const].map(([label, list]) => (
+              <div key={label} className={s.scroll}>
+                <h3>{label}</h3>
+                {!list.length ? <p className={s.empty}>No rows for {gsc.siteUrl}.</p> : (
+                  <table className={s.table}>
+                    <thead><tr>{[label.slice(4), "Clicks", "Impressions", "CTR", "Position"].map((h) => <th key={h} scope="col">{h}</th>)}</tr></thead>
+                    <tbody>{list.slice(0, 25).map((r) => <tr key={r.keys.join("|")}><td>{r.keys.join(" ")}</td><td>{r.clicks}</td><td>{r.impressions}</td><td>{share(r.ctr)}</td><td>{r.position.toFixed(1)}</td></tr>)}</tbody>
+                  </table>
+                )}
+              </div>
+            ))}
+            {gsc.sitemaps.length ? (
+              <div className={s.scroll}>
+                <h3>Sitemaps known to Search Console</h3>
+                <table className={s.table}>
+                  <thead><tr>{["Sitemap", "Submitted", "Last read", "URLs", "Indexed", "Errors", "Warnings"].map((h) => <th key={h} scope="col">{h}</th>)}</tr></thead>
+                  <tbody>{gsc.sitemaps.map((m) => <tr key={m.path}><td>{m.path}</td><td>{m.lastSubmitted?.slice(0, 10) ?? "—"}</td><td>{m.lastDownloaded?.slice(0, 10) ?? "—"}</td><td>{m.submitted ?? "—"}</td><td>{m.indexed ?? "—"}</td><td>{m.errors ?? 0}</td><td>{m.warnings ?? 0}</td></tr>)}</tbody>
+                </table>
+              </div>
+            ) : null}
+            <p className={s.sub}>Read live from the Search Console API with the read-only scope; the figures come from Google for {gsc.siteUrl} and lag by about two days. The sitemap index (/sitemap-index.xml) is the one to submit; the others are listed in it.</p>
+          </>
+        )}
       </section>
 
       <section className={s.panel} aria-labelledby="fresh-h">

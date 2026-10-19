@@ -1,4 +1,8 @@
 import { brand } from "./site";
+import { BUSINESS_TIERS, SELF_SERVE_TIERS } from "./business/tiers";
+
+/** "$199.99", the lowest self-serve Business price, from the plan table so the FAQ cannot drift. */
+const businessFrom = `$${Math.min(...SELF_SERVE_TIERS.map((id) => BUSINESS_TIERS[id].monthly ?? Infinity)).toFixed(2)}`;
 /**
  * Marketing-approved FAQ (docs source: /workspace/marketing/faq-final.md).
  * Rendered visibly on /pricing; the FAQPage JSON-LD is generated from this
@@ -51,6 +55,6 @@ export const faq: { q: string; a: string }[] = [
   },
   {
     q: "How much does Keplar cost?",
-    a: "Free is $0. Keplar Lite is $20 a month, Keplar Plus is $45 a month, and Keplar Pro is $99 a month. Keplar Business is custom, so talk to us through the Inquire form.",
+    a: `Free is $0. Keplar Lite is $20 a month, Keplar Plus is $45 a month, and Keplar Pro is $99 a month. Keplar Business plans start at ${businessFrom} a month at business.keplar.one, with custom pricing for enterprise.`,
   },
 ];

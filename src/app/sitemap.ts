@@ -9,6 +9,7 @@ import { SHOWCASE } from "@/lib/create/showcase/data";
 import { comparePages, hub as compareHub } from "@/lib/compare";
 import { localizedSitemapAlternates, localizedSitemapEntries } from "@/lib/i18n/sitemap";
 import { toolPaths } from "@/lib/free-tools/registry";
+import { allReports } from "@/lib/kb/reports";
 
 /**
  * Canonical, indexable, 200 public URLs only. /app, /api, auth, checkout and account are excluded (private or transactional);
@@ -51,6 +52,8 @@ export const sitemapPaths: string[] = [
   compareHub.path,
   ...comparePages.map((p) => p.path),
   ...toolPaths(), // the free tools hub and every tool (src/lib/free-tools/registry.ts)
+  "/reports",
+  ...allReports().map((r) => r.path), // research reports (content/reports)
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

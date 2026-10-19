@@ -2,7 +2,7 @@
 title: Write better questions
 description: Eight habits that get more from a multi-model answer: state the decision, add constraints, ask for the counterargument, separate facts from judgment, and more, with prompts you can copy.
 order: 2
-updated: 2026-10-03
+updated: 2026-10-19
 keywords: prompt tips, better questions, prompt writing, how to ask AI
 howto: true
 related: /prompts, /docs/using-keplar/follow-ups-and-chats, /docs/how-it-works/which-questions-use-more-models
@@ -46,6 +46,6 @@ I can verify, a judgment call, or a prediction, and what source I should check.
 
 - **Leading questions.** "Why is X the best?" assumes the answer. Ask "How does X compare with Y?"
 - **Pasting secrets.** Do not include passwords, card numbers or confidential data. On Free, model hosts may log prompts.
-- **Asking for live facts.** Current prices, versions and news can be out of date; Keplar does not browse today.
+- **Asking for live facts.** Current prices, versions and news can be out of date; browser answers do not search the web (the desktop app's Live Research, in beta, does).
 
 More ready-made examples are in the [prompt library](/prompts).

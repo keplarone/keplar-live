@@ -20,7 +20,7 @@ export default function ToolsHub() {
   const groups = CLUSTERS.map((c) => ({ c, tools: TOOLS.filter((t) => t.cluster === c.id) })).filter((g) => g.tools.length);
   return (
     <>
-      <PageHero label="Free tools" title="Small tools, no account, honest about what they do." lede={`Each tool does one job. The AI-backed ones run on ${brand.name}'s free lane with free open models; the others run entirely in your browser. Every result says what to check.`} ctas={[{ href: "/", label: "Ask Keplar instead" }]} />
+      <PageHero label="Free tools" title="Small tools, no account, honest about what they do." lede={`Each tool does one job. The AI-backed ones run on ${brand.name}'s free lane with free open models; the others run entirely in your browser. Every result says what to check.`} ctas={[{ href: "/app", label: "Ask Keplar instead" }]} where="tools:index" />
       <section className={prose.section} style={{ paddingTop: 0 }}>
         <div className={prose.inner}>
           {groups.map(({ c, tools }) => (

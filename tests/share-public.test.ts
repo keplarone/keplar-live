@@ -88,6 +88,10 @@ test("refusals: no question, too short, personal data, other account, signed out
   const r3 = await PATCH(jsonReq(u.cookie, "/api/share", "PATCH", { token: pii, public: true, consent: true }));
   assert.equal(r3.status, 422);
   assert.equal(((await r3.json()) as { code: string }).code, "personal_data");
+  const unsafe = await mk(u.cookie, { answer: { ...answer, markdown: `${answer.markdown}\n\nAlso, here is how to make a deepfake of a classmate.` } });
+  const r4 = await PATCH(jsonReq(u.cookie, "/api/share", "PATCH", { token: unsafe, public: true, consent: true }));
+  assert.equal(r4.status, 422);
+  assert.equal(((await r4.json()) as { code: string }).code, "unsafe"); // content moderation, rules engine without a key
   const ok = await mk(u.cookie);
   const other = await signIn("pub-other@example.com", "free");
   assert.equal((await PATCH(jsonReq(other.cookie, "/api/share", "PATCH", { token: ok, public: true, consent: true }))).status, 404);
@@ -116,6 +120,33 @@ test("per-account cap of public pages; admin takedown is final and admin-only", 
 
 test("robots lists both sitemaps", async () => {
   const src = await (await import("node:fs/promises")).readFile(new URL("../src/app/robots.ts", import.meta.url), "utf8");
-  assert.ok(src.includes("/answers-sitemap.xml") && src.includes("/sitemap.xml"));
+  const { sitemapUrls } = await import("../src/lib/seo/sitemaps");
+  assert.match(src, /sitemapUrls\(\)/); // robots lists every registered sitemap (src/lib/seo/sitemaps.ts)
+  assert.ok(sitemapUrls().some((u) => u.endsWith("/answers-sitemap.xml")) && sitemapUrls().some((u) => u.endsWith("/sitemap.xml")));
   assert.equal(src.includes('"/answers'), false); // public answers are never disallowed
+});
+
+test("kill switch: KEPLAR_PUBLIC_ANSWERS=off pauses publishing, listing and every public page; private links are untouched", async () => {
+  const { publicAnswersOn } = await import("../src/lib/growth/share-public");
+  assert.equal(publicAnswersOn({}), true);
+  assert.equal(publicAnswersOn({ KEPLAR_PUBLIC_ANSWERS: "off" }), false);
+  assert.equal(publicAnswersOn({ KEPLAR_PUBLIC_ANSWERS: " OFF " }), false);
+  const u = await signIn("pub-switch@example.com", "free");
+  const token = await mk(u.cookie);
+  const on = await PATCH(jsonReq(u.cookie, "/api/share", "PATCH", { token, public: true, consent: true }));
+  assert.equal(on.status, 200);
+  const slug = ((await on.json()) as { url: string }).url.split("/answers/")[1];
+  assert.ok(await openPublic(slug));
+  process.env.KEPLAR_PUBLIC_ANSWERS = "off";
+  try {
+    assert.equal(await openPublic(slug), null);
+    assert.deepEqual(await listPublic(), []);
+    const again = await mk(u.cookie);
+    const paused = await PATCH(jsonReq(u.cookie, "/api/share", "PATCH", { token: again, public: true, consent: true }));
+    assert.equal(paused.status, 422);
+    assert.equal(((await paused.json()) as { code: string }).code, "paused");
+  } finally {
+    delete process.env.KEPLAR_PUBLIC_ANSWERS;
+  }
+  assert.ok(await openPublic(slug), "back on: the page is public again, nothing was deleted");
 });

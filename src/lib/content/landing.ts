@@ -1,10 +1,13 @@
 /**
  * Indexable landing pages and use-case pages. Copy rules: describe what Keplar does today, nothing more.
  * No accuracy claims, no "checks claims against sources", no statistics, testimonials or customer counts.
- * Sources shown in an answer are the ones the models cite; Keplar has not checked them. Web lookups are not live.
+ * Sources shown in an answer are the ones the models cite; Keplar has not checked them. Browser answers do not search the web; the desktop app's Live Research (beta) does.
  */
 import { brand } from "@/lib/site";
 import { tiers } from "@/lib/tiers";
+import { BUSINESS_TIERS, SELF_SERVE_TIERS } from "@/lib/business/tiers";
+
+const businessFrom = `$${Math.min(...SELF_SERVE_TIERS.map((id) => BUSINESS_TIERS[id].monthly ?? Infinity)).toFixed(2)}`;
 
 const K = brand.name;
 const O = brand.engineName;
@@ -35,7 +38,7 @@ export type LandingPage = {
 const limits: Section = {
   h2: "Honest about limits",
   p: [
-    `${K} can be wrong, even when the models agree. Agreement is a signal, not proof. ${K} does not look things up on the web yet, and the sources shown under an answer are the ones the models cite; ${K} has not checked them.`,
+    `${K} can be wrong, even when the models agree. Agreement is a signal, not proof. In the browser, ${K} does not search the web (the desktop app's Live Research, in beta, does), and the sources shown under an answer are the ones the models cite; ${K} has not checked them.`,
     "The Free plan runs on free open models, which can be slower when they are busy, and their hosts may log prompts. Health, legal and money answers are general information, not professional advice.",
   ],
 };
@@ -154,7 +157,7 @@ export const landingPages: LandingPage[] = [
     faq: [
       { q: "Is Keplar a replacement for ChatGPT?", a: "It's an alternative approach rather than a one-for-one replacement. Some features of other products, such as voice or custom assistants, are not part of Keplar today." },
       { q: "Can I see which models answered?", a: "Yes. Open Models consulted under an answer. Which models run depends on your plan and the question. Free uses free open models only." },
-      { q: "How much does it cost?", a: "Free is $0. Lite is $20 a month, Plus is $45 a month and Pro is $99 a month. Business is custom." },
+      { q: "How much does it cost?", a: `Free is $0. Lite is ${price("lite")} a month, Plus is ${price("plus")} a month and Pro is ${price("pro")} a month. Business plans start at ${businessFrom} a month at business.keplar.one.` },
     ],
     related: ["/ai-answer-engine", "/compare-ai-models", "/compare", "/pricing"],
   },
@@ -823,7 +826,7 @@ export const landingPages: LandingPage[] = [
       },
       {
         h2: "Agents and connected apps",
-        p: ["On Plus and above, agents take a repeat task, such as following up with leads, and run it with a spend cap, approval for outbound actions and an audit log. Connected apps (beta) let a chat use tools from the apps you connect, each with permissions you set. Scheduled agent runs always wait for your approval before acting outside Keplar."],
+        p: ["Agents take a repeat task, such as following up with leads, and run it with a spend cap, approval for outbound actions and an audit log. Plus includes 3 agents and Pro 10; they run in Keplar Business (business.keplar.one) on the same account. Connected apps (beta) let a chat use tools from the apps you connect, each with permissions you set. Scheduled agent runs always wait for your approval before acting outside Keplar."],
       },
       {
         h2: "On your desktop and in your browser",
@@ -833,7 +836,7 @@ export const landingPages: LandingPage[] = [
     ],
     faq: [
       { q: "Is Keplar free for everyday work?", a: "Yes. Free runs on free open models, up to 50 questions a day. Lite adds premium models, coding help and file attachments; Plus adds Deep Research, agents, slides and image generation." },
-      { q: "Will Keplar take actions for me?", a: "Only through agents on Plus and above, and only within the spend cap and permissions you set. Outbound actions wait for your approval by default, and every run is logged." },
+      { q: "Will Keplar take actions for me?", a: "Only through agents (3 on Plus, 10 on Pro), which run in Keplar Business on the same account, and only within the spend cap and permissions you set. Outbound actions wait for your approval by default, and every run is logged." },
       { q: "Does Keplar remember what I told it?", a: "Signed in, optional memory saves short facts such as your name, goals and preferences, and you can see and delete each one. Memory is not learned from Free chats." },
       { q: "Can my team use one workspace?", a: "Keplar for Teams, with shared workspaces and roles, is in beta on the Business plan at business.keplar.one." },
     ],

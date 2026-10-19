@@ -4,7 +4,7 @@ metaTitle: What is AI deep research, and when to use it
 description: Deep research modes run many searches and read many pages to produce a report. What they do, what they cost, where they fail, and how to judge a report.
 category: How AI works
 published: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-19
 keywords: deep research AI, ChatGPT deep research, Gemini deep research, AI research report, agentic research
 related: /docs/using-keplar/deep-research, /blogs/how-to-check-an-ai-answer, /blogs/what-is-an-ai-agent
 ---
@@ -81,4 +81,4 @@ Minutes, typically, depending on the product and topic.
 
 Keplar has a Deep Research option on Plus and above. It is one of the heaviest things you can run: a typical run is estimated at about 1,200 credits, and the composer shows how many runs your remaining allowance covers. Because it is costly, a run that does not fit your allowance stops before any model is called.
 
-Keplar's other live-web behavior is limited: normal questions do not use live web lookups. In Deep Research, models cite sources, and those citations are shown labeled "Cited by <model>; Keplar didn't open or check." Keplar does not open the pages to verify them, and has no accuracy score, so the judging steps above remain yours. Read [Deep Research](/docs/using-keplar/deep-research) for what it does and what it costs.
+Keplar's other live-web behavior is limited: in the browser, normal questions do not use live web lookups (the desktop app's Live Research, in beta, does). In Deep Research, models cite sources, and those citations are shown labeled "Cited by <model>; Keplar didn't open or check." Keplar does not open the pages to verify them, and has no accuracy score, so the judging steps above remain yours. Read [Deep Research](/docs/using-keplar/deep-research) for what it does and what it costs.

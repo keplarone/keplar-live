@@ -48,7 +48,7 @@ test("free tools: the hub and every tool are in the sitemap with a real lastmod"
 test("free tools: validation enforces required fields, lengths and select options; prompts fence the material", () => {
   const sum = toolBySlug("text-summarizer")!;
   assert.deepEqual(validateInput(sum, {}), { ok: false, error: "Text to summarize is required.", field: "text" });
-  assert.equal(validateInput(sum, { text: "x".repeat(9001) }).ok, false);
+  assert.equal(validateInput(sum, { text: "x".repeat(4801) }).ok, false);
   const ok = validateInput(sum, { text: "Hello ```world", length: "nope", focus: "costs", extra: "dropped" });
   assert.ok(ok.ok);
   if (ok.ok) {

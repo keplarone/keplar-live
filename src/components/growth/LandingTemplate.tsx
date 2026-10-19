@@ -15,8 +15,8 @@ import { productCta } from "@/lib/seo/clusters";
 /** Shared layout for the indexable landing and use-case pages. One h1, a primary CTA above the fold, a no-signup try box, FAQ, related links. */
 export function LandingTemplate({ page }: { page: LandingPage }) {
   const related = page.related.map((p) => ({ path: p, title: landingBySlug(p.slice(1))?.label ?? RELATED_LABELS[p] ?? p }));
-  // The primary action is the cluster's product route (Study pages open Study mode, slides pages open Slides); the chat stays one click away.
-  const cta = productCta(page.path);
+  // Primary: the no-signup chat. Secondary: the cluster's product route with an honest label (or the plans page when the product is the chat).
+  const product = productCta(page.path);
   return (
     <>
       <header className={hero.hero}>
@@ -25,8 +25,12 @@ export function LandingTemplate({ page }: { page: LandingPage }) {
           <h1 className={hero.title}><TwoTone text={page.h1} /></h1>
           <p className={hero.lede}>{page.lede}</p>
           <div className={hero.ctaRow}>
-            <TrackedLink where={`${page.slug}:hero`} href={cta.href} size="lg" arrow>{cta.label}</TrackedLink>
-            <TrackedLink where={`${page.slug}:hero-pricing`} href={cta.href === "/app" ? "/pricing" : "/app"} size="lg" variant="secondary">{cta.href === "/app" ? "See plans" : "Ask Keplar"}</TrackedLink>
+            <TrackedLink where={`${page.slug}:hero`} href="/app" size="lg" arrow>Try Keplar free</TrackedLink>
+            {product ? (
+              <TrackedLink where={`${page.slug}:hero-product`} href={product.href} size="lg" variant="secondary">{product.label}</TrackedLink>
+            ) : (
+              <TrackedLink where={`${page.slug}:hero-pricing`} href="/pricing" size="lg" variant="secondary">See plans</TrackedLink>
+            )}
           </div>
         </div>
       </header>
@@ -53,7 +57,7 @@ export function LandingTemplate({ page }: { page: LandingPage }) {
       <section className={prose.section} style={{ paddingTop: 0, textAlign: "center" }}>
         <div className={prose.inner}>
           <div className={hero.ctaRow} style={{ justifyContent: "center", marginTop: 0 }}>
-            <TrackedLink where={`${page.slug}:footer`} href={cta.href} size="lg" arrow>{cta.label}</TrackedLink>
+            <TrackedLink where={`${page.slug}:footer`} href="/app" size="lg" arrow>Try Keplar free</TrackedLink>
             <TrackedLink where={`${page.slug}:footer-signup`} href="/signup" size="lg" variant="secondary">Create a free account</TrackedLink>
           </div>
         </div>

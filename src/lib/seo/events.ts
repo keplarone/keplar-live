@@ -11,6 +11,7 @@
 import { allows, parseRecord } from "@/lib/consent";
 import { collection } from "@/lib/create/platform/store";
 import { id } from "@/lib/create/platform/ids";
+import { SEO_SOURCES, type SeoSource } from "./sources";
 
 export const SEO_EVENTS = [
   "landing_view",
@@ -30,8 +31,7 @@ export type SeoEvent = (typeof SEO_EVENTS)[number];
 /** Coarse device class from the viewport (never the user agent string). */
 export const SEO_DEVICES = ["mobile", "desktop"] as const;
 export type SeoDevice = (typeof SEO_DEVICES)[number];
-export const SEO_SOURCES = ["search", "ai", "social", "direct", "other", "internal"] as const;
-export type SeoSource = (typeof SEO_SOURCES)[number];
+export { SEO_SOURCES, type SeoSource } from "./sources";
 
 export type SeoEventRow = {
   id: string;

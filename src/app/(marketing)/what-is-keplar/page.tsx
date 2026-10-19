@@ -13,7 +13,7 @@ import kb from "@/components/kb/kb.module.css";
 
 const PATH = "/what-is-keplar";
 const TITLE = `What is ${brand.companyName}? Everything Keplar does`;
-const DESCRIPTION = "Keplar is an AI workspace: a multi-model answer engine plus Study mode, Deep Research, slides, image and video generation, website and app building, Roblox Studio and Blender co-builders, an API, and Keplar Business for companies.";
+const DESCRIPTION = "Keplar is an AI workspace: a multi-model answer engine plus Study mode, Deep Research, slides, images, video, site and app building and Studio co-builders.";
 
 export const metadata = pageMeta(PATH, TITLE, DESCRIPTION);
 

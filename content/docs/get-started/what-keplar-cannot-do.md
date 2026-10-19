@@ -1,8 +1,8 @@
 ---
 title: What Keplar cannot do
-description: The limits, stated plainly: it can be wrong when the models agree, it does not browse the web or check sources, and it is not medical, legal or financial advice.
+description: The limits, stated plainly: it can be wrong even when the models agree, browser answers do not search the web (desktop Live Research, in beta, does), and it is not medical, legal or financial advice.
 order: 6
-updated: 2026-10-03
+updated: 2026-10-19
 keywords: limitations, accuracy, hallucination, web search, advice
 related: /docs/how-it-works/why-consensus-can-be-wrong, /docs/how-it-works/sources-and-citations, /docs/privacy-security/data-handling
 ---
@@ -13,9 +13,11 @@ A tool you can trust is one whose limits you know. These are Keplar's, as of 3 O
 
 Models trained on overlapping data can share a mistake. Keplar's agreement readout counts how many models took the same position. It does not measure correctness, and Keplar shows no confidence score or accuracy percentage because it has none to show. See [Why consensus can be wrong](/docs/how-it-works/why-consensus-can-be-wrong).
 
-## It does not browse the web today
+## It does not browse the web in the browser
 
 The Web option in the composer is labeled as not live. Models answer from what they learned in training, so anything that changes weekly (current software versions, prices, release dates, news, sports results) can be out of date. In a test on 3 October 2026, Keplar's free panel gave out-of-date answers on a "current LTS version" question; it flagged that the models split but could not look up the right answer. Check recent facts at the official source.
+
+The exception is the Keplar One desktop app (0.2.0 or newer): its Live Research, in beta, searches the web and reads pages on your computer, cites each page it used and checks the citations. See [Live Research](/features#live-research).
 
 ## It does not check the sources models cite
 

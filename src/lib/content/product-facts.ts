@@ -47,7 +47,8 @@ export const FACT_SECTIONS: FactSection[] = [
       { name: "Voice and Talk", what: "Ask out loud and hear the answer read back; press and hold to talk. Keplar does not record or store your audio.", feature: "voice" },
       { name: "Live demo", what: "Ask a real question on the home page without an account.", plans: "No account needed", feature: "demo", href: "/" },
       { name: "Shared answers", what: "Publish an answer you are proud of to a public page that shows the question, how many models agreed and where they differed.", plans: "Signed-in users", href: "/answers" },
-      { name: "Web lookups", what: "Live web search inside answers. Shown in the app but not switched on yet.", plans: "Paid plans when live", status: "soon" },
+      { name: "Live Research (desktop app)", what: "In the Keplar One desktop app, Keplar searches the web and reads pages on your computer, then cites each page it used and checks the citations. Desktop app 0.2.0 or newer.", plans: "Every plan, in the desktop app", feature: "live-research", href: "/download" },
+      { name: "Web lookups in the browser", what: "Live web search inside browser answers. The Web option in the composer is labeled as not live; answers draw on what the models know.", plans: "Not available yet", status: "soon" },
     ],
   },
   {
@@ -221,7 +222,8 @@ export const CAPABILITY_MATRIX: MatrixRow[] = [
   { feature: "Roblox Studio co-builder", cells: ["no", "beta", "no", "no"], note: "Needs Roblox Studio on the same computer." },
   { feature: "Blender co-builder", cells: ["no", "beta", "no", "no"], note: "Desktop app 0.1.8+, Blender 4.2+." },
   { feature: "Floating overlay over Studio or Blender", cells: ["no", "beta", "no", "no"] },
-  { feature: "Scheduled agents and Approvals", cells: ["no", "no", "beta", "beta"] },
+  // Agents are entitled by the Keplar One plan (3 on Plus, 10 on Pro, 50 on Business; src/lib/create/platform/plans.ts) and run in Keplar Business, on the same account.
+  { feature: "Scheduled agents and Approvals", cells: ["no", "no", "beta", "beta"], note: "Entitled by plan (Plus 3, Pro 10, Business 50); run in Keplar Business on the same account." },
   { feature: "Operations: orders, CRM, inbox, audit log", cells: ["no", "no", "beta", "beta"] },
   { feature: "AI Design Canvas", cells: ["no", "no", "beta", "beta"], note: "Design, code and AI edits to a website project in one draft, saved only when you approve." },
   { feature: "Connected apps (MCP)", cells: ["beta", "beta", "beta", "beta"] },

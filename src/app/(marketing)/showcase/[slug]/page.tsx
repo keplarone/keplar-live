@@ -16,7 +16,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const it = showcaseBySlug((await params).slug);
   if (!it) return {};
-  return pageMeta(`/showcase/${it.slug}`, `${it.title}: ${it.style.toLowerCase()} ${it.kind.toLowerCase()} demo`, `${it.line} A Keplar Create showcase demo made by the Keplar team, with the brief you would type to build something like it. Not a customer site.`);
+  return pageMeta(`/showcase/${it.slug}`, `${it.title}: ${it.style.toLowerCase()} ${it.kind.toLowerCase()} demo`, `${it.line} A Keplar Create demo by the Keplar team, with the brief that builds it. Not a customer site.`);
 }
 
 export default async function ShowcaseDetail({ params }: { params: Promise<{ slug: string }> }) {

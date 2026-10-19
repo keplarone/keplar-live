@@ -46,6 +46,7 @@ const m: CommonCatalog = {
       "/how-it-works": "यह कैसे काम करता है",
       "/showcase": "Create शोकेस",
       "/templates": "कम्युनिटी गैलरी",
+      "/tools": "मुफ़्त टूल",
       "/keplar-one": "Keplar-One",
       "/pricing": "कीमतें",
       "/download": "डाउनलोड",

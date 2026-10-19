@@ -1,8 +1,8 @@
 ---
 title: Deep Research
-description: What Deep Research does, who can use it, how much it uses, the in-app run estimate, and the honest limit that web lookups are not live.
+description: What Deep Research does, who can use it, how much it uses, the in-app run estimate, and the honest limit that browser web lookups are not live.
 order: 7
-updated: 2026-10-03
+updated: 2026-10-19
 keywords: Deep Research, long research, research mode, credits
 related: /docs/billing-plans/credits-explained, /docs/how-it-works/sources-and-citations, /docs/how-it-works/which-questions-use-more-models
 ---
@@ -19,7 +19,7 @@ Turning it on raises the question's complexity a lot, so it gets a wide panel, a
 
 ## What it does not do
 
-Web lookups are not live, so Deep Research draws on what the models know from training. It does not browse for current sources, and Keplar does not check the sources the models cite. For anything that depends on recent facts, treat the output as a map of positions and questions to verify, and do the checking yourself. See [Sources and citations](/docs/how-it-works/sources-and-citations).
+In the browser, web lookups are not live, so Deep Research draws on what the models know from training. It does not browse for current sources there, and Keplar does not check the sources the models cite. For anything that depends on recent facts, treat the output as a map of positions and questions to verify, and do the checking yourself, or use Live Research (beta) in the Keplar One desktop app, which searches the web, reads pages on your computer and cites them. See [Sources and citations](/docs/how-it-works/sources-and-citations).
 
 ## How much it uses
 

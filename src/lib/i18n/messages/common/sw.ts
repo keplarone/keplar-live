@@ -46,6 +46,7 @@ const m: CommonCatalog = {
       "/how-it-works": "Jinsi inavyofanya kazi",
       "/showcase": "Maonyesho ya Create",
       "/templates": "Matunzio ya jamii",
+      "/tools": "Zana za bure",
       "/keplar-one": "Keplar-One",
       "/pricing": "Bei",
       "/download": "Pakua",
