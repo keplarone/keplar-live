@@ -15,7 +15,7 @@ test("the Deep Research chip uses the off note before a request unless search wi
   const composer = readFileSync("src/components/app-ui/Composer.tsx", "utf8");
   assert.match(composer, /deepResearchChipNote\(retrievalEnabled === true \|\| liveOn\)/);
   assert.match(composer, /data-retrieval=\{drOffNote \? "off" : "on"\}/);
-  assert.match(composer, /const drBlocked = modes\.deepResearch && drRuns < 1 && !liveOn;/);
+  assert.match(composer, /const drBlocked = modes\.deepResearch && \(drNotOnPlan \|\| drRuns < 1\) && !liveOn;/);
   const tab = readFileSync("src/app/app/_tab.tsx", "utf8");
   const home = readFileSync("src/components/app-ui/ChatHome.tsx", "utf8");
   assert.match(tab, /KEPLAR_RETRIEVAL_ENABLED === "true"/);

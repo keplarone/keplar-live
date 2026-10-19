@@ -331,7 +331,7 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
   // so a run never starts that the allowance can't cover.
   const deep = deepAsked;
   if (deep && req.plan && !PLAN_ALLOWANCES[req.plan].deepResearch) {
-    yield { type: "error", code: "bad_request", message: "Deep Research is available on Plus and up.", retryable: false };
+    yield { type: "error", code: "plan_required", message: "Deep Research is available on Plus and up.", retryable: false };
     return;
   }
   // Live Research (live-request.ts): the pages were read on the person's desktop, which also checks the answer's citations. No server search

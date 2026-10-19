@@ -291,21 +291,28 @@ export function ImageStudio({ onUsedInSite }: { onUsedInSite?: () => void }) {
         ...(model ? { model } : {}), ...(seed.trim() && modelCfg?.supports.seed ? { seed: Number(seed) } : {}), ...(negative.trim() && modelCfg?.supports.negativePrompt ? { negativePrompt: negative.trim() } : {}),
         ...(readyRefs.length ? { references: readyRefs.map((x) => x.ref), rightsConfirmed: rights } : {}),
       };
-      let r = await api<{ job: Job }>("/api/images", {
-        method: "POST",
-        body: JSON.stringify({ prompt: finalPrompt, size, quality, regenerateOf: regenOf ?? undefined, idempotencyKey: keyRef.current ?? newKey(), confirmUnits: confirm.units, ...extra }),
-      });
       // More than one output: each is its own job with its own idempotency key and the same approved price.
-      for (let n = 1; n < count; n++) {
-        r = await api<{ job: Job }>("/api/images", { method: "POST", body: JSON.stringify({ prompt: finalPrompt, size, quality, idempotencyKey: newKey(), confirmUnits: confirm.units, ...extra }) });
-        setListing((l) => (l ? { ...l, images: [r.job, ...l.images.filter((j) => j.id !== r.job.id)] } : l));
+      // Each job goes into the listing as soon as it starts, so one that is running (and charged) never hides behind a later failure.
+      const started: Job[] = [];
+      try {
+        for (let n = 0; n < count; n++) {
+          const body = n === 0
+            ? { prompt: finalPrompt, size, quality, regenerateOf: regenOf ?? undefined, idempotencyKey: keyRef.current ?? newKey(), confirmUnits: confirm.units, ...extra }
+            : { prompt: finalPrompt, size, quality, idempotencyKey: newKey(), confirmUnits: confirm.units, ...extra };
+          const { job } = await api<{ job: Job }>("/api/images", { method: "POST", body: JSON.stringify(body) });
+          started.push(job);
+          setListing((l) => (l ? { ...l, images: [job, ...l.images.filter((j) => j.id !== job.id)] } : l));
+        }
+      } catch (e) {
+        if (!started.length) throw e;
+        // Some started: those keep running and are charged. Say how many, and don't offer the same approval again.
+        setError(`${started.length} of ${count} images started. The rest didn't: ${e instanceof Error ? e.message : "the request failed."}`);
       }
       setConfirm(null);
       keyRef.current = null;
       setRegenOf(null);
-      setSelected(r.job.id);
+      setSelected(started[0]!.id);
       showStage();
-      setListing((l) => (l ? { ...l, images: [r.job, ...l.images.filter((j) => j.id !== r.job.id)] } : l));
     } catch (e) {
       if (e instanceof ApiError && e.data.code === "confirm") {
         const est = (e.data.estimate as { units?: number } | undefined)?.units;

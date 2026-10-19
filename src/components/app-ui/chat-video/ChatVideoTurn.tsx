@@ -9,6 +9,7 @@
  */
 import { useEffect, useId, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
 import Link from "next/link";
+import { SignInLink } from "../SignInLink";
 import type { KeplarMessage } from "../state/types";
 import type { ChatAspect } from "@/lib/video/chat-intent";
 import type { ChatVideo } from "@/lib/video/chat-types";
@@ -301,7 +302,7 @@ export function ChatVideoTurn({ message: m, onPatch, onAskText, onSettled }: Pro
           <h3>{v.blocked.reason === "signin" ? "Sign in to create videos" : v.blocked.reason === "plan" || v.blocked.reason === "credits" ? "Video is part of Pro and Business" : v.blocked.reason === "limit" ? "That's today's limit" : "Video isn't available right now"}</h3>
           <p>{v.blocked.message}</p>
           <div className={css.row}>
-            {v.blocked.reason === "signin" ? <Link className={la.act} data-variant="primary" data-size="sm" href="/signin?next=%2Fapp">Sign in</Link> : null}
+            {v.blocked.reason === "signin" ? <SignInLink className={la.act} data-variant="primary" data-size="sm">Sign in</SignInLink> : null}
             {v.blocked.reason === "signin" || v.blocked.reason === "plan" || v.blocked.reason === "credits" ? <Link className={la.act} data-variant="secondary" data-size="sm" href="/pricing">See plans</Link> : null}
             {v.blocked.reason === "paused" || v.blocked.reason === "config" ? <Button size="sm" variant="primary" onClick={() => onPatch({ phase: "checking", key: newVideoKey(), blocked: undefined })}>Try again</Button> : null}
             <Button size="sm" variant="secondary" onClick={onAskText}>Ask as a normal question</Button>

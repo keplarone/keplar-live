@@ -43,11 +43,13 @@ export function SettingsDialog({ mode, children }: { mode: "modal" | "page"; chi
 
   useEffect(() => {
     if (!modal) return;
+    // On document, bubbling: after the dialog's own React handlers (inner Esc users call preventDefault first), before the app's
+    // window shortcuts, which must not also see the Escape that closes Settings (it would stop a running answer).
     const onKey = (e: KeyboardEvent) => {
       // A kit dialog opened from here (confirmAction) is a native <dialog> in the top layer: its Escape and Tab are its own.
       if (e.target instanceof Element && e.target.closest("dialog")) return;
       // Inner controls that use Esc themselves (search clear, menus, confirm boxes) call preventDefault first.
-      if (e.key === "Escape" && !e.defaultPrevented) { e.preventDefault(); close(); return; }
+      if (e.key === "Escape" && !e.defaultPrevented) { e.preventDefault(); e.stopPropagation(); close(); return; }
       if (e.key !== "Tab" || !box.current) return;
       const list = [...box.current.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((x) => x.offsetParent !== null);
       if (!list.length) return;
@@ -55,8 +57,8 @@ export function SettingsDialog({ mode, children }: { mode: "modal" | "page"; chi
       if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
   }, [modal, close]);
 
   const frame = (

@@ -7,7 +7,6 @@ import { GET as turnGET, POST as turnPOST } from "@/app/api/keplar/turn/route";
 import { claimTurn, finishTurn, readTurn, TURN_STALE_MS, TURN_TTL_MS, turnOwner } from "@/lib/orchestration/turn-recovery";
 import { newDeviceId, readDeviceId } from "@/lib/usage/daily";
 import { newTurnKey, pollTurn } from "@/components/app-ui/state/recovery";
-import { collection } from "@/lib/create/platform/store";
 import type { KeplarEvent } from "@/lib/orchestration/types";
 
 const ANSWER = "Start with the weakest topic for an hour, then sleep; a rested brain recalls more.";
@@ -119,7 +118,7 @@ test("route: a retry of a finished turn is replayed: no second run, no second ch
   });
 });
 
-test("route: signed out with the device cookie recovers; without it, or in a private chat, nothing is checkpointed", async () => {
+test("route: signed out with the device cookie recovers; without it, or in a private chat, nothing is kept or replayed", async () => {
   const dev = newDeviceId();
   const cookie = `keplar_dev=${dev.setCookie(true).split(";")[0].slice("keplar_dev=".length)}`;
   await withStub(async () => {
@@ -135,9 +134,70 @@ test("route: signed out with the device cookie recovers; without it, or in a pri
   });
   const { cookie: signedIn } = await signIn(`recover-private-${Math.random().toString(36).slice(2, 8)}@example.com`, "pro");
   const key = newTurnKey();
-  const before = (await collection("answer_turns").listSystem()).length;
-  await withStub(async () => { await events(await ask({ prompt: PROMPT, turnKey: key, private: true }, { cookie: signedIn })); });
-  assert.equal((await collection("answer_turns").listSystem()).length, before, "private chats are never checkpointed");
+  await withStub(async () => {
+    providerCalls = 0;
+    await events(await ask({ prompt: PROMPT, turnKey: key, private: true }, { cookie: signedIn }));
+    const ran = providerCalls;
+    // A private chat's turn exists only so Stop can reach it: it never keeps the answer and is never replayed.
+    const got = await turnGET(new Request(`https://keplar.one/api/keplar/turn?key=${key}`, { headers: { cookie: signedIn, origin: "https://keplar.one", "x-forwarded-for": "10.88.210.1" } }));
+    assert.equal(((await got.json()) as { answer?: unknown }).answer, undefined, "no answer of a private chat is kept");
+    const res = await ask({ prompt: PROMPT, turnKey: key, private: true }, { cookie: signedIn });
+    assert.notEqual(res.headers.get("x-keplar-turn"), "replayed", "private chats are never replayed");
+    await res.text();
+    assert.ok(providerCalls > ran, "asked again, not replayed");
+  });
+});
+
+test("claims: a Stop before the run claimed its key leaves an early row, and the claim then refuses to run", async () => {
+  const { requestCancel } = await import("@/lib/orchestration/turn-recovery");
+  const owner = "ws:early:u:1";
+  const key = newTurnKey();
+  assert.equal(await requestCancel(owner, key), true, "the Stop is kept");
+  assert.equal((await claimTurn(owner, key)).kind, "stopped", "the run never starts");
+  assert.equal((await claimTurn("ws:early:u:2", key)).kind, "fresh", "another owner's same key is untouched");
+  // Stop after the claim: the running row is asked to stop, as before.
+  const k2 = newTurnKey();
+  assert.equal((await claimTurn(owner, k2)).kind, "fresh");
+  assert.equal(await requestCancel(owner, k2), true);
+  assert.equal((await readTurn(owner, k2))?.cancelRequested, true);
+});
+
+test("route: Stop pressed before the run started -> 409 turn_stopped, no model called, nothing charged", async () => {
+  const { cookie } = await signIn(`recover-early-${Math.random().toString(36).slice(2, 8)}@example.com`, "pro");
+  const key = newTurnKey();
+  const stop = await turnPOST(new Request("https://keplar.one/api/keplar/turn", { method: "POST", headers: { "content-type": "application/json", cookie, origin: "https://keplar.one", "x-forwarded-for": "10.88.211.1" }, body: JSON.stringify({ key, action: "cancel" }) }));
+  assert.deepEqual(await stop.json(), { ok: true, cancelled: true });
+  await withStub(async () => {
+    providerCalls = 0;
+    const res = await ask({ prompt: PROMPT, turnKey: key }, { cookie });
+    assert.equal(res.status, 409);
+    assert.equal(((await res.json()) as { code: string }).code, "turn_stopped");
+    assert.equal(providerCalls, 0);
+  });
+});
+
+test("route: Stop reaches a private chat's run too (it has a turn for that only)", async () => {
+  const { cookie } = await signIn(`recover-private-stop-${Math.random().toString(36).slice(2, 8)}@example.com`, "pro");
+  const key = newTurnKey();
+  delayMs = 700;
+  try {
+    await withStub(async () => {
+      const res = await ask({ prompt: PROMPT, turnKey: key, private: true }, { cookie });
+      const reader = res.body!.getReader();
+      await reader.read();
+      await turnPOST(new Request("https://keplar.one/api/keplar/turn", { method: "POST", headers: { "content-type": "application/json", cookie, origin: "https://keplar.one", "x-forwarded-for": "10.88.212.1" }, body: JSON.stringify({ key, action: "cancel" }) }));
+      const seen: KeplarEvent[] = [];
+      const dec = new TextDecoder();
+      for (let r = await reader.read(); !r.done; r = await reader.read()) for (const l of dec.decode(r.value).split("\n").filter(Boolean)) seen.push(JSON.parse(l) as KeplarEvent);
+      assert.ok(!seen.some((e) => e.type === "answer"), "the run stopped before answering");
+      const res2 = await turnGET(new Request(`https://keplar.one/api/keplar/turn?key=${key}`, { headers: { cookie, origin: "https://keplar.one", "x-forwarded-for": "10.88.213.1" } }));
+      const turn = (await res2.json()) as { status: string; answer?: unknown };
+      assert.equal(turn.status, "cancelled");
+      assert.equal(turn.answer, undefined, "nothing of a private chat is kept");
+    });
+  } finally {
+    delayMs = 0;
+  }
 });
 
 test("route: the browser drops mid-answer -> the run finishes anyway and saves its answer; GET turn returns it", async () => {

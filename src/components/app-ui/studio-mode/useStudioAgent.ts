@@ -22,7 +22,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { resultText, type BlenderBridge, type StudioBridge, type StudioContent } from "@/lib/desktop/studio-bridge";
-import { clearSaved, deleteRemote, fetchRemote, placeKey, pushRemote, readSaved, toSaved, writeSaved, type SavedSession } from "./saved-session";
+import { clearSaved, deleteRemote, fetchRemote, placeKey, pushRemote, readSaved, resolveStudioScope, studioScope, toSaved, writeSaved, type SavedSession } from "./saved-session";
 import { scaleDataUrl } from "./references";
 import { appendEvent, clip, eventStamper, MAX_EVENT_TEXT, type ActionOrigin, type ReadPurpose, type StudioEvent, type StudioEventBody, type TurnUsage } from "./code/events";
 import { applyEdits, buildRevert, deriveDocuments, editOutcome, isRevertLineage, multiEditSchema, parseMultiEdit, parseScriptRead, retryAvailabilityFor, type ScriptSource } from "./code/documents";
@@ -274,19 +274,37 @@ export function useStudioAgent(bridge: StudioBridge | BlenderBridge | null, mode
     setItems(saved ? [...saved.items, { kind: "note", key: key(), text: `Picked up where you left off in ${p?.name ?? "this game"} (saved ${new Date(saved.savedAt).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}). Keplar will take a fresh look before your next request.` }] : []);
   }, [clearEvents]);
 
+  /**
+   * Whose chats these are (saved-session.ts studioScope): saved chats belong to the signed-in account, or to this device when
+   * signed out. Until that is known ("pending") nothing is restored or saved; once it is, the open game's chat is restored.
+   */
+  const [scope, setScope] = useState(studioScope);
+  /** The scope the chat on screen was restored for. It is only ever saved back under that scope. */
+  const restoredScope = useRef(scope);
+  useEffect(() => {
+    let live = true;
+    void resolveStudioScope().then((s) => { if (live) setScope(s); });
+    return () => { live = false; };
+  }, []);
+
   /** Opening a game brings back its saved chat: this device's copy at once, then the account's if it is newer (another computer). */
   const restore = useCallback((p: Place | null) => {
     const k = placeKey(p);
-    const local = readSaved(k);
+    const sc = studioScope();
+    restoredScope.current = sc;
+    const local = readSaved(k, sc);
     touched.current = false;
     apply(local, p);
-    void fetchRemote(k).then((remote) => {
-      if (!remote || touched.current || placeKey(placeRef.current) !== k) return;
+    void fetchRemote(k, sc).then((remote) => {
+      if (!remote || touched.current || placeKey(placeRef.current) !== k || restoredScope.current !== sc) return;
       if (remote.savedAt <= (local?.savedAt ?? 0)) return;
-      writeSaved(k, remote);
+      writeSaved(k, remote, sc);
       apply(remote, p);
     });
   }, [apply]);
+  useEffect(() => {
+    if (scope !== "pending" && restoredScope.current !== scope) restore(placeRef.current);
+  }, [scope, restore]);
 
   const setPlace = useCallback((p: Place | null) => {
     const changed = placeKey(p) !== placeKey(placeRef.current);
@@ -613,9 +631,12 @@ ${text || "(could not read the scene)"}` });
     const k = placeKey(place);
     if (skipSave.current) { skipSave.current = false; return; }
     if (!k || !items.length) return;
+    // Only under the scope it was restored for: a chat on screen is never saved into another account (or the device) after a switch.
+    const sc = restoredScope.current;
+    if (sc === "pending" || studioScope() !== sc) return;
     const snapshot = () => toSaved({ name: place?.name ?? "", items, history: history.current, plan, current, finished, built, stats, units });
-    const local = setTimeout(() => writeSaved(k, snapshot()), running ? 3000 : 400);
-    const push = () => { lastPush.current = Date.now(); void pushRemote(k, snapshot()); };
+    const local = setTimeout(() => writeSaved(k, snapshot(), sc), running ? 3000 : 400);
+    const push = () => { lastPush.current = Date.now(); void pushRemote(k, snapshot(), sc); };
     // Debounced, but a long build (a change every few seconds) still reaches the account at least every 30 seconds.
     if (running && Date.now() - lastPush.current > 30_000) push();
     const remote = setTimeout(push, running ? 15_000 : 4000);
@@ -693,6 +714,8 @@ ${text || "(could not read the scene)"}` });
 
   return {
     items, running, paused, looking, units, autoApprove, place, viewport, shots, plan: planSteps, current, finished, built, stats, pending,
+    /** Whose saved chats these are (saved-session.ts studioScope); "pending" until known. */
+    scope,
     send, decide, pause, resume, stop, reset, setAuto, setPlace, refreshViewport, playing, playTest,
     /** The run's execution events, oldest first (code/events.ts). */
     events,

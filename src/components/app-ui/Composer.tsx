@@ -13,9 +13,10 @@ import { deepResearchChipNote } from "@/lib/orchestration/research-notes";
 import { computeLevel, computeLevelLabel } from "@/lib/orchestration/compute";
 import { CostAwareRouter } from "@/lib/orchestration/router";
 import { DEBATE_POLICY, debateCostFactor } from "@/lib/orchestration/debate";
-import { DEEP_RESEARCH_UNITS, deepResearchRunsLeft, formatResetAt } from "@/lib/orchestration/plans";
+import { DEEP_RESEARCH_UNITS, deepResearchRunsLeft, formatResetAt, PLAN_ALLOWANCES } from "@/lib/orchestration/plans";
 import { brand } from "@/lib/site";
 import Link from "next/link";
+import { SignInLink } from "./SignInLink";
 import type { Depth } from "@/lib/core/types";
 import type { Attachment, ComposerModes, RoutingPreferences, RoutingStrategy } from "@/lib/orchestration/types";
 import { MEDIA_LIMITS, type MediaInput } from "@/lib/orchestration/media";
@@ -74,6 +75,8 @@ type Props = {
   recordNotes?: boolean;
   /** Server flag: live web search is on only when this is true. The client cannot read the env itself. */
   retrievalEnabled?: boolean;
+  /** The open chat's saved messages are still loading (or failed to): typing is kept, sending waits so no reply goes out without them. */
+  waiting?: boolean;
 };
 
 const MB = 1024 * 1024;
@@ -110,7 +113,7 @@ const tools: { key: ModeKey; label: string; Icon: typeof IconWeb; hint: string }
   { key: "study", label: "Study", Icon: IconStudy, hint: "Learn it: Keplar answers, then turns the answer (or your attached notes) into a study set with an outline, flashcards and a quiz" },
   { key: "slides", label: "Slides", Icon: IconSlides, hint: "Make a deck: Keplar writes the slides from your message, then you edit, present and export them (Plus and Pro)" },
   { key: "reason", label: "Reason", Icon: IconReason, hint: "Work it through step by step and show how the answer was checked. Paid plans also add a model to the panel" },
-  { key: "deepResearch", label: "Deep Research", Icon: IconDeep, hint: "Longer, multi-step research. Uses more usage" },
+  { key: "deepResearch", label: "Deep Research", Icon: IconDeep, hint: "Longer, multi-step research (Plus and up). Uses more usage" },
   { key: "debate", label: "Debate", Icon: IconDebate, hint: "The models argue in rounds and read each other's points, then Keplar writes one answer. Uses more usage" },
   { key: "create", label: "Create", Icon: IconCreate, hint: "Build a website or app" },
 ];
@@ -150,7 +153,7 @@ const router = new CostAwareRouter();
 
 
 export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
-  { running, onSend, onStop, routing, onRouting, placeholder, computeRemaining, resetsAt, plan, signedIn, onModesChange, draftKey = null, privateChat = null, recordNotes = false, retrievalEnabled = false },
+  { running, onSend, onStop, routing, onRouting, placeholder, computeRemaining, resetsAt, plan, signedIn, onModesChange, draftKey = null, privateChat = null, recordNotes = false, retrievalEnabled = false, waiting = false },
   ref,
 ) {
   const uid = useId();
@@ -396,13 +399,17 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
   const drRuns = deepResearchRunsLeft(computeRemaining);
   const formatReset = () => formatResetAt(resetsAt);
   // In the desktop app Deep Research runs as Live Research: the pages are read on this computer, so the server Deep Research budget doesn't apply.
-  const drBlocked = modes.deepResearch && drRuns < 1 && !liveOn;
+  // Free and Lite don't include Deep Research (the server answers plan_required), so it's blocked here with a "Plus and up" note.
+  // signedIn is undefined until the meter has synced: the plan isn't known yet, so nothing is blocked by plan before then.
+  const drPlan = signedIn === false ? "free" : signedIn === true ? plan : undefined;
+  const drNotOnPlan = drPlan !== undefined && !PLAN_ALLOWANCES[drPlan].deepResearch;
+  const drBlocked = modes.deepResearch && (drNotOnPlan || drRuns < 1) && !liveOn;
   // Before the request: say that no pages will be read unless retrieval is on or the desktop app is reading them.
   const drOffNote = deepResearchChipNote(retrievalEnabled === true || liveOn);
   const processing = media.some((m) => m.status === "processing") || docs.some((d) => d.status === "processing") || links.some((l) => l.status === "processing") || Object.values(tracks).some((t) => t.status === "processing");
   const tooLarge = mediaChars(media) > MEDIA_LIMITS.maxTotalDataUrlChars;
   const hasReady = media.some((m) => m.status === "ready") || docs.some((d) => d.status === "ready") || links.some((l) => l.status === "ready" && l.attachment);
-  const canSend = (text.trim().length > 0 || hasReady) && !running && !drBlocked && !processing && !tooLarge;
+  const canSend = (text.trim().length > 0 || hasReady) && !running && !waiting && !drBlocked && !processing && !tooLarge;
   // Voice mode hand-off: runs once per finished talk session. `latest` holds this render's submit so the effect never uses a stale one.
   const latest = useRef({ canSend, running, submit: () => {} });
   useEffect(() => {
@@ -979,7 +986,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
 
         {modes.deepResearch && !liveOn ? (
           <div id={`${uid}-budget`} className={s.budget} data-blocked={drBlocked || undefined} data-retrieval={drOffNote ? "off" : "on"} role="status">
-            {drOffNote ? (
+            {drOffNote && !drNotOnPlan ? (
               <>
                 <span>{drOffNote}</span>
                 {drBlocked ? (
@@ -994,7 +1001,9 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
             ) : drBlocked ? (
               <>
                 <span>
-                  Not enough {brand.usage} left for a Deep Research run this period. It resets {formatReset()}.
+                  {drNotOnPlan
+                    ? "Deep Research is available on Plus and up."
+                    : `Not enough ${brand.usage} left for a Deep Research run this period. It resets ${formatReset()}.`}
                 </span>
                 <span className={s.budgetActions}>
                   <Button size="sm" variant="ghost" className={s.budgetAct} onClick={() => setModes((m) => ({ ...m, deepResearch: false }))}>
@@ -1053,7 +1062,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
             {signedIn === false || !canUseSlides(plan ?? "free") ? (
               <span>
                 <strong>Slides</strong> is part of Plus and Pro: {brand.engineName} writes a deck from your message, then you edit it, present it and export it.{" "}
-                <Link href={signedIn === false ? "/signin?next=/app" : "/pricing"} className={s.budgetLink}>{signedIn === false ? "Sign in" : "See plans"}</Link>
+                {signedIn === false ? <SignInLink className={s.budgetLink}>Sign in</SignInLink> : <Link href="/pricing" className={s.budgetLink}>See plans</Link>}
               </span>
             ) : (
               <span>

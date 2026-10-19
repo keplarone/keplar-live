@@ -175,6 +175,20 @@ test("pipeline, Deep Research without web search: says honestly that no pages we
   } finally { s.restore(); }
 });
 
+test("pipeline, Deep Research on Free and Lite: one plan_required error (so the app can offer an upgrade), no research and no answer", async () => {
+  const s = stub();
+  try {
+    for (const plan of ["free", "lite"] as const) {
+      const { events } = await withEnv(FAKE, async () => run({ ...engineDeps(plan === "free" ? { keyTier: "free" } : undefined)!, retriever: researcher() }, { prompt: Q, plan, modes: { deepResearch: true }, computeRemaining: 1e7, limits: { maxRequestUsd: 50, maxDeepResearchUsd: 50 } }));
+      const errs = events.filter((e): e is Extract<KeplarEvent, { type: "error" }> => e.type === "error");
+      assert.equal(errs.length, 1, plan);
+      assert.equal(errs[0]!.code, "plan_required", plan);
+      assert.match(errs[0]!.message, /Plus and up/);
+      assert.equal(events.filter((e) => e.type === "research" || e.type === "answer").length, 0, plan);
+    }
+  } finally { s.restore(); }
+});
+
 test("pipeline, normal question: no research events at all", async () => {
   const s = stub();
   try {

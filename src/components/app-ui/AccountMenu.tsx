@@ -18,8 +18,9 @@ const ITEMS = '[role="menuitem"]:not([aria-disabled="true"]):not(:disabled), [ro
  * re-login; an account whose session ended says so and offers "Sign in again"), "Add account" (sign in as another account
  * without signing out), "Sign out" (this account only) and "Sign out of all". Only the active account's data is ever on screen:
  * a switch wipes the account caches and reloads, and each account's sessions are checked on the server.
- * The menu is the kit Popover (opaque top-layer surface above the chip): Escape closes it and returns focus to the chip, a press
- * outside or Tab closes it, and Up/Down/Home/End move between its items.
+ * The menu is the kit Popover (opaque top-layer surface above the chip): opening it (click, Enter, Space, Down) focuses the first
+ * item (Up the last), Escape closes it and returns focus to the chip, a press outside or Tab closes it, Up/Down/Home/End move
+ * between its items, and picking a link item closes it with focus back on the chip.
  */
 export function AccountMenu({ account, plan, paid = false, usage }: { account: AccountInfo; /** Plan name shown under the name (e.g. "Free", "Keplar Plus"). */ plan?: string; paid?: boolean; /** The usage readout (meter, notes, limits); shown at the top of the menu. */ usage?: React.ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -73,11 +74,14 @@ export function AccountMenu({ account, plan, paid = false, usage }: { account: A
     const n = e.key === "Home" ? 0 : e.key === "End" ? items.length - 1 : e.key === "ArrowDown" ? i + 1 : i < 0 ? items.length - 1 : i - 1;
     items[(n + items.length) % items.length]?.focus();
   };
-  const openMenu = (from: "first" | "last" | null) => {
+  // Picking a link item closes the menu and puts focus back on the account button (button items keep it open: they reload the
+  // page or show their error in it). Without this a soft navigation (Settings, Language...) left the menu open behind it.
+  const pick = () => { setOpen(false); chipRef.current?.focus({ preventScroll: true }); };
+  const openMenu = (from: "first" | "last") => {
     setProblem(null);
     setRowW(chipRef.current?.getBoundingClientRect().width ?? null);
     setOpen(true);
-    if (from) requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
       const items = document.getElementById(menuId)?.querySelectorAll<HTMLElement>(ITEMS);
       if (items?.length) items[from === "first" ? 0 : items.length - 1].focus();
     });
@@ -92,7 +96,7 @@ export function AccountMenu({ account, plan, paid = false, usage }: { account: A
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
-        onClick={() => (open ? setOpen(false) : openMenu(null))}
+        onClick={() => (open ? setOpen(false) : openMenu("first"))}
         onKeyDown={(e) => { if (e.key === "ArrowUp" || e.key === "ArrowDown") { e.preventDefault(); openMenu(e.key === "ArrowUp" ? "last" : "first"); } }}
         aria-label={`Account: ${account.email ?? account.name ?? "signed in"}`}
       >
@@ -114,7 +118,7 @@ export function AccountMenu({ account, plan, paid = false, usage }: { account: A
             {saved.map((a) => (
               <div key={a.slot} className={s.acctRow} data-saved-account={a.email} data-expired={a.expired || undefined}>
                 {a.expired ? (
-                  <a role="menuitem" className={s.item} href={signInAgainTarget(a.email)} data-account-action="signin-again">
+                  <a role="menuitem" className={s.item} href={signInAgainTarget(a.email)} data-account-action="signin-again" onClick={pick}>
                     <span className={s.avatar} aria-hidden="true">{(a.name || a.email)[0]}</span>
                     <span className={s.who}><span className={s.name}>{a.email}</span><span className={s.email}>Signed out · Sign in again</span></span>
                   </a>
@@ -136,14 +140,14 @@ export function AccountMenu({ account, plan, paid = false, usage }: { account: A
             {teams.map((t) => (
               <button key={t.id} type="button" role="menuitemradio" aria-checked={t.id === activeTeam} className={s.item} disabled={busy || t.id === activeTeam} data-workspace={t.id} onClick={() => void switchWorkspace(t.id)}>{t.name} <span className={s.email}>{t.role === "member" ? "editor" : t.role}</span></button>
             ))}
-            <Link role="menuitem" className={s.item} href="/account#team" data-workspace-manage="">Manage teams</Link>
+            <Link role="menuitem" className={s.item} href="/account#team" data-workspace-manage="" onClick={pick}>Manage teams</Link>
           </div>
         ) : null}
         <div className={s.list} role="group" aria-label="Account">
-          <Link role="menuitem" className={s.item} href="/account">Settings</Link>
-          <a role="menuitem" className={s.item} href={paid ? "/account#plan" : "/pricing"} data-plan-cta="change">{paid ? "Plan & billing" : "Upgrade plan"}</a>
-          <Link role="menuitem" className={s.item} href="/account#language">Language</Link>
-          <Link role="menuitem" className={s.item} href="/docs">Help &amp; docs</Link>
+          <Link role="menuitem" className={s.item} href="/account" onClick={pick}>Settings</Link>
+          <a role="menuitem" className={s.item} href={paid ? "/account#plan" : "/pricing"} data-plan-cta="change" onClick={pick}>{paid ? "Plan & billing" : "Upgrade plan"}</a>
+          <Link role="menuitem" className={s.item} href="/account#language" onClick={pick}>Language</Link>
+          <Link role="menuitem" className={s.item} href="/docs" onClick={pick}>Help &amp; docs</Link>
           <div className={s.themeRow} data-theme-row="">
             <span>Theme</span>
             <ThemeControl compact />

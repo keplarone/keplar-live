@@ -7,6 +7,7 @@
  * The "choose" card is the router's "did you mean": a tool, or a normal answer.
  */
 import Link from "next/link";
+import { SignInLink } from "../SignInLink";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { KeplarSymbol } from "@/components/brand";
 import { previewAction } from "@/lib/business/chat-flow";
@@ -90,7 +91,7 @@ export function WorkspaceTurn(props: Props) {
     return (
       <Card kind={w.kind} title={TITLES[w.kind]}>
         <p className={s.note}>Sign in to see {w.kind === "apps" || w.kind === "deployments" ? "the apps and sites you built" : "your business workspace"} here. Everything the {TAB_NAME[w.kind]} tab shows also works in the chat once you are signed in.</p>
-        <div className={s.actions}><Link href="/signin?next=/app" className={la.act} data-variant="primary">Sign in</Link><Link href="/signup?next=/app" className={la.act} data-variant="secondary">Create a free account</Link></div>
+        <div className={s.actions}><SignInLink className={la.act} data-variant="primary">Sign in</SignInLink><SignInLink page="signup" className={la.act} data-variant="secondary">Create a free account</SignInLink></div>
       </Card>
     );
   }
@@ -128,7 +129,7 @@ function Problem({ error, retry }: { error: ApiErr; retry: () => void }) {
   return (
     <p className={s.note} role="alert">
       {error.message}{" "}
-      {plan ? <Link href="/pricing" className={s.inline}>See plans</Link> : error.status === 401 ? <Link href="/signin?next=/app" className={s.inline}>Sign in</Link> : <Button size="sm" variant="ghost" className={s.quiet} onClick={retry}>Try again</Button>}
+      {plan ? <Link href="/pricing" className={s.inline}>See plans</Link> : error.status === 401 ? <SignInLink className={s.inline}>Sign in</SignInLink> : <Button size="sm" variant="ghost" className={s.quiet} onClick={retry}>Try again</Button>}
     </p>
   );
 }

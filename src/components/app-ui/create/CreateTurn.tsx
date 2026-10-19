@@ -10,7 +10,7 @@
  *   theme   -> PATCH /api/apps/[id]/theme (no model, no credits; the draft changes now, the live app on the next publish)
  *   publish / unpublish -> the owner confirms with one click (POST / DELETE /api/sites/[id]/publish)
  */
-import Link from "next/link";
+import { SignInLink } from "../SignInLink";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { KeplarSymbol } from "@/components/brand";
 import { applyEvent, emptyLive, runAppBuild, type BuildError, type Live } from "@/components/create/apps/build-client";
@@ -246,7 +246,7 @@ export function CreateTurn({ message: m, user, ledger, onPatch, onOpen, onSettle
       <section className={s.card} data-create="signin">
         <Head label="Create" busy={false} />
         <p className={s.note}>Sign in to build this. Keplar plans it, writes it, tests it in a real browser and gives you a live preview you can publish. Free accounts build front-end apps and sites; Plus and Pro add accounts, saved data and AI.</p>
-        <div className={s.actions}><Link className={s.primary} href="/signin?next=/app">Sign in</Link><Link className={s.ghost} href="/signup?next=/app">Create a free account</Link></div>
+        <div className={s.actions}><SignInLink className={s.primary}>Sign in</SignInLink><SignInLink page="signup" className={s.ghost}>Create a free account</SignInLink></div>
       </section>
     );
   }

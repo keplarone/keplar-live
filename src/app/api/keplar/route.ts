@@ -179,9 +179,10 @@ export async function POST(request: Request) {
   // Answer recovery (src/lib/orchestration/turn-recovery.ts), read-only here, before any daily question is taken or anything is charged:
   // a turn that already finished is replayed (no second run, no second charge); one still running gets 409 and the browser polls for it.
   // Never for private chats, API keys or embeds; signed out only with the signed device cookie.
-  const turnOwnerKey = req.turnKey && !req.private && ws.via !== "api" && ws.via !== "embed" ? turnOwner(ws, ws.anonymous ? readDeviceId(request.headers.get("cookie")) : null) : null;
-  let turn: { owner: string; key: string } | null = turnOwnerKey && req.turnKey ? { owner: turnOwnerKey, key: req.turnKey } : null;
-  if (turn) {
+  // Private chats get a turn too, but only so Stop can reach the run (`cancelOnly`): nothing is replayed, kept or recovered for them.
+  const turnOwnerKey = req.turnKey && ws.via !== "api" && ws.via !== "embed" ? turnOwner(ws, ws.anonymous ? readDeviceId(request.headers.get("cookie")) : null) : null;
+  let turn: { owner: string; key: string; cancelOnly: boolean } | null = turnOwnerKey && req.turnKey ? { owner: turnOwnerKey, key: req.turnKey, cancelOnly: req.private === true } : null;
+  if (turn && !turn.cancelOnly) {
     try {
       const seen = await readTurn(turn.owner, turn.key);
       if (seen?.status === "done" && seen.answer) return replayTurn(seen);
@@ -511,14 +512,14 @@ export async function POST(request: Request) {
       if (c.kind !== "fresh") {
         gate?.release();
         await dailyClaim?.release();
-        return c.kind === "replay" ? replayTurn(c.row) : turnRunning();
+        return c.kind === "replay" ? replayTurn(c.row) : c.kind === "stopped" ? turnStopped() : turnRunning();
       }
     } catch (e) {
       console.error("[turns] claim failed:", e instanceof Error ? e.name : "error");
       turn = null;
     }
   }
-  const recoverable = turn !== null;
+  const recoverable = turn !== null && !turn.cancelOnly;
 
   const encoder = new TextEncoder();
   const stamp = stamper(); // the event contract: protocol version and a sequence per response
@@ -535,7 +536,7 @@ export async function POST(request: Request) {
     if (!t || abort.signal.aborted) return;
     void cancelRequested(t.owner, t.key).then((yes) => { if (yes && !abort.signal.aborted) { flightPush(costScope.flight, { k: "cancel", code: "stop_requested" }); abort.abort(); } }).catch(() => undefined);
   };
-  if (recoverable) cancelWatch = setInterval(checkCancel, 2000);
+  if (turn) cancelWatch = setInterval(checkCancel, 2000); // private chats too: the only way their Stop reaches the run on Vercel
   const onClientGone = () => {
     if (clientGone) return;
     clientGone = true;
@@ -586,7 +587,20 @@ export async function POST(request: Request) {
           onClientGone(); // the stream closed under us: same as a disconnect
         }
       };
-      const closeStream = () => { try { controller.close(); } catch { /* the browser already closed it */ } };
+      // Answer recovery: save how the turn ended (the answer exactly as sent, or why it didn't come) before the stream closes. Otherwise a
+      // retry, a Stop check or a reload that arrives the moment the body ends still sees the turn as running and is refused.
+      let turnSaved = false;
+      const saveTurn = async () => {
+        if (!turn || turnSaved) return;
+        turnSaved = true;
+        const ended = answeredOk && turnAnswer !== undefined ? "done" : abort.signal.aborted ? "cancelled" : "failed";
+        if (clientGone && ended === "done") flightPush(costScope.flight, { k: "note", code: "finished_headless" });
+        await finishTurn(turn.owner, turn.key, { status: ended, answer: turn.cancelOnly ? undefined : turnAnswer, error: ended === "failed" ? (turnError ?? { code: "internal", message: "Something went wrong. Please try again." }) : undefined, headless: clientGone }).catch(() => undefined);
+      };
+      const closeStream = async () => {
+        await saveTurn();
+        try { controller.close(); } catch { /* the browser already closed it */ }
+      };
       // Free: a question only keeps its count if an answer reached the screen. Failures, "no reliable answer", no model
       // responding and stops all give it back, and the meter is re-sent so the UI shows the true number.
       let answered = false;
@@ -675,32 +689,28 @@ export async function POST(request: Request) {
         // Stopped by the user after paid calls went out: still billed at the planned (margin-included) cost.
         if (abort.signal.aborted && run.started && !run.settled && !smallTalk) await settle(run.plannedUnits).catch(() => undefined);
         await finishDaily(!abort.signal.aborted);
-        closeStream();
+        await closeStream();
       } catch (err) {
         // Stopped or crashed after the panel was called: charge the planned (margin-included) cost.
         if (run.started && !run.settled && !smallTalk) await settle(run.plannedUnits).catch(() => undefined);
         if (abort.signal.aborted) {
           await finishDaily(false);
-          closeStream();
+          await closeStream();
           return;
         }
         console.error("[keplar] run failed:", err instanceof Error ? err.name : "error");
         if (run.noResponse) send(noResponseEvent(ws.plan));
         else send({ type: "error", code: "internal", message: "Something went wrong. Please try again.", retryable: true });
         await finishDaily(true);
-        closeStream();
+        await closeStream();
       } finally {
         await finishDaily(false);
         releaseReserved?.();
         gate?.release();
         endRun();
         if (cancelWatch) clearInterval(cancelWatch);
-        // Answer recovery: save how the turn ended (the answer exactly as sent, or why it didn't come) for a retry or a reconnect.
-        if (turn) {
-          const ended = answeredOk && turnAnswer !== undefined ? "done" : abort.signal.aborted ? "cancelled" : "failed";
-          if (clientGone && ended === "done") flightPush(costScope.flight, { k: "note", code: "finished_headless" });
-          await finishTurn(turn.owner, turn.key, { status: ended, answer: turnAnswer, error: ended === "failed" ? (turnError ?? { code: "internal", message: "Something went wrong. Please try again." }) : undefined, headless: clientGone }).catch(() => undefined);
-        }
+        // The stream saved the turn before it closed; this covers a run that ended some other way.
+        await saveTurn();
         finishRun();
         if (!creator) recordFlight(flightRow(costScope.flight!, { reqId: reqIdForCost, plan: ws.plan, feature: costScope.tag?.feature, kind: smallTalk ? "instant" : "answer", answered: answeredOk, aborted: abort.signal.aborted, errorCode: flightError, limited: flightLimited, usd: costScope.usd }));
         if (!creator) recordRequestCost(costScope, { reqId: reqIdForCost, plan: ws.plan, accountId: ws.anonymous ? null : ws.id, kind: smallTalk ? "instant" : "answer", units: billedUnits, durationMs: Date.now() - startedAt, answered: answeredOk, degraded: degradedBy, maxModels: fanoutCap });
@@ -742,6 +752,11 @@ function replayTurn(row: TurnRow): Response {
   const events: KeplarEvent[] = [{ type: "recovery", state: "replayed", ...(row.headless ? { headless: true } : {}) }, { type: "answer", answer: row.answer as Extract<KeplarEvent, { type: "answer" }>["answer"] }];
   const stamp = stamper();
   return new Response(events.map((e) => JSON.stringify(stamp(e))).join("\n") + "\n", { headers: { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store, no-transform", "x-keplar-turn": "replayed", [PROTOCOL_HEADER]: String(EVENT_PROTOCOL) } });
+}
+
+/** Stop was pressed before this run started (turn-recovery.ts, "early"): nothing ran and nothing was charged. */
+function turnStopped(): Response {
+  return Response.json({ error: "Stopped before Keplar started on it. Nothing was charged.", code: "turn_stopped" }, { status: 409, headers: { "cache-control": "no-store" } });
 }
 
 /** Answer recovery: the same turn is still being worked on (a reconnect raced it). The browser polls /api/keplar/turn. */

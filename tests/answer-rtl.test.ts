@@ -7,8 +7,10 @@ import { readFileSync } from "node:fs";
 // Static guard (the renderer imports CSS modules, which the unit runner cannot load).
 test("answer blocks and the question bubble carry dir=auto so right-to-left text reads right to left", () => {
   const md = readFileSync("src/components/app-ui/Markdown.tsx", "utf8");
-  for (const tag of ["Tag", "p", "ul", "li", "ol", "blockquote"]) {
-    const opens = [...md.matchAll(new RegExp(`return <${tag} key=\\{k\\}[^>]*>|<li key=\\{j\\}[^>]*>`, "g"))].map((m) => m[0]).filter((m) => tag === "li" ? m.startsWith("<li") : !m.startsWith("<li"));
+  // "List" is a list block's ul/ol element and "Sub" its nested list.
+  for (const tag of ["Tag", "p", "List", "Sub", "li", "blockquote"]) {
+    const pattern = tag === "li" ? /<li key=\{[jn]\}[^>]*>/g : tag === "Sub" ? /<Sub className[^>]*>/g : new RegExp(`<${tag} key=\\{k\\}[^>]*>`, "g");
+    const opens = [...md.matchAll(pattern)].map((m) => m[0]);
     assert.ok(opens.length > 0, `${tag} block found`);
     for (const o of opens) assert.match(o, /dir="auto"/, `${o} has dir=auto`);
   }

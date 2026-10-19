@@ -625,7 +625,8 @@ test("page: Live Research runs only inside the desktop app, only for web or rese
   assert.match(composer, /data-live-research/);
   assert.match(composer, /liveDepth/);
   assert.match(composer, /const liveOn = liveDesktop && liveEnabled && wantsLiveResearch\(modes\);/);
-  assert.match(composer, /const drBlocked = modes\.deepResearch && drRuns < 1 && !liveOn;/, "the Deep Research budget gate is lifted only when Live Research will run");
+  assert.match(composer, /const drBlocked = modes\.deepResearch && \(drNotOnPlan \|\| drRuns < 1\) && !liveOn;/, "the Deep Research plan and budget gate is lifted only when Live Research will run");
+  assert.match(composer, /const drNotOnPlan = drPlan !== undefined && !PLAN_ALLOWANCES\[drPlan\]\.deepResearch;/, "Free and Lite are blocked by plan, not by a budget that reads as unlimited");
   const research = source("src/components/app-ui/research/Research.tsx");
   assert.match(research, /e\.preventDefault\(\);\n\s*e\.stopPropagation\(\);\n\s*setOpen\(false\)/, "Esc on a preview never also stops the running answer");
   assert.match(research, /"Pages read by the Keplar desktop app"/, "a saved answer is read on any device: its labels don't say 'this computer'");

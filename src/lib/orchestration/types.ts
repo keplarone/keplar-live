@@ -805,8 +805,11 @@ export type KeplarEvent =
     }
   | {
       type: "error";
-      /** "no_response": the run ended with no model answering. It is never charged. */
-      code: "bad_request" | "internal" | "network" | "unavailable" | "no_response";
+      /**
+       * "no_response": the run ended with no model answering. It is never charged.
+       * "plan_required": the request needs a feature the caller's plan doesn't include (Deep Research on Free and Lite); offer an upgrade.
+       */
+      code: "bad_request" | "internal" | "network" | "unavailable" | "no_response" | "plan_required";
       message: string;
       retryable: boolean;
       /** no_response only: show the Plus upgrade suggestion (Free and signed-out). */

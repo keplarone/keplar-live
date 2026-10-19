@@ -212,10 +212,14 @@ export function KeplarTurn({ message: m, onRetry, onRefreshResearch, onSignal, o
       {finished && isLast && !m.smalltalk && !m.answer?.smalltalk ? <WindowWarning ledger={ledger} /> : null}
       {finished && ledger.total && ledger.plan !== "free" && isLast && !m.smalltalk && !m.answer?.smalltalk && ledger.total - ledger.used <= ledger.total * 0.1 ? <LowCredits ledger={ledger} /> : null}
 
+      {(m.status === "stopped" || m.status === "error") && m.draft && !m.answer ? <PartialAnswer m={m} /> : null}
+
       {m.status === "stopped" ? (
         <NoticeCard>
           <div className={s.notice}>
-            <p>Stopped. {m.debate?.turns.length ? (ledger.plan === "free" ? "The debate was stopped and this question wasn't counted." : "The debate was stopped; only the rounds that had started count toward usage.") : m.draft ? "The partial answer was discarded." : "Nothing was charged."}</p>
+            {/* Charges: Free gives the question back when stopped; paid plans are billed only for models that had already been asked
+                (route.ts settles the planned cost once the panel started), which this screen can't see, so it never says "nothing". */}
+            <p>Stopped. {m.debate?.turns.length ? (ledger.plan === "free" ? "The debate was stopped and this question wasn't counted." : "The debate was stopped; only the rounds that had started count toward usage.") : ledger.plan === "free" ? "This question wasn't counted." : "Only models that had already started count toward usage."}</p>
             <Button size="sm" variant="ghost" onClick={onRetry} leadingIcon={<IconRetry size={14} />}>
               Ask again
             </Button>
@@ -307,6 +311,23 @@ function TypingBar({ text }: { text: string }) {
     <div className={s.typingBar}>
       <IconButton size="sm" className={s.footAct} onClick={copy} label={copied ? "Copied answer" : "Copy full answer"} icon={<MorphIcon icon="copy" state={copied ? "copied" : "idle"} size={15} />} />
     </div>
+  );
+}
+
+/**
+ * What arrived before an answer was stopped or broke off. Shown as unfinished (never as an answer): it may be one model's early draft that
+ * the others never checked. It can still be read, selected and copied.
+ */
+function PartialAnswer({ m }: { m: KeplarMessage }) {
+  return (
+    <article className={s.answer} data-partial="">
+      <p className={s.draftNote}>
+        {m.status === "stopped" ? "Unfinished: stopped here" : "Unfinished: the answer broke off here"}
+        {m.mode === "consensus" ? ", before the other models checked it." : "."}
+      </p>
+      <Markdown source={m.draft} />
+      <TypingBar text={m.draft} />
+    </article>
   );
 }
 

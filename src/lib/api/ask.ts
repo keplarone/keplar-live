@@ -121,6 +121,7 @@ export async function* runAsk(ws: Workspace, input: AskInput, passHeaders: Heade
     if (!line.trim()) return null;
     let ev: KeplarEvent;
     try { ev = JSON.parse(line) as KeplarEvent; } catch { return null; }
+    if (ev.type === "error" && ev.code === "plan_required") throw new ApiError(403, "plan_required", ev.message || "Your plan doesn't include this.");
     if (ev.type === "error") throw new ApiError(ev.code === "no_response" ? 502 : 500, ev.code === "no_response" ? "no_response" : "internal", ev.message || "The request failed.");
     if (ev.type === "limit") throw new ApiError(402, "limit_reached", ev.window?.message ?? "Your plan's credits for this period are used up.");
     const out = eventToPublic(ev);
