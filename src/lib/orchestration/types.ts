@@ -543,7 +543,8 @@ export type ResearchEvent =
 /** On the finished answer: what the research read and which pages the report cites ([n] markers that really map to a read page). */
 /** Server Deep Research's citation check (lib/research/citation-check.ts): words and numbers, not meaning. */
 export type CitationCheck = {
-  summary: { claims: number; supported: number; partiallySupported: number; notVerified: number };
+  /** `conflicting`: absent on answers checked before conflicts were detected. */
+  summary: { claims: number; supported: number; partiallySupported: number; conflicting?: number; notVerified: number };
   /** The statements that need a closer look, most serious first. */
   claims: LiveClaim[];
 };

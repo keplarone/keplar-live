@@ -12,7 +12,7 @@ export function ChatHome() {
   return (
     <div data-chat-home="">
       <h1 className={s.h1}>How can Keplar help you today?</h1>
-      <AppLoader initialView="thread" />
+      <AppLoader initialView="thread" retrievalEnabled={process.env.KEPLAR_RETRIEVAL_ENABLED === "true"} />
       <ExploreLinks className={s.crawl} />
       <JsonLd data={softwareApp()} />
     </div>

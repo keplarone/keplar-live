@@ -94,7 +94,14 @@ test("route: a retry of a finished turn is replayed: no second run, no second ch
     assert.ok(first.some((e) => e.type === "answer"), "first send answered");
     const ran = providerCalls;
     assert.ok(ran >= 1);
-    const res = await ask({ prompt: PROMPT, turnKey: key }, { cookie });
+    // The stream closes before the run saves how it ended (route.ts: closeStream, then finishTurn in `finally`). A retry in that gap
+    // gets 409 turn_running and waits, as the browser does; it must never start a second run.
+    let res = await ask({ prompt: PROMPT, turnKey: key }, { cookie });
+    for (let i = 0; i < 100 && res.status === 409; i++) {
+      assert.equal(((await res.json()) as { code?: string }).code, "turn_running", "a retry before the save waits; it never runs again");
+      await new Promise((r) => setTimeout(r, 20));
+      res = await ask({ prompt: PROMPT, turnKey: key }, { cookie });
+    }
     assert.equal(res.headers.get("x-keplar-turn"), "replayed");
     const second = await events(res);
     assert.deepEqual(second.map((e) => e.type), ["recovery", "answer"]);

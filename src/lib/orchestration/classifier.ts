@@ -42,6 +42,11 @@ export function isMultiStep(prompt: string): boolean {
 
 const RX_HARD = HARD;
 
+/** Output-token estimate used for routing cost. Local: a model classifier must not replace these numbers. */
+export function outputTokensFor(complexity: Complexity, deepResearch: boolean): number {
+  return complexity === "simple" ? 350 : complexity === "moderate" ? 900 : deepResearch ? 4000 : 1600;
+}
+
 function words(s: string) {
   return s.trim().split(/\s+/).filter(Boolean).length;
 }
@@ -120,8 +125,7 @@ export class HeuristicClassifier implements Classifier {
     const attachmentTokens = (req.attachments ?? []).reduce((a, f) => a + Math.min(f.size / 4, 200_000), 0);
     // Images and video frames are billed as input tokens (tile estimate, media.ts).
     const estimatedInputTokens = Math.ceil((p.length + historyChars) / 4) + Math.ceil(attachmentTokens) + mediaTokens(req.media) + 600;
-    const estimatedOutputTokens =
-      complexity === "simple" ? 350 : complexity === "moderate" ? 900 : modes.deepResearch ? 4000 : 1600;
+    const estimatedOutputTokens = outputTokensFor(complexity, Boolean(modes.deepResearch));
 
     const rationale = media
       ? "Images or video attached. A small panel of vision models looks at them, so one model's misreading doesn't become the answer."

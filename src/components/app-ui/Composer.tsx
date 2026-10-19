@@ -9,6 +9,7 @@ import { hasResearchBridge, noSubscribe, researchCapabilities } from "@/lib/desk
 import { wantsLiveResearch } from "./state/live-run";
 import { readDraft, writeDraft } from "./drafts";
 import { HeuristicClassifier } from "@/lib/orchestration/classifier";
+import { deepResearchChipNote } from "@/lib/orchestration/research-notes";
 import { computeLevel, computeLevelLabel } from "@/lib/orchestration/compute";
 import { CostAwareRouter } from "@/lib/orchestration/router";
 import { DEBATE_POLICY, debateCostFactor } from "@/lib/orchestration/debate";
@@ -71,6 +72,8 @@ type Props = {
   privateChat?: { on: boolean; onToggle: () => void } | null;
   /** New chats only. Record notes starts from the + menu; the stop control stays mounted in the composer. */
   recordNotes?: boolean;
+  /** Server flag: live web search is on only when this is true. The client cannot read the env itself. */
+  retrievalEnabled?: boolean;
 };
 
 const MB = 1024 * 1024;
@@ -147,7 +150,7 @@ const router = new CostAwareRouter();
 
 
 export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
-  { running, onSend, onStop, routing, onRouting, placeholder, computeRemaining, resetsAt, plan, signedIn, onModesChange, draftKey = null, privateChat = null, recordNotes = false },
+  { running, onSend, onStop, routing, onRouting, placeholder, computeRemaining, resetsAt, plan, signedIn, onModesChange, draftKey = null, privateChat = null, recordNotes = false, retrievalEnabled = false },
   ref,
 ) {
   const uid = useId();
@@ -394,6 +397,8 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
   const formatReset = () => formatResetAt(resetsAt);
   // In the desktop app Deep Research runs as Live Research: the pages are read on this computer, so the server Deep Research budget doesn't apply.
   const drBlocked = modes.deepResearch && drRuns < 1 && !liveOn;
+  // Before the request: say that no pages will be read unless retrieval is on or the desktop app is reading them.
+  const drOffNote = deepResearchChipNote(retrievalEnabled === true || liveOn);
   const processing = media.some((m) => m.status === "processing") || docs.some((d) => d.status === "processing") || links.some((l) => l.status === "processing") || Object.values(tracks).some((t) => t.status === "processing");
   const tooLarge = mediaChars(media) > MEDIA_LIMITS.maxTotalDataUrlChars;
   const hasReady = media.some((m) => m.status === "ready") || docs.some((d) => d.status === "ready") || links.some((l) => l.status === "ready" && l.attachment);
@@ -973,8 +978,20 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
         ) : null}
 
         {modes.deepResearch && !liveOn ? (
-          <div id={`${uid}-budget`} className={s.budget} data-blocked={drBlocked || undefined} role="status">
-            {drBlocked ? (
+          <div id={`${uid}-budget`} className={s.budget} data-blocked={drBlocked || undefined} data-retrieval={drOffNote ? "off" : "on"} role="status">
+            {drOffNote ? (
+              <>
+                <span>{drOffNote}</span>
+                {drBlocked ? (
+                  <span className={s.budgetActions}>
+                    <Button size="sm" variant="ghost" className={s.budgetAct} onClick={() => setModes((m) => ({ ...m, deepResearch: false }))}>
+                      Ask without Deep Research
+                    </Button>
+                    <Link href="/pricing" className={s.budgetLink}>See plans</Link>
+                  </span>
+                ) : null}
+              </>
+            ) : drBlocked ? (
               <>
                 <span>
                   Not enough {brand.usage} left for a Deep Research run this period. It resets {formatReset()}.
@@ -1076,9 +1093,11 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
                 className={s.modeChip}
                 data-mode={key}
                 aria-pressed="true"
+                title={key === "deepResearch" && drOffNote ? drOffNote : undefined}
                 onClick={() => setModes((m) => toggleMode(m, key))}
               >
                 <span className={s.modeChipLabel}>{label}</span>
+                {key === "deepResearch" && drOffNote ? <span className="visually-hidden">{drOffNote}</span> : null}
                 <span className={s.modeChipX} aria-hidden="true">×</span>
                 <span className="visually-hidden">Remove {label}</span>
               </button>
@@ -1214,7 +1233,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
                   aria-checked={Boolean(modes[t.key])}
                   className={s.moreItem}
                   data-more-mode={t.key}
-                  title={t.key === "web" && liveDesktop && liveEnabled ? LIVE_WEB_HINT : t.hint}
+                  title={t.key === "deepResearch" && drOffNote ? drOffNote : t.key === "web" && liveDesktop && liveEnabled ? LIVE_WEB_HINT : t.hint}
                   onClick={() => { setModes((m) => toggleMode(m, t.key)); setMoreOpen(false); taRef.current?.focus(); }}
                 >
                   <span className={s.moreIcon}><t.Icon size={16} /></span>
