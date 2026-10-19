@@ -14,6 +14,7 @@ import { FitRuntime } from "@/components/ui/FitRuntime";
 import { ThemeWatcher } from "@/components/theme/ThemeControl";
 import { LegacyDecor } from "@/components/chrome/LegacyDecor";
 import { InsertMode } from "@/components/glass/InsertMode";
+import { SmoothCaret } from "@/components/glass/SmoothCaret";
 import { StaticAssetSw } from "@/components/perf/StaticAssetSw";
 import { CommandPalette } from "@/components/nav/CommandPalette";
 import { LocaleHtml } from "@/components/i18n/LocaleHtml";
@@ -88,6 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ThemeWatcher />
         <InsertMode />
+        <SmoothCaret />
         <LegacyDecor />
         <StaticAssetSw />
         <CommandPalette />

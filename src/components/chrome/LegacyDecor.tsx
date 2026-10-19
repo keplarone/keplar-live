@@ -6,11 +6,10 @@ import { TypingFeel } from "@/components/glass/TypingFeel";
 import { PageMonolith } from "@/components/monolith/PageMonolith";
 import { ProximityLight } from "@/components/ui/ProximityLight";
 import { ButtonFx } from "@/components/ui/ButtonFx";
-import { SmoothCaret } from "@/components/glass/SmoothCaret";
 
 /**
  * The old decorative runtimes (glass, proximity glow, page monolith). Space Studio still mounts them
- * so its page is unchanged. keplar.one does not.
+ * so its page is unchanged. keplar.one does not. The smooth caret is not decoration: it mounts once, for every page, in the root layout.
  */
 export function LegacyDecor() {
   const path = usePathname() ?? "";
@@ -23,7 +22,6 @@ export function LegacyDecor() {
       <GlassDefs />
       <ProximityLight />
       <ButtonFx />
-      <SmoothCaret />
     </>
   );
 }

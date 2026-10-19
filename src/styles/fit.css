@@ -23,7 +23,9 @@ html[data-signed="1"] [data-cta="open"] { display: inline; }
 html[data-signed="1"] [data-cta="try"] { display: none; }
 
 /* ── smooth caret (SmoothCaret.tsx): only while the overlay is showing is the native caret hidden ── */
-[data-sc] { caret-color: transparent; }
+/* !important: field rules such as input[type="email"] (globals.css) and module classes set caret-color with more specificity, and two
+   carets would show. The attribute is only present while the overlay is drawn, so the native caret returns the moment it is not. */
+[data-sc] { caret-color: transparent !important; }
 /* The 2px caret sits where an empty field's placeholder starts and was drawn through its first letter ("Search settings"); while it shows, the placeholder alone moves over. */
 [data-sc]::placeholder { text-indent: 4px; }
 .smooth-caret { position: fixed; left: 0; top: 0; z-index: 2147483000; width: 2px; border-radius: 1px; background: currentColor; pointer-events: none; visibility: hidden; will-change: transform; contain: layout style; transition: width 0.14s ease; }
