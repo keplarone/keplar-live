@@ -6,7 +6,8 @@ import { neonConfigured } from "@/lib/create/platform/neon";
 import { rateLimitBackend } from "@/lib/create/platform/ratelimit";
 import { collection, storeDurable } from "@/lib/create/platform/store";
 import { id as newId } from "@/lib/create/platform/ids";
-import { authSecretConfigured, authSecretMissingInProduction } from "@/lib/accounts/secret";
+import { authSecretConfigured, authSecretMissingInProduction, isProductionRuntime } from "@/lib/accounts/secret";
+import { logEvent } from "@/lib/ops/log";
 
 type Probe = { id: string; workspaceId: string; at: string };
 let cached: { at: number; ok: boolean; ms: number; error?: string } | null = null;
@@ -35,6 +36,8 @@ export { authSecretConfigured };
 
 /** Shown (and logged) when production runs without BETTER_AUTH_SECRET. A label only, never a value. */
 export const AUTH_SECRET_ERROR = "auth secret not configured";
+/** Shown (and logged) when production is on the ephemeral file store. A label only, never a connection string. */
+export const FILE_STORE_ERROR = "database not configured";
 
 export async function healthSummary() {
   const postgres = neonConfigured();
@@ -44,10 +47,19 @@ export async function healthSummary() {
   };
   // Production on a temporary random secret is a failure, not a warning: sessions and sign-in links break on every restart.
   const secretMissing = authSecretMissingInProduction();
+  // Production on the file store is the same kind of failure: the disk is ephemeral, so a deploy that forgot DATABASE_URL
+  // must not look healthy. This is a runtime check only. `isProductionRuntime` is false during `next build`, so the build
+  // itself is not failed.
+  const fileStoreInProduction = !postgres && isProductionRuntime();
   if (secretMissing) console.error("[health] CRITICAL: auth secret not configured. Set BETTER_AUTH_SECRET to 32+ random characters in the production environment.");
+  if (fileStoreInProduction) {
+    console.error("[health] CRITICAL: production is on the ephemeral file store because DATABASE_URL is not set. Data will not survive a restart. /api/health stays unhealthy until Postgres is configured.");
+    logEvent("error", "health.file_store", { store: "file" });
+  }
   if (!postgres) {
-    const ok = !secretMissing;
-    return { status: ok ? 200 : 503, body: { ok, store: "file" as const, durable: storeDurable(), security, ...(ok ? {} : { error: AUTH_SECRET_ERROR }) } };
+    const ok = !secretMissing && !fileStoreInProduction;
+    const error = secretMissing ? AUTH_SECRET_ERROR : fileStoreInProduction ? FILE_STORE_ERROR : undefined;
+    return { status: ok ? 200 : 503, body: { ok, store: "file" as const, durable: storeDurable(), security, ...(error ? { error } : {}) } };
   }
   const p = await probeStore();
   const ok = p.ok && !secretMissing;
