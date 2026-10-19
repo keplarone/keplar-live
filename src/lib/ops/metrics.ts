@@ -8,6 +8,7 @@ import { neonConfigured, neonQuery } from "@/lib/create/platform/neon";
 import { caps, spendToday, adminSpendToday } from "@/lib/create/platform/spend";
 import { breakerLevel } from "@/lib/create/platform/breaker";
 import { PAID_PLANS } from "@/lib/billing/plans";
+import { BILLED_USD } from "@/lib/growth/dashboard";
 import { businessTierForWhopPlanId, priceFor } from "@/lib/business/tiers";
 import { whopCheckoutConfigured, whopWebhookConfigured } from "@/lib/billing/whop";
 import { type ModelCallRow } from "./telemetry";
@@ -33,7 +34,8 @@ export function summarize(input: { now: number; workspaces: WorkspaceRow[]; ledg
   const { now, workspaces, ledger, calls, payments, events } = input;
   const planOf = new Map(workspaces.map((w) => [w.id, w]));
 
-  // Plan mix + MRR: active, unexpired paid subscriptions recorded from Whop webhooks / verified checkout returns.
+  // Plan mix + MRR: active, unexpired paid subscriptions recorded from Whop webhooks / verified checkout returns, at the price
+  // Whop bills (BILLED_USD), the same figure /admin/growth uses, so the two pages agree.
   const mix: Record<string, number> = { free: 0, lite: 0, plus: 0, pro: 0, business: 0 };
   let mrr = 0;
   const activePaid: Record<string, number> = { lite: 0, plus: 0, pro: 0 };
@@ -41,7 +43,7 @@ export function summarize(input: { now: number; workspaces: WorkspaceRow[]; ledg
     mix[w.plan] = (mix[w.plan] ?? 0) + 1;
     if ((w.plan === "lite" || w.plan === "plus" || w.plan === "pro") && w.billing.status === "active" && (!w.billing.periodEnd || Date.parse(w.billing.periodEnd) > now)) {
       activePaid[w.plan]++;
-      mrr += PAID_PLANS[w.plan].usdMonthly;
+      mrr += BILLED_USD[w.plan] ?? PAID_PLANS[w.plan].usdMonthly;
     } else if (w.plan === "business" && w.billing.status === "active" && (!w.billing.periodEnd || Date.parse(w.billing.periodEnd) > now)) {
       // Keplar Business: the tier's monthly price.
       const bt = businessTierForWhopPlanId(w.billing.lookupKey);
@@ -102,6 +104,7 @@ export function summarize(input: { now: number; workspaces: WorkspaceRow[]; ledg
   const evByType: Record<string, number> = {};
   for (const e of ev7) evByType[e.type] = (evByType[e.type] ?? 0) + 1;
 
+  mrr = round(mrr, 2);
   return {
     plans: { workspaces: workspaces.length, mix, activePaid },
     revenue: { mrrUsd: mrr, paymentsLast30d: pay30.length, paymentsRevenueLast30dUsd: revenue30, refundedLast30d: all30.length - pay30.length, recordedAmountLast30dUsd: recorded30, recordedAmountPayments: withAmount.length, billingEventsLast7d: evByType },

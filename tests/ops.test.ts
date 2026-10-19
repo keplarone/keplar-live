@@ -159,7 +159,7 @@ test("admin summary: MRR only from active, unexpired paid subscriptions; spend a
     payments: [{ id: "p", email: "a@x.com", plan: "plus", at: "2026-10-01T00:00:00Z" }],
     events: [{ id: "e", type: "payment.succeeded", at: "2026-10-01T00:00:00Z", result: "ok" }],
   });
-  assert.equal(s.revenue.mrrUsd, 45 + 99, "expired and canceled subscriptions are not MRR");
+  assert.equal(s.revenue.mrrUsd, 44.99 + 99.99, "expired and canceled subscriptions are not MRR; MRR is what Whop bills");
   assert.deepEqual(s.plans.activePaid, { lite: 0, plus: 1, pro: 1 });
   assert.equal(s.spend.last30dUsd, 0.22, "the August charge is outside the 30-day window");
   assert.equal(s.spend.byFeature[0].key, "site.build");
