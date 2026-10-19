@@ -86,7 +86,7 @@ test("too-large answers are not kept (the turn says so instead)", async () => {
 /* ── through the real route ── */
 
 test("route: a retry of a finished turn is replayed: no second run, no second charge", async () => {
-  const { cookie } = await signIn(`recover-${Math.random().toString(36).slice(2, 8)}@example.com`, "pro");
+  const { cookie, workspaceId } = await signIn(`recover-${Math.random().toString(36).slice(2, 8)}@example.com`, "pro");
   const key = newTurnKey();
   await withStub(async () => {
     providerCalls = 0;
@@ -94,6 +94,12 @@ test("route: a retry of a finished turn is replayed: no second run, no second ch
     assert.ok(first.some((e) => e.type === "answer"), "first send answered");
     const ran = providerCalls;
     assert.ok(ran >= 1);
+    // The stream closes before finishTurn writes the row. Wait for that save, or a fast retry is a second run.
+    const { auth } = await import("@/lib/accounts/auth");
+    const session = await auth.api.getSession({ headers: new Headers({ cookie }) });
+    const owner = turnOwner({ id: workspaceId, anonymous: false, userId: session!.user.id }, null)!;
+    for (let i = 0; i < 100 && (await readTurn(owner, key))?.status !== "done"; i++) await new Promise((r) => setTimeout(r, 20));
+    assert.equal((await readTurn(owner, key))?.status, "done");
     const res = await ask({ prompt: PROMPT, turnKey: key }, { cookie });
     assert.equal(res.headers.get("x-keplar-turn"), "replayed");
     const second = await events(res);
