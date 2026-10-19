@@ -32,7 +32,7 @@ import { useTypewriter } from "./useTypewriter";
 import { stageCopy } from "./copy";
 import { SynthesisView } from "./SynthesisView";
 import { DebateLive, DebateTranscript } from "./DebateView";
-import { LiveChecks, ResearchHead, ResearchLive, ResearchSources, citeRenderer } from "./research/Research";
+import { LiveChecks, ResearchChecks, ResearchHead, ResearchLive, ResearchSources, citeRenderer } from "./research/Research";
 import { liveCopyText } from "./state/live-research";
 import { researchBridge, safe } from "@/lib/desktop/research-bridge";
 import { downloadText } from "./chat-export";
@@ -851,7 +851,7 @@ function Answer({ answer: a, onRetry, onRefreshResearch, onSignal, isLast, conti
       ) : null}
 
       {a.research ? <ResearchSources research={a.research} /> : null}
-      {a.research?.live ? <LiveChecks live={a.research.live} /> : null}
+      {a.research?.live ? <LiveChecks live={a.research.live} /> : a.research?.check ? <ResearchChecks check={a.research.check} /> : null}
       {a.sourcing ? <SourceChecks sourcing={a.sourcing} /> : null}
 
       <div className={s.how} data-open={howOpen || undefined}>

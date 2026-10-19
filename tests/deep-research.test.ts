@@ -3,6 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { engineDeps, orchestrate } from "@/lib/orchestration/orchestrator";
 import { catalog } from "@/lib/orchestration/catalog";
+import { checkCitations, citedSentences, evidenceByPage, numbersIn } from "@/lib/research/citation-check";
 import { addSources, runResearch, linkCitations, numberNotes, OFF_NOT_ENABLED, OFF_SENSITIVE, parsePlan, PLAN_SYSTEM, researchBrief, RESEARCH_SYSTEM } from "@/lib/orchestration/research";
 import { applyResearch } from "@/components/app-ui/state/research";
 import type { KeplarAnswer, KeplarEvent, KeplarRequest, ResearchEvent, ResearchSource, Retriever } from "@/lib/orchestration/types";
@@ -154,6 +155,9 @@ test("pipeline, Deep Research with web search: plan → search → read stream b
     assert.ok(a.research!.cited.every((n) => n >= 1 && n <= 3) && a.research!.cited.length > 0);
     assert.ok(s.synthSaw.some((x) => x.includes("Web research for this question") && x.includes("cite a page as [n]")), "the writer got the numbered pages and the citation rules");
     assert.ok(!a.sources?.some((x) => x.title === "No sources cited"), "no 'no sources' note when pages were read");
+    const check = a.research!.check;
+    assert.ok(check, "the cited statements were checked against their pages");
+    assert.ok(check!.summary.claims > 0 && check!.summary.claims === check!.summary.supported + check!.summary.partiallySupported + check!.summary.notVerified);
   } finally { s.restore(); }
 });
 
@@ -207,4 +211,30 @@ test("timeout: a search that hangs adds no pages instead of holding the report",
   assert.deepEqual(r.value.summary.queries, ["fast query", "slow query"]);
   assert.equal(r.value.summary.sources.length, 1, "the fast search's page is kept");
   assert.match(r.value.brief, /\[1\] A/);
+});
+
+test("citation check: figures and words are compared with what was read from the cited page; nothing is removed", () => {
+  const sources = [{ ...src(1), snippet: "The Eiffel Tower was completed in March 1889 for the World's Fair." }, src(2), src(3)];
+  const notes = ["- Gustave Eiffel's company designed and built the tower [2]", "- The tower is 330 metres tall today [3]"];
+  const ev = evidenceByPage(sources, notes);
+  const md = [
+    "The Eiffel Tower was completed in 1889 [1].",
+    "It was designed and built by Gustave Eiffel's company [2].",
+    "It is 300 metres tall [3].",
+    "It cost 7.8 million francs to build [1].",
+    "Visitors love the pastry shops nearby on weekends [2].",
+    "```js\nconst x = a[1];\n```",
+  ].join(" ");
+  const r = checkCitations(md, sources, ev);
+  assert.equal(r.summary.claims, 5, "the code block is not a statement");
+  assert.equal(r.summary.supported, 2);
+  const by = new Map(r.claims.map((c) => [c.text, c]));
+  assert.equal(by.get("It is 300 metres tall.")?.status, "not-verified", "a figure the page doesn't give");
+  assert.match(by.get("It is 300 metres tall.")!.note!, /300/);
+  assert.match(by.get("It is 300 metres tall.")!.quote!, /330 metres/, "the closest line read is shown");
+  assert.equal(by.get("It cost 7.8 million francs to build.")?.status, "not-verified");
+  assert.equal(by.get("Visitors love the pastry shops nearby on weekends.")?.status, "not-verified", "words the page doesn't have");
+  assert.equal(r.claims[0].status, "not-verified", "most serious first");
+  assert.deepEqual(numbersIn("1,200 people, 3.50 dollars, 45% and 2026"), ["1200", "3.5", "45", "2026"]);
+  assert.deepEqual(citedSentences("Uncited sentence here. Cited one here [2][3].").map((x) => x.cites), [[2, 3]]);
 });

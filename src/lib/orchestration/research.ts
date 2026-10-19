@@ -11,6 +11,7 @@
  * estimate fits the per-request cap and the allowance. Otherwise the run says plainly that no web research ran and answers from the models.
  */
 import { liveEnv, SEARCH_PRICE_USD } from "./config";
+import { evidenceByPage } from "@/lib/research/citation-check";
 import { callCostUsd, sanitizeParams, spentUsd } from "./pricing";
 import type { createRegistry } from "./providers";
 import type { Classification, KeplarRequest, ResearchEvent, ResearchSource, ResearchSummary, Retriever, RoutingPlan } from "./types";
@@ -144,7 +145,8 @@ export function linkCitations(markdown: string, sources: ResearchSource[]): { ma
 }
 
 type Registry = ReturnType<typeof createRegistry>;
-export type ResearchOutcome = { brief: string; summary: ResearchSummary; costUsd: number };
+/** `evidence`: what was read from each page (its passage and the notes that cite it), for the citation check. */
+export type ResearchOutcome = { brief: string; summary: ResearchSummary; costUsd: number; evidence: Map<number, string[]> };
 
 /**
  * The live research phase. Yields research events as it goes and returns the brief for the panel, the summary for the answer and
@@ -185,7 +187,7 @@ export async function* runResearch(i: { registry: Registry; retriever: Retriever
   yield ev({ phase: "step", step: "read", status: "done", detail: `${sources.length} ${sources.length === 1 ? "page" : "pages"} read` });
   if (!sources.length) {
     yield ev({ phase: "off", reason: OFF_FAILED });
-    return { brief: "", summary: { queries, sources: [], cited: [], off: OFF_FAILED }, costUsd };
+    return { brief: "", summary: { queries, sources: [], cited: [], off: OFF_FAILED }, costUsd, evidence: new Map() };
   }
-  return { brief: researchBrief(queries, sources, notes), summary: { queries, sources, cited: [] }, costUsd };
+  return { brief: researchBrief(queries, sources, notes), summary: { queries, sources, cited: [] }, costUsd, evidence: evidenceByPage(sources, notes) };
 }

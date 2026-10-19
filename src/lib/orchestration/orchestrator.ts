@@ -38,6 +38,7 @@ import { createRetriever, retrievalApplies, retrievalEstimateUsd } from "./retri
 import { budgetSkipped, runSourcing, signSourcing, sourcingGate } from "./sourcing";
 import { linkCitations, OFF_BUDGET, OFF_NOT_ENABLED, OFF_SENSITIVE, researchEstimateUsd, runResearch } from "./research";
 import { LIVE_RESEARCH_RULES, liveResearchSummary } from "@/lib/research/live-request";
+import { checkCitations } from "@/lib/research/citation-check";
 import { ModelVerifier } from "./verifier";
 import { MergedFreeReview } from "./free-merged";
 import { sharedPool } from "./pool-governor";
@@ -416,11 +417,13 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
 
   // Deep Research: plan → search → read, streamed. The pages and notes go to the panel and the writer as context; they cite pages as [n].
   let research: ResearchSummary | undefined;
+  let researchEvidence: Map<number, string[]> | undefined;
   let researchUsd = 0;
   if (deep) {
     if (researchOn && deps.retriever?.research) {
       if (deps.run) deps.run.started = true;
       const out = yield* runResearch({ registry, retriever: deps.retriever, req, plan, classification, signal });
+      researchEvidence = out.evidence;
       researchUsd = out.costUsd;
       research = out.summary;
       if (out.brief) req = { ...req, memory: out.brief + (req.memory ?? "") };
@@ -799,6 +802,8 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
     const linked = linkCitations(body.markdown ?? "", research.sources);
     body.markdown = linked.markdown;
     research = { ...research, cited: linked.cited };
+    // Server Deep Research: label each cited statement by whether its page backs it (Live Research is checked on the desktop).
+    if (researchEvidence && linked.cited.length) research = { ...research, check: checkCitations(linked.markdown, research.sources, researchEvidence) };
   }
   if (research?.sources.length) {
     // Pages were really read for this answer: the "web retrieval isn't live" and "no sources cited" notes no longer hold.
