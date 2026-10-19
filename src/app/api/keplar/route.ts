@@ -644,8 +644,13 @@ export async function POST(request: Request) {
           if (event.type === "answer" && toolUses.length) event = { ...event, answer: { ...event.answer, tools: toolUses } };
           // Links Keplar read for this answer are listed first in Sources, with their address (src/lib/attachments/sources.ts).
           if (event.type === "answer" && !event.answer.smalltalk && req.docs?.some((x) => x.source === "link")) event = { ...event, answer: withReadSources(event.answer, req.docs) };
+          // A metering failure never costs the person the answer: it is logged and the answer still goes out.
           if (event.type === "answer" && !event.answer.smalltalk && ws.plan !== "free") {
-            if (await settle(event.answer.compute.units)) billedUnits = event.answer.compute.units;
+            try {
+              if (await settle(event.answer.compute.units)) billedUnits = event.answer.compute.units;
+            } catch (e) {
+              console.error("[keplar] metering failed:", e instanceof Error ? e.name : "error");
+            }
           }
           if (event.type === "limit" && windowBound) event = { ...event, window: { id: windowBound.id, label: windowBound.label, resetsAt: windowBound.resetsAt, message: windowBound.message } };
           send(event);
