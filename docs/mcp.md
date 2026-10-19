@@ -15,9 +15,11 @@ Why: calling arbitrary third-party servers is the most abusable thing the produc
 Limits live in `src/lib/mcp/limits.ts`. Each call costs `mcp.call` is metered in `compute.ts` (shown in the UI as about 1 credit).
 
 ## Enforcement chain (server-side, `gateway.ts`)
-Every call, whether from the UI, an approval or an agent, goes through `runToolCall`:
+Every call, whether from the UI, an approval or an agent, goes through `runToolCall`. The permission steps run inside
+`authorize()` (`src/lib/security/authorize.ts`, MCP policy in `src/lib/security/authorize-mcp.ts`; interface in
+`docs/architecture/authorize.md`). `callTool` refuses a call that does not carry the permit that allow issued:
 owner auth > server belongs to workspace > tool enabled and schema unchanged > args validated against the stored schema >
-agent grant (tools list, daily calls, monthly units) > plan, per-minute, per-day and per-user concurrency caps > credit charge >
+agent grant (tools list, daily calls, monthly units) > firewall and approval > plan, per-minute, per-day and per-user concurrency caps > credit charge >
 timeout-bound call (reads: up to 3 bounded retries; writes: exactly one attempt) > output sanitised, fenced and capped > audit receipt.
 Idempotency: a receipt is keyed by approval or request id; replays return the stored result and never call the server twice.
 

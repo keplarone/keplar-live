@@ -5,6 +5,7 @@
  * (sampling, elicitation), resources/prompts, and OAuth sign-in (BETA).
  * Every request goes through safeFetch (SSRF guard, pinned DNS, size + time caps).
  */
+import { mcpCallBinding, permitMatches, type Permit } from "@/lib/security/authorize";
 import { FetchError, SsrfError, safeFetch, type SafeFetchOpts } from "./ssrf";
 import { scrub } from "./crypto";
 import { LIMITS, parseToolDef, type ToolDef } from "./schema";
@@ -166,8 +167,14 @@ export async function discoverTools(t: McpTarget): Promise<Discovery> {
 
 export type CallOutcome = { isError: boolean; text: string; bytes: number; parts: { text: number; other: number } };
 
-/** One tool call: handshake, call, close. Output is returned raw (untrusted); callers sanitize. */
-export async function callTool(t: McpTarget, name: string, args: Record<string, unknown>, timeoutMs = TIMEOUTS.call): Promise<CallOutcome> {
+/**
+ * One tool call: handshake, call, close. Output is returned raw (untrusted); callers sanitize.
+ * `permit` is the allow from `authorize` for this exact server, tool and arguments. A call without it never touches the network.
+ */
+export async function callTool(t: McpTarget, name: string, args: Record<string, unknown>, permit: Permit, timeoutMs = TIMEOUTS.call): Promise<CallOutcome> {
+  if (!permitMatches(permit, { action: "mcp.call", binding: mcpCallBinding(t.url, name, args) })) {
+    throw new McpError("This call was not authorized.", "forbidden");
+  }
   const started = Date.now();
   const { session } = await openSession(t);
   try {
