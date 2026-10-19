@@ -86,8 +86,11 @@ export async function softDeleteSite(ws: Pick<Workspace, "id">, site: Site): Pro
   if (isDeleted(site)) return { deletedAt: site.deletedAt as string, purgeAfter: site.purgeAfter ?? new Date(Date.parse(site.deletedAt as string) + GRACE_MS).toISOString() };
   const blockers = await deletionBlockers(site);
   if (blockers.length) throw new HttpError(409, blockers[0].message, blockers[0].code, { blockers });
-  const deletedAt = now();
-  const purgeAfter = new Date(Date.now() + GRACE_MS).toISOString();
+  // One clock read. A second Date.now() can land a millisecond later, so the
+  // stored window would be GRACE_MS + 1 and the exact-duration check flakes.
+  const deletedAtMs = Date.now();
+  const deletedAt = new Date(deletedAtMs).toISOString();
+  const purgeAfter = new Date(deletedAtMs + GRACE_MS).toISOString();
   const row = await sites().update(ws.id, site.id, { deletedAt, purgeAfter, updatedAt: deletedAt });
   if (!row) throw new HttpError(404, "Site not found.", "not_found");
   await setSiteAssetsPublic(site, false);

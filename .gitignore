@@ -19,3 +19,6 @@ public/deploy-stamp.json
 # Playwright output (traces can hold page content and cookies). Never committed.
 test-results/
 playwright-report/
+
+# Benchmark outputs (copy a live run's report into docs/ on purpose)
+bench/out/

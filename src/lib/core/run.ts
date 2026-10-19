@@ -150,6 +150,8 @@ export async function* runCore(req: KeplarRequest, deps: Deps, signal?: AbortSig
     // Escalation: the quick answer came back low-confidence, so it is critiqued and revised before it is shown.
     depth = "thorough";
     const budget = new CoreBudget(budgetFor(req.plan, "thorough"), extraUsdCap(req));
+    // The panel's answer is held back, not delivered: a stop during the revision still bills the panel plus the revision budget.
+    if (!free) holdForCore(deps, coreUnits(budget));
     yield coreEvent({ phase: "route", depth, asked, reason: "The models didn't agree on this, so Keplar checked and revised the answer before showing it.", escalated: true });
     const ch = channel<KeplarEvent>();
     const ctx = engineCtx(req, deps, models, budget, a, picked, (e) => ch.push(coreEvent(e)), signal);
@@ -160,7 +162,8 @@ export async function* runCore(req: KeplarRequest, deps: Deps, signal?: AbortSig
 
   /* ─────────────── thorough / exhaustive ─────────────── */
   const budget = new CoreBudget(budgetFor(req.plan, depth), extraUsdCap(req));
-  if (!free && deps.run) deps.run.plannedUnits += Math.ceil((budget.limit.usd || 0) / USD_PER_UNIT);
+  // Core's own steps are paid calls before the pipeline runs: a stop during them bills the planned Core budget.
+  if (!free && deps.run) { const units = coreUnits(budget); deps.run.extraUnits = units; deps.run.plannedUnits += units; if (!media) deps.run.started = true; }
   yield coreEvent({ phase: "route", depth, asked, reason, ...(asked === "auto" ? { escalated: true } : {}) });
   const brevity = opts.brevity ? await opts.brevity().catch(() => 0) : 0;
   if (brevity <= -0.3 || brevity >= 0.3) req = { ...req, memory: `${brevity < 0 ? "This person has preferred shorter answers: keep it tight." : "This person has liked fuller, detailed answers."}\n\n${req.memory ?? "The question:\n"}` };
@@ -176,6 +179,7 @@ export async function* runCore(req: KeplarRequest, deps: Deps, signal?: AbortSig
     yield ev;
   }
   if (!held) return; // an error / limit / no-response event was already passed through
+  if (!free) holdForCore(deps, 0);
   let markdown = held.markdown;
   let checks = solved.checks;
   let criticScore: number | null = null;
@@ -188,6 +192,19 @@ export async function* runCore(req: KeplarRequest, deps: Deps, signal?: AbortSig
     rounds += r.rounds;
   }
   yield* finish({ req: req2, deps, a, picked, ctx, budget, base: held, markdown, steps: solved.steps, checks, criticScore, rounds, depth, escalated: asked === "auto", reason, started, free, grounding, opts, complete: solved.complete });
+}
+
+const coreUnits = (budget: CoreBudget) => Math.ceil((budget.limit.usd || 0) / USD_PER_UNIT);
+
+/**
+ * orchestrate() marks the run settled when its answer is ready, but Core holds that answer back to revise it, so nothing has been
+ * billed yet: reopen settlement (the route then bills the planned units on a stop or crash) and add any further Core budget.
+ */
+function holdForCore(deps: Deps, units: number): void {
+  if (!deps.run) return;
+  deps.run.settled = false;
+  deps.run.started = true;
+  deps.run.plannedUnits += units;
 }
 
 function extraUsdCap(req: KeplarRequest): number {

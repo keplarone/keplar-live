@@ -1,0 +1,178 @@
+{
+  "paid-factual": {
+    "kind": "factual",
+    "complexity": "simple",
+    "errorProne": null,
+    "capabilities": ["Research"],
+    "needsWeb": false,
+    "mode": "single",
+    "panel": ["live:gpt-oss-20b"],
+    "verifier": null,
+    "judge": null
+  },
+  "free-factual": {
+    "kind": "factual",
+    "complexity": "simple",
+    "errorProne": null,
+    "capabilities": ["Research"],
+    "needsWeb": false,
+    "mode": "single",
+    "panel": ["free:nemotron-3-super"],
+    "verifier": null,
+    "judge": null
+  },
+  "paid-counting": {
+    "kind": "factual",
+    "complexity": "moderate",
+    "errorProne": "exact",
+    "capabilities": ["Research", "Verification"],
+    "needsWeb": false,
+    "mode": "consensus",
+    "panel": ["live:deepseek-v4-flash", "live:gpt-6-luna"],
+    "verifier": "live:gpt-oss-20b",
+    "judge": null
+  },
+  "free-counting": {
+    "kind": "factual",
+    "complexity": "moderate",
+    "errorProne": "exact",
+    "capabilities": ["Research", "Verification"],
+    "needsWeb": false,
+    "mode": "consensus",
+    "panel": ["free:dots-3-note", "free:nemotron-3-super"],
+    "verifier": "free:gemma-4-26b-a4b",
+    "judge": null
+  },
+  "paid-code": {
+    "kind": "code",
+    "complexity": "moderate",
+    "errorProne": null,
+    "capabilities": ["Coding", "Reasoning", "Verification"],
+    "needsWeb": false,
+    "mode": "consensus",
+    "panel": ["live:deepseek-v4-flash", "live:gpt-6-luna", "live:nemotron-3-super"],
+    "verifier": "live:gpt-oss-20b",
+    "judge": null
+  },
+  "free-code": {
+    "kind": "code",
+    "complexity": "moderate",
+    "errorProne": null,
+    "capabilities": ["Coding", "Reasoning", "Verification"],
+    "needsWeb": false,
+    "mode": "consensus",
+    "panel": ["free:qwen3.8-27b", "free:nemotron-3-super"],
+    "verifier": "free:gemma-4-26b-a4b",
+    "judge": null
+  },
+  "paid-strategy": {
+    "kind": "strategy",
+    "complexity": "complex",
+    "errorProne": null,
+    "capabilities": ["Reasoning", "Research", "Finance", "Market Analysis", "Regulatory"],
+    "needsWeb": false,
+    "mode": "consensus",
+    "panel": ["live:gpt-6-luna", "live:deepseek-v4-flash", "live:qwen3.8-flash", "live:mistral-small-2603", "live:gemma-4-31b"],
+    "verifier": "live:gpt-oss-20b",
+    "judge": "live:gemini-3.8-flash"
+  },
+  "free-strategy": {
+    "kind": "strategy",
+    "complexity": "complex",
+    "errorProne": null,
+    "capabilities": ["Reasoning", "Research", "Finance", "Market Analysis", "Regulatory"],
+    "needsWeb": false,
+    "mode": "consensus",
+    "panel": ["free:dots-3-note", "free:nemotron-3-super"],
+    "verifier": "free:gemma-4-26b-a4b",
+    "judge": null
+  },
+  "paid-deep": {
+    "kind": "research",
+    "complexity": "complex",
+    "errorProne": null,
+    "capabilities": ["Reasoning", "Research", "Verification"],
+    "needsWeb": true,
+    "mode": "consensus",
+    "panel": ["live:gpt-6-luna", "live:deepseek-v4-flash", "live:nemotron-3-super", "live:qwen3.8-flash", "live:glm-5.3-flash"],
+    "verifier": "live:gpt-oss-20b",
+    "judge": "live:gemini-3.8-flash"
+  },
+  "free-deep": {
+    "kind": "research",
+    "complexity": "complex",
+    "errorProne": null,
+    "capabilities": ["Reasoning", "Research", "Verification"],
+    "needsWeb": true,
+    "mode": "consensus",
+    "panel": ["free:dots-3-note", "free:nemotron-3-super"],
+    "verifier": "free:gemma-4-26b-a4b",
+    "judge": null
+  },
+  "paid-writing": {
+    "kind": "writing",
+    "complexity": "simple",
+    "errorProne": null,
+    "capabilities": ["Writing"],
+    "needsWeb": false,
+    "mode": "single",
+    "panel": ["live:gpt-oss-20b"],
+    "verifier": null,
+    "judge": null
+  },
+  "free-writing": {
+    "kind": "writing",
+    "complexity": "simple",
+    "errorProne": null,
+    "capabilities": ["Writing"],
+    "needsWeb": false,
+    "mode": "single",
+    "panel": ["free:nemotron-3-super"],
+    "verifier": null,
+    "judge": null
+  },
+  "paid-forecast": {
+    "kind": "analysis",
+    "complexity": "complex",
+    "errorProne": null,
+    "capabilities": ["Reasoning", "Verification"],
+    "needsWeb": false,
+    "mode": "consensus",
+    "panel": ["live:deepseek-v4-flash", "live:gpt-6-luna", "live:nemotron-3-super", "live:qwen3.8-flash", "live:glm-5.3-flash"],
+    "verifier": "live:gpt-oss-20b",
+    "judge": "live:gemini-3.8-flash"
+  },
+  "free-forecast": {
+    "kind": "analysis",
+    "complexity": "complex",
+    "errorProne": null,
+    "capabilities": ["Reasoning", "Verification"],
+    "needsWeb": false,
+    "mode": "consensus",
+    "panel": ["free:nemotron-3-super", "free:qwen3.8-27b"],
+    "verifier": "free:gemma-4-26b-a4b",
+    "judge": null
+  },
+  "paid-exact-fact": {
+    "kind": "factual",
+    "complexity": "moderate",
+    "errorProne": "fact",
+    "capabilities": ["Research", "Verification"],
+    "needsWeb": false,
+    "mode": "consensus",
+    "panel": ["live:deepseek-v4-flash", "live:gpt-6-luna"],
+    "verifier": "live:gpt-oss-20b",
+    "judge": null
+  },
+  "free-exact-fact": {
+    "kind": "factual",
+    "complexity": "moderate",
+    "errorProne": "fact",
+    "capabilities": ["Research", "Verification"],
+    "needsWeb": false,
+    "mode": "consensus",
+    "panel": ["free:dots-3-note", "free:nemotron-3-super"],
+    "verifier": "free:gemma-4-26b-a4b",
+    "judge": null
+  }
+}
