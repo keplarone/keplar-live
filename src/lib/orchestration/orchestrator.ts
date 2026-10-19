@@ -64,6 +64,9 @@ import type {
   Verifier,
 } from "./types";
 
+/** Most time the web check of disputed claims may take before the answer goes out without it. */
+const WEB_CHECK_MS = 25_000;
+
 export type Deps = {
   classifier: Classifier;
   router: Router;
@@ -748,10 +751,16 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
 
   // Optional: web-check only the claims still disputed. Never runs when the flag is off.
   let retrievalUsd = 0;
+  // Bounded like the sourcing stage: a slow search leaves the claims disputed rather than holding the answer (45 s × 3 retries otherwise).
   if (retrieve && deps.retriever && verification.disputed.length) {
-    const web = await deps.retriever.check({ req, claims: verification.disputed, plan, signal });
-    retrievalUsd = web.costUsd;
-    verification = { ...verification, checks: [...verification.checks, ...web.checks] };
+    try {
+      const guard = signal ? AbortSignal.any([signal, AbortSignal.timeout(WEB_CHECK_MS)]) : AbortSignal.timeout(WEB_CHECK_MS);
+      const web = await deps.retriever.check({ req, claims: verification.disputed, plan, signal: guard });
+      retrievalUsd = web.costUsd;
+      verification = { ...verification, checks: [...verification.checks, ...web.checks] };
+    } catch {
+      if (signal?.aborted) throw new Error("aborted");
+    }
   }
   comparison = deps.comparator.finalize(comparison, verification, results);
 

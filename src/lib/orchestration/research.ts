@@ -22,6 +22,8 @@ export const RESEARCH = {
   maxResults: 6,
   /** Notes kept per query in the brief. */
   noteChars: 1400,
+  /** Most time one search (fetch plus reading notes) may take; a slower one adds no pages instead of holding the report. */
+  searchMs: 60_000,
 } as const;
 
 export const OFF_NOT_ENABLED = "Live web search isn't switched on for Deep Research yet, so this report was researched by the models only. No pages were read.";
@@ -148,7 +150,7 @@ export type ResearchOutcome = { brief: string; summary: ResearchSummary; costUsd
  * The live research phase. Yields research events as it goes and returns the brief for the panel, the summary for the answer and
  * what it cost. A failed planning call falls back to searching the question itself; a failed search just adds no pages.
  */
-export async function* runResearch(i: { registry: Registry; retriever: Retriever; req: KeplarRequest; plan: RoutingPlan; classification: Classification; signal?: AbortSignal }): AsyncGenerator<{ type: "research"; research: ResearchEvent }, ResearchOutcome> {
+export async function* runResearch(i: { registry: Registry; retriever: Retriever; req: KeplarRequest; plan: RoutingPlan; classification: Classification; signal?: AbortSignal; searchMs?: number }): AsyncGenerator<{ type: "research"; research: ResearchEvent }, ResearchOutcome> {
   const ev = (research: ResearchEvent) => ({ type: "research" as const, research });
   let costUsd = 0;
   yield ev({ phase: "step", step: "plan", status: "active" });
@@ -167,7 +169,7 @@ export async function* runResearch(i: { registry: Registry; retriever: Retriever
   yield ev({ phase: "step", step: "read", status: "active" });
   const sources: ResearchSource[] = [];
   const notes: string[] = queries.map(() => "");
-  const pending = new Map(queries.map((q, qi) => [qi, i.retriever.research!({ query: q, plan: i.plan, signal: i.signal }).then((r) => ({ qi, r }), () => ({ qi, r: null }))]));
+  const pending = new Map(queries.map((q, qi) => [qi, i.retriever.research!({ query: q, plan: i.plan, signal: i.signal ? AbortSignal.any([i.signal, AbortSignal.timeout(i.searchMs ?? RESEARCH.searchMs)]) : AbortSignal.timeout(i.searchMs ?? RESEARCH.searchMs) }).then((r) => ({ qi, r }), () => ({ qi, r: null }))]));
   let searched = 0;
   while (pending.size) {
     const { qi, r } = await Promise.race(pending.values());

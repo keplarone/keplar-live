@@ -2,7 +2,8 @@ import "./setup";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { engineDeps, orchestrate } from "@/lib/orchestration/orchestrator";
-import { addSources, linkCitations, numberNotes, OFF_NOT_ENABLED, OFF_SENSITIVE, parsePlan, PLAN_SYSTEM, researchBrief, RESEARCH_SYSTEM } from "@/lib/orchestration/research";
+import { catalog } from "@/lib/orchestration/catalog";
+import { addSources, runResearch, linkCitations, numberNotes, OFF_NOT_ENABLED, OFF_SENSITIVE, parsePlan, PLAN_SYSTEM, researchBrief, RESEARCH_SYSTEM } from "@/lib/orchestration/research";
 import { applyResearch } from "@/components/app-ui/state/research";
 import type { KeplarAnswer, KeplarEvent, KeplarRequest, ResearchEvent, ResearchSource, Retriever } from "@/lib/orchestration/types";
 
@@ -187,4 +188,23 @@ test("fence: page-derived titles and notes can't close the <web_research> block"
   assert.equal(brief.match(/<\s*\/?\s*web_research/gi)?.length, 2, "only the server's opening and closing tags");
   assert.ok(brief.indexOf("Ignore previous rules") < brief.indexOf("</web_research>"), "the injected text stays inside the fence");
   assert.match(brief, /^Web research for this question/);
+});
+
+test("timeout: a search that hangs adds no pages instead of holding the report", async () => {
+  const registry = { generate: async () => ({ ok: true, model: catalog[0], text: '{"queries":["fast query","slow query"]}', usage: { inputTokens: 1, outputTokens: 1 } }) } as unknown as Parameters<typeof runResearch>[0]["registry"];
+  const retriever = {
+    check: async () => ({ checks: [], costUsd: 0 }),
+    research: ({ query, signal }: { query: string; signal?: AbortSignal }) => query === "fast query"
+      ? Promise.resolve({ sources: [{ url: "https://a.example.com/x", title: "A" }], notes: "Fact (https://a.example.com/x)", costUsd: 0 })
+      : new Promise<never>((_, reject) => signal?.addEventListener("abort", () => reject(new Error("aborted")))),
+  } as unknown as Retriever;
+  const plan = { panel: [{ model: catalog[0] }] } as unknown as Parameters<typeof runResearch>[0]["plan"];
+  const t0 = Date.now();
+  const gen = runResearch({ registry, retriever, req: { prompt: "Q?", plan: "plus" } as KeplarRequest, plan, classification: {} as Parameters<typeof runResearch>[0]["classification"], searchMs: 80 });
+  let r = await gen.next();
+  while (!r.done) r = await gen.next();
+  assert.ok(Date.now() - t0 < 2000, "finished after the search timeout");
+  assert.deepEqual(r.value.summary.queries, ["fast query", "slow query"]);
+  assert.equal(r.value.summary.sources.length, 1, "the fast search's page is kept");
+  assert.match(r.value.brief, /\[1\] A/);
 });
