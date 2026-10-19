@@ -2,18 +2,12 @@
  * keplar.one, Gemini-led look (Oct 2026). Loads after graphite.css and overrides it outside Space Studio.
  *
  * Brief (Destiny skill): subject = Keplar One's chat, where one question goes to several models. Lead reference = Gemini:
- * tonal surfaces instead of borders, filled pill controls, a big rounded composer, a calm greeting and one signature,
- * an ambient glow behind the empty composer. We borrow Gemini's system (tones, shapes, timing), never its brand: the glow and the
- * greeting gradient use Keplar's own blue and reasoning teal, and the Keplar mark and copy stay.
+ * tonal surfaces instead of borders, filled pill controls, a big rounded composer and a calm greeting. We borrow Gemini's
+ * system (shapes and timing), never its brand. Colour stays on the graphite system in graphite.css: dark #212121, light
+ * #ffffff, ink and white only. The greeting is solid ink. The empty home has no glow, halo, bloom, gradient or blue accent.
  * Type stays Google Sans (one family, already the site font). Motion: Gemini's curve (0.2, 0, 0, 1), enter 120 to 250ms,
  * menus close instantly, everything has a reduced-motion answer.
- * Contrast (computed, WCAG): dark ink #e3e3e3 on #131314 14.5:1, ink-2 #c4c7c5 10.9:1, ink-3 #9a9b9c on #1e1f20 5.9:1 and on
- * #282a2c 5.2:1; light ink #1f1f1f on #fff 16.5:1, ink-2 #444746 9.4:1, ink-3 #5e5e5e on #f0f4f9 5.9:1 and on #e9eef6 5.6:1.
  */
-
-/* Registered so the glow colours can cross-fade when a future mode sets them. */
-@property --kg-a { syntax: "<color>"; inherits: true; initial-value: #2f6bff; }
-@property --kg-b { syntax: "<color>"; inherits: true; initial-value: #00b2cc; }
 
 html:not(:has([data-space-root], [data-kb])) {
   --g-ease: cubic-bezier(0.2, 0, 0, 1);
@@ -26,111 +20,21 @@ html:not(:has([data-space-root], [data-kb])) {
   --m-ease-out: var(--g-ease);
 }
 
-/* Dark: Gemini's tonal steps. Depth comes from the surface tone, not borders or shadows. */
+/* Colour stays on graphite.css (#212121 dark, #ffffff light). These are only the layout's tonal steps, in those neutrals.
+   No blue, teal, gradient, glow, halo or bloom. Canvas, ink and focus come from graphite and are not overridden here. */
 html:not(:has([data-space-root], [data-kb]))[data-theme="dark"] {
-  --c-canvas: #131314;
-  --c-surface-1: #1e1f20;
-  --c-surface-2: #282a2c;
-  --g-container: #1e1f20;
-  --g-container-high: #282a2c;
-  --g-container-highest: #333537;
-  --g-selected: #0f3a44; /* Keplar teal container for the open chat; ink on it 9.6:1 */
-  --c-ink: #e3e3e3;
-  --c-ink-2: #c4c7c5;
-  --c-ink-3: #9a9b9c;
-  --c-border: rgb(255 255 255 / 0.08);
-  --c-border-strong: #444746;
-  --c-accent: #e3e3e3;
-  --c-focus: #e3e3e3;
-  --ring-rgb: 227 227 227;
-  --c-ink-hover: #ffffff;
-  --rgb-ink: 227 227 227;
-  --rgb-canvas: 19 19 20;
-  --rgb-surface: 30 31 32;
-  --hairline: rgb(255 255 255 / 0.08);
-  --hairline-strong: #444746;
-  --hover-wash: rgb(227 227 227 / 0.08); /* Gemini hover state layer */
-  --press-wash: rgb(227 227 227 / 0.12);
-  --g-menu-shadow: 0 0 20px rgb(0 0 0 / 0.28);
-  --g-glow: 0.55;
-  --kg-a: #2f6bff;
-  --kg-b: #00b2cc;
-  --space-void: #131314;
-  --space-p-face: #e3e3e3; /* primary buttons (sign up, CTAs, pricing): light pill, dark text 14.5:1 */
-  --space-p-ink: #131314;
-  --space-s-ink: #e3e3e3;
-  --space-s-face: #282a2c;
-  --space-glass: #282a2c;
-  --space-glass-solid: #1e1f20;
-  --space-field: #1e1f20;
-  --space-field-focus: #282a2c;
-  --ks-switch-on: #e3e3e3;
-  --ks-switch-thumb-on: #131314;
-  --nav-fill: #131314;
-  --nav-fill-scrolled: #131314;
-  --nav-solid: #131314;
-  --nav-menu-fill: #1e1f20;
-  --nav-sheet: #1e1f20;
-  --nav-ink: #e3e3e3;
-  --nav-link: #c4c7c5;
-  --nav-hover-bg: rgb(227 227 227 / 0.08);
-  --surface-overlay: #282a2c;
-  --surface-raised: #282a2c;
-  --surface-panel: #1e1f20;
-  --lg-solid: #1e1f20; /* glass.css hard-codes #171717 */
-  background: #131314;
+  --g-container: #171717;
+  --g-container-high: #2f2f2f;
+  --g-container-highest: #3a3a3a;
+  --g-selected: #2f2f2f;
+  --g-menu-shadow: none;
 }
-
-/* Light: white canvas, Gemini's cool blue-grey containers. */
 html:not(:has([data-space-root], [data-kb]))[data-theme="light"] {
-  --c-canvas: #ffffff;
-  --c-surface-1: #f0f4f9;
-  --c-surface-2: #e9eef6;
-  --g-container: #f0f4f9;
-  --g-container-high: #e9eef6;
-  --g-container-highest: #dde3ea;
-  --g-selected: #d3eef3; /* Keplar teal container; ink on it 13.6:1 */
-  --c-ink: #1f1f1f;
-  --c-ink-2: #444746;
-  --c-ink-3: #5e5e5e;
-  --c-border: rgb(31 31 31 / 0.08);
-  --c-border-strong: #c4c7c5;
-  --c-accent: #1f1f1f;
-  --c-focus: #1f1f1f;
-  --ring-rgb: 31 31 31;
-  --c-ink-hover: #3c3c3c;
-  --rgb-ink: 31 31 31;
-  --rgb-canvas: 255 255 255;
-  --rgb-surface: 240 244 249;
-  --hairline: rgb(31 31 31 / 0.08);
-  --hairline-strong: #c4c7c5;
-  --hover-wash: rgb(31 31 31 / 0.06);
-  --press-wash: rgb(31 31 31 / 0.1);
-  --g-menu-shadow: 0 1px 3px rgb(0 0 0 / 0.08), 0 8px 24px -6px rgb(31 31 31 / 0.18);
-  --g-glow: 0.32;
-  --kg-a: #6f9bff;
-  --kg-b: #5fd3e3;
-  --space-void: #ffffff;
-  --space-p-face: #1f1f1f; /* primary buttons: dark pill, white text 16.5:1 */
-  --space-p-ink: #ffffff;
-  --space-s-ink: #1f1f1f;
-  --space-s-face: #f0f4f9;
-  --space-glass: #ffffff;
-  --space-glass-solid: #ffffff;
-  --space-field: #f0f4f9;
-  --space-field-focus: #e9eef6;
-  --ks-switch-on: #1f1f1f;
-  --ks-switch-thumb-on: #ffffff;
-  --nav-fill: #ffffff;
-  --nav-fill-scrolled: #ffffff;
-  --nav-solid: #ffffff;
-  --nav-menu-fill: #ffffff;
-  --nav-sheet: #ffffff;
-  --nav-ink: #1f1f1f;
-  --surface-overlay: #f0f4f9;
-  --surface-raised: #f0f4f9;
-  --surface-panel: #f0f4f9;
-  background: #ffffff;
+  --g-container: #f7f7f8;
+  --g-container-high: #ececec;
+  --g-container-highest: #e0e0e0;
+  --g-selected: #ececec;
+  --g-menu-shadow: none;
 }
 
 /* ---------- Sidebar: a tonal panel with pill rows ---------- */
@@ -169,18 +73,10 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer
 }
 html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:focus-within {
   border-color: transparent !important;
-  box-shadow: 0 0 0 1px rgb(var(--ring-rgb) / 0.14) !important;
-}
-@media (prefers-reduced-motion: no-preference) {
-  /* Gemini's focus bloom: a soft ring of the glow colour that settles into the 1px edge. */
-  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:focus-within {
-    animation: g-bloom 1000ms var(--g-ease-decel) !important;
-  }
-}
-@keyframes g-bloom {
-  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--kg-a) 0%, transparent); }
-  20% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--kg-a) 22%, transparent); }
-  100% { box-shadow: 0 0 0 1px rgb(var(--ring-rgb) / 0.14); }
+  /* Crisp 2px solid outline. No bloom, halo, blur ring or coloured glow. */
+  outline: 2px solid var(--c-ink) !important;
+  outline-offset: 2px !important;
+  box-shadow: none !important;
 }
 
 /* Attach: the plus turns into a close mark while its menu is open (Gemini's + to ×, 200ms). */
@@ -213,7 +109,7 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] :is([class$="__attachMe
   from { opacity: 0; scale: 0.8; }
 }
 
-/* ---------- Home: chips, greeting, glow ---------- */
+/* ---------- Home: chips and greeting ---------- */
 html:not(:has([data-space-root], [data-kb]))[data-theme] button[class*="__homeChip"] {
   background: var(--g-container) !important; /* App module themes chips with :root[data-theme] .homeChip */
   border-color: transparent !important;
@@ -224,7 +120,7 @@ html:not(:has([data-space-root], [data-kb])) button[class*="__homeChip"]:hover {
   border-color: transparent !important;
 }
 
-/* The greeting: lighter and larger, like Gemini's. The name carries the gradient (Keplar blue to reasoning teal). */
+/* The greeting: lighter and larger, like Gemini's. "Keplar" is the same solid ink as the rest of the line. */
 /* Gemini: 36px, light, normal tracking. Google Sans stops at 400, so 400 with near-normal tracking. !important: the App
    module sets the title with :root[data-theme] .welcomeTitle. */
 html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] {
@@ -235,82 +131,22 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] {
 html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] span {
   font-weight: inherit !important;
 }
-html:not(:has([data-space-root], [data-kb])) [data-welcome] [class*="__welcomeName"] {
-  background: linear-gradient(90deg, #5b8cff 0%, #3aa0ff 45%, #1fc4d8 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-}
-html:not(:has([data-space-root], [data-kb]))[data-theme="light"] [data-welcome] [class*="__welcomeName"] {
-  /* darker stops on white: #1a5fe0 5.6:1, #1570d6 4.9:1, #007f99 4.7:1 (large text needs 3:1) */
-  background-image: linear-gradient(90deg, #1a5fe0 0%, #1570d6 45%, #007f99 100%);
-}
-@media (forced-colors: active) {
-  html:not(:has([data-space-root], [data-kb])) [data-welcome] [class*="__welcomeName"] {
-    background: none;
-    color: CanvasText;
-    -webkit-text-fill-color: CanvasText;
-  }
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] [class*="__welcomeName"] {
+  background: none;
+  color: inherit;
+  -webkit-text-fill-color: currentColor;
 }
 
-/* Signature: the ambient glow behind the empty composer. It grows in once (1000ms) and never loops, so it costs nothing after
-   the first second. It leaves as soon as the first message is sent (data-empty goes away). */
-html:not(:has([data-space-root], [data-kb])) [data-empty] {
-  isolation: isolate;
-}
-html:not(:has([data-space-root], [data-kb])) [data-empty]::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  z-index: -1;
-  width: min(1100px, 140%);
-  aspect-ratio: 1.6;
-  translate: -50% -50%;
-  border-radius: 50%;
-  pointer-events: none;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--kg-a) 55%, transparent), color-mix(in srgb, var(--kg-b) 22%, transparent) 55%, transparent 78%);
-  opacity: var(--g-glow);
-  transition: --kg-a 1000ms var(--g-ease), --kg-b 1000ms var(--g-ease);
-}
-@media (prefers-reduced-motion: no-preference) {
-  html:not(:has([data-space-root], [data-kb])) [data-empty]::before {
-    animation: g-glow-in 1000ms var(--g-ease) both;
-  }
-}
-@keyframes g-glow-in {
-  from { opacity: 0; scale: 0.3; }
-}
-@media (prefers-contrast: more) {
-  html:not(:has([data-space-root], [data-kb])) [data-empty]::before { display: none; }
-}
-
-/* ---------- Top bar: no divider, Gemini-style sign-up pill in Keplar blue ---------- */
+/* ---------- Top bar: no divider. Sign up stays the graphite ink pill from App.module.css, not a blue accent. ---------- */
 html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][class*="__topbar"] {
   border-bottom: 0 !important;
   box-shadow: none !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme="dark"] a[class*="__authUp"] {
-  --g-signup: #0c4a86; /* Gemini-style deep tonal pill in Keplar blue; #cfe3ff text on it 6.9:1 */
-  --g-signup-ink: #cfe3ff;
-  --g-signup-hover: #0f569b; /* 5.7:1 */
-}
-html:not(:has([data-space-root], [data-kb]))[data-theme="light"] a[class*="__authUp"] {
-  --g-signup: #1a5fe0; /* white on it 5.6:1 */
-  --g-signup-ink: #ffffff;
-  --g-signup-hover: #164fc0;
-}
 html:not(:has([data-space-root], [data-kb]))[data-theme] a[class*="__authUp"] {
-  background: var(--g-signup) !important;
-  color: var(--g-signup-ink) !important;
   height: 40px;
   padding: 0 16px;
   border-radius: 999px;
   transition: background-color 150ms var(--g-ease);
-}
-html:not(:has([data-space-root], [data-kb]))[data-theme] a[class*="__authUp"]:hover {
-  background: var(--g-signup-hover) !important;
 }
 html:not(:has([data-space-root], [data-kb]))[data-theme] a[class*="__authIn"] {
   height: 36px;
@@ -540,7 +376,9 @@ html:not(:has([data-space-root], [data-kb]))[data-theme="light"] [class*="App-mo
   background: var(--g-container-high);
 }
 html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][class*="__searchBar"]:has(:focus-visible) {
-  box-shadow: 0 0 0 1px rgb(var(--ring-rgb) / 0.45) !important; /* focus is drawn on the pill (plus the caret), like the composer */
+  outline: 2px solid var(--c-ink);
+  outline-offset: 2px;
+  box-shadow: none !important;
 }
 /* Result rows: full pills with the hover wash, a little taller so they read as targets (Gemini's 40px list rows). */
 html:not(:has([data-space-root], [data-kb]))[data-theme] dialog [class*="App-module"][class*="__searchItem"] {
@@ -571,10 +409,12 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [role="tooltip"][class*
 }
 @keyframes g-tip-in { from { opacity: 0; scale: 0.96; translate: 0 2px; } }
 
-/* ---------- Sidebar keyboard focus: a 2px pill ring that follows the row's shape (not a darkening filter on a pill) ---------- */
+/* ---------- Sidebar keyboard focus: the same crisp 2px solid outline as the rest of keplar.one. No inset glow. ---------- */
 html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar :is(a, button):focus-visible {
   filter: none !important;
-  box-shadow: inset 0 0 0 2px rgb(var(--ring-rgb) / 0.9) !important;
+  outline: 2px solid var(--c-ink) !important;
+  outline-offset: 2px !important;
+  box-shadow: none !important;
   background-color: var(--hover-wash) !important;
 }
 @media (forced-colors: active) {
@@ -735,7 +575,7 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [data-answer-tools] but
   }
 }
 
-/* ---------- Signed-out sidebar: "Sign in" is a quiet tonal pill, so the blue "Sign up" stays the one primary action ---------- */
+/* ---------- Signed-out sidebar: "Sign in" is a quiet tonal pill. "Sign up" stays the graphite ink pill. ---------- */
 html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar a[class*="__signInCta"],
 html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar button[class*="__signInCta"] {
   background: var(--g-container-high) !important;

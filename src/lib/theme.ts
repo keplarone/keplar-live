@@ -22,10 +22,10 @@ export const THEME_KEY = "keplar-theme-v2";
  */
 export const DEFAULT_THEME_PREF: ThemePref = "dark";
 /**
- * Keplar Business (business.keplar.one, business.localhost) is Apple-led and light-first: Light for visitors with no stored choice.
- * The workspace (/work) still pins itself to dark.
+ * Keplar Business (business.keplar.one, business.localhost) defaults new visitors to Dark. A stored choice still wins.
+ * The workspace (/work) also pins itself to dark.
  */
-export const BUSINESS_DEFAULT_THEME_PREF: ThemePref = "light";
+export const BUSINESS_DEFAULT_THEME_PREF: ThemePref = "dark";
 export const THEME_COLORS: Record<Theme, string> = { dark: "#212121", light: "#ffffff" };
 
 export const isThemePref = (v: unknown): v is ThemePref => v === "dark" || v === "light" || v === "auto";
