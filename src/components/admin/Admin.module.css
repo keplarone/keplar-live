@@ -22,7 +22,7 @@
 .alertWarn { background: rgb(201 140 20 / 0.12); color: var(--c-ink); border: var(--b-hairline) solid rgb(201 140 20 / 0.6); }
 .controls { display: grid; gap: var(--s-4); }
 .field { display: grid; gap: var(--s-1); font-size: var(--t-small); color: var(--c-ink-2); }
-.field input { font: inherit; color: var(--c-ink); background: var(--c-canvas); border: var(--b-hairline) solid var(--field-border); border-radius: var(--r-xs); padding: var(--s-2) var(--s-3); min-height: 40px; }
+.field input, .field select, .field textarea { font: inherit; color: var(--c-ink); background: var(--c-canvas); border: var(--b-hairline) solid var(--field-border); border-radius: var(--r-xs); padding: var(--s-2) var(--s-3); min-height: 40px; }
 .switches { display: flex; flex-wrap: wrap; gap: var(--s-2); }
 .btn, .warn, .danger { font: inherit; font-size: var(--t-small); font-weight: var(--w-medium); min-height: 40px; padding: 0 var(--s-4); border-radius: var(--r-xs); border: var(--b-hairline) solid var(--c-border-strong); background: var(--c-canvas); color: var(--c-ink); cursor: pointer; transition: transform var(--d-instant) var(--e-standard), background var(--d-fast) var(--e-standard); }
 .btn:hover { background: var(--c-surface-2); }
@@ -30,7 +30,7 @@
 .warn { background: rgb(201 140 20 / 0.16); border-color: rgb(201 140 20 / 0.7); }
 .danger { background: var(--c-err); color: #fff; border-color: var(--c-err); }
 .btn:disabled, .warn:disabled, .danger:disabled { opacity: 0.55; cursor: progress; }
-.btn:focus-visible, .warn:focus-visible, .danger:focus-visible, .field input:focus-visible { outline: none; text-decoration: underline; text-underline-offset: 3px; }
+.btn:focus-visible, .warn:focus-visible, .danger:focus-visible, .field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible { outline: none; text-decoration: underline; text-underline-offset: 3px; }
 .msg { min-height: 1.4em; font-size: var(--t-small); color: var(--c-ink-2); margin: 0; }
 
 /* ── Space UI (docs/design/space-ui.md, area d). Admin is dense: solid panels (no blur, no star field or sky), separated by depth
@@ -44,8 +44,8 @@
 .alertBad, .alertWarn { border: 0; border-radius: var(--space-r-panel); }
 .alertBad { box-shadow: 0 0 0 1px rgb(var(--rgb-destructive) / 0.4); }
 .alertWarn { box-shadow: 0 0 0 1px rgb(var(--rgb-attention) / 0.45); }
-.field input { border: 0; border-radius: var(--space-r-field); padding: var(--s-2) var(--s-4); background: var(--space-field); box-shadow: var(--space-field-depth); }
-.field input:focus-visible { outline: none; box-shadow: var(--space-field-depth), var(--space-focus-glow); }
+.field input, .field select, .field textarea { border: 0; border-radius: var(--space-r-field); padding: var(--s-2) var(--s-4); background: var(--space-field); box-shadow: var(--space-field-depth); }
+.field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible { outline: none; box-shadow: var(--space-field-depth), var(--space-focus-glow); }
 .btn, .warn, .danger { border: 0; border-radius: var(--r-pill); font-weight: var(--w-bold); background: var(--space-s-face); color: var(--space-s-ink); box-shadow: var(--space-s-depth); transition: transform var(--space-dur-slow) var(--space-spring-bouncy), box-shadow var(--space-dur-slow) var(--space-ease-out); }
 .btn:hover:not(:disabled), .warn:hover:not(:disabled), .danger:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--space-s-depth-hover); }
 .btn:active:not(:disabled), .warn:active:not(:disabled), .danger:active:not(:disabled) { transform: translateY(var(--space-ledge)); box-shadow: var(--space-s-depth-press); }
