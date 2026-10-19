@@ -39,6 +39,7 @@ import { createRetriever, retrievalApplies, retrievalEstimateUsd } from "./retri
 import { budgetSkipped, runSourcing, signSourcing, sourcingGate } from "./sourcing";
 import { linkCitations, OFF_BUDGET, OFF_NOT_ENABLED, OFF_SENSITIVE, researchEstimateUsd, runResearch } from "./research";
 import { LIVE_RESEARCH_RULES, liveResearchSummary } from "@/lib/research/live-request";
+import { checkCitations } from "@/lib/research/citation-check";
 import { ModelVerifier } from "./verifier";
 import { MergedFreeReview } from "./free-merged";
 import { sharedPool } from "./pool-governor";
@@ -64,6 +65,9 @@ import type {
   Synthesizer,
   Verifier,
 } from "./types";
+
+/** Most time the web check of disputed claims may take before the answer goes out without it. */
+const WEB_CHECK_MS = 25_000;
 
 export type Deps = {
   classifier: Classifier;
@@ -96,7 +100,7 @@ export type Deps = {
    * when the run ended with no model answering: that run is never billed.
    * `responded` is the number of panel models that answered (set once the panel finished).
    */
-  run?: { started: boolean; settled: boolean; plannedUnits: number; noResponse?: boolean; responded?: number };
+  run?: { started: boolean; settled: boolean; plannedUnits: number; noResponse?: boolean; responded?: number; extraUnits?: number };
 };
 
 /**
@@ -394,7 +398,8 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
     yield { type: "error", code: "bad_request", message: REQUEST_TOO_BIG, retryable: false };
     return;
   }
-  if (deps.run) deps.run.plannedUnits = Math.ceil(plannedUnits * METER_MARGIN);
+  // extraUnits: work a caller (Keplar Core) budgeted around this pipeline, kept so a stop mid-run still bills it.
+  if (deps.run) deps.run.plannedUnits = (deps.run.extraUnits ?? 0) + Math.ceil(plannedUnits * METER_MARGIN);
 
   const remaining = req.computeRemaining ?? Infinity;
   if (plannedUnits > remaining) {
@@ -416,11 +421,13 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
 
   // Deep Research: plan → search → read, streamed. The pages and notes go to the panel and the writer as context; they cite pages as [n].
   let research: ResearchSummary | undefined;
+  let researchEvidence: Map<number, string[]> | undefined;
   let researchUsd = 0;
   if (deep) {
     if (researchOn && deps.retriever?.research) {
       if (deps.run) deps.run.started = true;
       const out = yield* runResearch({ registry, retriever: deps.retriever, req, plan, classification, signal });
+      researchEvidence = out.evidence;
       researchUsd = out.costUsd;
       research = out.summary;
       if (out.brief) req = { ...req, memory: out.brief + (req.memory ?? "") };
@@ -496,7 +503,8 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
   let debateSummary: DebateSummary | undefined;
   let debateExtraUsd = 0;
   if (debateRounds) {
-    const perRound = deps.run ? deps.run.plannedUnits / debateCostFactor(debateRounds) : 0;
+    const baseUnits = deps.run?.extraUnits ?? 0;
+    const perRound = deps.run ? (deps.run.plannedUnits - baseUnits) / debateCostFactor(debateRounds) : 0;
     const outcome = yield* runDebate({
       registry,
       models: plan.panel.map((p) => p.model),
@@ -509,7 +517,7 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
       live,
       signal,
       // A stopped debate is charged for the rounds that were started, not the full plan.
-      onRound: (round) => { if (deps.run) deps.run.plannedUnits = Math.ceil(perRound * debateCostFactor(round)); },
+      onRound: (round) => { if (deps.run) deps.run.plannedUnits = baseUnits + Math.ceil(perRound * debateCostFactor(round)); },
       estimateUsd: (id) => plan.estimate.breakdown.find((b) => b.slot === "panel" && b.modelId === id)?.usd ?? 0,
     });
     debateResults = outcome.results;
@@ -750,10 +758,16 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
 
   // Optional: web-check only the claims still disputed. Never runs when the flag is off.
   let retrievalUsd = 0;
+  // Bounded like the sourcing stage: a slow search leaves the claims disputed rather than holding the answer (45 s × 3 retries otherwise).
   if (retrieve && deps.retriever && verification.disputed.length) {
-    const web = await deps.retriever.check({ req, claims: verification.disputed, plan, signal });
-    retrievalUsd = web.costUsd;
-    verification = { ...verification, checks: [...verification.checks, ...web.checks] };
+    try {
+      const guard = signal ? AbortSignal.any([signal, AbortSignal.timeout(WEB_CHECK_MS)]) : AbortSignal.timeout(WEB_CHECK_MS);
+      const web = await deps.retriever.check({ req, claims: verification.disputed, plan, signal: guard });
+      retrievalUsd = web.costUsd;
+      verification = { ...verification, checks: [...verification.checks, ...web.checks] };
+    } catch {
+      if (signal?.aborted) throw new Error("aborted");
+    }
   }
   comparison = deps.comparator.finalize(comparison, verification, results);
 
@@ -792,6 +806,8 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
     const linked = linkCitations(body.markdown ?? "", research.sources);
     body.markdown = linked.markdown;
     research = { ...research, cited: linked.cited };
+    // Server Deep Research: label each cited statement by whether its page backs it (Live Research is checked on the desktop).
+    if (researchEvidence && linked.cited.length) research = { ...research, check: checkCitations(linked.markdown, research.sources, researchEvidence) };
   }
   if (research?.sources.length) {
     // Pages were really read for this answer: the "web retrieval isn't live" and "no sources cited" notes no longer hold.
