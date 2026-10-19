@@ -17,7 +17,7 @@ import type { createRegistry } from "./providers";
 import { OFF_FAILED } from "./research-notes";
 import type { Classification, KeplarRequest, ResearchEvent, ResearchSource, ResearchSummary, Retriever, RoutingPlan } from "./types";
 
-export { OFF_BUDGET, OFF_FAILED, OFF_NOT_ENABLED, OFF_SENSITIVE, deepResearchChipNote } from "./research-notes";
+export { DEEP_RESEARCH_PRE_SEND, OFF_BUDGET, OFF_FAILED, OFF_NOT_ENABLED, OFF_SENSITIVE, deepResearchChipNote } from "./research-notes";
 
 export const RESEARCH = {
   /** Planned search queries per question. */

@@ -47,7 +47,7 @@ When the flag is on:
 
 ### 4. Deep Research says when no pages will be read — retrieval stays off
 
-Audit #8, and baseline roadmap item 2. When `KEPLAR_RETRIEVAL_ENABLED` is not exactly `true`, the Deep Research chip shows `OFF_NOT_ENABLED` from `src/lib/orchestration/research-notes.ts` before the request. The desktop app's Live Research path is the exception: that app reads pages on the computer, so the chip does not claim that search is off.
+Audit #8, and baseline roadmap item 2. When `KEPLAR_RETRIEVAL_ENABLED` is not exactly `true`, the composer shows `DEEP_RESEARCH_PRE_SEND` from `src/lib/orchestration/research-notes.ts` before the request, next to the runs-left line or the out-of-allowance reason. That sentence is forward-looking. Finished reports still use `OFF_NOT_ENABLED`. The desktop app's Live Research path is the exception: that app reads pages on the computer, so the composer does not say that search is off.
 
 The public API uses the same sentence for a paid caller when retrieval is off, and it does not return an unfetched "Web search" note as a source. `research.pages_read` counts pages that were actually retrieved.
 

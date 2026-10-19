@@ -397,8 +397,8 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
   const formatReset = () => formatResetAt(resetsAt);
   // In the desktop app Deep Research runs as Live Research: the pages are read on this computer, so the server Deep Research budget doesn't apply.
   const drBlocked = modes.deepResearch && drRuns < 1 && !liveOn;
-  // Before the request: say that no pages will be read unless retrieval is on or the desktop app is reading them.
-  const drOffNote = deepResearchChipNote(retrievalEnabled === true || liveOn);
+  // Before the request: a short hint when no pages will be read. Finished reports keep their own past-tense note.
+  const drPreSend = deepResearchChipNote(retrievalEnabled === true || liveOn);
   const processing = media.some((m) => m.status === "processing") || docs.some((d) => d.status === "processing") || links.some((l) => l.status === "processing") || Object.values(tracks).some((t) => t.status === "processing");
   const tooLarge = mediaChars(media) > MEDIA_LIMITS.maxTotalDataUrlChars;
   const hasReady = media.some((m) => m.status === "ready") || docs.some((d) => d.status === "ready") || links.some((l) => l.status === "ready" && l.attachment);
@@ -978,20 +978,8 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
         ) : null}
 
         {modes.deepResearch && !liveOn ? (
-          <div id={`${uid}-budget`} className={s.budget} data-blocked={drBlocked || undefined} data-retrieval={drOffNote ? "off" : "on"} role="status">
-            {drOffNote ? (
-              <>
-                <span>{drOffNote}</span>
-                {drBlocked ? (
-                  <span className={s.budgetActions}>
-                    <Button size="sm" variant="ghost" className={s.budgetAct} onClick={() => setModes((m) => ({ ...m, deepResearch: false }))}>
-                      Ask without Deep Research
-                    </Button>
-                    <Link href="/pricing" className={s.budgetLink}>See plans</Link>
-                  </span>
-                ) : null}
-              </>
-            ) : drBlocked ? (
+          <div id={`${uid}-budget`} className={s.budget} data-blocked={drBlocked || undefined} data-retrieval={drPreSend ? "off" : "on"} role="status">
+            {drBlocked ? (
               <>
                 <span>
                   Not enough {brand.usage} left for a Deep Research run this period. It resets {formatReset()}.
@@ -1011,6 +999,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
                 <span className={s.budgetQuiet}> · estimate · resets {formatReset()}</span>
               </span>
             )}
+            {drPreSend ? <span className={s.budgetNote}>{drPreSend}</span> : null}
           </div>
         ) : null}
 
@@ -1093,11 +1082,9 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
                 className={s.modeChip}
                 data-mode={key}
                 aria-pressed="true"
-                title={key === "deepResearch" && drOffNote ? drOffNote : undefined}
                 onClick={() => setModes((m) => toggleMode(m, key))}
               >
                 <span className={s.modeChipLabel}>{label}</span>
-                {key === "deepResearch" && drOffNote ? <span className="visually-hidden">{drOffNote}</span> : null}
                 <span className={s.modeChipX} aria-hidden="true">×</span>
                 <span className="visually-hidden">Remove {label}</span>
               </button>
@@ -1233,7 +1220,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
                   aria-checked={Boolean(modes[t.key])}
                   className={s.moreItem}
                   data-more-mode={t.key}
-                  title={t.key === "deepResearch" && drOffNote ? drOffNote : t.key === "web" && liveDesktop && liveEnabled ? LIVE_WEB_HINT : t.hint}
+                  title={t.key === "web" && liveDesktop && liveEnabled ? LIVE_WEB_HINT : t.hint}
                   onClick={() => { setModes((m) => toggleMode(m, t.key)); setMoreOpen(false); taRef.current?.focus(); }}
                 >
                   <span className={s.moreIcon}><t.Icon size={16} /></span>
