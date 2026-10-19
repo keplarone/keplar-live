@@ -25,5 +25,5 @@ export function tabMeta(view: View): Metadata {
 }
 
 export function TabPage({ view }: { view: View }) {
-  return <AppLoader initialView={view} />;
+  return <AppLoader initialView={view} retrievalEnabled={process.env.KEPLAR_RETRIEVAL_ENABLED === "true"} />;
 }

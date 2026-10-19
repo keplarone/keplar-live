@@ -253,9 +253,9 @@ export const reflectionFor = (n: number) => pick(REFLECTIONS, n);
 /** Static lines for greetings and thanks when every free model is busy, in the same voice. */
 export const SMALLTALK_VOICE_FALLBACK = {
   greeting: "Hi, I'm glad you're here. What are we figuring out today?",
-  "how-are-you": "Doing well, thanks. No coffee required, which is my one unfair advantage. What's on your mind?",
+  "how-are-you": "Doing well, thanks. What's on your mind?",
   thanks: "You're welcome. I'm glad it helped.",
-  bye: "Take care. I'll be right here. I don't really get out much.",
+  bye: "Take care. I'll be right here when you need me.",
   identity: "I'm Keplar. I take a question to several AI models, notice where they disagree, and give you one answer. Think of me as the friend who asks around before answering. What would you like to ask?",
   ack: "Got it. What's next?",
 } as const;
