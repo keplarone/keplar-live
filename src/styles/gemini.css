@@ -165,7 +165,7 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] button[class*="__homeCh
   transition: background-color 150ms var(--g-ease), color 150ms var(--g-ease);
 }
 html:not(:has([data-space-root], [data-kb])) button[class*="__homeChip"]:hover {
-  background: var(--g-container-high);
+  background: var(--g-container-high) !important; /* !important like the resting fill above, or the hover never shows */
   border-color: transparent !important;
 }
 
