@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { parseTools, prepareTools, postsDoc } from "../src/lib/api/tools";
+import { OFF_NOT_ENABLED } from "../src/lib/orchestration/research-notes";
 import { parseAsk } from "../src/lib/api/ask";
 import { LinkError, type LinkRead } from "../src/lib/attachments/link";
 
@@ -26,11 +27,15 @@ test("web and deep research stay off unless retrieval is enabled, and never on F
   const off = await prepareTools(ws, tools, "q", { env: {} });
   assert.deepEqual(off.modes, { reason: true });
   assert.deepEqual(off.report.map((r) => r.status), ["unavailable", "unavailable", "requested"]);
+  assert.equal(off.report[1]!.detail, OFF_NOT_ENABLED);
+  assert.equal((await prepareTools(ws, tools, "q", { env: { KEPLAR_RETRIEVAL_ENABLED: "yes" } })).report[1]!.detail, OFF_NOT_ENABLED);
   const on = await prepareTools(ws, tools, "q", { env: { KEPLAR_RETRIEVAL_ENABLED: "true" } });
   assert.deepEqual(on.modes, { web: true, deepResearch: true, reason: true });
   const free = await prepareTools({ id: "w", plan: "free" }, tools, "q", { env: { KEPLAR_RETRIEVAL_ENABLED: "true" } });
   assert.equal(free.modes.web, undefined);
+  assert.equal(free.modes.deepResearch, undefined);
   assert.match(free.report[0].detail, /paid/);
+  assert.match(free.report[1]!.detail, /paid/);
 });
 
 test("read_url hands readable pages to the models as link documents and reports failures", async () => {
