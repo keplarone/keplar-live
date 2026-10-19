@@ -1217,7 +1217,7 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
                             <span>{welcome ? "Welcome," : `${dayGreeting(new Date().getHours())},`}</span> <span className={s.welcomeName}>{firstName}</span>
                           </>
                         ) : state.ledger.synced ? (
-                          // "Keplar" is the same solid ink as the rest of the line (src/styles/gemini.css).
+                          // "Keplar" carries the same blue-to-teal greeting fill as a signed-in name (src/styles/gemini.css).
                           <span>How can <span className={s.welcomeName}>Keplar</span> help you today?</span>
                         ) : <span>Welcome to Keplar.</span>}
                       </span>
