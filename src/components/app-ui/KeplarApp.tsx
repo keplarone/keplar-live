@@ -58,6 +58,7 @@ import { HomeStart } from "./HomeStart";
 import { oauthReturnView, pathForView, viewForPath } from "./app-paths";
 import { AppOnboarding } from "@/components/onboarding/AppOnboarding";
 import { DeploymentsView } from "./DeploymentsView";
+import { TasksView } from "./TasksView";
 import { KeplarStudio } from "./studio-mode/workspace/KeplarStudio";
 import { BUSINESS_VIEWS, openBusinessWorkspace } from "@/lib/business-site";
 import { fetchCompute } from "@/components/billing/usePlan";
@@ -122,10 +123,10 @@ const ConnectedAppsView = appsView.View;
 /** Top-bar titles that are not just the capitalised view name. */
 const VIEW_TITLE: Partial<Record<View, string>> = { history: "All chats", apps: "Connected apps" };
 /** Opened beside the thread from chat. Business and Approvals still leave for the workspace. */
-const BESIDE_VIEWS = new Set<View>(["create", "slides", "study", "projects", "deployments", "apps", "history", "agents", "studio"]);
+const BESIDE_VIEWS = new Set<View>(["create", "slides", "study", "projects", "deployments", "apps", "history", "agents", "studio", "tasks"]);
 const BESIDE_TITLE: Partial<Record<View, string>> = {
   create: "Create", slides: "Slides", study: "Study", projects: "Projects", deployments: "Deployments",
-  apps: "Connected apps", history: "All chats", agents: "Agents", studio: "Studio",
+  apps: "Connected apps", history: "All chats", agents: "Agents", studio: "Studio", tasks: "Tasks",
 };
 function warmViews(all: boolean) {
   const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
@@ -1461,6 +1462,8 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
                   <div className={s.createHost}><KeplarStudio plan={state.ledger.plan} signedIn={state.ledger.synced ? state.ledger.signedIn : null} /></div>
                 ) : beside.view === "apps" ? (
                   <div className={s.scroll}><ConnectedAppsView /></div>
+                ) : beside.view === "tasks" ? (
+                  <div className={s.scroll}><TasksView onOpenTab={(v) => { setBeside(null); goView(v); }} /></div>
                 ) : beside.view === "deployments" ? (
                   <div className={s.scroll}><DeploymentsView onOpenCreate={() => openSurface("create")} /></div>
                 ) : beside.view === "history" ? (
@@ -1520,6 +1523,10 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
         ) : state.view === "apps" ? (
           <div className={s.scroll}>
             <ConnectedAppsView />
+          </div>
+        ) : state.view === "tasks" ? (
+          <div className={s.scroll}>
+            <TasksView onOpenTab={(v) => goView(v)} />
           </div>
         ) : state.view === "deployments" ? (
           <div className={s.scroll}>

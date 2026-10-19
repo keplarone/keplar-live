@@ -1,0 +1,228 @@
+/* Tasks (src/components/app-ui/TasksView.tsx). Colours are the app's semantic tokens, so light, dark and Increase Contrast
+   come from src/styles. Every coloured mark repeats a word next to it; colour never carries meaning alone. */
+
+.headline {
+  font-size: var(--t-small);
+  font-weight: var(--w-medium);
+  color: var(--c-ink-2);
+  margin-top: calc(var(--s-4) * -1);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: var(--b-hairline) solid var(--hairline);
+}
+
+.row {
+  border-bottom: var(--b-hairline) solid var(--hairline);
+  --tone: var(--c-ink-3);
+}
+.row[data-status="needs_you"] { --tone: var(--c-attention); }
+.row[data-status="running"] { --tone: var(--c-research); }
+.row[data-status="done"] { --tone: var(--c-verified); }
+.row[data-status="failed"] { --tone: var(--c-destructive); }
+
+.details[open] .summary { padding-bottom: var(--s-2); }
+
+.summary {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "status chevron" "title chevron" "meta chevron";
+  gap: var(--s-1) var(--s-4);
+  padding: var(--s-4) var(--s-2);
+  cursor: pointer;
+  list-style: none;
+  border-radius: var(--r-sm);
+  min-height: 44px;
+}
+.summary::-webkit-details-marker { display: none; }
+.summary::after {
+  grid-area: chevron;
+  align-self: center;
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-right: 1.5px solid var(--c-ink-3);
+  border-bottom: 1.5px solid var(--c-ink-3);
+  transform: rotate(-45deg);
+  transition: transform 0.2s var(--space-ease-out, ease-out);
+}
+.details[open] > .summary::after { transform: rotate(45deg); }
+.summary:hover { background: var(--hover-wash); }
+.summary:focus-visible { outline: 2px solid var(--c-accent); outline-offset: -2px; }
+
+.status {
+  grid-area: status;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--t-small);
+  font-weight: var(--w-medium);
+  color: var(--tone);
+}
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tone);
+}
+.row[data-status="running"] .statusDot { animation: pulse 1.6s ease-in-out infinite; }
+.row[data-status="needs_you"] .statusDot { background: transparent; box-shadow: inset 0 0 0 2px var(--tone); }
+@keyframes pulse { 50% { opacity: 0.35; } }
+
+.title {
+  grid-area: title;
+  font-weight: var(--w-medium);
+  color: var(--c-ink);
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  grid-area: meta;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-4);
+  font-size: var(--t-small);
+  color: var(--c-ink-3);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+  padding: 0 var(--s-2) var(--s-5);
+}
+
+.heading {
+  font-size: var(--t-small);
+  font-weight: var(--w-semibold);
+  color: var(--c-ink-2);
+  margin-bottom: var(--s-2);
+}
+
+/* The signature: every outcome line says what kind of claim it is. */
+.outcomes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+.outcome {
+  display: grid;
+  grid-template-columns: minmax(11.5em, auto) 1fr;
+  gap: var(--s-1) var(--s-4);
+  align-items: baseline;
+  --kind: var(--c-ink-3);
+}
+.outcome[data-kind="done"] { --kind: var(--c-verified); }
+.outcome[data-kind="verified"] { --kind: var(--c-research); }
+.outcome[data-kind="reviewed"] { --kind: var(--c-ink-2); }
+.outcome[data-kind="proposed"] { --kind: var(--c-attention); }
+.outcome[data-kind="open"] { --kind: var(--c-destructive); }
+
+.badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  font-size: var(--t-small);
+  font-weight: var(--w-medium);
+  color: var(--kind);
+  white-space: nowrap;
+}
+.glyph {
+  display: inline-grid;
+  place-items: center;
+  width: 1.35em;
+  height: 1.35em;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  font-size: 0.85em;
+  line-height: 1;
+  transform: translateY(0.12em);
+}
+.outcome[data-kind="done"] .glyph,
+.outcome[data-kind="open"] .glyph { background: var(--kind); border-color: var(--kind); color: var(--surface-raised, #fff); }
+
+.outcomeText {
+  color: var(--c-ink);
+  overflow-wrap: anywhere;
+}
+.evidence {
+  display: block;
+  font-size: var(--t-small);
+  color: var(--c-ink-3);
+  margin-top: 2px;
+}
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  font-size: var(--t-small);
+  color: var(--c-ink-2);
+}
+.steps li {
+  display: flex;
+  gap: var(--s-3);
+  align-items: baseline;
+}
+.stepMark {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1.5px solid var(--c-ink-3);
+  transform: translateY(-1px);
+}
+.steps li[data-state="done"] .stepMark { background: var(--c-ink-3); }
+.steps li[data-state="active"] .stepMark { border-color: var(--c-research); }
+.steps li[data-state="failed"] .stepMark { border-color: var(--c-destructive); background: var(--c-destructive); }
+.steps li[data-state="skipped"] { text-decoration: line-through; text-decoration-color: var(--c-ink-3); }
+
+.answer {
+  border-top: var(--b-hairline) solid var(--hairline);
+  padding-top: var(--s-4);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+}
+.problem {
+  font-size: var(--t-small);
+  color: var(--c-destructive);
+}
+
+.link {
+  display: inline-block;
+  margin-top: var(--s-3);
+  font-weight: var(--w-medium);
+  color: var(--c-accent);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .outcome { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row[data-status="running"] .statusDot { animation: none; }
+  .summary::after { transition: none; }
+}
