@@ -63,9 +63,11 @@ test("the work page activity center reads existing approvals and does not add a 
   assert.match(route, /approvals\.activity/);
   assert.doesNotMatch(`${center}\n${route}\n${readFileSync("src/lib/business/activity.ts", "utf8")}`, /CREATE TABLE|ALTER TABLE|DROP TABLE/);
   assert.match(css, /--font-business/);
-  assert.match(css, /#ffffff/);
-  assert.match(css, /#17171a/);
+  assert.match(css, /background:\s*var\(--kb-glass-solid\)/);
+  assert.match(css, /color:\s*var\(--kb-ink\)/);
+  assert.match(css, /:global\(\.m-skeleton\)\.skel[\s\S]*background:\s*var\(--kb-surface-2\)/);
   const rules = css.replace(/\/\*[\s\S]*?\*\//g, "");
+  assert.doesNotMatch(rules, /#(?:fff|ffffff|17171a|d9dce2|f4f4f5|3a3d44|26282d)\b/i);
   const shadows = [...rules.matchAll(/box-shadow:\s*([^;]+)/g)].map((m) => m[1]!.trim());
   assert.ok(shadows.length > 0 && shadows.every((value) => value === "none"));
   assert.doesNotMatch(rules, /gradient|text-shadow|drop-shadow/);
