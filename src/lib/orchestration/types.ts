@@ -601,6 +601,8 @@ export type ConsultedModel = {
   status: "responded" | "failed" | "refused" | "not-needed";
   stance?: string;
   note?: string;
+  /** Panel models that responded: the start of the model's own answer, shown when the reader opens "View Disagrees". Not in share snapshots. */
+  excerpt?: string;
 };
 
 /** How well the pages Keplar actually retrieved back one claim from the answer. Only set from a real search that returned pages. */
@@ -651,6 +653,8 @@ export type KeplarAnswer = {
     responded: number;
     consulted: number;
     summary: string;
+    /** The stance the agreeing models took (the comparator's majority), so the reader can see who agreed and who did not. */
+    majorityStance?: string | null;
   };
   models: ConsultedModel[];
   sources: Source[];

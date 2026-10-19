@@ -4,6 +4,7 @@ import { useSyncExternalStore } from "react";
 import { KeplarSymbol } from "@/components/brand";
 import { prefersReducedMotion } from "@/lib/ui/presence";
 import type { ModelTick } from "./state/types";
+import { modelMark, type ModelMark } from "./model-marks";
 import s from "./SynthesisView.module.css";
 
 /** The scene's own units: the box keeps this aspect ratio, so the SVG streams and the HTML discs line up at any width. */
@@ -21,8 +22,17 @@ function subscribeMotionPreference(onChange: () => void) {
 
 const serverReducedMotion = () => true;
 
+/** A seat's brand logo (the same marks as the answer header). One-colour logos are masks in the disc's ink; unknown families a monogram. */
+function SeatMark({ mark }: { mark: ModelMark }) {
+  if (mark.kind === "mono") return <span className={s.mono}>{mark.text}</span>;
+  if (mark.tint) return <span className={s.tint} style={{ maskImage: `url(${mark.src})`, WebkitMaskImage: `url(${mark.src})` }} aria-hidden="true" />;
+  // eslint-disable-next-line @next/next/no-img-element -- a 20px static SVG from our own origin; next/image adds nothing here
+  return <img className={s.logo} src={mark.src} alt="" width={20} height={20} decoding="async" />;
+}
+
 /**
  * The consensus answer being written: every model that was asked sits on a ring around Keplar, each with its own mark.
+ * Each seat shows its model's brand logo (ChatGPT, Claude, Gemini...); a seat whose model has not reported yet shows its number.
  * Models that answered stream into the center (their answers are what is being combined); ones that failed or refused stay
  * dim with a broken line and no stream; seats still waiting are faint. The line under it names the models and says what the
  * writing step is doing, in plain words, from real state only. Reduced motion: the same picture, still.
@@ -73,16 +83,18 @@ export function SynthesisView({ models, count, disagreement }: { models: ModelTi
         {place.map((p, i) => {
           const m = models[i];
           const st = m?.status ?? "pending";
+          const mark = m ? modelMark(m.id, m.name) : null;
+          const state = st === "responded" ? "answered" : st === "refused" ? "declined" : st === "failed" ? "didn't answer" : "waiting";
           return (
             <span
               key={i}
               className={s.seat}
               data-state={st}
-              title={m ? (st === "responded" ? "Answered" : st === "refused" ? "Declined" : st === "failed" ? "Didn't answer" : "Waiting") : undefined}
+              title={mark ? `${mark.family}: ${state}` : undefined}
               style={{ left: `${(p.x / W) * 100}%`, top: `${(p.y / H) * 100}%`, "--dx": `${CX - p.x}px`, "--dy": `${CY - p.y}px`, "--i": i } as React.CSSProperties}
             >
               <span className={s.disc}>
-                <span className={s.mono}>{i + 1}</span>
+                {mark ? <SeatMark mark={mark} /> : <span className={s.mono}>{i + 1}</span>}
               </span>
             </span>
           );

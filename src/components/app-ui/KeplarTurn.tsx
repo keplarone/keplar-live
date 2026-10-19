@@ -41,7 +41,8 @@ import { needsChargeNote } from "@/lib/orchestration/no-response";
 import type { KeplarMessage, Ledger } from "./state/types";
 import type { QuizProgress } from "@/lib/quiz/types";
 import { QuizBuilding, QuizCard } from "./quiz/QuizCard";
-import { AnswerBrand } from "./AnswerBrand";
+import { AnswerBrand, BrandMark } from "./AnswerBrand";
+import { answerBrands, consensusSides, modelMark } from "./model-marks";
 import s from "./KeplarTurn.module.css";
 
 type Props = {
@@ -520,7 +521,54 @@ function LowCredits({ ledger }: { ledger: Ledger }) {
   );
 }
 
-function ConsensusBadge({ c }: { c: KeplarAnswer["consensus"] }) {
+/** The brands on one side of the vote, as small overlapping logos (one per brand; the count beside them is per model). */
+function LogoStack({ models }: { models: readonly { id: string; name: string }[] }) {
+  const marks = answerBrands(models);
+  if (!marks.length) return null;
+  const shown = marks.slice(0, 4);
+  return (
+    <span className={s.logoStack} aria-hidden="true">
+      {shown.map((m) => (
+        <span key={m.family} className={s.logoChip} title={m.family}>
+          <BrandMark mark={m} size={12} />
+        </span>
+      ))}
+      {marks.length > shown.length ? <span className={s.logoMore}>+{marks.length - shown.length}</span> : null}
+    </span>
+  );
+}
+
+/** The models that did not take the majority position, each with its brand, position and its own answer ("View Disagrees"). */
+function DissentPanel({ id, models, disagreements, onClose }: { id: string; models: KeplarAnswer["models"]; disagreements: KeplarAnswer["disagreements"]; onClose: () => void }) {
+  const summaryOf = (stance?: string) => disagreements.flatMap((d) => d.positions).find((p) => p.stance === stance)?.summary;
+  return (
+    <section id={id} className={s.dissentPanel} aria-label="What the disagreeing models said">
+      <div className={s.dissentHead}>
+        <p>{models.length === 1 ? "The model that disagreed" : `The ${models.length} models that disagreed`}, in their own words. Keplar weighed these against the others; a minority can still be right.</p>
+        <button type="button" className={s.splitLink} onClick={onClose}>Close</button>
+      </div>
+      <ul className={s.dissentList}>
+        {models.map((m) => {
+          const mark = modelMark(m.id, m.name);
+          const text = m.excerpt ?? summaryOf(m.stance);
+          return (
+            <li key={m.id} className={s.dissentItem}>
+              <div className={s.dissentWho}>
+                <span className={s.dissentLogo}><BrandMark mark={mark} size={18} /></span>
+                <strong>{mark.family}</strong>
+                {m.name !== mark.family ? <span className={s.dissentModel}>{m.name}</span> : null}
+              </div>
+              {m.stance ? <p className={s.dissentStance}>Position: {m.stance}</p> : null}
+              {text ? <div className={s.dissentText}><Markdown source={text} /></div> : <p className={s.dissentModel}>This model&rsquo;s answer wasn&rsquo;t saved with this chat.</p>}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+function ConsensusBadge({ c, models = [] }: { c: KeplarAnswer["consensus"]; models?: KeplarAnswer["models"] }) {
   if (c.level === "single") {
     return <span className={s.badgeQuiet}>Single model</span>;
   }
@@ -531,10 +579,11 @@ function ConsensusBadge({ c }: { c: KeplarAnswer["consensus"] }) {
   const voters = c.agree + c.disagree;
   const pct = voters > 0 ? Math.round((c.agree / voters) * 100) : 0;
   const label = c.level === "none" ? "No majority" : c.level === "partial" ? "Models split" : "Models agree";
+  const sides = c.level === "none" ? { agree: [], dissent: [] } : consensusSides(models, c);
   return (
     // role="img": the badge is a graphic whose visible parts are all aria-hidden, so its label is the text equivalent (aria-label is
     // not allowed on a plain div).
-    <div className={s.consensus} data-level={c.level} role="img" aria-label={`${label}. ${asSentence(c.summary)}${c.missing ? ` ${c.responded} of ${c.consulted} responded.` : ""} Agreement is not proof the answer is right.`}>
+    <div className={s.consensus} data-level={c.level} role="img" aria-label={`${label}. ${asSentence(c.summary)}${sides.agree.length ? ` Agree: ${answerBrands(sides.agree).map((m) => m.family).join(", ")}.` : ""}${sides.dissent.length ? ` Disagree: ${answerBrands(sides.dissent).map((m) => m.family).join(", ")}.` : ""}${c.missing ? ` ${c.responded} of ${c.consulted} responded.` : ""} Agreement is not proof the answer is right.`}>
       <svg className={s.ring} viewBox="0 0 36 36" aria-hidden="true">
         <circle cx="18" cy="18" r="15.5" className={s.ringTrack} />
         <circle cx="18" cy="18" r="15.5" className={s.ringValue} pathLength={100} strokeDasharray={`${pct} 100`} />
@@ -548,8 +597,8 @@ function ConsensusBadge({ c }: { c: KeplarAnswer["consensus"] }) {
           <span>No majority</span>
         ) : (
           <>
-            <span><i className={s.agreeDot} />{c.agree} agree</span>
-            <span><i className={s.dissentDot} />{c.disagree} {c.disagree === 1 ? "disagrees" : "disagree"}</span>
+            <span><i className={s.agreeDot} />{c.agree} agree<LogoStack models={sides.agree} /></span>
+            {c.disagree > 0 ? <span><i className={s.dissentDot} />{c.disagree} {c.disagree === 1 ? "disagrees" : "disagree"}<LogoStack models={sides.dissent} /></span> : null}
           </>
         )}
         {c.missing ? <span className={s.missing}>{c.responded} of {c.consulted} responded</span> : null}
@@ -735,7 +784,9 @@ function Answer({ answer: a, onRetry, onRefreshResearch, onSignal, isLast, conti
   // The detail rows (consensus, models, sources, disagreements, verification, reasoning) sit behind one row: the answer leads,
   // the working is one click away. Opening a section from elsewhere (the comparison's "Open the full comparison") opens this too.
   const [howOpen, setHowOpen] = useState(false);
+  const [dissentOpen, setDissentOpen] = useState(false);
   const c = a.consensus;
+  const dissenters = c.level === "consensus" || c.level === "partial" ? consensusSides(a.models, c).dissent : [];
   const checkedOnWeb = a.sourcing?.state === "checked" || a.sourcing?.state === "no_sources";
   const toggle = (id: string) => {
     const next = open === id ? null : id;
@@ -848,8 +899,16 @@ function Answer({ answer: a, onRetry, onRefreshResearch, onSignal, isLast, conti
     <article className={s.answer} aria-labelledby={`${uid}-title`} data-level={c.level} data-continued={continued || undefined} data-last={isLast || undefined}>
       <header className={s.answerHead}>
         <AnswerBrand id={`${uid}-title`} models={a.models} />
-        <ConsensusBadge c={c} />
+        <div className={s.headSide}>
+          <ConsensusBadge c={c} models={a.models} />
+          {dissenters.length ? (
+            <button type="button" className={s.viewDissent} aria-expanded={dissentOpen} aria-controls={`${uid}-dissent`} onClick={() => setDissentOpen((v) => !v)}>
+              {dissentOpen ? "Hide Disagrees" : "View Disagrees"}
+            </button>
+          ) : null}
+        </div>
       </header>
+      {dissentOpen && dissenters.length ? <DissentPanel id={`${uid}-dissent`} models={dissenters} disagreements={a.disagreements} onClose={() => setDissentOpen(false)} /> : null}
 
       {a.research ? <ResearchHead research={a.research} /> : null}
       {a.quiz ? <QuizCard quiz={a.quiz} progress={quizProgress} onProgress={onQuizProgress} onNew={onAsk} /> : <StructuredAnswer source={a.markdown} cite={citeRenderer(a.research?.sources)} rich={a.rich} consensus={a.consensus} />}
