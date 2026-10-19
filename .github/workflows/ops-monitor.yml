@@ -1,0 +1,40 @@
+# External production checks every 5 minutes, independent of Vercel (whose Hobby plan runs crons once a day).
+#  1. Uptime: GET /api/health from outside. A non-200 fails the run, and GitHub notifies the repository's watchers of the failure.
+#  2. Incident sweep: GET /api/cron/incidents with the OPS_CHECK_SECRET repository secret (skipped when the secret is not set).
+#     The sweep deduplicates and throttles its own alerts, and overlapping runs are harmless.
+# GitHub may delay scheduled runs under load and pauses schedules in repositories with no activity for 60 days.
+name: Ops monitor
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ops-monitor
+  cancel-in-progress: false
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SITE: ${{ vars.KEPLAR_MONITOR_URL || 'https://keplar.one' }}
+    steps:
+      - name: Health
+        run: |
+          code=$(curl -sS -o /tmp/health.json -w '%{http_code}' --max-time 20 "$SITE/api/health" || echo 000)
+          echo "HTTP $code"
+          head -c 400 /tmp/health.json 2>/dev/null || true
+          echo
+          if [ "$code" != "200" ]; then echo "::error::$SITE/api/health answered $code"; exit 1; fi
+      - name: Incident sweep
+        if: ${{ always() }}
+        env:
+          OPS_CHECK_SECRET: ${{ secrets.OPS_CHECK_SECRET }}
+        run: |
+          if [ -z "$OPS_CHECK_SECRET" ]; then echo "OPS_CHECK_SECRET is not set: sweep skipped."; exit 0; fi
+          code=$(curl -sS -o /tmp/sweep.json -w '%{http_code}' --max-time 55 -H "Authorization: Bearer $OPS_CHECK_SECRET" "$SITE/api/cron/incidents" || echo 000)
+          echo "HTTP $code"
+          head -c 600 /tmp/sweep.json 2>/dev/null || true
+          echo
+          if [ "$code" != "200" ]; then echo "::warning::incident sweep answered $code"; fi

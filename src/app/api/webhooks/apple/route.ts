@@ -6,6 +6,7 @@
 import { json, readText } from "@/lib/create/platform/http";
 import { appleIapConfigured, AppleIapNotConfiguredError, AppleIapVerifyError, verifySignedNotification } from "@/lib/billing/apple";
 import { handleAppleNotification, notificationIdFor } from "@/lib/billing/apple-sync";
+import { countWebhook } from "@/lib/ops/counters";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,11 +29,13 @@ export async function POST(req: Request) {
   try {
     const notification = await verifySignedNotification(signedPayload);
     const out = await handleAppleNotification(notification, notificationIdFor(notification.notificationUUID, signedPayload));
+    countWebhook("apple", "ok");
     return json({ received: true, ...out });
   } catch (e) {
     if (e instanceof AppleIapNotConfiguredError) return json({ error: e.message, code: e.code }, { status: 503 });
-    if (e instanceof AppleIapVerifyError) return json({ error: e.message }, { status: e.status });
+    if (e instanceof AppleIapVerifyError) { countWebhook("apple", "rejected"); return json({ error: e.message }, { status: e.status }); }
     console.error("[apple webhook] handler failed:", e instanceof Error ? e.name : "error");
+    countWebhook("apple", "failed");
     return json({ error: "Handler failed." }, { status: 500 });
   }
 }

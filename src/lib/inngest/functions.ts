@@ -91,4 +91,24 @@ export const modelObservatory = inngest.createFunction(
   }),
 );
 
-export const functions = [agentScheduleTick, agentScheduledRun, agentEventRun, telemetryRetention, modelObservatory];
+export const incidentSweep = inngest.createFunction(
+  { id: "ops-incident-sweep", name: "Ops: incident detection sweep (alert only)", triggers: [{ cron: "*/5 * * * *" }], retries: 0, concurrency: { limit: 1 } },
+  async ({ step }) => step.run("sweep", async () => {
+    const [{ runIncidentSweep }, { cronBeat }] = await Promise.all([import("@/lib/ops/incidents"), import("@/lib/ops/health")]);
+    const r = await runIncidentSweep();
+    await cronBeat("incidents", true);
+    return { skipped: r.skipped ?? null, detected: r.detected.length, notified: r.notified };
+  }),
+);
+
+export const billingReconcile = inngest.createFunction(
+  { id: "ops-billing-reconcile", name: "Ops: subscription reconciliation (report only)", triggers: [{ cron: "25 5 * * *" }], retries: 1, concurrency: { limit: 1 } },
+  async ({ step }) => step.run("reconcile", async () => {
+    const [{ runReconciliation }, { cronBeat }] = await Promise.all([import("@/lib/billing/reconcile"), import("@/lib/ops/health")]);
+    const r = await runReconciliation();
+    await cronBeat("billing-reconcile", true);
+    return { checked: r.checked, findings: r.findings.length };
+  }),
+);
+
+export const functions = [agentScheduleTick, agentScheduledRun, agentEventRun, telemetryRetention, modelObservatory, incidentSweep, billingReconcile];

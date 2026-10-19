@@ -43,6 +43,14 @@
     {
       "path": "/api/cron/space-stats",
       "schedule": "11 4 * * *"
+    },
+    {
+      "path": "/api/cron/incidents",
+      "schedule": "7 12 * * *"
+    },
+    {
+      "path": "/api/cron/billing-reconcile",
+      "schedule": "25 5 * * *"
     }
   ]
 }

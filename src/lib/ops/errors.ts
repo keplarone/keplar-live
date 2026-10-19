@@ -11,6 +11,7 @@ import { keepAlive } from "@/lib/create/platform/after";
 import { createHash } from "node:crypto";
 import { collection } from "@/lib/create/platform/store";
 import { logEvent } from "./log";
+import { countError } from "./counters";
 
 export type ErrorSource = "server" | "render" | "client" | "job";
 export type ErrorRow = {
@@ -77,6 +78,7 @@ export async function recordError(input: ErrorInput, now = Date.now()): Promise<
     logEvent("error", "tracked_error", { source: input.source, name, route, sample });
     keepAlive(forwardToSentry({ ...input, name, message, route, sample }), "sentry forward");
     if (!allow(now)) return;
+    keepAlive(countError(input.source, now), "error minute");
     const id = fingerprint(input.source, name, message, route);
     const iso = new Date(now).toISOString();
     const { inserted } = await rows().insertIfAbsent({ id, workspaceId: "system", at: iso, firstAt: iso, count: 1, source: input.source, name, message, route, sample, status: "open" });

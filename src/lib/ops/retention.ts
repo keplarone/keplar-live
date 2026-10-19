@@ -56,7 +56,7 @@ export async function pruneTelemetry(at = Date.now(), batch = 5000): Promise<Ret
  * Newer operational collections, pruned separately so the result shape above stays stable:
  * system_request_costs 30 days (KEPLAR_RETAIN_REQUEST_COSTS_DAYS), system_error_events 30 days (KEPLAR_RETAIN_ERRORS_DAYS),
  * system_fanout_day 3 days, system_safety_events 180 days (KEPLAR_RETAIN_SAFETY_DAYS), system_flight 7 days (KEPLAR_RETAIN_FLIGHT_DAYS),
- * dev_outbox 14 days, biz_connect_event_claims 30 days.
+ * dev_outbox 14 days, biz_connect_event_claims 30 days, incident counters and history (see the list below).
  */
 export async function pruneOperational(at = Date.now(), batch = 5000): Promise<RetentionResult> {
   const n = (k: string, d: number) => (Number.isFinite(Number(process.env[k])) && Number(process.env[k]) >= 1 ? Math.floor(Number(process.env[k])) : d);
@@ -74,6 +74,11 @@ export async function pruneOperational(at = Date.now(), batch = 5000): Promise<R
     ["answer_turns", "expiresAt", 1], // answer recovery checkpoints (turn-recovery.ts): unreadable after 30 min, deleted within a day
     ["queue_claims", "at", 30], // per-run claims of durable jobs (platform/queue.ts); a job lives minutes, at most a day
     ["queue_jobs", "updatedAt", 30], // jobs that were given up (finished jobs delete their own row)
+    ["system_error_minute", "at", 3], // per-minute error counts (counters.ts): the incident detector reads 15 minutes
+    ["system_webhook_hourly", "at", 30], // webhook outcomes per provider and hour (counters.ts)
+    ["system_incident_locks", "at", 1], // one row per incident sweep slot (incidents.ts)
+    ["system_billing_reconcile", "at", 90], // daily reconciliation counts (billing/reconcile.ts), no account data
+    ["system_incidents", "lastAt", n("KEPLAR_RETAIN_INCIDENTS_DAYS", 90)], // incident history; open ones are refreshed every sweep
   ];
   for (const [name, field, days] of jobs) {
     try {
