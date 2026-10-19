@@ -74,6 +74,8 @@ type Props = {
   recordNotes?: boolean;
   /** Server flag: live web search is on only when this is true. The client cannot read the env itself. */
   retrievalEnabled?: boolean;
+  /** The open chat's saved messages are still loading (or failed to): typing is kept, sending waits so no reply goes out without them. */
+  waiting?: boolean;
 };
 
 const MB = 1024 * 1024;
@@ -150,7 +152,7 @@ const router = new CostAwareRouter();
 
 
 export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
-  { running, onSend, onStop, routing, onRouting, placeholder, computeRemaining, resetsAt, plan, signedIn, onModesChange, draftKey = null, privateChat = null, recordNotes = false, retrievalEnabled = false },
+  { running, onSend, onStop, routing, onRouting, placeholder, computeRemaining, resetsAt, plan, signedIn, onModesChange, draftKey = null, privateChat = null, recordNotes = false, retrievalEnabled = false, waiting = false },
   ref,
 ) {
   const uid = useId();
@@ -402,7 +404,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
   const processing = media.some((m) => m.status === "processing") || docs.some((d) => d.status === "processing") || links.some((l) => l.status === "processing") || Object.values(tracks).some((t) => t.status === "processing");
   const tooLarge = mediaChars(media) > MEDIA_LIMITS.maxTotalDataUrlChars;
   const hasReady = media.some((m) => m.status === "ready") || docs.some((d) => d.status === "ready") || links.some((l) => l.status === "ready" && l.attachment);
-  const canSend = (text.trim().length > 0 || hasReady) && !running && !drBlocked && !processing && !tooLarge;
+  const canSend = (text.trim().length > 0 || hasReady) && !running && !waiting && !drBlocked && !processing && !tooLarge;
   // Voice mode hand-off: runs once per finished talk session. `latest` holds this render's submit so the effect never uses a stale one.
   const latest = useRef({ canSend, running, submit: () => {} });
   useEffect(() => {

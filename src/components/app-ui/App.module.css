@@ -619,8 +619,9 @@
   flex-direction: column;
   align-items: center;
   gap: var(--s-2);
-  /* side inset + safe-area; soft top fade only — no opaque canvas slab stealing chrome */
-  padding: var(--s-5) var(--s-6) calc(var(--s-3) + env(safe-area-inset-bottom, 0px));
+  /* side inset; soft top fade only — no opaque canvas slab stealing chrome. No safe-area term: the shell (.app) already keeps
+     everything above the home bar, and adding it here too floated the composer ~34px high on notched iPhones. */
+  padding: var(--s-5) var(--s-6) var(--s-3);
   background: var(--c-canvas);
   pointer-events: none;
 }
@@ -991,7 +992,7 @@
     max-width: 88%;
   }
   .dock {
-    padding: var(--s-4) var(--s-3) calc(var(--s-2) + env(safe-area-inset-bottom, 0px));
+    padding: var(--s-4) var(--s-3) var(--s-2);
   }
   .empty {
     padding-top: var(--s-6);
@@ -1339,12 +1340,13 @@ a.sideItem {
 
 /* On-screen keyboard (see ViewportKeyboard.tsx): the shell is exactly the visible area, so the composer stays above the keys. */
 @media (pointer: coarse) {
-  :global(html[data-kb]) .app { inset: auto 0 auto 0; top: var(--vv-top, 0px); height: var(--vv-h, 100dvh); }
+  :global(html[data-kb]) .app { inset: auto 0 auto 0; top: var(--vv-top, 0px); height: var(--vv-h, 100dvh); padding-bottom: 0; /* the keys cover the home bar */ }
 }
 
 /* Touch targets (>= 44px) on coarse pointers */
 @media (pointer: coarse) {
   .iconBtn { width: 44px; height: 44px; }
+  .jump { height: 44px; }
 }
 
 @media (pointer: coarse) {
@@ -2077,4 +2079,14 @@ a.sideItem {
   :global(:root[data-theme]) .main[data-empty] .dock { top: 128px; bottom: auto; }
   :global(:root[data-theme]) .main[data-empty] .emptyBody { padding-top: calc(var(--dock-h, 140px) + 4px); }
   :global(:root[data-theme]) .main[data-empty] .welcomeTitle { font-size: 26px; }
+}
+
+/* Phones and narrow windows: the drawer is fixed to the screen edge, outside the shell's safe-area padding, so it keeps its own
+   distance from the status bar / Dynamic Island, the landscape notch and the home bar. After the theme rules so it wins over them. */
+@media (max-width: 899px) {
+  .sideWrap, :global(:root[data-theme]) .sideWrap {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+  }
 }

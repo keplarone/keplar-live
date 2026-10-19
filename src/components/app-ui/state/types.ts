@@ -198,6 +198,11 @@ export type KeplarMessage = {
    * arrived that way, "replayed" when a retry got the answer an earlier run of the same turn had already saved (no second charge).
    */
   recovery?: { state: "replayed" | "recovering" | "recovered"; headless?: boolean };
+  /**
+   * The turn key this answer was last sent with (state/recovery.ts). Kept with the chat so that after a reload a retry of an interrupted
+   * answer asks for the same turn: the server replays an answer that finished meanwhile instead of running and charging it again.
+   */
+  turnKey?: string;
   /** Free plan only: a soft, dismissible note about Plus (upsell.ts). */
   upsell?: "milestone" | "complex";
   /** A picture turn (a clear "draw me..." request, or regenerate / variation / edit). Has no panel answer. */
