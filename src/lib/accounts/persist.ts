@@ -19,6 +19,7 @@
 import { keepAlive } from "@/lib/create/platform/after";
 import { createHmac } from "node:crypto";
 import { neonConfigured, neonQuery } from "@/lib/create/platform/neon";
+import { ensureSideSql } from "./sql-setup";
 import { authSecret } from "./secret";
 import { normalizeEmail, userIdForEmail } from "./magic-token";
 
@@ -62,10 +63,9 @@ let ready: Promise<void> | null = null;
 export function ensureAuthSchema(): Promise<void> {
   ready ??= (async () => {
     const run = async () => {
-      await neonQuery("CREATE TABLE IF NOT EXISTS keplar_users (id text PRIMARY KEY, email text NOT NULL, name text NOT NULL DEFAULT '', created_at timestamptz NOT NULL DEFAULT now(), last_login timestamptz, providers jsonb NOT NULL DEFAULT '[]'::jsonb, sessions_valid_after timestamptz)");
-      await neonQuery("CREATE UNIQUE INDEX IF NOT EXISTS keplar_users_email ON keplar_users (email)");
-      await neonQuery("CREATE TABLE IF NOT EXISTS keplar_sessions (id text PRIMARY KEY, user_id text NOT NULL, created_at timestamptz NOT NULL, last_seen timestamptz NOT NULL, expires_at timestamptz NOT NULL, user_agent text NOT NULL DEFAULT '', ip_hash text NOT NULL DEFAULT '', provider text NOT NULL DEFAULT '', remember boolean NOT NULL DEFAULT true, revoked_at timestamptz)");
-      await neonQuery("CREATE INDEX IF NOT EXISTS keplar_sessions_user ON keplar_sessions (user_id, revoked_at)");
+      // Tables and indexes live in sql-setup.ts (versioned, create-if-not-exists only). The column adds below already
+      // shipped; they stay here so this setup does not take on a new change to an existing table.
+      await ensureSideSql();
       // First-run onboarding (src/lib/onboarding). Idempotent. Existing rows get onboarding_required = false, so only accounts
       // created from now on (the INSERT in upsertUser sets true) are sent through it.
       await neonQuery("ALTER TABLE keplar_users ADD COLUMN IF NOT EXISTS onboarding_required boolean NOT NULL DEFAULT false");
@@ -81,9 +81,6 @@ export function ensureAuthSchema(): Promise<void> {
       await neonQuery("ALTER TABLE keplar_sessions ADD COLUMN IF NOT EXISTS mfa_pending boolean NOT NULL DEFAULT false");
       // New-device notice (./new-device.ts): a keyed hash of the coarse network (IPv4 /16, IPv6 /32), never the address.
       await neonQuery("ALTER TABLE keplar_sessions ADD COLUMN IF NOT EXISTS net_hash text NOT NULL DEFAULT ''");
-      await neonQuery("CREATE TABLE IF NOT EXISTS keplar_magic_used (jti text PRIMARY KEY, expires_at timestamptz NOT NULL)");
-      // Deleted accounts: keyed hash of the email only (see deletedLoginKey), so old cookies can't bring the account back.
-      await neonQuery("CREATE TABLE IF NOT EXISTS keplar_deleted_logins (email_key text PRIMARY KEY, deleted_at timestamptz NOT NULL DEFAULT now())");
     };
     await run().catch(async () => {
       await new Promise((r) => setTimeout(r, 300));

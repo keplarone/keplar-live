@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-17",
+  "updated": "2026-10-19",
   "about": "The Keplar security checklist, item by item, with status and evidence. Source of truth for docs/security-checklist.md (render: node scripts/security-checklist.mjs). Statuses: done (in code, evidence listed), policy (a written procedure the operator follows), accepted (dated risk acceptance in docs/security-policy.md), n/a (does not apply, with the reason), todo (fails CI).",
   "sections": [
     {
@@ -2339,8 +2339,12 @@
           "item": "Tool-specific authorization checks",
           "status": "done",
           "evidence": [
+            "src/lib/security/authorize.ts",
+            "src/lib/security/tool-gate.ts",
             "src/lib/mcp/gateway.ts",
             "src/lib/business/firewall.ts",
+            "tests/authorize.test.ts",
+            "tests/security-gate.test.ts",
             "tests/firewall.test.ts"
           ]
         },
@@ -2348,8 +2352,10 @@
           "item": "Human approval for high-impact actions",
           "status": "done",
           "evidence": [
+            "src/lib/security/authorize.ts",
             "src/lib/business/agents.ts",
             "src/lib/mcp/chat.ts",
+            "tests/authorize.test.ts",
             "tests/agent-chat-flow.test.ts"
           ]
         },

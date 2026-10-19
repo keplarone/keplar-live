@@ -53,9 +53,16 @@ export function DraftPane({ scope, plan, onAsk }: { scope: string; plan: string;
   useEffect(() => {
     if (!openId) return;
     // Escape closes the pane, except in its fields and while a dialog (e.g. the delete confirm) owns Escape.
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape" && !(e.target as HTMLElement)?.closest?.("textarea, input, dialog")) setOpenId(null); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || e.defaultPrevented || (e.target as HTMLElement)?.closest?.("textarea, input, dialog")) return;
+      e.preventDefault(); // closes only the draft: the app's Esc (stop a running answer) must not also fire
+      e.stopPropagation();
+      setOpenId(null);
+    };
+    // On document, bubbling (as research/Research.tsx): after overlays opened over the pane (the Lightbox listens in the window's
+    // capture phase and stops the event), before the app's window shortcuts.
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
   }, [openId]);
 
   if (!d) return null;

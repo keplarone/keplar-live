@@ -113,7 +113,7 @@ test("edits: destructive actions in the Projects and History cards wait for a co
   assert.ok(src.includes("Uploaded files are not moved."), "merge says what does not move");
   assert.ok(!src.includes("Rename and delete chats in History."), "History no longer sends you to the tab for this");
   const app = read("src/components/app-ui/KeplarApp.tsx");
-  assert.ok(app.includes("onDeleteThread={del.request}"), "deleting a chat from a card uses the app's undo window");
+  assert.ok(app.includes("onDeleteThread={deleteChat}") && app.includes("requestDelete(id);"), "deleting a chat from a card uses the app's undo window (after stopping its answer)");
 });
 
 const slide = (id: string, title = id): Slide => ({ id, layout: "content", title, section: "", bullets: ["a", "b"], notes: "n", imagePrompt: "" });

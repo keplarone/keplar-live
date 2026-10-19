@@ -133,6 +133,7 @@ export type Action =
   | { type: "event"; threadId: string; keplarId: string; event: KeplarEvent }
   | { type: "fail"; threadId: string; keplarId: string; error: NonNullable<KeplarMessage["error"]> }
   | { type: "stop"; threadId: string; keplarId: string }
+  | { type: "turn-key"; threadId: string; keplarId: string; key: string }
   | { type: "add-project"; project: Project }
   | { type: "move-thread"; id: string; projectId: string | null }
   | { type: "merge-projects"; scope: Scope; projects: Project[] }
@@ -226,8 +227,10 @@ export function applyEvent(m: KeplarMessage, e: KeplarEvent): KeplarMessage {
         status: "error",
         error: e.code === "no_response"
           ? { kind: "no_response", message: e.message, retryable: true, upgrade: e.upgrade === true }
-          : { kind: e.code === "network" ? "network" : "server", message: e.message, retryable: e.retryable },
-        draft: "",
+          : { kind: e.code === "network" ? "network" : "server", message: e.message, retryable: e.retryable, ...(e.code === "plan_required" ? { upgrade: true } : {}) },
+        // What had already arrived stays: the card shows it as an unfinished answer under the error, never as a finished one. Except
+        // no_response: no model produced a reliable answer, so an early draft from one of them is not shown at all.
+        draft: e.code === "no_response" ? "" : m.draft,
         finishedAt: Date.now(),
       };
   }
@@ -253,7 +256,11 @@ export function reducer(state: AppState, a: Action): AppState {
     case "restore-thread":
       // Undo of a delete: put the chat back (newest first, like any chat) unless it came back some other way.
       if (state.threads.some((t) => t.id === a.thread.id)) return state;
-      return { ...state, threads: [a.thread, ...state.threads].sort((x, y) => y.updatedAt - x.updatedAt), ...(a.open ? { activeThreadId: a.thread.id, view: "thread" as const } : {}) };
+      {
+        // An answer that was still running when the chat was deleted was stopped then (KeplarApp): it comes back stopped, not spinning forever.
+        const thread = { ...a.thread, messages: a.thread.messages.map((m) => (m.role === "keplar" && m.status === "running" ? { ...m, status: "stopped" as const, finishedAt: Date.now() } : m)) };
+        return { ...state, threads: [thread, ...state.threads].sort((x, y) => y.updatedAt - x.updatedAt), ...(a.open ? { activeThreadId: a.thread.id, view: "thread" as const } : {}) };
+      }
     case "rename-thread":
       return { ...state, threads: state.threads.map((t) => (t.id === a.id ? { ...t, title: a.title.slice(0, 120), titleBy: "user" as const } : t)) };
     case "set-topic-title":
@@ -349,6 +356,8 @@ export function reducer(state: AppState, a: Action): AppState {
       return patchKeplar(state, a.threadId, a.keplarId, (m) => ({ ...m, status: "error", error: a.error, finishedAt: Date.now() }));
     case "stop":
       return patchKeplar(state, a.threadId, a.keplarId, (m) => (m.status === "running" ? { ...m, status: "stopped", finishedAt: Date.now() } : m));
+    case "turn-key":
+      return patchKeplar(state, a.threadId, a.keplarId, (m) => (m.turnKey === a.key ? m : { ...m, turnKey: a.key }));
     case "add-project":
       return { ...state, projects: [...state.projects, a.project] };
     case "rename-project":

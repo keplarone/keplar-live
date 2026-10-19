@@ -6,7 +6,7 @@ Rendered from `security/checklist.json` by `scripts/security-checklist.mjs`; do 
 
 "Done" means the control exists in code or configuration and the evidence column points at it (a module, a test that exercises it, or a setting). "Policy" means a written procedure the operator follows, because software cannot perform it alone (a restore drill, a lawyer's review, a penetration test). "Accepted risk" is a deliberate, dated decision recorded in `docs/security-policy.md`. Nothing here claims a certification or an external audit; `/security` says the same.
 
-Last rendered: 2026-10-17.
+Last rendered: 2026-10-19.
 
 ## Contents
 
@@ -405,8 +405,8 @@ Untrusted text fenced and sanitized; models never hold credentials; actions pass
 | Prevention of system prompt and secret leakage | Done | [`src/lib/business/firewall.ts`](../src/lib/business/firewall.ts)<br>[`tests/secrets-audit.test.ts`](../tests/secrets-audit.test.ts)<br>[`tests/draft-safety.test.ts`](../tests/draft-safety.test.ts) |  |
 | No API credentials exposed to models unless strictly necessary | Done | [`src/lib/mcp/crypto.ts`](../src/lib/mcp/crypto.ts)<br>[`src/lib/mcp/gateway.ts`](../src/lib/mcp/gateway.ts) | Tokens are opened inside the request builder only; prompts never contain them. |
 | AI tool allowlists | Done | [`src/lib/mcp/gateway.ts`](../src/lib/mcp/gateway.ts)<br>[`src/lib/api/tools.ts`](../src/lib/api/tools.ts)<br>[`tests/mcp-gateway.test.ts`](../tests/mcp-gateway.test.ts) |  |
-| Tool-specific authorization checks | Done | [`src/lib/mcp/gateway.ts`](../src/lib/mcp/gateway.ts)<br>[`src/lib/business/firewall.ts`](../src/lib/business/firewall.ts)<br>[`tests/firewall.test.ts`](../tests/firewall.test.ts) |  |
-| Human approval for high-impact actions | Done | [`src/lib/business/agents.ts`](../src/lib/business/agents.ts)<br>[`src/lib/mcp/chat.ts`](../src/lib/mcp/chat.ts)<br>[`tests/agent-chat-flow.test.ts`](../tests/agent-chat-flow.test.ts) |  |
+| Tool-specific authorization checks | Done | [`src/lib/security/authorize.ts`](../src/lib/security/authorize.ts)<br>[`src/lib/security/tool-gate.ts`](../src/lib/security/tool-gate.ts)<br>[`src/lib/mcp/gateway.ts`](../src/lib/mcp/gateway.ts)<br>[`src/lib/business/firewall.ts`](../src/lib/business/firewall.ts)<br>[`tests/authorize.test.ts`](../tests/authorize.test.ts)<br>[`tests/security-gate.test.ts`](../tests/security-gate.test.ts)<br>[`tests/firewall.test.ts`](../tests/firewall.test.ts) |  |
+| Human approval for high-impact actions | Done | [`src/lib/security/authorize.ts`](../src/lib/security/authorize.ts)<br>[`src/lib/business/agents.ts`](../src/lib/business/agents.ts)<br>[`src/lib/mcp/chat.ts`](../src/lib/mcp/chat.ts)<br>[`tests/authorize.test.ts`](../tests/authorize.test.ts)<br>[`tests/agent-chat-flow.test.ts`](../tests/agent-chat-flow.test.ts) |  |
 | Restricted agent permissions | Done | [`src/lib/mcp/gateway.ts`](../src/lib/mcp/gateway.ts)<br>[`src/lib/business/agents.ts`](../src/lib/business/agents.ts)<br>[`docs/agent-security.md`](../docs/agent-security.md) |  |
 | Sandboxed AI-generated code execution | Done | [`src/lib/sandbox/runner.ts`](../src/lib/sandbox/runner.ts)<br>[`src/lib/core/sandbox.ts`](../src/lib/core/sandbox.ts)<br>[`src/lib/app-builder/files.ts`](../src/lib/app-builder/files.ts) |  |
 | Network egress controls for agents | Done | [`src/lib/sandbox/runner.ts`](../src/lib/sandbox/runner.ts)<br>[`src/lib/mcp/ssrf.ts`](../src/lib/mcp/ssrf.ts) |  |

@@ -195,6 +195,7 @@ const APP_PAGES = new Set([
   "/app/studio",
   "/app/studio/overlay",
   "/app/study",
+  "/app/tasks",
   "/app/wants",
 ]);
 

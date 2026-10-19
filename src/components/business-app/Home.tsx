@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useEnterToSend } from "@/lib/use-enter-to-send";
 import type { MediaInput } from "@/lib/orchestration/media";
 import { AttachButton, mediaHandlers, MediaTray, ShareBar, ShareButton, useMediaAttach, useShare } from "./attach";
-import { count, type Pulse } from "./pulse";
+import { ActivityCenter } from "./ActivityCenter";
+import type { Pulse } from "./pulse";
 import { MODE_KEY } from "./settings-sections";
 import s from "./cursor.module.css";
 
@@ -24,24 +25,6 @@ const ago = (iso?: string) => {
   const m = Math.max(1, Math.round((Date.now() - Date.parse(iso)) / 60_000));
   return m < 60 ? `${m}m ago` : m < 1440 ? `${Math.round(m / 60)}h ago` : `${Math.round(m / 1440)}d ago`;
 };
-
-/** What needs a person right now, from the account's own numbers. Empty states say so plainly. */
-function NeedsYou({ pulse, onOpen }: { pulse: Pulse | null; onOpen: (place: HomePlace) => void }) {
-  if (!pulse) return <div className={s.list} aria-busy="true"><span className={s.rowSkeleton} /><span className={s.rowSkeleton} /></div>;
-  const items: { key: string; text: string; place: HomePlace }[] = [];
-  if (pulse.approvals.pending) items.push({ key: "approvals", text: `${count(pulse.approvals.pending)} ${pulse.approvals.pending === 1 ? "action is" : "actions are"} waiting for approval`, place: "approvals" });
-  if (pulse.agents.halted) items.push({ key: "halted", text: "Every agent is paused", place: "agents" });
-  const failed = pulse.agents.recentRuns.find((r) => r.status === "failed" || r.status === "error");
-  if (failed) items.push({ key: "failed", text: `${failed.agentName} failed its last run`, place: "agents" });
-  if (!items.length) return <p className={s.listEmpty}>Nothing is waiting for you.</p>;
-  return (
-    <ul className={s.list}>
-      {items.map((x) => (
-        <li key={x.key}><button type="button" className={s.listRow} onClick={() => onOpen(x.place)}><span className={s.ellipsis}>{x.text}</span><span className={s.listGo} aria-hidden="true">→</span></button></li>
-      ))}
-    </ul>
-  );
-}
 
 /**
  * The Business workspace's home, like a coding tool's new-chat screen: one question, one composer (mode, project, attachments,
@@ -180,10 +163,7 @@ export function Home({ projects, onSend, onNewProject, onOpenProject, onBuild, c
             </ul>
           ) : <p className={s.listEmpty}>Projects keep instructions, notes and files that Keplar uses in every answer.</p>}
         </section>
-        <section className={s.panel} aria-labelledby="home-needs">
-          <div className={s.panelHead}><h2 id="home-needs">Needs you</h2><button type="button" onClick={() => onOpen("approvals")}>Approvals</button></div>
-          <NeedsYou pulse={pulse} onOpen={onOpen} />
-        </section>
+        <ActivityCenter pulse={pulse} onOpen={onOpen} />
       </div>
 
       <p className={s.tip}><kbd>⌘K</kbd> jump anywhere <span aria-hidden="true">·</span> <kbd>⌘,</kbd> settings <span aria-hidden="true">·</span> <kbd>Alt M</kbd> switch mode</p>

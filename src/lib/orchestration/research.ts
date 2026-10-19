@@ -11,10 +11,13 @@
  * estimate fits the per-request cap and the allowance. Otherwise the run says plainly that no web research ran and answers from the models.
  */
 import { liveEnv, SEARCH_PRICE_USD } from "./config";
-import { evidenceByPage } from "@/lib/research/citation-check";
+import { evidenceByPage, PAGE_TEXT_CHARS } from "@/lib/research/citation-check";
 import { callCostUsd, sanitizeParams, spentUsd } from "./pricing";
 import type { createRegistry } from "./providers";
+import { OFF_FAILED } from "./research-notes";
 import type { Classification, KeplarRequest, ResearchEvent, ResearchSource, ResearchSummary, Retriever, RoutingPlan } from "./types";
+
+export { OFF_BUDGET, OFF_FAILED, OFF_NOT_ENABLED, OFF_SENSITIVE, deepResearchChipNote } from "./research-notes";
 
 export const RESEARCH = {
   /** Planned search queries per question. */
@@ -26,11 +29,6 @@ export const RESEARCH = {
   /** Most time one search (fetch plus reading notes) may take; a slower one adds no pages instead of holding the report. */
   searchMs: 60_000,
 } as const;
-
-export const OFF_NOT_ENABLED = "Live web search isn't switched on for Deep Research yet, so this report was researched by the models only. No pages were read.";
-export const OFF_SENSITIVE = "Web search is skipped on the Sensitive data tier (it can't keep zero data retention), so this report was researched by the models only.";
-export const OFF_BUDGET = "The web research was skipped to stay inside your allowance, so this report was researched by the models only.";
-export const OFF_FAILED = "The web searches didn't return any pages, so this report was researched by the models only.";
 
 export const PLAN_SYSTEM = `You plan web research for one question.
 Return ONLY JSON: {"queries": [string]} with up to ${RESEARCH.queries} short web search queries (under 12 words each) that together find what's needed to answer the question well: the main facts, the options or sides, and recent or local specifics if they matter.
@@ -170,6 +168,8 @@ export async function* runResearch(i: { registry: Registry; retriever: Retriever
   yield ev({ phase: "step", step: "search", status: "active", detail: `${queries.length} live ${queries.length === 1 ? "search" : "searches"}` });
   yield ev({ phase: "step", step: "read", status: "active" });
   const sources: ResearchSource[] = [];
+  // The fuller text each search returned for a page, for the citation check only (never streamed or saved; sources keep a short snippet).
+  const pageText = new Map<number, string>();
   const notes: string[] = queries.map(() => "");
   const pending = new Map(queries.map((q, qi) => [qi, i.retriever.research!({ query: q, plan: i.plan, signal: i.signal ? AbortSignal.any([i.signal, AbortSignal.timeout(i.searchMs ?? RESEARCH.searchMs)]) : AbortSignal.timeout(i.searchMs ?? RESEARCH.searchMs) }).then((r) => ({ qi, r }), () => ({ qi, r: null }))]));
   let searched = 0;
@@ -179,7 +179,11 @@ export async function* runResearch(i: { registry: Registry; retriever: Retriever
     searched++;
     if (!r) continue;
     costUsd += r.costUsd;
-    for (const s of addSources(sources, r.sources, qi)) yield ev({ phase: "source", source: s });
+    for (const s of addSources(sources, r.sources, qi)) {
+      const full = r.sources.find((p) => p.snippet && safeUrl(p.url) === s.url)?.snippet;
+      if (full) pageText.set(s.n, clean(full, PAGE_TEXT_CHARS));
+      yield ev({ phase: "source", source: s });
+    }
     notes[qi] = numberNotes(r.notes, sources);
     if (searched === 1) yield ev({ phase: "step", step: "search", status: "done", detail: `${queries.length} live ${queries.length === 1 ? "search" : "searches"}` });
   }
@@ -189,5 +193,5 @@ export async function* runResearch(i: { registry: Registry; retriever: Retriever
     yield ev({ phase: "off", reason: OFF_FAILED });
     return { brief: "", summary: { queries, sources: [], cited: [], off: OFF_FAILED }, costUsd, evidence: new Map() };
   }
-  return { brief: researchBrief(queries, sources, notes), summary: { queries, sources, cited: [] }, costUsd, evidence: evidenceByPage(sources, notes) };
+  return { brief: researchBrief(queries, sources, notes), summary: { queries, sources, cited: [] }, costUsd, evidence: evidenceByPage(sources, notes, pageText) };
 }

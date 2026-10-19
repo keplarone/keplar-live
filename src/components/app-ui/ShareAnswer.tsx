@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { SignInLink } from "./SignInLink";
 import { useEffect, useRef, useState } from "react";
 import type { KeplarAnswer } from "@/lib/orchestration/types";
 import { growthTrack } from "@/lib/growth/client";
@@ -160,7 +160,7 @@ export function ShareAnswer({ answer, triggerClass }: { answer: KeplarAnswer; tr
             <>
               <p className={s.p}>Sign in to make a link. Links belong to your account so you can turn them off later.</p>
               <div className={s.row}>
-                <Link className={la.act} data-variant="primary" href="/signin?next=/app" ref={(el) => { first.current = el; }}>Sign in</Link>
+                <SignInLink className={la.act} data-variant="primary" ref={(el) => { first.current = el; }}>Sign in</SignInLink>
                 <Button variant="secondary" onClick={close}>Not now</Button>
               </div>
             </>

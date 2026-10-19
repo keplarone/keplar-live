@@ -2,20 +2,23 @@
 
 import { useEffect, useState } from "react";
 import { xQueryFrom, type XPost } from "@/lib/providers/x-posts";
-import { activeScopeHeaders } from "../state/scope";
+import { activeScope, activeScopeHeaders } from "../state/scope";
 import { openDraft } from "./draft-bus";
 import { familyOn } from "./family-client";
 import { Button } from "@/components/kit";
 import s from "./parity.module.css";
 
-let availability: Promise<boolean> | null = null;
-/** One check per page load: are Posts on X switched on for this person? */
+let availability: { scope: string; p: Promise<boolean> } | null = null;
+/** One check per page load and account: are Posts on X switched on for this person? */
 function xAvailable(): Promise<boolean> {
-  availability ??= fetch("/api/x/search", { cache: "no-store", headers: activeScopeHeaders() })
-    .then((r) => (r.ok ? (r.json() as Promise<{ available: boolean }>) : { available: false }))
-    .then((d) => Boolean(d.available))
-    .catch(() => false);
-  return availability;
+  const scope = activeScope();
+  if (!availability || availability.scope !== scope) {
+    availability = { scope, p: fetch("/api/x/search", { cache: "no-store", headers: activeScopeHeaders() })
+      .then((r) => (r.ok ? (r.json() as Promise<{ available: boolean }>) : { available: false }))
+      .then((d) => Boolean(d.available))
+      .catch(() => false) };
+  }
+  return availability.p;
 }
 
 const when = (iso: string | null) => (iso ? new Date(iso).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "");

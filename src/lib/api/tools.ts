@@ -4,6 +4,7 @@
  * documents (reading links, recent posts on X). Every tool reports what actually happened in the answer's `tools` list, so a
  * caller can tell "ran" from "not available here". The pipeline's own gates still apply on top (plan, flags, capacity).
  */
+import { OFF_NOT_ENABLED } from "@/lib/orchestration/research-notes";
 import { readLink, LinkError } from "@/lib/attachments/link";
 import { limitsForPlan } from "@/lib/attachments/kinds";
 import { dailyLimit } from "@/lib/tools/access";
@@ -81,7 +82,7 @@ export async function prepareTools(ws: Pick<Workspace, "id" | "plan">, tools: Ap
         report.push({ type: t.type, status: "requested", detail: "Web search was switched on. Retrieved pages appear in source_check when they were used." });
         break;
       case "deep_research":
-        if (!retrieval) { off(t.type, paid ? "Deep research isn't switched on for this service yet." : "Deep research is on paid plans."); break; }
+        if (!retrieval) { off(t.type, paid ? OFF_NOT_ENABLED : "Deep research is on paid plans."); break; }
         modes.deepResearch = true;
         report.push({ type: t.type, status: "requested", detail: "Deep research was switched on for this question." });
         break;

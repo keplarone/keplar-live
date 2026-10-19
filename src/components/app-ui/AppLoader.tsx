@@ -25,12 +25,12 @@ const KeplarApp = dynamic(() => import("./KeplarApp"), {
   ),
 });
 
-export function AppLoader({ initialView }: { initialView?: View }) {
+export function AppLoader({ initialView, retrievalEnabled = false }: { initialView?: View; retrievalEnabled?: boolean }) {
   // The studio for this route is split out of the app bundle; start its download alongside the app so opening it does not wait twice.
   useEffect(() => {
     if (initialView === "create") void import("@/components/create/CreateStudio");
     else if (initialView === "slides") void import("@/components/slides/SlidesStudio");
     else if (initialView === "study") void import("@/components/study/StudyMode");
   }, [initialView]);
-  return <KeplarApp initialView={initialView} />;
+  return <KeplarApp initialView={initialView} retrievalEnabled={retrievalEnabled} />;
 }

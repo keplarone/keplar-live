@@ -2,7 +2,9 @@
 
 import { Fragment, useCallback, useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore, type ComponentType } from "react";
 import Link from "next/link";
+import { SignInLink } from "./SignInLink";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/kit";
 import { usePrefs } from "@/lib/use-prefs";
 import { playDoneSound } from "@/lib/prefs";
 import { KeplarSymbol } from "@/components/brand";
@@ -26,9 +28,9 @@ import { initialState, loadScope, persist, reducer, remaining, settle, uid } fro
 import { activeScopeHeaders, declineImport, importCandidates, importDeclined, importProjects, removeImported, scopeOf, setActiveScope, userIdOf, clearAccountCaches, type Scope } from "./state/scope";
 import type { ImportOffer } from "./AccountMenu";
 import { StreamHttpError, StreamNetworkError, streamKeplar } from "./state/stream";
-import { newTurnKey, pollTurn, stopTurn } from "./state/recovery";
+import { newTurnKey, pollTurn, stopTurn, type TurnState } from "./state/recovery";
 import { notePreloaded, predictNext, recordTransition } from "./predict";
-import { draftKeyFor } from "./drafts";
+import { draftKeyFor, writeDraft } from "./drafts";
 import type { AccountInfo, ChatImage, KeplarMessage, Message, MessageMedia, Project, Thread, UserMessage, View } from "./state/types";
 import { ChatImageTurn } from "./chat-image/ChatImageTurn";
 import { ChatVideoTurn } from "./chat-video/ChatVideoTurn";
@@ -58,6 +60,7 @@ import { HomeStart } from "./HomeStart";
 import { oauthReturnView, pathForView, viewForPath } from "./app-paths";
 import { AppOnboarding } from "@/components/onboarding/AppOnboarding";
 import { DeploymentsView } from "./DeploymentsView";
+import { TasksView } from "./TasksView";
 import { KeplarStudio } from "./studio-mode/workspace/KeplarStudio";
 import { BUSINESS_VIEWS, openBusinessWorkspace } from "@/lib/business-site";
 import { fetchCompute } from "@/components/billing/usePlan";
@@ -122,10 +125,10 @@ const ConnectedAppsView = appsView.View;
 /** Top-bar titles that are not just the capitalised view name. */
 const VIEW_TITLE: Partial<Record<View, string>> = { history: "All chats", apps: "Connected apps" };
 /** Opened beside the thread from chat. Business and Approvals still leave for the workspace. */
-const BESIDE_VIEWS = new Set<View>(["create", "slides", "study", "projects", "deployments", "apps", "history", "agents", "studio"]);
+const BESIDE_VIEWS = new Set<View>(["create", "slides", "study", "projects", "deployments", "apps", "history", "agents", "studio", "tasks"]);
 const BESIDE_TITLE: Partial<Record<View, string>> = {
   create: "Create", slides: "Slides", study: "Study", projects: "Projects", deployments: "Deployments",
-  apps: "Connected apps", history: "All chats", agents: "Agents", studio: "Studio",
+  apps: "Connected apps", history: "All chats", agents: "Agents", studio: "Studio", tasks: "Tasks",
 };
 function warmViews(all: boolean) {
   const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
@@ -194,7 +197,7 @@ function historyFor(thread: Thread | undefined, uptoId?: string) {
   return out.slice(-40);
 }
 
-export default function KeplarApp({ initialView }: { initialView?: View }) {
+export default function KeplarApp({ initialView, retrievalEnabled = false }: { initialView?: View; retrievalEnabled?: boolean }) {
   // Client-only component (no SSR), so the address is readable on the first render.
   const [oauthBack] = useState(() => {
     if (typeof window === "undefined") return null;
@@ -242,6 +245,8 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const controllers = useRef(new Map<string, AbortController>());
+  // The chat named in the address (?c=<id>) on load: opened once it is known to belong to whoever is on screen.
+  const wantChat = useRef<string | null>(typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("c")?.slice(0, 80) ?? null : null);
   // Answer recovery (state/recovery.ts): the turn key each answer attempt was sent with, by Keplar message id.
   const turnKeys = useRef(new Map<string, string>());
   /** Turns started by Refresh research: their Live Research run skips the desktop's cache. */
@@ -388,6 +393,26 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   // Settings → Chat (follow the answer while it streams) and → Notifications (tell me when an answer finishes in the background).
   const followRef = useRef(prefs.followStream);
   const runningRef = useRef(running);
+  /*
+   * Screen readers: the thread is a quiet log (streamed text is never read out word by word), so how an answer started and ended is
+   * announced here instead. Only changes seen on this screen: opening an old chat announces nothing.
+   */
+  const [announce, setAnnounce] = useState("");
+  // The session expired mid-chat: say so (and offer sign-in) on the signed-out screen that follows, until someone signs in again.
+  const [sessionExpiredRaw, setSessionExpired] = useState(false);
+  const expiredRef = useRef(false);
+  const sessionExpired = sessionExpiredRaw && state.ledger.synced && !state.ledger.signedIn;
+  const lastSeen = useRef<{ id: string; status: KeplarMessage["status"] } | null>(null);
+  const lastId = lastKeplar?.id ?? null;
+  const lastStatus = lastKeplar?.status ?? null;
+  useEffect(() => {
+    const prev = lastSeen.current;
+    lastSeen.current = lastId && lastStatus ? { id: lastId, status: lastStatus } : null;
+    if (!lastId || !lastStatus || (prev?.id === lastId && prev.status === lastStatus)) return;
+    const fresh = prev?.id !== lastId;
+    if (lastStatus === "running" && fresh) setAnnounce("Keplar is answering.");
+    else if (!fresh && prev?.status === "running") setAnnounce(lastStatus === "done" ? "Answer ready." : lastStatus === "stopped" ? "Answer stopped." : "");
+  }, [lastId, lastStatus]);
   const wasRunning = useRef(false);
   useEffect(() => {
     followRef.current = prefs.followStream;
@@ -439,7 +464,10 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
           } // pending: a first question sent before this answer belongs to whoever is on screen, so its run continues (the reducer merges it)
           if (userIdOf(prev)) clearAccountCaches(); // leaving an account: its caches go
           toolsRef.current = {};
-          dispatch({ type: "scope", scope: next, account, loaded: loadScope(next) });
+          // Signed out by an expired session: open on a new chat, where the question that didn't go out was put back (run, 401).
+          const loaded = loadScope(next);
+          if (expiredRef.current && next === "anon") { expiredRef.current = false; loaded.activeThreadId = null; }
+          dispatch({ type: "scope", scope: next, account, loaded });
         } else dispatch({ type: "scope", scope: next, account });
       }
       dispatch({ type: "ledger", ledger: { used: m.used, total: m.total, plan: m.plan, resetsAt: m.resetsAt, paused: m.paused, signedIn: m.signedIn, windows: m.windows ?? null, cooldown: m.cooldown ?? null, breakerNotice: m.breaker?.notice ?? null, daily: m.plan === "free" ? m.daily ?? null : null, admin: Boolean(m.admin), extension: m.extension ? { balance: m.extension.balance, expiresAt: m.extension.expiresAt, latestGrantAt: m.extension.latestGrantAt ?? null } : null } });
@@ -570,6 +598,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     const turnKey = turnKeys.current.get(keplar.id) ?? newTurnKey();
     turnKeys.current.set(keplar.id, turnKey);
     req.turnKey = turnKey;
+    if (keplar.turnKey !== turnKey) dispatch({ type: "turn-key", threadId, keplarId: keplar.id, key: turnKey }); // saved with the chat for a retry after a reload
     // Free: the question count drops the moment the question is sent (the server confirms it, or gives it back if no answer comes).
     const L0 = stateRef.current.ledger;
     const took = L0.plan === "free" && Boolean(L0.daily);
@@ -631,6 +660,15 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
       }
       else if (e instanceof StreamHttpError) {
         if (e.status === 409) void syncMeter(true); // signed in as someone else in another tab: reload who is on screen
+        if (e.status === 401) {
+          // The session ran out mid-chat (account-guard: session_expired). The screen is about to switch to signed out (syncMeter), which
+          // leaves the account's chats behind: the question goes back into the signed-out composer of a new chat, and the screen says why.
+          const key = draftKeyFor("anon", null, false);
+          if (key) writeDraft(key, user.text);
+          setSessionExpired(true);
+          expiredRef.current = true;
+          void syncMeter(true);
+        }
         dispatch({ type: "fail", threadId, keplarId: keplar.id, error: { kind: "server", message: e.message, retryable: e.status >= 500 || e.status === 429, upgrade: (e.status === 429 || e.status === 413) && stateRef.current.ledger.plan === "free" } });
       } else dispatch({ type: "fail", threadId, keplarId: keplar.id, error: { kind: "server", message: "Something went wrong while reading the answer.", retryable: true } });
     } finally {
@@ -648,6 +686,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     /** `forced`: a card asked for this (a choice, "Show here", "Review drafts"): do `intent` (null = a normal answer) without routing. */
     (text: string, attachments: Attachment[], modes: ComposerModes, media?: MessageMedia[], forced?: { intent: Intent | null }) => {
       const st = stateRef.current;
+      wantChat.current = null; // the person moved on: the address follows the chat on screen, not the one it named on load
       const threadId = st.activeThreadId ?? uid("thr");
       const current = st.threads.find((t) => t.id === threadId);
       // Learning: a follow-up that says the last answer was wrong counts against that answer (a signal, never stored text unless the person opted in).
@@ -822,19 +861,20 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   }, [run]);
 
   const retry = useCallback(
-    (k: KeplarMessage, opts?: { freshResearch?: boolean }) => {
+    (k: KeplarMessage, opts?: { freshResearch?: boolean; recover?: boolean }) => {
       const st = stateRef.current;
       const t = st.threads.find((x) => x.messages.some((m) => m.id === k.id));
       const user = t?.messages.find((m): m is UserMessage => m.id === k.replyTo && m.role === "user");
       if (!t || !user) return;
       // A Study turn that never got its set tries again with the new answer; a made set stays where it is.
       const next: KeplarMessage = { ...(k.studio?.kind === "study" && k.studio.phase !== "ready" ? { ...newKeplar(user.id), studio: { kind: "study", phase: "waiting" } } : newKeplar(user.id)), ...(k.practice ? { practice: k.practice } : {}) };
-      signalFor(t, k, "regenerate");
+      if (!opts?.recover) signalFor(t, k, "regenerate");
       // Refresh research (Live Research): the desktop reads the pages again instead of using its cache.
       if (opts?.freshResearch) freshResearch.current.add(next.id);
       // Answer recovery: a retry after a dropped connection is the same turn (an answer that finished meanwhile is replayed, not charged
-      // twice). Regenerating an answer that arrived, or retrying any other failure, is a new turn with a new key.
-      const prevKey = turnKeys.current.get(k.id);
+      // twice). Regenerating an answer that arrived, or retrying any other failure, is a new turn with a new key. The key saved with the
+      // chat covers a retry after a reload.
+      const prevKey = turnKeys.current.get(k.id) ?? k.turnKey;
       if (prevKey && k.error?.kind === "network") turnKeys.current.set(next.id, prevKey);
       dispatch({ type: "retry", threadId: t.id, keplarId: k.id, next });
       void run(t.id, next, user, historyFor(t, user.id));
@@ -848,7 +888,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     const k = t?.messages.find((m): m is KeplarMessage => m.role === "keplar" && m.status === "running");
     if (!t || !k) return;
     // Answer recovery: a run keeps going when only its connection drops; Stop says it was the person (before the abort, so the server sees it first).
-    const key = turnKeys.current.get(k.id);
+    const key = turnKeys.current.get(k.id) ?? k.turnKey;
     if (key) stopTurn(key);
     controllers.current.get(k.id)?.abort();
     dispatch({ type: "stop", threadId: t.id, keplarId: k.id });
@@ -860,6 +900,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   }, []);
 
   const newThread = useCallback((projectId?: string | null) => {
+    wantChat.current = null;
     dispatch({ type: "new-thread", projectId });
     setBeside(null);
     setDrawerOpen(false);
@@ -875,9 +916,80 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     setAtBottom(true);
     const path = pathForView("thread");
     if (typeof window !== "undefined" && window.location.pathname !== path) window.history.pushState({ view: "thread" }, "", path);
+    wantChat.current = null;
+  }, []);
+
+  /* A saved chat's messages load when it is opened (from the list, the address or a refresh); the screen says so meanwhile. */
+  const activeLoad = sync.loadState(state.activeThreadId);
+  const activeRemote = Boolean(thread?.remote);
+  const { hydrate } = sync;
+  useEffect(() => {
+    if (activeRemote && activeLoad === null && state.activeThreadId) void hydrate(state.activeThreadId);
+  }, [activeRemote, activeLoad, state.activeThreadId, hydrate]);
+  const chatLoading = activeRemote || activeLoad !== null;
+
+  /*
+   * The open chat is in the address (?c=<id>), so a refresh or a bookmark opens it again. Only this browser's own chats (or the
+   * signed-in account's) can open: an id that isn't among them is ignored and the home screen shows.
+   */
+  useEffect(() => {
+    const want = wantChat.current;
+    if (!want || state.scope === "pending") return;
+    if (state.threads.some((t) => t.id === want && !t.private)) {
+      wantChat.current = null;
+      if (state.activeThreadId !== want) openThread(want);
+    }
+  }, [state.threads, state.scope, state.activeThreadId, openThread]);
+  const urlChat = state.view === "thread" && thread && !thread.private ? thread.id : null;
+  useEffect(() => {
+    if (state.scope === "pending" || wantChat.current) return;
+    const url = new URL(window.location.href);
+    if (viewForPath(url.pathname) !== "thread" || url.searchParams.get("c") === urlChat) return;
+    if (urlChat) url.searchParams.set("c", urlChat);
+    else url.searchParams.delete("c");
+    window.history.replaceState(window.history.state, "", url);
+  }, [urlChat, state.scope]);
+
+  /*
+   * Answer recovery after a reload: an answer that was interrupted (the page went away while it was being written) asks the server
+   * once whether that turn finished meanwhile. A finished one is shown as recovered; one still running is followed (the card shows it
+   * and Stop works); anything else stays as it is, with Retry. Only answers from the last 10 minutes, each once.
+   */
+  const recoverTried = useRef(new Set<string>());
+  useEffect(() => {
+    if (!thread || chatLoading || state.scope === "pending") return;
+    for (const m of thread.messages) {
+      if (m.role !== "keplar" || m.status !== "error" || m.error?.kind !== "network" || !m.turnKey || controllers.current.has(m.id)) continue;
+      if (recoverTried.current.has(m.id) || Date.now() - m.startedAt > 10 * 60_000) continue;
+      recoverTried.current.add(m.id);
+      const threadId = thread.id;
+      void fetch(`/api/keplar/turn?key=${encodeURIComponent(m.turnKey)}`, { cache: "no-store", headers: activeScopeHeaders() })
+        .then((r) => (r.ok ? (r.json() as Promise<TurnState>) : null))
+        .then((got) => {
+          if (!got) return;
+          if (got.status === "done" && got.answer) {
+            dispatch({ type: "retry", threadId, keplarId: m.id, next: { ...m, status: "running", error: undefined, finishedAt: undefined } });
+            dispatch({ type: "event", threadId, keplarId: m.id, event: { type: "recovery", state: "recovered", headless: true } });
+            dispatch({ type: "event", threadId, keplarId: m.id, event: { type: "answer", answer: got.answer } });
+          } else if (got.status === "running") retry(m, { recover: true });
+        })
+        .catch(() => undefined);
+    }
+  }, [thread, chatLoading, state.scope, retry]);
+
+  /* Deleting a chat while an answer is being written stops that answer first (Undo brings the chat back with it stopped). */
+  const { request: requestDelete } = del;
+  const deleteChat = useCallback((id: string) => {
     const t = stateRef.current.threads.find((x) => x.id === id);
-    if (t?.remote) void sync.hydrate(id);
-  }, [sync]);
+    for (const m of t?.messages ?? []) {
+      if (m.role !== "keplar" || m.status !== "running") continue;
+      const key = turnKeys.current.get(m.id) ?? m.turnKey;
+      if (key) stopTurn(key);
+      controllers.current.get(m.id)?.abort();
+      dispatch({ type: "stop", threadId: id, keplarId: m.id });
+    }
+    requestDelete(id);
+  }, [requestDelete]);
 
   const tabFocusClear = useRef<() => void>(() => undefined);
   /**
@@ -1039,7 +1151,8 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
         e.preventDefault();
         router.push("/account"); // opens the Settings dialog over the app (src/app/app/@modal)
       } else if (e.key === "Escape") {
-        if (searchOpen) return;
+        // A dialog, menu or list that closed on this Escape already handled it (defaultPrevented): the answer being written keeps going.
+        if (searchOpen || e.defaultPrevented) return;
         // Escape in a kit Dialog or pop-up closes that overlay only (the overlay owns it): it never also stops the answer.
         if ((e.target as HTMLElement | null)?.closest?.("dialog, [popover]")) return;
         if (drawerOpen) { setDrawerOpen(false); return; }
@@ -1097,13 +1210,22 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
     // Empty chat: the composer sits mid-column over the scroller (not inside it), so it follows the scroll offset and the greeting,
     // composer and starters move as one column instead of sliding through each other (phones, short windows).
     el.parentElement?.style.setProperty("--empty-scroll", `${el.scrollTop}px`);
-    const near = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    // Following stops as soon as the reader moves up (detach below), and resumes only once they are back at the very bottom.
+    const near = el.scrollHeight - el.scrollTop - el.clientHeight < (atBottomRef.current ? 80 : 8);
+    atBottomRef.current = near;
     if (near !== atBottom) setAtBottom(near);
   };
+  /* Any upward wheel or drag stops following at once, so a stream of chunks never pulls the reader back down mid-scroll. */
+  const touchY = useRef<number | null>(null);
+  const detach = () => { if (!atBottomRef.current) return; atBottomRef.current = false; setAtBottom(false); };
+  const onWheel = (e: React.WheelEvent) => { if (e.deltaY < 0) detach(); };
+  const onTouchStart = (e: React.TouchEvent) => { touchY.current = e.touches[0]?.clientY ?? null; };
+  const onTouchMove = (e: React.TouchEvent) => { const y = e.touches[0]?.clientY; if (touchY.current !== null && y !== undefined && y - touchY.current > 6) detach(); };
 
   const jump = () => {
     const el = scrollRef.current;
     el?.scrollTo({ top: el.scrollHeight, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    atBottomRef.current = true;
     setAtBottom(true);
   };
 
@@ -1132,6 +1254,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
 
   return (
     <div ref={rootRef} className={s.app} data-product="" data-own-search="" data-collapsed={collapsed || undefined} data-drawer={drawerOpen || undefined} data-app-ready={state.scope === "pending" ? undefined : ""}>
+      <p className="visually-hidden" role="status" aria-live="polite">{announce}</p>
       <ExtensionReturn onChanged={() => void syncMeter(true)} />
       <ReferralClaim signedIn={state.ledger.signedIn} onChanged={() => void syncMeter(true)} />
       <ReferralNudge signedIn={state.ledger.signedIn} />
@@ -1143,7 +1266,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
           onSearch={() => { setDrawerOpen(false); setSearchOpen(true); }}
           onView={(v) => openSurface(v)}
           onOpen={openThread}
-          onDeleteChat={del.request}
+          onDeleteChat={deleteChat}
           onClose={drawerOpen ? () => setDrawerOpen(false) : undefined}
           businessProminent={businessProminent(useFor)}
           account={state.ledger.signedIn ? state.account : null}
@@ -1186,7 +1309,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
               ) : null}
             </>
           ) : null}
-          {state.view === "thread" && thread && thread.messages.length ? <DeleteChatAction variant="header" title={thread.title} onDelete={() => del.request(thread.id)} /> : null}
+          {state.view === "thread" && thread && thread.messages.length ? <DeleteChatAction variant="header" title={thread.title} onDelete={() => deleteChat(thread.id)} /> : null}
           {/* Phones signed in: the theme lives in the account menu and memory in Settings, so the bar keeps the title room. */}
           <ThemeToggle className={`${s.iconBtn} ${state.ledger.signedIn ? s.phoneHide : ""}`} />
           {state.ledger.synced && !state.ledger.signedIn ? (
@@ -1203,8 +1326,25 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
         {state.view === "thread" ? (
           <div className={s.threadSplit} data-beside={beside?.view}>
           <div className={s.threadCol}>
-            <div ref={scrollRef} className={s.scroll} onScroll={onScroll}>
-              {messages.length === 0 ? (
+            <div ref={scrollRef} className={s.scroll} onScroll={onScroll} onWheel={onWheel} onTouchStart={onTouchStart} onTouchMove={onTouchMove}>
+              {chatLoading && messages.length === 0 ? (
+                <div className={s.empty}>
+                  <div className={s.welcome} role={activeLoad === "failed" ? "alert" : "status"} data-chat-load={activeLoad ?? "loading"}>
+                    {activeLoad === "failed" ? (
+                      <>
+                        <p className={s.welcomeTitle}>This chat couldn&rsquo;t be loaded.</p>
+                        <p className={s.welcomeLede}>Check your connection and try again. Nothing in it was changed.</p>
+                        <p>
+                          <Button size="sm" variant="secondary" onClick={() => { if (state.activeThreadId) void hydrate(state.activeThreadId); }}>Try again</Button>{" "}
+                          <Button size="sm" variant="ghost" onClick={() => newThread()}>New chat</Button>
+                        </p>
+                      </>
+                    ) : (
+                      <p className={s.welcomeTitle}>Loading {thread?.title ? `“${thread.title}”` : "this chat"}&hellip;</p>
+                    )}
+                  </div>
+                </div>
+              ) : messages.length === 0 ? (
                 <div className={s.empty}>
                   <div className={s.welcome}>
                     {/* Held invisible (same height) until the session is known, so the name never pops in over a generic line.
@@ -1217,7 +1357,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                             <span>{welcome ? "Welcome," : `${dayGreeting(new Date().getHours())},`}</span> <span className={s.welcomeName}>{firstName}</span>
                           </>
                         ) : state.ledger.synced ? (
-                          // "Keplar" carries the greeting gradient (src/styles/gemini.css), like a signed-in name does.
+                          // "Keplar" carries the same blue-to-teal greeting fill as a signed-in name (src/styles/gemini.css).
                           <span>How can <span className={s.welcomeName}>Keplar</span> help you today?</span>
                         ) : <span>Welcome to Keplar.</span>}
                       </span>
@@ -1234,6 +1374,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                       ~0.5 s after first paint and shoved everything down 800 px (Lighthouse CLS 0.45 on /app, phone). */}
                   {homeReady ? (<>
                   <HomeStart
+                    plan={state.ledger.synced ? state.ledger.plan : undefined}
                     showBusiness={businessProminent(useFor)}
                     onSeed={seedComposer}
                     onView={(v) => openSurface(v)}
@@ -1335,7 +1476,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                         onDeleteProject={deleteProjectFromCard}
                         onMergeProjects={mergeProjectsFromCard}
                         onRenameThread={sync.rename}
-                        onDeleteThread={del.request}
+                        onDeleteThread={deleteChat}
                       />
                     ) : m.studio?.kind === "slides" || m.studio?.standalone ? (
                       <StudioTurn
@@ -1439,7 +1580,15 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                 draftKey={draftKeyFor(state.scope, state.activeThreadId, Boolean(state.threads.find((x) => x.id === state.activeThreadId)?.private ?? state.privateNext))}
                 privateChat={messages.length === 0 && !family ? { on: Boolean(state.privateNext), onToggle: () => dispatch({ type: "private-next", on: !state.privateNext }) } : null}
                 recordNotes={messages.length === 0}
+                retrievalEnabled={retrievalEnabled}
+                waiting={chatLoading}
               />
+              {sessionExpired ? (
+                <p className={s.dockNote} role="alert">
+                  Your session expired, so you&rsquo;re signed out. Your question is back in the box.{" "}
+                  <SignInLink>Sign in again</SignInLink>
+                </p>
+              ) : null}
               <p className={s.dockNote}>Keplar can be wrong, even when models agree. Verify important decisions.</p>
             </div>
           </div>
@@ -1460,11 +1609,13 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                   <div className={s.createHost}><KeplarStudio plan={state.ledger.plan} signedIn={state.ledger.synced ? state.ledger.signedIn : null} /></div>
                 ) : beside.view === "apps" ? (
                   <div className={s.scroll}><ConnectedAppsView /></div>
+                ) : beside.view === "tasks" ? (
+                  <div className={s.scroll}><TasksView onOpenTab={(v) => { setBeside(null); goView(v); }} /></div>
                 ) : beside.view === "deployments" ? (
                   <div className={s.scroll}><DeploymentsView onOpenCreate={() => openSurface("create")} /></div>
                 ) : beside.view === "history" ? (
                   <div className={s.scroll}>
-                    <HistoryView key={tabFocus?.view === "history" ? `q:${tabFocus.query ?? ""}` : "h"} initialQuery={tabFocus?.view === "history" ? tabFocus.query : undefined} state={listedState} signedIn={sync.signedIn} onRename={sync.rename} onOpen={openThread} onDelete={del.request} onMove={sync.move} />
+                    <HistoryView key={tabFocus?.view === "history" ? `q:${tabFocus.query ?? ""}` : "h"} initialQuery={tabFocus?.view === "history" ? tabFocus.query : undefined} state={listedState} signedIn={sync.signedIn} onRename={sync.rename} onOpen={openThread} onDelete={deleteChat} onMove={sync.move} />
                   </div>
                 ) : beside.view === "projects" ? (
                   <div className={s.scroll}>
@@ -1520,6 +1671,10 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
           <div className={s.scroll}>
             <ConnectedAppsView />
           </div>
+        ) : state.view === "tasks" ? (
+          <div className={s.scroll}>
+            <TasksView onOpenTab={(v) => goView(v)} />
+          </div>
         ) : state.view === "deployments" ? (
           <div className={s.scroll}>
             <DeploymentsView onOpenCreate={() => goView("create")} />
@@ -1527,7 +1682,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
         ) : (
           <div className={s.scroll}>
             {state.view === "history" ? (
-              <HistoryView key={tabFocus?.view === "history" ? `q:${tabFocus.query ?? ""}` : "h"} initialQuery={tabFocus?.view === "history" ? tabFocus.query : undefined} state={listedState} signedIn={sync.signedIn} onRename={sync.rename} onOpen={openThread} onDelete={del.request} onMove={sync.move} />
+              <HistoryView key={tabFocus?.view === "history" ? `q:${tabFocus.query ?? ""}` : "h"} initialQuery={tabFocus?.view === "history" ? tabFocus.query : undefined} state={listedState} signedIn={sync.signedIn} onRename={sync.rename} onOpen={openThread} onDelete={deleteChat} onMove={sync.move} />
             ) : state.view === "projects" ? (
               <ProjectsView
                 key={tabFocus?.view === "projects" ? `p:${tabFocus.projectId ?? ""}` : "p"}

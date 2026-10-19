@@ -30,7 +30,7 @@ test("how-to questions get the deep step-by-step guide; explanations, facts, dec
   assert.notEqual(shapeHint("how do I count to 7 out loud", { kind: "general", errorProne: "exact" }), GUIDE_HINT, "exact checks never get the guide");
   // What makes it better than a plain list: prerequisites, a check per step, troubleshooting, expert tips, and no invented details.
   for (const part of ["Before you start", "*Check:*", "If something goes wrong", "Pro tips", "never invent"]) assert.ok(GUIDE_HINT.includes(part), part);
-  assert.match(GUIDE_HINT, /touch of wit, it goes in the overview sentence or the final line, never inside a step/, "a how-to keeps its one line of wit out of the steps");
+  assert.match(GUIDE_HINT, /No jokes or witty asides anywhere in the guide/);
 });
 
 test("the final write-up of a how-to keeps the full guide: its own rules, every model's full answer, and room to write it", async () => {

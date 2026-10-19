@@ -19,8 +19,9 @@ test("a haiku keeps its three lines (hard-break spaces and backslashes dropped)"
 
 test("the answer renderer keeps lines in paragraphs and quotes and draws <br> between them", () => {
   const src = read("src/components/app-ui/Markdown.tsx");
-  assert.match(src, /t: "p", text: joinLines\(para\)/);
-  assert.match(src, /t: "quote", text: joinLines\(body\)/);
-  assert.doesNotMatch(src, /para\.join\(" "\)/);
+  const grammar = read("src/components/app-ui/markdown-parse.ts");
+  assert.match(grammar, /t: "p", text: joinLines\(para\)/);
+  assert.match(grammar, /t: "quote", text: joinLines\(body\)/);
+  assert.doesNotMatch(grammar, /para\.join\(" "\)/);
   assert.match(src, /<br key=/);
 });
