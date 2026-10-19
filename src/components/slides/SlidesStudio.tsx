@@ -69,6 +69,8 @@ function Unlocked({ plan }: { plan: "plus" | "pro" | "business" }) {
   const [theme, setTheme] = useState<DeckTheme>("dark");
   const [instruction, setInstruction] = useState("");
   const timer = useRef<number | undefined>(undefined);
+  /** The edit waiting for the autosave timer, so leaving the page still saves it. */
+  const pending = useRef<Deck | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const refresh = useCallback(async () => {
@@ -117,14 +119,23 @@ function Unlocked({ plan }: { plan: "plus" | "pro" | "business" }) {
   const edit = (next: Deck) => {
     setDeck(next); setSaved("saving");
     window.clearTimeout(timer.current);
+    pending.current = next;
     timer.current = window.setTimeout(async () => {
+      pending.current = null;
       try {
         await api(`/api/slides/decks/${next.id}`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ title: next.title, theme: next.theme, slides: next.slides }) });
         setSaved("saved"); void refresh();
       } catch (e) { setError((e as Error).message); setSaved("idle"); }
     }, 700);
   };
-  useEffect(() => () => window.clearTimeout(timer.current), []);
+  // Leaving with an edit still waiting: send it now. keepalive lets the request finish after the page is gone.
+  useEffect(() => () => {
+    window.clearTimeout(timer.current);
+    const d = pending.current;
+    if (!d) return;
+    pending.current = null;
+    void fetch(`/api/slides/decks/${d.id}`, { method: "PUT", keepalive: true, headers: { "content-type": "application/json" }, body: JSON.stringify({ title: d.title, theme: d.theme, slides: d.slides }) }).catch(() => undefined);
+  }, []);
 
   const patchSlide = (i: number, p: Partial<Slide>) => deck && edit({ ...deck, slides: deck.slides.map((x, j) => (j === i ? { ...x, ...p } : x)) });
   const move = (i: number, d: number) => {
@@ -151,6 +162,7 @@ function Unlocked({ plan }: { plan: "plus" | "pro" | "business" }) {
     setError(""); setBusy("regen");
     try {
       window.clearTimeout(timer.current);
+      pending.current = null;
       await api(`/api/slides/decks/${deck.id}`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ title: deck.title, theme: deck.theme, slides: deck.slides }) });
       const r = await api<{ deck: Deck; credits: number }>(`/api/slides/decks/${deck.id}/regenerate`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ index: sel, instruction }) });
       setDeck(r.deck); setCredits(r.credits); setInstruction("");

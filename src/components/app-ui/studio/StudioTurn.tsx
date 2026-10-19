@@ -11,6 +11,7 @@
  * the theme, presents fullscreen and exports PPTX / PDF. A follow-up is its own card on the same deck or set (op / standalone).
  */
 import Link from "next/link";
+import { SignInLink } from "../SignInLink";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { KeplarSymbol } from "@/components/brand";
 import { SlideView } from "@/components/slides/SlideView";
@@ -156,7 +157,7 @@ function StudyCard({ message: m, user, ledger, onPatch, onOpen, onSettled, sourc
       <section className={s.card} data-studio="study" data-phase="signin">
         <Head busy={false} label="Study" />
         <p className={s.note}>Sign in to turn this answer into flashcards and a quiz. Study sets and your progress are saved to your account; Study mode is on every plan, including Free.</p>
-        <div className={s.actions}><Link href="/signin?next=/app" className={sl.primary}>Sign in</Link><Link href="/signup?next=/app" className={sl.ghost}>Create a free account</Link></div>
+        <div className={s.actions}><SignInLink className={sl.primary}>Sign in</SignInLink><SignInLink page="signup" className={sl.ghost}>Create a free account</SignInLink></div>
       </section>
     );
   }
@@ -523,13 +524,14 @@ function SlidesCard({ message: m, user, ledger, onPatch, onOpen, onSettled, onAc
 
   const setTheme = async (theme: DeckTheme) => {
     if (!deck || deck.theme === theme) return;
+    const prev = deck;
     const next = { ...deck, theme };
     setDeck(next);
     setSaveErr("");
     try {
       await api(`/api/slides/decks/${deck.id}`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ title: next.title, theme, slides: next.slides }) });
       patch.current({ theme });
-    } catch (e) { setSaveErr((e as Error).message); }
+    } catch (e) { setDeck(prev); setSaveErr((e as Error).message); }
   };
 
   /** Saves hand edits (text, order, a deleted slide) with the same PUT the Slides tab uses; the card shows the change at once. */
@@ -600,7 +602,7 @@ function SlidesCard({ message: m, user, ledger, onPatch, onOpen, onSettled, onAc
         <p className={s.note}>Keplar writes the deck from your message, with speaker notes, then you edit it here (&ldquo;make slide 3 shorter&rdquo;), present it fullscreen and export it to PowerPoint or PDF. Slides is part of Keplar Plus and Pro{st.phase === "locked" ? "; your plan doesn't include it, so nothing was made or charged" : ""}.</p>
         <div className={s.actions}>
           <Link href="/checkout?plan=plus" className={sl.primary} data-upgrade="slides">Upgrade to Plus</Link>
-          {st.phase === "signin" ? <Link href="/signin?next=/app" className={sl.ghost}>Sign in</Link> : null}
+          {st.phase === "signin" ? <SignInLink className={sl.ghost}>Sign in</SignInLink> : null}
           <Link href="/pricing" className={sl.ghost}>See plans</Link>
         </div>
       </section>

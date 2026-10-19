@@ -14,9 +14,20 @@ export const ACCOUNT_PREFIX = "keplar.acct.v2.";
 /** Pre-accounts-scoping store. It may hold a signed-in user's cached chats, so it is never shown directly: only offered for import. */
 export const LEGACY_KEY = "keplar.app.v1";
 const DECLINED_KEY = "keplar.import.declined.v1";
-/** Other per-session client caches that belong to whoever was signed in. */
-const SESSION_KEYS = ["keplar.mcp.oauth", "keplar.onboarding.redirected", "keplar.onboarding.open", "keplar:create-site"];
-const LOCAL_KEYS = ["keplar.upsell.v1"];
+/**
+ * Other per-session client caches that belong to whoever was signed in: handoffs between views (a site, app, study set, deck or
+ * remix to open) and the unsent App prompt.
+ */
+const SESSION_KEYS = [
+  "keplar.mcp.oauth", "keplar.onboarding.redirected", "keplar.onboarding.open", "keplar:create-site",
+  "keplar:app-prompt", "keplar:app-open", "keplar:study-open", "keplar:slides-open", "keplar:create-remix",
+];
+/** keplar:app-build is the App build to resume after a reload (create/apps/resume.ts): it names the account's app and prompt. */
+const LOCAL_KEYS = ["keplar.upsell.v1", "keplar:app-build"];
+/** Studio chats saved on this device for a signed-in account (studio-mode/saved-session.ts): `<prefix><user id>|<game key>`. */
+export const STUDIO_ACCOUNT_PREFIX = "keplar-studio-chat@";
+/** Unsent composer drafts (drafts.ts): one object keyed `<scope>|<chat>`. Only the account entries go on sign-out. */
+const DRAFTS_KEY = "keplar-drafts-v1";
 
 export type KV = Pick<Storage, "getItem" | "setItem" | "removeItem" | "key" | "length">;
 
@@ -28,6 +39,8 @@ export const accountHeader = (scope: string): string | null => (scope === "pendi
 
 let active: string = "pending";
 export const setActiveScope = (scope: string) => { active = scope; };
+/** The scope the app has on screen ("pending" outside the app, or before it knows). */
+export const activeScope = (): string => active;
 export const activeScopeHeaders = (): Record<string, string> => {
   const v = accountHeader(active);
   return v ? { "x-keplar-account": v } : {};
@@ -103,13 +116,25 @@ export function removeImported(ids: string[], kv: KV | null = store()) {
 export function clearAccountCaches(kv: KV | null = store(), session: KV | null = typeof window === "undefined" ? null : safeSession()) {
   try {
     const drop: string[] = [];
-    for (let i = 0; kv && i < kv.length; i++) { const k = kv.key(i); if (k?.startsWith(ACCOUNT_PREFIX)) drop.push(k); }
+    for (let i = 0; kv && i < kv.length; i++) { const k = kv.key(i); if (k?.startsWith(ACCOUNT_PREFIX) || k?.startsWith(STUDIO_ACCOUNT_PREFIX)) drop.push(k); }
     for (const k of [...drop, ...LOCAL_KEYS]) kv?.removeItem(k);
     for (const k of SESSION_KEYS) session?.removeItem(k);
   } catch { /* ignore */ }
+  try { dropAccountDrafts(kv); } catch { /* ignore */ }
   try {
     if (typeof caches !== "undefined") void caches.keys().then((ks) => Promise.all(ks.filter((k) => /keplar/i.test(k)).map((k) => caches.delete(k)))).catch(() => undefined);
   } catch { /* ignore */ }
+}
+
+/** Keeps this device's (anon) drafts, drops every account's. */
+function dropAccountDrafts(kv: KV | null) {
+  const raw = kv?.getItem(DRAFTS_KEY);
+  if (!raw) return;
+  let all: unknown;
+  try { all = JSON.parse(raw); } catch { all = null; }
+  const kept = all && typeof all === "object" ? Object.fromEntries(Object.entries(all).filter(([k]) => !k.startsWith("user:"))) : {};
+  if (Object.keys(kept).length) kv?.setItem(DRAFTS_KEY, JSON.stringify(kept));
+  else kv?.removeItem(DRAFTS_KEY);
 }
 
 function safeSession(): KV | null {

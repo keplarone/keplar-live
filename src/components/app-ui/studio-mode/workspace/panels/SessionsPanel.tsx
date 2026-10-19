@@ -8,7 +8,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { Button, Icon, IconButton } from "@/components/kit";
-import { clearSaved, deleteRemote, fetchRemote, placeKey, writeSaved } from "../../saved-session";
+import { clearSaved, deleteRemote, fetchRemote, placeKey, studioHeaders, writeSaved } from "../../saved-session";
 import type { StudioAgent } from "../../useStudioAgent";
 import { accountIsNewer, deviceSessions, mergeSessions, savedWhen, whereSaved, type SessionEntry } from "./panel-logic";
 import s from "./panels.module.css";
@@ -18,9 +18,11 @@ type AccountRow = { key: string; name: string; savedAt: number };
 
 export type SessionsPanelProps = { a: StudioAgent; env: "roblox" | "blender"; compact?: boolean };
 
-function readDevice(env: "roblox" | "blender"): SessionEntry[] {
-  try { return deviceSessions(window.localStorage, env); } catch { return []; }
+/** The device copies that belong to `scope` (the signed-in account's, or the device's when signed out). */
+function readDevice(env: "roblox" | "blender", scope: string): SessionEntry[] {
+  try { return deviceSessions(window.localStorage, env, scope); } catch { return []; }
 }
+const onAccount = (scope: string) => scope.startsWith("user:");
 
 export function SessionsPanel({ a, env, compact = false }: SessionsPanelProps) {
   const [device, setDevice] = useState<SessionEntry[]>([]);
@@ -31,38 +33,41 @@ export function SessionsPanel({ a, env, compact = false }: SessionsPanelProps) {
   const [error, setError] = useState("");
   const [now, setNow] = useState(() => Date.now());
 
+  const scope = a.scope;
   const loadAccount = useCallback(async () => {
+    if (!onAccount(scope)) return;
     try {
-      const r = await fetch("/api/studio/chats", { cache: "no-store", credentials: "same-origin" });
+      const r = await fetch("/api/studio/chats", { cache: "no-store", credentials: "same-origin", headers: studioHeaders(scope) });
       if (!r.ok) return; // signed out or offline: the device copies still show
       const d = (await r.json()) as { chats?: AccountRow[] };
       setAccount(Array.isArray(d.chats) ? d.chats : []);
     } catch { /* offline */ }
-  }, []);
+  }, [scope]);
 
   // Device copies: re-read shortly after the hook's autosave (400 ms; 3 s while running), and when another window writes.
   const itemCount = a.items.length;
   useEffect(() => {
-    const t = window.setTimeout(() => { setDevice(readDevice(env)); setNow(Date.now()); }, a.running ? 3500 : 700);
+    const t = window.setTimeout(() => { setDevice(readDevice(env, scope)); setNow(Date.now()); }, a.running ? 3500 : 700);
     return () => window.clearTimeout(t);
-  }, [env, itemCount, a.running, a.place]);
+  }, [env, scope, itemCount, a.running, a.place]);
   useEffect(() => {
-    const on = (e: StorageEvent) => { if (!e.key || e.key.startsWith("keplar-studio-chat:")) setDevice(readDevice(env)); };
+    const on = (e: StorageEvent) => { if (!e.key || e.key.startsWith("keplar-studio-chat")) setDevice(readDevice(env, scope)); };
     window.addEventListener("storage", on);
     return () => window.removeEventListener("storage", on);
-  }, [env]);
+  }, [env, scope]);
   useEffect(() => {
     let live = true;
     void (async () => {
+      if (!onAccount(scope)) { setAccount([]); return; }
       try {
-        const r = await fetch("/api/studio/chats", { cache: "no-store", credentials: "same-origin" });
+        const r = await fetch("/api/studio/chats", { cache: "no-store", credentials: "same-origin", headers: studioHeaders(scope) });
         if (!r.ok || !live) return;
         const d = (await r.json()) as { chats?: AccountRow[] };
         if (live) setAccount(Array.isArray(d.chats) ? d.chats : []);
       } catch { /* offline */ }
     })();
     return () => { live = false; };
-  }, [a.place]);
+  }, [a.place, scope]);
 
   const currentKey = placeKey(a.place);
   const entries = mergeSessions(device, account, env);
@@ -71,7 +76,7 @@ export function SessionsPanel({ a, env, compact = false }: SessionsPanelProps) {
   const shown = all ? others : others.slice(0, SHOWN);
   const thing = env === "blender" ? "file" : "place";
 
-  const newSession = () => { setConfirm(null); a.reset(); setAccount((xs) => xs.filter((x) => x.key !== currentKey)); window.setTimeout(() => setDevice(readDevice(env)), 50); };
+  const newSession = () => { setConfirm(null); a.reset(); setAccount((xs) => xs.filter((x) => x.key !== currentKey)); window.setTimeout(() => setDevice(readDevice(env, scope)), 50); };
 
   const loadNewer = async () => {
     if (!currentKey || !a.place) return;
@@ -83,7 +88,7 @@ export function SessionsPanel({ a, env, compact = false }: SessionsPanelProps) {
       const place = a.place;
       a.setPlace(null);
       a.setPlace(place);
-      setDevice(readDevice(env));
+      setDevice(readDevice(env, scope));
     } finally { setLoading(false); }
   };
 

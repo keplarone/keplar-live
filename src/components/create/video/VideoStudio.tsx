@@ -7,6 +7,7 @@
  * result stored in Keplar. Credits are charged only when a video is delivered.
  */
 import Link from "next/link";
+import { SignInLink } from "@/components/app-ui/SignInLink";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CreateOptions } from "../CreateOptions";
 import ci from "../create-intro.module.css";
@@ -79,6 +80,8 @@ export function VideoStudio() {
   const [ackLarge, setAckLarge] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** Progress polling: "offline" after reads keep failing (it keeps trying), "signedOut" stops it. */
+  const [poll, setPoll] = useState<"ok" | "offline" | "signedOut">("ok");
   const keyRef = useRef<string | null>(null);
 
   const config = data?.config;
@@ -114,11 +117,20 @@ export function VideoStudio() {
 
   // Progress: the server advances running jobs on every read (and by webhook), so polling is all the client does.
   const anyActive = jobs.some(active);
+  const pollStopped = poll === "signedOut";
   useEffect(() => {
-    if (!anyActive) return;
-    const t = setInterval(() => void load().catch(() => undefined), 3000);
+    if (!anyActive || pollStopped) return;
+    let fails = 0;
+    const t = setInterval(() => {
+      load()
+        .then(() => { fails = 0; setPoll("ok"); })
+        .catch((e) => {
+          if (e instanceof ApiError && e.status === 401) { clearInterval(t); setPoll("signedOut"); return; }
+          if (++fails >= 2) setPoll("offline");
+        });
+    }, 3000);
     return () => clearInterval(t);
-  }, [anyActive, load]);
+  }, [anyActive, pollStopped, load]);
 
   const chosen = useMemo(() => (config?.models ?? []).filter((m) => models.includes(m.id)), [config, models]);
   const haveImage = refs.some((r) => r.kind === "image");
@@ -444,6 +456,8 @@ export function VideoStudio() {
           </form>
 
           <section aria-label="Your videos">
+            {anyActive && poll === "offline" ? <p className={v.err} role="status" data-testid="video-reconnecting">Can&apos;t reach Keplar to update progress. Reconnecting… Your videos keep generating on the server.</p> : null}
+            {anyActive && poll === "signedOut" ? <p className={v.err} role="alert" data-testid="video-signed-out">You&apos;ve been signed out, so progress stopped updating. <SignInLink>Sign in</SignInLink> again to see your videos. They keep generating on the server.</p> : null}
             {jobs.length === 0 ? <EmptyState className={v.empty} title="Your videos appear here." hint="Describe a shot, then approve the cost." /> : (
               <>
                 {groups.map((g) => (

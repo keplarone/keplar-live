@@ -56,6 +56,8 @@ export function Onboarding({ initial, next, accountName }: { initial: Payload; n
   const touched = useRef(new Set<Keys>(Object.keys(saved) as Keys[]));
   const timer = useRef<number | null>(null);
   const queue = useRef<Promise<unknown>>(Promise.resolve());
+  /** The memory setting failed to save and the person was told; the next finish goes on without trying again. */
+  const memoryWarned = useRef(false);
   const heading = useRef<HTMLHeadingElement>(null);
   const firstRender = useRef(true);
   const live = initial.plan;
@@ -137,8 +139,15 @@ export function Onboarding({ initial, next, accountName }: { initial: Payload; n
     const answers = collect();
     try {
       await queue.current.catch(() => undefined);
-      if (how === "complete" && touched.current.has("memory")) {
-        await fetch("/api/memory", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ enabled: memory }), credentials: "same-origin" }).catch(() => undefined);
+      if (how === "complete" && touched.current.has("memory") && !memoryWarned.current) {
+        const res = await fetch("/api/memory", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ enabled: memory }), credentials: "same-origin" }).catch(() => null);
+        if (!res?.ok) {
+          // Say so before leaving (the switch here showed a choice that didn't stick); the next click goes on.
+          memoryWarned.current = true;
+          setNote(`Your memory choice (${memory ? "On" : "Off"}) didn't save. Change it in Settings → Memory. Finish again to go on.`);
+          setLeaving(false);
+          return;
+        }
       }
       await finishOnboarding(how, answers);
     } catch (e) {
