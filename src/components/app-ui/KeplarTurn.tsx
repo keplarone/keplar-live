@@ -515,7 +515,9 @@ function ConsensusBadge({ c }: { c: KeplarAnswer["consensus"] }) {
   const pct = voters > 0 ? Math.round((c.agree / voters) * 100) : 0;
   const label = c.level === "none" ? "No majority" : c.level === "partial" ? "Models split" : "Models agree";
   return (
-    <div className={s.consensus} data-level={c.level} aria-label={`${label}. ${asSentence(c.summary)} Agreement is not proof the answer is right.`}>
+    // role="img": the badge is a graphic whose visible parts are all aria-hidden, so its label is the text equivalent (aria-label is
+    // not allowed on a plain div).
+    <div className={s.consensus} data-level={c.level} role="img" aria-label={`${label}. ${asSentence(c.summary)}${c.missing ? ` ${c.responded} of ${c.consulted} responded.` : ""} Agreement is not proof the answer is right.`}>
       <svg className={s.ring} viewBox="0 0 36 36" aria-hidden="true">
         <circle cx="18" cy="18" r="15.5" className={s.ringTrack} />
         <circle cx="18" cy="18" r="15.5" className={s.ringValue} pathLength={100} strokeDasharray={`${pct} 100`} />
