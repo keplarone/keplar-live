@@ -19,3 +19,5 @@ for (const k of ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "STRIPE_CONNECT_W
 // The shared-Free-pool governor (src/lib/orchestration/pool-governor.ts) is effectively off for ordinary tests; tests/free-pool.test.ts builds its own governors.
 process.env.FREE_POOL_DAILY_LIMIT ??= "1000000";
 process.env.FREE_POOL_RPM ??= "1000000";
+// Likewise the provider circuit breaker (src/lib/orchestration/circuit.ts): mocked outages would otherwise open it and refuse later calls; tests/provider-resilience.test.ts sets the real threshold.
+process.env.KEPLAR_CIRCUIT_FAILURES ??= "1000000";

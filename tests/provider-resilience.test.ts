@@ -5,6 +5,7 @@ import { HttpError, postJson, postChatStream, retryDecision } from "@/lib/orches
 import { circuitAllows, circuitFailure, circuitKey, circuitSnapshot, circuitSuccess, resetCircuits } from "@/lib/orchestration/circuit";
 
 const realFetch = globalThis.fetch;
+process.env.KEPLAR_CIRCUIT_FAILURES = "5";
 beforeEach(() => {
   resetCircuits();
   globalThis.fetch = realFetch;
