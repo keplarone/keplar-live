@@ -67,10 +67,9 @@ test("no electric blue-dominant spam (teal OK: green channel stays close to blue
     // the weather sky: natural daylight sky blues (zenith / gradient), not UI accents (docs/design/space-ui.md 2.1)
     "src/lib/sky/variants.ts": ["63,134,216", "60,130,212"],
     "src/styles/space.css": ["61,132,213"],
-    // Keplar One's Gemini-led layer: the sign-up pill (dark #0c4a86 / hover #0f569b, light #1a5fe0 / hover #164fc0) and the
-    // ambient glow behind the empty home (#2f6bff) and the light theme's greeting-name stops (#1a5fe0, #1570d6). Each is a
-    // single action or brand moment, not a UI-wide accent.
-    "src/styles/gemini.css": ["47,107,255", "26,95,224", "21,112,214", "12,74,134", "15,86,155", "22,79,192"],
+    // Empty-home wash and greeting only: Keplar blue #2f6bff, and the light greeting stops #1a5fe0 / #1570d6.
+    // Teal and cyan stops stay under the green-channel rule and are not listed here.
+    "src/styles/gemini.css": ["47,107,255", "26,95,224", "21,112,214"],
     // Keplar Business's Apple-led system: the one action colour (#0071e3) and its link (#0066cc) and pressed (#0058b0) steps.
     "src/components/business-site/tokens.css": ["0,113,227", "0,102,204", "0,88,176"],
   };
@@ -85,4 +84,31 @@ test("no electric blue-dominant spam (teal OK: green channel stays close to blue
     });
   }
   assert.deepEqual(hits, []);
+});
+
+test("empty home keeps the graphite canvas, a blue-teal glow, and a visible keyboard outline", () => {
+  const gemini = readFileSync("src/styles/gemini.css", "utf8");
+  const graphite = readFileSync("src/styles/graphite.css", "utf8");
+  const theme = readFileSync("src/lib/theme.ts", "utf8");
+  assert.match(graphite, /--c-canvas:\s*#212121/);
+  assert.match(graphite, /\[data-theme="light"\][\s\S]*?--c-canvas:\s*#ffffff/);
+  assert.match(graphite, /outline: 2px solid var\(--c-ink\) !important;/);
+  assert.doesNotMatch(gemini, /--c-canvas:\s*#/);
+  assert.match(gemini, /--g-glow:\s*0\.55/);
+  assert.match(gemini, /--kg-a:\s*#2f6bff/i);
+  assert.match(gemini, /--kg-b:\s*#00b2cc/i);
+  assert.match(gemini, /radial-gradient\(closest-side at/);
+  assert.match(gemini, /linear-gradient\(90deg,\s*#5b8cff 0%,\s*#2f6bff/);
+  assert.match(gemini, /@keyframes g-glow-in \{\s*from \{ opacity: 0; scale: 0\.88; \}/);
+  assert.match(gemini, /@keyframes g-bloom \{\s*0% \{ opacity: 0; scale: 0\.975; \}/);
+  assert.match(gemini, /form\[class\*="__composer"\]:focus-within:has\(:focus-visible\) \{\s*outline:\s*2px solid var\(--c-ink\) !important;/);
+  assert.match(gemini, /form\[class\*="__composer"\]:focus-within \{\s*border-color: transparent !important;\s*box-shadow:\s*none !important;/);
+  assert.match(gemini, /#keplar-sidebar :is\(a, button\):focus-visible \{[^}]*outline:\s*2px solid var\(--c-ink\) !important;/);
+  assert.doesNotMatch(gemini, /filter:\s*blur|backdrop-filter/);
+  assert.doesNotMatch(gemini, /#(?:7c3aed|a855f7|9333ea|c58cff|f08bd8|ec4899|ff4d9a)/i);
+  assert.match(theme, /BUSINESS_DEFAULT_THEME_PREF: ThemePref = "dark"/);
+  for (const shadow of gemini.match(/box-shadow:\s*[^;]+/g) ?? []) {
+    assert.ok(/none|var\(--g-menu-shadow\)/.test(shadow), shadow);
+  }
+  assert.match(gemini, /--g-menu-shadow:\s*none/);
 });
