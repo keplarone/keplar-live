@@ -8,7 +8,7 @@
  * on, and the desktop's citation check; that check compares words and numbers and is never presented as a check by Keplar's servers.
  */
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import type { LiveResearchMeta, ResearchSource, ResearchSummary } from "@/lib/orchestration/types";
+import type { CitationCheck, LiveClaim, LiveResearchMeta, ResearchSource, ResearchSummary } from "@/lib/orchestration/types";
 import { LIVE_RESEARCH_STEPS, RESEARCH_STEPS, type LiveResearch } from "../state/research";
 import type { CiteRenderer } from "../Markdown";
 import { IconCheck, IconDeep } from "../icons";
@@ -105,9 +105,16 @@ export function ResearchHead({ research }: { research: ResearchSummary }) {
       <span className={s.badges}>
         <span className={s.badge} data-kind="web"><IconCheck size={12} /> Researched on the web</span>
         <span className={s.badge}>{research.sources.length} {research.sources.length === 1 ? "source" : "sources"} read · {research.cited.length} cited</span>
+        {research.check ? <CheckBadge c={research.check.summary} title="Keplar compared each cited sentence with what was read from its page: words and numbers, not meaning." /> : null}
       </span>
     </div>
   );
+}
+
+/** The citation check's counts as one badge ("Citations: 4 supported · 1 not verified"); nothing when there were no cited statements. */
+function CheckBadge({ c, title }: { c: { supported: number; partiallySupported: number; conflicting?: number; notVerified: number }; title: string }) {
+  const counts = [c.supported && `${c.supported} supported`, c.partiallySupported && `${c.partiallySupported} partly supported`, c.conflicting && `${c.conflicting} conflicting`, c.notVerified && `${c.notVerified} not verified`].filter(Boolean).join(" · ");
+  return counts ? <span className={s.badge} title={title} data-citation-check="">Citations: {counts}</span> : null;
 }
 
 /** One inline citation: the number, and on hover or focus the page's title, site and the passage the search returned. */
@@ -204,14 +211,13 @@ const STATUS_WORD: Record<NonNullable<LiveResearchMeta["checked"]>["claims"][num
 /** Live Research's header: where the pages came from, how many were read and cited, how many independent, and the citation check's counts. */
 function LiveHead({ research, live }: { research: ResearchSummary; live: LiveResearchMeta }) {
   const c = live.checked?.summary;
-  const counts = c ? [c.supported && `${c.supported} supported`, c.partiallySupported && `${c.partiallySupported} partly supported`, c.conflicting && `${c.conflicting} conflicting`, c.notVerified && `${c.notVerified} not verified`].filter(Boolean).join(" · ") : "";
   return (
     <div className={s.reportHead} data-research-report="" data-via="desktop">
       <span className={s.reportLabel}><IconDeep size={14} /> Live Research</span>
       <span className={s.badges}>
         <span className={s.badge} data-kind="web">{live.webSearch ? "Pages read by the Keplar desktop app" : "Reference, scholarly and news pages read by the Keplar desktop app"}</span>
         <span className={s.badge}>{research.sources.length} {research.sources.length === 1 ? "source" : "sources"} read · {research.cited.length} cited{live.independentGroups ? ` · ${live.independentGroups} independent` : ""}</span>
-        {counts ? <span className={s.badge} title="The desktop compared each cited sentence with the pages it read: words and numbers, not meaning.">Citations: {counts}</span> : null}
+        {c ? <CheckBadge c={c} title="The desktop compared each cited sentence with the pages it read: words and numbers, not meaning." /> : null}
       </span>
     </div>
   );
@@ -219,21 +225,40 @@ function LiveHead({ research, live }: { research: ResearchSummary; live: LiveRes
 
 /** Statements the desktop's citation check couldn't fully back with a cited page, with the passage (or the conflicting page) it found. */
 export function LiveChecks({ live }: { live?: LiveResearchMeta }) {
-  const claims = live?.checked?.claims.filter((c) => c.status !== "supported") ?? [];
-  if (!live?.checked || !claims.length) return null;
+  if (!live?.checked) return null;
   // The count comes from the desktop's summary; only the most serious statements are kept with the chat.
   const sum = live.checked.summary;
-  const total = Math.max(claims.length, sum.conflicting + sum.notVerified + sum.partiallySupported);
   return (
-    <details className={s.list} data-live-checks="">
+    <ClaimList claims={live.checked.claims} flagged={sum.conflicting + sum.notVerified + sum.partiallySupported} attr="data-live-checks"
+      note="The Keplar desktop app compared each cited sentence with the pages it read. It matches words and numbers, not meaning, so read the page before relying on these." />
+  );
+}
+
+/** Server Deep Research's citation check: statements whose cited page didn't clearly back them, with the closest line that was read. */
+export function ResearchChecks({ check }: { check?: CitationCheck }) {
+  if (!check) return null;
+  const sum = check.summary;
+  return (
+    <ClaimList claims={check.claims} flagged={sum.notVerified + sum.partiallySupported + (sum.conflicting ?? 0)} attr="data-research-checks"
+      note="Keplar compared each cited sentence with what was read from its page: the passage the search returned and a model's notes on it. It matches words and numbers, not meaning, so a paraphrase can show here; open the page before relying on these." />
+  );
+}
+
+function ClaimList({ claims: all, flagged, note, attr }: { claims: LiveClaim[]; flagged: number; note: string; attr: string }) {
+  const claims = all.filter((c) => c.status !== "supported");
+  if (!claims.length) return null;
+  const total = Math.max(claims.length, flagged);
+  return (
+    <details className={s.list} {...{ [attr]: "" }}>
       <summary className={s.listSummary}>Citation check <span className={s.listMeta}>{total} {total === 1 ? "statement needs" : "statements need"} a closer look</span></summary>
-      <p className={s.listNote} role="note">The Keplar desktop app compared each cited sentence with the pages it read. It matches words and numbers, not meaning, so read the page before relying on these.</p>
+      <p className={s.listNote} role="note">{note}</p>
       <ul className={s.checks}>
         {claims.map((c, i) => (
           <li key={i} data-status={c.status}>
             <span className={s.checkStatus}>{STATUS_WORD[c.status]}</span>
-            <span className={s.checkText}>{c.text}</span>
+            <span className={s.checkText}>{c.text} <span className={s.listMeta}>{c.citations.map((n) => `[${n}]`).join("")}</span></span>
             {c.note ? <span className={s.checkNote}>{c.note}</span> : null}
+            {c.quote && !c.conflict ? <span className={s.checkNote}>Closest line read: &ldquo;{c.quote}&rdquo;</span> : null}
             {c.conflict ? <span className={s.checkNote}>Source {c.conflict.n} says: &ldquo;{c.conflict.quote}&rdquo;</span> : null}
           </li>
         ))}

@@ -1,5 +1,7 @@
 /**
- * The MCP gateway: the ONLY path from Keplar to a connected app. All enforcement is here, server-side:
+ * The MCP gateway: the ONLY path from Keplar to a connected app. A tool call is authorized by `authorize`
+ * (`src/lib/security/authorize.ts`) before `callTool`; the MCP steps live in `authorize-mcp.ts` so a later tool
+ * cannot skip approval by copying a subset of this file. All enforcement is server-side:
  *
  *   owner policy (enabled / risk / auto-run, per-agent grants + budgets)
  *     -> AI Firewall verdict on the arguments -> approval (unless read-only + auto-run allowed)
@@ -426,7 +428,7 @@ export async function setChatAutoRun(ws: Workspace, on: boolean) {
 
 /* ---------- calling ---------- */
 
-const argsHash = (args: unknown) => hashOf(args ?? {});
+export const argsHash = (args: unknown) => hashOf(args ?? {});
 function argsPreview(args: unknown): string {
   const s = sanitizeUntrusted(JSON.stringify(args ?? {}) ?? "{}", { maxChars: 300 });
   return s.text;
@@ -435,8 +437,8 @@ function argsPreview(args: unknown): string {
 const localInflight = new Map<string, number>();
 const dayStart = () => now().slice(0, 10);
 
-type Loaded = { server: McpServer; tool: McpTool };
-async function load(ws: Workspace, serverId: string, toolName: string): Promise<Loaded> {
+export type Loaded = { server: McpServer; tool: McpTool };
+export async function load(ws: Workspace, serverId: string, toolName: string): Promise<Loaded> {
   const server = await mcpServers().get(ws.id, serverId);
   if (!server) throw new HttpError(404, "Connection not found.", "no_server");
   if (server.status === "failed" && server.statusKind === "blocked") throw new HttpError(409, "This connection is blocked.", "server_blocked");
@@ -447,7 +449,7 @@ async function load(ws: Workspace, serverId: string, toolName: string): Promise<
   return { server, tool };
 }
 
-async function grantCheck(ws: Workspace, agentId: string, loaded: Loaded) {
+export async function grantCheck(ws: Workspace, agentId: string, loaded: Loaded) {
   const g = await mcpGrants().get(ws.id, `${agentId}:${loaded.server.id}`);
   if (!g || !g.tools.includes(loaded.tool.name)) throw new HttpError(403, "This agent isn't allowed to use that tool.", "no_grant");
   const receipts = await mcpReceipts().list(ws.id, (r) => r.agentId === agentId && r.serverId === loaded.server.id && r.status !== "failed");
@@ -457,7 +459,7 @@ async function grantCheck(ws: Workspace, agentId: string, loaded: Loaded) {
   if (month + estimateUnits("mcp.call") > g.maxUnitsPerMonth) throw new HttpError(402, "This agent used its monthly credit budget for this connection.", "grant_units");
 }
 
-async function haltedCheck(ws: Workspace) {
+export async function haltedCheck(ws: Workspace) {
   const st = await collection<{ id: string; workspaceId: string; agentsHalted: boolean }>("biz_settings").get(ws.id, "settings");
   if (st?.agentsHalted) throw new HttpError(409, "All agents are halted. Resume them first.", "halted");
 }
@@ -466,7 +468,7 @@ export function buildAction(loaded: Loaded, args: Record<string, unknown>, idemp
   return { type: "mcp.call", connector: "mcp", serverId: loaded.server.id, serverName: loaded.server.name, tool: loaded.tool.name, args, toolRisk: loaded.tool.risk, idempotencyKey };
 }
 
-function assertArgs(tool: McpTool, args: unknown): Record<string, unknown> {
+export function assertArgs(tool: McpTool, args: unknown): Record<string, unknown> {
   const problems = validateArgs(tool.inputSchema, args);
   if (problems.length) throw new HttpError(422, `The arguments don't match the tool's schema: ${problems.join("; ")}.`, "invalid_args", { problems });
   return args as Record<string, unknown>;
@@ -499,42 +501,21 @@ function resultOf(r: McpReceipt, replayed: boolean): CallResult {
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
- * Run one tool call. `via` states the authority being claimed; each claim is verified here against stored state:
+ * Run one tool call. `via` states the authority being claimed. `authorizeMcpCall` verifies that claim against
+ * stored state before this function charges or calls out:
  *  - approval: a claimed (executing) approval for this exact server/tool/arguments exists (the owner just decided it)
  *  - auto: tool is read-only AND auto-run AND the agent has a grant (with budget left)
  *  - manual: the signed-in owner pressed Run on a read-only tool
  */
 export async function runToolCall(ws: Workspace, req: { serverId: string; tool: string; args: Record<string, unknown>; idempotencyKey: string; agentId: string | null; via: CallVia; approvalId?: string }): Promise<CallResult> {
-  const limits = assertMcpAllowed(ws);
-  const loaded = await load(ws, req.serverId, req.tool);
-  const { server, tool } = loaded;
-  const args = assertArgs(tool, req.args);
-  const agentId = req.agentId && req.agentId !== "owner" ? req.agentId : null;
-  if (agentId) await haltedCheck(ws);
-
-  if (req.via === "approval") {
-    // "executing": decide() claimed this approval (biz_approval_claims) and is running it now; nothing else may run it.
-    const ap = req.approvalId ? await approvals().get(ws.id, req.approvalId) : null;
-    const a = ap?.action;
-    if (!ap || ap.status !== "executing" || a?.type !== "mcp.call" || a.serverId !== server.id || a.tool !== tool.name || argsHash(a.args) !== argsHash(args)) throw new HttpError(403, "No matching approval for this call.", "no_approval");
-  } else if (req.via === "auto") {
-    if (tool.risk !== "read" || !tool.autoRun) throw new HttpError(403, "This tool needs your approval before it runs.", "needs_approval");
-    if (!agentId) throw new HttpError(403, "This tool needs your approval before it runs.", "needs_approval");
-    if (agentId === CHAT_AGENT && !(await chatAutoRunAllowed(ws.id))) throw new HttpError(403, "Ask isn't set to run tools without asking.", "needs_approval");
-  } else if (tool.risk !== "read") throw new HttpError(403, "This tool needs your approval before it runs.", "needs_approval");
-  if (agentId) await grantCheck(ws, agentId, loaded);
-
-  // The firewall judges the arguments again at execution time (secrets, injection phrases, raw-IP links...).
-  const verdict = inspectAction(buildAction(loaded, args, req.idempotencyKey));
-  if (verdict.blocked) {
-    await audit(ws.id, agentId ? `agent:${agentId}` : "owner", "firewall.blocked", `${server.id}/${tool.name}`, verdict.blocked);
-    throw new HttpError(422, verdict.blocked, "firewall_blocked");
-  }
-  // Nothing runs on its own when the firewall rates it high risk: those calls need the owner's approval (chat and agents queue them).
-  if (req.via === "auto" && !verdict.autoSendAllowed) {
-    await audit(ws.id, `agent:${agentId}`, "mcp.call.needs_approval", `${server.id}/${tool.name}`, `${verdict.risk} risk: ${verdict.reasons.join("; ")}`.slice(0, 300));
-    throw new HttpError(403, "The AI Firewall rated this call high risk, so it needs your approval before it runs.", "needs_approval");
-  }
+  // Approval, grant, plan and firewall live in authorize(). callTool below refuses to run without the permit it issues.
+  const { authorizeMcpCall } = await import("@/lib/security/authorize-mcp");
+  const gated = await authorizeMcpCall(ws, req);
+  const limits = mcpLimitsFor(ws.plan);
+  const { server, tool } = gated.loaded;
+  const args = gated.args;
+  const agentId = gated.agentId;
+  const permit = gated.permit;
 
   const actor = agentId ? `agent:${agentId}` : "owner";
   const rid = `mcr_${createHash("sha256").update(`${ws.id}|${server.id}|${tool.name}|${req.idempotencyKey}`).digest("hex").slice(0, 24)}`;
@@ -589,7 +570,7 @@ export async function runToolCall(ws: Workspace, req: { serverId: string; tool: 
     while (attempts < maxAttempts && !outcome) {
       attempts++;
       try {
-        outcome = await callTool(target, tool.name, args);
+        outcome = await callTool(target, tool.name, args, permit);
       } catch (e) {
         lastErr = e;
         // OAuth: a 401 means the token was refused before anything ran, so renewing it and trying once more is safe for any tool.

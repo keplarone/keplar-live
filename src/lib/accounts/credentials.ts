@@ -9,21 +9,18 @@
 import { neonQuery } from "@/lib/create/platform/neon";
 import { normalizeEmail } from "./magic-token";
 import { ensureAuthSchema } from "./persist";
+import { ensureSideSql } from "./sql-setup";
 
 export type Credential = { email: string; hash: string; name: string; verifiedAt: string | null; termsAcceptedAt: string | null };
 
 let ready: Promise<void> | null = null;
 export function ensureCredentialSchema(): Promise<void> {
-  ready ??= (async () => {
-    const run = () => neonQuery("CREATE TABLE IF NOT EXISTS keplar_credentials (email text PRIMARY KEY, password_hash text NOT NULL, name text NOT NULL DEFAULT '', verified_at timestamptz, terms_accepted_at timestamptz, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now())");
-    await run().catch(async () => {
-      await new Promise((r) => setTimeout(r, 300));
-      await run();
+  ready ??= ensureSideSql()
+    .then(() => undefined)
+    .catch((e) => {
+      ready = null;
+      throw e;
     });
-  })().catch((e) => {
-    ready = null;
-    throw e;
-  });
   return ready;
 }
 
