@@ -8,19 +8,16 @@
  */
 import { randomBytes } from "node:crypto";
 import { neonQuery } from "@/lib/create/platform/neon";
+import { ensureSideSql } from "../sql-setup";
 
 let ready: Promise<void> | null = null;
 function ensure(): Promise<void> {
-  ready ??= (async () => {
-    await neonQuery(
-      "CREATE TABLE IF NOT EXISTS keplar_passkeys (id text PRIMARY KEY, user_id text NOT NULL, public_key text NOT NULL, counter bigint NOT NULL DEFAULT 0, transports jsonb NOT NULL DEFAULT '[]'::jsonb, name text NOT NULL DEFAULT 'Passkey', device_type text NOT NULL DEFAULT 'singleDevice', backed_up boolean NOT NULL DEFAULT false, created_at timestamptz NOT NULL DEFAULT now(), last_used_at timestamptz)",
-    );
-    await neonQuery("CREATE INDEX IF NOT EXISTS keplar_passkeys_user ON keplar_passkeys (user_id)");
-    await neonQuery("CREATE TABLE IF NOT EXISTS keplar_webauthn_challenges (id text PRIMARY KEY, challenge text NOT NULL, user_id text, purpose text NOT NULL, expires_at timestamptz NOT NULL)");
-  })().catch((e) => {
-    ready = null;
-    throw e;
-  });
+  ready ??= ensureSideSql()
+    .then(() => undefined)
+    .catch((e) => {
+      ready = null;
+      throw e;
+    });
   return ready;
 }
 const q = async (sql: string, params: unknown[] = []) => {

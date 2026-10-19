@@ -45,6 +45,8 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Unit tests
         run: npm test
+      - name: Benchmark harness self-tests (offline)
+        run: node --import tsx --test bench/tests/*.test.ts
       - name: Build
         run: npx next build
         env:

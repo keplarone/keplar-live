@@ -8,6 +8,7 @@
  */
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { neonQuery } from "@/lib/create/platform/neon";
+import { ensureSideSql } from "../sql-setup";
 import { openSecret, sealSecret } from "@/lib/mcp/crypto";
 import { authSecret } from "../secret";
 import { generateRecoveryCodes, generateSecret, looksLikeRecovery, normalizeRecovery, otpauthUri, verifyTotp } from "./totp";
@@ -15,9 +16,7 @@ import { generateRecoveryCodes, generateSecret, looksLikeRecovery, normalizeReco
 const SCOPE = "mfa";
 let ready: Promise<void> | null = null;
 function ensure(): Promise<void> {
-  ready ??= neonQuery(
-    "CREATE TABLE IF NOT EXISTS keplar_mfa (user_id text PRIMARY KEY, secret_enc text NOT NULL, enabled_at timestamptz, last_step bigint NOT NULL DEFAULT 0, recovery jsonb NOT NULL DEFAULT '[]'::jsonb, created_at timestamptz NOT NULL DEFAULT now())",
-  )
+  ready ??= ensureSideSql()
     .then(() => undefined)
     .catch((e) => {
       ready = null;

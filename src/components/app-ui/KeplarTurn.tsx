@@ -32,7 +32,7 @@ import { useTypewriter } from "./useTypewriter";
 import { stageCopy } from "./copy";
 import { SynthesisView } from "./SynthesisView";
 import { DebateLive, DebateTranscript } from "./DebateView";
-import { CitationChecks, LiveChecks, ResearchHead, ResearchLive, ResearchSources, citeRenderer } from "./research/Research";
+import { LiveChecks, ResearchChecks, ResearchHead, ResearchLive, ResearchSources, citeRenderer } from "./research/Research";
 import { liveCopyText } from "./state/live-research";
 import { researchBridge, safe } from "@/lib/desktop/research-bridge";
 import { downloadText } from "./chat-export";
@@ -515,7 +515,9 @@ function ConsensusBadge({ c }: { c: KeplarAnswer["consensus"] }) {
   const pct = voters > 0 ? Math.round((c.agree / voters) * 100) : 0;
   const label = c.level === "none" ? "No majority" : c.level === "partial" ? "Models split" : "Models agree";
   return (
-    <div className={s.consensus} data-level={c.level} aria-label={`${label}. ${asSentence(c.summary)} Agreement is not proof the answer is right.`}>
+    // role="img": the badge is a graphic whose visible parts are all aria-hidden, so its label is the text equivalent (aria-label is
+    // not allowed on a plain div).
+    <div className={s.consensus} data-level={c.level} role="img" aria-label={`${label}. ${asSentence(c.summary)}${c.missing ? ` ${c.responded} of ${c.consulted} responded.` : ""} Agreement is not proof the answer is right.`}>
       <svg className={s.ring} viewBox="0 0 36 36" aria-hidden="true">
         <circle cx="18" cy="18" r="15.5" className={s.ringTrack} />
         <circle cx="18" cy="18" r="15.5" className={s.ringValue} pathLength={100} strokeDasharray={`${pct} 100`} />
@@ -851,7 +853,7 @@ function Answer({ answer: a, onRetry, onRefreshResearch, onSignal, isLast, conti
       ) : null}
 
       {a.research ? <ResearchSources research={a.research} /> : null}
-      {a.research?.live ? <LiveChecks live={a.research.live} /> : a.research?.checked ? <CitationChecks checked={a.research.checked} via="server" /> : null}
+      {a.research?.live ? <LiveChecks live={a.research.live} /> : a.research?.check ? <ResearchChecks check={a.research.check} /> : null}
       {a.sourcing ? <SourceChecks sourcing={a.sourcing} /> : null}
 
       <div className={s.how} data-open={howOpen || undefined}>

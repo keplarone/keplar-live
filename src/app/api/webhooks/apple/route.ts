@@ -3,6 +3,7 @@
  * Body: { signedPayload: "<JWS>" }. Verified with Apple Root CAs + APPLE_BUNDLE_ID.
  * Missing config → 503 (safe empty deploy). Bad signature → 401.
  */
+import { createHash } from "node:crypto";
 import { json, readText } from "@/lib/create/platform/http";
 import { appleIapConfigured, AppleIapNotConfiguredError, AppleIapVerifyError, verifySignedNotification } from "@/lib/billing/apple";
 import { handleAppleNotification } from "@/lib/billing/apple-sync";
@@ -27,7 +28,7 @@ export async function POST(req: Request) {
   if (!signedPayload) return json({ error: "signedPayload required." }, { status: 400 });
   try {
     const notification = await verifySignedNotification(signedPayload);
-    const uuid = typeof notification.notificationUUID === "string" && notification.notificationUUID ? notification.notificationUUID : `apple_${Date.now()}`;
+    const uuid = typeof notification.notificationUUID === "string" && notification.notificationUUID ? notification.notificationUUID : `apple_${createHash("sha256").update(signedPayload).digest("hex").slice(0, 32)}`;
     const out = await handleAppleNotification(notification, uuid);
     return json({ received: true, ...out });
   } catch (e) {

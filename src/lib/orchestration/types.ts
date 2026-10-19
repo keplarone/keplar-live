@@ -541,15 +541,14 @@ export type ResearchEvent =
   /** Client only: the card starts over (Keplar's own Deep Research taking over from a desktop run that couldn't finish). */
   | { phase: "reset" };
 /** On the finished answer: what the research read and which pages the report cites ([n] markers that really map to a read page). */
-export type ResearchSummary = {
-  queries: string[];
-  sources: ResearchSource[];
-  cited: number[];
-  off?: string;
-  live?: LiveResearchMeta;
-  /** Server Deep Research only: each cited sentence compared with the text the search returned for its pages (src/lib/research/citation-check.ts). */
-  checked?: CitationCheck;
+/** Server Deep Research's citation check (lib/research/citation-check.ts): words and numbers, not meaning. */
+export type CitationCheck = {
+  /** `conflicting`: absent on answers checked before conflicts were detected. */
+  summary: { claims: number; supported: number; partiallySupported: number; conflicting?: number; notVerified: number };
+  /** The statements that need a closer look, most serious first. */
+  claims: LiveClaim[];
 };
+export type ResearchSummary = { queries: string[]; sources: ResearchSource[]; cited: number[]; off?: string; live?: LiveResearchMeta; check?: CitationCheck };
 
 /* ───────────────────────────── live research (desktop) ───────────────────────────── */
 
@@ -572,18 +571,11 @@ export type LiveResearchMeta = {
   webSearch: boolean;
   independentGroups?: number;
   failed?: { url: string; status: string; reason: string }[];
-  checked?: CitationCheck;
-};
-/**
- * A citation check's result, kept with the answer: the counts, and the statements that need a closer look (the most serious first).
- * `by`: "desktop" (Live Research, the desktop's validate(), run client-side) or "server" (Deep Research, citation-check.ts). Absent on
- * answers saved before the server check existed, which were all desktop checks. Both compare words and numbers, not meaning.
- */
-export type CitationCheck = {
-  at: string;
-  by?: "desktop" | "server";
-  summary: { claims: number; supported: number; partiallySupported: number; conflicting: number; notVerified: number; removedCitations: number; removedLinks: number; uncitedFacts: number };
-  claims: LiveClaim[];
+  checked?: {
+    at: string;
+    summary: { claims: number; supported: number; partiallySupported: number; conflicting: number; notVerified: number; removedCitations: number; removedLinks: number; uncitedFacts: number };
+    claims: LiveClaim[];
+  };
 };
 
 /* ───────────────────────────── synthesis ───────────────────────────── */
