@@ -40,6 +40,7 @@ import { addQuizQuestions, applyShortfall, sourceCapacity } from "@/lib/quiz/fil
 import { quizPanelHint } from "@/lib/quiz/prompt";
 import { cheapestQuizModel, QUIZ_REPAIR_SYSTEM, QUIZ_TOPUP_SYSTEM, quizFromRepair, quizRepairUser, quizTopUpUser, questionsFromModel, readQuizLimited } from "@/lib/quiz/repair";
 import type { Quiz, QuizAsk, QuizQuestion } from "@/lib/quiz/types";
+import { substitutionNote } from "./served-model";
 
 type Ok = Extract<ProviderResult, { ok: true }>;
 const nameOf = (id: string) => catalogById.get(id)?.name ?? id;
@@ -422,7 +423,7 @@ export class ModelSynthesizer implements Synthesizer {
         const base = { id: p.model.id, name: p.model.name, provider: p.model.provider, slot: "panel" as const };
         if (!r) return { ...base, status: "failed", note: "No response." };
         if (!r.ok) return { ...base, status: r.reason === "refusal" ? "refused" : "failed", note: r.reason === "timeout" ? `${r.message} Excluded from consensus, not counted as dissent.` : `${r.message} Excluded from consensus.` };
-        return { ...base, status: "responded", stance: r.stance === UNCLASSIFIED ? undefined : r.stance, note: p.reason?.startsWith("Stood in") ? p.reason : r.servedBy ? `Served via ${r.servedBy.via}.` : undefined };
+        return { ...base, status: "responded", stance: r.stance === UNCLASSIFIED ? undefined : r.stance, note: r.servedBy?.substituted ? substitutionNote(p.model.name, r.servedBy.model) : p.reason?.startsWith("Stood in") ? p.reason : r.servedBy ? `Served via ${r.servedBy.via}.` : undefined };
       }),
       ...(plan.verifier
         ? [{ ...(verification.reviewer?.role === "verifier" ? { id: verification.reviewer.modelId, name: verification.reviewer.name, provider: catalogById.get(verification.reviewer.modelId)?.provider ?? plan.verifier.model.provider } : { id: plan.verifier.model.id, name: plan.verifier.model.name, provider: plan.verifier.model.provider }), slot: "verifier" as const, status: verification.reviewer?.role === "verifier" ? ("responded" as const) : ("not-needed" as const), note: verification.reviewer?.role === "verifier" ? "Reviewed the draft answer against each response." : "Not called." }]

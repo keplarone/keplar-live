@@ -59,7 +59,7 @@ export class OpenRouterProvider implements Provider {
       const res = onToken
         ? ((await postChatStream(url, body, headers, onToken, signal, this.freeOnly ? FREE_RETRY : undefined)) as ChatResponse)
         : await postJson<ChatResponse>(url, body, headers, signal, this.freeOnly ? FREE_RETRY : undefined);
-      return fromChat(model, res, started, this.name, classification);
+      return fromChat(model, res, started, this.name, classification, slug);
     } catch (e) {
       if (signal?.aborted) throw e;
       const status = e instanceof HttpError ? e.status : 0;

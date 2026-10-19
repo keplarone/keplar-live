@@ -29,8 +29,23 @@ export function summarizeModels(models: readonly ConsultedModel[]): ModelStatusS
   const panel = models.filter((m) => m.slot === "panel");
   const answered = panel.filter((m) => m.status === "responded").map((m) => m.name);
   const missing = panel.filter((m) => m.status === "failed" || m.status === "refused").map((m) => ({ name: m.name, why: whyMissing(m) }));
-  const standIns = panel.filter((m) => m.status === "responded" && m.note?.startsWith("Stood in for ")).map((m) => `${m.name} answered ${m.note!.replace(/^Stood in for /, "in place of ").replace(/\.$/, "")}`);
+  const standIns = [
+    ...panel.filter((m) => m.status === "responded" && m.note?.startsWith("Stood in for ")).map((m) => `${m.name} answered ${m.note!.replace(/^Stood in for /, "in place of ").replace(/\.$/, "")}`),
+    ...panel.filter((m) => m.status === "responded" && m.note?.startsWith("Answered by ")).map((m) => m.note!.replace(/\.$/, "")),
+  ];
   return { answered, missing, standIns, notable: missing.length > 0 || standIns.length > 0 };
+}
+
+/**
+ * The one-line process summary above a finished answer. Counts the models that actually answered, never the planned panel, so a
+ * consensus run where one of three answered cannot read "Reasoned with 3 intelligences".
+ */
+export function processSummary(m: { mode?: string; count: number; consensus?: { consulted: number; responded: number } | null }): string {
+  if (m.mode === "single") return "Answered with one model";
+  if (!m.consensus) return `Asked ${m.count} intelligences`;
+  const { consulted, responded } = m.consensus;
+  if (responded <= 1) return consulted > 1 ? `Answered by one model (${responded} of ${consulted} responded)` : "Answered with one model";
+  return responded < consulted ? `Reasoned with ${responded} of ${consulted} intelligences` : `Reasoned with ${responded} intelligences`;
 }
 
 const list = (xs: string[]) => (xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);

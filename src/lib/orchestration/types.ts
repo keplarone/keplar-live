@@ -317,7 +317,7 @@ export type ProviderResult =
        */
       actualCostUsd?: number;
       /** The model and upstream host that actually served the call (may differ after fallback). */
-      servedBy?: { model: string; provider?: string; via: string };
+      servedBy?: { model: string; provider?: string; via: string; substituted?: boolean };
       /** Sources the model cited in its own response (not opened or checked by Keplar). */
       citations?: Citation[];
     }

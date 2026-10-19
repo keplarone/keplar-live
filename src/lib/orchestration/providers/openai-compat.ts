@@ -37,7 +37,7 @@ abstract class OpenAICompatProvider implements Provider {
       const url = `${this.base()}/chat/completions`;
       const headers = { Authorization: `Bearer ${this.key()}` };
       const res = input.onToken ? ((await postChatStream(url, this.body(id, input), headers, input.onToken, signal)) as ChatResponse) : await postJson<ChatResponse>(url, this.body(id, input), headers, signal);
-      const r = fromChat(model, res, started, this.name, classification);
+      const r = fromChat(model, res, started, this.name, classification, id);
       // No billed figure from these APIs: meter at the roster's list price (conservative for NVIDIA credits).
       if (r.ok && r.actualCostUsd === undefined) r.actualCostUsd = callCostUsd(model, r.usage.inputTokens, r.usage.outputTokens, new Date().toISOString()) ?? undefined;
       return r;

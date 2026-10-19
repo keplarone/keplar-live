@@ -1,5 +1,6 @@
 import { UNCLASSIFIED } from "../comparator";
 import { frameLabel, type ImageInput } from "../media";
+import { servedModelDiffers } from "../served-model";
 import type { Citation, Classification, GenerationParams, ModelSpec, ProviderResult } from "../types";
 import { identityPrompt } from "@/lib/identity";
 import { VOICE_PROMPT_SHORT } from "@/lib/persona";
@@ -114,7 +115,7 @@ export function extractCitations(text: string, annotations?: NonNullable<NonNull
 }
 
 /** Map an OpenAI-compatible response to a ProviderResult. Refusals are missing votes. */
-export function fromChat(model: ModelSpec, res: ChatResponse, started: number, via: string, c: Classification): ProviderResult {
+export function fromChat(model: ModelSpec, res: ChatResponse, started: number, via: string, c: Classification, requested?: string): ProviderResult {
   const choice = res.choices?.[0];
   // Some open-weight hosts inline their reasoning as <think>…</think>; it is never shown or compared.
   const text = (choice?.message?.content ?? "").replace(/<think>[\s\S]*?<\/think>\s*/g, "").replace(/^[\s\S]*?<\/think>\s*/, "");
@@ -135,7 +136,7 @@ export function fromChat(model: ModelSpec, res: ChatResponse, started: number, v
       outputTokens: res.usage?.completion_tokens ?? 0,
     },
     actualCostUsd: typeof res.usage?.cost === "number" ? res.usage.cost : undefined,
-    servedBy: { model: res.model ?? model.id, provider: res.provider, via },
+    servedBy: { model: res.model ?? model.id, provider: res.provider, via, ...(servedModelDiffers(requested, res.model) ? { substituted: true } : {}) },
     citations: extractCitations(text, choice?.message?.annotations),
   };
 }

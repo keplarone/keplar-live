@@ -42,6 +42,7 @@ import { ModelVerifier } from "./verifier";
 import { MergedFreeReview } from "./free-merged";
 import { sharedPool } from "./pool-governor";
 import { debateCostFactor, debatePolicy, debaterSystem, runDebate, type DebateSummary } from "./debate";
+import { substitutionNote } from "./served-model";
 import type {
   Retriever,
   Classification,
@@ -578,7 +579,7 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
   if (debateResults && multi) {
     for (const [i, r] of debateResults.entries()) {
       const m = plan.panel[i].model;
-      yield r.ok ? { type: "model", modelId: m.id, name: m.name, status: "responded" } : { type: "model", modelId: m.id, name: m.name, status: r.reason === "refusal" ? "refused" : "failed", note: r.message };
+      yield r.ok ? { type: "model", modelId: m.id, name: m.name, status: "responded", ...(r.servedBy?.substituted ? { note: substitutionNote(m.name, r.servedBy.model) } : {}) } : { type: "model", modelId: m.id, name: m.name, status: r.reason === "refusal" ? "refused" : "failed", note: r.message };
     }
   }
   const queue = new Map(seats.map((pr, i) => [i, pr.then((r) => ({ i, r }))]));
@@ -613,7 +614,7 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
     const m = plan.panel[i].model;
     if (multi) {
       yield r.ok
-        ? { type: "model", modelId: m.id, name: m.name, status: "responded", ...(plan.panel[i].reason?.startsWith("Stood in") ? { note: plan.panel[i].reason } : {}) }
+        ? { type: "model", modelId: m.id, name: m.name, status: "responded", ...(r.servedBy?.substituted ? { note: substitutionNote(m.name, r.servedBy.model) } : plan.panel[i].reason?.startsWith("Stood in") ? { note: plan.panel[i].reason } : {}) }
         : { type: "model", modelId: m.id, name: m.name, status: r.reason === "refusal" ? "refused" : "failed", note: r.message };
     }
   }

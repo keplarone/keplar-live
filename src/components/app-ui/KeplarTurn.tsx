@@ -8,7 +8,7 @@ import { brand } from "@/lib/site";
 import { tiers } from "@/lib/tiers";
 import { formatResetAt, upgradesFrom, WINDOW_WARN_AT, windowResetText } from "@/lib/orchestration/plans";
 import { computeLevelLabel } from "@/lib/orchestration/compute";
-import { summarizeModels } from "@/lib/orchestration/model-status";
+import { processSummary, summarizeModels } from "@/lib/orchestration/model-status";
 import type { KeplarAnswer, VerificationCheck } from "@/lib/orchestration/types";
 import { IconCheck, IconChevron, IconRetry, IconSave, IconThumb, IconWeb } from "./icons";
 import { ListenButton } from "./ListenButton";
@@ -97,10 +97,7 @@ export function KeplarTurn({ message: m, onRetry, onRefreshResearch, onSignal, o
     }
   }, [live, m.id, m.status, m.answer, m.mode, m.smalltalk, m.finishedAt, m.startedAt, m.error?.kind, tier]);
 
-  const summary =
-    m.mode === "single"
-      ? "Answered with one model"
-      : `Reasoned with ${m.answer ? m.answer.consensus.consulted : count} intelligences`;
+  const summary = processSummary({ mode: m.mode, count, consensus: m.answer?.consensus });
 
   return (
     <div className={s.turn} data-status={m.status}>
