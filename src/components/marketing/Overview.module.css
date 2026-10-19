@@ -77,7 +77,7 @@
   overflow: hidden;
   border: 1px solid var(--hairline);
   border-radius: 20px;
-  background: var(--c-surface-1); /* follows the theme tokens (gemini.css): #1e1f20 dark, #f0f4f9 light */
+  background: var(--c-surface-1); /* graphite surface: #171717 dark, #f7f7f8 light */
   opacity: 1;
 }
 

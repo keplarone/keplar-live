@@ -67,9 +67,6 @@ test("no electric blue-dominant spam (teal OK: green channel stays close to blue
     // the weather sky: natural daylight sky blues (zenith / gradient), not UI accents (docs/design/space-ui.md 2.1)
     "src/lib/sky/variants.ts": ["63,134,216", "60,130,212"],
     "src/styles/space.css": ["61,132,213"],
-    // Keplar One's Gemini-led layer: the sign-up pill (dark #0c4a86 / hover #0f569b, light #1a5fe0 / hover #164fc0).
-    // Each is a single action, not a UI-wide accent. The empty-home glow and the greeting gradient are not part of this list.
-    "src/styles/gemini.css": ["26,95,224", "12,74,134", "15,86,155", "22,79,192"],
     // Keplar Business's Apple-led system: the one action colour (#0071e3) and its link (#0066cc) and pressed (#0058b0) steps.
     "src/components/business-site/tokens.css": ["0,113,227", "0,102,204", "0,88,176"],
   };
@@ -84,4 +81,20 @@ test("no electric blue-dominant spam (teal OK: green channel stays close to blue
     });
   }
   assert.deepEqual(hits, []);
+});
+
+test("app and home keep graphite: no restyle glow, blue-teal gradient, or blurred halo", () => {
+  const gemini = readFileSync("src/styles/gemini.css", "utf8");
+  const graphite = readFileSync("src/styles/graphite.css", "utf8");
+  assert.match(graphite, /--c-canvas:\s*#212121/);
+  assert.match(graphite, /\[data-theme="light"\][\s\S]*?--c-canvas:\s*#ffffff/);
+  assert.doesNotMatch(gemini, /--c-canvas:\s*#/);
+  assert.doesNotMatch(gemini, /--g-glow|--kg-[ab]|#2f6bff|#00b2cc|#6f9bff|#5fd3e3|#0c4a86|#1a5fe0|#0f3a44|#131314|#f0f4f9|g-bloom|g-glow-in/i);
+  assert.doesNotMatch(gemini, /linear-gradient|radial-gradient|filter:\s*blur|backdrop-filter/);
+  assert.match(gemini, /form\[class\*="__composer"\]:focus-within \{[^}]*outline:\s*2px solid var\(--c-ink\) !important;/);
+  assert.match(gemini, /form\[class\*="__composer"\]:focus-within \{[^}]*box-shadow:\s*none !important;/);
+  for (const shadow of gemini.match(/box-shadow:\s*[^;]+/g) ?? []) {
+    assert.ok(/none|var\(--g-menu-shadow\)/.test(shadow), shadow);
+  }
+  assert.match(gemini, /--g-menu-shadow:\s*none/);
 });
