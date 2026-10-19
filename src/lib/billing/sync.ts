@@ -19,8 +19,9 @@ import { EMBED_SOURCE, verifyEmbedRef } from "./embed";
 import { extensionValidDays, packForWhopPlanId, type Pack } from "./extensions";
 import { extensionForPayment, grantExtension, revokeExtensionByPayment } from "@/lib/create/platform/extensions";
 import { revokeStudioTopUp, syncStudioTopUp } from "./studio-topup";
+import { claimEvent, finishEvent, releaseEvent, type ClaimRow } from "./event-claim";
 
-type EventRow = { id: string; workspaceId: string; type: string; at: string; result: string };
+type EventRow = ClaimRow;
 const events = () => collection<EventRow>("billing_events");
 type PaymentRow = {
   id: string; workspaceId: string; email: string; plan: GrantablePlan; membershipId: string | null; at: string;
@@ -126,26 +127,20 @@ async function revoke(ws: WorkspaceRow, status: "canceled" | "unpaid") {
 
 /** Apply one verified Whop event. Returns a short result string (never user data). */
 export async function handleWhopEvent(event: WhopEvent, webhookId: string): Promise<{ duplicate: boolean; result: string }> {
-  // Atomic claim: two concurrent deliveries of the same webhook-id cannot both apply (the loser sees the claim and returns a duplicate).
-  // A failed handler releases the claim so Whop's retry is processed; a claim stuck "processing" for > 2 minutes (crashed instance) is taken over.
-  const claim: EventRow = { id: webhookId, workspaceId: SYSTEM, type: event.type, at: now(), result: PROCESSING };
-  const first = await events().insertIfAbsent(claim);
-  if (!first.inserted) {
-    const stale = first.row.result === PROCESSING && Date.now() - Date.parse(first.row.at) > 120_000;
-    if (!stale) return { duplicate: true, result: first.row.result };
-    await events().update(SYSTEM, webhookId, { at: now() });
-  }
+  // Atomic claim (event-claim.ts): two concurrent deliveries of the same webhook-id cannot both apply. A failed handler releases the
+  // claim so Whop's retry is processed; a claim stuck "processing" for > 2 minutes (crashed instance) is taken over by exactly one retry.
+  const claim = await claimEvent(events(), { id: webhookId, workspaceId: SYSTEM, type: event.type });
+  if (!claim.claimed) return { duplicate: true, result: claim.result };
   try {
     const result = await applyWhopEvent(event, webhookId);
-    await events().update(SYSTEM, webhookId, { result, at: now() });
+    await finishEvent(events(), SYSTEM, webhookId, result);
     return { duplicate: false, result };
   } catch (e) {
-    await events().remove(SYSTEM, webhookId).catch(() => undefined);
+    await releaseEvent(events(), SYSTEM, webhookId);
     throw e;
   }
 }
 
-const PROCESSING = "processing";
 
 async function applyWhopEvent(event: WhopEvent, webhookId: string): Promise<string> {
   const data = obj(event.data) ?? {};
