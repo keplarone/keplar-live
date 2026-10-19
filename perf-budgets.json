@@ -1,0 +1,51 @@
+{
+  "about": "Per-route download budgets checked by scripts/perf-budget.mjs after next build (CI and npm run verify). Bytes: jsGzip and cssGzip are gzip level 9 sizes of the files the server-rendered HTML references; cssRaw is uncompressed CSS (render-blocking, parsed before first paint). Raise a budget only in the same pull request that explains why the page needs the bytes.",
+  "measured": "2026-10-19",
+  "routes": {
+    "/": {
+      "jsGzip": 277504,
+      "cssGzip": 89088,
+      "cssRaw": 523264
+    },
+    "/overview": {
+      "jsGzip": 273408,
+      "cssGzip": 89088,
+      "cssRaw": 520192
+    },
+    "/pricing": {
+      "jsGzip": 277504,
+      "cssGzip": 99328,
+      "cssRaw": 593920
+    },
+    "/how-it-works": {
+      "jsGzip": 273408,
+      "cssGzip": 89088,
+      "cssRaw": 523264
+    },
+    "/features": {
+      "jsGzip": 273408,
+      "cssGzip": 90112,
+      "cssRaw": 525312
+    },
+    "/blogs": {
+      "jsGzip": 273408,
+      "cssGzip": 99328,
+      "cssRaw": 593920
+    },
+    "/blogs/why-ai-models-disagree": {
+      "jsGzip": 277504,
+      "cssGzip": 99328,
+      "cssRaw": 593920
+    },
+    "/docs": {
+      "jsGzip": 276480,
+      "cssGzip": 99328,
+      "cssRaw": 593920
+    },
+    "/signin": {
+      "jsGzip": 303104,
+      "cssGzip": 91136,
+      "cssRaw": 528384
+    }
+  }
+}

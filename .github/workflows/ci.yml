@@ -56,6 +56,13 @@ jobs:
           KEPLAR_DEV_TOOLS: '1'
           KEPLAR_MX_CHECK: 'off'
           RESEND_API_KEY: ''
+      - name: Performance budget (per-route JS and CSS against perf-budgets.json)
+        run: node scripts/perf-budget.mjs --start
+        env:
+          BETTER_AUTH_SECRET: ci-build-secret-0123456789abcdefghijklmnop
+          KEPLAR_DEV_TOOLS: '1'
+          KEPLAR_MX_CHECK: 'off'
+          RESEND_API_KEY: ''
       - name: Secret scan of the build output
         # Nothing under .next/static (what browsers download) may contain a credential pattern.
         run: node scripts/secret-scan.mjs --dir .next/static

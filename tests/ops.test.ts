@@ -169,6 +169,16 @@ test("admin summary: MRR only from active, unexpired paid subscriptions; spend a
   assert.equal(s.models.errorRate24h, 0.5);
   assert.equal(s.models.requestsPerMinute.reduce((a, b) => a + b, 0), 2);
   assert.equal(s.revenue.paymentsLast30d, 1);
+  const r = summarize({ now, workspaces: [], ledger: [], calls: [], events: [], payments: [
+    { id: "a", email: "a@x.com", plan: "plus", at: "2026-10-01T00:00:00Z", amountUsd: 44.99 },
+    { id: "b", email: "b@x.com", plan: "lite", at: "2026-10-02T00:00:00Z" },
+    { id: "c", email: "c@x.com", plan: "pro", at: "2026-10-03T00:00:00Z", amountUsd: 99.99, refundedAt: "2026-10-04T00:00:00Z" },
+  ] });
+  assert.equal(r.revenue.paymentsLast30d, 2, "a refunded payment is not revenue");
+  assert.equal(r.revenue.refundedLast30d, 1);
+  assert.equal(r.revenue.paymentsRevenueLast30dUsd, 45 + 20, "list price of the kept payments, Lite included");
+  assert.equal(r.revenue.recordedAmountLast30dUsd, 44.99, "only amounts Whop recorded, on kept payments");
+  assert.equal(r.revenue.recordedAmountPayments, 1);
   assert.equal(percentile([1, 2, 3, 4], 50), 3);
 });
 

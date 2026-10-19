@@ -2,7 +2,7 @@
 /**
  * Release gate: `npm run verify`. Runs, in order, and stops at the first failure:
  *   1. secret scan   2. production dependency audit (high/critical fails)   3. typecheck   4. lint (errors fail; warnings are listed,
- *   not fatal)   5. unit tests   6. production build   7. smoke Playwright test
+ *   not fatal)   5. unit tests   6. production build   7. performance budget (scripts/perf-budget.mjs)   8. smoke Playwright test
  * Flags: --quick (typecheck + lint + unit tests only)   --no-e2e (skip the browser smoke test)
  * Logs: $KEPLAR_VERIFY_LOGS (default <os tmpdir>/keplar-verify). Exit code 0 only when every step passed.
  */
@@ -30,6 +30,8 @@ const steps = [
   { name: "lint", cmd: "npx", args: ["eslint", ".", "--quiet"] },
   { name: "unit tests", cmd: "npm", args: ["test"] },
   ...(quick ? [] : [{ name: "build", cmd: "npx", args: ["next", "build"], env: e2eEnv }]),
+  // Per-route JS and CSS against perf-budgets.json, measured on the build just made (scripts/perf-budget.mjs).
+  ...(quick ? [] : [{ name: "performance budget", cmd: "node", args: ["scripts/perf-budget.mjs", "--start"], env: e2eEnv }]),
   ...(noE2e ? [] : [{ name: "smoke e2e", cmd: "npx", args: ["playwright", "test", "-c", "e2e/playwright.config.ts", "e2e/smoke.e2e.ts", "e2e/report-dialog.e2e.ts", "e2e/a11y.e2e.ts", "e2e/typing-hidden.e2e.ts"], env: e2eEnv }]),
 ];
 

@@ -111,7 +111,7 @@ export default async function AdminPage() {
         <section className={s.panel}>
           <h2>Plan mix</h2>
           <Table head={["Plan", "Accounts"]} rows={Object.entries(o.plans.mix).map(([k, v]) => [k, v])} />
-          <p className={s.sub}>Payments last 30 days: {o.revenue.paymentsLast30d} ({usd(o.revenue.paymentsRevenueLast30dUsd, 0)} at list price). Billing events 7 d: {Object.entries(o.revenue.billingEventsLast7d).map(([k, v]) => `${k} ${v}`).join(", ") || "none"}.</p>
+          <p className={s.sub}>Payments last 30 days: {o.revenue.paymentsLast30d} ({usd(o.revenue.paymentsRevenueLast30dUsd, 0)} at list price{o.revenue.recordedAmountLast30dUsd !== null ? `; ${usd(o.revenue.recordedAmountLast30dUsd, 2)} as recorded by Whop on ${o.revenue.recordedAmountPayments} of them` : ""}), refunds excluded ({o.revenue.refundedLast30d} refunded). Billing events 7 d: {Object.entries(o.revenue.billingEventsLast7d).map(([k, v]) => `${k} ${v}`).join(", ") || "none"}.</p>
         </section>
         <section className={s.panel}>
           <h2>Spend by plan (30 days)</h2>

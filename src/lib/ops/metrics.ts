@@ -19,7 +19,8 @@ const DAY = 864e5;
 const iso = (t: number) => new Date(t).toISOString();
 
 type LedgerRow = { id: string; workspaceId: string; action: string; units: number; usd: number; at: string };
-type PaymentRow = { id: string; workspaceId: string; email: string; plan: "plus" | "pro"; at: string };
+/** A Whop payment as the webhook stores it (src/lib/billing/sync.ts): amountUsd when Whop sent one, refundedAt once refunded. */
+type PaymentRow = { id: string; workspaceId: string; email: string; plan: "lite" | "plus" | "pro"; at: string; amountUsd?: number; refundedAt?: string };
 type EventRow = { id: string; workspaceId: string; type: string; at: string; result: string };
 
 export const percentile = (sorted: number[], p: number) => (sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor((p / 100) * sorted.length))] : null);
@@ -47,8 +48,12 @@ export function summarize(input: { now: number; workspaces: WorkspaceRow[]; ledg
       if (bt) mrr += Math.round(priceFor(bt.tier));
     }
   }
-  const pay30 = payments.filter((p) => Date.parse(p.at) >= now - 30 * DAY);
+  // Refunded payments are not revenue. Amounts: list price for every kept payment, and what Whop recorded where it sent one.
+  const all30 = payments.filter((p) => Date.parse(p.at) >= now - 30 * DAY);
+  const pay30 = all30.filter((p) => !p.refundedAt);
   const revenue30 = pay30.reduce((t, p) => t + (PAID_PLANS[p.plan]?.usdMonthly ?? 0), 0);
+  const withAmount = pay30.filter((p) => typeof p.amountUsd === "number");
+  const recorded30 = withAmount.length ? round(withAmount.reduce((t, p) => t + (p.amountUsd ?? 0), 0), 2) : null;
 
   // Spend (Usage ledger = charged provider USD).
   const l30 = ledger.filter((r) => Date.parse(r.at) >= now - 30 * DAY);
@@ -99,7 +104,7 @@ export function summarize(input: { now: number; workspaces: WorkspaceRow[]; ledg
 
   return {
     plans: { workspaces: workspaces.length, mix, activePaid },
-    revenue: { mrrUsd: mrr, paymentsLast30d: pay30.length, paymentsRevenueLast30dUsd: revenue30, billingEventsLast7d: evByType },
+    revenue: { mrrUsd: mrr, paymentsLast30d: pay30.length, paymentsRevenueLast30dUsd: revenue30, refundedLast30d: all30.length - pay30.length, recordedAmountLast30dUsd: recorded30, recordedAmountPayments: withAmount.length, billingEventsLast7d: evByType },
     spend: { last30dUsd: round(spend30), byFeature, byPlan, topUsers: byUser, byDay: spendByDay },
     margin: { estimateUsd: round(mrr - spend30, 2), note: "MRR minus provider spend over 30 days. Excludes payment fees, hosting, database and email costs." },
     models: { calls24h: c24.length, errors24h: c24.filter((c) => !c.ok).length, errorRate24h: c24.length ? round(c24.filter((c) => !c.ok).length / c24.length, 4) : null, p50Ms: percentile(lat, 50), p95Ms: percentile(lat, 95), errorReasons: reasons, byModel: by((c) => c.model).slice(0, 20), byProvider: by((c) => c.provider), requestsPerMinute: last60 },
