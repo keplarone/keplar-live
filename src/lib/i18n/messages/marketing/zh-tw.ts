@@ -298,7 +298,8 @@ const m: MarketingCatalog = {
           "程式設計幫助和檔案分析",
           "使用更強模型的學習模式",
           "建立一個小型個人網站（免費 keplar.site 網址）",
-          "圖片生成、Slides、Deep Research、影片、AI 代理和自訂網域從 Plus 起提供"
+          "圖片生成、Slides、Deep Research、AI 代理和自訂網域從 Plus 起提供",
+          "影片僅限 Pro 和 Business"
         ],
         "cta": "升級到 Lite"
       },

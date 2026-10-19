@@ -298,7 +298,8 @@ const m: MarketingCatalog = {
           "编程帮助和文件分析",
           "使用更强模型的学习模式",
           "创建一个小型个人网站（免费 keplar.site 地址）",
-          "图片生成、Slides、Deep Research、视频、智能体和自定义域名从 Plus 起提供"
+          "图片生成、Slides、Deep Research、智能体和自定义域名从 Plus 起提供",
+          "视频仅限 Pro 和 Business"
         ],
         "cta": "升级到 Lite"
       },

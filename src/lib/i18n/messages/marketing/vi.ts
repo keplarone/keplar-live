@@ -298,7 +298,8 @@ const m: MarketingCatalog = {
           "Hỗ trợ lập trình và phân tích tệp",
           "Chế độ học trên mô hình mạnh hơn",
           "Tạo một trang cá nhân nhỏ (địa chỉ keplar.site miễn phí)",
-          "Tạo hình ảnh, Slides, Deep Research, video, tác tử và tên miền tùy chỉnh bắt đầu từ Plus"
+          "Tạo hình ảnh, Slides, Deep Research, tác tử và tên miền tùy chỉnh bắt đầu từ Plus",
+          "Video chỉ có ở Pro và Business"
         ],
         "cta": "Nâng cấp lên Lite"
       },
