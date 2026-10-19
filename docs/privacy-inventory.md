@@ -22,6 +22,7 @@ changes (the PR template asks). Owner: team@keplar.one. Last revised Oct 17, 202
 | Error reports (scrubbed message, fingerprint, route) | `errors` collection, optional Sentry | Fixing bugs | Legitimate interest | Internal | Per retention job |
 | Visit counts (anonymous daily code, page, referrer type) and presence heartbeat | `visits` | Admin traffic card | Legitimate interest (no personal data) | Internal | Days |
 | Consent-gated analytics (Vercel Web Analytics, first-party funnel events: page, source type, milestone, random device id) | Vercel; `seo_events` | Measuring the public site | Consent | Internal | 180 days |
+| Daily subscription snapshot: plan and billed monthly price per paying account, the account under a keyed hash (no id, no email) | `growth_sub_daily` | Revenue retention and churn for the internal Command Center | Legitimate interest (business reporting) | Internal (admins only) | Kept as a billing aggregate, like `billing_events` |
 | Whop Pixel (visits to public marketing pages) | Whop | Ad measurement | Consent where required; disclosed | Internal | Whop's policy |
 | Feedback, support tickets, abuse reports, "report this answer" | collections + email copy to team@keplar.one | Support and safety | Legitimate interest | Confidential | Until handled; deleted on request |
 | Emails sent (magic links, notices) | Resend | Delivery | Contract | Confidential | Resend's log retention; Keplar keeps no body unless dev tools |

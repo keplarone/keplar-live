@@ -104,17 +104,17 @@ export default async function CommandCenterPage() {
         <h2 id="lb-h">Leaderboard Intelligence</h2>
         <p className={s.sub}>Registry {REGISTRY_VERSION}, compiled 2026-10-19 from {REGISTRY_EVIDENCE === "search-snippet" ? "web-search results quoting each source (the pages themselves were not opened); confirm on the page before relying on a fact" : "the platforms' pages"}. &ldquo;Unknown&rdquo; means nobody could confirm it. Nothing is submitted automatically: each is a task for a person, recorded here.</p>
         <div className={s.scroll}>
-          <table className={s.table}>
+          <table className={`${s.table} ${s.wide}`}>
             <thead><tr><th scope="col">Platform</th><th scope="col">Ranks</th><th scope="col">Route</th><th scope="col">Pay</th><th scope="col">Blockers</th><th scope="col">Status</th><th scope="col">Next step</th><th scope="col">Record</th></tr></thead>
             <tbody>
               {plans.map(({ p, plan, sub }) => (
                 <tr key={p.id}>
                   <td><a href={p.url} rel="noopener noreferrer" target="_blank">{p.name}</a><br /><small>{p.methodology.slice(0, 120)}</small></td>
-                  <td>{p.ranksWhat}</td>
-                  <td>{plan.route}</td>
-                  <td>{tri(p.requiresPayment)}</td>
+                  <td className={s.nowrap}>{p.ranksWhat}</td>
+                  <td className={s.nowrap}>{plan.route}</td>
+                  <td className={s.nowrap}>{tri(p.requiresPayment)}</td>
                   <td>{plan.blockers.join(", ")}</td>
-                  <td>{sub ? `${sub.status.replace("_", " ")}${sub.listingUrl ? ` (${sub.listingUrl})` : ""}` : "not started"}</td>
+                  <td className={s.nowrap}>{sub ? `${sub.status.replace("_", " ")}${sub.listingUrl ? ` (${sub.listingUrl})` : ""}` : "not started"}</td>
                   <td>{plan.nextStep}</td>
                   <td>{plan.route === "not-applicable" ? "—" : <SubmissionActions platformId={p.id} status={sub?.status ?? "not_started"} />}</td>
                 </tr>
@@ -170,7 +170,7 @@ export default async function CommandCenterPage() {
           {dash ? (
             <table className={s.table}>
               <tbody>
-                {dash.funnel.steps.map((x) => <tr key={x.label}><td>{x.label}</td><td>{num(x.browsers)}</td></tr>)}
+                {dash.funnel.steps.map((x) => <tr key={x.label}><td>{x.label}</td><td className={s.nowrap}>{num(x.browsers)}</td></tr>)}
                 <tr><td>Visits by source</td><td>{Object.entries(dash.funnel.bySource).map(([k, v]) => `${k} ${v}`).join(" · ") || NA}</td></tr>
               </tbody>
             </table>
@@ -274,11 +274,11 @@ export default async function CommandCenterPage() {
               return (
                 <tr key={j.id}>
                   <td>{j.label}<br /><small>{j.description}</small></td>
-                  <td>{j.cadence}</td>
+                  <td className={s.nowrap}>{j.cadence}</td>
                   <td>{r ? `${r.period}, ${when(r.finishedAt ?? r.at)}` : "Never"}</td>
                   <td>{r ? `${r.status ?? r.result}: ${r.summary ?? ""}` : "—"}</td>
                   <td>{r?.costUsd ? usd(r.costUsd) : "$0"}</td>
-                  <td><JobActions job={j.id} paused={Boolean(controls?.pausedJobs.includes(j.id))} /></td>
+                  <td className={s.nowrap}><JobActions job={j.id} paused={Boolean(controls?.pausedJobs.includes(j.id))} /></td>
                 </tr>
               );
             })}</tbody>

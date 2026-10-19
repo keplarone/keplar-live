@@ -14,6 +14,9 @@
 .table { width: 100%; border-collapse: collapse; font-size: var(--t-small); font-variant-numeric: tabular-nums; }
 .table th { text-align: left; font-weight: var(--w-medium); color: var(--c-ink-3); font-size: var(--t-label); letter-spacing: 0; text-transform: none; padding: var(--s-2) var(--s-3) var(--s-2) 0; border-bottom: var(--b-hairline) solid var(--c-border-strong); white-space: nowrap; }
 .table td { padding: var(--s-2) var(--s-3) var(--s-2) 0; border-bottom: var(--b-hairline) solid var(--c-border); vertical-align: top; word-break: break-word; }
+/* A table with many columns keeps readable columns and scrolls inside its panel (in .scroll) instead of breaking words. */
+.wide { min-width: 1080px; }
+.nowrap { white-space: nowrap; }
 .empty { color: var(--c-ink-3); font-size: var(--t-small); margin: 0; }
 .spark { display: flex; align-items: flex-end; gap: 2px; height: 64px; }
 .spark span { flex: 1; min-width: 2px; background: var(--c-agree); opacity: 0.7; border-radius: 1px 1px 0 0; }
