@@ -128,3 +128,31 @@ test("budget: a run stops at the plan's call limit and says so", async () => {
     assert.equal(answer!.core!.stoppedBy, "budget");
   });
 });
+
+test("billing: a stop while Core revises the held answer still bills the panel plus the Core budget (paid plans)", async () => {
+  setActiveForTests(null);
+  await withEnv(ENV, async () => {
+    const { p } = fakeGateway();
+    const deps = liveDeps([p], liveEnv("paid"));
+    const run = { started: false, settled: false, plannedUnits: 0 } as NonNullable<typeof deps.run>;
+    deps.run = run;
+    const seen: { kind: string; started: boolean; settled: boolean; planned: number }[] = [];
+    const orig = p.generate.bind(p);
+    p.generate = async (i) => {
+      const sys = i.system ?? "";
+      const kind = sys.startsWith("You plan how") ? "plan" : sys.startsWith("You are the final checker") ? "final" : "other";
+      if (kind !== "other") seen.push({ kind, started: run.started, settled: run.settled, planned: run.plannedUnits });
+      return orig(i);
+    };
+    const req: KeplarRequest = { prompt: "Work out 6 times 7, then explain the result step by step.", plan: "plus", routing: { depth: "thorough" } };
+    const { answer } = await collect(runCore(req, deps));
+    assert.ok(answer, "an answer");
+    const plan = seen.find((s) => s.kind === "plan");
+    assert.ok(plan && plan.started && !plan.settled && plan.planned > 0, `Core's own steps count as a started, unsettled run: ${JSON.stringify(plan)}`);
+    const finals = seen.filter((s) => s.kind === "final");
+    assert.ok(finals.length, "the final review ran");
+    const last = finals.at(-1)!;
+    assert.ok(last.started && !last.settled, `during the revision the run is not settled, so a stop bills it: ${JSON.stringify(last)}`);
+    assert.ok(run.extraUnits! > 0 && last.planned > run.extraUnits!, "the planned units carry both the pipeline estimate and the Core budget");
+  });
+});

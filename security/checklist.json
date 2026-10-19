@@ -2339,8 +2339,10 @@
           "item": "Tool-specific authorization checks",
           "status": "done",
           "evidence": [
+            "src/lib/security/authorize.ts",
             "src/lib/mcp/gateway.ts",
             "src/lib/business/firewall.ts",
+            "tests/authorize.test.ts",
             "tests/firewall.test.ts"
           ]
         },
@@ -2348,8 +2350,10 @@
           "item": "Human approval for high-impact actions",
           "status": "done",
           "evidence": [
+            "src/lib/security/authorize.ts",
             "src/lib/business/agents.ts",
             "src/lib/mcp/chat.ts",
+            "tests/authorize.test.ts",
             "tests/agent-chat-flow.test.ts"
           ]
         },
