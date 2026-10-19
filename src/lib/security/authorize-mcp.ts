@@ -11,6 +11,7 @@ import type { Workspace } from "@/lib/create/platform/workspace";
 import { argsHash, assertArgs, assertMcpAllowed, buildAction, CHAT_AGENT, chatAutoRunAllowed, grantCheck, haltedCheck, load } from "@/lib/mcp/gateway";
 import type { McpServer, McpTool } from "@/lib/mcp/types";
 import { authorize, mcpCallBinding, registerActionPolicy, type AuthorizeDecision, type AuthorizeDeny, type McpCallSubject, type Permit } from "./authorize";
+import { registerToolCallSecurityGate } from "./tool-gate";
 
 export type McpCallState = {
   loaded: { server: McpServer; tool: McpTool };
@@ -23,6 +24,7 @@ function ensureRegistered() {
   if (registered) return;
   registered = true;
   registerActionPolicy("mcp.call", mcpCallPolicy);
+  registerToolCallSecurityGate();
 }
 ensureRegistered();
 
