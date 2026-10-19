@@ -39,6 +39,15 @@ export const RETAINED = [
   "sb_slug_holds", // released /s/<slug> addresses held 30 days for their previous workspace (opaque workspace id + dates, workspace "system"); swept by the delete job
   "sb_fingerprints", // content-free structural fingerprints of recent site builds (no text, no names, workspace "system"); pruned after 120 days
   "growth_events", // anonymous product events (random browser id, no account link, no prompt text); pruned after 180 days
+  // Keplar Growth Intelligence (src/lib/growth/ops), all workspace "system":
+  "growth_job_runs", // job run log: job, period, status, a short summary, spend; no personal data
+  "growth_controls", // pause switches for growth jobs
+  "growth_sub_daily", // daily subscription snapshot: plan and billed price per paying account under a keyed hash (no id, no email); a billing aggregate like billing_events
+  "growth_watch_pages", // public pages of competitors and ranking platforms: hash and short excerpt of the page text
+  "growth_geo_results", // answer-engine visibility: per prompt and week, whether Keplar was mentioned or cited
+  "growth_content", // editorial drafts and their approval history (admin authors only)
+  "growth_submissions", // Keplar's own listing submissions to ranking platforms
+  "growth_reports", // weekly and monthly reports built from the rows above
   "cost_events", // provider cost per call (feature, model, tokens, USD, latency; workspace "system", no prompt text); purged after 90 days
   "cost_user_day", // per-account daily provider-cost and call counters for quotas (numbers only)
   "cost_feature_day", // per-feature daily cost totals (no personal data)
@@ -80,7 +89,7 @@ export const USER_COLLECTIONS = [
 
 export const isRetained = (name: string) => (RETAINED as readonly string[]).includes(name) || RETAINED_PATTERNS.some((p) => p.test(name));
 /** Not worth exporting: internal telemetry with no user-authored content. */
-const NOT_EXPORTED = new Set(["model_calls", "live_model_spend", "job_slots", "dev_outbox", "seo_events", "growth_events", "sb_fingerprints", "chatgpt_codes", "chatgpt_grants", "browser_tasks", "wants_confirmations", "wants_confirm_claims", "wants_pins", "wants_oauth_states", "wants_oauth_tokens" /* removed features (see above) */, "queue_jobs", "queue_claims"]);
+const NOT_EXPORTED = new Set(["model_calls", "live_model_spend", "job_slots", "dev_outbox", "seo_events", "growth_events", "sb_fingerprints", "chatgpt_codes", "chatgpt_grants", "browser_tasks", "wants_confirmations", "wants_confirm_claims", "wants_pins", "wants_oauth_states", "wants_oauth_tokens" /* removed features (see above) */, "queue_jobs", "queue_claims", "growth_job_runs", "growth_controls", "growth_sub_daily", "growth_watch_pages", "growth_geo_results", "growth_content", "growth_submissions", "growth_reports"]);
 
 const SECRET_KEY = /token|secret|password|passwd|api[-_]?key|authorization|credential|signing|^hash$/i;
 /** Redact secret-looking fields at any depth. */
