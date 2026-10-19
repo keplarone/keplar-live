@@ -19,7 +19,7 @@ export const MODEL_NAMES = [
   { id: "gemini", name: "Gemini" },
 ] as const;
 
-export const SWITCH_MS = 2600;
+export const SWITCH_MS = 1800;
 
 const QUERY = "(prefers-reduced-motion: reduce)";
 const subscribeMotion = (onChange: () => void) => {
