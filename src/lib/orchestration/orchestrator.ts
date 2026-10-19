@@ -95,7 +95,7 @@ export type Deps = {
    * when the run ended with no model answering: that run is never billed.
    * `responded` is the number of panel models that answered (set once the panel finished).
    */
-  run?: { started: boolean; settled: boolean; plannedUnits: number; noResponse?: boolean; responded?: number };
+  run?: { started: boolean; settled: boolean; plannedUnits: number; noResponse?: boolean; responded?: number; extraUnits?: number };
 };
 
 /**
@@ -390,7 +390,8 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
     yield { type: "error", code: "bad_request", message: REQUEST_TOO_BIG, retryable: false };
     return;
   }
-  if (deps.run) deps.run.plannedUnits = Math.ceil(plannedUnits * METER_MARGIN);
+  // extraUnits: work a caller (Keplar Core) budgeted around this pipeline, kept so a stop mid-run still bills it.
+  if (deps.run) deps.run.plannedUnits = (deps.run.extraUnits ?? 0) + Math.ceil(plannedUnits * METER_MARGIN);
 
   const remaining = req.computeRemaining ?? Infinity;
   if (plannedUnits > remaining) {
@@ -492,7 +493,8 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
   let debateSummary: DebateSummary | undefined;
   let debateExtraUsd = 0;
   if (debateRounds) {
-    const perRound = deps.run ? deps.run.plannedUnits / debateCostFactor(debateRounds) : 0;
+    const baseUnits = deps.run?.extraUnits ?? 0;
+    const perRound = deps.run ? (deps.run.plannedUnits - baseUnits) / debateCostFactor(debateRounds) : 0;
     const outcome = yield* runDebate({
       registry,
       models: plan.panel.map((p) => p.model),
@@ -505,7 +507,7 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
       live,
       signal,
       // A stopped debate is charged for the rounds that were started, not the full plan.
-      onRound: (round) => { if (deps.run) deps.run.plannedUnits = Math.ceil(perRound * debateCostFactor(round)); },
+      onRound: (round) => { if (deps.run) deps.run.plannedUnits = baseUnits + Math.ceil(perRound * debateCostFactor(round)); },
       estimateUsd: (id) => plan.estimate.breakdown.find((b) => b.slot === "panel" && b.modelId === id)?.usd ?? 0,
     });
     debateResults = outcome.results;
