@@ -5,6 +5,7 @@ import { PINNED_QUESTION, STARTERS } from "@/lib/faq/constants";
 import type { ComposerModes } from "@/lib/orchestration/types";
 import type { View } from "./state/types";
 import s from "./App.module.css";
+import { IconCreate, IconProjects, IconSearch, IconStudy } from "./icons";
 
 type Props = {
   showBusiness: boolean;
@@ -24,11 +25,12 @@ const FALLBACK: FaqItem[] = [{ text: PINNED_QUESTION, kind: "pinned" }, ...START
 type Tile = { id: string; title: string; body: string; run: () => void };
 
 /** Line icons for the starter chips (24px grid, drawn with the chip's text color). */
+// Keplar Icons v2 (./icons): the same set as the rest of the app, not stock glyphs.
 const TILE_ICONS: Record<string, ReactNode> = {
-  research: <><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></>,
-  create: <path d="M4 20l4-1 11-11-3-3L5 16l-1 4z" />,
-  study: <><path d="M4 6l8-3 8 3-8 3-8-3z" /><path d="M8 8v5c0 1.5 2 3 4 3s4-1.5 4-3V8" /></>,
-  project: <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />,
+  research: <IconSearch size={16} className={s.homeChipIcon} />,
+  create: <IconCreate size={16} className={s.homeChipIcon} />,
+  study: <IconStudy size={16} className={s.homeChipIcon} />,
+  project: <IconProjects size={16} className={s.homeChipIcon} />,
 };
 
 /**
@@ -63,7 +65,7 @@ export function HomeStart({ showBusiness: _showBusiness, onSeed, onView, onSend,
         {tiles.map((t) => (
           <li key={t.id}>
             <button type="button" className={s.homeChip} data-tile={t.id} title={t.body} onClick={t.run}>
-              <svg className={s.homeChipIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{TILE_ICONS[t.id]}</svg>
+              {TILE_ICONS[t.id]}
               <span className={s.homeChipLabel}>{t.title}</span>
             </button>
           </li>
