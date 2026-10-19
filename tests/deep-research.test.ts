@@ -203,10 +203,17 @@ test("timeout: a search that hangs adds no pages instead of holding the report",
       : new Promise<never>((_, reject) => signal?.addEventListener("abort", () => reject(new Error("aborted")))),
   } as unknown as Retriever;
   const plan = { panel: [{ model: catalog[0] }] } as unknown as Parameters<typeof runResearch>[0]["plan"];
+  // AbortSignal.timeout's timer is unref'd: without a ref'd handle the event loop can drain before the abort fires, and node:test
+  // then cancels this test instead of running it.
+  const keepAlive = setInterval(() => {}, 1000);
   const t0 = Date.now();
   const gen = runResearch({ registry, retriever, req: { prompt: "Q?", plan: "plus" } as KeplarRequest, plan, classification: {} as Parameters<typeof runResearch>[0]["classification"], searchMs: 80 });
   let r = await gen.next();
-  while (!r.done) r = await gen.next();
+  try {
+    while (!r.done) r = await gen.next();
+  } finally {
+    clearInterval(keepAlive);
+  }
   assert.ok(Date.now() - t0 < 2000, "finished after the search timeout");
   assert.deepEqual(r.value.summary.queries, ["fast query", "slow query"]);
   assert.equal(r.value.summary.sources.length, 1, "the fast search's page is kept");
