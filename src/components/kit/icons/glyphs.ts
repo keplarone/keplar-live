@@ -63,7 +63,8 @@ export const GLYPHS = {
   close: ["M6 6 L18 18", "M18 6 L6 18"],
   plus: ["M12 5 L12 19", "M5 12 L19 12"],
   minus: ["M5 12 L19 12"],
-  "arrow-up": ["M6 11 L12 5 L18 11", "M12 5 L12 19"],
+  // Send: the Keplar mark's triangle as the arrowhead (Keplar Icons v2), on a shorter shaft.
+  "arrow-up": ["M7.5 11 L12 5 L16.5 11 Z", "M12 11 L12 19"],
   "arrow-right": ["M13 6 L19 12 L13 18", "M19 12 L5 12"],
   "chevron-down": ["M6 9 L12 15 L18 9"],
   "chevron-right": ["M9 6 L15 12 L9 18"],

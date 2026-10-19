@@ -21,13 +21,18 @@ export function ThemeToggle({ className }: { className?: string }) {
       style={theme === null ? { visibility: "hidden" } : undefined}
     >
       {dark ? (
-        <svg key="sun" className="kp-theme-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="4" />
-          <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4" />
+        <svg key="sun" className="kp-theme-icon" width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" aria-hidden="true">
+          {/* Keplar Icons v2: a ring and eight orbit dots instead of the stock rays. */}
+          <circle cx="8" cy="8" r="3" />
+          {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => (
+            <circle key={a} cx={8 + 5.6 * Math.cos((a * Math.PI) / 180)} cy={8 + 5.6 * Math.sin((a * Math.PI) / 180)} r={a % 90 ? 0.75 : 0.95} fill="currentColor" stroke="none" />
+          ))}
         </svg>
       ) : (
-        <svg key="moon" className="kp-theme-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />
+        <svg key="moon" className="kp-theme-icon" width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          {/* Keplar Icons v2: a crescent with the orbit dot as a star. */}
+          <path d="M12.9 9.7A5.4 5.4 0 0 1 6.3 3.1a5.4 5.4 0 1 0 6.6 6.6Z" />
+          <circle cx="12.3" cy="3.6" r="1" fill="currentColor" stroke="none" />
         </svg>
       )}
     </button>

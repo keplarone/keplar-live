@@ -14,11 +14,19 @@ function walk(dir: string, out: string[] = []) {
   return out;
 }
 
-test("font: Inter (variable, swap) via next/font/google on keplar.one; Space Studio keeps Montserrat; mono only for code", () => {
+test("font: Google Sans (variable, swap) via next/font/google on keplar.one; Keplar Business uses Inter from its own font module; Space Studio keeps Montserrat; mono only for code", () => {
   const layout = read("src/app/layout.tsx");
-  assert.match(layout, /import \{ Inter \} from "next\/font\/google"/);
-  assert.match(layout, /Inter\(\{[\s\S]*display: "swap"[\s\S]*adjustFontFallback: true/);
-  assert.doesNotMatch(layout, /Montserrat\(|IBM_Plex|Google_Sans|Lexend/);
+  // keplar.one is Gemini-led (src/styles/gemini.css): Google Sans, one family.
+  assert.match(layout, /import \{ Google_Sans \} from "next\/font\/google"/);
+  assert.match(layout, /Google_Sans\(\{[\s\S]*display: "swap"[\s\S]*adjustFontFallback: true/);
+  assert.doesNotMatch(layout, /Montserrat\(|IBM_Plex|\bInter\(|Lexend/);
+  // Keplar Business is Apple-led (tokens.css): Inter, loaded once in src/components/business-site/font.tsx and pointed at the
+  // whole page only while a Business root is on it, so no page mixes the two faces.
+  const business = read("src/components/business-site/font.tsx");
+  assert.match(business, /import \{ Inter \} from "next\/font\/google"/);
+  assert.match(business, /Inter\(\{[\s\S]*variable: "--font-business"[\s\S]*display: "swap"[\s\S]*adjustFontFallback: true/);
+  assert.match(business, /--font-business:\$\{family\};--font-sans:\$\{family\}/);
+  for (const l of ["src/app/(business)/layout.tsx", "src/app/(business-app)/layout.tsx"]) assert.match(read(l), /<BusinessFont \/>/);
   assert.match(read("src/app/(space)/layout.tsx"), /Montserrat\(\{[\s\S]*variable: "--font-space"[\s\S]*preload: false/);
   // Share images still render from the bundled OFL files (no network). Lexend stays gone.
   assert.match(read("assets/fonts/OFL-Montserrat.txt"), /SIL OPEN FONT LICENSE Version 1\.1/);
@@ -33,10 +41,10 @@ test("font: Inter (variable, swap) via next/font/google on keplar.one; Space Stu
   assert.ok(!/next\/font/.test(read("src/lib/i18n/fonts.ts")), "localized pages do not load a second face");
   assert.match(read("src/components/i18n/i18n.css"), /html:not\(:lang\(en\)\) \{\s*--f-sans: var\(--font-sans\), ui-sans-serif/);
   const graphite = read("src/styles/graphite.css");
-  assert.match(graphite, /html:not\(:has\(\[data-space-root\]\)\) \{[^}]*--f-sans: var\(--font-sans\), ui-sans-serif, system-ui/);
+  assert.match(graphite, /html:not\(:has\(\[data-space-root\], \[data-kb\]\)\) \{[^}]*--f-sans: var\(--font-sans\), ui-sans-serif, system-ui/);
   assert.match(graphite, /--t-body: 1rem;/);
   assert.match(graphite, /--lh-body: 1\.65;/);
-  const bad = walk("src").filter((f) => !f.endsWith("serve.ts") && !f.endsWith("styles/graphite.css") && !f.endsWith("app/layout.tsx") && !f.endsWith("lib/i18n/fonts.ts") && !f.endsWith("components/i18n/i18n.css") && !f.includes("/api/") && !f.includes("/site-builder/") /* fonts of generated sites, not the app */ && !f.includes("/app-builder/design/") /* font pairings offered to generated apps */ && !f.endsWith("slides/export.ts") && /Instrument|Inter\b|Helvetica|Arial|"Segoe/.test(readFileSync(f, "utf8")));
+  const bad = walk("src").filter((f) => !f.endsWith("serve.ts") && !f.endsWith("styles/graphite.css") && !f.endsWith("app/layout.tsx") && !f.endsWith("lib/i18n/fonts.ts") && !f.endsWith("components/i18n/i18n.css") && !f.includes("/api/") && !f.includes("/site-builder/") /* fonts of generated sites, not the app */ && !f.includes("/app-builder/design/") /* font pairings offered to generated apps */ && !f.endsWith("slides/export.ts") && !f.endsWith("business-site/font.tsx") && !f.endsWith("business-site/tokens.css") /* the Business face is declared here, and only here */ && /Instrument|Inter\b|Helvetica|Arial|"Segoe/.test(readFileSync(f, "utf8")));
   assert.deepEqual(bad, []);
   assert.match(read("src/styles/tokens.css"), /--f-sans: var\(--font-sans\), ui-sans-serif, system-ui, sans-serif;/);
   assert.ok(!/Keplar Sans Fallback/.test(read("src/styles/globals.css")), "the Google Sans fallback face is gone");

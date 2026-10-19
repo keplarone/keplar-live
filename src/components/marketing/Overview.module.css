@@ -75,12 +75,11 @@
   margin: 28px 0 0;
   padding: 0;
   overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 0.22);
+  border: 1px solid var(--hairline);
   border-radius: 20px;
-  background: #171717;
+  background: var(--c-surface-1); /* follows the theme tokens (gemini.css): #1e1f20 dark, #f0f4f9 light */
   opacity: 1;
 }
-:global(html[data-theme="light"]) .frame { border-color: rgb(0 0 0 / 0.16); background: #f7f7f8; }
 
 .frame img {
   display: block;

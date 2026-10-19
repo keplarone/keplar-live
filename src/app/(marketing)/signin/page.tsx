@@ -12,6 +12,7 @@ import { AuthShell } from "@/components/auth/AuthShell";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { SavedAccounts } from "@/components/auth/SavedAccounts";
 import { savedAccounts } from "@/lib/accounts/multi-api";
+import { isBusinessHandoff } from "@/lib/business/handoff";
 
 export const metadata = pageMeta("/signin", "Sign in", "Sign in to Keplar.");
 export const dynamic = "force-dynamic";
@@ -33,12 +34,15 @@ export default async function SignInPage({ searchParams }: Props) {
   const saved = await savedAccounts(h);
   const expiredEmail = typeof expired === "string" && expired.length < 200 ? expired : null;
   const nextQs = adding ? `?next=${encodeURIComponent(next)}&add=1` : again ? `?next=${encodeURIComponent(next)}&reauth=1` : nextQuery(next, "/account");
+  // Continuing to Keplar Business: the same account and form, in the Business look and copy.
+  const business = isBusinessHandoff(next);
   return (
     <AuthShell
       variant="signin"
+      brand={business ? "business" : "one"}
       nextQs={nextQs}
-      title={adding ? "Add an account" : "Sign in to Keplar"}
-      lead={adding ? "Sign in with another account. The account you're using stays signed in on this device." : next.startsWith("/checkout") ? "Sign in to continue to checkout. You'll go straight to payment after." : "Pick up your threads, projects, and plan."}
+      title={adding ? "Add an account" : business ? "Sign in to Keplar Business" : "Sign in to Keplar"}
+      lead={adding ? "Sign in with another account. The account you're using stays signed in on this device." : business ? "Use the Keplar account that has your Business plan. You'll go straight back to your workspace." : next.startsWith("/checkout") ? "Sign in to continue to checkout. You'll go straight to payment after." : "Pick up your threads, projects, and plan."}
       notice={oauthErrorMessage(error) ?? (again ? "Please sign in again to continue." : null) ?? (expiredEmail ? `${expiredEmail} was signed out. Sign in again to use it.` : null)}
     >
       {again ? null : <SavedAccounts accounts={saved} />}

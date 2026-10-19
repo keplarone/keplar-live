@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { usePrefs } from "@/lib/use-prefs";
 import { playDoneSound } from "@/lib/prefs";
 import { KeplarSymbol } from "@/components/brand";
+import { HOME_HINTS, useRotatingHint } from "./rotating-hint";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import type { Attachment, ComposerModes, KeplarRequest, ResearchEvent } from "@/lib/orchestration/types";
 import { hasResearchBridge, noSubscribe, researchBridge } from "@/lib/desktop/research-bridge";
@@ -1107,6 +1108,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
   };
 
   const messages: Message[] = useMemo(() => thread?.messages ?? [], [thread]);
+  const homeHint = useRotatingHint(messages.length === 0, HOME_HINTS);
 
   /* The typing reveal grows the answer without any state change here: follow it while the reader is at the bottom. */
   const threadRef = useRef<HTMLDivElement>(null);
@@ -1148,6 +1150,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
           importOffer={importOffer}
           id="keplar-sidebar"
           onToggleCollapse={toggleCollapsed}
+          collapsed={collapsed}
         />
       </div>
       {drawerScrim.mounted ? <div className={s.drawerScrim} onClick={() => setDrawerOpen(false)} aria-hidden="true" {...drawerScrim.motion("fade")} /> : null}
@@ -1213,7 +1216,10 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                           <>
                             <span>{welcome ? "Welcome," : `${dayGreeting(new Date().getHours())},`}</span> <span className={s.welcomeName}>{firstName}</span>
                           </>
-                        ) : <span>{state.ledger.synced ? "How can Keplar help you today?" : "Welcome to Keplar."}</span>}
+                        ) : state.ledger.synced ? (
+                          // "Keplar" carries the greeting gradient (src/styles/gemini.css), like a signed-in name does.
+                          <span>How can <span className={s.welcomeName}>Keplar</span> help you today?</span>
+                        ) : <span>Welcome to Keplar.</span>}
                       </span>
                     </h1>
                     <p className={s.welcomeLede}>Ask anything. Keplar checks with several models and gives you one clear answer.</p>
@@ -1429,7 +1435,7 @@ export default function KeplarApp({ initialView }: { initialView?: View }) {
                 resetsAt={state.ledger.resetsAt}
                 plan={state.ledger.plan}
                 signedIn={state.ledger.synced ? state.ledger.signedIn : undefined}
-                placeholder={messages.length ? "Reply to Keplar…" : "How can Keplar help you today?"}
+                placeholder={messages.length ? "Reply to Keplar…" : homeHint}
                 draftKey={draftKeyFor(state.scope, state.activeThreadId, Boolean(state.threads.find((x) => x.id === state.activeThreadId)?.private ?? state.privateNext))}
                 privateChat={messages.length === 0 && !family ? { on: Boolean(state.privateNext), onToggle: () => dispatch({ type: "private-next", on: !state.privateNext }) } : null}
                 recordNotes={messages.length === 0}

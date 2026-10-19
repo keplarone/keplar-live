@@ -57,6 +57,10 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+  /* Also out of the tab order and the accessibility tree: the app's own greeting and links replace them, so keyboard users no
+     longer tab through six invisible links and screen readers no longer hear the heading twice. The HTML is unchanged for
+     crawlers and no-JS visits (this only applies once the app has rendered). */
+  visibility: hidden;
 }
 
 /* A conversation has no [data-welcome]. Without this, the fixed server heading stays on screen and

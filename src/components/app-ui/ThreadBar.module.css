@@ -1,6 +1,7 @@
 /* Share / Export / Shortcuts above a chat, and Edit under a message: quiet kit ghost Buttons. The shortcuts list is a kit Dialog. */
 .bar { display: flex; justify-content: flex-end; gap: var(--s-1); margin-bottom: var(--s-2); }
 .act { color: var(--c-ink-3); font-size: var(--t-label); }
+.more { color: var(--c-ink-3); }
 .edit { margin-top: var(--s-1); align-self: flex-end; }
 .list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-2); font-size: var(--t-small); }
 .list li { display: flex; justify-content: space-between; gap: var(--s-4); }

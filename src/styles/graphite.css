@@ -1,9 +1,10 @@
 /*
  * keplar.one graphite system. Dark by default, solid canvas, hairline edges, white and graphite only.
- * Space Studio keeps its own look: these rules do not apply while [data-space-root] is on the page.
+ * Space Studio and Keplar Business keep their own looks: these rules do not apply while [data-space-root] or a Business root
+ * ([data-kb], the Apple-led system in src/components/business-site/tokens.css) is on the page.
  */
 
-html:not(:has([data-space-root])) {
+html:not(:has([data-space-root], [data-kb])) {
   --f-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   --f-mono: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
   --t-body: 1rem;
@@ -20,7 +21,7 @@ html:not(:has([data-space-root])) {
   --nav-shadow: none;
 }
 
-html:not(:has([data-space-root]))[data-theme="dark"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme="dark"] {
   --c-canvas: #212121;
   --c-surface-1: #171717;
   --c-surface-2: #2f2f2f;
@@ -78,7 +79,7 @@ html:not(:has([data-space-root]))[data-theme="dark"] {
   color-scheme: dark;
 }
 
-html:not(:has([data-space-root]))[data-theme="light"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme="light"] {
   --c-canvas: #ffffff;
   --c-surface-1: #f7f7f8;
   --c-surface-2: #ececec;
@@ -124,49 +125,49 @@ html:not(:has([data-space-root]))[data-theme="light"] {
   color-scheme: light;
 }
 
-html:not(:has([data-space-root]))[data-theme] body {
+html:not(:has([data-space-root], [data-kb]))[data-theme] body {
   background: var(--c-canvas);
   color: var(--c-ink);
   font-family: var(--f-sans);
 }
 
-html:not(:has([data-space-root])) :where(*, *::before, *::after) {
+html:not(:has([data-space-root], [data-kb])) :where(*, *::before, *::after) {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
-html:not(:has([data-space-root])) :where(.sp-grad) {
+html:not(:has([data-space-root], [data-kb])) :where(.sp-grad) {
   background-image: none !important;
   color: inherit !important;
   -webkit-text-fill-color: currentColor !important;
 }
 
 /* Marketing and app pages sit on the solid canvas. No sky, no aura wash. */
-html:not(:has([data-space-root])) [data-site-sky],
-html:not(:has([data-space-root])) [data-weather-sky] {
+html:not(:has([data-space-root], [data-kb])) [data-site-sky],
+html:not(:has([data-space-root], [data-kb])) [data-weather-sky] {
   display: none !important;
 }
 
 /* Flat controls. No halo, blurred ring, text glow, drop shadow or hover lift.
    CSS modules load after this file, so the wipe is !important. Hover is a background shift. */
-html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]) {
+html:not(:has([data-space-root], [data-kb])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]) {
   text-shadow: none !important;
   filter: none !important;
 }
-html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]) {
+html:not(:has([data-space-root], [data-kb])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]) {
   box-shadow: none !important;
 }
-html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]) {
+html:not(:has([data-space-root], [data-kb])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]) {
   transition: background-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1), border-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1), color 180ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 160ms cubic-bezier(0.2, 0.8, 0.2, 1), scale 180ms cubic-bezier(0.34, 1.32, 0.64, 1);
 }
-html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]):is(:hover, :focus, :focus-visible) {
+html:not(:has([data-space-root], [data-kb])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]):is(:hover, :focus, :focus-visible) {
   transform: none !important;
   translate: none !important;
   box-shadow: none !important;
   text-shadow: none !important;
   filter: none !important;
 }
-html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]):active:not(:disabled):not([aria-disabled="true"]) {
+html:not(:has([data-space-root], [data-kb])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]):active:not(:disabled):not([aria-disabled="true"]) {
   transform: none !important;
   translate: none !important;
   scale: 0.97 !important;
@@ -178,17 +179,17 @@ html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [ro
 }
 /* Sidebar rows fade their fill and step 2px in. The hover rule above clears translate on every control. */
 @media (prefers-reduced-motion: no-preference) {
-  html:not(:has([data-space-root])) [class*="sideItem"]:hover {
+  html:not(:has([data-space-root], [data-kb])) [class*="sideItem"]:hover {
     translate: 2px 0 !important;
   }
-  html:not(:has([data-space-root])) [class*="homeChipLabel"] {
+  html:not(:has([data-space-root], [data-kb])) [class*="homeChipLabel"] {
     transition: translate 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
   }
-  html:not(:has([data-space-root])) [class*="homeChip"]:hover [class*="homeChipLabel"] {
+  html:not(:has([data-space-root], [data-kb])) [class*="homeChip"]:hover [class*="homeChipLabel"] {
     translate: 1px 0;
   }
 }
-html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href], input, textarea, select):focus-visible {
+html:not(:has([data-space-root], [data-kb])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href], input, textarea, select):focus-visible {
   outline: 2px solid var(--c-ink) !important;
   outline-offset: 2px !important;
   box-shadow: none !important;
@@ -196,40 +197,40 @@ html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [ro
   filter: none !important;
 }
 /* The composer's textarea carries no square outline. Focus sits on the rounded container (border only, no glow). */
-html:not(:has([data-space-root])) [class*="composer"] textarea:focus,
-html:not(:has([data-space-root])) [class*="composer"] textarea:focus-visible {
+html:not(:has([data-space-root], [data-kb])) [class*="composer"] textarea:focus,
+html:not(:has([data-space-root], [data-kb])) [class*="composer"] textarea:focus-visible {
   outline: none !important;
   outline-offset: 0 !important;
   box-shadow: none !important;
 }
 @media (prefers-reduced-motion: reduce) {
-  html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]) {
+  html:not(:has([data-space-root], [data-kb])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]) {
     transition: none !important;
     scale: none !important;
   }
-  html:not(:has([data-space-root])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]):active:not(:disabled):not([aria-disabled="true"]) {
+  html:not(:has([data-space-root], [data-kb])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]):active:not(:disabled):not([aria-disabled="true"]) {
     scale: none !important;
     transition: none !important;
   }
 }
 /* A secondary control that used an inset shadow as its only edge keeps a hairline. */
-html:not(:has([data-space-root])) :is(button, a)[class*="btnSecondary"],
-html:not(:has([data-space-root])) :is(button, a)[class*="__secondary"] {
+html:not(:has([data-space-root], [data-kb])) :is(button, a)[class*="btnSecondary"],
+html:not(:has([data-space-root], [data-kb])) :is(button, a)[class*="__secondary"] {
   border: 1px solid var(--hairline-strong);
 }
-html:not(:has([data-space-root])) :is(button, a)[class*="btnPrimary"]:hover:not(:disabled),
-html:not(:has([data-space-root])) a[class*="__cta"]:hover {
+html:not(:has([data-space-root], [data-kb])) :is(button, a)[class*="btnPrimary"]:hover:not(:disabled),
+html:not(:has([data-space-root], [data-kb])) a[class*="__cta"]:hover {
   background: var(--c-ink-hover);
 }
-html:not(:has([data-space-root])) a[class*="signIn"]:hover {
+html:not(:has([data-space-root], [data-kb])) a[class*="signIn"]:hover {
   background: var(--hover-wash);
 }
-html:not(:has([data-space-root])) :is(h1, h2) {
+html:not(:has([data-space-root], [data-kb])) :is(h1, h2) {
   letter-spacing: -0.02em;
 }
 
 /* Halos painted on chips, icons, meters, menus and plan cards (not the control itself). */
-html:not(:has([data-space-root])) :is(
+html:not(:has([data-space-root], [data-kb])) :is(
   [class*="composer"],
   [class*="homeChip"],
   [class*="useForOption"],
@@ -252,59 +253,59 @@ html:not(:has([data-space-root])) :is(
   [class*="promptBox"],
   [class*="dotLive"]
 ),
-html:not(:has([data-space-root])) :is([class*="sideItem"] svg, [class*="meterTrack"] > span, [class*="strengthBar"] span, [class*="moreIcon"], [class*="__fill"]),
-html:not(:has([data-space-root])) :is([class*="routingBtn"], [class*="choiceText"], [class*="points"])::before,
-html:not(:has([data-space-root])) :is([class*="routingBtn"], [class*="choiceText"], [class*="points"])::after {
+html:not(:has([data-space-root], [data-kb])) :is([class*="sideItem"] svg, [class*="meterTrack"] > span, [class*="strengthBar"] span, [class*="moreIcon"], [class*="__fill"]),
+html:not(:has([data-space-root], [data-kb])) :is([class*="routingBtn"], [class*="choiceText"], [class*="points"])::before,
+html:not(:has([data-space-root], [data-kb])) :is([class*="routingBtn"], [class*="choiceText"], [class*="points"])::after {
   box-shadow: none !important;
   text-shadow: none !important;
   filter: none !important;
 }
-html:not(:has([data-space-root])) :is([class*="homeChip"], [class*="useForOption"], [class*="__plan"], [class*="__fit"], [class*="__jump"], [class*="rowItem"], [class*="deployRow"], [class*="__example"]):is(:hover, :active) {
+html:not(:has([data-space-root], [data-kb])) :is([class*="homeChip"], [class*="useForOption"], [class*="__plan"], [class*="__fit"], [class*="__jump"], [class*="rowItem"], [class*="deployRow"], [class*="__example"]):is(:hover, :active) {
   transform: none !important;
   translate: none !important;
   box-shadow: none !important;
   filter: none !important;
 }
-html:not(:has([data-space-root])) [class*="homeChip"] {
+html:not(:has([data-space-root], [data-kb])) [class*="homeChip"] {
   border-color: #3a3a3a;
   transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
 }
-html:not(:has([data-space-root])) [class*="homeChip"]:hover {
+html:not(:has([data-space-root], [data-kb])) [class*="homeChip"]:hover {
   border-color: #5a5a5a !important;
   background: var(--hover-wash);
 }
-html:not(:has([data-space-root])) [data-theme="light"] [class*="homeChip"],
-html:not(:has([data-space-root]))[data-theme="light"] [class*="homeChip"] {
+html:not(:has([data-space-root], [data-kb])) [data-theme="light"] [class*="homeChip"],
+html:not(:has([data-space-root], [data-kb]))[data-theme="light"] [class*="homeChip"] {
   border-color: #d4d4d4;
 }
-html:not(:has([data-space-root])) [data-theme="light"] [class*="homeChip"]:hover,
-html:not(:has([data-space-root]))[data-theme="light"] [class*="homeChip"]:hover {
+html:not(:has([data-space-root], [data-kb])) [data-theme="light"] [class*="homeChip"]:hover,
+html:not(:has([data-space-root], [data-kb]))[data-theme="light"] [class*="homeChip"]:hover {
   border-color: #8a8a8a !important;
 }
-html:not(:has([data-space-root])) [class*="meterTrack"] > span,
-html:not(:has([data-space-root])) [class*="strengthBar"] span {
+html:not(:has([data-space-root], [data-kb])) [class*="meterTrack"] > span,
+html:not(:has([data-space-root], [data-kb])) [class*="strengthBar"] span {
   background: var(--c-ink) !important;
 }
-html:not(:has([data-space-root])) [class*="composer"][data-pulse] {
+html:not(:has([data-space-root], [data-kb])) [class*="composer"][data-pulse] {
   animation: none !important;
 }
-html:not(:has([data-space-root])) [class*="composer"]:is(:focus-within, [data-dragging]) {
+html:not(:has([data-space-root], [data-kb])) [class*="composer"]:is(:focus-within, [data-dragging]) {
   box-shadow: none !important;
 }
-html:not(:has([data-space-root])) [class*="composer"] {
+html:not(:has([data-space-root], [data-kb])) [class*="composer"] {
   border-color: #3a3a3a !important;
 }
-html:not(:has([data-space-root])) [class*="composer"]:focus-within {
+html:not(:has([data-space-root], [data-kb])) [class*="composer"]:focus-within {
   border-color: #5a5a5a !important;
   box-shadow: none !important;
 }
-html:not(:has([data-space-root]))[data-theme="light"] [class*="composer"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme="light"] [class*="composer"] {
   border-color: #d4d4d4 !important;
 }
-html:not(:has([data-space-root]))[data-theme="light"] [class*="composer"]:focus-within {
+html:not(:has([data-space-root], [data-kb]))[data-theme="light"] [class*="composer"]:focus-within {
   border-color: #8a8a8a !important;
 }
-html:not(:has([data-space-root])) [class*="__sheet"] {
+html:not(:has([data-space-root], [data-kb])) [class*="__sheet"] {
   border: 1px solid var(--hairline);
   background: var(--c-canvas);
 }

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Google_Sans } from "next/font/google";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { brand, isIndexable, site, siteVerification } from "@/lib/site";
 import { siteGraph } from "@/lib/structuredData";
@@ -22,10 +22,11 @@ import { SpaceMotionFilters } from "@/components/ui/space/MotionFilters";
 import "@/styles/globals.css";
 import "@/styles/redesign.css";
 
-// Inter (SIL OFL) is the UI face for keplar.one: the closest free match to a calm product sans. next/font self-hosts one
-// variable file (weights 400–700), display swap, preloaded, with a metric-matched fallback so the swap does not shift layout.
-// Space Studio loads Montserrat on its own layout. Code uses the system mono stack, so no second font file is fetched.
-const sans = Inter({
+// Google Sans (SIL OFL 1.1, the open-source family on Google Fonts) is the one UI face for keplar.one, matching the Gemini-led look in
+// src/styles/gemini.css. next/font self-hosts one variable file (wght 400–700), display swap, preloaded, with a metric-matched fallback
+// so the swap does not shift layout. The subsets match what Inter covered so translated pages keep their glyphs. (Google Sans Flex
+// has no Cyrillic or Greek, so it is not used.) Space Studio loads Montserrat on its own layout. Code uses the system mono stack.
+const sans = Google_Sans({
   subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext", "greek", "greek-ext", "vietnamese"],
   variable: "--font-sans",
   display: "swap",

@@ -17,6 +17,8 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
 export const HANDOFF_NONCE_COOKIE = "kb_handoff";
+/** True when a sign-in will continue to the Business handoff, so the shared sign-in page can wear the Business look. */
+export const isBusinessHandoff = (next: string): boolean => next.startsWith("/api/business/handoff");
 export const NONCE_TTL_SECONDS = 10 * 60;
 export const TICKET_TTL_SECONDS = 60;
 
