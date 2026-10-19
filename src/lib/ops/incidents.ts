@@ -211,7 +211,7 @@ export async function collectSignals(at = Date.now(), windowMin = 15): Promise<S
   const baseFrom = new Date(at - 24 * 3_600_000).toISOString();
   const calls = collection<ModelCallRow>("model_calls");
   const [db, current, baseline, flights, errors, webhooks, today, lastHour, auth, crons] = await Promise.all([
-    neonConfigured() ? safe(async () => { const p = await probeStore(); return { checked: true, ok: p.ok, ms: p.ms }; }, { checked: true, ok: false, ms: null }) : Promise.resolve({ checked: false, ok: true, ms: null }),
+    neonConfigured() ? safe<Signals["database"]>(async () => { const p = await probeStore(); return { checked: true, ok: p.ok, ms: p.ms }; }, { checked: true, ok: false, ms: null }) : Promise.resolve<Signals["database"]>({ checked: false, ok: true, ms: null }),
     safe(() => calls.listSystemRange({ field: "at", gte: from }, 20_000), [] as ModelCallRow[]),
     safe(() => calls.listSystemRange({ field: "at", gte: baseFrom, lt: from }, 20_000), [] as ModelCallRow[]),
     safe(() => collection<FlightRow>("system_flight").listSystemRange({ field: "at", gte: from }, 5000), [] as FlightRow[]),

@@ -3,10 +3,12 @@
  * write/read/delete round trip works. Never returns connection details or env values.
  * The round trip is cached per instance for 60 s, so polling it can't hammer the database.
  * Add `?crons=1` for the last successful run of each scheduled job (ok / late / failed / never).
- * Add `?luau=1` to check that Roblox Cloud's Luau analyzer loads and works here (one fixed snippet, never user input).
+ * Add `?luau=1` with the ops bearer secret to check that Roblox Cloud's Luau analyzer loads and works here (one fixed snippet,
+ * never user input); without the secret the parameter is ignored, so anonymous callers cannot make the server do that work.
  */
 import { json } from "@/lib/create/platform/http";
 import { cronStatus, healthSummary } from "@/lib/ops/health";
+import { opsAuthorized } from "@/lib/ops/openrouter-balance";
 import { checkLuau, LUAU_VERSION } from "@/lib/roblox-cloud/luau-check";
 
 export const runtime = "nodejs";
@@ -26,6 +28,6 @@ export async function GET(req?: Request) {
   const h = await healthSummary();
   const q = new URL(req?.url ?? "http://x/").searchParams;
   const crons = q.get("crons") === "1" ? await cronStatus() : undefined;
-  const luau = q.get("luau") === "1" ? await luauProbe() : undefined;
+  const luau = q.get("luau") === "1" && opsAuthorized(req?.headers.get("authorization") ?? null) ? await luauProbe() : undefined;
   return json({ ...h.body, ...(crons ? { crons } : {}), ...(luau ? { luau } : {}) }, { status: h.status });
 }
