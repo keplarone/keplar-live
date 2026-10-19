@@ -20,3 +20,7 @@ Ask first only when deploying now is not recommended, and say why. For example:
 - the change does not alter the site at all (docs, CI or tests only), so there is nothing to deploy.
 
 Never commit `node_modules/`, `.next/` or `*.tsbuildinfo`.
+
+## Design
+
+Always use the `apple-design` skill (Apple Human Interface Guidelines reviewer, installed at `~/.claude/skills/apple-design`) for any UI, UX, layout, styling, component, copy, icon, or onboarding work in this project, whether building or reviewing. Follow its process: load the always-load HIG references plus those for what's on screen, cite guidelines as `file.md › Heading`, and work through its five lenses. For new UI, use its design improvement mode. This is a permanent preference from the owner, so apply it without being asked.
