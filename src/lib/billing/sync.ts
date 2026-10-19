@@ -115,13 +115,14 @@ async function grant(ws: WorkspaceRow, plan: GrantablePlan, ids: Ids, paidAt: st
       paymentFailedAt: null,
       mode: "live",
       manageUrl: ids.manageUrl ?? ws.billing.manageUrl ?? null,
+      canceledAt: null,
     },
   });
 }
 
 async function revoke(ws: WorkspaceRow, status: "canceled" | "unpaid") {
   securityEvent({ kind: "billing.change", code: `revoke:${status}`, where: "webhook/whop", accountId: ws.id });
-  await updateWorkspace(ws.id, { plan: "free", billing: { status, subscriptionId: null, cancelAtPeriodEnd: false, periodStart: null, periodEnd: null } });
+  await updateWorkspace(ws.id, { plan: "free", billing: { status, subscriptionId: null, cancelAtPeriodEnd: false, periodStart: null, periodEnd: null, canceledAt: now() } });
 }
 
 /** Apply one verified Whop event. Returns a short result string (never user data). */
@@ -258,6 +259,23 @@ export function claimFromPayment(p: { status?: string; paid_at?: string | null; 
   const end = addDays(start, 31);
   if (Date.parse(end) < Date.now()) return null;
   return { plan: tier as PlanId & PaidPlan, periodStart: start, periodEnd: end, membershipId: str(p.membership?.id), manageUrl: str(p.membership?.manage_url) };
+}
+
+type PaymentLike = Parameters<typeof claimFromPayment>[0];
+
+/**
+ * The plan "Refresh plan" may record, or null. A refund or dispute on file blocks it outright (only a new payment webhook can undo
+ * that). After a deactivation webhook only a payment made after the cancellation counts, so Refresh cannot resurrect a cancelled
+ * membership from the payment that preceded it (rows cancelled before canceledAt existed fall back to their last update).
+ */
+export function refreshClaim(payments: PaymentLike[], email: string, billing: { status: string; canceledAt?: string | null }, updatedAt?: string) {
+  if (billing.status === "unpaid") return null;
+  const after = billing.status === "canceled" ? Date.parse(billing.canceledAt ?? updatedAt ?? "") : NaN;
+  return payments
+    .map((p) => claimFromPayment(p, email))
+    .filter((c): c is NonNullable<typeof c> => Boolean(c))
+    .filter((c) => !Number.isFinite(after) || Date.parse(c.periodStart) > after)
+    .sort((a, b) => (a.plan === b.plan ? b.periodEnd.localeCompare(a.periodEnd) : a.plan === "pro" ? -1 : 1))[0] ?? null;
 }
 
 /** Limit-extension purchase events. Grants only on a verified `payment.succeeded` for a pack's own Whop plan id; idempotent by payment id. */

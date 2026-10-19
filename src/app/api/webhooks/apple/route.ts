@@ -5,7 +5,7 @@
  */
 import { json, readText } from "@/lib/create/platform/http";
 import { appleIapConfigured, AppleIapNotConfiguredError, AppleIapVerifyError, verifySignedNotification } from "@/lib/billing/apple";
-import { handleAppleNotification } from "@/lib/billing/apple-sync";
+import { handleAppleNotification, notificationIdFor } from "@/lib/billing/apple-sync";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,8 +27,7 @@ export async function POST(req: Request) {
   if (!signedPayload) return json({ error: "signedPayload required." }, { status: 400 });
   try {
     const notification = await verifySignedNotification(signedPayload);
-    const uuid = typeof notification.notificationUUID === "string" && notification.notificationUUID ? notification.notificationUUID : `apple_${Date.now()}`;
-    const out = await handleAppleNotification(notification, uuid);
+    const out = await handleAppleNotification(notification, notificationIdFor(notification.notificationUUID, signedPayload));
     return json({ received: true, ...out });
   } catch (e) {
     if (e instanceof AppleIapNotConfiguredError) return json({ error: e.message, code: e.code }, { status: 503 });

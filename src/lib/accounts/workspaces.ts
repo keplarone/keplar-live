@@ -27,6 +27,8 @@ export type Billing = {
   mode: "live" | null;
   /** Whop-hosted page where the customer manages or cancels the membership. */
   manageUrl?: string | null;
+  /** When a deactivation webhook ended the plan; "Refresh plan" only re-grants from a payment made after it. */
+  canceledAt?: string | null;
 };
 
 export type WorkspaceRow = {

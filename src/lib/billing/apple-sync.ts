@@ -51,6 +51,37 @@ const REVOKE_TYPES = new Set<string>([NotificationTypeV2.EXPIRED, NotificationTy
 
 const PAST_DUE_TYPES = new Set<string>([NotificationTypeV2.DID_FAIL_TO_RENEW]);
 
+const PROCESSING = "processing";
+
+/**
+ * Atomic claim on a notificationUUID, the same contract as the Whop handler: two concurrent deliveries cannot both apply (the
+ * loser returns the winner's result), a failed handler releases the claim so Apple's retry is processed, and a claim stuck
+ * "processing" for more than 2 minutes (crashed instance) is taken over.
+ */
+async function claimNotification(id: string, type: string): Promise<{ result: string } | null> {
+  const first = await events().insertIfAbsent({ id, workspaceId: SYSTEM, type, at: now(), result: PROCESSING });
+  if (first.inserted) return null;
+  const stale = first.row.result === PROCESSING && Date.now() - Date.parse(first.row.at) > 120_000;
+  if (!stale) return { result: first.row.result };
+  await events().update(SYSTEM, id, { at: now() });
+  return null;
+}
+
+async function settleNotification<T extends { result: string }>(id: string, run: () => Promise<T>): Promise<T> {
+  try {
+    const out = await run();
+    await events().update(SYSTEM, id, { result: out.result, at: now() });
+    return out;
+  } catch (e) {
+    await events().remove(SYSTEM, id).catch(() => undefined);
+    throw e;
+  }
+}
+
+/** Dedupe id when Apple omits notificationUUID: the signed payload itself, so a redelivery maps to the same claim. */
+export const notificationIdFor = (uuid: unknown, signedPayload: string): string =>
+  typeof uuid === "string" && uuid ? uuid : `apple_${createHash("sha256").update(signedPayload).digest("hex").slice(0, 32)}`;
+
 /** Deterministic UUID for StoreKit appAccountToken, derived from workspace id. */
 export function appAccountTokenForWorkspace(workspaceId: string): string {
   const h = createHash("sha256").update(`keplar-apple-aat:${workspaceId}`).digest();
@@ -154,14 +185,14 @@ export async function syncAppleTransactionForWorkspace(wsRef: { id: string; emai
 }
 
 export async function handleAppleNotification(notification: ResponseBodyV2DecodedPayload, notificationUUID: string): Promise<{ result: string }> {
-  const existing = await events().get(SYSTEM, notificationUUID);
-  if (existing) return { result: existing.result };
-
   const type = typeof notification.notificationType === "string" ? notification.notificationType : "";
-  if (type === NotificationTypeV2.TEST) {
-    await events().insert({ id: notificationUUID, workspaceId: SYSTEM, type, at: now(), result: "test_ok" }).catch(() => undefined);
-    return { result: "test_ok" };
-  }
+  const dup = await claimNotification(notificationUUID, type);
+  if (dup) return dup;
+  return settleNotification(notificationUUID, () => applyNotification(notification, type));
+}
+
+async function applyNotification(notification: ResponseBodyV2DecodedPayload, type: string): Promise<{ result: string }> {
+  if (type === NotificationTypeV2.TEST) return { result: "test_ok" };
 
   const data = notification.data;
   let decoded: DecodedAppleTransaction | null = null;
@@ -205,9 +236,6 @@ export async function handleAppleNotification(notification: ResponseBodyV2Decode
     console.error("[apple asn] handler failed:", type, e instanceof Error ? e.name : "error");
     throw e;
   }
-
-  const wsId = decoded ? ((await workspaceForOriginal(decoded.originalTransactionId))?.id ?? SYSTEM) : SYSTEM;
-  await events().insert({ id: notificationUUID, workspaceId: wsId === SYSTEM ? SYSTEM : SYSTEM, type, at: now(), result }).catch(() => undefined);
   return { result };
 }
 
@@ -220,8 +248,12 @@ export async function applyDecodedAppleEvent(input: {
   workspace: WorkspaceRow;
   decoded: DecodedAppleTransaction;
 }): Promise<{ result: string }> {
-  const existing = await events().get(SYSTEM, input.notificationUUID);
-  if (existing) return { result: existing.result };
+  const dup = await claimNotification(input.notificationUUID, input.type);
+  if (dup) return dup;
+  return settleNotification(input.notificationUUID, () => applyDecoded(input));
+}
+
+async function applyDecoded(input: { type: string; workspace: WorkspaceRow; decoded: DecodedAppleTransaction }): Promise<{ result: string }> {
   let result = `ignored:${input.type}`;
   if (GRANT_TYPES.has(input.type) || input.type === NotificationTypeV2.DID_CHANGE_RENEWAL_PREF) {
     await grantApple(input.workspace, { ...input.decoded, appAccountToken: input.decoded.appAccountToken ?? appAccountTokenForWorkspace(input.workspace.id) });
@@ -236,7 +268,6 @@ export async function applyDecodedAppleEvent(input: {
   } else if (input.type === NotificationTypeV2.TEST) {
     result = "test_ok";
   }
-  await events().insert({ id: input.notificationUUID, workspaceId: SYSTEM, type: input.type, at: now(), result });
   return { result };
 }
 
