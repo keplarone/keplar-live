@@ -14,5 +14,37 @@ test("model marks: catalog models map to their family logo, others to a monogram
   assert.equal(logo("live:claude-sonnet", "Claude Sonnet"), "/models/claude.svg");
   assert.deepEqual(modelMark("live:qwen3.8-flash", "Qwen3.8 Flash"), { kind: "mono", text: "Qw", family: "Qwen" });
   assert.deepEqual(modelMark("free:nemotron-3-super", "Nemotron 3 Super (free)"), { kind: "mono", text: "Nv", family: "NVIDIA" });
-  assert.deepEqual(modelMark("free:dots-3-note", "Dots3-Note Preview (free)"), { kind: "mono", text: "Do", family: "Dots3-Note Preview (free)" });
+  assert.deepEqual(modelMark("free:dots-3-note", "Dots3-Note Preview (free)"), { kind: "mono", text: "Do", family: "Dots3-Note Preview" });
+});
+
+test("answer brands: the parent brand of each model that answered, once each, in answer order; failures left out", async () => {
+  const { answerBrands, brandList } = await import("@/components/app-ui/model-marks");
+  const fam = (ms: Parameters<typeof answerBrands>[0]) => answerBrands(ms).map((m) => m.family);
+  assert.deepEqual(fam([{ id: "live:gpt-6-astra", name: "GPT Astra" }]), ["ChatGPT"]);
+  assert.deepEqual(fam([
+    { id: "live:gpt-6-luna", name: "GPT-6 Luna", status: "responded" },
+    { id: "live:claude-sonnet", name: "Claude Sonnet", status: "responded" },
+    { id: "live:gpt-oss-20b", name: "gpt-oss-20b", status: "responded" },
+    { id: "live:gemini-3.8-flash", name: "Gemini 3.8 Flash", status: "failed" },
+    { id: "free:llama-4", name: "Llama 4 Maverick (free)", status: "responded" },
+    { id: "live:grok-5", name: "Grok 5", status: "not-needed" },
+  ]), ["ChatGPT", "Claude", "Meta AI"]);
+  assert.deepEqual(answerBrands([]), []);
+  const marks = answerBrands([{ id: "live:gpt-6-luna", name: "GPT-6 Luna" }, { id: "x:grok-5", name: "Grok 5" }, { id: "live:claude", name: "Claude" }]);
+  assert.equal(brandList(marks), "ChatGPT, Grok and Claude");
+  assert.equal(brandList(marks.slice(0, 2)), "ChatGPT and Grok");
+  assert.ok(marks[0].kind === "logo" && marks[0].tint, "one-colour logos are tinted so they read on the dark canvas");
+});
+
+test("answer brands: every answer header credits its models, notices keep the Keplar mark, the swap is reduced-motion safe", async () => {
+  const { readFileSync } = await import("node:fs");
+  const turn = readFileSync("src/components/app-ui/KeplarTurn.tsx", "utf8");
+  assert.ok(!/<KeplarSymbol/.test(turn), "headers render through AnswerBrand");
+  assert.match(turn, /<AnswerBrand id=\{`\$\{uid\}-title`\} models=\{a\.models\} \/>/);
+  assert.equal((turn.match(/<AnswerTitle models=\{m\.answer\?\.models \?\? m\.models\} \/>/g) ?? []).length, 2, "typing answers credit the models so far");
+  assert.match(turn, /function NoticeCard[\s\S]*?<AnswerTitle \/>/, "errors and stops credit no model");
+  const comp = readFileSync("src/components/app-ui/AnswerBrand.tsx", "utf8");
+  assert.match(comp, /prefers-reduced-motion: reduce/);
+  assert.match(comp, /visually-hidden">\{`\$\{brand\.answer\} from \$\{brandList\(marks\)\}`\}/, "one stable accessible name, still 'Keplar Answer'");
+  assert.match(readFileSync("src/components/app-ui/AnswerBrand.module.css", "utf8"), /prefers-reduced-motion: reduce\) \{\s*\.item\[data-swap\] \{ animation: none; \}/);
 });

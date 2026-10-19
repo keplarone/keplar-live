@@ -3,7 +3,6 @@
 import { SourceChecks } from "@/components/answer/SourceChecks";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
-import { KeplarSymbol } from "@/components/brand";
 import { brand } from "@/lib/site";
 import { tiers } from "@/lib/tiers";
 import { formatResetAt, upgradesFrom, WINDOW_WARN_AT, windowResetText } from "@/lib/orchestration/plans";
@@ -42,6 +41,7 @@ import { needsChargeNote } from "@/lib/orchestration/no-response";
 import type { KeplarMessage, Ledger } from "./state/types";
 import type { QuizProgress } from "@/lib/quiz/types";
 import { QuizBuilding, QuizCard } from "./quiz/QuizCard";
+import { AnswerBrand } from "./AnswerBrand";
 import s from "./KeplarTurn.module.css";
 
 type Props = {
@@ -176,7 +176,7 @@ export function KeplarTurn({ message: m, onRetry, onRefreshResearch, onSignal, o
 
       {typingAnswer && !m.practice && (m.smalltalk || m.answer?.smalltalk) ? (
         <article className={`${s.answer} ${s.plainReply}`} aria-busy="true" data-typing="" data-plain="">
-          <header className={s.answerHead}><AnswerTitle /></header>
+          <header className={s.answerHead}><AnswerTitle models={m.answer?.models ?? m.models} /></header>
           {running && m.mode === "consensus" ? <p className={s.draftNote} role="status" data-early-note="">Early draft from the first model to answer. Keplar is checking it with the others; the final answer will replace it.</p> : null}
           <Markdown source={tw.text} streaming caret />
           <TypingBar text={fullText} />
@@ -185,7 +185,7 @@ export function KeplarTurn({ message: m, onRetry, onRefreshResearch, onSignal, o
 
       {typingAnswer && !m.practice && !(m.smalltalk || m.answer?.smalltalk) ? (
         <article className={s.answer} aria-busy="true" data-typing="" data-continued={live || undefined}>
-          <header className={s.answerHead}><AnswerTitle /></header>
+          <header className={s.answerHead}><AnswerTitle models={m.answer?.models ?? m.models} /></header>
           {/* A panel's first words are one model's early draft (early-stream.ts): say so, so the checked answer replacing it is no surprise. */}
           {running && m.mode === "consensus" && !m.answer ? <p className={s.draftNote} role="status" data-early-note="">Early draft from the first model to answer. Keplar is checking it with the others; the final answer will replace it.</p> : null}
           {m.answer?.research ? <ResearchHead research={m.answer.research} /> : null}
@@ -331,13 +331,9 @@ function PartialAnswer({ m }: { m: KeplarMessage }) {
   );
 }
 
-function AnswerTitle() {
-  return (
-    <h3 className={s.answerTitle}>
-      <KeplarSymbol size={15} />
-      {brand.answer}
-    </h3>
-  );
+/** The answer header: the brand(s) of the models that answered (AnswerBrand.tsx), or the Keplar mark when no model is credited. */
+function AnswerTitle({ models }: { models?: readonly { id: string; name: string; status?: string }[] }) {
+  return <AnswerBrand models={models} />;
 }
 
 const upgradeTiersFor = (plan: Ledger["plan"]) =>
@@ -646,7 +642,7 @@ function VerificationBody({ v }: { v: KeplarAnswer["verification"] }) {
 function PlainReply({ answer: a, onRetry, onSignal, isLast, onAsk }: { answer: KeplarAnswer; onRetry: () => void; onSignal?: (kind: "up" | "down" | "copy") => void; isLast: boolean; onAsk?: (text: string) => void }) {
   return (
     <article className={`${s.answer} ${s.plainReply}`} data-plain="" data-last={isLast || undefined}>
-      <header className={s.answerHead}><AnswerTitle /></header>
+      <header className={s.answerHead}><AnswerTitle models={a.models} /></header>
       <Markdown source={a.markdown} />
       {a.clarify ? <ClarifyChips clarify={a.clarify} onAsk={onAsk} enabled={isLast} /> : null}
       <AnswerFooter answer={a} onRetry={onRetry} onSignal={onSignal} isLast={isLast} meta={<span className={s.compute}>{a.durationMs && a.durationMs > 2500 ? `Replied in ${(a.durationMs / 1000).toFixed(1)}s` : "Quick reply"}</span>} />
@@ -851,10 +847,7 @@ function Answer({ answer: a, onRetry, onRefreshResearch, onSignal, isLast, conti
   return (
     <article className={s.answer} aria-labelledby={`${uid}-title`} data-level={c.level} data-continued={continued || undefined} data-last={isLast || undefined}>
       <header className={s.answerHead}>
-        <h3 id={`${uid}-title`} className={s.answerTitle}>
-          <KeplarSymbol size={15} />
-          {brand.answer}
-        </h3>
+        <AnswerBrand id={`${uid}-title`} models={a.models} />
         <ConsensusBadge c={c} />
       </header>
 
