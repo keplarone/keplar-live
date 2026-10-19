@@ -14,14 +14,14 @@ const LOGOS: { rx: RegExp; family: string; src: string; tint?: boolean }[] = [
   { rx: /deepseek/i, family: "DeepSeek", src: "/models/deepseek.svg" },
   { rx: /mistral|ministral|codestral|magistral|devstral/i, family: "Mistral", src: "/models/mistral.svg" },
   { rx: /grok|x-?ai\b/i, family: "Grok", src: "/models/grok.svg", tint: true },
+  { rx: /qwen|alibaba/i, family: "Qwen", src: "/models/qwen.svg" },
+  { rx: /nemotron|nvidia/i, family: "NVIDIA", src: "/models/nvidia.svg" },
+  { rx: /llama|\bmeta\b/i, family: "Meta", src: "/models/meta.svg" },
+  { rx: /kimi|moonshot/i, family: "Kimi", src: "/models/kimi.svg", tint: true },
 ];
 
 const MONOS: { rx: RegExp; family: string; text: string }[] = [
-  { rx: /qwen|alibaba/i, family: "Qwen", text: "Qw" },
-  { rx: /nemotron|nvidia/i, family: "NVIDIA", text: "Nv" },
   { rx: /glm|zhipu|z\.ai/i, family: "Z.ai", text: "Z" },
-  { rx: /llama|meta/i, family: "Meta AI", text: "M" },
-  { rx: /kimi|moonshot/i, family: "Kimi", text: "Ki" },
   { rx: /\bphi[-\s]?\d|microsoft/i, family: "Microsoft", text: "Ms" },
 ];
 
