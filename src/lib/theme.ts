@@ -21,6 +21,11 @@ export const THEME_KEY = "keplar-theme-v2";
  * Dark graphite is the default for everyone with no stored choice. Light and Auto stay available in the theme control.
  */
 export const DEFAULT_THEME_PREF: ThemePref = "dark";
+/**
+ * Keplar Business (business.keplar.one, business.localhost) is Apple-led and light-first: Light for visitors with no stored choice.
+ * The workspace (/work) still pins itself to dark.
+ */
+export const BUSINESS_DEFAULT_THEME_PREF: ThemePref = "light";
 export const THEME_COLORS: Record<Theme, string> = { dark: "#212121", light: "#ffffff" };
 
 export const isThemePref = (v: unknown): v is ThemePref => v === "dark" || v === "light" || v === "auto";
@@ -37,7 +42,7 @@ const keyRe = THEME_KEY.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
 /**
  * Runs before paint. Keep it tiny, dependency-free and exception-safe. Docs use the same theme as the rest of keplar.one.
  */
-export const THEME_SCRIPT = `(function(){try{var k=${inlineJs(THEME_KEY)},p=null;try{p=localStorage.getItem(k)}catch(e){}if(!p){var m=document.cookie.match(/(?:^|; )${keyRe}=(dark|light|auto)/);p=m&&m[1]}if(p!=="dark"&&p!=="light"&&p!=="auto")p=${inlineJs(DEFAULT_THEME_PREF)};var d=p==="dark"||(p==="auto"&&window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);var r=document.documentElement;var t=d?"dark":"light";r.setAttribute("data-theme",t);r.setAttribute("data-theme-pref",p);r.classList.remove(d?"light":"dark");r.classList.add(t);r.style.colorScheme=t}catch(e){}})();`;
+export const THEME_SCRIPT = `(function(){try{var k=${inlineJs(THEME_KEY)},p=null;try{p=localStorage.getItem(k)}catch(e){}if(!p){var m=document.cookie.match(/(?:^|; )${keyRe}=(dark|light|auto)/);p=m&&m[1]}if(p!=="dark"&&p!=="light"&&p!=="auto")p=(typeof location!=="undefined"&&/^business\\./.test(location.hostname))?${inlineJs(BUSINESS_DEFAULT_THEME_PREF)}:${inlineJs(DEFAULT_THEME_PREF)};var d=p==="dark"||(p==="auto"&&window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);var r=document.documentElement;var t=d?"dark":"light";r.setAttribute("data-theme",t);r.setAttribute("data-theme-pref",p);r.classList.remove(d?"light":"dark");r.classList.add(t);r.style.colorScheme=t}catch(e){}})();`;
 
 /* ── client helpers ── */
 

@@ -131,6 +131,11 @@
   scrollbar-width: thin;
 }
 
+/* The browser gives <code> its own "monospace" (Courier on most systems); inherit the mono stack set on the block instead. */
+.pre code {
+  font: inherit;
+}
+
 .pre:focus-visible {
   outline-offset: -2px;
 }

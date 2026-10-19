@@ -1,17 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { KeplarLogo } from "@/components/brand";
 import { formatResetAt, PLAN_ALLOWANCES, WINDOW_WARN_AT, windowResetText } from "@/lib/orchestration/plans";
 import { brand } from "@/lib/site";
 import { dailyLeftText, formatDailyReset } from "@/lib/usage/format";
 import { extensionNote, usageMeter } from "@/lib/usage/meter";
-import { IconClose, IconMenu, IconPlus, IconSearch, IconSettings } from "./icons";
+import { IconAbout, IconBusinessCase, IconClose, IconGetApp, IconMenu, IconPlus, IconPricing, IconSearch, IconSettings } from "./icons";
 import type { AccountInfo, AppState, View } from "./state/types";
 import { AccountMenu, ImportPrompt, type ImportOffer } from "./AccountMenu";
 import s from "./App.module.css";
 import la from "./link-action.module.css";
-import { IconButton, Tooltip } from "@/components/kit";
+import { IconButton, Menu, MenuItem, MenuLabel, Tooltip } from "@/components/kit";
+import { readThemePref, saveThemePref, type ThemePref } from "@/lib/theme";
 import { Recents } from "./Recents";
 
 type Props = {
@@ -34,12 +36,14 @@ type Props = {
   id?: string;
   /** Hide the sidebar on a wide screen. Phones keep the slide-in drawer. */
   onToggleCollapse?: () => void;
+  /** Wide screens: the sidebar is folded to an icon rail (src/styles/gemini.css), so the toggle expands it. */
+  collapsed?: boolean;
 };
 
 /** Usage shows in the sidebar only when it is getting low (below this share left, or a usage window near its limit). */
 const LOW_AT = 20;
 
-export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteChat, onClose, businessProminent = false, account = null, importOffer = null, id, onToggleCollapse }: Props) {
+export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteChat, onClose, businessProminent = false, account = null, importOffer = null, id, onToggleCollapse, collapsed = false }: Props) {
   void businessProminent;
   // One rule for the meter (src/lib/usage/meter.ts): Free = the daily "N of M left" count, paid = credits for the period, unlimited/unknown show no percentage.
   const um = usageMeter(state.ledger);
@@ -105,7 +109,7 @@ export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteC
           <KeplarLogo height={18} />
         </Link>
         {onToggleCollapse ? (
-          <button type="button" className={s.collapseBtn} onClick={onToggleCollapse} aria-label="Collapse sidebar">
+          <button type="button" className={s.collapseBtn} onClick={onToggleCollapse} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} aria-expanded={!collapsed} aria-controls={id}>
             <IconMenu size={16} />
           </button>
         ) : null}
@@ -117,14 +121,14 @@ export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteC
       <div className={s.sideScroll} data-side-scroll="">
       <ul className={s.sideNav} data-primary-nav="">
         <li>
-          <button type="button" className={s.sideItem} data-nav="new" data-primary="" onClick={onNew} aria-keyshortcuts={mac ? "Meta+Shift+O" : "Control+Shift+O"}>
+          <button type="button" className={s.sideItem} data-nav="new" data-primary="" data-rail-label="New chat" onClick={onNew} aria-keyshortcuts={mac ? "Meta+Shift+O" : "Control+Shift+O"}>
             <IconPlus size={15} />
             <span>New chat</span>
             <kbd className={s.kbd} aria-hidden="true">{mod}⇧O</kbd>
           </button>
         </li>
         <li>
-          <button type="button" className={s.sideItem} data-nav="search" data-primary="" onClick={onSearch} aria-keyshortcuts={mac ? "Meta+K" : "Control+K"}>
+          <button type="button" className={s.sideItem} data-nav="search" data-primary="" data-rail-label="Search chats" onClick={onSearch} aria-keyshortcuts={mac ? "Meta+K" : "Control+K"}>
             <IconSearch size={15} />
             <span>Search chats</span>
             <kbd className={s.kbd} aria-hidden="true">{mod}K</kbd>
@@ -135,12 +139,23 @@ export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteC
       <Recents threads={state.threads} activeId={state.activeThreadId} view={state.view} userKey={state.ledger.synced ? (account?.id ?? state.account?.id ?? "anon") : null} onOpen={onOpen} onDeleteChat={onDeleteChat} onAll={() => onView("history")} />
       </div>
 
+      <ul className={s.sideNav} data-side-links="" aria-label="About Keplar">
+        {SIDE_LINKS.map(({ href, label, Icon }) => (
+          <li key={href}>
+            <Link className={s.sideItem} href={href} data-rail-label={label}>
+              <Icon size={15} />
+              <span>{label}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+
       <div className={s.meter}>
         {state.ledger.synced && !state.ledger.signedIn ? (
-          // Signed out: no usage meter at all, just the way in.
+          // Signed out: no usage meter, just the way in (plans are in the links above) and the appearance settings.
           <div className={s.signedOutRow}>
             <Link className={`${la.act} ${s.signInCta}`} data-variant="primary" href="/signin" data-plan-cta="signin">Sign in</Link>
-            <Link className={s.meterLink} href="/pricing">See plans</Link>
+            <GuestSettings />
           </div>
         ) : null}
         {state.ledger.synced && state.ledger.signedIn ? (
@@ -166,5 +181,43 @@ export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteC
         ) : null}
       </div>
     </nav>
+  );
+}
+
+/** The footer list, as in Gemini: what Keplar is, the apps, the business product and the plans. */
+const SIDE_LINKS = [
+  { href: "/about", label: "About Keplar", Icon: IconAbout },
+  { href: "/download", label: "Get the Keplar app", Icon: IconGetApp },
+  { href: "https://business.keplar.one", label: "For Business", Icon: IconBusinessCase },
+  { href: "/pricing", label: "Pricing", Icon: IconPricing },
+] as const;
+
+const THEMES: { id: ThemePref; label: string }[] = [
+  { id: "auto", label: "Match system" },
+  { id: "light", label: "Light" },
+  { id: "dark", label: "Dark" },
+];
+
+/** Signed out there is no account page to open, so the gear holds what a guest can change: the appearance. */
+function GuestSettings() {
+  const [pref, setPref] = useState<ThemePref | null>(null);
+  useEffect(() => {
+    const t = window.setTimeout(() => setPref(readThemePref()), 0);
+    return () => window.clearTimeout(t);
+  }, []);
+  return (
+    <Menu
+      label="Settings"
+      side="top"
+      align="end"
+      trigger={(p) => <IconButton {...p} size="sm" variant="ghost" className={s.iconBtn} label="Settings" tooltip={!p.open} icon={<IconSettings size={16} />} />}
+    >
+      <MenuLabel>Appearance</MenuLabel>
+      {THEMES.map((t) => (
+        <MenuItem key={t.id} checked={pref === t.id} onSelect={() => { saveThemePref(t.id); setPref(t.id); }}>
+          {t.label}
+        </MenuItem>
+      ))}
+    </Menu>
   );
 }

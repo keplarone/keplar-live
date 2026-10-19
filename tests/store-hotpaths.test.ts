@@ -43,9 +43,13 @@ test("/api/health fails (503) in production while the auth secret is missing, an
   assert.equal(bad.body.security.authSecret, false);
   assert.ok(errors.some((a) => /CRITICAL/.test(String(a[0]))), "logged loudly");
   process.env.BETTER_AUTH_SECRET = "a-long-enough-production-secret-0123456789";
-  const good = await healthSummary();
-  assert.equal(good.status, 200);
-  assert.equal(good.body.ok, true);
+  const fileStore = await healthSummary();
+  assert.equal(fileStore.status, 503, "production on the file store is unhealthy even when the auth secret is set");
+  assert.equal(fileStore.body.ok, false);
+  assert.equal("error" in fileStore.body && fileStore.body.error, "database not configured");
+  assert.equal(fileStore.body.store, "file");
+  assert.ok(errors.some((a) => /ephemeral file store/.test(String(a[0]))), "file store logged loudly");
+  assert.doesNotMatch(JSON.stringify(errors), /postgres(ql)?:\/\//, "the log does not contain a connection string");
 });
 
 test("outbox: production logs and stores a masked recipient; development keeps it", async (t) => {
