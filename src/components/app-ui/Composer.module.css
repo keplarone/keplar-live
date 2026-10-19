@@ -442,6 +442,12 @@
   color: var(--c-ink-3);
 }
 
+/* Pre-send hint. One line under the allowance, inside the same status, so it is announced once. */
+.budgetNote {
+  flex-basis: 100%;
+  color: var(--c-ink-3);
+}
+
 .budgetActions {
   display: inline-flex;
   align-items: center;
