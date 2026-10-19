@@ -2,7 +2,7 @@ import { Inter } from "next/font/google";
 
 /**
  * Keplar Business's one UI face: Inter, the closest openly licensed match for Apple's SF Pro (the Apple-led look in tokens.css).
- * Keplar One keeps Google Sans. next/font self-hosts one variable file, display swap, with a metric-matched fallback so the swap
+ * Keplar One uses Nunito Sans (the root layout). next/font self-hosts one variable file, display swap, with a metric-matched fallback so the swap
  * does not shift layout; the subsets match the root layout's so translated pages keep their glyphs. Code stays monospaced.
  */
 const inter = Inter({

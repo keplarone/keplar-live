@@ -3,7 +3,7 @@
  *
  * Every glyph is built from the mark's three shapes (src/components/brand/KeplarSymbol.tsx): a soft square (rx 2.5 to 3), a
  * triangle and a circle. 16px grid, a light 1.3px stroke with round ends and joins, so the set reads light and soft next to
- * Google Sans (the weight of Gemini's light symbols, in our own forms).
+ * the site face, Nunito Sans (the weight of Gemini's light symbols, in our own forms).
  *
  * Signature: the "orbit" dot, a solid circle from the mark, used only on Keplar's own actions (new chat and add, search,
  * create, deep research, history, memory, settings, web, the sidebar menu). Universal controls (close, check, chevrons,
