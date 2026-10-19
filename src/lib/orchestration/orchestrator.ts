@@ -38,6 +38,7 @@ import { createRetriever, retrievalApplies, retrievalEstimateUsd } from "./retri
 import { budgetSkipped, runSourcing, signSourcing, sourcingGate } from "./sourcing";
 import { linkCitations, OFF_BUDGET, OFF_NOT_ENABLED, OFF_SENSITIVE, researchEstimateUsd, runResearch } from "./research";
 import { LIVE_RESEARCH_RULES, liveResearchSummary } from "@/lib/research/live-request";
+import { checkCitations, citedPages } from "@/lib/research/citation-check";
 import { ModelVerifier } from "./verifier";
 import { MergedFreeReview } from "./free-merged";
 import { sharedPool } from "./pool-governor";
@@ -412,6 +413,8 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
 
   // Deep Research: plan → search → read, streamed. The pages and notes go to the panel and the writer as context; they cite pages as [n].
   let research: ResearchSummary | undefined;
+  // Page text the server's own searches returned (Deep Research only; Live Research is checked on the desktop).
+  let researchEvidence: Map<number, string> | undefined;
   let researchUsd = 0;
   if (deep) {
     if (researchOn && deps.retriever?.research) {
@@ -419,6 +422,7 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
       const out = yield* runResearch({ registry, retriever: deps.retriever, req, plan, classification, signal });
       researchUsd = out.costUsd;
       research = out.summary;
+      researchEvidence = out.evidence;
       if (out.brief) req = { ...req, memory: out.brief + (req.memory ?? "") };
     } else {
       yield { type: "research", research: { phase: "off", reason: researchOff } };
@@ -788,6 +792,12 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
     const linked = linkCitations(body.markdown ?? "", research.sources);
     body.markdown = linked.markdown;
     research = { ...research, cited: linked.cited };
+    // Deep Research: each remaining [n] compared with its page's text; a citation whose page clearly doesn't match is removed.
+    if (researchEvidence && research.sources.length && linked.cited.length) {
+      const checked = checkCitations(body.markdown, research.sources, researchEvidence);
+      body.markdown = checked.markdown;
+      research = { ...research, cited: citedPages(checked.markdown, research.sources), checked: checked.check };
+    }
   }
   if (research?.sources.length) {
     // Pages were really read for this answer: the "web retrieval isn't live" and "no sources cited" notes no longer hold.

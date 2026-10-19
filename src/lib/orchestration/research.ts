@@ -13,6 +13,7 @@
 import { liveEnv, SEARCH_PRICE_USD } from "./config";
 import { callCostUsd, sanitizeParams, spentUsd } from "./pricing";
 import type { createRegistry } from "./providers";
+import { EVIDENCE_CHARS } from "@/lib/research/citation-check";
 import type { Classification, KeplarRequest, ResearchEvent, ResearchSource, ResearchSummary, Retriever, RoutingPlan } from "./types";
 
 export const RESEARCH = {
@@ -83,8 +84,12 @@ const safeUrl = (u: string): string | null => {
 };
 const clean = (t: string, max: number) => t.replace(/[\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
 
-/** Adds a search's pages to the numbered list (deduplicated by URL). Returns only the pages that were new. Pure apart from `into`. */
-export function addSources(into: ResearchSource[], pages: { url: string; title: string; snippet?: string }[], query: number): ResearchSource[] {
+/**
+ * Adds a search's pages to the numbered list (deduplicated by URL). Returns only the pages that were new. `evidence`, when given,
+ * keeps up to EVIDENCE_CHARS of each new page's returned text for the citation check (the source itself carries a short snippet).
+ * Pure apart from `into` and `evidence`.
+ */
+export function addSources(into: ResearchSource[], pages: { url: string; title: string; snippet?: string }[], query: number, evidence?: Map<number, string>): ResearchSource[] {
   const added: ResearchSource[] = [];
   for (const p of pages) {
     const url = safeUrl(p.url);
@@ -92,6 +97,7 @@ export function addSources(into: ResearchSource[], pages: { url: string; title: 
     const s: ResearchSource = { n: into.length + 1, title: clean(p.title || hostOf(url), 160), url, host: hostOf(url), query, ...(p.snippet ? { snippet: clean(p.snippet, 280) } : {}) };
     into.push(s);
     added.push(s);
+    if (evidence && p.snippet) evidence.set(s.n, clean(p.snippet, EVIDENCE_CHARS));
   }
   return added;
 }
@@ -139,7 +145,8 @@ export function linkCitations(markdown: string, sources: ResearchSource[]): { ma
 }
 
 type Registry = ReturnType<typeof createRegistry>;
-export type ResearchOutcome = { brief: string; summary: ResearchSummary; costUsd: number };
+/** `evidence`: each page's returned text by page number, for the citation check. Server side only: never streamed or saved. */
+export type ResearchOutcome = { brief: string; summary: ResearchSummary; costUsd: number; evidence: Map<number, string> };
 
 /**
  * The live research phase. Yields research events as it goes and returns the brief for the panel, the summary for the answer and
@@ -163,6 +170,7 @@ export async function* runResearch(i: { registry: Registry; retriever: Retriever
   yield ev({ phase: "step", step: "search", status: "active", detail: `${queries.length} live ${queries.length === 1 ? "search" : "searches"}` });
   yield ev({ phase: "step", step: "read", status: "active" });
   const sources: ResearchSource[] = [];
+  const evidence = new Map<number, string>();
   const notes: string[] = queries.map(() => "");
   const pending = new Map(queries.map((q, qi) => [qi, i.retriever.research!({ query: q, plan: i.plan, signal: i.signal }).then((r) => ({ qi, r }), () => ({ qi, r: null }))]));
   let searched = 0;
@@ -172,7 +180,7 @@ export async function* runResearch(i: { registry: Registry; retriever: Retriever
     searched++;
     if (!r) continue;
     costUsd += r.costUsd;
-    for (const s of addSources(sources, r.sources, qi)) yield ev({ phase: "source", source: s });
+    for (const s of addSources(sources, r.sources, qi, evidence)) yield ev({ phase: "source", source: s });
     notes[qi] = numberNotes(r.notes, sources);
     if (searched === 1) yield ev({ phase: "step", step: "search", status: "done", detail: `${queries.length} live ${queries.length === 1 ? "search" : "searches"}` });
   }
@@ -180,7 +188,7 @@ export async function* runResearch(i: { registry: Registry; retriever: Retriever
   yield ev({ phase: "step", step: "read", status: "done", detail: `${sources.length} ${sources.length === 1 ? "page" : "pages"} read` });
   if (!sources.length) {
     yield ev({ phase: "off", reason: OFF_FAILED });
-    return { brief: "", summary: { queries, sources: [], cited: [], off: OFF_FAILED }, costUsd };
+    return { brief: "", summary: { queries, sources: [], cited: [], off: OFF_FAILED }, costUsd, evidence };
   }
-  return { brief: researchBrief(queries, sources, notes), summary: { queries, sources, cited: [] }, costUsd };
+  return { brief: researchBrief(queries, sources, notes), summary: { queries, sources, cited: [] }, costUsd, evidence };
 }

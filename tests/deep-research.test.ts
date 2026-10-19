@@ -83,7 +83,7 @@ async function withEnv<T>(vars: Record<string, string>, fn: () => Promise<T>): P
   try { return await fn(); } finally { for (const [k, v] of Object.entries(prev)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; } }
 }
 const REPORT = "The Eiffel Tower was completed in 1889 [1]. It was designed by Gustave Eiffel's engineering firm [2, 3]. Its height is 330 metres [7].\nRESOLUTION: No disagreement.";
-function stub() {
+function stub(report = REPORT) {
   const realFetch = globalThis.fetch;
   const synthSaw: string[] = [];
   globalThis.fetch = (async (url: string | URL, init?: RequestInit) => {
@@ -98,8 +98,8 @@ function stub() {
       content = JSON.stringify({ topic: "Eiffel Tower", positions: [{ id: "P1", label: "1889", summary: "1889." }], responses: Array.from({ length: n }, (_, i) => ({ id: `R${i + 1}`, kind: "answer", position: "P1" })), claims: [] });
     } else if (sys.startsWith("You are Keplar's verifier")) content = JSON.stringify({ checks: [], disputed: [] });
     else if (sys.startsWith("You are Keplar's judge-tier synthesizer writing a DRAFT")) content = "Draft: 1889 [1].";
-    else if (sys.startsWith("You are Keplar's judge-tier synthesizer")) { synthSaw.push(`${sys}\n${body.messages[1]?.content ?? ""}`); content = REPORT; }
-    else if (sys.includes("critic") || sys.includes("Critique") || sys.includes("CRITIQUE")) content = REPORT;
+    else if (sys.startsWith("You are Keplar's judge-tier synthesizer")) { synthSaw.push(`${sys}\n${body.messages[1]?.content ?? ""}`); content = report; }
+    else if (sys.includes("critic") || sys.includes("Critique") || sys.includes("CRITIQUE")) content = report;
     else content = "The Eiffel Tower was completed in 1889 [1] by Gustave Eiffel's firm [2].";
     return new Response(JSON.stringify({ model: body.model, choices: [{ message: { content }, finish_reason: "stop" }], usage: { prompt_tokens: 100, completion_tokens: 50, cost: 0.0001 } }), { status: 200, headers: { "content-type": "application/json" } });
   }) as typeof fetch;
@@ -153,6 +153,37 @@ test("pipeline, Deep Research with web search: plan → search → read stream b
     assert.ok(a.research!.cited.every((n) => n >= 1 && n <= 3) && a.research!.cited.length > 0);
     assert.ok(s.synthSaw.some((x) => x.includes("Web research for this question") && x.includes("cite a page as [n]")), "the writer got the numbered pages and the citation rules");
     assert.ok(!a.sources?.some((x) => x.title === "No sources cited"), "no 'no sources' note when pages were read");
+  } finally { s.restore(); }
+});
+
+test("pipeline, Deep Research citation check: a citation whose page is about something else is removed, the check rides on the answer", async () => {
+  const TOWER = "The Eiffel Tower is a wrought-iron lattice tower in Paris. It was completed in 1889 for the Exposition Universelle and designed by the engineering firm of Gustave Eiffel. It stands 330 metres tall.";
+  const BAKERY = "Our bakery opens at seven every morning and sells sourdough loaves, croissants and seasonal fruit tarts made with butter from local farms near Lyon. Orders for weddings and birthdays need two days of notice, and deliveries run within the city on weekdays. Every Sunday we bake rye and close early on public holidays across Auvergne.";
+  const s = stub("The Eiffel Tower was completed in 1889 [1]. It stands 330 metres tall [2].\nRESOLUTION: No disagreement.");
+  try {
+    const r: Retriever = {
+      name: "openrouter-web:exa", live: true,
+      async check() { return { checks: [], costUsd: 0 }; },
+      async research({ query }) {
+        const pages = query.includes("designer")
+          ? [{ url: "https://bakery.example.com/", title: "A bakery", snippet: BAKERY }]
+          : [{ url: "https://www.britannica.com/topic/Eiffel-Tower-Paris-France", title: "Eiffel Tower | Britannica", snippet: TOWER }];
+        return { sources: pages, notes: `Notes (${pages[0].url})`, costUsd: 0.01 };
+      },
+    };
+    const { a } = await withEnv(FAKE, async () => run({ ...engineDeps()!, retriever: r }, { prompt: Q, plan: "plus", modes: { deepResearch: true }, computeRemaining: 1e7, limits: { maxRequestUsd: 50, maxDeepResearchUsd: 50 } }));
+    const bakery = a.research!.sources.find((x) => x.host === "bakery.example.com")!;
+    const tower = a.research!.sources.find((x) => x.host === "britannica.com")!;
+    assert.ok(bakery && tower, "both pages were read");
+    const checked = a.research!.checked!;
+    assert.ok(checked, "the server check is on the answer");
+    assert.equal(checked.by, "server");
+    assert.ok(checked.summary.claims >= 1);
+    assert.doesNotMatch(a.markdown, new RegExp(`tall \\[${bakery.n}\\]`), "the bakery page no longer cites the tower's height");
+    assert.match(a.markdown, new RegExp(`1889 \\[${tower.n}\\]`), "the matching citation stays");
+    assert.ok(a.research!.cited.every((n) => a.markdown.includes(`[${n}]`)), "cited lists only pages still cited in the text");
+    assert.ok(BAKERY.length > 280 && bakery.snippet!.length === 280, "the page shows only its 280-character snippet");
+    assert.ok(!JSON.stringify(a).includes("close early on public holidays across Auvergne"), "the longer page text kept for the check never leaves the server");
   } finally { s.restore(); }
 });
 

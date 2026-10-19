@@ -8,7 +8,7 @@
  * on, and the desktop's citation check; that check compares words and numbers and is never presented as a check by Keplar's servers.
  */
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import type { LiveResearchMeta, ResearchSource, ResearchSummary } from "@/lib/orchestration/types";
+import type { CitationCheck, LiveResearchMeta, ResearchSource, ResearchSummary } from "@/lib/orchestration/types";
 import { LIVE_RESEARCH_STEPS, RESEARCH_STEPS, type LiveResearch } from "../state/research";
 import type { CiteRenderer } from "../Markdown";
 import { IconCheck, IconDeep } from "../icons";
@@ -105,6 +105,7 @@ export function ResearchHead({ research }: { research: ResearchSummary }) {
       <span className={s.badges}>
         <span className={s.badge} data-kind="web"><IconCheck size={12} /> Researched on the web</span>
         <span className={s.badge}>{research.sources.length} {research.sources.length === 1 ? "source" : "sources"} read · {research.cited.length} cited</span>
+        {research.checked && checkCounts(research.checked.summary) ? <span className={s.badge} title="Keplar compared each cited sentence with the text the search returned for its page: words and numbers, not meaning.">Citations: {checkCounts(research.checked.summary)}</span> : null}
       </span>
     </div>
   );
@@ -203,8 +204,7 @@ const STATUS_WORD: Record<NonNullable<LiveResearchMeta["checked"]>["claims"][num
 
 /** Live Research's header: where the pages came from, how many were read and cited, how many independent, and the citation check's counts. */
 function LiveHead({ research, live }: { research: ResearchSummary; live: LiveResearchMeta }) {
-  const c = live.checked?.summary;
-  const counts = c ? [c.supported && `${c.supported} supported`, c.partiallySupported && `${c.partiallySupported} partly supported`, c.conflicting && `${c.conflicting} conflicting`, c.notVerified && `${c.notVerified} not verified`].filter(Boolean).join(" · ") : "";
+  const counts = live.checked ? checkCounts(live.checked.summary) : "";
   return (
     <div className={s.reportHead} data-research-report="" data-via="desktop">
       <span className={s.reportLabel}><IconDeep size={14} /> Live Research</span>
@@ -217,17 +217,32 @@ function LiveHead({ research, live }: { research: ResearchSummary; live: LiveRes
   );
 }
 
+/** "3 supported · 1 not verified": a citation check's counts, for a header badge. */
+const checkCounts = (c: CitationCheck["summary"]) =>
+  [c.supported && `${c.supported} supported`, c.partiallySupported && `${c.partiallySupported} partly supported`, c.conflicting && `${c.conflicting} conflicting`, c.notVerified && `${c.notVerified} not verified`].filter(Boolean).join(" · ");
+
+const CHECK_NOTE: Record<"desktop" | "server", string> = {
+  desktop: "The Keplar desktop app compared each cited sentence with the pages it read. It matches words and numbers, not meaning, so read the page before relying on these.",
+  server: "Keplar compared each cited sentence with the text the search returned for the page it cites. It matches words and numbers, not meaning, so read the page before relying on these.",
+};
+
 /** Statements the desktop's citation check couldn't fully back with a cited page, with the passage (or the conflicting page) it found. */
 export function LiveChecks({ live }: { live?: LiveResearchMeta }) {
-  const claims = live?.checked?.claims.filter((c) => c.status !== "supported") ?? [];
-  if (!live?.checked || !claims.length) return null;
-  // The count comes from the desktop's summary; only the most serious statements are kept with the chat.
-  const sum = live.checked.summary;
+  return live?.checked ? <CitationChecks checked={live.checked} via="desktop" /> : null;
+}
+
+/** Statements a citation check (the desktop's, or the server's for Deep Research) couldn't fully back with a cited page. */
+export function CitationChecks({ checked, via }: { checked: CitationCheck; via: "desktop" | "server" }) {
+  const claims = checked.claims.filter((c) => c.status !== "supported");
+  if (!claims.length) return null;
+  // The count comes from the check's summary; only the most serious statements are kept with the chat.
+  const sum = checked.summary;
   const total = Math.max(claims.length, sum.conflicting + sum.notVerified + sum.partiallySupported);
+  const removed = via === "server" ? sum.removedCitations : 0;
   return (
-    <details className={s.list} data-live-checks="">
+    <details className={s.list} data-live-checks={via === "desktop" ? "" : undefined} data-citation-checks={via}>
       <summary className={s.listSummary}>Citation check <span className={s.listMeta}>{total} {total === 1 ? "statement needs" : "statements need"} a closer look</span></summary>
-      <p className={s.listNote} role="note">The Keplar desktop app compared each cited sentence with the pages it read. It matches words and numbers, not meaning, so read the page before relying on these.</p>
+      <p className={s.listNote} role="note">{CHECK_NOTE[via]}{removed ? ` ${removed === 1 ? "1 citation was" : `${removed} citations were`} removed because the page didn't mention the sentence.` : ""}</p>
       <ul className={s.checks}>
         {claims.map((c, i) => (
           <li key={i} data-status={c.status}>
