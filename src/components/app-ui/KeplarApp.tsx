@@ -1357,8 +1357,8 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
                           <span>{welcome ? "Welcome," : `${dayGreeting(new Date().getHours())},`}</span> <span className={s.welcomeName}>{firstName}</span>
                         </span>
                       ) : state.ledger.synced ? (
-                        // Direct children of the heading. A span around the slot matches [data-welcome] span
-                        // (background-clip: text) and repaints the name at the wrapper's origin.
+                        // Direct children of the heading. No ancestor of the slot clips its background to text.
+                        // The brand fill is on the name element inside the slot, not on a wrapper.
                         <><span>How can </span><RotatingModelName /><span> help you today?</span></>
                       ) : <span>Welcome to Keplar.</span>}
                     </h1>

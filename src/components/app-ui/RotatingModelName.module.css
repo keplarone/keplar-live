@@ -1,5 +1,7 @@
-/* The greeting's rotating model name (RotatingModelName.tsx). The name inherits the heading ink.
-   This file is the slot and the switch. Transform, opacity and width only. */
+/* The greeting's rotating model name (RotatingModelName.tsx). Brand gradients live in src/styles/gemini.css
+   on each [data-letter] (background-size / background-position too). This file is the slot and the switch.
+   The pop is transform and opacity only (no blur, glow or shadow). The letter animation does not keep a
+   transform after it ends: a leftover transform inside a text-clipped word piles every letter on the first. */
 
 .slot {
   position: relative;
@@ -9,19 +11,40 @@
   transition: width 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* The current name is in flow (it gives the slot its height and baseline); the outgoing one sits on top of it. */
+/* The current name is in flow (it gives the slot its height and baseline); the outgoing one sits on top of it.
+   The word is not text-clipped. Each letter clips its own slice of the brand gradient. */
 .word {
   display: inline-block;
   will-change: transform, opacity;
 }
+
+/* Inline-block letters so a stagger can move each one. The hidden measure copies use the same display,
+   so the slot's width matches the name on screen. No extra tracking: the gap between spans is zero. */
+.word > [data-letter],
+.measure [data-letter] {
+  display: inline-block;
+  background-repeat: no-repeat;
+  background-size: var(--word-w) 100%;
+  background-position: calc(var(--x) * -1) 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+/* backwards, not both: the 0% pose holds during the stagger delay, and nothing is left transformed once it lands. */
+.letter {
+  animation: letter-pop 450ms cubic-bezier(0.22, 0.85, 0.28, 1) backwards;
+}
+
 .out {
   position: absolute;
   left: 0;
   top: 0;
-  animation: lift-out 520ms cubic-bezier(0.4, 0, 1, 1) both;
+  pointer-events: none;
+  animation: lift-out 420ms linear both;
 }
 .in {
-  animation: roll-in 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fade-in 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 /* Every name rendered once, invisibly, so the slot can take the next name's width before it arrives. */
@@ -37,16 +60,23 @@
   white-space: nowrap;
 }
 
-@keyframes roll-in {
-  from { opacity: 0; transform: translateY(0.55em) scale(0.96); }
-  to { opacity: 1; transform: none; }
+/* Each letter springs up, overshoots slightly, then settles on its own box. Transform only. */
+@keyframes letter-pop {
+  0% { transform: translate3d(0, 0.82em, 0) scale(0.58); }
+  68% { transform: translate3d(0, -0.07em, 0) scale(1.07); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 @keyframes lift-out {
-  from { opacity: 1; transform: none; }
-  to { opacity: 0; transform: translateY(-0.5em) scale(1.02); }
+  0% { opacity: 1; transform: translate3d(0, 0, 0); }
+  42% { opacity: 0; transform: translate3d(0, -0.62em, 0) scale(1.03); }
+  100% { opacity: 0; transform: translate3d(0, -0.9em, 0) scale(1.05); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .slot { transition: none; }
-  .word, .in, .out { animation: none; }
+  .word, .letter, .in, .out { animation: none; }
 }
