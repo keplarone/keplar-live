@@ -52,6 +52,9 @@ PUBLIC_OK.add("GET space-studio/auth/google/start");
 PUBLIC_OK.add("GET space-studio/auth/roblox/start");
 // The installer download is public: it only redirects to the latest GitHub release asset (src/lib/space-studio/download.ts).
 PUBLIC_OK.add("GET space-studio/download");
+// Desktop installers. Without GITHUB_RELEASES_TOKEN this is 404. With it, an allow-listed asset name is redirected to a
+// short-lived GitHub asset URL; the token stays on the server (src/lib/desktop/releases.ts openDesktopAsset).
+PUBLIC_OK.add("GET desktop/download");
 // Keplar Business for ChatGPT (src/lib/chatgpt): OAuth 2.1 + MCP endpoints that ChatGPT's servers call without a Keplar cookie, by design.
 PUBLIC_OK.add("GET chatgpt/mcp"); // Always 405 (POST only); no body.
 PUBLIC_OK.add("POST chatgpt/mcp"); // initialize / ping / tools/list are static protocol metadata; tools/call authenticates the bearer grant (hash, expiry, resource, client, scope, plan) before any workspace read.
