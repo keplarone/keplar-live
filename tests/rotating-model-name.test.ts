@@ -71,18 +71,24 @@ function keyframeProps(file: string, name: string): string[] {
   return [...new Set([...body.matchAll(/[;{\s]([a-z-]+)\s*:/g)].map((m) => m[1]))];
 }
 
-test("greeting name slot: the five models in order, each with its PR #93 brand gradient on the name only", () => {
+test("greeting name slot: the five models in order, each letter wearing its PR #93 brand gradient", () => {
   assert.deepEqual(MODEL_NAMES.map((m) => m.name), ["Claude", "ChatGPT", "DeepSeek", "Mistral", "Gemini"]);
   for (const m of MODEL_NAMES) {
-    assert.match(css, new RegExp(`\\[data-theme\\] \\[data-welcome\\] \\[data-model="${m.id}"\\] \\{ background-image: ${BRAND[m.id].dark.replace(/[()]/g, "\\$&")}; \\}`), `${m.id} dark`);
-    assert.match(css, new RegExp(`\\[data-theme="light"\\] \\[data-welcome\\] \\[data-model="${m.id}"\\] \\{ background-image: ${BRAND[m.id].light.replace(/[()]/g, "\\$&")}; \\}`), `${m.id} light`);
+    const dark = BRAND[m.id].dark.replace(/[()]/g, "\\$&");
+    const light = BRAND[m.id].light.replace(/[()]/g, "\\$&");
+    assert.match(css, new RegExp(`\\[data-theme\\] \\[data-welcome\\] \\[data-model="${m.id}"\\] > \\[data-letter\\] \\{ background-image: ${dark}; \\}`), `${m.id} dark`);
+    assert.match(css, new RegExp(`\\[data-theme="light"\\] \\[data-welcome\\] \\[data-model="${m.id}"\\] > \\[data-letter\\] \\{ background-image: ${light}; \\}`), `${m.id} light`);
   }
-  assert.match(mod, /background-size:\s*220% 100%/);
-  assert.match(mod, /@keyframes shimmer \{\s*from \{ background-position: 0% 50%; \}\s*to \{ background-position: 100% 50%; \}\s*\}/);
-  assert.match(mod, /shimmer 4\.8s ease-in-out infinite alternate/);
+  assert.match(css, /\[data-letter\] \{[^}]*background-size:\s*var\(--word-w\) 100%/);
+  assert.match(css, /background-position:\s*calc\(var\(--x\) \* -1\) 0/);
+  assert.match(mod, /background-size:\s*var\(--word-w\) 100%/);
+  assert.match(mod, /background-position:\s*calc\(var\(--x\) \* -1\) 0/);
+  assert.match(src, /--word-w/);
+  assert.match(src, /--x/);
   assert.match(mod, /will-change:\s*transform,\s*opacity;/);
   assert.doesNotMatch(mod, /will-change:[^;]*filter/);
   assert.doesNotMatch(mod, /blur\(/);
+  assert.doesNotMatch(mod, /shimmer|background-size:\s*220%/);
   assert.ok(SWITCH_MS >= 1500, "each name stays long enough to read");
 });
 
@@ -94,7 +100,8 @@ test("greeting name slot: the pop is a letter stagger and a lift, transform/opac
   assert.deepEqual(lift, ["opacity", "transform"]);
   const fade = keyframeProps(mod, "fade-in");
   assert.deepEqual(fade, ["opacity"]);
-  assert.deepEqual(keyframeProps(mod, "shimmer"), ["background-position"]);
+  assert.match(mod, /letter-pop\s+\d+ms[^;{]*\sbackwards/);
+  assert.doesNotMatch(mod, /letter-pop[^;{]*\bboth\b/);
   const popMs = Number(mod.match(/letter-pop\s+(\d+)ms/)?.[1]);
   const liftMs = Number(mod.match(/lift-out\s+(\d+)ms/)?.[1]);
   assert.ok(popMs >= 400 && popMs <= 600, `letter pop ${popMs}ms`);
@@ -120,25 +127,29 @@ test("signed-out greeting words stay solid white in dark and solid ink in light"
   assert.doesNotMatch(css, /blur\(/);
 });
 
-test("no ancestor of [data-model-slot] gets background-clip: text; the clip is on the name", () => {
+test("no ancestor of [data-model-slot] gets background-clip: text; the clip is on each letter", () => {
   const h1 = app.slice(app.indexOf('data-welcome=""'), app.indexOf("</h1>"));
   // The signed-out line is a fragment of three direct children of the heading, not one wrapping span.
   assert.match(h1, /<><span>How can <\/span>\s*<RotatingModelName \/>\s*<span> help you today\?<\/span><\/>/);
   // The slot element is the component's own root, so its parent is the heading.
   assert.match(src, /return \(\s*<>\s*<span className=\{s\.slot\} data-model-slot=""/);
   const subjects = textClipSubjects(css);
-  assert.ok(subjects.length > 0, "the name clips its own gradient");
+  assert.ok(subjects.length > 0, "each letter clips its own gradient");
   for (const subject of subjects) {
-    assert.match(subject, /^\[data-model(?:=|\])/, `clip subject ${subject}`);
-    assert.doesNotMatch(subject, /data-model-slot/);
-    assert.doesNotMatch(subject, /data-welcome\]$/);
+    assert.equal(subject, "[data-letter]", `clip subject ${subject}`);
   }
-  // Transparent text-fill is what lets the gradient show, and it belongs on the name only.
+  // [data-model] is not clipped. A transform on a child of a clipped word is what piles the letters up.
+  for (const match of stripped(css).matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    if (!/background-clip:\s*text/.test(match[2])) continue;
+    for (const part of selectorList(match[1])) {
+      assert.doesNotMatch(part, /\[data-model(?:=|\])(?![^\]]*letter)/);
+    }
+  }
   for (const match of stripped(css).matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
     if (!/-webkit-text-fill-color:\s*transparent/.test(match[2])) continue;
     for (const part of selectorList(match[1])) {
       const subject = (part.trim().split(/\s+/).pop() ?? "").trim();
-      assert.match(subject, /^\[data-model(?:=|\])/, `transparent fill subject ${subject}`);
+      assert.equal(subject, "[data-letter]", `transparent fill subject ${subject}`);
     }
   }
 });

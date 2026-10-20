@@ -101,9 +101,10 @@ test("empty home keeps the graphite canvas, a blue-teal glow, and a visible keyb
   assert.match(gemini, /radial-gradient\(closest-side at/);
   assert.match(gemini, /\[data-theme\] \[data-welcome\] \{[^}]*color:\s*#ffffff !important/);
   assert.match(gemini, /\[data-theme="light"\] \[data-welcome\] \{[^}]*color:\s*#0e0f12 !important/);
-  // The heading is solid. The only text clip is the rotating name's own brand fill.
+  // The heading is solid. The only text clip is each letter of the rotating name.
   assert.doesNotMatch(gemini, /\[data-welcome\] \{[^}]*background-clip:\s*text/);
-  assert.match(gemini, /\[data-model\] \{[^}]*background-clip:\s*text/);
+  assert.doesNotMatch(gemini, /\[data-model\] \{[^}]*background-clip:\s*text/);
+  assert.match(gemini, /\[data-letter\] \{[^}]*background-clip:\s*text/);
   assert.match(gemini, /@keyframes g-glow-in \{\s*from \{ opacity: 0; scale: 0\.88; \}/);
   assert.match(gemini, /@keyframes g-bloom \{\s*0% \{ opacity: 0; scale: 0\.975; \}/);
   // The controls inside the composer keep the outline; the text field doesn't (a textarea always matches :focus-visible while typing).

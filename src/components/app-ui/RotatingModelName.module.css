@@ -1,6 +1,7 @@
-/* The greeting's rotating model name (RotatingModelName.tsx). The brand gradients live in src/styles/gemini.css
-   on the name element ([data-model]); this file is the slot, the switch and the shimmer.
-   The pop is transform and opacity only (no blur, glow or shadow). The shimmer moves background-position. */
+/* The greeting's rotating model name (RotatingModelName.tsx). Brand gradients live in src/styles/gemini.css
+   on each [data-letter] (background-size / background-position too). This file is the slot and the switch.
+   The pop is transform and opacity only (no blur, glow or shadow). The letter animation does not keep a
+   transform after it ends: a leftover transform inside a text-clipped word piles every letter on the first. */
 
 .slot {
   position: relative;
@@ -11,11 +12,9 @@
 }
 
 /* The current name is in flow (it gives the slot its height and baseline); the outgoing one sits on top of it.
-   background-size lets the brand gradient travel; the clip itself is on [data-model] in gemini.css. */
+   The word is not text-clipped. Each letter clips its own slice of the brand gradient. */
 .word {
   display: inline-block;
-  background-size: 220% 100%;
-  animation: shimmer 4.8s ease-in-out infinite alternate;
   will-change: transform, opacity;
 }
 
@@ -24,9 +23,17 @@
 .word > [data-letter],
 .measure [data-letter] {
   display: inline-block;
+  background-repeat: no-repeat;
+  background-size: var(--word-w) 100%;
+  background-position: calc(var(--x) * -1) 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
 }
+/* backwards, not both: the 0% pose holds during the stagger delay, and nothing is left transformed once it lands. */
 .letter {
-  animation: letter-pop 450ms cubic-bezier(0.22, 0.85, 0.28, 1) both;
+  animation: letter-pop 450ms cubic-bezier(0.22, 0.85, 0.28, 1) backwards;
 }
 
 .out {
@@ -34,10 +41,10 @@
   left: 0;
   top: 0;
   pointer-events: none;
-  animation: lift-out 420ms linear both, shimmer 4.8s ease-in-out infinite alternate;
+  animation: lift-out 420ms linear both;
 }
 .in {
-  animation: fade-in 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both, shimmer 4.8s ease-in-out infinite alternate;
+  animation: fade-in 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 /* Every name rendered once, invisibly, so the slot can take the next name's width before it arrives. */
@@ -53,8 +60,7 @@
   white-space: nowrap;
 }
 
-/* Each letter springs up, overshoots slightly, then settles. Transform only, so the brand fill on the
-   word stays a single paint. */
+/* Each letter springs up, overshoots slightly, then settles on its own box. Transform only. */
 @keyframes letter-pop {
   0% { transform: translate3d(0, 0.82em, 0) scale(0.58); }
   68% { transform: translate3d(0, -0.07em, 0) scale(1.07); }
@@ -68,11 +74,6 @@
   0% { opacity: 1; transform: translate3d(0, 0, 0); }
   42% { opacity: 0; transform: translate3d(0, -0.62em, 0) scale(1.03); }
   100% { opacity: 0; transform: translate3d(0, -0.9em, 0) scale(1.05); }
-}
-/* The brand gradient drifts back and forth across the word. */
-@keyframes shimmer {
-  from { background-position: 0% 50%; }
-  to { background-position: 100% 50%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
