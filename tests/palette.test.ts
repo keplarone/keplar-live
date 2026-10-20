@@ -67,11 +67,8 @@ test("no electric blue-dominant spam (teal OK: green channel stays close to blue
     // the weather sky: natural daylight sky blues (zenith / gradient), not UI accents (docs/design/space-ui.md 2.1)
     "src/lib/sky/variants.ts": ["63,134,216", "60,130,212"],
     "src/styles/space.css": ["61,132,213"],
-    // Empty-home wash and greeting only: Keplar blue #2f6bff, and the light greeting stops #1a5fe0 / #1570d6.
-    // Teal and cyan stops stay under the green-channel rule and are not listed here.
-    // Plus the rotating greeting's third-party brand gradients (RotatingModelName): DeepSeek's blue #4d6bfe with its #6b84ff tint and
-    // light-theme #3651e0 / #2a40c4 steps, and Gemini's light-theme blue #2f6fc0. Model marks, not Keplar accents.
-    "src/styles/gemini.css": ["47,107,255", "26,95,224", "21,112,214", "77,107,254", "107,132,255", "54,81,224", "42,64,196", "47,111,192"],
+    // Empty-home wash only: Keplar blue #2f6bff. Teal and cyan stops stay under the green-channel rule and are not listed here.
+    "src/styles/gemini.css": ["47,107,255"],
     // Keplar Business's Apple-led system: the one action colour (#0071e3) and its link (#0066cc) and pressed (#0058b0) steps.
     "src/components/business-site/tokens.css": ["0,113,227", "0,102,204", "0,88,176"],
   };
@@ -100,7 +97,9 @@ test("empty home keeps the graphite canvas, a blue-teal glow, and a visible keyb
   assert.match(gemini, /--kg-a:\s*#2f6bff/i);
   assert.match(gemini, /--kg-b:\s*#00b2cc/i);
   assert.match(gemini, /radial-gradient\(closest-side at/);
-  assert.match(gemini, /linear-gradient\(90deg,\s*#5b8cff 0%,\s*#2f6bff/);
+  assert.match(gemini, /\[data-theme\] \[data-welcome\] \{[^}]*color:\s*#ffffff !important/);
+  assert.match(gemini, /\[data-theme="light"\] \[data-welcome\] \{[^}]*color:\s*#0e0f12 !important/);
+  assert.doesNotMatch(gemini, /background-clip:\s*text/);
   assert.match(gemini, /@keyframes g-glow-in \{\s*from \{ opacity: 0; scale: 0\.88; \}/);
   assert.match(gemini, /@keyframes g-bloom \{\s*0% \{ opacity: 0; scale: 0\.975; \}/);
   // The controls inside the composer keep the outline; the text field doesn't (a textarea always matches :focus-visible while typing).

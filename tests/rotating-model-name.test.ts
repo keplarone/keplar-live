@@ -9,7 +9,7 @@ const mod = readFileSync("src/components/app-ui/RotatingModelName.module.css", "
 const src = readFileSync("src/components/app-ui/RotatingModelName.tsx", "utf8");
 const app = readFileSync("src/components/app-ui/KeplarApp.tsx", "utf8");
 
-test("greeting name slot: the five models in order, inheriting the heading ink", () => {
+test("greeting name slot: the five models in order, in the same solid colour as the heading", () => {
   assert.deepEqual(MODEL_NAMES.map((m) => m.name), ["Claude", "ChatGPT", "DeepSeek", "Mistral", "Gemini"]);
   assert.doesNotMatch(css, /\[data-model=/);
   assert.doesNotMatch(mod, /shimmer|background-size|blur\(/);
@@ -31,21 +31,21 @@ test("greeting name slot: motion is transform/opacity/width only, off under redu
   assert.match(src, /document\.hidden/, "no switching in a background tab");
 });
 
+test("signed-out greeting is solid white in dark and solid ink in light, with no text clip", () => {
+  assert.match(css, /\[data-theme\] \[data-welcome\] \{[^}]*color:\s*#ffffff !important/);
+  assert.match(css, /\[data-theme="light"\] \[data-welcome\] \{[^}]*color:\s*#0e0f12 !important/);
+  assert.match(css, /\[data-welcome\] \[data-model-slot\][\s\S]*?color:\s*inherit !important/);
+  assert.doesNotMatch(css, /background-clip:\s*text/);
+  assert.doesNotMatch(css, /-webkit-text-fill-color:\s*transparent/);
+  assert.doesNotMatch(css, /linear-gradient\(90deg,\s*#5b8cff/);
+  assert.doesNotMatch(css, /#1a5fe0|#1570d6/);
+});
+
 test("no ancestor of [data-model-slot] gets background-clip: text", () => {
   const h1 = app.slice(app.indexOf('data-welcome=""'), app.indexOf("</h1>"));
   // The signed-out line is a fragment of three direct children of the heading, not one wrapping span.
   assert.match(h1, /<><span>How can <\/span>\s*<RotatingModelName \/>\s*<span> help you today\?<\/span><\/>/);
   // The slot element is the component's own root, so its parent is the heading.
   assert.match(src, /return \(\s*<>\s*<span className=\{s\.slot\} data-model-slot=""/);
-
-  const clips = css.split("}").filter((block) => /background-clip:\s*text/.test(block));
-  assert.ok(clips.length >= 1);
-  for (const block of clips) {
-    const sel = block.slice(0, block.lastIndexOf("{"));
-    // Direct-child spans of the heading, excluding the slot. A descendant span selector would
-    // also match a wrapper around the slot, and the heading itself must not clip.
-    assert.match(sel, /\[data-welcome\] > span:not\(\[data-model-slot\]\)/);
-    assert.doesNotMatch(sel, /\[data-welcome\]\s+span\b/);
-    assert.doesNotMatch(sel, /\[data-welcome\]\s*\{/);
-  }
+  assert.doesNotMatch(css, /background-clip:\s*text/);
 });

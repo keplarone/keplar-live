@@ -4,8 +4,8 @@
  * Brief (Destiny skill): subject = Keplar One's chat, where one question goes to several models. Lead reference = Gemini's
  * empty chat (gemini.google.com): a calm greeting, a pill composer, and one soft wash behind them. We borrow Gemini's
  * system (shapes and timing), never its brand. Canvas, ink and keyboard focus stay on graphite.css: dark #212121, light
- * #ffffff, a 2px solid focus outline. The empty-home wash and the greeting fill stay in Keplar blue, teal and cyan
- * (--kg-a #2f6bff, --kg-b). No pink, magenta, purple or violet. Type stays the site face (Nunito Sans) at the greeting weight
+ * #ffffff, a 2px solid focus outline. The empty-home wash stays in Keplar blue, teal and cyan
+ * (--kg-a #2f6bff, --kg-b). The greeting is solid: white in dark, ink in light. No pink, magenta, purple or violet. Type stays the site face (Nunito Sans) at the greeting weight
  * (400). Motion: Gemini's curve, slow opacity and transform only, menus close instantly, reduced motion has an answer.
  */
 
@@ -171,34 +171,36 @@ html:not(:has([data-space-root], [data-kb])) button[class*="__homeChip"]:hover {
   border-color: transparent !important;
 }
 
-/* The greeting: Gemini's "Hello, name" line. Weight 400 (the site face's greeting weight), open tracking,
-   and a blue-to-teal fill on the words beside the model name. The rotating name is a direct child of the
-   heading and inherits var(--c-ink). The clip is only on those direct-child spans, never on an ancestor of
-   [data-model-slot], or the name is painted again at that ancestor's origin. The heading is a block so the
-   spans share one centered line (the title module is a flex row).
-   !important: the App module sets the title with :root[data-theme] .welcomeTitle. */
+/* The greeting: Gemini's "Hello, name" line. Weight 400 (the site face's greeting weight), open tracking.
+   The words and the rotating name are one solid colour: white on the dark canvas, ink (#0e0f12) on the light
+   canvas (white would disappear there). No gradient and no background-clip, so nothing repaints the name.
+   The heading is a block so the spans share one centered line (the title module is a flex row).
+   !important: the App module and light.css set the title colour. */
 html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] {
   display: block !important;
   text-align: center !important;
+  color: #ffffff !important;
   font-size: clamp(36px, calc(1.1vw + 22px), 44px) !important;
   font-weight: 400 !important;
   letter-spacing: -0.02em !important;
   line-height: 1.18 !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] > span:not([data-model-slot]) {
-  font-weight: inherit !important;
-  background-image: linear-gradient(90deg, #5b8cff 0%, #2f6bff 38%, #1fc4d8 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent !important;
-  -webkit-text-fill-color: transparent;
+html:not(:has([data-space-root], [data-kb]))[data-theme="light"] [data-welcome] {
+  color: #0e0f12 !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme="light"] [data-welcome] > span:not([data-model-slot]) {
-  /* darker stops on white: #1a5fe0 5.6:1, #1570d6 4.9:1, #007f99 4.7:1 (large text needs 3:1) */
-  background-image: linear-gradient(90deg, #1a5fe0 0%, #1570d6 45%, #007f99 100%);
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] > span,
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] [data-model-slot],
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] [data-model-slot] span {
+  font-weight: inherit !important;
+  background: none !important;
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor !important;
 }
 @media (forced-colors: active) {
-  html:not(:has([data-space-root], [data-kb])) [data-welcome] span {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome],
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] > span,
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] [data-model-slot],
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] [data-model-slot] span {
     background: none;
     color: CanvasText !important;
     -webkit-text-fill-color: CanvasText;

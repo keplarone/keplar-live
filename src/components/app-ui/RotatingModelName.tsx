@@ -5,7 +5,7 @@ import s from "./RotatingModelName.module.css";
 
 /**
  * The greeting's name slot: "How can [Claude] help you today?", cycling through the models Keplar asks. The name inherits the
- * heading's ink (var(--c-ink)). The switch lifts the old name out and rolls the new one in (transform and opacity only), and the
+ * heading colour (white in dark, #0e0f12 in light). The switch lifts the old name out and rolls the new one in (transform and opacity only), and the
  * slot's width eases to the new name so the rest of the line glides instead of jumping.
  *
  * Accessibility: screen readers get the sentence once with every name ("Claude, ChatGPT, DeepSeek, Mistral or Gemini"), not a word
