@@ -1352,17 +1352,15 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
                         firstName is only set after the client knows the session, so the time-of-day greeting never renders on the server. */}
                     <h1 className={s.welcomeTitle} data-welcome="" data-welcome-name={firstName || undefined} style={state.ledger.synced ? undefined : { visibility: "hidden" }}>
                       <KeplarSymbol size={22} className={s.welcomeMark} />
-                      <span>
-                        {firstName ? (
-                          <>
-                            <span>{welcome ? "Welcome," : `${dayGreeting(new Date().getHours())},`}</span> <span className={s.welcomeName}>{firstName}</span>
-                          </>
-                        ) : state.ledger.synced ? (
-                          // The name slot cycles through the models Keplar asks, each in its brand gradient (RotatingModelName). Three
-                          // sibling spans, so no gradient-filled span wraps the slot and shows through while a name fades.
-                          <><span>How can </span><RotatingModelName /><span> help you today?</span></>
-                        ) : <span>Welcome to Keplar.</span>}
-                      </span>
+                      {firstName ? (
+                        <span>
+                          <span>{welcome ? "Welcome," : `${dayGreeting(new Date().getHours())},`}</span> <span className={s.welcomeName}>{firstName}</span>
+                        </span>
+                      ) : state.ledger.synced ? (
+                        // Direct children of the heading. A span around the slot matches [data-welcome] span
+                        // (background-clip: text) and repaints the name at the wrapper's origin.
+                        <><span>How can </span><RotatingModelName /><span> help you today?</span></>
+                      ) : <span>Welcome to Keplar.</span>}
                     </h1>
                     <p className={s.welcomeLede}>Ask anything. Keplar checks with several models and gives you one clear answer.</p>
                   </div>
