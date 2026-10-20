@@ -1,10 +1,12 @@
 /**
- * Latest desktop release, read from the public GitHub repo's Releases API on the server (never from the browser).
+ * Latest desktop release, read from the GitHub repo's Releases API on the server (never from the browser).
  *
  * Honesty rules: a file is listed only if it is an uploaded asset of the release, named Keplar-One-<version>-<os>-<arch>.<ext>
  * (releases before v0.1.2 used Keplar-<version>-...; Keplar Business files are Keplar-Business-<version>-...),
  * and served from this repo's own github.com release path. A checksum is shown only when SHA256SUMS lists that exact file.
  * No release, a rate limit or a network failure each produce an explicit state; nothing is ever invented.
+ * A 404 from the releases API is "unavailable", never "none": GitHub uses 404 for a private repository as well as a missing one,
+ * and both desktop apps have already shipped. "none" is only an empty public release list.
  */
 export const DESKTOP_REPO = "keplarone/keplar-desktop";
 export const RELEASES_PAGE = `https://github.com/${DESKTOP_REPO}/releases`;
@@ -34,10 +36,14 @@ export type DesktopFile = {
   sha256: string | null;
 };
 export type DesktopRelease = { tag: string; version: string; name: string; publishedAt: string | null; notesUrl: string; files: DesktopFile[]; checksumsUrl: string | null };
+/**
+ * `releasesPublic: false` means the public GitHub releases page is not available (private or missing), so the UI must not link to it.
+ * Omitted when that page is public, or when a check could not tell.
+ */
 export type ReleaseState =
-  | { status: "ok"; release: DesktopRelease }
-  | { status: "none" }
-  | { status: "unavailable"; reason: "rate_limited" | "error" };
+  | { status: "ok"; release: DesktopRelease; releasesPublic?: boolean }
+  | { status: "none"; releasesPublic?: boolean }
+  | { status: "unavailable"; reason: "rate_limited" | "error"; releasesPublic?: boolean };
 
 const OS_WORDS: Record<string, DesktopOs> = { win: "windows", windows: "windows", mac: "macos", macos: "macos", darwin: "macos", linux: "linux" };
 const ARCH_WORDS: Record<string, DesktopArch> = { x64: "x64", x86_64: "x64", amd64: "x64", arm64: "arm64", aarch64: "arm64", universal: "universal" };
@@ -66,7 +72,7 @@ export function parseSha256Sums(text: string): Map<string, string> {
   return out;
 }
 
-type GhAsset = { name?: unknown; size?: unknown; state?: unknown; browser_download_url?: unknown };
+type GhAsset = { name?: unknown; size?: unknown; state?: unknown; browser_download_url?: unknown; url?: unknown };
 type GhRelease = { tag_name?: unknown; name?: unknown; draft?: unknown; prerelease?: unknown; published_at?: unknown; html_url?: unknown; assets?: unknown };
 
 /** Turns one GitHub release JSON into our shape, or null when it is a draft/prerelease/unusable. `sums` maps file name to SHA-256. */
@@ -112,43 +118,162 @@ export function pickLatest(list: unknown): unknown | null {
 }
 
 type Fetch = typeof fetch;
+type PageVisibility = "public" | "private" | "unknown";
+type FeedState = "empty" | "present" | "missing" | "unknown";
 
-/** True only when GitHub's public releases feed loads and has zero entries. Any doubt is false. */
-async function feedIsEmpty(doFetch: Fetch, product: DesktopProduct): Promise<boolean> {
+const TAG_RE = /^v\d+\.\d+\.\d+(?:[.+-][0-9A-Za-z.-]+)?$/;
+const ASSET_HOSTS = new Set(["release-assets.githubusercontent.com", "objects.githubusercontent.com", "github-releases.githubusercontent.com"]);
+
+/** The public releases page, without a token. 404 and login redirects mean it is not public; anything else is not proof of that. */
+export async function releasesPageVisibility(doFetch: Fetch = fetch, product: DesktopProduct = "one"): Promise<PageVisibility> {
+  try {
+    const res = await doFetch(releasesPage(product), { redirect: "manual", headers: { "User-Agent": "keplar-one-download-page", Accept: "text/html" }, next: { revalidate: REVALIDATE_SECONDS }, signal: AbortSignal.timeout(6000) } as RequestInit);
+    if (res.status === 404 || res.status === 401 || (res.status >= 300 && res.status < 400)) return "private";
+    if (res.ok) return "public";
+    return "unknown";
+  } catch {
+    return "unknown";
+  }
+}
+
+/** Public Atom feed: empty (a real "no releases"), present, missing (404) or unknown. */
+async function publicFeed(doFetch: Fetch, product: DesktopProduct): Promise<FeedState> {
   try {
     const res = await doFetch(`${releasesPage(product)}.atom`, { headers: { "User-Agent": "keplar-one-download-page" }, next: { revalidate: REVALIDATE_SECONDS }, signal: AbortSignal.timeout(6000) } as RequestInit);
-    if (!res.ok) return false;
+    if (res.status === 404 || res.status === 401) return "missing";
+    if (!res.ok) return "unknown";
     const text = await res.text();
-    return text.length < 200_000 && /<feed[\s>]/.test(text) && !/<entry[\s>]/.test(text);
+    if (text.length >= 200_000 || !/<feed[\s>]/.test(text)) return "unknown";
+    return /<entry[\s>]/.test(text) ? "present" : "empty";
   } catch {
-    return false;
+    return "unknown";
+  }
+}
+
+/** GitHub's API URL for one uploaded asset (`/releases/assets/<id>`), or null. Never a browser download URL. */
+function githubAssetApiUrl(raw: unknown, name: string, repo: string): string | null {
+  const assets = (raw as GhRelease).assets;
+  if (!Array.isArray(assets)) return null;
+  const prefix = `https://api.github.com/repos/${repo}/releases/assets/`;
+  for (const a of assets as GhAsset[]) {
+    if (!a || a.name !== name || typeof a.url !== "string") continue;
+    if (a.state !== undefined && a.state !== "uploaded") continue;
+    if (a.url.startsWith(prefix) && /^[0-9]+$/.test(a.url.slice(prefix.length))) return a.url;
+  }
+  return null;
+}
+
+/** Same-origin download URL for one installer or SHA256SUMS. Null when the name or tag is not one we publish. */
+export function desktopDownloadHref(product: DesktopProduct, tag: string, file: string): string | null {
+  if (product !== "one" && product !== "business") return null;
+  if (tag.length > 64 || !TAG_RE.test(tag)) return null;
+  if (file.length > 180 || /[/\\]|\.\./.test(file)) return null;
+  if (file !== "SHA256SUMS" && !parseAssetName(file, product)) return null;
+  return `/api/desktop/download?${new URLSearchParams({ product, tag, file })}`;
+}
+
+/** A redirect GitHub gives us for an asset. Only GitHub's own asset hosts, and never a URL that contains the token. */
+export function safeReleaseAssetLocation(location: string, repo: string, secret = ""): string | null {
+  let u: URL;
+  try {
+    u = new URL(location);
+  } catch {
+    return null;
+  }
+  if (u.protocol !== "https:" || u.username || u.password) return null;
+  const ownDownload = u.hostname === "github.com" && u.pathname.startsWith(`/${repo}/releases/download/`);
+  if (!ASSET_HOSTS.has(u.hostname) && !ownDownload) return null;
+  const out = u.toString();
+  if (secret && out.includes(secret)) return null;
+  return out;
+}
+
+const plain = (status: number, message: string, extra: Record<string, string> = {}) =>
+  new Response(message, { status, headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff", ...extra } });
+
+/**
+ * Serves one desktop asset. With `GITHUB_RELEASES_TOKEN`, asks GitHub for the asset and redirects the browser to the
+ * short-lived URL GitHub returns. The token is never copied into that redirect or into an error. Without the token, 404.
+ */
+export async function openDesktopAsset(product: DesktopProduct, tag: string, file: string, doFetch: Fetch = fetch): Promise<Response> {
+  const token = process.env.GITHUB_RELEASES_TOKEN;
+  if (!token || !desktopDownloadHref(product, tag, file)) return plain(404, "Not found");
+  const repo = DESKTOP_PRODUCTS[product].repo;
+  const headers: Record<string, string> = { Accept: "application/vnd.github+json", Authorization: `Bearer ${token}`, "User-Agent": "keplar-one-download-page", "X-GitHub-Api-Version": "2022-11-28" };
+  try {
+    const rel = await doFetch(`https://api.github.com/repos/${repo}/releases/tags/${encodeURIComponent(tag)}`, { headers, cache: "no-store", signal: AbortSignal.timeout(8000) });
+    if (!rel.ok) return plain(404, "Not found");
+    const body = (await rel.json()) as GhRelease;
+    if (!body || body.draft === true || body.prerelease === true || body.tag_name !== tag) return plain(404, "Not found");
+    const api = githubAssetApiUrl(body, file, repo);
+    if (!api) return plain(404, "Not found");
+    const dl = await doFetch(api, { headers: { ...headers, Accept: "application/octet-stream" }, redirect: "manual", cache: "no-store", signal: AbortSignal.timeout(8000) });
+    const loc = dl.headers.get("location");
+    if (loc && (dl.status === 301 || dl.status === 302 || dl.status === 307 || dl.status === 308)) {
+      const safe = safeReleaseAssetLocation(loc, repo, token);
+      if (!safe) return plain(404, "Not found");
+      return new Response(null, { status: 302, headers: { location: safe, "cache-control": "private, no-store", "x-content-type-options": "nosniff", "referrer-policy": "no-referrer" } });
+    }
+    if (dl.status === 200 && dl.body) {
+      const out = new Headers();
+      out.set("content-type", "application/octet-stream");
+      out.set("content-disposition", `attachment; filename="${file.replace(/["\r\n]/g, "")}"`);
+      const len = dl.headers.get("content-length");
+      if (len && /^\d+$/.test(len)) out.set("content-length", len);
+      out.set("cache-control", "private, no-store");
+      out.set("x-content-type-options", "nosniff");
+      return new Response(dl.body, { status: 200, headers: out });
+    }
+    return plain(404, "Not found");
+  } catch {
+    return plain(503, "Downloads are temporarily unavailable", { "retry-after": "60" });
   }
 }
 
 /**
  * Reads the latest release. `revalidate` caches the response ~10 minutes in Next's data cache. An optional
- * `GITHUB_RELEASES_TOKEN` (read-only, public repo scope) raises the API limit; it is never required and never sent to the browser.
+ * `GITHUB_RELEASES_TOKEN` (read access to the desktop repos) raises the API limit and, when the releases page is not
+ * public, lets the server fetch files. The token is never sent to the browser: private files are served from /api/desktop/download.
  */
 export async function getDesktopRelease(doFetch: Fetch = fetch, product: DesktopProduct = "one"): Promise<ReleaseState> {
+  const token = process.env.GITHUB_RELEASES_TOKEN || "";
   const headers: Record<string, string> = { Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28", "User-Agent": "keplar-one-download-page" };
-  if (process.env.GITHUB_RELEASES_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_RELEASES_TOKEN}`;
+  if (token) headers.Authorization = `Bearer ${token}`;
   const opts = { headers, next: { revalidate: REVALIDATE_SECONDS }, signal: AbortSignal.timeout(8000) } as RequestInit;
   try {
     const res = await doFetch(`https://api.github.com/repos/${DESKTOP_PRODUCTS[product].repo}/releases?per_page=15`, opts);
-    if (res.status === 404) return { status: "none" };
+    // 404 is never "none". GitHub returns 404 for a private repo, which would otherwise look like the app was never released.
+    if (res.status === 404) return { status: "unavailable", reason: "error", releasesPublic: false };
     if (res.status === 403 || res.status === 429 || !res.ok) {
       // The API is limited per IP (and Vercel's addresses are shared). The public Atom feed isn't: if it shows no releases at all,
       // the honest answer is still "none yet". If it shows releases we can't read their files, so we say unavailable.
+      // A missing feed (404) is a private or gone repo, not an empty one.
       const reason = res.status === 403 || res.status === 429 ? "rate_limited" : "error";
-      return (await feedIsEmpty(doFetch, product)) ? { status: "none" } : { status: "unavailable", reason };
+      const feed = await publicFeed(doFetch, product);
+      if (feed === "empty") return { status: "none" };
+      return { status: "unavailable", reason, ...(feed === "missing" ? { releasesPublic: false } : {}) };
     }
     const picked = pickLatest(await res.json());
     if (!picked) return { status: "none" };
+    const repo = DESKTOP_PRODUCTS[product].repo;
+    let visibility: PageVisibility | undefined;
+    const pageVisibility = async (): Promise<PageVisibility> => {
+      if (!token) return "public";
+      visibility ??= await releasesPageVisibility(doFetch, product);
+      return visibility;
+    };
     let sums = new Map<string, string>();
     const first = parseRelease(picked, new Map(), product);
     if (first?.checksumsUrl) {
+      const api = githubAssetApiUrl(picked, "SHA256SUMS", repo);
+      const viaApi = Boolean(api && token && (await pageVisibility()) !== "public");
       try {
-        const s = await doFetch(first.checksumsUrl, { headers: { "User-Agent": "keplar-one-download-page" }, next: { revalidate: REVALIDATE_SECONDS }, signal: AbortSignal.timeout(8000) } as RequestInit);
+        const s = await doFetch(viaApi && api ? api : first.checksumsUrl, {
+          headers: viaApi ? { ...headers, Accept: "application/octet-stream" } : { "User-Agent": "keplar-one-download-page" },
+          redirect: "follow",
+          next: { revalidate: REVALIDATE_SECONDS },
+          signal: AbortSignal.timeout(8000),
+        } as RequestInit);
         const text = s.ok ? await s.text() : "";
         if (text.length <= 100_000) sums = parseSha256Sums(text);
       } catch {
@@ -156,7 +281,20 @@ export async function getDesktopRelease(doFetch: Fetch = fetch, product: Desktop
       }
     }
     const release = parseRelease(picked, sums, product);
-    return release ? { status: "ok", release } : { status: "none" };
+    if (!release) return { status: "none" };
+    if (token && (await pageVisibility()) !== "public") {
+      for (const f of release.files) {
+        const href = desktopDownloadHref(product, release.tag, f.name);
+        if (href) f.url = href;
+      }
+      if (release.checksumsUrl) {
+        const href = desktopDownloadHref(product, release.tag, "SHA256SUMS");
+        if (href) release.checksumsUrl = href;
+      }
+      if (visibility === "private") release.notesUrl = "";
+      return { status: "ok", release, ...(visibility === "private" ? { releasesPublic: false } : {}) };
+    }
+    return { status: "ok", release };
   } catch {
     return { status: "unavailable", reason: "error" };
   }

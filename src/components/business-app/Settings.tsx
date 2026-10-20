@@ -265,7 +265,7 @@ export function Settings({ section, onSection, onClose, onOpenPlace }: {
                     {acct.download.files.map((f) => (
                       <Row key={f.url} label={`${f.os === "macos" ? "macOS" : f.os === "windows" ? "Windows" : "Linux"} · ${f.arch}`} hint={`.${f.type} · ${mb(f.size)}`}><a className={s.ghost} href={f.url}>Download</a></Row>
                     ))}
-                    <Row label="Release notes"><a className={s.link} href={acct.download.notesUrl} target="_blank" rel="noopener">What changed</a></Row>
+                    {acct.download.notesUrl ? <Row label="Release notes"><a className={s.link} href={acct.download.notesUrl} target="_blank" rel="noopener">What changed</a></Row> : null}
                     <p className={s.note}>The desktop app updates itself. Installers are not yet code-signed, so Windows and macOS show a warning the first time.</p>
                   </>
                 ) : <p className={s.note}>Downloads appear here once your Business plan is active.</p>}

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { getDesktopRelease, parseAssetName, parseRelease, parseSha256Sums, pickLatest, DESKTOP_REPO } from "../src/lib/desktop/releases";
+import { desktopDownloadHref, getDesktopRelease, openDesktopAsset, parseAssetName, parseRelease, parseSha256Sums, pickLatest, releasesPageVisibility, safeReleaseAssetLocation, DESKTOP_REPO } from "../src/lib/desktop/releases";
 import { detectPlatform, formatSize, pickPrimary } from "../src/lib/desktop/platform";
 import { downloadPageGraph } from "../src/lib/structuredData";
 import { primaryNav, footerNav } from "../src/lib/site";
@@ -87,10 +87,20 @@ test("release: drafts, prereleases and non-version tags are skipped; the newest 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 const fakeFetch = (routes: (url: string) => Response | Promise<Response>) => (async (u: string | URL | Request) => routes(String(u))) as typeof fetch;
 
-test("fetch: no release yet (empty list or 404) is the honest 'none' state", async () => {
+test("fetch: an empty public list is 'none'; a releases API 404 is 'unavailable', never 'none'", async () => {
   assert.deepEqual(await getDesktopRelease(fakeFetch(() => json([]))), { status: "none" });
-  assert.deepEqual(await getDesktopRelease(fakeFetch(() => json({ message: "Not Found" }, 404))), { status: "none" });
   assert.deepEqual(await getDesktopRelease(fakeFetch(() => json([rel({ draft: true }), rel({ prerelease: true })]))), { status: "none" });
+  // GitHub returns 404 for a private repo. That must not be described as "not released yet", even if a feed looks empty.
+  const emptyFeed = `<?xml version="1.0"?><feed xmlns="http://www.w3.org/2005/Atom"><title>Releases</title></feed>`;
+  for (const product of ["one", "business"] as const) {
+    const got = await getDesktopRelease(fakeFetch((u) => (u.endsWith(".atom") ? new Response(emptyFeed) : json({ message: "Not Found" }, 404))), product);
+    assert.equal(got.status, "unavailable", product);
+    assert.notEqual(got.status, "none");
+    if (got.status === "unavailable") {
+      assert.equal(got.reason, "error");
+      assert.equal(got.releasesPublic, false);
+    }
+  }
 });
 
 test("fetch: when the API is rate limited, an empty public feed still means 'none'; a feed with releases means unavailable", async () => {
@@ -169,6 +179,77 @@ test("structured data: no release means no version or download URLs; a release l
   const g = JSON.stringify(downloadPageGraph({ status: "ok", release: ok }));
   assert.match(g, /softwareVersion":"1\.2\.3"/);
   assert.ok(ok.files.every((f) => g.includes(f.url)));
+});
+
+const TOKEN = "releases-test-token";
+async function withToken<T>(fn: () => Promise<T>): Promise<T> {
+  const prev = process.env.GITHUB_RELEASES_TOKEN;
+  process.env.GITHUB_RELEASES_TOKEN = TOKEN;
+  try {
+    return await fn();
+  } finally {
+    if (prev === undefined) delete process.env.GITHUB_RELEASES_TOKEN;
+    else process.env.GITHUB_RELEASES_TOKEN = prev;
+  }
+}
+
+test("fetch: a token serves a private repo through the download route, and the token never reaches the page", async () => {
+  const sumsApi = "https://api.github.com/repos/keplarone/keplar-desktop/releases/assets/99";
+  const sums = `${H("a")}  Keplar-1.2.3-win-x64.exe\n`;
+  const base = rel();
+  const raw = { ...base, assets: base.assets.map((a) => (a.name === "SHA256SUMS" ? { ...a, url: sumsApi } : a)) };
+  const seen: { url: string; auth: string | null }[] = [];
+  const fetcher = (async (u: string | URL | Request, init?: RequestInit) => {
+    const url = String(u);
+    seen.push({ url, auth: new Headers(init?.headers).get("authorization") });
+    if (url === `https://github.com/${DESKTOP_REPO}/releases`) return new Response("Not Found", { status: 404 });
+    if (url === sumsApi) return new Response(sums);
+    return json([raw]);
+  }) as typeof fetch;
+  const got = await withToken(() => getDesktopRelease(fetcher));
+  assert.equal(got.status, "ok");
+  if (got.status !== "ok") return;
+  assert.equal(got.releasesPublic, false);
+  assert.equal(got.release.notesUrl, "");
+  assert.ok(got.release.files.length >= 1);
+  for (const f of got.release.files) {
+    assert.equal(f.url, desktopDownloadHref("one", "v1.2.3", f.name));
+    assert.equal(f.url.includes(TOKEN), false);
+    assert.equal(f.url.startsWith("/api/desktop/download?"), true);
+  }
+  assert.equal(got.release.checksumsUrl, desktopDownloadHref("one", "v1.2.3", "SHA256SUMS"));
+  assert.equal(got.release.files.find((f) => f.name.endsWith("win-x64.exe"))?.sha256, H("a"));
+  assert.equal(JSON.stringify(got).includes(TOKEN), false);
+  const apiCall = seen.find((s) => s.url.includes("api.github.com/repos/"));
+  const pageCall = seen.find((s) => s.url === `https://github.com/${DESKTOP_REPO}/releases`);
+  assert.equal(apiCall?.auth, `Bearer ${TOKEN}`);
+  assert.equal(pageCall?.auth, null);
+});
+
+test("download route: a mocked private asset redirects to GitHub's asset host, and refuses anything else", async () => {
+  const api = `https://api.github.com/repos/${DESKTOP_REPO}/releases/assets/7`;
+  const release = { tag_name: "v1.2.3", draft: false, prerelease: false, assets: [{ name: "Keplar-1.2.3-win-x64.exe", state: "uploaded", url: api }] };
+  const asset = (location: string, status = 302) => fakeFetch((u) => (u === api ? new Response(null, { status, headers: { location } }) : json(release)));
+  assert.equal((await openDesktopAsset("one", "v1.2.3", "Keplar-1.2.3-win-x64.exe", fakeFetch(() => json(release)))).status, 404);
+  await withToken(async () => {
+    assert.equal((await openDesktopAsset("one", "v1.2.3", "../secret", fakeFetch(() => { throw new Error("no fetch"); }))).status, 404);
+    assert.equal((await openDesktopAsset("one", "nightly", "Keplar-1.2.3-win-x64.exe", fakeFetch(() => { throw new Error("no fetch"); }))).status, 404);
+    assert.equal((await openDesktopAsset("one", "v1.2.3", "latest.yml", fakeFetch(() => { throw new Error("no fetch"); }))).status, 404);
+    const good = await openDesktopAsset("one", "v1.2.3", "Keplar-1.2.3-win-x64.exe", asset("https://release-assets.githubusercontent.com/github-production-release-asset/7?jwt=short"));
+    assert.equal(good.status, 302);
+    assert.equal(good.headers.get("location"), "https://release-assets.githubusercontent.com/github-production-release-asset/7?jwt=short");
+    assert.equal(good.headers.get("location")!.includes(TOKEN), false);
+    assert.equal((await openDesktopAsset("one", "v1.2.3", "Keplar-1.2.3-win-x64.exe", asset("https://evil.example/file"))).status, 404);
+    assert.equal((await openDesktopAsset("one", "v1.2.3", "Keplar-1.2.3-win-x64.exe", asset(`https://release-assets.githubusercontent.com/x?token=${TOKEN}`))).status, 404);
+    assert.equal((await openDesktopAsset("one", "v1.2.3", "Keplar-1.2.3-win-x64.exe", asset("http://release-assets.githubusercontent.com/file"))).status, 404);
+    const draft = { ...release, draft: true };
+    assert.equal((await openDesktopAsset("one", "v1.2.3", "Keplar-1.2.3-win-x64.exe", fakeFetch(() => json(draft)))).status, 404);
+  });
+  assert.equal(safeReleaseAssetLocation("https://objects.githubusercontent.com/a/b", DESKTOP_REPO), "https://objects.githubusercontent.com/a/b");
+  assert.equal(safeReleaseAssetLocation("https://github.com/other/repo/releases/download/v1/x", DESKTOP_REPO), null);
+  assert.equal(await releasesPageVisibility(fakeFetch(() => new Response("nope", { status: 404 }))), "private");
+  assert.equal(await releasesPageVisibility(fakeFetch(() => new Response("ok", { status: 200 }))), "public");
+  assert.equal(await releasesPageVisibility((async () => { throw new Error("offline"); }) as typeof fetch), "unknown");
 });
 
 test("site: Download is in the nav, footer and sitemap", () => {
