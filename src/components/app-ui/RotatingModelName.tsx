@@ -4,9 +4,10 @@ import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } fr
 import s from "./RotatingModelName.module.css";
 
 /**
- * The greeting's name slot: "How can [Claude] help you today?", cycling through the models Keplar asks. The name inherits the
- * heading colour (white in dark, #0e0f12 in light). The switch lifts the old name out and rolls the new one in (transform and opacity only), and the
- * slot's width eases to the new name so the rest of the line glides instead of jumping.
+ * The greeting's name slot: "How can [Claude] help you today?", cycling through the models Keplar asks. Each name wears its brand
+ * gradient on the name element itself (src/styles/gemini.css, [data-model]) with a slow shimmer. The switch lifts the old name out
+ * and springs the new one in letter by letter (transform and opacity only), and the slot's width eases to the new name so the rest
+ * of the line glides instead of jumping.
  *
  * Accessibility: screen readers get the sentence once with every name ("Claude, ChatGPT, DeepSeek, Mistral or Gemini"), not a word
  * that changes under them; hovering pauses the cycle; under prefers-reduced-motion nothing cycles and the slot reads "Keplar".
@@ -20,6 +21,8 @@ export const MODEL_NAMES = [
 ] as const;
 
 export const SWITCH_MS = 1800;
+/** Delay between letters on the way in. The longest name (DeepSeek) still finishes inside 600ms with the 450ms pop. */
+export const STAGGER_MS = 18;
 
 const QUERY = "(prefers-reduced-motion: reduce)";
 const subscribeMotion = (onChange: () => void) => {
@@ -60,14 +63,28 @@ export function RotatingModelName() {
     <>
       <span className={s.slot} data-model-slot="" style={width ? { width } : undefined} aria-hidden="true" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
         {prev !== null ? (
-          <span key={`out-${turn}`} className={`${s.word} ${s.out}`} data-model={MODEL_NAMES[prev].id}>{MODEL_NAMES[prev].name}</span>
+          <span key={`out-${turn}`} className={`${s.word} ${s.out}`} data-model={MODEL_NAMES[prev].id}>
+            <Glyphs name={MODEL_NAMES[prev].name} pop={false} />
+          </span>
         ) : null}
-        <span key={`in-${turn}`} className={`${s.word} ${turn ? s.in : ""}`} data-model={MODEL_NAMES[i].id}>{MODEL_NAMES[i].name}</span>
+        <span key={`in-${turn}`} className={`${s.word} ${turn ? s.in : ""}`} data-model={MODEL_NAMES[i].id}>
+          <Glyphs name={MODEL_NAMES[i].name} pop={turn > 0} />
+        </span>
         <span className={s.measure}>
-          {MODEL_NAMES.map((m, k) => <span key={m.id} ref={(el) => { measure.current[k] = el; }}>{m.name}</span>)}
+          {MODEL_NAMES.map((m, k) => (
+            <span key={m.id} ref={(el) => { measure.current[k] = el; }}>
+              <Glyphs name={m.name} pop={false} />
+            </span>
+          ))}
         </span>
       </span>
       <span className="visually-hidden">{`${names.slice(0, -1).join(", ")} or ${names.at(-1)}`}</span>
     </>
   );
+}
+
+function Glyphs({ name, pop }: { name: string; pop: boolean }) {
+  return Array.from(name).map((ch, index) => (
+    <span key={index} data-letter="" className={pop ? s.letter : undefined} style={pop ? { animationDelay: `${index * STAGGER_MS}ms` } : undefined}>{ch}</span>
+  ));
 }
