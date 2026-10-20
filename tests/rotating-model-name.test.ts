@@ -7,21 +7,45 @@ import { MODEL_NAMES, SWITCH_MS } from "@/components/app-ui/RotatingModelName";
 const css = readFileSync("src/styles/gemini.css", "utf8");
 const mod = readFileSync("src/components/app-ui/RotatingModelName.module.css", "utf8");
 const src = readFileSync("src/components/app-ui/RotatingModelName.tsx", "utf8");
+const app = readFileSync("src/components/app-ui/KeplarApp.tsx", "utf8");
 
-test("greeting name slot: the five models in order, each with a dark and a light brand gradient", () => {
+test("greeting name slot: the five models in order, in the same solid colour as the heading", () => {
   assert.deepEqual(MODEL_NAMES.map((m) => m.name), ["Claude", "ChatGPT", "DeepSeek", "Mistral", "Gemini"]);
-  for (const m of MODEL_NAMES) {
-    assert.match(css, new RegExp(`\\[data-theme\\] \\[data-welcome\\] \\[data-model="${m.id}"\\] \\{ background-image: linear-gradient`), `${m.id} dark`);
-    assert.match(css, new RegExp(`\\[data-theme="light"\\] \\[data-welcome\\] \\[data-model="${m.id}"\\] \\{ background-image: linear-gradient`), `${m.id} light`);
-  }
+  assert.doesNotMatch(css, /\[data-model=/);
+  assert.doesNotMatch(mod, /shimmer|background-size|blur\(/);
+  assert.match(mod, /will-change:\s*transform,\s*opacity;/);
+  assert.doesNotMatch(mod, /will-change:[^;]*filter/);
   assert.ok(SWITCH_MS >= 1500, "each name stays long enough to read");
 });
 
-test("greeting name slot: motion is transform/opacity/filter/width only, off under reduced motion; screen readers get every name once", () => {
+test("greeting name slot: motion is transform/opacity/width only, off under reduced motion; screen readers get every name once", () => {
+  assert.match(mod, /transition:\s*width /);
+  assert.match(mod, /@keyframes roll-in \{[\s\S]*opacity:[\s\S]*transform:/);
+  assert.match(mod, /@keyframes lift-out \{[\s\S]*opacity:[\s\S]*transform:/);
+  assert.doesNotMatch(mod, /filter:/);
   assert.match(mod, /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*animation: none;/);
   assert.doesNotMatch(mod, /\b(top|left|margin|height)\s*:[^;]*;[^}]*transition/, "no layout properties animated");
   assert.match(src, /if \(reduced\) return <>Keplar<\/>;/);
   assert.match(src, /aria-hidden="true"/);
   assert.match(src, /className="visually-hidden"/);
   assert.match(src, /document\.hidden/, "no switching in a background tab");
+});
+
+test("signed-out greeting is solid white in dark and solid ink in light, with no text clip", () => {
+  assert.match(css, /\[data-theme\] \[data-welcome\] \{[^}]*color:\s*#ffffff !important/);
+  assert.match(css, /\[data-theme="light"\] \[data-welcome\] \{[^}]*color:\s*#0e0f12 !important/);
+  assert.match(css, /\[data-welcome\] \[data-model-slot\][\s\S]*?color:\s*inherit !important/);
+  assert.doesNotMatch(css, /background-clip:\s*text/);
+  assert.doesNotMatch(css, /-webkit-text-fill-color:\s*transparent/);
+  assert.doesNotMatch(css, /linear-gradient\(90deg,\s*#5b8cff/);
+  assert.doesNotMatch(css, /#1a5fe0|#1570d6/);
+});
+
+test("no ancestor of [data-model-slot] gets background-clip: text", () => {
+  const h1 = app.slice(app.indexOf('data-welcome=""'), app.indexOf("</h1>"));
+  // The signed-out line is a fragment of three direct children of the heading, not one wrapping span.
+  assert.match(h1, /<><span>How can <\/span>\s*<RotatingModelName \/>\s*<span> help you today\?<\/span><\/>/);
+  // The slot element is the component's own root, so its parent is the heading.
+  assert.match(src, /return \(\s*<>\s*<span className=\{s\.slot\} data-model-slot=""/);
+  assert.doesNotMatch(css, /background-clip:\s*text/);
 });

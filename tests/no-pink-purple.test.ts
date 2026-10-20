@@ -19,8 +19,6 @@ const SKIP_FILE = [
   /src\/components\/space\/SpaceChrome\.tsx$/,
   /src\/components\/space\/Starfield\.tsx$/,
 ];
-/* Third-party brand marks, exact colours per file: Gemini's violet stop in the rotating greeting's brand gradient (RotatingModelName). */
-const BRAND_COLOURS: Record<string, string[]> = { "src/styles/gemini.css": ["#9177c7"] };
 const EXT = /\.(css|ts|tsx|js|mjs|svg|html)$/;
 const TW = /\b(?:purple|violet|fuchsia|pink|indigo)-\d{2,3}\b/;
 
@@ -100,11 +98,19 @@ test("no pink, magenta, purple or violet accents, and no Tailwind purple utiliti
       if (TW.test(line)) hits.push(`${f}:${i + 1}: ${line.trim().slice(0, 120)}`);
       for (const { label, rgb } of coloursIn(line)) {
         const info = hsv(...rgb);
-        if (bannedHue(info) && !BRAND_COLOURS[f]?.includes(label.toLowerCase())) hits.push(`${f}:${i + 1}: ${label} hue ${info!.h}: ${line.trim().slice(0, 100)}`);
+        if (bannedHue(info)) hits.push(`${f}:${i + 1}: ${label} hue ${info!.h}: ${line.trim().slice(0, 100)}`);
       }
     });
   }
   assert.deepEqual(hits, []);
+});
+
+test("the rotating greeting name has no [data-model= gradients and no blur(", () => {
+  const css = readFileSync("src/styles/gemini.css", "utf8");
+  const mod = readFileSync("src/components/app-ui/RotatingModelName.module.css", "utf8");
+  assert.doesNotMatch(css, /\[data-model=/);
+  assert.doesNotMatch(css, /blur\(/);
+  assert.doesNotMatch(mod, /blur\(/);
 });
 
 test("the single accent is graphite in light and near-white in dark, at AA", () => {
