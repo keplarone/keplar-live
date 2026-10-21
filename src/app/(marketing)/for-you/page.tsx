@@ -44,8 +44,8 @@ export default function ForYouPage() {
           </p>
           <h2>Make things, too</h2>
           <p>
-            On Plus and Pro, the same thread can turn into a personal site, a portfolio, an invitation, images, or a short video,
-            published on your own domain if you like. See <Link href="/pricing">plans</Link>, or{" "}
+            On Plus and Pro, the same thread can turn into a personal site, a portfolio, an invitation, or images,
+            published on your own domain if you like. Video is Pro and Business only. See <Link href="/pricing">plans</Link>, or{" "}
             <Link href="/how-it-works">how it works</Link>.
           </p>
           <p>

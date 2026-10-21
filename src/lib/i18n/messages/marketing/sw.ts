@@ -298,7 +298,8 @@ const m: MarketingCatalog = {
           "Msaada wa kuandika msimbo na uchambuzi wa faili",
           "Hali ya kusoma kwenye miundo yenye nguvu zaidi",
           "Tengeneza tovuti ndogo binafsi (anwani ya bure ya keplar.site)",
-          "Kutengeneza picha, Slides, Deep Research, video, mawakala na vikoa maalum huanzia Plus"
+          "Kutengeneza picha, Slides, Deep Research, mawakala na vikoa maalum huanzia Plus",
+          "Video ni ya Pro na Business pekee"
         ],
         "cta": "Pandisha hadi Lite"
       },

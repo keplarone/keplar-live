@@ -298,7 +298,8 @@ const m: MarketingCatalog = {
           "Pomoc w programowaniu i analiza plików",
           "Tryb nauki na mocniejszych modelach",
           "Utwórz małą stronę osobistą (darmowy adres keplar.site)",
-          "Generowanie obrazów, Slides, Deep Research, wideo, agenci i własne domeny od planu Plus"
+          "Generowanie obrazów, Slides, Deep Research, agenci i własne domeny od planu Plus",
+          "Wideo jest tylko w planach Pro i Business"
         ],
         "cta": "Przejdź na Lite"
       },

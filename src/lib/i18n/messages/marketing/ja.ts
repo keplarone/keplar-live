@@ -298,7 +298,8 @@ const m: MarketingCatalog = {
           "コーディング支援とファイル分析",
           "より強力なモデルでの学習モード",
           "小さな個人サイトを作成（無料の keplar.site アドレス）",
-          "画像生成、Slides、Deep Research、動画、エージェント、独自ドメインは Plus から"
+          "画像生成、Slides、Deep Research、エージェント、独自ドメインは Plus から",
+          "動画は Pro と Business のみ"
         ],
         "cta": "Lite にアップグレード"
       },
