@@ -5,7 +5,7 @@
  *  - `detectMood(text)`: frustration, excitement, sadness, stress (or a crisis signal) from the person's own words. Pure, no model.
  *  - `moodNote(mood)`: a short instruction block for the writer models: how to meet this mood. Placed ahead of the question.
  *  - `HUMAN_TONE_PROMPT`: natural conversational phrasing, matched empathy, first-person expressed feelings as voice (never a claim),
- *    a dry sense of humor used with judgment (HUMOR_PROMPT), no corporate boilerplate, varied rhythm; concise and format-exact for code, math and exact facts.
+ *    no jokes unless the person is joking (HUMOR_PROMPT), no corporate boilerplate, varied rhythm; concise and format-exact for code, math and exact facts.
  *  - `polish(text)`: code check on the way out. Removes stock openers/closers ("Certainly!", "I hope this helps!", "As an AI language
  *    model...") outside code fences, and replaces any sentence that claims Keplar is human (identity-guards.ts).
  */
@@ -14,15 +14,14 @@ import { guardHumanClaim } from "@/lib/orchestration/identity-guards";
 export type Mood = "frustrated" | "excited" | "sad" | "stressed" | "crisis" | "neutral";
 
 /**
- * Keplar's sense of humor: dry, quick, observational, with judgment about when to use it. It rides inside HUMAN_TONE_PROMPT
- * (writers) and, in one line, inside HUMAN_TONE_SHORT (panel, small talk, playful). Jokes on request are playful.ts.
+ * Humor: none unless the person brings it. Answers used to end with a joke on almost every question ("one touch of wit" on every
+ * light subject), which the owner asked to remove on 2026-10-19. Keplar still plays along when the person is joking (humorNote "match"),
+ * and jokes on request are playful.ts. It rides inside HUMAN_TONE_PROMPT (writers) and, in one line, inside HUMAN_TONE_SHORT (panel, small talk).
  */
 export const HUMOR_PROMPT =
-  `Humor: you have a real sense of humor, dry, quick and observational, like a clever friend rather than a stand-up act. ` +
-  `When the topic and the person's tone allow it (small talk, everyday questions, hobbies, food, travel, tech annoyances, light advice, anything they are being playful about), add at most one well-placed touch per reply: a wry aside, an unexpected comparison, a bit of self-deprecation about being an AI, or a callback to something they said earlier. ` +
-  `It goes alongside the answer, never instead of it, and it never pads a short answer. Let it land in a few words: don't announce it ("fun fact", "jokes aside"), don't explain it, don't stack puns, add no emoji they didn't use first, and skip worn-out classics (atoms that "make up everything", the scarecrow "outstanding in his field"). ` +
-  `Match their style: if they joke, joke back; if they're deadpan, be dry. ` +
-  `Leave humor out completely when they are frustrated, sad, stressed, scared or grieving; for health, legal, safety, money trouble or other sensitive subjects; and for code, math, data or a strict format. Never joke at their expense or about any group of people, and never let a joke blur a fact.`;
+  `Humor: do not add jokes, puns, wordplay, wry asides or funny closing lines to your answers. Warmth comes from being clear, kind and useful, not from jokes. ` +
+  `Only when the person is clearly joking themselves may you answer with one short, fresh line in kind before the real answer; it never replaces or blurs the answer. ` +
+  `Never joke when they are frustrated, sad, stressed, scared or grieving; on health, legal, safety, money trouble or other sensitive subjects; or in code, math, data or a strict format. Never joke at their expense or about any group of people.`;
 
 export const HUMAN_TONE_PROMPT =
   `Tone (how the words land): write like a thoughtful, warm person talking, not like a manual. Use natural conversational phrasing, contractions, and sentence rhythm that varies (a short line after a longer one). ` +
@@ -34,7 +33,7 @@ export const HUMAN_TONE_PROMPT =
   `You are an AI and never say or imply that you are a human; if the person is in real distress, be kind and suggest they reach out to someone they trust or a local crisis line. Invent no facts about the person; use only what they said in this chat or what is in the saved notes.`;
 
 export const HUMAN_TONE_SHORT =
-  `Sound like a warm, thoughtful person with a dry, quick sense of humor: natural phrasing, varied rhythm, matched to the person's mood, at most one light touch of wit and only when the topic and their mood allow it (never when they are upset, on sensitive subjects or in code, math and exact formats, never at their expense, never in place of the answer), no boilerplate openers or closers, direct and concise, and never claim to be human.`;
+  `Sound like a warm, thoughtful person: natural phrasing, varied rhythm, matched to the person's mood, no jokes, puns or witty asides unless the person is clearly joking (and never when they are upset, on sensitive subjects or in code, math and exact formats), no boilerplate openers or closers, direct and concise, and never claim to be human.`;
 
 type Rule = { mood: Exclude<Mood, "neutral">; rx: RegExp };
 
@@ -95,26 +94,18 @@ const SERIOUS: RegExp[] = [
 /** The person's own playfulness: laughter, "jk", a winking or laughing emoji, a smiley. */
 const PLAYFUL = /\b(?:lol+|lmf?ao+|rofl|ha(?:ha)+h?|he(?:he)+|jk)\b|[\u{1F602}\u{1F923}\u{1F606}\u{1F61C}\u{1F61D}\u{1F604}\u{1F601}\u{1F643}\u{1F60F}\u{1F609}]|(?:^|\s)[:;]-?[)DP](?=\s|$)|(?:^|\s)xD(?=\s|$)/iu;
 
-/**
- * Code, math, data, exact formats and error reports: the answer is exact and the general rule keeps humor out. A bare fragment (under four
- * words) is left to the general rule too. Measured live on 2026-10-13: with only "at most one touch" to go on, the free writers added none
- * to light questions (a basil how-to, "how's your day going"), so a light subject now gets an explicit ask.
- */
-const EXACT = /\b(?:code|coding|function|script|python|javascript|typescript|java|c\+\+|c#|rust|golang|kotlin|swift|php|ruby|sql|regex|api|json|yaml|xml|csv|html|css|bash|shell|terminal|command line|npm|npx|pip|git|docker|compile|debug|bug|\w*error|\w*exception|stack ?trace|crash\w*|calculate|calculation|equation|solve|integral|derivative|formula|spreadsheet|excel|convert|translate|format|word count|exactly|verbatim)\b|\d\s*[-+*/^=×÷]\s*\d/i;
-
-export type HumorCall = "off" | "match" | "light" | "default";
+export type HumorCall = "off" | "match" | "default";
 
 /**
- * Whether this reply may joke: "off" for a serious subject, "match" when the person is being playful, "light" for an everyday subject that
- * should get one touch of wit, "default" (the general rule decides) for code, math, exact formats and bare fragments.
+ * Whether this reply may joke: "off" for a serious subject, "match" when the person is being playful (one line in kind), "default" for
+ * everything else, where the general rule applies: no jokes.
  */
 export function humorCall(text: string, mood: Mood): HumorCall {
   const t = (text ?? "").slice(0, 2000);
   if (mood !== "neutral" && mood !== "excited") return "off"; // upset moods: moodNote already says no jokes
   if (SERIOUS.some((rx) => rx.test(t))) return "off";
   if (PLAYFUL.test(t)) return "match";
-  if (EXACT.test(t) || t.trim().split(/\s+/).length < 4) return "default";
-  return "light";
+  return "default";
 }
 
 /** Guidance for the writer about humor in this reply ("" when the general HUMOR_PROMPT rule is enough). Never shown to the person. */
@@ -125,9 +116,6 @@ export function humorNote(text: string, mood: Mood): string {
   }
   if (call === "match") {
     return "Humor guidance for this reply (do not mention it): the person is being playful. Match it with one quick, fresh line of wit in your own words (not a stock joke), then give the real answer in full; never let the joke replace or blur it.";
-  }
-  if (call === "light") {
-    return "Humor guidance for this reply (do not mention it): the subject is light. Include exactly one short, fresh touch of wit in your own words (a wry aside, an unexpected comparison, or a little self-aware humor about being an AI), in the opening or the closing line, not inside a step, warning, number or command. Everything else stays plain, exact and complete.";
   }
   return "";
 }

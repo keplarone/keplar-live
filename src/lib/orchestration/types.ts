@@ -543,7 +543,8 @@ export type ResearchEvent =
 /** On the finished answer: what the research read and which pages the report cites ([n] markers that really map to a read page). */
 /** Server Deep Research's citation check (lib/research/citation-check.ts): words and numbers, not meaning. */
 export type CitationCheck = {
-  summary: { claims: number; supported: number; partiallySupported: number; notVerified: number };
+  /** `conflicting`: absent on answers checked before conflicts were detected. */
+  summary: { claims: number; supported: number; partiallySupported: number; conflicting?: number; notVerified: number };
   /** The statements that need a closer look, most serious first. */
   claims: LiveClaim[];
 };
@@ -600,6 +601,8 @@ export type ConsultedModel = {
   status: "responded" | "failed" | "refused" | "not-needed";
   stance?: string;
   note?: string;
+  /** Panel models that responded: the start of the model's own answer, shown when the reader opens "View Disagrees". Not in share snapshots. */
+  excerpt?: string;
 };
 
 /** How well the pages Keplar actually retrieved back one claim from the answer. Only set from a real search that returned pages. */
@@ -650,6 +653,8 @@ export type KeplarAnswer = {
     responded: number;
     consulted: number;
     summary: string;
+    /** The stance the agreeing models took (the comparator's majority), so the reader can see who agreed and who did not. */
+    majorityStance?: string | null;
   };
   models: ConsultedModel[];
   sources: Source[];
@@ -804,8 +809,11 @@ export type KeplarEvent =
     }
   | {
       type: "error";
-      /** "no_response": the run ended with no model answering. It is never charged. */
-      code: "bad_request" | "internal" | "network" | "unavailable" | "no_response";
+      /**
+       * "no_response": the run ended with no model answering. It is never charged.
+       * "plan_required": the request needs a feature the caller's plan doesn't include (Deep Research on Free and Lite); offer an upgrade.
+       */
+      code: "bad_request" | "internal" | "network" | "unavailable" | "no_response" | "plan_required";
       message: string;
       retryable: boolean;
       /** no_response only: show the Plus upgrade suggestion (Free and signed-out). */

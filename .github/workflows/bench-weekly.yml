@@ -1,0 +1,77 @@
+# Weekly blind pairwise benchmark (bench/pairwise.ts): Keplar vs one baseline model on the held-out test split, budget-capped.
+# It runs only when both are set in the repository settings (Settings > Secrets and variables > Actions):
+#   secret   OPENROUTER_API_KEY_BENCH   a key used only for benchmarks (so its spend is separate and can be capped at the provider)
+#   variable BENCH_WEEKLY_MAX_USD       the hard cap per run in USD (the harness never sends a call that would cross it)
+# Without them the job logs that it was skipped and spends nothing. A regression against the previous run opens an issue for a
+# person to look at; nothing here changes production routing.
+name: Weekly benchmark
+on:
+  schedule:
+    - cron: '33 9 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+  issues: write
+concurrency:
+  group: bench-weekly
+  cancel-in-progress: false
+jobs:
+  pairwise:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY_BENCH }}
+      MAX_USD: ${{ vars.BENCH_WEEKLY_MAX_USD }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check configuration
+        id: cfg
+        run: |
+          if [ -z "$OPENROUTER_API_KEY" ] || [ -z "$MAX_USD" ]; then
+            echo "Skipped: set the OPENROUTER_API_KEY_BENCH secret and the BENCH_WEEKLY_MAX_USD variable to run the weekly benchmark."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        if: steps.cfg.outputs.run == 'true'
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        if: steps.cfg.outputs.run == 'true'
+        with:
+          node-version: '22'
+          cache: npm
+      - if: steps.cfg.outputs.run == 'true'
+        run: npm ci --ignore-scripts
+      - name: Run the benchmark (test split, hard cap)
+        if: steps.cfg.outputs.run == 'true'
+        env:
+          KEPLAR_LIVE_MODELS: '1'
+        run: npx tsx bench/pairwise.ts --live --yes --split test --max-usd "$MAX_USD" --out bench/out/pairwise
+      - name: Previous results
+        if: steps.cfg.outputs.run == 'true'
+        id: prev
+        run: |
+          id=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow bench-weekly.yml --status success --limit 1 --json databaseId --jq '.[0].databaseId // empty')
+          if [ -n "$id" ] && gh run download "$id" --repo "$GITHUB_REPOSITORY" -n pairwise-results -D prev; then echo "found=true" >> "$GITHUB_OUTPUT"; else echo "found=false" >> "$GITHUB_OUTPUT"; fi
+      - name: Regression check
+        if: steps.cfg.outputs.run == 'true' && steps.prev.outputs.found == 'true'
+        run: |
+          prev=$(ls prev/*-live-test.json | sort | tail -1)
+          cur=$(ls bench/out/pairwise/*-live-test.json | sort | tail -1)
+          set +e
+          npx tsx bench/regress.ts "$prev" "$cur" | tee regress.txt
+          code=${PIPESTATUS[0]}
+          set -e
+          if [ "$code" = "2" ]; then
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "Benchmark regression ($(date -u +%Y-%m-%d))" --body "$(printf 'The weekly pairwise benchmark regressed against the previous run.\n\n```\n%s\n```\n\nRun: %s/%s/actions/runs/%s\n\nNothing was changed automatically. Review before any routing change.' "$(cat regress.txt)" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID")"
+          fi
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: steps.cfg.outputs.run == 'true'
+        with:
+          name: pairwise-results
+          path: bench/out/pairwise/
+          retention-days: 400

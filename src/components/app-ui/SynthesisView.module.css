@@ -71,6 +71,9 @@
   transition: opacity var(--d-slow) var(--e-standard), filter var(--d-slow) var(--e-standard);
 }
 .disc img { display: block; }
+.logo { width: 20px; height: 20px; }
+/* One-colour logos (ChatGPT, Grok, Kimi, Z.ai) in the disc's ink: the disc is white in both themes. */
+.tint { display: block; width: 20px; height: 20px; background: var(--n-graphite); mask-repeat: no-repeat; mask-position: center; mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center; -webkit-mask-size: contain; }
 .mono {
   font-size: var(--t-label);
   font-weight: var(--w-semibold);

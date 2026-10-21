@@ -3,7 +3,7 @@
  * behaviour from StudioTopUp.tsx, RobloxCloud.tsx and BlenderCloud.tsx; the wording that carries legal or billing meaning
  * (the top-up consent and monthly maximum) is kept word for word. Unit tested in tests/studio-panels.test.ts.
  */
-import { SAVE_PREFIX, SAVE_VERSION } from "../../saved-session";
+import { gameKeyOf, SAVE_PREFIX, SAVE_VERSION } from "../../saved-session";
 import type { BadgeProps } from "@/components/kit";
 
 type Tone = NonNullable<BadgeProps["tone"]>;
@@ -192,16 +192,20 @@ export const envOfKey = (key: string): SessionEnv => (key.startsWith(`${SAVE_PRE
 
 type StorageLike = { length: number; key(i: number): string | null; getItem(k: string): string | null };
 
-/** This device's saved chats for one environment. Malformed entries are skipped; storage errors give an empty list. */
-export function deviceSessions(storage: StorageLike | null | undefined, env: SessionEnv): SessionEntry[] {
+/**
+ * This device's saved chats for one environment that belong to `scope` (the signed-in account's, or the device's when signed out;
+ * none while unknown). Entries carry the game key. Malformed entries are skipped; storage errors give an empty list.
+ */
+export function deviceSessions(storage: StorageLike | null | undefined, env: SessionEnv, scope = "anon"): SessionEntry[] {
   const out: SessionEntry[] = [];
   if (!storage) return out;
   try {
     for (let i = 0; i < storage.length; i++) {
-      const key = storage.key(i);
-      if (!key || !key.startsWith(SAVE_PREFIX) || envOfKey(key) !== env) continue;
+      const stored = storage.key(i);
+      const key = stored ? gameKeyOf(stored, scope) : null;
+      if (!stored || !key || envOfKey(key) !== env) continue;
       try {
-        const s = JSON.parse(storage.getItem(key) ?? "null") as { v?: number; savedAt?: number; name?: string; items?: unknown[]; units?: number } | null;
+        const s = JSON.parse(storage.getItem(stored) ?? "null") as { v?: number; savedAt?: number; name?: string; items?: unknown[]; units?: number } | null;
         if (!s || s.v !== SAVE_VERSION || !Array.isArray(s.items) || typeof s.savedAt !== "number") continue;
         out.push({ key, name: s.name || nameFromKey(key), savedAt: s.savedAt, device: { savedAt: s.savedAt, items: s.items.length, units: s.units ?? 0 }, account: null });
       } catch { /* one bad entry */ }

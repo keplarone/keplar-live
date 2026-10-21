@@ -27,6 +27,7 @@ export const ACCOUNT_COMMANDS: Command[] = [
   { id: "signup", label: `Create a ${brand.name} account`, href: "/signup", group: "Account", keywords: "register join" },
   { id: "history", label: "Chat history", href: "/app/history", group: "Account", keywords: "past chats threads" },
   { id: "projects", label: "Projects", href: "/app/projects", group: "Account", keywords: "folders files" },
+  { id: "tasks", label: "Tasks", href: "/app/tasks", group: "Account", hint: "What Keplar is working on and what needs you", keywords: "runs jobs progress agents approvals keep working" },
 ];
 
 /** Everything static, deduped by href (feature entries win over footer duplicates). */

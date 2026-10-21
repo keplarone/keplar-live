@@ -23,8 +23,10 @@ export type V1Answer = {
     why: { recorded: boolean; text: string };
   };
   models: { name: string; provider: string; status: string }[];
-  /** Sources the models cited. Keplar has not checked them unless `source_check` says so. */
+  /** Sources the models cited. Keplar has not checked them unless `source_check` says so. A note that no page was fetched is not listed here. */
   sources: { kind: string; title: string; url: string | null }[];
+  /** Present when Deep Research ran or was skipped. `pages_read` counts pages Keplar actually retrieved. */
+  research?: { pages_read: number; cited: number; note: string | null };
   /** Present only when Keplar checked claims against web pages it retrieved (BETA, off unless enabled). */
   source_check: null | { state: string; note: string; claims: { text: string; support: string; finding: string; sources: { title: string; url: string }[] }[] };
   usage: { credits: number };
@@ -53,7 +55,10 @@ export function toV1Answer(a: KeplarAnswer, at = new Date()): V1Answer {
         }
       : null,
     models: a.models.map((m) => ({ name: m.name, provider: m.provider, status: m.status })),
-    sources: a.sources.map((s) => ({ kind: s.kind, title: s.title, url: s.url ?? null })),
+    sources: a.sources.filter((s) => s.kind !== "note" || Boolean(s.url)).map((s) => ({ kind: s.kind, title: s.title, url: s.url ?? null })),
+    ...(a.research
+      ? { research: { pages_read: a.research.sources.length, cited: a.research.cited.length, note: a.research.off ?? null } }
+      : {}),
     source_check: a.sourcing && a.sourcing.state === "checked" ? { state: a.sourcing.state, note: a.sourcing.note, claims: a.sourcing.claims.map((x) => ({ text: x.text, support: x.support, finding: x.finding, sources: x.sources })) } : null,
     usage: { credits: a.compute.units },
     created: at.toISOString(),

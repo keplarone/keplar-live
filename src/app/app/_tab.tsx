@@ -16,6 +16,7 @@ const META: Record<View, { title: string; description: string }> = {
   study: { title: "Study", description: "Study with Keplar: flashcards, quizzes and notes." },
   history: { title: "All chats", description: "Every Keplar chat you have saved." },
   studio: { title: "Keplar Studio", description: "Build in Roblox Studio or Blender with Keplar from the desktop app." },
+  tasks: { title: "Tasks", description: "What Keplar is working on, what it finished, and what still needs you." },
   apps: { title: "Connected apps", description: "Connect apps to Keplar, choose what each tool may do, and let Ask use them with your approval." },
 };
 
@@ -25,5 +26,5 @@ export function tabMeta(view: View): Metadata {
 }
 
 export function TabPage({ view }: { view: View }) {
-  return <AppLoader initialView={view} />;
+  return <AppLoader initialView={view} retrievalEnabled={process.env.KEPLAR_RETRIEVAL_ENABLED === "true"} />;
 }

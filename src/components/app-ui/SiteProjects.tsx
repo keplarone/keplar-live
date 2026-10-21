@@ -131,7 +131,7 @@ export function SiteProjects({ query, onResume }: { query: string; onResume: (id
                     {renaming === x.id ? (
                       <form className={css.rename} onSubmit={(e) => { e.preventDefault(); const n = draft.trim(); if (n) void act(x.id, `Renamed to ${n}.`, async () => { await api(`/api/sites/${x.id}`, { method: "PATCH", body: JSON.stringify({ name: n }) }); setRenaming(null); }); }}>
                         <label className="visually-hidden" htmlFor={`rn-${x.id}`}>Site name</label>
-                        <input id={`rn-${x.id}`} className={s.textInput} value={draft} maxLength={60} autoFocus onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Escape") setRenaming(null); }} />
+                        <input id={`rn-${x.id}`} className={s.textInput} value={draft} maxLength={60} autoFocus onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Escape") { e.stopPropagation(); setRenaming(null); } }} />
                         <Button type="submit" size="sm" variant="primary">Save</Button>
                       </form>
                     ) : (

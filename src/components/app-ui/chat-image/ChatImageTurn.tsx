@@ -8,6 +8,7 @@
  */
 import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
+import { SignInLink } from "../SignInLink";
 import type { KeplarMessage, MessageMedia } from "../state/types";
 import type { ChatImage } from "@/lib/images/chat-types";
 import { blockedFrom, fetchStored, ImgError, needsApproval, newKey, quote, RIGHTS_TEXT, SIZE_LABEL, startImage, uploadSources, waitForJob } from "@/lib/images/chat-flow";
@@ -69,6 +70,12 @@ export function ChatImageTurn({ message: m, media, onPatch, onFollowUp, onAskTex
     if (blocked) patchRef.current({ phase: "blocked", blocked });
     else patchRef.current({ phase: "failed", error: e instanceof Error ? e.message : "Couldn't make the picture. Nothing was charged." });
   };
+  /** Starting failed. A 409 "confirm" means the price moved since it was quoted: show the new one for approval instead of failing. */
+  const failOrConfirm = (e: unknown) => {
+    const est = e instanceof ImgError && e.code === "confirm" ? (e.data.estimate as { units?: number } | undefined)?.units : undefined;
+    if (typeof est === "number") patchRef.current({ phase: "confirm", estimateUnits: est, error: (e as Error).message });
+    else fail(e);
+  };
 
   /* checking: gate + exact cost. A cheap picture starts at once; otherwise the person approves. */
   const checkKey = img.phase === "checking" ? img.key : "";
@@ -83,10 +90,12 @@ export function ChatImageTurn({ message: m, media, onPatch, onFollowUp, onAskTex
         if (needsApproval(q.units, Boolean(img.ref))) patchRef.current({ phase: "confirm", estimateUnits: q.units, left: q.left });
         else await run(q.units, q.left);
       } catch (e) {
-        if (live) fail(e);
+        if (live) failOrConfirm(e);
       }
     })();
-    return () => { live = false; };
+    // Reset `began` too: React StrictMode runs this effect twice in development and the first run's result is dropped (live is false),
+    // so the second run must be allowed to check again. Only the free quote repeats; nothing is started before it resolves.
+    return () => { live = false; began.current = ""; };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once per check key
   }, [checkKey]);
 
@@ -108,12 +117,7 @@ export function ChatImageTurn({ message: m, media, onPatch, onFollowUp, onAskTex
     try {
       await run(img.estimateUnits, img.left ?? null);
     } catch (e) {
-      // The price moved since it was shown: show the new one before going on.
-      if (e instanceof ImgError && e.code === "confirm") {
-        const est = (e.data.estimate as { units?: number } | undefined)?.units;
-        if (typeof est === "number") patchRef.current({ phase: "confirm", estimateUnits: est, error: e.message });
-        else fail(e);
-      } else fail(e);
+      failOrConfirm(e);
     } finally {
       setBusy(false);
     }
@@ -234,7 +238,7 @@ export function ChatImageTurn({ message: m, media, onPatch, onFollowUp, onAskTex
           <h3>{img.blocked.reason === "signin" ? "Sign in to create images" : img.blocked.reason === "plan" ? "Images are part of Plus and Pro" : img.blocked.reason === "limit" ? "That's today's limit" : img.blocked.reason === "credits" ? "Not enough credits" : "Images aren't available right now"}</h3>
           <p>{img.blocked.message}</p>
           <div className={css.row}>
-            {img.blocked.reason === "signin" ? <Link className={la.act} data-variant="primary" data-size="sm" href="/signin?next=%2Fapp">Sign in</Link> : null}
+            {img.blocked.reason === "signin" ? <SignInLink className={la.act} data-variant="primary" data-size="sm">Sign in</SignInLink> : null}
             {img.blocked.reason === "plan" || img.blocked.reason === "credits" ? <Link className={la.act} data-variant="primary" data-size="sm" href="/pricing">See plans</Link> : null}
             {img.blocked.reason === "paused" || img.blocked.reason === "config" ? <Button size="sm" variant="primary" onClick={() => onPatch({ phase: "checking", key: newKey(), blocked: undefined })}>Try again</Button> : null}
             <Button size="sm" variant="secondary" onClick={onAskText}>Ask as a normal question</Button>

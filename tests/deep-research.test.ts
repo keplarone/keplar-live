@@ -157,7 +157,7 @@ test("pipeline, Deep Research with web search: plan → search → read stream b
     assert.ok(!a.sources?.some((x) => x.title === "No sources cited"), "no 'no sources' note when pages were read");
     const check = a.research!.check;
     assert.ok(check, "the cited statements were checked against their pages");
-    assert.ok(check!.summary.claims > 0 && check!.summary.claims === check!.summary.supported + check!.summary.partiallySupported + check!.summary.notVerified);
+    assert.ok(check!.summary.claims > 0 && check!.summary.claims === check!.summary.supported + check!.summary.partiallySupported + (check!.summary.conflicting ?? 0) + check!.summary.notVerified);
   } finally { s.restore(); }
 });
 
@@ -172,6 +172,20 @@ test("pipeline, Deep Research without web search: says honestly that no pages we
     assert.doesNotMatch(a.markdown, /\[\d\]/, "no citation survives when no page was read");
     const sens = await withEnv(FAKE, async () => run({ ...engineDeps()!, retriever: researcher() }, { prompt: Q, plan: "plus", modes: { deepResearch: true }, routing: { tier: "sensitive" }, computeRemaining: 1e7, limits: { maxRequestUsd: 50, maxDeepResearchUsd: 50 } }));
     if (sens.a) assert.equal(sens.a.research?.off, OFF_SENSITIVE);
+  } finally { s.restore(); }
+});
+
+test("pipeline, Deep Research on Free and Lite: one plan_required error (so the app can offer an upgrade), no research and no answer", async () => {
+  const s = stub();
+  try {
+    for (const plan of ["free", "lite"] as const) {
+      const { events } = await withEnv(FAKE, async () => run({ ...engineDeps(plan === "free" ? { keyTier: "free" } : undefined)!, retriever: researcher() }, { prompt: Q, plan, modes: { deepResearch: true }, computeRemaining: 1e7, limits: { maxRequestUsd: 50, maxDeepResearchUsd: 50 } }));
+      const errs = events.filter((e): e is Extract<KeplarEvent, { type: "error" }> => e.type === "error");
+      assert.equal(errs.length, 1, plan);
+      assert.equal(errs[0]!.code, "plan_required", plan);
+      assert.match(errs[0]!.message, /Plus and up/);
+      assert.equal(events.filter((e) => e.type === "research" || e.type === "answer").length, 0, plan);
+    }
   } finally { s.restore(); }
 });
 
@@ -235,13 +249,48 @@ test("citation check: figures and words are compared with what was read from the
   const r = checkCitations(md, sources, ev);
   assert.equal(r.summary.claims, 5, "the code block is not a statement");
   assert.equal(r.summary.supported, 2);
+  assert.equal(r.summary.conflicting, 1);
   const by = new Map(r.claims.map((c) => [c.text, c]));
-  assert.equal(by.get("It is 300 metres tall.")?.status, "not-verified", "a figure the page doesn't give");
-  assert.match(by.get("It is 300 metres tall.")!.note!, /300/);
-  assert.match(by.get("It is 300 metres tall.")!.quote!, /330 metres/, "the closest line read is shown");
+  assert.equal(by.get("It is 300 metres tall.")?.status, "conflicting", "the page gives a different figure for the same unit");
+  assert.deepEqual(by.get("It is 300 metres tall.")!.conflict, { n: 3, quote: "The tower is 330 metres tall today" }, "the page's own figure is quoted");
   assert.equal(by.get("It cost 7.8 million francs to build.")?.status, "not-verified");
+  assert.match(by.get("It cost 7.8 million francs to build.")!.note!, /7\.8/);
   assert.equal(by.get("Visitors love the pastry shops nearby on weekends.")?.status, "not-verified", "words the page doesn't have");
   assert.equal(r.claims[0].status, "not-verified", "most serious first");
   assert.deepEqual(numbersIn("1,200 people, 3.50 dollars, 45% and 2026"), ["1200", "3.5", "45", "2026"]);
   assert.deepEqual(citedSentences("Uncited sentence here. Cited one here [2][3].").map((x) => x.cites), [[2, 3]]);
+});
+
+test("citation check reads the fuller page text the search returned, not only the 280-character snippet the card shows", async () => {
+  const LONG = `${"The Eiffel Tower stands on the Champ de Mars in Paris and was built as the entrance to a world's fair. ".repeat(3)}It was completed in March 1889 by the engineering company of Gustave Eiffel.`;
+  const registry = { generate: async () => ({ ok: true, model: catalog[0], text: '{"queries":["eiffel"]}', usage: { inputTokens: 1, outputTokens: 1 } }) } as unknown as Parameters<typeof runResearch>[0]["registry"];
+  const retriever = {
+    check: async () => ({ checks: [], costUsd: 0 }),
+    research: async () => ({ sources: [{ url: "https://a.example.com/eiffel", title: "Eiffel", snippet: LONG }, { url: "https://b.example.com/x", title: "B" }], notes: "", costUsd: 0 }),
+  } as unknown as Retriever;
+  const plan = { panel: [{ model: catalog[0] }] } as unknown as Parameters<typeof runResearch>[0]["plan"];
+  const gen = runResearch({ registry, retriever, req: { prompt: "Q?", plan: "plus" } as KeplarRequest, plan, classification: {} as Parameters<typeof runResearch>[0]["classification"] });
+  let r = await gen.next();
+  while (!r.done) r = await gen.next();
+  const out = r.value;
+  assert.equal(out.summary.sources[0].snippet!.length, 280, "the card keeps its short snippet");
+  assert.ok(!out.summary.sources[0].snippet!.includes("March 1889"), "the date is past the snippet");
+  assert.ok(out.evidence.get(1)![0].includes("March 1889"), "the check gets the fuller page text");
+  assert.deepEqual(out.evidence.get(2), [], "a page without text has nothing to compare");
+  assert.ok(!JSON.stringify(out.summary).includes("March 1889"), "the fuller text isn't in what is streamed or saved");
+  const check = checkCitations("The Eiffel Tower was completed in March 1889 by Gustave Eiffel's company [1].", out.summary.sources, out.evidence);
+  assert.equal(check.summary.supported, 1, "backed by text the snippet alone would have missed");
+});
+
+test("citation check: a conflict needs a different figure for the same unit on the cited page, on the same topic", () => {
+  const sources = [{ ...src(1), snippet: "Paris had an estimated population of 2.1 million residents in January 2023, according to the national statistics office." }, { ...src(2), snippet: "Coffee exports reached 3 million tonnes last season across the producing countries of South America." }];
+  const ev = evidenceByPage(sources, []);
+  const r = checkCitations("Paris has about 2.4 million residents [1]. Paris has 2.1 million residents [1]. Paris has about 2.4 million residents [2].", sources, ev);
+  const conflicting = r.claims.filter((c) => c.status === "conflicting");
+  assert.equal(conflicting.length, 1, "only the on-topic page with a different figure for the same unit conflicts");
+  assert.deepEqual(conflicting[0].citations, [1]);
+  assert.match(conflicting[0].conflict!.quote, /2\.1 million residents/);
+  assert.equal(r.summary.supported, 1, "the matching figure is supported");
+  assert.equal(r.summary.conflicting, 1);
+  assert.equal(r.summary.claims, r.summary.supported + r.summary.partiallySupported + (r.summary.conflicting ?? 0) + r.summary.notVerified);
 });

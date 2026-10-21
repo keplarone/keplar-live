@@ -1,12 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
 import { SIGNED_KEY } from "@/lib/signed-hint";
+import { activeScope } from "@/components/app-ui/state/scope";
 
 export type PlanInfo = { ready: boolean; plan: "free" | "lite" | "plus" | "pro" | "business"; signedIn: boolean; admin: boolean; checkout: boolean; liteCheckout: boolean };
 
 const FREE: PlanInfo = { ready: false, plan: "free", signedIn: false, admin: false, checkout: true, liteCheckout: false };
 const FAILED: PlanInfo = { ...FREE, ready: true };
-let cached: Promise<PlanInfo> | undefined;
+/** Keyed by the app's scope (state/scope.ts), so a different account signed in on the same page load is asked again. */
+let cached: { scope: string; p: Promise<PlanInfo> } | undefined;
 
 type ComputeBody = { plan?: PlanInfo["plan"]; signedIn?: boolean; admin?: boolean; checkout?: boolean; liteCheckout?: boolean } & Record<string, unknown>;
 let computeInflight: { at: number; p: Promise<ComputeBody | null> } | null = null;
@@ -30,9 +32,12 @@ function remember(i: PlanInfo): PlanInfo {
   return i;
 }
 
-/** One small request per page load; marketing pages stay static. Failures fall back to Free/signed-out. */
+/** One small request per page load (and account); marketing pages stay static. Failures fall back to Free/signed-out. */
 function load(): Promise<PlanInfo> {
-  cached ??= fetchCompute()
+  const scope = activeScope();
+  if (cached?.scope === scope) return cached.p;
+  // A different account from the cached answer: never share a request that may have started for the previous one.
+  const p = fetchCompute(cached !== undefined)
     .then((m): PlanInfo => (!m ? FAILED : {
       ready: true,
       plan: m?.plan === "lite" || m?.plan === "plus" || m?.plan === "pro" || m?.plan === "business" ? m.plan : "free",
@@ -43,7 +48,8 @@ function load(): Promise<PlanInfo> {
     }))
     .catch((): PlanInfo => FAILED)
     .then(remember);
-  return cached;
+  cached = { scope, p };
+  return p;
 }
 
 export function usePlan(): PlanInfo {

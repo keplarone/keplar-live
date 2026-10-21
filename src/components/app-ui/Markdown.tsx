@@ -10,81 +10,13 @@ import { safeHref } from "@/lib/safe-href";
 import { splitForEase } from "@/lib/typing/smooth";
 import { Fragment, memo, useState, type ReactNode } from "react";
 import { MATH_TOKEN, maskMath, type MathItem } from "@/lib/math/extract";
-import { joinLines, splitLines } from "@/lib/md-lines";
+import { splitLines } from "@/lib/md-lines";
+import { parse } from "./markdown-parse";
 import { MorphIcon } from "@/components/kit";
 import { MathSpan } from "./MathSpan";
 import { Button } from "@/components/kit";
 import s from "./Markdown.module.css";
 import { CodeRunner, runnableLang } from "./parity/CodeRunner";
-
-type Block =
-  | { t: "h"; level: number; text: string }
-  | { t: "p"; text: string }
-  | { t: "ul" | "ol"; items: string[] }
-  | { t: "quote"; text: string }
-  | { t: "hr" }
-  | { t: "code"; lang: string; code: string; open: boolean }
-  | { t: "table"; head: string[]; align: ("left" | "right" | "center" | null)[]; rows: string[][] };
-
-const splitRow = (line: string) =>
-  line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((c) => c.trim());
-
-function parse(src: string): Block[] {
-  const lines = src.replace(/\r\n?/g, "\n").split("\n");
-  const out: Block[] = [];
-  let i = 0;
-  while (i < lines.length) {
-    const line = lines[i];
-    if (!line.trim()) { i++; continue; }
-
-    const fence = line.match(/^\s*```\s*([\w+-]*)/);
-    if (fence) {
-      const body: string[] = [];
-      i++;
-      while (i < lines.length && !/^\s*```/.test(lines[i])) body.push(lines[i++]);
-      const open = i >= lines.length;
-      i++;
-      out.push({ t: "code", lang: fence[1] || "", code: body.join("\n"), open });
-      continue;
-    }
-    const h = line.match(/^(#{1,4})\s+(.*)$/);
-    if (h) { out.push({ t: "h", level: h[1].length, text: h[2] }); i++; continue; }
-    if (/^\s*(-{3,}|\*{3,})\s*$/.test(line)) { out.push({ t: "hr" }); i++; continue; }
-
-    if (/^\s*\|/.test(line) && i + 1 < lines.length && /^\s*\|?\s*:?-{2,}/.test(lines[i + 1])) {
-      const head = splitRow(line);
-      const align = splitRow(lines[i + 1]).map((c) => (c.startsWith(":") && c.endsWith(":") ? "center" : c.endsWith(":") ? "right" : c.startsWith(":") ? "left" : null));
-      i += 2;
-      const rows: string[][] = [];
-      while (i < lines.length && /^\s*\|/.test(lines[i])) rows.push(splitRow(lines[i++]));
-      out.push({ t: "table", head, align, rows });
-      continue;
-    }
-    if (/^\s*[-*]\s+/.test(line)) {
-      const items: string[] = [];
-      while (i < lines.length && /^\s*[-*]\s+/.test(lines[i])) items.push(lines[i++].replace(/^\s*[-*]\s+/, ""));
-      out.push({ t: "ul", items });
-      continue;
-    }
-    if (/^\s*\d+[.)]\s+/.test(line)) {
-      const items: string[] = [];
-      while (i < lines.length && /^\s*\d+[.)]\s+/.test(lines[i])) items.push(lines[i++].replace(/^\s*\d+[.)]\s+/, ""));
-      out.push({ t: "ol", items });
-      continue;
-    }
-    if (/^\s*>/.test(line)) {
-      const body: string[] = [];
-      while (i < lines.length && /^\s*>/.test(lines[i])) body.push(lines[i++].replace(/^\s*>\s?/, ""));
-      out.push({ t: "quote", text: joinLines(body) });
-      continue;
-    }
-    const para: string[] = [];
-    while (i < lines.length && lines[i].trim() && !/^(#{1,4}\s|\s*```|\s*[-*]\s+|\s*\d+[.)]\s+|\s*>|\s*\|)/.test(lines[i])) para.push(lines[i++]);
-    if (!para.length) para.push(lines[i++]);
-    out.push({ t: "p", text: joinLines(para) });
-  }
-  return out;
-}
 
 const INLINE = /(`[^`]+`)|(\*\*[^*]+\*\*)|(\*[^*\s][^*]*\*|_[^_\s][^_]*_)|(\[[^\]]+\]\([^)\s]+\))/g;
 /** With citations on (a Deep Research report): a bare "[3]" that isn't a link is a citation of page 3. */
@@ -226,9 +158,22 @@ function MarkdownImpl({ source, streaming, caret, cite }: { source: string; stre
           case "p":
             return <p key={k} dir="auto">{inline_(b.text, k)}{c(i)}</p>;
           case "ul":
-            return <ul key={k} className={s.ul} dir="auto">{b.items.map((it, j) => <li key={j} dir="auto">{inline_(it, `${k}-${j}`)}{c(i, j, b.items.length - 1)}</li>)}</ul>;
-          case "ol":
-            return <ol key={k} className={s.ol} dir="auto">{b.items.map((it, j) => <li key={j} dir="auto">{inline_(it, `${k}-${j}`)}{c(i, j, b.items.length - 1)}</li>)}</ol>;
+          case "ol": {
+            const List = b.t;
+            return (
+              <List key={k} className={b.t === "ul" ? s.ul : s.ol} dir="auto" start={b.t === "ol" ? b.start : undefined}>
+                {b.items.map((it, j) => {
+                  const Sub = it.sub?.ordered ? "ol" : "ul";
+                  return (
+                    <li key={j} dir="auto">
+                      {inline_(it.text, `${k}-${j}`)}
+                      {it.sub ? <Sub className={it.sub.ordered ? s.ol : s.ul} dir="auto">{it.sub.items.map((x, n) => <li key={n} dir="auto">{inline_(x, `${k}-${j}-${n}`)}{c(i, j * 1000 + n, (b.items.length - 1) * 1000 + it.sub!.items.length - 1)}</li>)}</Sub> : c(i, j, b.items.length - 1)}
+                    </li>
+                  );
+                })}
+              </List>
+            );
+          }
           case "quote":
             return <blockquote key={k} className={s.quote} dir="auto">{inline_(b.text, k)}{c(i)}</blockquote>;
           case "hr":

@@ -7,8 +7,14 @@
  * reference images (data URLs would overflow storage; a resumed session takes one fresh look), and the model's old thinking blocks
  * (only needed inside a run that is still going).
  */
+import { accountHeader, activeScope, scopeOf, STUDIO_ACCOUNT_PREFIX, userIdOf } from "../state/scope";
 import type { Item, Msg, Place } from "./useStudioAgent";
 
+/**
+ * The game key (placeKey) names the game; it is also the key on the account (/api/studio/chats). On this device a signed-in
+ * account's copy is stored under its own prefix (deviceKey), so another account on the same browser never reads it and sign-out
+ * removes it (clearAccountCaches). Signed out, the game key itself is used: chats saved before this split stay with the device.
+ */
 export const SAVE_PREFIX = "keplar-studio-chat:";
 export const SAVE_VERSION = 1;
 /** Stay well inside localStorage's ~5 MB per origin, which is shared with the rest of Keplar. */
@@ -36,6 +42,48 @@ export function placeKey(place: Pick<Place, "name" | "placeId" | "saveKey"> | nu
   if (place.placeId) return `${SAVE_PREFIX}id:${place.placeId}`;
   const name = place.name.trim().toLowerCase();
   return name ? `${SAVE_PREFIX}name:${name}` : null;
+}
+
+/* ── whose chats: the scope (state/scope.ts) ── */
+
+let resolved = "pending";
+/** Whose Studio chats these are: the app's scope when the app knows it, else what resolveStudioScope found ("pending" until then). */
+export const studioScope = (): string => (activeScope() !== "pending" ? activeScope() : resolved);
+
+/** Asks the server who is signed in (outside the app, e.g. the overlay window). Unknown (offline) stays "pending": nothing is saved. */
+export async function resolveStudioScope(): Promise<string> {
+  if (activeScope() !== "pending") return activeScope();
+  try {
+    const r = await fetch("/api/compute", { cache: "no-store", credentials: "same-origin" });
+    if (r.ok) {
+      const d = (await r.json()) as { signedIn?: boolean; account?: { id?: string } | null };
+      if (!d.signedIn) resolved = "anon";
+      else if (d.account?.id) resolved = scopeOf(d.account.id);
+    }
+  } catch { /* offline */ }
+  return studioScope();
+}
+
+/** Where this game's chat is stored on this device for `scope`; null when nothing may be kept (no game, or the scope is unknown). */
+export function deviceKey(key: string | null, scope: string = studioScope()): string | null {
+  if (!key) return null;
+  if (scope === "anon") return key;
+  const id = userIdOf(scope);
+  return id && key.startsWith(SAVE_PREFIX) ? `${STUDIO_ACCOUNT_PREFIX}${id}|${key.slice(SAVE_PREFIX.length)}` : null;
+}
+
+/** The game key for one of `scope`'s device keys, or null when the entry belongs to someone else (or is not a Studio chat). */
+export function gameKeyOf(storageKey: string, scope: string = studioScope()): string | null {
+  if (scope === "anon") return storageKey.startsWith(SAVE_PREFIX) ? storageKey : null;
+  const id = userIdOf(scope);
+  const mine = id ? `${STUDIO_ACCOUNT_PREFIX}${id}|` : null;
+  return mine && storageKey.startsWith(mine) ? `${SAVE_PREFIX}${storageKey.slice(mine.length)}` : null;
+}
+
+/** The `x-keplar-account` header for account requests, so the server refuses them if the session is now someone else's. */
+export function studioHeaders(scope: string = studioScope()): Record<string, string> {
+  const v = accountHeader(scope);
+  return v ? { "x-keplar-account": v } : {};
 }
 
 const NO_IMAGE = "(A screenshot was here.)";
@@ -100,7 +148,8 @@ export function toSaved(s: Omit<SavedSession, "v" | "savedAt" | "history" | "ite
   return { ...s, v: SAVE_VERSION, savedAt: now, items, history };
 }
 
-export function readSaved(key: string | null): SavedSession | null {
+export function readSaved(game: string | null, scope?: string): SavedSession | null {
+  const key = deviceKey(game, scope);
   if (!key) return null;
   try {
     const raw = localStorage.getItem(key);
@@ -113,7 +162,8 @@ export function readSaved(key: string | null): SavedSession | null {
   }
 }
 
-export function writeSaved(key: string | null, s: SavedSession): boolean {
+export function writeSaved(game: string | null, s: SavedSession, scope?: string): boolean {
+  const key = deviceKey(game, scope);
   if (!key) return false;
   try {
     localStorage.setItem(key, JSON.stringify(s));
@@ -124,18 +174,22 @@ export function writeSaved(key: string | null, s: SavedSession): boolean {
   }
 }
 
-export function clearSaved(key: string | null): void {
+export function clearSaved(game: string | null, scope?: string): void {
+  const key = deviceKey(game, scope);
   if (!key) return;
   try { localStorage.removeItem(key); } catch { /* storage blocked */ }
 }
 
 /* ── account sync (/api/studio/chats): the device copy above is the instant, offline one; the account copy follows the person ── */
 
+/** Only a signed-in scope has an account copy (signed out or still unknown: nothing is sent). */
+const onAccount = (scope: string) => Boolean(userIdOf(scope));
+
 /** The account's save of this game, or null (signed out, offline, or none yet). */
-export async function fetchRemote(key: string | null): Promise<SavedSession | null> {
-  if (!key) return null;
+export async function fetchRemote(key: string | null, scope: string = studioScope()): Promise<SavedSession | null> {
+  if (!key || !onAccount(scope)) return null;
   try {
-    const r = await fetch(`/api/studio/chats?key=${encodeURIComponent(key)}`, { cache: "no-store", credentials: "same-origin" });
+    const r = await fetch(`/api/studio/chats?key=${encodeURIComponent(key)}`, { cache: "no-store", credentials: "same-origin", headers: studioHeaders(scope) });
     if (!r.ok) return null;
     const d = (await r.json()) as { chat?: { session?: SavedSession } | null };
     const s = d.chat?.session;
@@ -146,16 +200,16 @@ export async function fetchRemote(key: string | null): Promise<SavedSession | nu
 }
 
 /** Sends this game's save to the account. Quietly does nothing when signed out or offline: the device copy still has it. */
-export async function pushRemote(key: string | null, s: SavedSession): Promise<void> {
-  if (!key) return;
+export async function pushRemote(key: string | null, s: SavedSession, scope: string = studioScope()): Promise<void> {
+  if (!key || !onAccount(scope)) return;
   try {
-    await fetch("/api/studio/chats", { method: "PUT", headers: { "content-type": "application/json" }, credentials: "same-origin", body: JSON.stringify({ key, session: s }) });
+    await fetch("/api/studio/chats", { method: "PUT", headers: { "content-type": "application/json", ...studioHeaders(scope) }, credentials: "same-origin", body: JSON.stringify({ key, session: s }) });
   } catch { /* offline: the next save tries again */ }
 }
 
-export async function deleteRemote(key: string | null): Promise<void> {
-  if (!key) return;
+export async function deleteRemote(key: string | null, scope: string = studioScope()): Promise<void> {
+  if (!key || !onAccount(scope)) return;
   try {
-    await fetch(`/api/studio/chats?key=${encodeURIComponent(key)}`, { method: "DELETE", credentials: "same-origin" });
+    await fetch(`/api/studio/chats?key=${encodeURIComponent(key)}`, { method: "DELETE", credentials: "same-origin", headers: studioHeaders(scope) });
   } catch { /* offline */ }
 }

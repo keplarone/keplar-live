@@ -105,6 +105,14 @@ test("no pink, magenta, purple or violet accents, and no Tailwind purple utiliti
   assert.deepEqual(hits, []);
 });
 
+test("the rotating greeting name has no [data-model= gradients and no blur(", () => {
+  const css = readFileSync("src/styles/gemini.css", "utf8");
+  const mod = readFileSync("src/components/app-ui/RotatingModelName.module.css", "utf8");
+  assert.doesNotMatch(css, /\[data-model=/);
+  assert.doesNotMatch(css, /blur\(/);
+  assert.doesNotMatch(mod, /blur\(/);
+});
+
 test("the single accent is graphite in light and near-white in dark, at AA", () => {
   const css = readFileSync("src/styles/tokens.css", "utf8");
   const cut = css.indexOf(':root[data-theme="dark"]');

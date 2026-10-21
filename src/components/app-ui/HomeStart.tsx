@@ -3,7 +3,8 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { PINNED_QUESTION, STARTERS } from "@/lib/faq/constants";
 import type { ComposerModes } from "@/lib/orchestration/types";
-import type { View } from "./state/types";
+import { PLAN_ALLOWANCES } from "@/lib/orchestration/plans";
+import type { Ledger, View } from "./state/types";
 import s from "./App.module.css";
 import { IconCreate, IconProjects, IconSearch, IconStudy } from "./icons";
 
@@ -15,6 +16,8 @@ type Props = {
   onSend: (text: string) => void;
   /** Extra ideas (use-for examples) shown inside the quiet "More ideas" disclosure, above the frequently asked list. */
   more?: ReactNode;
+  /** Caller's plan once known: Free and Lite don't include Deep Research, so "Research a topic" says so (the composer then shows the "Plus and up" note). */
+  plan?: Ledger["plan"];
 };
 
 type FaqItem = { text: string; people?: number; kind: "pinned" | "frequent" | "starter" };
@@ -40,7 +43,7 @@ const TILE_ICONS: Record<string, ReactNode> = {
  * number of people), then generic starters only while there is not enough real data. Clicking an entry sends it.
  * "Ask a question" is the composer itself. Create and Study turn that mode on in the composer; Projects opens beside the thread.
  */
-export function HomeStart({ showBusiness: _showBusiness, onSeed, onView, onSend, more }: Props) {
+export function HomeStart({ showBusiness: _showBusiness, onSeed, onView, onSend, more, plan }: Props) {
   const [faq, setFaq] = useState<FaqItem[]>(FALLBACK);
   const [faqState, setFaqState] = useState<"loading" | "loaded" | "fallback">("loading");
   useEffect(() => {
@@ -53,7 +56,7 @@ export function HomeStart({ showBusiness: _showBusiness, onSeed, onView, onSend,
     return () => { live = false; };
   }, []);
   const tiles: Tile[] = [
-    { id: "research", title: "Research a topic", body: "Deep Research mode on, you write the question.", run: () => onSeed("", { deepResearch: true }) },
+    { id: "research", title: "Research a topic", body: plan && !PLAN_ALLOWANCES[plan].deepResearch ? "Deep Research is available on Plus and up." : "Deep Research mode on, you write the question.", run: () => onSeed("", { deepResearch: true }) },
     { id: "create", title: "Create a website or app", body: "Create mode on. Describe it in the chat.", run: () => onSeed("", { create: true }) },
     { id: "study", title: "Study something", body: "Study mode on. A topic becomes flashcards and a quiz.", run: () => onSeed("", { study: true }) },
     { id: "project", title: "Start a project", body: "Keep related threads together.", run: () => onView("projects") },

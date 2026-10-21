@@ -1,0 +1,493 @@
+{
+  "generatedAt": "2026-10-19",
+  "researchMethod": "WebFetch and direct HTTPS were blocked in this sandbox (DNS failure / egress proxy 403 for similarweb.com, artificialanalysis.ai, lmarena.ai, theresanaiforthat.com, futurepedia.io, openai.com, huggingface.co, producthunt.com, g2.com). Every fact below comes from WebSearch result summaries that quote the listed URL; no page was opened directly. Facts that only third-party pages support are marked 'third-party'. Re-verify on the live official page before acting, especially prices.",
+  "platforms": [
+    {
+      "id": "similarweb",
+      "name": "Similarweb Top Websites / Rank",
+      "url": "https://www.similarweb.com/top-websites/",
+      "ranksWhat": "apps",
+      "methodology": "traffic: 'Rank is a website traffic scoring method ... calculated based on a mix of our estimations of a site's monthly unique visitors and monthly pageviews across desktop and mobile web traffic.' Category rank = 'Highest sum of monthly unique visitors and page views for the category to which the primary website belongs.' Updated monthly. Connecting Google Analytics does not change rank.",
+      "keplarQualifies": true,
+      "keplarQualifiesReason": "Any domain with enough estimated traffic is ranked automatically. A category such as 'AI Chatbots and Tools' exists (seen only in a third-party reprint of a table). Keplar would appear only once its traffic is large enough for Similarweb's panel to estimate.",
+      "submissionPossible": false,
+      "submissionUrl": null,
+      "automaticPlacement": true,
+      "requiresAccount": false,
+      "requiresPayment": false,
+      "requiresPaymentNote": "Placement is free and automatic. Full data and API are paid and sales-led. A third-party tracker lists a Starter plan from $149/mo (unverified).",
+      "requiresReview": false,
+      "publicApi": true,
+      "publicApiNote": "Paid, credit-metered API. Docs say 'speak to your Similarweb Account Manager' to start. Docs: https://docs.similarweb.com/api-v5/guides/data-credits-calculations",
+      "listedAlready": null,
+      "listedAlreadyEvidence": "unverified: similarweb.com could not be fetched from the sandbox to check keplar.one.",
+      "notes": "Category assignment is Similarweb's choice, not the site owner's. The exact weights for visitors and pageviews are not published.",
+      "sources": [
+        "https://support.similarweb.com/hc/en-us/articles/213452305-Rank",
+        "https://support.similarweb.com/hc/en-us/articles/6092440668445-Using-Similarweb-Extension",
+        "https://docs.similarweb.com/api-v5/guides/data-credits-calculations",
+        "https://quantrimang.com/cong-nghe/top-website-hang-dau-the-gioi-93536",
+        "https://www.saaspricepulse.com/tools/similarweb"
+      ],
+      "verifiedAt": "2026-10-19"
+    },
+    {
+      "id": "artificial-analysis",
+      "name": "Artificial Analysis",
+      "url": "https://artificialanalysis.ai/",
+      "ranksWhat": "models",
+      "methodology": "benchmarks: Intelligence Index built from about ten evaluations (GDPval-AA, Terminal-Bench Hard, GPQA Diamond, HLE and others), plus speed, latency and price measurements of API provider endpoints. It reports coverage of '500+ models, 100+ inference providers, and 1,000+ endpoints'.",
+      "keplarQualifies": false,
+      "keplarQualifiesReason": "It benchmarks models, API providers, hardware and search APIs. No consumer chat-app ranking was found. Keplar does not train or serve its own model.",
+      "submissionPossible": null,
+      "submissionUrl": null,
+      "automaticPlacement": false,
+      "requiresAccount": null,
+      "requiresPayment": null,
+      "requiresReview": null,
+      "publicApi": true,
+      "publicApiNote": "API at https://artificialanalysis.ai/api/v2. A free tier covers headline indices, pricing and median performance. Pro and Commercial tiers are paid. Docs: https://artificialanalysis.ai/api-reference/beta",
+      "listedAlready": false,
+      "listedAlreadyEvidence": "Not applicable: the site lists models and providers only.",
+      "notes": "Useful as a data source for Keplar's model-routing decisions and for marketing copy about the models it uses, not as a listing.",
+      "sources": [
+        "https://artificialanalysis.ai/methodology",
+        "https://artificialanalysis.ai/about",
+        "https://artificialanalysis.ai/guide",
+        "https://artificialanalysis.ai/methodology/search-api",
+        "https://artificialanalysis.ai/api-reference/beta",
+        "https://artificialanalysis.ai/data-access"
+      ],
+      "verifiedAt": "2026-10-19"
+    },
+    {
+      "id": "hugging-face",
+      "name": "Hugging Face (Spaces / Open LLM Leaderboard)",
+      "url": "https://huggingface.co/spaces",
+      "ranksWhat": "models",
+      "methodology": "benchmarks (Open LLM Leaderboard: 'We evaluated models on 6 key benchmarks using the Eleuther AI Language Model Evaluation Harness'). Spaces is ML demo hosting, not a ranking.",
+      "keplarQualifies": false,
+      "keplarQualifiesReason": "Leaderboard submissions required 'a Transformers model with weights on the Hub'. Keplar has no weights. Also, the v1 leaderboard was archived in June 2024. Keplar could host a demo Space, but that is a hosting choice, not a ranking.",
+      "submissionPossible": false,
+      "submissionUrl": null,
+      "automaticPlacement": false,
+      "requiresAccount": true,
+      "requiresPayment": null,
+      "requiresPaymentNote": "Spaces: static Spaces are free. Gradio and Docker Spaces on the free CPU tier now require a PRO subscription (users) or Team/Enterprise (orgs), per the current Hub docs.",
+      "requiresReview": false,
+      "publicApi": true,
+      "publicApiNote": "The Hub API (huggingface_hub) can create and manage Spaces: https://huggingface.co/docs/huggingface_hub/en/guides/manage-spaces",
+      "listedAlready": null,
+      "listedAlreadyEvidence": "unverified: huggingface.co could not be fetched.",
+      "notes": "The status of the newer leaderboard that replaced v1 was not confirmed (unverified).",
+      "sources": [
+        "https://huggingface.co/docs/leaderboards/en/open_llm_leaderboard/archive",
+        "https://huggingface.co/spaces/open-llm-leaderboard/open_llm_leaderboard/blob/d16cee27d4c72a4bd357bf8a56df6e1932bfd559/src/assets/text_content.py",
+        "https://huggingface.co/docs/hub/spaces-overview",
+        "https://huggingface.co/docs/huggingface_hub/en/guides/manage-spaces"
+      ],
+      "verifiedAt": "2026-10-19"
+    },
+    {
+      "id": "arena",
+      "name": "Arena (formerly LMArena / LMSYS Chatbot Arena)",
+      "url": "https://arena.ai/",
+      "ranksWhat": "models",
+      "methodology": "votes: a public leaderboard ranking models by aggregated human-preference votes on blind side-by-side responses. Listing requires 'at least 1,000 votes'. Eligible only if 'publicly available': open weights, public APIs with transparent pricing and documentation, or a widely accessible public-facing service.",
+      "keplarQualifies": false,
+      "keplarQualifiesReason": "It ranks models that providers supply. No public submission form exists; listings come through collaboration with model providers. Keplar is an app that routes to third-party models, not a model provider.",
+      "submissionPossible": false,
+      "submissionUrl": null,
+      "automaticPlacement": false,
+      "requiresAccount": null,
+      "requiresPayment": null,
+      "requiresReview": true,
+      "publicApi": null,
+      "publicApiNote": "unverified",
+      "listedAlready": false,
+      "listedAlreadyEvidence": "Not applicable: models only.",
+      "notes": "Renamed from LMArena to Arena on 2026-01-28 with domain arena.ai (per Wikipedia citing the Arena blog). Policy page last updated 2026-04-30.",
+      "sources": [
+        "https://arena.ai/company/policy/",
+        "https://arena.ai/blog/policy/",
+        "https://news.lmarena.ai/policy",
+        "https://en.wikipedia.org/wiki/Arena_(AI_platform)"
+      ],
+      "verifiedAt": "2026-10-19"
+    },
+    {
+      "id": "theresanaiforthat",
+      "name": "There's An AI For That (TAAFT)",
+      "url": "https://theresanaiforthat.com/",
+      "ranksWhat": "directory-listing",
+      "methodology": "editorial directory with paid listing tiers (third-party sources only).",
+      "keplarQualifies": true,
+      "keplarQualifiesReason": "Consumer AI tools are its core listing type.",
+      "submissionPossible": true,
+      "submissionUrl": null,
+      "submissionUrlNote": "The official submit URL was not confirmed (unverified).",
+      "automaticPlacement": false,
+      "requiresAccount": null,
+      "requiresPayment": true,
+      "requiresPaymentNote": "Third-party: G2 lists one-time editions from $49 (website listing) to $347 ('Maximum Exposure'). SaaSCity (2026-10-07) reports $49 to list, $437 for a newsletter spot, and a free route of one tool a month (from an X thread). Not confirmed on TAAFT's own site.",
+      "requiresReview": null,
+      "publicApi": null,
+      "listedAlready": null,
+      "listedAlreadyEvidence": "unverified: the site could not be fetched. A web search for 'Keplar One' / 'keplar.one' returned no TAAFT page.",
+      "notes": "",
+      "sources": [
+        "https://www.g2.com/products/there-s-an-ai-for-that/pricing",
+        "https://saascity.io/theresanaiforthat-alternatives"
+      ],
+      "verifiedAt": "2026-10-19"
+    },
+    {
+      "id": "futurepedia",
+      "name": "Futurepedia",
+      "url": "https://www.futurepedia.io/",
+      "ranksWhat": "directory-listing",
+      "methodology": "editorial, paid directory.",
+      "keplarQualifies": true,
+      "keplarQualifiesReason": "AI tool directory.",
+      "submissionPossible": true,
+      "submissionUrl": null,
+      "submissionUrlNote": "An older cached https://futurepedia.io/submit-tool showed $247 Basic (sold out) and $497 Verified. SaaSCity (2026-10-07) says that page now returns 404 and the only route is a $497 'Verified Enhanced Listing' at futurepedia.io/enhanced. Neither is confirmed live (unverified).",
+      "automaticPlacement": false,
+      "requiresAccount": null,
+      "requiresPayment": true,
+      "requiresPaymentNote": "$497 one-time (cached official page, plus third-party sources). No free route found.",
+      "requiresReview": true,
+      "publicApi": null,
+      "listedAlready": null,
+      "listedAlreadyEvidence": "unverified: the site could not be fetched. No search hit for Keplar.",
+      "notes": "Third-party sources say outbound links are nofollow.",
+      "sources": [
+        "https://futurepedia.io/submit-tool",
+        "https://saascity.io/directories/futurepedia",
+        "https://orangebot.ai/blog/where-to-submit-your-ai-tool-2026"
+      ],
+      "verifiedAt": "2026-10-19"
+    },
+    {
+      "id": "product-hunt",
+      "name": "Product Hunt",
+      "url": "https://www.producthunt.com/",
+      "ranksWhat": "directory-listing",
+      "methodology": "votes plus editorial: daily launch leaderboard on Pacific time. The team decides which launches are featured (third-party).",
+      "keplarQualifies": true,
+      "keplarQualifiesReason": "Any product can be launched.",
+      "submissionPossible": true,
+      "submissionUrl": "https://help.producthunt.com/en/articles/479557-how-to-post-a-product",
+      "submissionUrlNote": "This is the official how-to article, referenced by a third-party guide and not opened directly.",
+      "automaticPlacement": false,
+      "requiresAccount": true,
+      "requiresPayment": false,
+      "requiresPaymentNote": "A free personal account can post (third-party, 2026 review).",
+      "requiresReview": null,
+      "publicApi": true,
+      "publicApiNote": "GraphQL API v2 at https://api.producthunt.com/v2/api/graphql, OAuth or developer token. Docs: https://www.producthunt.com/v2/docs",
+      "listedAlready": null,
+      "listedAlreadyEvidence": "unverified: the site could not be fetched. No search hit for Keplar.",
+      "notes": "Plan the launch day. Featuring is editorial.",
+      "sources": [
+        "https://gosquared.notion.site/Product-Hunt-Launch-80095ec8958340138afea3d0e7abbc0c",
+        "https://saascity.io/directories/product-hunt",
+        "https://www.producthunt.com/v2/docs"
+      ],
+      "verifiedAt": "2026-10-19"
+    },
+    {
+      "id": "g2-ai-chatbots",
+      "name": "G2 (AI Chatbots category)",
+      "url": "https://www.g2.com/categories/ai-chatbots",
+      "ranksWhat": "apps",
+      "methodology": "reviews: the Grid plots products by satisfaction and market presence from user reviews. Category inclusion requires meeting all feature criteria, e.g. a conversational interface 'powered by either stochastic generative models (e.g., LLMs) or intent-based NLU pipelines'.",
+      "keplarQualifies": true,
+      "keplarQualifiesReason": "It is an LLM-powered conversational product. ChatGPT, Claude, Gemini and Perplexity are already in the category. Grid placement needs enough reviews.",
+      "submissionPossible": true,
+      "submissionUrl": "https://sell.g2.com/create-free-profile",
+      "automaticPlacement": false,
+      "requiresAccount": true,
+      "requiresPayment": false,
+      "requiresPaymentNote": "'Every company can claim and maintain a free G2 Profile'. Paid plans add customization and lead generation (pricing guide: https://sell.g2.com/hubfs/G2-External-Pricing-Guide-PDF-FY26.pdf).",
+      "requiresReview": true,
+      "requiresReviewNote": "G2's research team reviews a new listing in about 3-5 business days (third-party, SaaSCity). Work email is verified to claim.",
+      "publicApi": null,
+      "listedAlready": null,
+      "listedAlreadyEvidence": "unverified: g2.com could not be fetched. No search hit for Keplar.",
+      "notes": "G2 acquired Capterra, GetApp and Software Advice from Gartner (agreed January 2026, closed the following month, per third-party), so one G2 profile may also feed Capterra.",
+      "sources": [
+        "https://sell.g2.com/create-free-profile",
+        "https://learn.g2.com/claim-free-g2-profile",
+        "https://legal.g2.com/g2-profile-free-service-description?hsLang=en",
+        "https://research.g2.com/methodology/categorization?hsLang=en",
+        "https://g2.com/categories/ai-chatbots?page=5",
+        "https://saascity.io/directories/g2"
+      ],
+      "verifiedAt": "2026-10-19"
+    },
+    {
+      "id": "capterra",
+      "name": "Capterra",
+      "url": "https://www.capterra.com/",
+      "ranksWhat": "apps",
+      "methodology": "reviews plus pay-per-click sponsored placement.",
+      "keplarQualifies": true,
+      "keplarQualifiesReason": "Software review site. The buyer audience is mostly business, so fit for a consumer app is weaker.",
+      "submissionPossible": true,
+      "submissionUrl": "https://digital-markets.gartner.com/capterra-vendor-signup",
+      "submissionUrlNote": "Since the G2 acquisition, 'Get your product listed' may route to G2's product form (third-party, SaaSCity).",
+      "automaticPlacement": false,
+      "requiresAccount": true,
+      "requiresPayment": false,
+      "requiresPaymentNote": "The free 'Launch' tier includes a profile. Promote (budgets up to $2K/mo) and Grow (up to $10K/mo) are PPC. A free profile reportedly has no website link (third-party).",
+      "requiresReview": null,
+      "publicApi": null,
+      "listedAlready": null,
+      "listedAlreadyEvidence": "unverified: no search hit for Keplar.",
+      "notes": "",
+      "sources": [
+        "https://digital-markets.gartner.com/capterra-vendor-signup",
+        "https://en.wikipedia.org/wiki/Capterra",
+        "https://saascity.io/directories/capterra"
+      ],
+      "verifiedAt": "2026-10-19"
+    },
+    {
+      "id": "alternativeto",
+      "name": "AlternativeTo",
+      "url": "https://alternativeto.net/",
+      "ranksWhat": "directory-listing",
+      "methodology": "votes ('likes') from users, plus moderation of submissions.",
+      "keplarQualifies": true,
+      "keplarQualifiesReason": "Can be listed as an alternative to ChatGPT, Poe or Perplexity. Third-party: 'thin AI wrappers' are not accepted, so the submission should stress the original features (synthesis, Deep Research, study mode).",
+      "submissionPossible": true,
+      "submissionUrl": null,
+      "submissionUrlNote": "Per the FAQ: sign up, then User icon > 'Suggest new application'.",
+      "automaticPlacement": false,
+      "requiresAccount": true,
+      "requiresPayment": false,
+      "requiresPaymentNote": "Free queue. A $5 priority review is reported by a third party only (unverified).",
+      "requiresReview": true,
+      "publicApi": null,
+      "listedAlready": null,
+      "listedAlreadyEvidence": "unverified: no search hit for Keplar.",
+      "notes": "",
+      "sources": [
+        "https://alternativeto.net/faq",
+        "https://en.wikipedia.org/wiki/AlternativeTo",
+        "https://saascity.io/directories/alternativeto"
+      ],
+      "verifiedAt": "2026-10-19"
+    },
+    {
+      "id": "toolify",
+      "name": "Toolify.ai",
+      "url": "https://www.toolify.ai/",
+      "ranksWhat": "directory-listing",
+      "methodology": "editorial directory with manual review.",
+      "keplarQualifies": true,
+      "keplarQualifiesReason": "AI tool directory.",
+      "submissionPossible": true,
+      "submissionUrl": null,
+      "automaticPlacement": false,
+      "requiresAccount": null,
+      "requiresPayment": true,
+      "requiresPaymentNote": "Third-party only: $99 one-time, live within 48h, refund if rejected, no free route (SaaSCity 2026-10-07). An older blog says $49. Not confirmed officially.",
+      "requiresReview": true,
+      "publicApi": null,
+      "listedAlready": null,
+      "listedAlreadyEvidence": "unverified",
+      "notes": "",
+      "sources": [
+        "https://saascity.io/directories/toolify",
+        "https://simon-frey.com/blog/?p=1058"
+      ],
+      "verifiedAt": "2026-10-19"
+    },
+    {
+      "id": "future-tools",
+      "name": "Future Tools (futuretools.io)",
+      "url": "https://www.futuretools.io/",
+      "ranksWhat": "directory-listing",
+      "methodology": "editorial: human reviewers, final call by Matt Wolfe's team. 'Over 75% of the tools that are submitted ... do not get approved.'",
+      "keplarQualifies": true,
+      "keplarQualifiesReason": "AI tool directory. Approval is selective.",
+      "submissionPossible": true,
+      "submissionUrl": null,
+      "submissionUrlNote": "The submit form is referenced in the official FAQ. Its exact URL was not confirmed.",
+      "automaticPlacement": false,
+      "requiresAccount": null,
+      "requiresPayment": false,
+      "requiresPaymentNote": "Submission is free. Featured listings are paid promotions.",
+      "requiresReview": true,
+      "publicApi": null,
+      "listedAlready": null,
+      "listedAlreadyEvidence": "unverified",
+      "notes": "Wait a week before resubmitting, or the tool will almost certainly be skipped. Expect no reply either way.",
+      "sources": [
+        "https://futuretools.io/faq",
+        "https://saascity.io/directories/future-tools"
+      ],
+      "verifiedAt": "2026-10-19"
+    },
+    {
+      "id": "saashub",
+      "name": "SaaSHub",
+      "url": "https://www.saashub.com/",
+      "ranksWhat": "directory-listing",
+      "methodology": "directory with alternatives pages and manual approval.",
+      "keplarQualifies": true,
+      "keplarQualifiesReason": "Accepts SaaS/web products. Can be listed against ChatGPT, Poe and others.",
+      "submissionPossible": true,
+      "submissionUrl": "https://www.saashub.com/services/submit",
+      "submissionUrlNote": "URL from third-party sources (unverified).",
+      "automaticPlacement": false,
+      "requiresAccount": true,
+      "requiresPayment": false,
+      "requiresPaymentNote": "Free listing and free verification (domain email or meta tag). Featured listing is $99/month (third-party).",
+      "requiresReview": true,
+      "publicApi": null,
+      "listedAlready": null,
+      "listedAlreadyEvidence": "unverified",
+      "notes": "Verified listings reportedly get a followed link (SaaSCity), but sources conflict.",
+      "sources": [
+        "https://saascity.io/directories/saashub",
+        "https://ideaproof.io/launch-directories/saashub"
+      ],
+      "verifiedAt": "2026-10-19"
+    },
+    {
+      "id": "a16z-top-100-gen-ai-consumer-apps",
+      "name": "a16z Top 100 Gen AI Consumer Apps",
+      "url": "https://a16z.com/100-gen-ai-apps-6/",
+      "ranksWhat": "apps",
+      "methodology": "traffic/usage: based on web traffic and mobile app usage ('most popular generative AI web products, based on monthly visits'). A 7th edition (reported 2026-10-05, third-party) adds a top-50 spending ranking from YipitData US consumer panels. The specific data vendors (Similarweb/Sensor Tower) were not confirmed.",
+      "keplarQualifies": true,
+      "keplarQualifiesReason": "A consumer Gen-AI web app is in scope, but placement needs top-100 traffic. Not realistic near-term.",
+      "submissionPossible": false,
+      "submissionUrl": null,
+      "automaticPlacement": true,
+      "requiresAccount": false,
+      "requiresPayment": false,
+      "requiresReview": null,
+      "publicApi": false,
+      "listedAlready": false,
+      "listedAlreadyEvidence": "Inferred from search results; the list itself was not fetched (unverified).",
+      "notes": "Editorial selection from traffic data. Published roughly twice a year (6th edition page dated 2026-03-09).",
+      "sources": [
+        "https://a16z.com/100-gen-ai-apps-6/",
+        "https://www.theneuron.ai/explainer-articles/a16z-just-ranked-the-100-most-popular-ai-apps-heres-the-full-list-and-what-it-tells-us-/",
+        "https://noqta.tn/en/news/a16z-top-100-gen-ai-consumer-apps-march-2026"
+      ],
+      "verifiedAt": "2026-10-19"
+    },
+    {
+      "id": "topai-tools",
+      "name": "TopAI.tools",
+      "url": "https://topai.tools/",
+      "ranksWhat": "directory-listing",
+      "methodology": "editorial: 'All tool submissions are subject to editorial review.'",
+      "keplarQualifies": true,
+      "keplarQualifiesReason": "AI tool directory.",
+      "submissionPossible": true,
+      "submissionUrl": "https://topai.tools/submit",
+      "automaticPlacement": false,
+      "requiresAccount": null,
+      "requiresPayment": true,
+      "requiresPaymentNote": "Official submit page: $47 Fast Listing (live within 48h) or $229 Premium (premium placement for 7 days). Automatic refund if not accepted. One third-party source mentions a free path (unverified).",
+      "requiresReview": true,
+      "publicApi": null,
+      "listedAlready": null,
+      "listedAlreadyEvidence": "unverified",
+      "notes": "",
+      "sources": ["https://topai.tools/submit"],
+      "verifiedAt": "2026-10-19"
+    }
+  ],
+  "competitors": [
+    {
+      "id": "chatgpt",
+      "name": "ChatGPT (OpenAI)",
+      "pages": [
+        {"kind": "pricing", "url": "https://chatgpt.com/pricing/", "fetchOk": false, "note": "Official. Seen in search results; direct fetch blocked by sandbox. Plus $20/mo; Pro tiers $100/$200/$500 (help.openai.com/en/articles/9793128)."},
+        {"kind": "changelog", "url": "https://help.openai.com/en/articles/6825453-chatgpt-release-notes", "fetchOk": false, "note": "Official. Latest entry in search: 2026-10-16. Also https://help.openai.com/en/articles/9624314-model-release-notes"},
+        {"kind": "blog", "url": "https://openai.com/products/release-notes/", "fetchOk": false, "note": "Official cross-product release notes (ChatGPT, API, Codex)."},
+        {"kind": "status", "url": "https://status.openai.com/", "fetchOk": false, "note": "Official. RSS: https://status.openai.com/history.rss"}
+      ]
+    },
+    {
+      "id": "claude",
+      "name": "Claude (Anthropic)",
+      "pages": [
+        {"kind": "pricing", "url": "https://claude.com/pricing", "fetchOk": false, "note": "Official. Pro $20/mo ($17/mo annual); Max from $100/mo."},
+        {"kind": "changelog", "url": "https://support.claude.com/en/articles/12138966-release-notes", "fetchOk": false, "note": "Official consumer release notes. API notes: https://platform.claude.com/docs/en/release-notes/overview"},
+        {"kind": "blog", "url": "https://www.anthropic.com/news", "fetchOk": false, "note": "Official news index. Inferred from individual /news/ posts in search results; the index itself was not seen (unverified)."},
+        {"kind": "status", "url": "https://status.claude.com/", "fetchOk": false, "note": "Official (also status.anthropic.com). JSON API: https://status.claude.com/api"}
+      ]
+    },
+    {
+      "id": "gemini",
+      "name": "Gemini (Google)",
+      "pages": [
+        {"kind": "pricing", "url": "https://gemini.google/subscriptions/", "fetchOk": false, "note": "Official. Google AI Plus/Pro/Ultra. Also https://one.google.com/about/google-ai-plans/ (prices differ between the two pages)."},
+        {"kind": "changelog", "url": "https://gemini.google/release-notes/", "fetchOk": false, "note": "Official Gemini Apps release notes (alias https://gemini.google.com/updates)."},
+        {"kind": "blog", "url": "https://blog.google/products-and-platforms/products/gemini/", "fetchOk": false, "note": "Section path inferred from post URLs in search results (unverified). Monthly 'Gemini Drops' posts are on blog.google."}
+      ]
+    },
+    {
+      "id": "grok",
+      "name": "Grok (xAI)",
+      "pages": [
+        {"kind": "pricing", "url": "https://x.ai/pricing", "fetchOk": false, "note": "Official 'Compare Grok Plans'. Conflicts with the newer 'X Subscription' announcement (Free/Plus $8/Premium $30/Super $100/Ultra $200): https://x.ai/news/x-subscription"},
+        {"kind": "changelog", "url": "https://docs.x.ai/developers/release-notes", "fetchOk": false, "note": "Official, but developer/API focused."},
+        {"kind": "blog", "url": "https://x.ai/news", "fetchOk": false, "note": "Inferred from /news/ post URLs (unverified index). Branding seen as xAI / SpaceXSI."}
+      ]
+    },
+    {
+      "id": "perplexity",
+      "name": "Perplexity",
+      "pages": [
+        {"kind": "pricing", "url": "https://www.perplexity.ai/hub/pricing", "fetchOk": false, "note": "Official. Pro $17/mo annual; Max $200/mo per help center."},
+        {"kind": "changelog", "url": "https://www.perplexity.ai/changelog", "fetchOk": false, "note": "Index path inferred from entries such as /changelog/what-we-shipped---march-13-2026 (unverified index)."},
+        {"kind": "status", "url": "https://status.perplexity.com/", "fetchOk": false, "note": "Official."}
+      ]
+    },
+    {
+      "id": "poe",
+      "name": "Poe (Quora)",
+      "pages": [
+        {"kind": "pricing", "url": "https://poe.com/subscription_plans", "fetchOk": false, "note": "Official. Five tiers, from $4.17/mo (yearly) to $2,499.99/yr."},
+        {"kind": "blog", "url": "https://poe.com/blog", "fetchOk": false, "note": "Official. The newest posts seen in search are from November 2025."}
+      ]
+    },
+    {
+      "id": "deepseek",
+      "name": "DeepSeek",
+      "pages": [
+        {"kind": "pricing", "url": null, "fetchOk": false, "note": "The consumer app is free. No consumer pricing page was confirmed (unverified)."},
+        {"kind": "changelog", "url": "https://api-docs.deepseek.com/updates/", "fetchOk": false, "note": "Official change log. Latest seen: V4.1-Flash-1017 (2026-10-17)."},
+        {"kind": "blog", "url": "https://api-docs.deepseek.com/news/news261017/", "fetchOk": false, "note": "Official news posts live under api-docs.deepseek.com/news/."}
+      ]
+    },
+    {
+      "id": "microsoft-copilot",
+      "name": "Microsoft Copilot",
+      "pages": [
+        {"kind": "pricing", "url": "https://www.microsoft.com/en-us/copilot/pricing/individuals", "fetchOk": false, "note": "Official consumer pricing. Microsoft 365 Premium $19.99/mo."},
+        {"kind": "changelog", "url": "https://support.microsoft.com/en-us/microsoft-365-copilot/learning/changes-microsoft-copilot-app", "fetchOk": false, "note": "Official consumer app changes. Deep Research retired for consumers from 2026-08-18."},
+        {"kind": "blog", "url": "https://techcommunity.microsoft.com/blog/microsoft-copilot-blog/what%E2%80%99s-new-in-microsoft-copilot--september-2026/4559107", "fetchOk": false, "note": "Official monthly 'What's New'. Mostly business-focused."}
+      ]
+    },
+    {
+      "id": "mistral-le-chat",
+      "name": "Mistral Le Chat (now 'Vibe')",
+      "pages": [
+        {"kind": "pricing", "url": "https://mistral.ai/pricing/", "fetchOk": false, "note": "Official. Pro $14.99/mo; students $5.99. Mistral says 'Le Chat is now Vibe'."},
+        {"kind": "changelog", "url": "https://docs.mistral.ai/resources/changelogs", "fetchOk": false, "note": "Official, but model/API focused."},
+        {"kind": "blog", "url": "https://mistral.ai/news/", "fetchOk": false, "note": "Official."},
+        {"kind": "status", "url": "https://status.mistral.ai/", "fetchOk": false, "note": "Only an incident sub-page was seen. The root page was not confirmed."}
+      ]
+    }
+  ]
+}

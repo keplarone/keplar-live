@@ -3,11 +3,12 @@
  * as an async stream. Every dependency is an interface; tests inject mocks.
  */
 import { HeuristicClassifier } from "./classifier";
+import { classifierModel, ModelClassifier } from "./model-classifier";
 import { EvidenceWeightedComparator } from "./comparator";
 import { computeLevel, toUnits, USD_PER_UNIT } from "./compute";
 import { METER_MARGIN, overRequestCap, REQUEST_TOO_BIG } from "./limits";
 import { DEEP_RESEARCH_UNITS, PLAN_ALLOWANCES } from "./plans";
-import { liveEnv, type KeyTier } from "./config";
+import { liveEnv, modelClassifierEnabled, type KeyTier } from "./config";
 import { sanitizeParams } from "./pricing";
 import { createRegistry, defaultProviders, FREE_BUSY_MESSAGE, liveMode } from "./providers";
 import { isEmptyAnswer, noResponseEvent } from "./no-response";
@@ -145,7 +146,7 @@ function freeExtractor(c: ModelResponseClassifier, free: boolean, byId: Map<stri
   return c;
 }
 
-export function liveDeps(providers: Provider[], env: ReturnType<typeof liveEnv>): Deps {
+export function liveDeps(providers: Provider[], env: ReturnType<typeof liveEnv>, opts?: { modelClassifier?: boolean }): Deps {
   const free = env.keyTier === "free";
   // Free plan: $0 `:free` roster, hard price guard on every call, fallback to other free models.
   const freeCat = free ? loadFreeCatalog() : null;
@@ -165,8 +166,11 @@ export function liveDeps(providers: Provider[], env: ReturnType<typeof liveEnv>)
   const mergedReview = free && env.freeMerged ? new MergedFreeReview(registry, synth, budget) : null;
   if (mergedReview) { synthesizer.noExtraCalls = true; synthesizer.draftless = true; }
   if (free) synthesizer.synthCapMs = 12_000; // normal Free synthesis takes 4-6 s; past 12 s the best-supported model's own answer is shown instead
+  const heuristic = new HeuristicClassifier();
+  const useModel = opts?.modelClassifier ?? modelClassifierEnabled();
+  const classifier = useModel ? new ModelClassifier({ ask: (input) => registry.generate(input), model: classifierModel(roster, free), fallback: heuristic }) : heuristic;
   return {
-    classifier: new HeuristicClassifier(),
+    classifier,
     router: new CostAwareRouter(roster),
     providers,
     comparator: new EvidenceWeightedComparator(),
@@ -327,7 +331,7 @@ export async function* orchestrate(req: KeplarRequest, deps: Deps, signal?: Abor
   // so a run never starts that the allowance can't cover.
   const deep = deepAsked;
   if (deep && req.plan && !PLAN_ALLOWANCES[req.plan].deepResearch) {
-    yield { type: "error", code: "bad_request", message: "Deep Research is available on Plus and up.", retryable: false };
+    yield { type: "error", code: "plan_required", message: "Deep Research is available on Plus and up.", retryable: false };
     return;
   }
   // Live Research (live-request.ts): the pages were read on the person's desktop, which also checks the answer's citations. No server search

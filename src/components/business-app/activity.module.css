@@ -1,5 +1,6 @@
 /*
- * Activity center on the business work page. Graphite ink on white, hairline edge, flat surfaces.
+ * Activity center on the business work page. Same surface as the Projects panel beside it
+ * (src/components/business-app/cursor.module.css): workspace tokens, flat, no glow and no gradient.
  * The Business face is --font-business (loaded once for the Business app). Press, hover timing, and reduced motion come from src/styles/motion.css.
  */
 .panel {
@@ -7,10 +8,10 @@
   flex-direction: column;
   min-width: 0;
   padding: 16px 16px 12px;
-  border: 1px solid #d9dce2;
-  border-radius: 16px;
-  background: #ffffff;
-  color: #17171a;
+  border: 0;
+  border-radius: var(--kb-r-lg);
+  background: var(--kb-glass-solid);
+  color: var(--kb-ink);
   box-shadow: none;
   font-family: var(--font-business), ui-sans-serif, system-ui, sans-serif;
 }
@@ -28,7 +29,7 @@
   font-size: 13px;
   font-weight: 600;
   letter-spacing: -0.006em;
-  color: #17171a;
+  color: var(--kb-ink-3);
 }
 
 .count {
@@ -38,8 +39,8 @@
   height: 22px;
   padding: 0 6px;
   border-radius: 999px;
-  background: #17171a;
-  color: #ffffff;
+  background: var(--kb-ink);
+  color: var(--kb-ink-inverse);
   font-size: 12px;
   font-weight: 600;
   line-height: 22px;
@@ -50,10 +51,10 @@
   margin-left: auto;
   min-height: 32px;
   padding: 0 14px;
-  border: 1px solid #17171a;
+  border: 0;
   border-radius: 999px;
-  background: #17171a;
-  color: #ffffff;
+  background: var(--kb-ink);
+  color: var(--kb-ink-inverse);
   font: inherit;
   font-size: 13px;
   font-weight: 600;
@@ -81,7 +82,7 @@
   border: 0;
   border-radius: 12px;
   background: transparent;
-  color: #17171a;
+  color: var(--kb-ink-2);
   font: inherit;
   font-size: 14px;
   font-weight: 600;
@@ -89,12 +90,12 @@
   cursor: pointer;
 }
 
-.row:hover { background: #f4f4f5; }
+.row:hover { color: var(--kb-ink); background: var(--kb-hover); }
 
 .row:focus-visible,
 .review:focus-visible,
 .retry:focus-visible {
-  outline: 2px solid #17171a;
+  outline: 2px solid var(--kb-ink);
   outline-offset: 2px;
   box-shadow: none;
 }
@@ -106,7 +107,7 @@
   flex: none;
   font-size: 12px;
   font-weight: 500;
-  color: #3a3d44;
+  color: var(--kb-ink-3);
 }
 
 .empty, .more, .alert {
@@ -114,32 +115,38 @@
   padding: 8px 12px 10px;
   font-size: 14px;
   line-height: 1.5;
-  color: #3a3d44;
+  color: var(--kb-ink-3);
 }
 
-.alert { color: #17171a; }
+.alert { color: var(--kb-ink); }
 
 .retry {
   align-self: flex-start;
   margin: 0 12px 8px;
   min-height: 32px;
   padding: 0 14px;
-  border: 1px solid #d9dce2;
+  border: 1px solid var(--kb-border);
   border-radius: 999px;
-  background: #ffffff;
-  color: #17171a;
+  background: transparent;
+  color: var(--kb-ink);
   font: inherit;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
 }
 
-.retry:hover { background: #f4f4f5; }
-.review:hover { background: #26282d; }
+.retry:hover { background: var(--kb-hover); }
+.review:hover { background: var(--kb-ink-2); }
 
-.skel { height: 44px; margin: 2px 0; border-radius: 12px; }
+/* The shared skeleton uses Keplar One's ink wash, which disappears on this dark card. Match the Projects placeholder. */
+:global(.m-skeleton).skel {
+  height: 44px;
+  margin: 2px 0;
+  border-radius: 12px;
+  background: var(--kb-surface-2);
+}
 
-.also { margin: 8px 0 0; padding: 8px 0 0; border-top: 1px solid #d9dce2; list-style: none; }
+.also { margin: 8px 0 0; padding: 8px 0 0; border-top: 1px solid var(--kb-border); list-style: none; }
 
 @media (max-width: 720px) {
   .panel { padding: 14px 12px 10px; }

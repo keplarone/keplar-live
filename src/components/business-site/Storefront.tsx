@@ -111,7 +111,7 @@ function DownloadPanel({ download }: { download: NonNullable<Extract<Status, { s
           <span className={s.btnMeta}>{Math.round(f.size / 1048576)} MB</span>
         </a>
       ))}
-      <a href={download.notesUrl} className={s.textLink} rel="noopener">Version {download.version} release notes</a>
+      {download.notesUrl ? <a href={download.notesUrl} className={s.textLink} rel="noopener">Version {download.version} release notes</a> : <span className={s.textLink}>Version {download.version}</span>}
     </div>
   );
 }
@@ -332,7 +332,7 @@ export function Storefront() {
                 <h2 id="download-h" className={s.h4}>{status.plan?.name ?? "Keplar Business"} is active{status.account ? ` for ${status.account.company}` : ""}.</h2>
                 <p className={s.muted}>Sign in to the desktop app with {status.email ?? "the same account"}.</p>
               </div>
-              {status.download ? <DownloadPanel download={status.download} /> : <p className={s.muted}>The download is loading. If it does not appear, try again in a minute.</p>}
+              {status.download ? <DownloadPanel download={status.download} /> : <p className={s.muted}>Downloads are temporarily unavailable. Try again in a few minutes.</p>}
             </div>
           </div>
         </section>

@@ -14,11 +14,15 @@ function walk(dir: string, out: string[] = []) {
   return out;
 }
 
-test("font: Google Sans (variable, swap) via next/font/google on keplar.one; Keplar Business uses Inter from its own font module; Space Studio keeps Montserrat; mono only for code", () => {
+test("font: Nunito Sans (variable, swap) via next/font/google on keplar.one; Keplar Business uses Inter from its own font module; Space Studio keeps Montserrat; mono only for code", () => {
   const layout = read("src/app/layout.tsx");
-  // keplar.one is Gemini-led (src/styles/gemini.css): Google Sans, one family.
-  assert.match(layout, /import \{ Google_Sans \} from "next\/font\/google"/);
-  assert.match(layout, /Google_Sans\(\{[\s\S]*display: "swap"[\s\S]*adjustFontFallback: true/);
+  // keplar.one: Nunito Sans, one family.
+  assert.match(layout, /import \{ Nunito_Sans \} from "next\/font\/google"/);
+  assert.match(layout, /Nunito_Sans\(\{[\s\S]*display: "swap"[\s\S]*adjustFontFallback: true/);
+  assert.doesNotMatch(layout, /Google_Sans/);
+  // Nunito Sans has no Greek subset (next/font rejects one it doesn't have); Greek pages fall back to a system Greek sans.
+  assert.doesNotMatch(layout, /"greek"/);
+  assert.match(read("src/components/i18n/i18n.css"), /html:lang\(el\) \{ --f-sans: var\(--font-sans\), "Noto Sans", system-ui, sans-serif; \}/);
   assert.doesNotMatch(layout, /Montserrat\(|IBM_Plex|\bInter\(|Lexend/);
   // Keplar Business is Apple-led (tokens.css): Inter, loaded once in src/components/business-site/font.tsx and pointed at the
   // whole page only while a Business root is on it, so no page mixes the two faces.

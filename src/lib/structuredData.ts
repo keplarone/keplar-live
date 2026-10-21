@@ -171,7 +171,7 @@ export function downloadPageGraph(state: import("./desktop/releases").ReleaseSta
               softwareVersion: release.version,
               ...(release.publishedAt ? { datePublished: release.publishedAt } : {}),
               ...(urls.length ? { downloadUrl: urls.length === 1 ? urls[0] : urls } : {}),
-              releaseNotes: release.notesUrl,
+              ...(release.notesUrl ? { releaseNotes: release.notesUrl } : {}),
             }
           : {}),
       },

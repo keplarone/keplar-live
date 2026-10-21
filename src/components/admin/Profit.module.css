@@ -1,4 +1,4 @@
-/* Admin profitability dashboard: flat graphite, no gradients, Google Sans via the site font tokens (dark is the site default). */
+/* Admin profitability dashboard: flat graphite, no gradients, the site face (Nunito Sans) via the font tokens (dark is the site default). */
 .wrap { font-family: var(--f-sans, var(--font-sans)), system-ui, sans-serif; }
 .range { display: flex; gap: var(--s-2); flex-wrap: wrap; margin-top: var(--s-3); }
 .range a { font-size: var(--t-small); padding: var(--s-1) var(--s-3); border: var(--b-hairline) solid var(--c-border-strong); border-radius: var(--r-xs); color: var(--c-ink-2); text-decoration: none; background: var(--c-canvas); }

@@ -62,13 +62,15 @@ export function DownloadView({ state, pageUrl }: Props) {
             <p className={s.text}>
               {state.status === "none"
                 ? "The desktop app hasn't been released yet, so there is nothing to download today. This page lists real files as soon as the first version is published, and nothing before then."
-                : state.reason === "rate_limited"
-                  ? "We couldn't load the release list from GitHub just now (it is rate limiting requests). Nothing is wrong with your device. Try again in a few minutes, or see the releases page directly."
-                  : "We couldn't load the release list from GitHub just now. Try again in a few minutes, or see the releases page directly."}
+                : state.releasesPublic === false
+                  ? "Downloads are temporarily unavailable. We couldn't load the release list just now. Nothing is wrong with your device. Try again in a few minutes."
+                  : state.reason === "rate_limited"
+                    ? "We couldn't load the release list from GitHub just now (it is rate limiting requests). Nothing is wrong with your device. Try again in a few minutes, or see the releases page directly."
+                    : "We couldn't load the release list from GitHub just now. Try again in a few minutes, or see the releases page directly."}
             </p>
             <div className={s.row}>
               <Link href="/app" className={`${btn.button} ${btn.primary} ${btn.lg}`}><span>Use Keplar in your browser</span></Link>
-              {state.status === "unavailable" ? <a href={RELEASES_PAGE} className={`${btn.button} ${btn.secondary} ${btn.lg}`} rel="noopener noreferrer"><span>GitHub releases</span></a> : null}
+              {state.status === "unavailable" && state.releasesPublic !== false ? <a href={RELEASES_PAGE} className={`${btn.button} ${btn.secondary} ${btn.lg}`} rel="noopener noreferrer"><span>GitHub releases</span></a> : null}
             </div>
           </>
         ) : platform?.mobile ? (
@@ -126,8 +128,8 @@ export function DownloadView({ state, pageUrl }: Props) {
         <section aria-labelledby="dl-all" className={s.block}>
           <h2 id="dl-all" className={s.h2}>All downloads</h2>
           <p className={s.fine}>
-            Version {release.version}{release.publishedAt ? `, released ${dateFmt(release.publishedAt)}` : ""} ·{" "}
-            <a href={release.notesUrl} rel="noopener noreferrer">Release notes</a>
+            Version {release.version}{release.publishedAt ? `, released ${dateFmt(release.publishedAt)}` : ""}
+            {release.notesUrl ? <> · <a href={release.notesUrl} rel="noopener noreferrer">Release notes</a></> : null}
             {release.checksumsUrl ? <> · <a href={release.checksumsUrl} rel="noopener noreferrer">SHA256SUMS</a></> : null}
           </p>
           {release.files.length ? (
@@ -152,7 +154,7 @@ export function DownloadView({ state, pageUrl }: Props) {
               </table>
             </div>
           ) : (
-            <p className={s.text}>This release has no installable files attached yet. Check back soon, or see the <a href={release.notesUrl} rel="noopener noreferrer">release page</a>.</p>
+            <p className={s.text}>This release has no installable files attached yet. Check back soon{release.notesUrl ? <>, or see the <a href={release.notesUrl} rel="noopener noreferrer">release page</a></> : null}.</p>
           )}
           <p className={s.fine}>Check a download: <code>shasum -a 256 &lt;file&gt;</code> (macOS/Linux) or <code>Get-FileHash &lt;file&gt;</code> (Windows PowerShell), and compare it with the value above.</p>
         </section>

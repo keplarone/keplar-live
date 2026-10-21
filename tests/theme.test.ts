@@ -59,7 +59,7 @@ test("theme: storedThemePref reads the saved choice (storage, then cookie), not 
   }
 });
 
-test("theme: Keplar Business defaults to Light (Apple-led); a stored choice still wins, and other hosts keep Dark", () => {
+test("theme: Keplar Business defaults to Dark; a stored choice still wins, and other hosts keep Dark", () => {
   const run = (hostname: string, stored: string | null = null) => {
     const attrs: Record<string, string> = {};
     const root = { setAttribute: (k: string, v: string) => (attrs[k] = v), classList: { add: () => {}, remove: () => {} }, style: {} as Record<string, string> };
@@ -69,10 +69,10 @@ test("theme: Keplar Business defaults to Light (Apple-led); a stored choice stil
     );
     return attrs["data-theme"];
   };
-  assert.equal(BUSINESS_DEFAULT_THEME_PREF, "light");
-  assert.equal(run("business.keplar.one"), "light");
-  assert.equal(run("business.localhost"), "light");
-  assert.equal(run("business.keplar.one", "dark"), "dark", "a saved Dark choice is kept");
+  assert.equal(BUSINESS_DEFAULT_THEME_PREF, "dark");
+  assert.equal(run("business.keplar.one"), "dark");
+  assert.equal(run("business.localhost"), "dark");
+  assert.equal(run("business.keplar.one", "light"), "light", "a saved Light choice is kept");
   assert.equal(run("keplar.one"), "dark");
   assert.equal(run("businessxkeplar.one"), "dark", "only the business. subdomain");
 });

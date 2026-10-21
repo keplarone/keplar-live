@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { latestRelease, releaseDate, releases } from "@/lib/kb/changelog";
-import { RELEASES_PAGE } from "@/lib/desktop/releases";
+import { RELEASES_PAGE, releasesPageVisibility } from "@/lib/desktop/releases";
 import { abs, pageMeta } from "@/lib/seo";
 import { breadcrumbs } from "@/lib/seo-graph";
 import s from "@/components/kb/kb.module.css";
@@ -12,7 +12,8 @@ export const metadata = {
   alternates: { canonical: "/changelog", types: { "application/atom+xml": "/changelog/feed.xml" } },
 };
 
-export default function Changelog() {
+export default async function Changelog() {
+  const showGithubReleases = (await releasesPageVisibility()) === "public";
   const org = { "@id": abs("/#organization") };
   return (
     <div className={s.shell}>
@@ -33,7 +34,7 @@ export default function Changelog() {
             </section>
           ))}
           <h2>Desktop app releases</h2>
-          <p>The desktop app has its own versions and checksums on <a href={RELEASES_PAGE} rel="noopener">GitHub releases</a>. The <Link href="/download">download page</Link> always links the latest one.</p>
+          <p>The desktop app has its own versions and checksums{showGithubReleases ? <> on <a href={RELEASES_PAGE} rel="noopener">GitHub releases</a></> : null}. The <Link href="/download">download page</Link> always links the latest one.</p>
         </div>
       </div>
       <JsonLd

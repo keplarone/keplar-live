@@ -1,4 +1,4 @@
-/* Keplar Apps builder. Keplar's own UI rules: graphite, glowy white/grey, the sitewide font (Google Sans), no blue, no focus or
+/* Keplar Apps builder. Keplar's own UI rules: graphite, glowy white/grey, the sitewide font (Nunito Sans), no blue, no focus or
    selection boxes (focus shows as a soft glow). Generated apps are NOT styled by this file: they use the owner's design. */
 .root { display: flex; flex-direction: column; flex: 1; min-height: 0; color: var(--c-ink); }
 .root :focus { outline: none; }

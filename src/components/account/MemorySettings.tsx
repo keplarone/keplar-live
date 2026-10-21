@@ -52,7 +52,15 @@ export function MemorySettings() {
   const add = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(""); setNote("");
-    try { const r = await api<{ item: Item | null }>("/api/memory", { method: "POST", body: JSON.stringify({ text }) }); if (r.item) setItems((v) => [r.item!, ...v]); setText(""); } catch (er) { setError((er as Error).message); }
+    try {
+      const r = await api<{ item: Item | null }>("/api/memory", { method: "POST", body: JSON.stringify({ text }) });
+      setText("");
+      // null: the server already had it. Saving can also replace or drop older notes, so the list is read again.
+      setNote(r.item ? "Saved." : "Already saved.");
+      const fresh = await api<{ enabled: boolean; items: Item[] }>("/api/memory").catch(() => null);
+      if (fresh) setItems(fresh.items);
+      else if (r.item) setItems((v) => [r.item!, ...v.filter((i) => i.id !== r.item!.id)]);
+    } catch (er) { setError((er as Error).message); }
   };
   const erase = async () => {
     setBusy(true); setError(""); setNote("");

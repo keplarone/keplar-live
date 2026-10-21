@@ -1,0 +1,52 @@
+/* The greeting's rotating model name (RotatingModelName.tsx). The name inherits the heading ink.
+   This file is the slot and the switch. Transform, opacity and width only. */
+
+.slot {
+  position: relative;
+  display: inline-block;
+  vertical-align: bottom;
+  white-space: nowrap;
+  transition: width 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* The current name is in flow (it gives the slot its height and baseline); the outgoing one sits on top of it. */
+.word {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+.out {
+  position: absolute;
+  left: 0;
+  top: 0;
+  animation: lift-out 520ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+.in {
+  animation: roll-in 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Every name rendered once, invisibly, so the slot can take the next name's width before it arrives. */
+.measure {
+  position: absolute;
+  left: 0;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.measure > span {
+  position: absolute;
+  white-space: nowrap;
+}
+
+@keyframes roll-in {
+  from { opacity: 0; transform: translateY(0.55em) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes lift-out {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(-0.5em) scale(1.02); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slot { transition: none; }
+  .word, .in, .out { animation: none; }
+}

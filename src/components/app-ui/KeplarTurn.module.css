@@ -285,7 +285,7 @@
   color: var(--c-ink-2);
 }
 
-.consensusSplit span {
+.consensusSplit > span {
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
@@ -1107,3 +1107,61 @@
 .limitMeterText { font-weight: var(--w-semibold); }
 .limitPlans li { border-radius: 20px; background: var(--hover-wash); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05); }
 .limitPrice { font-weight: var(--w-semibold); color: var(--c-ink); }
+
+/* Agreement badge: the brands on each side, as small overlapping logos on light discs (they read on any canvas). */
+.logoStack { display: inline-flex; align-items: center; margin-left: 2px; }
+.logoChip {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: white;
+  color: var(--n-graphite);
+  box-shadow: 0 0 0 1.5px var(--c-canvas);
+}
+.logoChip + .logoChip { margin-left: -5px; }
+.logoMore { margin-left: 4px; font-size: 11px; color: var(--c-ink-3); font-variant-numeric: tabular-nums; }
+
+/* "View Disagrees" beside the badge (outside it: the badge is one image for screen readers, and its split column hides on phones). */
+.headSide { display: inline-flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; justify-content: flex-end; }
+.viewDissent {
+  font: inherit;
+  font-size: var(--t-label);
+  font-weight: var(--w-medium);
+  color: var(--c-ink);
+  background: transparent;
+  border: var(--b-hairline) solid var(--c-border);
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background var(--d-fast, 120ms) var(--e-standard, ease);
+}
+.viewDissent:hover { background: var(--hover-wash); }
+.viewDissent:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+.viewDissent[aria-expanded="true"] { background: var(--hover-wash); }
+
+.dissentPanel {
+  margin: var(--s-3) 0 var(--s-4);
+  padding: var(--s-4);
+  border: var(--b-hairline) solid var(--c-border);
+  border-left: 2px solid var(--c-dissent);
+  border-radius: var(--r-md, 12px);
+  background: var(--c-surface-1);
+  animation: dissentIn 220ms var(--e-emphasized, ease) both;
+}
+@keyframes dissentIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.dissentHead { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); font-size: var(--t-small); color: var(--c-ink-2); }
+.dissentHead p { margin: 0; }
+.dissentHead button { flex: none; white-space: nowrap; }
+.dissentList { list-style: none; margin: var(--s-3) 0 0; padding: 0; display: grid; gap: var(--s-4); }
+.dissentItem + .dissentItem { padding-top: var(--s-4); border-top: var(--b-hairline) solid var(--hairline); }
+.dissentWho { display: flex; align-items: center; gap: var(--s-2); font-size: var(--t-small); }
+.dissentLogo { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 999px; background: white; color: var(--n-graphite); flex: none; }
+.dissentModel { color: var(--c-ink-3); font-size: var(--t-label); }
+.dissentStance { margin: var(--s-2) 0 0; font-size: var(--t-small); color: var(--c-dissent-text, var(--c-ink-2)); }
+.dissentText { margin-top: var(--s-2); max-height: 22em; overflow: auto; font-size: var(--t-small); line-height: 1.55; }
+/* The model's own words read as a quote at a quieter size than the answer itself. */
+.dissentText :is(p, li, h1, h2, h3, h4, strong) { font-size: inherit; line-height: inherit; }
+.dissentText :is(p, ul, ol) { margin-block: 0 var(--s-2); }
+@media (prefers-reduced-motion: reduce) { .dissentPanel { animation: none; } }

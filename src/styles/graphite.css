@@ -185,7 +185,7 @@ html:not(:has([data-space-root], [data-kb])) :is(button, [role="button"], [role=
   html:not(:has([data-space-root], [data-kb])) [class*="homeChipLabel"] {
     transition: translate 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
   }
-  html:not(:has([data-space-root], [data-kb])) button[class*="__homeChip"]:hover [class*="homeChipLabel"] {
+  html:not(:has([data-space-root], [data-kb])) button[class*="homeChip"]:hover [class*="homeChipLabel"] {
     translate: 1px 0;
   }
 }
@@ -232,7 +232,7 @@ html:not(:has([data-space-root], [data-kb])) :is(h1, h2) {
 /* Halos painted on chips, icons, meters, menus and plan cards (not the control itself). */
 html:not(:has([data-space-root], [data-kb])) :is(
   [class*="composer"],
-  button[class*="__homeChip"],
+  [class*="homeChip"],
   [class*="useForOption"],
   [class*="__jump"],
   [class*="sideItem"],
@@ -260,26 +260,28 @@ html:not(:has([data-space-root], [data-kb])) :is([class*="routingBtn"], [class*=
   text-shadow: none !important;
   filter: none !important;
 }
-html:not(:has([data-space-root], [data-kb])) :is(button[class*="__homeChip"], [class*="useForOption"], [class*="__plan"], [class*="__fit"], [class*="__jump"], [class*="rowItem"], [class*="deployRow"], [class*="__example"]):is(:hover, :active) {
+html:not(:has([data-space-root], [data-kb])) :is([class*="homeChip"], [class*="useForOption"], [class*="__plan"], [class*="__fit"], [class*="__jump"], [class*="rowItem"], [class*="deployRow"], [class*="__example"]):is(:hover, :active) {
   transform: none !important;
   translate: none !important;
   box-shadow: none !important;
   filter: none !important;
 }
-html:not(:has([data-space-root], [data-kb])) button[class*="__homeChip"] {
+/* button[...]: the chip only. A bare [class*="homeChip"] also matched the row (homeChips) and the label (homeChipLabel),
+   so hovering anywhere over the row washed its whole box grey (a rectangle behind all four chips). */
+html:not(:has([data-space-root], [data-kb])) button[class*="homeChip"] {
   border-color: #3a3a3a;
   transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
 }
-html:not(:has([data-space-root], [data-kb])) button[class*="__homeChip"]:hover {
+html:not(:has([data-space-root], [data-kb])) button[class*="homeChip"]:hover {
   border-color: #5a5a5a !important;
   background: var(--hover-wash);
 }
-html:not(:has([data-space-root], [data-kb])) [data-theme="light"] button[class*="__homeChip"],
-html:not(:has([data-space-root], [data-kb]))[data-theme="light"] button[class*="__homeChip"] {
+html:not(:has([data-space-root], [data-kb])) [data-theme="light"] button[class*="homeChip"],
+html:not(:has([data-space-root], [data-kb]))[data-theme="light"] button[class*="homeChip"] {
   border-color: #d4d4d4;
 }
-html:not(:has([data-space-root], [data-kb])) [data-theme="light"] button[class*="__homeChip"]:hover,
-html:not(:has([data-space-root], [data-kb]))[data-theme="light"] button[class*="__homeChip"]:hover {
+html:not(:has([data-space-root], [data-kb])) [data-theme="light"] button[class*="homeChip"]:hover,
+html:not(:has([data-space-root], [data-kb]))[data-theme="light"] button[class*="homeChip"]:hover {
   border-color: #8a8a8a !important;
 }
 html:not(:has([data-space-root], [data-kb])) [class*="meterTrack"] > span,

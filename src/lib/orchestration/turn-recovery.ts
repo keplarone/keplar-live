@@ -8,13 +8,15 @@
  *   - the earlier run is still going (a reconnect raced it): 409, and the browser polls GET /api/keplar/turn until it is done.
  * While a turn runs and the browser disconnects, the run is not aborted: it finishes in the background and saves its answer,
  * unless the person pressed Stop (the browser posts a cancel first; the run checks for it and stops within ~1.5 s).
+ * A Stop that arrives before the run has claimed its key (the route still checking the plan, reading files, ...) leaves an
+ * "early" cancelled row: the claim then refuses to start the run, so nothing is asked of the models and nothing is charged.
  *
  * Isolation: a turn belongs to its owner, the workspace AND the person for signed-in users (team workspaces are shared), the
  * signed device cookie for signed-out visitors (who all share the "anonymous" workspace). No device cookie, no recovery. The row
  * id is a hash of owner + key and the owner hash is checked again on every read, so one person's key never opens another's turn.
  *
  * Data: the final answer (what the person would have seen) is kept for 30 minutes, then the row is unreadable and pruned.
- * Private chats are never checkpointed. No prompt text is stored.
+ * Private chats are never checkpointed: their turn exists only so Stop can reach the run (no answer is kept). No prompt text is stored.
  */
 import { createHash } from "node:crypto";
 import { collection } from "@/lib/create/platform/store";
@@ -43,6 +45,8 @@ export type TurnRow = {
   cancelRequested?: boolean;
   /** Set when the run finished after the browser had gone (recovered in the background). */
   headless?: boolean;
+  /** Stopped before any run claimed the key: a later claim must not start one. */
+  early?: boolean;
 };
 
 const rows = () => collection<TurnRow>("answer_turns");
@@ -57,7 +61,7 @@ export function turnOwner(ws: { id: string; anonymous: boolean; userId?: string 
 export const validTurnKey = (k: unknown): k is string => typeof k === "string" && TURN_KEY_RE.test(k);
 const rowId = (owner: string, key: string) => `tk_${sha(`${owner}\u0000${key}`).slice(0, 40)}`;
 
-export type TurnClaim = { kind: "fresh" } | { kind: "replay"; row: TurnRow } | { kind: "running"; row: TurnRow };
+export type TurnClaim = { kind: "fresh" } | { kind: "replay"; row: TurnRow } | { kind: "running"; row: TurnRow } | { kind: "stopped" };
 
 /** Claim a key before any work starts. Atomic for the first claim (insertIfAbsent); see the header for the rules. */
 export async function claimTurn(owner: string, key: string, at = Date.now()): Promise<TurnClaim> {
@@ -68,6 +72,7 @@ export async function claimTurn(owner: string, key: string, at = Date.now()): Pr
   const cur = r.row;
   if (cur.owner !== row.owner) return { kind: "fresh" }; // a hash collision across owners: never read another owner's row
   const expired = Date.parse(cur.expiresAt) <= at;
+  if (!expired && cur.early) return { kind: "stopped" }; // Stop came first: this run never starts
   if (!expired && cur.status === "done" && cur.answer) return { kind: "replay", row: cur };
   if (!expired && cur.status === "running" && at - Date.parse(cur.updatedAt) < TURN_STALE_MS) return { kind: "running", row: cur };
   // Failed, cancelled, stale or expired: this request runs again under the same key.
@@ -97,9 +102,18 @@ export async function finishTurn(owner: string, key: string, f: { status: Exclud
 }
 
 /** The person pressed Stop: the run (possibly on another instance, possibly headless) stops at its next check. */
-export async function requestCancel(owner: string, key: string): Promise<boolean> {
-  const cur = await readTurn(owner, key);
-  if (!cur || cur.status !== "running") return false;
+export async function requestCancel(owner: string, key: string, at = Date.now()): Promise<boolean> {
+  const cur = await readTurn(owner, key, at);
+  if (!cur) {
+    // No run has claimed the key yet: leave the Stop behind for the claim (claimTurn). If the claim won the race after all, ask it to stop.
+    const now = new Date(at).toISOString();
+    const r = await rows().insertIfAbsent({ id: rowId(owner, key), workspaceId: "system", owner: sha(owner), status: "cancelled", startedAt: now, updatedAt: now, expiresAt: new Date(at + TURN_TTL_MS).toISOString(), cancelRequested: true, early: true });
+    if (r.inserted) return true;
+    if (r.row.owner !== sha(owner) || r.row.status !== "running") return false;
+    await rows().update("system", r.row.id, { cancelRequested: true, updatedAt: now });
+    return true;
+  }
+  if (cur.status !== "running") return false;
   await rows().update("system", cur.id, { cancelRequested: true, updatedAt: new Date().toISOString() });
   return true;
 }

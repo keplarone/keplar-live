@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { authHref } from "./signin-href";
 import s from "./SignInGate.module.css";
 import la from "./link-action.module.css";
 
@@ -14,8 +15,8 @@ export function SignInGate({ title, body, next, tone = "creation" }: { title: st
       <h2 id="gate-title" className={s.title}>{title}</h2>
       <p className={s.body}>{body}</p>
       <div className={s.actions}>
-        <Link href={`/signin?next=${encodeURIComponent(next)}`} className={la.act} data-variant="primary">Sign in</Link>
-        <Link href={`/signup?next=${encodeURIComponent(next)}`} className={la.act} data-variant="secondary">Create a free account</Link>
+        <Link href={authHref("signin", next)} className={la.act} data-variant="primary">Sign in</Link>
+        <Link href={authHref("signup", next)} className={la.act} data-variant="secondary">Create a free account</Link>
       </div>
     </section>
   );

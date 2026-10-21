@@ -49,11 +49,11 @@ test("wiring: visual only, never hides the real cursor, never touches the input 
   assert.ok(!existsSync("src/components/glass/PointerFollower.tsx"), "the pointer follower is gone");
   assert.ok(!/cursor:\s*none/.test(readFileSync("src/styles/fit.css", "utf8")) && !/ptr-ring|ptr-dot/.test(readFileSync("src/styles/fit.css", "utf8")), "the real cursor is never hidden");
   const css = readFileSync("src/styles/fit.css", "utf8");
-  assert.match(css, /\[data-sc\] \{ caret-color: transparent; \}/);
+  assert.match(css, /\[data-sc\] \{ caret-color: transparent !important; \}/, "wins over input[type=email] and module caret colours, so only one caret shows");
   assert.match(css, /prefers-reduced-motion: reduce\)[^{]*\{ \.smooth-caret \{ display: none; \}/);
   assert.match(readFileSync("src/components/app-ui/Markdown.module.css", "utf8"), /@media \(prefers-reduced-motion: reduce\) \{ \.w \{ animation: none; \} \}/);
-  assert.match(readFileSync("src/components/chrome/LegacyDecor.tsx", "utf8"), /<SmoothCaret \/>/);
-  assert.match(readFileSync("src/components/chrome/LegacyDecor.tsx", "utf8"), /space-studio/);
-  assert.ok(!/<SmoothCaret \/>/.test(readFileSync("src/app/layout.tsx", "utf8")));
+  // Every page gets the smooth caret, mounted exactly once (root layout), never a second time from the Space Studio decor.
+  assert.equal((readFileSync("src/app/layout.tsx", "utf8").match(/<SmoothCaret \/>/g) ?? []).length, 1);
+  assert.ok(!/SmoothCaret/.test(readFileSync("src/components/chrome/LegacyDecor.tsx", "utf8")));
   assert.ok(!/PointerFollower/.test(readFileSync("src/app/layout.tsx", "utf8")));
 });
