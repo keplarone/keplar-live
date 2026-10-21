@@ -11,6 +11,7 @@ import { CookieBanner } from "@/components/consent/CookieBanner";
 import { WhopPixel } from "@/components/analytics/WhopPixel";
 import { PresenceBeacon } from "@/components/analytics/PresenceBeacon";
 import { FitRuntime } from "@/components/ui/FitRuntime";
+import { SelectMenus } from "@/components/ui/SelectMenus";
 import { ThemeWatcher } from "@/components/theme/ThemeControl";
 import { LegacyDecor } from "@/components/chrome/LegacyDecor";
 import { InsertMode } from "@/components/glass/InsertMode";
@@ -97,6 +98,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <CookieBanner />
         <PresenceBeacon />
         <FitRuntime />
+        <SelectMenus />
         <JsonLd data={siteGraph()} />
         <a className="skip-link" href="#main">
           Skip to content

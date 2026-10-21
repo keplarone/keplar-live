@@ -15,6 +15,7 @@
 @import "./space.css"; /* Space UI: tokens, motion, components (docs/design/space-ui.md). */
 @import "./graphite.css"; /* keplar.one graphite system. After space.css so it wins outside Space Studio. */
 @import "./gemini.css"; /* Gemini-led look: tonal surfaces, pill composer, empty-home glow, greeting gradient. After graphite.css so it wins. */
+@import "./select-menu.css"; /* Custom menus for every native <select> (SelectMenus.tsx), site-wide including Business. */
 
 /* The UI font is the root layout's next/font face. It generates a metric-matched fallback in
    --font-sans, so the swap moves nothing. Space Studio sets its own --f-sans. Code uses the system mono stack. */
