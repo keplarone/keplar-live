@@ -47,7 +47,7 @@
     "@vercel/speed-insights": "^2.0.0",
     "acorn": "^8.18.0",
     "axe-core": "^4.14.0",
-    "better-auth": "^1.7.6",
+    "better-auth": "^1.7.7",
     "gsap": "^3.15.0",
     "inngest": "^4.21.0",
     "katex": "^0.19.0",
