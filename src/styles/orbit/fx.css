@@ -38,10 +38,15 @@
 [data-ofx-pos] {
   position: relative;
 }
+/* The highlight sits between the control's own background and its label (isolation + z-index -1), so it never washes the text. */
+[data-ofx-sheen] {
+  isolation: isolate;
+}
 [data-ofx-sheen]::after {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: -1;
   border-radius: inherit;
   pointer-events: none;
   background-image: radial-gradient(closest-side, var(--ofx-sheen, var(--o-sheen)), transparent);
