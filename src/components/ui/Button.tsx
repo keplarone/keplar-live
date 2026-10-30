@@ -51,7 +51,7 @@ export function ButtonLink({
   ...rest
 }: Common & Omit<ComponentProps<typeof Link>, "className" | "children">) {
   const el = (
-    <Link href={href} className={classes(variant, size, className)} {...rest}>
+    <Link href={href} className={classes(variant, size, className)} data-orbit-fx={variant === "quiet" ? "ghost" : variant} {...rest}>
       <Inner arrow={arrow}>{children}</Inner>
     </Link>
   );
@@ -71,7 +71,7 @@ export function Button({
   ...rest
 }: Common & Omit<ComponentProps<"button">, "className" | "children">) {
   const el = (
-    <button type="button" className={classes(variant, size, className)} aria-busy={loading || undefined} data-state={state} {...rest}>
+    <button type="button" className={classes(variant, size, className)} aria-busy={loading || undefined} data-state={state} data-orbit-fx={variant === "quiet" ? "ghost" : variant} {...rest}>
       {loading ? <KLoader size={size === "sm" ? 14 : 16} label="Working" tone="current" /> : null}
       <Inner arrow={arrow}>{children}</Inner>
     </button>

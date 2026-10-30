@@ -1,0 +1,140 @@
+/*
+ * Keplar Orbit button effects (docs/design/keplar-orbit.md §5). The runtime (src/lib/orbit-fx.ts, mounted by
+ * src/components/orbit/OrbitFx.tsx) tags controls with the data attributes these rules read; Orbit primitives
+ * (src/components/orbit/Button.tsx) and the kit/ui buttons carry data-orbit-fx from the server, so press and focus work before
+ * any script runs. Compositor-only: scale, translate, opacity, background-position. No layout work.
+ *
+ *   data-orbit-fx="<kind>"  primary · secondary · ghost · danger · icon · chip · segment · menuitem · auto · off (opt out)
+ *   data-orbit-icon="<intent>"  send · plus · copy · trash · chevron · refresh  (icon micro-motion)
+ *   data-ofx-sheen / data-ofx-pos / data-ofx-magnet / data-ofx-hover  set by the runtime
+ *   data-ofx-state="success"  the success check (flashSuccess() or <Button success>)
+ *   aria-busy="true"  the loading arc (Orbit primitives and kit/ui buttons)
+ */
+
+@property --ofx-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/* ── 3. Press: scale + 1px sink, spring back on release. Every button; links only once claimed (never prose links). ── */
+:is(button, [role="button"], [role="tab"], [role="menuitem"], [role="menuitemradio"], [role="menuitemcheckbox"], [role="switch"], summary, [data-orbit-fx]):not([data-orbit-fx="off"]) {
+  transition-property: background-color, border-color, color, opacity, box-shadow, scale, translate, outline-color, outline-offset;
+  transition-duration: var(--o-dur-2), var(--o-dur-2), var(--o-dur-2), var(--o-dur-2), var(--o-dur-2), var(--o-dur-3), var(--o-dur-4), var(--o-dur-2), var(--o-dur-2);
+  transition-timing-function: var(--o-ease-out), var(--o-ease-out), var(--o-ease-out), var(--o-ease-out), var(--o-ease-out), var(--o-ease-spring), var(--o-ease-spring), var(--o-ease-out), var(--o-ease-out);
+}
+:is(button, [role="button"], [role="tab"], [role="menuitem"], [role="menuitemradio"], [role="menuitemcheckbox"], [role="switch"], summary, [data-orbit-fx]):not([data-orbit-fx="off"]):active:not(:disabled, [aria-disabled="true"], [aria-busy="true"]) {
+  scale: var(--ofx-ps, 0.97);
+  translate: var(--ofx-tx, 0px) calc(var(--ofx-ty, 0px) + 1px);
+  transition-duration: 60ms;
+}
+
+/* ── 2. Magnet: primary and icon controls drift ≤ 3px toward the pointer (runtime writes --ofx-tx/--ofx-ty) ── */
+[data-ofx-magnet][data-ofx-hover] {
+  translate: var(--ofx-tx, 0px) var(--ofx-ty, 0px);
+}
+
+/* ── 1. Sheen: a soft radial highlight that follows the pointer (background-position only) ── */
+[data-ofx-pos] {
+  position: relative;
+}
+[data-ofx-sheen]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image: radial-gradient(closest-side, var(--ofx-sheen, var(--o-sheen)), transparent);
+  background-repeat: no-repeat;
+  background-size: 160px 160px;
+  background-position: calc(var(--mx, 50%) - 80px) calc(var(--my, 50%) - 80px);
+  opacity: 0;
+  transition: opacity var(--o-dur-3) var(--o-ease-out);
+}
+[data-orbit-fx="primary"],
+[data-orbit-fx="danger"] {
+  --ofx-sheen: var(--o-sheen-on-accent);
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  [data-ofx-sheen][data-ofx-hover]:not(:disabled, [aria-disabled="true"], [aria-busy="true"])::after {
+    opacity: 1;
+  }
+}
+
+/* ── 4. Focus: keyboard focus draws an accent ring that animates in (offset 0 → 2px, colour from transparent). Never on
+ * mouse focus (:focus-visible). Transitions outrank !important in the cascade, so the ring still eases in over the
+ * !important outline rules older layers set. ── */
+@media not (forced-colors: active) {
+  :is(a[href], button, summary, select, [role="button"], [role="tab"], [role="link"], [role="menuitem"], [role="menuitemradio"], [role="menuitemcheckbox"], [role="option"], [role="switch"], [role="radio"], [role="checkbox"], input:is([type="checkbox"], [type="radio"], [type="range"], [type="button"], [type="submit"]), [data-orbit-fx]) {
+    outline-color: transparent;
+    outline-offset: 0;
+  }
+  :is(a[href], button, summary, select, [role="button"], [role="tab"], [role="link"], [role="menuitem"], [role="menuitemradio"], [role="menuitemcheckbox"], [role="option"], [role="switch"], [role="radio"], [role="checkbox"], input:is([type="checkbox"], [type="radio"], [type="range"], [type="button"], [type="submit"]), [data-orbit-fx]):focus-visible {
+    outline: 2px solid var(--o-focus) !important;
+    outline-offset: 2px !important;
+  }
+}
+
+/* ── 5. Loading: the edge becomes a sweeping arc; the label cross-fades to a spinner (Orbit Button), width unchanged ── */
+[data-orbit-fx][aria-busy="true"] {
+  position: relative;
+  cursor: progress;
+}
+[data-orbit-fx][aria-busy="true"]::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: 1;
+  border-radius: inherit;
+  padding: 1.5px;
+  pointer-events: none;
+  background: conic-gradient(from var(--ofx-angle), transparent 0 58%, var(--ofx-arc, var(--o-accent)) 92%, transparent);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  animation: ofx-sweep 1100ms linear infinite;
+}
+[data-orbit-fx="primary"][aria-busy="true"],
+[data-orbit-fx="danger"][aria-busy="true"] {
+  --ofx-arc: var(--o-accent-ink);
+}
+@keyframes ofx-sweep {
+  to { --ofx-angle: 360deg; }
+}
+
+/* ── 7. Icon micro-motion (first svg in the control), on hover and keyboard focus ── */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  [data-orbit-icon] svg:first-of-type {
+    transition: translate var(--o-dur-3) var(--o-ease-spring), rotate var(--o-dur-4) var(--o-ease-spring);
+  }
+  [data-orbit-icon="send"]:is([data-ofx-hover], :focus-visible):not(:disabled, [aria-disabled="true"]) svg:first-of-type { translate: 0 -2px; }
+  [data-orbit-icon="plus"]:is([data-ofx-hover], :focus-visible):not(:disabled, [aria-disabled="true"]) svg:first-of-type { rotate: 90deg; }
+  [data-orbit-icon="copy"]:is([data-ofx-hover], :focus-visible):not(:disabled, [aria-disabled="true"]) svg:first-of-type { translate: 1px -1px; }
+  [data-orbit-icon="chevron"]:is([data-ofx-hover], :focus-visible):not(:disabled, [aria-disabled="true"]) svg:first-of-type { translate: 2px 0; }
+  [dir="rtl"] [data-orbit-icon="chevron"]:is([data-ofx-hover], :focus-visible) svg:first-of-type { translate: -2px 0; }
+  [data-orbit-icon="trash"][data-ofx-hover]:not(:disabled, [aria-disabled="true"]) svg:first-of-type { animation: ofx-shake 360ms var(--o-ease-out) 1; }
+  [data-orbit-icon="refresh"][data-ofx-hover]:not(:disabled, [aria-disabled="true"]) svg:first-of-type { animation: ofx-spin 520ms var(--o-ease-out) 1; }
+}
+@keyframes ofx-shake {
+  20% { rotate: -9deg; }
+  45% { rotate: 7deg; }
+  70% { rotate: -4deg; }
+  100% { rotate: 0deg; }
+}
+@keyframes ofx-spin {
+  to { rotate: 360deg; }
+}
+
+/* ── Touch: press and focus only. Reduced motion: no sheen, magnet or micro-motion; states are instant. ── */
+@media (pointer: coarse) {
+  [data-ofx-sheen]::after { display: none; }
+  [data-ofx-magnet][data-ofx-hover] { translate: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-ofx-sheen]::after { display: none; }
+  [data-ofx-magnet][data-ofx-hover] { translate: none; }
+  [data-orbit-fx][aria-busy="true"]::before { animation: none; --ofx-angle: 120deg; }
+  :is(button, [role="button"], [role="tab"], [role="menuitem"], [role="switch"], summary, [data-orbit-fx]):active { scale: none; translate: none; }
+}
+/* Disabled: no effect at all. */
+:is(:disabled, [aria-disabled="true"])[data-orbit-fx] { translate: none; scale: none; }

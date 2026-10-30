@@ -1,0 +1,145 @@
+/*
+ * Orbit legacy map. keplar.one grew several token layers (tokens.css --c-*/--surface-*/--hairline*/--elev-*, kit.css --ks-*,
+ * space.css --space-*, the nav --nav-* set, graphite.css and gemini.css --g-*/--kg-*). Rather than edit hundreds of components,
+ * every legacy name is pointed at an Orbit token here, so each page adopts the Orbit palette, radii and elevation as it is.
+ * New code reads --o-* directly (src/styles/orbit/tokens.css); these names stay only so old modules keep rendering.
+ *
+ * Scope: keplar.one (chat, app, marketing, docs, account). Space Studio ([data-space-root]) and Keplar Business ([data-kb]) keep
+ * their own token sets until their area pass moves them (docs/design/keplar-orbit.md "Implementation notes").
+ * The selectors repeat graphite.css's so they win by order at equal specificity (this file loads last).
+ */
+
+html:not(:has([data-space-root], [data-kb])),
+html:not(:has([data-space-root], [data-kb]))[data-theme] {
+  /* type */
+  --f-sans: var(--o-font-sans);
+  --f-mono: var(--o-font-mono);
+  /* colour */
+  --c-canvas: var(--o-canvas);
+  --c-surface-1: var(--o-surface-1);
+  --c-surface-2: var(--o-surface-2);
+  --c-ink: var(--o-ink);
+  --c-ink-2: var(--o-ink-2);
+  --c-ink-3: var(--o-ink-3);
+  --c-border: var(--o-line);
+  --c-border-strong: var(--o-line-strong);
+  --c-accent: var(--o-accent);
+  --c-on-accent: var(--o-accent-ink);
+  --c-focus: var(--o-focus);
+  --c-ink-hover: var(--o-accent-hover);
+  --ring-rgb: var(--o-accent-rgb);
+  --rgb-ink: var(--o-ink-rgb);
+  --rgb-canvas: var(--o-canvas-rgb);
+  --c-reasoning: var(--o-accent-text);
+  --rgb-reasoning: var(--o-accent-rgb);
+  --v-reasoning: var(--o-accent);
+  --c-destructive: var(--o-bad);
+  --v-destructive: var(--o-bad);
+  --c-night: var(--o-surface-1);
+  --c-night-ink: var(--o-ink);
+  --n-paper: var(--o-surface-2);
+  /* product surfaces */
+  --surface-panel: var(--o-surface-1);
+  --surface-raised: var(--o-surface-1);
+  --surface-overlay: var(--o-surface-1);
+  --hairline: var(--o-line);
+  --hairline-strong: var(--o-line-strong);
+  --hover-wash: var(--o-hover);
+  --press-wash: var(--o-press);
+  --field-border: var(--o-field-line);
+  --elev-1: var(--o-elev-1);
+  --elev-2: var(--o-elev-2);
+  --elev-3: var(--o-elev-3);
+  --sh-hairline: 0 0 0 1px var(--o-line);
+  /* radius: controls are 10px rounded rectangles, cards 14px, panels 20px; pills stay pills */
+  --r-xs: var(--o-r-chip);
+  --r-sm: var(--o-r-control);
+  --r-md: var(--o-r-card);
+  --r-card: var(--o-r-card);
+  --r-card-lg: var(--o-r-panel);
+  --r-input: var(--o-r-control);
+  --shape-control: var(--o-r-control);
+  --shape-card: var(--o-r-card);
+  /* motion */
+  --m-ease-out: var(--o-ease-out);
+  --kp-ease: var(--o-ease-out);
+  --kp-spring: var(--o-ease-spring);
+  --e-standard: var(--o-ease-out);
+  /* kit (kit.css reads the --c-* names above; these are the ones it sets on its own) */
+  --ks-primary-bg: var(--o-accent);
+  --ks-primary-bg-hover: var(--o-accent-hover);
+  --ks-primary-text: var(--o-accent-ink);
+  --ks-accent: var(--o-accent);
+  --ks-accent-text: var(--o-accent-text);
+  --ks-accent-ink: var(--o-accent-ink);
+  --ks-accent-subtle: var(--o-accent-soft);
+  --ks-fill-selected: var(--o-selected);
+  --ks-focus: var(--o-focus);
+  --ks-control-radius: var(--o-r-control);
+  --ks-radius-xs: var(--o-r-chip);
+  --ks-radius-sm: var(--o-r-control);
+  --ks-radius-md: var(--o-r-card);
+  --ks-radius-lg: var(--o-r-panel);
+  --ks-surface-2: var(--o-surface-1);
+  --ks-switch-on: var(--o-accent);
+  --ks-switch-thumb-on: #ffffff;
+  /* Space UI faces (space.css), as used by the kit and link-action on keplar.one */
+  --space-void: var(--o-canvas);
+  --space-p-face: var(--o-accent);
+  --space-p-ink: var(--o-accent-ink);
+  --space-s-face: var(--o-surface-2);
+  --space-s-ink: var(--o-ink);
+  --space-glass: var(--o-surface-1);
+  --space-glass-solid: var(--o-canvas);
+  --space-field: var(--o-surface-1);
+  --space-field-focus: var(--o-surface-1);
+  --space-d-face: var(--o-bad);
+  /* marketing nav (chrome/Nav.module.css) */
+  --nav-fill: rgb(var(--o-canvas-rgb) / 0.86);
+  --nav-fill-scrolled: rgb(var(--o-canvas-rgb) / 0.92);
+  --nav-solid: var(--o-surface-1);
+  --nav-ink: var(--o-ink);
+  --nav-link: var(--o-ink-2);
+  --nav-link-2: var(--o-ink-2);
+  --nav-hover-bg: var(--o-hover);
+  --nav-active-bg: var(--o-press);
+  --nav-rim: var(--o-line);
+  --nav-focus: var(--o-focus);
+  --nav-menu-fill: var(--o-surface-1);
+  --nav-sheet: var(--o-surface-1);
+  --nav-cta-bg: var(--o-accent);
+  --nav-cta-solid: var(--o-accent);
+  --nav-cta-ink: var(--o-accent-ink);
+  /* gemini.css tonal steps; its blue-teal wash is switched off (one accent, no decorative gradients) */
+  --g-container: var(--o-surface-2);
+  --g-container-high: var(--o-surface-3);
+  --g-container-highest: var(--o-surface-3);
+  --g-selected: var(--o-selected);
+  --g-glow: 0;
+  --kg-a: var(--o-accent);
+  --kg-b: var(--o-accent);
+  --g-ease: var(--o-ease-out);
+  --g-r-composer: var(--o-r-panel);
+  --g-r-menu: var(--o-r-card);
+  --g-r-item: var(--o-r-control);
+  background: var(--o-canvas);
+}
+
+/* The Orbit canvas and ink everywhere on keplar.one (graphite.css painted #212121 / #ffffff). */
+html:not(:has([data-space-root], [data-kb]))[data-theme] body {
+  background: var(--o-canvas);
+  color: var(--o-ink);
+  font-family: var(--o-font-sans);
+  font-optical-sizing: auto;
+}
+
+/* One accent selection colour. */
+html:not(:has([data-space-root], [data-kb])) ::selection {
+  background: var(--o-accent-soft);
+}
+
+/* Display type (§2): Inter's display cut through opsz, 600 weight, tight tracking at 32px and up. */
+html:not(:has([data-space-root], [data-kb])) :is(h1, h2) {
+  font-weight: var(--o-w-semibold);
+  letter-spacing: -0.025em;
+}

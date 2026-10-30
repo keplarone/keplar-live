@@ -74,6 +74,7 @@ export function SegmentedControl<V extends string>({ label, value, onValueChange
             tabIndex={on ? 0 : -1}
             data-value={o.value}
             className={l.segOption}
+            data-orbit-fx="segment"
             onClick={() => {
               if (!o.disabled && !on) onValueChange(o.value);
             }}
@@ -159,6 +160,7 @@ export function Tabs<V extends string>({ id, label, value, onValueChange, items,
             aria-disabled={t.disabled || undefined}
             tabIndex={on ? 0 : -1}
             className={l.stripItem}
+            data-orbit-fx="segment"
             onClick={() => {
               if (!t.disabled) onValueChange(t.value);
             }}

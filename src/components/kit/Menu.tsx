@@ -267,6 +267,7 @@ export function MenuItem({ children, onSelect, icon, shortcut, hint, danger, dis
       aria-disabled={disabled || undefined}
       tabIndex={-1}
       className={o.item}
+      data-orbit-fx="menuitem"
       data-danger={danger ? "" : undefined}
       onClick={() => {
         if (disabled) return;

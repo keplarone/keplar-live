@@ -1,0 +1,119 @@
+/*
+ * Orbit controls (docs/design/keplar-orbit.md §5). The look; the effects (sheen, magnet, press, focus ring, loading arc,
+ * success check, icon micro-motion) are shared by every control in src/styles/orbit/fx.css + src/lib/orbit-fx.ts.
+ */
+.btn {
+  --h: 36px;
+  --px: 14px;
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: var(--h);
+  padding: 0 var(--px);
+  border: 0;
+  border-radius: var(--o-r-control);
+  font: inherit;
+  font-family: var(--o-font-sans);
+  font-size: var(--o-t-14);
+  font-weight: var(--o-w-medium);
+  line-height: 1;
+  letter-spacing: -0.006em;
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--o-ink);
+  background: var(--o-surface-1);
+  box-shadow: var(--o-elev-1);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn[data-size="sm"] { --h: 30px; --px: 10px; font-size: var(--o-t-13); gap: 6px; }
+.btn[data-size="lg"] { --h: 44px; --px: 18px; font-size: var(--o-t-16); }
+.btn[data-full] { width: 100%; }
+.btn:hover:not(:disabled, [aria-disabled="true"]) { background: var(--o-surface-2); }
+
+.btn[data-variant="primary"] {
+  background: var(--o-accent);
+  color: var(--o-accent-ink);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.12), inset 0 1px 0 rgb(255 255 255 / 0.14);
+}
+.btn[data-variant="primary"]:hover:not(:disabled, [aria-disabled="true"]) { background: var(--o-accent-hover); }
+/* §5.8 primary only: a slow accent glow under the face that brightens while the pointer is over it (opacity only). */
+.btn[data-variant="primary"]:not([aria-busy="true"])::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  box-shadow: 0 6px 22px -6px var(--o-glow);
+  opacity: 0.35;
+  transition: opacity 600ms var(--o-ease-out);
+  pointer-events: none;
+}
+.btn[data-variant="primary"]:hover:not(:disabled, [aria-disabled="true"])::before { opacity: 1; }
+
+.btn[data-variant="ghost"] { background: transparent; box-shadow: none; color: var(--o-ink-2); }
+.btn[data-variant="ghost"]:hover:not(:disabled, [aria-disabled="true"]) { background: var(--o-hover); color: var(--o-ink); }
+
+.btn[data-variant="danger"] { background: var(--o-bad); color: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); }
+.btn[data-variant="danger"]:hover:not(:disabled, [aria-disabled="true"]) { filter: brightness(1.06); }
+
+.btn:is(:disabled, [aria-disabled="true"]):not([aria-busy="true"]) { opacity: 0.45; cursor: not-allowed; }
+
+/* Label, spinner and check share one cell, so loading and success never change the width. */
+.face { display: inline-grid; place-items: center; }
+.face > * { grid-area: 1 / 1; }
+.label { display: inline-flex; align-items: center; gap: inherit; transition: opacity var(--o-dur-2) var(--o-ease-out), translate var(--o-dur-2) var(--o-ease-out); }
+.spin,
+.check { opacity: 0; pointer-events: none; transition: opacity var(--o-dur-2) var(--o-ease-out); }
+.spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; }
+.btn[aria-busy="true"] .label { opacity: 0; }
+.btn[aria-busy="true"] .spin { opacity: 1; animation: o-spin 800ms linear infinite; }
+.check path { stroke-dasharray: 24; stroke-dashoffset: 24; }
+.btn[data-ofx-state="success"] .label { opacity: 0; translate: 0 -4px; }
+.btn[data-ofx-state="success"] .check { opacity: 1; }
+.btn[data-ofx-state="success"] .check path { stroke-dashoffset: 0; transition: stroke-dashoffset var(--o-dur-4) var(--o-ease-out) 60ms; }
+.slot { display: inline-flex; flex: none; }
+.slot svg { display: block; }
+@keyframes o-spin { to { rotate: 360deg; } }
+@media (prefers-reduced-motion: reduce) {
+  .btn[aria-busy="true"] .spin { animation-duration: 2400ms; }
+  .label, .spin, .check, .check path { transition: none !important; }
+}
+
+/* Icon button: a square (or circle) that holds one glyph. */
+.icon { --h: 36px; width: var(--h); padding: 0; background: transparent; box-shadow: none; color: var(--o-ink-2); }
+.icon:hover:not(:disabled, [aria-disabled="true"]) { background: var(--o-hover); color: var(--o-ink); }
+.icon[data-size="sm"] { --h: 30px; }
+.icon[data-size="lg"] { --h: 44px; }
+.icon[data-shape="circle"] { border-radius: var(--o-r-pill); }
+.icon[data-variant="secondary"] { background: var(--o-surface-1); box-shadow: var(--o-elev-1); }
+.icon[data-variant="primary"] { background: var(--o-accent); color: var(--o-accent-ink); }
+.icon[data-variant="primary"]:hover:not(:disabled, [aria-disabled="true"]) { background: var(--o-accent-hover); color: var(--o-accent-ink); }
+.icon[aria-pressed="true"] { background: var(--o-selected); color: var(--o-accent-text); }
+
+/* Chip: a pill filter / suggestion. Selected = accent-soft. */
+.chip {
+  --h: 32px;
+  --px: 12px;
+  border-radius: var(--o-r-pill);
+  background: var(--o-surface-2);
+  box-shadow: none;
+  color: var(--o-ink-2);
+  font-size: var(--o-t-13);
+}
+.chip:hover:not(:disabled, [aria-disabled="true"]) { background: var(--o-surface-3); color: var(--o-ink); }
+.chip[aria-pressed="true"],
+.chip[aria-selected="true"],
+.chip[data-selected] { background: var(--o-accent-soft); color: var(--o-accent-text); }
+
+@media (pointer: coarse) {
+  .btn { min-height: 44px; }
+  .icon { min-width: 44px; }
+}
+@media (forced-colors: active) {
+  .btn { border: 1px solid ButtonText; }
+}
