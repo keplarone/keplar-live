@@ -21,6 +21,7 @@
 }
 
 .grid {
+  box-sizing: content-box; /* Orbit grid: --l-max is the content width; the gutter pads outside it */
   position: relative;
   z-index: var(--z-content);
   display: grid;

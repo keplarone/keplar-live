@@ -135,14 +135,13 @@ test("the single accent is graphite in light and near-white in dark, at AA", () 
   assert.ok(ratio("#17171a", "#f4f4f6") >= 4.5);
 });
 
-test("Space Studio keeps its violet aura, headline, and focus glow", () => {
+test("Space Studio keeps its star scene (aura) and moves its palette to Keplar Orbit", () => {
   const css = readFileSync("src/components/space/space.module.css", "utf8");
   const chrome = readFileSync("src/components/space/SpaceChrome.tsx", "utf8");
-  assert.match(chrome, /rgb\(176, 104, 255\)/);
-  assert.match(css, /#c58cff 0%, #f08bd8/);
-  assert.match(css, /background: #c39bff/);
-  assert.match(css, /--c-accent: #c39bff/);
-  assert.match(css, /--space-focus-glow: 0 0 0 3px rgb\(195 155 255 \/ 0\.55\), 0 0 24px rgb\(176 104 255 \/ 0\.35\)/);
+  assert.match(chrome, /rgb\(176, 104, 255\)/, "the aura over the stars stays (Space Studio's identity)");
+  assert.match(css, /--c-accent: var\(--o-accent\)/, "accent is Orbit's");
+  assert.match(css, /--space-p-face: var\(--o-accent\)/, "primary buttons are the Orbit accent");
+  assert.doesNotMatch(css, /#c39bff|#c58cff|#f08bd8/i, "no violet palette left in the page styles");
   assert.match(css, /html:has\(\[data-space-root\]\)/);
   const graphite = readFileSync("src/styles/graphite.css", "utf8");
   assert.match(graphite, /outline: 2px solid var\(--c-ink\) !important;/);

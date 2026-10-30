@@ -97,20 +97,21 @@
   .banner { display: none; }
 }
 
-/* Space UI (area d): a glass card (28px, depth and light, no outline), 3D pill buttons, the violet glow on focus. */
-.banner { border-radius: var(--space-r-card); background: var(--space-glass-solid); box-shadow: var(--space-glass-depth); }
-.title { font-weight: var(--w-bold); font-size: 14px; }
-.primary, .secondary { min-height: 38px; font-weight: var(--w-bold); transition: transform var(--space-dur-slow) var(--space-spring-bouncy), box-shadow var(--space-dur-slow) var(--space-ease-out); }
-.primary { background: var(--space-p-face); color: var(--space-p-ink); box-shadow: var(--space-p-depth); }
-.primary:hover { background: var(--space-p-face); transform: translateY(-1px); box-shadow: var(--space-p-depth-hover); }
-.secondary { background: var(--space-s-face); color: var(--space-s-ink); box-shadow: var(--space-s-depth); }
-.secondary:hover { background: var(--space-s-face); transform: translateY(-1px); box-shadow: var(--space-s-depth-hover); }
-.primary:active, .secondary:active { scale: none; transform: translateY(var(--space-ledge)); }
-.primary:active { box-shadow: var(--space-p-depth-press); }
-.secondary:active { box-shadow: var(--space-s-depth-press); }
-.tertiary { border-radius: var(--r-pill); text-decoration-color: rgb(var(--ring-rgb) / 0.45); font-weight: var(--w-semibold); }
-.link { text-decoration-color: rgb(var(--ring-rgb) / 0.45); }
-@media (prefers-reduced-motion: reduce) { .primary, .secondary { transition: none; } .primary:hover, .secondary:hover, .primary:active, .secondary:active { transform: none; } }
+/* Keplar Orbit: an elevation-3 surface card (20px), the accent primary, a surface secondary, quiet text tertiary. Press, sheen
+   and the focus ring come from the shared Orbit runtime (src/styles/orbit/fx.css). */
+.banner { border-radius: var(--o-r-panel); background: var(--o-surface-1); box-shadow: var(--o-elev-3); font-family: var(--o-font-sans); }
+.title { font-weight: var(--o-w-semibold); font-size: var(--o-t-14); color: var(--o-ink); }
+.text { font-size: var(--o-t-13); line-height: 1.5; color: var(--o-ink-2); }
+.primary, .secondary, .tertiary { min-height: 34px; border-radius: var(--o-r-control); font-size: var(--o-t-13); font-weight: var(--o-w-medium); }
+.primary { position: relative; background: var(--o-accent); color: var(--o-accent-ink); box-shadow: 0 1px 2px rgb(0 0 0 / 0.12), inset 0 1px 0 rgb(255 255 255 / 0.14); font-weight: var(--o-w-semibold); }
+.primary:hover { background: var(--o-accent-hover); }
+.secondary { background: var(--o-surface-1); color: var(--o-ink); box-shadow: var(--o-elev-1); }
+.secondary:hover { background: var(--o-surface-2); }
+.primary:active, .secondary:active { scale: none; }
+.tertiary { color: var(--o-ink-2); text-decoration: none; }
+.tertiary:hover { color: var(--o-ink); background: var(--o-hover); }
+.link { color: var(--o-accent-text); text-decoration-color: currentColor; }
+.cat input { accent-color: var(--o-accent); }
 
 /* Chat: a slim bar along the bottom edge, above the composer, not a card on top of it. */
 .banner { z-index: calc(var(--z-overlay) + 2); }
@@ -125,8 +126,8 @@
   align-items: center;
   gap: 4px 12px;
   padding: 8px 16px calc(8px + env(safe-area-inset-bottom, 0px));
-  background: var(--c-canvas);
-  box-shadow: inset 0 1px 0 var(--hairline);
+  background: var(--o-surface-1);
+  box-shadow: 0 -1px 0 var(--o-line);
   max-height: none;
 }
 .banner[data-placement="bar"] .title { font-size: 13px; }

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { ScreenCollage } from "./ScreenCollage";
 import { BusinessMark } from "@/components/business-site/BusinessMark";
 import { BusinessFont, businessFontClass } from "@/components/business-site/font";
 import "@/components/business-site/tokens.css";
@@ -9,8 +8,8 @@ import s from "./auth.module.css";
 type Variant = "signin" | "signup" | "recover";
 
 /**
- * Sign-in and sign-up. The form sits on the left, on the solid canvas. A slow collage of the real product
- * sits on the right on a wide screen, and is hidden on a phone. The Sign up / Sign in links stay a simple pair.
+ * Sign-in and sign-up (Keplar Orbit): one clean card centred on the canvas. The Sign up / Sign in links stay a simple pair
+ * (an Orbit segmented control). Keplar Business keeps its panel beside the form.
  */
 /** Translated chrome for a localized auth page (/es/signin); English pages pass nothing. */
 export type AuthShellCopy = { panel: { eyebrow: string; title: string; lead: string }; points: string[]; signUp: string; logIn: string; toggle: string; about: string; prefix: string };
@@ -47,7 +46,7 @@ export function AuthShell({ variant, nextQs = "", title, lead, notice, children,
           {children}
         </div>
       </div>
-      {business ? <BusinessPanel /> : <ScreenCollage />}
+      {business ? <BusinessPanel /> : null}
     </div>
   );
 }

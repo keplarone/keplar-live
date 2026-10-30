@@ -15,10 +15,10 @@ import { lockScroll } from "@/lib/ui/scroll-lock";
 import { usePresence } from "@/components/motion/usePresence";
 
 /**
- * Site nav (UI v2, docs/ui-v2.md): one calm bar across the top. The Keplar mark and name on the left; on wide screens the four
- * primary links inline; on the right search, theme, Sign in and the one ink CTA. A Menu button opens a sheet under the bar with
- * every place (product, learn, company, search); on phones it is the only way to the links.
- * The bar is transparent at the top of a page and takes the canvas colour and a hairline once the page scrolls.
+ * Site header (Keplar Orbit, docs/design/keplar-orbit.md §4): the Keplar mark and name on the left; on wide screens the four
+ * primary links centred; on the right search, theme, Sign in and the one primary CTA. A Menu button opens a panel under the bar
+ * with every place (product, learn, company, search); on phones it is the only way to the links.
+ * The bar is flat across the 1200px grid at the top of a page and condenses into a floating pill once the page scrolls.
  * Escape, an outside click, a route change or the Menu button closes the sheet; focus moves into it on open and back on close.
  */
 export function Nav() {
@@ -95,7 +95,7 @@ export function Nav() {
   return (
     <header className={`${s.wrap} m-vt-nav`} data-keplar-drag data-scrolled={scrolled || undefined} data-open={open || undefined}>
       <div className={s.bar}>
-        <Link href={href("/")} className={s.brand} aria-label={t.home}>
+        <Link href={href("/")} className={s.brand} aria-label={t.home} data-orbit-fx="ghost">
           <KeplarSymbol size={22} className={s.mark} />
           <span className={s.word}>{brand.name}</span>
         </Link>
@@ -104,28 +104,29 @@ export function Nav() {
           <ul>
             {inline.map((l) => (
               <li key={l.href}>
-                <Link href={href(l.href)} className={s.link} aria-current={current(l.href)}>{l.label}</Link>
+                <Link href={href(l.href)} className={s.link} aria-current={current(l.href)} data-orbit-fx="ghost">{l.label}</Link>
               </li>
             ))}
           </ul>
         </nav>
 
         <div className={s.actions}>
-          <button type="button" className={`${s.icon} ${s.searchBtn}`} onClick={search} aria-label={en ? "Search" : t.search}>
+          <button type="button" className={`${s.icon} ${s.searchBtn}`} data-orbit-fx="icon" onClick={search} aria-label={en ? "Search" : t.search}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></svg>
           </button>
           <ThemeToggle className={`${s.icon} ${s.theme}`} />
-          <Link href={me.signedIn ? "/account" : href(signInHref)} className={s.signIn}>
+          <Link href={me.signedIn ? "/account" : href(signInHref)} className={s.signIn} data-orbit-fx="ghost">
             {me.signedIn ? t.account : t.signIn}
           </Link>
           {/* "Try Keplar" signed out, "Open Keplar" signed in (CtaLabel: both in the HTML, CSS shows one from <html data-signed>). */}
-          <Link href={tryHref} className={s.cta}>
+          <Link href={tryHref} className={s.cta} data-orbit-fx="primary">
             <CtaLabel tryText={en ? `Try ${brand.name}` : t.try} openText={t.open} />
           </Link>
           <button
             ref={toggleRef}
             type="button"
             className={`${s.icon} ${s.toggle}`}
+            data-orbit-fx="icon"
             aria-expanded={open}
             aria-controls="site-menu"
             aria-label={open ? t.closeMenu : t.openMenu}

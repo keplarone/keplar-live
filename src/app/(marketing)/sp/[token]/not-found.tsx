@@ -11,7 +11,7 @@ export default function SharedSpecialistGone() {
       <h1 className={s.title}>This link isn&apos;t available.</h1>
       <p className={s.notice}>The person who shared it may have turned it off, or it has expired. Specialist links stay live for 180 days at most.</p>
       <div className={s.cta}>
-        <Link className={s.btn} href="/app?utm_source=share&utm_medium=link&utm_campaign=shared-specialist-gone">Ask your own question</Link>
+        <Link className={s.btn} data-orbit-fx="primary" href="/app?utm_source=share&utm_medium=link&utm_campaign=shared-specialist-gone">Ask your own question</Link>
       </div>
     </div>
   );
