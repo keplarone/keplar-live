@@ -622,7 +622,7 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][c
   outline: 2px solid var(--o-focus);
   outline-offset: 2px;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] dialog input[class*="App-module"][class*="__searchInput"]:is(:focus, :focus-visible) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] dialog input:is([class*="App-module"], [class*="SearchDialog-module"])[class*="__searchInput"]:is(:focus, :focus-visible) {
   outline: none !important;
   box-shadow: none !important;
 }

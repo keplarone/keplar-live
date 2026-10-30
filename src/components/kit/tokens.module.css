@@ -332,3 +332,61 @@
   white-space: nowrap;
   border: 0;
 }
+
+/*
+ * Keplar Orbit bridge (docs/design/keplar-orbit.md §3). On keplar.one (not Space Studio, not Keplar Business) a Studio root that
+ * follows the site theme reads its palette, radii, type and elevation from the Orbit tokens (src/styles/orbit/tokens.css), so
+ * Keplar Studio's dense workspace matches the rest of the app in light and dark. The palettes above stay the source for a root
+ * pinned to a theme (data-ks-theme) and for hosts outside keplar.one. Specificity 0,3,1 beats the Dark rule's 0,3,0.
+ */
+:global(html:not(:has([data-space-root], [data-kb]))) .root:not([data-ks-theme]) {
+  --ks-bg: var(--o-canvas);
+  --ks-surface-1: var(--o-surface-1);
+  --ks-surface-2: var(--o-surface-1);
+  --ks-surface-3: var(--o-surface-3);
+  --ks-surface-inset: var(--o-surface-2);
+  --ks-fill-hover: var(--o-hover);
+  --ks-fill-active: var(--o-press);
+  --ks-fill-selected: var(--o-selected);
+  --ks-text-1: var(--o-ink);
+  --ks-text-2: var(--o-ink-2);
+  --ks-text-3: var(--o-ink-3);
+  --ks-border: var(--o-line);
+  --ks-border-strong: var(--o-line-strong);
+  --ks-divider: var(--o-line);
+  --ks-accent: var(--o-accent);
+  --ks-accent-text: var(--o-accent-text);
+  --ks-accent-ink: var(--o-accent-ink);
+  --ks-accent-subtle: var(--o-accent-soft);
+  --ks-focus: var(--o-focus);
+  --ks-primary-bg: var(--o-accent);
+  --ks-primary-bg-hover: var(--o-accent-hover);
+  --ks-primary-text: var(--o-accent-ink);
+  --ks-success: var(--o-good);
+  --ks-warning: var(--o-warn);
+  --ks-danger: var(--o-bad);
+  --ks-info: var(--o-accent-text);
+  --ks-danger-solid: var(--o-bad);
+  --ks-danger-ink: var(--o-canvas);
+  --ks-danger-solid-hover: color-mix(in srgb, var(--o-bad) 86%, var(--o-ink));
+  --ks-primary-depth: none;
+  --ks-primary-depth-hover: none;
+  --ks-primary-depth-press: none;
+  --ks-secondary-depth: inset 0 0 0 1px var(--o-line-strong);
+  --ks-secondary-depth-hover: inset 0 0 0 1px var(--o-line-strong);
+  --ks-secondary-depth-press: inset 0 0 0 1px var(--o-line-strong);
+  --ks-danger-depth: none;
+  --ks-danger-depth-hover: none;
+  --ks-danger-depth-press: none;
+  --ks-press-y: 0px;
+  --ks-elev-1: var(--o-elev-1);
+  --ks-elev-2: var(--o-elev-3);
+  --ks-scrim: rgb(var(--o-canvas-rgb) / 0.6);
+  --ks-radius-xs: var(--o-r-chip);
+  --ks-radius-sm: var(--o-r-control);
+  --ks-radius-md: var(--o-r-card);
+  --ks-radius-lg: var(--o-r-panel);
+  --ks-control-radius: var(--o-r-control);
+  --ks-font-sans: var(--o-font-sans);
+  --ks-font-mono: var(--o-font-mono);
+}

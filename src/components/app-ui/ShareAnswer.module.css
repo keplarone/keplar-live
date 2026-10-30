@@ -9,8 +9,6 @@
   border: 0; border-radius: var(--r-sm); padding: var(--s-3); box-shadow: var(--elev-1);
 }
 .area { min-height: 72px; resize: vertical; }
-/* the site's keyboard cue for fields: a bar under the text, never a box */
-.area:focus-visible, .url:focus-visible { box-shadow: var(--space-focus-glow); }
 .check { display: flex; gap: var(--s-3); align-items: flex-start; font-size: var(--t-small); color: var(--c-ink); }
 .check input { margin-top: 3px; width: 18px; height: 18px; flex: none; accent-color: var(--c-ink); }
 .choices { border: 0; padding: 0; margin: 0; display: grid; gap: var(--s-2); }
@@ -24,9 +22,21 @@
 .state { display: inline-flex; align-items: center; min-height: 32px; font-size: var(--t-small); color: var(--c-ink-2); }
 
 /* Space UI (phase B): fields are Space fields (a fill with the 3:1 edge, the violet glow while typing), checkboxes violet. */
-.area, .url { background: var(--space-field); box-shadow: var(--space-field-depth); padding: 12px 18px; }
+.area, .url { background: var(--space-field); box-shadow: none; padding: 12px 18px; }
 .url { border-radius: 999px; }
-.area { border-radius: var(--space-r-area); }
-.area:focus-visible, .url:focus-visible { background: var(--space-field-focus); box-shadow: var(--space-field-depth), var(--space-focus-glow); }
+.area { border-radius: var(--o-r-panel); }
+.area:focus-visible, .url:focus-visible { background: var(--space-field-focus); }
 .check input { accent-color: var(--c-accent); }
-.pub { border-top: 0; padding: 16px 18px; border-radius: 22px; background: var(--hover-wash); }
+.pub { border-top: 0; padding: 16px 18px; border-radius: var(--o-r-panel); background: var(--hover-wash); }
+
+/* Keplar Orbit (docs/design/keplar-orbit.md): 36px fields with a 3:1 edge on --o-surface-1 (10px; the note area too), an accent
+   checkbox, the public section as an --o-surface-2 inset with a hairline. Declared last so it wins at equal specificity. */
+.p, .list, .links li, .state { color: var(--o-ink-2); font-size: var(--o-t-13); }
+.check { font-size: var(--o-t-13); color: var(--o-ink); }
+.check input { width: 16px; height: 16px; accent-color: var(--o-accent); }
+.area, .url { padding: 8px 12px; border: 1px solid var(--o-field-line); border-radius: var(--o-r-control); background: var(--o-surface-1); color: var(--o-ink); font-size: var(--o-t-14); transition: border-color var(--o-dur-2) var(--o-ease-out); }
+.url { min-height: 36px; font-family: var(--o-font-mono); font-size: var(--o-t-12); }
+.area:hover, .url:hover { border-color: rgb(var(--o-ink-rgb) / 0.6); }
+.area:focus-visible, .url:focus-visible { background: var(--o-surface-1); border-color: var(--o-accent); }
+.err { color: var(--o-bad); }
+.pub { padding: 16px; border-radius: var(--o-r-card); background: var(--o-surface-2); box-shadow: inset 0 0 0 1px var(--o-line); }

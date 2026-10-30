@@ -6,7 +6,7 @@ import { Button } from "@/components/kit";
 import { Markdown } from "./Markdown";
 import type { Outcome, OutcomeKind, RunStatus, RunView } from "@/lib/runs/types";
 import { OUTCOME_ORDER } from "@/lib/runs/types";
-import s from "./App.module.css";
+import s from "./views.module.css";
 import t from "./Tasks.module.css";
 
 /**
@@ -199,7 +199,7 @@ export function TasksView({ onOpenTab }: { onOpenTab: (v: Tab) => void }) {
           <h1 className={s.viewTitle}>Tasks</h1>
           <p className={s.viewLede}>What Keplar is working on, what it finished, and what still needs you. Every result says how it was checked.</p>
         </div>
-        {st.kind === "ready" ? <Button variant="secondary" size="sm" onClick={() => load()}>Refresh</Button> : null}
+        {st.kind === "ready" ? <div className={s.viewActions}><Button variant="secondary" size="sm" data-orbit-icon="refresh" onClick={() => load()}>Refresh</Button></div> : null}
       </header>
       {status ? <p className={t.headline} role="status">{status}</p> : null}
       {st.kind === "loading" ? <p className={s.viewEmpty} role="status">Loading tasks…</p> : null}

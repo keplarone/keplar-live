@@ -1,58 +1,67 @@
-/* Slides: product UI on the site tokens (dark and light), 16:9 slide frames use container units. */
-.studio { display: flex; flex-direction: column; gap: var(--s-6); width: 100%; max-width: 1240px; margin: 0 auto; padding: var(--s-6) var(--s-6) var(--s-16); color: var(--c-ink); font-size: var(--t-small); }
-.head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--s-4); flex-wrap: wrap; }
-.title { font-size: var(--t-title); line-height: var(--lh-title); letter-spacing: var(--tr-title); font-weight: var(--w-medium); }
-.lede { margin-top: var(--s-2); color: var(--c-ink-2); max-width: 60ch; font-size: var(--t-body); }
-.error { padding: var(--s-3) var(--s-4); border-radius: var(--r-sm); background: var(--c-surface-1); box-shadow: inset 0 0 0 1px var(--c-border-strong); color: var(--c-err); }
-.grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: var(--s-6); align-items: start; }
-.card { display: flex; flex-direction: column; gap: var(--s-4); padding: var(--s-6); border-radius: var(--r-card); background: var(--c-surface-1); box-shadow: var(--elev-1); min-width: 0; }
-.cardTitle { font-size: var(--t-body); font-weight: var(--w-medium); }
-.field { display: flex; flex-direction: column; gap: var(--s-2); min-width: 0; }
-.label { font-size: var(--t-label); letter-spacing: 0; text-transform: none; color: var(--c-ink-3); }
-.label em { text-transform: none; letter-spacing: 0; font-style: normal; }
-.input { width: 100%; padding: var(--s-3) var(--s-4); border-radius: var(--r-sm); border: 0; background: var(--c-canvas); color: var(--c-ink); font: inherit; box-shadow: inset 0 0 0 1px var(--c-border-strong); resize: vertical; }
-.input:focus-visible { outline: none; }
-.row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); }
-.range { width: 100%; min-height: 24px; accent-color: var(--c-ink); } /* a 24px tall hit area for the slider (WCAG 2.5.8) */
-.hint { color: var(--c-ink-3); font-size: var(--t-label); }
-.fileRow { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
+/* Slides, in Keplar Orbit (docs/design/keplar-orbit.md): a page header (title + lede, hairline under it), the brief on an
+   --o-surface-1 card at --o-elev-1 beside "Your decks", 36px fields with a 3:1 edge, an accent primary and outlined secondaries.
+   Study builds on these classes. The 16:9 slide frames are the user's content and keep their own palette (--sl-*).
+   Buttons get their press, sheen and focus ring from the shared effects runtime, so nothing here animates transform on hover,
+   draws a focus outline or uses a control's ::after. */
+.studio { display: flex; flex-direction: column; gap: 32px; width: 100%; max-width: 1180px; margin: 0 auto; padding: 24px 32px 64px; color: var(--o-ink); font-size: var(--o-t-14); line-height: var(--o-lh-text); }
+.head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; padding-bottom: 24px; border-bottom: 1px solid var(--o-line); }
+.title { margin: 0; font-size: var(--o-t-28); line-height: var(--o-lh-display); letter-spacing: -0.025em; font-weight: var(--o-w-semibold); color: var(--o-ink); }
+.lede { margin: 8px 0 0; color: var(--o-ink-2); max-width: 64ch; font-size: var(--o-t-14); }
+.error { margin: 0; padding: 12px 16px; border-radius: var(--o-r-control); background: color-mix(in srgb, var(--o-bad) 10%, transparent); color: var(--o-bad); }
+.grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.card { display: flex; flex-direction: column; gap: 20px; padding: 24px; border-radius: var(--o-r-card); background: var(--o-surface-1); box-shadow: var(--o-elev-1); min-width: 0; }
+.cardTitle { margin: 0; font-size: var(--o-t-16); font-weight: var(--o-w-semibold); letter-spacing: -0.01em; color: var(--o-ink); }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.label { font-size: var(--o-t-13); font-weight: var(--o-w-medium); letter-spacing: 0; text-transform: none; color: var(--o-ink); }
+.label em { text-transform: none; letter-spacing: 0; font-style: normal; font-weight: var(--o-w-regular); color: var(--o-ink-3); }
+.input { width: 100%; min-height: 36px; padding: 0 12px; border: 1px solid var(--o-field-line); border-radius: var(--o-r-control); background: var(--o-surface-1); color: var(--o-ink); font: inherit; font-size: var(--o-t-14); resize: vertical; transition: border-color var(--o-dur-2) var(--o-ease-out); }
+textarea.input { padding: 8px 12px; line-height: var(--o-lh-text); }
+select.input { cursor: pointer; }
+.input::placeholder { color: var(--o-ink-3); }
+.input:hover { border-color: rgb(var(--o-ink-rgb) / 0.6); }
+.input:focus, .input:focus-visible { border-color: var(--o-accent); }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.range { width: 100%; min-height: 24px; accent-color: var(--o-accent); } /* a 24px tall hit area for the slider (WCAG 2.5.8) */
+.hint { color: var(--o-ink-3); font-size: var(--o-t-12); }
+.fileRow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .fileInput { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
-.fileInput:focus-visible + label { outline: none; text-decoration: underline; text-underline-offset: 3px; }
-.fileName { color: var(--c-ink-2); overflow-wrap: anywhere; }
-.primary, .ghost { display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2); height: 40px; padding: 0 var(--s-5); border-radius: var(--r-pill); font: inherit; font-weight: var(--w-medium); text-decoration: none; cursor: pointer; white-space: nowrap; }
-.primary { background: var(--c-ink); color: var(--c-canvas); }
-.primary:hover:not(:disabled) { background: var(--c-ink-hover); }
-.ghost { color: var(--c-ink); box-shadow: var(--elev-1); background: var(--surface-raised); }
-.ghost:hover:not(:disabled) { background: var(--hover-wash); }
-.primary:active:not(:disabled), .ghost:active:not(:disabled) { scale: var(--m-press); }
+.fileInput:focus-visible + label { outline: 2px solid var(--o-focus); outline-offset: 2px; }
+.fileName { color: var(--o-ink-2); overflow-wrap: anywhere; }
+.primary, .ghost { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 36px; padding: 0 16px; border: 0; border-radius: var(--o-r-control); font: inherit; font-size: var(--o-t-14); font-weight: var(--o-w-medium); text-decoration: none; cursor: pointer; white-space: nowrap; }
+.primary { background: var(--o-accent); color: var(--o-accent-ink); }
+.primary:hover:not(:disabled, [aria-disabled="true"]) { background: var(--o-accent-hover); }
+.ghost { color: var(--o-ink); background: var(--o-surface-1); box-shadow: inset 0 0 0 1px var(--o-line-strong); }
+.ghost:hover:not(:disabled, [aria-disabled="true"]) { background: var(--o-surface-2); }
 .primary:disabled, .ghost:disabled { opacity: 0.45; cursor: default; }
-.primary:focus-visible, .ghost:focus-visible, .linkBtn:focus-visible, .tiny:focus-visible, .thumb:focus-visible, .deckOpen:focus-visible, .pBtn:focus-visible { outline: none; text-decoration: underline; text-underline-offset: 3px; }
-.linkBtn { color: var(--c-ink-2); text-decoration: underline; text-underline-offset: 3px; font: inherit; font-size: var(--t-label); cursor: pointer; width: fit-content; }
-.linkBtn:hover:not(:disabled) { color: var(--c-ink); }
+.linkBtn { padding: 0; border: 0; background: none; color: var(--o-accent-text); text-decoration: none; font: inherit; font-size: var(--o-t-13); font-weight: var(--o-w-medium); cursor: pointer; width: fit-content; }
+.linkBtn:hover:not(:disabled) { text-decoration: underline; text-underline-offset: 3px; }
 .linkBtn:disabled { opacity: 0.4; cursor: default; }
-.submitRow { display: flex; align-items: center; gap: var(--s-4); flex-wrap: wrap; }
-.estimate { color: var(--c-ink-3); font-size: var(--t-label); }
-.deckList { display: flex; flex-direction: column; }
-.deckRow { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); padding: var(--s-3) 0; border-bottom: 1px solid var(--c-border); }
-.deckRow:last-child { border-bottom: 0; }
-.deckOpen { display: flex; flex-direction: column; gap: 2px; text-align: left; min-width: 0; cursor: pointer; border-radius: var(--r-xs); }
-.deckName { font-weight: var(--w-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.deckMeta { color: var(--c-ink-3); font-size: var(--t-label); }
-.editor { display: flex; flex-direction: column; gap: var(--s-4); }
-.toolbar { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
-.titleInput { flex: 1 1 220px; min-width: 0; width: auto; font-weight: var(--w-medium); }
-.saved { color: var(--c-ink-3); font-size: var(--t-label); min-width: 3ch; }
-.deckMeta { color: var(--c-ink-2); font-size: var(--t-label); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.workbench { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: var(--s-5); align-items: start; }
-.rail { display: flex; flex-direction: column; gap: var(--s-3); max-height: 76vh; overflow-y: auto; padding: 2px; scrollbar-width: thin; }
-.thumbItem { display: flex; gap: var(--s-2); align-items: center; }
-.thumb { flex: 1; min-width: 0; border-radius: var(--r-xs); cursor: pointer; box-shadow: 0 0 0 1px var(--c-border); }
-.thumbItem[data-active] .thumb { box-shadow: 0 0 0 2px var(--c-focus); }
+.submitRow { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding-top: 16px; border-top: 1px solid var(--o-line); }
+.estimate { color: var(--o-ink-3); font-size: var(--o-t-12); }
+/* Your decks: a dense list with hairlines */
+.deckList { display: flex; flex-direction: column; margin: 0 -24px -8px; }
+.deckRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 24px; border-top: 1px solid var(--o-line); transition: background-color var(--o-dur-1) var(--o-ease-out); }
+.deckRow:hover { background: var(--o-hover); }
+.deckOpen { display: flex; flex-direction: column; gap: 2px; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; min-width: 0; cursor: pointer; border-radius: var(--o-r-chip); }
+.deckName { font-weight: var(--o-w-medium); color: var(--o-ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.editor { display: flex; flex-direction: column; gap: 16px; }
+.toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px; border-radius: var(--o-r-card); background: var(--o-surface-1); box-shadow: var(--o-elev-1); }
+.toolbar .input { min-height: 32px; }
+.titleInput { flex: 1 1 220px; min-width: 0; width: auto; font-weight: var(--o-w-medium); }
+.saved { color: var(--o-ink-3); font-size: var(--o-t-12); min-width: 3ch; }
+.deckMeta { color: var(--o-ink-3); font-size: var(--o-t-12); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.workbench { display: grid; grid-template-columns: 184px minmax(0, 1fr); gap: 24px; align-items: start; }
+.rail { display: flex; flex-direction: column; gap: 12px; max-height: 76vh; overflow-y: auto; padding: 2px; scrollbar-width: thin; }
+.thumbItem { display: flex; gap: 6px; align-items: center; }
+.thumb { flex: 1; min-width: 0; padding: 0; border: 0; background: none; border-radius: var(--o-r-chip); cursor: pointer; box-shadow: 0 0 0 1px var(--o-line); transition: box-shadow var(--o-dur-2) var(--o-ease-out); }
+.thumb:hover { box-shadow: 0 0 0 1px var(--o-line-strong), var(--o-elev-2); }
+.thumbItem[data-active] .thumb { box-shadow: 0 0 0 2px var(--o-accent); }
 .thumbTools { display: flex; flex-direction: column; gap: 2px; }
-.tiny { width: 24px; height: 24px; border-radius: var(--r-xs); color: var(--c-ink-2); font-size: 12px; cursor: pointer; box-shadow: inset 0 0 0 1px var(--c-border); }
+.tiny { display: inline-grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: var(--o-r-chip); background: transparent; color: var(--o-ink-3); font-size: 12px; cursor: pointer; }
+.tiny:hover:not(:disabled) { background: var(--o-hover); color: var(--o-ink); }
 .tiny:disabled { opacity: 0.3; cursor: default; }
-.stage { display: flex; flex-direction: column; gap: var(--s-4); min-width: 0; }
-.regen { display: grid; grid-template-columns: 1fr auto; gap: var(--s-3); align-items: center; }
+.stage { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.regen { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 16px; border-radius: var(--o-r-card); background: var(--o-surface-1); box-shadow: var(--o-elev-1); }
 .regen .estimate { grid-column: 1 / -1; }
 /* slide */
 .frame { container-type: inline-size; width: 100%; aspect-ratio: 16 / 9; border-radius: var(--r-xs); overflow: hidden; background: var(--sl-bg); color: var(--sl-ink); box-shadow: inset 0 0 0 1px var(--sl-line); }
@@ -86,26 +95,31 @@
 .pBtn[aria-pressed="true"] { background: color-mix(in srgb, var(--c-night-ink) 18%, transparent); }
 .pCount { min-width: 5ch; text-align: center; font-variant-numeric: tabular-nums; }
 /* locked */
-.locked { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--s-4); max-width: 560px; margin: var(--s-16) auto; padding: var(--s-10) var(--s-8); border-radius: var(--r-card); background: var(--c-surface-1); box-shadow: var(--elev-1); }
-.lockIcon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: var(--r-pill); background: var(--c-canvas); color: var(--c-ink-2); box-shadow: var(--elev-1); }
-.lockedTitle { font-size: var(--t-title); letter-spacing: var(--tr-title); line-height: var(--lh-title); font-weight: var(--w-medium); }
-.lockedBody { color: var(--c-ink-2); font-size: var(--t-body); line-height: var(--lh-body); }
-.lockedActions { display: flex; gap: var(--s-3); flex-wrap: wrap; justify-content: center; margin-top: var(--s-2); }
+.locked { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; max-width: 520px; margin: 64px auto; padding: 40px 32px; border-radius: var(--o-r-card); background: var(--o-surface-1); box-shadow: var(--o-elev-1); }
+.lockIcon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--o-r-control); background: var(--o-accent-soft); color: var(--o-accent-text); }
+.lockedTitle { margin: 0; font-size: var(--o-t-22); letter-spacing: -0.02em; line-height: var(--o-lh-display); font-weight: var(--o-w-semibold); }
+.lockedBody { margin: 0; color: var(--o-ink-2); font-size: var(--o-t-14); line-height: var(--o-lh-text); }
+.lockedActions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
 @media (max-width: 880px) {
-  .studio { padding: var(--s-5) var(--s-4) var(--s-12); }
+  .studio { gap: 24px; padding: 16px 16px 48px; }
+  .head { padding-bottom: 16px; }
+  .title { font-size: var(--o-t-22); }
   .grid { grid-template-columns: minmax(0, 1fr); }
   .workbench { grid-template-columns: minmax(0, 1fr); }
-  .rail { flex-direction: row; max-height: none; overflow-x: auto; overflow-y: hidden; padding-bottom: var(--s-2); }
+  .rail { flex-direction: row; max-height: none; overflow-x: auto; overflow-y: hidden; padding-bottom: 8px; }
   .thumbItem { flex: 0 0 150px; }
   .row { grid-template-columns: minmax(0, 1fr); }
   .regen { grid-template-columns: minmax(0, 1fr); }
-  .card { padding: var(--s-5); }
-  .locked { margin: var(--s-8) auto; padding: var(--s-8) var(--s-5); }
+  .card { padding: 16px; }
+  .deckList { margin-inline: -16px; }
+  .deckRow { padding-inline: 16px; }
+  .locked { margin: 32px auto; padding: 32px 20px; }
 }
 @media (prefers-reduced-motion: reduce) { .presentBar { transition: none; } }
 
 @media (pointer: coarse) {
   .primary, .ghost { height: 44px; }
+  .tiny { width: 36px; height: 36px; }
 }
 
 /* Present mode on a touch screen: there is no hover to wake the control bar, so it is fully visible, and its buttons are 44px. */
@@ -113,65 +127,5 @@
   .presentBar { opacity: 1; }
   .pBtn { height: 44px; min-width: 44px; }
 }
-
-/* UI v2: a light title, raised cards with a hairline (no frost), sentence-case labels */
-.title { font-weight: var(--w-regular); letter-spacing: -0.035em; }
-.card { background: var(--surface-raised); box-shadow: var(--elev-1); border-radius: var(--r-card); }
-.label { text-transform: none; letter-spacing: 0; font-size: 13px; }
-
-/* ── Space UI (docs/design/space-ui.md, phase B): this view's buttons draw Space Studio's 3D faces (space.css --space-p-* for the
-   one primary, --space-s-* for secondaries): a lit face over a ledge, a 1px lift and violet glow on hover, a press that sinks into
-   the ledge, the violet focus glow. Reduced motion keeps the faces and drops the lift. ── */
-:global(:root[data-theme]:not([data-business-app])) .primary {
-  background: var(--space-p-face);
-  color: var(--space-p-ink);
-  box-shadow: var(--space-p-depth);
-  border-color: transparent;
-  font-weight: var(--w-bold);
-  transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out), opacity 0.2s ease;
-}
-:global(:root[data-theme]:not([data-business-app])) .primary:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-p-face); transform: translateY(-1px); box-shadow: var(--space-p-depth-hover); }
-:global(:root[data-theme]:not([data-business-app])) .primary:active:not(:disabled, [aria-disabled="true"]) { transform: translateY(var(--space-ledge)); scale: none; box-shadow: var(--space-p-depth-press); transition-duration: 0.06s; }
-:global(:root[data-theme]:not([data-business-app])) .primary:focus-visible { box-shadow: var(--space-p-depth), var(--space-focus-glow); filter: none; text-decoration: none; }
-:global(:root[data-theme]:not([data-business-app])) .primary:disabled { transform: none; box-shadow: none; }
-:global(:root[data-theme]:not([data-business-app])) .ghost {
-  background: var(--space-s-face);
-  color: var(--space-s-ink);
-  box-shadow: var(--space-s-depth);
-  border-color: transparent;
-  font-weight: var(--w-bold);
-  transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out), opacity 0.2s ease;
-}
-:global(:root[data-theme]:not([data-business-app])) .ghost:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-s-face); transform: translateY(-1px); box-shadow: var(--space-s-depth-hover); }
-:global(:root[data-theme]:not([data-business-app])) .ghost:active:not(:disabled, [aria-disabled="true"]) { transform: translateY(var(--space-ledge)); scale: none; box-shadow: var(--space-s-depth-press); transition-duration: 0.06s; }
-:global(:root[data-theme]:not([data-business-app])) .ghost:focus-visible { box-shadow: var(--space-s-depth), var(--space-focus-glow); filter: none; text-decoration: none; }
-:global(:root[data-theme]:not([data-business-app])) .ghost:disabled { transform: none; box-shadow: none; }
-@media (prefers-reduced-motion: reduce) {
-  :global(:root[data-theme]:not([data-business-app])) .primary:hover:not(:disabled),
-  :global(:root[data-theme]:not([data-business-app])) .ghost:hover:not(:disabled) { transform: none; }
-}
-
-/* ── Space UI (phase B): Slides (and Study, which builds on these) ──
-   28px Space cards, Space fields with the violet glow, a semibold tight title, deck rows as wash pills, the active thumbnail glows
-   violet, the presenter bar is a glass pill, keyboard focus is the violet glow (no underline cue). The slide frames themselves are the
-   user's content and keep their own palette. */
-.title, .lockedTitle { font-weight: var(--w-semibold); letter-spacing: -0.045em; }
-.card, .locked { border-radius: var(--space-r-card); background: var(--surface-panel); box-shadow: var(--space-glass-depth); }
-.cardTitle { font-weight: var(--w-semibold); }
-.input { border-radius: 999px; padding: 0 20px; min-height: 46px; background: var(--space-field); box-shadow: var(--space-field-depth); transition: background-color 0.25s ease, box-shadow 0.3s var(--space-ease-out); }
-textarea.input { border-radius: var(--space-r-area); padding: 14px 20px; }
-.input:hover { background: var(--space-field-hover); }
-.input:focus, .input:focus-visible { background: var(--space-field-focus); box-shadow: var(--space-field-depth), var(--space-focus-glow); }
-.range { accent-color: var(--c-accent); }
-.error { border-radius: 20px; background: rgb(var(--rgb-destructive) / 0.1); box-shadow: none; }
-.primary:focus-visible, .ghost:focus-visible, .linkBtn:focus-visible, .tiny:focus-visible, .thumb:focus-visible, .deckOpen:focus-visible, .pBtn:focus-visible, .fileInput:focus-visible + label { text-decoration: none; box-shadow: var(--space-focus-glow); }
-.deckList { gap: 6px; }
-.deckRow { border-bottom: 0; padding: 10px 14px; border-radius: 20px; background: var(--hover-wash); }
-.deckRow:last-child { border-bottom: 0; }
-.thumb { border-radius: 10px; box-shadow: 0 6px 16px rgb(0 0 0 / 0.25); }
-.thumbItem[data-active] .thumb { box-shadow: 0 0 0 2px rgb(var(--ring-rgb) / 0.8); }
-.tiny { border-radius: 999px; box-shadow: none; background: var(--hover-wash); }
-.tiny:hover:not(:disabled) { background: var(--press-wash); }
-.frame { border-radius: 12px; }
-.lockIcon { background: var(--space-p-face); color: var(--space-p-ink); box-shadow: none; }
-.presentBar { border-radius: 999px; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 18px 48px rgb(0 0 0 / 0.55); }
+.frame { border-radius: var(--o-r-control); }
+.presentBar { box-shadow: var(--o-elev-3); }

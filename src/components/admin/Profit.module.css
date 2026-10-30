@@ -32,4 +32,4 @@
 .tagBad { background: rgb(var(--rgb-destructive) / 0.14); }
 .meter { background: var(--space-track); border-radius: 999px; }
 .pre { border: 0; border-radius: var(--space-r-panel); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04); }
-.select, .num { border: 0; border-radius: var(--r-pill); background: var(--space-field); box-shadow: var(--space-field-depth); padding-inline: var(--s-3); }
+.select, .num { border: 0; border-radius: var(--r-pill); background: var(--space-field); box-shadow: none; padding-inline: var(--s-3); }

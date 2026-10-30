@@ -371,8 +371,4 @@
     transition: none;
     scale: none;
   }
-  .opt:active,
-  .face:active {
-    scale: none;
-  }
 }

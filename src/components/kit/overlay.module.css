@@ -202,3 +202,84 @@
 @media (prefers-reduced-motion: reduce) {
   :global(html:not(:has([data-space-root]))) .float { animation: none; }
 }
+
+/* Keplar Orbit (docs/design/keplar-orbit.md §3/§5) on keplar.one: menus, popovers, toasts and dialogs are --o-surface-1 at
+   --o-elev-3 (menus, dialogs) or --o-elev-2 (toasts), on the Orbit radii; menu rows are 32px, 10px rounded, with the shared
+   hover wash; tooltips are ink on canvas. Space Studio and Keplar Business keep the kit's own look above. */
+:global(html:not(:has([data-space-root], [data-kb]))) .tip {
+  padding: 5px 8px;
+  border-radius: var(--o-r-chip);
+  background: var(--o-ink);
+  color: var(--o-canvas);
+  font-size: var(--o-t-12);
+  box-shadow: var(--o-elev-2);
+}
+:global(html:not(:has([data-space-root], [data-kb]))) .float {
+  padding: 4px;
+  border-radius: var(--o-r-card);
+  background: var(--o-surface-1);
+  box-shadow: var(--o-elev-3);
+}
+:global(html:not(:has([data-space-root], [data-kb]))) .item {
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: var(--o-r-control);
+  color: var(--o-ink);
+  font-size: var(--o-t-14);
+}
+:global(html:not(:has([data-space-root], [data-kb]))) .item:hover:not([aria-disabled="true"]),
+:global(html:not(:has([data-space-root], [data-kb]))) .item:focus-visible {
+  background: var(--o-hover);
+  box-shadow: none;
+}
+:global(html:not(:has([data-space-root], [data-kb]))) .item[data-danger] { color: var(--o-bad); }
+:global(html:not(:has([data-space-root], [data-kb]))) .item[data-danger]:hover:not([aria-disabled="true"]) {
+  background: color-mix(in srgb, var(--o-bad) 10%, transparent);
+}
+:global(html:not(:has([data-space-root], [data-kb]))) .itemIcon { color: var(--o-ink-3); }
+:global(html:not(:has([data-space-root], [data-kb]))) .itemHint { color: var(--o-ink-3); font-family: var(--o-font-mono); font-size: var(--o-t-11); }
+:global(html:not(:has([data-space-root], [data-kb]))) .sep { margin: 4px -4px; background: var(--o-line); }
+:global(html:not(:has([data-space-root], [data-kb]))) .groupLabel {
+  padding: 8px 10px 4px;
+  font-size: var(--o-t-11);
+  font-weight: var(--o-w-medium);
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--o-ink-3);
+}
+:global(html:not(:has([data-space-root], [data-kb]))) .toast {
+  padding: 12px 12px 12px 14px;
+  border-radius: var(--o-r-card);
+  background: var(--o-surface-1);
+  box-shadow: var(--o-elev-2);
+}
+:global(html:not(:has([data-space-root], [data-kb]))) .toast[data-tone="success"] .toastMark { color: var(--o-good); }
+:global(html:not(:has([data-space-root], [data-kb]))) .toast[data-tone="warning"] .toastMark { color: var(--o-warn); }
+:global(html:not(:has([data-space-root], [data-kb]))) .toast[data-tone="danger"] .toastMark { color: var(--o-bad); }
+:global(html:not(:has([data-space-root], [data-kb]))) .toast[data-tone="info"] .toastMark { color: var(--o-accent-text); }
+:global(html:not(:has([data-space-root], [data-kb]))) .toastTitle { font-size: var(--o-t-14); font-weight: var(--o-w-medium); color: var(--o-ink); }
+:global(html:not(:has([data-space-root], [data-kb]))) .toastText { font-size: var(--o-t-13); color: var(--o-ink-2); }
+:global(html:not(:has([data-space-root], [data-kb]))) .dialog {
+  border-color: transparent;
+  border-radius: var(--o-r-panel);
+  background: var(--o-surface-1);
+  color: var(--o-ink);
+  box-shadow: var(--o-elev-3);
+}
+:global(html:not(:has([data-space-root], [data-kb]))) .dialog::backdrop {
+  background: rgb(var(--o-canvas-rgb) / 0.72);
+}
+:global(html:not(:has([data-space-root], [data-kb]))) .dialogHead { padding: 20px 24px 8px; }
+:global(html:not(:has([data-space-root], [data-kb]))) .dialogTitle {
+  font-size: var(--o-t-18);
+  font-weight: var(--o-w-semibold);
+  letter-spacing: -0.015em;
+}
+:global(html:not(:has([data-space-root], [data-kb]))) .dialogDesc { font-size: var(--o-t-14); color: var(--o-ink-2); }
+:global(html:not(:has([data-space-root], [data-kb]))) .dialogBody { padding: 8px 24px 24px; }
+:global(html:not(:has([data-space-root], [data-kb]))) .dialogFoot {
+  gap: 8px;
+  padding: 16px 24px;
+  border-top-color: var(--o-line);
+  background: var(--o-surface-2);
+}
