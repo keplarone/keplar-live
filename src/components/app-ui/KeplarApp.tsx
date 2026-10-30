@@ -89,6 +89,8 @@ import { AnswerTools } from "./parity/AnswerTools";
 import { ChatOptionsBar, PrivateBanner, SpecialistStarters, useSpecialists } from "./parity/ChatOptionsBar";
 import { useFamilyMode } from "./parity/family-client";
 import { DraftPane } from "./parity/DraftPane";
+import { Rail } from "./shell/Rail";
+import { ContextPanel, agreementLabel, contextTabs, type ContextTab } from "./shell/ContextPanel";
 import s from "./App.module.css";
 
 // Three.js stays out of the main app bundle: loaded on a send (SendFieldLazy), only when a scene can run.
@@ -228,6 +230,15 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
       return next;
     });
   }, []);
+  /** Orbit context panel (answer details: sources, models, memory). Closed by default, never remembered. */
+  const [contextOpen, setContextOpen] = useState(false);
+  const [contextTab, setContextTab] = useState<ContextTab>("sources");
+  /** Show / hide the drawer (rail button and Ctrl/⌘+\): wide screens fold the docked drawer (remembered); tablets and phones open it
+   * as an overlay. */
+  const toggleDrawer = useCallback(() => {
+    if (window.matchMedia("(min-width: 1200px)").matches) toggleCollapsed();
+    else setDrawerOpen((v) => !v);
+  }, [toggleCollapsed]);
   /** A studio opened from the chat, beside the thread. Deep links still use the full view. */
   const [beside, setBeside] = useState<{ view: View; nonce: number } | null>(null);
   // The desktop title bar's search box (DesktopTitleBar) opens this search.
@@ -1148,6 +1159,9 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
       } else if (mod && e.shiftKey && k === "o") {
         e.preventDefault();
         newThread();
+      } else if (mod && (e.key === "\\" || e.code === "Backslash")) {
+        e.preventDefault();
+        toggleDrawer();
       } else if (mod && e.key === ",") {
         e.preventDefault();
         router.push("/account"); // opens the Settings dialog over the app (src/app/app/@modal)
@@ -1157,6 +1171,7 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
         // Escape in a kit Dialog or pop-up closes that overlay only (the overlay owns it): it never also stops the answer.
         if ((e.target as HTMLElement | null)?.closest?.("dialog, [popover]")) return;
         if (drawerOpen) { setDrawerOpen(false); return; }
+        if (contextOpen) { setContextOpen(false); document.querySelector<HTMLElement>("[data-context-open]")?.focus(); return; }
         if (running) { e.preventDefault(); stop(); return; }
         (document.activeElement as HTMLElement | null)?.blur?.();
       } else if (e.key === "/" && !mod) {
@@ -1167,7 +1182,7 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [searchOpen, drawerOpen, running, stop, newThread, goView, router]);
+  }, [searchOpen, drawerOpen, contextOpen, running, stop, newThread, goView, router, toggleDrawer]);
 
   /* drawer: focus the first control, trap Tab */
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -1191,7 +1206,11 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
       // return it to the menu button unless the next view already took it (e.g. the composer, a dialog).
       requestAnimationFrame(() => {
         const a = document.activeElement;
-        if (!a || a === document.body || el?.contains(a)) menuBtn.current?.focus({ preventScroll: true });
+        if (!a || a === document.body || el?.contains(a)) {
+          // The top bar's menu button on phones; the rail's drawer toggle where the rail shows instead.
+          const btn = menuBtn.current && menuBtn.current.offsetParent ? menuBtn.current : document.querySelector<HTMLElement>("[data-drawer-toggle]");
+          btn?.focus({ preventScroll: true });
+        }
       });
     };
   }, [drawerOpen]);
@@ -1251,6 +1270,8 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
   }, [state.activeThreadId, state.view, messages.length]);
   const title = state.view === "thread" ? thread?.title ?? "New chat" : VIEW_TITLE[state.view] ?? state.view[0].toUpperCase() + state.view.slice(1);
   const dailyLow = Boolean(state.ledger.daily && (state.ledger.paused || state.ledger.daily.left / Math.max(1, state.ledger.daily.limit) < 0.2));
+  const ctxTabs = contextTabs(lastKeplar, sync.memory);
+  const agreement = agreementLabel(lastKeplar);
   const projectName = state.projects.find((p) => p.id === (thread?.projectId ?? state.projectFilter))?.name;
 
   return (
@@ -1259,6 +1280,16 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
       <ExtensionReturn onChanged={() => void syncMeter(true)} />
       <ReferralClaim signedIn={state.ledger.signedIn} onChanged={() => void syncMeter(true)} />
       <ReferralNudge signedIn={state.ledger.signedIn} />
+      <Rail
+        active={beside?.view ?? state.view}
+        mac={mac}
+        onNew={() => newThread()}
+        onSearch={() => { setDrawerOpen(false); setSearchOpen(true); }}
+        onView={(v) => { if (v === "thread") { setBeside(null); goView("thread"); } else openSurface(v); }}
+        onToggleDrawer={toggleDrawer}
+        drawerShown={drawerOpen || !collapsed}
+        signedIn={state.ledger.signedIn}
+      />
       <div ref={drawerRef} className={s.sideWrap} data-open={drawerOpen || undefined} onPointerEnter={() => warmViews(true)} onFocus={() => warmViews(true)}>
         <Sidebar
           state={listedState}
@@ -1281,13 +1312,21 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
 
       <div key={state.epoch} className={s.main} inert={drawerOpen || undefined} data-view={state.view} data-empty={(state.view === "thread" && messages.length === 0) || undefined}>
         <header className={s.topbar} data-keplar-drag>
-          <button ref={menuBtnRef} type="button" className={`${s.iconBtn} ${s.menuBtn}`} onClick={() => { if (window.matchMedia("(min-width: 900px)").matches) { toggleCollapsed(); return; } setDrawerOpen(true); }} aria-label="Open sidebar" aria-expanded={drawerOpen} aria-controls="keplar-sidebar">
+          <button ref={menuBtnRef} type="button" className={`${s.iconBtn} ${s.menuBtn}`} onClick={toggleDrawer} aria-label="Open sidebar" aria-expanded={drawerOpen} aria-controls="keplar-sidebar">
             <KeplarSymbol size={22} />
           </button>
           <p className={s.topTitle}>
             {projectName ? <span className={s.topProject}>{projectName} / </span> : null}
             {title}
           </p>
+          {state.view === "thread" && ctxTabs.length && messages.length ? (
+            // Orbit top strip: the latest answer's model agreement, which opens the context panel (sources, models, memory).
+            <button type="button" className={s.ctxOpen} data-context-open="" aria-expanded={contextOpen} aria-controls="keplar-context" onClick={() => setContextOpen((v) => !v)} data-orbit-fx="secondary">
+              <span className={s.ctxDot} aria-hidden="true" />
+              <span className={s.ctxText}>{agreement ?? "Answer details"}</span>
+              {agreement ? <span className="visually-hidden">, answer details</span> : null}
+            </button>
+          ) : null}
           {sync.memory !== null ? (
             // Minimal pass: a quiet icon, not a chip. The state is in its name and tooltip (and a slash when off); one click opens the setting.
             <Link href="/account#memory" className={`${s.memoryChip} ${s.phoneHide}`} data-memory-status="" data-on={sync.memory || undefined} aria-label={sync.memory ? "Memory on" : "Memory off"} title={sync.memory ? "Memory is on: Keplar remembers your name, goals and past chats. Click to manage." : "Memory is off. Click to turn it on."}>
@@ -1312,7 +1351,7 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
           ) : null}
           {state.view === "thread" && thread && thread.messages.length ? <DeleteChatAction variant="header" title={thread.title} onDelete={() => deleteChat(thread.id)} /> : null}
           {/* Phones signed in: the theme lives in the account menu and memory in Settings, so the bar keeps the title room. */}
-          <ThemeToggle className={`${s.iconBtn} ${state.ledger.signedIn ? s.phoneHide : ""}`} />
+          <ThemeToggle className={`${s.iconBtn} kp-topbar-theme ${state.ledger.signedIn ? s.phoneHide : ""}`} />
           {state.ledger.synced && !state.ledger.signedIn ? (
             <span className={s.authTop}>
               <Link href="/signin" className={s.authIn}>Log in</Link>
@@ -1592,6 +1631,9 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
               <p className={s.dockNote}>Keplar can be wrong, even when models agree. Verify important decisions.</p>
             </div>
           </div>
+          {contextOpen && state.view === "thread" && ctxTabs.length ? (
+            <ContextPanel msg={lastKeplar ?? null} memoryOn={sync.memory} tab={contextTab} onTab={setContextTab} onClose={() => { setContextOpen(false); document.querySelector<HTMLElement>("[data-context-open]")?.focus(); }} />
+          ) : null}
           {beside ? (
             <aside className={s.beside} aria-label={BESIDE_TITLE[beside.view] ?? "Panel"}>
               <div className={s.besideHead}>

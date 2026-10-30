@@ -1,0 +1,34 @@
+/* /dev/orbit (Showcase.tsx). Orbit tokens only. */
+.page { max-width: 1200px; margin: 0 auto; padding: 120px 24px 120px; color: var(--o-ink); font-family: var(--o-font-sans); }
+.head { margin-bottom: 56px; }
+.kicker { font-size: var(--o-t-13); font-weight: var(--o-w-medium); color: var(--o-accent-text); }
+.title { margin-top: 8px; font-size: var(--o-t-48); line-height: var(--o-lh-display); letter-spacing: var(--o-tr-display); font-weight: var(--o-w-semibold); }
+.lede { margin-top: 12px; max-width: 60ch; font-size: var(--o-t-18); color: var(--o-ink-2); }
+.section { padding: 40px 0; border-top: 1px solid var(--o-line); }
+.h2 { font-size: var(--o-t-22) !important; letter-spacing: -0.02em !important; font-weight: var(--o-w-semibold); margin-bottom: 20px; }
+.h3 { margin: 28px 0 12px; font-size: var(--o-t-14); font-weight: var(--o-w-semibold); color: var(--o-ink-2); }
+.note { margin: -8px 0 20px; max-width: 70ch; font-size: var(--o-t-14); color: var(--o-ink-2); }
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.swatch { display: flex; flex-direction: column; gap: 6px; font-size: var(--o-t-12); color: var(--o-ink-2); }
+.chipColor { height: 56px; border-radius: var(--o-r-card); box-shadow: inset 0 0 0 1px var(--o-line); }
+.typeList { display: flex; flex-direction: column; gap: 10px; }
+.typeTag { display: inline-block; min-width: 44px; font-family: var(--o-font-mono); font-size: var(--o-t-11); color: var(--o-ink-3); vertical-align: middle; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 16px; }
+.shape { display: grid; place-items: center; width: 120px; height: 72px; background: var(--o-surface-2); font-size: var(--o-t-12); color: var(--o-ink-2); }
+.elev { display: grid; place-items: center; width: 140px; height: 80px; border-radius: var(--o-r-card); background: var(--o-surface-1); font-size: var(--o-t-12); color: var(--o-ink-2); }
+.grid { display: flex; flex-direction: column; gap: 12px; }
+.cell { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.label { min-width: 80px; font-size: var(--o-t-12); font-weight: var(--o-w-medium); color: var(--o-ink-3); }
+.shell { position: relative; display: flex; height: 460px; overflow: hidden; border-radius: var(--o-r-panel); background: var(--o-canvas); box-shadow: var(--o-elev-2); }
+.mockDrawer { width: 220px; flex: none; padding: 16px 10px; background: var(--o-surface-1); border-inline-end: 1px solid var(--o-line); display: flex; flex-direction: column; gap: 4px; }
+.mockRow { padding: 8px 10px; border-radius: var(--o-r-control); font-size: var(--o-t-14); color: var(--o-ink-2); }
+.mockRow[data-on] { background: var(--o-selected); color: var(--o-ink); font-weight: var(--o-w-medium); }
+.mockCanvas { flex: 1; min-width: 0; padding: 40px 32px; display: flex; flex-direction: column; gap: 20px; }
+.mockUser { align-self: flex-end; padding: 10px 16px; border-radius: 18px 18px 6px 18px; background: var(--o-surface-2); font-size: var(--o-t-14); }
+.mockAnswer { max-width: 56ch; font-size: var(--o-t-16); line-height: 1.7; }
+.mockContext { display: flex; }
+.mockContext > aside { position: static; height: 100%; box-shadow: none; }
+@media (max-width: 899px) {
+  .shell { flex-direction: column; height: auto; }
+  .mockDrawer, .mockContext { display: none; }
+}

@@ -268,24 +268,7 @@ html:not(:has([data-space-root], [data-kb])) :is([class*="homeChip"], [class*="u
   box-shadow: none !important;
   filter: none !important;
 }
-/* button[...]: the chip only. A bare [class*="homeChip"] also matched the row (homeChips) and the label (homeChipLabel),
-   so hovering anywhere over the row washed its whole box grey (a rectangle behind all four chips). */
-html:not(:has([data-space-root], [data-kb])) button[class*="homeChip"] {
-  border-color: #3a3a3a;
-  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
-}
-html:not(:has([data-space-root], [data-kb])) button[class*="homeChip"]:hover {
-  border-color: #5a5a5a !important;
-  background: var(--hover-wash);
-}
-html:not(:has([data-space-root], [data-kb])) [data-theme="light"] button[class*="homeChip"],
-html:not(:has([data-space-root], [data-kb]))[data-theme="light"] button[class*="homeChip"] {
-  border-color: #d4d4d4;
-}
-html:not(:has([data-space-root], [data-kb])) [data-theme="light"] button[class*="homeChip"]:hover,
-html:not(:has([data-space-root], [data-kb]))[data-theme="light"] button[class*="homeChip"]:hover {
-  border-color: #8a8a8a !important;
-}
+/* Home chips and the composer edge: Orbit (src/styles/orbit/app.css). */
 html:not(:has([data-space-root], [data-kb])) [class*="meterTrack"] > span,
 html:not(:has([data-space-root], [data-kb])) [class*="strengthBar"] span {
   background: var(--c-ink) !important;
@@ -295,19 +278,6 @@ html:not(:has([data-space-root], [data-kb])) [class*="composer"][data-pulse] {
 }
 html:not(:has([data-space-root], [data-kb])) [class*="composer"]:is(:focus-within, [data-dragging]) {
   box-shadow: none !important;
-}
-html:not(:has([data-space-root], [data-kb])) [class*="composer"] {
-  border-color: #3a3a3a !important;
-}
-html:not(:has([data-space-root], [data-kb])) [class*="composer"]:focus-within {
-  border-color: #5a5a5a !important;
-  box-shadow: none !important;
-}
-html:not(:has([data-space-root], [data-kb]))[data-theme="light"] [class*="composer"] {
-  border-color: #d4d4d4 !important;
-}
-html:not(:has([data-space-root], [data-kb]))[data-theme="light"] [class*="composer"]:focus-within {
-  border-color: #8a8a8a !important;
 }
 html:not(:has([data-space-root], [data-kb])) [class*="__sheet"] {
   border: 1px solid var(--hairline);
