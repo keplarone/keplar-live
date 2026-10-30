@@ -62,7 +62,7 @@ function ProjectList({ onOpen }: { onOpen: (id: string) => void }) {
       <form className={s.inline} onSubmit={(e) => void create(e)}>
         <label className={s.srOnly} htmlFor="new-project">New project name</label>
         <input spellCheck={false} id="new-project" className={s.input} value={name} onChange={(e) => setName(e.target.value)} placeholder="New project, e.g. Q4 launch" maxLength={80} />
-        <button type="submit" className={s.btnPrimary} disabled={busy || !name.trim()}>{busy ? "Creating…" : "Create project"}</button>
+        <button type="submit" className={s.btnPrimary} data-orbit-fx="primary" disabled={busy || !name.trim()}>{busy ? "Creating…" : "Create project"}</button>
       </form>
       {err ? <p className={s.error} role="alert">{err}</p> : null}
       {list === null ? <span className={s.skel} /> : list.length === 0 ? <p className={s.muted}>No projects yet. Create one above.</p> : (
@@ -178,7 +178,7 @@ function ProjectPage({ id, onBack }: { id: string; onBack: () => void }) {
             <input id="task-title" className={s.input} value={taskTitle} onChange={(e) => setTaskTitle(e.target.value)} placeholder="Add a task" maxLength={200} />
             <label className={s.srOnly} htmlFor="task-due">Due date</label>
             <input id="task-due" className={s.input} data-narrow="" type="date" value={taskDue} onChange={(e) => setTaskDue(e.target.value)} />
-            <button type="submit" className={s.btnGhost} disabled={!taskTitle.trim()}>Add</button>
+            <button type="submit" className={s.btnGhost} data-orbit-fx="secondary" disabled={!taskTitle.trim()}>Add</button>
           </form>
           {tasks.length ? (
             <ul className={s.tasks}>
@@ -199,7 +199,7 @@ function ProjectPage({ id, onBack }: { id: string; onBack: () => void }) {
           <label className={s.srOnly} htmlFor="ins">Project instructions</label>
           <textarea id="ins" className={s.textarea} rows={6} value={instructions} onChange={(e) => { setInstructions(e.target.value); setSaved("idle"); }} maxLength={4000} />
           <div className={s.row}>
-            <button type="button" className={s.btnGhost} onClick={() => void saveInstructions()} disabled={saved === "saving" || instructions === d.project.instructions && saved !== "idle"}>{saved === "saving" ? "Saving…" : "Save"}</button>
+            <button type="button" className={s.btnGhost} data-orbit-fx="secondary" onClick={() => void saveInstructions()} disabled={saved === "saving" || instructions === d.project.instructions && saved !== "idle"}>{saved === "saving" ? "Saving…" : "Save"}</button>
             {saved === "saved" ? <span className={s.muted} role="status">Saved</span> : null}
           </div>
         </section>
@@ -207,7 +207,7 @@ function ProjectPage({ id, onBack }: { id: string; onBack: () => void }) {
           <div className={s.panelHead}>
             <h2 id="files-h" className={s.h2}>Files</h2>
             <input ref={fileRef} type="file" accept={TEXT_TYPES} multiple hidden onChange={(e) => void upload(e.target.files)} />
-            <button type="button" className={s.btnGhost} onClick={() => fileRef.current?.click()}>Add files</button>
+            <button type="button" className={s.btnGhost} data-orbit-fx="secondary" onClick={() => fileRef.current?.click()}>Add files</button>
           </div>
           {d.files.length ? (
             <ul className={s.list}>{d.files.map((f) => <li key={f.id}><span>{f.name}</span><span className={s.muted}>{Math.round(f.chars / 1000)}k characters{f.truncated ? " (shortened)" : ""}</span><button type="button" className={s.iconBtn} onClick={() => void removeFile(f.id)} aria-label={`Remove ${f.name}`}>×</button></li>)}</ul>

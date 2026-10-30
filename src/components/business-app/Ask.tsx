@@ -123,7 +123,7 @@ export function Ask({ chatId, first, firstMedia, projectId: projectIn, resume, o
           <span className={s.model}><span className={s.modelDot} aria-hidden="true" />Keplar One · Auto</span>
           <span className={s.grow} />
           {busy ? <button type="button" className={s.quickBtn} onClick={() => abort.current?.abort()}>Stop</button> : null}
-          <button type="submit" className={s.sendBtn} disabled={busy || !text.trim() || media.busy} aria-label="Send">
+          <button type="submit" className={s.sendBtn} data-orbit-fx="primary" data-orbit-icon="send" disabled={busy || !text.trim() || media.busy} aria-label="Send">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
           </button>
         </div>

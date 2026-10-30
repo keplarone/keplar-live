@@ -1,11 +1,10 @@
-/* Product grid (ProductTiles.tsx): Space Studio cards, each a small moving example of one module. Tokens from tokens.css.
-   28px glass without backdrop blur (the grid repeats), depth instead of outlines; a hover lifts the card and adds the violet glow. */
-:global(:root[data-theme="dark"]) .tile { --tile-bg: #161617; }
-.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; width: 100%; max-width: var(--kb-max); margin: 0 auto; padding: 0 var(--kb-gutter); box-sizing: border-box; }
+/* Product grid (ProductTiles.tsx): Orbit cards (surface-1 on a hairline, 14px), each a small moving example of one module.
+   Tokens are Orbit (--o-*, directly or through the --kb-* names in tokens.css). The Explore link carries the hover. */
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; width: 100%; max-width: calc(var(--kb-max) + 2 * var(--kb-gutter)); margin: 0 auto; padding: 0 var(--kb-gutter); box-sizing: border-box; }
 .tile {
-  --tile-bg: #f5f5f7;
-  position: relative; display: flex; flex-direction: column; min-width: 0; height: 340px; border-radius: var(--kb-r-lg); overflow: hidden;
-  background: var(--kb-card-deep); box-shadow: var(--kb-depth);
+  --tile-bg: var(--o-surface-1);
+  position: relative; display: flex; flex-direction: column; min-width: 0; height: 340px; border-radius: var(--o-r-card); overflow: hidden;
+  background: var(--tile-bg); box-shadow: var(--o-elev-1);
   transition: background-color var(--kb-d-3) var(--kb-ease);
 }
 /* Apple's tiles do not lift: the Explore link carries the hover. */
@@ -13,7 +12,7 @@
 .example { position: absolute; top: 14px; right: 16px; z-index: 2; display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: var(--kb-r-pill); background: var(--kb-hover); font-size: 11px; font-weight: 600; color: var(--kb-ink-2); }
 .stage { position: relative; flex: 1; min-height: 0; overflow: hidden; padding: 50px 22px 0; }
 .stage::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 56px; background: linear-gradient(transparent, var(--tile-bg)); pointer-events: none; }
-.foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 56px; margin: 0 8px 8px; padding: 0 14px; border-radius: var(--kb-r-pill); color: var(--kb-ink); text-decoration: none; transition: background-color var(--kb-d-2) var(--kb-ease); }
+.foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 56px; margin: 0 8px 8px; padding: 0 14px; border-radius: var(--o-r-control); color: var(--kb-ink); text-decoration: none; transition: background-color var(--kb-d-2) var(--kb-ease); }
 .foot:hover { background: var(--kb-hover); }
 .tile .foot:focus-visible { outline: none; box-shadow: var(--kb-glow); }
 .title { font-size: var(--kb-t-body); font-weight: 600; letter-spacing: -0.015em; }
@@ -60,12 +59,12 @@
 .approvalHead::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--kb-warn); box-shadow: none; }
 .approvalText { margin: 6px 0 12px; font-size: 13px; color: var(--kb-ink); }
 .approvalActions { display: flex; justify-content: flex-end; gap: 8px; }
-.btnDark, .btnLight { display: inline-flex; align-items: center; height: 28px; padding: 0 14px; border-radius: 999px; font-size: 12px; font-weight: 400; transition: background-color 160ms ease, box-shadow 160ms ease, background 300ms var(--kb-ease), color 300ms var(--kb-ease); }
+.btnDark, .btnLight { display: inline-flex; align-items: center; height: 28px; padding: 0 14px; border-radius: var(--o-r-control); font-size: 12px; font-weight: 400; transition: background-color 160ms ease, box-shadow 160ms ease, background 300ms var(--kb-ease), color 300ms var(--kb-ease); }
 .btnDark { background: transparent; color: var(--kb-accent-ink); box-shadow: inset 0 0 0 1px var(--kb-accent); }
 .btnLight { background: var(--kb-p-face); color: var(--kb-p-ink); box-shadow: none; }
 /* the press: the face sinks into its ledge, then turns green */
 /* Approved: a deep green in both themes, so white text holds 6.3:1 (the Dark theme's --kb-green is bright, for text) */
-.btnLight[data-pressed] { background: #0e6e49; color: #ffffff; }
+.btnLight[data-pressed] { background: var(--o-good); color: var(--o-canvas); }
 
 /* Research */
 .report { display: flex; flex-direction: column; gap: 10px; }
@@ -90,12 +89,12 @@
 .wHero[data-sel] { box-shadow: inset 0 0 0 1.5px var(--kb-accent); }
 .wH1 { width: 58%; height: 16px; background: #1d1d1f !important; }
 .wP { width: 42%; height: 7px; }
-.wBtn { width: 70px; height: 20px; border-radius: 999px !important; background: var(--kb-accent) !important; margin-top: 4px; }
+.wBtn { width: 70px; height: 20px; border-radius: var(--o-r-control) !important; background: var(--kb-accent) !important; margin-top: 4px; }
 .h { position: absolute; width: 7px; height: 7px; border-radius: 2px; background: #fff; box-shadow: 0 0 0 1.5px var(--kb-accent); }
 .h[data-c="tl"] { top: -3px; left: -3px; } .h[data-c="tr"] { top: -3px; right: -3px; } .h[data-c="bl"] { bottom: -3px; left: -3px; } .h[data-c="br"] { bottom: -3px; right: -3px; }
 .wGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .wGrid i { height: 54px; border-radius: 8px; }
-.code { position: absolute; right: 12px; bottom: 12px; margin: 0; padding: 10px 14px; border-radius: 16px; background: var(--kb-term); color: var(--kb-ink-2); font-family: var(--kb-code); font-size: 10.5px; line-height: 1.5; box-shadow: 0 14px 30px rgb(0 0 0 / 0.55); animation: pop 0.42s var(--kb-ease-expo) both; }
+.code { position: absolute; right: 12px; bottom: 12px; margin: 0; padding: 10px 14px; border-radius: var(--o-r-card); background: var(--kb-term); color: var(--kb-ink-2); font-family: var(--kb-code); font-size: 10.5px; line-height: 1.5; box-shadow: 0 14px 30px rgb(0 0 0 / 0.55); animation: pop 0.42s var(--kb-ease-expo) both; }
 .ai { position: absolute; right: 12px; bottom: 12px; margin: 0; max-width: 220px; padding: 10px 14px; border-radius: 18px 18px 6px 18px; background: var(--kb-card-featured); color: var(--kb-ink); font-size: 11.5px; box-shadow: var(--kb-depth); animation: pop 0.42s var(--kb-ease-expo) both; }
 @keyframes pop { from { opacity: 0; } }
 
@@ -105,7 +104,7 @@
 .tile:has(.converge) .stage::after { display: none; }
 
 /* Product section feature rows (ProductDemo): the same examples, larger, on a glass card */
-.demo { position: relative; min-height: 380px; border-radius: var(--kb-r-lg); overflow: hidden; background: var(--kb-card-deep); box-shadow: var(--kb-depth); }
+.demo { position: relative; min-height: 380px; border-radius: var(--o-r-card); overflow: hidden; background: var(--tile-bg); box-shadow: var(--o-elev-1); }
 .demoStage { position: absolute; inset: 0; padding: 44px 32px 0; display: flex; flex-direction: column; }
 .demoStage > * { flex: 1; min-height: 0; }
 .demo[data-kind="chat"] .demoStage { padding: 52px clamp(20px, 6%, 56px) 24px; }
@@ -129,4 +128,4 @@
   .code, .ai { animation: none; }
 }
 /* Dark: the selected segment is the lighter step (macOS systemGray), raised above the track. */
-:global(:root[data-theme="dark"]) .modes span[data-on] { background: #636366; color: var(--kb-ink); }
+

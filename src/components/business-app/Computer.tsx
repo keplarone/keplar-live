@@ -97,7 +97,7 @@ export function Computer({ onOpenSettings }: { onOpenSettings: () => void }) {
         <div className={c.card}>
           <h2 className={c.cardTitle}>Runs in the Keplar Business desktop app</h2>
           <p className={s.muted}>A web page can&apos;t control your computer, so computer use needs the desktop app for Windows, macOS or Linux (version 0.1.8 or later). In a browser you can still share your screen with Keplar from the composer.</p>
-          <div className={s.row}><button type="button" className={s.btnPrimary} onClick={onOpenSettings}>Get the desktop app</button></div>
+          <div className={s.row}><button type="button" className={s.btnPrimary} data-orbit-fx="primary" onClick={onOpenSettings}>Get the desktop app</button></div>
         </div>
         <How />
       </div>
@@ -121,8 +121,8 @@ export function Computer({ onOpenSettings }: { onOpenSettings: () => void }) {
         <div className={c.controls}>
           <label className={c.check}><input type="checkbox" checked={askEach} onChange={(e) => setAskEach(e.target.checked)} disabled={running} /> Ask before each step</label>
           <span className={c.grow} />
-          {running ? <button type="button" className={s.btnGhost} onClick={() => { stopped.current = true; void b.stop(); }}>Stop</button>
-            : <button type="submit" className={s.btnPrimary} disabled={goal.trim().length < 4 || Boolean(blocked && status?.platform !== "darwin")}>Start</button>}
+          {running ? <button type="button" className={s.btnGhost} data-orbit-fx="secondary" onClick={() => { stopped.current = true; void b.stop(); }}>Stop</button>
+            : <button type="submit" className={s.btnPrimary} data-orbit-fx="primary" disabled={goal.trim().length < 4 || Boolean(blocked && status?.platform !== "darwin")}>Start</button>}
         </div>
         <p className={s.muted}>{askEach ? "You approve every step on the bar at the top of your screen." : "Steps run on their own, except anything that spends, sends, deletes, submits or signs in: those always wait for you."} Stop any time with {status?.stopKey ?? "Ctrl+Shift+X"} or the bar&apos;s Stop. Up to {status?.limits.steps ?? 40} steps or {status?.limits.minutes ?? 15} minutes per run. Keplar never types passwords or card numbers.</p>
       </form>

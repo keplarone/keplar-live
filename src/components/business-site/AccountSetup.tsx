@@ -109,7 +109,7 @@ export function AccountSetup() {
               <label className={s.field}><span>Industry</span><select name="industry" defaultValue="" aria-invalid={Boolean(errors.industry) || undefined}><option value="">Choose…</option>{INDUSTRIES.map((x) => <option key={x}>{x}</option>)}</select>{errors.industry ? <em>{errors.industry}</em> : null}</label>
               <label className={`${s.field} ${s.wide}`}><span>Your role</span><input name="role" required autoComplete="organization-title" placeholder="Founder, Head of Operations…" aria-invalid={Boolean(errors.role) || undefined} />{errors.role ? <em>{errors.role}</em> : null}</label>
               {message ? <p className={`${s.formError} ${s.wide}`} role="alert">{message}</p> : null}
-              <div className={s.wide}><button type="submit" className={s.btnPrimary} disabled={busy || !phase.verified}>{busy ? "Saving…" : "Create business account"}</button></div>
+              <div className={s.wide}><button type="submit" className={s.btnPrimary} data-orbit-fx="primary" disabled={busy || !phase.verified}>{busy ? "Saving…" : "Create business account"}</button></div>
             </form>
           </>
         ) : null}
@@ -120,8 +120,8 @@ export function AccountSetup() {
               <h1 className={s.h2}>{phase.account.company} is on Keplar Business</h1>
               <p className={s.muted}>Your plan is active. Open the workspace here, or get the desktop app.</p>
               <div className={s.heroActions}>
-                <Link href="/work" className={s.btnPrimary}>Open workspace</Link>
-                <Link href="/#download" className={s.btnGhost}>Get the desktop app</Link>
+                <Link href="/work" className={s.btnPrimary} data-orbit-fx="primary">Open workspace</Link>
+                <Link href="/#download" className={s.btnGhost} data-orbit-fx="secondary">Get the desktop app</Link>
               </div>
             </>
           ) : embed ? (
@@ -139,7 +139,7 @@ export function AccountSetup() {
               </div>
               {message ? <p className={s.formError} role="alert">{message}</p> : null}
               <div className={s.heroActions}>
-                <button type="button" className={s.btnGhost} onClick={() => setEmbed(null)}>Change plan</button>
+                <button type="button" className={s.btnGhost} data-orbit-fx="secondary" onClick={() => setEmbed(null)}>Change plan</button>
               </div>
               <p className={s.muted}>Payment is handled by Whop inside the form above; Keplar never sees your card.</p>
             </>
@@ -159,8 +159,8 @@ export function AccountSetup() {
               </div>
               {message ? <p className={s.formError} role="alert">{message} <Link href="/#contact" className={s.textLink}>Contact sales</Link></p> : null}
               <div className={s.heroActions}>
-                <button type="button" className={s.btnPrimary} onClick={() => void checkout("embed")} disabled={busy}>{busy ? "Opening checkout…" : "Continue to checkout"}</button>
-                <Link href="/#contact" className={s.btnGhost}>Need Enterprise? Talk to sales</Link>
+                <button type="button" className={s.btnPrimary} data-orbit-fx="primary" onClick={() => void checkout("embed")} disabled={busy}>{busy ? "Opening checkout…" : "Continue to checkout"}</button>
+                <Link href="/#contact" className={s.btnGhost} data-orbit-fx="secondary">Need Enterprise? Talk to sales</Link>
               </div>
               <p className={s.muted}>Payments are processed by Whop. Billed monthly. Cancel any time from your account; your plan runs to the end of the paid month.</p>
             </>

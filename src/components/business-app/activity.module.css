@@ -9,7 +9,7 @@
   min-width: 0;
   padding: 16px 16px 12px;
   border: 0;
-  border-radius: var(--kb-r-lg);
+  border-radius: var(--o-r-card);
   background: var(--kb-glass-solid);
   color: var(--kb-ink);
   box-shadow: none;
@@ -52,12 +52,12 @@
   min-height: 32px;
   padding: 0 14px;
   border: 0;
-  border-radius: 999px;
-  background: var(--kb-ink);
-  color: var(--kb-ink-inverse);
+  border-radius: var(--o-r-control);
+  background: var(--o-surface-3);
+  color: var(--o-ink);
   font: inherit;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
 }
 
@@ -136,7 +136,7 @@
 }
 
 .retry:hover { background: var(--kb-hover); }
-.review:hover { background: var(--kb-ink-2); }
+.review:hover { background: var(--o-press); }
 
 /* The shared skeleton uses Keplar One's ink wash, which disappears on this dark card. Match the Projects placeholder. */
 :global(.m-skeleton).skel {
