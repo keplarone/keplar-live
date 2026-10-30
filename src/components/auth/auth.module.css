@@ -424,52 +424,52 @@
   .collageTrack { animation: none; }
 }
 
-/* ── Keplar Business sign-in (AuthShell brand="business"): the shared form in the Business look (tokens.css, Apple-led): the
-   page and panel in the Business canvas and tiles, the Business face, 56px fields with 12px corners, the blue pill, outline secondaries and
-   Apple's segmented Sign up / Sign in control. Edges are borders, not box-shadows: Keplar One's flat-controls layer still runs
-   on this page and strips control shadows. ── */
-.shell[data-brand="business"] { background: var(--kb-bg); color: var(--kb-ink); font-family: var(--kb-sans); letter-spacing: -0.011em; }
+/* ── Keplar Business sign-in (AuthShell brand="business"): the shared form in Keplar Orbit (the Business tokens in
+   src/components/business-site/tokens.css point at --o-*): the canvas, Inter, 44px fields with a 3:1 edge and 10px corners, the
+   accent primary, a segmented Sign up / Sign in control whose chosen item lifts onto surface-1, and a panel beside the form.
+   Edges are borders, not box-shadows: Keplar One's flat-controls layer still runs on this page and strips control shadows. ── */
+.shell[data-brand="business"] { background: var(--o-canvas); color: var(--o-ink); font-family: var(--kb-sans); letter-spacing: -0.006em; }
 .shell[data-brand="business"] .card { gap: var(--s-5); }
-.shell[data-brand="business"] .title { font-size: clamp(28px, 1.6vw + 18px, 40px); line-height: 1.1; letter-spacing: -0.024em; font-weight: 600; color: var(--kb-ink); }
-.shell[data-brand="business"] .lead { font-size: 17px; line-height: 1.47; letter-spacing: -0.022em; color: var(--kb-ink-2); }
-.shell[data-brand="business"] .toggle { background: var(--kb-surface-3); box-shadow: none; padding: 3px; }
-.shell[data-brand="business"] .toggleItem { color: var(--kb-ink-2); font-weight: 400; }
-.shell[data-brand="business"] .toggleItem[aria-current="page"] { background: var(--kb-surface); color: var(--kb-ink); }
-/* Dark: the thumb is the lighter step (macOS systemGray), so it reads as raised above the track (#f5f5f7 on #636366 is 5.4:1). */
-:global(:root[data-theme="dark"]) .shell[data-brand="business"] .toggleItem[aria-current="page"] { background: #636366; }
-.shell[data-brand="business"] .label { color: var(--kb-ink); font-size: 14px; letter-spacing: -0.016em; }
-.shell[data-brand="business"] .input { min-height: 56px; border: 1px solid #86868b; border-radius: var(--kb-r-sm); background: var(--kb-field); color: var(--kb-ink); font-size: 17px; letter-spacing: -0.022em; }
-.shell[data-brand="business"] .input:hover { background: var(--kb-field); }
+/* Display weight: Keplar One's marketing layer sets #main h1 to regular; the Business title is Orbit display (600). */
+:global(#main) .shell[data-brand="business"] .title { font-weight: 600; }
+.shell[data-brand="business"] .title { font-size: clamp(28px, 1.6vw + 18px, 36px); line-height: var(--o-lh-display); letter-spacing: var(--o-tr-display); font-weight: 600; color: var(--o-ink); }
+.shell[data-brand="business"] .lead { font-size: var(--o-t-16); line-height: 1.5; color: var(--o-ink-2); }
+.shell[data-brand="business"] .toggle { background: var(--o-surface-2); box-shadow: none; padding: 3px; border-radius: var(--o-r-control); }
+.shell[data-brand="business"] .toggleItem { color: var(--o-ink-2); font-weight: 500; border-radius: 8px; }
+.shell[data-brand="business"] .toggleItem[aria-current="page"] { background: var(--o-surface-1); color: var(--o-ink); box-shadow: var(--o-elev-1); }
+.shell[data-brand="business"] .label { color: var(--o-ink); font-size: var(--o-t-13); font-weight: 600; }
+.shell[data-brand="business"] .input { min-height: 44px; border: 1px solid var(--o-field-line); border-radius: var(--o-r-control); background: var(--o-surface-1); color: var(--o-ink); font-size: var(--o-t-16); }
+.shell[data-brand="business"] .input:hover { background: var(--o-surface-1); }
 .shell[data-brand="business"] .input:focus,
-.shell[data-brand="business"] .input:focus-visible { border-color: var(--kb-focus); outline: 1px solid var(--kb-focus); outline-offset: 0; }
-.shell[data-brand="business"] .btn { min-height: 48px; border-radius: var(--kb-r-pill); font-size: 17px; font-weight: 400; letter-spacing: -0.022em; }
-.shell[data-brand="business"] .btnPrimary { background: var(--kb-p-face); color: var(--kb-p-ink); }
-.shell[data-brand="business"] .btnPrimary:hover:not(:disabled) { background: var(--kb-p-hover); }
-.shell[data-brand="business"] .btnPrimary:active:not(:disabled) { background: var(--kb-p-press); }
-.shell[data-brand="business"] .btnSecondary { background: transparent; color: var(--kb-accent-ink); border: 1px solid var(--kb-accent); }
-.shell[data-brand="business"] .btnSecondary:hover:not(:disabled) { background: var(--kb-p-face); color: var(--kb-p-ink); }
-.shell[data-brand="business"] .btnGhost { color: var(--kb-accent-ink); }
-.shell[data-brand="business"] .link { color: var(--kb-accent-ink); font-weight: 400; text-decoration: none; }
+.shell[data-brand="business"] .input:focus-visible { border-color: var(--o-accent); outline: 3px solid var(--o-accent-soft); outline-offset: 0; }
+.shell[data-brand="business"] .btn { min-height: 44px; border-radius: var(--o-r-control); font-size: var(--o-t-16); font-weight: 500; letter-spacing: -0.011em; }
+.shell[data-brand="business"] .btnPrimary { background: var(--o-accent); color: var(--o-accent-ink); }
+.shell[data-brand="business"] .btnPrimary:hover:not(:disabled) { background: var(--o-accent-hover); }
+.shell[data-brand="business"] .btnPrimary:active:not(:disabled) { background: var(--o-accent-hover); }
+.shell[data-brand="business"] .btnSecondary { background: var(--o-surface-1); color: var(--o-ink); border: 1px solid var(--o-line-strong); }
+.shell[data-brand="business"] .btnSecondary:hover:not(:disabled) { background: var(--o-surface-2); color: var(--o-ink); }
+.shell[data-brand="business"] .btnGhost { color: var(--o-accent-text); }
+.shell[data-brand="business"] .link { color: var(--o-accent-text); font-weight: 500; text-decoration: none; }
 .shell[data-brand="business"] .link:hover { text-decoration: underline; }
-.shell[data-brand="business"] .divider { letter-spacing: 0; text-transform: none; font-weight: 400; color: var(--kb-ink-3); }
+.shell[data-brand="business"] .divider { letter-spacing: 0; text-transform: none; font-weight: 400; color: var(--o-ink-3); }
 .shell[data-brand="business"] .divider::before,
-.shell[data-brand="business"] .divider::after { background: var(--kb-border-strong); }
-.shell[data-brand="business"] :is(.fieldNote, .check) { color: var(--kb-ink-3); }
-.shell[data-brand="business"] .check input { accent-color: var(--kb-accent); }
-.shell[data-brand="business"] :is(.alert, .alertErr) { border-radius: var(--kb-r-sm); }
+.shell[data-brand="business"] .divider::after { background: var(--o-line-strong); }
+.shell[data-brand="business"] :is(.fieldNote, .check) { color: var(--o-ink-3); }
+.shell[data-brand="business"] .check input { accent-color: var(--o-accent); }
+.shell[data-brand="business"] :is(.alert, .alertErr) { border-radius: var(--o-r-control); }
 
-/* the panel beside the form (wide screens): a quiet Apple tile with the mark, the line and three points */
+/* the panel beside the form (wide screens): a quiet Orbit panel with the mark, the line and three points */
 .bizPanel { display: none; }
 @media (min-width: 960px) {
-  .bizPanel { display: flex; align-items: center; justify-content: center; position: sticky; top: 0; height: 100svh; box-sizing: border-box; padding: calc(var(--l-nav-offset) + var(--l-nav-h) + 24px) 48px 48px; background: var(--kb-surface-2); }
+  .bizPanel { display: flex; align-items: center; justify-content: center; position: sticky; top: 0; height: 100svh; box-sizing: border-box; padding: calc(var(--l-nav-offset) + var(--l-nav-h) + 24px) 48px 48px; background: var(--o-surface-1); box-shadow: inset 1px 0 0 var(--o-line); }
 }
 .bizPanelInner { display: flex; flex-direction: column; gap: 16px; max-width: 440px; }
-.bizEyebrow { margin: 8px 0 0; font-size: 17px; font-weight: 600; letter-spacing: -0.022em; color: var(--kb-ink-3); }
-.bizTitle { margin: 0; font-size: clamp(32px, 2vw + 14px, 44px); line-height: 1.08; font-weight: 600; letter-spacing: -0.024em; color: var(--kb-ink); text-wrap: balance; }
-.bizPoints { list-style: none; display: flex; flex-direction: column; gap: 12px; margin: 8px 0 0; padding: 0; font-size: 17px; line-height: 1.47; letter-spacing: -0.022em; color: var(--kb-ink-2); }
+.bizEyebrow { margin: 8px 0 0; font-size: var(--o-t-13); font-weight: 600; color: var(--o-accent-text); }
+.bizTitle { margin: 0; font-size: clamp(32px, 2vw + 14px, 44px); line-height: var(--o-lh-display); font-weight: 600; letter-spacing: var(--o-tr-display); color: var(--o-ink); text-wrap: balance; }
+.bizPoints { list-style: none; display: flex; flex-direction: column; gap: 12px; margin: 8px 0 0; padding: 0; font-size: var(--o-t-16); line-height: 1.5; color: var(--o-ink-2); }
 .bizPoints li { display: flex; gap: 12px; }
-.bizPoints li::before { content: ""; flex: none; width: 10px; height: 5px; margin-top: 8px; border-left: 2px solid var(--kb-accent); border-bottom: 2px solid var(--kb-accent); transform: rotate(-45deg); }
+.bizPoints li::before { content: ""; flex: none; width: 9px; height: 5px; margin-top: 8px; border-left: 2px solid var(--o-accent); border-bottom: 2px solid var(--o-accent); rotate: -45deg; }
 @media (prefers-reduced-motion: no-preference) {
-  .bizPanelInner { animation: bizIn 0.6s cubic-bezier(0.28, 0.11, 0.32, 1) both; }
+  .bizPanelInner { animation: bizIn var(--o-dur-4) var(--o-ease-out) both; }
 }
-@keyframes bizIn { from { opacity: 0; transform: translateY(16px); } }
+@keyframes bizIn { from { opacity: 0; translate: 0 8px; } }

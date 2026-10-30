@@ -182,7 +182,7 @@ export function Analyst({ kind, seed, seedMedia, openId, projectSeed, onSaved }:
               <span>Documents <small className={s.muted}>(text, CSV, Markdown; up to 12)</small></span>
               <input ref={fileRef} type="file" accept={TEXT_TYPES} multiple hidden onChange={(e) => void pickDocs(e.target.files)} />
               <div className={s.row}>
-                <button type="button" className={s.btnGhost} onClick={() => fileRef.current?.click()} disabled={docs.length >= 12}>Add documents</button>
+                <button type="button" className={s.btnGhost} data-orbit-fx="secondary" onClick={() => fileRef.current?.click()} disabled={docs.length >= 12}>Add documents</button>
                 {docs.map((d) => <span key={d.name} className={s.tag}>{d.name}{d.truncated ? " (shortened)" : ""} <button type="button" className={s.tagX} onClick={() => setDocs((x) => x.filter((y) => y.name !== d.name))} aria-label={`Remove ${d.name}`}>×</button></span>)}
               </div>
             </div>
@@ -195,8 +195,8 @@ export function Analyst({ kind, seed, seedMedia, openId, projectSeed, onSaved }:
             </select>
           </label>
           <div className={s.row}>
-            <button type="submit" className={s.btnPrimary} disabled={running || !topic.trim()}>{running ? (research ? "Researching…" : "Reasoning…") : research ? "Start research" : "Analyse"}</button>
-            {running ? <button type="button" className={s.btnGhost} onClick={() => abort.current?.abort()}>Stop</button> : null}
+            <button type="submit" className={s.btnPrimary} data-orbit-fx="primary" disabled={running || !topic.trim()}>{running ? (research ? "Researching…" : "Reasoning…") : research ? "Start research" : "Analyse"}</button>
+            {running ? <button type="button" className={s.btnGhost} data-orbit-fx="secondary" onClick={() => abort.current?.abort()}>Stop</button> : null}
           </div>
           <p className={s.muted}>{research ? "A full report usually takes one to three minutes and uses more credits than a normal question." : "Thorough analysis takes a minute or two. Documents stay in this request; nothing is shared."}</p>
           {history.length ? (
@@ -232,8 +232,8 @@ export function Analyst({ kind, seed, seedMedia, openId, projectSeed, onSaved }:
                 <header className={s.reportHead}>
                   <h2 className={s.reportTitle}>{report.title}</h2>
                   <div className={s.row}>
-                    {report.id ? <a className={s.btnGhost} href={`/api/business/reports/${encodeURIComponent(report.id)}?format=md`}>Download</a> : null}
-                    {projectId ? <button type="button" className={s.btnGhost} onClick={() => void fileToProject()}>Save to project</button> : null}
+                    {report.id ? <a className={s.btnGhost} data-orbit-fx="secondary" href={`/api/business/reports/${encodeURIComponent(report.id)}?format=md`}>Download</a> : null}
+                    {projectId ? <button type="button" className={s.btnGhost} data-orbit-fx="secondary" onClick={() => void fileToProject()}>Save to project</button> : null}
                   </div>
                 </header>
               ) : null}

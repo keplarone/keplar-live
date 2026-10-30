@@ -121,7 +121,7 @@ test("Agents, Approvals, Operations, Integrations and Create look like the works
   assert.match(os, /<EmbeddedHead tab=\{tab\}/);
   for (const t of ["Operations", "Agents", "Approvals", "Integrations"]) assert.match(os, new RegExp(`title: "${t}"`));
   const osCss = readFileSync("src/components/business/business.module.css", "utf8");
-  assert.match(osCss, /\.shell\[data-embedded\] \.card, \.shell\[data-embedded\] \.notice, \.shell\[data-embedded\] \.col \{\s*border: 0; border-radius: 26px; padding: 22px 24px;/);
+  assert.match(osCss, /\.shell\[data-embedded\] \.card, \.shell\[data-embedded\] \.notice, \.shell\[data-embedded\] \.col \{\s*border: 0; border-radius: var\(--o-r-card\); padding: 22px 24px;/);
   // Create: underline tabs and the New chat composer, only while the workspace is open.
   assert.match(readFileSync("src/components/create/apps/studio.module.css", "utf8"), /:global\(html\[data-business-app\]\) \.calm \.calmCard \{/);
   for (const f of ["src/components/create/images.module.css", "src/components/create/video/video.module.css"]) {

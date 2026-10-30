@@ -261,7 +261,7 @@ export function DesignCanvas() {
   return (
     <div className={d.root}>
       <header className={d.bar}>
-        <button type="button" className={s.btnGhost} onClick={async () => { if (!dirty || await confirmAction({ title: "Leave without saving your changes?", confirmLabel: "Leave", danger: true })) { setOpen(null); setDraft({}); } }}>Projects</button>
+        <button type="button" className={s.btnGhost} data-orbit-fx="secondary" onClick={async () => { if (!dirty || await confirmAction({ title: "Leave without saving your changes?", confirmLabel: "Leave", danger: true })) { setOpen(null); setDraft({}); } }}>Projects</button>
         <strong className={d.name} title={open.name}>{open.name}</strong>
         <span className={d.meta}>v{open.headVersion}</span>
         <div className={d.seg} role="tablist" aria-label="Canvas mode">
@@ -308,13 +308,13 @@ export function DesignCanvas() {
               <div className={d.stack}>
                 <p className={d.label}>Selected: <code>{picked!.label}</code></p>
                 <div className={d.row}>
-                  <button type="button" className={s.btnGhost} onClick={() => { const p = el.parentElement; if (p && p.tagName !== "BODY") setPicked({ el: p, box: boxOf(p), label: describe(p) }); }}>Select parent</button>
+                  <button type="button" className={s.btnGhost} data-orbit-fx="secondary" onClick={() => { const p = el.parentElement; if (p && p.tagName !== "BODY") setPicked({ el: p, box: boxOf(p), label: describe(p) }); }}>Select parent</button>
                   {/* Keyboard path through the page without the pointer: into the element and across its siblings. */}
-                  {el.firstElementChild ? <button type="button" className={s.btnGhost} onClick={() => { const c = el.firstElementChild; if (c) { c.scrollIntoView({ block: "center" }); setPicked({ el: c, box: boxOf(c), label: describe(c) }); } }}>Select inside</button> : null}
-                  {el.previousElementSibling ? <button type="button" className={s.btnGhost} onClick={() => { const c = el.previousElementSibling; if (c) { c.scrollIntoView({ block: "center" }); setPicked({ el: c, box: boxOf(c), label: describe(c) }); } }}>Previous</button> : null}
-                  {el.nextElementSibling ? <button type="button" className={s.btnGhost} onClick={() => { const c = el.nextElementSibling; if (c) { c.scrollIntoView({ block: "center" }); setPicked({ el: c, box: boxOf(c), label: describe(c) }); } }}>Next</button> : null}
-                  <button type="button" className={s.btnGhost} onClick={() => { const c = el.cloneNode(true) as Element; el.after(c); fromDom(`Duplicated ${el.tagName.toLowerCase()}`); }}>Duplicate</button>
-                  <button type="button" className={s.btnGhost} onClick={() => { const t = el.tagName.toLowerCase(); el.remove(); setPicked(null); fromDom(`Removed ${t}`); }}>Remove</button>
+                  {el.firstElementChild ? <button type="button" className={s.btnGhost} data-orbit-fx="secondary" onClick={() => { const c = el.firstElementChild; if (c) { c.scrollIntoView({ block: "center" }); setPicked({ el: c, box: boxOf(c), label: describe(c) }); } }}>Select inside</button> : null}
+                  {el.previousElementSibling ? <button type="button" className={s.btnGhost} data-orbit-fx="secondary" onClick={() => { const c = el.previousElementSibling; if (c) { c.scrollIntoView({ block: "center" }); setPicked({ el: c, box: boxOf(c), label: describe(c) }); } }}>Previous</button> : null}
+                  {el.nextElementSibling ? <button type="button" className={s.btnGhost} data-orbit-fx="secondary" onClick={() => { const c = el.nextElementSibling; if (c) { c.scrollIntoView({ block: "center" }); setPicked({ el: c, box: boxOf(c), label: describe(c) }); } }}>Next</button> : null}
+                  <button type="button" className={s.btnGhost} data-orbit-fx="secondary" onClick={() => { const c = el.cloneNode(true) as Element; el.after(c); fromDom(`Duplicated ${el.tagName.toLowerCase()}`); }}>Duplicate</button>
+                  <button type="button" className={s.btnGhost} data-orbit-fx="secondary" onClick={() => { const t = el.tagName.toLowerCase(); el.remove(); setPicked(null); fromDom(`Removed ${t}`); }}>Remove</button>
                 </div>
                 {leafText ? (
                   <label className={s.field}>Text
@@ -367,7 +367,7 @@ export function DesignCanvas() {
               <label className={s.srOnly} htmlFor="kc-code">Source of {codeFile}</label>
               <textarea id="kc-code" className={d.code} spellCheck={false} value={draft[codeFile] ?? ""} onChange={(e) => { const v = e.target.value; setDraft((cur) => ({ ...cur, [codeFile]: v })); setNotes((n) => (n.includes(`Edited ${codeFile}`) ? n : [...n, `Edited ${codeFile}`])); }} />
               <div className={d.row}>
-                <button type="button" className={s.btnGhost} onClick={() => reloadWith(draft)}>Refresh canvas</button>
+                <button type="button" className={s.btnGhost} data-orbit-fx="secondary" onClick={() => reloadWith(draft)}>Refresh canvas</button>
                 <span className={d.hint}>Plain HTML and CSS. Scripts are removed when you save.</span>
               </div>
             </div>
@@ -380,7 +380,7 @@ export function DesignCanvas() {
               <label className={s.field}>What should change?
                 <textarea className={s.textarea} rows={4} maxLength={600} value={instruction} onChange={(e) => setInstruction(e.target.value)} placeholder="Make this a two-column layout with the image on the right" disabled={!picked || busy === "ai"} />
               </label>
-              <button type="button" className={s.btnPrimary} onClick={() => void askAi()} disabled={!picked || instruction.trim().length < 3 || busy === "ai"}>{busy === "ai" ? "Working…" : "Propose change"}</button>
+              <button type="button" className={s.btnPrimary} data-orbit-fx="primary" onClick={() => void askAi()} disabled={!picked || instruction.trim().length < 3 || busy === "ai"}>{busy === "ai" ? "Working…" : "Propose change"}</button>
               <p className={d.hint}>AI sees only the selected element. Its change goes into the draft for you to check, undo or approve. Uses a small amount of your plan&rsquo;s usage.</p>
             </div>
           ) : null}
@@ -391,9 +391,9 @@ export function DesignCanvas() {
             <p className={d.label}>{dirty ? `Draft: ${changed.length} file${changed.length === 1 ? "" : "s"} changed (${changed.map((f) => `${f.path} +${f.plus} −${f.minus}`).join(", ")})` : "No unsaved changes"}</p>
             {notes.length ? <ul className={d.notes}>{notes.slice(-8).map((n, i) => <li key={`${i}-${n}`}>{n}</li>)}</ul> : null}
             <div className={d.row}>
-              <button type="button" className={s.btnPrimary} onClick={() => void approve()} disabled={!dirty || busy === "save"}>{busy === "save" ? "Saving…" : "Approve and save"}</button>
-              <button type="button" className={s.btnGhost} onClick={undoLast} disabled={!undo.length}>Undo</button>
-              <button type="button" className={s.btnGhost} onClick={discard} disabled={!dirty}>Discard</button>
+              <button type="button" className={s.btnPrimary} data-orbit-fx="primary" onClick={() => void approve()} disabled={!dirty || busy === "save"}>{busy === "save" ? "Saving…" : "Approve and save"}</button>
+              <button type="button" className={s.btnGhost} data-orbit-fx="secondary" onClick={undoLast} disabled={!undo.length}>Undo</button>
+              <button type="button" className={s.btnGhost} data-orbit-fx="secondary" onClick={discard} disabled={!dirty}>Discard</button>
             </div>
           </div>
         </aside>

@@ -1,117 +1,146 @@
 /*
- * Keplar Business design tokens: one system for the site (business.keplar.one) and the workspace (/work and the desktop app).
- * Both surfaces put data-kb on their root and read only these semantic tokens, so the two never drift into separate looks.
+ * Keplar Business tokens, now a thin layer over Keplar Orbit (src/styles/orbit/tokens.css, docs/design/keplar-orbit.md).
+ * The storefront (business.keplar.one), the Business sign-in (AuthShell brand="business", data-kb-auth) and the workspace
+ * (/work and the desktop app) put data-kb on their root. Every --kb-* name below points at an --o-* token, so each module that
+ * still reads the old names renders in Orbit: graphite neutrals, one cobalt accent, 10px controls, 14px cards, Orbit motion.
+ * New Business code reads --o-* directly.
  *
- * Destiny brief (Apple-led). Subject: Keplar Business, AI agents that build and run a company's software; the page's single job
- * is to get a business owner to start building. The one detail only this product has: every change waits for a person to
- * approve it. Lead reference: Apple. Its system, not its branding:
- *  - White pages and #f5f5f7 tiles (light, the default); black and #161617/#1d1d1f in Dark and in the workspace.
- *  - Ink #1d1d1f / #424245 / #6e6e73 (16.8, 10.0 and 5.1:1 on white). Dark: #f5f5f7 / #d2d2d7 / #98989d.
- *  - One action colour: #0071e3 pills with white text (4.6:1). Secondary actions are blue outline pills; links #0066cc.
- *  - Flat 18px tiles: no 3D ledges, no glass, no drop shadows on content. Only floating layers (menus, sheets) cast a shadow;
- *    only the nav is frosted.
- *  - Inter (the Business layouts load it as --font-business), Apple's per-size tracking; code stays monospaced.
- *  - House curve cubic-bezier(.4,0,.6,1) at 160/240/320ms, symmetric; reveals on (.28,.11,.32,1). No springs.
- *  - Signature: the build demo told as an Apple gallery: the active step's pill fills while that step plays.
- * Colour carries meaning only: blue is the action (and focus), green is money and passing work, yellow is waiting for a person,
- * red is failure.
+ * Themes: the storefront and the sign-in follow the site theme (:root[data-theme]). The workspace is always dark: it pins
+ * <html data-theme="dark"> while it is open (BusinessWorkspace.tsx), and main[data-business-app] carries the dark Orbit set
+ * itself so the first paint, before that pin runs, is dark too. Surfaces that are dark in both themes (the storefront's example
+ * IDE window and terminals) carry data-kb-dark.
+ * Colour carries meaning only: the accent is the action (and focus), green is money and passing work, amber is waiting for a
+ * person, red is failure.
  */
-/* [data-kb-auth]: the shared Keplar sign-in page when it is signing someone into Business (AuthShell brand="business"). */
-[data-kb], [data-kb-auth] {
-  /* ── light (the default) ── */
-  --kb-bg: #ffffff;
-  --kb-surface: #ffffff;
-  --kb-surface-2: #f5f5f7;
-  --kb-surface-3: #e8e8ed;
-  --kb-overlay: rgb(0 0 0 / 0.4);
-  /* No outlines: these lines only rule data tables. Surfaces use --kb-glass / --kb-depth. */
-  --kb-border: rgb(0 0 0 / 0.08);
-  --kb-border-strong: rgb(0 0 0 / 0.14);
-  /* type: AA on white and on the light page */
-  --kb-ink: #1d1d1f;
-  --kb-ink-2: #424245;
-  --kb-ink-3: #6e6e73;
-  --kb-ink-inverse: #ffffff;
-  --kb-nav-ink: #1d1d1f;
-  /* meaning */
-  --kb-accent: #0071e3;
-  --kb-accent-rgb: 0 113 227;
-  --kb-accent-ink: #0066cc;
-  --kb-accent-soft: rgb(0 113 227 / 0.1);
-  --kb-blue: #2b6f8a;
-  --kb-blue-deep: #235d74;
-  --kb-green: #13865a;
-  --kb-green-deep: #0e6e49;
-  --kb-add: #13865a;
-  --kb-add-bg: rgb(19 134 90 / 0.1);
-  --kb-del: #c62c3b;
-  --kb-del-bg: rgb(198 44 59 / 0.08);
-  --kb-warn: #8a5a00;
-  --kb-focus: #0071e3;
 
-  /* Space recipes (light): white glass on the sky */
-  --kb-glass: #f5f5f7;
-  --kb-glass-solid: #f5f5f7;
-  --kb-card-deep: #f5f5f7;
-  --kb-card-featured: #ffffff;
-  --kb-depth: none;
-  --kb-depth-sm: none;
-  --kb-lift: 0 4px 16px rgb(0 0 0 / 0.06), 0 24px 64px -16px rgb(0 0 0 / 0.18);
-  --kb-featured-depth: inset 0 0 0 2px #0071e3;
-  --kb-pill: rgb(255 255 255 / 0.72);
-  --kb-pill-depth: none;
-  --kb-pill-hover: none;
-  --kb-hover: rgb(0 0 0 / 0.04);
-  --kb-press: rgb(0 0 0 / 0.08);
-  --kb-selected: rgb(0 0 0 / 0.06);
-  --kb-wash: rgb(0 0 0 / 0.03);
-  --kb-field: #ffffff;
-  --kb-field-hover: #ffffff;
-  --kb-field-focus: #ffffff;
-  /* the field's edge holds 3:1 (WCAG 1.4.11) without reading as an outline */
-  --kb-field-depth: inset 0 0 0 1px #86868b;
-  --kb-option-bg: #ffffff;
-  --kb-glow: 0 0 0 2px var(--kb-bg), 0 0 0 4px var(--kb-focus);
-  --kb-invalid: inset 0 0 0 2px #e30000;
-  /* 3D buttons: an ink face over a black ledge (primary), a white face over a grey ledge (secondary) */
-  --kb-p-face: #0071e3;
-  --kb-p-ink: #ffffff;
-  --kb-p-depth: none;
-  --kb-p-depth-hover: none;
+/* ── the dark Orbit set, for the workspace (always dark) and for always-dark examples on the storefront ── */
+main[data-business-app],
+[data-kb] [data-kb-dark] {
+  --o-canvas: #0b0c0f;
+  --o-surface-1: #121318;
+  --o-surface-2: #181a20;
+  --o-surface-3: #20232b;
+  --o-line: rgb(255 255 255 / 0.08);
+  --o-line-strong: rgb(255 255 255 / 0.14);
+  --o-field-line: rgb(255 255 255 / 0.36);
+  --o-ink: #f2f3f5;
+  --o-ink-2: #b4b8c3;
+  --o-ink-3: #8a8f9c;
+  --o-accent: #6f8cff;
+  --o-accent-hover: #8aa1ff;
+  --o-accent-ink: #0b0c0f;
+  --o-accent-soft: rgb(111 140 255 / 0.14);
+  --o-accent-text: #8ea5ff;
+  --o-good: #3fcf95;
+  --o-warn: #f2b14c;
+  --o-bad: #ff6b75;
+  --o-ink-rgb: 242 243 245;
+  --o-canvas-rgb: 11 12 15;
+  --o-accent-rgb: 111 140 255;
+  --o-hover: rgb(255 255 255 / 0.06);
+  --o-press: rgb(255 255 255 / 0.1);
+  --o-selected: rgb(111 140 255 / 0.16);
+  --o-sheen: rgb(255 255 255 / 0.1);
+  --o-sheen-on-accent: rgb(255 255 255 / 0.4);
+  --o-glow: rgb(111 140 255 / 0.45);
+  --o-focus: #6f8cff;
+  --o-elev-1: 0 1px 2px rgb(0 0 0 / 0.4), 0 0 0 1px rgb(255 255 255 / 0.08);
+  --o-elev-2: 0 8px 24px -8px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.08);
+  --o-elev-3: 0 24px 64px -16px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.08);
+  color-scheme: dark;
+}
+
+/* ── the Business names, pointed at Orbit (theme-free: the --o-* values carry the theme) ── */
+[data-kb], [data-kb-auth], [data-kb] [data-kb-dark] {
+  --kb-bg: var(--o-canvas);
+  --kb-surface: var(--o-surface-1);
+  --kb-surface-2: var(--o-surface-2);
+  --kb-surface-3: var(--o-surface-3);
+  --kb-overlay: rgb(0 0 0 / 0.5);
+  --kb-border: var(--o-line);
+  --kb-border-strong: var(--o-line-strong);
+  --kb-ink: var(--o-ink);
+  --kb-ink-2: var(--o-ink-2);
+  --kb-ink-3: var(--o-ink-3);
+  --kb-ink-inverse: var(--o-accent-ink);
+  --kb-nav-ink: var(--o-ink);
+  /* meaning */
+  --kb-accent: var(--o-accent);
+  --kb-accent-rgb: var(--o-accent-rgb);
+  --kb-accent-ink: var(--o-accent-text);
+  --kb-accent-soft: var(--o-accent-soft);
+  --kb-blue: var(--o-accent-text);
+  --kb-blue-deep: var(--o-accent);
+  --kb-green: var(--o-good);
+  --kb-green-deep: var(--o-good);
+  --kb-add: var(--o-good);
+  --kb-add-bg: color-mix(in srgb, var(--o-good) 12%, transparent);
+  --kb-del: var(--o-bad);
+  --kb-del-bg: color-mix(in srgb, var(--o-bad) 10%, transparent);
+  --kb-warn: var(--o-warn);
+  --kb-focus: var(--o-focus);
+
+  /* surfaces: cards sit on the canvas as surface-1 with a hairline; floating layers use elevation 2 and 3 */
+  --kb-glass: var(--o-surface-1);
+  --kb-glass-solid: var(--o-surface-1);
+  --kb-card-deep: var(--o-surface-1);
+  --kb-card-featured: var(--o-surface-1);
+  --kb-depth: var(--o-elev-1);
+  --kb-depth-sm: var(--o-elev-1);
+  --kb-lift: var(--o-elev-2);
+  --kb-featured-depth: 0 0 0 1.5px var(--o-accent), var(--o-elev-2);
+  --kb-pill: rgb(var(--o-canvas-rgb) / 0.82);
+  --kb-pill-depth: var(--o-elev-1);
+  --kb-pill-hover: var(--o-elev-2);
+  --kb-hover: var(--o-hover);
+  --kb-press: var(--o-press);
+  --kb-selected: var(--o-selected);
+  --kb-wash: var(--o-hover);
+  --kb-field: var(--o-surface-1);
+  --kb-field-hover: var(--o-surface-1);
+  --kb-field-focus: var(--o-surface-1);
+  /* a text field's edge holds 3:1 (WCAG 1.4.11) */
+  --kb-field-depth: inset 0 0 0 1px var(--o-field-line);
+  --kb-option-bg: var(--o-surface-1);
+  /* A soft accent halo. Buttons and links already get Orbit's animated accent ring (src/styles/orbit/fx.css); fields add this. */
+  --kb-glow: 0 0 0 1px var(--o-accent), 0 0 0 4px var(--o-accent-soft);
+  --kb-invalid: inset 0 0 0 2px var(--o-bad);
+  /* buttons: Orbit primary (the accent face) and secondary (surface-1 on a hairline) */
+  --kb-p-face: var(--o-accent);
+  --kb-p-ink: var(--o-accent-ink);
+  --kb-p-depth: 0 1px 2px rgb(0 0 0 / 0.12), inset 0 1px 0 rgb(255 255 255 / 0.14);
+  --kb-p-depth-hover: 0 6px 22px -6px var(--o-glow);
   --kb-p-depth-press: none;
   --kb-p-ledge: transparent;
-  --kb-g-face: transparent;
-  --kb-g-depth: inset 0 0 0 1px #0071e3;
-  --kb-g-depth-hover: inset 0 0 0 1px #0071e3;
-  --kb-g-depth-press: inset 0 0 0 1px #0071e3;
+  --kb-p-hover: var(--o-accent-hover);
+  --kb-p-press: var(--o-accent-hover);
+  --kb-g-face: var(--o-surface-1);
+  --kb-g-depth: var(--o-elev-1);
+  --kb-g-depth-hover: var(--o-elev-1);
+  --kb-g-depth-press: var(--o-elev-1);
   --kb-g-ledge: transparent;
   --kb-grad: none;
-  /* product examples: a dark terminal on both themes (code reads as code), the example window's frame follows the theme */
-  --kb-term: #0b0b0d;
-  --kb-term-ink: #e8e8ec;
-  --kb-term-ink-2: #b3b3bb;
-  --kb-term-ink-3: #8a8a94;
+  /* product examples: a dark terminal on both themes (code reads as code) */
+  --kb-term: #08090b;
+  --kb-term-ink: #e6e8ec;
+  --kb-term-ink-2: #b4b8c3;
+  --kb-term-ink-3: #8a8f9c;
 
-  /* ── theme-free ── */
-  /* type: Montserrat (the root layout's --font-sans, self-hosted by next/font), the family's one face; IBM Plex Mono for code */
-  --kb-sans: var(--font-business), "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  /* type: Inter (font.tsx points --font-business and --font-sans at it on Business pages); JetBrains Mono for code */
+  --kb-sans: var(--font-business), "Inter", var(--o-font-sans);
   /* Labels, figures and shortcuts use the same face as words; only real code is monospace (--kb-code). */
   --kb-mono: var(--kb-sans);
-  --kb-code: var(--font-mono), "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --kb-code: var(--o-font-mono);
   --kb-brand: var(--kb-sans);
-  --kb-t-xs: 12px;
-  --kb-t-sm: 13px;
-  --kb-t-md: 14px;
-  --kb-t-body: 16px;
-  --kb-t-lead: 21px;
-  --kb-t-h4: 21px;
-  --kb-t-h3: 28px;
-  --kb-t-h2: clamp(32px, 2.6vw + 14px, 48px);
-  --kb-t-h1: clamp(40px, 4vw + 16px, 72px);
-
-  /* the blue pill in both themes: darker on hover and press (Apple lightens on hover, which drops white text below 4.5:1; these hold 4.7, 5.6 and 6.9:1) */
-  --kb-p-hover: #0066cc;
-  --kb-p-press: #0058b0;
+  --kb-t-xs: var(--o-t-12);
+  --kb-t-sm: var(--o-t-13);
+  --kb-t-md: var(--o-t-14);
+  --kb-t-body: var(--o-t-16);
+  --kb-t-lead: var(--o-t-18);
+  --kb-t-h4: var(--o-t-22);
+  --kb-t-h3: var(--o-t-28);
+  --kb-t-h2: clamp(32px, 2.4vw + 14px, 48px);
+  --kb-t-h1: clamp(40px, 3.6vw + 16px, 64px);
 
   /* space (4px base) */
   --kb-s-1: 4px;
@@ -123,113 +152,43 @@
   --kb-s-7: 48px;
   --kb-s-8: 64px;
   --kb-s-9: 96px;
-  --kb-s-10: 144px;
+  --kb-s-10: 120px;
 
-  /* shape: every control is a pill; cards are 28px; panels 22px; small insets 14px */
-  --kb-r-sm: 12px;
-  --kb-r: 18px;
-  --kb-r-lg: 18px;
-  --kb-r-pill: 980px;
+  /* shape: Orbit radii (controls 10, cards 14, panels 20); "pill" controls became 10px controls */
+  --kb-r-sm: var(--o-r-control);
+  --kb-r: var(--o-r-card);
+  --kb-r-lg: var(--o-r-card);
+  --kb-r-pill: var(--o-r-control);
 
-  /* motion: Space Studio's curves */
-  --kb-ease: cubic-bezier(0.4, 0, 0.6, 1);
-  --kb-ease-expo: cubic-bezier(0.28, 0.11, 0.32, 1);
-  --kb-ease-in-out: cubic-bezier(0.4, 0, 0.6, 1);
-  --kb-spring: cubic-bezier(0.4, 0, 0.6, 1);
-  --kb-spring-snappy: cubic-bezier(0.4, 0, 0.6, 1);
-  --kb-d-1: 160ms;
-  --kb-d-2: 240ms;
-  --kb-d-3: 320ms;
-  --kb-d-4: 600ms;
+  /* motion: Orbit's curves and durations */
+  --kb-ease: var(--o-ease-out);
+  --kb-ease-expo: var(--o-ease-out);
+  --kb-ease-in-out: var(--o-ease-out);
+  --kb-spring: var(--o-ease-spring);
+  --kb-spring-snappy: var(--o-ease-spring);
+  --kb-d-1: var(--o-dur-1);
+  --kb-d-2: var(--o-dur-2);
+  --kb-d-3: var(--o-dur-3);
+  --kb-d-4: var(--o-dur-4);
 
-  /* layout */
-  --kb-max: 1120px;
+  /* layout: the marketing 12-column grid (§4) */
+  --kb-max: 1200px;
   --kb-gutter: clamp(16px, 4vw, 32px);
-}
-
-/* ── dark: the site's Dark theme, always in the workspace (which pins the page to dark; the main[data-business-app] selector
-   also covers the first paint, before that pin runs), and on surfaces that are dark in both themes (data-kb-dark: the
-   storefront's example IDE window and terminals) ── */
-:root[data-theme="dark"] [data-kb], :root[data-theme="dark"] [data-kb-auth], main[data-business-app] [data-kb], [data-kb] [data-kb-dark] {
-  --kb-bg: #000000;
-  --kb-surface: #161617;
-  --kb-surface-2: #1d1d1f;
-  --kb-surface-3: #2c2c2e;
-  --kb-overlay: rgb(0 0 0 / 0.6);
-  --kb-border: rgb(255 255 255 / 0.08);
-  --kb-border-strong: rgb(255 255 255 / 0.14);
-  /* 19:1, 10:1 and 6.1:1 on black (4.9:1 even on --kb-surface-3) */
-  --kb-ink: #f5f5f7;
-  --kb-ink-2: #d2d2d7;
-  --kb-ink-3: #98989d;
-  --kb-ink-inverse: #000000;
-  --kb-nav-ink: #f5f5f7;
-  --kb-accent: #2997ff;
-  --kb-accent-rgb: 41 151 255;
-  --kb-accent-ink: #2997ff;
-  --kb-accent-soft: rgb(41 151 255 / 0.16);
-  --kb-blue: #7cb2ff;
-  --kb-blue-deep: #5a96ff;
-  --kb-green: #45e09a;
-  --kb-green-deep: #19b874;
-  --kb-add: #5fd49a;
-  --kb-add-bg: rgb(95 212 154 / 0.1);
-  --kb-del: #ff7a85;
-  --kb-del-bg: rgb(255 122 133 / 0.1);
-  --kb-warn: #ffd66b;
-  --kb-focus: #2997ff;
-
-  --kb-glass: #161617;
-  --kb-glass-solid: #161617;
-  --kb-card-deep: #161617;
-  --kb-card-featured: #1d1d1f;
-  --kb-depth: none;
-  --kb-depth-sm: none;
-  --kb-lift: 0 4px 16px rgb(0 0 0 / 0.4), 0 24px 64px -16px rgb(0 0 0 / 0.7);
-  --kb-featured-depth: inset 0 0 0 2px #2997ff;
-  --kb-pill: rgb(22 22 23 / 0.72);
-  --kb-pill-depth: none;
-  --kb-pill-hover: none;
-  --kb-hover: rgb(255 255 255 / 0.07);
-  --kb-press: rgb(255 255 255 / 0.12);
-  --kb-selected: rgb(255 255 255 / 0.1);
-  --kb-wash: rgb(255 255 255 / 0.04);
-  --kb-field: #1d1d1f;
-  --kb-field-hover: #1d1d1f;
-  --kb-field-focus: #1d1d1f;
-  --kb-field-depth: inset 0 0 0 1px #6e6e73;
-  --kb-option-bg: #1d1d1f;
-  --kb-glow: 0 0 0 2px var(--kb-bg), 0 0 0 4px var(--kb-focus);
-  --kb-invalid: inset 0 0 0 2px #ff6961;
-  --kb-p-face: #0071e3;
-  --kb-p-ink: #ffffff;
-  --kb-p-depth: none;
-  --kb-p-depth-hover: none;
-  --kb-p-depth-press: none;
-  --kb-p-ledge: transparent;
-  --kb-g-face: transparent;
-  --kb-g-depth: inset 0 0 0 1px #2997ff;
-  --kb-g-depth-hover: inset 0 0 0 1px #2997ff;
-  --kb-g-depth-press: inset 0 0 0 1px #2997ff;
-  --kb-g-ledge: transparent;
-  --kb-grad: none;
-  --kb-term: #050507;
-  color-scheme: dark;
 }
 [data-kb] [data-kb-dark] { color: var(--kb-ink); }
 @media (prefers-reduced-motion: reduce) {
   [data-kb] { --kb-d-1: 0ms; --kb-d-2: 0ms; --kb-d-3: 0ms; --kb-d-4: 0ms; }
 }
-[data-kb] ::selection { background: rgb(var(--kb-accent-rgb) / 0.3); }
+[data-kb] ::selection { background: var(--o-accent-soft); }
 
-/* The workspace's scrollbars: dark and slim, a rounded grey thumb, no arrow buttons. The page behind is Keplar One's html, so
-   the workspace pins the canvas and scrollbar to dark (!important: the theme script sets color-scheme inline on <html>). The
-   storefront pages follow the site theme and keep the browser's own scrollbars. */
-html:has(main[data-business-app]) { color-scheme: dark !important; background: #000; scrollbar-width: thin; scrollbar-color: #2a2a31 #000; }
-main[data-business-app] [data-kb] * { scrollbar-width: thin; scrollbar-color: #2a2a31 transparent; }
+/* The workspace's scrollbars: slim, a rounded thumb, no arrow buttons. The page behind is Keplar One's html, so the workspace
+   pins the canvas and scrollbar to dark (!important: the theme script sets color-scheme inline on <html>). The storefront pages
+   follow the site theme and keep the browser's own scrollbars. */
+html:has(main[data-business-app]) { color-scheme: dark !important; background: #0b0c0f; scrollbar-width: thin; scrollbar-color: #2a2d36 #0b0c0f; }
+main[data-business-app] [data-kb] * { scrollbar-width: thin; scrollbar-color: #2a2d36 transparent; }
 main[data-business-app] [data-kb] *::-webkit-scrollbar { width: 10px; height: 10px; background: transparent; }
-main[data-business-app] [data-kb] *::-webkit-scrollbar-thumb { background: #2a2a31; border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
-main[data-business-app] [data-kb] *::-webkit-scrollbar-thumb:hover { background: #45454f; background-clip: content-box; }
+main[data-business-app] [data-kb] *::-webkit-scrollbar-thumb { background: #2a2d36; border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
+main[data-business-app] [data-kb] *::-webkit-scrollbar-thumb:hover { background: #3c404c; background-clip: content-box; }
 main[data-business-app] [data-kb] *::-webkit-scrollbar-button { display: none; }
 main[data-business-app] [data-kb] *::-webkit-scrollbar-corner { background: transparent; }
 
@@ -239,5 +198,5 @@ main[data-business-app] [data-kb] *::-webkit-scrollbar-corner { background: tran
 }
 
 /* The workspace is a fixed full-window surface: neither it nor the page behind it ever scrolls as a whole (an iframe focusing a
-   field could otherwise scroll a clipped box and slide the sidebar and top bar off screen). Its own panes still scroll. */
+   field could otherwise scroll a clipped box and slide the rail and top strip off screen). Its own panes still scroll. */
 html:has(main[data-business-app]), html:has(main[data-business-app]) body { overflow: clip; overscroll-behavior: none; }
