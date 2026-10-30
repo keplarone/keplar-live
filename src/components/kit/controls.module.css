@@ -298,3 +298,10 @@
 .status[data-status="success"] .statusShape { color: var(--ks-success); }
 .status[data-status="warning"] .statusShape { color: var(--ks-warning); }
 .status[data-status="error"] .statusShape { color: var(--ks-danger); }
+
+/* Keplar Orbit on keplar.one (docs/design/keplar-orbit.md §5): the shared effects runtime (src/styles/orbit/fx.css) owns hover and
+   press motion through the scale/translate properties, so the kit's own hover lift and press transform stand down here, leaving
+   one press, not two. Space Studio and Keplar Business keep the kit's motion above. */
+:global(html:not(:has([data-space-root], [data-kb]))) :is(.act, .glyphAct):is(:hover, :active):not([aria-disabled="true"]) {
+  transform: none;
+}

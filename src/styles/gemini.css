@@ -300,7 +300,7 @@ html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [class*="Recents-mo
   border-radius: 999px;
 }
 /* Search dialog: the field sits inside the dialog's own focus treatment; no square outline crossing the dialog edge. */
-html:not(:has([data-space-root], [data-kb]))[data-theme] dialog input[class*="App-module"][class*="__searchInput"]:is(:focus, :focus-visible) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] dialog input:is([class*="App-module"], [class*="SearchDialog-module"])[class*="__searchInput"]:is(:focus, :focus-visible) {
   outline: none !important;
   box-shadow: none !important;
 }
