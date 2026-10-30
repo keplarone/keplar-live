@@ -51,12 +51,14 @@ export function Rail({ active, mac, onNew, onSearch, onView, onToggleDrawer, dra
         list.style.setProperty("--ind-o", "0");
         return;
       }
-      const vertical = getComputedStyle(list).flexDirection === "column";
+      // Relative to the list itself (each item sits in a positioned <li>, so offsetTop would always read 0).
+      const lr = list.getBoundingClientRect();
+      const br = on.getBoundingClientRect();
       list.style.setProperty("--ind-o", "1");
-      list.style.setProperty("--ind-x", vertical ? "0px" : `${on.offsetLeft}px`);
-      list.style.setProperty("--ind-y", vertical ? `${on.offsetTop}px` : "0px");
-      list.style.setProperty("--ind-w", `${on.offsetWidth}px`);
-      list.style.setProperty("--ind-h", `${on.offsetHeight}px`);
+      list.style.setProperty("--ind-x", `${(br.left - lr.left - list.clientLeft).toFixed(1)}px`);
+      list.style.setProperty("--ind-y", `${(br.top - lr.top - list.clientTop).toFixed(1)}px`);
+      list.style.setProperty("--ind-w", `${br.width.toFixed(1)}px`);
+      list.style.setProperty("--ind-h", `${br.height.toFixed(1)}px`);
     };
     place();
     const ro = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(place);
