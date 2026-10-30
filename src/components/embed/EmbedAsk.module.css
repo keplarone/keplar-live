@@ -4,29 +4,31 @@
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  font-family: var(--f-sans, system-ui, sans-serif);
+  font-family: var(--o-font-sans, system-ui, sans-serif);
   background: var(--emb-bg, #0b0b0d);
   color: var(--emb-ink, #e8e8ea);
   padding: 16px;
   gap: 12px;
 }
+/* Orbit palette (src/styles/orbit/tokens.css), pinned here: the widget's theme is the publisher's choice (data-theme on .root),
+   not the page's <html data-theme>, so it cannot read the --o-* values of the host theme. */
 .root[data-theme="light"] {
-  --emb-bg: #f6f6f7;
-  --emb-ink: #141418;
-  --emb-muted: #5c5c66;
+  --emb-bg: #fbfbfc;
+  --emb-ink: #0e1014;
+  --emb-muted: #4a4f5c;
   --emb-surface: #ffffff;
-  --emb-border: #d8d8de;
-  --emb-btn: #1a1a1f;
-  --emb-btn-ink: #f6f6f7;
+  --emb-border: rgb(15 18 30 / 0.14);
+  --emb-btn: #2f5bff;
+  --emb-btn-ink: #ffffff;
 }
 .root[data-theme="dark"] {
-  --emb-bg: #0b0b0d;
-  --emb-ink: #e8e8ea;
-  --emb-muted: #9a9aa3;
-  --emb-surface: #16161a;
-  --emb-border: #2a2a30;
-  --emb-btn: #e8e8ea;
-  --emb-btn-ink: #0b0b0d;
+  --emb-bg: #0b0c0f;
+  --emb-ink: #f2f3f5;
+  --emb-muted: #b4b8c3;
+  --emb-surface: #121318;
+  --emb-border: rgb(255 255 255 / 0.14);
+  --emb-btn: #6f8cff;
+  --emb-btn-ink: #0b0c0f;
 }
 .brand {
   display: flex;
@@ -58,7 +60,7 @@
 .bubble {
   border: 1px solid var(--emb-border);
   background: var(--emb-surface);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 12px 14px;
   font-size: 14px;
   line-height: 1.5;
@@ -83,7 +85,7 @@
   box-sizing: border-box;
   min-height: 72px;
   resize: vertical;
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid var(--emb-border);
   background: var(--emb-surface);
   color: var(--emb-ink);

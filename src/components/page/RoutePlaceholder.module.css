@@ -1,8 +1,9 @@
-/* The one page hero (Space UI, docs/design/space-ui.md): Space Studio's eyebrow (12px, tracked, uppercase, plain text), a semibold
-   headline with Space tracking, a lead in --c-ink-2, then at most one 3D primary and one secondary CTA. The block rises out of a
+/* The one page hero (Keplar Orbit, docs/design/keplar-orbit.md §4): a small accent kicker (sentence case), a semibold
+   display headline at Orbit tracking, a lead in --c-ink-2, then at most one 3D primary and one secondary CTA. The block rises out of a
    blur on wider screens (never on phones, never under reduced motion: it is the page's largest paint there).
    Used by PageHero, RoutePlaceholder, the editorial and landing templates and the Help page. */
 .page {
+  box-sizing: content-box; /* Orbit grid: --l-max is the content width; the gutter pads outside it */
   position: relative;
   z-index: var(--z-content);
   max-width: var(--l-max);
@@ -12,6 +13,7 @@
 }
 
 .hero {
+  box-sizing: content-box; /* Orbit grid: --l-max is the content width; the gutter pads outside it */
   position: relative;
   z-index: var(--z-content);
   max-width: var(--l-max);
@@ -23,12 +25,12 @@
   max-width: clamp(720px, 62vw, 2000px);
 }
 @media (min-width: 641px) and (prefers-reduced-motion: no-preference) {
-  .header > * { animation: hero-rise var(--space-dur-entry) var(--space-ease-expo) both; }
+  .header > * { animation: hero-rise var(--o-dur-4) var(--o-ease-out) both; }
   .header > :nth-child(2) { animation-delay: 60ms; }
   .header > :nth-child(3) { animation-delay: 120ms; }
   .header > :nth-child(n + 4) { animation-delay: 180ms; }
 }
-@keyframes hero-rise { from { opacity: 0; transform: translateY(16px); filter: blur(10px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes hero-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
 /* Kicker: plain small text in the quiet ink, sentence case. */
 .label {
@@ -36,12 +38,12 @@
   margin: 0 0 var(--s-5);
   padding: 0;
   font-family: var(--f-sans);
-  font-size: 12px;
-  font-weight: var(--w-semibold);
+  font-size: var(--o-t-13);
+  font-weight: var(--o-w-medium);
   line-height: var(--lh-small);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--c-ink-3);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--o-accent-text);
 }
 
 .label a {
@@ -60,10 +62,10 @@
   /* --t-headline (44-76px); under ~400px wide the floor follows the screen (11vw) so "superintelligence?" fits a 320px phone
      in one piece (at a fixed 42-44px it split "superintelligenc / e?", QA 2026-10-05). */
   font-size: min(var(--t-headline), 11vw);
-  line-height: 1.04;
-  letter-spacing: -0.045em;
-  font-weight: var(--w-semibold);
-  color: var(--c-ink);
+  line-height: 1.06;
+  letter-spacing: var(--o-tr-display);
+  font-weight: var(--o-w-semibold);
+  color: var(--o-ink);
   text-wrap: balance;
   max-width: 18ch;
 }

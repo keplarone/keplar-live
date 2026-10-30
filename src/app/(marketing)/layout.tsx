@@ -13,7 +13,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
       <AmbientRuntime />
       <PageChrome />
       <Nav />
-      <main id="main" style={{ position: "relative", zIndex: 0, isolation: "isolate", overflowX: "clip" }}>
+      <main id="main" data-site="" style={{ position: "relative", zIndex: 0, isolation: "isolate", overflowX: "clip" }}>
         {children}
       </main>
       <Footer />

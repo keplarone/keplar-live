@@ -50,7 +50,7 @@ export function SharedBody({ r, answerHeading }: { r: ShareRow; answerHeading?: 
 export function SharedCta({ campaign, extra, report }: { campaign: string; extra?: React.ReactNode; report?: { ref: string; excerpt: string } }) {
   return (
     <div className={s.cta}>
-      <Link className={s.btn} href={`/app?utm_source=share&utm_medium=link&utm_campaign=${campaign}`}>Ask your own question, free</Link>
+      <Link className={s.btn} data-orbit-fx="primary" href={`/app?utm_source=share&utm_medium=link&utm_campaign=${campaign}`}>Ask your own question, free</Link>
       <Link href="/how-it-works">How Keplar works</Link>
       {extra}
       {report ? (

@@ -102,15 +102,15 @@ export function CookieBanner() {
       ) : null}
       <div className={s.actions}>
         {custom ? (
-          <button type="button" className={s.primary} onClick={() => done({ analytics }, t.saved)}>{t.save}</button>
+          <button type="button" className={s.primary} data-orbit-fx="primary" onClick={() => done({ analytics }, t.saved)}>{t.save}</button>
         ) : (
           <>
-            <button type="button" className={s.primary} onClick={() => done(acceptAll(), t.accepted)}>{t.acceptAll}</button>
-            <button type="button" className={s.secondary} onClick={() => done(rejectAll(), t.rejected)}>{t.reject}</button>
-            <button type="button" className={s.tertiary} onClick={() => setCustom(true)} aria-expanded={custom}>{t.customize}</button>
+            <button type="button" className={s.primary} data-orbit-fx="primary" onClick={() => done(acceptAll(), t.accepted)}>{t.acceptAll}</button>
+            <button type="button" className={s.secondary} data-orbit-fx="secondary" onClick={() => done(rejectAll(), t.rejected)}>{t.reject}</button>
+            <button type="button" className={s.tertiary} data-orbit-fx="ghost" onClick={() => setCustom(true)} aria-expanded={custom}>{t.customize}</button>
           </>
         )}
-        {custom ? <button type="button" className={s.tertiary} onClick={() => done(rejectAll(), t.rejected)}>{t.reject}</button> : null}
+        {custom ? <button type="button" className={s.tertiary} data-orbit-fx="ghost" onClick={() => done(rejectAll(), t.rejected)}>{t.reject}</button> : null}
       </div>
     </div>
   );

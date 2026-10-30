@@ -1,6 +1,6 @@
 /* Help centre (Space UI): the shared hero, topic tiles as 28px glass cards that lift on hover, then a sticky topic rail beside the
    questions. Each question is a glass panel that opens in place (separated by space, not rules). Colours are tokens only. */
-.wrap { position: relative; z-index: var(--z-content); max-width: var(--l-max); margin: 0 auto; padding: var(--s-4) var(--l-gutter) var(--s-24); }
+.wrap { position: relative; z-index: var(--z-content); box-sizing: content-box; max-width: var(--l-max); margin: 0 auto; padding: var(--s-4) var(--l-gutter) var(--s-24); }
 .tiles { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: var(--s-3); }
 .tile { display: grid; gap: var(--s-3); align-content: space-between; min-height: 128px; padding: var(--s-6); border-radius: var(--r-card); text-decoration: none; color: var(--c-ink); background: var(--space-glass); box-shadow: var(--space-glass-depth); transition: box-shadow var(--space-dur-slow) var(--space-ease-out), transform var(--space-dur-slow) var(--space-ease-expo); }
 .tile:hover { box-shadow: var(--space-glass-lift); transform: translateY(-3px); color: var(--c-ink); }
