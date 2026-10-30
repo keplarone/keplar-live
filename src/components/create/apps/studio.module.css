@@ -660,26 +660,26 @@
 :global(:root[data-theme]:not([data-business-app])) .linkPrimary {
   background: var(--space-p-face);
   color: var(--space-p-ink);
-  box-shadow: var(--space-p-depth);
+  box-shadow: none;
   border-color: transparent;
   font-weight: var(--w-bold);
   transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out), opacity 0.2s ease;
 }
-:global(:root[data-theme]:not([data-business-app])) .linkPrimary:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-p-face); transform: translateY(-1px); box-shadow: var(--space-p-depth-hover); }
-:global(:root[data-theme]:not([data-business-app])) .linkPrimary:active:not(:disabled, [aria-disabled="true"]) { transform: translateY(var(--space-ledge)); scale: none; box-shadow: var(--space-p-depth-press); transition-duration: 0.06s; }
-:global(:root[data-theme]:not([data-business-app])) .linkPrimary:focus-visible { box-shadow: var(--space-p-depth), var(--space-focus-glow); filter: none; text-decoration: none; }
+:global(:root[data-theme]:not([data-business-app])) .linkPrimary:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-p-face); box-shadow: none; }
+:global(:root[data-theme]:not([data-business-app])) .linkPrimary:active:not(:disabled, [aria-disabled="true"]) { box-shadow: none; transition-duration: 0.06s; }
+:global(:root[data-theme]:not([data-business-app])) .linkPrimary:focus-visible { filter: none; text-decoration: none; }
 :global(:root[data-theme]:not([data-business-app])) .linkPrimary:disabled { transform: none; box-shadow: none; }
 :global(:root[data-theme]:not([data-business-app])) .linkBtn {
   background: var(--space-s-face);
   color: var(--space-s-ink);
-  box-shadow: var(--space-s-depth);
+  box-shadow: none;
   border-color: transparent;
   font-weight: var(--w-bold);
   transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out), opacity 0.2s ease;
 }
-:global(:root[data-theme]:not([data-business-app])) .linkBtn:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-s-face); transform: translateY(-1px); box-shadow: var(--space-s-depth-hover); }
-:global(:root[data-theme]:not([data-business-app])) .linkBtn:active:not(:disabled, [aria-disabled="true"]) { transform: translateY(var(--space-ledge)); scale: none; box-shadow: var(--space-s-depth-press); transition-duration: 0.06s; }
-:global(:root[data-theme]:not([data-business-app])) .linkBtn:focus-visible { box-shadow: var(--space-s-depth), var(--space-focus-glow); filter: none; text-decoration: none; }
+:global(:root[data-theme]:not([data-business-app])) .linkBtn:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-s-face); box-shadow: none; }
+:global(:root[data-theme]:not([data-business-app])) .linkBtn:active:not(:disabled, [aria-disabled="true"]) { box-shadow: none; transition-duration: 0.06s; }
+:global(:root[data-theme]:not([data-business-app])) .linkBtn:focus-visible { filter: none; text-decoration: none; }
 :global(:root[data-theme]:not([data-business-app])) .linkBtn:disabled { transform: none; box-shadow: none; }
 @media (prefers-reduced-motion: reduce) {
   :global(:root[data-theme]:not([data-business-app])) .linkPrimary:hover:not(:disabled),
@@ -695,3 +695,37 @@
 .shelfPage .shelfGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); overflow: visible; scroll-snap-type: none; padding-bottom: 0; }
 .shelfPage .shelfGrid > li { flex: none; }
 @media (max-width: 600px) { .calm { min-height: 0; } .shelfPage .shelfGrid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } }
+
+/* ── Keplar Orbit (docs/design/keplar-orbit.md) in Keplar One's Create (Keplar Business keeps its block above) ──
+   The brief is a 20px panel at --o-elev-2 with an accent edge while typing; quiet 10px text buttons; starter chips are Orbit chips;
+   the shelf of recent apps is a page section (22px semibold title + count) over 14px cards at --o-elev-1 that rise to --o-elev-2
+   on hover (shadow only, nothing moves). */
+:global(:root[data-theme]:not([data-business-app])) .calmTitle { font-size: clamp(28px, 3vw, 40px); line-height: var(--o-lh-display); letter-spacing: var(--o-tr-display); font-weight: var(--o-w-semibold); color: var(--o-ink); }
+:global(:root[data-theme]:not([data-business-app])) .calmLede { font-size: var(--o-t-16); color: var(--o-ink-2); }
+:global(:root[data-theme]:not([data-business-app])) .calmCard { padding: 16px 16px 12px 20px; border-radius: var(--o-r-panel); background: var(--o-surface-1); box-shadow: var(--o-elev-2); transition: box-shadow var(--o-dur-2) var(--o-ease-out); }
+:global(:root[data-theme]:not([data-business-app])) .calmCard:focus-within { box-shadow: 0 0 0 1px var(--o-accent), var(--o-elev-2); }
+:global(:root[data-theme]:not([data-business-app])) .calmBar .textBtn { height: 32px; padding: 0 12px; border-radius: var(--o-r-control); background: var(--o-surface-2); color: var(--o-ink); font-size: var(--o-t-13); font-weight: var(--o-w-medium); }
+:global(:root[data-theme]:not([data-business-app])) .calmBar .textBtn:hover { background: var(--o-surface-3); }
+:global(:root[data-theme]:not([data-business-app])) .calmChip { height: 32px; padding: 0 14px; border: 1px solid var(--o-line-strong); border-radius: var(--o-r-pill); background: var(--o-surface-1); color: var(--o-ink-2); font-size: var(--o-t-13); }
+:global(:root[data-theme]:not([data-business-app])) .calmChip:hover { background: var(--o-surface-2); color: var(--o-ink); }
+:global(:root[data-theme]:not([data-business-app])) .shelfHead { padding-top: 32px; border-top: 1px solid var(--o-line); }
+:global(:root[data-theme]:not([data-business-app])) .shelfTitle { font-size: var(--o-t-22); font-weight: var(--o-w-semibold); letter-spacing: -0.02em; color: var(--o-ink); }
+:global(:root[data-theme]:not([data-business-app])) .shelfCount { height: 20px; padding: 0 8px; border-radius: var(--o-r-pill); background: var(--o-surface-2); color: var(--o-ink-2); font-size: var(--o-t-12); font-variant-numeric: tabular-nums; }
+:global(:root[data-theme]:not([data-business-app])) .card { border-radius: var(--o-r-card); background: var(--o-surface-1); box-shadow: var(--o-elev-1); }
+:global(:root[data-theme]:not([data-business-app])) .card:hover { box-shadow: var(--o-elev-2); }
+:global(:root[data-theme]:not([data-business-app])) .thumb { border-radius: var(--o-r-control); }
+:global(:root[data-theme]:not([data-business-app])) .poster { background: var(--o-surface-2); }
+:global(:root[data-theme]:not([data-business-app])) .posterName { font-weight: var(--o-w-semibold); letter-spacing: -0.02em; }
+:global(:root[data-theme]:not([data-business-app])) .posterKind { border-radius: var(--o-r-chip); background: var(--o-surface-1); color: var(--o-ink-2); font-size: var(--o-t-11); font-weight: var(--o-w-medium); box-shadow: 0 0 0 1px var(--o-line); }
+:global(:root[data-theme]:not([data-business-app])) .cardActions .textBtn { height: 28px; border-radius: var(--o-r-control); color: var(--o-ink-2); font-size: var(--o-t-13); }
+:global(:root[data-theme]:not([data-business-app])) .cardActions .textBtn:hover { background: var(--o-hover); color: var(--o-ink); }
+:global(:root[data-theme]:not([data-business-app])) .liveCode { border-radius: var(--o-r-card); background: var(--o-surface-1); box-shadow: var(--o-elev-1); }
+:global(:root[data-theme]:not([data-business-app])) .liveHead { border-bottom-color: var(--o-line); }
+:global(:root[data-theme]:not([data-business-app])) .liveLog { border-top-color: var(--o-line); background: var(--o-surface-2); font-family: var(--o-font-mono); }
+:global(:root[data-theme]:not([data-business-app])) .finder { border-radius: var(--o-r-card); background: var(--o-surface-1); box-shadow: var(--o-elev-3); }
+:global(:root[data-theme]:not([data-business-app])) .finderItem { border-radius: var(--o-r-chip); font-family: var(--o-font-mono); }
+:global(:root[data-theme]:not([data-business-app])) .finderItem[aria-selected="true"] { background: var(--o-selected); }
+:global(:root[data-theme]:not([data-business-app])) .linkPrimary { border-radius: var(--o-r-control); background: var(--o-accent); color: var(--o-accent-ink); font-weight: var(--o-w-medium); }
+:global(:root[data-theme]:not([data-business-app])) .linkPrimary:hover:not(:disabled, [aria-disabled="true"]) { background: var(--o-accent-hover); }
+:global(:root[data-theme]:not([data-business-app])) .linkBtn { border-radius: var(--o-r-control); background: var(--o-surface-1); color: var(--o-ink); box-shadow: inset 0 0 0 1px var(--o-line-strong); font-weight: var(--o-w-medium); }
+:global(:root[data-theme]:not([data-business-app])) .linkBtn:hover:not(:disabled, [aria-disabled="true"]) { background: var(--o-surface-2); box-shadow: inset 0 0 0 1px var(--o-line-strong); }

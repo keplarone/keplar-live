@@ -130,30 +130,30 @@
 :global(:root[data-theme]:not([data-business-app])) .primary {
   background: var(--space-p-face);
   color: var(--space-p-ink);
-  box-shadow: var(--space-p-depth);
+  box-shadow: none;
   border-color: transparent;
   font-weight: var(--w-bold);
   transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out), opacity 0.2s ease;
 }
 :global(:root[data-theme]:not([data-business-app])) .btn.primary:hover:not(:disabled, [aria-disabled="true"]),
-:global(:root[data-theme]:not([data-business-app])) .primary:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-p-face); transform: translateY(-1px); box-shadow: var(--space-p-depth-hover); }
+:global(:root[data-theme]:not([data-business-app])) .primary:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-p-face); box-shadow: none; }
 :global(:root[data-theme]:not([data-business-app])) .btn.primary:active:not(:disabled, [aria-disabled="true"]),
-:global(:root[data-theme]:not([data-business-app])) .primary:active:not(:disabled, [aria-disabled="true"]) { transform: translateY(var(--space-ledge)); scale: none; box-shadow: var(--space-p-depth-press); transition-duration: 0.06s; }
+:global(:root[data-theme]:not([data-business-app])) .primary:active:not(:disabled, [aria-disabled="true"]) { box-shadow: none; transition-duration: 0.06s; }
 :global(:root[data-theme]:not([data-business-app])) .btn.primary:focus-visible,
-:global(:root[data-theme]:not([data-business-app])) .primary:focus-visible { box-shadow: var(--space-p-depth), var(--space-focus-glow); filter: none; text-decoration: none; }
+:global(:root[data-theme]:not([data-business-app])) .primary:focus-visible { filter: none; text-decoration: none; }
 :global(:root[data-theme]:not([data-business-app])) .btn.primary:disabled,
 :global(:root[data-theme]:not([data-business-app])) .primary:disabled { transform: none; box-shadow: none; }
 :global(:root[data-theme]:not([data-business-app])) .btn:not(.primary) {
   background: var(--space-s-face);
   color: var(--space-s-ink);
-  box-shadow: var(--space-s-depth);
+  box-shadow: none;
   border-color: transparent;
   font-weight: var(--w-bold);
   transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out), opacity 0.2s ease;
 }
-:global(:root[data-theme]:not([data-business-app])) .btn:not(.primary):hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-s-face); transform: translateY(-1px); box-shadow: var(--space-s-depth-hover); }
-:global(:root[data-theme]:not([data-business-app])) .btn:not(.primary):active:not(:disabled, [aria-disabled="true"]) { transform: translateY(var(--space-ledge)); scale: none; box-shadow: var(--space-s-depth-press); transition-duration: 0.06s; }
-:global(:root[data-theme]:not([data-business-app])) .btn:not(.primary):focus-visible { box-shadow: var(--space-s-depth), var(--space-focus-glow); filter: none; text-decoration: none; }
+:global(:root[data-theme]:not([data-business-app])) .btn:not(.primary):hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-s-face); box-shadow: none; }
+:global(:root[data-theme]:not([data-business-app])) .btn:not(.primary):active:not(:disabled, [aria-disabled="true"]) { box-shadow: none; transition-duration: 0.06s; }
+:global(:root[data-theme]:not([data-business-app])) .btn:not(.primary):focus-visible { filter: none; text-decoration: none; }
 :global(:root[data-theme]:not([data-business-app])) .btn:not(.primary):disabled { transform: none; box-shadow: none; }
 @media (prefers-reduced-motion: reduce) {
   :global(:root[data-theme]:not([data-business-app])) .btn.primary:hover:not(:disabled),

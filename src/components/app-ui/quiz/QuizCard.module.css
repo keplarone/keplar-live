@@ -11,7 +11,7 @@
   color: var(--c-ink);
   background: var(--surface-panel);
   border: 1px solid var(--hairline);
-  border-radius: 16px;
+  border-radius: var(--o-r-card);
   font-family: var(--f-sans);
 }
 
@@ -29,7 +29,7 @@
   color: var(--c-ink);
   background: var(--surface-panel);
   border: 1px solid var(--hairline);
-  border-radius: 16px;
+  border-radius: var(--o-r-card);
 }
 
 .building p {
@@ -118,7 +118,7 @@
   width: 100%;
   padding: 14px 16px;
   border: 1px solid var(--hairline-strong);
-  border-radius: 12px;
+  border-radius: var(--o-r-card);
   background: transparent;
   color: var(--c-ink);
   font: inherit;
@@ -174,7 +174,7 @@
   margin: 0;
   padding: 14px 16px;
   border: 1px solid var(--hairline-strong);
-  border-radius: 12px;
+  border-radius: var(--o-r-card);
   background: transparent;
   color: var(--c-ink);
   line-height: 1.5;
@@ -219,7 +219,7 @@
   min-width: 0;
   padding: 14px 16px;
   border: 1px solid var(--hairline-strong);
-  border-radius: 12px;
+  border-radius: var(--o-r-card);
   background: transparent;
   color: var(--c-ink);
   font: inherit;
@@ -304,7 +304,7 @@
   min-height: 160px;
   padding: 22px 18px;
   border: 1px solid var(--hairline-strong);
-  border-radius: 12px;
+  border-radius: var(--o-r-card);
   background: transparent;
   color: var(--c-ink);
   font: inherit;
@@ -369,10 +369,6 @@
   .opt,
   .face {
     transition: none;
-    scale: none;
-  }
-  .opt:active,
-  .face:active {
     scale: none;
   }
 }

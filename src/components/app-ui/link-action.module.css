@@ -27,13 +27,13 @@
 }
 .act[data-size="sm"] { --act-h: var(--ks-control-sm); --act-px: var(--ks-space-3); font-size: var(--ks-text-sm); }
 .act[data-variant="primary"] { background: var(--ks-primary-face, var(--ks-primary-bg)); color: var(--ks-primary-text); box-shadow: var(--ks-primary-depth, none); }
-.act[data-variant="primary"]:hover { box-shadow: var(--ks-primary-depth-hover, none); transform: translateY(-1px); }
+.act[data-variant="primary"]:hover { box-shadow: var(--ks-primary-depth-hover, none); }
 .act[data-variant="primary"]:active { box-shadow: var(--ks-primary-depth-press, none); transform: translateY(var(--ks-press-y, 0)); }
 .act[data-variant="secondary"] { border-color: transparent; background: var(--ks-secondary-face, var(--ks-surface-1)); box-shadow: var(--ks-secondary-depth, none); }
-.act[data-variant="secondary"]:hover { box-shadow: var(--ks-secondary-depth-hover, none); transform: translateY(-1px); }
+.act[data-variant="secondary"]:hover { box-shadow: var(--ks-secondary-depth-hover, none); }
 .act[data-variant="secondary"]:active { box-shadow: var(--ks-secondary-depth-press, none); transform: translateY(var(--ks-press-y, 0)); }
 .act[data-variant="ghost"] { color: var(--ks-text-2); border-radius: var(--ks-control-radius, var(--ks-radius-sm)); }
 .act[data-variant="ghost"]:hover { background: var(--ks-fill-hover); color: var(--ks-text-1); }
 .act[data-variant="ghost"]:active { scale: var(--m-press); }
-@media (prefers-reduced-motion: reduce) { .act:active { scale: none; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .act:active { transform: none; } }
 @media (pointer: coarse) { .act { min-height: 44px; } }

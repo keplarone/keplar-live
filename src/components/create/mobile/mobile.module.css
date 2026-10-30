@@ -51,26 +51,26 @@
 :global(:root[data-theme]:not([data-business-app])) .btn {
   background: var(--space-p-face);
   color: var(--space-p-ink);
-  box-shadow: var(--space-p-depth);
+  box-shadow: none;
   border-color: transparent;
   font-weight: var(--w-bold);
   transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out), opacity 0.2s ease;
 }
-:global(:root[data-theme]:not([data-business-app])) .btn:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-p-face); transform: translateY(-1px); box-shadow: var(--space-p-depth-hover); }
-:global(:root[data-theme]:not([data-business-app])) .btn:active:not(:disabled, [aria-disabled="true"]) { transform: translateY(var(--space-ledge)); scale: none; box-shadow: var(--space-p-depth-press); transition-duration: 0.06s; }
-:global(:root[data-theme]:not([data-business-app])) .btn:focus-visible { box-shadow: var(--space-p-depth), var(--space-focus-glow); filter: none; text-decoration: none; }
+:global(:root[data-theme]:not([data-business-app])) .btn:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-p-face); box-shadow: none; }
+:global(:root[data-theme]:not([data-business-app])) .btn:active:not(:disabled, [aria-disabled="true"]) { box-shadow: none; transition-duration: 0.06s; }
+:global(:root[data-theme]:not([data-business-app])) .btn:focus-visible { filter: none; text-decoration: none; }
 :global(:root[data-theme]:not([data-business-app])) .btn:disabled { transform: none; box-shadow: none; }
 :global(:root[data-theme]:not([data-business-app])) .ghost {
   background: var(--space-s-face);
   color: var(--space-s-ink);
-  box-shadow: var(--space-s-depth);
+  box-shadow: none;
   border-color: transparent;
   font-weight: var(--w-bold);
   transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out), opacity 0.2s ease;
 }
-:global(:root[data-theme]:not([data-business-app])) .ghost:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-s-face); transform: translateY(-1px); box-shadow: var(--space-s-depth-hover); }
-:global(:root[data-theme]:not([data-business-app])) .ghost:active:not(:disabled, [aria-disabled="true"]) { transform: translateY(var(--space-ledge)); scale: none; box-shadow: var(--space-s-depth-press); transition-duration: 0.06s; }
-:global(:root[data-theme]:not([data-business-app])) .ghost:focus-visible { box-shadow: var(--space-s-depth), var(--space-focus-glow); filter: none; text-decoration: none; }
+:global(:root[data-theme]:not([data-business-app])) .ghost:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-s-face); box-shadow: none; }
+:global(:root[data-theme]:not([data-business-app])) .ghost:active:not(:disabled, [aria-disabled="true"]) { box-shadow: none; transition-duration: 0.06s; }
+:global(:root[data-theme]:not([data-business-app])) .ghost:focus-visible { filter: none; text-decoration: none; }
 :global(:root[data-theme]:not([data-business-app])) .ghost:disabled { transform: none; box-shadow: none; }
 @media (prefers-reduced-motion: reduce) {
   :global(:root[data-theme]:not([data-business-app])) .btn:hover:not(:disabled),
