@@ -47,13 +47,52 @@
 .alertBad, .alertWarn { border: 0; border-radius: var(--space-r-panel); }
 .alertBad { box-shadow: 0 0 0 1px rgb(var(--rgb-destructive) / 0.4); }
 .alertWarn { box-shadow: 0 0 0 1px rgb(var(--rgb-attention) / 0.45); }
-.field input, .field select, .field textarea { border: 0; border-radius: var(--space-r-field); padding: var(--s-2) var(--s-4); background: var(--space-field); box-shadow: var(--space-field-depth); }
-.field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible { outline: none; box-shadow: var(--space-field-depth), var(--space-focus-glow); }
-.btn, .warn, .danger { border: 0; border-radius: var(--r-pill); font-weight: var(--w-bold); background: var(--space-s-face); color: var(--space-s-ink); box-shadow: var(--space-s-depth); transition: transform var(--space-dur-slow) var(--space-spring-bouncy), box-shadow var(--space-dur-slow) var(--space-ease-out); }
-.btn:hover:not(:disabled), .warn:hover:not(:disabled), .danger:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--space-s-depth-hover); }
-.btn:active:not(:disabled), .warn:active:not(:disabled), .danger:active:not(:disabled) { transform: translateY(var(--space-ledge)); box-shadow: var(--space-s-depth-press); }
+.field input, .field select, .field textarea { border: 0; border-radius: var(--space-r-field); padding: var(--s-2) var(--s-4); background: var(--space-field); box-shadow: none; }
+.field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible { outline: none; }
+.btn, .warn, .danger { border: 0; border-radius: var(--r-pill); font-weight: var(--w-bold); background: var(--space-s-face); color: var(--space-s-ink); box-shadow: none; transition: transform var(--space-dur-slow) var(--space-spring-bouncy), box-shadow var(--space-dur-slow) var(--space-ease-out); }
+.btn:hover:not(:disabled), .warn:hover:not(:disabled), .danger:hover:not(:disabled) { box-shadow: none; }
+.btn:active:not(:disabled), .warn:active:not(:disabled), .danger:active:not(:disabled) { box-shadow: none; }
 .warn { box-shadow: var(--space-s-depth), 0 0 0 1px rgb(var(--rgb-attention) / 0.55); }
-.danger { background: var(--space-d-face); color: var(--space-d-ink); box-shadow: var(--space-d-depth); }
-.danger:hover:not(:disabled) { box-shadow: var(--space-d-depth-hover); }
-.danger:active:not(:disabled) { box-shadow: var(--space-d-depth-press); }
+.danger { background: var(--space-d-face); color: var(--space-d-ink); box-shadow: none; }
+.danger:hover:not(:disabled) { box-shadow: none; }
+.danger:active:not(:disabled) { box-shadow: none; }
 @media (prefers-reduced-motion: reduce) { .btn, .warn, .danger { transition: none; } }
+
+/* ── Keplar Orbit (docs/design/keplar-orbit.md): Command Center and the admin pages are a dense dashboard. Page header (eyebrow,
+ *    28px semibold title, lede); KPI tiles are 14px cards at --o-elev-1 (label, a 28px semibold tabular figure, its source);
+ *    panels are cards with a 16px semibold title; tables are dense: an --o-surface-2 header row, 1px --o-line rows, a hover wash.
+ *    10px Orbit fields and buttons; effects from the shared runtime. Declared last so it wins at equal specificity. ── */
+.page { gap: 24px; max-width: 1280px; padding: 40px 32px 96px; color: var(--o-ink); font-size: var(--o-t-14); }
+.page > h1, .page h1 { margin: 4px 0 0; font-size: var(--o-t-28); line-height: var(--o-lh-display); font-weight: var(--o-w-semibold); letter-spacing: -0.025em; }
+.eyebrow { font-size: var(--o-t-12); letter-spacing: 0.01em; text-transform: none; font-weight: var(--o-w-medium); color: var(--o-ink-3); font-variant-numeric: tabular-nums; }
+.sub { font-size: var(--o-t-13); color: var(--o-ink-2); max-width: 96ch; }
+.grid { gap: 12px; }
+.stat { gap: 6px; padding: 16px 20px; border: 0; border-radius: var(--o-r-card); background: var(--o-surface-1); box-shadow: var(--o-elev-1); }
+.stat span { font-size: var(--o-t-12); font-weight: var(--o-w-medium); color: var(--o-ink-3); }
+.stat b { font-size: var(--o-t-28); line-height: var(--o-lh-display); font-weight: var(--o-w-semibold); letter-spacing: -0.025em; color: var(--o-ink); }
+.stat small { font-size: var(--o-t-12); color: var(--o-ink-3); }
+.panel { padding: 20px 24px; border: 0; border-radius: var(--o-r-card); background: var(--o-surface-1); box-shadow: var(--o-elev-1); }
+.panel h2 { margin: 0 0 12px; font-size: var(--o-t-16); font-weight: var(--o-w-semibold); letter-spacing: -0.01em; }
+.cols { gap: 16px; }
+.table { font-size: var(--o-t-13); }
+.table th { padding: 8px 12px; background: var(--o-surface-2); color: var(--o-ink-3); font-size: var(--o-t-12); font-weight: var(--o-w-medium); border-bottom: 1px solid var(--o-line); }
+.table th:first-child { border-top-left-radius: var(--o-r-chip); border-bottom-left-radius: var(--o-r-chip); }
+.table th:last-child { border-top-right-radius: var(--o-r-chip); border-bottom-right-radius: var(--o-r-chip); }
+.table td { padding: 10px 12px; border-bottom: 1px solid var(--o-line); color: var(--o-ink); }
+.table tbody tr:hover td { background: var(--o-hover); }
+.empty { color: var(--o-ink-3); font-size: var(--o-t-13); }
+.spark span { background: var(--o-accent); opacity: 0.9; border-radius: 2px 2px 0 0; }
+.alertBad, .alertWarn { border: 0; border-radius: var(--o-r-control); }
+.alertBad { background: color-mix(in srgb, var(--o-bad) 10%, transparent); color: var(--o-bad); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--o-bad) 40%, transparent); }
+.alertWarn { background: color-mix(in srgb, var(--o-warn) 10%, transparent); color: var(--o-ink); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--o-warn) 45%, transparent); }
+.field { color: var(--o-ink-2); font-size: var(--o-t-13); }
+.field input, .field select, .field textarea { min-height: 36px; padding: 0 12px; border: 1px solid var(--o-field-line); border-radius: var(--o-r-control); background: var(--o-surface-1); box-shadow: none; color: var(--o-ink); }
+.field textarea { padding: 8px 12px; }
+.field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible { border-color: var(--o-accent); box-shadow: none; }
+.btn, .warn, .danger { min-height: 32px; padding: 0 14px; white-space: nowrap; border-radius: var(--o-r-control); font-weight: var(--o-w-medium); background: var(--o-surface-1); color: var(--o-ink); box-shadow: inset 0 0 0 1px var(--o-line-strong); transition: background-color var(--o-dur-2) var(--o-ease-out); }
+.btn:hover:not(:disabled), .warn:hover:not(:disabled) { background: var(--o-surface-2); box-shadow: inset 0 0 0 1px var(--o-line-strong); }
+.warn { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--o-warn) 60%, transparent); }
+.danger { background: var(--o-bad); color: var(--o-canvas); box-shadow: none; }
+.danger:hover:not(:disabled) { background: color-mix(in srgb, var(--o-bad) 86%, var(--o-ink)); box-shadow: none; }
+.danger:active:not(:disabled) { box-shadow: none; }
+@media (max-width: 640px) { .page { padding: 24px 16px 64px; } .stat, .panel { padding: 16px; } }
