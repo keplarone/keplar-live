@@ -25,7 +25,7 @@
 .optIn [role="switch"]::before { content: ""; position: absolute; inset: -4px -8px; }
 .msg { min-height: 1.2em; margin: 0; font-size: var(--t-small); color: var(--c-ink-2); }
 @media (pointer: coarse) { .cta, .btn { min-height: 44px; } .optIn [role="switch"]::before { inset: -14px -8px; } }
-@media (prefers-reduced-motion: reduce) { .cta, .btn { transition: none; } .btn:active:not(:disabled) { scale: none; } }
+@media (prefers-reduced-motion: reduce) { .cta, .btn { transition: none; } }
 
 /* ── Space UI (docs/design/space-ui.md, phase B): this view's buttons draw Space Studio's 3D faces (space.css --space-p-* for the
    one primary, --space-s-* for secondaries): a lit face over a ledge, a 1px lift and violet glow on hover, a press that sinks into
@@ -34,20 +34,43 @@
 :global(:root[data-theme]:not([data-business-app])) .cta {
   background: var(--space-s-face);
   color: var(--space-s-ink);
-  box-shadow: var(--space-s-depth);
+  box-shadow: none;
   border-color: transparent;
   font-weight: var(--w-bold);
   transition: transform 0.4s var(--space-spring-snappy), box-shadow 0.4s var(--space-ease-out), opacity 0.2s ease;
 }
 :global(:root[data-theme]:not([data-business-app])) .btn:hover:not(:disabled, [aria-disabled="true"]),
-:global(:root[data-theme]:not([data-business-app])) .cta:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-s-face); transform: translateY(-1px); box-shadow: var(--space-s-depth-hover); }
+:global(:root[data-theme]:not([data-business-app])) .cta:hover:not(:disabled, [aria-disabled="true"]) { background: var(--space-s-face); box-shadow: none; }
 :global(:root[data-theme]:not([data-business-app])) .btn:active:not(:disabled, [aria-disabled="true"]),
-:global(:root[data-theme]:not([data-business-app])) .cta:active:not(:disabled, [aria-disabled="true"]) { transform: translateY(var(--space-ledge)); scale: none; box-shadow: var(--space-s-depth-press); transition-duration: 0.06s; }
+:global(:root[data-theme]:not([data-business-app])) .cta:active:not(:disabled, [aria-disabled="true"]) { box-shadow: none; transition-duration: 0.06s; }
 :global(:root[data-theme]:not([data-business-app])) .btn:focus-visible,
-:global(:root[data-theme]:not([data-business-app])) .cta:focus-visible { box-shadow: var(--space-s-depth), var(--space-focus-glow); filter: none; text-decoration: none; }
+:global(:root[data-theme]:not([data-business-app])) .cta:focus-visible { filter: none; text-decoration: none; }
 :global(:root[data-theme]:not([data-business-app])) .btn:disabled,
 :global(:root[data-theme]:not([data-business-app])) .cta:disabled { transform: none; box-shadow: none; }
 @media (prefers-reduced-motion: reduce) {
   :global(:root[data-theme]:not([data-business-app])) .btn:hover:not(:disabled),
   :global(:root[data-theme]:not([data-business-app])) .cta:hover:not(:disabled) { transform: none; }
 }
+
+/* ── Keplar Orbit (docs/design/keplar-orbit.md): Usage is a card on --o-surface-1 at --o-elev-1 with hairline rows and accent
+   meters (an exhausted allowance turns --o-bad and says so in words); its buttons are 10px Orbit secondaries. ── */
+.card { gap: 12px; padding: 20px 24px; border-radius: var(--o-r-card); background: var(--o-surface-1); box-shadow: var(--o-elev-1); }
+.card h2 { font-size: var(--o-t-14); font-weight: var(--o-w-semibold); color: var(--o-ink); }
+.sub { font-size: var(--o-t-13); color: var(--o-ink-2); }
+.row { padding: 10px 0; font-size: var(--o-t-13); }
+.rows > .row + .row { border-top: 1px solid var(--o-line); }
+.meter { background: var(--o-surface-3); }
+.meter > span { background: var(--o-accent); }
+.row:has(.out) .meter > span { background: var(--o-bad); }
+.left { color: var(--o-ink-2); }
+.out { color: var(--o-bad); }
+.field input[type="number"] { min-height: 36px; border: 1px solid var(--o-field-line); border-radius: var(--o-r-control); background: var(--o-surface-1); color: var(--o-ink); font-size: var(--o-t-14); }
+.field input[type="number"]:focus-visible { border-color: var(--o-accent); }
+:global(:root[data-theme]:not([data-business-app])) .btn,
+:global(:root[data-theme]:not([data-business-app])) .cta {
+  min-height: 36px; padding: 0 14px; border-radius: var(--o-r-control); background: var(--o-surface-1); color: var(--o-ink);
+  box-shadow: inset 0 0 0 1px var(--o-line-strong); font-weight: var(--o-w-medium); transition: background-color var(--o-dur-2) var(--o-ease-out);
+}
+:global(:root[data-theme]:not([data-business-app])) .btn:hover:not(:disabled, [aria-disabled="true"]),
+:global(:root[data-theme]:not([data-business-app])) .cta:hover:not(:disabled, [aria-disabled="true"]) { background: var(--o-surface-2); box-shadow: inset 0 0 0 1px var(--o-line-strong); }
+@media (pointer: coarse) { :global(:root[data-theme]:not([data-business-app])) :is(.btn, .cta) { min-height: 44px; } }

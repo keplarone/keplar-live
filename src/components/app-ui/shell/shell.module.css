@@ -1,0 +1,347 @@
+/*
+ * Keplar Orbit app shell pieces (docs/design/keplar-orbit.md §4): the rail (Rail.tsx) and the context panel (ContextPanel.tsx).
+ * The grid that places them is in src/styles/orbit/app.css (the .app grid lives in App.module.css).
+ */
+
+/* ── Rail: 56px on wide screens, a bottom bar on phones ── */
+.rail {
+  grid-column: 1;
+  grid-row: 1;
+  z-index: 9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: var(--o-rail-w);
+  min-height: 0;
+  padding: 10px 0 12px;
+  background: var(--o-canvas);
+  border-inline-end: 1px solid var(--o-line);
+}
+.railTop,
+.railFoot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.railFoot {
+  margin-top: auto;
+}
+.railBrand {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 6px;
+  border-radius: var(--o-r-control);
+  color: var(--o-ink);
+}
+.railBrand:hover {
+  background: var(--o-hover);
+}
+.railBtn {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border: 0;
+  border-radius: var(--o-r-control);
+  background: transparent;
+  color: var(--o-ink-2);
+  cursor: pointer;
+}
+.railBtn:hover {
+  background: var(--o-hover);
+  color: var(--o-ink);
+}
+.railBtn[aria-expanded="true"] {
+  color: var(--o-ink);
+}
+.railNew {
+  margin-top: 4px;
+  background: var(--o-accent);
+  color: var(--o-accent-ink);
+}
+.railNew:hover {
+  background: var(--o-accent-hover);
+  color: var(--o-accent-ink);
+}
+
+.railList {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 8px 0 0;
+  border-top: 1px solid var(--o-line);
+  list-style: none;
+  --ind-o: 0;
+}
+.railList > li {
+  position: relative;
+  z-index: 1;
+}
+/* The sliding accent pill: one element, moved with translate between the items (compositor only). */
+.railList > .railInd {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 0;
+  width: var(--ind-w, 40px);
+  height: var(--ind-h, 40px);
+  border-radius: var(--o-r-control);
+  background: var(--o-accent-soft);
+  opacity: var(--ind-o);
+  translate: var(--ind-x, 0px) var(--ind-y, 0px);
+  transition: translate var(--o-dur-4) var(--o-ease-spring), opacity var(--o-dur-2) var(--o-ease-out), width var(--o-dur-3) var(--o-ease-out);
+  pointer-events: none;
+}
+.railList > .railInd::before {
+  content: "";
+  position: absolute;
+  inset-block: 10px;
+  inset-inline-start: -8px;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--o-accent);
+}
+.railTip {
+  display: block;
+}
+.railDest {
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--o-r-control);
+  background: transparent;
+  color: var(--o-ink-2);
+  cursor: pointer;
+}
+.railDest:hover {
+  background: var(--o-hover);
+  color: var(--o-ink);
+}
+.railDest[aria-current="page"] {
+  color: var(--o-accent-text);
+}
+.railDest[aria-current="page"]:hover {
+  background: transparent;
+}
+/* Wide screens: icon only, the label stays in the accessibility tree (and the tooltip shows it). */
+.railLabel {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Phones: the rail is the bottom bar with the five destinations; the rest lives in the drawer and the top bar. */
+@media (max-width: 899px) {
+  .rail {
+    grid-column: 1;
+    grid-row: 2;
+    flex-direction: row;
+    justify-content: center;
+    width: auto;
+    height: auto;
+    padding: 4px 8px calc(4px + env(safe-area-inset-bottom, 0px) * 0);
+    border-inline-end: 0;
+    border-top: 1px solid var(--o-line);
+  }
+  .railTop,
+  .railFoot {
+    display: none;
+  }
+  .railList {
+    flex: 1;
+    flex-direction: row;
+    justify-content: space-around;
+    max-width: 520px;
+    padding: 0;
+    border-top: 0;
+  }
+  .railList > li {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+  }
+  .railList > .railInd::before {
+    display: none;
+  }
+  .railDest {
+    width: 100%;
+    max-width: 88px;
+    height: 52px;
+    padding-top: 4px;
+    align-content: center;
+  }
+  .railLabel {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    font-size: var(--o-t-11);
+    font-weight: var(--o-w-medium);
+    line-height: 1.2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .railList > .railInd {
+    transition: none;
+  }
+}
+@media (forced-colors: active) {
+  .railDest[aria-current="page"] {
+    outline: 2px solid Highlight;
+  }
+}
+
+/* ── Context panel (320px, right; overlay on narrow screens; bottom sheet on phones) ── */
+.context {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  width: var(--o-context-w);
+  min-height: 0;
+  border-inline-start: 1px solid var(--o-line);
+  background: var(--o-surface-1);
+}
+.contextHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: var(--o-topbar-h);
+  padding: 0 10px 0 18px;
+}
+.contextTitle {
+  font-size: var(--o-t-14) !important;
+  font-weight: var(--o-w-semibold);
+  letter-spacing: -0.006em !important;
+}
+.contextTabs {
+  padding-inline: 12px;
+}
+.contextBody {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 18px 24px;
+  font-size: var(--o-t-14);
+  line-height: var(--o-lh-text);
+}
+.ctxLede {
+  margin: 0 0 12px;
+  color: var(--o-ink-2);
+}
+.ctxList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ctxItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: var(--o-r-control);
+  background: var(--o-surface-2);
+}
+.ctxKind {
+  font-size: var(--o-t-11);
+  font-weight: var(--o-w-medium);
+  color: var(--o-ink-3);
+}
+.ctxLink {
+  color: var(--o-accent-text);
+  overflow-wrap: anywhere;
+}
+.ctxLink:hover {
+  text-decoration: underline;
+}
+.ctxText {
+  color: var(--o-ink);
+  overflow-wrap: anywhere;
+}
+.ctxDetail {
+  font-size: var(--o-t-13);
+  color: var(--o-ink-2);
+}
+.ctxModel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: var(--o-w-medium);
+}
+.ctxDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--o-ink-3);
+}
+.ctxDot[data-status="responded"] {
+  background: var(--o-good);
+}
+.ctxDot[data-status="failed"],
+.ctxDot[data-status="refused"] {
+  background: var(--o-bad);
+}
+.ctxAction {
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  margin-top: 14px;
+  padding: 0 14px;
+  border-radius: var(--o-r-control);
+  background: var(--o-surface-2);
+  color: var(--o-ink);
+  font-weight: var(--o-w-medium);
+}
+.ctxAction:hover {
+  background: var(--o-surface-3);
+}
+
+@media (max-width: 1199px) {
+  .context {
+    position: absolute;
+    inset: 0 0 0 auto;
+    z-index: 12;
+    width: min(var(--o-context-w), 92vw);
+    box-shadow: var(--o-elev-3);
+  }
+}
+@media (max-width: 899px) {
+  .context {
+    position: fixed;
+    inset: auto 0 0 0;
+    width: auto;
+    max-height: 72dvh;
+    border-inline-start: 0;
+    border-radius: var(--o-r-panel) var(--o-r-panel) 0 0;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .context {
+    animation: ctx-in var(--o-dur-3) var(--o-ease-out) both;
+  }
+}
+@keyframes ctx-in {
+  from {
+    opacity: 0;
+    translate: 12px 0;
+  }
+}

@@ -14,8 +14,11 @@
 @import "./prefs.css";
 @import "./space.css"; /* Space UI: tokens, motion, components (docs/design/space-ui.md). */
 @import "./graphite.css"; /* keplar.one graphite system. After space.css so it wins outside Space Studio. */
-@import "./gemini.css"; /* Gemini-led look: tonal surfaces, pill composer, empty-home glow, greeting gradient. After graphite.css so it wins. */
 @import "./select-menu.css"; /* Custom menus for every native <select> (SelectMenus.tsx), site-wide including Business. */
+@import "./orbit/tokens.css"; /* Keplar Orbit tokens (docs/design/keplar-orbit.md). */
+@import "./orbit/legacy.css"; /* Every legacy token name pointed at Orbit. Last, so it wins at equal specificity. */
+@import "./orbit/fx.css"; /* Orbit button effects for every control. */
+@import "./orbit/app.css"; /* Orbit app shell: rail, drawer, canvas, top strip, composer, thread (replaces gemini.css). */
 
 /* The UI font is the root layout's next/font face. It generates a metric-matched fallback in
    --font-sans, so the swap moves nothing. Space Studio sets its own --f-sans. Code uses the system mono stack. */

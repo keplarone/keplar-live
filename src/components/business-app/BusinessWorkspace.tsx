@@ -3,7 +3,7 @@
 import { siteUrl } from "@/lib/site";
 import { BusinessMark } from "@/components/business-site/BusinessMark";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { MediaInput } from "@/lib/orchestration/media";
 import { Analyst } from "./Analyst";
 import { Ask } from "./Ask";
@@ -100,8 +100,11 @@ const Icon = ({ d, size = 15 }: { d: React.ReactNode; size?: number }) => (
  * one quiet top bar, and a centered composer. Settings is a popover from the account button, so it never replaces the work
  * underneath. Ctrl+K jumps anywhere, Ctrl+, opens settings, Ctrl+B toggles the sidebar. Only built modules are shown.
  */
-/** Bottom-left account row: round avatar, your name · plan, and a menu (Settings, Sign out). */
-function AccountRow({ name, plan, email, settingsOpen, signingOut, onSettings, onSignOut }: { name: string; plan: string; email: string | null; settingsOpen: boolean; signingOut: boolean; onSettings: () => void; onSignOut: () => void }) {
+/**
+ * The account: round avatar, your name · plan, and a menu (Settings, Sign out). On desktop it is the avatar at the foot of the
+ * rail (compact, its menu opens beside the rail); on phones the row at the foot of the drawer.
+ */
+function AccountRow({ name, plan, email, settingsOpen, signingOut, onSettings, onSignOut, compact = false }: { name: string; plan: string; email: string | null; settingsOpen: boolean; signingOut: boolean; onSettings: () => void; onSignOut: () => void; compact?: boolean }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -113,7 +116,7 @@ function AccountRow({ name, plan, email, settingsOpen, signingOut, onSettings, o
     return () => { document.removeEventListener("mousedown", off); document.removeEventListener("keydown", esc); };
   }, [open]);
   return (
-    <div ref={ref} className={c.acctWrap}>
+    <div ref={ref} className={c.acctWrap} data-compact={compact || undefined}>
       {open ? (
         <div className={c.acctMenu} role="menu">
           {email ? <p className={c.acctEmail}>{email}</p> : null}
@@ -121,10 +124,10 @@ function AccountRow({ name, plan, email, settingsOpen, signingOut, onSettings, o
           <button type="button" role="menuitem" className={c.acctItem} onClick={() => { setOpen(false); onSignOut(); }} disabled={signingOut}>{signingOut ? "Signing out…" : "Sign out"}</button>
         </div>
       ) : null}
-      <button type="button" className={c.account} onClick={() => setOpen((x) => !x)} aria-haspopup="menu" aria-expanded={open || settingsOpen} title={email ?? undefined}>
+      <button type="button" className={c.account} onClick={() => setOpen((x) => !x)} aria-haspopup="menu" aria-expanded={open || settingsOpen} title={email ?? undefined} aria-label={compact ? `${name} · ${plan}` : undefined} data-orbit-fx={compact ? "icon" : undefined}>
         <span className={c.avatar} aria-hidden="true">{name.slice(0, 1).toUpperCase()}</span>
-        <span className={c.acctLine}><span className={c.acctName}>{name}</span><span className={c.acctPlan}> · {plan}</span></span>
-        <svg className={c.acctChevron} width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        {compact ? null : <span className={c.acctLine}><span className={c.acctName}>{name}</span><span className={c.acctPlan}> · {plan}</span></span>}
+        {compact ? null : <svg className={c.acctChevron} width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>}
       </button>
     </div>
   );
@@ -208,6 +211,35 @@ export function BusinessWorkspace() {
     return () => window.removeEventListener("keydown", onKey);
   }, [active, toggleSide]);
 
+  // The rail's accent pill slides to the current destination (measured after each render; translate only).
+  const railRef = useRef<HTMLDivElement | null>(null);
+  const pillRef = useRef<HTMLSpanElement | null>(null);
+  useLayoutEffect(() => {
+    const pill = pillRef.current;
+    if (!pill) return;
+    const cur = railRef.current?.querySelector<HTMLElement>('[aria-current="page"]');
+    if (cur) { pill.style.translate = `0 ${cur.offsetTop}px`; pill.setAttribute("data-on", ""); }
+    else pill.removeAttribute("data-on");
+  });
+  // One tooltip for the rail, beside the hovered or keyboard-focused icon.
+  const shellRef = useRef<HTMLDivElement | null>(null);
+  const [tip, setTip] = useState<{ label: string; hint?: string; y: number } | null>(null);
+  const tipFor = (label: string, hint?: string) => {
+    const show = (el: HTMLElement) => {
+      const shell = shellRef.current;
+      if (!shell) return;
+      const r = el.getBoundingClientRect();
+      setTip({ label, hint, y: r.top - shell.getBoundingClientRect().top + (r.height - 28) / 2 });
+    };
+    return {
+      onPointerEnter: (e: React.PointerEvent<HTMLElement>) => { if (e.pointerType === "mouse") show(e.currentTarget); },
+      onPointerLeave: () => setTip(null),
+      onFocus: (e: React.FocusEvent<HTMLElement>) => { if (e.currentTarget.matches(":focus-visible")) show(e.currentTarget); },
+      onBlur: () => setTip(null),
+      onPointerDown: () => setTip(null),
+    };
+  };
+
   const go = (v: View) => { setView(v); writeView(v); closeNavigation(); };
   const openSettings = (section: SettingsSection) => { setSettings(section); closeNavigation(); };
   const closeSettings = useCallback(() => setSettings(null), []);
@@ -232,7 +264,7 @@ export function BusinessWorkspace() {
             <p className={c.gateText}>{!acct.signedIn ? "Sign in with the account that has your Business plan." : "This workspace comes with a Keplar Business plan."}</p>
             <div className={c.gateActions}>
               {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- /signin is a route handler (the sign-in handoff from keplar.one): it needs a full page load */}
-              {!acct.signedIn ? <a className={c.pillPrimary} href="/signin?next=%2Fwork">Sign in</a> : <a className={c.pillPrimary} href={STORE}>See Business plans</a>}
+              {!acct.signedIn ? <a className={c.pillPrimary} data-orbit-fx="primary" href="/signin?next=%2Fwork">Sign in</a> : <a className={c.pillPrimary} data-orbit-fx="primary" href={STORE}>See Business plans</a>}
               <a className={c.pillGhost} href={ONE}>Open Keplar One</a>
               {/* Signed in with an account that has no Business plan: let them switch to the right one. */}
               {acct.signedIn ? <button type="button" className={c.pillGhost} onClick={() => void signOut()} disabled={signingOut}>{signingOut ? "Signing out…" : "Sign out"}</button> : null}
@@ -296,41 +328,100 @@ export function BusinessWorkspace() {
     { id: "sign-out", label: "Sign out", section: "Account", keywords: "log out leave", run: () => void signOut() },
   ];
   const title = PLACES.find((place) => place.current)?.label ?? (view.at === "projects" ? "Projects" : view.at === "ask" ? "Chat" : "Home");
+  const group = PLACES.find((place) => place.current)?.group;
   const who = acct.account?.company ?? acct.email ?? "Keplar Business";
+  const accountRow = (compact: boolean) => (
+    <AccountRow
+      compact={compact}
+      name={acct.name || (acct.email ? acct.email.split("@")[0] : who)}
+      plan={(acct.plan?.name ?? "Business").replace(/^Keplar (Business )?/, "") || "Business"}
+      email={acct.email ?? null}
+      settingsOpen={Boolean(settings)}
+      signingOut={signingOut}
+      onSettings={() => openSettings("general")}
+      onSignOut={() => void signOut()}
+    />
+  );
+  const sideIcon = <Icon d={<><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16" /></>} size={17} />;
 
   return (
     <div className={`${s.root} ${c.cursor}`} data-kb="">
-      <div className={c.shell} data-collapsed={collapsed || undefined} data-menu-open={drawerOpen || undefined}>
+      <div ref={shellRef} className={c.shell} data-collapsed={collapsed || undefined} data-menu-open={drawerOpen || undefined}>
         {drawerOpen ? <button type="button" className={c.backdrop} onClick={closeNavigation} aria-label="Close navigation" tabIndex={-1} /> : null}
-        <aside id="business-navigation" ref={sideRef} className={c.side} aria-label="Business workspace" role={drawerOpen ? "dialog" : undefined} aria-modal={drawerOpen || undefined} tabIndex={-1}>
-          <div className={c.sideTop}>
-            <span className={c.sideBrand} role="img" aria-label="Keplar Business"><BusinessMark size={24} /></span>
-            <button type="button" className={c.iconBtn} onClick={toggleSide} aria-label={mobile ? "Close navigation" : "Hide sidebar"} title={mobile ? undefined : "Hide sidebar (Ctrl+B)"} aria-expanded={mobile ? drawerOpen : !collapsed} aria-controls="business-navigation">
-              <Icon d={<><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16" /></>} />
-            </button>
-          </div>
 
-          <nav className={c.nav} aria-label="Workspace modules">
-            <button type="button" className={c.item} data-strong="" aria-current={is("home") || is("ask") ? "page" : undefined} onClick={() => go({ at: "home" })}>
-              <Icon d={<path d="M4 20l4-1 11-11-3-3L5 16l-1 4z" />} />New chat
+        {/* The rail (desktop): the Business destinations as icons; the drawer toggle on top, settings and the account below. */}
+        <nav className={c.rail} aria-label="Workspace modules">
+          <span className={c.railBrand} role="img" aria-label="Keplar Business"><BusinessMark size={24} /></span>
+          <button type="button" className={c.railItem} data-toggle="" data-orbit-fx="icon" onClick={toggleSide} aria-label={collapsed ? "Show sidebar" : "Hide sidebar"} aria-expanded={!collapsed} aria-controls="business-navigation" aria-keyshortcuts="Control+B Meta+B" {...tipFor(collapsed ? "Show sidebar" : "Hide sidebar", "Ctrl B")}>{sideIcon}</button>
+          <div ref={railRef} className={c.railScroll}>
+            <span ref={pillRef} className={c.railPill} aria-hidden="true" />
+            <button type="button" className={c.railItem} data-orbit-fx="icon" aria-label="New chat" aria-current={is("home") || is("ask") ? "page" : undefined} onClick={() => go({ at: "home" })} {...tipFor("New chat")}>
+              <Icon d={<path d="M4 20l4-1 11-11-3-3L5 16l-1 4z" />} size={17} />
             </button>
-            <button type="button" className={c.item} onClick={() => setPaletteOpen(true)} aria-keyshortcuts="Control+K Meta+K">
-              <Icon d={<><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></>} />Search<kbd className={c.kbd}>⌘K</kbd>
+            <button type="button" className={c.railItem} data-orbit-fx="icon" aria-label="Search" onClick={() => setPaletteOpen(true)} aria-keyshortcuts="Control+K Meta+K" {...tipFor("Search", "Ctrl K")}>
+              <Icon d={<><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></>} size={17} />
             </button>
-          </nav>
-
-          <div className={c.sideScroll}>
             {groups.map((g) => (
-              <section key={g} className={c.group} aria-label={g}>
-                <p className={c.groupTitle} data-static="">{g}</p>
+              <div key={g} className={c.railGroup} role="group" aria-label={g}>
+                <span className={c.railRule} aria-hidden="true" />
                 {PLACES.filter((p) => p.group === g).map((p) => (
-                  <button key={p.id} type="button" className={c.item} aria-current={p.current ? "page" : undefined} onClick={() => go(p.view())}>
-                    <Icon d={p.icon} />{p.label}
-                    {p.badge ? <span className={c.badge} aria-label={`${p.badge} waiting`}>{p.badge}</span> : null}
+                  <button key={p.id} type="button" className={c.railItem} data-orbit-fx="icon" aria-label={p.badge ? `${p.label}, ${p.badge} waiting` : p.label} aria-current={p.current ? "page" : undefined} onClick={() => go(p.view())} {...tipFor(p.label, g)}>
+                    <Icon d={p.icon} size={17} />
+                    {p.badge ? <span className={c.railBadge} aria-hidden="true">{p.badge}</span> : null}
                   </button>
                 ))}
-              </section>
+              </div>
             ))}
+            <span className={c.railRule} aria-hidden="true" />
+            <button type="button" className={c.railItem} data-orbit-fx="icon" aria-label="Projects" aria-current={view.at === "projects" ? "page" : undefined} onClick={() => go({ at: "projects", projectId: null })} {...tipFor("Projects")}>
+              <Icon d={<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />} size={17} />
+            </button>
+          </div>
+          <div className={c.railFoot}>
+            <button type="button" className={c.railItem} data-orbit-fx="icon" aria-label="Settings" aria-haspopup="dialog" aria-keyshortcuts="Control+Comma Meta+Comma" onClick={() => openSettings("general")} {...tipFor("Settings", "Ctrl ,")}>
+              <Icon d={<><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></>} size={17} />
+            </button>
+            {accountRow(true)}
+          </div>
+        </nav>
+        {tip ? <span className={c.railTip} role="tooltip" style={{ top: tip.y }}>{tip.label}{tip.hint ? <kbd>{tip.hint}</kbd> : null}</span> : null}
+
+        <aside id="business-navigation" ref={sideRef} className={c.side} aria-label="Business workspace" role={drawerOpen ? "dialog" : undefined} aria-modal={drawerOpen || undefined} tabIndex={-1} inert={(!mobile && collapsed) || undefined}>
+          <div className={c.sideTop}>
+            <span className={c.drawerOnly}><span className={c.sideBrand} role="img" aria-label="Keplar Business"><BusinessMark size={24} /></span></span>
+            <span className={`${c.sideTitle} ${c.desktopOnly}`} title={who}>{who}</span>
+            <span className={c.drawerOnly}>
+              <button type="button" className={c.iconBtn} onClick={toggleSide} aria-label={mobile ? "Close navigation" : "Hide sidebar"} title={mobile ? undefined : "Hide sidebar (Ctrl+B)"} aria-expanded={mobile ? drawerOpen : !collapsed} aria-controls="business-navigation">
+                <Icon d={<><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16" /></>} />
+              </button>
+            </span>
+          </div>
+
+          <div className={c.drawerOnly}>
+            <nav className={c.nav} aria-label="Workspace modules">
+              <button type="button" className={c.item} data-strong="" aria-current={is("home") || is("ask") ? "page" : undefined} onClick={() => go({ at: "home" })}>
+                <Icon d={<path d="M4 20l4-1 11-11-3-3L5 16l-1 4z" />} />New chat
+              </button>
+              <button type="button" className={c.item} onClick={() => setPaletteOpen(true)} aria-keyshortcuts="Control+K Meta+K">
+                <Icon d={<><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></>} />Search<kbd className={c.kbd}>⌘K</kbd>
+              </button>
+            </nav>
+          </div>
+
+          <div className={c.sideScroll}>
+            <div className={c.drawerOnly}>
+              {groups.map((g) => (
+                <section key={g} className={c.group} aria-label={g}>
+                  <p className={c.groupTitle} data-static="">{g}</p>
+                  {PLACES.filter((p) => p.group === g).map((p) => (
+                    <button key={p.id} type="button" className={c.item} aria-current={p.current ? "page" : undefined} onClick={() => go(p.view())}>
+                      <Icon d={p.icon} />{p.label}
+                      {p.badge ? <span className={c.badge} aria-label={`${p.badge} waiting`}>{p.badge}</span> : null}
+                    </button>
+                  ))}
+                </section>
+              ))}
+            </div>
 
             <section className={c.group} aria-labelledby="side-projects">
               <div className={c.groupHead}>
@@ -382,24 +473,17 @@ export function BusinessWorkspace() {
             </section>
           </div>
 
-          <div className={c.sideFoot}>
-            <AccountRow
-              name={acct.name || (acct.email ? acct.email.split("@")[0] : who)}
-              plan={(acct.plan?.name ?? "Business").replace(/^Keplar (Business )?/, "") || "Business"}
-              email={acct.email ?? null}
-              settingsOpen={Boolean(settings)}
-              signingOut={signingOut}
-              onSettings={() => openSettings("general")}
-              onSignOut={() => void signOut()}
-            />
+          <div className={c.drawerOnly}>
+            <div className={c.sideFoot}>{accountRow(false)}</div>
           </div>
           {signOutError ? <p className={c.empty} role="alert">{signOutError}</p> : null}
         </aside>
 
         <section className={c.main} inert={drawerOpen || undefined}>
           <header className={c.mainTop}>
-            {collapsed || mobile ? <button ref={menuRef} type="button" className={c.iconBtn} onClick={toggleSide} aria-label={mobile ? "Open navigation" : "Show sidebar"} title={mobile ? undefined : "Show sidebar (Ctrl+B)"} aria-expanded={mobile ? drawerOpen : !collapsed} aria-controls="business-navigation"><Icon d={<><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16" /></>} /></button> : null}
-            <span className={c.viewName}>{title}</span>
+            {/* Phones open the drawer from here; on desktop the rail's top button shows and hides it. */}
+            {mobile ? <button ref={menuRef} type="button" className={c.iconBtn} onClick={toggleSide} aria-label="Open navigation" aria-expanded={drawerOpen} aria-controls="business-navigation"><Icon d={<><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16" /></>} /></button> : null}
+            <span className={c.viewName}>{group ? <span className={c.crumb}>{group} / </span> : null}{title}</span>
             <span className={c.grow} />
             <button type="button" className={c.kbdBtn} onClick={() => setPaletteOpen(true)} aria-label="Open the command palette" aria-keyshortcuts="Control+K Meta+K"><Icon d={<><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></>} size={13} />Jump to<kbd>⌘K</kbd></button>
             <a className={c.topLink} href={ONE}>Keplar One <Icon d={<path d="M7 17L17 7M9 7h8v8" />} size={12} /></a>
@@ -415,6 +499,24 @@ export function BusinessWorkspace() {
               : view.at === "os" ? <div className={s.module}><BusinessOS key={view.tab} initialTab={view.tab} embedded /></div>
               : <Analyst key={view.key} kind={view.at} seed={view.seed} seedMedia={sentMedia?.key === view.key ? sentMedia.media : undefined} openId={view.openId} projectSeed={view.projectId} onSaved={loadSide} />}
           </div>
+          {/* Phones: the rail becomes a bottom bar of the most used places; "More" opens the drawer with everything. */}
+          {mobile ? (
+            <nav className={c.tabbar} aria-label="Workspace shortcuts">
+              {[
+                { id: "home", label: "Chat", icon: <path d="M4 20l4-1 11-11-3-3L5 16l-1 4z" />, current: is("home") || is("ask"), run: () => go({ at: "home" }), badge: 0 },
+                ...PLACES.filter((p) => p.id === "dashboard" || p.id === "approvals" || p.id === "operations").map((p) => ({ id: p.id, label: p.label, icon: p.icon, current: p.current, run: () => go(p.view()), badge: p.badge ?? 0 })),
+              ].map((t) => (
+                <button key={t.id} type="button" className={c.tab} aria-current={t.current ? "page" : undefined} onClick={t.run} aria-label={t.badge ? `${t.label}, ${t.badge} waiting` : undefined}>
+                  <span className={c.tabIcon}><Icon d={t.icon} size={19} />{t.badge ? <span className={c.railBadge} aria-hidden="true">{t.badge}</span> : null}</span>
+                  <span aria-hidden={t.badge ? true : undefined}>{t.label}</span>
+                </button>
+              ))}
+              <button type="button" className={c.tab} onClick={toggleSide} aria-expanded={drawerOpen} aria-controls="business-navigation">
+                <span className={c.tabIcon}><Icon d={<><rect x="4" y="4" width="6" height="6" rx="1.5" /><rect x="14" y="4" width="6" height="6" rx="1.5" /><rect x="4" y="14" width="6" height="6" rx="1.5" /><rect x="14" y="14" width="6" height="6" rx="1.5" /></>} size={19} /></span>
+                <span>More</span>
+              </button>
+            </nav>
+          ) : null}
         </section>
       </div>
       <CommandPalette open={paletteOpen} commands={COMMANDS} onClose={() => setPaletteOpen(false)} />

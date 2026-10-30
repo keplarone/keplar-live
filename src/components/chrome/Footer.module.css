@@ -1,18 +1,20 @@
-/* Space UI footer: solid canvas, hairline, then the columns. */
+/* Orbit footer (docs/design/keplar-orbit.md §4): a quiet surface-2 band on the 1200px grid, brand in 3 of 12 columns, the
+   link groups in the other 9, then a base row (copyright, cookies, language, theme) under a hairline. */
 .footer {
   position: relative;
   z-index: var(--z-content);
-  background: var(--c-canvas);
-  border-top: 1px solid var(--hairline);
-  padding: var(--s-20) var(--l-gutter) var(--s-8);
+  background: var(--o-surface-2);
+  border-top: 1px solid var(--o-line);
+  padding: 80px var(--l-gutter) 32px;
+  font-family: var(--o-font-sans);
 }
 
 .inner {
   max-width: var(--l-max);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(200px, 1fr) 3fr;
-  gap: var(--s-16);
+  grid-template-columns: minmax(200px, 3fr) 9fr;
+  gap: 48px;
 }
 
 .brand {
@@ -24,8 +26,9 @@
 }
 
 .tagline {
-  color: var(--c-ink-2);
-  font-size: var(--t-small);
+  color: var(--o-ink-2);
+  font-size: var(--o-t-14);
+  line-height: var(--o-lh-text);
   max-width: 28ch;
 }
 
@@ -90,35 +93,35 @@
 }
 
 .heading {
-  font-family: var(--f-sans);
-  font-size: 11.5px;
-  font-weight: var(--w-semibold);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--c-ink-3);
-  margin-bottom: var(--s-4);
+  font-family: var(--o-font-sans);
+  font-size: var(--o-t-13);
+  font-weight: var(--o-w-semibold);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--o-ink);
+  margin-bottom: 14px;
 }
 
 .link {
   display: inline-block;
-  font-size: var(--t-small);
-  font-weight: var(--w-medium);
-  color: var(--c-ink-2);
-  transition: color var(--space-dur-base) var(--space-ease-out), transform 0.45s var(--space-ease-out);
+  font-size: var(--o-t-14);
+  font-weight: var(--o-w-regular);
+  color: var(--o-ink-2);
+  text-decoration: none;
+  transition: color var(--o-dur-2) var(--o-ease-out);
 }
 
 .link:hover {
-  color: var(--c-ink);
-  transform: translateX(3px);
+  color: var(--o-accent-text);
 }
-@media (prefers-reduced-motion: reduce) { .link:hover { transform: none; } }
 
 .base {
   max-width: var(--l-max);
-  margin: var(--s-20) auto 0;
-  padding-top: var(--s-6);
-  font-size: var(--t-small);
-  color: var(--c-ink-3);
+  margin: 64px auto 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--o-line);
+  font-size: var(--o-t-13);
+  color: var(--o-ink-3);
   display: flex;
   align-items: center;
   justify-content: space-between;

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Nunito_Sans } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { brand, isIndexable, site, siteVerification } from "@/lib/site";
 import { siteGraph } from "@/lib/structuredData";
@@ -21,17 +21,26 @@ import { CommandPalette } from "@/components/nav/CommandPalette";
 import { LocaleHtml } from "@/components/i18n/LocaleHtml";
 import { KitHosts } from "@/components/kit/Hosts";
 import { SpaceMotionFilters } from "@/components/ui/space/MotionFilters";
+import { OrbitFx } from "@/components/orbit/OrbitFx";
 import "@/styles/globals.css";
 import "@/styles/redesign.css";
 
-// Nunito Sans (SIL OFL 1.1, Google Fonts) is the one UI face for keplar.one. next/font self-hosts the variable file, display swap,
-// preloaded, with a metric-matched fallback so the swap does not shift layout. Nunito Sans has every subset below; it draws no Greek,
-// so Greek letters fall through per glyph to the system faces in --f-sans (src/components/i18n/i18n.css). Keplar Business loads Inter
-// (src/components/business-site/font.tsx) and Space Studio Montserrat, each on its own layout. Code uses the system mono stack.
-const sans = Nunito_Sans({
+// Keplar Orbit type (docs/design/keplar-orbit.md §2): Inter (SIL OFL 1.1) as one variable face with the optical-size axis on, so
+// display sizes get Inter's display cut; JetBrains Mono (OFL) for code. next/font self-hosts both, display swap, with a
+// metric-matched fallback so the swap does not shift layout. Keplar Business loads its own Inter (src/components/business-site/font.tsx)
+// and Space Studio Montserrat, each on its own layout.
+const sans = Inter({
   subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext", "vietnamese"],
+  axes: ["opsz"],
   variable: "--font-sans",
   display: "swap",
+  adjustFontFallback: true,
+});
+const mono = JetBrains_Mono({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-mono",
+  display: "swap",
+  preload: false,
   adjustFontFallback: true,
 });
 
@@ -79,7 +88,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     // data-theme is the server default (dark graphite); THEME_SCRIPT corrects it before
     // paint from localStorage / the keplar-theme-v2 cookie, hence suppressHydrationWarning.
     // LocaleHtml renders <html> with lang and dir from the URL (/ar → ar, rtl; English at the root → en, ltr). src/components/i18n/LocaleHtml.tsx
-    <LocaleHtml className={`${sans.variable} dark`} data-theme="dark" data-theme-pref="dark" style={{ colorScheme: "dark" }}>
+    <LocaleHtml className={`${sans.variable} ${mono.variable} dark`} data-theme="dark" data-theme-pref="dark" style={{ colorScheme: "dark" }}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: PREFS_SCRIPT }} />
@@ -99,6 +108,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <PresenceBeacon />
         <FitRuntime />
         <SelectMenus />
+        <OrbitFx />
         <JsonLd data={siteGraph()} />
         <a className="skip-link" href="#main">
           Skip to content

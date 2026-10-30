@@ -106,7 +106,7 @@ function DownloadPanel({ download }: { download: NonNullable<Extract<Status, { s
   return (
     <div className={s.downloads}>
       {sorted.map((f, i) => (
-        <a key={f.url} href={f.url} className={i === 0 ? s.btnPrimary : s.btnGhost} rel="noopener">
+        <a key={f.url} href={f.url} className={i === 0 ? s.btnPrimary : s.btnGhost} data-orbit-fx={i === 0 ? "primary" : "secondary"} rel="noopener">
           Download for {label(f)}
           <span className={s.btnMeta}>{Math.round(f.size / 1048576)} MB</span>
         </a>
@@ -259,11 +259,11 @@ export function Storefront() {
               <>
                 <a href={`/signin?next=${encodeURIComponent("/work")}`} className={s.navLink}>Sign in</a>
                 <a href="#contact" className={s.btnDarkSm}>Contact sales</a>
-                <a href={accountUrl()} className={s.btnPrimarySm}>Start Building</a>
+                <a href={accountUrl()} className={s.btnPrimarySm} data-orbit-fx="primary">Start Building</a>
               </>
             ) : status.state === "in" ? (
               <span className={s.navAccount}>
-                {status.active ? <Link href="/work" className={s.btnPrimarySm}>Open workspace</Link> : <span className={s.who} title={status.email ?? undefined}>{status.account?.company ?? status.email}</span>}
+                {status.active ? <Link href="/work" className={s.btnPrimarySm} data-orbit-fx="primary">Open workspace</Link> : <span className={s.who} title={status.email ?? undefined}>{status.account?.company ?? status.email}</span>}
                 <span className={s.navSignOut}><SignOutButton email={status.email} /></span>
               </span>
             ) : <span className={s.navSkeleton} aria-hidden="true" />}
@@ -294,9 +294,9 @@ export function Storefront() {
         {signinFailed && status.state === "out" ? <p className={s.notice} role="status">That sign-in didn&apos;t finish (the link expired or was opened in a different browser). <a href="/signin?next=%2Fwork" className={s.textLink}>Sign in again</a></p> : null}
         {purchased && !(status.state === "in" && status.active) ? <p className={s.notice} role="status">Thanks for your purchase. Your plan activates as soon as the payment confirms, usually within a minute. Refresh this page to see your download.</p> : null}
         <div className={s.heroActions}>
-          {status.state === "loading" ? <span className={s.skeleton} aria-hidden="true" /> : <a href={start.href} className={s.btnPrimary}>Start Building<Arrow /></a>}
-          <a href="#product" className={s.btnGhost}>Explore Keplar Business</a>
-          <Link href="/chatgpt" className={s.btnGhost}>Connect to ChatGPT</Link>
+          {status.state === "loading" ? <span className={s.skeleton} aria-hidden="true" /> : <a href={start.href} className={s.btnPrimary} data-orbit-fx="primary">Start Building<Arrow /></a>}
+          <a href="#product" className={s.btnGhost} data-orbit-fx="secondary">Explore Keplar Business</a>
+          <Link href="/chatgpt" className={s.btnGhost} data-orbit-fx="secondary">Connect to ChatGPT</Link>
         </div>
         {start.sub ? <p className={s.heroSub}>{start.sub}</p> : null}
         <button type="button" className={s.pauseBtn} onClick={() => setHeroPaused((x) => !x)}>
@@ -404,8 +404,8 @@ export function Storefront() {
                       : <><span className={s.priceBig}>Custom</span><span className={s.priceNote}>custom contract</span></>}
                   </p>
                   {current ? <span className={s.btnGhost} aria-current="true">Your plan</span>
-                    : id === "enterprise" ? <a href="#contact" className={s.btnGhost}>Contact sales</a>
-                    : <a href={accountUrl(id)} className={id === "growth" ? s.btnPrimary : s.btnGhost}>Choose {short(id)}</a>}
+                    : id === "enterprise" ? <a href="#contact" className={s.btnGhost} data-orbit-fx="secondary">Contact sales</a>
+                    : <a href={accountUrl(id)} className={id === "growth" ? s.btnPrimary : s.btnGhost} data-orbit-fx={id === "growth" ? "primary" : "secondary"}>Choose {short(id)}</a>}
                   <dl className={s.planMetrics}>
                     <div><dt>Seats</dt><dd>{t.seats === null ? "Custom" : fmt(t.seats)}</dd></div>
                     <div><dt>Active agents</dt><dd>{t.activeAgents === null ? "Custom" : fmt(t.activeAgents)}</dd></div>
@@ -465,7 +465,7 @@ export function Storefront() {
                 <li>Browser and desktop app for Windows, macOS and Linux</li>
                 <li>Usage limits shown in full</li>
               </ul>
-              {status.state === "in" && status.active ? <a href="#download" className={s.btnPrimary}>Get the desktop app</a> : <a href={start.href} className={s.btnPrimary}>Start Building</a>}
+              {status.state === "in" && status.active ? <a href="#download" className={s.btnPrimary} data-orbit-fx="primary">Get the desktop app</a> : <a href={start.href} className={s.btnPrimary} data-orbit-fx="primary">Start Building</a>}
             </article>
             <article className={s.start}>
               <h3 className={s.h4}>Get extra support</h3>
@@ -475,7 +475,7 @@ export function Storefront() {
                 <li>Negotiated seats, usage and concurrency</li>
                 <li>Dedicated onboarding</li>
               </ul>
-              <a href="#contact" className={s.btnGhost}>Contact sales</a>
+              <a href="#contact" className={s.btnGhost} data-orbit-fx="secondary">Contact sales</a>
             </article>
           </div>
         </div>
@@ -555,7 +555,7 @@ function InquiryForm({ defaultEmail, defaultCompany }: { defaultEmail: string; d
       <label className={`${s.field} ${s.wide}`}><span>How can we help?</span><textarea name="message" rows={5} required aria-invalid={Boolean(fields.message) || undefined} />{fields.message ? <em>{fields.message}</em> : null}</label>
       <input name="website" tabIndex={-1} autoComplete="off" className={s.honeypot} aria-hidden="true" />
       {error ? <p className={`${s.formError} ${s.wide}`} role="alert">{error}</p> : null}
-      <div className={s.wide}><button type="submit" className={s.btnPrimary} disabled={busy}>{busy ? "Sending…" : "Send message"}</button></div>
+      <div className={s.wide}><button type="submit" className={s.btnPrimary} data-orbit-fx="primary" disabled={busy}>{busy ? "Sending…" : "Send message"}</button></div>
     </form>
   );
 }

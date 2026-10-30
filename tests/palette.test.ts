@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 /**
@@ -67,8 +67,11 @@ test("no electric blue-dominant spam (teal OK: green channel stays close to blue
     // the weather sky: natural daylight sky blues (zenith / gradient), not UI accents (docs/design/space-ui.md 2.1)
     "src/lib/sky/variants.ts": ["63,134,216", "60,130,212"],
     "src/styles/space.css": ["61,132,213"],
-    // Empty-home wash only: Keplar blue #2f6bff. Teal and cyan stops stay under the green-channel rule and are not listed here.
-    "src/styles/gemini.css": ["47,107,255"],
+    // Keplar Orbit's one accent (docs/design/keplar-orbit.md §3): cobalt #2f5bff in light, its hover and text steps, and the tints
+    // built from it. Dark uses #6f8cff, which the green-channel rule already allows.
+    "src/styles/orbit/tokens.css": ["47,91,255", "33,73,232", "36,73,224"],
+    // The embed widget runs inside other sites, where Orbit tokens are not loaded, so it repeats the Orbit accent.
+    "src/components/embed/EmbedAsk.module.css": ["47,91,255"],
     // Keplar Business's Apple-led system: the one action colour (#0071e3) and its link (#0066cc) and pressed (#0058b0) steps.
     "src/components/business-site/tokens.css": ["0,113,227", "0,102,204", "0,88,176"],
   };
@@ -85,32 +88,24 @@ test("no electric blue-dominant spam (teal OK: green channel stays close to blue
   assert.deepEqual(hits, []);
 });
 
-test("empty home keeps the graphite canvas, a blue-teal glow, and a visible keyboard outline", () => {
-  const gemini = readFileSync("src/styles/gemini.css", "utf8");
+test("empty home: the Orbit canvas, no decorative wash, and a visible keyboard outline", () => {
+  // Keplar Orbit (docs/design/keplar-orbit.md) replaced the graphite canvas and the Gemini-led blue-teal wash (gemini.css is gone).
+  const tokens = readFileSync("src/styles/orbit/tokens.css", "utf8");
+  const legacy = readFileSync("src/styles/orbit/legacy.css", "utf8");
+  const app = readFileSync("src/styles/orbit/app.css", "utf8");
   const graphite = readFileSync("src/styles/graphite.css", "utf8");
   const theme = readFileSync("src/lib/theme.ts", "utf8");
-  assert.match(graphite, /--c-canvas:\s*#212121/);
-  assert.match(graphite, /\[data-theme="light"\][\s\S]*?--c-canvas:\s*#ffffff/);
-  assert.match(graphite, /outline: 2px solid var\(--c-ink\) !important;/);
-  assert.doesNotMatch(gemini, /--c-canvas:\s*#/);
-  assert.match(gemini, /--g-glow:\s*0\.55/);
-  assert.match(gemini, /--kg-a:\s*#2f6bff/i);
-  assert.match(gemini, /--kg-b:\s*#00b2cc/i);
-  assert.match(gemini, /radial-gradient\(closest-side at/);
-  assert.match(gemini, /\[data-theme\] \[data-welcome\] \{[^}]*color:\s*#ffffff !important/);
-  assert.match(gemini, /\[data-theme="light"\] \[data-welcome\] \{[^}]*color:\s*#0e0f12 !important/);
-  assert.doesNotMatch(gemini, /background-clip:\s*text/);
-  assert.match(gemini, /@keyframes g-glow-in \{\s*from \{ opacity: 0; scale: 0\.88; \}/);
-  assert.match(gemini, /@keyframes g-bloom \{\s*0% \{ opacity: 0; scale: 0\.975; \}/);
+  assert.ok(!existsSync("src/styles/gemini.css"));
+  assert.match(tokens, /:root\[data-theme="light"\] \{[\s\S]*?--o-canvas: #fbfbfc;/);
+  assert.match(tokens, /:root\[data-theme="dark"\] \{[\s\S]*?--o-canvas: #0b0c0f;/);
+  assert.match(legacy, /--c-canvas: var\(--o-canvas\);/);
+  assert.match(legacy, /--g-glow: 0;/);
+  assert.match(graphite, /outline: 2px solid var\(--o-focus\) !important;/);
+  assert.doesNotMatch(app, /radial-gradient|background-clip:\s*text|filter:\s*blur|backdrop-filter/);
+  assert.match(app, /\[data-theme\] \[data-welcome\] \{[^}]*color: var\(--o-ink\) !important/);
   // The controls inside the composer keep the outline; the text field doesn't (a textarea always matches :focus-visible while typing).
-  assert.match(gemini, /form\[class\*="__composer"\]:focus-within:has\(:focus-visible:not\(textarea\)\) \{\s*outline:\s*2px solid var\(--c-ink\) !important;/);
-  assert.match(gemini, /form\[class\*="__composer"\]:focus-within \{\s*border-color: transparent !important;\s*box-shadow:\s*none !important;/);
-  assert.match(gemini, /#keplar-sidebar :is\(a, button\):focus-visible \{[^}]*outline:\s*2px solid var\(--c-ink\) !important;/);
-  assert.doesNotMatch(gemini, /filter:\s*blur|backdrop-filter/);
-  assert.doesNotMatch(gemini, /#(?:7c3aed|a855f7|9333ea|c58cff|f08bd8|ec4899|ff4d9a)/i);
+  assert.match(app, /form\[class\*="__composer"\]:focus-within:has\(:focus-visible:not\(textarea\)\) \{\s*outline:\s*2px solid var\(--o-focus\) !important;/);
+  assert.doesNotMatch(app, /#(?:7c3aed|a855f7|9333ea|c58cff|f08bd8|ec4899|ff4d9a)/i);
   assert.match(theme, /BUSINESS_DEFAULT_THEME_PREF: ThemePref = "dark"/);
-  for (const shadow of gemini.match(/box-shadow:\s*[^;]+/g) ?? []) {
-    assert.ok(/none|var\(--g-menu-shadow\)/.test(shadow), shadow);
-  }
-  assert.match(gemini, /--g-menu-shadow:\s*none/);
 });
+

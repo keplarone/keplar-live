@@ -4,7 +4,7 @@ import { useId, useMemo, useRef, useState } from "react";
 import { Dialog } from "@/components/kit";
 import { IconSearch } from "./icons";
 import type { Thread, View } from "./state/types";
-import s from "./App.module.css";
+import s from "./SearchDialog.module.css";
 import { saveThemePref } from "@/lib/theme";
 import { rankCommands, staticCommands } from "@/lib/nav/commands";
 

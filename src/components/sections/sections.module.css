@@ -22,22 +22,22 @@
   gap: var(--s-16);
 }
 
-/* Kicker: Space Studio's eyebrow (12px, 0.18em tracked, uppercase, quiet ink). Plain text, not a pill. */
+/* Kicker (Orbit): small accent text, sentence case. Plain text, not a pill. */
 .label {
-  font-size: 12px;
-  font-weight: var(--w-semibold);
+  font-size: var(--o-t-13);
+  font-weight: var(--o-w-medium);
   line-height: var(--lh-small);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--c-ink-3);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--o-accent-text);
   margin-bottom: var(--s-4);
 }
 
 /* A section title (h2). */
 .headline {
   font-size: var(--t-title);
-  line-height: 1.08;
-  letter-spacing: -0.045em;
+  line-height: var(--o-lh-display);
+  letter-spacing: -0.03em;
   font-weight: var(--w-semibold);
   text-wrap: balance;
   max-width: 22ch;
@@ -47,7 +47,7 @@
 .display {
   font-size: var(--t-headline);
   line-height: var(--lh-headline);
-  letter-spacing: -0.045em;
+  letter-spacing: var(--o-tr-display);
   font-weight: var(--w-semibold);
   text-wrap: balance;
   max-width: 18ch;
@@ -75,8 +75,8 @@
 .prose h2 {
   margin-top: var(--s-12);
   font-size: var(--t-title);
-  line-height: 1.08;
-  letter-spacing: -0.045em;
+  line-height: var(--o-lh-display);
+  letter-spacing: -0.03em;
   font-weight: var(--w-semibold);
   color: var(--c-ink);
   text-wrap: balance;

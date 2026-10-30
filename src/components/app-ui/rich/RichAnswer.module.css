@@ -14,7 +14,7 @@
   align-self: flex-start;
   padding: 6px 12px;
   border: 1px solid var(--hairline, var(--c-border));
-  border-radius: 14px;
+  border-radius: var(--o-r-card);
   background: var(--c-surface-1);
   color: var(--c-ink-2);
   font-size: var(--t-small);
@@ -27,7 +27,7 @@
   gap: var(--s-3);
   padding: var(--s-4);
   border: 1px solid var(--hairline, var(--c-border));
-  border-radius: 14px;
+  border-radius: var(--o-r-card);
   background: var(--c-surface-1);
   animation: richIn 420ms var(--e-standard) both;
   animation-delay: calc(var(--i, 0) * 45ms);
@@ -109,7 +109,7 @@
   width: 28px;
   height: 28px;
   border: 1px solid var(--hairline, var(--c-border));
-  border-radius: 14px;
+  border-radius: var(--o-r-card);
   color: var(--c-ink);
   font-size: var(--t-small);
   font-variant-numeric: tabular-nums;
@@ -161,7 +161,7 @@
 .tag {
   padding: 2px 8px;
   border: 1px solid var(--hairline, var(--c-border));
-  border-radius: 14px;
+  border-radius: var(--o-r-card);
 }
 
 .differ {
@@ -174,7 +174,7 @@
   min-height: 28px;
   padding: 0 10px;
   border: 1px solid var(--hairline, var(--c-border));
-  border-radius: 14px;
+  border-radius: var(--o-r-card);
   color: var(--c-ink-2);
   font-size: var(--t-label);
   cursor: pointer;
@@ -258,7 +258,7 @@
 .card {
   padding: var(--s-3);
   border: 1px solid var(--hairline, var(--c-border));
-  border-radius: 14px;
+  border-radius: var(--o-r-card);
   animation: richIn 420ms var(--e-standard) both;
   animation-delay: calc(var(--i, 0) * 40ms);
 }
@@ -324,7 +324,7 @@
   margin: 0;
   padding: var(--s-4);
   border: 1px solid var(--hairline, var(--c-border));
-  border-radius: 14px;
+  border-radius: var(--o-r-card);
   background: var(--c-canvas);
   animation: richIn 420ms var(--e-standard) both;
 }
@@ -349,7 +349,7 @@
   min-height: 36px;
   padding: 6px 10px;
   border: 1px solid var(--hairline, var(--c-border));
-  border-radius: 14px;
+  border-radius: var(--o-r-card);
   color: var(--c-ink);
   text-decoration: none;
   font-size: var(--t-small);
@@ -382,7 +382,7 @@
   height: 8px;
   margin-top: 8px;
   border: 1px solid var(--hairline-strong, var(--c-border-strong));
-  border-radius: 14px;
+  border-radius: var(--o-r-card);
   background: var(--c-ink);
 }
 
@@ -392,7 +392,7 @@
   gap: 10px;
   padding: var(--s-4);
   border: 1px solid var(--hairline, var(--c-border));
-  border-radius: 14px;
+  border-radius: var(--o-r-card);
   background: var(--c-surface-1);
 }
 

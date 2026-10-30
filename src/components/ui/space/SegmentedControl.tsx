@@ -107,6 +107,7 @@ export function SegmentedControl<T extends string>({
             disabled={s.disabled}
             data-value={s.value}
             className="sp-seg__opt"
+            data-orbit-fx="segment"
             onClick={() => onChange(s.value)}
           >
             {s.label}

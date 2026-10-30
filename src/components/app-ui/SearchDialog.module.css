@@ -1,0 +1,147 @@
+/*
+ * Search (⌘K / Ctrl+K), Orbit command palette (docs/design/keplar-orbit.md §3/§4). The kit Dialog (size lg) is the frame;
+ * these place it near the top, make the field the palette's head, and let the result list (not the field) scroll.
+ * Rows are 36px, 10px rounded, the active one on the selected wash with an accent bar; groups are quiet labels.
+ */
+.search.search {
+  margin-block: 12vh auto;
+  max-height: min(64vh, calc(100dvh - 24vh));
+  width: min(640px, calc(100vw - 24px));
+}
+/* the dialog head only names the dialog for assistive tech; the field is the visible head */
+.search.search > :first-child {
+  position: absolute;
+  inset: 8px 8px auto auto;
+  padding: 0;
+  z-index: 1;
+}
+.search.search > :first-child h2 {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.search.search > :last-child {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+.searchBody {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.searchBar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  padding: 0 56px 0 20px;
+  border-bottom: 1px solid var(--o-line);
+  color: var(--o-ink-3);
+  transition: box-shadow var(--o-dur-2) var(--o-ease-out);
+}
+.searchBar:has(input:focus-visible) {
+  box-shadow: inset 0 -1px 0 var(--o-accent);
+}
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--o-t-16);
+  color: var(--o-ink);
+  outline: none;
+}
+.searchInput::placeholder {
+  color: var(--o-ink-3);
+}
+.kbd {
+  flex: none;
+  padding: 2px 6px;
+  border-radius: var(--o-r-chip);
+  background: var(--o-surface-2);
+  box-shadow: inset 0 0 0 1px var(--o-line);
+  font-family: var(--o-font-mono);
+  font-size: var(--o-t-11);
+  color: var(--o-ink-3);
+}
+.searchList {
+  min-height: 0;
+  overflow-y: auto;
+  margin: 0;
+  padding: 8px;
+  list-style: none;
+  scrollbar-width: thin;
+}
+.searchGroup {
+  padding: 12px 12px 4px;
+  font-size: var(--o-t-11);
+  font-weight: var(--o-w-medium);
+  letter-spacing: 0.02em;
+  color: var(--o-ink-3);
+}
+.searchGroup:first-child {
+  padding-top: 4px;
+}
+.searchEmpty {
+  padding: 16px 12px;
+  color: var(--o-ink-3);
+  font-size: var(--o-t-13);
+}
+.searchItem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-height: 36px;
+  padding: 6px 12px;
+  border-radius: var(--o-r-control);
+  cursor: pointer;
+  font-size: var(--o-t-14);
+  transition: background-color var(--o-dur-1) var(--o-ease-out);
+}
+.searchItem[aria-selected="true"] {
+  background: var(--o-selected);
+}
+.searchItem[aria-selected="true"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--o-accent);
+}
+.searchTitle {
+  color: var(--o-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.searchSnippet {
+  font-size: var(--o-t-12);
+  color: var(--o-ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 640px) {
+  .search.search {
+    margin-block: 8px auto;
+    max-height: calc(100dvh - 16px);
+  }
+}
+@media (hover: none) {
+  .kbd {
+    display: none;
+  }
+}

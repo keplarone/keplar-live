@@ -8,7 +8,7 @@ import { ProjectTimeline } from "./ProjectTimeline";
 import { ProjectWorkspace } from "./ProjectWorkspace";
 import { AgentsPanel } from "./AgentsPanel";
 import { activeScopeHeaders } from "./state/scope";
-import s from "./App.module.css";
+import s from "./views.module.css";
 import { Button, IconButton, SegmentedControl } from "@/components/kit";
 import { DeleteConfirm, DeleteTrigger } from "./delete/DeleteChat";
 
@@ -19,7 +19,7 @@ function Header({ title, lede, children }: { title: string; lede: string; childr
         <h1 className={s.viewTitle}>{title}</h1>
         <p className={s.viewLede}>{lede}</p>
       </div>
-      {children}
+      {children ? <div className={s.viewActions}>{children}</div> : null}
     </header>
   );
 }
@@ -77,7 +77,7 @@ export function HistoryView({ state, signedIn, onRename, onOpen, onDelete, onMov
       ) : (
         groups.map((g) => (
           <section key={g.label} className={s.group} aria-labelledby={`${uid}-${g.label}`}>
-            <h2 id={`${uid}-${g.label}`} className={s.sideLabel}>{g.label}</h2>
+            <h2 id={`${uid}-${g.label}`} className={s.groupLabel}>{g.label}</h2>
             <ul className={s.rows}>
               {g.items.map((t) => (
                 <li key={t.id} className={s.rowItem}>
@@ -175,33 +175,37 @@ export function ProjectsView({ state, signedIn, onCreate, onMerge, onRemoved, on
   }
   return (
     <div className={s.view} data-hue="memory">
-      <Header title="Projects" lede="Your sites, and workspaces that keep a project's chats, files, instructions and memory together." />
-      <form className={s.inlineForm} onSubmit={submit} noValidate>
-        <label htmlFor={`${uid}-name`} className="visually-hidden">Project name</label>
-        <input
-          id={`${uid}-name`}
-          className={s.textInput}
-          placeholder="New project name"
-          value={name}
-          onChange={(e) => { setName(e.target.value); setError(null); }}
-          aria-invalid={!!error}
-          aria-describedby={error ? `${uid}-err` : undefined}
-          maxLength={60}
-        />
-        <Button type="submit" variant="secondary" size="lg" leadingIcon={<IconPlus size={14} />}>
-          Create project
-        </Button>
-        {error ? <p id={`${uid}-err`} className={s.fieldError}>{error}</p> : null}
-      </form>
-      <div className={s.inlineForm}>
-        <label htmlFor={`${uid}-find`} className="visually-hidden">Search projects and sites</label>
-        <input id={`${uid}-find`} type="search" className={s.textInput} placeholder="Search projects and sites" value={find} onChange={(e) => setFind(e.target.value)} />
+      <Header title="Projects" lede="Your sites, and workspaces that keep a project's chats, files, instructions and memory together.">
+        <form className={s.inlineForm} onSubmit={submit} noValidate>
+          <label htmlFor={`${uid}-name`} className="visually-hidden">Project name</label>
+          <input
+            id={`${uid}-name`}
+            className={s.textInput}
+            placeholder="New project name"
+            value={name}
+            onChange={(e) => { setName(e.target.value); setError(null); }}
+            aria-invalid={!!error}
+            aria-describedby={error ? `${uid}-err` : undefined}
+            maxLength={60}
+          />
+          <Button type="submit" variant="primary" leadingIcon={<IconPlus size={14} />} data-orbit-icon="plus">
+            Create project
+          </Button>
+          {error ? <p id={`${uid}-err`} className={s.fieldError}>{error}</p> : null}
+        </form>
+      </Header>
+      <div className={s.toolbar}>
+        <div className={s.viewSearch}>
+          <label htmlFor={`${uid}-find`} className="visually-hidden">Search projects and sites</label>
+          <input id={`${uid}-find`} type="search" className={s.textInput} placeholder="Search projects and sites" value={find} onChange={(e) => setFind(e.target.value)} />
+        </div>
+        {state.projects.length === 0 ? null : (
+          <SegmentedControl label="View" size="sm" className={s.viewToggle} value={mode} onValueChange={setMode} options={[{ value: "list", label: "List" }, { value: "timeline", label: "Timeline" }]} />
+        )}
       </div>
       {state.projects.length === 0 ? (
         <p className={s.viewEmpty}>No projects yet. Name one above to keep its chats, files and memory in one place.</p>
-      ) : (
-        <SegmentedControl label="View" size="sm" className={s.viewToggle} value={mode} onValueChange={setMode} options={[{ value: "list", label: "List" }, { value: "timeline", label: "Timeline" }]} />
-      )}
+      ) : null}
       {state.projects.length > 0 && mode === "timeline" ? <ProjectTimeline state={state} onOpenThread={onOpenThread} /> : null}
       {state.projects.length === 0 || mode === "timeline" ? null : (
         <ul className={s.rows}>

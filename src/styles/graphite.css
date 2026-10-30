@@ -154,26 +154,27 @@ html:not(:has([data-space-root], [data-kb])) :is(button, [role="button"], [role=
   text-shadow: none !important;
   filter: none !important;
 }
-html:not(:has([data-space-root], [data-kb])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]) {
+html:not(:has([data-space-root], [data-kb])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]):not([data-orbit]) {
   box-shadow: none !important;
 }
+/* Orbit (src/styles/orbit/fx.css): colour on the house ease; press, magnet and the focus ring on the Orbit spring. */
 html:not(:has([data-space-root], [data-kb])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]) {
-  transition: background-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1), border-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1), color 180ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 160ms cubic-bezier(0.2, 0.8, 0.2, 1), scale 180ms cubic-bezier(0.34, 1.32, 0.64, 1);
+  transition: background-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1), border-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1), color 180ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 160ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 180ms cubic-bezier(0.2, 0.8, 0.2, 1), scale 240ms cubic-bezier(0.34, 1.56, 0.64, 1), translate 320ms cubic-bezier(0.34, 1.56, 0.64, 1), outline-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1), outline-offset 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+html:not(:has([data-space-root], [data-kb])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]):not([data-orbit]):is(:hover, :focus, :focus-visible) {
+  box-shadow: none !important;
 }
 html:not(:has([data-space-root], [data-kb])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]):is(:hover, :focus, :focus-visible) {
   transform: none !important;
-  translate: none !important;
-  box-shadow: none !important;
   text-shadow: none !important;
   filter: none !important;
 }
-html:not(:has([data-space-root], [data-kb])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]):active:not(:disabled):not([aria-disabled="true"]) {
+html:not(:has([data-space-root], [data-kb])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]):active:not(:disabled):not([aria-disabled="true"]):not(:is(p, blockquote) a) {
   transform: none !important;
-  translate: none !important;
-  scale: 0.97 !important;
-  /* Press is quick. Releasing uses the 180ms spring on the rule above. */
+  /* Orbit press: scale by size (--ofx-ps, 0.97 for a small control) and a 1px sink. Releasing springs back (rule above). */
+  scale: var(--ofx-ps, 0.97) !important;
+  translate: var(--ofx-tx, 0px) calc(var(--ofx-ty, 0px) + 1px) !important;
   transition-duration: 60ms;
-  box-shadow: none !important;
   text-shadow: none !important;
   filter: none !important;
 }
@@ -190,7 +191,7 @@ html:not(:has([data-space-root], [data-kb])) :is(button, [role="button"], [role=
   }
 }
 html:not(:has([data-space-root], [data-kb])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href], input, textarea, select):focus-visible {
-  outline: 2px solid var(--c-ink) !important;
+  outline: 2px solid var(--o-focus) !important;
   outline-offset: 2px !important;
   box-shadow: none !important;
   text-shadow: none !important;
@@ -210,6 +211,7 @@ html:not(:has([data-space-root], [data-kb])) [class*="composer"] textarea:focus-
   }
   html:not(:has([data-space-root], [data-kb])) :is(button, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], summary, a[href]):active:not(:disabled):not([aria-disabled="true"]) {
     scale: none !important;
+    translate: none !important;
     transition: none !important;
   }
 }
@@ -266,24 +268,7 @@ html:not(:has([data-space-root], [data-kb])) :is([class*="homeChip"], [class*="u
   box-shadow: none !important;
   filter: none !important;
 }
-/* button[...]: the chip only. A bare [class*="homeChip"] also matched the row (homeChips) and the label (homeChipLabel),
-   so hovering anywhere over the row washed its whole box grey (a rectangle behind all four chips). */
-html:not(:has([data-space-root], [data-kb])) button[class*="homeChip"] {
-  border-color: #3a3a3a;
-  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
-}
-html:not(:has([data-space-root], [data-kb])) button[class*="homeChip"]:hover {
-  border-color: #5a5a5a !important;
-  background: var(--hover-wash);
-}
-html:not(:has([data-space-root], [data-kb])) [data-theme="light"] button[class*="homeChip"],
-html:not(:has([data-space-root], [data-kb]))[data-theme="light"] button[class*="homeChip"] {
-  border-color: #d4d4d4;
-}
-html:not(:has([data-space-root], [data-kb])) [data-theme="light"] button[class*="homeChip"]:hover,
-html:not(:has([data-space-root], [data-kb]))[data-theme="light"] button[class*="homeChip"]:hover {
-  border-color: #8a8a8a !important;
-}
+/* Home chips and the composer edge: Orbit (src/styles/orbit/app.css). */
 html:not(:has([data-space-root], [data-kb])) [class*="meterTrack"] > span,
 html:not(:has([data-space-root], [data-kb])) [class*="strengthBar"] span {
   background: var(--c-ink) !important;
@@ -293,19 +278,6 @@ html:not(:has([data-space-root], [data-kb])) [class*="composer"][data-pulse] {
 }
 html:not(:has([data-space-root], [data-kb])) [class*="composer"]:is(:focus-within, [data-dragging]) {
   box-shadow: none !important;
-}
-html:not(:has([data-space-root], [data-kb])) [class*="composer"] {
-  border-color: #3a3a3a !important;
-}
-html:not(:has([data-space-root], [data-kb])) [class*="composer"]:focus-within {
-  border-color: #5a5a5a !important;
-  box-shadow: none !important;
-}
-html:not(:has([data-space-root], [data-kb]))[data-theme="light"] [class*="composer"] {
-  border-color: #d4d4d4 !important;
-}
-html:not(:has([data-space-root], [data-kb]))[data-theme="light"] [class*="composer"]:focus-within {
-  border-color: #8a8a8a !important;
 }
 html:not(:has([data-space-root], [data-kb])) [class*="__sheet"] {
   border: 1px solid var(--hairline);

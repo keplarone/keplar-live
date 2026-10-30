@@ -3,11 +3,12 @@
 import { projectTimeline } from "@/lib/spatial/policy";
 import type { AppState } from "./state/types";
 import s from "./App.module.css";
+import v from "./views.module.css";
 
 /** Real projects and threads on one time axis. Dot = a thread at the moment it was created; nothing is inferred. */
 export function ProjectTimeline({ state, onOpenThread }: { state: AppState; onOpenThread: (id: string) => void }) {
   const tl = projectTimeline(state.projects, state.threads.filter((t) => t.messages.length > 0 || t.remote));
-  if (!tl) return <p className={s.viewEmpty}>The timeline appears once you have a few threads or projects.</p>;
+  if (!tl) return <p className={v.viewEmpty}>The timeline appears once you have a few threads or projects.</p>;
   const d = (t: number) => new Date(t).toLocaleDateString(undefined, { month: "short", day: "numeric" });
   return (
     <section className={s.timeline} aria-label="Project timeline">

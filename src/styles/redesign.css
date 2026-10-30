@@ -6,14 +6,14 @@
  * Both themes: colours come from the theme tokens. */
 
 #main:not([data-kb]) h1 {
-  font-weight: var(--w-medium);
-  letter-spacing: -0.045em;
-  line-height: 1.04;
+  font-weight: var(--o-w-semibold);
+  letter-spacing: var(--o-tr-display);
+  line-height: 1.06;
   text-wrap: balance;
 }
 #main:not([data-kb]) h2 {
-  font-weight: var(--w-medium);
-  letter-spacing: -0.03em;
+  font-weight: var(--o-w-semibold);
+  letter-spacing: -0.028em;
   text-wrap: balance;
 }
 #main:not([data-kb]) h3 { letter-spacing: -0.02em; }
@@ -52,10 +52,61 @@
 /* Display-size titles capped at the design's 76px (several modules went to 110–170px) */
 #main :is([class*="RoutePlaceholder-module__"], [class*="Feedback-module__"], [class*="Legal-module__"], [class*="compare-module__"], [class*="how-module__"], [class*="Developers-module__"], [class*="Showcase-module__"], [class*="kb-module__"])[class$="__title"],
 #main :is([class*="compare-module__"], [class*="how-module__"], [class*="kb-module__"])[class$="__h1"] {
-  font-size: clamp(min(44px, 11.5vw), 5.2vw, 76px); /* 11.5vw under ~380px wide: at a fixed 44px "superintelligence?" was 321px in a 280px column and split mid-word */
-  line-height: 1.04;
-  letter-spacing: -0.045em;
-  font-weight: var(--w-medium);
+  font-size: clamp(min(40px, 11.5vw), 4.6vw, 64px); /* Orbit display ceiling (64px); 11.5vw under ~380px wide: at a fixed 44px "superintelligence?" was 321px in a 280px column and split mid-word */
+  line-height: 1.06;
+  letter-spacing: var(--o-tr-display);
+  font-weight: var(--o-w-semibold);
+}
+
+/* ── Keplar Orbit marketing grid (docs/design/keplar-orbit.md §4 Marketing) ──
+ * Every page in the marketing and localized layouts (<main id="main" data-site>) sits on one 12-column grid with a 1200px content
+ * width, a 120px section rhythm and the Orbit display scale (64px ceiling). The legacy layout names the page modules read
+ * (--l-max, --l-gutter, --s-24, --t-headline …) are pointed at it here, so every page re-lays out without a per-page rewrite.
+ * .o-grid is the 12-column grid for new sections; .o-pane frames a product screenshot (device-less pane). */
+html:has(#main[data-site]) {
+  --o-site-max: 1200px;
+  --l-gutter: clamp(20px, 3.4vw, 40px);
+  --l-max: var(--o-site-max); /* content width; blocks that pad themselves with --l-gutter are content-box below */
+  --l-nav-h: 68px;
+  --l-nav-offset: 0px;
+  --o-section: 120px;
+  --s-24: var(--o-section);
+  --t-display: clamp(2.75rem, 5.6vw, 4rem);
+  --t-headline: clamp(2.5rem, 4.6vw, 4rem);
+  --t-title: clamp(1.75rem, 2.6vw, 2.25rem);
+  --t-lead: clamp(1.0625rem, 1.25vw, 1.25rem);
+}
+@media (max-width: 899px) {
+  html:has(#main[data-site]) { --o-section: 88px; }
+}
+@media (max-width: 640px) {
+  html:has(#main[data-site]) { --o-section: 72px; --l-gutter: 20px; }
+}
+#main[data-site] { font-size: var(--o-t-16); }
+.o-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: 24px;
+  width: 100%;
+  max-width: var(--o-site-max, 1200px);
+  margin-inline: auto;
+}
+.o-pane {
+  overflow: hidden;
+  margin: 0;
+  border-radius: var(--o-r-panel);
+  background: var(--o-surface-2);
+  box-shadow: var(--o-elev-2);
+  padding: 10px;
+}
+.o-pane > img, .o-pane > picture img { display: block; width: 100%; height: auto; border-radius: calc(var(--o-r-panel) - 8px); box-shadow: 0 0 0 1px var(--o-line); }
+
+/* Kickers on Orbit pages: small accent text, sentence case. */
+#main[data-site]:not([data-kb]) :is([class*="-module__"][class$="__eyebrow"], [class*="-module__"][class$="__kicker"], [class*="RoutePlaceholder-module__"][class$="__label"]) {
+  font-size: var(--o-t-13);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--o-accent-text);
 }
 
 /* Two-tone headlines (components/page/TwoTone.tsx) */

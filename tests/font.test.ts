@@ -14,18 +14,19 @@ function walk(dir: string, out: string[] = []) {
   return out;
 }
 
-test("font: Nunito Sans (variable, swap) via next/font/google on keplar.one; Keplar Business uses Inter from its own font module; Space Studio keeps Montserrat; mono only for code", () => {
+test("font: Inter (variable, opsz, swap) and JetBrains Mono via next/font/google on keplar.one (Keplar Orbit); Keplar Business uses Inter from its own font module; Space Studio keeps Montserrat; mono only for code", () => {
   const layout = read("src/app/layout.tsx");
-  // keplar.one: Nunito Sans, one family.
-  assert.match(layout, /import \{ Nunito_Sans \} from "next\/font\/google"/);
-  assert.match(layout, /Nunito_Sans\(\{[\s\S]*display: "swap"[\s\S]*adjustFontFallback: true/);
-  assert.doesNotMatch(layout, /Google_Sans/);
-  // Nunito Sans has no Greek subset (next/font rejects one it doesn't have); Greek pages fall back to a system Greek sans.
+  // keplar.one: Inter with the optical-size axis (Orbit's display cut), plus JetBrains Mono for code (docs/design/keplar-orbit.md §2).
+  assert.match(layout, /import \{ Inter, JetBrains_Mono \} from "next\/font\/google"/);
+  assert.match(layout, /Inter\(\{[\s\S]*axes: \["opsz"\][\s\S]*variable: "--font-sans"[\s\S]*display: "swap"[\s\S]*adjustFontFallback: true/);
+  assert.match(layout, /JetBrains_Mono\(\{[\s\S]*variable: "--font-mono"[\s\S]*display: "swap"/);
+  assert.doesNotMatch(layout, /Google_Sans|Nunito/);
+  // Greek pages keep the system Greek fallback (i18n.css), as before.
   assert.doesNotMatch(layout, /"greek"/);
   assert.match(read("src/components/i18n/i18n.css"), /html:lang\(el\) \{ --f-sans: var\(--font-sans\), "Noto Sans", system-ui, sans-serif; \}/);
-  assert.doesNotMatch(layout, /Montserrat\(|IBM_Plex|\bInter\(|Lexend/);
+  assert.doesNotMatch(layout, /Montserrat\(|IBM_Plex|Lexend/);
   // Keplar Business is Apple-led (tokens.css): Inter, loaded once in src/components/business-site/font.tsx and pointed at the
-  // whole page only while a Business root is on it, so no page mixes the two faces.
+  // whole page only while a Business root is on it.
   const business = read("src/components/business-site/font.tsx");
   assert.match(business, /import \{ Inter \} from "next\/font\/google"/);
   assert.match(business, /Inter\(\{[\s\S]*variable: "--font-business"[\s\S]*display: "swap"[\s\S]*adjustFontFallback: true/);
@@ -39,16 +40,18 @@ test("font: Nunito Sans (variable, swap) via next/font/google on keplar.one; Kep
   assert.match(read("src/lib/og.tsx"), /fontFamily: "Montserrat"/);
   assert.ok(!/Google Sans/.test(read("src/lib/og.tsx")), "share images no longer use Google Sans");
   assert.ok(!/Lexend/i.test(read("src/lib/og.tsx")) && !/Lexend/i.test(read("src/lib/slides/export.ts")));
-  assert.match(layout, /variable: "--font-sans"/);
   assert.match(read("src/styles/globals.css"), /body \{[^}]*font-family: var\(--f-sans\)/);
   assert.match(read("src/styles/globals.css"), /input,\s*textarea,\s*select,[\s\S]*font-family: var\(--f-sans\)/);
   assert.ok(!/next\/font/.test(read("src/lib/i18n/fonts.ts")), "localized pages do not load a second face");
   assert.match(read("src/components/i18n/i18n.css"), /html:not\(:lang\(en\)\) \{\s*--f-sans: var\(--font-sans\), ui-sans-serif/);
+  // Orbit maps the legacy family names onto its tokens.
+  assert.match(read("src/styles/orbit/tokens.css"), /--o-font-sans: var\(--font-sans\), ui-sans-serif, system-ui, sans-serif;/);
+  assert.match(read("src/styles/orbit/legacy.css"), /--f-sans: var\(--o-font-sans\);/);
   const graphite = read("src/styles/graphite.css");
   assert.match(graphite, /html:not\(:has\(\[data-space-root\], \[data-kb\]\)\) \{[^}]*--f-sans: var\(--font-sans\), ui-sans-serif, system-ui/);
   assert.match(graphite, /--t-body: 1rem;/);
   assert.match(graphite, /--lh-body: 1\.65;/);
-  const bad = walk("src").filter((f) => !f.endsWith("serve.ts") && !f.endsWith("styles/graphite.css") && !f.endsWith("app/layout.tsx") && !f.endsWith("lib/i18n/fonts.ts") && !f.endsWith("components/i18n/i18n.css") && !f.includes("/api/") && !f.includes("/site-builder/") /* fonts of generated sites, not the app */ && !f.includes("/app-builder/design/") /* font pairings offered to generated apps */ && !f.endsWith("slides/export.ts") && !f.endsWith("business-site/font.tsx") && !f.endsWith("business-site/tokens.css") /* the Business face is declared here, and only here */ && /Instrument|Inter\b|Helvetica|Arial|"Segoe/.test(readFileSync(f, "utf8")));
+  const bad = walk("src").filter((f) => !f.endsWith("serve.ts") && !f.endsWith("styles/graphite.css") && !f.endsWith("app/layout.tsx") && !f.endsWith("lib/i18n/fonts.ts") && !f.endsWith("components/i18n/i18n.css") && !f.includes("/api/") && !f.includes("/site-builder/") /* fonts of generated sites, not the app */ && !f.includes("/app-builder/design/") /* font pairings offered to generated apps */ && !f.endsWith("slides/export.ts") && !f.endsWith("business-site/font.tsx") && !f.endsWith("business-site/tokens.css") /* the Business face is declared here, and only here */ && !f.endsWith("styles/orbit/tokens.css") /* the Orbit face is named in its token comment */ && /Instrument|Inter\b|Helvetica|Arial|"Segoe/.test(readFileSync(f, "utf8")));
   assert.deepEqual(bad, []);
   assert.match(read("src/styles/tokens.css"), /--f-sans: var\(--font-sans\), ui-sans-serif, system-ui, sans-serif;/);
   assert.ok(!/Keplar Sans Fallback/.test(read("src/styles/globals.css")), "the Google Sans fallback face is gone");

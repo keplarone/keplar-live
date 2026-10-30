@@ -1,198 +1,216 @@
 /*
- * Site nav in the Space UI (docs/design/space-ui.md): Space Studio's floating top bar. Three glass pills over the page (the brand,
- * the primary links, the actions) and the 3D white CTA; no bar, no hairline. Once the page scrolls, a soft fade of the canvas
- * colour rises behind the pills so text never runs under them. The current link wears the lit face (white in dark, ink in
- * light), like Space Studio's tab indicator. Colours come from the --nav-* and --space-* tokens, so the theme swaps them.
+ * Site header in Keplar Orbit (docs/design/keplar-orbit.md §4 Marketing). Logo left, the primary links centred, Sign in and the
+ * one primary CTA on the right. At the top of a page the bar is flat and spans the 1200px grid; once the page scrolls it condenses
+ * into a floating pill (narrower, shorter, a translucent canvas fill and elevation 2). Colours are Orbit tokens only, so the theme
+ * swaps them; the controls take the shared Orbit effects (src/styles/orbit/fx.css) through data-orbit-fx.
  */
 .wrap {
   position: fixed;
   z-index: var(--z-nav);
   inset: 0 0 auto 0;
-  padding: env(safe-area-inset-top, 0px) var(--l-gutter) 0;
-  color: var(--nav-ink);
+  padding: env(safe-area-inset-top, 0px) 16px 0;
+  color: var(--o-ink);
+  font-family: var(--o-font-sans);
+  pointer-events: none; /* only the bar and the sheet take the pointer; the page under the gap stays clickable */
 }
-.wrap::after {
-  content: "";
-  position: absolute;
-  inset: 0 0 -28px 0;
-  z-index: -1;
-  pointer-events: none;
-  background: var(--c-canvas);
-  opacity: 0;
-  transition: opacity var(--space-dur-slow) var(--space-ease-out);
-}
-.wrap[data-scrolled]::after,
-.wrap[data-open]::after { opacity: 1; }
 
 .bar {
+  pointer-events: auto;
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: var(--s-4);
-  max-width: var(--l-max);
-  height: 76px;
+  gap: 16px;
+  width: min(1216px, 100%);
+  height: 68px;
   margin: 0 auto;
+  padding: 0 0 0 0;
+  border-radius: var(--o-r-pill);
+  background: transparent;
+  box-shadow: 0 0 0 1px transparent;
+  transition:
+    width var(--o-dur-4) var(--o-ease-out),
+    height var(--o-dur-4) var(--o-ease-out),
+    margin-top var(--o-dur-4) var(--o-ease-out),
+    background-color var(--o-dur-3) var(--o-ease-out),
+    box-shadow var(--o-dur-3) var(--o-ease-out);
+}
+/* condensed: the floating pill */
+.wrap[data-scrolled] .bar,
+.wrap[data-open] .bar {
+  width: min(1040px, 100%);
+  height: 54px;
+  margin-top: 10px;
+  padding: 0 8px 0 10px;
+  background: rgb(var(--o-canvas-rgb) / 0.9);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  backdrop-filter: blur(18px) saturate(1.4);
+  box-shadow: var(--o-elev-2);
 }
 
-/* glass pill surface shared by the brand, the link group and the icon buttons */
-.brand, .links ul, .icon, .signIn {
-  background: var(--c-canvas);
-  border: 1px solid var(--hairline);
-  box-shadow: none;
-}
-
-/* brand: Space Studio's logo pill; the mark turns a little on hover */
+/* brand */
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  height: 52px;
-  padding: 0 20px 0 15px;
-  border-radius: var(--r-pill);
-  color: var(--nav-ink);
+  gap: 9px;
+  height: 40px;
+  padding: 0 12px 0 8px;
+  border-radius: var(--o-r-pill);
+  color: var(--nav-ink); /* --nav-ink is --o-ink (src/styles/orbit/legacy.css) */
   text-decoration: none;
-  transition: background-color 0.3s ease, box-shadow 0.5s var(--space-ease-out);
+  transition: background-color var(--o-dur-2) var(--o-ease-out);
 }
-.brand:hover { background: var(--c-surface-1); }
-.mark { flex: none; transition: transform 0.8s var(--space-ease-out); }
-.brand:hover .mark { transform: rotate(-14deg) scale(0.94); }
-.word { font-size: 16px; font-weight: var(--w-bold); letter-spacing: -0.02em; }
+.brand:hover { background: var(--o-hover); }
+.mark { flex: none; }
+.word { font-size: var(--o-t-16); font-weight: var(--o-w-semibold); letter-spacing: -0.02em; }
 
-/* inline links (wide screens): one glass pill holding pill links; the current one is lit */
-.links { display: flex; justify-content: center; }
-.links ul { display: flex; align-items: center; justify-content: center; gap: 2px; margin: 0; padding: 5px; list-style: none; border-radius: var(--r-pill); }
+/* centre links */
+.links { display: flex; justify-content: center; min-width: 0; }
+.links ul { display: flex; align-items: center; gap: 2px; margin: 0; padding: 0; list-style: none; }
 .link {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  height: 40px;
-  padding: 0 18px;
-  border-radius: var(--r-pill);
-  color: var(--nav-link);
-  font-size: 13.5px;
-  font-weight: var(--w-semibold);
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--o-r-pill);
+  color: var(--o-ink-2);
+  font-size: var(--o-t-14);
+  font-weight: var(--o-w-medium);
   text-decoration: none;
   white-space: nowrap;
-  transition: background-color 0.35s ease, color 0.35s ease, box-shadow 0.35s ease;
+  transition: background-color var(--o-dur-2) var(--o-ease-out), color var(--o-dur-2) var(--o-ease-out);
 }
-.link:hover { color: var(--nav-ink); background: var(--nav-hover-bg); }
-.link[aria-current="page"] {
-  color: var(--space-p-ink);
-  background: var(--space-p-face);
-  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12);
-  font-weight: var(--w-bold);
-}
+.link:hover { color: var(--o-ink); background: var(--o-hover); }
+.link[aria-current="page"] { color: var(--o-accent-text); background: var(--o-selected); }
 
 /* actions */
-.actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.actions { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
 .icon {
   display: inline-grid;
   place-items: center;
   flex: none;
-  width: 44px;
-  height: 44px;
-  border-radius: var(--r-pill);
-  color: var(--nav-link);
-  transition: color 0.3s ease, box-shadow 0.5s var(--space-ease-out);
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--o-r-pill);
+  background: transparent;
+  color: var(--o-ink-2);
+  transition: background-color var(--o-dur-2) var(--o-ease-out), color var(--o-dur-2) var(--o-ease-out);
 }
-.icon:hover { color: var(--nav-ink); background: var(--c-surface-1); }
+.icon:hover { color: var(--o-ink); background: var(--o-hover); }
 .theme { flex: none; }
 .signIn {
   display: inline-flex;
   align-items: center;
-  height: 44px;
-  padding: 0 20px;
-  border-radius: var(--r-pill);
-  color: var(--nav-ink);
-  font-size: 13.5px;
-  font-weight: var(--w-semibold);
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--o-r-pill);
+  color: var(--o-ink);
+  font-size: var(--o-t-14);
+  font-weight: var(--o-w-medium);
   text-decoration: none;
   white-space: nowrap;
-  transition: box-shadow 0.5s var(--space-ease-out);
+  transition: background-color var(--o-dur-2) var(--o-ease-out);
 }
-.signIn:hover { box-shadow: var(--nav-shadow); }
-/* the one CTA: Space Studio's 3D white button (ink in light) */
+.signIn:hover { background: var(--o-hover); }
+/* the one primary: Orbit accent pill ("Try Keplar" signed out, "Open Keplar" signed in) */
 .cta {
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
-  height: 44px;
-  margin-left: 2px;
-  padding: 0 22px;
-  border-radius: var(--r-pill);
-  background: var(--space-p-face);
-  color: var(--space-p-ink);
-  font-size: 13.5px;
-  font-weight: var(--w-bold);
+  height: 38px;
+  margin-left: 4px;
+  padding: 0 18px;
+  border-radius: var(--o-r-pill);
+  background: var(--o-accent);
+  color: var(--o-accent-ink);
+  font-size: var(--o-t-14);
+  font-weight: var(--o-w-semibold);
   white-space: nowrap;
   text-decoration: none;
-  box-shadow: var(--space-p-depth);
-  transform: translateY(0);
-  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.2s ease;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.12), inset 0 1px 0 rgb(255 255 255 / 0.16);
+  transition: background-color var(--o-dur-2) var(--o-ease-out);
 }
-.cta:hover { transform: translateY(-1px); filter: brightness(1.03); box-shadow: var(--space-p-depth-hover); }
-.cta:active { transform: translateY(var(--space-ledge)); box-shadow: var(--space-p-depth-press); transition-duration: 0.06s; }
-.cta:focus-visible { box-shadow: var(--space-p-depth), var(--space-focus-glow) !important; }
+.cta:hover { background: var(--o-accent-hover); }
+/* §5.8 primary glow (opacity only) */
+.cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  box-shadow: 0 6px 22px -6px var(--o-glow);
+  opacity: 0.35;
+  transition: opacity 600ms var(--o-ease-out);
+  pointer-events: none;
+}
+.cta:hover::before { opacity: 1; }
 
 /* Menu button: two lines that turn into a close mark */
-.toggleIcon { position: relative; display: block; width: 18px; height: 12px; }
-.toggleIcon i { position: absolute; left: 0; right: 0; height: 1.6px; border-radius: 1px; background: currentColor; transition: translate var(--m-dur-2) var(--m-ease-out), rotate var(--m-dur-2) var(--m-ease-out); }
+.toggleIcon { position: relative; display: block; width: 16px; height: 11px; }
+.toggleIcon i { position: absolute; left: 0; right: 0; height: 1.6px; border-radius: 1px; background: currentColor; transition: translate var(--o-dur-3) var(--o-ease-out), rotate var(--o-dur-3) var(--o-ease-out); }
 .toggleIcon i:first-child { top: 2px; }
 .toggleIcon i:last-child { bottom: 2px; }
-.wrap[data-open] .toggleIcon i:first-child { translate: 0 3.2px; rotate: 45deg; }
-.wrap[data-open] .toggleIcon i:last-child { translate: 0 -3.2px; rotate: -45deg; }
+.wrap[data-open] .toggleIcon i:first-child { translate: 0 2.7px; rotate: 45deg; }
+.wrap[data-open] .toggleIcon i:last-child { translate: 0 -2.7px; rotate: -45deg; }
 
-/* the sheet under the bar: a glass card that unfolds from the Menu pill */
+/* the menu sheet: an Orbit panel that drops from the bar */
 .sheet {
+  pointer-events: auto;
   position: absolute;
   top: calc(env(safe-area-inset-top, 0px) + 72px);
-  right: var(--l-gutter);
-  width: min(720px, calc(100vw - 2 * var(--l-gutter)));
+  left: 0;
+  right: 0;
+  margin-inline: auto; /* centred without translate: the drop motion animates translate */
+  width: min(760px, calc(100vw - 32px));
   max-height: calc(100dvh - 96px);
   overflow-y: auto;
-  padding: var(--s-6);
-  border-radius: var(--space-r-card);
-  background: var(--nav-menu-fill);
-  -webkit-backdrop-filter: blur(26px) saturate(1.3);
-  backdrop-filter: blur(26px) saturate(1.3);
-  box-shadow: var(--space-glass-depth), 0 30px 80px rgb(0 0 0 / 0.35);
-  --m-origin: 100% 0;
+  padding: 24px;
+  border-radius: var(--o-r-panel);
+  background: var(--o-surface-1);
+  box-shadow: var(--o-elev-3);
+  --m-origin: 50% 0;
 }
 .sheet[hidden] { display: none; }
-.cols { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: var(--s-6); }
-.colHead { margin: 0 0 var(--s-3); padding-left: 14px; font-size: 11.5px; font-weight: var(--w-semibold); letter-spacing: 0.16em; text-transform: uppercase; color: var(--c-ink-3); }
+.cols { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 24px; }
+.colHead { margin: 0 0 8px; padding-left: 12px; font-size: var(--o-t-12); font-weight: var(--o-w-medium); color: var(--o-ink-3); }
 .bigLinks, .smallLinks { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; }
 .bigLinks a, .smallLinks a {
   display: flex;
   align-items: center;
-  min-height: 42px;
-  padding: 0 14px;
-  border-radius: var(--r-pill);
-  color: var(--c-ink);
-  font-weight: var(--w-semibold);
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: var(--o-r-control);
+  color: var(--o-ink);
+  font-weight: var(--o-w-medium);
   text-decoration: none;
-  transition: background-color 0.25s ease, color 0.25s ease, transform 0.45s var(--space-ease-out);
+  transition: background-color var(--o-dur-2) var(--o-ease-out), color var(--o-dur-2) var(--o-ease-out);
 }
-.bigLinks a { font-size: 17px; letter-spacing: -0.02em; }
-.smallLinks a { font-size: 14px; color: var(--c-ink-2); font-weight: var(--w-medium); }
-.bigLinks a:hover, .smallLinks a:hover { background: var(--hover-wash); color: var(--c-ink); transform: translateX(3px); }
-.bigLinks a[aria-current="page"], .smallLinks a[aria-current="page"] { background: var(--hover-wash); color: var(--c-ink); }
-.sheetFoot { display: flex; align-items: center; gap: var(--s-2); margin-top: var(--s-6); padding-top: var(--s-4); }
+.bigLinks a { font-size: var(--o-t-16); letter-spacing: -0.01em; }
+.smallLinks a { font-size: var(--o-t-14); color: var(--o-ink-2); }
+.bigLinks a:hover, .smallLinks a:hover { background: var(--o-hover); color: var(--o-ink); }
+.bigLinks a[aria-current="page"], .smallLinks a[aria-current="page"] { background: var(--o-selected); color: var(--o-accent-text); }
+.sheetFoot { display: flex; align-items: center; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--o-line); }
 .searchWide {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   flex: 1 1 auto;
-  height: 48px;
-  padding: 0 20px;
-  border-radius: var(--r-pill);
-  background: var(--space-field);
-  box-shadow: var(--space-field-depth);
-  color: var(--c-ink-2);
-  font-size: 14px;
-  font-weight: var(--w-medium);
+  height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--o-r-control);
+  background: var(--o-surface-2);
+  color: var(--o-ink-2);
+  font-size: var(--o-t-14);
+  font-weight: var(--o-w-medium);
   text-align: left;
+  transition: background-color var(--o-dur-2) var(--o-ease-out), color var(--o-dur-2) var(--o-ease-out);
 }
-.searchWide:hover { background: var(--space-field-hover); color: var(--c-ink); }
-.sheetSignIn { display: none; align-items: center; height: 48px; padding: 0 20px; border-radius: var(--r-pill); color: var(--space-s-ink); background: var(--space-s-face); box-shadow: var(--space-s-depth); font-weight: var(--w-semibold); text-decoration: none; }
+.searchWide:hover { background: var(--o-surface-3); color: var(--o-ink); }
+.sheetSignIn { display: none; align-items: center; height: 44px; padding: 0 18px; border-radius: var(--o-r-control); color: var(--o-ink); background: var(--o-surface-1); box-shadow: var(--o-elev-1); font-weight: var(--o-w-medium); text-decoration: none; }
 .panelTheme { display: none; }
 
 /* Medium screens: the inline links leave; the Menu button holds them. */
@@ -202,16 +220,15 @@
 }
 /* Phones: search and Sign in move into the sheet; the sheet spans the screen. Nothing wraps or shrinks. */
 @media (max-width: 640px) {
-  .bar { height: 64px; gap: var(--s-2); }
-  .brand { height: 46px; padding: 0 16px 0 12px; }
-  .icon { width: 44px; height: 44px; }
+  .wrap { padding: env(safe-area-inset-top, 0px) 10px 0; }
+  .bar { height: 60px; gap: 8px; padding: 0 6px 0 8px; }
+  .wrap[data-scrolled] .bar, .wrap[data-open] .bar { height: 52px; margin-top: 8px; }
+  .icon { width: 40px; height: 40px; }
   .searchBtn, .signIn { display: none; }
   .sheetSignIn { display: inline-flex; }
-  .sheet { top: calc(env(safe-area-inset-top, 0px) + 62px); right: 12px; width: calc(100vw - 24px); padding: var(--s-5); }
-  .cols { grid-template-columns: 1fr; gap: var(--s-5); }
-  .cta { padding: 0 18px; font-size: 13.5px; }
-  /* phones: no live blur on the pills (redesign.css drops backdrop-filter); the fill is near-opaque so it stays readable */
-  .brand, .links ul, .icon, .signIn { background: var(--nav-fill-scrolled); }
+  .sheet { top: calc(env(safe-area-inset-top, 0px) + 66px); width: calc(100vw - 20px); padding: 18px; }
+  .cols { grid-template-columns: 1fr; gap: 18px; }
+  .cta { padding: 0 16px; }
 }
 @media (max-width: 400px) {
   .actions .theme { display: none; }
@@ -225,6 +242,7 @@
   padding-left: calc(env(titlebar-area-x, 0px) + 12px);
   /* Where env() is not exposed (the Keplar desktop window), the fallback keeps 146px for minimise/maximise/close. */
   padding-right: calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, calc(100vw - 146px)) + 12px);
+  pointer-events: auto;
 }
 /* macOS: the traffic lights are on the left (x 16) and nothing is on the right. */
 :global(html[data-desktop-os="mac"]) .wrap {
@@ -238,6 +256,5 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .wrap::after, .toggleIcon i, .mark, .cta, .bigLinks a, .smallLinks a { transition: none; }
-  .brand:hover .mark, .bigLinks a:hover, .smallLinks a:hover { transform: none; }
+  .bar, .toggleIcon i, .cta, .cta::before, .brand, .link, .icon, .signIn, .bigLinks a, .smallLinks a { transition: none; }
 }

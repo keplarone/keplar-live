@@ -1,113 +1,238 @@
+/*
+ * The marketing landing in Keplar Orbit (docs/design/keplar-orbit.md §4 Marketing): a calm sky behind the hero only, then the
+ * product in panes on the 12-column grid (src/styles/redesign.css .o-grid / .o-pane) with a 120px section rhythm. Tokens only.
+ */
 .page {
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 140px 28px 120px;
-  color: var(--c-ink);
+  position: relative;
+  color: var(--o-ink);
+  padding-bottom: var(--o-section, 120px);
 }
 
+/* ── Hero on the sky ── */
 .hero {
-  max-width: 760px;
-  margin: 0 auto 120px;
+  position: relative;
+  isolation: isolate;
+  padding: calc(68px + 120px) var(--l-gutter) var(--o-section, 120px);
   text-align: center;
 }
+/* The sky: a soft accent atmosphere that settles into the canvas at the hero's foot. Static, two layers that only drift in
+   opacity on load; nothing loops. */
+.sky {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, rgb(var(--o-accent-rgb) / 0.10), rgb(var(--o-accent-rgb) / 0.03) 55%, rgb(var(--o-canvas-rgb) / 0) 100%);
+}
+.sky i {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+}
+.sky i:first-child {
+  left: 50%;
+  top: -38%;
+  width: 120%;
+  height: 90%;
+  translate: -50% 0;
+  background: radial-gradient(closest-side, rgb(var(--o-accent-rgb) / 0.22), transparent);
+}
+.sky i:last-child {
+  left: 50%;
+  bottom: 4%;
+  width: 70%;
+  height: 34%;
+  translate: -50% 0;
+  background: radial-gradient(closest-side, rgb(var(--o-ink-rgb) / 0.05), transparent);
+}
+.sky::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 45%;
+  background: linear-gradient(to bottom, rgb(var(--o-canvas-rgb) / 0), var(--o-canvas));
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sky i { animation: sky-in 1.2s var(--o-ease-out) both; }
+}
+@keyframes sky-in { from { opacity: 0; } }
 
-/* #main's marketing rule sets h1 to medium weight. This wins so the statement stays bold white. */
+.heroInner {
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  margin: 0 0 24px;
+  padding: 0 12px;
+  border-radius: var(--o-r-pill);
+  background: rgb(var(--o-canvas-rgb) / 0.7);
+  box-shadow: var(--o-elev-1);
+  color: var(--o-ink-2);
+  font-size: var(--o-t-13);
+  font-weight: var(--o-w-medium);
+}
+.badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--o-accent);
+}
+
+/* #main's marketing rule sets h1; this keeps the statement at the Orbit display size. */
 :global(#main:not([data-kb])) .h1 {
   margin: 0;
-  color: #fff;
-  font-size: clamp(3rem, 7vw, 5.5rem);
-  font-weight: 700;
-  letter-spacing: -0.045em;
-  line-height: 0.98;
+  color: var(--o-ink);
+  font-size: clamp(2.75rem, 6.4vw, 4.5rem);
+  font-weight: var(--o-w-semibold);
+  letter-spacing: var(--o-tr-display);
+  line-height: 1.04;
 }
-:global(html[data-theme="light"] #main:not([data-kb])) .h1 { color: #0d0d0d; }
 
 .lede {
   margin: 24px auto 0;
-  max-width: 38ch;
-  font-size: 18px;
-  line-height: 1.5;
-  font-weight: 400;
-  color: var(--c-ink-2);
+  max-width: 40ch;
+  font-size: var(--o-t-18);
+  line-height: var(--o-lh-text);
+  color: var(--o-ink-2);
 }
 
-.primary {
-  display: inline-flex;
-  align-items: center;
+.ctaRow {
+  display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  height: 48px;
+  gap: 12px;
   margin-top: 36px;
-  padding: 0 22px;
-  border-radius: 999px;
-  background: #fff;
-  color: #0d0d0d;
-  font-size: 16px;
-  font-weight: 600;
-  text-decoration: none;
 }
-.primary:hover { background: #e8e8e8; }
-:global(html[data-theme="light"]) .primary { background: #0d0d0d; color: #fff; }
-:global(html[data-theme="light"]) .primary:hover { background: #2a2a2a; }
 
+/* ── Product sections: copy in 5 columns, the pane in 7; every other one flips ── */
 .section {
-  margin: 0 auto 96px;
-  max-width: 920px;
+  align-items: center;
+  padding: 0 var(--l-gutter);
+  margin-top: var(--o-section, 120px);
+  box-sizing: content-box;
+  max-width: var(--o-site-max, 1200px);
+}
+.section:first-of-type { margin-top: 0; }
+.copy { grid-column: 1 / span 4; }
+.frame { grid-column: 6 / span 7; }
+.section[data-flip] .copy { grid-column: 9 / span 4; grid-row: 1; }
+.section[data-flip] .frame { grid-column: 1 / span 7; grid-row: 1; }
+
+.step, .stepN {
+  margin: 0 0 12px;
+  font-family: var(--o-font-mono);
+  font-size: var(--o-t-12);
+  color: var(--o-accent-text);
 }
 
-:global(#main:not([data-kb])) .section h2 {
+:global(#main:not([data-kb])) .section h2,
+:global(#main:not([data-kb])) .how h2,
+:global(#main:not([data-kb])) .close h2 {
   margin: 0;
-  color: #fff;
+  color: var(--o-ink);
   font-size: clamp(1.75rem, 3vw, 2.25rem);
-  font-weight: 700;
+  font-weight: var(--o-w-semibold);
   letter-spacing: -0.03em;
-}
-:global(html[data-theme="light"] #main:not([data-kb])) .section h2 { color: #0d0d0d; }
-
-.section p {
-  margin: 10px 0 0;
-  max-width: 46ch;
-  color: var(--c-ink-2);
-  font-size: 16px;
-  line-height: 1.5;
+  line-height: var(--o-lh-display);
 }
 
-.frame {
-  margin: 28px 0 0;
+.copy p:not(.step) {
+  margin: 14px 0 0;
+  max-width: 34ch;
+  color: var(--o-ink-2);
+  font-size: var(--o-t-16);
+  line-height: var(--o-lh-text);
+}
+
+.frame img { aspect-ratio: 1440 / 900; }
+
+/* ── How an answer is made ── */
+.how {
+  padding: 0 var(--l-gutter);
+  margin-top: var(--o-section, 120px);
+  box-sizing: content-box;
+  max-width: var(--o-site-max, 1200px);
+  row-gap: 40px;
+}
+.howTitle { grid-column: 1 / -1; }
+.steps {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin: 0;
   padding: 0;
-  overflow: hidden;
-  border: 1px solid var(--hairline);
-  border-radius: 20px;
-  background: var(--c-surface-1); /* graphite surface: #171717 dark, #f7f7f8 light */
-  opacity: 1;
+  list-style: none;
+}
+.steps li {
+  padding: 28px;
+  border-radius: var(--o-r-card);
+  background: var(--o-surface-1);
+  box-shadow: var(--o-elev-1);
+}
+:global(#main:not([data-kb])) .steps h3 {
+  margin: 0;
+  font-size: var(--o-t-18);
+  font-weight: var(--o-w-semibold);
+  letter-spacing: -0.015em;
+  color: var(--o-ink);
+}
+.steps p {
+  margin: 8px 0 0;
+  color: var(--o-ink-2);
+  font-size: var(--o-t-14);
+  line-height: var(--o-lh-text);
 }
 
-.frame img {
-  display: block;
-  width: 100%;
-  height: auto;
-  opacity: 1;
+/* ── Closing call to action ── */
+.close {
+  width: min(var(--o-site-max, 1200px), calc(100% - 2 * var(--l-gutter)));
+  margin: var(--o-section, 120px) auto 0;
+  padding: 72px 24px;
+  box-sizing: border-box;
+  text-align: center;
+  border-radius: var(--o-r-panel);
+  background: var(--o-surface-2);
 }
+.close > p:not(.more) {
+  margin: 12px auto 0;
+  color: var(--o-ink-2);
+  font-size: var(--o-t-16);
+}
+.close .ctaRow { margin-top: 28px; }
 
 .more {
   display: flex;
   justify-content: center;
-  gap: 28px;
-  margin: 8px 0 0;
-  font-size: 15px;
+  gap: 24px;
+  margin: 24px 0 0;
+  font-size: var(--o-t-14);
 }
-
 .more a {
-  color: var(--c-ink-2);
+  color: var(--o-ink-2);
   text-decoration: none;
+  transition: color var(--o-dur-2) var(--o-ease-out);
 }
+.more a:hover { color: var(--o-accent-text); }
 
-.more a:hover {
-  color: var(--c-ink);
+@media (max-width: 899px) {
+  .copy, .frame, .section[data-flip] .copy, .section[data-flip] .frame { grid-column: 1 / -1; grid-row: auto; }
+  .copy { margin-bottom: 24px; }
+  .steps { grid-template-columns: minmax(0, 1fr); gap: 12px; }
 }
 
 @media (max-width: 640px) {
-  .page { padding: 108px 20px 80px; }
-  .hero { margin-bottom: 72px; }
-  .section { margin-bottom: 64px; }
-  .h1 { font-size: clamp(2.4rem, 12vw, 3.2rem); }
+  .hero { padding-top: calc(60px + 64px); }
+  :global(#main:not([data-kb])) .h1 { font-size: clamp(2.4rem, 11vw, 3rem); }
+  .lede { font-size: var(--o-t-16); }
+  .close { padding: 48px 20px; }
+  .steps li { padding: 20px; }
 }

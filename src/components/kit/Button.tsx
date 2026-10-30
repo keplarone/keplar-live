@@ -44,6 +44,7 @@ export function Button({
       {...rest}
       type={type}
       className={cx(c.act, className)}
+      data-orbit-fx={variant}
       data-variant={variant}
       data-size={size}
       data-full={fullWidth ? "" : undefined}
@@ -125,6 +126,8 @@ export function IconButton({
       aria-pressed={pressed}
       aria-disabled={disabled || undefined}
       className={cx(c.glyphAct, className)}
+      data-orbit-fx="icon"
+      data-orbit-icon={motion === "send" ? "send" : undefined}
       data-variant={variant}
       data-size={size}
       data-shape={shape ?? (variant === "primary" ? "circle" : "square")}

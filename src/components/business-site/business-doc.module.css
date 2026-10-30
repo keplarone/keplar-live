@@ -1,8 +1,8 @@
 /*
  * Keplar Business copies of keplar.one's Status, Terms, Privacy and Security pages (BusinessDoc.tsx). They render the very same
- * components as keplar.one, so the words never drift apart. This file maps keplar.one's tokens onto the Business ones (Apple-led,
- * tokens.css), so the shared content reads as Business: flat tiles, the Business face, Apple tracking, no tracked capitals, and adds the
- * Business header.
+ * components as keplar.one, so the words never drift apart. keplar.one maps its legacy tokens onto Orbit in
+ * src/styles/orbit/legacy.css, which stays out of Business ([data-kb]); this file does the same for these pages, so the shared
+ * content reads as Orbit (surfaces, hairlines, radii), and adds the Business header (logo left, the way back right).
  */
 .doc {
   /* type */
@@ -19,21 +19,39 @@
   --c-ink: var(--kb-ink);
   --c-ink-2: var(--kb-ink-2);
   --c-ink-3: var(--kb-ink-3);
-  --c-surface-1: var(--kb-surface-2);
-  --c-surface-2: var(--kb-surface-3);
+  --c-surface-1: var(--o-surface-1);
+  --c-surface-2: var(--o-surface-2);
+  --c-border: var(--o-line);
+  --c-border-strong: var(--o-line-strong);
+  --c-accent: var(--o-accent);
+  --c-on-accent: var(--o-accent-ink);
+  --c-focus: var(--o-focus);
+  --rgb-ink: var(--o-ink-rgb);
+  --rgb-canvas: var(--o-canvas-rgb);
+  --surface-panel: var(--o-surface-1);
+  --surface-raised: var(--o-surface-1);
+  --elev-1: var(--o-elev-1);
+  --elev-2: var(--o-elev-2);
+  --r-xs: var(--o-r-chip);
+  --r-sm: var(--o-r-control);
+  --r-md: var(--o-r-card);
+  --r-card: var(--o-r-card);
+  --r-card-lg: var(--o-r-panel);
+  --shape-control: var(--o-r-control);
+  --shape-card: var(--o-r-card);
   --hairline: var(--kb-border);
   --hairline-strong: var(--kb-border-strong);
   --space-glass: var(--kb-surface-2);
   --space-glass-depth: none;
   --space-r-panel: var(--kb-r-sm);
-  --space-r-card: var(--kb-r-lg);
+  --space-r-card: var(--o-r-card);
   background: var(--kb-bg);
   color: var(--kb-ink);
   font-family: var(--kb-sans);
   padding-top: var(--kb-s-6);
-  animation: rise 0.7s var(--kb-ease-expo) both;
+  animation: rise var(--o-dur-4) var(--o-ease-out) both;
 }
-@keyframes rise { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: none; filter: none; } }
+@keyframes rise { from { opacity: 0; translate: 0 8px; } }
 .doc a {
   color: var(--kb-ink);
   text-decoration-color: rgb(var(--kb-accent-rgb) / 0.5);
@@ -48,19 +66,20 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--kb-s-5);
-  height: 74px;
-  max-width: var(--kb-max);
+  height: 64px;
+  max-width: calc(var(--kb-max) + 2 * var(--kb-gutter));
   margin: 0 auto;
-  padding: 10px var(--kb-gutter) 0;
+  padding: 0 var(--kb-gutter);
+  border-bottom: 1px solid var(--o-line);
   box-sizing: border-box;
 }
 .home {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 48px;
-  min-width: 48px;
-  padding: 0 12px;
+  height: 40px;
+  min-width: 40px;
+  padding: 0 6px;
   box-sizing: border-box;
   border-radius: var(--kb-r-sm);
   background: transparent;
@@ -69,42 +88,37 @@
   transition: opacity var(--kb-d-3) var(--kb-ease);
 }
 .home:hover {
-  opacity: 0.72;
+  background: var(--o-hover);
 }
 .back {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 44px;
-  padding: 0 4px;
-  border-radius: var(--kb-r-sm);
-  background: transparent;
-  color: var(--kb-accent-ink);
-  font-size: 14px;
-  font-weight: 400;
-  letter-spacing: -0.016em;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: var(--o-r-control);
+  background: var(--o-surface-1);
+  box-shadow: var(--o-elev-1);
+  color: var(--o-ink);
+  font-size: var(--o-t-14);
+  font-weight: var(--o-w-medium);
+  letter-spacing: -0.006em;
   text-decoration: none;
   transition: color var(--kb-d-2) var(--kb-ease);
 }
 .back > span {
   display: inline-block;
-  transition: transform 0.4s var(--kb-spring);
+  transition: translate var(--o-dur-3) var(--o-ease-spring);
 }
 .back:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  background: var(--o-surface-2);
 }
 .back:hover > span {
-  transform: translateX(-3px);
-}
-.header .home:focus-visible,
-.header .back:focus-visible {
-  outline: none;
-  box-shadow: var(--kb-glow);
+  translate: -3px 0;
 }
 /* the shared pages' eyebrows (Status, Legal): Apple's sentence-case category label, not tracked capitals */
-.doc :global([class*="__eyebrow"]) { font-size: 17px; letter-spacing: -0.022em; text-transform: none; font-weight: 600; color: var(--kb-ink-3); }
-.doc :is(h1, h2) { letter-spacing: -0.024em; }
+.doc :global([class*="__eyebrow"]) { font-size: var(--o-t-13); letter-spacing: 0; text-transform: none; font-weight: 600; color: var(--o-accent-text); }
+.doc :is(h1, h2) { font-weight: 600; letter-spacing: -0.03em; }
 @media (max-width: 640px), (prefers-reduced-motion: reduce) {
   .doc { animation: none; }
 }

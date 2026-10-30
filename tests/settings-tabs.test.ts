@@ -18,10 +18,10 @@ test("Settings: categories are real tabs with an active state, search covers pan
 test("Settings CSS: secondary buttons are declared after the ink primary, no glass, and the category rail is one swipeable line on phones", () => {
   const css = read("src/components/account/account.module.css");
   assert.ok(css.lastIndexOf(".btn.btnGhost {") > css.indexOf(".btn {"), ".btnGhost must win over the ink .btn background");
-  // Space UI (docs/design/space-ui.md): the primary is the 3D face on its ledge, declared in the Space block that comes last.
-  const space = css.slice(css.indexOf("Space UI (docs/design/space-ui.md"));
-  assert.match(space.match(/\.btn \{[^}]*\}/)?.[0] ?? "", /background: var\(--space-p-face\)[\s\S]*box-shadow: var\(--space-p-depth\)/, "the primary is the 3D Space face");
-  assert.ok(space.lastIndexOf(".btn.btnGhost {") > space.indexOf(".btn {"), ".btnGhost must win over the primary face in the Space block too");
+  // Keplar Orbit (docs/design/keplar-orbit.md): the primary is the flat accent, declared in the Orbit block that comes last.
+  const orbit = css.slice(css.indexOf("Keplar Orbit (docs/design/keplar-orbit.md)"));
+  assert.match(orbit.match(/\.btn \{[^}]*\}/)?.[0] ?? "", /background: var\(--o-accent\)/, "the primary is the Orbit accent");
+  assert.ok(orbit.lastIndexOf(".btn.btnGhost {") > orbit.indexOf(".btn {"), ".btnGhost must win over the primary in the Orbit block too");
   assert.doesNotMatch(css, /backdrop-filter|--btn-|--lt-|#[0-9a-fA-F]{3,8}\b|rgba?\(\d/, "tokens only (Space tokens included), no glass blur on settings");
   assert.match(css, /@media \(max-width: 720px\)[\s\S]*\.settingsNav \{ flex-direction: row; overflow-x: auto/);
 });

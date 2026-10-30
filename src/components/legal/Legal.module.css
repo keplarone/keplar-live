@@ -1,6 +1,7 @@
 /* Legal documents (UI v2): the shared page header, a calm contents column with one ink bar for the current section, and clauses as
    clean typographic sections divided by hairlines (no panel per clause, no lit intro, no pills). Colours are tokens only. */
 .page {
+  box-sizing: content-box; /* Orbit grid: --l-max is the content width; the gutter pads outside it */
   position: relative;
   z-index: var(--z-content);
   max-width: var(--l-max);

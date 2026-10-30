@@ -112,7 +112,6 @@
 @media (prefers-reduced-motion: reduce) {
   .card, .label[data-busy] { animation: none; }
   .choice { transition: none; }
-  .choice:active:not(:disabled) { scale: none; }
 }
 
 /* Edits from the chat: rename / merge / delete rows, editors, destructive confirm */
@@ -125,8 +124,6 @@
 .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1 1 140px; }
 .field > span { font-size: var(--t-label); color: var(--c-ink-3); }
 .textarea { min-height: 96px; padding: var(--s-2) var(--s-3); border: 0; border-radius: var(--r-xs); background: var(--c-canvas); color: var(--c-ink); font: inherit; line-height: 1.5; box-shadow: var(--elev-1); resize: vertical; }
-/* the site's keyboard cue for fields: a bar under the text, never a box */
-.textarea:focus-visible, .input:focus-visible { box-shadow: var(--space-focus-glow); }
 .check { display: inline-flex; align-items: center; gap: var(--s-2); font-size: var(--t-label); color: var(--c-ink-2); }
 @media (pointer: coarse) { .quiet { min-height: 44px; } }
 .amount { flex: none; font-variant-numeric: tabular-nums; color: var(--c-ink); }

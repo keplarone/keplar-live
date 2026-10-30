@@ -41,10 +41,21 @@
 
 /* Space UI (phase B): the viewer rises out of a blur onto the void; the bar has no rule line; the picture sits in a soft 18px frame. */
 .bar { border-bottom: 0; }
-.img { border-radius: 18px; box-shadow: 0 30px 80px rgb(0 0 0 / 0.5); }
+.img { border-radius: var(--o-r-panel); box-shadow: 0 30px 80px rgb(0 0 0 / 0.5); }
 @media (min-width: 641px) and (prefers-reduced-motion: no-preference) {
   .scrim { animation: spLightIn 0.42s var(--space-ease-expo) both; }
   .img { animation: spLightImg 0.6s var(--space-ease-expo) both; }
 }
 @keyframes spLightIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes spLightImg { from { opacity: 0; transform: scale(0.96); filter: blur(10px); } to { opacity: 1; transform: none; filter: blur(0); } }
+
+/* Keplar Orbit: the viewer is the canvas with a 52px top bar (caption left, actions right, hairline under it); the picture sits
+   in a 14px frame at --o-elev-3 and rises 8px in 240ms (none with reduced motion). */
+.scrim { background: var(--o-canvas); color: var(--o-ink); }
+.bar { min-height: 52px; padding: 8px 16px; border-bottom: 1px solid var(--o-line); color: var(--o-ink-2); font: var(--o-t-13) / 1.3 var(--o-font-sans); }
+.img { border-radius: var(--o-r-card); box-shadow: var(--o-elev-3); }
+@media (min-width: 641px) and (prefers-reduced-motion: no-preference) {
+  .scrim { animation: in var(--o-dur-2) var(--o-ease-out) both; }
+  .img { animation: oLightImg var(--o-dur-3) var(--o-ease-out) both; }
+}
+@keyframes oLightImg { from { opacity: 0; translate: 0 8px; } }

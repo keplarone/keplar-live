@@ -23,10 +23,10 @@ export function AddSpecialist({ token }: { token: string }) {
       {state === "done" ? (
         <>
           <span role="status">Added to your specialists.</span>
-          <Link className={s.btn} href="/app">Use it in a chat</Link>
+          <Link className={s.btn} data-orbit-fx="primary" href="/app">Use it in a chat</Link>
         </>
       ) : state === "signin" ? (
-        <Link className={s.btn} href={`/signin?next=${encodeURIComponent(`/sp/${token}`)}`}>Sign in to add it</Link>
+        <Link className={s.btn} data-orbit-fx="primary" href={`/signin?next=${encodeURIComponent(`/sp/${token}`)}`}>Sign in to add it</Link>
       ) : (
         <button type="button" className={s.btn} style={{ border: 0, font: "inherit", cursor: "pointer" }} disabled={state === "busy"} onClick={() => void add()}>
           {state === "busy" ? "Adding..." : "Add to my specialists"}
