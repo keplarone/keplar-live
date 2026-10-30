@@ -26,7 +26,7 @@
 .page { width: 100%; max-width: calc(var(--kb-max) + 2 * var(--kb-gutter)); margin: 0 auto; padding: 0 var(--kb-gutter) var(--kb-s-7); display: flex; flex-direction: column; box-sizing: border-box; }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-/* ── type: Inter Display moments at 32px+ (600, -0.035em, 1.15), text at 1.5 ── */
+/* ── type: Orbit display moments at 32px+ (600, -0.035em, 1.15), text at 1.5 ── */
 .h1, .h2, .h3, .h4, .h5, .h6 { margin: 0; color: var(--o-ink); text-wrap: balance; font-weight: var(--o-w-semibold); }
 .h1 { font-size: var(--kb-t-h1); line-height: 1.04; letter-spacing: var(--o-tr-display); }
 .h1Dim { display: block; color: var(--o-ink-3); }

@@ -281,7 +281,7 @@
 }
 
 /* ── Keplar Business sign-in (AuthShell brand="business"): the shared form in Keplar Orbit (the Business tokens in
-   src/components/business-site/tokens.css point at --o-*): the canvas, Inter, 44px fields with a 3:1 edge and 10px corners, the
+   src/components/business-site/tokens.css point at --o-*): the canvas, the Orbit sans face, 44px fields with a 3:1 edge and 10px corners, the
    accent primary, a segmented Sign up / Sign in control whose chosen item lifts onto surface-1, and a panel beside the form.
    Edges are borders, not box-shadows: Keplar One's flat-controls layer still runs on this page and strips control shadows. ── */
 .shell[data-brand="business"] { background: var(--o-canvas); color: var(--o-ink); font-family: var(--kb-sans); letter-spacing: -0.006em; }

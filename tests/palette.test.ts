@@ -70,6 +70,8 @@ test("no electric blue-dominant spam (teal OK: green channel stays close to blue
     // Keplar Orbit's one accent (docs/design/keplar-orbit.md §3): cobalt #2f5bff in light, its hover and text steps, and the tints
     // built from it. Dark uses #6f8cff, which the green-channel rule already allows.
     "src/styles/orbit/tokens.css": ["47,91,255", "33,73,232", "36,73,224"],
+    // The embed widget runs inside other sites, where Orbit tokens are not loaded, so it repeats the Orbit accent.
+    "src/components/embed/EmbedAsk.module.css": ["47,91,255"],
     // Keplar Business's Apple-led system: the one action colour (#0071e3) and its link (#0066cc) and pressed (#0058b0) steps.
     "src/components/business-site/tokens.css": ["0,113,227", "0,102,204", "0,88,176"],
   };
