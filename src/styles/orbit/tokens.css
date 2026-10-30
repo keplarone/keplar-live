@@ -35,8 +35,8 @@
   --o-press: rgb(15 18 30 / 0.09);
   --o-selected: rgb(47 91 255 / 0.1);
   /* button effects (src/styles/orbit/fx.css) */
-  --o-sheen: rgb(255 255 255 / 0.55);
-  --o-sheen-on-accent: rgb(255 255 255 / 0.32);
+  --o-sheen: rgb(47 91 255 / 0.1);
+  --o-sheen-on-accent: rgb(255 255 255 / 0.2);
   --o-glow: rgb(47 91 255 / 0.38);
   --o-focus: var(--o-accent);
   /* elevation */
@@ -72,8 +72,8 @@
   --o-hover: rgb(255 255 255 / 0.06);
   --o-press: rgb(255 255 255 / 0.1);
   --o-selected: rgb(111 140 255 / 0.16);
-  --o-sheen: rgb(255 255 255 / 0.1);
-  --o-sheen-on-accent: rgb(255 255 255 / 0.4);
+  --o-sheen: rgb(255 255 255 / 0.09);
+  --o-sheen-on-accent: rgb(255 255 255 / 0.22);
   --o-glow: rgb(111 140 255 / 0.45);
   --o-elev-1: 0 1px 2px rgb(0 0 0 / 0.4), 0 0 0 1px var(--o-line);
   --o-elev-2: 0 8px 24px -8px rgb(0 0 0 / 0.6), 0 0 0 1px var(--o-line);

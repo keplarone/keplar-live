@@ -46,8 +46,8 @@
   pointer-events: none;
   background-image: radial-gradient(closest-side, var(--ofx-sheen, var(--o-sheen)), transparent);
   background-repeat: no-repeat;
-  background-size: 160px 160px;
-  background-position: calc(var(--mx, 50%) - 80px) calc(var(--my, 50%) - 80px);
+  background-size: 128px 128px;
+  background-position: calc(var(--mx, 50%) - 64px) calc(var(--my, 50%) - 64px);
   opacity: 0;
   transition: opacity var(--o-dur-3) var(--o-ease-out);
 }

@@ -8,7 +8,8 @@ const read = (p: string) => readFileSync(p, "utf8");
 test("keplar.one shares one ease, presses to 0.97, and steps sidebar rows 2px", () => {
   const g = read("src/styles/graphite.css");
   assert.match(g, /--m-ease-out: cubic-bezier\(0\.2, 0\.8, 0\.2, 1\);/);
-  assert.match(g, /scale: 0\.97 !important;/);
+  // Orbit press (src/styles/orbit/fx.css): 0.97 for a small control, shallower for wide ones (--ofx-ps from src/lib/orbit-fx.ts).
+  assert.match(g, /scale: var\(--ofx-ps, 0\.97\) !important;/);
   assert.match(g, /transition-duration: 60ms;/);
   assert.match(g, /\[class\*="sideItem"\]:hover \{\s*translate: 2px 0 !important;/);
   assert.match(g, /\[class\*="homeChip"\]:hover \[class\*="homeChipLabel"\] \{\s*translate: 1px 0;/);

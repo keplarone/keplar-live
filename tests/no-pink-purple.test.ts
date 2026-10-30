@@ -106,7 +106,7 @@ test("no pink, magenta, purple or violet accents, and no Tailwind purple utiliti
 });
 
 test("the rotating greeting name has no [data-model= gradients and no blur(", () => {
-  const css = readFileSync("src/styles/gemini.css", "utf8");
+  const css = readFileSync("src/styles/orbit/app.css", "utf8");
   const mod = readFileSync("src/components/app-ui/RotatingModelName.module.css", "utf8");
   assert.doesNotMatch(css, /\[data-model=/);
   assert.doesNotMatch(css, /blur\(/);
@@ -145,7 +145,7 @@ test("Space Studio keeps its violet aura, headline, and focus glow", () => {
   assert.match(css, /--space-focus-glow: 0 0 0 3px rgb\(195 155 255 \/ 0\.55\), 0 0 24px rgb\(176 104 255 \/ 0\.35\)/);
   assert.match(css, /html:has\(\[data-space-root\]\)/);
   const graphite = readFileSync("src/styles/graphite.css", "utf8");
-  assert.match(graphite, /outline: 2px solid var\(--c-ink\) !important;/);
+  assert.match(graphite, /outline: 2px solid var\(--o-focus\) !important;/);
   assert.match(graphite, /outline-offset: 2px !important;/);
   assert.match(readFileSync("src/app/(space)/layout.tsx", "utf8"), /Montserrat/);
 });

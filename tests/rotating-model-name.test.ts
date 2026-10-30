@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { MODEL_NAMES, SWITCH_MS } from "@/components/app-ui/RotatingModelName";
 
-const css = readFileSync("src/styles/gemini.css", "utf8");
+const css = readFileSync("src/styles/orbit/app.css", "utf8");
 const mod = readFileSync("src/components/app-ui/RotatingModelName.module.css", "utf8");
 const src = readFileSync("src/components/app-ui/RotatingModelName.tsx", "utf8");
 const app = readFileSync("src/components/app-ui/KeplarApp.tsx", "utf8");
@@ -31,9 +31,8 @@ test("greeting name slot: motion is transform/opacity/width only, off under redu
   assert.match(src, /document\.hidden/, "no switching in a background tab");
 });
 
-test("signed-out greeting is solid white in dark and solid ink in light, with no text clip", () => {
-  assert.match(css, /\[data-theme\] \[data-welcome\] \{[^}]*color:\s*#ffffff !important/);
-  assert.match(css, /\[data-theme="light"\] \[data-welcome\] \{[^}]*color:\s*#0e0f12 !important/);
+test("signed-out greeting is one solid ink color in both themes (Orbit --o-ink), with no text clip", () => {
+  assert.match(css, /\[data-theme\] \[data-welcome\] \{[^}]*color:\s*var\(--o-ink\) !important/);
   assert.match(css, /\[data-welcome\] \[data-model-slot\][\s\S]*?color:\s*inherit !important/);
   assert.doesNotMatch(css, /background-clip:\s*text/);
   assert.doesNotMatch(css, /-webkit-text-fill-color:\s*transparent/);

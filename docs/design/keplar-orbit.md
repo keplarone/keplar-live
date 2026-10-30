@@ -66,3 +66,64 @@ Durations 120/180/240/320ms; easings `--ease-out: cubic-bezier(.2,.8,.2,1)`, `--
 
 ## 7. Done means
 Every route renders in Orbit in light and dark, desktop and phone; old visual layers (graphite overrides, space/violet tokens, glass leftovers) are removed or mapped to Orbit tokens; all tests, typecheck, lint, build pass; e2e flows (send a chat, sign in, open settings, create) still work; Lighthouse a11y 100.
+
+## 8. Implementation notes (phase 1: foundation + app shell)
+
+### File map
+| What | Where |
+| --- | --- |
+| Tokens (`--o-*`: colour, type, radius, elevation, motion, shell sizes) | `src/styles/orbit/tokens.css` |
+| Legacy names pointed at Orbit (`--c-*`, `--surface-*`, `--hairline*`, `--hover-wash`, `--elev-*`, `--r-*`, `--shape-*`, `--ks-*`, `--space-*` faces, `--nav-*`, `--g-*`) | `src/styles/orbit/legacy.css` |
+| Button effects CSS (press, magnet, sheen, focus ring, loading arc, icon micro-motion) | `src/styles/orbit/fx.css` |
+| Button effects runtime (one delegated listener set; `claim()`, `flashSuccess()`, pure helpers) | `src/lib/orbit-fx.ts`, mounted by `src/components/orbit/OrbitFx.tsx` in `src/app/layout.tsx` |
+| Orbit primitives: `Button`, `ButtonLink`, `IconButton`, `Chip` | `src/components/orbit/Button.tsx` (+ `Button.module.css`), barrel `src/components/orbit/index.ts` |
+| App shell layer (grid, drawer, top strip, composer, thread, search dialog, tooltips) | `src/styles/orbit/app.css` (replaces `gemini.css`) |
+| Rail / bottom bar | `src/components/app-ui/shell/Rail.tsx` |
+| Context panel (Sources, Models, Memory) | `src/components/app-ui/shell/ContextPanel.tsx` |
+| Shell CSS for those two | `src/components/app-ui/shell/shell.module.css` |
+| Fonts: Inter (opsz) as `--font-sans`, JetBrains Mono as `--font-mono` | `src/app/layout.tsx` |
+| Living reference | `/dev/orbit` (`src/components/orbit/Showcase.tsx`, needs `KEPLAR_DEV_TOOLS=1`) |
+| Load order | `src/styles/globals.css`: … `graphite.css`, `select-menu.css`, then `orbit/tokens.css`, `orbit/legacy.css`, `orbit/fx.css`, `orbit/app.css` (last wins at equal specificity) |
+
+### Token names (use these in new CSS)
+- Colour: `--o-canvas`, `--o-surface-1/2/3`, `--o-line`, `--o-line-strong`, `--o-field-line` (text-field edge, 3:1), `--o-ink`, `--o-ink-2`, `--o-ink-3`, `--o-accent`, `--o-accent-hover`, `--o-accent-ink` (text on accent), `--o-accent-soft` (selected fill), `--o-accent-text` (accent used as text, AA), `--o-good`, `--o-warn`, `--o-bad`.
+- Channels for tints: `rgb(var(--o-ink-rgb) / .05)`, `--o-canvas-rgb`, `--o-accent-rgb`. Washes: `--o-hover`, `--o-press`, `--o-selected`.
+- Type: `--o-font-sans`, `--o-font-mono`, sizes `--o-t-11 … --o-t-64` (rem), `--o-lh-text` 1.5, `--o-lh-display` 1.15, `--o-tr-display` −0.035em, weights `--o-w-regular/medium/semibold`.
+- Radius: `--o-r-chip` 6, `--o-r-control` 10, `--o-r-card` 14, `--o-r-panel` 20, `--o-r-pill`.
+- Elevation: `--o-elev-0 … --o-elev-3`. Motion: `--o-dur-1…4` (120/180/240/320 ms; 0 under reduced motion), `--o-ease-out`, `--o-ease-spring`.
+- Shell: `--o-rail-w` 56px, `--o-drawer-w` 264px, `--o-canvas-max` 760px, `--o-context-w` 320px, `--o-topbar-h` 52px.
+- Spec deviation: light `--o-ink-3` is `#636978` (spec `#6b7180` is 4.45:1 on surface-2 and fails AA there).
+
+### How the legacy map works
+`legacy.css` re-points the old names on keplar.one (`html:not(:has([data-space-root],[data-kb]))`, the same scope graphite.css used), so a module that still says `var(--c-ink)` or `var(--surface-raised)` renders Orbit. Semantic shifts to know: `--c-accent` / `--ks-primary-bg` / `--space-p-face` / `--nav-cta-bg` are now the cobalt accent (they were ink/white); `--shape-control`, `--r-input`, `--r-sm` are 10px rounded rectangles (were pills); `--c-reasoning` is the accent text colour; `--c-destructive` is `--o-bad`; `--g-glow` is 0 (the Gemini wash is off). Space Studio (`[data-space-root]`) and Business (`[data-kb]`) keep their own token sets until their area pass moves them: those areas should write `--o-*` directly.
+
+### Button effects: how every control gets them
+- No page edits needed. The runtime claims any `button`, `[role=button|tab|menuitem*|option|switch]`, `summary` or control-looking link the first time a pointer or keyboard focus reaches it, and tags it: `data-orbit-fx="<kind>"` (inferred from `data-variant`, role or icon-only content), `data-orbit-icon` (from the accessible name: Send/Copy/Delete/Retry/New/Next…), `--ofx-ps` (press depth by width), `data-ofx-sheen` (only if the control's `::after` is free) and `data-ofx-magnet` (primary, danger, icon).
+- Already tagged on the server: kit `Button`/`IconButton`/`MenuItem`/`SegmentedControl`/`Tabs`, ui `Button`/`ButtonLink`, the Space segmented control, the rail.
+- Loading: put `aria-busy="true"` on a `[data-orbit-fx]` control (Orbit `Button loading`, kit `Button loading`). Success: Orbit `Button success`, or `flashSuccess(el)` on any Orbit button.
+- Opt out: `data-orbit-fx="off"` (e.g. a canvas-like control). Space Studio and `[data-lit]` controls are skipped by the runtime.
+- Rules honoured: transform/opacity/background-position only; touch = press + focus; reduced motion = no sheen/magnet/micro-motion; disabled = nothing; prose links never claimed.
+
+### Dos and don'ts for area agents
+- Do use `--o-*` tokens and the Orbit primitives for new controls. Do keep every `data-testid`, role, aria label, route and copy.
+- Do let the global focus ring work: don't draw your own outline/box-shadow focus, and never `outline: none` on `:focus-visible`.
+- Don't give a control its own `::after` unless you accept losing the sheen; don't animate `transform` on hover (the effects use `scale`/`translate`); don't add hover lifts, glows, gradients on text, or backdrop blur.
+- Don't write `*/` inside a CSS comment (e.g. `--c-*/--surface-*`): it ends the comment and breaks the whole stylesheet.
+- Prefer editing the module that owns a class over adding more `[class*="Module-module"]` global overrides; when you must override from global CSS, scope it with `html:not(:has([data-space-root], [data-kb]))[data-theme]`.
+- Check light, dark, 1440×900 and 390×844, and keep Lighthouse a11y at 100.
+
+### App shell (what phase 1 built)
+- ≥1200px: rail 56 · drawer 264 (docked, remembered in `localStorage["keplar.sidebar"]`) · canvas (760px column). 900–1199px: rail + drawer as an overlay (focus-trapped, Escape closes, focus returns to the rail toggle). <900px: rail becomes the bottom bar (Chat, Create, Study, Projects, Library), the drawer a left sheet opened from the top bar, the context panel a bottom sheet.
+- Rail: Keplar home, Hide/Show sidebar (Ctrl/⌘+\), New chat (Ctrl/⌘+⇧+O), Search chats (Ctrl/⌘+K), Chat, Create, Study, Projects, Library (= All chats), theme, Help & docs, Settings (signed in) or Sign in. On wide screens the drawer hides its own copies of New chat, Search, the brand, the settings gear and the signed-out row, so no two visible controls share a name.
+- Top strip: title, the latest answer's agreement ("3 of 3 models agree"), which opens the context panel; delete, memory, auth as before. Context panel tabs appear only when the data exists (answer sources, answer models, memory setting).
+- Canvas: empty state centres greeting + composer + starter chips; once a chat starts the composer docks at the bottom with a fade above it. The composer keeps every behaviour (Enter rules, modes, attachments, one-row layout only for one-line text, stacked for long text, model routing).
+
+## 9. Area split for the remaining phases
+Each area agent restyles its files with the tokens and primitives above and leaves the shell, tokens and effects alone (raise shell changes with the lead).
+
+| Area | Scope | File globs |
+| --- | --- | --- |
+| (a) Marketing, docs, space, legal, shared pages | Marketing header/footer and every public page, docs, Space pages, legal, shared answers, templates, compare, guides, status, download | `src/app/(marketing)/**`, `src/app/(i18n)/**`, `src/app/(space)/**`, `src/app/s/**`, `src/app/i/**`, `src/app/changelog/**`, `src/app/templates*`, `src/components/{chrome,marketing,sections,landing,page,legal,editorial,kb,compare,developers,download,how,seo,share,templates,status,support,space,spatial,simulation,monolith,home,i18n,consent,feedback}/**`, `src/components/ui/**` (not `Button.tsx` APIs), `src/styles/{redesign,space,glass,lit,aura,light,polish,monolith-ui,ambient,field,docs-theme,mobile,motion,fit}.css` |
+| (b) Inside the app beyond the shell | Create, Studio, Slides, Study, Research, Projects, All chats, Agents, Tasks/Run ledger, Approvals, Deployments, Connected apps, Growth/Command Center, settings dialogs, admin, answer cards and rich answers | `src/components/app-ui/**` except `shell/**`, `KeplarApp.tsx` layout and `App.module.css` shell rules; `src/components/{create,slides,study,growth,admin,answer,usage,loader}/**`, `src/app/app/**` views, `src/app/admin/**`, `src/components/account/AccountSettings.tsx` + `SettingsSections.tsx` (the dialog) |
+| (c) Business | business.keplar.one storefront (marketing layout) and the Business workspace (rail/drawer/canvas grammar with Business destinations) | `src/app/(business)/**`, `src/app/(business-app)/**`, `src/components/{business,business-site,business-app}/**` (move `[data-kb]` tokens in `business-site/tokens.css` onto `--o-*`) |
+| (d) Auth, onboarding, account, checkout, embed, errors | Sign in/up, magic link, passkeys, onboarding, account pages outside the settings dialog, billing/checkout, embeds, invite, welcome, error/404/global-error | `src/components/{auth,onboarding,account,billing,embed}/**`, `src/app/{embed,invite,welcome,bot}/**`, `src/app/{error,global-error,not-found}.tsx`, `src/components/page/NotFound*`, auth routes `src/app/(marketing)/{signin,signup,account,checkout,forgot-password,reset-password,verify-email,two-factor,secure-account}/**` (area (a) owns every other `(marketing)` route) |

@@ -138,7 +138,7 @@ html:not(:has([data-space-root], [data-kb])) ::selection {
   background: var(--o-accent-soft);
 }
 
-/* Display type (§2): Inter's display cut through opsz, 600 weight, tight tracking at 32px and up. */
+/* Display type (§2): the UI face's display cut through opsz, 600 weight, tight tracking at 32px and up. */
 html:not(:has([data-space-root], [data-kb])) :is(h1, h2) {
   font-weight: var(--o-w-semibold);
   letter-spacing: -0.025em;

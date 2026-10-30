@@ -230,6 +230,12 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
       return next;
     });
   }, []);
+  /** Wide screens (>= 1200px) dock the drawer; narrower ones open it as an overlay (src/styles/orbit/app.css). */
+  const wide = useSyncExternalStore(
+    (cb) => { const m = window.matchMedia("(min-width: 1200px)"); m.addEventListener("change", cb); return () => m.removeEventListener("change", cb); },
+    () => window.matchMedia("(min-width: 1200px)").matches,
+    () => true,
+  );
   /** Orbit context panel (answer details: sources, models, memory). Closed by default, never remembered. */
   const [contextOpen, setContextOpen] = useState(false);
   const [contextTab, setContextTab] = useState<ContextTab>("sources");
@@ -1287,7 +1293,7 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
         onSearch={() => { setDrawerOpen(false); setSearchOpen(true); }}
         onView={(v) => { if (v === "thread") { setBeside(null); goView("thread"); } else openSurface(v); }}
         onToggleDrawer={toggleDrawer}
-        drawerShown={drawerOpen || !collapsed}
+        drawerShown={drawerOpen || (wide && !collapsed)}
         signedIn={state.ledger.signedIn}
       />
       <div ref={drawerRef} className={s.sideWrap} data-open={drawerOpen || undefined} onPointerEnter={() => warmViews(true)} onFocus={() => warmViews(true)}>

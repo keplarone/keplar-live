@@ -89,8 +89,8 @@ export function OrbitShowcase() {
         <p className={s.lede}>Tokens, type, controls and the app shell, rendered from the real components. Guide: docs/design/keplar-orbit.md.</p>
       </header>
 
-      <section className={s.section} aria-labelledby="o-colour">
-        <h2 id="o-colour" className={s.h2}>Colour</h2>
+      <section className={s.section} aria-labelledby="o-color">
+        <h2 id="o-color" className={s.h2}>Color</h2>
         <ul className={s.swatches}>
           {COLORS.map((c) => (
             <li key={c} className={s.swatch}>
