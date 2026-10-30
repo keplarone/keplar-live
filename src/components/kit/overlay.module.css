@@ -267,8 +267,7 @@
   box-shadow: var(--o-elev-3);
 }
 :global(html:not(:has([data-space-root], [data-kb]))) .dialog::backdrop {
-  background: rgb(var(--o-canvas-rgb) / 0.6);
-  backdrop-filter: blur(6px);
+  background: rgb(var(--o-canvas-rgb) / 0.72);
 }
 :global(html:not(:has([data-space-root], [data-kb]))) .dialogHead { padding: 20px 24px 8px; }
 :global(html:not(:has([data-space-root], [data-kb]))) .dialogTitle {
