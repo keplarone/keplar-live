@@ -10,7 +10,7 @@ import { DeleteSiteDialog, SiteUndo } from "@/components/create/delete/DeleteSit
 import { useSiteDelete } from "@/components/create/delete/useSiteDelete";
 import { ShareTemplate, type MyTemplate } from "./ShareTemplate";
 import { Button, SegmentedControl, Tooltip } from "@/components/kit";
-import s from "./App.module.css";
+import s from "./views.module.css";
 import css from "./SiteProjects.module.css";
 import la from "./link-action.module.css";
 

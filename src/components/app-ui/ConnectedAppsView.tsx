@@ -9,7 +9,7 @@ import { McpConnections } from "@/components/business/McpConnections";
 import { loadPendingMcpApprovals } from "@/components/business/mcp-pending";
 import type { ToolUse } from "@/lib/orchestration/types";
 import { ToolUses } from "./ToolUses";
-import s from "./App.module.css";
+import s from "./views.module.css";
 
 export function ConnectedAppsView() {
   const [pending, setPending] = useState<ToolUse[] | null>(null);
