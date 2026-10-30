@@ -1,6 +1,6 @@
 /*
- * Orbit legacy map. keplar.one grew several token layers (tokens.css --c-*/--surface-*/--hairline*/--elev-*, kit.css --ks-*,
- * space.css --space-*, the nav --nav-* set, graphite.css and gemini.css --g-*/--kg-*). Rather than edit hundreds of components,
+ * Orbit legacy map. keplar.one grew several token layers (tokens.css --c-, --surface-, --hairline, --elev- names; kit.css --ks-;
+ * space.css --space-; the nav --nav- set; graphite.css and gemini.css --g- and --kg-). Rather than edit hundreds of components,
  * every legacy name is pointed at an Orbit token here, so each page adopts the Orbit palette, radii and elevation as it is.
  * New code reads --o-* directly (src/styles/orbit/tokens.css); these names stay only so old modules keep rendering.
  *
