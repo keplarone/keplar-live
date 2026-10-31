@@ -63,7 +63,7 @@ export function DownloadView({ state, pageUrl }: Props) {
               {state.status === "none"
                 ? "The desktop app hasn't been released yet, so there is nothing to download today. This page lists real files as soon as the first version is published, and nothing before then."
                 : state.releasesPublic === false
-                  ? "Downloads are temporarily unavailable. We couldn't load the release list just now. Nothing is wrong with your device. Try again in a few minutes."
+                  ? "We couldn't load the release list. Nothing is wrong with your device. Use Keplar in your browser."
                   : state.reason === "rate_limited"
                     ? "We couldn't load the release list from GitHub just now (it is rate limiting requests). Nothing is wrong with your device. Try again in a few minutes, or see the releases page directly."
                     : "We couldn't load the release list from GitHub just now. Try again in a few minutes, or see the releases page directly."}
