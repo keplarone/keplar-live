@@ -12,6 +12,7 @@
  * (KEPLAR_RETAIN_FLIGHT_DAYS). Reading is admin-only (/api/admin/flight, /admin/flight).
  */
 import { keepAlive } from "@/lib/create/platform/after";
+import { isStoreUnavailable } from "@/lib/create/platform/neon";
 import { collection } from "@/lib/create/platform/store";
 import { id } from "@/lib/create/platform/ids";
 
@@ -158,7 +159,7 @@ export function flightRow(log: FlightLog, f: { reqId: string; plan: string; feat
 
 /** Fire and forget: a recorder failure never touches the answer. */
 export function recordFlight(row: FlightRow): void {
-  keepAlive(rows().insert(row).catch((e) => console.error("[ops] flight not recorded:", e instanceof Error ? e.name : "error")), "flight"); // finishes after the response
+  keepAlive(rows().insert(row).catch((e) => { if (!isStoreUnavailable(e)) console.error("[ops] flight not recorded:", e instanceof Error ? e.name : "error"); }), "flight"); // finishes after the response
 }
 
 export async function flightByRequest(reqId: string): Promise<FlightRow | null> {

@@ -11,6 +11,7 @@ import { keepAlive } from "@/lib/create/platform/after";
 import { allows, parseRecord } from "@/lib/consent";
 import { collection } from "@/lib/create/platform/store";
 import { id } from "@/lib/create/platform/ids";
+import { telemetryBuffer } from "@/lib/traffic/flush-gate";
 
 export const GROWTH_EVENTS = ["ask_started", "ask_done", "ask_error", "answer_action", "share_dialog", "share_created", "feedback_submitted", "upgrade_click"] as const;
 export type GrowthEvent = (typeof GROWTH_EVENTS)[number];
@@ -92,6 +93,19 @@ export async function recordGrowthEvent(input: GrowthInput, at = new Date()): Pr
   }
   return rows().insert({ id: id("ge"), workspaceId: SYSTEM, at: iso, day: iso.slice(0, 10), ...input });
 }
+
+/**
+ * The browser beacon's path: events are held in memory and written in batches (src/lib/traffic/flush-gate.ts), so a stream of
+ * beacons doesn't keep the database awake on its own. Each event keeps the time it happened. Returns a promise for after() when a
+ * batch write started, null otherwise. Never throws.
+ */
+const growthQueue = telemetryBuffer<{ input: GrowthInput; at: Date }>("growth", (e) => recordGrowthEvent(e.input, e.at));
+export function queueGrowthEvent(input: GrowthInput, at = new Date()): Promise<number> | null {
+  return growthQueue.push({ input, at });
+}
+/** Tests / shutdown: write whatever is queued now. */
+export const flushGrowthQueue = () => growthQueue.flush();
+export const resetGrowthQueue = () => growthQueue.reset();
 
 export const retainGrowthDays = (env: Record<string, string | undefined> = process.env) => {
   const n = Number(env.KEPLAR_RETAIN_GROWTH_EVENTS_DAYS);

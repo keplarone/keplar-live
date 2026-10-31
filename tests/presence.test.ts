@@ -21,7 +21,8 @@ async function send(ip: string, at: number, kind: "hb" | "bye" = "hb", extra: Re
 
 test("a visitor is present for the TTL after the last heartbeat, then expires", async () => {
   await clear();
-  assert.ok(PRESENCE_TTL_MS >= 30_000 && PRESENCE_TTL_MS <= 45_000);
+  // Oct 2026: 60 s beats and a 150 s TTL (was 15 s / 40 s), so presence alone doesn't keep the database awake (flush-gate.ts).
+  assert.ok(PRESENCE_TTL_MS >= 120_000 && PRESENCE_TTL_MS <= 180_000);
   assert.ok(HEARTBEAT_MS <= PRESENCE_TTL_MS / 2); // survives one missed beat
   await send("198.51.100.1", T);
   assert.equal(await presentNow(T), 1);
@@ -141,7 +142,7 @@ test("admin endpoints: 404 for anonymous and non-admins; the admin gets one numb
   void jsonReq;
 });
 
-test("the browser beacon: idle start, 15 s visible-only heartbeat, leave on pagehide, never on admin pages, no cookies", () => {
+test("the browser beacon: idle start, 60 s visible-only heartbeat, leave on pagehide, never on admin pages, no cookies", () => {
   const src = readFileSync("src/components/analytics/PresenceBeacon.tsx", "utf8");
   assert.match(src, /requestIdleCallback/);
   assert.match(src, /visibilityState/);
@@ -150,7 +151,7 @@ test("the browser beacon: idle start, 15 s visible-only heartbeat, leave on page
   assert.match(src, /doNotTrack/);
   assert.match(src, /globalPrivacyControl/);
   assert.doesNotMatch(src, /document\.cookie|localStorage|sessionStorage/);
-  assert.equal(HEARTBEAT_MS, 15_000);
+  assert.equal(HEARTBEAT_MS, 60_000);
   for (const p of ["/admin", "/admin/seo", "/api/x", "/s/abc", "/reset-password"]) assert.equal(routeOf(p), null, p);
   assert.equal(routeOf("/pricing"), "/pricing");
   assert.match(readFileSync("src/app/layout.tsx", "utf8"), /<PresenceBeacon \/>/);

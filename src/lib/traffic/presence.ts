@@ -1,11 +1,13 @@
 /**
- * "On the site now": privacy-respecting presence. Pages send a tiny heartbeat every ~15 s while a tab is visible and a leave
+ * "On the site now": privacy-respecting presence. Pages send a tiny heartbeat every ~60 s while a tab is visible and a leave
  * beacon when it closes. The server keeps one small row per anonymous DAILY code (HMAC of IP + browser + secret + the date, so it
  * cannot be linked across days or turned back into an IP; neither is stored) with the time it was last seen. A visitor counts
  * as present while their row is younger than PRESENCE_TTL_MS. No cookies, no ids besides that rotating code, no path, no
  * referrer, no account. Bots, Do Not Track, Global Privacy Control and prefetches are never counted.
  *
- * Cost: one small UPDATE per visitor per heartbeat, written off the request path in short batches. Rate limits are in memory
+ * Cost: heartbeats are held in memory and written in one batch when the database is awake anyway, or at most every ~30 minutes
+ * (src/lib/traffic/flush-gate.ts): before, a write every few seconds kept the database awake around the clock. So the admin's
+ * "on the site now" can lag while the site is otherwise idle; reading it (presentNow) writes this instance's batch first. Rate limits are in memory
  * (a shared limiter would cost a database write per heartbeat). Rows older than 10 minutes are deleted as we go.
  * Caveat: instances do not share memory, but the count is read from the shared database, so it is the same on every instance.
  */
@@ -13,6 +15,8 @@ import { createHmac } from "node:crypto";
 import { clientIpOf } from "@/lib/create/platform/ratelimit";
 import { collection } from "@/lib/create/platform/store";
 import { countable } from "@/lib/site-builder/features/analytics";
+import { isStoreUnavailable } from "@/lib/create/platform/neon";
+import { flushDue, telemetryWrite } from "./flush-gate";
 
 import { HEARTBEAT_MS, PRESENCE_TTL_MS } from "./presence-config";
 
@@ -32,6 +36,8 @@ export const presenceMark = (ip: string, ua: string, day: string) => createHmac(
 const pending = new Map<string, number>(); // mark -> time of the latest heartbeat not yet written
 const accepted = new Map<string, number>(); // mark -> last accepted heartbeat (per-visitor throttle)
 const left = new Map<string, number>(); // mark -> time of a leave beacon (so a late flush cannot resurrect the row)
+const byes = new Set<string>(); // marks whose row is deleted with the next batch
+let lastFlushAt = 0;
 let minuteStart = 0;
 let minuteCount = 0;
 let flushPromise: Promise<void> | null = null;
@@ -64,11 +70,13 @@ export function noteHeartbeat(req: Request, kind: "hb" | "bye", at = Date.now())
       pending.delete(mark);
       accepted.delete(mark);
       left.set(mark, at);
-      return rows().remove(SYSTEM, mark).then(() => undefined, () => undefined);
+      byes.add(mark);
+    } else {
+      if (!rateLimit(mark, at)) return null;
+      pending.set(mark, at);
     }
-    if (!rateLimit(mark, at)) return null;
-    pending.set(mark, at);
-    if (flushPromise) return null;
+    if (flushPromise || !flushDue(lastFlushAt, pending.size + byes.size)) return null;
+    lastFlushAt = Date.now();
     flushPromise = new Promise<void>((resolve) => setTimeout(resolve, FLUSH_DELAY_MS))
       .then(async () => {
         await flush();
@@ -83,7 +91,22 @@ export function noteHeartbeat(req: Request, kind: "hb" | "bye", at = Date.now())
 }
 
 /** Write the queued heartbeats (update the visitor's row, or create it). Errors are swallowed: presence never breaks a page. */
-export async function flush(now?: number): Promise<number> {
+export function flush(now?: number): Promise<number> {
+  return telemetryWrite(() => flushNow(now));
+}
+
+async function flushNow(now?: number): Promise<number> {
+  for (const mark of [...byes]) {
+    byes.delete(mark);
+    try {
+      await rows().remove(SYSTEM, mark);
+    } catch (e) {
+      if (isStoreUnavailable(e)) {
+        byes.add(mark);
+        return 0; // the rest waits for the next batch
+      }
+    }
+  }
   const batch = [...pending].slice(0, 300);
   const ref = now ?? (batch.length ? Math.max(...batch.map(([, at]) => at)) : Date.now()); // purge relative to the newest heartbeat
   let n = 0;
@@ -99,6 +122,10 @@ export async function flush(now?: number): Promise<number> {
       }
       n++;
     } catch (e) {
+      if (isStoreUnavailable(e)) {
+        if (!pending.has(mark)) pending.set(mark, at); // keep it for the next batch
+        return n;
+      }
       console.error("[presence] heartbeat not recorded:", e instanceof Error ? e.name : "error");
     }
   }
@@ -108,6 +135,7 @@ export async function flush(now?: number): Promise<number> {
 
 /** Distinct anonymous visitors whose last heartbeat is younger than the TTL. */
 export async function presentNow(now = Date.now()): Promise<number> {
+  if (pending.size || byes.size) await flush().catch(() => 0); // this instance's held heartbeats first
   const live = await rows().listSystemRange({ field: "seen", gte: new Date(now - PRESENCE_TTL_MS).toISOString() }, 20_000);
   return live.length;
 }
@@ -117,6 +145,8 @@ export function resetPresenceState() {
   pending.clear();
   accepted.clear();
   left.clear();
+  byes.clear();
+  lastFlushAt = 0;
   minuteStart = 0;
   minuteCount = 0;
   flushPromise = null;

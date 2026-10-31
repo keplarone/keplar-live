@@ -13,6 +13,7 @@
  *   - Runs are sequential inside one function call (maxDuration below). Runs not started before the time budget are left for the next check.
  */
 import { createHash, timingSafeEqual } from "node:crypto";
+import { isStoreUnavailable } from "@/lib/create/platform/neon";
 import { json } from "@/lib/create/platform/http";
 import { inngestEnabled } from "@/lib/inngest/client";
 import { tick } from "@/lib/business/scheduler";
@@ -35,7 +36,9 @@ export async function GET(req: Request) {
     const t = await tick(new Date(), { windowMinutes: cronWindowMinutes(process.env, inngestEnabled()), deadline: Date.now() + BUDGET_MS });
     await cronBeat("agents", true);
     return json({ ok: true, driver: inngestEnabled() ? "inngest+cron" : "vercel-cron", due: t.due, deferred: t.deferred, ran: t.results.filter((r) => r.outcome === "ran").length, skipped: t.results.filter((r) => r.outcome === "skipped").length, duplicate: t.results.filter((r) => r.outcome === "duplicate").length });
-  } catch {
+  } catch (e) {
+    // The database is down: nothing could run, and recording the failed beat would fail the same way. Vercel retries tomorrow.
+    if (isStoreUnavailable(e)) return json({ error: "temporarily_unavailable", code: "temporarily_unavailable" }, { status: 503, headers: { "retry-after": "3600" } });
     await cronBeat("agents", false);
     return json({ error: "The agent check failed.", code: "internal" }, { status: 500 });
   }

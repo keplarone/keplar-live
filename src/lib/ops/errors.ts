@@ -10,6 +10,7 @@
 import { keepAlive } from "@/lib/create/platform/after";
 import { createHash } from "node:crypto";
 import { collection } from "@/lib/create/platform/store";
+import { isStoreUnavailable, storeUnavailableNow } from "@/lib/create/platform/neon";
 import { logEvent } from "./log";
 
 export type ErrorSource = "server" | "render" | "client" | "job";
@@ -76,12 +77,15 @@ export async function recordError(input: ErrorInput, now = Date.now()): Promise<
     const sample = scrub(input.sample || "", 60);
     logEvent("error", "tracked_error", { source: input.source, name, route, sample });
     keepAlive(forwardToSentry({ ...input, name, message, route, sample }), "sentry forward");
+    // The database being down is not a new error to store in that same database (it would fail too, and every write attempt wakes it).
+    if (input.name === "StoreUnavailableError" || storeUnavailableNow(now)) return;
     if (!allow(now)) return;
     const id = fingerprint(input.source, name, message, route);
     const iso = new Date(now).toISOString();
     const { inserted } = await rows().insertIfAbsent({ id, workspaceId: "system", at: iso, firstAt: iso, count: 1, source: input.source, name, message, route, sample, status: "open" });
     if (!inserted) await rows().increment("system", id, { count: 1 }, { id, workspaceId: "system", at: iso, firstAt: iso, count: 0, source: input.source, name, message, route, sample, status: "open" }).then(() => rows().update("system", id, { at: iso, sample: sample || undefined, status: "open" }));
   } catch (e) {
+    if (isStoreUnavailable(e)) return; // already logged once by the store's circuit
     console.error("[errors] could not record:", e instanceof Error ? e.name : "error");
   }
 }

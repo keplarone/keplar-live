@@ -11,16 +11,20 @@ const FAILED: PlanInfo = { ...FREE, ready: true };
 let cached: { scope: string; p: Promise<PlanInfo> } | undefined;
 
 type ComputeBody = { plan?: PlanInfo["plan"]; signedIn?: boolean; admin?: boolean; checkout?: boolean; liteCheckout?: boolean } & Record<string, unknown>;
-let computeInflight: { at: number; p: Promise<ComputeBody | null> } | null = null;
+let computeInflight: { at: number; lite: boolean; p: Promise<ComputeBody | null> } | null = null;
 
-/** One in-flight GET /api/compute. Callers that start within a short window share it (nav plan + the chat meter). */
-export function fetchCompute(fresh = false): Promise<ComputeBody | null> {
+/**
+ * One in-flight GET /api/compute. Callers that start within a short window share it (nav plan + the chat meter).
+ * `lite`: only the plan and sign-in state are needed (the nav): signed out, the server answers without reading the meter from the
+ * database. A lite caller may share a full request; a full caller never shares a lite one.
+ */
+export function fetchCompute(fresh = false, lite = false): Promise<ComputeBody | null> {
   const now = Date.now();
-  if (!fresh && computeInflight && now - computeInflight.at < 2000) return computeInflight.p;
-  const p = fetch("/api/compute", { cache: "no-store", credentials: "same-origin" })
+  if (!fresh && computeInflight && now - computeInflight.at < 2000 && (lite || !computeInflight.lite)) return computeInflight.p;
+  const p = fetch(lite ? "/api/compute?lite=1" : "/api/compute", { cache: "no-store", credentials: "same-origin" })
     .then((r) => (r.ok ? (r.json() as Promise<ComputeBody>) : null))
     .catch((): null => null);
-  computeInflight = { at: now, p };
+  computeInflight = { at: now, lite, p };
   return p;
 }
 
@@ -37,7 +41,7 @@ function load(): Promise<PlanInfo> {
   const scope = activeScope();
   if (cached?.scope === scope) return cached.p;
   // A different account from the cached answer: never share a request that may have started for the previous one.
-  const p = fetchCompute(cached !== undefined)
+  const p = fetchCompute(cached !== undefined, true)
     .then((m): PlanInfo => (!m ? FAILED : {
       ready: true,
       plan: m?.plan === "lite" || m?.plan === "plus" || m?.plan === "pro" || m?.plan === "business" ? m.plan : "free",

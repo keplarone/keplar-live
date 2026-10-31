@@ -5,6 +5,7 @@
  * no billed calls (Free models, instant replies) logs $0. No prompt or answer text is stored.
  */
 import { AsyncLocalStorage } from "node:async_hooks";
+import { isStoreUnavailable } from "@/lib/create/platform/neon";
 import { collection } from "@/lib/create/platform/store";
 import { id } from "@/lib/create/platform/ids";
 import { flightPush, type FlightLog } from "./flight";
@@ -102,7 +103,7 @@ const rows = () => collection<RequestCostRow>("system_request_costs");
 export function recordRequestCost(scope: CostScope, f: Omit<RequestCostRow, "id" | "workspaceId" | "at" | "modelCalls" | "failedCalls" | "distinctModels" | "usd">): void {
   rows()
     .insert({ id: id("rc"), workspaceId: "system", at: new Date().toISOString(), ...f, modelCalls: scope.calls, failedCalls: scope.failed, distinctModels: scope.models.size, providerCalls: scope.sent ?? scope.calls, rateLimited: scope.rateLimited ?? 0, callsBySlot: { ...(scope.sentBySlot ?? {}) }, answeredBy: [...(scope.answeredBy ?? [])].slice(0, 6), usd: Math.round(scope.usd * 1e6) / 1e6 })
-    .catch((e) => console.error("[ops] request cost not recorded:", e instanceof Error ? e.name : "error"));
+    .catch((e) => { if (!isStoreUnavailable(e)) console.error("[ops] request cost not recorded:", e instanceof Error ? e.name : "error"); });
 }
 
 export type CostSummary = {

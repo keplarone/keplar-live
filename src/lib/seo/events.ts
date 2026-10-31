@@ -11,6 +11,7 @@
 import { allows, parseRecord } from "@/lib/consent";
 import { collection } from "@/lib/create/platform/store";
 import { id } from "@/lib/create/platform/ids";
+import { telemetryBuffer } from "@/lib/traffic/flush-gate";
 
 export const SEO_EVENTS = [
   "landing_view",
@@ -92,6 +93,19 @@ export async function recordSeoEvent(input: SeoInput, at = new Date()): Promise<
   for (const k of Object.keys(row) as (keyof SeoEventRow)[]) if (row[k] === undefined) delete row[k];
   return rows().insert(row);
 }
+
+/**
+ * The browser beacon's path: events are held in memory and written in batches (src/lib/traffic/flush-gate.ts), so a stream of
+ * beacons doesn't keep the database awake on its own. Each event keeps the time it happened. Returns a promise for after() when a
+ * batch write started, null otherwise. Never throws.
+ */
+const seoQueue = telemetryBuffer<{ input: SeoInput; at: Date }>("seo", (e) => recordSeoEvent(e.input, e.at));
+export function queueSeoEvent(input: SeoInput, at = new Date()): Promise<number> | null {
+  return seoQueue.push({ input, at });
+}
+/** Tests / shutdown: write whatever is queued now. */
+export const flushSeoQueue = () => seoQueue.flush();
+export const resetSeoQueue = () => seoQueue.reset();
 
 export const retainSeoDays = (env: Record<string, string | undefined> = process.env) => {
   const n = Number(env.KEPLAR_RETAIN_SEO_EVENTS_DAYS);

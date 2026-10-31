@@ -12,6 +12,22 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = pageMeta("/specialists", "Specialist directory", "Specialists shared by Keplar users and reviewed before listing. Add one to your account and Keplar's panel of models answers with it.");
 
+/**
+ * The directory changes only when an admin approves a listing, so each (category, search) result is kept in memory for 10 minutes:
+ * a page view doesn't wake the database (it was N+1 queries per view). A failed read is not kept (the next view tries again).
+ */
+const CACHE_MS = 10 * 60_000;
+const cache = new Map<string, { at: number; items: Awaited<ReturnType<typeof publicDirectory>> }>();
+async function directory(cat: string | undefined, q: unknown) {
+  const key = `${cat ?? ""}|${typeof q === "string" ? q.toLowerCase().trim().slice(0, 80) : ""}`;
+  const hit = cache.get(key);
+  if (hit && Date.now() - hit.at < CACHE_MS) return hit.items;
+  const items = await publicDirectory({ category: cat, q });
+  if (cache.size > 200) cache.clear();
+  cache.set(key, { at: Date.now(), items });
+  return items;
+}
+
 /** The search field: a hairline pill on the raised surface, 44px tall (UI v2 tokens). Category links and the button use the kb pill. */
 const field: React.CSSProperties = { display: "inline-flex", alignItems: "center", minHeight: 44, padding: "0 var(--s-4)", border: 0, borderRadius: "var(--r-pill)", background: "var(--surface-raised)", boxShadow: "inset 0 0 0 var(--b-hairline) var(--hairline-strong)", color: "var(--c-ink)" };
 
@@ -19,7 +35,7 @@ const field: React.CSSProperties = { display: "inline-flex", alignItems: "center
 export default async function SpecialistDirectory({ searchParams }: { searchParams: Promise<{ c?: string; q?: string }> }) {
   const { c, q } = await searchParams;
   const cat = validCategory(c) ? c : undefined;
-  const items = await publicDirectory({ category: cat, q }).catch(() => []);
+  const items = await directory(cat, q).catch(() => []);
   return (
     <>
     <JsonLd data={breadcrumbs([{ name: "Specialists", path: "/specialists" }])} />

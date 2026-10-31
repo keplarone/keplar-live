@@ -11,7 +11,7 @@ export function urlEntry(loc: string, lastmod?: string | null): string {
 
 export function urlsetResponse(entries: string[]): Response {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries.join("\n")}\n</urlset>\n`;
-  return new Response(xml, { headers: { "content-type": "application/xml; charset=utf-8", "cache-control": "public, max-age=0, s-maxage=600" } });
+  return new Response(xml, { headers: { "content-type": "application/xml; charset=utf-8", "cache-control": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400" } }); // CDN-cached: crawlers re-reading a sitemap must not wake the database each time
 }
 
 /**
