@@ -32,3 +32,6 @@
   .shell { flex-direction: column; height: auto; }
   .mockDrawer, .mockContext { display: none; }
 }
+.answers { display: flex; flex-direction: column; gap: 48px; max-width: 760px; margin: 0 auto; }
+.answerCase { display: flex; flex-direction: column; gap: 8px; }
+.devLink { font-size: var(--o-t-14); color: var(--o-accent-text); text-decoration: underline; text-underline-offset: 3px; }

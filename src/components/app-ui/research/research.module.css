@@ -177,3 +177,19 @@ button.citeChip:focus-visible { outline: none; filter: var(--focus-filter); text
 @keyframes rowIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes pulse { from { opacity: 0.55; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .feedRow, .step[data-state="active"] .stepDot { animation: none; } }
+
+/* ── Consensus layout (Orbit): inline citations are small numbered pills in the accent; the preview is an Orbit menu surface. ── */
+.citeChip {
+  min-width: 17px;
+  height: 17px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--o-accent-soft);
+  box-shadow: none;
+  color: var(--o-accent-text);
+  font-size: 10.5px;
+  font-weight: var(--o-w-semibold);
+  transition: background-color var(--o-dur-2) var(--o-ease-out), color var(--o-dur-2) var(--o-ease-out);
+}
+.citeChip:hover, .cite:focus-within .citeChip, .cite[data-open] .citeChip { background: var(--o-accent); color: var(--o-accent-ink); }
+.pop { border-radius: var(--o-r-control); background: var(--o-surface-1); box-shadow: var(--o-elev-3); }

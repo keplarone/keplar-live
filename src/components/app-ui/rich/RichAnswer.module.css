@@ -453,3 +453,50 @@
     animation: none;
   }
 }
+
+/* ── Consensus layout (Orbit): structured blocks are hairline cards (the --o-elev-1 edge) in the answer's own type and spacing. ── */
+.stack { gap: 14px; margin-top: 4px; font-family: var(--o-font-sans); color: var(--o-ink); }
+.agree {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border: 1px solid var(--o-line);
+  border-radius: var(--o-r-pill);
+  background: var(--o-surface-1);
+  font-size: var(--o-t-12);
+  color: var(--o-ink-2);
+}
+.agree::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--o-accent); }
+.block {
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid var(--o-line);
+  border-radius: var(--o-r-card);
+  background: var(--o-surface-1);
+}
+.title { font-size: var(--o-t-14); font-weight: var(--o-w-semibold); letter-spacing: -0.01em; color: var(--o-ink); }
+.note { font-size: var(--o-t-13); color: var(--o-ink-3); }
+.rankItem { border-top-color: var(--o-line); padding: 14px 0; }
+.rankItem .rank,
+.rank,
+.stepN {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--o-accent-soft);
+  color: var(--o-accent-text);
+  font-size: var(--o-t-13);
+  font-weight: var(--o-w-semibold);
+}
+.rankItem:first-child .rank { background: var(--o-accent); color: var(--o-accent-ink); }
+.name, .card h3, .event h3, .step h3 { font-size: var(--o-t-16); font-weight: var(--o-w-semibold); letter-spacing: -0.01em; color: var(--o-ink); }
+.why, .body, .cell { color: var(--o-ink-2); }
+.score { font-variant-numeric: tabular-nums; color: var(--o-ink); font-weight: var(--o-w-medium); }
+.tag { border-radius: var(--o-r-pill); background: var(--o-surface-2); color: var(--o-ink-2); }
+.card { border: 0; border-radius: var(--o-r-control); background: var(--o-surface-2); }
+.table th, .table td { border-color: var(--o-line); }
+.stat { padding: 12px 14px; border-radius: var(--o-r-control); background: var(--o-surface-2); }
+.stat dd { font-size: var(--o-t-22); font-weight: var(--o-w-semibold); letter-spacing: -0.02em; }
+.callout { border: 0; border-left: 3px solid var(--o-accent); border-radius: var(--o-r-control); background: var(--o-accent-soft); }

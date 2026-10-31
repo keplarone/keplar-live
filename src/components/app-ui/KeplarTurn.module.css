@@ -1165,3 +1165,428 @@
 .dissentText :is(p, li, h1, h2, h3, h4, strong) { font-size: inherit; line-height: inherit; }
 .dissentText :is(p, ul, ol) { margin-block: 0 var(--s-2); }
 @media (prefers-reduced-motion: reduce) { .dissentPanel { animation: none; } }
+
+/* ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+   Consensus layout (Keplar Orbit, Oct 2026). One answer, one reading column:
+   header (the brands that answered · mode · agreement meter · View Disagrees) → the lead (the first paragraph, the short answer) →
+   the body (numbered sections, hairline tables, code wells) → "Where models differ" → sources strip → "How Keplar answered" → actions.
+   Orbit tokens only. Elements inside other modules are reached by their own tags and data-o tokens, never by class-name text.
+   ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ */
+
+:global(:root[data-theme]) .answer {
+  gap: 18px;
+  padding: 4px 0 6px;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  container-type: inline-size;
+  container-name: answer;
+}
+@media (min-width: 641px) and (prefers-reduced-motion: no-preference) {
+  .answer { animation: oAnswerIn var(--o-dur-4) var(--o-ease-out) both; }
+  .answer[data-continued] { animation: none; }
+}
+@keyframes oAnswerIn { from { opacity: 0; translate: 0 6px; } }
+@media (max-width: 640px) {
+  :global(:root[data-theme]) .answer { padding: 2px 0 4px; border-radius: 0; }
+}
+
+/* ── header ── */
+.answerHead {
+  gap: 10px 14px;
+  min-height: 40px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--o-line);
+}
+.answer[data-notice] .answerHead,
+.answer[data-plain] .answerHead { padding-bottom: 0; border-bottom: 0; min-height: 32px; }
+.headSide { gap: 8px; }
+
+.modeBadge {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: var(--o-r-pill);
+  background: var(--o-accent-soft);
+  color: var(--o-accent-text);
+  font-size: var(--o-t-12);
+  font-weight: var(--o-w-medium);
+  white-space: nowrap;
+}
+
+/* The agreement meter: a ring, the count ("4 of 5"), the verdict, then (when there is room) who sat on each side. */
+.consensus {
+  gap: 8px;
+  min-height: 32px;
+  padding: 3px 12px 3px 4px;
+  border-radius: var(--o-r-pill);
+  background: var(--o-surface-1);
+  box-shadow: var(--o-elev-1);
+}
+.ring { width: 24px; height: 24px; }
+.ringTrack { stroke: var(--o-surface-3); stroke-width: 4; }
+.ringValue { stroke: var(--o-ink-2); stroke-width: 4; }
+.consensus[data-level="consensus"] .ringValue { stroke: var(--o-accent); }
+.consensus[data-level="partial"] .ringValue { stroke: var(--o-warn); }
+.consensus[data-level="none"] .ringValue { stroke: var(--o-bad); }
+.consensusValue { flex-direction: row; align-items: baseline; gap: 6px; white-space: nowrap; }
+.consensusPct { font-size: var(--o-t-13); font-weight: var(--o-w-semibold); letter-spacing: -0.01em; color: var(--o-ink); }
+.consensusLabel { font-size: var(--o-t-12); color: var(--o-ink-3); }
+.consensus[data-level="none"] .consensusLabel { color: var(--o-bad); }
+.consensusSplit {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin-left: 2px;
+  padding-left: 10px;
+  border-left: 1px solid var(--o-line);
+  font-size: var(--o-t-12);
+  color: var(--o-ink-2);
+  white-space: nowrap;
+}
+.consensusSplit > span { gap: 5px; }
+.agreeDot, .dissentDot { width: 6px; height: 6px; background: var(--o-accent); }
+.dissentDot { background: var(--o-warn); }
+.logoChip {
+  width: 18px;
+  height: 18px;
+  background: var(--o-surface-1);
+  color: var(--o-ink);
+  box-shadow: 0 0 0 1.5px var(--o-surface-1), inset 0 0 0 1px var(--o-line-strong);
+}
+.badgeQuiet {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: var(--o-r-pill);
+  background: var(--o-surface-1);
+  box-shadow: var(--o-elev-1);
+  font-size: var(--o-t-12);
+  font-weight: var(--o-w-medium);
+  color: var(--o-ink-2);
+}
+/* With room, the sides say who agreed ("4 agree" + logos), so the verdict word is left to the narrow layout. */
+@container answer (min-width: 681px) {
+  .consensus:has(.agreeDot) .consensusLabel { display: none; }
+}
+@container answer (max-width: 680px) {
+  .consensusSplit { display: none; }
+}
+@media (max-width: 640px) {
+  .body > [data-o~="md"] > p:first-child:not(:has(> em:only-child)) { font-size: var(--o-t-18); line-height: 1.55; }
+}
+
+.viewDissent {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--o-line-strong);
+  border-radius: var(--o-r-pill);
+  background: transparent;
+  font-size: var(--o-t-12);
+  font-weight: var(--o-w-medium);
+  color: var(--o-ink);
+  white-space: nowrap;
+  transition: background-color var(--o-dur-2) var(--o-ease-out), color var(--o-dur-2) var(--o-ease-out), box-shadow var(--o-dur-2) var(--o-ease-out);
+}
+.viewDissent:hover { background: var(--o-hover); }
+.viewDissent[aria-expanded="true"] { border-color: rgb(var(--o-accent-rgb) / 0.35); background: var(--o-accent-soft); color: var(--o-accent-text); }
+
+/* ── body: the reading column ── */
+.body { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.body > [data-o~="md"] { max-width: 68ch; gap: 14px; counter-reset: o-sec; }
+.body > [data-o~="md"] > p { color: var(--o-ink); }
+
+/* The lead: the first paragraph is the short answer. Same words, set larger. (Not an italic "how Keplar read it" line.) */
+.body > [data-o~="md"] > p:first-child:not(:has(> em:only-child)) {
+  font-size: 1.25rem;
+  line-height: 1.5;
+  letter-spacing: -0.014em;
+  font-weight: var(--o-w-regular);
+  color: var(--o-ink);
+  text-wrap: pretty;
+}
+
+/* Sections: numbered, the number hanging in the margin on wide screens and inline before the heading elsewhere. */
+.body > [data-o~="md"] > h3 {
+  position: relative;
+  counter-increment: o-sec;
+  margin-top: 14px;
+  font-size: var(--o-t-18);
+  line-height: 1.35;
+  font-weight: var(--o-w-semibold);
+  letter-spacing: -0.015em;
+  color: var(--o-ink);
+  text-wrap: balance;
+}
+.body > [data-o~="md"] > h3::before {
+  content: counter(o-sec, decimal-leading-zero);
+  display: inline-block;
+  margin-right: 10px;
+  font-family: var(--o-font-mono);
+  font-size: 11px;
+  font-weight: var(--o-w-medium);
+  letter-spacing: 0.02em;
+  color: var(--o-accent-text);
+  vertical-align: 0.18em;
+}
+/* Wide answers read in a column with a 44px gutter (inside the answer, so nothing is clipped, and the same from the first streamed
+   word to the finished answer): a short accent rule marks the lead, and section numbers hang beside their headings. */
+@container answer (min-width: 700px) {
+  .body { padding-left: 44px; }
+  .body > [data-o~="md"] > h3::before { position: absolute; right: 100%; top: 0.6em; width: 44px; margin-right: 0; text-align: left; }
+  .body > [data-o~="md"] > p:first-child:not(:has(> em:only-child)) { position: relative; }
+  .body > [data-o~="md"] > p:first-child:not(:has(> em:only-child))::before {
+    content: "";
+    position: absolute;
+    top: 0.72em;
+    left: -44px;
+    width: 18px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--o-accent);
+  }
+}
+.body > [data-o~="md"] > h4 {
+  margin-top: 6px;
+  font-size: var(--o-t-16);
+  font-weight: var(--o-w-semibold);
+  letter-spacing: -0.01em;
+  color: var(--o-ink);
+}
+
+/* Lists */
+.body [data-o~="md"] ul > li::before { width: 5px; height: 5px; top: 0.68em; border-radius: 50%; background: var(--o-ink-3); }
+.body [data-o~="md"] ol > li::marker { color: var(--o-ink-3); font-weight: var(--o-w-medium); font-size: 0.92em; }
+.body [data-o~="md"] :is(ul, ol) { gap: 8px; }
+.body [data-o~="md"] li { padding-left: 2px; }
+
+/* Quotes: an accent bar, the words a step quieter. */
+.body [data-o~="md"] blockquote {
+  padding: 2px 0 2px 16px;
+  border-left: 2px solid var(--o-accent);
+  border-radius: 0;
+  color: var(--o-ink-2);
+}
+
+/* Links and inline code */
+.body [data-o~="md"] a:not([data-cite]) {
+  color: var(--o-ink);
+  text-decoration: underline;
+  text-decoration-color: rgb(var(--o-accent-rgb) / 0.5);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: color var(--o-dur-2) var(--o-ease-out), text-decoration-color var(--o-dur-2) var(--o-ease-out);
+}
+.body [data-o~="md"] a:not([data-cite]):hover { color: var(--o-accent-text); text-decoration-color: currentColor; }
+.body [data-o~="md"] :not(pre) > code {
+  padding: 1px 6px;
+  border-radius: var(--o-r-chip);
+  background: var(--o-surface-2);
+  box-shadow: inset 0 0 0 1px var(--o-line);
+  font-family: var(--o-font-mono);
+  font-size: 0.86em;
+  color: var(--o-ink);
+}
+
+/* Tables: a hairline frame, a sticky header, hairline rows (no zebra), numbers right-aligned in tabular figures. */
+.body [data-o~="md"] > [role="region"] {
+  max-height: min(70vh, 560px);
+  overflow: auto;
+  border-radius: var(--o-r-card);
+  border: 1px solid var(--o-line);
+  background: var(--o-surface-1);
+  box-shadow: none;
+}
+.body [data-o~="md"] table { font-size: var(--o-t-14); line-height: 1.45; }
+.body [data-o~="md"] th,
+.body [data-o~="md"] td { padding: 10px 14px; border-bottom: 1px solid var(--o-line); }
+.body [data-o~="md"] thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-bottom: 0;
+  background: var(--o-surface-1);
+  box-shadow: inset 0 -1px 0 var(--o-line-strong);
+  font-size: var(--o-t-12);
+  font-weight: var(--o-w-semibold);
+  letter-spacing: 0.01em;
+  color: var(--o-ink-2);
+}
+.body [data-o~="md"] td { color: var(--o-ink-2); }
+.body [data-o~="md"] td:first-child,
+.body [data-o~="md"] tbody th { color: var(--o-ink); font-weight: var(--o-w-medium); }
+.body [data-o~="md"] :is(td, th)[data-num] { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.body [data-o~="md"] tbody tr:hover > * { background: rgb(var(--o-ink-rgb) / 0.025); }
+
+/* Code: a quiet well with the language and Copy in its bar. */
+.body [data-o~="code"] { overflow: hidden; }
+.body [data-o~="code"] > figcaption {
+  height: 38px;
+  padding: 0 6px 0 14px;
+  border-bottom: 1px solid var(--o-line);
+}
+.body [data-o~="code"] > figcaption > span:first-child {
+  font-family: var(--o-font-mono);
+  font-size: 11.5px;
+  font-weight: var(--o-w-medium);
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  color: var(--o-ink-3);
+}
+.body [data-o~="code"] pre { padding: 14px 16px 16px; font-size: var(--o-t-13); line-height: 1.65; }
+
+/* ── "Where models differ" ── */
+.dissentPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 16px 18px 18px 20px;
+  border: 0;
+  border-radius: var(--o-r-card);
+  background: var(--o-surface-1);
+  box-shadow: inset 3px 0 0 var(--o-accent), var(--o-elev-1);
+  animation: dissentIn var(--o-dur-3) var(--o-ease-out) both;
+}
+.dissentHead { font-size: var(--o-t-13); color: var(--o-ink-2); line-height: 1.5; }
+.dissentHead p + p { margin-top: 2px; }
+.dissentTitle { font-size: var(--o-t-14); font-weight: var(--o-w-semibold); color: var(--o-ink); letter-spacing: -0.01em; }
+.dissentChips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.dissentChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 12px 0 5px;
+  border: 1px solid var(--o-line-strong);
+  border-radius: var(--o-r-pill);
+  background: transparent;
+  font: inherit;
+  font-size: var(--o-t-13);
+  font-weight: var(--o-w-medium);
+  color: var(--o-ink-2);
+  cursor: pointer;
+  transition: background-color var(--o-dur-2) var(--o-ease-out), color var(--o-dur-2) var(--o-ease-out), box-shadow var(--o-dur-2) var(--o-ease-out);
+}
+.dissentChip:hover { background: var(--o-hover); color: var(--o-ink); }
+.dissentChip[aria-pressed="true"] { border-color: rgb(var(--o-accent-rgb) / 0.4); background: var(--o-accent-soft); color: var(--o-accent-text); }
+.dissentChip .dissentLogo { width: 22px; height: 22px; }
+.dissentItem { display: flex; flex-direction: column; gap: 6px; padding-top: 14px; border-top: 1px solid var(--o-line); }
+.dissentItem + .dissentItem { padding-top: 14px; }
+.dissentLogo { background: var(--o-surface-2); color: var(--o-ink); box-shadow: inset 0 0 0 1px var(--o-line); }
+.dissentWho { font-size: var(--o-t-14); color: var(--o-ink); }
+.dissentModel { font-size: var(--o-t-12); color: var(--o-ink-3); }
+.dissentStance { margin: 0; font-size: var(--o-t-13); color: var(--o-warn); }
+.dissentText { margin-top: 2px; font-size: var(--o-t-14); line-height: 1.6; color: var(--o-ink-2); }
+/* The model's own words at the panel's quieter size (the app layer sets every answer Markdown to 16px). */
+.dissentText [data-o~="md"] { font-size: var(--o-t-14) !important; line-height: 1.6 !important; color: var(--o-ink-2); gap: 10px; }
+@media (pointer: coarse) { .dissentChip { height: 44px; } }
+
+/* ── sources strip ── */
+.sourceStrip { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.sourceCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sourceCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  height: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--o-line);
+  border-radius: var(--o-r-control);
+  background: var(--o-surface-1);
+  color: var(--o-ink);
+  text-decoration: none;
+  transition: background-color var(--o-dur-2) var(--o-ease-out), box-shadow var(--o-dur-2) var(--o-ease-out);
+}
+a.sourceCard:hover { background: var(--o-surface-2); border-color: var(--o-line-strong); }
+.sourceLabel { font-size: var(--o-t-12); font-weight: var(--o-w-semibold); color: var(--o-ink-2); letter-spacing: 0.01em; }
+.sourceLabel > span { margin-left: 4px; font-weight: var(--o-w-medium); color: var(--o-ink-3); font-variant-numeric: tabular-nums; }
+.sourceFav {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--o-r-chip);
+  background: var(--o-surface-3);
+  color: var(--o-ink-2);
+  font-size: 11px;
+  font-weight: var(--o-w-semibold);
+  font-variant-numeric: tabular-nums;
+}
+.sourceCard[data-n] .sourceFav { background: var(--o-accent-soft); color: var(--o-accent-text); }
+.sourceText { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.sourceHost { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--o-t-12); color: var(--o-ink-3); }
+.sourceTitle {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  font-size: var(--o-t-13);
+  line-height: 1.4;
+  font-weight: var(--o-w-medium);
+  overflow-wrap: anywhere;
+}
+@media (max-width: 640px) {
+  .sourceCards { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 2px; }
+  .sourceCards > li { flex: 0 0 72%; scroll-snap-align: start; }
+}
+
+/* ── streaming: the phase line ── */
+.phaseLine { display: flex; gap: 6px; width: min(100%, 440px); }
+.phase { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
+.phaseTrack { position: relative; display: block; height: 2px; overflow: hidden; border-radius: 2px; background: var(--o-surface-3); }
+.phaseFill { position: absolute; inset: 0; border-radius: inherit; background: var(--o-accent); transform-origin: left; transform: scaleX(0); transition: transform var(--o-dur-4) var(--o-ease-out); }
+.phase[data-state="done"] .phaseFill { transform: none; }
+.phase[data-state="active"] .phaseFill { transform: scaleX(0.4); animation: phaseSweep 1.4s var(--o-ease-out) infinite; }
+@keyframes phaseSweep {
+  from { transform: translateX(-100%) scaleX(0.6); }
+  to { transform: translateX(170%) scaleX(0.6); }
+}
+.phaseLabel { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--o-t-12); color: var(--o-ink-3); transition: color var(--o-dur-3) var(--o-ease-out); }
+.phase[data-state="active"] .phaseLabel { color: var(--o-ink); font-weight: var(--o-w-medium); }
+.phase[data-state="done"] .phaseLabel { color: var(--o-ink-2); }
+@media (prefers-reduced-motion: reduce) {
+  .phase[data-state="active"] .phaseFill { animation: none; transform: scaleX(0.5); }
+  .phaseFill, .phaseLabel { transition: none; }
+}
+
+/* ── how Keplar answered, notes, footer ── */
+.howBtn {
+  padding: 8px 14px;
+  border: 1px solid var(--o-line);
+  border-radius: var(--o-r-control);
+  background: transparent;
+  font-weight: var(--o-w-medium);
+  color: var(--o-ink-2);
+}
+.howBtn:hover, .sectionBtn:hover { background: var(--o-hover); }
+.how[data-open] > .howBtn { color: var(--o-ink); border-color: var(--o-line-strong); }
+.sectionBtn { border-radius: var(--o-r-control); }
+.missingNote { margin: 0; border-radius: var(--o-r-control); background: rgb(var(--o-ink-rgb) / 0.04); color: var(--o-ink-2); font-size: var(--o-t-13); }
+.draftNote { font-size: var(--o-t-12); color: var(--o-ink-3); }
+
+.answerFoot { margin-top: -4px; gap: 6px 12px; }
+.footMeta { font-family: var(--o-font-sans); font-size: var(--o-t-12); letter-spacing: 0; color: var(--o-ink-3); }
+.footActions {
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--o-r-pill);
+  background: var(--o-surface-1);
+  box-shadow: var(--o-elev-1);
+}
+.footAct.footAct { color: var(--o-ink-2); }
+.footAct.footAct:hover { color: var(--o-ink); }
+.typingBar .footAct.footAct { box-shadow: var(--o-elev-1); background: var(--o-surface-1); }
+@media (pointer: coarse) and (max-width: 480px) {
+  .footActions { gap: 0; padding: 2px; }
+}
