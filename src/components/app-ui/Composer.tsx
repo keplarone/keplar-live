@@ -819,7 +819,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
   return (
     <div ref={wrapRef} className={s.wrap} data-pop={pop.side} style={{ ["--pop-room" as string]: `${pop.room}px` }}>
       <span ref={popAnchorRef} className={s.popAnchor} aria-hidden="true" />
-      <Popover open={routingOpen} onOpenChange={closeOnOutside(setRoutingOpen)} anchorRef={popAnchorRef} side={popSide} align="end" label="Advanced routing" id={`${uid}-routing`} className={s.panel} onKeyDown={popKeys(() => setRoutingOpen(false), routingBtnRef, "")}>
+      <Popover open={routingOpen} onOpenChange={closeOnOutside(setRoutingOpen)} anchorRef={popAnchorRef} side={popSide} align="end" label="Advanced routing" id={`${uid}-routing`} className={s.panel} data-o="Composer panel" onKeyDown={popKeys(() => setRoutingOpen(false), routingBtnRef, "")}>
           <div className={s.panelHead}>
             <p className={s.panelTitle}>Advanced routing</p>
             <p className={s.panelLede}>{brand.engineName} chooses models for you. These settings constrain it; they don&rsquo;t pick models directly.</p>
@@ -888,6 +888,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
 
       <form
         className={s.composer}
+        data-o="Composer composer"
         data-multiline={multiline || undefined}
         onSubmit={(e) => {
           e.preventDefault();
@@ -949,7 +950,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
         {voice.error ? <p className={s.fileError} role="alert">{voice.error.message}</p> : null}
         {voiceNote && !voice.error ? <p className={s.fileError} role="status" data-testid="voice-note">{voiceNote}</p> : null}
 
-        {recordNotes ? <div className={s.recordHold}><RecordNotes hideIdle /></div> : null}
+        {recordNotes ? <div className={s.recordHold} data-o="Composer recordHold"><RecordNotes hideIdle /></div> : null}
 
         <label htmlFor={`${uid}-input`} className="visually-hidden">Message Keplar</label>
         {slashOpen ? (
@@ -986,7 +987,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
           data-composer-input
         />
         {!text && !media.length && !docs.length && !links.length && !running ? (
-          <p className={s.readsHint} aria-hidden="true">
+          <p className={s.readsHint} data-o="Composer readsHint" aria-hidden="true">
             <span>Paste a link or drop a file.</span>
             <span className={s.readsKinds}>Keplar reads {READS.map((r) => r.label.toLowerCase()).join(" · ")}</span>
           </p>
@@ -1157,8 +1158,8 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
           </div>
         ) : null}
 
-        <div className={s.row}>
-          <div className={s.tools} role="group" aria-label="Tools">
+        <div className={s.row} data-o="Composer row">
+          <div className={s.tools} data-o="Composer tools" role="group" aria-label="Tools">
             <input
               ref={fileRef}
               type="file"
@@ -1187,6 +1188,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
               ref={attachBtnRef}
               type="button"
               className={s.tool}
+              data-o="Composer tool"
               onClick={() => { toggleFrom(setAttachOpen)(); setLinkDraft(null); }}
               aria-haspopup="menu"
               aria-expanded={attachOpen}
@@ -1203,6 +1205,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
               ref={moreBtnRef}
               type="button"
               className={`${s.tool} ${s.more}`}
+              data-o="Composer tool"
               aria-haspopup="menu"
               aria-expanded={moreOpen}
               aria-controls={`${uid}-more`}
@@ -1217,7 +1220,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
               <span className={s.toolLabel}>Modes</span>
             </button>
           </div>
-          <Popover open={attachOpen} onOpenChange={closeOnOutside(setAttachOpen)} anchorRef={popAnchorRef} side={popSide} align="start" label="Attach" role="menu" id={`${uid}-attach`} className={s.attachMenu} onKeyDown={popKeys(() => setAttachOpen(false), attachBtnRef, '[role="menuitem"], [role="menuitemcheckbox"], input')}>
+          <Popover open={attachOpen} onOpenChange={closeOnOutside(setAttachOpen)} anchorRef={popAnchorRef} side={popSide} align="start" label="Attach" role="menu" id={`${uid}-attach`} className={s.attachMenu} data-o="Composer attachMenu" onKeyDown={popKeys(() => setAttachOpen(false), attachBtnRef, '[role="menuitem"], [role="menuitemcheckbox"], input')}>
               <button type="button" role="menuitem" className={s.attachItem} data-attach-item="files" onClick={() => { setAttachOpen(false); fileRef.current?.click(); }}>
                 <GlyphUpload size={16} />
                 <span className={s.attachText}><span>Upload files</span><span className={s.attachSub}>Docs, slides, sheets, data, code, .zip, audio</span></span>
@@ -1261,7 +1264,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
                 </ul>
               </div>
           </Popover>
-          <Popover open={moreOpen} onOpenChange={closeOnOutside(setMoreOpen)} anchorRef={popAnchorRef} side={popSide} align="start" label="Modes" role="menu" id={`${uid}-more`} className={s.moreMenu} onKeyDown={popKeys(() => setMoreOpen(false), moreBtnRef, '[role="menuitemcheckbox"]')}>
+          <Popover open={moreOpen} onOpenChange={closeOnOutside(setMoreOpen)} anchorRef={popAnchorRef} side={popSide} align="start" label="Modes" role="menu" id={`${uid}-more`} className={s.moreMenu} data-o="Composer moreMenu" onKeyDown={popKeys(() => setMoreOpen(false), moreBtnRef, '[role="menuitemcheckbox"]')}>
               {tools.map((t) => (
                 <button
                   key={t.key}
@@ -1269,6 +1272,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
                   role="menuitemcheckbox"
                   aria-checked={Boolean(modes[t.key])}
                   className={s.moreItem}
+                  data-o="Composer moreItem"
                   data-more-mode={t.key}
                   title={t.key === "deepResearch" && drOffNote ? drOffNote : t.key === "web" && liveDesktop && liveEnabled ? LIVE_WEB_HINT : t.hint}
                   onClick={() => { setModes((m) => toggleMode(m, t.key)); setMoreOpen(false); taRef.current?.focus(); }}
@@ -1276,18 +1280,19 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
                   <span className={s.moreIcon}><t.Icon size={16} /></span>
                   <span className={s.moreText}>
                     <span className={s.moreLabel}>{t.label}</span>
-                    <span className={s.moreBlurb}>{BLURB[t.key]}</span>
+                    <span className={s.moreBlurb} data-o="Composer moreBlurb">{BLURB[t.key]}</span>
                   </span>
                 </button>
               ))}
               <p className={s.modeHint}>Or type /create, /study, /slides</p>
           </Popover>
 
-          <div className={s.actions}>
+          <div className={s.actions} data-o="Composer actions">
             {voice.supported ? (
               <button
                 type="button"
                 className={s.tool}
+                data-o="Composer tool"
                 data-voice-btn={voice.state}
                 aria-pressed={voice.state === "listening"}
                 aria-label={voice.state === "listening" ? "Stop dictation" : voice.state === "processing" ? "Finishing dictation" : "Dictate with your voice"}
@@ -1299,7 +1304,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
                 <span className={s.toolLabel}>{voice.state === "listening" ? "Listening…" : voice.state === "processing" ? "Finishing…" : "Voice"}</span>
               </button>
             ) : null}
-            <VoiceTalk voice={voice} className={s.tool} labelClass={s.toolLabel} disabled={running} onNote={setVoiceNote} onAsk={() => setVoiceAsk((n) => n + 1)} />
+            <VoiceTalk voice={voice} className={s.tool} data-o="Composer tool" labelClass={s.toolLabel} disabled={running} onNote={setVoiceNote} onAsk={() => setVoiceAsk((n) => n + 1)} />
             <button
               ref={routingBtnRef}
               type="button"
@@ -1320,6 +1325,7 @@ export const Composer = forwardRef<ComposerHandle, Props>(function Composer(
               variant="primary"
               shape="circle"
               className={s.send}
+              data-o="Composer send"
               motion="send"
               streaming={running}
               label={running ? "Stop generating" : "Ask Keplar"}

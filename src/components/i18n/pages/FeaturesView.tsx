@@ -18,7 +18,7 @@ export async function FeaturesView({ locale = "en" }: { locale?: string }) {
   return (
     <div className={s.page}>
       <header className={s.head}>
-        <p className={s.kicker}>{p.kicker}</p>
+        <p className={s.kicker} data-o="Features kicker">{p.kicker}</p>
         <h1 className={s.title}><TwoTone text={p.title} /></h1>
         <p className={s.lead}>{rich(p.lead, { b: (t) => <b>{t}</b> }, { live: n.live, beta: n.beta, soon: n.soon })}</p>
         <nav className={s.jump} aria-label={p.sections}>{CHAPTERS.map((c) => <a key={c.id} href={`#${c.id}`}><b>{c.n}</b>{m.chapters.list[c.id]?.label ?? c.label}</a>)}</nav>

@@ -84,8 +84,8 @@ export function OrbitShowcase() {
   return (
     <div className={s.page} data-orbit-showcase="">
       <header className={s.head}>
-        <p className={s.kicker}>Keplar Orbit</p>
-        <h1 className={s.title}>The interface system</h1>
+        <p className={s.kicker} data-o="Showcase kicker">Keplar Orbit</p>
+        <h1 className={s.title} data-o="Showcase title">The interface system</h1>
         <p className={s.lede}>Tokens, type, controls and the app shell, rendered from the real components. Guide: docs/design/keplar-orbit.md.</p>
       </header>
 

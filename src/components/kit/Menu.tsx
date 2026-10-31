@@ -38,6 +38,8 @@ export interface PopoverProps {
   initialFocus?: "first" | "last" | "surface" | "none";
   id?: string;
   className?: string;
+  /** Style hooks (data-o tokens): CSS-module class names are minified in production, so global layers target these. */
+  "data-o"?: string;
   children: ReactNode;
   onKeyDown?: (e: KeyboardEvent<HTMLDivElement>) => void;
 }
@@ -57,6 +59,7 @@ export function Popover({
   initialFocus = "first",
   id,
   className,
+  "data-o": hook,
   children,
   onKeyDown,
 }: PopoverProps) {
@@ -95,6 +98,7 @@ export function Popover({
       popover="manual"
       data-motion="ks"
       className={cx(o.layer, o.float, className)}
+      data-o={hook}
       onKeyDown={(e) => {
         onKeyDown?.(e);
         if (e.defaultPrevented) return;

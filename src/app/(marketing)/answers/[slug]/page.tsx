@@ -45,7 +45,7 @@ export default async function PublicAnswer({ params }: Props) {
   };
   return (
     <div className={s.page}>
-      <p className={s.eyebrow}><Link href="/answers">Shared answers</Link></p>
+      <p className={s.eyebrow} data-o="Shared eyebrow"><Link href="/answers">Shared answers</Link></p>
       <h1 className={s.title}>{r.question.length > 160 ? title : r.question}</h1>
       <p className={s.notice}>
         An answer a Keplar user chose to publish. It was written by AI models working together and has not been checked by a person at Keplar, so it can be wrong even when the models agree. Check anything important with a reliable source.

@@ -18,8 +18,8 @@ export default function HelpPage() {
       <JsonLd data={graph} />
       <header className={hero.hero}>
         <div className={hero.header}>
-          <p className={hero.label}>Help</p>
-          <h1 className={hero.title}><TwoTone text={"How can we help?"} /></h1>
+          <p className={hero.label} data-o="RoutePlaceholder label">Help</p>
+          <h1 className={hero.title} data-o="RoutePlaceholder title"><TwoTone text={"How can we help?"} /></h1>
           <p className={hero.lede}>
             Answers about what Keplar does today. Can&apos;t find yours? <Link href="/contact">Contact the team</Link> or email {brand.feedbackEmail}. Live service checks are on the <Link href="/status">Status</Link> page.
           </p>

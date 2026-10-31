@@ -16,7 +16,7 @@ export default async function AdminReferralsPage() {
   return (
     <div className={s.page}>
       <header className={s.head}>
-        <p className={s.eyebrow}>Admin · Referrals</p>
+        <p className={s.eyebrow} data-o="Admin eyebrow">Admin · Referrals</p>
         <h1>Referral rewards</h1>
         <p className={s.sub}>
           Rewards are extra usage credit only (never cash): {c.referrerCredits.toLocaleString()} for the referrer and {c.friendCredits.toLocaleString()} for the friend, valid {c.validDays} days.

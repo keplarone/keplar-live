@@ -104,12 +104,12 @@ export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteC
 
   return (
     <nav className={s.sidebar} aria-label="Keplar" id={id}>
-      <div className={s.sideTop} data-keplar-drag>
-        <Link href="/" className={s.sideBrand} aria-label="Keplar home">
+      <div className={s.sideTop} data-o="App sideTop" data-keplar-drag>
+        <Link href="/" className={s.sideBrand} data-o="App sideBrand" aria-label="Keplar home">
           <KeplarLogo height={18} />
         </Link>
         {onToggleCollapse ? (
-          <button type="button" className={s.collapseBtn} onClick={onToggleCollapse} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} aria-expanded={!collapsed} aria-controls={id}>
+          <button type="button" className={s.collapseBtn} data-o="App collapseBtn" onClick={onToggleCollapse} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} aria-expanded={!collapsed} aria-controls={id}>
             <IconMenu size={16} />
           </button>
         ) : null}
@@ -121,14 +121,14 @@ export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteC
       <div className={s.sideScroll} data-side-scroll="">
       <ul className={s.sideNav} data-primary-nav="">
         <li>
-          <button type="button" className={s.sideItem} data-nav="new" data-primary="" data-rail-label="New chat" onClick={onNew} aria-keyshortcuts={mac ? "Meta+Shift+O" : "Control+Shift+O"}>
+          <button type="button" className={s.sideItem} data-o="App sideItem" data-nav="new" data-primary="" data-rail-label="New chat" onClick={onNew} aria-keyshortcuts={mac ? "Meta+Shift+O" : "Control+Shift+O"}>
             <IconPlus size={15} />
             <span>New chat</span>
             <kbd className={s.kbd} aria-hidden="true">{mod}⇧O</kbd>
           </button>
         </li>
         <li>
-          <button type="button" className={s.sideItem} data-nav="search" data-primary="" data-rail-label="Search chats" onClick={onSearch} aria-keyshortcuts={mac ? "Meta+K" : "Control+K"}>
+          <button type="button" className={s.sideItem} data-o="App sideItem" data-nav="search" data-primary="" data-rail-label="Search chats" onClick={onSearch} aria-keyshortcuts={mac ? "Meta+K" : "Control+K"}>
             <IconSearch size={15} />
             <span>Search chats</span>
             <kbd className={s.kbd} aria-hidden="true">{mod}K</kbd>
@@ -142,7 +142,7 @@ export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteC
       <ul className={s.sideNav} data-side-links="" aria-label="About Keplar">
         {SIDE_LINKS.map(({ href, label, Icon }) => (
           <li key={href}>
-            <Link className={s.sideItem} href={href} data-rail-label={label}>
+            <Link className={s.sideItem} data-o="App sideItem" href={href} data-rail-label={label}>
               <Icon size={15} />
               <span>{label}</span>
             </Link>
@@ -153,8 +153,8 @@ export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteC
       <div className={s.meter}>
         {state.ledger.synced && !state.ledger.signedIn ? (
           // Signed out: no usage meter, just the way in (plans are in the links above) and the appearance settings.
-          <div className={s.signedOutRow}>
-            <Link className={`${la.act} ${s.signInCta}`} data-variant="primary" href="/signin" data-plan-cta="signin">Sign in</Link>
+          <div className={s.signedOutRow} data-o="App signedOutRow">
+            <Link className={`${la.act} ${s.signInCta}`} data-o="App signInCta" data-variant="primary" href="/signin" data-plan-cta="signin">Sign in</Link>
             <GuestSettings />
           </div>
         ) : null}
@@ -169,7 +169,7 @@ export function Sidebar({ state, mac, onNew, onSearch, onView, onOpen, onDeleteC
                 <Link className={s.lowUsageCta} href={paidPlan ? "/account#plan" : "/pricing"} data-plan-cta="upgrade" data-low="">{paidPlan ? "Get more" : "Upgrade"}</Link>
               </div>
             ) : null}
-            <div className={s.accountRow}>
+            <div className={s.accountRow} data-o="App accountRow">
               {account ? <AccountMenu account={account} plan={planName} paid={paidPlan} usage={usage} /> : <span className={s.grow} />}
               <Tooltip content="Settings">
                 <Link href="/account" className={s.iconBtn} aria-label="Settings" data-nav="settings">

@@ -176,7 +176,7 @@ export function KeplarTurn({ message: m, onRetry, onRefreshResearch, onSignal, o
       {running && m.practice && !m.answer?.quiz ? <QuizBuilding kind={m.practice.kind} source={m.practice.source} /> : null}
 
       {typingAnswer && !m.practice && (m.smalltalk || m.answer?.smalltalk) ? (
-        <article className={`${s.answer} ${s.plainReply}`} aria-busy="true" data-typing="" data-plain="">
+        <article className={`${s.answer} ${s.plainReply}`} data-o="KeplarTurn answer" aria-busy="true" data-typing="" data-plain="">
           <header className={s.answerHead}><AnswerTitle models={m.answer?.models ?? m.models} /></header>
           {running && m.mode === "consensus" ? <p className={s.draftNote} role="status" data-early-note="">Early draft from the first model to answer. Keplar is checking it with the others; the final answer will replace it.</p> : null}
           <Markdown source={tw.text} streaming caret />
@@ -185,7 +185,7 @@ export function KeplarTurn({ message: m, onRetry, onRefreshResearch, onSignal, o
       ) : null}
 
       {typingAnswer && !m.practice && !(m.smalltalk || m.answer?.smalltalk) ? (
-        <article className={s.answer} aria-busy="true" data-typing="" data-continued={live || undefined}>
+        <article className={s.answer} data-o="KeplarTurn answer" aria-busy="true" data-typing="" data-continued={live || undefined}>
           <header className={s.answerHead}><AnswerTitle models={m.answer?.models ?? m.models} /></header>
           {/* A panel's first words are one model's early draft (early-stream.ts): say so, so the checked answer replacing it is no surprise. */}
           {running && m.mode === "consensus" && !m.answer ? <p className={s.draftNote} role="status" data-early-note="">Early draft from the first model to answer. Keplar is checking it with the others; the final answer will replace it.</p> : null}
@@ -285,7 +285,7 @@ function NoResponse({ error, onRetry }: { error: { message: string; upgrade?: bo
 /** Errors and stops sit in the same card as an answer (same header and shell), so nothing Keplar says looks different from an answer. */
 function NoticeCard({ children }: { children: ReactNode }) {
   return (
-    <article className={s.answer} data-notice="">
+    <article className={s.answer} data-o="KeplarTurn answer" data-notice="">
       <header className={s.answerHead}><AnswerTitle /></header>
       {children}
     </article>
@@ -321,7 +321,7 @@ function TypingBar({ text }: { text: string }) {
  */
 function PartialAnswer({ m }: { m: KeplarMessage }) {
   return (
-    <article className={s.answer} data-partial="">
+    <article className={s.answer} data-o="KeplarTurn answer" data-partial="">
       <p className={s.draftNote}>
         {m.status === "stopped" ? "Unfinished: stopped here" : "Unfinished: the answer broke off here"}
         {m.mode === "consensus" ? ", before the other models checked it." : "."}
@@ -690,7 +690,7 @@ function VerificationBody({ v }: { v: KeplarAnswer["verification"] }) {
 /** Casual chat, fixed replies, instant answers, jokes and support: the same card as every answer (header, body, footer), without the sections that have nothing to say. */
 function PlainReply({ answer: a, onRetry, onSignal, isLast, onAsk }: { answer: KeplarAnswer; onRetry: () => void; onSignal?: (kind: "up" | "down" | "copy") => void; isLast: boolean; onAsk?: (text: string) => void }) {
   return (
-    <article className={`${s.answer} ${s.plainReply}`} data-plain="" data-last={isLast || undefined}>
+    <article className={`${s.answer} ${s.plainReply}`} data-o="KeplarTurn answer" data-plain="" data-last={isLast || undefined}>
       <header className={s.answerHead}><AnswerTitle models={a.models} /></header>
       <Markdown source={a.markdown} />
       {a.clarify ? <ClarifyChips clarify={a.clarify} onAsk={onAsk} enabled={isLast} /> : null}
@@ -728,7 +728,7 @@ function AnswerFooter({ answer: a, meta, onRetry, onRefreshResearch, onSignal, i
   return (
     <footer className={s.answerFoot}>
       <div className={s.footMeta}>{meta}</div>
-      <div className={s.footActions}>
+      <div className={s.footActions} data-o="KeplarTurn footActions">
         {/* Quiet kit IconButtons; the name is the tooltip, and a longer note (what a vote does) is the tooltip of its own. */}
         <IconButton size="sm" className={s.footAct} onClick={copy} label={copied ? "Copied answer" : "Copy answer"} icon={<MorphIcon icon="copy" state={copied ? "copied" : "idle"} size={15} />} />
         {onSignal ? (
@@ -896,7 +896,7 @@ function Answer({ answer: a, onRetry, onRefreshResearch, onSignal, isLast, conti
 
 
   return (
-    <article className={s.answer} aria-labelledby={`${uid}-title`} data-level={c.level} data-continued={continued || undefined} data-last={isLast || undefined}>
+    <article className={s.answer} data-o="KeplarTurn answer" aria-labelledby={`${uid}-title`} data-level={c.level} data-continued={continued || undefined} data-last={isLast || undefined}>
       <header className={s.answerHead}>
         <AnswerBrand id={`${uid}-title`} models={a.models} />
         <div className={s.headSide}>

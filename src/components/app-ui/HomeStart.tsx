@@ -64,10 +64,10 @@ export function HomeStart({ showBusiness: _showBusiness, onSeed, onView, onSend,
 
   return (
     <>
-      <ul className={s.homeChips} aria-label="What you can do">
+      <ul className={s.homeChips} data-o="App homeChips" aria-label="What you can do">
         {tiles.map((t) => (
           <li key={t.id}>
-            <button type="button" className={s.homeChip} data-tile={t.id} title={t.body} onClick={t.run}>
+            <button type="button" className={s.homeChip} data-o="App homeChip" data-tile={t.id} title={t.body} onClick={t.run}>
               {TILE_ICONS[t.id]}
               <span className={s.homeChipLabel}>{t.title}</span>
             </button>

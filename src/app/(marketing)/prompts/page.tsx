@@ -10,11 +10,11 @@ export const metadata = pageMeta("/prompts", "AI prompt library: copyable prompt
 
 export default function PromptsHub() {
   return (
-    <div className={s.shell}>
+    <div className={s.shell} data-o="kb shell">
       <div className={s.hubWrap}>
         <header>
           <p className={s.crumbs}>Prompt library</p>
-          <h1 className={s.h1}><TwoTone text={"Prompt library"} /></h1>
+          <h1 className={s.h1} data-o="kb h1"><TwoTone text={"Prompt library"} /></h1>
           <p className={s.lede}>{allPrompts().length} templates with [placeholders] you fill in. Each says why it works and what to check afterward. They work in any assistant; the Keplar page notes how Keplar handles them.</p>
         </header>
         <div className={s.cards}>

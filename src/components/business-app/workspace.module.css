@@ -190,8 +190,10 @@ select.input option { background: var(--o-surface-1); color: var(--w-ink); }
 /* Compact controls inside the modules (Create, Operations, Integrations, Agents, Approvals): Business is a dense desktop tool.
    Only button-like controls are touched (their CSS-module class names: btn, tab, primary, ghost, quiet, chip, seg, pill); card-like
    buttons, inputs and text links keep their size. Icon-only buttons (an aria-label and one svg; CSS can't see
-   text, so "Options ▾" or "Build the app →" would otherwise be squashed to 28px) stay square. Keplar One's own screens are not affected. */
-.module :global(:is(button, a, [role="tab"]):is([class*="__btn"], [class*="Btn"], [class*="__tab"], [class*="__primary"], [class*="__ghost"], [class*="__quiet"], [class*="__chip"], [class*="__seg"], [class*="__pill"], [class*="__segBtn"]):not([class*="__tabs"]):not([aria-label]:has(> svg:only-child))) {
+   text, so "Options ▾" or "Build the app →" would otherwise be squashed to 28px) stay square. Keplar One's own screens are not affected.
+   The class names are matched by their local part ("_btn"), which both the dev name ("x-module__hash__btn") and the minified production
+   name ("hash_btn") keep; never "__x" or "-module" (production builds drop both: tests/no-class-name-hooks.test.ts). */
+.module :global(:is(button, a, [role="tab"]):is([class*="_btn"], [class*="Btn"], [class*="_tab"], [class*="_primary"], [class*="_ghost"], [class*="_quiet"], [class*="_chip"], [class*="_seg"], [class*="_pill"], [class*="_segBtn"]):not([class*="_tabs"]):not([aria-label]:has(> svg:only-child))) {
   height: auto;
   min-height: 30px;
   padding-block: 4px;
@@ -200,7 +202,7 @@ select.input option { background: var(--o-surface-1); color: var(--w-ink); }
   line-height: 1.25;
   gap: 6px;
 }
-.module :global(:is(button, a):is([class*="__btn"], [class*="Btn"], [class*="__primary"], [class*="__ghost"], [class*="__quiet"])[aria-label]:has(> svg:only-child)) {
+.module :global(:is(button, a):is([class*="_btn"], [class*="Btn"], [class*="_primary"], [class*="_ghost"], [class*="_quiet"])[aria-label]:has(> svg:only-child)) {
   width: 28px;
   height: 28px;
   min-height: 0;

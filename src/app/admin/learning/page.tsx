@@ -37,7 +37,7 @@ export default async function AdminLearningPage() {
   return (
     <div className={s.page}>
       <header className={s.head}>
-        <p className={s.eyebrow}>Admin · Learning · last {d.totals.windowDays} days</p>
+        <p className={s.eyebrow} data-o="Admin eyebrow">Admin · Learning · last {d.totals.windowDays} days</p>
         <h1>Learning</h1>
         <p className={s.sub}>
           The AI models are <b>not retrained</b>. This is system-level learning: Keplar keeps score of which models worked for which kind of question and nudges its own routing within fixed safety rules.

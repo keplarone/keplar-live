@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "This link isn't available", robots: 
 export default function SharedSpecialistGone() {
   return (
     <div className={s.page}>
-      <p className={s.eyebrow}>Shared specialist</p>
+      <p className={s.eyebrow} data-o="Shared eyebrow">Shared specialist</p>
       <h1 className={s.title}>This link isn&apos;t available.</h1>
       <p className={s.notice}>The person who shared it may have turned it off, or it has expired. Specialist links stay live for 180 days at most.</p>
       <div className={s.cta}>

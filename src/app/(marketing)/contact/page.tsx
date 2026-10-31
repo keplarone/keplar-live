@@ -14,8 +14,8 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
   const topic = TICKET_TOPICS.find((t) => t === q.topic) as TicketTopic | undefined;
   return (
     <div className={s.page}>
-      <p className={s.eyebrow}>Support</p>
-      <h1 className={s.title}><TwoTone text={"Contact the Keplar team."} /></h1>
+      <p className={s.eyebrow} data-o="Feedback eyebrow">Support</p>
+      <h1 className={s.title} data-o="Feedback title"><TwoTone text={"Contact the Keplar team."} /></h1>
       <p className={s.lede}>
         Your message is saved for the team and read by a person. We reply from {brand.feedbackEmail}; nothing is sent automatically and there is no guaranteed reply time. Check <Link href="/help">Help</Link> first, it covers the most common questions. If someone is in danger, contact your local emergency number.
       </p>

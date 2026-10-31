@@ -19,7 +19,7 @@ export default async function AdminTemplatesPage() {
   return (
     <div className={s.page}>
       <header className={s.head}>
-        <p className={s.eyebrow}>Admin · templates</p>
+        <p className={s.eyebrow} data-o="Admin eyebrow">Admin · templates</p>
         <h1>Community templates</h1>
         <p className={s.sub}>Snapshots owners chose to share. Reports arrive in the <Link href="/admin/inbox">inbox</Link> with the template address. Hiding removes a template from every public page at once. <Link href="/admin">Operations</Link></p>
       </header>

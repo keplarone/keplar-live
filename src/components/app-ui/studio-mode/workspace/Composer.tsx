@@ -107,7 +107,7 @@ export function Composer({ a, env, compact = false, mode, canPlayTest, onTyping 
   const label = solarMode(mode).label;
 
   return (
-    <form className={s.composer} data-compact={compact || undefined} aria-label="Request" onSubmit={(e) => { e.preventDefault(); submit(); }}>
+    <form className={s.composer} data-o="conversation composer" data-compact={compact || undefined} aria-label="Request" onSubmit={(e) => { e.preventDefault(); submit(); }}>
       {refs.length ? (
         <div className={s.pending} role="group" aria-label="References for this request">
           {refs.map((src, i) => (

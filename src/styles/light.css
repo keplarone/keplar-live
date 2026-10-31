@@ -80,20 +80,21 @@
 }
 html[data-glass="lite"][data-theme="light"] { --lg-fill: var(--lg-solid); --lg-fill-strong: var(--lg-solid); --lg-card: var(--lg-solid); --lg-card-hover: var(--lg-solid); }
 
-/* ── Shared surfaces (global hooks, so the shared app modules are untouched) ── */
+/* ── Shared surfaces (global hooks, so the shared app modules are untouched) ──
+   Hooks are data-o tokens ("<Module> <class>"): production builds minify CSS-module class names, so class substrings match nothing. */
 /* Monolith UI panels below the home: white cards, cool hairline, soft drop (Dark keeps its lit graphite panels) */
 :root[data-theme="light"] .mu-panel { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-shadow); }
 :root[data-theme="light"] .mu-panel[data-lit] { border-color: rgb(14 15 18 / 0.16); background: var(--lt-card-bg); box-shadow: inset 0 1px 0 rgb(var(--ring-rgb) / 0.25), var(--lt-card-lift); }
 /* Ask home tiles and the empty mark: white tiles, no dark halo */
-:root[data-theme="light"] [class*="App-module__"][class*="__homeTile"]:not([class*="__homeTileDot"]) { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-shadow); }
-:root[data-theme="light"] [class*="App-module__"][class*="__homeTile"]:not([class*="__homeTileDot"]):hover { background: #fff; border-color: rgb(14 15 18 / 0.18); box-shadow: var(--lt-card-lift); }
-:root[data-theme="light"] [class*="App-module__"][class$="__emptyMark"] { filter: none; }
-:root[data-theme="light"] [class*="App-module__"][class$="__emptyTitle"] { text-shadow: none; color: #0e0f12; }
-:root[data-theme="light"] [class*="App-module__"][class$="__emptyLede"] { color: #686d78; }
-:root[data-theme="light"] [class*="App-module__"][class$="__welcomeTitle"] { color: #0e0f12; }
-:root[data-theme="light"] [class*="App-module__"][class$="__welcomeLede"] { color: #686d78; }
-:root[data-theme="light"] [class*="App-module__"][class$="__exampleHint"] { color: #0c5c66; }
+:root[data-theme="light"] [data-o~="App"][data-o~="homeTile"]:not([data-o~="homeTileDot"]) { background: var(--lt-card-bg); border-color: var(--lt-card-border); box-shadow: var(--lt-card-shadow); }
+:root[data-theme="light"] [data-o~="App"][data-o~="homeTile"]:not([data-o~="homeTileDot"]):hover { background: #fff; border-color: rgb(14 15 18 / 0.18); box-shadow: var(--lt-card-lift); }
+:root[data-theme="light"] [data-o~="App"][data-o~="emptyMark"] { filter: none; }
+:root[data-theme="light"] [data-o~="App"][data-o~="emptyTitle"] { text-shadow: none; color: #0e0f12; }
+:root[data-theme="light"] [data-o~="App"][data-o~="emptyLede"] { color: #686d78; }
+:root[data-theme="light"] [data-o~="App"][data-o~="welcomeTitle"] { color: #0e0f12; }
+:root[data-theme="light"] [data-o~="App"][data-o~="welcomeLede"] { color: #686d78; }
+:root[data-theme="light"] [data-o~="App"][data-o~="exampleHint"] { color: #0c5c66; }
 /* In-app search (Cmd-K): a near-opaque white sheet over a light cool scrim; the selected row is a cool tint, not white on white */
-:root[data-theme="light"] [class*="App-module__"][class$="__scrim"] { background: rgb(14 15 18 / 0.12); }
-:root[data-theme="light"] [class*="App-module__"][class$="__search"] { background: rgb(255 255 255 / 0.95); box-shadow: var(--lg-ring), 0 2px 4px rgb(14 15 18 / 0.05), 0 30px 80px -28px rgb(14 15 18 / 0.32); }
-:root[data-theme="light"] [class*="App-module__"][class$="__searchItem"][aria-selected="true"] { background: rgb(14 15 18 / 0.05); box-shadow: none; }
+:root[data-theme="light"] [data-o~="App"][data-o~="scrim"] { background: rgb(14 15 18 / 0.12); }
+:root[data-theme="light"] [data-o~="App"][data-o~="search"] { background: rgb(255 255 255 / 0.95); box-shadow: var(--lg-ring), 0 2px 4px rgb(14 15 18 / 0.05), 0 30px 80px -28px rgb(14 15 18 / 0.32); }
+:root[data-theme="light"] [data-o~="App"][data-o~="searchItem"][aria-selected="true"] { background: rgb(14 15 18 / 0.05); box-shadow: none; }

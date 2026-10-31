@@ -30,7 +30,7 @@ export default async function TemplatePage({ params }: Props) {
   const path = `/templates/${slug}`;
   return (
     <div className={s.page}>
-      <p className={s.eyebrow}><Link href="/templates">Templates</Link></p>
+      <p className={s.eyebrow} data-o="Templates eyebrow"><Link href="/templates">Templates</Link></p>
       <h1 className={s.title}>{v.title}</h1>
       <p className={s.lead}>{v.description}</p>
       <div className={s.chips}>

@@ -25,7 +25,7 @@ export default async function AdminFlightPage({ searchParams }: { searchParams: 
   return (
     <div className={s.page}>
       <header className={s.head}>
-        <p className={s.eyebrow}>Admin · flight recorder · real rows only</p>
+        <p className={s.eyebrow} data-o="Admin eyebrow">Admin · flight recorder · real rows only</p>
         <h1>Execution timelines</h1>
         <p className={s.sub}>
           One text-free timeline per answer request: stages, every provider request (model, provider, outcome, latency, cost), tools, cancellation and the outcome with its cause.

@@ -25,7 +25,7 @@ export async function RoadmapView({ locale = "en" }: { locale?: string }) {
   return (
     <div className={s.page}>
       <header className={s.head}>
-        <p className={s.kicker}>{r.kicker}</p>
+        <p className={s.kicker} data-o="Features kicker">{r.kicker}</p>
         <h1 className={s.title}><TwoTone text={r.title} /></h1>
         <p className={s.lead}>{rich(r.lead, { changelog: (t) => <Link href="/changelog">{t}</Link>, features: (t) => <Link href={L("/features")}>{t}</Link> })}</p>
       </header>

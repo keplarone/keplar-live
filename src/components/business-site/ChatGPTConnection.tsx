@@ -47,7 +47,7 @@ export function ChatGPTConnection() {
       <div className={s.main}>
         <section className={s.hero} aria-labelledby="chatgpt-hero-title">
           <div className={s.heroCopy}>
-            <p className={s.eyebrow}>Keplar One / Business / ChatGPT</p>
+            <p className={s.eyebrow} data-o="chatgpt-connection eyebrow">Keplar One / Business / ChatGPT</p>
             <h1 id="chatgpt-hero-title">Small idea.<br />Next big thing.</h1>
             <p className={s.intro}>A little clarity goes a long way. Shape your idea in ChatGPT, then keep your projects, tasks and reports together in Keplar.</p>
             <div className={s.actions}>
@@ -72,7 +72,7 @@ export function ChatGPTConnection() {
 
         <section className={s.status} aria-labelledby="connection-status-title">
           <div>
-            <p className={s.eyebrow}>Your connection</p>
+            <p className={s.eyebrow} data-o="chatgpt-connection eyebrow">Your connection</p>
             <h2 id="connection-status-title">{status.state === "ready" ? status.connected ? "Connected account" : "Not connected yet" : status.state === "signed_out" ? "Sign in to check" : status.state === "unverified" ? "Verify your email" : status.state === "error" ? "Status unavailable" : "Checking connection…"}</h2>
             <div aria-live="polite">
               {status.state === "loading" && <p>Checking this Keplar account for an active ChatGPT connection.</p>}
@@ -96,7 +96,7 @@ export function ChatGPTConnection() {
         </section>
 
         <section id="setup" className={s.setup} aria-labelledby="setup-title">
-          <p className={s.eyebrow}>A few quick steps</p>
+          <p className={s.eyebrow} data-o="chatgpt-connection eyebrow">A few quick steps</p>
           <h2 id="setup-title">Connect once. Pick up where you left off.</h2>
           <ol className={s.steps}>
             <li><span>01</span><div><h3>Open Keplar Business in ChatGPT</h3><p>Use the plugin link above. Sign in to ChatGPT and choose the workspace where the private plugin is available.</p></div></li>
@@ -106,7 +106,7 @@ export function ChatGPTConnection() {
         </section>
 
         <section className={s.permissions} aria-labelledby="permissions-title">
-          <div><p className={s.eyebrow}>Your permission, your projects</p><h2 id="permissions-title">Continue your work from ChatGPT.</h2></div>
+          <div><p className={s.eyebrow} data-o="chatgpt-connection eyebrow">Your permission, your projects</p><h2 id="permissions-title">Continue your work from ChatGPT.</h2></div>
           <div><ul><li>Read your projects, tasks, reports and agent status.</li><li>Create projects and tasks, update progress and save report drafts.</li><li>Open the same projects in your Keplar workspace.</li></ul><p>Website and app creation uses the building tools available in your ChatGPT session or the Keplar website builder. The account connector saves your project work; publishing, email, payments and overnight jobs each need a supported integration and the appropriate account access.</p></div>
         </section>
         <section className={s.help} aria-labelledby="help-title">

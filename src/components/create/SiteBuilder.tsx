@@ -753,7 +753,7 @@ export function SiteBuilder() {
           {config?.breakerNotice ? <p className={w.notice} role="status">{config.breakerNotice}</p> : null}
           {config && !config.ready ? <p className={w.notice} role="status">The site builder isn&apos;t connected to its models yet. Templates still work.</p> : null}
           {thread}
-          <form className={w.composer} onSubmit={(e) => { e.preventDefault(); submit(); }}>
+          <form className={w.composer} data-o="ws composer" onSubmit={(e) => { e.preventDefault(); submit(); }}>
             {confirm ? (
               <div className={w.confirm} role="alertdialog" aria-label="Confirm cost">
                 <span>This will use about <strong>{confirm.units.toLocaleString()} credits</strong>. Continue?</span>

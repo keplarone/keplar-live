@@ -37,7 +37,7 @@ export default async function Templates() {
   const community = all.filter((t) => t.kind === "community");
   return (
     <div className={s.page}>
-      <p className={s.eyebrow}>Templates</p>
+      <p className={s.eyebrow} data-o="Templates eyebrow">Templates</p>
       <h1 className={s.title}><TwoTone text={"Start from a real site. Change it by describing it."} /></h1>
       <p className={s.lead}>Pick a template, press Remix, and Keplar copies the pages into your workspace and opens Create so you can say what to change: your name, words, colors, photos, pages.</p>
       <p className={s.notice}>Remix copies pages, text, layout and styles only. Form messages, contacts, bookings, orders, members and uploaded photos never come with a template, and forms in your copy go to your own inbox.</p>

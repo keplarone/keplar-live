@@ -20,8 +20,8 @@ export function PageHero({ label, title, lede, ctas }: Props) {
   return (
     <header className={s.hero}>
       <div className={s.header}>
-        <p className={s.label}>{label}</p>
-        <h1 className={s.title}><TwoTone text={title} /></h1>
+        <p className={s.label} data-o="RoutePlaceholder label">{label}</p>
+        <h1 className={s.title} data-o="RoutePlaceholder title"><TwoTone text={title} /></h1>
         <p className={s.lede}>{lede}</p>
         {primary || secondary ? (
           <div className={s.ctaRow}>

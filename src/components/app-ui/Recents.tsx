@@ -89,7 +89,7 @@ export function Recents({ threads, activeId, view, userKey, onOpen, onDeleteChat
 
   return (
     <div ref={rootRef} className={`${s.recent} ${cx.root}`} data-recents={open ? "open" : "closed"}>
-      <button type="button" className={cx.toggle} aria-expanded={open} aria-controls={listId} onClick={toggle} disabled={userKey === null} data-recents-toggle="">
+      <button type="button" className={cx.toggle} data-o="Recents toggle" aria-expanded={open} aria-controls={listId} onClick={toggle} disabled={userKey === null} data-recents-toggle="">
         <span className={cx.chev} aria-hidden="true"><IconChevron size={14} /></span>
         <span className={cx.label}>Recents</span>
         {!open && hasActive ? <span className={cx.here} aria-label="Open chat is inside" role="img" /> : null}
@@ -98,13 +98,14 @@ export function Recents({ threads, activeId, view, userKey, onOpen, onDeleteChat
       <div id={listId} role="region" aria-label="Recent chats" className={cx.collapse} data-open={open || undefined} inert={open ? undefined : true}>
         <div className={cx.inner}>
           {recent.length ? (
-            <ul className={s.recentList}>
+            <ul className={s.recentList} data-o="App recentList">
               {recent.map((t) => (
                 <li key={t.id}>
                   <DeleteChatAction title={t.title} onDelete={() => onDeleteChat?.(t.id)} enabled={Boolean(onDeleteChat)}>
                     <button
                       type="button"
                       className={s.threadLink}
+                      data-o="App threadLink"
                       aria-current={view === "thread" && activeId === t.id ? "page" : undefined}
                       onClick={() => onOpen(t.id)}
                       title={t.title}

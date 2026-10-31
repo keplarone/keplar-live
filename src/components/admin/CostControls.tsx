@@ -56,7 +56,7 @@ export function CostControls(props: Props) {
     <div className={s.controls}>
       <div className={p.grid2}>
         <fieldset className={s.field} style={{ border: 0, padding: 0, margin: 0 }}>
-          <legend className={s.eyebrow}>Guard flags</legend>
+          <legend className={s.eyebrow} data-o="Admin eyebrow">Guard flags</legend>
           {Object.entries(FLAG_LABELS).map(([k, label]) => (
             <label key={k} className={p.toggle}>
               <input type="checkbox" checked={Boolean(props.flags[k])} disabled={busy} onChange={(e) => call("PUT", { flags: { [k]: e.target.checked } }, `${label}: ${e.target.checked ? "on" : "off"}.`)} />
@@ -65,7 +65,7 @@ export function CostControls(props: Props) {
           ))}
         </fieldset>
         <fieldset className={s.field} style={{ border: 0, padding: 0, margin: 0 }}>
-          <legend className={s.eyebrow}>Feature kill switches</legend>
+          <legend className={s.eyebrow} data-o="Admin eyebrow">Feature kill switches</legend>
           <div className={p.row}>
             {props.features.map((f) => (
               <label key={f.id} className={p.toggle} title={f.label}>
@@ -78,7 +78,7 @@ export function CostControls(props: Props) {
       </div>
       <div className={p.grid2}>
         <div className={s.field}>
-          <span className={s.eyebrow}>Pricing</span>
+          <span className={s.eyebrow} data-o="Admin eyebrow">Pricing</span>
           <div className={p.row}>
             <label className={p.small} htmlFor="mm">Credit margin multiplier</label>
             <input id="mm" className={p.num} inputMode="decimal" value={mult} onChange={(e) => setMult(e.target.value)} />
@@ -86,7 +86,7 @@ export function CostControls(props: Props) {
           </div>
         </div>
         <div className={s.field}>
-          <span className={s.eyebrow}>OpenRouter low-balance alert</span>
+          <span className={s.eyebrow} data-o="Admin eyebrow">OpenRouter low-balance alert</span>
           <div className={p.row}>
             <input aria-label="Alert percent" className={p.num} inputMode="decimal" value={pct} onChange={(e) => setPct(e.target.value)} />
             <span className={p.small}>% of</span>
@@ -108,7 +108,7 @@ export function CostControls(props: Props) {
         </div>
       </div>
       <div className={s.field}>
-        <span className={s.eyebrow}>Throttles</span>
+        <span className={s.eyebrow} data-o="Admin eyebrow">Throttles</span>
         <div className={p.row}>
           <select aria-label="Feature" className={p.select} value={throttleFeature} onChange={(e) => setThrottleFeature(e.target.value)}>
             {props.features.map((f) => <option key={f.id} value={f.id}>{f.label}</option>)}

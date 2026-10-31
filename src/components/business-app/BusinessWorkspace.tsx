@@ -252,11 +252,11 @@ export function BusinessWorkspace() {
     else go({ at: mode, seed: text, projectId: projectId ?? undefined, key });
   };
 
-  if (!acct) return <div className={`${s.root} ${c.cursor}`} data-kb=""><div className={s.center}><span className={s.spinner} aria-label="Loading" /></div></div>;
+  if (!acct) return <div className={`${s.root} ${c.cursor}`} data-o="workspace root" data-kb=""><div className={s.center}><span className={s.spinner} aria-label="Loading" /></div></div>;
 
   if (!active) {
     return (
-      <div className={`${s.root} ${c.cursor}`} data-kb="">
+      <div className={`${s.root} ${c.cursor}`} data-o="workspace root" data-kb="">
         <div className={s.center}>
           <div className={c.gate}>
             <BusinessMark size={36} />
@@ -345,7 +345,7 @@ export function BusinessWorkspace() {
   const sideIcon = <Icon d={<><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16" /></>} size={17} />;
 
   return (
-    <div className={`${s.root} ${c.cursor}`} data-kb="">
+    <div className={`${s.root} ${c.cursor}`} data-o="workspace root" data-kb="">
       <div ref={shellRef} className={c.shell} data-collapsed={collapsed || undefined} data-menu-open={drawerOpen || undefined}>
         {drawerOpen ? <button type="button" className={c.backdrop} onClick={closeNavigation} aria-label="Close navigation" tabIndex={-1} /> : null}
 

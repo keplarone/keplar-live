@@ -116,8 +116,9 @@
 .back:hover > span {
   translate: -3px 0;
 }
-/* the shared pages' eyebrows (Status, Legal): Apple's sentence-case category label, not tracked capitals */
-.doc :global([class*="__eyebrow"]) { font-size: var(--o-t-13); letter-spacing: 0; text-transform: none; font-weight: 600; color: var(--o-accent-text); }
+/* the shared pages' eyebrows (Status, Legal): Apple's sentence-case category label, not tracked capitals (data-o="<Module> eyebrow":
+   production builds minify CSS-module class names) */
+.doc :global([data-o~="eyebrow"]) { font-size: var(--o-t-13); letter-spacing: 0; text-transform: none; font-weight: 600; color: var(--o-accent-text); }
 .doc :is(h1, h2) { font-weight: 600; letter-spacing: -0.03em; }
 @media (max-width: 640px), (prefers-reduced-motion: reduce) {
   .doc { animation: none; }

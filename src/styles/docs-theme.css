@@ -137,19 +137,20 @@
 
 /* ---- Docs layout on top of the shared kb styles (kb.module.css) ----
    The plain off-white canvas (no backdrop), the left menu as one 28px card with depth (no edge), the current page in a teal tint,
-   cards that lift on hover. The product surface tokens resolve to their light values here. */
-:root[data-docs="1"] main [class*="kb-module"][class*="__shell"] { background: transparent; }
-:root[data-docs="1"] main [class*="kb-module"][class*="__side"] {
+   cards that lift on hover. The product surface tokens resolve to their light values here.
+   kb hooks are data-o tokens (data-o="kb side"): production builds minify CSS-module class names. */
+:root[data-docs="1"] main [data-o~="kb"][data-o~="shell"] { background: transparent; }
+:root[data-docs="1"] main [data-o~="kb"]:is([data-o~="side"], [data-o~="sideTitle"]) {
   padding: 18px 12px;
   background: var(--surface-raised);
   border-radius: var(--r-card);
   box-shadow: var(--space-glass-depth);
 }
-:root[data-docs="1"] main [class*="kb-module"][class*="__sideTitle"] { padding: 0 12px; font-size: 17px; letter-spacing: -0.01em; }
-:root[data-docs="1"] main [class*="kb-module"][class*="__side"] a[aria-current="page"] { border-radius: 12px; font-weight: var(--w-semibold); }
-:root[data-docs="1"] main [class*="kb-module"][class*="__navLink"] { border-radius: 12px; }
-:root[data-docs="1"] main [class*="kb-module"][class*="__navLink"]:hover:not([aria-current="page"]) { background: var(--hover-wash); }
-:root[data-docs="1"] main [class*="kb-module"][class*="__searchInput"] { border-radius: var(--r-pill); padding-inline: 18px; }
+:root[data-docs="1"] main [data-o~="kb"][data-o~="sideTitle"] { padding: 0 12px; font-size: 17px; letter-spacing: -0.01em; }
+:root[data-docs="1"] main [data-o~="kb"]:is([data-o~="side"], [data-o~="sideTitle"]) a[aria-current="page"] { border-radius: 12px; font-weight: var(--w-semibold); }
+:root[data-docs="1"] main [data-o~="kb"][data-o~="navLink"] { border-radius: 12px; }
+:root[data-docs="1"] main [data-o~="kb"][data-o~="navLink"]:hover:not([aria-current="page"]) { background: var(--hover-wash); }
+:root[data-docs="1"] main [data-o~="kb"][data-o~="searchInput"] { border-radius: var(--r-pill); padding-inline: 18px; }
 :root[data-docs="1"] main a[class*="card"]:hover { box-shadow: var(--space-glass-lift); }
 :root[data-docs="1"] main [class*="callout"] { border-radius: var(--space-r-panel); color: var(--c-ink); }
 :root[data-docs="1"] main [class*="codeBlock"] { background: var(--surface-raised); border-radius: var(--space-r-panel); }

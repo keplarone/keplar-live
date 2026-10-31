@@ -14,7 +14,7 @@ export default async function Outbox() {
   return (
     <section className={s.page}>
       <div className={`${s.card} ${s.wide}`}>
-        <p className={s.eyebrow}>Dev tools</p>
+        <p className={s.eyebrow} data-o="account eyebrow">Dev tools</p>
         <h1 className={s.title}>Outbox</h1>
         <p className={s.lead}>Emails that would be sent by Resend. Newest first.</p>
         <div className={s.panel}>

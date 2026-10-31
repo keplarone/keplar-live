@@ -30,8 +30,8 @@ export default async function ShowcaseDetail({ params }: { params: Promise<{ slu
     <div className={s.page}>
       <header className={s.head}>
         <div>
-          <p className={s.kicker}><Link href="/showcase">Showcase</Link> / {it.kind} · {it.style} · {it.industry}</p>
-          <h1 className={s.title}>{it.title}</h1>
+          <p className={s.kicker} data-o="Showcase kicker"><Link href="/showcase">Showcase</Link> / {it.kind} · {it.style} · {it.industry}</p>
+          <h1 className={s.title} data-o="Showcase title">{it.title}</h1>
         </div>
         <div>
           <p className={s.lead}>{it.line}</p>

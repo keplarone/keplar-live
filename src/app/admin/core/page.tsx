@@ -53,7 +53,7 @@ export default async function AdminCorePage() {
   return (
     <div className={s.page}>
       <header className={s.head}>
-        <p className={s.eyebrow}>Admin · Keplar Core · last 30 days</p>
+        <p className={s.eyebrow} data-o="Admin eyebrow">Admin · Keplar Core · last 30 days</p>
         <h1>Core</h1>
         <p className={s.sub}>
           Keplar Core plans, checks and revises answers. It improves its own prompts, routing hints, retrieval and strategies from outcomes; it does <b>not</b> retrain the AI models.

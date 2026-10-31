@@ -8,13 +8,15 @@ import { currentTheme, onThemeChange, saveThemePref, type Theme } from "@/lib/th
  * preference (Auto stays available in Settings and the footer theme control) and follows changes made anywhere else.
  * The icon spins in when it swaps (kp-theme-icon, redesign.css) while the page crossfades (saveThemePref).
  */
-export function ThemeToggle({ className }: { className?: string }) {
+/** data-o: style hooks (stable data attribute; CSS-module class names are minified in production builds). */
+export function ThemeToggle({ className, "data-o": hook }: { className?: string; "data-o"?: string }) {
   const theme = useSyncExternalStore<Theme | null>((cb) => onThemeChange(() => cb()), currentTheme, () => null);
   const dark = theme === "dark";
   return (
     <button
       type="button"
       className={className}
+      data-o={hook}
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
       title={dark ? "Light mode" : "Dark mode"}
       onClick={() => saveThemePref(dark ? "light" : "dark")}

@@ -138,6 +138,7 @@ export function SearchDialog({ threads, onClose, onOpen, onNew, onView }: Props)
           <input
             ref={inputRef}
             className={s.searchInput}
+            data-o="SearchDialog searchInput"
             placeholder="Search chats, places and settings"
             aria-label="Search chats and Keplar"
             value={q}

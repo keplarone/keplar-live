@@ -14,11 +14,11 @@ const date = (iso: string) => new Date(iso + "T12:00:00Z").toLocaleDateString("e
 export default function BlogIndex() {
   const posts = allPosts();
   return (
-    <div className={s.shell}>
+    <div className={s.shell} data-o="kb shell">
       <div className={s.hubWrap}>
         <header>
           <p className={s.crumbs}>Blog</p>
-          <h1 className={s.h1}><TwoTone text={"The Keplar blog"} /></h1>
+          <h1 className={s.h1} data-o="kb h1"><TwoTone text={"The Keplar blog"} /></h1>
           <p className={s.lede}>Articles on the questions people actually ask about AI: which model to use, why answers differ, how to check them, what the trends mean. Each one ends with how Keplar handles the question, including where it falls short.</p>
           <div className={s.pills} style={{ marginTop: "var(--s-5)" }}>
             {blogCategories().map((c) => <span key={c} className={s.pill}>{c}</span>)}

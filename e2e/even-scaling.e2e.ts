@@ -119,7 +119,7 @@ test.describe("Ask home: the floating composer overlay never cuts the first row 
       await page.locator("[aria-label='What you can do'] li").first().waitFor();
       await page.waitForTimeout(400);
       const r = await page.evaluate(() => {
-        const dock = document.querySelector("[class*='__dock']:not([class*='dockNote'])")!;
+        const dock = document.querySelector("[data-o~='App'][data-o~='dock']")!;
         const tiles = [...document.querySelectorAll("[aria-label='What you can do'] li")].map((li) => li.getBoundingClientRect());
         const top = tiles[0].top;
         const de = document.documentElement;

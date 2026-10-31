@@ -13,11 +13,11 @@ const date = (iso: string) => new Date(iso + "T12:00:00Z").toLocaleDateString("e
 export default function VsHub() {
   const list = approvedVs();
   return (
-    <div className={s.shell}>
+    <div className={s.shell} data-o="kb shell">
       <div className={s.hubWrap}>
         <header>
           <p className={s.crumbs}>Compare</p>
-          <h1 className={s.h1}><TwoTone text={"Keplar compared with other assistants"} /></h1>
+          <h1 className={s.h1} data-o="kb h1"><TwoTone text={"Keplar compared with other assistants"} /></h1>
           <p className={s.lede}>These pages are written by Keplar, which makes us an interested party. We keep them factual: competitor details come from their own public pages with the date we read them, we make no claims about accuracy, safety or privacy being better, and each page says when the other product is the better choice.</p>
         </header>
         <div className={s.cards}>

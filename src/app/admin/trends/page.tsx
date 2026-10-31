@@ -17,7 +17,7 @@ export default async function AdminTrendsPage() {
   return (
     <div className={s.page}>
       <header className={s.head}>
-        <p className={s.eyebrow}>Admin · SEO · trend tracker</p>
+        <p className={s.eyebrow} data-o="Admin eyebrow">Admin · SEO · trend tracker</p>
         <h1>Trend pages</h1>
         <p className={s.sub}>
           Once a day the tracker reads Google Trends (public feeds), keeps only AI-related queries that pass the safety filter, matches them to a term in the Keplar glossary, builds a short grounded page and runs the quality gates. Only pages that pass are eligible. Auto-publish is <b>{settings.autoPublish ? "ON" : "OFF"}</b>; the tracker is <b>{settings.paused ? "PAUSED (kill switch)" : "running"}</b>. Pages: {count("published")} published, {count("held")} waiting for approval, {count("rejected")} rejected, {count("rolled_back")} rolled back. Public index: <Link href="/topics">/topics</Link>.

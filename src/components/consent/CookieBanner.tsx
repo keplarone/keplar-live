@@ -81,7 +81,7 @@ export function CookieBanner() {
   const onChat = path === "/" || path.startsWith("/app");
   const placement = onChat ? "bar" : path.startsWith("/welcome") ? "side" : "bottom";
   return (
-    <div ref={region} className={s.banner} data-cookie-banner="" data-placement={placement} {...banner.motion("toast")} role="region" aria-labelledby="cookie-title" lang={info?.code ?? "en"} dir={info?.dir ?? "ltr"} onKeyDown={(e) => { if (e.key === "Escape" && wasOpenedByUser.current) setOpen(false); }}>
+    <div ref={region} className={s.banner} data-o="CookieBanner banner" data-cookie-banner="" data-placement={placement} {...banner.motion("toast")} role="region" aria-labelledby="cookie-title" lang={info?.code ?? "en"} dir={info?.dir ?? "ltr"} onKeyDown={(e) => { if (e.key === "Escape" && wasOpenedByUser.current) setOpen(false); }}>
       <h2 id="cookie-title" className={s.title}>{t.title}</h2>
       <p className={s.text}>
         {t.text}{" "}

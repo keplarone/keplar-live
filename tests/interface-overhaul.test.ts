@@ -53,7 +53,7 @@ test("no backdrop art, corner glow or animated gradient text in the app", () => 
 test("no class-name button rule anywhere: every component draws its own buttons from the tokens (UI v2)", () => {
   const r = strip(read("src/styles/redesign.css"));
   assert.doesNotMatch(r, /\[class\*="btn" i\]|--button-shadow|\[class\*="__card"\][^{]*:hover/);
-  assert.match(read("src/components/app-ui/KeplarApp.tsx"), /className=\{s\.app\} data-product=""/);
+  assert.match(read("src/components/app-ui/KeplarApp.tsx"), /className=\{s\.app\} data-o="App app" data-product=""/);
   assert.match(read("src/components/account/SettingsDialog.tsx"), /className=\{s\.dlg\} data-product=""/);
 });
 

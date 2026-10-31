@@ -79,7 +79,7 @@ export default async function CommandCenterPage() {
   return (
     <div className={s.page}>
       <header className={s.head}>
-        <p className={s.eyebrow}>Admin · Command Center · {when(now.toISOString())}</p>
+        <p className={s.eyebrow} data-o="Admin eyebrow">Admin · Command Center · {when(now.toISOString())}</p>
         <h1>Keplar Command Center</h1>
         <p className={s.sub}>
           Measured data only. Every number names its source; anything not measured says &ldquo;{NA}&rdquo;. Usage counts are consenting browsers only (a floor). Revenue is recorded billing state at the price Whop bills, not accounting data. Jobs run from Vercel Cron daily (weekly jobs on Mondays, monthly on the 1st); see Automation below.

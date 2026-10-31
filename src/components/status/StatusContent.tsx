@@ -31,7 +31,7 @@ export async function StatusContent() {
   const worst = lines.some((l) => l.state === "down") ? "down" : lines.some((l) => l.state === "degraded") ? "degraded" : "ok";
   return (
     <div className={s.page}>
-      <p className={s.eyebrow}>Status</p>
+      <p className={s.eyebrow} data-o="Status eyebrow">Status</p>
       <h1 className={s.title}>{worst === "ok" ? "Keplar is running normally." : worst === "degraded" ? "Keplar is running with a delay in one area." : "Keplar has a problem right now."}</h1>
       <p className={s.lede}>These are live checks made when you opened this page, not a recorded history. If something looks wrong, tell us at <a href={`mailto:${brand.contactEmail}`}>{brand.contactEmail}</a>.</p>
       <ul className={s.list}>

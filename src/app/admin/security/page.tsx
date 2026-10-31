@@ -64,7 +64,7 @@ export default async function AdminSecurityPage({ searchParams }: { searchParams
   return (
     <div className={s.page}>
       <header className={s.head}>
-        <p className={s.eyebrow}>Admin · security · last 7 days · real rows only</p>
+        <p className={s.eyebrow} data-o="Admin eyebrow">Admin · security · last 7 days · real rows only</p>
         <h1>Security events</h1>
         <p className={s.sub}>
           Every refused call, tripped limiter, wrong code, secret opened, billing change and agent action, as the code recorded it (<code>src/lib/security/events.ts</code>).

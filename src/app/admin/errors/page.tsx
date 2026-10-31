@@ -18,7 +18,7 @@ export default async function AdminErrorsPage() {
   return (
     <div className={s.page}>
       <header className={s.head}>
-        <p className={s.eyebrow}>Admin · errors · last 30 days</p>
+        <p className={s.eyebrow} data-o="Admin eyebrow">Admin · errors · last 30 days</p>
         <h1>Errors</h1>
         <p className={s.sub}>Grouped by fingerprint; the sample id finds the log line in Vercel (every log line carries the request id). Also forwarded to Sentry: <b>{sentryConfigured() ? "yes (SENTRY_DSN is set; untested against a real project)" : "no (SENTRY_DSN not set)"}</b>. <Link href="/admin">Operations</Link></p>
       </header>

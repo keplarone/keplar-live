@@ -33,11 +33,11 @@ export default async function BlogPost({ params }: Props) {
   const faq = faqPairs(p.nodes);
   const more = p.related.map((path) => allPosts().find((x) => x.path === path) ?? allDocs().find((x) => x.path === path)).filter(Boolean) as { path: string; title: string; description: string }[];
   return (
-    <div className={s.shell}>
+    <div className={s.shell} data-o="kb shell">
       <div className={`${s.grid} ${s.grid2} ${s.gridPost}`}>
         <div>
           <Breadcrumbs trail={[{ name: "Blog", path: "/blogs" }, { name: p.title, path: p.path }]} />
-          <h1 className={s.h1}>{p.title}</h1>
+          <h1 className={s.h1} data-o="kb h1">{p.title}</h1>
           <p className={s.lede}>{p.description}</p>
           <p className={s.meta}>
             <span>{`By ${CREATOR_CREDIT}`}</span>
