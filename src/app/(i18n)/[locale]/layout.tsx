@@ -30,7 +30,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
       <AmbientRuntime />
       <PageChrome />
       <Nav />
-      <main id="main" data-site="" style={{ position: "relative", zIndex: 0 }}>
+      <main id="main" data-site="" style={{ position: "relative", zIndex: 0, isolation: "isolate", overflowX: "clip" }}>
         {children}
       </main>
       <Footer locale={locale} />

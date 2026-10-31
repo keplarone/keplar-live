@@ -58,16 +58,12 @@
 .btnPrimary, .btnPrimarySm { background: var(--o-accent); color: var(--o-accent-ink); box-shadow: var(--kb-p-depth); }
 .btnGhost, .btnGhostSm, .btnDarkSm { background: var(--o-surface-1); color: var(--o-ink); box-shadow: var(--o-elev-1); }
 .btnDarkSm { background: transparent; box-shadow: none; color: var(--o-ink-2); }
-/* §5.8 primary only: a slow accent glow under the face that brightens under the pointer (opacity only) */
-.btnPrimary::before, .btnPrimarySm::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; box-shadow: 0 6px 22px -6px var(--o-glow); opacity: 0.35; transition: opacity 600ms var(--o-ease-out); pointer-events: none; }
 @media (hover: hover) {
   .btnPrimary:hover:not(:disabled), .btnPrimarySm:hover:not(:disabled) { background: var(--o-accent-hover); }
-  .btnPrimary:hover::before, .btnPrimarySm:hover::before { opacity: 1; }
   .btnGhost:hover:not(:disabled, [aria-current="true"]), .btnGhostSm:hover:not(:disabled) { background: var(--o-surface-2); }
   .btnDarkSm:hover { background: var(--o-hover); color: var(--o-ink); }
 }
 .btnPrimary:disabled, .btnGhost:disabled, .btnPrimarySm:disabled, .btnGhostSm:disabled { opacity: 0.45; cursor: not-allowed; }
-.btnPrimary:disabled::before { opacity: 0; }
 .btnGhost[aria-current="true"] { cursor: default; color: var(--o-ink-2); background: var(--o-surface-2); box-shadow: 0 0 0 1px var(--o-line-strong); }
 .btnMeta { font-size: var(--o-t-12); font-weight: var(--o-w-medium); opacity: 0.7; }
 .textLink { display: inline-flex; align-items: center; gap: 6px; color: var(--o-accent-text); text-decoration: none; text-decoration-thickness: 1px; text-underline-offset: 3px; transition: color var(--o-dur-1) var(--o-ease-out); }

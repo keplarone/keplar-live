@@ -109,7 +109,7 @@ main[data-business-app],
   --kb-p-face: var(--o-accent);
   --kb-p-ink: var(--o-accent-ink);
   --kb-p-depth: 0 1px 2px rgb(0 0 0 / 0.12), inset 0 1px 0 rgb(255 255 255 / 0.14);
-  --kb-p-depth-hover: 0 6px 22px -6px var(--o-glow);
+  --kb-p-depth-hover: 0 1px 2px rgb(0 0 0 / 0.12), inset 0 1px 0 rgb(255 255 255 / 0.14);
   --kb-p-depth-press: none;
   --kb-p-ledge: transparent;
   --kb-p-hover: var(--o-accent-hover);

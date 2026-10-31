@@ -3,21 +3,21 @@
  * Replaces the Gemini-led layer (gemini.css) and keeps every behaviour it carried: the one-row composer for short text (and the
  * stacked layout for long text, data-multiline), the attach + to ×, the rotating placeholder fade, the edit-on-hover under your
  * own message, 44px touch targets, the one-column Modes list, the centred empty-state composer.
- * Hooks are the readable CSS-module names Next emits ("App-module__hash__sideWrap"), as the previous layers used.
+ * Hooks match both class-name shapes Next emits: Turbopack "App-module__hash__sideWrap" and webpack "App_sideWrap__hash".
  * Specificity: html[data-theme] + module class + attribute, so it beats the modules' own :root[data-theme] .x rules without !important
  * where it can; !important only where a module or an older layer already used it.
  */
 
 /* ───────────── Grid: rail · drawer · canvas ───────────── */
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][data-product] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is([class*="App-module"], [class*="App_app__"])[data-product] {
   grid-template-columns: var(--o-rail-w) var(--o-drawer-w) minmax(0, 1fr) !important;
   grid-template-rows: minmax(0, 1fr);
   background: var(--o-canvas);
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][data-product][data-collapsed] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is([class*="App-module"], [class*="App_app__"])[data-product][data-collapsed] {
   grid-template-columns: var(--o-rail-w) 0 minmax(0, 1fr) !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] [class*="App-module"]:is([class$="__sideWrap"], [class*="__sideWrap "]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] :is([class*="App-module"]:is([class$="__sideWrap"], [class*="__sideWrap "]), [class*="App_sideWrap__"]) {
   grid-column: 2;
   grid-row: 1;
   min-width: 0;
@@ -26,30 +26,30 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] [class*=
   background: var(--o-surface-1) !important;
   border-inline-end: 1px solid var(--o-line) !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] [class*="App-module"]:is([class$="__main"], [class*="__main "]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] :is([class*="App-module"]:is([class$="__main"], [class*="__main "]), [class*="App_main__"]) {
   grid-column: 3;
   grid-row: 1;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product][data-collapsed] [class*="App-module"]:is([class$="__sideWrap"], [class*="__sideWrap "]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product][data-collapsed] :is([class*="App-module"]:is([class$="__sideWrap"], [class*="__sideWrap "]), [class*="App_sideWrap__"]) {
   visibility: hidden;
   border-inline-end-width: 0 !important;
 }
 @media (prefers-reduced-motion: no-preference) {
-  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][data-product] {
+  html:not(:has([data-space-root], [data-kb])) :is([class*="App-module"], [class*="App_app__"])[data-product] {
     transition: grid-template-columns var(--o-dur-3) var(--o-ease-out);
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product][data-collapsed] [class*="App-module"]:is([class$="__sideWrap"], [class*="__sideWrap "]) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product][data-collapsed] :is([class*="App-module"]:is([class$="__sideWrap"], [class*="__sideWrap "]), [class*="App_sideWrap__"]) {
     transition: visibility 0s linear var(--o-dur-3);
   }
 }
 
 /* Tablets (900–1199px): the rail stays, the drawer opens over the canvas (it does not squeeze the conversation). */
 @media (min-width: 900px) and (max-width: 1199px) {
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][data-product],
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][data-product][data-collapsed] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] :is([class*="App-module"], [class*="App_app__"])[data-product],
+  html:not(:has([data-space-root], [data-kb]))[data-theme] :is([class*="App-module"], [class*="App_app__"])[data-product][data-collapsed] {
     grid-template-columns: var(--o-rail-w) 0 minmax(0, 1fr) !important;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] [class*="App-module"]:is([class$="__sideWrap"], [class*="__sideWrap "]) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] :is([class*="App-module"]:is([class$="__sideWrap"], [class*="__sideWrap "]), [class*="App_sideWrap__"]) {
     position: fixed;
     inset: 0 auto 0 var(--o-rail-w);
     z-index: 8;
@@ -60,13 +60,13 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product][data-col
     box-shadow: var(--o-elev-3);
     transition: translate var(--o-dur-3) var(--o-ease-out), opacity var(--o-dur-2) var(--o-ease-out), visibility 0s linear var(--o-dur-3);
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] [class*="App-module"]:is([class$="__sideWrap"], [class*="__sideWrap "])[data-open] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] :is([class*="App-module"]:is([class$="__sideWrap"], [class*="__sideWrap "]), [class*="App_sideWrap__"])[data-open] {
     visibility: visible;
     translate: 0 0;
     opacity: 1;
     transition: translate var(--o-dur-3) var(--o-ease-out), opacity var(--o-dur-2) var(--o-ease-out), visibility 0s;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] [class*="App-module"]:is([class$="__drawerScrim"], [class*="__drawerScrim "]) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] :is([class*="App-module"]:is([class$="__drawerScrim"], [class*="__drawerScrim "]), [class*="App_drawerScrim__"]) {
     display: block;
     position: fixed;
     inset: 0 0 0 var(--o-rail-w);
@@ -77,15 +77,15 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product][data-col
 
 /* Phones (< 900px): the rail is the bottom bar (row 2); the drawer is a left sheet over everything. */
 @media (max-width: 899px) {
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][data-product],
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][data-product][data-collapsed] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] :is([class*="App-module"], [class*="App_app__"])[data-product],
+  html:not(:has([data-space-root], [data-kb]))[data-theme] :is([class*="App-module"], [class*="App_app__"])[data-product][data-collapsed] {
     grid-template-columns: minmax(0, 1fr) !important;
     grid-template-rows: minmax(0, 1fr) auto;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] [class*="App-module"]:is([class$="__main"], [class*="__main "]) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] :is([class*="App-module"]:is([class$="__main"], [class*="__main "]), [class*="App_main__"]) {
     grid-column: 1;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] [class*="App-module"]:is([class$="__sideWrap"], [class*="__sideWrap "]) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] :is([class*="App-module"]:is([class$="__sideWrap"], [class*="__sideWrap "]), [class*="App_sideWrap__"]) {
     grid-column: auto;
     width: min(320px, 86vw);
     border-radius: 0 var(--o-r-panel) var(--o-r-panel) 0;
@@ -115,26 +115,26 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar {
     border-radius: 0 var(--o-r-panel) var(--o-r-panel) 0 !important;
   }
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [class*="__sideItem"],
-html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [class*="Recents-module"]:is([class*="__threadLink"], [class*="__toggle"], [class*="__recentAll"]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar :is([class*="__sideItem"], [class*="_sideItem__"]),
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar :is([class*="Recents-module"], [class*="Recents_"]):is(:is([class*="__threadLink"], [class*="_threadLink__"]), :is([class*="__toggle"], [class*="_toggle__"]), :is([class*="__recentAll"], [class*="_recentAll__"])) {
   min-height: 34px;
   border-radius: var(--o-r-control) !important;
   font-weight: var(--o-w-regular);
   color: var(--o-ink-2);
   transition: background-color var(--o-dur-2) var(--o-ease-out), color var(--o-dur-2) var(--o-ease-out), translate var(--o-dur-3) var(--o-ease-spring);
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [class*="__sideItem"]:hover,
-html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [class*="Recents-module"]:is([class*="__threadLink"], [class*="__toggle"], [class*="__recentAll"]):hover {
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar :is([class*="__sideItem"], [class*="_sideItem__"]):hover,
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar :is([class*="Recents-module"], [class*="Recents_"]):is(:is([class*="__threadLink"], [class*="_threadLink__"]), :is([class*="__toggle"], [class*="_toggle__"]), :is([class*="__recentAll"], [class*="_recentAll__"])):hover {
   background: var(--o-hover) !important;
   color: var(--o-ink);
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar :is([class*="__sideItem"], [class*="__threadLink"])[aria-current="page"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar :is(:is([class*="__sideItem"], [class*="_sideItem__"]), :is([class*="__threadLink"], [class*="_threadLink__"]))[aria-current="page"] {
   background: var(--o-selected) !important;
   color: var(--o-ink) !important;
   font-weight: var(--o-w-medium) !important;
   box-shadow: none !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [class*="__sideItem"][data-nav="new"] > svg:first-child {
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar :is([class*="__sideItem"], [class*="_sideItem__"])[data-nav="new"] > svg:first-child {
   background: var(--o-accent) !important;
   color: var(--o-accent-ink) !important;
   border-radius: 6px !important;
@@ -144,17 +144,17 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [data-s
   padding-top: 8px;
   border-top: 1px solid var(--o-line);
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [data-side-links] [class*="__sideItem"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [data-side-links] :is([class*="__sideItem"], [class*="_sideItem__"]) {
   font-size: var(--o-t-13);
   color: var(--o-ink-3);
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [class*="__signedOutRow"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar :is([class*="__signedOutRow"], [class*="_signedOutRow__"]) {
   display: flex !important;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [class*="__signedOutRow"] > [class*="__signInCta"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar :is([class*="__signedOutRow"], [class*="_signedOutRow__"]) > :is([class*="__signInCta"], [class*="_signInCta__"]) {
   width: auto !important;
   flex: 0 0 auto;
   height: 36px;
@@ -163,7 +163,7 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [class*
   background: var(--o-accent) !important;
   color: var(--o-accent-ink) !important;
 }
-html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [class*="__meterLink"] {
+html:not(:has([data-space-root], [data-kb])) #keplar-sidebar :is([class*="__meterLink"], [class*="_meterLink__"]) {
   display: inline-block;
   padding-block: 10px;
   margin-block: -10px;
@@ -171,32 +171,32 @@ html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [class*="__meterLin
 /* Wide screens: the rail carries New chat, Search, the drawer toggle, theme, Settings and Sign in, so the drawer drops its
  * copies of them (display: none takes them out of the accessibility tree too: no two controls with one name). Phones keep them. */
 @media (min-width: 900px) {
-  html:not(:has([data-space-root], [data-kb])) [data-product] #keplar-sidebar :is([data-primary-nav], [class*="__collapseBtn"], [class*="__signedOutRow"]),
-  html:not(:has([data-space-root], [data-kb])) [data-product] #keplar-sidebar [class*="__accountRow"] > a[data-nav="settings"],
-  html:not(:has([data-space-root], [data-kb])) [data-product] #keplar-sidebar [class*="__accountRow"] > span:has(> a[data-nav="settings"]) {
+  html:not(:has([data-space-root], [data-kb])) [data-product] #keplar-sidebar :is([data-primary-nav], :is([class*="__collapseBtn"], [class*="_collapseBtn__"]), :is([class*="__signedOutRow"], [class*="_signedOutRow__"])),
+  html:not(:has([data-space-root], [data-kb])) [data-product] #keplar-sidebar :is([class*="__accountRow"], [class*="_accountRow__"]) > a[data-nav="settings"],
+  html:not(:has([data-space-root], [data-kb])) [data-product] #keplar-sidebar :is([class*="__accountRow"], [class*="_accountRow__"]) > span:has(> a[data-nav="settings"]) {
     display: none !important;
   }
   /* The rail carries the Keplar mark (home link); the drawer's header keeps only its close button (tablet overlay). */
-  html:not(:has([data-space-root], [data-kb])) [data-product] #keplar-sidebar [class*="__sideBrand"] {
+  html:not(:has([data-space-root], [data-kb])) [data-product] #keplar-sidebar :is([class*="__sideBrand"], [class*="_sideBrand__"]) {
     display: none !important;
   }
-  html:not(:has([data-space-root], [data-kb])) [data-product] #keplar-sidebar [class*="__sideTop"]:not(:has(button:not([class*="__collapseBtn"]))) {
+  html:not(:has([data-space-root], [data-kb])) [data-product] #keplar-sidebar :is([class*="__sideTop"], [class*="_sideTop__"]):not(:has(button:not(:is([class*="__collapseBtn"], [class*="_collapseBtn__"])))) {
     display: none !important;
   }
   /* The rail holds the theme toggle and the logo; the top bar's copies step aside. */
-  html:not(:has([data-space-root], [data-kb])) [data-product] [class*="App-module"][class*="__topbar"] > .kp-topbar-theme {
+  html:not(:has([data-space-root], [data-kb])) [data-product] :is(:is([class*="App-module"], [class*="App_"]):is([class*="__topbar"], [class*="_topbar__"]), [class*="App_topbar__"]) > .kp-topbar-theme {
     display: none !important;
   }
 }
 @media (pointer: coarse) {
-  html:not(:has([data-space-root], [data-kb])) #keplar-sidebar :is(button[class*="__glyphAct"], button[class*="__trigger"]) {
+  html:not(:has([data-space-root], [data-kb])) #keplar-sidebar :is(button:is([class*="__glyphAct"], [class*="_glyphAct__"]), button:is([class*="__trigger"], [class*="_trigger__"])) {
     min-width: 44px;
     min-height: 44px;
   }
 }
 
 /* ───────────── Top strip ───────────── */
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][class*="__topbar"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="App-module"], [class*="App_"]):is([class*="__topbar"], [class*="_topbar__"]), [class*="App_topbar__"]) {
   height: var(--o-topbar-h) !important;
   padding: 0 16px !important;
   align-items: center !important;
@@ -205,7 +205,7 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][c
   box-shadow: none !important;
   background: transparent !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][class*="__topbar"] [class*="__topTitle"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="App-module"], [class*="App_"]):is([class*="__topbar"], [class*="_topbar__"]), [class*="App_topbar__"]) :is([class*="__topTitle"], [class*="_topTitle__"]) {
   flex: 1 1 auto !important;
   max-width: none !important;
   margin: 0 !important;
@@ -219,7 +219,7 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][c
   color: var(--o-ink) !important;
   text-align: start !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][class*="__topbar"] :is([class*="__iconBtn"], [class*="__memoryChip"]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="App-module"], [class*="App_"]):is([class*="__topbar"], [class*="_topbar__"]), [class*="App_topbar__"]) :is(:is([class*="__iconBtn"], [class*="_iconBtn__"]), :is([class*="__memoryChip"], [class*="_memoryChip__"])) {
   width: 36px !important;
   height: 36px !important;
   border-radius: var(--o-r-control) !important;
@@ -227,11 +227,11 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][c
   box-shadow: none !important;
   color: var(--o-ink-2);
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][class*="__topbar"] :is([class*="__iconBtn"], [class*="__memoryChip"]):hover {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="App-module"], [class*="App_"]):is([class*="__topbar"], [class*="_topbar__"]), [class*="App_topbar__"]) :is(:is([class*="__iconBtn"], [class*="_iconBtn__"]), :is([class*="__memoryChip"], [class*="_memoryChip__"])):hover {
   background: var(--o-hover) !important;
   color: var(--o-ink);
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] a[class*="__authUp"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] a:is([class*="__authUp"], [class*="_authUp__"]) {
   height: 34px;
   padding: 0 14px;
   border-radius: var(--o-r-control) !important;
@@ -239,20 +239,20 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] a[class*="__authUp"] {
   color: var(--o-accent-ink) !important;
   font-weight: var(--o-w-medium);
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] a[class*="__authUp"]:hover {
+html:not(:has([data-space-root], [data-kb]))[data-theme] a:is([class*="__authUp"], [class*="_authUp__"]):hover {
   background: var(--o-accent-hover) !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] a[class*="__authIn"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] a:is([class*="__authIn"], [class*="_authIn__"]) {
   height: 34px;
   padding: 0 12px;
   border-radius: var(--o-r-control) !important;
   color: var(--o-ink);
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] a[class*="__authIn"]:hover {
+html:not(:has([data-space-root], [data-kb]))[data-theme] a:is([class*="__authIn"], [class*="_authIn__"]):hover {
   background: var(--o-hover) !important;
 }
 @media (pointer: coarse) {
-  html:not(:has([data-space-root], [data-kb]))[data-theme] :is(a[class*="__authUp"], a[class*="__authIn"]) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] :is(a:is([class*="__authUp"], [class*="_authUp__"]), a:is([class*="__authIn"], [class*="_authIn__"])) {
     height: 44px;
   }
   html:not(:has([data-space-root], [data-kb])) [data-explore] a {
@@ -262,11 +262,11 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] a[class*="__authIn"]:ho
   }
 }
 /* Thread header (ThreadBar): Share and ⋯ as quiet controls. */
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="ThreadBar-module"][class*="__bar"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="ThreadBar-module"], [class*="ThreadBar_"]):is([class*="__bar"], [class*="_bar__"]), [class*="ThreadBar_bar__"]) {
   align-items: center;
   gap: 4px;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="ThreadBar-module"][class*="__bar"] > button[data-share-chat-open] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="ThreadBar-module"], [class*="ThreadBar_"]):is([class*="__bar"], [class*="_bar__"]), [class*="ThreadBar_bar__"]) > button[data-share-chat-open] {
   height: 32px;
   padding-inline: 12px;
   border-radius: var(--o-r-control);
@@ -275,25 +275,25 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="ThreadBar-modu
   font-size: var(--o-t-13);
   font-weight: var(--o-w-medium);
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="ThreadBar-module"][class*="__bar"] > button[data-share-chat-open]:hover {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="ThreadBar-module"], [class*="ThreadBar_"]):is([class*="__bar"], [class*="_bar__"]), [class*="ThreadBar_bar__"]) > button[data-share-chat-open]:hover {
   background: var(--o-surface-3);
 }
 
 /* ───────────── Canvas: centred column, empty state, dock ───────────── */
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"]:is([class$="__thread"], [class*="__thread "]),
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][class*="__dock"] > *,
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][class*="__empty"][class*="__empty"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="App-module"], [class*="App_"]):is(:is([class$="__thread"], [class*="_thread__"]), :is([class*="__thread "], [class*="_thread__"])), [class*="App_thread__"]),
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="App-module"], [class*="App_"]):is([class*="__dock"], [class*="_dock__"]), [class*="App_dock__"]) > *,
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="App-module"], [class*="App_"]):is([class*="__empty"], [class*="_empty__"]), [class*="App_empty__"]):is([class*="__empty"], [class*="_empty__"]) {
   max-width: var(--o-canvas-max);
 }
 /* Settings → Appearance → Chat width keeps working. */
-html[data-pref-chat-width="wide"]:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"]:is([class$="__thread"], [class*="__thread "]) { max-width: min(1080px, 100%); }
-html[data-pref-chat-width="full"]:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"]:is([class$="__thread"], [class*="__thread "]) { max-width: 100%; }
+html[data-pref-chat-width="wide"]:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="App-module"], [class*="App_"]):is(:is([class$="__thread"], [class*="_thread__"]), :is([class*="__thread "], [class*="_thread__"])), [class*="App_thread__"]) { max-width: min(1080px, 100%); }
+html[data-pref-chat-width="full"]:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="App-module"], [class*="App_"]):is(:is([class$="__thread"], [class*="_thread__"]), :is([class*="__thread "], [class*="_thread__"])), [class*="App_thread__"]) { max-width: 100%; }
 /* Docked composer: a soft fade above it, not a slab. */
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"]:not([data-empty]) > * [class*="App-module"][class*="__dock"],
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"]:not([data-empty]) [class*="App-module"][class*="__dock"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is([class*="App-module"], [class*="App_"]):not([data-empty]) > * :is(:is([class*="App-module"], [class*="App_"]):is([class*="__dock"], [class*="_dock__"]), [class*="App_dock__"]),
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is([class*="App-module"], [class*="App_"]):not([data-empty]) :is(:is([class*="App-module"], [class*="App_"]):is([class*="__dock"], [class*="_dock__"]), [class*="App_dock__"]) {
   background: linear-gradient(to top, var(--o-canvas) 62%, rgb(var(--o-canvas-rgb) / 0)) !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][class*="__dockNote"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="App-module"], [class*="App_"]):is([class*="__dockNote"], [class*="_dockNote__"]), [class*="App_dockNote__"]) {
   font-size: var(--o-t-12);
   color: var(--o-ink-3);
 }
@@ -316,7 +316,7 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] [data-mo
   color: inherit !important;
   -webkit-text-fill-color: currentColor !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] [class*="__welcomeName"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] :is([class*="__welcomeName"], [class*="_welcomeName__"]) {
   color: var(--o-accent-text) !important;
 }
 @media (forced-colors: active) {
@@ -326,7 +326,7 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] [class*=
     -webkit-text-fill-color: CanvasText;
   }
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] button[class*="__homeChip"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] button:is([class*="__homeChip"], [class*="_homeChip__"]) {
   min-height: 34px;
   padding: 0 14px !important;
   border: 1px solid var(--o-line) !important;
@@ -336,22 +336,22 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] button[class*="__homeCh
   color: var(--o-ink-2) !important;
   font-size: var(--o-t-13) !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] button[class*="__homeChip"]:hover {
+html:not(:has([data-space-root], [data-kb]))[data-theme] button:is([class*="__homeChip"], [class*="_homeChip__"]):hover {
   border-color: var(--o-line-strong) !important;
   background: var(--o-surface-2) !important;
   color: var(--o-ink) !important;
 }
 @media (pointer: coarse) {
-  html:not(:has([data-space-root], [data-kb]))[data-theme] button[class*="__homeChip"] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] button:is([class*="__homeChip"], [class*="_homeChip__"]) {
     min-height: 44px;
   }
 }
 /* Phone home: lift the greeting + composer + starters to just above the middle of the screen. */
 @media (max-width: 899px) {
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][data-empty] [class*="App-module"]:is([class$="__scroll"], [class*="__scroll "]) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] :is([class*="App-module"], [class*="App_"])[data-empty] :is(:is([class*="App-module"], [class*="App_"]):is(:is([class$="__scroll"], [class*="_scroll__"]), :is([class*="__scroll "], [class*="_scroll__"])), [class*="App_scroll__"]) {
     padding-top: max(56px, calc(46svh - 220px)) !important;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][data-empty] [class*="App-module"]:is([class$="__dock"], [class*="__dock "]) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] :is([class*="App-module"], [class*="App_"])[data-empty] :is(:is([class*="App-module"], [class*="App_"]):is(:is([class$="__dock"], [class*="_dock__"]), :is([class*="__dock "], [class*="_dock__"])), [class*="App_dock__"]) {
     top: calc(max(56px, calc(46svh - 220px)) + 78px) !important;
   }
 }
@@ -359,13 +359,13 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] button[class*="__homeCh
   html:not(:has([data-space-root], [data-kb])) [data-welcome]:not([style*="hidden"]) {
     animation: o-rise 420ms var(--o-ease-out) both;
   }
-  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][class*="__homeChips"] > li {
+  html:not(:has([data-space-root], [data-kb])) :is(:is([class*="App-module"], [class*="App_"]):is([class*="__homeChips"], [class*="_homeChips__"]), [class*="App_homeChips__"]) > li {
     animation: o-rise-sm 420ms var(--o-ease-out) both;
   }
-  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][class*="__homeChips"] > li:nth-child(1) { animation-delay: 120ms; }
-  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][class*="__homeChips"] > li:nth-child(2) { animation-delay: 150ms; }
-  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][class*="__homeChips"] > li:nth-child(3) { animation-delay: 180ms; }
-  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][class*="__homeChips"] > li:nth-child(n + 4) { animation-delay: 210ms; }
+  html:not(:has([data-space-root], [data-kb])) :is(:is([class*="App-module"], [class*="App_"]):is([class*="__homeChips"], [class*="_homeChips__"]), [class*="App_homeChips__"]) > li:nth-child(1) { animation-delay: 120ms; }
+  html:not(:has([data-space-root], [data-kb])) :is(:is([class*="App-module"], [class*="App_"]):is([class*="__homeChips"], [class*="_homeChips__"]), [class*="App_homeChips__"]) > li:nth-child(2) { animation-delay: 150ms; }
+  html:not(:has([data-space-root], [data-kb])) :is(:is([class*="App-module"], [class*="App_"]):is([class*="__homeChips"], [class*="_homeChips__"]), [class*="App_homeChips__"]) > li:nth-child(3) { animation-delay: 180ms; }
+  html:not(:has([data-space-root], [data-kb])) :is(:is([class*="App-module"], [class*="App_"]):is([class*="__homeChips"], [class*="_homeChips__"]), [class*="App_homeChips__"]) > li:nth-child(n + 4) { animation-delay: 210ms; }
 }
 @keyframes o-rise { from { opacity: 0; translate: 0 12px; } }
 @keyframes o-rise-sm { from { opacity: 0; translate: 0 8px; } }
@@ -398,7 +398,7 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] button[data-context-ope
   background: var(--o-good);
 }
 @media (max-width: 520px) {
-  html:not(:has([data-space-root], [data-kb]))[data-theme] button[data-context-open] [class*="__ctxText"] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] button[data-context-open] :is([class*="__ctxText"], [class*="_ctxText__"]) {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -413,8 +413,8 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] button[data-context-ope
 }
 
 /* ───────────── Conversation ───────────── */
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"]:is([class$="__userMsg"], [class*="__userMsg "]),
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="KeplarTurn-module"]:is([class$="__userMsg"], [class*="__userMsg "]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="App-module"], [class*="App_"]):is(:is([class$="__userMsg"], [class*="_userMsg__"]), :is([class*="__userMsg "], [class*="_userMsg__"])), [class*="App_userMsg__"]),
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="KeplarTurn-module"], [class*="KeplarTurn_"]):is(:is([class$="__userMsg"], [class*="_userMsg__"]), :is([class*="__userMsg "], [class*="_userMsg__"])), [class*="KeplarTurn_userMsg__"]) {
   padding: 10px 16px !important;
   background: var(--o-surface-2) !important;
   border: 0 !important;
@@ -423,18 +423,18 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="KeplarTurn-mod
   font-weight: var(--o-w-regular) !important;
   color: var(--o-ink) !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="KeplarTurn-module"]:is([class$="__answer"], [class*="__answer "]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="KeplarTurn-module"], [class*="KeplarTurn_"]):is(:is([class$="__answer"], [class*="_answer__"]), :is([class*="__answer "], [class*="_answer__"])), [class*="KeplarTurn_answer__"]) {
   background: transparent !important;
   box-shadow: none !important;
   border: 0 !important;
   border-radius: 0 !important;
   padding-inline: 0 !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="KeplarTurn-module"]:is([class$="__answer"], [class*="__answer "]) [class*="Markdown-module"]:is([class$="__md"], [class*="__md "]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="KeplarTurn-module"], [class*="KeplarTurn_"]):is(:is([class$="__answer"], [class*="_answer__"]), :is([class*="__answer "], [class*="_answer__"])), [class*="KeplarTurn_answer__"]) :is(:is([class*="Markdown-module"], [class*="Markdown_"]):is(:is([class$="__md"], [class*="_md__"]), :is([class*="__md "], [class*="_md__"])), [class*="Markdown_md__"]) {
   font-size: 1rem;
   line-height: 1.7;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="Markdown-module"]:is([class$="__code"], [class*="__code "]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="Markdown-module"], [class*="Markdown_"]):is(:is([class$="__code"], [class*="_code__"]), :is([class*="__code "], [class*="_code__"])), [class*="Markdown_code__"]) {
   border-radius: var(--o-r-card) !important;
   background: var(--o-surface-2) !important;
   box-shadow: 0 0 0 1px var(--o-line) !important;
@@ -442,11 +442,11 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="Markdown-modul
 }
 /* Edit under your own message: shown on hover or keyboard focus, always on touch. */
 @media (hover: hover) {
-  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][class*="__userTurn"] > [data-edit-message] {
+  html:not(:has([data-space-root], [data-kb])) :is(:is([class*="App-module"], [class*="App_"]):is([class*="__userTurn"], [class*="_userTurn__"]), [class*="App_userTurn__"]) > [data-edit-message] {
     opacity: 0;
     transition: opacity var(--o-dur-2) var(--o-ease-out);
   }
-  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][class*="__userTurn"]:is(:hover, :focus-within) > [data-edit-message] {
+  html:not(:has([data-space-root], [data-kb])) :is(:is([class*="App-module"], [class*="App_"]):is([class*="__userTurn"], [class*="_userTurn__"]), [class*="App_userTurn__"]):is(:hover, :focus-within) > [data-edit-message] {
     opacity: 1;
   }
 }
@@ -466,58 +466,58 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [data-answer-tools] but
   color: var(--o-ink);
 }
 @media (prefers-reduced-motion: no-preference) {
-  html:not(:has([data-space-root], [data-kb])) [class*="KeplarTurn-module"][class*="__footActions"] > * {
+  html:not(:has([data-space-root], [data-kb])) :is(:is([class*="KeplarTurn-module"], [class*="KeplarTurn_"]):is([class*="__footActions"], [class*="_footActions__"]), [class*="KeplarTurn_footActions__"]) > * {
     animation: o-rise-sm 320ms var(--o-ease-out) both;
     animation-delay: 220ms;
   }
-  html:not(:has([data-space-root], [data-kb])) [class*="__footActions"] > :nth-child(2) { animation-delay: 250ms; }
-  html:not(:has([data-space-root], [data-kb])) [class*="__footActions"] > :nth-child(3) { animation-delay: 280ms; }
-  html:not(:has([data-space-root], [data-kb])) [class*="__footActions"] > :nth-child(4) { animation-delay: 310ms; }
-  html:not(:has([data-space-root], [data-kb])) [class*="__footActions"] > :nth-child(n + 5) { animation-delay: 340ms; }
-  html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [class*="__recentList"] > li {
+  html:not(:has([data-space-root], [data-kb])) :is([class*="__footActions"], [class*="_footActions__"]) > :nth-child(2) { animation-delay: 250ms; }
+  html:not(:has([data-space-root], [data-kb])) :is([class*="__footActions"], [class*="_footActions__"]) > :nth-child(3) { animation-delay: 280ms; }
+  html:not(:has([data-space-root], [data-kb])) :is([class*="__footActions"], [class*="_footActions__"]) > :nth-child(4) { animation-delay: 310ms; }
+  html:not(:has([data-space-root], [data-kb])) :is([class*="__footActions"], [class*="_footActions__"]) > :nth-child(n + 5) { animation-delay: 340ms; }
+  html:not(:has([data-space-root], [data-kb])) #keplar-sidebar :is([class*="__recentList"], [class*="_recentList__"]) > li {
     animation: o-slide-in 260ms var(--o-ease-out) both;
   }
-  html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [class*="__recentList"] > li:nth-child(2) { animation-delay: 30ms; }
-  html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [class*="__recentList"] > li:nth-child(n + 3) { animation-delay: 60ms; }
+  html:not(:has([data-space-root], [data-kb])) #keplar-sidebar :is([class*="__recentList"], [class*="_recentList__"]) > li:nth-child(2) { animation-delay: 30ms; }
+  html:not(:has([data-space-root], [data-kb])) #keplar-sidebar :is([class*="__recentList"], [class*="_recentList__"]) > li:nth-child(n + 3) { animation-delay: 60ms; }
 }
 @keyframes o-slide-in { from { opacity: 0; translate: -6px 0; } }
 
 /* ───────────── Composer ───────────── */
-html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] form:is([class*="__composer"], [class*="_composer__"]) {
   background: var(--o-surface-1) !important;
   border: 1px solid var(--o-line-strong) !important;
   border-radius: var(--o-r-panel) !important;
   box-shadow: var(--o-elev-2) !important;
   transition: border-color var(--o-dur-2) var(--o-ease-out), box-shadow var(--o-dur-3) var(--o-ease-out);
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:focus-within {
+html:not(:has([data-space-root], [data-kb]))[data-theme] form:is([class*="__composer"], [class*="_composer__"]):focus-within {
   border-color: rgb(var(--o-accent-rgb) / 0.55) !important;
   box-shadow: var(--o-elev-2), 0 0 0 4px var(--o-accent-soft) !important;
 }
 /* Keyboard focus on a control inside the composer draws the ring around the composer; typing in the field does not. */
-html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:focus-within:has(:focus-visible:not(textarea)) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] form:is([class*="__composer"], [class*="_composer__"]):focus-within:has(:focus-visible:not(textarea)) {
   outline: 2px solid var(--o-focus) !important;
   outline-offset: 3px !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"] button[class*="__tool"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] form:is([class*="__composer"], [class*="_composer__"]) button:is([class*="__tool"], [class*="_tool__"]) {
   background: transparent !important;
   border-radius: var(--o-r-control) !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"] button[class*="__tool"]:is(:hover, [aria-expanded="true"]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] form:is([class*="__composer"], [class*="_composer__"]) button:is([class*="__tool"], [class*="_tool__"]):is(:hover, [aria-expanded="true"]) {
   background: var(--o-hover) !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"] button[class*="__send"]:not([aria-disabled="true"]):not(:disabled) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] form:is([class*="__composer"], [class*="_composer__"]) button:is([class*="__send"], [class*="_send__"]):not([aria-disabled="true"]):not(:disabled) {
   background: var(--o-accent) !important;
   color: var(--o-accent-ink) !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"] button[class*="__send"]:not([aria-disabled="true"]):not(:disabled):hover {
+html:not(:has([data-space-root], [data-kb]))[data-theme] form:is([class*="__composer"], [class*="_composer__"]) button:is([class*="__send"], [class*="_send__"]):not([aria-disabled="true"]):not(:disabled):hover {
   background: var(--o-accent-hover) !important;
 }
-html:not(:has([data-space-root], [data-kb])) button[class*="__send"] {
+html:not(:has([data-space-root], [data-kb])) button:is([class*="__send"], [class*="_send__"]) {
   transition: background-color 240ms var(--o-ease-out) 50ms, color 240ms var(--o-ease-out) 50ms, scale var(--o-dur-3) var(--o-ease-spring), translate var(--o-dur-4) var(--o-ease-spring);
 }
 @media (prefers-reduced-motion: no-preference) {
-  html:not(:has([data-space-root], [data-kb])) form[class*="__composer"] button[class*="__send"][aria-disabled="true"] {
+  html:not(:has([data-space-root], [data-kb])) form:is([class*="__composer"], [class*="_composer__"]) button:is([class*="__send"], [class*="_send__"])[aria-disabled="true"] {
     scale: 0.92;
   }
 }
@@ -529,15 +529,15 @@ html:not(:has([data-space-root], [data-kb])) [data-attach-btn][aria-expanded="tr
   rotate: 45deg;
 }
 /* Rotating placeholder: fades out, swaps, fades back in (useRotatingHint sets data-hint-swap). */
-html:not(:has([data-space-root], [data-kb])) form[class*="__composer"] textarea::placeholder {
+html:not(:has([data-space-root], [data-kb])) form:is([class*="__composer"], [class*="_composer__"]) textarea::placeholder {
   color: var(--o-ink-3);
   transition: opacity 180ms var(--o-ease-out);
 }
-html[data-hint-swap]:not(:has([data-space-root])) form[class*="__composer"] textarea::placeholder {
+html[data-hint-swap]:not(:has([data-space-root])) form:is([class*="__composer"], [class*="_composer__"]) textarea::placeholder {
   opacity: 0;
 }
 /* Composer menus: an Orbit surface that pops in (scale .96 → 1) and closes instantly. */
-html:not(:has([data-space-root], [data-kb]))[data-theme] :is([class$="__attachMenu"], [class*="__attachMenu "], [class$="__moreMenu"], [class*="__moreMenu "], [class$="__panel"], [class*="__panel "]):is([class*="Composer-module"]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class$="__attachMenu"], [class*="_attachMenu__"]), :is([class*="__attachMenu "], [class*="_attachMenu__"]), :is([class$="__moreMenu"], [class*="_moreMenu__"]), :is([class*="__moreMenu "], [class*="_moreMenu__"]), :is([class$="__panel"], [class*="_panel__"]), :is([class*="__panel "], [class*="_panel__"])):is(:is([class*="Composer-module"], [class*="Composer_"])) {
   background: var(--o-surface-1) !important;
   border: 0 !important;
   border-radius: var(--o-r-card) !important;
@@ -550,29 +550,29 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] :is([class$="__attachMe
 }
 @keyframes o-menu-in { from { opacity: 0; scale: 0.96; } }
 /* Modes menu: one column, a row per mode. */
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="Composer-module"]:is([class$="__moreMenu"], [class*="__moreMenu "]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="Composer-module"], [class*="Composer_"]):is(:is([class$="__moreMenu"], [class*="_moreMenu__"]), :is([class*="__moreMenu "], [class*="_moreMenu__"])), [class*="Composer_moreMenu__"]) {
   grid-template-columns: minmax(0, 1fr) !important;
   width: 340px !important;
   gap: 2px !important;
   padding: 6px !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="Composer-module"][class*="__moreItem"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="Composer-module"], [class*="Composer_"]):is([class*="__moreItem"], [class*="_moreItem__"]), [class*="Composer_moreItem__"]) {
   min-height: 48px !important;
   padding: 6px 12px 6px 8px !important;
   border-radius: var(--o-r-control) !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="Composer-module"][class*="__moreBlurb"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="Composer-module"], [class*="Composer_"]):is([class*="__moreBlurb"], [class*="_moreBlurb__"]), [class*="Composer_moreBlurb__"]) {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="Composer-module"][class*="__moreBlurb"] br { display: none; }
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="Composer-module"], [class*="Composer_"]):is([class*="__moreBlurb"], [class*="_moreBlurb__"]), [class*="Composer_moreBlurb__"]) br { display: none; }
 
 /* One row (+ and Modes · the field · voice, routing, send) while the composer holds just the field and its controls and the text
    fits one line. Mode chips, attachments or any row above the field fall back to the stacked layout, and so does text longer than
    one line (data-multiline, set by Composer.tsx): a one-row layout around many lines squeezed the text between the controls. */
 @container composer (min-width: 600px) {
-  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not([data-multiline]):not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form:is([class*="__composer"], [class*="_composer__"]):not([data-multiline]):not(:has(> :not(p, label, textarea, :is([class*="__row"], [class*="_row__"]), :is([class*="__recordHold"], [class*="_recordHold__"]), :is([class*="__readsHint"], [class*="_readsHint__"])))) {
     display: grid !important;
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: end;
@@ -581,27 +581,27 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="Composer-modul
     padding: 10px 10px 10px 12px !important;
     border-radius: var(--o-r-panel) !important;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not([data-multiline]):not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) > [class*="__row"] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form:is([class*="__composer"], [class*="_composer__"]):not([data-multiline]):not(:has(> :not(p, label, textarea, :is([class*="__row"], [class*="_row__"]), :is([class*="__recordHold"], [class*="_recordHold__"]), :is([class*="__readsHint"], [class*="_readsHint__"])))) > :is([class*="__row"], [class*="_row__"]) {
     display: contents !important;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not([data-multiline]):not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) > textarea {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form:is([class*="__composer"], [class*="_composer__"]):not([data-multiline]):not(:has(> :not(p, label, textarea, :is([class*="__row"], [class*="_row__"]), :is([class*="__recordHold"], [class*="_recordHold__"]), :is([class*="__readsHint"], [class*="_readsHint__"])))) > textarea {
     grid-column: 2;
     grid-row: 1;
     align-self: center;
     padding: 8px 6px !important;
     margin: 0 !important;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not([data-multiline]):not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) [class*="__tools"] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form:is([class*="__composer"], [class*="_composer__"]):not([data-multiline]):not(:has(> :not(p, label, textarea, :is([class*="__row"], [class*="_row__"]), :is([class*="__recordHold"], [class*="_recordHold__"]), :is([class*="__readsHint"], [class*="_readsHint__"])))) :is([class*="__tools"], [class*="_tools__"]) {
     grid-column: 1;
     grid-row: 1;
     align-self: end;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not([data-multiline]):not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) [class*="__actions"] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form:is([class*="__composer"], [class*="_composer__"]):not([data-multiline]):not(:has(> :not(p, label, textarea, :is([class*="__row"], [class*="_row__"]), :is([class*="__recordHold"], [class*="_recordHold__"]), :is([class*="__readsHint"], [class*="_readsHint__"])))) :is([class*="__actions"], [class*="_actions__"]) {
     grid-column: 3;
     grid-row: 1;
     align-self: end;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"] [class*="Composer-module"]:is([class$="__tools"], [class*="__tools "]) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form:is([class*="__composer"], [class*="_composer__"]) :is(:is([class*="Composer-module"], [class*="Composer_"]):is(:is([class$="__tools"], [class*="_tools__"]), :is([class*="__tools "], [class*="_tools__"])), [class*="Composer_tools__"]) {
     min-height: 44px;
     align-items: center;
     padding-block: 0;
@@ -609,7 +609,7 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="Composer-modul
 }
 
 /* ───────────── Search dialog and tooltips ───────────── */
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][class*="__searchBar"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="App-module"], [class*="App_"]):is([class*="__searchBar"], [class*="_searchBar__"]), [class*="App_searchBar__"]) {
   margin: 12px 12px 4px;
   padding-inline: 14px;
   min-height: 44px;
@@ -618,26 +618,26 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][c
   background: var(--o-surface-2);
   box-shadow: none !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][class*="__searchBar"]:has(:focus-visible) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is(:is([class*="App-module"], [class*="App_"]):is([class*="__searchBar"], [class*="_searchBar__"]), [class*="App_searchBar__"]):has(:focus-visible) {
   outline: 2px solid var(--o-focus);
   outline-offset: 2px;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] dialog input:is([class*="App-module"], [class*="SearchDialog-module"])[class*="__searchInput"]:is(:focus, :focus-visible) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] dialog input:is(:is([class*="App-module"], [class*="App_"]), :is([class*="SearchDialog-module"], [class*="SearchDialog_"])):is([class*="__searchInput"], [class*="_searchInput__"]):is(:focus, :focus-visible) {
   outline: none !important;
   box-shadow: none !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] dialog [class*="App-module"][class*="__searchItem"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] dialog :is(:is([class*="App-module"], [class*="App_"]):is([class*="__searchItem"], [class*="_searchItem__"]), [class*="App_searchItem__"]) {
   min-height: 40px;
   border-radius: var(--o-r-control) !important;
   padding-inline: 14px !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] dialog [class*="App-module"][class*="__searchItem"][aria-selected="true"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] dialog :is(:is([class*="App-module"], [class*="App_"]):is([class*="__searchItem"], [class*="_searchItem__"]), [class*="App_searchItem__"])[aria-selected="true"] {
   background: var(--o-selected) !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] dialog [class*="App-module"][class*="__searchGroup"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] dialog :is(:is([class*="App-module"], [class*="App_"]):is([class*="__searchGroup"], [class*="_searchGroup__"]), [class*="App_searchGroup__"]) {
   padding-inline: 14px;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [role="tooltip"][class*="overlay-module"][class*="__tip"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [role="tooltip"]:is(:is([class*="overlay-module"], [class*="overlay_"]):is([class*="__tip"], [class*="_tip__"]), [class*="overlay_tip__"]) {
   padding: 5px 9px;
   border-radius: 8px;
   background: var(--o-ink);
@@ -648,10 +648,10 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [role="tooltip"][class*
   box-shadow: var(--o-elev-2);
 }
 @media (prefers-reduced-motion: no-preference) {
-  html:not(:has([data-space-root], [data-kb])) [role="tooltip"][class*="overlay-module"][class*="__tip"] {
+  html:not(:has([data-space-root], [data-kb])) [role="tooltip"]:is(:is([class*="overlay-module"], [class*="overlay_"]):is([class*="__tip"], [class*="_tip__"]), [class*="overlay_tip__"]) {
     animation: o-tip-in 140ms var(--o-ease-out) both;
   }
-  html:not(:has([data-space-root], [data-kb])) dialog[open][class*="App-module"][class*="__search"] {
+  html:not(:has([data-space-root], [data-kb])) dialog[open]:is(:is([class*="App-module"], [class*="App_"]):is([class*="__search"], [class*="_search__"]), [class*="App_search__"]) {
     animation: o-pop 180ms var(--o-ease-out) both;
   }
 }

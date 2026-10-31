@@ -7,9 +7,7 @@
  *     controls (not inline text links inside paragraphs);
  *   - it gets data-orbit-fx (its kind: primary, secondary, ghost, danger, icon, chip, segment, menuitem, auto) if it had none,
  *     data-orbit-icon (the icon intent) when its name says what it does, --ofx-ps (press depth by size),
- *     data-ofx-sheen when its ::after is free (a module's own ::after is never overwritten), data-ofx-pos when it needs
- *     position: relative for that sheen and nothing inside depends on its containing block,
- *     data-ofx-magnet for primary and icon controls.
+ *     data-ofx-magnet for primary and icon controls. The pointer sheen is not applied.
  * While a fine pointer hovers a claimed control, one rAF writes --mx/--my (sheen position) and, for magnets, --ofx-tx/--ofx-ty
  * (≤ 3px drift). Leaving clears them, and the CSS spring brings the control home. Touch gets press + focus only; reduced motion
  * gets no sheen, magnet or icon motion; disabled controls get nothing.
@@ -93,17 +91,6 @@ function isProseLink(el: HTMLElement, cs: CSSStyleDeclaration) {
   return cs.display === "inline" || !!el.closest("p, li > p, blockquote, td, [data-prose]");
 }
 
-/** True when nothing inside depends on this element staying position: static (an absolute child anchored further out). */
-function safeToPosition(el: HTMLElement) {
-  const all = el.getElementsByTagName("*");
-  if (all.length > 60) return false;
-  for (const c of all) {
-    const p = getComputedStyle(c).position;
-    if (p === "absolute" || p === "fixed") return false;
-  }
-  return true;
-}
-
 const claimed = new WeakSet<Element>();
 
 /** Tag a control for the effects. Idempotent; returns the element when it takes part, else null. */
@@ -125,18 +112,6 @@ export function claim(el: HTMLElement): HTMLElement | null {
   const w = el.getBoundingClientRect().width;
   el.style.setProperty("--ofx-ps", String(pressScale(w)));
   if (kind === "primary" || kind === "icon" || kind === "danger") el.setAttribute("data-ofx-magnet", "");
-  // The sheen is an ::after; only take it when the control does not draw its own.
-  const after = getComputedStyle(el, "::after").content;
-  if ((after === "none" || after === "normal") && w > 0) {
-    if (cs.position === "static") {
-      if (safeToPosition(el)) {
-        el.setAttribute("data-ofx-pos", "");
-        el.setAttribute("data-ofx-sheen", "");
-      }
-    } else {
-      el.setAttribute("data-ofx-sheen", "");
-    }
-  }
   return el;
 }
 

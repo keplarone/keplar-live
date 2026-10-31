@@ -39,7 +39,7 @@ test("composer focus is the container border, and the agree dot is not blue", ()
   const orbit = readFileSync("src/styles/orbit/app.css", "utf8");
   assert.match(graphite, /\[class\*="composer"\] textarea:focus-visible \{\s*outline: none !important;/);
   // Orbit (docs/design/keplar-orbit.md): the composer's edge turns accent with a soft accent halo while focused.
-  assert.match(orbit, /form\[class\*="__composer"\]:focus-within \{\s*border-color: rgb\(var\(--o-accent-rgb\) \/ 0\.55\) !important;/);
+  assert.match(orbit, /form:is\(\[class\*="__composer"\], \[class\*="_composer__"\]\):focus-within \{\s*border-color: rgb\(var\(--o-accent-rgb\) \/ 0\.55\) !important;/);
   assert.match(graphite, /scale: var\(--ofx-ps, 0\.97\) !important;/);
   const turn = readFileSync("src/components/app-ui/KeplarTurn.module.css", "utf8");
   assert.match(turn, /\.agreeDot,\s*\.dissentDot \{[^}]*background: var\(--c-ink-2\)/);

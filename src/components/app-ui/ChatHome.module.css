@@ -5,7 +5,7 @@
   position: fixed;
   z-index: 210;
   top: 18vh;
-  left: clamp(264px, 14vw, 400px);
+  left: calc(var(--o-rail-w) + var(--o-drawer-w));
   right: 0;
   margin: 0;
   padding: 0 24px;
@@ -20,7 +20,7 @@
 .crawl {
   position: fixed;
   z-index: 210;
-  left: clamp(264px, 14vw, 400px);
+  left: calc(var(--o-rail-w) + var(--o-drawer-w));
   right: 0;
   bottom: 0;
   display: flex;

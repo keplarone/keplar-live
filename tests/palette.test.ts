@@ -88,6 +88,25 @@ test("no electric blue-dominant spam (teal OK: green channel stays close to blue
   assert.deepEqual(hits, []);
 });
 
+test("primary controls and locale homes are flat: no blue glow, no pointer sheen, no sky wash", () => {
+  for (const f of [
+    "src/components/orbit/Button.module.css",
+    "src/components/chrome/Nav.module.css",
+    "src/components/auth/auth.module.css",
+    "src/components/business-site/business-site.module.css",
+    "src/components/marketing/Overview.module.css",
+    "src/styles/orbit/fx.css",
+  ]) {
+    const css = readFileSync(f, "utf8");
+    assert.doesNotMatch(css, /0 6px 22px -6px var\(--o-glow\)/, f);
+    assert.doesNotMatch(css, /\[data-ofx-sheen\]/, f);
+  }
+  assert.doesNotMatch(readFileSync("src/components/marketing/Overview.module.css", "utf8"), /\.sky\b/);
+  assert.doesNotMatch(readFileSync("src/components/marketing/CalmOverview.tsx", "utf8"), /s\.sky/);
+  assert.doesNotMatch(readFileSync("src/components/auth/auth.module.css", "utf8"), /radial-gradient/);
+  assert.doesNotMatch(readFileSync("src/lib/orbit-fx.ts", "utf8"), /data-ofx-sheen/);
+});
+
 test("empty home: the Orbit canvas, no decorative wash, and a visible keyboard outline", () => {
   // Keplar Orbit (docs/design/keplar-orbit.md) replaced the graphite canvas and the Gemini-led blue-teal wash (gemini.css is gone).
   const tokens = readFileSync("src/styles/orbit/tokens.css", "utf8");
@@ -104,7 +123,7 @@ test("empty home: the Orbit canvas, no decorative wash, and a visible keyboard o
   assert.doesNotMatch(app, /radial-gradient|background-clip:\s*text|filter:\s*blur|backdrop-filter/);
   assert.match(app, /\[data-theme\] \[data-welcome\] \{[^}]*color: var\(--o-ink\) !important/);
   // The controls inside the composer keep the outline; the text field doesn't (a textarea always matches :focus-visible while typing).
-  assert.match(app, /form\[class\*="__composer"\]:focus-within:has\(:focus-visible:not\(textarea\)\) \{\s*outline:\s*2px solid var\(--o-focus\) !important;/);
+  assert.match(app, /form:is\(\[class\*="__composer"\], \[class\*="_composer__"\]\):focus-within:has\(:focus-visible:not\(textarea\)\) \{\s*outline:\s*2px solid var\(--o-focus\) !important;/);
   assert.doesNotMatch(app, /#(?:7c3aed|a855f7|9333ea|c58cff|f08bd8|ec4899|ff4d9a)/i);
   assert.match(theme, /BUSINESS_DEFAULT_THEME_PREF: ThemePref = "dark"/);
 });

@@ -12,8 +12,8 @@ const STEPS = [
 ] as const;
 
 /**
- * The marketing landing (Keplar Orbit, docs/design/keplar-orbit.md §4 Marketing). A calm sky behind the hero only, then the real
- * product in device-less panes on the 12-column grid, alternating sides, a three-step row and one closing call to action.
+ * The marketing landing. A flat canvas, then the real product in device-less panes on the 12-column grid,
+ * alternating sides, a three-step row and one closing call to action.
  * No invented proof, no model-provider names.
  */
 export function CalmOverview({ locale }: { locale?: string }) {
@@ -21,10 +21,6 @@ export function CalmOverview({ locale }: { locale?: string }) {
   return (
     <article className={s.page} data-overview="">
       <header className={s.hero}>
-        <div className={s.sky} aria-hidden="true">
-          <i />
-          <i />
-        </div>
         <div className={s.heroInner}>
           <p className={s.badge}>Keplar One</p>
           <h1 className={s.h1}>Several models. One answer.</h1>

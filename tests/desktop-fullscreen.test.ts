@@ -46,6 +46,6 @@ test("large screens: content, type and the app shell scale with the viewport ins
   assert.match(tokens, /--u: clamp\(calc\(1px \* var\(--ui-scale\)\),/);
   assert.match(read("src/styles/globals.css"), /font-size:\s*calc\(16px \* var\(--ui-scale\)\)/);
   const app = read("src/components/app-ui/App.module.css");
-  assert.match(app, /grid-template-columns: clamp\(264px, 14vw, 400px\) minmax\(0, 1fr\)/);
+  assert.match(app, /grid-template-columns: var\(--o-rail-w\) var\(--o-drawer-w\) minmax\(0, 1fr\)/);
   assert.doesNotMatch(app.replace(/@media[^{]*\{/g, ""), /max-width: 800px;/);
 });
