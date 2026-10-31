@@ -75,7 +75,7 @@
     "eslint": "^9.39.5",
     "eslint-config-next": "~16.4.3",
     "htm": "^3.1.1",
-    "playwright": "^1.63.0",
+    "playwright": "^1.64.1",
     "preact": "^10.29.8",
     "sharp": "^0.35.5",
     "tsx": "^4.23.15",
