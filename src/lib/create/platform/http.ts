@@ -2,6 +2,7 @@ import { keepAlive } from "./after";
 import { EntitlementError } from "./plans";
 import { RateLimitError } from "./ratelimit";
 import { CooldownError } from "./cooldown";
+import { isStoreUnavailable } from "./neon";
 import { logEvent } from "@/lib/ops/log";
 import { recordError, routeFromStack } from "@/lib/ops/errors";
 
@@ -9,7 +10,15 @@ export function json(data: unknown, init: ResponseInit = {}) {
   return Response.json(data, { ...init, headers: { "cache-control": "no-store", ...(init.headers ?? {}) } });
 }
 
+/** Body and status every route answers while the database is unavailable (neon.ts StoreUnavailableError). */
+export const UNAVAILABLE_MESSAGE = "Keplar is temporarily unavailable. Please try again in a minute.";
+export function unavailableResponse(retryAfterSec = 30) {
+  return json({ error: "temporarily_unavailable", code: "temporarily_unavailable", message: UNAVAILABLE_MESSAGE }, { status: 503, headers: { "retry-after": String(retryAfterSec) } });
+}
+
 export function errorResponse(err: unknown) {
+  // The database is down (allowance used up, outage, timeout): a calm 503, not a 500, and not recorded as a new error.
+  if (isStoreUnavailable(err)) return unavailableResponse();
   if (err instanceof CooldownError) return json({ error: err.message, code: "cooldown", until: err.info.until, startedAt: err.info.startedAt, strikes: err.info.strikes }, { status: 429, headers: { "retry-after": String(Math.ceil(err.info.remainingMs / 1000)) } });
   if (err instanceof EntitlementError) return json({ error: err.message, code: "entitlement", upgradeTo: err.upgradeTo }, { status: 402 });
   if (err instanceof RateLimitError) return json({ error: err.message, code: "rate_limited" }, { status: 429 });
@@ -25,6 +34,7 @@ export function errorResponse(err: unknown) {
  */
 export function publicErrorText(err: unknown, fallback: string): string {
   if (err instanceof HttpError || err instanceof EntitlementError || err instanceof RateLimitError || err instanceof CooldownError) return err.message;
+  if (isStoreUnavailable(err)) return UNAVAILABLE_MESSAGE;
   logEvent("error", "stream_error", { name: err instanceof Error ? err.name : "unknown" });
   void recordError({ source: "server", name: err instanceof Error ? err.name : "unknown", message: err instanceof Error ? err.message : String(err), route: err instanceof Error ? routeFromStack(err.stack) : undefined });
   return fallback;

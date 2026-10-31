@@ -5,6 +5,7 @@
  * Writes are fire-and-forget (a metering hiccup never fails a request) and bounded.
  */
 import { keepAlive } from "@/lib/create/platform/after";
+import { isStoreUnavailable } from "@/lib/create/platform/neon";
 import { collection } from "@/lib/create/platform/store";
 import { id, now } from "@/lib/create/platform/ids";
 import { alertOwner } from "@/lib/accounts/alerts";
@@ -23,7 +24,7 @@ export function recordModelCall(c: Omit<ModelCallRow, "id" | "workspaceId" | "at
   keepAlive(
     calls()
       .insert({ id: id("mc"), workspaceId: SYSTEM, at: now(), ...c, usd: Number.isFinite(c.usd) ? Math.max(0, c.usd) : 0, latencyMs: Math.max(0, Math.round(c.latencyMs || 0)) })
-      .catch((e) => console.error("[ops] model call not recorded:", e instanceof Error ? e.name : "error")),
+      .catch((e) => { if (!isStoreUnavailable(e)) console.error("[ops] model call not recorded:", e instanceof Error ? e.name : "error"); }),
     "model call",
   );
 }

@@ -1,6 +1,7 @@
+import { after } from "next/server";
 import { readText } from "@/lib/create/platform/http";
 import { clientIpOf, rateLimit, RateLimitError } from "@/lib/create/platform/ratelimit";
-import { consentOk, recordSeoEvent, sanitizeSeoEvent } from "@/lib/seo/events";
+import { consentOk, queueSeoEvent, sanitizeSeoEvent } from "@/lib/seo/events";
 
 /**
  * POST /api/seo/event: one funnel event from the browser (name, landing page path, source class, random browser id).
@@ -27,10 +28,14 @@ export async function POST(req: Request) {
   }
   const input = sanitizeSeoEvent(body);
   if (!input) return NO_CONTENT();
-  try {
-    await recordSeoEvent(input);
-  } catch (e) {
-    console.error("[seo] event not recorded:", e instanceof Error ? e.name : "error");
+  // Held and written in batches (flush-gate.ts); while the database is unavailable the batch waits. Always 204.
+  const work = queueSeoEvent(input);
+  if (work) {
+    try {
+      after(work);
+    } catch {
+      await work.catch(() => 0); // outside a request scope (tests, scripts)
+    }
   }
   return NO_CONTENT();
 }

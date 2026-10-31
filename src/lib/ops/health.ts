@@ -2,7 +2,7 @@
  * Health probes shared by GET /api/health and the public /status page.
  * Nothing here returns connection details, env values, user data or error text beyond a short label.
  */
-import { neonConfigured } from "@/lib/create/platform/neon";
+import { isStoreUnavailable, neonConfigured, storeUnavailableNow } from "@/lib/create/platform/neon";
 import { rateLimitBackend } from "@/lib/create/platform/ratelimit";
 import { collection, storeDurable } from "@/lib/create/platform/store";
 import { id as newId } from "@/lib/create/platform/ids";
@@ -16,6 +16,11 @@ let cached: { at: number; ok: boolean; ms: number; error?: string } | null = nul
 export async function probeStore() {
   if (cached && Date.now() - cached.at < 60_000) return cached;
   const started = Date.now();
+  // The store's circuit is open (it just answered "unavailable"): report that honestly without another round trip.
+  if (neonConfigured() && storeUnavailableNow()) {
+    cached = { at: Date.now(), ok: false, ms: 0, error: "store round trip failed" };
+    return cached;
+  }
   const rows = collection<Probe>("_health");
   const rid = newId("hc");
   try {
@@ -26,7 +31,7 @@ export async function probeStore() {
     cached = { at: Date.now(), ok: true, ms: Date.now() - started };
   } catch (e) {
     // The public answer says only that the round trip failed; the database's own error text stays in the log.
-    console.error("[health] store round trip failed:", e instanceof Error ? e.message.slice(0, 200) : "error");
+    if (!isStoreUnavailable(e)) console.error("[health] store round trip failed:", e instanceof Error ? e.message.slice(0, 200) : "error"); // an outage is logged once by the circuit
     cached = { at: Date.now(), ok: false, ms: Date.now() - started, error: "store round trip failed" };
   }
   return cached;

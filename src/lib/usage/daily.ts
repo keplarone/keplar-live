@@ -14,7 +14,7 @@ import { keepAlive } from "@/lib/create/platform/after";
 import { FREE_UPGRADE_HINT } from "@/lib/upgrade-copy";
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { authSecret } from "@/lib/accounts/secret";
-import { neonConfigured, neonQuery } from "@/lib/create/platform/neon";
+import { isStoreUnavailable, neonConfigured, neonQuery } from "@/lib/create/platform/neon";
 
 export type DailyMeter = { used: number; limit: number; left: number; resetsAt: string };
 
@@ -51,8 +51,8 @@ export async function claimOne(key: string, limit: number, day = dayOf()): Promi
       );
       if (Math.random() < 0.01) keepAlive(() => neonQuery("DELETE FROM keplar_daily_use WHERE day < (now() at time zone 'utc')::date - 3"), "daily-use prune");
       return rows[0] ? Number(rows[0].used) : null;
-    } catch {
-      console.error("[usage] daily counter unavailable; using this instance's count");
+    } catch (e) {
+      if (!isStoreUnavailable(e)) console.error("[usage] daily counter unavailable; using this instance's count");
     }
   }
   const k = memKey(key, day);

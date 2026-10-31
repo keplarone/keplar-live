@@ -42,3 +42,19 @@
 .detail { border-top: 0; }
 @media (max-width: 640px), (prefers-reduced-motion: reduce) { .chip:hover { translate: none; } }
 @media (pointer: coarse) { .chip { min-height: 44px; } }
+
+/* ── Consensus layout (Orbit): suggestion chips are hairline pills that take the accent when chosen. ── */
+.chips { gap: 8px; margin: 2px 0 0; }
+.chip {
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: var(--o-r-pill);
+  background: var(--o-surface-1);
+  box-shadow: var(--o-elev-1);
+  font-size: var(--o-t-13);
+  font-weight: var(--o-w-medium);
+  color: var(--o-ink);
+}
+.chip:hover { background: var(--o-surface-2); box-shadow: var(--o-elev-1); }
+.chip[aria-pressed="true"] { background: var(--o-accent-soft); color: var(--o-accent-text); box-shadow: inset 0 0 0 1px rgb(var(--o-accent-rgb) / 0.4); opacity: 1; }
+@media (pointer: coarse) { .chip { min-height: 44px; } }

@@ -15,6 +15,7 @@ import { collection } from "@/lib/create/platform/store";
 import { pruneSeoEvents } from "@/lib/seo/events";
 import { pruneSecurityEvents } from "@/lib/security/events";
 import { keepAlive } from "@/lib/create/platform/after";
+import { storeUnavailableNow } from "@/lib/create/platform/neon";
 import { maybePruneViews } from "@/lib/business/traffic";
 
 export type RetentionResult = Record<string, number>;
@@ -93,6 +94,7 @@ let lastRun = 0;
  */
 export function maybePrune(at = Date.now()): void {
   if (at - lastRun < 3_600_000) return;
+  if (storeUnavailableNow()) return; // the database is down: try again on a later call (no lastRun update), not 20 failing deletes now
   lastRun = at;
   keepAlive(() => pruneTelemetry(at), "retention: telemetry");
   keepAlive(() => pruneOperational(at), "retention: operational");

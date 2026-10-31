@@ -90,6 +90,8 @@ import { answerLanguageNote } from "@/lib/i18n/answer-language";
 import { detectVideoIntent } from "@/lib/video/chat-intent";
 import { newVideoKey } from "@/lib/video/chat-flow";
 import type { ChatVideo } from "@/lib/video/chat-types";
+import { isStoreUnavailable, storeUnavailableNow } from "@/lib/create/platform/neon";
+import { admitDegraded, DEGRADED_ATTACHMENTS, DEGRADED_FIXED_MEMORY, DEGRADED_NOTICE, DEGRADED_PREFIX, degradedRequest, needsFullService } from "@/lib/orchestration/degraded";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -166,7 +168,26 @@ export async function POST(request: Request) {
   }
   const req = parse(json);
   if (typeof req === "string") return Response.json({ error: req }, { status: 400 });
+  // The database is unavailable (allowance used up, outage): answer anyway, as Free, unsaved, with nothing that spends credits
+  // (degradedAnswer below). Known up front once the store's circuit is open; otherwise found by the first read that fails, before
+  // anything was streamed, charged or saved.
+  if (storeUnavailableNow()) return degradedAnswer(request, req);
+  try {
+    return await answer(request, json, req);
+  } catch (e) {
+    if (!isStoreUnavailable(e)) throw e;
+    const fresh = parse(json); // the full path may have rewritten the request (understanding, routing): start from what was sent
+    return typeof fresh === "string" ? Response.json({ error: fresh }, { status: 400 }) : degradedAnswer(request, fresh);
+  }
+}
 
+/** Pre-stream failures: a store outage goes back to POST (degraded answer); everything else answers as before. */
+function routeError(e: unknown): Response {
+  if (isStoreUnavailable(e)) throw e;
+  return errorResponse(e);
+}
+
+async function answer(request: Request, json: unknown, req: KeplarRequest): Promise<Response> {
   // Server-side account context: plan, Usage ledger, rate limits, spend guard.
   let ws;
   try {
@@ -174,7 +195,7 @@ export async function POST(request: Request) {
     assertSameAccount(request, ws.userId);
     await limitRequest(request, "keplar", { perIp: 30, perAccount: ws.entitlements.rpm, accountId: ws.anonymous ? null : ws.id, shared: true });
   } catch (e) {
-    return errorResponse(e);
+    return routeError(e);
   }
   // Answer recovery (src/lib/orchestration/turn-recovery.ts), read-only here, before any daily question is taken or anything is charged:
   // a turn that already finished is replayed (no second run, no second charge); one still running gets 409 and the browser polls for it.
@@ -206,7 +227,7 @@ export async function POST(request: Request) {
     try {
       memoryReply = await runMemoryIntent(ws, intent);
     } catch (e) {
-      return errorResponse(e);
+      return routeError(e);
     }
   } else if (recall?.kind === "just-asked") {
     memoryReply = justAskedReply(history);
@@ -368,12 +389,19 @@ export async function POST(request: Request) {
       if (e instanceof UsageLimitError) {
         return Response.json({ error: e.message, code: e.code === "daily" || e.code === "daily_ip" || e.code === "daily_spend" ? "daily_limit" : "rate_limited", plan: ws.plan }, { status: 429, headers: { "retry-after": String(e.retryAfterSec) } });
       }
-      return errorResponse(e);
+      return routeError(e);
     }
   }
   // Shared daily budget (spend.ts): Free pauses until 00:00 UTC. This is not the person's questions and not monthly credits.
   // Refuse before a question is counted, so the meter stays where it was. Paid plans are not paused here.
-  if (ws.plan === "free" && !ws.admin && !smallTalk && (await freePaused())) {
+  let paused = false;
+  try {
+    paused = ws.plan === "free" && !ws.admin && !smallTalk && (await freePaused());
+  } catch (e) {
+    gate?.release();
+    return routeError(e);
+  }
+  if (paused) {
     gate?.release();
     const resetsAt = nextUtcMidnight();
     const secs = Math.max(1, Math.ceil((Date.parse(resetsAt) - Date.now()) / 1000));
@@ -418,7 +446,7 @@ export async function POST(request: Request) {
     } catch (e) {
       gate?.release();
       if (e instanceof DailyLimitError) return Response.json({ error: e.message, code: "daily_limit", plan: ws.plan, daily: e.meter }, { status: 429, headers: { "retry-after": String(Math.max(1, Math.ceil((Date.parse(e.meter.resetsAt) - Date.now()) / 1000))), "cache-control": "no-store" } });
-      return errorResponse(e);
+      return routeError(e);
     }
   }
   req.plan = ws.plan;
@@ -501,7 +529,7 @@ export async function POST(request: Request) {
   } catch (e) {
     gate?.release();
     await dailyClaim?.release();
-    return errorResponse(e);
+    return routeError(e);
   }
 
   // Answer recovery: the atomic claim, after every early exit above (so a refused request never leaves a "running" turn behind).
@@ -775,4 +803,75 @@ function learn(workspaceId: string, req: KeplarRequest, answer: string, modelsAl
     /* outside a request scope (tests, scripts): the promise still runs */
   }
   return job;
+}
+
+/**
+ * The database is unavailable (src/lib/orchestration/degraded.ts): answer as a signed-out Free visitor on the free roster, with a
+ * one-line notice, saving nothing. The plan, credits and session can't be read, so nothing that spends credits or uses a paid model
+ * runs (fail closed); limits are in memory and stricter than Free's. Safety screening and Keplar's fixed replies still apply.
+ */
+async function degradedAnswer(request: Request, req: KeplarRequest): Promise<Response> {
+  const unavailable = (error: string, retryAfterSec = 60) => Response.json({ error, code: "temporarily_unavailable" }, { status: 503, headers: { "retry-after": String(retryAfterSec), "cache-control": "no-store", "x-keplar-degraded": "store" } });
+  if (needsFullService(req)) return unavailable(DEGRADED_ATTACHMENTS);
+  const limits = limitsFor("free");
+  const tooBig = sizeProblem(req, limits, "free");
+  if (tooBig) return Response.json({ error: tooBig, code: "too_large" }, { status: 413 });
+  // Fixed replies first (no model): the safety screen, memory commands (paused), identity guards and "who made you".
+  let fixed: string | null = null;
+  let safety = false;
+  const screened = screenPrompt(req.prompt);
+  if (screened.action !== "allow") {
+    fixed = screened.reply;
+    safety = true;
+  } else if (memoryIntent(req) || recallIntent(req)) fixed = DEGRADED_FIXED_MEMORY;
+  else fixed = guardReply(req) ?? null;
+  const creator = fixed === null && isCreatorQuestion(req);
+  const deps = fixed === null && !creator ? engineDeps({ keyTier: "free" }) : null;
+  if (fixed === null && !creator && !deps) return Response.json({ error: "Keplar isn't connected to its models yet. Please check back soon.", code: "not_configured" }, { status: 503 });
+  const admitted = admitDegraded({ ip: clientIpOf(request), device: readDeviceId(request.headers.get("cookie")) });
+  if ("message" in admitted) return Response.json({ error: admitted.message, code: "rate_limited", plan: "free", degraded: true }, { status: 429, headers: { "retry-after": String(admitted.retryAfterSec), "cache-control": "no-store" } });
+  const engineReq = degradedRequest(req, Math.min(limits.maxHistoryChars, 12_000), clampHistory);
+  const encoder = new TextEncoder();
+  const stamp = stamper();
+  const abort = new AbortController();
+  request.signal.addEventListener("abort", () => abort.abort(), { once: true });
+  const notice = !safety;
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      const send = (e: KeplarEvent) => {
+        try {
+          controller.enqueue(encoder.encode(JSON.stringify(stamp(e)) + "\n"));
+        } catch {
+          abort.abort(); // the browser left
+        }
+      };
+      let prefixed = false;
+      try {
+        const events = fixed !== null ? runCreator(undefined, fixed) : creator || !deps ? runCreator() : runCore(engineReq, deps, abort.signal, { anonymous: true });
+        for await (let event of events) {
+          if (abort.signal.aborted) break;
+          if (event.type === "answer" && !event.answer.smalltalk && isEmptyAnswer(event.answer)) event = noResponseEvent("free");
+          if (notice && event.type === "delta" && !prefixed) {
+            prefixed = true;
+            event = { ...event, text: DEGRADED_PREFIX + event.text };
+          }
+          if (event.type === "answer") {
+            const md = scrubCreatorAges(event.answer.markdown ?? "");
+            event = { ...event, answer: { ...event.answer, markdown: notice && !md.startsWith(DEGRADED_PREFIX) ? DEGRADED_PREFIX + md : md, ...(notice ? { reasoning: `${event.answer.reasoning ? `${event.answer.reasoning} ` : ""}${DEGRADED_NOTICE}` } : {}) } };
+          }
+          send(event);
+        }
+      } catch (err) {
+        console.error("[keplar] degraded run failed:", err instanceof Error ? err.name : "error");
+        send({ type: "error", code: "unavailable", message: "Keplar is temporarily unavailable. Please try again in a minute.", retryable: true });
+      } finally {
+        admitted.release();
+        try { controller.close(); } catch { /* already closed */ }
+      }
+    },
+    cancel() {
+      abort.abort();
+    },
+  });
+  return new Response(stream, { headers: { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store, no-transform", "x-keplar-degraded": "store", [PROTOCOL_HEADER]: String(EVENT_PROTOCOL) } });
 }

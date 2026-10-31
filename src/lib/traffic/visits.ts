@@ -8,7 +8,8 @@
  *     first/last seen and a hit count.
  * Not counted: bots, link previews, prefetches, Do Not Track / Global Privacy Control visitors, files, API calls, admin, customer
  * sites, shared-answer and token links. Writes are batched and run after the response (waitUntil); a visitor is written at most
- * once a minute per instance, and one instance writes at most DAILY_NEW_CAP new visitors a day.
+ * once every 5 minutes per instance, batches go out only when the database is awake anyway or every ~30 minutes (flush-gate.ts),
+ * and one instance writes at most DAILY_NEW_CAP new visitors a day.
  * Because the code changes every day, "visitors" over several days are visitor-days: someone who returns on another day counts again.
  * Raw rows are rolled up into one `traffic_daily` row per day after 35 days, so all-time totals survive without per-visitor rows.
  */
@@ -17,11 +18,14 @@ import { collection } from "@/lib/create/platform/store";
 import { clientIpOf } from "@/lib/create/platform/ratelimit";
 import { countable, refHost } from "@/lib/site-builder/features/analytics";
 import { routeOf } from "./route";
+import { flushDue, telemetryWrite } from "./flush-gate";
+import { isStoreUnavailable } from "@/lib/create/platform/neon";
 
 export const LIVE_WINDOW_MS = 5 * 60_000;
 export const RAW_DAYS = 35;
 export const DAILY_NEW_CAP = 20_000;
-const REWRITE_MS = 60_000;
+/** A returning visitor's row is rewritten at most this often per instance (hits add up in memory meanwhile). Was 60 s. */
+const REWRITE_MS = 5 * 60_000;
 const FLUSH_DELAY_MS = 1_500;
 const SYSTEM = "system";
 
@@ -51,6 +55,7 @@ const queue = new Set<string>();
 let seenDay = "";
 let newToday = 0;
 let flushPromise: Promise<void> | null = null;
+let lastFlushAt = 0;
 
 /**
  * Note one request. Returns a promise for `event.waitUntil` only when this call started a new batch; null otherwise
@@ -85,7 +90,9 @@ export function noteVisit(req: Request, at = Date.now()): Promise<void> | null {
       s.queued = true;
       queue.add(key);
     }
-    if (queue.size === 0 || flushPromise) return null;
+    // Written in batches when the database is awake anyway, or at most every ~30 min (flush-gate.ts); never while it is unavailable.
+    if (queue.size === 0 || flushPromise || !flushDue(lastFlushAt, queue.size)) return null;
+    lastFlushAt = Date.now();
     flushPromise = new Promise<void>((resolve) => setTimeout(resolve, FLUSH_DELAY_MS)).then(async () => { await flush(); }).finally(() => {
       flushPromise = null;
     });
@@ -96,7 +103,11 @@ export function noteVisit(req: Request, at = Date.now()): Promise<void> | null {
 }
 
 /** Write the queued visitors (insert, or update an existing day row). Errors are swallowed: a missed count never breaks a page. */
-export async function flush(at = Date.now()): Promise<number> {
+export function flush(at = Date.now()): Promise<number> {
+  return telemetryWrite(() => flushNow(at));
+}
+
+async function flushNow(at: number): Promise<number> {
   const keys = [...queue].slice(0, 300);
   let n = 0;
   for (const key of keys) {
@@ -117,6 +128,13 @@ export async function flush(at = Date.now()): Promise<number> {
       }
       n++;
     } catch (e) {
+      if (isStoreUnavailable(e)) {
+        // The database went away: keep this visitor (and the rest of the batch) for the next window instead of logging each one.
+        s.hits += hits;
+        s.queued = true;
+        queue.add(key);
+        break;
+      }
       console.error("[traffic] visit not recorded:", e instanceof Error ? e.name : "error");
     }
   }
@@ -130,6 +148,7 @@ export function resetTrafficState() {
   seenDay = "";
   newToday = 0;
   flushPromise = null;
+  lastFlushAt = 0;
 }
 
 export type TrafficSummary = {

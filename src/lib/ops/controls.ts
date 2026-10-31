@@ -14,6 +14,7 @@
  * If the store cannot be read, the last known state is used (never "everything open" after a hiccup that follows a stop).
  */
 import { collection } from "@/lib/create/platform/store";
+import { isStoreUnavailable } from "@/lib/create/platform/neon";
 import { HttpError } from "@/lib/create/platform/http";
 import { now } from "@/lib/create/platform/ids";
 
@@ -62,7 +63,7 @@ async function load(): Promise<OpsControls> {
     cached = { at: Date.now(), value };
     return value;
   } catch (e) {
-    console.error("[ops] could not read controls:", e instanceof Error ? e.name : "error");
+    if (!isStoreUnavailable(e)) console.error("[ops] could not read controls:", e instanceof Error ? e.name : "error");
     if (cached) cached = { at: Date.now() - CACHE_MS / 2, value: cached.value }; // keep last known state, retry soon
     return cached?.value ?? defaultControls();
   }
