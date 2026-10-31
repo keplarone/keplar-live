@@ -257,9 +257,18 @@ test("/api/compute?lite=1: a signed-out page view reads nothing from the databas
   assert.equal(neonCalls, 0);
   mode = "402";
   await assert.rejects(neonQuery("SELECT 1"));
-  const down = await GET(new Request("https://keplar.one/api/compute?lite=1", { headers: { "x-forwarded-for": "203.0.113.70" } }));
+  // With a session cookie the session can't be checked: unavailable, never "signed out".
+  const cookie = "__Secure-better-auth.session_token=abc.def";
+  const down = await GET(new Request("https://keplar.one/api/compute?lite=1", { headers: { "x-forwarded-for": "203.0.113.70", cookie } }));
   assert.equal(down.status, 503);
-  const full = await GET(new Request("https://keplar.one/api/compute", { headers: { "x-forwarded-for": "203.0.113.71" } }));
+  const full = await GET(new Request("https://keplar.one/api/compute", { headers: { "x-forwarded-for": "203.0.113.71", cookie } }));
   assert.equal(full.status, 503);
   assert.equal(((await full.json()) as { error: string }).error, "temporarily_unavailable");
+  // With no session cookie the browser is signed out, which needs no database: the app gets that, so it finishes loading.
+  neonCalls = 0;
+  const anon = await GET(new Request("https://keplar.one/api/compute", { headers: { "x-forwarded-for": "203.0.113.72" } }));
+  assert.equal(anon.status, 200);
+  const a = (await anon.json()) as { signedIn: boolean; plan: string; degraded: boolean; account: unknown };
+  assert.deepEqual([a.signedIn, a.plan, a.degraded, a.account], [false, "free", true, null]);
+  assert.equal(neonCalls, 0);
 });
