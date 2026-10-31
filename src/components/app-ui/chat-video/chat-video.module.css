@@ -141,3 +141,10 @@
   color: var(--c-ink);
   font-size: var(--t-small);
 }
+
+/* ── Consensus layout (Orbit): the video picker sits in the answer's card language (--o-elev-1, 14px, the answer's spacing). ── */
+.panel { gap: 14px; padding: 18px 20px; border-radius: var(--o-r-card); background: var(--o-surface-1); box-shadow: var(--o-elev-1); }
+.panel h3 { font-size: var(--o-t-16); font-weight: var(--o-w-semibold); letter-spacing: -0.01em; color: var(--o-ink); }
+.panel p { font-size: var(--o-t-13); color: var(--o-ink-2); }
+.choices legend { font-size: var(--o-t-12); font-weight: var(--o-w-medium); color: var(--o-ink-3); }
+.choices .chip { border-radius: var(--o-r-pill); }

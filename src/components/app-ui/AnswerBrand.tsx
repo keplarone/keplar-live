@@ -55,12 +55,21 @@ export function AnswerBrand({ models, id }: { models?: readonly { id: string; na
     );
   }
   const shown = marks[i % count];
+  const stack = marks.slice(0, 4);
   return (
     <h3 id={id} className={b.title} data-brands={count}>
       <span className="visually-hidden">{`${brand.answer} from ${brandList(marks)}`}</span>
+      {/* Every brand that answered, as overlapping discs; the one named beside them is lit, so the swap reads as one motion. */}
+      <span className={b.stack} aria-hidden="true">
+        {stack.map((m) => (
+          <span key={m.family} className={b.disc} data-on={m.family === shown.family || undefined}>
+            <Mark mark={m} size={14} />
+          </span>
+        ))}
+        {count > stack.length ? <span className={b.disc} data-more="">+{count - stack.length}</span> : null}
+      </span>
       <span className={b.slot} aria-hidden="true">
         <span key={shown.family} className={b.item} data-swap={count > 1 && !still ? "" : undefined}>
-          <Mark mark={shown} />
           <span className={b.name}>{shown.family}</span>
         </span>
       </span>

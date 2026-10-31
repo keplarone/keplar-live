@@ -4,6 +4,7 @@ import { SourceChecks } from "@/components/answer/SourceChecks";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { brand } from "@/lib/site";
+import { safeHref } from "@/lib/safe-href";
 import { tiers } from "@/lib/tiers";
 import { formatResetAt, upgradesFrom, WINDOW_WARN_AT, windowResetText } from "@/lib/orchestration/plans";
 import { computeLevelLabel } from "@/lib/orchestration/compute";
@@ -107,6 +108,7 @@ export function KeplarTurn({ message: m, onRetry, onRefreshResearch, onSignal, o
     <div className={s.turn} data-status={m.status}>
       {m.stages.length > 0 && m.status !== "limit" && !m.smalltalk ? (
         <div className={s.process}>
+          {running ? <PhaseLine stage={activeStage} single={m.mode === "single"} /> : null}
           {finished ? (
             <button
               type="button"
@@ -190,7 +192,9 @@ export function KeplarTurn({ message: m, onRetry, onRefreshResearch, onSignal, o
           {/* A panel's first words are one model's early draft (early-stream.ts): say so, so the checked answer replacing it is no surprise. */}
           {running && m.mode === "consensus" && !m.answer ? <p className={s.draftNote} role="status" data-early-note="">Early draft from the first model to answer. Keplar is checking it with the others; the final answer will replace it.</p> : null}
           {m.answer?.research ? <ResearchHead research={m.answer.research} /> : null}
-          <StructuredAnswer source={tw.text} streaming caret cite={citeRenderer(m.answer ? m.answer.research?.sources : m.research?.sources)} rich={m.answer?.rich} consensus={m.answer?.consensus} />
+          <div className={s.body} data-o="KeplarTurn body">
+            <StructuredAnswer source={tw.text} streaming caret cite={citeRenderer(m.answer ? m.answer.research?.sources : m.research?.sources)} rich={m.answer?.rich} consensus={m.answer?.consensus} />
+          </div>
           <TypingBar text={fullText} />
         </article>
       ) : null}
@@ -538,32 +542,135 @@ function LogoStack({ models }: { models: readonly { id: string; name: string }[]
   );
 }
 
-/** The models that did not take the majority position, each with its brand, position and its own answer ("View Disagrees"). */
+/**
+ * "Where models differ": the models that did not take the majority position, as chips. Choosing a chip shows that model's position
+ * and its own answer (the excerpt saved with the chat; nothing is fetched). The first one is shown when the panel opens.
+ */
 function DissentPanel({ id, models, disagreements, onClose }: { id: string; models: KeplarAnswer["models"]; disagreements: KeplarAnswer["disagreements"]; onClose: () => void }) {
   const summaryOf = (stance?: string) => disagreements.flatMap((d) => d.positions).find((p) => p.stance === stance)?.summary;
+  const [pick, setPick] = useState(models[0]?.id ?? "");
+  const viewId = `${id}-view`;
+  const m = models.find((x) => x.id === pick) ?? models[0];
+  const mark = m ? modelMark(m.id, m.name) : null;
+  const text = m ? m.excerpt ?? summaryOf(m.stance) : undefined;
   return (
-    <section id={id} className={s.dissentPanel} aria-label="What the disagreeing models said">
+    <section id={id} className={s.dissentPanel} aria-label="What the disagreeing models said" data-o="KeplarTurn dissent">
       <div className={s.dissentHead}>
-        <p>{models.length === 1 ? "The model that disagreed" : `The ${models.length} models that disagreed`}, in their own words. Keplar weighed these against the others; a minority can still be right.</p>
+        <div>
+          <p className={s.dissentTitle}>Where models differ</p>
+          <p>{models.length === 1 ? "The model that disagreed" : `The ${models.length} models that disagreed`}, in their own words. Keplar weighed these against the others; a minority can still be right.</p>
+        </div>
         <button type="button" className={s.splitLink} onClick={onClose}>Close</button>
       </div>
-      <ul className={s.dissentList}>
-        {models.map((m) => {
-          const mark = modelMark(m.id, m.name);
-          const text = m.excerpt ?? summaryOf(m.stance);
+      {models.length > 1 ? (
+        <ul className={s.dissentChips} aria-label="Disagreeing models">
+          {models.map((x) => {
+            const xm = modelMark(x.id, x.name);
+            return (
+              <li key={x.id}>
+                <button type="button" className={s.dissentChip} aria-pressed={x.id === m?.id} aria-controls={viewId} onClick={() => setPick(x.id)}>
+                  <span className={s.dissentLogo}><BrandMark mark={xm} size={14} /></span>
+                  {x.name}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+      {m && mark ? (
+        <div id={viewId} className={s.dissentItem} aria-live="polite">
+          <div className={s.dissentWho}>
+            <span className={s.dissentLogo}><BrandMark mark={mark} size={18} /></span>
+            <strong>{mark.family}</strong>
+            {m.name !== mark.family ? <span className={s.dissentModel}>{m.name}</span> : null}
+          </div>
+          {m.stance ? <p className={s.dissentStance}>Position: {m.stance}</p> : null}
+          {text ? <div className={s.dissentText}><Markdown source={text} /></div> : <p className={s.dissentModel}>This model&rsquo;s answer wasn&rsquo;t saved with this chat.</p>}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+/** The answer's mode, when it ran in one (Deep or Live Research, Debate, a quiz). Plain answers have none. */
+function modeLabel(a: KeplarAnswer): string | null {
+  if (a.research?.live) return "Live Research";
+  if (a.research) return "Deep Research";
+  if (a.debate) return "Debate";
+  if (a.quiz) return a.quiz.kind === "flashcards" ? "Flashcards" : "Quiz";
+  return null;
+}
+
+/**
+ * While an answer is worked on: one slim line in three phases taken from the real stages (asking the models, comparing them, writing
+ * the answer). Decorative: the step list below it and its live region say the same to screen readers.
+ */
+const PHASES: { label: string; single: string; ids: readonly string[] }[] = [
+  { label: "Asking models", single: "Reading", ids: ["understand", "select", "debate"] },
+  { label: "Comparing", single: "Checking", ids: ["compare", "disagree", "verify"] },
+  { label: "Writing", single: "Writing", ids: ["synthesize"] },
+];
+function PhaseLine({ stage, single }: { stage: string | null; single: boolean }) {
+  const at = Math.max(0, PHASES.findIndex((p) => stage && p.ids.includes(stage)));
+  const phases = single ? PHASES.filter((p) => p.label !== "Comparing") : PHASES;
+  const now = single && at > 0 ? at - 1 : at;
+  return (
+    <div className={s.phaseLine} aria-hidden="true" data-o="KeplarTurn phaseLine">
+      {phases.map((p, i) => (
+        <span key={p.label} className={s.phase} data-state={i < now ? "done" : i === now ? "active" : "next"}>
+          <span className={s.phaseTrack}><span className={s.phaseFill} /></span>
+          <span className={s.phaseLabel}>{single ? p.single : p.label}</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+const hostOf = (url?: string) => {
+  if (!url) return "";
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+};
+const SOURCE_STRIP_MAX = 6;
+
+/**
+ * The sources under the answer, as a strip of cards (domain, title). Deep Research: the pages the report cites, numbered like the
+ * pills in the text. Other answers: the links the models cited or Keplar read, and attachments. Nothing to show: nothing rendered.
+ */
+function SourceStrip({ answer: a, onAll }: { answer: KeplarAnswer; onAll: () => void }) {
+  const r = a.research;
+  const items = r
+    ? r.sources.filter((x) => r.cited.includes(x.n)).map((x) => ({ key: `r${x.n}`, n: x.n as number | null, title: x.title, href: safeHref(x.url) ? x.url : null, host: x.publisher ?? x.host ?? hostOf(x.url), tag: null as string | null }))
+    : a.sources
+        .filter((x) => x.kind !== "note" && (x.url || x.kind === "attachment"))
+        .map((x, i) => ({ key: `s${i}`, n: null, title: x.title, href: x.url && safeHref(x.url) ? x.url : null, host: hostOf(x.url), tag: x.kind === "attachment" ? "Attached" : x.detail === "Read by Keplar for this answer" ? "Read by Keplar" : x.kind === "model" ? "Cited by models" : null }));
+  if (!items.length) return null;
+  const shown = items.slice(0, SOURCE_STRIP_MAX);
+  return (
+    <section className={s.sourceStrip} aria-label="Sources" data-source-strip="">
+      <p className={s.sourceLabel} aria-hidden="true">Sources <span>{items.length}</span></p>
+      <ul className={s.sourceCards}>
+        {shown.map((it) => {
+          const inner = (
+            <>
+              <span className={s.sourceFav} aria-hidden="true">{it.n ?? ((it.host || it.title).replace(/^[^A-Za-z0-9]+/, "").slice(0, 1).toUpperCase() || "·")}</span>
+              <span className={s.sourceText}>
+                <span className={s.sourceHost}>{[it.host, it.tag].filter(Boolean).join(" · ") || "Source"}</span>
+                <span className={s.sourceTitle}>{it.title}</span>
+              </span>
+            </>
+          );
           return (
-            <li key={m.id} className={s.dissentItem}>
-              <div className={s.dissentWho}>
-                <span className={s.dissentLogo}><BrandMark mark={mark} size={18} /></span>
-                <strong>{mark.family}</strong>
-                {m.name !== mark.family ? <span className={s.dissentModel}>{m.name}</span> : null}
-              </div>
-              {m.stance ? <p className={s.dissentStance}>Position: {m.stance}</p> : null}
-              {text ? <div className={s.dissentText}><Markdown source={text} /></div> : <p className={s.dissentModel}>This model&rsquo;s answer wasn&rsquo;t saved with this chat.</p>}
+            <li key={it.key}>
+              {it.href ? <a className={s.sourceCard} href={it.href} target="_blank" rel="noopener noreferrer nofollow" data-n={it.n ?? undefined}>{inner}</a> : <span className={s.sourceCard}>{inner}</span>}
             </li>
           );
         })}
       </ul>
+      {items.length > shown.length && !r ? <button type="button" className={s.splitLink} onClick={onAll}>All {items.length} sources</button> : null}
     </section>
   );
 }
@@ -900,6 +1007,7 @@ function Answer({ answer: a, onRetry, onRefreshResearch, onSignal, isLast, conti
       <header className={s.answerHead}>
         <AnswerBrand id={`${uid}-title`} models={a.models} />
         <div className={s.headSide}>
+          {modeLabel(a) ? <span className={s.modeBadge} data-mode-badge="">{modeLabel(a)}</span> : null}
           <ConsensusBadge c={c} models={a.models} />
           {dissenters.length ? (
             <button type="button" className={s.viewDissent} aria-expanded={dissentOpen} aria-controls={`${uid}-dissent`} onClick={() => setDissentOpen((v) => !v)}>
@@ -911,7 +1019,12 @@ function Answer({ answer: a, onRetry, onRefreshResearch, onSignal, isLast, conti
       {dissentOpen && dissenters.length ? <DissentPanel id={`${uid}-dissent`} models={dissenters} disagreements={a.disagreements} onClose={() => setDissentOpen(false)} /> : null}
 
       {a.research ? <ResearchHead research={a.research} /> : null}
-      {a.quiz ? <QuizCard quiz={a.quiz} progress={quizProgress} onProgress={onQuizProgress} onNew={onAsk} /> : <StructuredAnswer source={a.markdown} cite={citeRenderer(a.research?.sources)} rich={a.rich} consensus={a.consensus} />}
+      {a.quiz ? <QuizCard quiz={a.quiz} progress={quizProgress} onProgress={onQuizProgress} onNew={onAsk} /> : (
+        <div className={s.body} data-o="KeplarTurn body">
+          <StructuredAnswer source={a.markdown} cite={citeRenderer(a.research?.sources)} rich={a.rich} consensus={a.consensus} />
+        </div>
+      )}
+      <SourceStrip answer={a} onAll={() => { setHowOpen(true); setOpen(quiet.has("sources") ? "details" : "sources"); }} />
 
       {modelStatus.missing.length && c.level !== "single" ? (
         <p className={s.missingNote} role="note" data-missing-models={modelStatus.missing.length}>

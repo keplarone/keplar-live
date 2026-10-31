@@ -41,3 +41,24 @@
 @media (prefers-reduced-motion: reduce) {
   .item[data-swap] { animation: none; }
 }
+
+/* ── Consensus layout (Orbit): the brands that answered as an overlapping stack of discs; the brand named beside it is lit. ── */
+.title { gap: 10px; font-family: var(--o-font-sans); font-size: var(--o-t-14); color: var(--o-ink); }
+.stack { display: inline-flex; align-items: center; flex: none; }
+.disc {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--o-surface-1);
+  color: var(--o-ink);
+  box-shadow: 0 0 0 2px var(--o-canvas), inset 0 0 0 1px var(--o-line-strong);
+  transition: box-shadow var(--o-dur-3) var(--o-ease-out);
+}
+.disc + .disc { margin-left: -6px; }
+.disc[data-on] { position: relative; z-index: 1; box-shadow: 0 0 0 2px var(--o-canvas), inset 0 0 0 1.5px var(--o-accent); }
+.disc[data-more] { font-size: 10px; font-weight: var(--o-w-semibold); color: var(--o-ink-2); background: var(--o-surface-2); font-variant-numeric: tabular-nums; }
+.disc .logo, .disc .tint, .disc .mono { width: 14px; height: 14px; }
+.disc .mono { border: 0; }
+.more { color: var(--o-ink-3); }

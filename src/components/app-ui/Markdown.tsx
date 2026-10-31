@@ -21,6 +21,8 @@ import { CodeRunner, runnableLang } from "./parity/CodeRunner";
 const INLINE = /(`[^`]+`)|(\*\*[^*]+\*\*)|(\*[^*\s][^*]*\*|_[^_\s][^_]*_)|(\[[^\]]+\]\([^)\s]+\))/g;
 /** With citations on (a Deep Research report): a bare "[3]" that isn't a link is a citation of page 3. */
 const INLINE_CITE = new RegExp(`${INLINE.source}|(\\[\\d{1,2}\\](?!\\())`, "g");
+/** A table cell that is a figure: optional sign or currency, digits, an optional unit or percent. */
+const NUMERIC = /^[~≈<>±+\-−]?\s?[$€£¥]?\s?\d[\d,.' ]*(?:\s?(?:%|‰|x|×|k|K|M|B|bn|ms|s|h|GB|MB|KB|TB|kg|g|km|m|cm|mm|°C|°F|USD|EUR))?$/;
 export type CiteRenderer = (n: number, key: string) => ReactNode;
 
 /** Plain text with math placeholders swapped for rendered formulas. */
@@ -182,12 +184,17 @@ function MarkdownImpl({ source, streaming, caret, cite }: { source: string; stre
             // The structured view is rendered beside the prose. A leaked or half-written fence is never shown as code.
             if (b.lang === "keplar-ui" || b.lang === "keplar-quiz") return null;
             return <CodeBlock key={k} code={b.code} lang={b.lang} streaming={streaming && b.open} />;
-          case "table":
+          case "table": {
+            // A column whose every filled cell is a figure ("42", "$1.2k", "-3.5%", "120 ms") is right-aligned in tabular figures.
+            const num = b.head.map((_, j) => {
+              const cells = b.rows.map((r) => (r[j] ?? "").trim()).filter(Boolean);
+              return cells.length > 0 && cells.every((x) => NUMERIC.test(x)) && !(j === 0 && !b.head[0]);
+            });
             return (
               <div key={k} className={s.tableWrap} tabIndex={0} role="region" aria-label="Table">
                 <table className={s.table}>
                   <thead>
-                    <tr>{b.head.map((c, j) => <th key={j} scope="col" style={{ textAlign: b.align[j] ?? undefined }}>{inline_(c, `${k}-h${j}`)}</th>)}</tr>
+                    <tr>{b.head.map((c, j) => <th key={j} scope="col" style={{ textAlign: b.align[j] ?? undefined }} data-num={num[j] || undefined}>{inline_(c, `${k}-h${j}`)}</th>)}</tr>
                   </thead>
                   <tbody>
                     {b.rows.map((r, ri) => (
@@ -196,7 +203,7 @@ function MarkdownImpl({ source, streaming, caret, cite }: { source: string; stre
                           j === 0 && !b.head[0] ? (
                             <th key={j} scope="row">{inline_(r[j] ?? "", `${k}-${ri}-${j}`)}</th>
                           ) : (
-                            <td key={j} style={{ textAlign: b.align[j] ?? undefined }}>{inline_(r[j] ?? "", `${k}-${ri}-${j}`)}</td>
+                            <td key={j} style={{ textAlign: b.align[j] ?? undefined }} data-num={num[j] || undefined}>{inline_(r[j] ?? "", `${k}-${ri}-${j}`)}</td>
                           ),
                         )}
                       </tr>
@@ -205,6 +212,7 @@ function MarkdownImpl({ source, streaming, caret, cite }: { source: string; stre
                 </table>
               </div>
             );
+          }
         }
       })}
       {caret && (!blocks.length || !textLast) ? <p className={s.caretLine}><Caret /></p> : null}

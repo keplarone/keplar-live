@@ -372,3 +372,24 @@
     scale: none;
   }
 }
+
+/* ── Consensus layout (Orbit): the quiz is an answer card like the structured blocks (the --o-elev-1 hairline edge, 14px, the answer's spacing). ── */
+.card,
+.building {
+  padding: 20px;
+  border: 1px solid var(--o-line);
+  border-radius: var(--o-r-card);
+  background: var(--o-surface-1);
+  font-family: var(--o-font-sans);
+  color: var(--o-ink);
+}
+.track { height: 3px; border-radius: 3px; background: var(--o-surface-3); }
+.track > span { height: 3px; border-radius: 3px; background: var(--o-accent); }
+.count { color: var(--o-ink-3); font-size: var(--o-t-12); }
+.prompt { font-size: var(--o-t-18); font-weight: var(--o-w-semibold); letter-spacing: -0.012em; }
+.opt { border: 1px solid var(--o-line-strong); border-radius: var(--o-r-control); font-size: var(--o-t-14); }
+.opt:hover:not([aria-disabled="true"]) { background: var(--o-hover); }
+.letter { color: var(--o-ink-3); font-weight: var(--o-w-medium); }
+.opt[data-state="correct"] { border-color: var(--quiz-ok); }
+.opt[data-state="wrong"] { border-color: var(--quiz-bad); }
+.feedback { border: 0; border-radius: var(--o-r-control); background: var(--o-surface-2); font-size: var(--o-t-14); }

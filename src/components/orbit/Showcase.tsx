@@ -8,6 +8,7 @@ import { ContextPanel, type ContextTab } from "@/components/app-ui/shell/Context
 import type { KeplarMessage, View } from "@/components/app-ui/state/types";
 import { Button, ButtonLink, Chip, IconButton } from "./Button";
 import { flashSuccess } from "@/lib/orbit-fx";
+import { AnswersShowcase } from "./AnswersShowcase";
 import s from "./Showcase.module.css";
 
 /**
@@ -195,6 +196,8 @@ export function OrbitShowcase() {
           <KitIconButton label="Kit copy" icon={<IconCopy size={16} />} />
         </div>
       </section>
+
+      <AnswersShowcase />
 
       <section className={s.section} aria-labelledby="o-shell">
         <h2 id="o-shell" className={s.h2}>App shell</h2>
