@@ -140,7 +140,7 @@ export function InquireExperience() {
 
       <div className={s.grid}>
         <header className={s.intro}>
-          <p className={s.eyebrow}>{copy.eyebrow}</p>
+          <p className={s.eyebrow} data-o="Inquire eyebrow">{copy.eyebrow}</p>
           <h1 className={s.title}>{copy.title}</h1>
           <p className={s.lede}>{copy.lede}</p>
           <div className={s.anchorWrap} aria-hidden="true">

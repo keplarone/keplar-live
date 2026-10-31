@@ -57,8 +57,8 @@ export default function DevelopersPage() {
     <JsonLd data={breadcrumbs([{ name: "Developers", path: "/developers" }])} />
     <div className={s.page}>
       <header className={s.hero}>
-        <p className={s.kicker}><span>Developers</span><span>API v1</span><span>Embed</span><span>Teams</span></p>
-        <h1 className={s.title}><TwoTone text={"Build with Keplar."} /></h1>
+        <p className={s.kicker} data-o="Developers kicker"><span>Developers</span><span>API v1</span><span>Embed</span><span>Teams</span></p>
+        <h1 className={s.title} data-o="Developers title"><TwoTone text={"Build with Keplar."} /></h1>
         <p className={s.lede}>
           One request sends a question to several models, compares them, and returns one answer with a plain record of where they disagreed.
           Call it from your server with an API key, or put the same Ask on your own site with one script tag.

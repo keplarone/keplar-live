@@ -30,7 +30,7 @@ export default async function AdminInboxPage() {
   return (
     <div className={s.page}>
       <header className={s.head}>
-        <p className={s.eyebrow}>Admin · inbox</p>
+        <p className={s.eyebrow} data-o="Admin eyebrow">Admin · inbox</p>
         <h1>Reports and support</h1>
         <p className={s.sub}>Stored in the database. Nothing here is emailed automatically: reply from team@keplar.one yourself. <Link href="/admin">Operations</Link></p>
       </header>

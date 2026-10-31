@@ -27,7 +27,7 @@ export default async function AdminSeoPage() {
   return (
     <div className={s.page}>
       <header className={s.head}>
-        <p className={s.eyebrow}>Admin · SEO · last 28 days</p>
+        <p className={s.eyebrow} data-o="Admin eyebrow">Admin · SEO · last 28 days</p>
         <h1>Search to activation</h1>
         <p className={s.sub}>
           Counts come from visitors who allowed Analytics (and send no Global Privacy Control or Do Not Track signal), so they are a floor, not a total. Impressions, clicks, queries and rankings live in Google Search Console and Bing Webmaster Tools; Keplar cannot see them.

@@ -29,10 +29,10 @@ export default async function UseCasePage({ params }: Props) {
   if (!u) notFound();
   const more = u.related.map((p) => allBlogAndDocsByPath(p)).filter(Boolean) as { path: string; title: string; description: string }[];
   return (
-    <div className={s.shell}>
+    <div className={s.shell} data-o="kb shell">
       <div style={{ maxWidth: "var(--l-max)", margin: "0 auto" }}>
         <Breadcrumbs trail={[{ name: "Use cases", path: "/use-cases" }, { name: u.title, path: u.path }]} />
-        <h1 className={s.h1}><TwoTone text={u.title} /></h1>
+        <h1 className={s.h1} data-o="kb h1"><TwoTone text={u.title} /></h1>
         <p className={s.lede}>{u.description}</p>
         <p className={s.meta}><span>Updated <time dateTime={u.updated}>{date(u.updated)}</time></span></p>
         <article className={s.prose}><Markdown nodes={u.nodes} /></article>

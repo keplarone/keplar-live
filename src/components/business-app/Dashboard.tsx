@@ -183,7 +183,7 @@ export function Dashboard({ onOpenProject }: { onOpenProject: (id: string) => vo
     <div className={`${s.page} ${d.dash}`}>
       <header className={d.head}>
         <div className={d.headL}>
-          <p className={d.eyebrow}><span className={d.dot} data-busy={!dash || undefined} aria-hidden="true" />{loadedAt ? `Updated ${loadedAt}` : "Loading your numbers…"}</p>
+          <p className={d.eyebrow} data-o="dashboard eyebrow"><span className={d.dot} data-busy={!dash || undefined} aria-hidden="true" />{loadedAt ? `Updated ${loadedAt}` : "Loading your numbers…"}</p>
           <h1 className={d.title}>Dashboard</h1>
           <p className={d.lead}>From your connected payments, site, agents and usage.</p>
         </div>

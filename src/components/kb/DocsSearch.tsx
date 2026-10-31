@@ -58,6 +58,7 @@ export function DocsSearch() {
     <div className={s.searchWrap} ref={box} role="search">
       <input
         className={s.searchInput}
+        data-o="kb searchInput"
         type="search"
         role="combobox"
         value={q}

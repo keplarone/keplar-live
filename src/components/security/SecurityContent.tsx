@@ -11,8 +11,8 @@ import { TwoTone } from "@/components/page/TwoTone";
 export function SecurityContent({ accountOrigin = "" }: { accountOrigin?: string }) {
   return (
     <div className={s.page}>
-      <p className={s.eyebrow}>Security</p>
-      <h1 className={s.title}><TwoTone text={"Report a security problem"} /></h1>
+      <p className={s.eyebrow} data-o="Feedback eyebrow">Security</p>
+      <h1 className={s.title} data-o="Feedback title"><TwoTone text={"Report a security problem"} /></h1>
       <p className={s.lede}>
         If you think you found a vulnerability in Keplar, email <a href={`mailto:${brand.contactEmail}`}>{brand.contactEmail}</a>. A machine-readable copy of this policy is at <a href="/.well-known/security.txt">/.well-known/security.txt</a>.
       </p>

@@ -20,7 +20,7 @@ export default async function AdminCostsPage() {
   return (
     <div className={s.page}>
       <header className={s.head}>
-        <p className={s.eyebrow}>Admin · costs · last 7 days</p>
+        <p className={s.eyebrow} data-o="Admin eyebrow">Admin · costs · last 7 days</p>
         <h1>Cost per request</h1>
         <p className={s.sub}>One row per answered request, written by the server with the provider cost it actually incurred. Rows are kept 30 days; no prompt or answer text is stored. Spend breaker now: <b>{level}</b>.{pool ? <> Free pool today: <b>{pool.usedToday}</b> of {pool.usable} requests used ({pool.level}), {pool.minuteLeft} of {pool.rpm} left this minute; resets {new Date(pool.resetsAt).toLocaleString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" })} ET.</> : null} <Link href="/admin">Operations</Link></p>
       </header>

@@ -1281,7 +1281,7 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
   const projectName = state.projects.find((p) => p.id === (thread?.projectId ?? state.projectFilter))?.name;
 
   return (
-    <div ref={rootRef} className={s.app} data-product="" data-own-search="" data-collapsed={collapsed || undefined} data-drawer={drawerOpen || undefined} data-app-ready={state.scope === "pending" ? undefined : ""}>
+    <div ref={rootRef} className={s.app} data-o="App app" data-product="" data-own-search="" data-collapsed={collapsed || undefined} data-drawer={drawerOpen || undefined} data-app-ready={state.scope === "pending" ? undefined : ""}>
       <p className="visually-hidden" role="status" aria-live="polite">{announce}</p>
       <ExtensionReturn onChanged={() => void syncMeter(true)} />
       <ReferralClaim signedIn={state.ledger.signedIn} onChanged={() => void syncMeter(true)} />
@@ -1296,7 +1296,7 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
         drawerShown={drawerOpen || (wide && !collapsed)}
         signedIn={state.ledger.signedIn}
       />
-      <div ref={drawerRef} className={s.sideWrap} data-open={drawerOpen || undefined} onPointerEnter={() => warmViews(true)} onFocus={() => warmViews(true)}>
+      <div ref={drawerRef} className={s.sideWrap} data-o="App sideWrap" data-open={drawerOpen || undefined} onPointerEnter={() => warmViews(true)} onFocus={() => warmViews(true)}>
         <Sidebar
           state={listedState}
           mac={mac}
@@ -1314,14 +1314,14 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
           collapsed={collapsed}
         />
       </div>
-      {drawerScrim.mounted ? <div className={s.drawerScrim} onClick={() => setDrawerOpen(false)} aria-hidden="true" {...drawerScrim.motion("fade")} /> : null}
+      {drawerScrim.mounted ? <div className={s.drawerScrim} data-o="App drawerScrim" onClick={() => setDrawerOpen(false)} aria-hidden="true" {...drawerScrim.motion("fade")} /> : null}
 
-      <div key={state.epoch} className={s.main} inert={drawerOpen || undefined} data-view={state.view} data-empty={(state.view === "thread" && messages.length === 0) || undefined}>
-        <header className={s.topbar} data-keplar-drag>
-          <button ref={menuBtnRef} type="button" className={`${s.iconBtn} ${s.menuBtn}`} onClick={toggleDrawer} aria-label="Open sidebar" aria-expanded={drawerOpen} aria-controls="keplar-sidebar">
+      <div key={state.epoch} className={s.main} data-o="App main" inert={drawerOpen || undefined} data-view={state.view} data-empty={(state.view === "thread" && messages.length === 0) || undefined}>
+        <header className={s.topbar} data-o="App topbar" data-keplar-drag>
+          <button ref={menuBtnRef} type="button" className={`${s.iconBtn} ${s.menuBtn}`} data-o="App iconBtn" onClick={toggleDrawer} aria-label="Open sidebar" aria-expanded={drawerOpen} aria-controls="keplar-sidebar">
             <KeplarSymbol size={22} />
           </button>
-          <p className={s.topTitle}>
+          <p className={s.topTitle} data-o="App topTitle">
             {projectName ? <span className={s.topProject}>{projectName} / </span> : null}
             {title}
           </p>
@@ -1329,13 +1329,13 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
             // Orbit top strip: the latest answer's model agreement, which opens the context panel (sources, models, memory).
             <button type="button" className={s.ctxOpen} data-context-open="" aria-expanded={contextOpen} aria-controls="keplar-context" onClick={() => setContextOpen((v) => !v)} data-orbit-fx="secondary">
               <span className={s.ctxDot} aria-hidden="true" />
-              <span className={s.ctxText}>{agreement ?? "Answer details"}</span>
+              <span className={s.ctxText} data-o="App ctxText">{agreement ?? "Answer details"}</span>
               {agreement ? <span className="visually-hidden">, answer details</span> : null}
             </button>
           ) : null}
           {sync.memory !== null ? (
             // Minimal pass: a quiet icon, not a chip. The state is in its name and tooltip (and a slash when off); one click opens the setting.
-            <Link href="/account#memory" className={`${s.memoryChip} ${s.phoneHide}`} data-memory-status="" data-on={sync.memory || undefined} aria-label={sync.memory ? "Memory on" : "Memory off"} title={sync.memory ? "Memory is on: Keplar remembers your name, goals and past chats. Click to manage." : "Memory is off. Click to turn it on."}>
+            <Link href="/account#memory" className={`${s.memoryChip} ${s.phoneHide}`} data-o="App memoryChip" data-memory-status="" data-on={sync.memory || undefined} aria-label={sync.memory ? "Memory on" : "Memory off"} title={sync.memory ? "Memory is on: Keplar remembers your name, goals and past chats. Click to manage." : "Memory is off. Click to turn it on."}>
               <IconMemory size={16} />
             </Link>
           ) : null}
@@ -1357,14 +1357,14 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
           ) : null}
           {state.view === "thread" && thread && thread.messages.length ? <DeleteChatAction variant="header" title={thread.title} onDelete={() => deleteChat(thread.id)} /> : null}
           {/* Phones signed in: the theme lives in the account menu and memory in Settings, so the bar keeps the title room. */}
-          <ThemeToggle className={`${s.iconBtn} kp-topbar-theme ${state.ledger.signedIn ? s.phoneHide : ""}`} />
+          <ThemeToggle className={`${s.iconBtn} kp-topbar-theme ${state.ledger.signedIn ? s.phoneHide : ""}`} data-o="App iconBtn" />
           {state.ledger.synced && !state.ledger.signedIn ? (
             <span className={s.authTop}>
-              <Link href="/signin" className={s.authIn}>Log in</Link>
-              <Link href="/signup" className={s.authUp}><span className={s.authFull}>Sign up for free</span><span className={s.authShort}>Sign up</span></Link>
+              <Link href="/signin" className={s.authIn} data-o="App authIn">Log in</Link>
+              <Link href="/signup" className={s.authUp} data-o="App authUp"><span className={s.authFull}>Sign up for free</span><span className={s.authShort}>Sign up</span></Link>
             </span>
           ) : null}
-          <button type="button" className={`${s.iconBtn} ${s.newBtnMobile}`} onClick={() => newThread()} aria-label="New chat">
+          <button type="button" className={`${s.iconBtn} ${s.newBtnMobile}`} data-o="App iconBtn" onClick={() => newThread()} aria-label="New chat">
             <IconPlus size={18} />
           </button>
         </header>
@@ -1372,34 +1372,34 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
         {state.view === "thread" ? (
           <div className={s.threadSplit} data-beside={beside?.view}>
           <div className={s.threadCol}>
-            <div ref={scrollRef} className={s.scroll} onScroll={onScroll} onWheel={onWheel} onTouchStart={onTouchStart} onTouchMove={onTouchMove}>
+            <div ref={scrollRef} className={s.scroll} data-o="App scroll" onScroll={onScroll} onWheel={onWheel} onTouchStart={onTouchStart} onTouchMove={onTouchMove}>
               {chatLoading && messages.length === 0 ? (
-                <div className={s.empty}>
+                <div className={s.empty} data-o="App empty">
                   <div className={s.welcome} role={activeLoad === "failed" ? "alert" : "status"} data-chat-load={activeLoad ?? "loading"}>
                     {activeLoad === "failed" ? (
                       <>
-                        <p className={s.welcomeTitle}>This chat couldn&rsquo;t be loaded.</p>
-                        <p className={s.welcomeLede}>Check your connection and try again. Nothing in it was changed.</p>
+                        <p className={s.welcomeTitle} data-o="App welcomeTitle">This chat couldn&rsquo;t be loaded.</p>
+                        <p className={s.welcomeLede} data-o="App welcomeLede">Check your connection and try again. Nothing in it was changed.</p>
                         <p>
                           <Button size="sm" variant="secondary" onClick={() => { if (state.activeThreadId) void hydrate(state.activeThreadId); }}>Try again</Button>{" "}
                           <Button size="sm" variant="ghost" onClick={() => newThread()}>New chat</Button>
                         </p>
                       </>
                     ) : (
-                      <p className={s.welcomeTitle}>Loading {thread?.title ? `“${thread.title}”` : "this chat"}&hellip;</p>
+                      <p className={s.welcomeTitle} data-o="App welcomeTitle">Loading {thread?.title ? `“${thread.title}”` : "this chat"}&hellip;</p>
                     )}
                   </div>
                 </div>
               ) : messages.length === 0 ? (
-                <div className={s.empty}>
+                <div className={s.empty} data-o="App empty">
                   <div className={s.welcome}>
                     {/* Held invisible (same height) until the session is known, so the name never pops in over a generic line.
                         firstName is only set after the client knows the session, so the time-of-day greeting never renders on the server. */}
-                    <h1 className={s.welcomeTitle} data-welcome="" data-welcome-name={firstName || undefined} style={state.ledger.synced ? undefined : { visibility: "hidden" }}>
+                    <h1 className={s.welcomeTitle} data-o="App welcomeTitle" data-welcome="" data-welcome-name={firstName || undefined} style={state.ledger.synced ? undefined : { visibility: "hidden" }}>
                       <KeplarSymbol size={22} className={s.welcomeMark} />
                       {firstName ? (
                         <span>
-                          <span>{welcome ? "Welcome," : `${dayGreeting(new Date().getHours())},`}</span> <span className={s.welcomeName}>{firstName}</span>
+                          <span>{welcome ? "Welcome," : `${dayGreeting(new Date().getHours())},`}</span> <span className={s.welcomeName} data-o="App welcomeName">{firstName}</span>
                         </span>
                       ) : state.ledger.synced ? (
                         // Direct children of the heading. A span around the slot matches [data-welcome] span
@@ -1407,7 +1407,7 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
                         <><span>How can </span><RotatingModelName /><span> help you today?</span></>
                       ) : <span>Welcome to Keplar.</span>}
                     </h1>
-                    <p className={s.welcomeLede}>Ask anything. Keplar checks with several models and gives you one clear answer.</p>
+                    <p className={s.welcomeLede} data-o="App welcomeLede">Ask anything. Keplar checks with several models and gives you one clear answer.</p>
                   </div>
                   <div className={s.emptyBody}>
                   {state.privateNext ? <PrivateBanner onClose={() => dispatch({ type: "private-next", on: false })} /> : null}
@@ -1430,7 +1430,7 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
                       <li key={p.label}>
                         <button type="button" className={s.example} onClick={() => send(p.label, [], { web: false, deepResearch: false, create: false, agent: false })}>
                           <span>{p.label}</span>
-                          <span className={s.exampleHint}>{p.hint}</span>
+                          <span className={s.exampleHint} data-o="App exampleHint">{p.hint}</span>
                         </button>
                       </li>
                     ))}
@@ -1442,16 +1442,16 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
                   </div>
                 </div>
               ) : (
-                <div ref={threadRef} className={s.thread} role="log" aria-label={thread?.title} aria-live="off" data-motion="stream">
+                <div ref={threadRef} className={s.thread} data-o="App thread" role="log" aria-label={thread?.title} aria-live="off" data-motion="stream">
                   {/* Heading structure for screen readers: the chat's title, then each question as an h2 heading its turn (answers use h3/h4). */}
                   <h1 className="visually-hidden">{thread?.title ?? "Chat"}</h1>
                   {thread?.private ? <PrivateBanner onClose={() => newThread()} /> : null}
                   {thread ? <ThreadBar thread={thread} signedIn={state.ledger.signedIn} /> : null}
                   {messages.map((m) =>
                     m.role === "user" ? (
-                      <div key={m.id} className={s.userTurn}>
+                      <div key={m.id} className={s.userTurn} data-o="App userTurn">
                         {m.media?.length ? <UserMedia media={m.media} /> : null}
-                        {m.text ? <h2 className={s.userMsg} dir="auto">{m.text}</h2> : <h2 className="visually-hidden">Your message</h2>}
+                        {m.text ? <h2 className={s.userMsg} data-o="App userMsg" dir="auto">{m.text}</h2> : <h2 className="visually-hidden">Your message</h2>}
                         {m.text && !running ? <EditMessage onEdit={() => { composerRef.current?.setText(m.text); composerRef.current?.focus(); }} /> : null}
                         {m.attachments.length || m.via || Object.values(m.modes).some(Boolean) ? (
                           <p className={s.userMeta}>
@@ -1588,6 +1588,7 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
             <div
               ref={dockRef}
               className={s.dock}
+              data-o="App dock"
               onWheel={(e) => {
                 // Overlay dock: a wheel over the composer / footer note scrolls the thread underneath (textarea scrolls only when it overflows).
                 const t = e.target as HTMLElement;
@@ -1629,12 +1630,12 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
                 waiting={chatLoading}
               />
               {sessionExpired ? (
-                <p className={s.dockNote} role="alert">
+                <p className={s.dockNote} data-o="App dockNote" role="alert">
                   Your session expired, so you&rsquo;re signed out. Your question is back in the box.{" "}
                   <SignInLink>Sign in again</SignInLink>
                 </p>
               ) : null}
-              <p className={s.dockNote}>Keplar can be wrong, even when models agree. Verify important decisions.</p>
+              <p className={s.dockNote} data-o="App dockNote">Keplar can be wrong, even when models agree. Verify important decisions.</p>
             </div>
           </div>
           {contextOpen && state.view === "thread" && ctxTabs.length ? (
@@ -1656,17 +1657,17 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
                 ) : beside.view === "studio" ? (
                   <div className={s.createHost}><KeplarStudio plan={state.ledger.plan} signedIn={state.ledger.synced ? state.ledger.signedIn : null} /></div>
                 ) : beside.view === "apps" ? (
-                  <div className={s.scroll}><ConnectedAppsView /></div>
+                  <div className={s.scroll} data-o="App scroll"><ConnectedAppsView /></div>
                 ) : beside.view === "tasks" ? (
-                  <div className={s.scroll}><TasksView onOpenTab={(v) => { setBeside(null); goView(v); }} /></div>
+                  <div className={s.scroll} data-o="App scroll"><TasksView onOpenTab={(v) => { setBeside(null); goView(v); }} /></div>
                 ) : beside.view === "deployments" ? (
-                  <div className={s.scroll}><DeploymentsView onOpenCreate={() => openSurface("create")} /></div>
+                  <div className={s.scroll} data-o="App scroll"><DeploymentsView onOpenCreate={() => openSurface("create")} /></div>
                 ) : beside.view === "history" ? (
-                  <div className={s.scroll}>
+                  <div className={s.scroll} data-o="App scroll">
                     <HistoryView key={tabFocus?.view === "history" ? `q:${tabFocus.query ?? ""}` : "h"} initialQuery={tabFocus?.view === "history" ? tabFocus.query : undefined} state={listedState} signedIn={sync.signedIn} onRename={sync.rename} onOpen={openThread} onDelete={deleteChat} onMove={sync.move} />
                   </div>
                 ) : beside.view === "projects" ? (
-                  <div className={s.scroll}>
+                  <div className={s.scroll} data-o="App scroll">
                     <ProjectsView
                       key={tabFocus?.view === "projects" ? `p:${tabFocus.projectId ?? ""}` : "p"}
                       initialOpenId={tabFocus?.view === "projects" ? tabFocus.projectId : undefined}
@@ -1683,7 +1684,7 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
                     />
                   </div>
                 ) : beside.view === "agents" ? (
-                  <div className={s.scroll}>
+                  <div className={s.scroll} data-o="App scroll">
                     <AgentsView onStart={() => { setBeside(null); seedComposer("", { agent: true }); }} signedIn={sync.signedIn} onOpenApprovals={() => goView("approvals")} />
                   </div>
                 ) : null}
@@ -1716,19 +1717,19 @@ export default function KeplarApp({ initialView, retrievalEnabled = false }: { i
             <KeplarStudio plan={state.ledger.plan} signedIn={state.ledger.synced ? state.ledger.signedIn : null} />
           </div>
         ) : state.view === "apps" ? (
-          <div className={s.scroll}>
+          <div className={s.scroll} data-o="App scroll">
             <ConnectedAppsView />
           </div>
         ) : state.view === "tasks" ? (
-          <div className={s.scroll}>
+          <div className={s.scroll} data-o="App scroll">
             <TasksView onOpenTab={(v) => goView(v)} />
           </div>
         ) : state.view === "deployments" ? (
-          <div className={s.scroll}>
+          <div className={s.scroll} data-o="App scroll">
             <DeploymentsView onOpenCreate={() => goView("create")} />
           </div>
         ) : (
-          <div className={s.scroll}>
+          <div className={s.scroll} data-o="App scroll">
             {state.view === "history" ? (
               <HistoryView key={tabFocus?.view === "history" ? `q:${tabFocus.query ?? ""}` : "h"} initialQuery={tabFocus?.view === "history" ? tabFocus.query : undefined} state={listedState} signedIn={sync.signedIn} onRename={sync.rename} onOpen={openThread} onDelete={deleteChat} onMove={sync.move} />
             ) : state.view === "projects" ? (

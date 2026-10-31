@@ -18,7 +18,7 @@ export default function DocsHome() {
   return (
     <DocsFrame current="/docs">
       <p className={s.crumbs}>Docs</p>
-      <h1 className={s.h1}><TwoTone text={"Keplar docs"} /></h1>
+      <h1 className={s.h1} data-o="kb h1"><TwoTone text={"Keplar docs"} /></h1>
       <p className={s.lede}>How to use Keplar, how it reaches an answer, and what it will and will not do. Written to be checked against the product: where a number can change, the page says where to see the current one.</p>
       <p className={s.meta}><span>{docs.length} pages</span><span>{docSections.length} sections</span></p>
       <div className={s.prose}>

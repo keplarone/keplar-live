@@ -16,11 +16,11 @@ export default async function Changelog() {
   const showGithubReleases = (await releasesPageVisibility()) === "public";
   const org = { "@id": abs("/#organization") };
   return (
-    <div className={s.shell}>
+    <div className={s.shell} data-o="kb shell">
       <div className={s.hubWrap}>
         <header>
           <p className={s.crumbs}>Release notes</p>
-          <h1 className={s.h1}><TwoTone text={"Release notes"} /></h1>
+          <h1 className={s.h1} data-o="kb h1"><TwoTone text={"Release notes"} /></h1>
           <p className={s.lede}>What changed in Keplar and when, newest first. Only changes you can see are listed. Beta features say so. Last updated {releaseDate(latestRelease())}. <a href="/changelog/feed.xml">Atom feed</a>.</p>
         </header>
         <div className={s.prose}>

@@ -19,8 +19,8 @@ export function RoutePlaceholder({ label, title, lede, children, cta }: Props) {
   return (
     <div className={s.page}>
       <header className={s.header}>
-        <p className={s.label}>{label}</p>
-        <h1 className={s.title}><TwoTone text={title} /></h1>
+        <p className={s.label} data-o="RoutePlaceholder label">{label}</p>
+        <h1 className={s.title} data-o="RoutePlaceholder title"><TwoTone text={title} /></h1>
         <p className={s.lede}>{lede}</p>
         {cta ? (
           <div className={s.cta}>

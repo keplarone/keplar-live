@@ -30,8 +30,8 @@ export default async function LocaleDevelopers({ params }: P) {
   return (
     <div className={s.page}>
       <header className={s.hero}>
-        <p className={s.kicker}><span>{d.kicker}</span><span>API v1</span><span>Embed</span><span>Teams</span></p>
-        <h1 className={s.title}><TwoTone text={d.title} /></h1>
+        <p className={s.kicker} data-o="Developers kicker"><span>{d.kicker}</span><span>API v1</span><span>Embed</span><span>Teams</span></p>
+        <h1 className={s.title} data-o="Developers title"><TwoTone text={d.title} /></h1>
         <p className={s.lede}>{d.lede}</p>
         <div className={s.endpoint} aria-label={d.endpoint} dir="ltr"><span className={s.method}>POST</span>{site.url.replace(/^https?:\/\//, "")}/api/v1/ask</div>
         <div className={s.heroActions}>

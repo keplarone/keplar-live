@@ -37,8 +37,8 @@ export default async function GuidePage({ params }: Props) {
     <>
       <header className={hero.hero}>
         <div className={hero.header}>
-          <p className={hero.label}><Link href="/guides">Guides</Link></p>
-          <h1 className={hero.title}><TwoTone text={g.title} /></h1>
+          <p className={hero.label} data-o="RoutePlaceholder label"><Link href="/guides">Guides</Link></p>
+          <h1 className={hero.title} data-o="RoutePlaceholder title"><TwoTone text={g.title} /></h1>
           <p className={hero.lede}>{g.summary}</p>
           <p style={{ marginTop: "var(--s-4)", color: "var(--c-ink-3)", fontSize: "var(--t-small)" }}>
             {g.readingMinutes} min read · Updated <time dateTime={g.updated}>{new Date(g.updated + "T12:00:00Z").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })}</time>

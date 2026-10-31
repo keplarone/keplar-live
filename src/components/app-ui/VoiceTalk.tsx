@@ -17,7 +17,7 @@ import type { useVoice } from "./useVoice";
 
 type Voice = ReturnType<typeof useVoice>;
 
-export function VoiceTalk({ voice, className, labelClass, disabled, onNote, onAsk }: { voice: Voice; className: string; labelClass: string; disabled?: boolean; onNote: (text: string | null) => void; /** The session ended with a result: send it. */ onAsk: () => void }) {
+export function VoiceTalk({ voice, className, "data-o": hook, labelClass, disabled, onNote, onAsk }: { voice: Voice; className: string; /** style hooks for the button (data-o) */ "data-o"?: string; labelClass: string; disabled?: boolean; onNote: (text: string | null) => void; /** The session ended with a result: send it. */ onAsk: () => void }) {
   const sp = useSpeech();
   // Client-only tree (AppLoader is ssr:false): read support on the first render so the button never pops in and shifts the tools row.
   const [support] = useState<VoiceSupport | null>(() => (typeof window === "undefined" ? null : voiceSupport(window as never)));
@@ -105,7 +105,7 @@ export function VoiceTalk({ voice, className, labelClass, disabled, onNote, onAs
   if (!support.recognition) {
     const msg = unsupportedMessage(support);
     return (
-      <button type="button" className={className} aria-label="Voice mode (beta): not available in this browser" title={msg} onClick={() => onNote(msg)}>
+      <button type="button" className={className} data-o={hook} aria-label="Voice mode (beta): not available in this browser" title={msg} onClick={() => onNote(msg)}>
         <IconTalk size={15} />
         <span className={labelClass}>Talk (beta)</span>
       </button>
@@ -121,6 +121,7 @@ export function VoiceTalk({ voice, className, labelClass, disabled, onNote, onAs
       <button
         type="button"
         className={className}
+        data-o={hook}
         data-voice-btn={listening ? "listening" : voice.state === "processing" ? "processing" : speaking ? "speaking" : "idle"}
         data-talk=""
         aria-pressed={listening || speaking}

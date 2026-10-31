@@ -27,10 +27,10 @@ export default async function VsPage({ params }: Props) {
   if (!v) notFound();
   const path = `/vs/${v.slug}`;
   return (
-    <div className={s.shell}>
+    <div className={s.shell} data-o="kb shell">
       <div style={{ maxWidth: "var(--l-max)", margin: "0 auto" }}>
         <Breadcrumbs trail={[{ name: "Compare", path: "/vs" }, { name: `Keplar vs ${v.name}`, path }]} />
-        <h1 className={s.h1}>{v.title.replace(": what each is for and how they differ", "")}</h1>
+        <h1 className={s.h1} data-o="kb h1">{v.title.replace(": what each is for and how they differ", "")}</h1>
         <p className={s.lede}>{v.description}</p>
         <p className={s.meta}><span>Details about {v.name} read on <time dateTime={VS_ACCESSED}>{date(VS_ACCESSED)}</time></span></p>
         <div className={s.notice} role="note" style={{ marginBottom: "var(--s-8)" }}>

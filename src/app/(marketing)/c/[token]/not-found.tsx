@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "This link isn't available", robots: 
 export default function SharedChatGone() {
   return (
     <div className={s.page}>
-      <p className={s.eyebrow}>Shared chat</p>
+      <p className={s.eyebrow} data-o="Shared eyebrow">Shared chat</p>
       <h1 className={s.title}>This link isn&apos;t available.</h1>
       <p className={s.notice}>The person who shared it may have turned it off, or it has expired. Links stay live for 90 days at most.</p>
       <div className={s.cta}>

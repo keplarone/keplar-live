@@ -95,8 +95,8 @@ export function CompareTemplate({ page, related }: { page: ComparePage; related?
   return (
     <article className={s.page}>
       <header className={s.header}>
-        <p className={s.label}>{page.label}</p>
-        <h1 className={s.h1}><TwoTone text={page.h1} /></h1>
+        <p className={s.label} data-o="compare label">{page.label}</p>
+        <h1 className={s.h1} data-o="compare h1"><TwoTone text={page.h1} /></h1>
         <p className={s.checked}>Last checked: <time>{page.lastChecked}</time></p>
       </header>
 

@@ -60,7 +60,7 @@ test("the roadmap's 'being built' table is hidden when nothing is marked soon", 
 test("chat: a heading structure (h1 title, h2 per question; answers' own headings start at h3) and unique limit-card ids", () => {
   const app = read("src/components/app-ui/KeplarApp.tsx");
   assert.match(app, /<h1 className="visually-hidden">\{thread\?\.title \?\? "Chat"\}<\/h1>/);
-  assert.match(app, /<h2 className=\{s\.userMsg\} dir="auto">\{m\.text\}<\/h2>/);
+  assert.match(app, /<h2 className=\{s\.userMsg\} data-o="App userMsg" dir="auto">\{m\.text\}<\/h2>/);
   assert.match(read("src/components/app-ui/Markdown.tsx"), /b\.level <= 2 \? "h3" : "h4"/);
   const turn = read("src/components/app-ui/KeplarTurn.tsx");
   assert.doesNotMatch(turn, /id="limit-title"|aria-labelledby="limit-title"/);

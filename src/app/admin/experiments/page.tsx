@@ -28,7 +28,7 @@ export default async function AdminExperimentsPage() {
   return (
     <div className={s.page}>
       <header className={s.head}>
-        <p className={s.eyebrow}>Admin · Experiments · last {DAYS} days</p>
+        <p className={s.eyebrow} data-o="Admin eyebrow">Admin · Experiments · last {DAYS} days</p>
         <h1>Experiments</h1>
         <p className={s.sub}>
           An experiment runs only when its id is in NEXT_PUBLIC_KEPLAR_EXPERIMENTS ({running.size ? [...running].join(", ") : "none set"}). Counts are browsers that allowed

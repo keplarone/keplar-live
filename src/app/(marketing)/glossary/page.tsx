@@ -19,11 +19,11 @@ export default function GlossaryPage() {
   const terms = [...glossary].sort((a, b) => a.term.localeCompare(b.term));
   const letters = [...new Set(terms.map((t) => letter(t.term)))];
   return (
-    <div className={s.shell}>
+    <div className={s.shell} data-o="kb shell">
       <div className={s.hubWrap}>
         <header>
           <p className={s.crumbs}>Glossary</p>
-          <h1 className={s.h1}><TwoTone text={"AI glossary"} /></h1>
+          <h1 className={s.h1} data-o="kb h1"><TwoTone text={"AI glossary"} /></h1>
           <p className={s.lede}>{terms.length} terms in plain English. Where a term is part of how Keplar works, a note says exactly how, and links point to the longer explanation.</p>
           <nav aria-label="Jump to letter" className={s.pills} style={{ marginTop: "var(--s-5)" }}>
             {letters.map((l) => <a key={l} href={`#letter-${l}`} className={s.pill}>{l}</a>)}

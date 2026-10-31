@@ -254,7 +254,7 @@ function Score({
         <ul className={s.missed} aria-label="Missed questions">
           {missed.map((q) => (
             <li key={q.id}>
-              <p className={s.kicker}>Missed</p>
+              <p className={s.kicker} data-o="QuizCard kicker">Missed</p>
               <p>{q.prompt}</p>
               <p>Your answer: {progress.picks[q.id] || "—"}</p>
               <p>{feedbackBody(q, false)}</p>

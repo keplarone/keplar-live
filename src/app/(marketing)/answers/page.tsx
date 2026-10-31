@@ -19,7 +19,7 @@ export default async function Answers() {
   const list = await listPublic(100).catch(() => []);
   return (
     <div className={s.page}>
-      <p className={s.eyebrow}>Shared answers</p>
+      <p className={s.eyebrow} data-o="Shared eyebrow">Shared answers</p>
       <h1 className={s.title}><TwoTone text={"Answers Keplar users chose to publish."} /></h1>
       <p className={s.notice}>
         Each page shows one question, the answer several AI models produced together, how many agreed and where they differed. Users opt in page by page and can take a page down at any time. Keplar has not checked these answers, so verify anything important.

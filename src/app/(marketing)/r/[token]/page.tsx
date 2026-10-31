@@ -36,7 +36,7 @@ export default async function SharedAnswer({ params }: { params: Promise<{ token
   if (!r) notFound(); // a real 404 for revoked, expired or unknown links; see not-found.tsx
   return (
     <div className={s.page}>
-      <p className={s.eyebrow}>A shared Keplar answer</p>
+      <p className={s.eyebrow} data-o="Shared eyebrow">A shared Keplar answer</p>
       <h1 className={s.title}><TwoTone text={"One question, several models, one answer."} /></h1>
       <p className={s.notice}>
         Shared by a Keplar user, who chose to make this link. Keplar has not verified it. Models can be wrong, even when they agree, so check anything important. {r.publicAt && !r.hiddenAt ? "The owner also chose to publish this answer as a public page." : "This page is not listed in search engines."}

@@ -3,21 +3,23 @@
  * Replaces the Gemini-led layer (gemini.css) and keeps every behaviour it carried: the one-row composer for short text (and the
  * stacked layout for long text, data-multiline), the attach + to ×, the rotating placeholder fade, the edit-on-hover under your
  * own message, 44px touch targets, the one-column Modes list, the centred empty-state composer.
- * Hooks are the readable CSS-module names Next emits ("App-module__hash__sideWrap"), as the previous layers used.
- * Specificity: html[data-theme] + module class + attribute, so it beats the modules' own :root[data-theme] .x rules without !important
+ * Hooks are data-o tokens on the components ("<Module> <class>", e.g. data-o="App sideWrap" on App.module.css's .sideWrap):
+ * production builds minify CSS-module class names (Next 16.4: "QDraMW_sideWrap"), so class-name substrings match nothing there.
+ * Each old class-substring attribute maps to one [data-o~="…"] attribute, so every selector keeps its specificity.
+ * Specificity: html[data-theme] + module token + attribute, so it beats the modules' own :root[data-theme] .x rules without !important
  * where it can; !important only where a module or an older layer already used it.
  */
 
 /* ───────────── Grid: rail · drawer · canvas ───────────── */
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][data-product] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"][data-product] {
   grid-template-columns: var(--o-rail-w) var(--o-drawer-w) minmax(0, 1fr) !important;
   grid-template-rows: minmax(0, 1fr);
   background: var(--o-canvas);
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][data-product][data-collapsed] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"][data-product][data-collapsed] {
   grid-template-columns: var(--o-rail-w) 0 minmax(0, 1fr) !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] [class*="App-module"]:is([class$="__sideWrap"], [class*="__sideWrap "]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] [data-o~="App"][data-o~="sideWrap"] {
   grid-column: 2;
   grid-row: 1;
   min-width: 0;
@@ -26,30 +28,30 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] [class*=
   background: var(--o-surface-1) !important;
   border-inline-end: 1px solid var(--o-line) !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] [class*="App-module"]:is([class$="__main"], [class*="__main "]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] [data-o~="App"][data-o~="main"] {
   grid-column: 3;
   grid-row: 1;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product][data-collapsed] [class*="App-module"]:is([class$="__sideWrap"], [class*="__sideWrap "]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product][data-collapsed] [data-o~="App"][data-o~="sideWrap"] {
   visibility: hidden;
   border-inline-end-width: 0 !important;
 }
 @media (prefers-reduced-motion: no-preference) {
-  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][data-product] {
+  html:not(:has([data-space-root], [data-kb])) [data-o~="App"][data-product] {
     transition: grid-template-columns var(--o-dur-3) var(--o-ease-out);
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product][data-collapsed] [class*="App-module"]:is([class$="__sideWrap"], [class*="__sideWrap "]) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product][data-collapsed] [data-o~="App"][data-o~="sideWrap"] {
     transition: visibility 0s linear var(--o-dur-3);
   }
 }
 
 /* Tablets (900–1199px): the rail stays, the drawer opens over the canvas (it does not squeeze the conversation). */
 @media (min-width: 900px) and (max-width: 1199px) {
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][data-product],
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][data-product][data-collapsed] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"][data-product],
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"][data-product][data-collapsed] {
     grid-template-columns: var(--o-rail-w) 0 minmax(0, 1fr) !important;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] [class*="App-module"]:is([class$="__sideWrap"], [class*="__sideWrap "]) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] [data-o~="App"][data-o~="sideWrap"] {
     position: fixed;
     inset: 0 auto 0 var(--o-rail-w);
     z-index: 8;
@@ -60,13 +62,13 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product][data-col
     box-shadow: var(--o-elev-3);
     transition: translate var(--o-dur-3) var(--o-ease-out), opacity var(--o-dur-2) var(--o-ease-out), visibility 0s linear var(--o-dur-3);
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] [class*="App-module"]:is([class$="__sideWrap"], [class*="__sideWrap "])[data-open] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] [data-o~="App"][data-o~="sideWrap"][data-open] {
     visibility: visible;
     translate: 0 0;
     opacity: 1;
     transition: translate var(--o-dur-3) var(--o-ease-out), opacity var(--o-dur-2) var(--o-ease-out), visibility 0s;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] [class*="App-module"]:is([class$="__drawerScrim"], [class*="__drawerScrim "]) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] [data-o~="App"][data-o~="drawerScrim"] {
     display: block;
     position: fixed;
     inset: 0 0 0 var(--o-rail-w);
@@ -77,15 +79,15 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product][data-col
 
 /* Phones (< 900px): the rail is the bottom bar (row 2); the drawer is a left sheet over everything. */
 @media (max-width: 899px) {
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][data-product],
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][data-product][data-collapsed] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"][data-product],
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"][data-product][data-collapsed] {
     grid-template-columns: minmax(0, 1fr) !important;
     grid-template-rows: minmax(0, 1fr) auto;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] [class*="App-module"]:is([class$="__main"], [class*="__main "]) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] [data-o~="App"][data-o~="main"] {
     grid-column: 1;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] [class*="App-module"]:is([class$="__sideWrap"], [class*="__sideWrap "]) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-product] [data-o~="App"][data-o~="sideWrap"] {
     grid-column: auto;
     width: min(320px, 86vw);
     border-radius: 0 var(--o-r-panel) var(--o-r-panel) 0;
@@ -115,26 +117,26 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar {
     border-radius: 0 var(--o-r-panel) var(--o-r-panel) 0 !important;
   }
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [class*="__sideItem"],
-html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [class*="Recents-module"]:is([class*="__threadLink"], [class*="__toggle"], [class*="__recentAll"]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [data-o~="sideItem"],
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [data-o~="Recents"]:is([data-o~="threadLink"], [data-o~="toggle"], [data-o~="recentAll"]) {
   min-height: 34px;
   border-radius: var(--o-r-control) !important;
   font-weight: var(--o-w-regular);
   color: var(--o-ink-2);
   transition: background-color var(--o-dur-2) var(--o-ease-out), color var(--o-dur-2) var(--o-ease-out), translate var(--o-dur-3) var(--o-ease-spring);
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [class*="__sideItem"]:hover,
-html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [class*="Recents-module"]:is([class*="__threadLink"], [class*="__toggle"], [class*="__recentAll"]):hover {
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [data-o~="sideItem"]:hover,
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [data-o~="Recents"]:is([data-o~="threadLink"], [data-o~="toggle"], [data-o~="recentAll"]):hover {
   background: var(--o-hover) !important;
   color: var(--o-ink);
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar :is([class*="__sideItem"], [class*="__threadLink"])[aria-current="page"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar :is([data-o~="sideItem"], [data-o~="threadLink"])[aria-current="page"] {
   background: var(--o-selected) !important;
   color: var(--o-ink) !important;
   font-weight: var(--o-w-medium) !important;
   box-shadow: none !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [class*="__sideItem"][data-nav="new"] > svg:first-child {
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [data-o~="sideItem"][data-nav="new"] > svg:first-child {
   background: var(--o-accent) !important;
   color: var(--o-accent-ink) !important;
   border-radius: 6px !important;
@@ -144,17 +146,17 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [data-s
   padding-top: 8px;
   border-top: 1px solid var(--o-line);
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [data-side-links] [class*="__sideItem"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [data-side-links] [data-o~="sideItem"] {
   font-size: var(--o-t-13);
   color: var(--o-ink-3);
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [class*="__signedOutRow"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [data-o~="signedOutRow"] {
   display: flex !important;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [class*="__signedOutRow"] > [class*="__signInCta"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [data-o~="signedOutRow"] > [data-o~="signInCta"] {
   width: auto !important;
   flex: 0 0 auto;
   height: 36px;
@@ -163,7 +165,7 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] #keplar-sidebar [class*
   background: var(--o-accent) !important;
   color: var(--o-accent-ink) !important;
 }
-html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [class*="__meterLink"] {
+html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [data-o~="meterLink"] {
   display: inline-block;
   padding-block: 10px;
   margin-block: -10px;
@@ -171,32 +173,32 @@ html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [class*="__meterLin
 /* Wide screens: the rail carries New chat, Search, the drawer toggle, theme, Settings and Sign in, so the drawer drops its
  * copies of them (display: none takes them out of the accessibility tree too: no two controls with one name). Phones keep them. */
 @media (min-width: 900px) {
-  html:not(:has([data-space-root], [data-kb])) [data-product] #keplar-sidebar :is([data-primary-nav], [class*="__collapseBtn"], [class*="__signedOutRow"]),
-  html:not(:has([data-space-root], [data-kb])) [data-product] #keplar-sidebar [class*="__accountRow"] > a[data-nav="settings"],
-  html:not(:has([data-space-root], [data-kb])) [data-product] #keplar-sidebar [class*="__accountRow"] > span:has(> a[data-nav="settings"]) {
+  html:not(:has([data-space-root], [data-kb])) [data-product] #keplar-sidebar :is([data-primary-nav], [data-o~="collapseBtn"], [data-o~="signedOutRow"]),
+  html:not(:has([data-space-root], [data-kb])) [data-product] #keplar-sidebar [data-o~="accountRow"] > a[data-nav="settings"],
+  html:not(:has([data-space-root], [data-kb])) [data-product] #keplar-sidebar [data-o~="accountRow"] > span:has(> a[data-nav="settings"]) {
     display: none !important;
   }
   /* The rail carries the Keplar mark (home link); the drawer's header keeps only its close button (tablet overlay). */
-  html:not(:has([data-space-root], [data-kb])) [data-product] #keplar-sidebar [class*="__sideBrand"] {
+  html:not(:has([data-space-root], [data-kb])) [data-product] #keplar-sidebar [data-o~="sideBrand"] {
     display: none !important;
   }
-  html:not(:has([data-space-root], [data-kb])) [data-product] #keplar-sidebar [class*="__sideTop"]:not(:has(button:not([class*="__collapseBtn"]))) {
+  html:not(:has([data-space-root], [data-kb])) [data-product] #keplar-sidebar [data-o~="sideTop"]:not(:has(button:not([data-o~="collapseBtn"]))) {
     display: none !important;
   }
   /* The rail holds the theme toggle and the logo; the top bar's copies step aside. */
-  html:not(:has([data-space-root], [data-kb])) [data-product] [class*="App-module"][class*="__topbar"] > .kp-topbar-theme {
+  html:not(:has([data-space-root], [data-kb])) [data-product] [data-o~="App"][data-o~="topbar"] > .kp-topbar-theme {
     display: none !important;
   }
 }
 @media (pointer: coarse) {
-  html:not(:has([data-space-root], [data-kb])) #keplar-sidebar :is(button[class*="__glyphAct"], button[class*="__trigger"]) {
+  html:not(:has([data-space-root], [data-kb])) #keplar-sidebar :is(button[data-o~="glyphAct"], button[data-o~="trigger"]) {
     min-width: 44px;
     min-height: 44px;
   }
 }
 
 /* ───────────── Top strip ───────────── */
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][class*="__topbar"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"][data-o~="topbar"] {
   height: var(--o-topbar-h) !important;
   padding: 0 16px !important;
   align-items: center !important;
@@ -205,7 +207,7 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][c
   box-shadow: none !important;
   background: transparent !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][class*="__topbar"] [class*="__topTitle"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"][data-o~="topbar"] [data-o~="topTitle"] {
   flex: 1 1 auto !important;
   max-width: none !important;
   margin: 0 !important;
@@ -219,7 +221,7 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][c
   color: var(--o-ink) !important;
   text-align: start !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][class*="__topbar"] :is([class*="__iconBtn"], [class*="__memoryChip"]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"][data-o~="topbar"] :is([data-o~="iconBtn"], [data-o~="memoryChip"]) {
   width: 36px !important;
   height: 36px !important;
   border-radius: var(--o-r-control) !important;
@@ -227,11 +229,11 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][c
   box-shadow: none !important;
   color: var(--o-ink-2);
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][class*="__topbar"] :is([class*="__iconBtn"], [class*="__memoryChip"]):hover {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"][data-o~="topbar"] :is([data-o~="iconBtn"], [data-o~="memoryChip"]):hover {
   background: var(--o-hover) !important;
   color: var(--o-ink);
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] a[class*="__authUp"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] a[data-o~="authUp"] {
   height: 34px;
   padding: 0 14px;
   border-radius: var(--o-r-control) !important;
@@ -239,20 +241,20 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] a[class*="__authUp"] {
   color: var(--o-accent-ink) !important;
   font-weight: var(--o-w-medium);
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] a[class*="__authUp"]:hover {
+html:not(:has([data-space-root], [data-kb]))[data-theme] a[data-o~="authUp"]:hover {
   background: var(--o-accent-hover) !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] a[class*="__authIn"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] a[data-o~="authIn"] {
   height: 34px;
   padding: 0 12px;
   border-radius: var(--o-r-control) !important;
   color: var(--o-ink);
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] a[class*="__authIn"]:hover {
+html:not(:has([data-space-root], [data-kb]))[data-theme] a[data-o~="authIn"]:hover {
   background: var(--o-hover) !important;
 }
 @media (pointer: coarse) {
-  html:not(:has([data-space-root], [data-kb]))[data-theme] :is(a[class*="__authUp"], a[class*="__authIn"]) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] :is(a[data-o~="authUp"], a[data-o~="authIn"]) {
     height: 44px;
   }
   html:not(:has([data-space-root], [data-kb])) [data-explore] a {
@@ -262,11 +264,11 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] a[class*="__authIn"]:ho
   }
 }
 /* Thread header (ThreadBar): Share and ⋯ as quiet controls. */
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="ThreadBar-module"][class*="__bar"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="ThreadBar"][data-o~="bar"] {
   align-items: center;
   gap: 4px;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="ThreadBar-module"][class*="__bar"] > button[data-share-chat-open] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="ThreadBar"][data-o~="bar"] > button[data-share-chat-open] {
   height: 32px;
   padding-inline: 12px;
   border-radius: var(--o-r-control);
@@ -275,25 +277,25 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="ThreadBar-modu
   font-size: var(--o-t-13);
   font-weight: var(--o-w-medium);
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="ThreadBar-module"][class*="__bar"] > button[data-share-chat-open]:hover {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="ThreadBar"][data-o~="bar"] > button[data-share-chat-open]:hover {
   background: var(--o-surface-3);
 }
 
 /* ───────────── Canvas: centred column, empty state, dock ───────────── */
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"]:is([class$="__thread"], [class*="__thread "]),
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][class*="__dock"] > *,
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][class*="__empty"][class*="__empty"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"][data-o~="thread"],
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"]:is([data-o~="dock"], [data-o~="dockNote"]) > *,
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"][data-o~="empty"][data-o~="empty"] {
   max-width: var(--o-canvas-max);
 }
 /* Settings → Appearance → Chat width keeps working. */
-html[data-pref-chat-width="wide"]:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"]:is([class$="__thread"], [class*="__thread "]) { max-width: min(1080px, 100%); }
-html[data-pref-chat-width="full"]:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"]:is([class$="__thread"], [class*="__thread "]) { max-width: 100%; }
+html[data-pref-chat-width="wide"]:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"][data-o~="thread"] { max-width: min(1080px, 100%); }
+html[data-pref-chat-width="full"]:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"][data-o~="thread"] { max-width: 100%; }
 /* Docked composer: a soft fade above it, not a slab. */
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"]:not([data-empty]) > * [class*="App-module"][class*="__dock"],
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"]:not([data-empty]) [class*="App-module"][class*="__dock"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"]:not([data-empty]) > * [data-o~="App"]:is([data-o~="dock"], [data-o~="dockNote"]),
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"]:not([data-empty]) [data-o~="App"]:is([data-o~="dock"], [data-o~="dockNote"]) {
   background: linear-gradient(to top, var(--o-canvas) 62%, rgb(var(--o-canvas-rgb) / 0)) !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][class*="__dockNote"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"][data-o~="dockNote"] {
   font-size: var(--o-t-12);
   color: var(--o-ink-3);
 }
@@ -316,7 +318,7 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] [data-mo
   color: inherit !important;
   -webkit-text-fill-color: currentColor !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] [class*="__welcomeName"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] [data-o~="welcomeName"] {
   color: var(--o-accent-text) !important;
 }
 @media (forced-colors: active) {
@@ -326,7 +328,7 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [data-welcome] [class*=
     -webkit-text-fill-color: CanvasText;
   }
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] button[class*="__homeChip"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] button[data-o~="homeChip"] {
   min-height: 34px;
   padding: 0 14px !important;
   border: 1px solid var(--o-line) !important;
@@ -336,22 +338,22 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] button[class*="__homeCh
   color: var(--o-ink-2) !important;
   font-size: var(--o-t-13) !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] button[class*="__homeChip"]:hover {
+html:not(:has([data-space-root], [data-kb]))[data-theme] button[data-o~="homeChip"]:hover {
   border-color: var(--o-line-strong) !important;
   background: var(--o-surface-2) !important;
   color: var(--o-ink) !important;
 }
 @media (pointer: coarse) {
-  html:not(:has([data-space-root], [data-kb]))[data-theme] button[class*="__homeChip"] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] button[data-o~="homeChip"] {
     min-height: 44px;
   }
 }
 /* Phone home: lift the greeting + composer + starters to just above the middle of the screen. */
 @media (max-width: 899px) {
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][data-empty] [class*="App-module"]:is([class$="__scroll"], [class*="__scroll "]) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"][data-empty] [data-o~="App"][data-o~="scroll"] {
     padding-top: max(56px, calc(46svh - 220px)) !important;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][data-empty] [class*="App-module"]:is([class$="__dock"], [class*="__dock "]) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"][data-empty] [data-o~="App"][data-o~="dock"] {
     top: calc(max(56px, calc(46svh - 220px)) + 78px) !important;
   }
 }
@@ -359,13 +361,13 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] button[class*="__homeCh
   html:not(:has([data-space-root], [data-kb])) [data-welcome]:not([style*="hidden"]) {
     animation: o-rise 420ms var(--o-ease-out) both;
   }
-  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][class*="__homeChips"] > li {
+  html:not(:has([data-space-root], [data-kb])) [data-o~="App"][data-o~="homeChips"] > li {
     animation: o-rise-sm 420ms var(--o-ease-out) both;
   }
-  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][class*="__homeChips"] > li:nth-child(1) { animation-delay: 120ms; }
-  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][class*="__homeChips"] > li:nth-child(2) { animation-delay: 150ms; }
-  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][class*="__homeChips"] > li:nth-child(3) { animation-delay: 180ms; }
-  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][class*="__homeChips"] > li:nth-child(n + 4) { animation-delay: 210ms; }
+  html:not(:has([data-space-root], [data-kb])) [data-o~="App"][data-o~="homeChips"] > li:nth-child(1) { animation-delay: 120ms; }
+  html:not(:has([data-space-root], [data-kb])) [data-o~="App"][data-o~="homeChips"] > li:nth-child(2) { animation-delay: 150ms; }
+  html:not(:has([data-space-root], [data-kb])) [data-o~="App"][data-o~="homeChips"] > li:nth-child(3) { animation-delay: 180ms; }
+  html:not(:has([data-space-root], [data-kb])) [data-o~="App"][data-o~="homeChips"] > li:nth-child(n + 4) { animation-delay: 210ms; }
 }
 @keyframes o-rise { from { opacity: 0; translate: 0 12px; } }
 @keyframes o-rise-sm { from { opacity: 0; translate: 0 8px; } }
@@ -398,7 +400,7 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] button[data-context-ope
   background: var(--o-good);
 }
 @media (max-width: 520px) {
-  html:not(:has([data-space-root], [data-kb]))[data-theme] button[data-context-open] [class*="__ctxText"] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] button[data-context-open] [data-o~="ctxText"] {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -413,8 +415,8 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] button[data-context-ope
 }
 
 /* ───────────── Conversation ───────────── */
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"]:is([class$="__userMsg"], [class*="__userMsg "]),
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="KeplarTurn-module"]:is([class$="__userMsg"], [class*="__userMsg "]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"][data-o~="userMsg"],
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="KeplarTurn"][data-o~="userMsg"] {
   padding: 10px 16px !important;
   background: var(--o-surface-2) !important;
   border: 0 !important;
@@ -423,18 +425,18 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="KeplarTurn-mod
   font-weight: var(--o-w-regular) !important;
   color: var(--o-ink) !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="KeplarTurn-module"]:is([class$="__answer"], [class*="__answer "]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="KeplarTurn"][data-o~="answer"] {
   background: transparent !important;
   box-shadow: none !important;
   border: 0 !important;
   border-radius: 0 !important;
   padding-inline: 0 !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="KeplarTurn-module"]:is([class$="__answer"], [class*="__answer "]) [class*="Markdown-module"]:is([class$="__md"], [class*="__md "]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="KeplarTurn"][data-o~="answer"] [data-o~="Markdown"][data-o~="md"] {
   font-size: 1rem;
   line-height: 1.7;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="Markdown-module"]:is([class$="__code"], [class*="__code "]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="Markdown"][data-o~="code"] {
   border-radius: var(--o-r-card) !important;
   background: var(--o-surface-2) !important;
   box-shadow: 0 0 0 1px var(--o-line) !important;
@@ -442,11 +444,11 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="Markdown-modul
 }
 /* Edit under your own message: shown on hover or keyboard focus, always on touch. */
 @media (hover: hover) {
-  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][class*="__userTurn"] > [data-edit-message] {
+  html:not(:has([data-space-root], [data-kb])) [data-o~="App"][data-o~="userTurn"] > [data-edit-message] {
     opacity: 0;
     transition: opacity var(--o-dur-2) var(--o-ease-out);
   }
-  html:not(:has([data-space-root], [data-kb])) [class*="App-module"][class*="__userTurn"]:is(:hover, :focus-within) > [data-edit-message] {
+  html:not(:has([data-space-root], [data-kb])) [data-o~="App"][data-o~="userTurn"]:is(:hover, :focus-within) > [data-edit-message] {
     opacity: 1;
   }
 }
@@ -466,58 +468,58 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [data-answer-tools] but
   color: var(--o-ink);
 }
 @media (prefers-reduced-motion: no-preference) {
-  html:not(:has([data-space-root], [data-kb])) [class*="KeplarTurn-module"][class*="__footActions"] > * {
+  html:not(:has([data-space-root], [data-kb])) [data-o~="KeplarTurn"][data-o~="footActions"] > * {
     animation: o-rise-sm 320ms var(--o-ease-out) both;
     animation-delay: 220ms;
   }
-  html:not(:has([data-space-root], [data-kb])) [class*="__footActions"] > :nth-child(2) { animation-delay: 250ms; }
-  html:not(:has([data-space-root], [data-kb])) [class*="__footActions"] > :nth-child(3) { animation-delay: 280ms; }
-  html:not(:has([data-space-root], [data-kb])) [class*="__footActions"] > :nth-child(4) { animation-delay: 310ms; }
-  html:not(:has([data-space-root], [data-kb])) [class*="__footActions"] > :nth-child(n + 5) { animation-delay: 340ms; }
-  html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [class*="__recentList"] > li {
+  html:not(:has([data-space-root], [data-kb])) [data-o~="footActions"] > :nth-child(2) { animation-delay: 250ms; }
+  html:not(:has([data-space-root], [data-kb])) [data-o~="footActions"] > :nth-child(3) { animation-delay: 280ms; }
+  html:not(:has([data-space-root], [data-kb])) [data-o~="footActions"] > :nth-child(4) { animation-delay: 310ms; }
+  html:not(:has([data-space-root], [data-kb])) [data-o~="footActions"] > :nth-child(n + 5) { animation-delay: 340ms; }
+  html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [data-o~="recentList"] > li {
     animation: o-slide-in 260ms var(--o-ease-out) both;
   }
-  html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [class*="__recentList"] > li:nth-child(2) { animation-delay: 30ms; }
-  html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [class*="__recentList"] > li:nth-child(n + 3) { animation-delay: 60ms; }
+  html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [data-o~="recentList"] > li:nth-child(2) { animation-delay: 30ms; }
+  html:not(:has([data-space-root], [data-kb])) #keplar-sidebar [data-o~="recentList"] > li:nth-child(n + 3) { animation-delay: 60ms; }
 }
 @keyframes o-slide-in { from { opacity: 0; translate: -6px 0; } }
 
 /* ───────────── Composer ───────────── */
-html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] form[data-o~="composer"] {
   background: var(--o-surface-1) !important;
   border: 1px solid var(--o-line-strong) !important;
   border-radius: var(--o-r-panel) !important;
   box-shadow: var(--o-elev-2) !important;
   transition: border-color var(--o-dur-2) var(--o-ease-out), box-shadow var(--o-dur-3) var(--o-ease-out);
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:focus-within {
+html:not(:has([data-space-root], [data-kb]))[data-theme] form[data-o~="composer"]:focus-within {
   border-color: rgb(var(--o-accent-rgb) / 0.55) !important;
   box-shadow: var(--o-elev-2), 0 0 0 4px var(--o-accent-soft) !important;
 }
 /* Keyboard focus on a control inside the composer draws the ring around the composer; typing in the field does not. */
-html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:focus-within:has(:focus-visible:not(textarea)) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] form[data-o~="composer"]:focus-within:has(:focus-visible:not(textarea)) {
   outline: 2px solid var(--o-focus) !important;
   outline-offset: 3px !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"] button[class*="__tool"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] form[data-o~="composer"] button[data-o~="tool"] {
   background: transparent !important;
   border-radius: var(--o-r-control) !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"] button[class*="__tool"]:is(:hover, [aria-expanded="true"]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] form[data-o~="composer"] button[data-o~="tool"]:is(:hover, [aria-expanded="true"]) {
   background: var(--o-hover) !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"] button[class*="__send"]:not([aria-disabled="true"]):not(:disabled) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] form[data-o~="composer"] button[data-o~="send"]:not([aria-disabled="true"]):not(:disabled) {
   background: var(--o-accent) !important;
   color: var(--o-accent-ink) !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"] button[class*="__send"]:not([aria-disabled="true"]):not(:disabled):hover {
+html:not(:has([data-space-root], [data-kb]))[data-theme] form[data-o~="composer"] button[data-o~="send"]:not([aria-disabled="true"]):not(:disabled):hover {
   background: var(--o-accent-hover) !important;
 }
-html:not(:has([data-space-root], [data-kb])) button[class*="__send"] {
+html:not(:has([data-space-root], [data-kb])) button[data-o~="send"] {
   transition: background-color 240ms var(--o-ease-out) 50ms, color 240ms var(--o-ease-out) 50ms, scale var(--o-dur-3) var(--o-ease-spring), translate var(--o-dur-4) var(--o-ease-spring);
 }
 @media (prefers-reduced-motion: no-preference) {
-  html:not(:has([data-space-root], [data-kb])) form[class*="__composer"] button[class*="__send"][aria-disabled="true"] {
+  html:not(:has([data-space-root], [data-kb])) form[data-o~="composer"] button[data-o~="send"][aria-disabled="true"] {
     scale: 0.92;
   }
 }
@@ -529,15 +531,15 @@ html:not(:has([data-space-root], [data-kb])) [data-attach-btn][aria-expanded="tr
   rotate: 45deg;
 }
 /* Rotating placeholder: fades out, swaps, fades back in (useRotatingHint sets data-hint-swap). */
-html:not(:has([data-space-root], [data-kb])) form[class*="__composer"] textarea::placeholder {
+html:not(:has([data-space-root], [data-kb])) form[data-o~="composer"] textarea::placeholder {
   color: var(--o-ink-3);
   transition: opacity 180ms var(--o-ease-out);
 }
-html[data-hint-swap]:not(:has([data-space-root])) form[class*="__composer"] textarea::placeholder {
+html[data-hint-swap]:not(:has([data-space-root])) form[data-o~="composer"] textarea::placeholder {
   opacity: 0;
 }
 /* Composer menus: an Orbit surface that pops in (scale .96 → 1) and closes instantly. */
-html:not(:has([data-space-root], [data-kb]))[data-theme] :is([class$="__attachMenu"], [class*="__attachMenu "], [class$="__moreMenu"], [class*="__moreMenu "], [class$="__panel"], [class*="__panel "]):is([class*="Composer-module"]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] :is([data-o~="attachMenu"], [data-o~="moreMenu"], [data-o~="panel"])[data-o~="Composer"] {
   background: var(--o-surface-1) !important;
   border: 0 !important;
   border-radius: var(--o-r-card) !important;
@@ -550,29 +552,29 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] :is([class$="__attachMe
 }
 @keyframes o-menu-in { from { opacity: 0; scale: 0.96; } }
 /* Modes menu: one column, a row per mode. */
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="Composer-module"]:is([class$="__moreMenu"], [class*="__moreMenu "]) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="Composer"][data-o~="moreMenu"] {
   grid-template-columns: minmax(0, 1fr) !important;
   width: 340px !important;
   gap: 2px !important;
   padding: 6px !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="Composer-module"][class*="__moreItem"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="Composer"][data-o~="moreItem"] {
   min-height: 48px !important;
   padding: 6px 12px 6px 8px !important;
   border-radius: var(--o-r-control) !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="Composer-module"][class*="__moreBlurb"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="Composer"][data-o~="moreBlurb"] {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="Composer-module"][class*="__moreBlurb"] br { display: none; }
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="Composer"][data-o~="moreBlurb"] br { display: none; }
 
 /* One row (+ and Modes · the field · voice, routing, send) while the composer holds just the field and its controls and the text
    fits one line. Mode chips, attachments or any row above the field fall back to the stacked layout, and so does text longer than
    one line (data-multiline, set by Composer.tsx): a one-row layout around many lines squeezed the text between the controls. */
 @container composer (min-width: 600px) {
-  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not([data-multiline]):not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form[data-o~="composer"]:not([data-multiline]):not(:has(> :not(p, label, textarea, [data-o~="row"], [data-o~="recordHold"], [data-o~="readsHint"]))) {
     display: grid !important;
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: end;
@@ -581,27 +583,27 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="Composer-modul
     padding: 10px 10px 10px 12px !important;
     border-radius: var(--o-r-panel) !important;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not([data-multiline]):not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) > [class*="__row"] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form[data-o~="composer"]:not([data-multiline]):not(:has(> :not(p, label, textarea, [data-o~="row"], [data-o~="recordHold"], [data-o~="readsHint"]))) > [data-o~="row"] {
     display: contents !important;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not([data-multiline]):not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) > textarea {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form[data-o~="composer"]:not([data-multiline]):not(:has(> :not(p, label, textarea, [data-o~="row"], [data-o~="recordHold"], [data-o~="readsHint"]))) > textarea {
     grid-column: 2;
     grid-row: 1;
     align-self: center;
     padding: 8px 6px !important;
     margin: 0 !important;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not([data-multiline]):not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) [class*="__tools"] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form[data-o~="composer"]:not([data-multiline]):not(:has(> :not(p, label, textarea, [data-o~="row"], [data-o~="recordHold"], [data-o~="readsHint"]))) [data-o~="tools"] {
     grid-column: 1;
     grid-row: 1;
     align-self: end;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"]:not([data-multiline]):not(:has(> :not(p, label, textarea, [class*="__row"], [class*="__recordHold"], [class*="__readsHint"]))) [class*="__actions"] {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form[data-o~="composer"]:not([data-multiline]):not(:has(> :not(p, label, textarea, [data-o~="row"], [data-o~="recordHold"], [data-o~="readsHint"]))) [data-o~="actions"] {
     grid-column: 3;
     grid-row: 1;
     align-self: end;
   }
-  html:not(:has([data-space-root], [data-kb]))[data-theme] form[class*="__composer"] [class*="Composer-module"]:is([class$="__tools"], [class*="__tools "]) {
+  html:not(:has([data-space-root], [data-kb]))[data-theme] form[data-o~="composer"] [data-o~="Composer"][data-o~="tools"] {
     min-height: 44px;
     align-items: center;
     padding-block: 0;
@@ -609,7 +611,7 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="Composer-modul
 }
 
 /* ───────────── Search dialog and tooltips ───────────── */
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][class*="__searchBar"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"][data-o~="searchBar"] {
   margin: 12px 12px 4px;
   padding-inline: 14px;
   min-height: 44px;
@@ -618,26 +620,26 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][c
   background: var(--o-surface-2);
   box-shadow: none !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [class*="App-module"][class*="__searchBar"]:has(:focus-visible) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"][data-o~="searchBar"]:has(:focus-visible) {
   outline: 2px solid var(--o-focus);
   outline-offset: 2px;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] dialog input:is([class*="App-module"], [class*="SearchDialog-module"])[class*="__searchInput"]:is(:focus, :focus-visible) {
+html:not(:has([data-space-root], [data-kb]))[data-theme] dialog input:is([data-o~="App"], [data-o~="SearchDialog"])[data-o~="searchInput"]:is(:focus, :focus-visible) {
   outline: none !important;
   box-shadow: none !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] dialog [class*="App-module"][class*="__searchItem"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] dialog [data-o~="App"][data-o~="searchItem"] {
   min-height: 40px;
   border-radius: var(--o-r-control) !important;
   padding-inline: 14px !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] dialog [class*="App-module"][class*="__searchItem"][aria-selected="true"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] dialog [data-o~="App"][data-o~="searchItem"][aria-selected="true"] {
   background: var(--o-selected) !important;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] dialog [class*="App-module"][class*="__searchGroup"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] dialog [data-o~="App"][data-o~="searchGroup"] {
   padding-inline: 14px;
 }
-html:not(:has([data-space-root], [data-kb]))[data-theme] [role="tooltip"][class*="overlay-module"][class*="__tip"] {
+html:not(:has([data-space-root], [data-kb]))[data-theme] [role="tooltip"][data-o~="overlay"][data-o~="tip"] {
   padding: 5px 9px;
   border-radius: 8px;
   background: var(--o-ink);
@@ -648,10 +650,10 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [role="tooltip"][class*
   box-shadow: var(--o-elev-2);
 }
 @media (prefers-reduced-motion: no-preference) {
-  html:not(:has([data-space-root], [data-kb])) [role="tooltip"][class*="overlay-module"][class*="__tip"] {
+  html:not(:has([data-space-root], [data-kb])) [role="tooltip"][data-o~="overlay"][data-o~="tip"] {
     animation: o-tip-in 140ms var(--o-ease-out) both;
   }
-  html:not(:has([data-space-root], [data-kb])) dialog[open][class*="App-module"][class*="__search"] {
+  html:not(:has([data-space-root], [data-kb])) dialog[open][data-o~="App"][data-o~="search"] {
     animation: o-pop 180ms var(--o-ease-out) both;
   }
 }

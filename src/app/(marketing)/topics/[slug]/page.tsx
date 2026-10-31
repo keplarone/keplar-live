@@ -32,10 +32,10 @@ export default async function Topic({ params }: Props) {
   // credited publisher-side through that Organization's founder array (site-wide graph) and the visible "Published by" line.
   const orgNode = { "@type": "Organization", ...org, name: brand.companyName, url: PRODUCTION_URL };
   return (
-    <div className={s.shell}>
+    <div className={s.shell} data-o="kb shell">
       <div className={s.hubWrap}>
         <Breadcrumbs trail={[{ name: "Topics", path: "/topics" }, { name: p.term, path }]} />
-        <h1 className={s.h1}><TwoTone text={p.title} /></h1>
+        <h1 className={s.h1} data-o="kb h1"><TwoTone text={p.title} /></h1>
         <p className={s.lede}>{p.intro}</p>
         <p className={s.meta}>
           <span>{`Published by ${CREATOR_CREDIT}`}</span>

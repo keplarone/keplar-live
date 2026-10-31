@@ -24,10 +24,10 @@ export default async function PromptCategoryPage({ params }: Props) {
   if (!c) notFound();
   const path = `/prompts/${c.slug}`;
   return (
-    <div className={s.shell}>
+    <div className={s.shell} data-o="kb shell">
       <div style={{ maxWidth: "var(--l-max)", margin: "0 auto" }}>
         <Breadcrumbs trail={[{ name: "Prompt library", path: "/prompts" }, { name: c.name, path }]} />
-        <h1 className={s.h1}>{c.name} prompts</h1>
+        <h1 className={s.h1} data-o="kb h1">{c.name} prompts</h1>
         <p className={s.lede}>{c.blurb}</p>
         <div className={s.prose}>
           {c.intro.map((p, i) => <p key={i}>{p}</p>)}

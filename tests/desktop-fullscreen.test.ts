@@ -25,7 +25,7 @@ test("desktop app: detected before paint (keplar-desktop UA token / html marker)
   assert.match(bar, /padding-right: calc\(100vw - env\(titlebar-area-x, 0px\) - env\(titlebar-area-width, 100vw\)/);
   assert.match(read("src/components/desktop/DesktopTitleBar.tsx"), /data-keplar-drag/);
   assert.match(read("src/app/app/layout.tsx"), /<DesktopTitleBar \/>/);
-  assert.match(read("src/components/app-ui/KeplarApp.tsx"), /className=\{s\.topbar\} data-keplar-drag/);
+  assert.match(read("src/components/app-ui/KeplarApp.tsx"), /className=\{s\.topbar\} data-o="App topbar" data-keplar-drag/);
 });
 
 test("nav: one bar (brand left, links centred, actions right); real mark at a readable size; no refraction filter", () => {

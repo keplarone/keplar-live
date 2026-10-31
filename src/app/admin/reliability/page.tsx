@@ -26,7 +26,7 @@ export default async function AdminReliabilityPage() {
   return (
     <div className={s.page}>
       <header className={s.head}>
-        <p className={s.eyebrow}>Admin · reliability · last 24 h vs the 7 days before · real rows only</p>
+        <p className={s.eyebrow} data-o="Admin eyebrow">Admin · reliability · last 24 h vs the 7 days before · real rows only</p>
         <h1>Reliability</h1>
         <p className={s.sub}>
           Per model from every provider call (<code>model_calls</code>), per feature from every answer request&apos;s timeline (<code>system_flight</code>). Drift needs {DRIFT.minCurrent}+ calls today and {DRIFT.minBaseline}+ in the baseline; otherwise nothing is claimed.

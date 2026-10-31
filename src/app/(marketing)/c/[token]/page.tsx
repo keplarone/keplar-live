@@ -20,7 +20,7 @@ export default async function SharedChat({ params }: { params: Promise<{ token: 
   if (!r) notFound();
   return (
     <div className={s.page}>
-      <p className={s.eyebrow}>A shared Keplar chat</p>
+      <p className={s.eyebrow} data-o="Shared eyebrow">A shared Keplar chat</p>
       <h1 className={s.title} dir="auto">{r.title}</h1>
       <p className={s.notice}>
         Shared by a Keplar user, who chose to make this link and which parts to include. Personal details may have been hidden by the owner. Keplar has not verified it, and models can be wrong even when they agree, so check anything important. This page is not listed in search engines.

@@ -16,8 +16,8 @@ export default async function FeedbackPage({ searchParams }: { searchParams: Pro
   const from = typeof q.from === "string" && /^[a-z0-9:_.-]{1,60}$/i.test(q.from) ? q.from : undefined;
   return (
     <div className={s.page}>
-      <p className={s.eyebrow}>Feedback</p>
-      <h1 className={s.title}><TwoTone text={"Tell us what to fix, keep or change."} /></h1>
+      <p className={s.eyebrow} data-o="Feedback eyebrow">Feedback</p>
+      <h1 className={s.title} data-o="Feedback title"><TwoTone text={"Tell us what to fix, keep or change."} /></h1>
       <p className={s.lede}>
         Keplar was built by two co-founders, Hassen and Hussain Keder. Every message is read by a person. Answers are stored as text you typed, shown only to the team, and used to decide what to build next. Leave your email out and it stays anonymous.
       </p>

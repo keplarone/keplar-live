@@ -21,7 +21,7 @@ export default async function SharedSpecialist({ params }: { params: Promise<{ t
   if (!r) notFound();
   return (
     <div className={s.page}>
-      <p className={s.eyebrow}>A shared Keplar specialist</p>
+      <p className={s.eyebrow} data-o="Shared eyebrow">A shared Keplar specialist</p>
       <h1 className={s.title} dir="auto">{r.name}</h1>
       {r.description ? <p className={s.q} dir="auto" style={{ marginTop: "var(--s-3)" }}>{r.description}</p> : null}
       <p className={s.notice}>

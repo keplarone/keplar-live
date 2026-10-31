@@ -11,11 +11,11 @@ export const metadata = pageMeta("/use-cases", "What to use Keplar for: ten prac
 export default function UseCasesPage() {
   const list = allUseCases();
   return (
-    <div className={s.shell}>
+    <div className={s.shell} data-o="kb shell">
       <div className={s.hubWrap}>
         <header>
           <p className={s.crumbs}>Use cases</p>
-          <h1 className={s.h1}><TwoTone text={"What people use Keplar for"} /></h1>
+          <h1 className={s.h1} data-o="kb h1"><TwoTone text={"What people use Keplar for"} /></h1>
           <p className={s.lede}>Each page explains one job, how to ask, what Keplar does with the question, what you still have to check, and where it falls short.</p>
         </header>
         <div className={s.cards}>

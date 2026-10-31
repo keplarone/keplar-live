@@ -200,7 +200,7 @@ export function Onboarding({ initial, next, accountName }: { initial: Payload; n
 
       <section className={s.card} aria-labelledby="ob-h" aria-busy={busy || undefined}>
         <div key={step} className={s.stepBody}>
-          <p className={s.eyebrow}>Step {step + 1} of {STEPS.length}</p>
+          <p className={s.eyebrow} data-o="onboarding eyebrow">Step {step + 1} of {STEPS.length}</p>
           <h1 id="ob-h" ref={heading} tabIndex={-1} className={s.title}>
             {step === 0 ? (display ? `Welcome, ${display}.` : "Welcome to Keplar.") : TITLES[step]}
           </h1>

@@ -217,11 +217,11 @@ html:not(:has([data-space-root], [data-kb])) [class*="composer"] textarea:focus-
 }
 /* A secondary control that used an inset shadow as its only edge keeps a hairline. */
 html:not(:has([data-space-root], [data-kb])) :is(button, a)[class*="btnSecondary"],
-html:not(:has([data-space-root], [data-kb])) :is(button, a)[class*="__secondary"] {
+html:not(:has([data-space-root], [data-kb])) :is(button, a)[class*="_secondary"] {
   border: 1px solid var(--hairline-strong);
 }
 html:not(:has([data-space-root], [data-kb])) :is(button, a)[class*="btnPrimary"]:hover:not(:disabled),
-html:not(:has([data-space-root], [data-kb])) a[class*="__cta"]:hover {
+html:not(:has([data-space-root], [data-kb])) a[class*="_cta"]:hover {
   background: var(--c-ink-hover);
 }
 html:not(:has([data-space-root], [data-kb])) a[class*="signIn"]:hover {
@@ -231,38 +231,41 @@ html:not(:has([data-space-root], [data-kb])) :is(h1, h2) {
   letter-spacing: -0.02em;
 }
 
-/* Halos painted on chips, icons, meters, menus and plan cards (not the control itself). */
+/* Halos painted on chips, icons, meters, menus and plan cards (not the control itself).
+   These sweep every module's classes by name, so they match the class name's local part: "_plan" is the boundary both the dev
+   name ("Name-module__hash__plan…") and the minified production name ("hash_plan…") share. Never "__x" or "-module": production
+   builds (Next 16.4) drop both (tests/no-class-name-hooks.test.ts). Targeted hooks use data-o tokens instead. */
 html:not(:has([data-space-root], [data-kb])) :is(
   [class*="composer"],
   [class*="homeChip"],
   [class*="useForOption"],
-  [class*="__jump"],
+  [class*="_jump"],
   [class*="sideItem"],
   [class*="rowItem"],
   [class*="deployRow"],
-  [class*="__example"],
+  [class*="_example"],
   [class*="moreIcon"],
   [class*="moreItem"],
   [class*="routingBtn"],
-  [class*="__panel"],
+  [class*="_panel"],
   [class*="moreMenu"],
   [class*="attachMenu"],
-  [class*="__plan"],
-  [class*="__fit"],
-  [class*="__sheet"],
+  [class*="_plan"],
+  [class*="_fit"],
+  [class*="_sheet"],
   [class*="upgradeTop"],
   [class*="textInput"],
   [class*="promptBox"],
   [class*="dotLive"]
 ),
-html:not(:has([data-space-root], [data-kb])) :is([class*="sideItem"] svg, [class*="meterTrack"] > span, [class*="strengthBar"] span, [class*="moreIcon"], [class*="__fill"]),
+html:not(:has([data-space-root], [data-kb])) :is([class*="sideItem"] svg, [class*="meterTrack"] > span, [class*="strengthBar"] span, [class*="moreIcon"], [class*="_fill"]),
 html:not(:has([data-space-root], [data-kb])) :is([class*="routingBtn"], [class*="choiceText"], [class*="points"])::before,
 html:not(:has([data-space-root], [data-kb])) :is([class*="routingBtn"], [class*="choiceText"], [class*="points"])::after {
   box-shadow: none !important;
   text-shadow: none !important;
   filter: none !important;
 }
-html:not(:has([data-space-root], [data-kb])) :is([class*="homeChip"], [class*="useForOption"], [class*="__plan"], [class*="__fit"], [class*="__jump"], [class*="rowItem"], [class*="deployRow"], [class*="__example"]):is(:hover, :active) {
+html:not(:has([data-space-root], [data-kb])) :is([class*="homeChip"], [class*="useForOption"], [class*="_plan"], [class*="_fit"], [class*="_jump"], [class*="rowItem"], [class*="deployRow"], [class*="_example"]):is(:hover, :active) {
   transform: none !important;
   translate: none !important;
   box-shadow: none !important;
@@ -279,7 +282,7 @@ html:not(:has([data-space-root], [data-kb])) [class*="composer"][data-pulse] {
 html:not(:has([data-space-root], [data-kb])) [class*="composer"]:is(:focus-within, [data-dragging]) {
   box-shadow: none !important;
 }
-html:not(:has([data-space-root], [data-kb])) [class*="__sheet"] {
+html:not(:has([data-space-root], [data-kb])) [class*="_sheet"] {
   border: 1px solid var(--hairline);
   background: var(--c-canvas);
 }

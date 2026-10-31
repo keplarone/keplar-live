@@ -35,7 +35,7 @@ export default async function AdminGrowthPage() {
   return (
     <div className={s.page}>
       <header className={s.head}>
-        <p className={s.eyebrow}>Admin · Growth · last {d.windowDays} days · {d.generatedAt.replace("T", " ").slice(0, 16)} UTC</p>
+        <p className={s.eyebrow} data-o="Admin eyebrow">Admin · Growth · last {d.windowDays} days · {d.generatedAt.replace("T", " ").slice(0, 16)} UTC</p>
         <h1>Growth</h1>
         <p className={s.sub}>
           Real data only; anything not recorded says &ldquo;{NO}&rdquo;. Visit, activation and usage counts come from visitors who allowed Analytics (and send no Global Privacy Control or Do Not Track signal), so they are a floor, not a total. Money comes from Whop webhooks and the credits ledger. Search impressions and rankings live in Google Search Console. See <Link href="/admin/seo">Search to activation</Link> for per-page detail and docs/growth/ for the definitions.

@@ -36,7 +36,7 @@ export default async function CheckoutPage({ searchParams }: Props) {
   return (
     <section className={s.page}>
       <div className={s.card}>
-        <p className={s.eyebrow}>Upgrade</p>
+        <p className={s.eyebrow} data-o="account eyebrow">Upgrade</p>
         <h1 className={s.title}>{p.name}</h1>
         {ws.admin ? (
           <p className={s.lead}>Admin accounts don&rsquo;t need a plan. <Link className={s.link} href="/account">Back to account</Link></p>

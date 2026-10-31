@@ -92,6 +92,8 @@ export interface IconButtonProps extends Omit<ComponentPropsWithRef<"button">, "
   motion?: "send";
   /** A reply is in flight: the send glyph shows the stop square. */
   streaming?: boolean;
+  /** Extra style-hook tokens, added after "controls glyphAct" (data-o; CSS-module class names are minified in production). */
+  "data-o"?: string;
 }
 
 export function IconButton({
@@ -108,6 +110,7 @@ export function IconButton({
   motion,
   streaming = false,
   className,
+  "data-o": hook,
   onClick,
   type = "button",
   ...rest
@@ -126,6 +129,7 @@ export function IconButton({
       aria-pressed={pressed}
       aria-disabled={disabled || undefined}
       className={cx(c.glyphAct, className)}
+      data-o={cx("controls glyphAct", hook)}
       data-orbit-fx="icon"
       data-orbit-icon={motion === "send" ? "send" : undefined}
       data-variant={variant}

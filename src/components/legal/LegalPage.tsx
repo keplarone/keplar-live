@@ -67,9 +67,9 @@ export function LegalPage({ doc, sibling }: { doc: LegalDoc; sibling: { href: st
   let r = 0;
   return (
     <div className={s.page}>
-      <header className={s.header}>
-        <p className={s.eyebrow}>Legal</p>
-        <h1 className={s.title}><TwoTone text={doc.title} /></h1>
+      <header className={s.header} data-o="Legal header">
+        <p className={s.eyebrow} data-o="Legal eyebrow">Legal</p>
+        <h1 className={s.title} data-o="Legal title"><TwoTone text={doc.title} /></h1>
         {doc.subline ? <p className={s.subline}>{doc.subline}</p> : null}
         <p className={s.updated}>
           Last updated: {doc.lastUpdated ?? <Placeholder>[DATE]</Placeholder>}

@@ -130,14 +130,15 @@ export function CommandPalette() {
   const heads = results.map((c, i) => (i === 0 || results[i - 1].group !== c.group ? c.group : null));
   const activeId = results[clamped] ? `${listId}-${clamped}` : undefined;
   return (
-    <div className={s.backdrop} onPointerDown={(e) => { if (e.target === e.currentTarget) hide(); }} {...presence.motion("fade")} inert={presence.closing || undefined}>
-      <div ref={dialogRef} className={s.dialog} role="dialog" aria-modal="true" aria-labelledby={titleId} onKeyDown={onKeyDown} {...presence.motion("pop", false)} style={{ ["--m-origin" as string]: "50% 0" }}>
+    <div className={s.backdrop} data-o="CommandPalette backdrop" onPointerDown={(e) => { if (e.target === e.currentTarget) hide(); }} {...presence.motion("fade")} inert={presence.closing || undefined}>
+      <div ref={dialogRef} className={s.dialog} data-o="CommandPalette dialog" role="dialog" aria-modal="true" aria-labelledby={titleId} onKeyDown={onKeyDown} {...presence.motion("pop", false)} style={{ ["--m-origin" as string]: "50% 0" }}>
         <h2 id={titleId} className="visually-hidden">Go to a page, feature or section</h2>
-        <div className={s.bar}>
-          <svg className={s.icon} viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" strokeWidth="1.4" /><path d="m10.5 10.5 3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
+        <div className={s.bar} data-o="CommandPalette bar">
+          <svg className={s.icon} data-o="CommandPalette icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" strokeWidth="1.4" /><path d="m10.5 10.5 3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
           <input
             ref={inputRef}
             className={s.input}
+            data-o="CommandPalette input"
             type="text"
             role="combobox"
             aria-expanded="true"
@@ -151,33 +152,34 @@ export function CommandPalette() {
             value={q}
             onChange={(e) => { setQ(e.target.value); setActive(0); }}
           />
-          <button type="button" className={s.close} onClick={hide} aria-label="Esc: close search">Esc</button>
+          <button type="button" className={s.close} data-o="CommandPalette close" onClick={hide} aria-label="Esc: close search">Esc</button>
         </div>
-        <ul id={listId} role="listbox" aria-label="Results" className={s.list}>
+        <ul id={listId} role="listbox" aria-label="Results" className={s.list} data-o="CommandPalette list">
           {results.map((c, i) => {
             const head = heads[i];
             return (
               <li key={c.id} role="presentation">
-                {head ? <div className={s.group} role="presentation" aria-hidden="true">{head}</div> : null}
+                {head ? <div className={s.group} data-o="CommandPalette group" role="presentation" aria-hidden="true">{head}</div> : null}
                 <div
                   id={`${listId}-${i}`}
                   role="option"
                   aria-selected={i === clamped}
                   className={s.item}
+                  data-o="CommandPalette item"
                   data-active={i === clamped || undefined}
                   onPointerMove={() => setActive(i)}
                   onClick={() => go(c)}
                 >
-                  <span className={s.label}>{c.label}</span>
-                  {c.hint ? <span className={s.hint}>{c.hint}</span> : null}
+                  <span className={s.label} data-o="CommandPalette label">{c.label}</span>
+                  {c.hint ? <span className={s.hint} data-o="CommandPalette hint">{c.hint}</span> : null}
                   <span className="visually-hidden">, {c.group}</span>
                 </div>
               </li>
             );
           })}
-          {results.length === 0 ? <li className={s.empty} role="presentation">{docs === null ? "Loading…" : `Nothing matches “${q}”.`}</li> : null}
+          {results.length === 0 ? <li className={s.empty} data-o="CommandPalette empty" role="presentation">{docs === null ? "Loading…" : `Nothing matches “${q}”.`}</li> : null}
         </ul>
-        <p className={s.foot} aria-hidden="true"><kbd>↑</kbd><kbd>↓</kbd> move · <kbd>Enter</kbd> open · <kbd>Esc</kbd> close</p>
+        <p className={s.foot} data-o="CommandPalette foot" aria-hidden="true"><kbd>↑</kbd><kbd>↓</kbd> move · <kbd>Enter</kbd> open · <kbd>Esc</kbd> close</p>
         <p className="visually-hidden" aria-live="polite">{results.length} results</p>
       </div>
     </div>

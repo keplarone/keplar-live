@@ -19,7 +19,7 @@ export default async function AdminSpecialistsPage() {
   return (
     <div className={s.page}>
       <header className={s.head}>
-        <p className={s.eyebrow}>Admin · specialists</p>
+        <p className={s.eyebrow} data-o="Admin eyebrow">Admin · specialists</p>
         <h1>Specialist directory</h1>
         <p className={s.sub}>Specialists owners asked to list publicly. Open each link and read the instructions before approving. Reports arrive in the <Link href="/admin/inbox">inbox</Link>. <Link href="/admin">Operations</Link></p>
       </header>

@@ -17,8 +17,8 @@ export function LandingTemplate({ page }: { page: LandingPage }) {
     <>
       <header className={hero.hero}>
         <div className={hero.header}>
-          <p className={hero.label}>{page.label}</p>
-          <h1 className={hero.title}><TwoTone text={page.h1} /></h1>
+          <p className={hero.label} data-o="RoutePlaceholder label">{page.label}</p>
+          <h1 className={hero.title} data-o="RoutePlaceholder title"><TwoTone text={page.h1} /></h1>
           <p className={hero.lede}>{page.lede}</p>
           <div className={hero.ctaRow}>
             <TrackedLink where={`${page.slug}:hero`} href="/app" size="lg" arrow>Try Keplar free</TrackedLink>

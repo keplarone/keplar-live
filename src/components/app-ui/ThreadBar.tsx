@@ -25,7 +25,7 @@ export function ThreadBar({ thread, signedIn = false }: { thread: Thread; signed
   const has = thread.messages.some((m) => m.role === "keplar" && (m.answer || m.draft));
   return (
     <>
-      <div className={s.bar}>
+      <div className={s.bar} data-o="ThreadBar bar">
         {has && !thread.private ? (
           <Button size="sm" variant="ghost" className={s.act} data-share-chat-open="" onClick={() => setShare(true)} aria-haspopup="dialog">
             Share chat

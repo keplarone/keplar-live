@@ -2,7 +2,9 @@
  * Medium-weight headlines with tight tracking (the same Google Sans setting as space.keplar.one), plain sentence-case kickers (not pills, not mono all-caps), no ink glows.
  * Scoped to the marketing <main id="main"> so /app and /admin are untouched. Buttons, cards and surfaces are NOT restyled here:
  * each component draws its own from the tokens (the old class-name button rule is gone).
- * Hooks use the readable CSS-module names Next emits ("Name-module__hash__class"), the same way aura.css targets shared modules.
+ * Hooks are data-o tokens on the components ("<Module> <class>", e.g. data-o="Legal eyebrow"): production builds minify CSS-module
+ * class names (Next 16.4), so class-name substrings match nothing there. [data-o] alone stands for "any module element"; each old
+ * class-substring attribute maps to one data-o attribute, so specificity is unchanged.
  * Both themes: colours come from the theme tokens. */
 
 #main:not([data-kb]) h1 {
@@ -19,7 +21,7 @@
 #main:not([data-kb]) h3 { letter-spacing: -0.02em; }
 
 /* Kickers / eyebrows / labels above titles: plain small text in the quiet ink, sentence case (no pill, no dot, no mono caps) */
-#main:not([data-kb]) :is([class*="-module__"][class$="__eyebrow"], [class*="-module__"][class$="__kicker"], [class*="RoutePlaceholder-module__"][class$="__label"], [class*="compare-module__"][class$="__label"]) {
+#main:not([data-kb]) :is([data-o][data-o~="eyebrow"], [data-o][data-o~="kicker"], [data-o~="RoutePlaceholder"][data-o~="label"], [data-o~="compare"][data-o~="label"]) {
   display: inline-block;
   width: auto;
   min-height: 0;
@@ -35,11 +37,11 @@
   text-transform: none;
   color: var(--c-ink-3);
 }
-#main :is([class$="__eyebrow"], [class$="__kicker"], [class$="__label"])::before { box-shadow: none !important; }
-#main :is([class*="RoutePlaceholder-module__"][class$="__label"], [class*="compare-module__"][class$="__label"], [class*="Legal-module__"][class$="__eyebrow"], [class*="Feedback-module__"][class$="__eyebrow"], [class*="auth-module__"][class$="__eyebrow"])::before { display: none; }
+#main :is([data-o~="eyebrow"], [data-o~="kicker"], [data-o~="label"])::before { box-shadow: none !important; }
+#main :is([data-o~="RoutePlaceholder"][data-o~="label"], [data-o~="compare"][data-o~="label"], [data-o~="Legal"][data-o~="eyebrow"], [data-o~="Feedback"][data-o~="eyebrow"], [data-o~="auth"][data-o~="eyebrow"])::before { display: none; }
 
 /* No glowing hairlines under headers */
-#main [class*="Legal-module__"][class$="__header"]::after { box-shadow: none; }
+#main [data-o~="Legal"][data-o~="header"]::after { box-shadow: none; }
 
 /* Status words (Live / Beta / Soon) as soft chips */
 #main [data-s="live"], #main [data-s="beta"], #main [data-s="soon"] {
@@ -50,8 +52,8 @@
 }
 
 /* Display-size titles capped at the design's 76px (several modules went to 110–170px) */
-#main :is([class*="RoutePlaceholder-module__"], [class*="Feedback-module__"], [class*="Legal-module__"], [class*="compare-module__"], [class*="how-module__"], [class*="Developers-module__"], [class*="Showcase-module__"], [class*="kb-module__"])[class$="__title"],
-#main :is([class*="compare-module__"], [class*="how-module__"], [class*="kb-module__"])[class$="__h1"] {
+#main :is([data-o~="RoutePlaceholder"], [data-o~="Feedback"], [data-o~="Legal"], [data-o~="compare"], [data-o~="how"], [data-o~="Developers"], [data-o~="Showcase"], [data-o~="kb"])[data-o~="title"],
+#main :is([data-o~="compare"], [data-o~="how"], [data-o~="kb"])[data-o~="h1"] {
   font-size: clamp(min(40px, 11.5vw), 4.6vw, 64px); /* Orbit display ceiling (64px); 11.5vw under ~380px wide: at a fixed 44px "superintelligence?" was 321px in a 280px column and split mid-word */
   line-height: 1.06;
   letter-spacing: var(--o-tr-display);
@@ -102,7 +104,7 @@ html:has(#main[data-site]) {
 .o-pane > img, .o-pane > picture img { display: block; width: 100%; height: auto; border-radius: calc(var(--o-r-panel) - 8px); box-shadow: 0 0 0 1px var(--o-line); }
 
 /* Kickers on Orbit pages: small accent text, sentence case. */
-#main[data-site]:not([data-kb]) :is([class*="-module__"][class$="__eyebrow"], [class*="-module__"][class$="__kicker"], [class*="RoutePlaceholder-module__"][class$="__label"]) {
+#main[data-site]:not([data-kb]) :is([data-o][data-o~="eyebrow"], [data-o][data-o~="kicker"], [data-o~="RoutePlaceholder"][data-o~="label"]) {
   font-size: var(--o-t-13);
   letter-spacing: 0;
   text-transform: none;
@@ -141,11 +143,11 @@ html:has(#main[data-site]) {
     from { opacity: 0; translate: 0 10px; }
     to { opacity: 1; translate: none; }
   }
-  #main:not([data-kb]) > :not([class*="workspace-module__"]) > :is(header, section, div, article, nav, form):nth-child(-n + 6) {
+  #main:not([data-kb]) > :not([data-o~="workspace"]) > :is(header, section, div, article, nav, form):nth-child(-n + 6) {
     animation: kp-page-in 360ms var(--m-ease-out) both;
   }
   /* Overview stays at full contrast from the first frame. A fade that starts at opacity 0 paints the headline grey in a capture taken before it lands. */
-  #main:not([data-kb]) > [data-overview]:not([class*="workspace-module__"]) > :is(header, section, p):nth-child(-n + 6) {
+  #main:not([data-kb]) > [data-overview]:not([data-o~="workspace"]) > :is(header, section, p):nth-child(-n + 6) {
     animation: none;
     opacity: 1;
   }
@@ -154,7 +156,7 @@ html:has(#main[data-site]) {
   /* Phones: no page entry. Text that starts at opacity 0 is not "painted" until its first visible frame, and on a phone that frame
      waits behind hydration, so the hero counted as painted ~2s late (LCP). The page is simply there. */
   @media (max-width: 640px) {
-    #main:not([data-kb]) > :not([class*="workspace-module__"]) > :is(header, section, div, article, nav, form):nth-child(-n + 6) {
+    #main:not([data-kb]) > :not([data-o~="workspace"]) > :is(header, section, div, article, nav, form):nth-child(-n + 6) {
       animation: none;
     }
   }
@@ -162,12 +164,12 @@ html:has(#main[data-site]) {
   #main > [data-ks-root] > * { animation: none !important; } /* outranks the page-entry selector above */
 
   /* App: each view's header and content ease in together when the view opens */
-  [class*="App-module__"][class$="__view"] > * { animation: kp-page-in 280ms var(--m-ease-out) both; }
-  [class*="App-module__"][class$="__view"] > :nth-child(n + 2) { animation-delay: 40ms; }
+  [data-o~="App"][data-o~="view"] > * { animation: kp-page-in 280ms var(--m-ease-out) both; }
+  [data-o~="App"][data-o~="view"] > :nth-child(n + 2) { animation-delay: 40ms; }
 }
 /* Reduced motion and a browser that skips the entry: the page is simply there, at full opacity. No script required. */
 @media (prefers-reduced-motion: reduce) {
-  #main:not([data-kb]) > :not([class*="workspace-module__"]) > :is(header, section, div, article, nav, form):nth-child(-n + 6),
+  #main:not([data-kb]) > :not([data-o~="workspace"]) > :is(header, section, div, article, nav, form):nth-child(-n + 6),
   #main:not([data-kb]) > [data-overview] > :is(header, section, p) {
     animation: none;
     opacity: 1;
@@ -200,8 +202,8 @@ html:has(#main[data-site]) {
    desktop overlay window): its dialogs and menus are opaque token surfaces and never blur. */
 @media (pointer: coarse), (max-width: 767px) {
   :not([data-ks-root], [data-ks-root] *):is([role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], [role="tooltip"],
-      [class*="CookieBanner-module__"][class$="__banner"],
-      [class*="CommandPalette-module__"]) {
+      [data-o~="CookieBanner"][data-o~="banner"],
+      [data-o~="CommandPalette"]) {
     -webkit-backdrop-filter: blur(18px) saturate(1.3) !important;
     backdrop-filter: blur(18px) saturate(1.3) !important;
   }

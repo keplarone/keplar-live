@@ -104,7 +104,7 @@ test("empty home: the Orbit canvas, no decorative wash, and a visible keyboard o
   assert.doesNotMatch(app, /radial-gradient|background-clip:\s*text|filter:\s*blur|backdrop-filter/);
   assert.match(app, /\[data-theme\] \[data-welcome\] \{[^}]*color: var\(--o-ink\) !important/);
   // The controls inside the composer keep the outline; the text field doesn't (a textarea always matches :focus-visible while typing).
-  assert.match(app, /form\[class\*="__composer"\]:focus-within:has\(:focus-visible:not\(textarea\)\) \{\s*outline:\s*2px solid var\(--o-focus\) !important;/);
+  assert.match(app, /form\[data-o~="composer"\]:focus-within:has\(:focus-visible:not\(textarea\)\) \{\s*outline:\s*2px solid var\(--o-focus\) !important;/);
   assert.doesNotMatch(app, /#(?:7c3aed|a855f7|9333ea|c58cff|f08bd8|ec4899|ff4d9a)/i);
   assert.match(theme, /BUSINESS_DEFAULT_THEME_PREF: ThemePref = "dark"/);
 });

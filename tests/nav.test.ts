@@ -47,7 +47,7 @@ test("home greets by time of day and first name (fallback 'Welcome to Keplar.') 
   const app = readFileSync("src/components/app-ui/KeplarApp.tsx", "utf8");
   assert.match(app, /Welcome to Keplar\./);
   assert.match(app, /dayGreeting\(new Date\(\)\.getHours\(\)\)/);
-  assert.match(app, /className=\{s\.welcomeName\}>\{firstName\}/);
+  assert.match(app, /className=\{s\.welcomeName\} data-o="App welcomeName">\{firstName\}/);
   const home = readFileSync("src/components/app-ui/HomeStart.tsx", "utf8");
   assert.match(home, /Most frequently asked question/);
   assert.doesNotMatch(home, /Pick up where you left off/);

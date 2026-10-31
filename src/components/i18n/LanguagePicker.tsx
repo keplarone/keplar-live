@@ -67,7 +67,7 @@ export function LanguagePicker({ variant = "footer" }: { variant?: "footer" | "s
 
   return (
     <div ref={wrap} className={s.wrap} data-variant={variant}>
-      <button ref={button} type="button" className={s.trigger} aria-expanded={open} aria-controls={id} aria-haspopup="dialog" onClick={() => setOpen((v) => !v)}>
+      <button ref={button} type="button" className={s.trigger} data-o="LanguagePicker trigger" aria-expanded={open} aria-controls={id} aria-haspopup="dialog" onClick={() => setOpen((v) => !v)}>
         <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" strokeWidth="1.3" /><path d="M1.9 8h12.2M8 1.75c1.8 1.9 2.6 4 2.6 6.25S9.8 12.35 8 14.25C6.2 12.35 5.4 10.25 5.4 8S6.2 3.65 8 1.75z" fill="none" stroke="currentColor" strokeWidth="1.3" /></svg>
         <span className="visually-hidden">{c.label}: </span>
         <span lang={info.lang}>{info.native}</span>

@@ -107,8 +107,8 @@ export default function HowItWorksPage() {
     <JsonLd data={breadcrumbs([{ name: "How it works", path: "/how-it-works" }])} />
     <article className={s.page}>
       <header className={s.hero}>
-        <p className={s.kicker}>How it works</p>
-        <h1 className={s.h1}><TwoTone text={"Stop trusting one AI."} /></h1>
+        <p className={s.kicker} data-o="how kicker">How it works</p>
+        <h1 className={s.h1} data-o="how h1"><TwoTone text={"Stop trusting one AI."} /></h1>
         <p className={s.sub}>One question. Multiple intelligences. One answer.</p>
         <p className={s.intro}>
           Every AI model has blind spots. {KO} asks the models your question needs, evaluates what they say, and gives you one

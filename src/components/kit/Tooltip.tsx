@@ -91,7 +91,7 @@ export function Tooltip({ content, shortcut, side = "top", children, disabled, c
     >
       {child}
       {visible ? (
-        <div ref={tipRef} id={id} role="tooltip" popover="manual" data-motion="ks" className={cx(o.layer, o.tip)}>
+        <div ref={tipRef} id={id} role="tooltip" popover="manual" data-motion="ks" className={cx(o.layer, o.tip)} data-o="overlay tip">
           <span>{content}</span>
           {shortcut?.length ? <KeyCombo keys={shortcut} className={o.tipKeys} plain /> : null}
         </div>

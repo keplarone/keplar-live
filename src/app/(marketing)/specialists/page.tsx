@@ -24,7 +24,7 @@ export default async function SpecialistDirectory({ searchParams }: { searchPara
     <>
     <JsonLd data={breadcrumbs([{ name: "Specialists", path: "/specialists" }])} />
     <div className={s.page}>
-      <p className={s.eyebrow}>Specialist directory</p>
+      <p className={s.eyebrow} data-o="Shared eyebrow">Specialist directory</p>
       <h1 className={s.title}><TwoTone text={"Specialists people made and shared"} /></h1>
       <p className={s.notice}>
         Each one is a saved setup: instructions and conversation starters someone wrote for one kind of work. Every listing was checked automatically and approved by a person at Keplar before it appeared here. Adding one gives you your own copy you can read and change, and Keplar&rsquo;s panel still answers and cross-checks every question.

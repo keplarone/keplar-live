@@ -32,7 +32,7 @@ export default async function ProfitabilityPage({ searchParams }: { searchParams
   return (
     <div className={`${s.page} ${p.wrap}`}>
       <header className={s.head}>
-        <p className={s.eyebrow}>Admin · profitability · last {days} days</p>
+        <p className={s.eyebrow} data-o="Admin eyebrow">Admin · profitability · last {days} days</p>
         <h1>Cost &amp; profitability</h1>
         <p className={s.sub}>Every provider call is metered at the fetch boundary (feature, user, plan, model, tokens, actual cost, latency). Feature revenue = credits charged on it × the payer&apos;s revenue per credit. Generated {r.generatedAt.replace("T", " ").slice(0, 16)} UTC. <Link href="/admin">Operations</Link> · <Link href="/admin/costs">Per-request costs</Link></p>
         <nav className={p.range} aria-label="Range">{RANGES.map((d) => <a key={d} href={`?days=${d}`} aria-current={d === days ? "page" : undefined}>{d} days</a>)}</nav>

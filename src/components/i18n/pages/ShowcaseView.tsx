@@ -20,8 +20,8 @@ export async function ShowcaseView({ locale = "en" }: { locale?: string }) {
     <div className={s.page}>
       <header className={s.head}>
         <div>
-          <p className={s.kicker}><Link href="/app/create">Create</Link> / {sc.kicker}</p>
-          <h1 className={s.title}><TwoTone text={sc.title} /></h1>
+          <p className={s.kicker} data-o="Showcase kicker"><Link href="/app/create">Create</Link> / {sc.kicker}</p>
+          <h1 className={s.title} data-o="Showcase title"><TwoTone text={sc.title} /></h1>
         </div>
         <div>
           <p className={s.lead}>{sc.lead}</p>

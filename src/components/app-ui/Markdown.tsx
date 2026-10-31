@@ -105,7 +105,7 @@ export function CodeBlock({ code, lang, streaming }: { code: string; lang: strin
     }
   };
   return (
-    <figure className={s.code}>
+    <figure className={s.code} data-o="Markdown code">
       <figcaption className={s.codeBar}>
         <span className={s.codeLang}>{lang || "text"}</span>
         <Button size="sm" variant="ghost" className={s.copy} onClick={copy} disabled={streaming} aria-label={copied ? "Copied" : `Copy ${lang || "code"}`} leadingIcon={<MorphIcon icon="copy" state={copied ? "copied" : "idle"} size={14} />}>
@@ -147,7 +147,7 @@ function MarkdownImpl({ source, streaming, caret, cite }: { source: string; stre
   // dir="auto" on every text block: an Arabic / Hebrew / Persian answer reads right to left with its punctuation on the correct side
   // (".عاصمة فرنسا هي باريس" was rendered as LTR), while English and mixed answers that start with a Latin letter stay LTR.
   return (
-    <div className={s.md}>
+    <div className={s.md} data-o="Markdown md">
       {blocks.map((b, i) => {
         const k = `b${i}`;
         switch (b.t) {

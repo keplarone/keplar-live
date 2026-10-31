@@ -174,7 +174,7 @@ export function Journey() {
         <div className={s.slide} key={id === "create" || id === "agent" ? id : "x"}>
           {id === "intro" && (
             <div className={s.center} style={{ opacity: 1 - seg(p, 0.7, 1) }}>
-              <p className={s.eyebrow}>A guided walkthrough</p>
+              <p className={s.eyebrow} data-o="journey eyebrow">A guided walkthrough</p>
               <h1 className={s.h1}>Watch one question become one answer.</h1>
               <p className={s.lede}>One everyday question, several models, a disagreement, a check, and a single answer. Then an idea becoming a site, and an agent that waits for your approval.</p>
               <p className={s.hint}>It plays by itself. Scroll, or use the controls, to go at your own pace.</p>
@@ -182,14 +182,14 @@ export function Journey() {
           )}
           {id === "ask" && (
             <div className={s.center}>
-              <p className={s.eyebrow}>1 · You ask once</p>
+              <p className={s.eyebrow} data-o="journey eyebrow">1 · You ask once</p>
               <div className={s.ask}><Typed text={QUESTION} t={seg(p, 0.08, 0.7)} /></div>
               <p className={s.lede} style={{ opacity: seg(p, 0.75, 0.95) }}>In plain words, the way you would ask a person.</p>
             </div>
           )}
           {id === "route" && (
             <div className={s.col}>
-              <p className={s.eyebrow}>2 · Keplar chooses who to ask</p>
+              <p className={s.eyebrow} data-o="journey eyebrow">2 · Keplar chooses who to ask</p>
               <div className={s.askSm}>{QUESTION}</div>
               <p className={s.note} style={{ opacity: seg(p, 0.1, 0.35) }}>{ROUTING}</p>
               <div className={s.lanes}>
@@ -204,13 +204,13 @@ export function Journey() {
           )}
           {id === "answer" && (
             <div className={s.col}>
-              <p className={s.eyebrow}>3 · The answers arrive, side by side</p>
+              <p className={s.eyebrow} data-o="journey eyebrow">3 · The answers arrive, side by side</p>
               {lanesView(0.05, 0.85)}
             </div>
           )}
           {id === "split" && (
             <div className={s.col}>
-              <p className={s.eyebrow}>4 · Where they disagree</p>
+              <p className={s.eyebrow} data-o="journey eyebrow">4 · Where they disagree</p>
               <h2 className={s.h2}>{SPLIT.agree} of {SPLIT.total} agree</h2>
               {lanesView(-0.4, 0.01, { hi: true })}
               <p className={s.note} style={{ opacity: seg(p, 0.3, 0.55) }}>{SPLIT.summary} Keplar does not average them. It checks.</p>
@@ -218,7 +218,7 @@ export function Journey() {
           )}
           {id === "verify" && (
             <div className={s.col}>
-              <p className={s.eyebrow}>5 · The disputed point is checked</p>
+              <p className={s.eyebrow} data-o="journey eyebrow">5 · The disputed point is checked</p>
               <div className={s.verify}>
                 <div className={s.claim}><span>Disputed claim</span><p>“Covered is fine.”</p></div>
                 <ol className={s.checks}>
@@ -233,7 +233,7 @@ export function Journey() {
           )}
           {id === "final" && (
             <div className={s.col}>
-              <p className={s.eyebrow}>6 · One answer</p>
+              <p className={s.eyebrow} data-o="journey eyebrow">6 · One answer</p>
               <div className={s.final} style={{ opacity: 0.2 + 0.8 * seg(p, 0, 0.25), transform: `translateY(${(1 - seg(p, 0, 0.25)) * 16}px)` }}>
                 <h2 className={s.h2}><Typed text={FINAL.title} t={seg(p, 0.1, 0.4)} caret={false} /></h2>
                 <p className={s.body} style={{ opacity: seg(p, 0.4, 0.6) }}>{FINAL.body}</p>
@@ -246,7 +246,7 @@ export function Journey() {
           )}
           {id === "create" && (
             <div className={s.col}>
-              <p className={s.eyebrow}>Create · from idea to site</p>
+              <p className={s.eyebrow} data-o="journey eyebrow">Create · from idea to site</p>
               <div className={s.createGrid}>
                 <div className={s.chat}>
                   <div className={s.ask}><Typed text={CREATE_IDEA} t={seg(p, 0.02, 0.2)} /></div>
@@ -280,7 +280,7 @@ export function Journey() {
           )}
           {id === "agent" && (
             <div className={s.col}>
-              <p className={s.eyebrow}>Agents · they ask before they act</p>
+              <p className={s.eyebrow} data-o="journey eyebrow">Agents · they ask before they act</p>
               <div className={s.ask}><Typed text={AGENT_TASK} t={seg(p, 0.02, 0.25)} /></div>
               <p className={s.note} style={{ opacity: seg(p, 0.3, 0.4) }}>Plan: write the order from your usual quantities, then send it from your connected email, after you approve.</p>
               <div className={s.mail} style={{ opacity: seg(p, 0.4, 0.55), transform: `translateY(${(1 - seg(p, 0.4, 0.55)) * 12}px)` }}>
@@ -303,7 +303,7 @@ export function Journey() {
           )}
           {id === "end" && (
             <div className={s.center}>
-              <p className={s.eyebrow}>That was a simulation</p>
+              <p className={s.eyebrow} data-o="journey eyebrow">That was a simulation</p>
               <h2 className={s.h1}>Now ask your own question.</h2>
               <p className={s.lede}>The real Keplar asks real models, shows you where they disagree, and checks before it answers. It can be wrong, so check what matters.</p>
               <div className={s.row}>

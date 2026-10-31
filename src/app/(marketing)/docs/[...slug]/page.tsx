@@ -38,7 +38,7 @@ export default async function DocPage({ params }: Props) {
     return (
       <DocsFrame current={`/docs/${sec.id}`}>
         <Breadcrumbs trail={[{ name: "Docs", path: "/docs" }, { name: sec.title, path: `/docs/${sec.id}` }]} />
-        <h1 className={s.h1}>{sec.title}</h1>
+        <h1 className={s.h1} data-o="kb h1">{sec.title}</h1>
         <p className={s.lede}>{sec.blurb}</p>
         <ul className={s.list} style={{ marginTop: "var(--s-8)" }}>
           {pages.map((p) => (
@@ -61,7 +61,7 @@ export default async function DocPage({ params }: Props) {
   return (
     <DocsFrame current={d.path} toc={toc}>
       <Breadcrumbs trail={[{ name: "Docs", path: "/docs" }, { name: section.title, path: `/docs/${section.id}` }, { name: d.title, path: d.path }]} />
-      <h1 className={s.h1}>{d.title}</h1>
+      <h1 className={s.h1} data-o="kb h1">{d.title}</h1>
       <p className={s.lede}>{d.description}</p>
       <p className={s.meta}><span>Updated <time dateTime={d.updated}>{longDate(d.updated)}</time></span><span>{Math.max(1, Math.round(d.words / 220))} min read</span></p>
       <details className={s.tocInline}>
