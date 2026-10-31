@@ -39,6 +39,7 @@ test("error copy", () => {
   assert.match(oauthErrorMessage("link") as string, /expired/);
   assert.match(oauthErrorMessage("unable_to_create_user") as string, /verified email/);
   assert.match(oauthErrorMessage("anything_else") as string, /didn't complete/);
+  assert.match(oauthErrorMessage("unavailable") as string, /temporarily unavailable/);
 });
 
 /* ── end-to-end against the real Better Auth handler, provider endpoints mocked ── */

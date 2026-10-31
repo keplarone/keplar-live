@@ -272,3 +272,21 @@ test("/api/compute?lite=1: a signed-out page view reads nothing from the databas
   assert.deepEqual([a.signedIn, a.plan, a.degraded, a.account], [false, "free", true, null]);
   assert.equal(neonCalls, 0);
 });
+
+test("auth: an OAuth callback that failed in the outage redirects with error=unavailable, cookies kept", async () => {
+  const { outageRedirect } = await import("@/lib/accounts/outage-redirect");
+  const { oauthErrorMessage } = await import("@/lib/accounts/oauth");
+  const h = new Headers({ location: "/signin?error=unable_to_create_user&next=%2Fapp" });
+  h.append("set-cookie", "a=1; Path=/");
+  h.append("set-cookie", "b=2; Path=/");
+  const out = outageRedirect(new Response(null, { status: 302, headers: h }), new Request("https://keplar.one/api/auth/callback/google"));
+  assert.equal(out.status, 302);
+  assert.equal(out.headers.get("location"), "/signin?error=unavailable&next=%2Fapp");
+  assert.equal(out.headers.getSetCookie().length, 2);
+  assert.match(oauthErrorMessage("unavailable") as string, /temporarily unavailable/);
+  // Absolute redirects stay absolute; a redirect without an error is untouched.
+  const abs = outageRedirect(new Response(null, { status: 302, headers: { location: "https://keplar.one/signin?error=email_not_found" } }), new Request("https://keplar.one/x"));
+  assert.equal(abs.headers.get("location"), "https://keplar.one/signin?error=unavailable");
+  const ok = new Response(null, { status: 302, headers: { location: "/app" } });
+  assert.equal(outageRedirect(ok, new Request("https://keplar.one/x")), ok);
+});

@@ -1,6 +1,7 @@
 import { toNextJsHandler } from "better-auth/next-js";
 import { auth } from "@/lib/accounts/auth";
 import { isStoreUnavailable, storeUnavailableNow } from "@/lib/create/platform/neon";
+import { outageRedirect } from "@/lib/accounts/outage-redirect";
 
 export const runtime = "nodejs";
 
@@ -21,6 +22,7 @@ async function guarded(handler: (req: Request) => Promise<Response>, req: Reques
   try {
     const res = await handler(req);
     if (res.status >= 500 && storeUnavailableNow()) return unavailable();
+    if (res.status >= 300 && res.status < 400 && storeUnavailableNow()) return outageRedirect(res, req);
     return res;
   } catch (e) {
     if (isStoreUnavailable(e) || storeUnavailableNow()) return unavailable();
