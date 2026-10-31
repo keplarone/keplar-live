@@ -205,7 +205,8 @@ html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"][data-o~
   gap: 6px !important;
   border-bottom: 0 !important;
   box-shadow: none !important;
-  background: transparent !important;
+  /* Solid, so a scrolled answer never shows through the title and buttons. */
+  background: var(--o-canvas) !important;
 }
 html:not(:has([data-space-root], [data-kb]))[data-theme] [data-o~="App"][data-o~="topbar"] [data-o~="topTitle"] {
   flex: 1 1 auto !important;
