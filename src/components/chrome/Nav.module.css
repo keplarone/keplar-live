@@ -134,19 +134,6 @@
   transition: background-color var(--o-dur-2) var(--o-ease-out);
 }
 .cta:hover { background: var(--o-accent-hover); }
-/* §5.8 primary glow (opacity only) */
-.cta::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  box-shadow: 0 6px 22px -6px var(--o-glow);
-  opacity: 0.35;
-  transition: opacity 600ms var(--o-ease-out);
-  pointer-events: none;
-}
-.cta:hover::before { opacity: 1; }
 
 /* Menu button: two lines that turn into a close mark */
 .toggleIcon { position: relative; display: block; width: 16px; height: 11px; }
@@ -256,5 +243,5 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .bar, .toggleIcon i, .cta, .cta::before, .brand, .link, .icon, .signIn, .bigLinks a, .smallLinks a { transition: none; }
+  .bar, .toggleIcon i, .cta, .brand, .link, .icon, .signIn, .bigLinks a, .smallLinks a { transition: none; }
 }

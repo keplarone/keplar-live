@@ -43,6 +43,15 @@ test("first-question card: equal-height starters, nowrap pills, wrapping action 
   assert.match(css, /\.actions \{[^}]*flex-wrap: wrap/);
 });
 
+test("app shell: rail, 264px drawer and a flexible canvas, including when the Orbit attribute hooks miss", () => {
+  const app = read("src/components/app-ui/App.module.css");
+  assert.match(app, /\.app \{[^}]*grid-template-columns: var\(--o-rail-w\) var\(--o-drawer-w\) minmax\(0, 1fr\)/);
+  assert.match(app, /\.sideWrap \{[^}]*grid-column: 2/);
+  assert.match(app, /\.main \{[^}]*grid-column: 3/);
+  assert.match(app, /@media \(max-width: 899px\)[\s\S]*?\.main \{\s*grid-column: 1;/);
+  assert.match(app, /grid-template-columns: var\(--o-rail-w\) 0 minmax\(0, 1fr\)/);
+});
+
 test("app: the composer dock floats as an overlay over the thread; one-row grid exactly the viewport tall", () => {
   const css = read("src/components/app-ui/App.module.css");
   assert.match(css, /\.app \{[^}]*grid-template-rows: minmax\(0, 1fr\)/);

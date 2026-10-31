@@ -20,7 +20,8 @@
   inset: 0;
   z-index: var(--z-overlay);
   display: grid;
-  grid-template-columns: clamp(264px, 14vw, 400px) minmax(0, 1fr);
+  /* Rail · drawer · canvas. The canvas is the flexible track, so the conversation fills the space beside the sidebar. */
+  grid-template-columns: var(--o-rail-w) var(--o-drawer-w) minmax(0, 1fr);
   /* one row exactly the viewport tall: content can never stretch the row and push the composer below the fold */
   grid-template-rows: minmax(0, 1fr);
   /* viewport-fit=cover lets the shell reach the screen edges; keep its content out of the notch / rounded corners / home bar */
@@ -34,6 +35,9 @@
 }
 
 .sideWrap {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
   min-height: 0;
   border-right: var(--b-hairline) solid var(--hairline);
   background: var(--c-surface-1);
@@ -407,6 +411,8 @@
 }
 
 .main {
+  grid-column: 3;
+  grid-row: 1;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -944,8 +950,15 @@
 @media (max-width: 899px) {
   .app {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+  .main {
+    grid-column: 1;
+    grid-row: 1;
   }
   .sideWrap {
+    grid-column: auto;
+    grid-row: auto;
     position: fixed;
     inset: 0 auto 0 0;
     z-index: 8;
@@ -1967,8 +1980,9 @@ a.sideItem {
   line-height: 1.55;
 }
 @media (min-width: 900px) {
-  :global(:root[data-theme]) .app[data-collapsed] { grid-template-columns: minmax(0, 1fr); }
-  :global(:root[data-theme]) .app[data-collapsed] .sideWrap { display: none; }
+  /* Fold the drawer; keep the rail. display:none would drop the drawer from the grid and pull the canvas into its column. */
+  :global(:root[data-theme]) .app[data-collapsed] { grid-template-columns: var(--o-rail-w) 0 minmax(0, 1fr); }
+  :global(:root[data-theme]) .app[data-collapsed] .sideWrap { visibility: hidden; overflow: hidden; border-right-width: 0; }
   :global(:root[data-theme]) .app[data-collapsed] .menuBtn { display: inline-grid; }
 }
 .collapseBtn {

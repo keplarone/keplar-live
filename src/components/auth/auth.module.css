@@ -15,16 +15,6 @@
   color: var(--o-ink);
   font-family: var(--o-font-sans);
 }
-/* a faint accent atmosphere at the top of the page, behind the card */
-.shell:not([data-brand="business"])::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto;
-  height: 420px;
-  z-index: -1;
-  pointer-events: none;
-  background: radial-gradient(60% 100% at 50% 0%, rgb(var(--o-accent-rgb) / 0.10), transparent 70%);
-}
 .formSide {
   position: relative;
   z-index: 1;
@@ -189,20 +179,6 @@
 .btnSecondary:hover:not(:disabled) { background: var(--o-surface-2); }
 .btnGhost { background: transparent; box-shadow: none; color: var(--o-ink-2); }
 .btnGhost:hover:not(:disabled) { background: var(--o-hover); color: var(--o-ink); }
-/* §5.8 primary glow (opacity only) */
-.btnPrimary::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  box-shadow: 0 6px 22px -6px var(--o-glow);
-  opacity: 0.35;
-  transition: opacity 600ms var(--o-ease-out);
-  pointer-events: none;
-}
-.btnPrimary:hover:not(:disabled)::before { opacity: 1; }
-.btnPrimary[aria-busy="true"]::before { content: none; }
 .btn:disabled { box-shadow: none; opacity: 0.45; cursor: not-allowed; }
 .btn[aria-busy="true"] { cursor: progress; opacity: 1; }
 .row { display: flex; gap: 10px; flex-wrap: wrap; }

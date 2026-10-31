@@ -6,7 +6,7 @@
  *
  *   data-orbit-fx="<kind>"  primary · secondary · ghost · danger · icon · chip · segment · menuitem · auto · off (opt out)
  *   data-orbit-icon="<intent>"  send · plus · copy · trash · chevron · refresh  (icon micro-motion)
- *   data-ofx-sheen / data-ofx-pos / data-ofx-magnet / data-ofx-hover  set by the runtime
+ *   data-ofx-magnet / data-ofx-hover  set by the runtime. The pointer sheen is not drawn.
  *   data-ofx-state="success"  the success check (flashSuccess() or <Button success>)
  *   aria-busy="true"  the loading arc (Orbit primitives and kit/ui buttons)
  */
@@ -34,37 +34,7 @@
   translate: var(--ofx-tx, 0px) var(--ofx-ty, 0px);
 }
 
-/* ── 1. Sheen: a soft radial highlight that follows the pointer (background-position only) ── */
-[data-ofx-pos] {
-  position: relative;
-}
-/* The highlight sits between the control's own background and its label (isolation + z-index -1), so it never washes the text. */
-[data-ofx-sheen] {
-  isolation: isolate;
-}
-[data-ofx-sheen]::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  pointer-events: none;
-  background-image: radial-gradient(closest-side, var(--ofx-sheen, var(--o-sheen)), transparent);
-  background-repeat: no-repeat;
-  background-size: 128px 128px;
-  background-position: calc(var(--mx, 50%) - 64px) calc(var(--my, 50%) - 64px);
-  opacity: 0;
-  transition: opacity var(--o-dur-3) var(--o-ease-out);
-}
-[data-orbit-fx="primary"],
-[data-orbit-fx="danger"] {
-  --ofx-sheen: var(--o-sheen-on-accent);
-}
-@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  [data-ofx-sheen][data-ofx-hover]:not(:disabled, [aria-disabled="true"], [aria-busy="true"])::after {
-    opacity: 1;
-  }
-}
+/* Sheen (the white radial that followed the pointer) is off: primary controls are a flat accent face. */
 
 /* ── 4. Focus: keyboard focus draws an accent ring that animates in (offset 0 → 2px, colour from transparent). Never on
  * mouse focus (:focus-visible). Transitions outrank !important in the cascade, so the ring still eases in over the
@@ -130,13 +100,11 @@
   to { rotate: 360deg; }
 }
 
-/* ── Touch: press and focus only. Reduced motion: no sheen, magnet or micro-motion; states are instant. ── */
+/* ── Touch: press and focus only. Reduced motion: no magnet or micro-motion; states are instant. ── */
 @media (pointer: coarse) {
-  [data-ofx-sheen]::after { display: none; }
   [data-ofx-magnet][data-ofx-hover] { translate: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  [data-ofx-sheen]::after { display: none; }
   [data-ofx-magnet][data-ofx-hover] { translate: none; }
   [data-orbit-fx][aria-busy="true"]::before { animation: none; --ofx-angle: 120deg; }
   :is(button, [role="button"], [role="tab"], [role="menuitem"], [role="switch"], summary, [data-orbit-fx]):active { scale: none; translate: none; }

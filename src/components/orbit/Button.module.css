@@ -41,19 +41,6 @@
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.12), inset 0 1px 0 rgb(255 255 255 / 0.14);
 }
 .btn[data-variant="primary"]:hover:not(:disabled, [aria-disabled="true"]) { background: var(--o-accent-hover); }
-/* §5.8 primary only: a slow accent glow under the face that brightens while the pointer is over it (opacity only). */
-.btn[data-variant="primary"]:not([aria-busy="true"])::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  box-shadow: 0 6px 22px -6px var(--o-glow);
-  opacity: 0.35;
-  transition: opacity 600ms var(--o-ease-out);
-  pointer-events: none;
-}
-.btn[data-variant="primary"]:hover:not(:disabled, [aria-disabled="true"])::before { opacity: 1; }
 
 .btn[data-variant="ghost"] { background: transparent; box-shadow: none; color: var(--o-ink-2); }
 .btn[data-variant="ghost"]:hover:not(:disabled, [aria-disabled="true"]) { background: var(--o-hover); color: var(--o-ink); }
