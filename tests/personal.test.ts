@@ -1,6 +1,7 @@
 import "./setup";
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { businessProminent, examplesFor, isUseFor, personalPrompts } from "@/components/app-ui/use-for";
 import { tiers } from "@/lib/tiers";
 import { useCases } from "@/lib/sections";
@@ -24,6 +25,11 @@ test("honest copy: prices unchanged, Plus doesn't promise web lookups, health us
   const free = tiers.find((t) => t.id === "free")!;
   for (const f of ["Free open models only", "Web search only in the desktop app (Live Research, beta)", "Image and video questions on free vision models"]) assert.ok(free.features.includes(f), f);
   assert.match(useCases.find((u) => u.id === "health")?.caveat ?? "", /not medical advice/i);
+  const create = useCases.find((u) => u.id === "create")!;
+  assert.match(create.text, /On Plus and Pro\. Video is Pro and Business only\./);
+  assert.doesNotMatch(create.text, /short video[\s\S]*On Plus and Pro/);
+  assert.match(readFileSync("src/app/(marketing)/for-you/page.tsx", "utf8"), /Video is Pro and Business only/);
+  assert.doesNotMatch(readFileSync("src/app/(marketing)/for-you/page.tsx", "utf8"), /or a short video/);
   const all = JSON.stringify({ tiers, useCases });
   assert.doesNotMatch(all, /against sources|accurate|accuracy/i);
   // Only Free (open models, fair use) is described as unlimited; paid plans have monthly allowances.

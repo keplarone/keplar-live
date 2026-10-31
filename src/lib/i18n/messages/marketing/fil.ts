@@ -298,7 +298,8 @@ const m: MarketingCatalog = {
           "Tulong sa coding at pagsusuri ng file",
           "Study mode sa mas malalakas na model",
           "Gumawa ng maliit na personal na site (libreng keplar.site address)",
-          "Nagsisimula sa Plus ang image generation, Slides, Deep Research, video, agent at custom domain"
+          "Nagsisimula sa Plus ang image generation, Slides, Deep Research, agent at custom domain",
+          "Pro at Business lang ang video"
         ],
         "cta": "Mag-upgrade sa Lite"
       },

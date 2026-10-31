@@ -298,7 +298,8 @@ const m: MarketingCatalog = {
           "코딩 도움과 파일 분석",
           "더 강력한 모델의 학습 모드",
           "작은 개인 사이트 만들기(무료 keplar.site 주소)",
-          "이미지 생성, Slides, Deep Research, 동영상, 에이전트, 맞춤 도메인은 Plus부터"
+          "이미지 생성, Slides, Deep Research, 에이전트, 맞춤 도메인은 Plus부터",
+          "동영상은 Pro와 Business만"
         ],
         "cta": "Lite로 업그레이드"
       },

@@ -298,7 +298,8 @@ const m: MarketingCatalog = {
           "Kodlama yardımı ve dosya analizi",
           "Daha güçlü modellerde Çalışma modu",
           "Küçük bir kişisel site oluşturun (ücretsiz keplar.site adresi)",
-          "Görsel üretimi, Slides, Deep Research, video, ajanlar ve özel alan adları Plus’tan itibaren"
+          "Görsel üretimi, Slides, Deep Research, ajanlar ve özel alan adları Plus’tan itibaren",
+          "Video yalnızca Pro ve Business’ta"
         ],
         "cta": "Lite’a yükselt"
       },

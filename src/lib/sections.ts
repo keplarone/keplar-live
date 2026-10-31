@@ -142,7 +142,7 @@ export const useCases: UseCase[] = [
   {
     id: "create",
     name: "Your own site, images, and video",
-    text: "Make a personal site or portfolio, an invitation, or a short video, and publish on your own domain. On Plus and Pro.",
+    text: "Make a personal site or portfolio, an invitation, and publish on your own domain. On Plus and Pro. Video is Pro and Business only.",
     example: "A one-page portfolio for my photography.",
   },
 ];

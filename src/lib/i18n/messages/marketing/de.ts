@@ -298,7 +298,8 @@ const m: MarketingCatalog = {
           "Hilfe beim Programmieren und Dateianalyse",
           "Lernmodus mit stärkeren Modellen",
           "Eine kleine persönliche Website erstellen (kostenlose keplar.site-Adresse)",
-          "Bildgenerierung, Slides, Deep Research, Video, Agenten und eigene Domains ab Plus"
+          "Bildgenerierung, Slides, Deep Research, Agenten und eigene Domains ab Plus",
+          "Video gibt es nur bei Pro und Business"
         ],
         "cta": "Auf Lite upgraden"
       },
