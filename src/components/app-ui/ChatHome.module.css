@@ -65,7 +65,9 @@
 
 /* A conversation has no [data-welcome]. Without this, the fixed server heading stays on screen and
    sits on top of the user's message. The empty state keeps the client greeting; no-JS still sees this h1. */
-:global(body:has([data-app-ready]):not(:has([data-welcome]))) .h1 {
+:global(body:has([data-app-ready]):not(:has([data-welcome]))) .h1,
+/* Also once the app shell has mounted, whether or not the account check has answered (it can't while the database is down). */
+:global(body:has([data-product]):not(:has([data-welcome]))) .h1 {
   display: none;
 }
 
