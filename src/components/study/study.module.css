@@ -73,3 +73,32 @@
 .track span[data-level="strong"] { background: var(--o-good); }
 @media (max-width: 880px) { .flash { min-height: 220px; } .face { padding: 20px; } .msg { max-width: 95%; } .mastery { grid-template-columns: 1fr auto; } .mastery .track { grid-column: 1 / -1; grid-row: 2; } }
 @media (prefers-reduced-motion: reduce) { .track span { transition: none; } .flashInner { transition: none; } }
+
+/* ── the study-set list page: a composer-style box for a new set (text, file, title, exam date, build), then the sets ── */
+.composer { display: flex; flex-direction: column; gap: 4px; padding: 8px; border: 1px solid var(--o-line-strong); border-radius: 22px; background: var(--o-surface-1); transition: border-color var(--o-dur-2) var(--o-ease-out); }
+.composer:focus-within { border-color: var(--o-field-line); }
+.composerText { width: 100%; min-height: 96px; padding: 10px 12px; border: 0; border-radius: 14px; background: transparent; color: var(--o-ink); font: inherit; font-size: var(--o-t-14); line-height: var(--o-lh-text); resize: vertical; }
+.composerText::placeholder { color: var(--o-ink-3); }
+.composerText:focus-visible { outline: none; }
+.composerText:disabled { cursor: default; }
+.composerBar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 4px 4px 2px; }
+.composerGrow { flex: 1 1 auto; }
+.attach { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: var(--o-r-pill); border: 1px solid var(--o-line-strong); color: var(--o-ink); font-size: var(--o-t-13); font-weight: var(--o-w-medium); cursor: pointer; white-space: nowrap; transition: background-color var(--o-dur-1) var(--o-ease-out); }
+.attach:hover { background: var(--o-hover); }
+input:focus-visible + .attach { outline: 2px solid var(--o-focus); outline-offset: 2px; }
+.fileChip { display: inline-flex; align-items: center; gap: 4px; max-width: 240px; height: 34px; padding: 0 4px 0 12px; border-radius: var(--o-r-pill); background: var(--o-accent-soft); color: var(--o-accent-text); font-size: var(--o-t-13); }
+.fileChipName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fileChipX { display: grid; place-items: center; width: 26px; height: 26px; border: 0; border-radius: var(--o-r-pill); background: transparent; color: inherit; font: inherit; font-size: var(--o-t-16); cursor: pointer; }
+.fileChipX:hover { background: var(--o-hover); }
+.mini { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 4px 0 12px; border-radius: var(--o-r-pill); border: 1px solid var(--o-line-strong); }
+.mini:focus-within { border-color: var(--o-accent); }
+.miniLabel { color: var(--o-ink-3); font-size: var(--o-t-13); }
+.miniInput { width: 9.5rem; min-width: 0; height: 30px; padding: 0 8px 0 0; border: 0; background: transparent; color: var(--o-ink); font: inherit; font-size: var(--o-t-13); }
+.miniInput::placeholder { color: var(--o-ink-3); }
+.miniInput:focus-visible { outline: none; }
+.composerHint { margin: -16px 12px 0; color: var(--o-ink-3); font-size: var(--o-t-12); line-height: var(--o-lh-text); }
+@media (max-width: 640px) {
+  .composerBar > :global(button[type="submit"]) { width: 100%; }
+  .mini { flex: 1 1 40%; }
+  .miniInput { width: 100%; }
+}

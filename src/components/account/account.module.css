@@ -353,6 +353,9 @@ textarea.input { padding: 8px 12px; border-radius: var(--o-r-control); }
 .navItem[data-on] .navIcon { color: var(--o-accent-text); }
 @media (pointer: coarse) { .navItem { min-height: 44px; } .btn, .btn.btnSm { min-height: 44px; } }
 @media (max-width: 720px) {
+  /* The Orbit grid above (232px nav column) comes after the first phone block, so it has to be undone here too: on a phone the
+     categories are one sideways-scrolling row over the chosen category, not a squeezed column beside it. */
+  .settings { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
   .dlg { border-radius: 0; box-shadow: none; }
   .dlg[data-mode="page"] { border-radius: var(--o-r-card); }
   .rail { padding: 12px 0 8px; background: var(--o-surface-1); border-right: 0; border-bottom: 1px solid var(--o-line); }

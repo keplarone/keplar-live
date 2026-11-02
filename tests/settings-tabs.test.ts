@@ -45,6 +45,13 @@ test("Settings window: a dialog over the app via an intercepted route, the same 
   assert.match(read("src/app/app/@modal/(..)account/page.tsx"), /<AccountSettings mode="modal"/);
   assert.match(read("src/app/app/@modal/default.tsx"), /return null/);
   assert.match(read("src/app/app/@modal/[...rest]/page.tsx"), /return null/, "navigating elsewhere in the app closes the dialog");
+  // The home chat (/) has the same dialog slot, so Settings opens over the chat there too, not as a separate page.
+  const home = read("src/app/(chat)/layout.tsx");
+  assert.match(home, /modal: React\.ReactNode/);
+  assert.match(home, /\{modal\}/);
+  assert.match(read("src/app/(chat)/@modal/(.)account/page.tsx"), /<AccountSettings mode="modal"/);
+  assert.match(read("src/app/(chat)/@modal/default.tsx"), /return null/);
+  assert.match(read("src/app/(chat)/@modal/page.tsx"), /return null/, "back on the chat, the dialog closes");
   assert.match(read("src/app/(marketing)/account/page.tsx"), /<AccountSettings mode="page"/);
   const dlg = read("src/components/account/SettingsDialog.tsx");
   assert.match(dlg, /role=\{modal \? "dialog" : undefined\}/);

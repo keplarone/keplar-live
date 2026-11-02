@@ -47,7 +47,9 @@
 /* Once the app has painted its own greeting and link row, keep this copy in the document for the
    initial HTML but out of the way of the composer. */
 :global(body:has([data-welcome])) .h1,
-:global(body:has([data-explore])) .crawl {
+:global(body:has([data-explore])) .crawl,
+/* and once the app shell is up on any of its pages (Projects, Study, …), where its own footer links are not shown */
+:global(body:has([data-product])) .crawl {
   position: absolute;
   width: 1px;
   height: 1px;
