@@ -8,6 +8,8 @@ import type { PlanDay, TopicMastery } from "@/lib/study/progress";
 import { STUDY_OPEN_KEY, takeHandoff } from "@/components/app-ui/studio/handoff";
 import c from "@/components/slides/slides.module.css";
 import s from "./study.module.css";
+import pg from "@/components/app-ui/page.module.css";
+import { IconPlus, IconStudy } from "@/components/app-ui/icons";
 import { useEnterToSend } from "@/lib/use-enter-to-send";
 import { ActivityIndicator, Button, Tabs, confirmAction, tabId, tabPanelId } from "@/components/kit";
 
@@ -90,55 +92,73 @@ function Study({ plan }: { plan: "free" | "lite" | "plus" | "pro" | "business" }
 
   if (openId) return <SetView id={openId} plan={plan} notice={notice} initialTab={openId === handoff?.id ? handoff?.tab : undefined} onBack={() => { setOpenId(null); setNotice(""); void refresh(); }} />;
 
+  const sets = rows ?? [];
   return (
-    <div className={c.studio}>
-      <header className={c.head}>
-        <div>
-          <h1 className={c.title}>Study</h1>
-          <p className={c.lede}>Upload your study guide. Keplar builds the outline, flashcards, quizzes and a plan, and answers questions using only your material.</p>
+    <div className={pg.page} data-page="study">
+      <header className={pg.head}>
+        <div className={pg.headText}>
+          <h1 className={pg.title}>Study</h1>
+          <p className={pg.lede}>Add a study guide. Keplar builds the outline, flashcards, quizzes and a plan, and answers questions using only your material.</p>
         </div>
       </header>
       {error ? <p className={c.error} role="alert">{error}</p> : null}
-      <div className={c.grid}>
-        <form className={c.card} onSubmit={(e) => { e.preventDefault(); void build(); }}>
-          <div className={c.field}>
-            <span className={c.label}>Study guide <em>(PDF, .txt or .md · up to {Math.round(L.maxUploadBytes / 1048576)} MB and {L.maxPages} pages)</em></span>
-            <div className={c.fileRow}>
-              <input id="st-file" type="file" accept=".pdf,.txt,.md,application/pdf,text/plain,text/markdown" className={c.fileInput} onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-              <label htmlFor="st-file" className={c.ghost}>{file ? "Change file" : "Choose file"}</label>
-              {file ? <span className={c.fileName}>{file.name}</span> : <span className={c.hint}>Text-based PDFs only. Scanned pages can&rsquo;t be read yet.</span>}
-            </div>
-          </div>
-          <label className={c.field}>
-            <span className={c.label}>Or paste text</span>
-            <textarea className={c.input} rows={6} value={text} onChange={(e) => setText(e.target.value)} placeholder="Paste your notes or study guide here." disabled={Boolean(file)} />
+      <form className={s.composer} onSubmit={(e) => { e.preventDefault(); void build(); }} aria-label="New study set">
+        <label className="visually-hidden" htmlFor="st-text">Or paste text</label>
+        <textarea id="st-text" className={s.composerText} rows={4} value={text} onChange={(e) => setText(e.target.value)} placeholder={file ? `Using ${file.name}` : "Paste your notes or study guide here, or attach a file."} disabled={Boolean(file)} />
+        <div className={s.composerBar}>
+          <input id="st-file" type="file" accept=".pdf,.txt,.md,application/pdf,text/plain,text/markdown" className={c.fileInput} onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+          <label htmlFor="st-file" className={s.attach} title={`PDF, .txt or .md · up to ${Math.round(L.maxUploadBytes / 1048576)} MB and ${L.maxPages} pages`}>
+            <IconPlus size={14} /> {file ? "Change file" : "Choose file"}
           </label>
-          <div className={c.row}>
-            <label className={c.field}><span className={c.label}>Title <em>(optional)</em></span><input className={c.input} value={title} maxLength={120} onChange={(e) => setTitle(e.target.value)} /></label>
-            <label className={c.field}><span className={c.label}>Exam date <em>(optional)</em></span><input className={c.input} type="date" value={exam} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setExam(e.target.value)} /></label>
+          {file ? (
+            <span className={s.fileChip}>
+              <span className={s.fileChipName}>{file.name}</span>
+              <button type="button" className={s.fileChipX} onClick={() => setFile(null)} aria-label={`Remove ${file.name}`}>×</button>
+            </span>
+          ) : null}
+          <label className={s.mini}>
+            <span className="visually-hidden">Title (optional)</span>
+            <input className={s.miniInput} value={title} maxLength={120} onChange={(e) => setTitle(e.target.value)} placeholder="Title (optional)" />
+          </label>
+          <label className={s.mini}>
+            <span className={s.miniLabel}>Exam</span>
+            <input className={s.miniInput} type="date" value={exam} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setExam(e.target.value)} aria-label="Exam date (optional)" />
+          </label>
+          <span className={s.composerGrow} />
+          <Button type="submit" variant="primary" loading={busy} disabled={!file && text.trim().length < 80}>{busy ? "Reading and building…" : "Build my study set"}</Button>
+        </div>
+      </form>
+      <p className={s.composerHint}>
+        {plan === "free" ? "Free: runs on free models, so it can be slower. No credits used." : "Charged by actual cost, shown in your usage."}{" "}
+        Text-based PDFs only; scanned pages can&rsquo;t be read yet. Keplar treats your document as material to learn from, never as instructions.
+      </p>
+      <section className={pg.section} aria-labelledby="st-sets">
+        <div className={pg.sectionHead}>
+          <h2 id="st-sets" className={pg.sectionTitle}>Your study sets</h2>
+          {rows?.length ? <span className={pg.count}>{rows.length}</span> : null}
+        </div>
+        {rows === null ? <p className={pg.loading}><ActivityIndicator label="Loading" showLabel /></p> : sets.length ? (
+          <ul className={pg.list}>
+            {sets.map((r) => (
+              <li key={r.id} className={pg.item}>
+                <button type="button" className={pg.itemMain} onClick={() => setOpenId(r.id)}>
+                  <span className={pg.tile} aria-hidden="true"><IconStudy size={18} /></span>
+                  <span className={pg.itemText}>
+                    <span className={pg.itemTitle}>{r.title}</span>
+                    <span className={pg.itemMeta}>{r.pages} pages · {r.topics} topics · {r.cards} cards{r.examDate ? ` · exam ${r.examDate}` : ""}</span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className={pg.empty}>
+            <span className={pg.emptyTile} aria-hidden="true"><IconStudy size={22} /></span>
+            <p className={pg.emptyTitle}>No study sets yet</p>
+            <p className={pg.emptyText}>Add a guide above. Your sets and progress are saved here.</p>
           </div>
-          <div className={c.submitRow}>
-            <Button type="submit" variant="primary" loading={busy} disabled={!file && text.trim().length < 80}>{busy ? "Reading and building…" : "Build my study set"}</Button>
-            <span className={c.estimate}>{plan === "free" ? "Free: runs on free models, so it can be slower. No credits used." : "Charged by actual cost, shown in your usage."}</span>
-          </div>
-          <p className={c.hint}>Keplar treats your document as material to learn from, never as instructions. Answers come from the document, and Keplar says when something isn&rsquo;t in it.</p>
-        </form>
-        <aside className={c.card} aria-labelledby="st-sets">
-          <h2 id="st-sets" className={c.cardTitle}>Your study sets</h2>
-          {rows === null ? <p className={c.hint}><ActivityIndicator label="Loading" showLabel /></p> : rows.length ? (
-            <ul className={c.deckList}>
-              {rows.map((r) => (
-                <li key={r.id} className={c.deckRow}>
-                  <button type="button" className={c.deckOpen} onClick={() => setOpenId(r.id)}>
-                    <span className={c.deckName}>{r.title}</span>
-                    <span className={c.deckMeta}>{r.pages} pages · {r.topics} topics · {r.cards} cards{r.examDate ? ` · exam ${r.examDate}` : ""}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : <p className={c.hint}>Your sets and progress are saved here.</p>}
-        </aside>
-      </div>
+        )}
+      </section>
     </div>
   );
 }

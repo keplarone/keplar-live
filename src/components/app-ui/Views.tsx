@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useMemo, useState } from "react";
-import { IconEdit, IconPlus } from "./icons";
+import { IconEdit, IconPlus, IconProjects, IconSearch } from "./icons";
 import type { AppState, Project, Thread } from "./state/types";
 import { SiteProjects } from "./SiteProjects";
 import { ProjectTimeline } from "./ProjectTimeline";
@@ -9,6 +9,7 @@ import { ProjectWorkspace } from "./ProjectWorkspace";
 import { AgentsPanel } from "./AgentsPanel";
 import { activeScopeHeaders } from "./state/scope";
 import s from "./views.module.css";
+import pg from "./page.module.css";
 import { Button, IconButton, SegmentedControl } from "@/components/kit";
 import { DeleteConfirm, DeleteTrigger } from "./delete/DeleteChat";
 
@@ -141,6 +142,7 @@ export function ProjectsView({ state, signedIn, onCreate, onMerge, onRemoved, on
   const [name, setName] = useState("");
   const [mode, setMode] = useState<"list" | "timeline">("list");
   const [error, setError] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
   const [find, setFind] = useState("");
   const uid = useId();
   const needle = find.trim().toLowerCase();
@@ -152,6 +154,7 @@ export function ProjectsView({ state, signedIn, onCreate, onMerge, onRemoved, on
     if (state.projects.some((p) => p.name.toLowerCase() === n.toLowerCase())) return setError("A project with that name exists.");
     const project = { id: `prj_${Date.now().toString(36)}`, name: n.slice(0, 60), createdAt: Date.now() };
     onCreate(project);
+    setCreating(false);
     if (signedIn) void fetch("/api/projects", { method: "POST", headers: { "content-type": "application/json", ...activeScopeHeaders() }, body: JSON.stringify({ id: project.id, name: project.name }) }).catch(() => undefined);
     setName("");
     setError(null);
@@ -173,56 +176,93 @@ export function ProjectsView({ state, signedIn, onCreate, onMerge, onRemoved, on
       </div>
     );
   }
+  const startNew = () => {
+    setCreating(true);
+    requestAnimationFrame(() => document.getElementById(`${uid}-name`)?.focus());
+  };
   return (
-    <div className={s.view} data-hue="memory">
-      <Header title="Projects" lede="Your sites, and workspaces that keep a project's chats, files, instructions and memory together.">
-        <form className={s.inlineForm} onSubmit={submit} noValidate>
+    <div className={pg.page} data-hue="memory" data-page="projects">
+      <header className={pg.head}>
+        <div className={pg.headText}>
+          <h1 className={pg.title}>Projects</h1>
+          <p className={pg.lede}>Keep a project&rsquo;s chats, files, instructions and memory together, next to the sites you build.</p>
+        </div>
+        <div className={pg.headActions}>
+          <Button variant="primary" leadingIcon={<IconPlus size={14} />} data-orbit-icon="plus" onClick={startNew} aria-expanded={creating} aria-controls={`${uid}-new`}>
+            New project
+          </Button>
+        </div>
+      </header>
+      {creating ? (
+        <form id={`${uid}-new`} className={pg.create} onSubmit={submit} noValidate>
+          <span className={pg.tile} aria-hidden="true"><IconProjects size={18} /></span>
           <label htmlFor={`${uid}-name`} className="visually-hidden">Project name</label>
           <input
             id={`${uid}-name`}
-            className={s.textInput}
-            placeholder="New project name"
+            className={pg.createInput}
+            placeholder="Name your project"
             value={name}
             onChange={(e) => { setName(e.target.value); setError(null); }}
+            onKeyDown={(e) => { if (e.key === "Escape") { setCreating(false); setName(""); setError(null); } }}
             aria-invalid={!!error}
             aria-describedby={error ? `${uid}-err` : undefined}
             maxLength={60}
           />
-          <Button type="submit" variant="primary" leadingIcon={<IconPlus size={14} />} data-orbit-icon="plus">
-            Create project
-          </Button>
-          {error ? <p id={`${uid}-err`} className={s.fieldError}>{error}</p> : null}
+          <Button type="button" variant="ghost" onClick={() => { setCreating(false); setName(""); setError(null); }}>Cancel</Button>
+          <Button type="submit" variant="primary">Create project</Button>
+          {error ? <p id={`${uid}-err`} className={pg.createError}>{error}</p> : null}
         </form>
-      </Header>
-      <div className={s.toolbar}>
-        <div className={s.viewSearch}>
+      ) : null}
+      <div className={pg.toolbar}>
+        <div className={pg.search}>
+          <span className={pg.searchIcon} aria-hidden="true"><IconSearch size={16} /></span>
           <label htmlFor={`${uid}-find`} className="visually-hidden">Search projects and sites</label>
-          <input id={`${uid}-find`} type="search" className={s.textInput} placeholder="Search projects and sites" value={find} onChange={(e) => setFind(e.target.value)} />
+          <input id={`${uid}-find`} type="search" className={pg.searchInput} placeholder="Search projects and sites" value={find} onChange={(e) => setFind(e.target.value)} />
         </div>
         {state.projects.length === 0 ? null : (
-          <SegmentedControl label="View" size="sm" className={s.viewToggle} value={mode} onValueChange={setMode} options={[{ value: "list", label: "List" }, { value: "timeline", label: "Timeline" }]} />
+          <SegmentedControl label="View" size="sm" value={mode} onValueChange={setMode} options={[{ value: "list", label: "List" }, { value: "timeline", label: "Timeline" }]} />
         )}
       </div>
       {state.projects.length === 0 ? (
-        <p className={s.viewEmpty}>No projects yet. Name one above to keep its chats, files and memory in one place.</p>
-      ) : null}
-      {state.projects.length > 0 && mode === "timeline" ? <ProjectTimeline state={state} onOpenThread={onOpenThread} /> : null}
-      {state.projects.length === 0 || mode === "timeline" ? null : (
-        <ul className={s.rows}>
-          {projects.map((p) => {
-            const n = state.threads.filter((t) => t.projectId === p.id).length;
-            return (
-              <li key={p.id} className={s.rowItem}>
-                <button type="button" className={s.rowMain} onClick={() => onOpenProject(p.id)}>
-                  <span className={s.rowTitle}>{p.name}</span>
-                  <span className={s.rowMeta}>{n === 1 ? "1 thread" : `${n} threads`}</span>
-                </button>
-                <Button size="sm" variant="ghost" onClick={() => onNewInProject(p.id)}>New chat</Button>
-                <Button size="sm" variant="ghost" onClick={() => setOpenId(p.id)} aria-label={`Open the ${p.name} workspace: memory, files and instructions`}>Workspace</Button>
-              </li>
-            );
-          })}
-        </ul>
+        creating ? null : (
+          <div className={pg.empty}>
+            <span className={pg.emptyTile} aria-hidden="true"><IconProjects size={22} /></span>
+            <p className={pg.emptyTitle}>No projects yet</p>
+            <p className={pg.emptyText}>A project keeps its chats, files and memory in one place, so Keplar remembers the context every time.</p>
+            <Button variant="secondary" leadingIcon={<IconPlus size={14} />} onClick={startNew}>New project</Button>
+          </div>
+        )
+      ) : mode === "timeline" ? (
+        <ProjectTimeline state={state} onOpenThread={onOpenThread} />
+      ) : (
+        <section className={pg.section} aria-labelledby={`${uid}-list`}>
+          <div className={pg.sectionHead}>
+            <h2 id={`${uid}-list`} className={pg.sectionTitle}>Your projects</h2>
+            <span className={pg.count}>{projects.length}</span>
+          </div>
+          {projects.length === 0 ? <p className={pg.loading}>No projects match &ldquo;{find.trim()}&rdquo;.</p> : (
+            <ul className={pg.list}>
+              {projects.map((p) => {
+                const n = state.threads.filter((t) => t.projectId === p.id).length;
+                return (
+                  <li key={p.id} className={pg.item}>
+                    <button type="button" className={pg.itemMain} onClick={() => onOpenProject(p.id)}>
+                      <span className={pg.tile} aria-hidden="true"><IconProjects size={18} /></span>
+                      <span className={pg.itemText}>
+                        <span className={pg.itemTitle}>{p.name}</span>
+                        <span className={pg.itemMeta}>{n === 1 ? "1 chat" : `${n} chats`}</span>
+                      </span>
+                    </button>
+                    <span className={pg.itemActions}>
+                      <Button size="sm" variant="ghost" onClick={() => onNewInProject(p.id)}>New chat</Button>
+                      <Button size="sm" variant="ghost" onClick={() => setOpenId(p.id)} aria-label={`Open the ${p.name} workspace: memory, files and instructions`}>Workspace</Button>
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
       )}
       {onResumeSite ? <SiteProjects query={find} onResume={onResumeSite} /> : null}
     </div>

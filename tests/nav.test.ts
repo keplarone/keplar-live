@@ -20,10 +20,10 @@ test("sidebar: New chat, Search and Recents; modes are not navigation (Keplar Bu
   assert.doesNotMatch(side, /label: "(Agents|Approvals|Business)"/, "Agents and Approvals are business-mode only");
 });
 
-test("modes open beside the chat; /app/create and the other routes still render their views", () => {
+test("modes open as their own full page (never a panel beside the chat); /app/create and the other routes render their views", () => {
   const app = readFileSync("src/components/app-ui/KeplarApp.tsx", "utf8");
-  assert.match(app, /BESIDE_VIEWS = new Set<View>\(\["create", "slides", "study"/);
-  assert.match(app, /className=\{s\.beside\}/);
+  assert.doesNotMatch(app, /BESIDE_VIEWS|className=\{s\.beside\}|setBeside/);
+  assert.match(app, /const openSurface = useCallback\(\(view: View, projectFilter\?: string \| null\) => \{\n    goView\(view/);
   assert.match(app, /state\.view === "create"/);
   assert.match(app, /state\.view === "study"/);
   assert.match(app, /state\.view === "slides"/);
