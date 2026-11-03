@@ -53,7 +53,8 @@ function themeFrom(sel: HTMLSelectElement, menu: HTMLElement) {
   set("--ks-ink", first("--c-ink", "--kb-ink"));
   set("--ks-ink-3", first("--c-ink-3", "--kb-ink-3"));
   set("--ks-hover", first("--hover-wash"));
-  set("--ks-shadow", first("--g-menu-shadow"));
+  // The 1px graphite edge lives in select-menu.css. Do not copy --g-menu-shadow onto the menu:
+  // on keplar.one that token is `none`, and `box-shadow: none, 0 0 0 1px …` is invalid, so the browser drops it.
   menu.style.fontFamily = cs.fontFamily;
   const size = parseFloat(cs.fontSize);
   menu.style.fontSize = `${Math.min(16, Math.max(13, Number.isFinite(size) ? size : 14))}px`;

@@ -4,6 +4,11 @@
  * --c-surface-2 and the ink tokens); the values below are the fallbacks when a page defines none.
  * Contrast: dark #e3e3e3 on #282a2c 11.6:1, group label #9a9b9c on #282a2c 5.2:1; light #1f1f1f on #ffffff 16.5:1,
  * group label #5e5e5e on #ffffff 6.4:1.
+ *
+ * The open menu's edge is a 1px solid graphite border, not a shadow. keplar.one sets --g-menu-shadow to none, and
+ * `box-shadow: none, 0 0 0 1px …` is invalid, so the browser drops the whole declaration and the menu (#2f2f2f dark,
+ * #ececec light) disappears into the form. Dark #8a8a8a on #2f2f2f is 3.9:1; light #6e6e6e on #ececec is 4.3:1.
+ * No glow, no colour, no gradient.
  */
 .ks-menu {
   --ks-r: 16px;
@@ -18,11 +23,11 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 6px;
-  border: 0;
+  border: 1px solid #8a8a8a;
   border-radius: var(--ks-r);
   background: var(--ks-bg, #282a2c);
   color: var(--ks-ink, #e3e3e3);
-  box-shadow: var(--ks-shadow, 0 0 20px rgb(0 0 0 / 0.28)), 0 0 0 1px rgb(255 255 255 / 0.06);
+  box-shadow: none;
   font-size: 14px;
   line-height: 20px;
   text-align: start;
@@ -31,9 +36,10 @@
   color-scheme: dark;
 }
 .ks-menu[data-scheme="light"] {
+  border-color: #6e6e6e;
   background: var(--ks-bg, #ffffff);
   color: var(--ks-ink, #1f1f1f);
-  box-shadow: var(--ks-shadow, 0 1px 3px rgb(0 0 0 / 0.08), 0 8px 24px -6px rgb(31 31 31 / 0.18)), 0 0 0 1px rgb(0 0 0 / 0.06);
+  box-shadow: none;
   color-scheme: light;
 }
 .ks-menu:popover-open { inset: auto; }
