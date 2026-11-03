@@ -1,5 +1,9 @@
+import "./setup";
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { DownloadView } from "../src/components/download/DownloadView";
 import { desktopDownloadHref, getDesktopRelease, openDesktopAsset, parseAssetName, parseRelease, parseSha256Sums, pickLatest, releasesPageVisibility, safeReleaseAssetLocation, DESKTOP_REPO } from "../src/lib/desktop/releases";
 import { detectPlatform, formatSize, pickPrimary } from "../src/lib/desktop/platform";
 import { downloadPageGraph } from "../src/lib/structuredData";
@@ -250,6 +254,41 @@ test("download route: a mocked private asset redirects to GitHub's asset host, a
   assert.equal(await releasesPageVisibility(fakeFetch(() => new Response("nope", { status: 404 }))), "private");
   assert.equal(await releasesPageVisibility(fakeFetch(() => new Response("ok", { status: 200 }))), "public");
   assert.equal(await releasesPageVisibility((async () => { throw new Error("offline"); }) as typeof fetch), "unknown");
+});
+
+/** Visible text of a rendered page, with tags stripped and the apostrophe entity decoded. */
+function visibleText(html: string): string {
+  return html.replace(/<[^>]+>/g, " ").replace(/&#x27;|&apos;/g, "'").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
+}
+
+test("unavailable copy: a private release repo does not repeat the heading or promise a retry window", () => {
+  const html = renderToStaticMarkup(createElement(DownloadView, {
+    state: { status: "unavailable", reason: "error", releasesPublic: false },
+    pageUrl: "https://keplar.one/download",
+  }));
+  const text = visibleText(html);
+  assert.equal((text.match(/Downloads are temporarily unavailable/g) ?? []).length, 1);
+  assert.match(text, /We couldn't load the release list\. Nothing is wrong with your device\. Use Keplar in your browser\./);
+  assert.doesNotMatch(text, /few minutes|try again|in a minute|shortly|come back|check back/i);
+  assert.match(html, /href="\/app"/);
+  assert.equal(html.includes("GitHub releases"), false);
+});
+
+test("unavailable copy: a public rate limit still names GitHub and a short retry; an empty public list does not", () => {
+  const limited = visibleText(renderToStaticMarkup(createElement(DownloadView, {
+    state: { status: "unavailable", reason: "rate_limited" },
+    pageUrl: "https://keplar.one/download",
+  })));
+  assert.match(limited, /Try again in a few minutes, or see the releases page directly/);
+  assert.match(limited, /GitHub releases/);
+  assert.match(limited, /Use Keplar in your browser/);
+  const none = visibleText(renderToStaticMarkup(createElement(DownloadView, {
+    state: { status: "none" },
+    pageUrl: "https://business.keplar.one/download",
+  })));
+  assert.match(none, /First release coming soon/);
+  assert.equal(none.includes("Downloads are temporarily unavailable"), false);
+  assert.match(none, /Use Keplar in your browser/);
 });
 
 test("site: Download is in the nav, footer and sitemap", () => {
