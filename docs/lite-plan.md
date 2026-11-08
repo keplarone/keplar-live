@@ -18,7 +18,8 @@ Plan ids are matched case-insensitively (Whop resolves them that way; its canoni
 | Deep Research | no | yes |
 | Study mode | stronger models, mid limits | higher limits |
 | Create (site builder) | 2 projects, 5 pages, small jobs ($0.30 cap) | 5 projects |
-| Images, video, Slides, commerce, agents, connected apps (MCP), custom domains | **no** (start at Plus) | yes |
+| Images, Slides, commerce, agents, connected apps (MCP), custom domains | **no** (start at Plus) | yes |
+| Video | **no** (Pro and Business only) | no |
 | Per request cap / day cap (USD) | 0.30 / 1.20 | 0.75 / 3 |
 | Cooldown trigger (provider USD / hour) | 0.80 | 2 |
 

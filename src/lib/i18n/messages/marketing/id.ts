@@ -298,7 +298,8 @@ const m: MarketingCatalog = {
           "Bantuan coding dan analisis file",
           "Mode belajar dengan model yang lebih kuat",
           "Buat situs pribadi kecil (alamat keplar.site gratis)",
-          "Pembuatan gambar, Slides, Deep Research, video, agen, dan domain kustom mulai dari Plus"
+          "Pembuatan gambar, Slides, Deep Research, agen, dan domain kustom mulai dari Plus",
+          "Video hanya ada di Pro dan Business"
         ],
         "cta": "Tingkatkan ke Lite"
       },

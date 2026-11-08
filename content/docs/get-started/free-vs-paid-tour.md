@@ -13,7 +13,7 @@ Plans differ in three things: which models can answer, how much you can do (cred
 
 **Free.** Real Keplar on free open models. Up to 50 questions a day under fair use, image and video questions on free vision models, Study mode with smaller limits, saved chats and optional memory when signed in. Can be slower when free models are busy, and free model hosts may log prompts. No Deep Research, no web lookups, no Create beyond the basics.
 
-**Keplar Lite.** The step up: premium models for everyday questions at a lower price. Monthly credits with a 5-hour and a weekly limit, coding help and file analysis, Study mode on stronger models, and a small personal site on a free keplar.site address. Image generation, Slides, Deep Research, video, agents and custom domains start at Plus.
+**Keplar Lite.** The step up: premium models for everyday questions at a lower price. Monthly credits with a 5-hour and a weekly limit, coding help and file analysis, Study mode on stronger models, and a small personal site on a free keplar.site address. Image generation, Slides, Deep Research, agents and custom domains start at Plus. Video is Pro and Business only.
 
 **Keplar Plus.** For daily use. A larger credit allowance, Deep Research, image generation, the slideshow creator with PowerPoint and PDF export, personal sites and apps, custom domains, connected apps and a few agents.
 

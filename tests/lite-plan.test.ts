@@ -76,6 +76,9 @@ test("lite: pricing data has a Lite card between Free and Plus", () => {
   assert.equal(t.price, 20);
   assert.equal(t.cta.href, "/checkout?plan=lite");
   assert.ok(t.features.some((f) => /2,400 credits/.test(f)));
+  assert.ok(t.features.includes("Image generation, Slides, Deep Research, agents and custom domains start at Plus"));
+  assert.ok(t.features.includes("Video is Pro and Business only"));
+  assert.equal(t.features.some((f) => /video/i.test(f) && /start at Plus/.test(f)), false);
   assert.ok(isPaidPlan("lite") && asPlanId("lite") === "lite");
 });
 

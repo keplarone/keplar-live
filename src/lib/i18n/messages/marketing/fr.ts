@@ -298,7 +298,8 @@ const m: MarketingCatalog = {
           "Aide au code et analyse de fichiers",
           "Mode Étude sur des modèles plus puissants",
           "Créez un petit site personnel (adresse keplar.site gratuite)",
-          "Génération d’images, Slides, Deep Research, vidéo, agents et domaines personnalisés à partir de Plus"
+          "Génération d’images, Slides, Deep Research, agents et domaines personnalisés à partir de Plus",
+          "La vidéo est réservée à Pro et Business"
         ],
         "cta": "Passer à Lite"
       },
